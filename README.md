@@ -94,8 +94,12 @@ Output: src/utils.ts#L10-L25
 ```bash
 git clone https://github.com/couimet/rangelink.git
 cd rangelink
-npm install
-npm run compile
+
+# Use `setup` script to get started quickly
+npm setup
+
+pnpm run compile
+
 code --install-extension *.vsix
 ```
 
@@ -104,16 +108,18 @@ code --install-extension *.vsix
 ### Building
 
 ```bash
-npm install
-npm run compile
+# Use `setup` script to get started quickly
+npm setup
+
+pnpm run compile
 ```
 
 ### Testing
 
 ```bash
-npm test              # Run tests with coverage
-npm run test:watch    # Run tests in watch mode
-npm run test:coverage # Generate detailed coverage report
+pnpm test              # Run tests with coverage
+pnpm run test:watch    # Run tests in watch mode
+pnpm run test:coverage # Generate detailed coverage report
 ```
 
 Tests aim for **100% branch coverage** to ensure reliability.

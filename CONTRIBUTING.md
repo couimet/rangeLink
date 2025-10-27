@@ -14,9 +14,15 @@ Thank you for your interest in contributing to RangeLink! This document provides
 
 ### Prerequisites
 
-- Node.js (v16 or higher recommended)
-- npm or yarn
+- Node.js 22+ (comes with corepack so we can use `pnpm`)
 - VS Code or Cursor (latest stable version)
+
+**Enabling pnpm (one-time setup):**
+
+```bash
+npm run enable-pnpm
+# This runs "corepack enable" - no extra installation needed!
+```
 
 ### Setup Steps
 
@@ -30,13 +36,13 @@ cd rangelink
 2. Install dependencies:
 
 ```bash
-npm install
+npm run setup
 ```
 
 3. Compile the TypeScript:
 
 ```bash
-npm run compile
+pnpm run compile
 ```
 
 4. Open in VS Code/Cursor:
@@ -52,19 +58,21 @@ code .
 ### Compile
 
 ```bash
-npm run compile
+pnpm run compile
 ```
 
 ### Watch Mode
 
 ```bash
-npm run watch
+pnpm run watch
 ```
 
 ### Package for Distribution
 
 ```bash
-npm install -g vsce
+pnpm add -g vsce
+vsce package
+pnpm install -g vsce
 vsce package
 ```
 

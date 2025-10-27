@@ -5,14 +5,14 @@ Quick start guide for developing RangeLink.
 ## Getting Started (2 Minutes)
 
 ```bash
-# Install dependencies
-npm install
+# Use `setup` script to get started quickly
+npm setup
 
 # Compile TypeScript
-npm run compile
+pnpm run compile
 
 # Start watch mode (auto-compile on changes)
-npm run watch
+pnpm run watch
 ```
 
 Then:

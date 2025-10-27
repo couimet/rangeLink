@@ -25,18 +25,23 @@ vsce login <publisher-name>
 1. Install dependencies:
 
 ```bash
-npm install
+# Use `setup` script to get started quickly
+npm setup
 ```
 
 2. Compile TypeScript:
 
 ```bash
-npm run compile
+pnpm run compile
 ```
 
 3. Package the extension:
 
 ```bash
+# pnpm
+pnpm exec vsce package
+
+# or directly if installed globally
 vsce package
 ```
 

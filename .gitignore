@@ -6,3 +6,7 @@ node_modules
 .history
 coverage/
 
+# Package manager files (keep pnpm lock in repo for consistency)
+package-lock.json
+yarn.lock
+
