@@ -1,13 +1,16 @@
 # RangeLink
 
-Create links to code ranges in your files. Perfect for documentation, AI prompts, and team collaboration.
+Create sharable links to code ranges in your files. Perfect for documentation, AI prompts, and team collaboration.
+
+By default, the link format uses GitHub-inspired notation (`#L10-L25` for lines or `#L10C5-L25C20` for lines with columns) for ranges, but generates local file paths suitable for your workspace, documentation, interactions with AI assistants, etc.
 
 ![Version](https://img.shields.io/badge/version-0.1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tests](https://img.shields.io/badge/tests-100%25%20coverage-green)
 
 ## Features
 
+- **GitHub-Inspired Notation**: Uses GitHub-style range notation (`#L10-L25` for lines or `#L10C5-L25C20` for lines with columns) for line and column references
 - **Quick Link Creation**: Create links to code ranges with a simple keyboard shortcut
-- **Smart Formatting**: Automatically adapts format based on your selection (line, column, or range)
+- **Smart Formatting**: Automatically adapts based on selection (cursor, full lines, or partial selections with column precision)
 - **Relative or Absolute Paths**: Choose between workspace-relative or absolute file paths
 - **Status Bar Feedback**: Visual confirmation when a link is created
 - **Cross-Platform**: Works on Windows, macOS, and Linux
@@ -23,12 +26,12 @@ Create links to code ranges in your files. Perfect for documentation, AI prompts
 
 ### Link Formats
 
-RangeLink generates links in the following formats:
+RangeLink generates local file paths with GitHub-inspired range notation:
 
-- **Line number**: `path/to/file.ts:42`
-- **Single line with columns**: `path/to/file.ts#L42C1-L42C10`
-- **Multiple lines**: `path/to/file.ts#L10-L25`
-- **Multi-line with columns**: `path/to/file.ts#L10C5-L25C20`
+- **Cursor or full line**: `path/to/file.ts:42` - References a single line
+- **Single line with columns**: `path/to/file.ts#L42C6-L42C15` - When selecting partial content on one line
+- **Multiple full lines**: `path/to/file.ts#L10-L25` - When selecting complete lines
+- **Multi-line with column precision**: `path/to/file.ts#L10C5-L25C20` - When start/end columns are specified across multiple lines
 
 ### Commands
 
@@ -45,32 +48,6 @@ Want to use different keyboard shortcuts? You can customize them:
 2. Search for "RangeLink"
 3. Double-click any command to assign your preferred shortcut
 4. Press your desired key combination
-
-## Examples
-
-### Example 1: Single Line Link
-
-Select line 42 in `src/utils.ts`:
-
-```
-Output: src/utils.ts:42
-```
-
-### Example 2: Specific Columns
-
-Select characters 5-15 on line 42:
-
-```
-Output: src/utils.ts#L42C5-L42C15
-```
-
-### Example 3: Multi-Line Range
-
-Select lines 10-25:
-
-```
-Output: src/utils.ts#L10-L25
-```
 
 ## Use Cases
 
