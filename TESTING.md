@@ -1,6 +1,6 @@
 # Testing Guide
 
-CodeAnchor aims for **100% branch coverage** to ensure reliability and catch edge cases.
+RangeLink aims for **100% branch coverage** to ensure reliability and catch edge cases.
 
 ## Running Tests
 
@@ -25,14 +25,14 @@ After running `npm run test:coverage`, open:
 
 ## Test Structure
 
-- `src/extension.test.ts` - Unit tests for `CodeAnchorService`
+- `src/extension.test.ts` - Unit tests for `RangeLinkService`
 - Tests cover all code paths including edge cases
 
 ## What We Test
 
-### CodeAnchorService Methods
+### RangeLinkService Methods
 
-✅ `createAnchor()` - Main command handler
+✅ `createLink()` - Main command handler
 
 - Cursor position (empty selection)
 - Full line selections
@@ -42,7 +42,7 @@ After running `npm run test:coverage`, open:
 - Error handling (no editor)
 - Status bar feedback
 
-✅ `formatAnchor()` - Anchor formatting logic
+✅ `formatLink()` - Link formatting logic
 
 - Line number format
 - Column-specific format
@@ -87,7 +87,7 @@ it("should handle [specific edge case]", async () => {
     },
   };
 
-  await service.createAnchor(false);
+  await service.createLink(false);
 
   expect(mockClipboard.writeText).toHaveBeenCalledWith(expectedValue);
 });

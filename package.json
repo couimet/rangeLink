@@ -1,9 +1,9 @@
 {
-  "name": "codeanchor",
-  "displayName": "CodeAnchor",
+  "name": "rangelink",
+  "displayName": "RangeLink",
   "description": "Create sharable links to code ranges in your files. Perfect for documentation, AI prompts, and team collaboration.",
   "version": "0.1.0",
-  "publisher": "codeanchor",
+  "publisher": "rangelink",
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -12,7 +12,6 @@
   ],
   "keywords": [
     "reference",
-    "anchor",
     "link",
     "range",
     "citation",
@@ -24,34 +23,34 @@
   "contributes": {
     "commands": [
       {
-        "command": "codeanchor.createAnchor",
-        "title": "Create Anchor",
-        "category": "CodeAnchor",
-        "icon": "$(anchor)"
+        "command": "rangelink.createLink",
+        "title": "Create Link",
+        "category": "RangeLink",
+        "icon": "$(link)"
       },
       {
-        "command": "codeanchor.createAbsoluteAnchor",
-        "title": "Create Absolute Anchor",
-        "category": "CodeAnchor",
+        "command": "rangelink.createAbsoluteLink",
+        "title": "Create Absolute Link",
+        "category": "RangeLink",
         "icon": "$(link-external)"
       }
     ],
     "keybindings": [
       {
-        "command": "codeanchor.createAnchor",
-        "key": "ctrl+k ctrl+a",
-        "mac": "cmd+k cmd+a",
+        "command": "rangelink.createLink",
+        "key": "ctrl+k ctrl+l",
+        "mac": "cmd+k cmd+l",
         "when": "editorHasSelection || editorTextFocus"
       },
       {
-        "command": "codeanchor.createAbsoluteAnchor",
-        "key": "ctrl+k ctrl+shift+a",
-        "mac": "cmd+k cmd+shift+a",
+        "command": "rangelink.createAbsoluteLink",
+        "key": "ctrl+k ctrl+shift+l",
+        "mac": "cmd+k cmd+shift+l",
         "when": "editorHasSelection || editorTextFocus"
       }
     ],
     "configuration": {
-      "title": "CodeAnchor",
+      "title": "RangeLink",
       "properties": {}
     }
   },
@@ -74,10 +73,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/couimet/codeanchor"
+    "url": "https://github.com/couimet/rangelink"
   },
   "bugs": {
-    "url": "https://github.com/couimet/codeanchor/issues"
+    "url": "https://github.com/couimet/rangelink/issues"
   },
-  "homepage": "https://github.com/couimet/codeanchor#readme"
+  "homepage": "https://github.com/couimet/rangelink#readme"
 }

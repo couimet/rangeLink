@@ -1,29 +1,29 @@
-# CodeAnchor
+# RangeLink
 
-Create anchors (sharable links) to code ranges in your files. Perfect for documentation, AI prompts, and team collaboration.
+Create links to code ranges in your files. Perfect for documentation, AI prompts, and team collaboration.
 
 ![Version](https://img.shields.io/badge/version-0.1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tests](https://img.shields.io/badge/tests-100%25%20coverage-green)
 
 ## Features
 
-- **Quick Anchor Creation**: Create anchors to code ranges with a simple keyboard shortcut
+- **Quick Link Creation**: Create links to code ranges with a simple keyboard shortcut
 - **Smart Formatting**: Automatically adapts format based on your selection (line, column, or range)
 - **Relative or Absolute Paths**: Choose between workspace-relative or absolute file paths
-- **Status Bar Feedback**: Visual confirmation when an anchor is created
+- **Status Bar Feedback**: Visual confirmation when a link is created
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 
 ## Usage
 
-### Create an Anchor
+### Create a Link
 
 1. **Select text** in the editor (or just place your cursor on a line)
-2. **Press `Ctrl+K Ctrl+A`** to create a relative anchor (or `Cmd+K Cmd+A` on Mac)
-3. **Press `Ctrl+K Ctrl+Shift+A`** to create an absolute anchor (or `Cmd+K Cmd+Shift+A` on Mac)
-4. The anchor is copied to your clipboard
+2. **Press `Ctrl+K Ctrl+L`** to create a relative link (or `Cmd+K Cmd+L` on Mac)
+3. **Press `Ctrl+K Ctrl+Shift+L`** to create an absolute link (or `Cmd+K Cmd+Shift+L` on Mac)
+4. The link is copied to your clipboard
 
-### Anchor Formats
+### Link Formats
 
-CodeAnchor generates anchors in the following formats:
+RangeLink generates links in the following formats:
 
 - **Line number**: `path/to/file.ts:42`
 - **Single line with columns**: `path/to/file.ts#L42C1-L42C10`
@@ -34,21 +34,21 @@ CodeAnchor generates anchors in the following formats:
 
 You can also access the commands from the Command Palette:
 
-- `CodeAnchor: Create Anchor` - Create an anchor with relative path
-- `CodeAnchor: Create Absolute Anchor` - Create an anchor with absolute path
+- `RangeLink: Create Link` - Create a link with relative path
+- `RangeLink: Create Absolute Link` - Create a link with absolute path
 
 ### Customizing Keyboard Shortcuts
 
 Want to use different keyboard shortcuts? You can customize them:
 
-1. Press `Ctrl+K Ctrl+S` (or `Cmd+K Cmd+S` on Mac) to open Keyboard Shortcuts
-2. Search for "CodeAnchor"
+1. Press `Ctrl+K Ctrl+S` (or `Cmd+R Cmd+S` on Mac) to open Keyboard Shortcuts
+2. Search for "RangeLink"
 3. Double-click any command to assign your preferred shortcut
 4. Press your desired key combination
 
 ## Examples
 
-### Example 1: Single Line Anchor
+### Example 1: Single Line Link
 
 Select line 42 in `src/utils.ts`:
 
@@ -74,10 +74,10 @@ Output: src/utils.ts#L10-L25
 
 ## Use Cases
 
-- **Documentation**: Include precise code anchors in your docs
+- **Documentation**: Include precise code links in your docs
 - **AI Prompts**: Give AI assistants exact locations in your codebase
 - **Code Reviews**: Point team members to specific code sections
-- **Bug Reports**: Include precise file and line anchors
+- **Bug Reports**: Include precise file and line links
 - **Pair Programming**: Quickly share code locations
 
 ## Installation
@@ -86,14 +86,14 @@ Output: src/utils.ts#L10-L25
 
 1. Open VS Code or Cursor
 2. Go to Extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`)
-3. Search for "CodeAnchor"
+3. Search for "RangeLink"
 4. Click Install
 
 ### From Source
 
 ```bash
-git clone https://github.com/couimet/codeanchor.git
-cd codeanchor
+git clone https://github.com/couimet/rangelink.git
+cd rangelink
 npm install
 npm run compile
 code --install-extension *.vsix
@@ -124,35 +124,14 @@ Tests aim for **100% branch coverage** to ensure reliability.
 
 ## Extension Settings
 
-CodeAnchor provides the following settings:
-
-### Keyboard Shortcuts
-
-You can customize keyboard shortcuts for CodeAnchor commands:
-
-1. **Open Keyboard Shortcuts**: Press `Ctrl+K Ctrl+S` (or `Cmd+K Cmd+S` on Mac)
-2. **Search for "CodeAnchor"** to find all available commands
-3. **Customize** any keyboard shortcut by double-clicking it and entering your preferred key combination
-
-#### Available Commands
-
-- **CodeAnchor: Create Anchor** - Default: `Ctrl+K Ctrl+A` (or `Cmd+K Cmd+A` on Mac)
-- **CodeAnchor: Create Absolute Anchor** - Default: `Ctrl+K Ctrl+Shift+A` (or `Cmd+K Cmd+Shift+A` on Mac)
-
-#### Keyboard Shortcuts
-
-Keyboard shortcuts are managed through VSCode's built-in Keyboard Shortcuts UI. No additional extension settings required!
-
-### Extension Settings
-
-CodeAnchor follows VSCode's standard approach:
+RangeLink follows VSCode's standard approach:
 
 - **Keyboard shortcuts**: Configure via VSCode's Keyboard Shortcuts UI (File > Preferences > Keyboard Shortcuts)
-- **Future settings**: May include anchor format customization, path style preferences, etc.
+- **Future settings**: May include link format customization, path style preferences, etc.
 
 ## Known Issues
 
-None at the moment. If you find a bug, please [report it](https://github.com/couimet/codeanchor/issues).
+None at the moment. If you find a bug, please [report it](https://github.com/couimet/rangelink/issues).
 
 ## Release Notes
 

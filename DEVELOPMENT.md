@@ -1,6 +1,6 @@
 # Development Guide
 
-Quick start guide for developing CodeAnchor.
+Quick start guide for developing RangeLink.
 
 ## Getting Started (2 Minutes)
 
@@ -20,13 +20,13 @@ Then:
 1. Press `F5` to open a new Extension Development Host window
 2. Open any file in the new window
 3. Select some text
-4. Press `Ctrl+K Ctrl+R` (or `Cmd+K Cmd+R` on Mac)
-5. Check the status bar for the copied reference
+4. Press `Ctrl+K Ctrl+L` (or `Cmd+K Cmd+L` on Mac) to create a link
+5. Check the status bar for "Linked: ..."
 
 ## Project Structure
 
 ```
-codeanchor/
+rangelink/
 ├── src/
 │   └── extension.ts      # Main extension code
 ├── out/                   # Compiled JavaScript (generated)
@@ -43,7 +43,7 @@ codeanchor/
 ### `src/extension.ts`
 
 - Main extension entry point
-- Contains `CodeAnchorService` class
+- Contains `RangeLinkService` class
 - Handles command registration
 - Formats code references
 
@@ -56,12 +56,12 @@ codeanchor/
 
 ## Code Architecture
 
-### CodeAnchorService
+### RangeLinkService
 
 Handles all extension logic:
 
-- `copyReference()` - Main command handler
-- `formatReference()` - Smart formatting logic
+- `createLink()` - Main command handler
+- `formatLink()` - Smart formatting logic
 - Status bar feedback
 
 ### Activation

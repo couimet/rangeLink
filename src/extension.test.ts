@@ -48,7 +48,7 @@ jest.mock("vscode", () => ({
   ExtensionKind: { Workspace: 1 },
 }));
 
-describe("CodeAnchorService", () => {
+describe("RangeLinkService", () => {
   let service: any;
 
   beforeEach(() => {
@@ -57,16 +57,16 @@ describe("CodeAnchorService", () => {
     mockClipboard.writeText.mockResolvedValue(undefined);
 
     // Import after mocks are set up
-    const { CodeAnchorService } = require("./extension");
-    service = new CodeAnchorService();
+    const { RangeLinkService } = require("./extension");
+    service = new RangeLinkService();
   });
 
   afterEach(() => {
     service.dispose();
   });
 
-  describe("createAnchor - Cursor position (empty selection)", () => {
-    it("should create anchor for empty selection", async () => {
+  describe("createLink - Cursor position (empty selection)", () => {
+    it("should create link for empty selection", async () => {
       mockWindow.activeTextEditor = {
         selection: {
           start: { line: 5, character: 0 },
@@ -83,14 +83,14 @@ describe("CodeAnchorService", () => {
       });
       mockWorkspace.asRelativePath.mockReturnValue("src/file.ts");
 
-      await service.createAnchor(false);
+      await service.createLink(false);
 
       expect(mockClipboard.writeText).toHaveBeenCalledWith("src/file.ts:6");
     });
   });
 
-  describe("createAnchor - Single line selections", () => {
-    it("should create anchor for full line selection", async () => {
+  describe("createLink - Single line selections", () => {
+    it("should create link for full line selection", async () => {
       mockWindow.activeTextEditor = {
         selection: {
           start: { line: 10, character: 0 },
@@ -111,7 +111,7 @@ describe("CodeAnchorService", () => {
       });
       mockWorkspace.asRelativePath.mockReturnValue("src/file.ts");
 
-      await service.createAnchor(false);
+      await service.createLink(false);
 
       expect(mockClipboard.writeText).toHaveBeenCalledWith("src/file.ts:11");
     });
@@ -137,7 +137,7 @@ describe("CodeAnchorService", () => {
       });
       mockWorkspace.asRelativePath.mockReturnValue("src/file.ts");
 
-      await service.createAnchor(false);
+      await service.createLink(false);
 
       expect(mockClipboard.writeText).toHaveBeenCalledWith(
         "src/file.ts#L21C6-L21C15"
@@ -145,7 +145,7 @@ describe("CodeAnchorService", () => {
     });
   });
 
-  describe("createAnchor - Multi-line selections", () => {
+  describe("createLink - Multi-line selections", () => {
     it("should copy range when selection spans multiple full lines", async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -163,7 +163,7 @@ describe("CodeAnchorService", () => {
       });
       mockWorkspace.asRelativePath.mockReturnValue("src/file.ts");
 
-      await service.createAnchor(false);
+      await service.createLink(false);
 
       expect(mockClipboard.writeText).toHaveBeenCalledWith(
         "src/file.ts#L11-L26"
@@ -187,7 +187,7 @@ describe("CodeAnchorService", () => {
       });
       mockWorkspace.asRelativePath.mockReturnValue("src/file.ts");
 
-      await service.createAnchor(false);
+      await service.createLink(false);
 
       expect(mockClipboard.writeText).toHaveBeenCalledWith(
         "src/file.ts#L11C6-L26C11"
@@ -195,7 +195,7 @@ describe("CodeAnchorService", () => {
     });
   });
 
-  describe("createAnchor - Path handling", () => {
+  describe("createLink - Path handling", () => {
     it("should use relative path by default", async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -213,7 +213,7 @@ describe("CodeAnchorService", () => {
       });
       mockWorkspace.asRelativePath.mockReturnValue("src/file.ts");
 
-      await service.createAnchor(false);
+      await service.createLink(false);
 
       expect(mockWorkspace.asRelativePath).toHaveBeenCalled();
     });
@@ -230,7 +230,7 @@ describe("CodeAnchorService", () => {
         },
       };
 
-      await service.createAnchor(true);
+      await service.createLink(true);
 
       expect(mockWorkspace.asRelativePath).not.toHaveBeenCalled();
       const callArg = mockClipboard.writeText.mock.calls[0][0];
@@ -249,18 +249,18 @@ describe("CodeAnchorService", () => {
         },
       };
 
-      await service.createAnchor(true);
+      await service.createLink(true);
 
       const callArg = mockClipboard.writeText.mock.calls[0][0];
       expect(callArg).not.toContain("\\");
     });
   });
 
-  describe("createAnchor - Error handling", () => {
+  describe("createLink - Error handling", () => {
     it("should show error when no active editor", async () => {
       mockWindow.activeTextEditor = null;
 
-      await service.createAnchor(false);
+      await service.createLink(false);
 
       expect(mockWindow.showErrorMessage).toHaveBeenCalledWith(
         "No active editor"
@@ -282,13 +282,13 @@ describe("CodeAnchorService", () => {
 
       mockWorkspace.getWorkspaceFolder.mockReturnValue(undefined);
 
-      await service.createAnchor(false);
+      await service.createLink(false);
 
       expect(mockClipboard.writeText).toHaveBeenCalled();
     });
   });
 
-  describe("createAnchor - Status bar feedback", () => {
+  describe("createLink - Status bar feedback", () => {
     it("should show status bar message after copying", async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -306,10 +306,10 @@ describe("CodeAnchorService", () => {
       });
       mockWorkspace.asRelativePath.mockReturnValue("src/file.ts");
 
-      await service.createAnchor(false);
+      await service.createLink(false);
 
       expect(mockStatusBarItem.show).toHaveBeenCalled();
-      expect(mockStatusBarItem.text).toBe("$(check) Copied: src/file.ts:43");
+      expect(mockStatusBarItem.text).toBe("$(check) Linked: src/file.ts:43");
     });
   });
 

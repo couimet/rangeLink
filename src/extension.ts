@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-export interface Anchor {
+export interface Link {
   path: string;
   startLine: number;
   endLine: number;
@@ -9,7 +9,7 @@ export interface Anchor {
   isAbsolute: boolean;
 }
 
-export class CodeAnchorService {
+export class RangeLinkService {
   private statusBarItem: vscode.StatusBarItem;
 
   constructor() {
@@ -17,13 +17,13 @@ export class CodeAnchorService {
       vscode.StatusBarAlignment.Right,
       100
     );
-    this.statusBarItem.tooltip = "CodeAnchor";
+    this.statusBarItem.tooltip = "RangeLink";
   }
 
   /**
-   * Create an anchor for the current selection
+   * Create a link for the current selection
    */
-  async createAnchor(useAbsolutePath: boolean = false): Promise<void> {
+  async createLink(useAbsolutePath: boolean = false): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       vscode.window.showErrorMessage("No active editor");
@@ -47,20 +47,20 @@ export class CodeAnchorService {
     // Normalize path separators
     referencePath = referencePath.replace(/\\/g, "/");
 
-    // Format the anchor
-    const anchorString = this.formatAnchor(referencePath, selection);
+    // Format the link
+    const linkString = this.formatLink(referencePath, selection);
 
     // Copy to clipboard
-    await vscode.env.clipboard.writeText(anchorString);
+    await vscode.env.clipboard.writeText(linkString);
 
     // Show feedback
-    this.showFeedback(anchorString);
+    this.showFeedback(linkString);
   }
 
   /**
-   * Format an anchor string based on the selection
+   * Format a link string based on the selection
    */
-  private formatAnchor(path: string, selection: vscode.Selection): string {
+  private formatLink(path: string, selection: vscode.Selection): string {
     // Convert to 1-based indexing
     const startLine = selection.start.line + 1;
     const startColumn = selection.start.character + 1;
@@ -107,9 +107,9 @@ export class CodeAnchorService {
   /**
    * Show feedback to the user
    */
-  private showFeedback(anchorString: string): void {
+  private showFeedback(linkString: string): void {
     // Show in status bar
-    this.statusBarItem.text = `$(check) Anchored: ${anchorString}`;
+    this.statusBarItem.text = `$(check) Linked: ${linkString}`;
     this.statusBarItem.show();
 
     // Use global setTimeout (provided by Node.js environment)
@@ -118,7 +118,7 @@ export class CodeAnchorService {
     }, 3000);
 
     // Optionally show an information message (commented out to be less intrusive)
-    // vscode.window.showInformationMessage(`Created anchor: ${anchorString}`);
+    // vscode.window.showInformationMessage(`Created link: ${linkString}`);
   }
 
   dispose(): void {
@@ -126,28 +126,28 @@ export class CodeAnchorService {
   }
 }
 
-let service: CodeAnchorService | undefined;
+let service: RangeLinkService | undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
-  const currentService = new CodeAnchorService();
+  const currentService = new RangeLinkService();
   service = currentService;
 
   // Register commands
-  const createAnchor = vscode.commands.registerCommand(
-    "codeanchor.createAnchor",
+  const createLink = vscode.commands.registerCommand(
+    "rangelink.createLink",
     async () => {
-      await currentService.createAnchor(false);
+      await currentService.createLink(false);
     }
   );
 
-  const createAbsoluteAnchor = vscode.commands.registerCommand(
-    "codeanchor.createAbsoluteAnchor",
+  const createAbsoluteLink = vscode.commands.registerCommand(
+    "rangelink.createAbsoluteLink",
     async () => {
-      await currentService.createAnchor(true);
+      await currentService.createLink(true);
     }
   );
 
-  context.subscriptions.push(createAnchor, createAbsoluteAnchor);
+  context.subscriptions.push(createLink, createAbsoluteLink);
 }
 
 export function deactivate(): void {

@@ -1,6 +1,6 @@
-# Publishing CodeAnchor Extension
+# Publishing RangeLink Extension
 
-This guide explains how to build and publish the CodeAnchor extension to the VS Code and Cursor marketplaces.
+This guide explains how to build and publish the RangeLink extension to the VS Code and Cursor marketplaces.
 
 ## Prerequisites
 
@@ -40,14 +40,14 @@ npm run compile
 vsce package
 ```
 
-This creates a `.vsix` file (e.g., `codeanchor-0.1.0.vsix`).
+This creates a `.vsix` file (e.g., `rangelink-0.1.0.vsix`).
 
 ## Testing the Extension Locally
 
 1. Install the extension locally:
 
 ```bash
-code --install-extension codeanchor-0.1.0.vsix
+code --install-extension rangelink-0.1.0.vsix
 ```
 
 2. Or use the VS Code UI:
@@ -61,8 +61,8 @@ code --install-extension codeanchor-0.1.0.vsix
 3. Test the functionality:
    - Open any file
    - Select some text
-   - Press `Ctrl+K Ctrl+R` (or `Cmd+K Cmd+R` on Mac)
-   - Verify the reference is copied to clipboard
+   - Press `Ctrl+K Ctrl+L` (or `Cmd+K Cmd+L` on Mac)
+   - Verify the link is copied to clipboard
 
 ## Publishing to VS Code Marketplace
 
@@ -126,7 +126,7 @@ Solution: Add repository info to `package.json`:
 ```json
 "repository": {
   "type": "git",
-  "url": "https://github.com/couimet/codeanchor.git"
+  "url": "https://github.com/couimet/rangelink.git"
 }
 ```
 

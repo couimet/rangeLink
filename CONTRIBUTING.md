@@ -1,6 +1,6 @@
-# Contributing to CodeAnchor
+# Contributing to RangeLink
 
-Thank you for your interest in contributing to CodeAnchor! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to RangeLink! This document provides guidelines for contributing to the project.
 
 ## Getting Started
 
@@ -23,8 +23,8 @@ Thank you for your interest in contributing to CodeAnchor! This document provide
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/couimet/codeanchor.git
-cd codeanchor
+git clone https://github.com/couimet/rangelink.git
+cd rangelink
 ```
 
 2. Install dependencies:
