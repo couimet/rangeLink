@@ -6,10 +6,7 @@ Quick start guide for developing RangeLink.
 
 ```bash
 # Use `setup` script to get started quickly
-npm setup
-
-# Compile TypeScript
-pnpm run compile
+./setup.sh
 
 # Start watch mode (auto-compile on changes)
 pnpm run watch

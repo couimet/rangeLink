@@ -68,38 +68,7 @@ Want to use different keyboard shortcuts? You can customize them:
 
 ### From Source
 
-```bash
-git clone https://github.com/couimet/rangelink.git
-cd rangelink
-
-# Use `setup` script to get started quickly
-npm setup
-
-pnpm run compile
-
-code --install-extension *.vsix
-```
-
-## Development
-
-### Building
-
-```bash
-# Use `setup` script to get started quickly
-npm setup
-
-pnpm run compile
-```
-
-### Testing
-
-```bash
-pnpm test              # Run tests with coverage
-pnpm run test:watch    # Run tests in watch mode
-pnpm run test:coverage # Generate detailed coverage report
-```
-
-Tests aim for **100% branch coverage** to ensure reliability.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for instructions on building from source.
 
 ## Requirements
 
