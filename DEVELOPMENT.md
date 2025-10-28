@@ -17,8 +17,8 @@ Then:
 1. Press `F5` to open a new Extension Development Host window
 2. Open any file in the new window
 3. Select some text
-4. Press `Ctrl+K Ctrl+L` (or `Cmd+K Cmd+L` on Mac) to create a link
-5. Check the status bar for "Linked: ..."
+4. Use the keyboard shortcuts or context menu to create a link
+5. Check the status bar for any feedback
 
 ## Project Structure
 

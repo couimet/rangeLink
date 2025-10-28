@@ -52,14 +52,14 @@
     "keybindings": [
       {
         "command": "rangelink.copyLinkToSelectionWithRelativePath",
-        "key": "ctrl+k ctrl+l",
-        "mac": "cmd+k cmd+l",
+        "key": "ctrl+r ctrl+l",
+        "mac": "cmd+r cmd+l",
         "when": "editorHasSelection || editorTextFocus"
       },
       {
         "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
-        "key": "ctrl+k ctrl+shift+l",
-        "mac": "cmd+k cmd+shift+l",
+        "key": "ctrl+r ctrl+shift+l",
+        "mac": "cmd+r cmd+shift+l",
         "when": "editorHasSelection || editorTextFocus"
       }
     ],

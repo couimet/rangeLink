@@ -20,9 +20,11 @@ By default, the link format uses GitHub-inspired notation (`#L10-L25` for lines 
 ### Create a Link
 
 1. **Select text** in the editor (or just place your cursor on a line)
-2. **Press `Ctrl+K Ctrl+L`** to create a relative link (or `Cmd+K Cmd+L` on Mac)
-3. **Press `Ctrl+K Ctrl+Shift+L`** to create an absolute link (or `Cmd+K Cmd+Shift+L` on Mac)
+2. **Press `Ctrl+R Ctrl+L`** to create a relative link (or `Cmd+R Cmd+L` on Mac)
+3. **Press `Ctrl+R Ctrl+Shift+L`** to create an absolute link (or `Cmd+R Cmd+Shift+L` on Mac)
 4. The link is copied to your clipboard
+
+Note: R then L — the letters stand for the extension's name: **R**ange **L**ink.
 
 ### Link Formats
 
