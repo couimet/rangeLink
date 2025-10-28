@@ -23,27 +23,27 @@
   "contributes": {
     "commands": [
       {
-        "command": "rangelink.createLink",
-        "title": "Create Link",
+        "command": "rangelink.copyLinkToSelectionWithRelativePath",
+        "title": "Copy Range Link",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
-        "command": "rangelink.createAbsoluteLink",
-        "title": "Create Absolute Link",
+        "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
+        "title": "Copy Range Link (Absolute)",
         "category": "RangeLink",
         "icon": "$(link-external)"
       }
     ],
     "keybindings": [
       {
-        "command": "rangelink.createLink",
+        "command": "rangelink.copyLinkToSelectionWithRelativePath",
         "key": "ctrl+k ctrl+l",
         "mac": "cmd+k cmd+l",
         "when": "editorHasSelection || editorTextFocus"
       },
       {
-        "command": "rangelink.createAbsoluteLink",
+        "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
         "key": "ctrl+k ctrl+shift+l",
         "mac": "cmd+k cmd+shift+l",
         "when": "editorHasSelection || editorTextFocus"

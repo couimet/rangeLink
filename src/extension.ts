@@ -90,19 +90,22 @@ export function activate(context: vscode.ExtensionContext): void {
   const currentService = new RangeLinkService();
   service = currentService;
 
-  const createLink = vscode.commands.registerCommand(
-    "rangelink.createLink",
+  const copyLinkToSelectionWithRelativePath = vscode.commands.registerCommand(
+    "rangelink.copyLinkToSelectionWithRelativePath",
     async () => {
       await currentService.createLink(false);
     }
   );
 
-  const createAbsoluteLink = vscode.commands.registerCommand(
-    "rangelink.createAbsoluteLink",
+  const copyLinkToSelectionWithAbsolutePath = vscode.commands.registerCommand(
+    "rangelink.copyLinkToSelectionWithAbsolutePath",
     async () => {
       await currentService.createLink(true);
     }
   );
 
-  context.subscriptions.push(createLink, createAbsoluteLink);
+  context.subscriptions.push(
+    copyLinkToSelectionWithRelativePath,
+    copyLinkToSelectionWithAbsolutePath
+  );
 }
