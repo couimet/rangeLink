@@ -10,16 +10,6 @@ export interface Link {
 }
 
 export class RangeLinkService {
-  private statusBarItem: vscode.StatusBarItem;
-
-  constructor() {
-    this.statusBarItem = vscode.window.createStatusBarItem(
-      vscode.StatusBarAlignment.Right,
-      100
-    );
-    this.statusBarItem.tooltip = "RangeLink";
-  }
-
   async createLink(useAbsolutePath: boolean = false): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -87,21 +77,10 @@ export class RangeLinkService {
   }
 
   private showFeedback(linkString: string): void {
-    // Show in status bar
-    this.statusBarItem.text = `$(check) Linked: ${linkString}`;
-    this.statusBarItem.show();
-
-    // Use global setTimeout (provided by Node.js environment)
-    global.setTimeout(() => {
-      this.statusBarItem.hide();
-    }, 3000);
-
-    // Optionally show an information message (commented out to be less intrusive)
-    // vscode.window.showInformationMessage(`Created link: ${linkString}`);
-  }
-
-  dispose(): void {
-    this.statusBarItem.dispose();
+    vscode.window.setStatusBarMessage(
+      `$(check) Copied Range Link: ${linkString}`,
+      3000
+    );
   }
 }
 
@@ -126,10 +105,4 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(createLink, createAbsoluteLink);
-}
-
-export function deactivate(): void {
-  if (service) {
-    service.dispose();
-  }
 }
