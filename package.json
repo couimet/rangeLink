@@ -35,6 +35,20 @@
         "icon": "$(link-external)"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorTextFocus",
+          "command": "rangelink.copyLinkToSelectionWithRelativePath",
+          "group": "9_cutcopypaste@1"
+        },
+        {
+          "when": "editorTextFocus",
+          "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
+          "group": "9_cutcopypaste@1"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "rangelink.copyLinkToSelectionWithRelativePath",
