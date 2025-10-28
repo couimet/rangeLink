@@ -20,9 +20,6 @@ export class RangeLinkService {
     this.statusBarItem.tooltip = "RangeLink";
   }
 
-  /**
-   * Create a link for the current selection
-   */
   async createLink(useAbsolutePath: boolean = false): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -34,26 +31,19 @@ export class RangeLinkService {
     const document = editor.document;
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
 
-    // Determine the path
     let referencePath: string;
     if (workspaceFolder && !useAbsolutePath) {
-      // Relative path from workspace root
       referencePath = vscode.workspace.asRelativePath(document.uri);
     } else {
-      // Absolute path or no workspace
       referencePath = document.uri.fsPath;
     }
 
-    // Normalize path separators
     referencePath = referencePath.replace(/\\/g, "/");
 
-    // Format the link
     const linkString = this.formatLink(referencePath, selection);
 
-    // Copy to clipboard
     await vscode.env.clipboard.writeText(linkString);
 
-    // Show feedback
     this.showFeedback(linkString);
   }
 
@@ -67,18 +57,14 @@ export class RangeLinkService {
     const endLine = selection.end.line + 1;
     const endColumn = selection.end.character + 1;
 
-    // Handle empty selection (cursor position)
     if (selection.isEmpty) {
       return `${path}:${startLine}`;
     }
 
-    // Handle single line selection
     if (startLine === endLine) {
       const lineNum = `L${startLine}`;
 
-      // Check if it's a full line selection
       if (startColumn === 1 && endColumn > 1) {
-        // Use a line hint: check if selection goes to end of line
         const line = vscode.window.activeTextEditor!.document.lineAt(
           startLine - 1
         );
@@ -87,12 +73,9 @@ export class RangeLinkService {
         }
       }
 
-      // Specific columns
       return `${path}#${lineNum}C${startColumn}-${lineNum}C${endColumn}`;
     }
 
-    // Handle multi-line selection
-    // If it's a full multi-line block (columns at start and end of lines)
     const isFullBlock =
       selection.start.character === 0 && selection.end.character === 0;
 
@@ -100,13 +83,9 @@ export class RangeLinkService {
       return `${path}#L${startLine}-L${endLine}`;
     }
 
-    // Multi-line with specific columns
     return `${path}#L${startLine}C${startColumn}-L${endLine}C${endColumn}`;
   }
 
-  /**
-   * Show feedback to the user
-   */
   private showFeedback(linkString: string): void {
     // Show in status bar
     this.statusBarItem.text = `$(check) Linked: ${linkString}`;
@@ -132,7 +111,6 @@ export function activate(context: vscode.ExtensionContext): void {
   const currentService = new RangeLinkService();
   service = currentService;
 
-  // Register commands
   const createLink = vscode.commands.registerCommand(
     "rangelink.createLink",
     async () => {
