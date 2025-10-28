@@ -100,7 +100,7 @@ Extension activates immediately when loaded (no lazy activation needed).
 ## Package for Testing
 
 ```bash
-npm install -g @vscode/vsce
+pnpm install -g @vscode/vsce
 vsce package
 ```
 
