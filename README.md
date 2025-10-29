@@ -241,8 +241,12 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
 - [x] Column-mode selection detection
 - [x] Portable RangeLinks (BYOD) format specification
 - [ ] Refactor column-mode formatting to use `##` instead of `CL` prefix
-- [ ] Add delimiter validation for reserved characters (`~`, `|`, `/`, `\`, `:`, whitespace)
+- [ ] Add delimiter validation for reserved characters (`~`, `|`, `/`, `\`, `:`, whitespace, `,`, `@`)
+- [ ] Add delimiter subset/superset detection (prevent ambiguous parsing)
+- [ ] Ensure numeric values (line/column/radius) always parse with priority over delimiters
+- [ ] Design format to support future extensions (multi-range, circular) while maintaining backwards compatibility
 - [ ] Implement portable link generation
+- [ ] Ensure BYOD format supports future formats (preserve `,` and `@` in portable links)
 - [ ] Comprehensive parsing tests (100% branch coverage)
 - [ ] Parse all link formats with error handling
 
@@ -385,6 +389,8 @@ Rationale:
   - All `rangelink-core-*` implementations must support this
   - VSCode extension exposes multi-range UI
   - Other IDEs expose based on platform capabilities
+  - BYOD compatibility: embed delimiters once and preserve comma-separated ranges
+  - Validation: evaluate reserving `,` as a separator to avoid conflicts
 
 - [ ] **Generate column-mode links from selection**
   - Detect when user has column selection
@@ -521,9 +527,12 @@ Rationale:
 
 - [ ] **Circular/radius-based selection**
   - Define selection based on starting point and character radius
-  - Format: `path#L10C5@radius:15` (line 10, column 5, radius of 15 chars)
+  - Format: `path#L10C5@15` (line 10, column 5, radius of 15 chars)
+  - `@` is hardcoded separator (reserved character), radius value follows immediately
   - Useful for contextual selections around a point
   - All `rangelink-core-*` implementations must support
+  - BYOD compatibility: preserve `@` and radius value in portable links (e.g., `path#L10C5@15~#~L~-~C~`)
+  - Note: Format is simpler than `@radius:15` - just `@` + number for brevity
 
 - [ ] **Code review integration**
   - Generate links for PR review comments
