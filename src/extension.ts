@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 export interface Link {
   path: string;
@@ -13,7 +13,7 @@ export class RangeLinkService {
   async createLink(useAbsolutePath: boolean = false): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
-      vscode.window.showErrorMessage("No active editor");
+      vscode.window.showErrorMessage('No active editor');
       return;
     }
 
@@ -28,7 +28,7 @@ export class RangeLinkService {
       referencePath = document.uri.fsPath;
     }
 
-    referencePath = referencePath.replace(/\\/g, "/");
+    referencePath = referencePath.replace(/\\/g, '/');
 
     const linkString = this.formatLink(referencePath, selection);
 
@@ -55,9 +55,7 @@ export class RangeLinkService {
       const lineNum = `L${startLine}`;
 
       if (startColumn === 1 && endColumn > 1) {
-        const line = vscode.window.activeTextEditor!.document.lineAt(
-          startLine - 1
-        );
+        const line = vscode.window.activeTextEditor!.document.lineAt(startLine - 1);
         if (selection.end.character >= line.text.length) {
           return `${path}:${startLine}`;
         }
@@ -66,8 +64,7 @@ export class RangeLinkService {
       return `${path}#${lineNum}C${startColumn}-${lineNum}C${endColumn}`;
     }
 
-    const isFullBlock =
-      selection.start.character === 0 && selection.end.character === 0;
+    const isFullBlock = selection.start.character === 0 && selection.end.character === 0;
 
     if (isFullBlock) {
       return `${path}#L${startLine}-L${endLine}`;
@@ -77,10 +74,7 @@ export class RangeLinkService {
   }
 
   private showFeedback(linkString: string): void {
-    vscode.window.setStatusBarMessage(
-      `$(check) Copied Range Link: ${linkString}`,
-      3000
-    );
+    vscode.window.setStatusBarMessage(`$(check) Copied Range Link: ${linkString}`, 3000);
   }
 }
 
@@ -91,21 +85,21 @@ export function activate(context: vscode.ExtensionContext): void {
   service = currentService;
 
   const copyLinkToSelectionWithRelativePath = vscode.commands.registerCommand(
-    "rangelink.copyLinkToSelectionWithRelativePath",
+    'rangelink.copyLinkToSelectionWithRelativePath',
     async () => {
       await currentService.createLink(false);
-    }
+    },
   );
 
   const copyLinkToSelectionWithAbsolutePath = vscode.commands.registerCommand(
-    "rangelink.copyLinkToSelectionWithAbsolutePath",
+    'rangelink.copyLinkToSelectionWithAbsolutePath',
     async () => {
       await currentService.createLink(true);
-    }
+    },
   );
 
   context.subscriptions.push(
     copyLinkToSelectionWithRelativePath,
-    copyLinkToSelectionWithAbsolutePath
+    copyLinkToSelectionWithAbsolutePath,
   );
 }
