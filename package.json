@@ -45,13 +45,15 @@
         "command": "rangelink.copyLinkToSelectionWithRelativePath",
         "title": "Copy Range Link",
         "category": "RangeLink",
-        "icon": "$(link)"
+        "icon": "$(link)",
+        "enablement": "editorHasSelection"
       },
       {
         "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
         "title": "Copy Range Link (Absolute)",
         "category": "RangeLink",
-        "icon": "$(link-external)"
+        "icon": "$(link-external)",
+        "enablement": "editorHasSelection"
       }
     ],
     "configuration": {
@@ -88,24 +90,24 @@
         "command": "rangelink.copyLinkToSelectionWithRelativePath",
         "key": "ctrl+r ctrl+l",
         "mac": "cmd+r cmd+l",
-        "when": "editorHasSelection || editorTextFocus"
+        "when": "editorHasSelection"
       },
       {
         "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
         "key": "ctrl+r ctrl+shift+l",
         "mac": "cmd+r cmd+shift+l",
-        "when": "editorHasSelection || editorTextFocus"
+        "when": "editorHasSelection"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "when": "editorTextFocus",
+          "when": "editorHasSelection",
           "command": "rangelink.copyLinkToSelectionWithRelativePath",
           "group": "9_cutcopypaste@1"
         },
         {
-          "when": "editorTextFocus",
+          "when": "editorHasSelection",
           "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
           "group": "9_cutcopypaste@1"
         }

@@ -16,11 +16,59 @@ interface DelimiterConfig {
   range: string;
 }
 
+// Enums to clarify intent for anchor format and hash mode
+enum AnchorColumns {
+  WithColumns = 'WithColumns',
+  LineOnly = 'LineOnly',
+}
+
+enum HashMode {
+  Normal = 'Normal',
+  ColumnMode = 'ColumnMode',
+}
+
 export class RangeLinkService {
   private delimiters: DelimiterConfig;
 
   constructor(delimiters: DelimiterConfig) {
     this.delimiters = delimiters;
+  }
+
+  /**
+   * Build an anchor string for a range using current delimiters.
+   * When useColumns is false, columns are omitted (line-only anchor).
+   */
+  private buildAnchor(
+    startLine: number,
+    endLine: number,
+    startColumn: number | undefined,
+    endColumn: number | undefined,
+    columns: AnchorColumns = AnchorColumns.WithColumns,
+  ): string {
+    const { line: delimL, column: delimC, range: delimRange } = this.delimiters;
+    if (columns === AnchorColumns.LineOnly) {
+      return `${delimL}${startLine}${delimRange}${delimL}${endLine}`;
+    }
+    const start = `${delimL}${startLine}${delimC}${startColumn ?? 1}`;
+    const end = `${delimL}${endLine}${delimC}${endColumn ?? 1}`;
+    return `${start}${delimRange}${end}`;
+  }
+
+  /**
+   * Join a path with an anchor, adding one or two hash delimiters depending on columnMode.
+   */
+  private joinWithHash(path: string, anchor: string, mode: HashMode = HashMode.Normal): string {
+    const { hash: delimHash } = this.delimiters;
+    const prefix = mode === HashMode.ColumnMode ? `${delimHash}${delimHash}` : `${delimHash}`;
+    return `${path}${prefix}${anchor}`;
+  }
+
+  /**
+   * Format a simple line reference using colon separator (e.g., path:10).
+   * Used for empty selections and full-line selections that extend to end.
+   */
+  private formatSimpleLineReference(path: string, line: number): string {
+    return `${path}:${line}`;
   }
 
   async createLink(useAbsolutePath: boolean = false): Promise<void> {
@@ -30,7 +78,7 @@ export class RangeLinkService {
       return;
     }
 
-    const selection = editor.selection;
+    const selections = editor.selections;
     const document = editor.document;
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
 
@@ -43,7 +91,14 @@ export class RangeLinkService {
 
     referencePath = referencePath.replace(/\\/g, '/');
 
-    const linkString = this.formatLink(referencePath, selection);
+    // Detect column-mode selection (multiple selections with same column range)
+    const isColumnMode = this.isColumnSelection(selections);
+
+    // Use the primary selection for formatting
+    const selection = selections[0];
+    const linkString = isColumnMode
+      ? this.formatColumnModeSelectionLink(referencePath, selections)
+      : this.formatRegularSelectionLink(referencePath, selection);
 
     await vscode.env.clipboard.writeText(linkString);
 
@@ -51,41 +106,104 @@ export class RangeLinkService {
   }
 
   /**
-   * Format a link string based on the selection
+   * Detect if the current selection is a column (block) selection.
+   * Column selections typically have multiple selections with the same character range across consecutive lines.
    */
-  private formatLink(path: string, selection: vscode.Selection): string {
+  private isColumnSelection(selections: readonly vscode.Selection[]): boolean {
+    // Need at least 2 selections to be a column selection
+    if (selections.length < 2) {
+      return false;
+    }
+
+    // Get the character range from the first selection
+    const firstStartChar = selections[0].start.character;
+    const firstEndChar = selections[0].end.character;
+
+    // Check if all selections have the same character range
+    const allHaveSameCharacterRange = selections.every(
+      (sel) => sel.start.character === firstStartChar && sel.end.character === firstEndChar,
+    );
+
+    if (!allHaveSameCharacterRange) {
+      return false;
+    }
+
+    // Check if selections are on consecutive lines
+    const lines = selections.map((sel) => sel.start.line).sort((a, b) => a - b);
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i] !== lines[i - 1] + 1) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private formatColumnModeSelectionLink(
+    path: string,
+    selections: readonly vscode.Selection[],
+  ): string {
+    // Sort selections by line number
+    const sortedSelections = [...selections].sort((a, b) => a.start.line - b.start.line);
+
+    const firstSelection = sortedSelections[0];
+    const lastSelection = sortedSelections[sortedSelections.length - 1];
+
+    const startLine = firstSelection.start.line + 1;
+    const endLine = lastSelection.start.line + 1;
+    const startColumn = firstSelection.start.character + 1;
+    const endColumn = firstSelection.end.character + 1;
+
+    const anchor = this.buildAnchor(
+      startLine,
+      endLine,
+      startColumn,
+      endColumn,
+      AnchorColumns.WithColumns,
+    );
+    return this.joinWithHash(path, anchor, HashMode.ColumnMode);
+  }
+
+  private formatRegularSelectionLink(path: string, selection: vscode.Selection): string {
     // Convert to 1-based indexing
     const startLine = selection.start.line + 1;
     const startColumn = selection.start.character + 1;
     const endLine = selection.end.line + 1;
     const endColumn = selection.end.character + 1;
 
-    const { line: delimL, column: delimC, hash: delimHash, range: delimRange } = this.delimiters;
-
+    // Empty selections should be prevented by command enablement,
+    // but guard here for safety
     if (selection.isEmpty) {
-      return `${path}:${startLine}`;
+      throw new Error('RangeLink command invoked with empty selection');
     }
 
-    if (startLine === endLine) {
-      const lineNum = `${delimL}${startLine}`;
-
-      if (startColumn === 1 && endColumn > 1) {
-        const line = vscode.window.activeTextEditor!.document.lineAt(startLine - 1);
-        if (selection.end.character >= line.text.length) {
-          return `${path}:${startLine}`;
-        }
+    // Special case: single-line selection extending to end of line
+    if (startLine === endLine && startColumn === 1 && endColumn > 1) {
+      const line = vscode.window.activeTextEditor!.document.lineAt(startLine - 1);
+      if (selection.end.character >= line.text.length) {
+        return this.formatSimpleLineReference(path, startLine);
       }
-
-      return `${path}${delimHash}${lineNum}${delimC}${startColumn}${delimRange}${lineNum}${delimC}${endColumn}`;
     }
 
+    // Determine values to use for anchor
     const isFullBlock = selection.start.character === 0 && selection.end.character === 0;
+    const useColumns = !isFullBlock;
 
-    if (isFullBlock) {
-      return `${path}${delimHash}${delimL}${startLine}${delimRange}${delimL}${endLine}`;
-    }
+    const startLineToUse = startLine;
+    const endLineToUse = endLine;
+    const startColumnToUse = useColumns ? startColumn : undefined;
+    const endColumnToUse = useColumns ? endColumn : undefined;
+    const columnsMode = useColumns ? AnchorColumns.WithColumns : AnchorColumns.LineOnly;
 
-    return `${path}${delimHash}${delimL}${startLine}${delimC}${startColumn}${delimRange}${delimL}${endLine}${delimC}${endColumn}`;
+    // Build anchor and join with hash in a single location
+    const anchor = this.buildAnchor(
+      startLineToUse,
+      endLineToUse,
+      startColumnToUse,
+      endColumnToUse,
+      columnsMode,
+    );
+    return this.joinWithHash(path, anchor, HashMode.Normal);
   }
 
   private showFeedback(linkString: string): void {
@@ -181,7 +299,12 @@ function loadDelimiterConfig(): DelimiterConfig {
     logError(`Invalid delimiterRange value "${rangeConfig}". Using default "${range}".`);
   }
 
-  const delimiters: DelimiterConfig = { line, column, hash, range };
+  const delimiters: DelimiterConfig = {
+    line,
+    column,
+    hash,
+    range,
+  };
 
   // Validate uniqueness
   if (!areDelimitersUnique(delimiters)) {
@@ -202,6 +325,7 @@ function loadDelimiterConfig(): DelimiterConfig {
   log(`  - Column delimiter: "${column}" (from ${getSource(columnInspect)})`);
   log(`  - Hash delimiter: "${hash}" (from ${getSource(hashInspect)})`);
   log(`  - Range delimiter: "${range}" (from ${getSource(rangeInspect)})`);
+  log(`  - Column mode: indicated by double hash delimiter (${hash}${hash})`);
 
   return delimiters;
 }
