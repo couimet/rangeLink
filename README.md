@@ -19,7 +19,7 @@ By default, the link format uses GitHub-inspired notation (`#L10-L25` for lines 
 
 ### Create a Link
 
-1. **Select text** in the editor (or just place your cursor on a line)
+1. **Select text** in the editor (non-empty selection required)
 2. **Press `Ctrl+R Ctrl+L`** to create a relative link (or `Cmd+R Cmd+L` on Mac)
 3. **Press `Ctrl+R Ctrl+Shift+L`** to create an absolute link (or `Cmd+R Cmd+Shift+L` on Mac)
 4. The link is copied to your clipboard
@@ -30,7 +30,7 @@ Note: R then L — the letters stand for the extension's name: **R**ange **L**in
 
 RangeLink generates local file paths with GitHub-inspired range notation:
 
-- **Cursor or full line**: `path/to/file.ts:42` - References a single line
+- **Full line selection**: `path/to/file.ts:42` - When selecting an entire line (including end of line)
 - **Single line with columns**: `path/to/file.ts#L42C6-L42C15` - When selecting partial content on one line
 - **Multiple full lines**: `path/to/file.ts#L10-L25` - When selecting complete lines
 - **Multi-line with column precision**: `path/to/file.ts#L10C5-L25C20` - When start/end columns are specified across multiple lines
@@ -97,14 +97,22 @@ When parsing a portable rangelink, the extension uses the embedded delimiters in
 
 The following characters are **reserved** and cannot be used in delimiter configurations:
 
-- `~` - Used for metadata separation in portable links (BYOD format)
+- `~` - Portable link metadata separator (BYOD format)
 - `|` - Reserved for future expansion
-- `/` - Conflicts with file path separators (forward slash)
-- `\` - Conflicts with file path separators and shell special characters (backslash)
-- `:` - Used for single-line reference format (`path:42`)
+- `/`, `\` - File path separators (forward/backslash)
+- `:` - Single-line reference format (`path:42`)
 - Whitespace (spaces, tabs, newlines) - Would break link parsing
+- `,` - Reserved for multi-range separator: `path#L10-L20,L30-L40`
+- `@` - Reserved for circular/radius selection: `path#L10C5@15`
 
 When configuring custom delimiters, any attempt to use these reserved characters will be rejected, and the extension will log a warning and use default delimiters. This ensures that all RangeLinks can be reliably parsed regardless of delimiter configuration.
+
+**Delimiter Validation Rules:**
+
+1. Cannot be empty
+2. Cannot contain digits (ensures numeric tokens parse with priority)
+3. Must be unique (no duplicates)
+4. Cannot be subset/superset of another delimiter (prevents parsing ambiguity)
 
 #### Link Format Summary
 
@@ -238,17 +246,136 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
 
 ### Phase 1: Core Enhancements (In Progress)
 
-- [x] Column-mode selection detection
-- [x] Portable RangeLinks (BYOD) format specification
-- [ ] Refactor column-mode formatting to use `##` instead of `CL` prefix
-- [ ] Add delimiter validation for reserved characters (`~`, `|`, `/`, `\`, `:`, whitespace, `,`, `@`)
-- [ ] Add delimiter subset/superset detection (prevent ambiguous parsing)
-- [ ] Ensure numeric values (line/column/radius) always parse with priority over delimiters
-- [ ] Design format to support future extensions (multi-range, circular) while maintaining backwards compatibility
-- [ ] Implement portable link generation
-- [ ] Ensure BYOD format supports future formats (preserve `,` and `@` in portable links)
-- [ ] Comprehensive parsing tests (100% branch coverage)
-- [ ] Parse all link formats with error handling
+Phase 1 is split into three iterative sub-phases focusing on column-mode support, robust delimiter validation, and portable link generation.
+
+#### 1A) Column-mode format (double hash) — ✅ Completed
+
+**Objective:** Use double `delimHash` to indicate column-mode selections in a delimiter-agnostic way.
+
+**Implementation:**
+
+- Detects column-mode: multiple selections with identical character ranges across consecutive lines
+- Format: `path##L10C5-L20C10` (double hash indicates column-mode)
+- Works with any `delimHash` value (single or multi-character)
+- Example: if `delimHash="##"`, column mode uses `####` (4 hash characters)
+
+**Test Coverage Achieved:**
+
+- ✅ Default delimiters, custom single-character, and multi-character delimiters
+- ✅ Edge cases: line 0, column 0, large numbers, min/max selections
+- ✅ Negative cases: non-consecutive lines, different ranges, single selection
+- ✅ Path handling: relative and absolute paths
+
+**Future Compatibility:**
+
+- Scales to multi-range column-mode: `path##L10C5-L20C10,L30C5-L40C10`
+- Circular ranges are mutually exclusive with column mode (circular takes precedence)
+
+---
+
+#### 1B) Reserved character validation and delimiter constraints — 🔄 Next
+
+**Objective:** Enforce strict validation rules to prevent parsing ambiguities and ensure forward compatibility.
+
+**Reserved Characters** (cannot be used in delimiter configurations):
+
+- `~` - Portable link metadata separator (BYOD format)
+- `|` - Reserved for future expansion
+- `/`, `\` - File path separators
+- `:` - Single-line reference format (`path:42`)
+- Whitespace (spaces, tabs, newlines) - Would break parsing
+- `,` - Reserved for multi-range separator: `path#L10-L20,L30-L40`
+- `@` - Reserved for circular/radius selection: `path#L10C5@15`
+
+**Core Validation Rules:**
+
+1. **Delimiters cannot be empty**
+2. **Delimiters cannot contain digits** - Critical: ensures numeric tokens (line numbers, column positions, radius values) always parse with priority over delimiter matching
+3. **All delimiters must be unique** - No two delimiters can be identical
+4. **No subset/superset relationships** - A delimiter cannot be a substring of another delimiter
+   - ❌ Invalid: `line="L"` and `hash="#L"` (L is substring of #L)
+   - ❌ Invalid: `line="LINE"` and `hash="LINE10"` (conflict potential)
+   - ✅ Valid: `line="L"` and `hash="##"` (no overlap)
+
+**Delimiter Subset/Superset Detection:**
+
+- For each delimiter pair (A, B), verify A is not a substring of B and B is not a substring of A
+- Case-sensitive comparison (`"L"` ≠ `"l"`)
+- Multi-character delimiters must not start/end with another delimiter
+  - Example: If `line="L"`, then `hash="L#"` is invalid (L at start)
+  - Example: If `range="-"`, then `hash="#-"` is invalid (- at end)
+
+**Rationale:** Prevents parsing ambiguity. If `line="L"` and `hash="#L"`, the parser can't unambiguously decide whether `L10` is a line number or part of a hash delimiter.
+
+**Parsing Priority (applied in order):**
+
+1. Numeric values (line, column, radius) - highest priority
+2. Reserved characters with semantic meaning (`:`, `~`, `@`, `,`)
+3. Delimiters (hash, line, column, range) - lowest priority (matched after numbers)
+
+**Test Coverage Requirements (100% branches):**
+
+- Each reserved character across all four delimiters
+- Multiple invalid delimiters at once
+- Duplicate delimiter conflicts (with and without reserved chars)
+- Subset/superset conflicts
+- Digits in delimiters (should always fail)
+- Empty delimiters
+- Valid multi-character delimiters (including non-ASCII) accepted
+- Edge cases: single character delimiters, Unicode characters, special symbols
+- Logging and fallback to defaults verified
+- Verify numeric values always parse correctly even with complex delimiters
+
+---
+
+#### 1C) Portable link (BYOD) generation — 📋 Planned
+
+**Objective:** Generate links with embedded delimiter metadata so recipients can parse them correctly regardless of their local configuration.
+
+**Format:**
+
+- Line-only: `path#L10-L20~#~L~-~`
+- With columns: `path#L10C5-L20C10~#~L~-~C~`
+- Column-mode: `path##L10C5-L20C10~#~L~-~C~` (note double hash in range part)
+
+**Metadata Order (after `~` separator):**
+
+1. `delimHash`
+2. `delimLine`
+3. `delimRange`
+4. `delimColumn` (only when columns are present)
+
+**Exposure:**
+
+- Command: "RangeLink: Create Portable Link"
+- Context menu: "Copy Portable RangeLink"
+- Keybinding: `Cmd+R Cmd+P` / `Ctrl+R Ctrl+P` (two-key chord)
+
+**BYOD Compatibility for Future Formats:**
+
+- Multi-range: Preserve commas, embed metadata once
+  - Example: `path#L10-L20,L30-L40~#~L~-~`
+- Circular: Preserve `@` and radius value
+  - Example: `path#L10C5@15~#~L~-~C~`
+
+**Test Coverage Requirements (100% branches):**
+
+- Generate all three portable variants (line-only, columns, column-mode)
+- Custom, multi-character delimiters embedded and parsed back
+- Missing/extra metadata fields → log and fallback
+- Conflicts between current settings and embedded metadata → use embedded values
+- Very large line/column numbers
+- Non-ASCII delimiters
+
+---
+
+**Parsing Rules and Error Recovery (applicable across 1A–1C):**
+
+- Single `#` → regular selection
+- Double `##` → column-mode selection
+- `###` or more → error; treat as single `#`; log warning
+- Presence of `~` after range → BYOD metadata present; use embedded delimiters
+- Any parsing error logs a warning and falls back gracefully without crashing
 
 ### Phase 2: Core Architecture and Monorepo
 
