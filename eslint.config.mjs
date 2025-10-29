@@ -8,7 +8,7 @@ import unicorn from 'eslint-plugin-unicorn';
 
 export default [
   {
-    ignores: ['out/**', 'node_modules/**', 'coverage/**']
+    ignores: ['out/**', 'node_modules/**', 'coverage/**'],
   },
   {
     files: ['**/*.ts', '**/*.js'],
@@ -18,18 +18,18 @@ export default [
       sourceType: 'commonjs',
       parserOptions: {
         // Not enabling full type-checking to keep lint fast; can be enabled later
-      }
+      },
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
       import: importPlugin,
       unicorn,
-      n
+      n,
     },
     settings: {
       'import/resolver': {
-        typescript: {}
-      }
+        typescript: {},
+      },
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -38,14 +38,12 @@ export default [
         'error',
         {
           'newlines-between': 'always',
-          alphabetize: { order: 'asc', caseInsensitive: true }
-        }
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        },
       ],
-      'unicorn/prefer-node-protocol': 'error'
-    }
+      'unicorn/prefer-node-protocol': 'error',
+    },
   },
   // Keep Prettier as the last extend to disable stylistic conflicts
-  eslintConfigPrettier
+  eslintConfigPrettier,
 ];
-
-

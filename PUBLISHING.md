@@ -56,7 +56,6 @@ code --install-extension rangelink-0.1.0.vsix
 ```
 
 2. Or use the VS Code UI:
-
    - Open VS Code
    - Go to Extensions view
    - Click the `...` menu

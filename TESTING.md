@@ -76,7 +76,7 @@ When adding features, ensure:
 Example:
 
 ```typescript
-it("should handle [specific edge case]", async () => {
+it('should handle [specific edge case]', async () => {
   // Setup mock conditions
   mockWindow.activeTextEditor = {
     selection: {

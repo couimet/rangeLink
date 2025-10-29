@@ -4,7 +4,5 @@ module.exports = {
   trailingComma: 'all',
   printWidth: 100,
   tabWidth: 2,
-  plugins: [
-    'prettier-plugin-packagejson',
-  ],
+  plugins: ['prettier-plugin-packagejson'],
 };
