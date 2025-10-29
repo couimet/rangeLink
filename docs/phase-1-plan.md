@@ -8,9 +8,9 @@ This document captures the agreed approach and recommendations for Phase 1, spli
   - Regular selection: `path#L10C5-L20C10`
   - Column-mode selection: `path##L10C5-L20C10`
 - Rationale: delimiter-agnostic; works with multi-character `delimHash` and does not hardcode a special token.
-- **Future compatibility**: This approach scales to multi-range and circular formats:
+- **Future compatibility**: This approach scales to multi-range; circular ranges are incompatible with column mode:
   - Multi-range column-mode: `path##L10C5-L20C10,L30C5-L40C10`
-  - Circular column-mode: Could use `path##L10C5@15` (if we support circular ranges)
+  - Circular ranges are mutually exclusive with column mode (see 1B.5 precedence rule)
 
 ### 1A Test Coverage (100% branches)
 
@@ -145,6 +145,12 @@ This ensures `L10C5-L20C10` always parses as:
 - Reserve `@` as reserved character
 - Keep format simple: just `@` + number
 - No need for `delimiterRadius` for now (can add later if needed)
+
+**Mutual Exclusivity & Precedence:**
+
+- Circular and column-mode selections are conceptually incompatible
+- If both are signaled (e.g., column-mode indicator present along with `@radius`), circular takes precedence
+- Behavior: treat as circular range, ignore column-mode, and log an informational warning
 
 #### 4. BYOD Compatibility Strategy
 
