@@ -231,6 +231,26 @@ RangeLink allows you to customize the delimiters used in range links via VSCode 
 - Reserved characters (`~`, `|`, `/`, `\`) cannot be used
 - Any violation will log an error and use default delimiters
 
+#### Structured logging and error codes
+
+RangeLink uses structured logging for all configuration and validation messages to enable future i18n and easier debugging.
+
+- Format: `[LEVEL] [CODE] message`
+- Examples:
+  - `[INFO] [MSG_1002] Using default delimiter configuration: line="L", column="C", hash="#", range="-"`
+  - `[ERROR] [ERR_1005] Invalid delimiterLine value "L~"` (reserved character)
+  - `[ERROR] [ERR_1099] CRITICAL: Unknown validation error for delimiterLine value "L?" (error type: INVALID_ERROR_VALUE). This indicates a bug in validation logic.`
+
+Error codes are stable identifiers. Configuration validation logs a specific code per problem:
+
+- `ERR_1002` (CONFIG_ERR_DELIMITER_EMPTY)
+- `ERR_1003` (CONFIG_ERR_DELIMITER_DIGITS)
+- `ERR_1004` (CONFIG_ERR_DELIMITER_WHITESPACE)
+- `ERR_1005` (CONFIG_ERR_DELIMITER_RESERVED)
+- `ERR_1006` (CONFIG_ERR_DELIMITER_NOT_UNIQUE)
+- `ERR_1007` (CONFIG_ERR_DELIMITER_SUBSTRING_CONFLICT)
+- `ERR_1099` (CONFIG_ERR_UNKNOWN) – defensive catch-all for unexpected validation errors; logged as CRITICAL with diagnostics
+
 ### Keyboard Shortcuts
 
 RangeLink follows VSCode's standard approach:
@@ -273,7 +293,7 @@ Phase 1 is split into three iterative sub-phases focusing on column-mode support
 
 ---
 
-#### 1B) Reserved character validation and delimiter constraints — 🔄 Next
+#### 1B) Reserved character validation and delimiter constraints — ✅ Completed
 
 **Objective:** Enforce strict validation rules to prevent parsing ambiguities and ensure forward compatibility.
 
@@ -299,13 +319,22 @@ Phase 1 is split into three iterative sub-phases focusing on column-mode support
 
 **Delimiter Subset/Superset Detection:**
 
-- For each delimiter pair (A, B), verify A is not a substring of B and B is not a substring of A
+- For each delimiter pair (A, B), verify A is not a substring of B and B is not a substring of A (anywhere in the string)
 - Case-sensitive comparison (`"L"` ≠ `"l"`)
-- Multi-character delimiters must not start/end with another delimiter
-  - Example: If `line="L"`, then `hash="L#"` is invalid (L at start)
-  - Example: If `range="-"`, then `hash="#-"` is invalid (- at end)
+- Delimiters cannot share any common substring (even in the middle)
+  - Example: If `line="L"`, then `hash="L#"` is invalid (L at start) ❌
+  - Example: If `range="-"`, then `hash="#-"` is invalid (- at end) ❌
+  - Example: If `line="L"`, then `hash="XLY"` is invalid (L in middle) ❌
+  - ✅ Valid: `line="L"` and `hash="##"` (no overlap)
 
-**Rationale:** Prevents parsing ambiguity. If `line="L"` and `hash="#L"`, the parser can't unambiguously decide whether `L10` is a line number or part of a hash delimiter.
+**Rationale:** Prevents parsing ambiguity. If `line="L"` and `hash="#L"`, the parser can't unambiguously decide whether `L10` is a line number or part of a hash delimiter. Checking substrings anywhere (start, end, middle) ensures completely unambiguous parsing.
+
+**Reserved Character Detection:**
+
+- Reserved characters are forbidden **anywhere** in a delimiter value
+- Example: `"@test"` is invalid because it contains `@`, even if `@` doesn't cause immediate conflict
+- Example: `"~meta~"` is invalid because it contains `~`
+- Rationale: Reserved characters have semantic meaning and their appearance anywhere could cause parsing issues in edge cases
 
 **Parsing Priority (applied in order):**
 
@@ -313,17 +342,47 @@ Phase 1 is split into three iterative sub-phases focusing on column-mode support
 2. Reserved characters with semantic meaning (`:`, `~`, `@`, `,`)
 3. Delimiters (hash, line, column, range) - lowest priority (matched after numbers)
 
+**Validation Order:**
+
+Validation is applied in the following order with aggregated error reporting:
+
+1. Empty check (cannot be empty or whitespace-only)
+2. Reserved characters (forbidden anywhere in delimiter)
+3. Contains digits (forbidden to ensure numeric parsing priority)
+4. Uniqueness check (all delimiters must be different)
+5. Subset/superset check (no delimiter can be substring of another)
+
+All validation errors are collected and reported together before falling back to defaults, providing better feedback to users.
+
+**Implementation:**
+
+- Structured logging with stable error codes for each validation failure
+  - Empty (`ERR_1002`), Digits (`ERR_1003`), Whitespace (`ERR_1004`), Reserved (`ERR_1005`)
+  - Not unique (`ERR_1006`), Substring conflict (`ERR_1007`)
+- Aggregated error reporting: all issues shown at once, then defaults applied
+- INFO log when defaults are used (`MSG_1002`)
+- Defensive guard for unexpected validation states: `CONFIG_ERR_UNKNOWN` (`ERR_1099`) logs a CRITICAL message with diagnostics
+
+**Test Coverage Achieved:**
+
+- Each reserved character across all four delimiters (`~`, `|`, `/`, `\\`, `:`, whitespace, `,`, `@`)
+- Digits, empty values, and whitespace detection
+- Uniqueness and substring conflicts (start, end, middle)
+- Aggregated errors when multiple problems occur simultaneously
+- Confirmation that defaults are used and logged via INFO when config is invalid
+
 **Test Coverage Requirements (100% branches):**
 
-- Each reserved character across all four delimiters
-- Multiple invalid delimiters at once
+- Each reserved character (`~`, `|`, `/`, `\`, `:`, whitespace, `,`, `@`) across all four delimiters
+- Multiple invalid delimiters at once (aggregated error reporting)
 - Duplicate delimiter conflicts (with and without reserved chars)
-- Subset/superset conflicts
+- Subset/superset conflicts (start, end, and middle positions)
 - Digits in delimiters (should always fail)
 - Empty delimiters
+- Whitespace in delimiters (spaces, tabs, newlines)
 - Valid multi-character delimiters (including non-ASCII) accepted
 - Edge cases: single character delimiters, Unicode characters, special symbols
-- Logging and fallback to defaults verified
+- Aggregated error logging and fallback to defaults verified
 - Verify numeric values always parse correctly even with complex delimiters
 
 ---
@@ -591,6 +650,7 @@ Rationale:
   - Preferred link format (relative vs absolute)
   - Keyboard shortcut customization for all commands
   - Exclude certain file patterns from link generation
+  - Custom settings panel with live delimiter validation (prevent invalid configs at input time)
 
 - [ ] **Visual feedback**
   - Show generated link in notification instead of just status bar
@@ -650,6 +710,30 @@ Rationale:
   - Optimized regex patterns
   - Caching of workspace structure
 
+### Phase 10: Internationalization (i18n)
+
+- [ ] **Translation Infrastructure**
+  - Integrate VSCode i18n extension API
+  - Create translation resource files (`.json` format)
+  - Map error codes to localized messages
+  - Support for multiple languages (starting with most common: English, Spanish, French, German, Japanese, Chinese)
+
+- [ ] **Error Message Localization**
+  - Translate all validation error messages
+  - Translate status bar feedback messages
+  - Translate command descriptions and titles
+  - Translate settings descriptions
+
+- [ ] **Community Contributions**
+  - Document translation contribution process
+  - Provide translation templates
+  - Credit translators in README
+
+- [ ] **Testing**
+  - Verify translations don't break layout
+  - Test long translations in UI elements
+  - Ensure error codes remain consistent across languages
+
 ### Nice-to-Have Features
 
 - [ ] **Circular/radius-based selection**
@@ -689,6 +773,31 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed release notes.
 ## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Guiding Principles
+
+### Internationalization (i18n) Readiness
+
+RangeLink is designed with internationalization in mind. All user-facing error messages and validation feedback use error codes rather than hardcoded strings, enabling future translation support.
+
+**Key Design Decisions:**
+
+- Validation functions return error codes (e.g., `DelimiterValidationError.Empty`) instead of boolean flags
+- Error messages are composed from codes, allowing message templates to be localized
+- All error codes follow a consistent naming convention: `ERR_<CATEGORY>` for errors, descriptive enums for status
+
+**Example:**
+
+```typescript
+enum DelimiterValidationError {
+  None = 'VALID',
+  Empty = 'ERR_EMPTY',
+  ContainsDigits = 'ERR_DIGITS',
+  ContainsReservedChar = 'ERR_RESERVED',
+}
+```
+
+This architecture ensures that when i18n support is added (see Phase 10), translation resources can map error codes to localized messages without requiring code changes.
 
 ## License
 

@@ -214,15 +214,144 @@ export class RangeLinkService {
 /**
  * Validate a delimiter value
  */
-function isValidDelimiter(value: string): boolean {
+const RESERVED_CHARS = ['~', '|', '/', '\\', ':', ',', '@'];
+
+/**
+ * Log levels for structured logging
+ */
+enum LogLevel {
+  Info = 'INFO',
+  Warning = 'WARNING',
+  Error = 'ERROR',
+}
+
+/**
+ * Centralized message codes for all RangeLink messages
+ * Organized by category (1xxx = Configuration, 2xxx = Link Generation, etc.)
+ * These codes enable future i18n support by decoupling message identification from formatting
+ */
+enum RangeLinkMessageCode {
+  // Configuration messages (1xxx)
+  CONFIG_LOADED = 'MSG_1001',
+  CONFIG_USING_DEFAULTS = 'MSG_1002',
+  // Reserved: MSG_1003-1010 for future configuration info messages
+  CONFIG_ERR_DELIMITER_INVALID = 'ERR_1001',
+  CONFIG_ERR_DELIMITER_EMPTY = 'ERR_1002',
+  CONFIG_ERR_DELIMITER_DIGITS = 'ERR_1003',
+  CONFIG_ERR_DELIMITER_WHITESPACE = 'ERR_1004',
+  CONFIG_ERR_DELIMITER_RESERVED = 'ERR_1005',
+  CONFIG_ERR_DELIMITER_NOT_UNIQUE = 'ERR_1006',
+  CONFIG_ERR_DELIMITER_SUBSTRING_CONFLICT = 'ERR_1007',
+  CONFIG_ERR_UNKNOWN = 'ERR_1099', // Unexpected validation error - should never occur
+  // Reserved: ERR_1008-1098 for future configuration error messages
+
+  // Link generation messages (2xxx)
+  // Reserved: MSG_2001-2010 for future link generation info messages
+  // Reserved: ERR_2001-2010 for future link generation errors (LINK_ERR_* pattern)
+  // Potential future codes:
+  // LINK_COPIED = 'MSG_2001'
+  // LINK_COPIED_ABSOLUTE = 'MSG_2002'
+  // LINK_COPIED_PORTABLE = 'MSG_2003'
+  // LINK_ERR_GENERATION_FAILED = 'ERR_2001'
+  // LINK_ERR_NO_SELECTION = 'ERR_2002'
+  // LINK_ERR_NO_ACTIVE_EDITOR = 'ERR_2003'
+  // LINK_ERR_NO_WORKSPACE = 'ERR_2004'
+  // LINK_ERR_EMPTY_SELECTION = 'ERR_2005'
+
+  // Navigation messages (3xxx)
+  // Reserved: MSG_3001-3010 for future navigation info messages
+  // Reserved: ERR_3001-3010 for future navigation errors (NAV_ERR_* pattern)
+  // Potential future codes:
+  // NAV_MSG_LINK_PARSED = 'MSG_3001'
+  // NAV_MSG_FILE_OPENED = 'MSG_3002'
+  // NAV_MSG_RANGE_SELECTED = 'MSG_3003'
+  // NAV_ERR_INVALID_LINK = 'ERR_3001'
+  // NAV_ERR_FILE_NOT_FOUND = 'ERR_3002'
+  // NAV_ERR_INVALID_RANGE = 'ERR_3003'
+  // NAV_ERR_CLIPBOARD_EMPTY = 'ERR_3004'
+  // NAV_ERR_LINK_NOT_IN_WORKSPACE = 'ERR_3005'
+  // NAV_ERR_BYOD_METADATA_INVALID = 'ERR_3006'
+  // NAV_ERR_BYOD_METADATA_MISSING = 'ERR_3007'
+  // NAV_MSG_COLUMN_MODE_RECONSTRUCTED = 'MSG_3004'
+
+  // Multi-range messages (4xxx)
+  // Reserved: MSG_4001-4010 for future multi-range info messages
+  // Reserved: ERR_4001-4010 for future multi-range errors (MULTIRANGE_ERR_* pattern)
+  // Potential future codes:
+  // MULTIRANGE_MSG_DETECTED = 'MSG_4001'
+  // MULTIRANGE_MSG_GENERATED = 'MSG_4002'
+  // MULTIRANGE_MSG_PARSED = 'MSG_4003'
+  // MULTIRANGE_ERR_INVALID = 'ERR_4001'
+
+  // Circular selection messages (5xxx)
+  // Reserved: MSG_5001-5010 for future circular selection info messages
+  // Reserved: ERR_5001-5010 for future circular selection errors (CIRCULAR_ERR_* pattern)
+  // Reserved: WARN_5001-5010 for future circular selection warnings (CIRCULAR_WARN_* pattern)
+  // Potential future codes:
+  // CIRCULAR_MSG_RANGE_GENERATED = 'MSG_5001'
+  // CIRCULAR_MSG_RANGE_PARSED = 'MSG_5002'
+  // CIRCULAR_ERR_INVALID_RADIUS = 'ERR_5001'
+  // CIRCULAR_WARN_NOT_SUPPORTED = 'WARN_5001'
+
+  // Portable link (BYOD) messages (6xxx)
+  // Reserved: MSG_6001-6010 for future BYOD info messages
+  // Reserved: ERR_6001-6010 for future BYOD errors (BYOD_ERR_* pattern)
+  // Reserved: WARN_6001-6010 for future BYOD warnings (BYOD_WARN_* pattern)
+  // Potential future codes:
+  // BYOD_MSG_GENERATED = 'MSG_6001'
+  // BYOD_MSG_PARSED = 'MSG_6002'
+  // BYOD_MSG_METADATA_EXTRACTED = 'MSG_6003'
+  // BYOD_ERR_INVALID_FORMAT = 'ERR_6001'
+  // BYOD_WARN_DELIMITER_CONFLICT = 'WARN_6001'
+}
+
+/**
+ * Structured log message interface
+ * Separates message identification (code) from rendering (message)
+ * Enables future i18n by allowing code-to-template mapping
+ */
+interface LogMessage {
+  level: LogLevel;
+  code: RangeLinkMessageCode;
+  message: string; // Rendered message (currently English, future: localized from templates)
+}
+
+/**
+ * Validation error codes for delimiter validation
+ * These codes enable future i18n support by decoupling error identification from message formatting
+ */
+export enum DelimiterValidationError {
+  None = 'VALID',
+  Empty = 'ERR_EMPTY',
+  ContainsDigits = 'ERR_DIGITS',
+  ContainsWhitespace = 'ERR_WHITESPACE',
+  ContainsReservedChar = 'ERR_RESERVED',
+}
+
+/**
+ * Validate a delimiter value and return an error code
+ * @param value The delimiter value to validate
+ * @returns DelimiterValidationError code (VALID if valid, error code otherwise)
+ */
+export function validateDelimiter(value: string): DelimiterValidationError {
   if (!value || value.trim() === '') {
-    return false;
+    return DelimiterValidationError.Empty;
   }
-  // Check if it contains any number
+  // Must not contain digits
   if (/\d/.test(value)) {
-    return false;
+    return DelimiterValidationError.ContainsDigits;
   }
-  return true;
+  // Must not contain whitespace
+  if (/\s/.test(value)) {
+    return DelimiterValidationError.ContainsWhitespace;
+  }
+  // Must not contain any reserved characters anywhere
+  for (const ch of RESERVED_CHARS) {
+    if (value.includes(ch)) {
+      return DelimiterValidationError.ContainsReservedChar;
+    }
+  }
+  return DelimiterValidationError.None;
 }
 
 /**
@@ -233,23 +362,90 @@ function areDelimitersUnique(delimiters: DelimiterConfig): boolean {
   return new Set(values).size === values.length;
 }
 
+function haveSubstringConflicts(delimiters: DelimiterConfig): boolean {
+  const values = [delimiters.line, delimiters.column, delimiters.hash, delimiters.range];
+  for (let i = 0; i < values.length; i++) {
+    for (let j = 0; j < values.length; j++) {
+      if (i === j) continue;
+      const a = values[i];
+      const b = values[j];
+      if (a.length === 0 || b.length === 0) continue;
+      if (a.includes(b)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 let outputChannel: vscode.OutputChannel | undefined;
 
 /**
- * Log a message to the output channel
+ * Log a structured message to the output channel
+ * @param logMessage The structured log message with level, code, and rendered message
  */
-function log(message: string): void {
+function logMessage(logMessage: LogMessage): void {
   if (outputChannel) {
-    outputChannel.appendLine(message);
+    const prefix = `[${logMessage.level}] [${logMessage.code}]`;
+    outputChannel.appendLine(`${prefix} ${logMessage.message}`);
   }
 }
 
 /**
- * Log an error to the output channel
+ * Log an info message (backward compatibility wrapper)
+ * @param code Message code
+ * @param message Rendered message
  */
-function logError(message: string): void {
-  if (outputChannel) {
-    outputChannel.appendLine(`[ERROR] ${message}`);
+function logInfo(code: RangeLinkMessageCode, message: string): void {
+  logMessage({ level: LogLevel.Info, code, message });
+}
+
+/**
+ * Log a warning message
+ * @param code Message code
+ * @param message Rendered message
+ * @internal For future use when warnings are needed
+ */
+export function logWarning(code: RangeLinkMessageCode, message: string): void {
+  logMessage({ level: LogLevel.Warning, code, message });
+}
+
+/**
+ * Log an error message (backward compatibility wrapper)
+ * @param code Message code
+ * @param message Rendered message
+ */
+function logError(code: RangeLinkMessageCode, message: string): void {
+  logMessage({ level: LogLevel.Error, code, message });
+}
+
+/**
+ * Legacy log function for plain info messages (maintained for backward compatibility)
+ * @deprecated Use logInfo() with a message code instead
+ * @internal Used internally for configuration logging
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function log(message: string): void {
+  logInfo(RangeLinkMessageCode.CONFIG_LOADED, message);
+}
+
+/**
+ * Map DelimiterValidationError to RangeLinkMessageCode
+ * Exported for testing the default case (CONFIG_ERR_UNKNOWN)
+ */
+export function getErrorCodeForTesting(error: DelimiterValidationError): RangeLinkMessageCode {
+  switch (error) {
+    case DelimiterValidationError.Empty:
+      return RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY;
+    case DelimiterValidationError.ContainsDigits:
+      return RangeLinkMessageCode.CONFIG_ERR_DELIMITER_DIGITS;
+    case DelimiterValidationError.ContainsWhitespace:
+      return RangeLinkMessageCode.CONFIG_ERR_DELIMITER_WHITESPACE;
+    case DelimiterValidationError.ContainsReservedChar:
+      return RangeLinkMessageCode.CONFIG_ERR_DELIMITER_RESERVED;
+    default:
+      // This should never happen - indicates a bug in validation logic
+      return RangeLinkMessageCode.CONFIG_ERR_UNKNOWN;
   }
 }
 
@@ -278,37 +474,71 @@ function loadDelimiterConfig(): DelimiterConfig {
   const hashConfig = config.get<string>('delimiterHash', defaults.hash);
   const rangeConfig = config.get<string>('delimiterRange', defaults.range);
 
-  // Validate individual delimiters and log when non-default values are ignored
-  const line = isValidDelimiter(lineConfig) ? lineConfig : defaults.line;
-  if (line !== lineConfig) {
-    logError(`Invalid delimiterLine value "${lineConfig}". Using default "${line}".`);
+  // Validate each delimiter and map to specific error codes
+  const lineError = validateDelimiter(lineConfig);
+  const columnError = validateDelimiter(columnConfig);
+  const hashError = validateDelimiter(hashConfig);
+  const rangeError = validateDelimiter(rangeConfig);
+
+  // Use the exported function for actual use
+  const getErrorCode = getErrorCodeForTesting;
+
+  // Log specific validation errors with their codes (de-duplicated)
+  const validations: Array<{
+    name: 'delimiterLine' | 'delimiterColumn' | 'delimiterHash' | 'delimiterRange';
+    value: string;
+    error: DelimiterValidationError;
+  }> = [
+    { name: 'delimiterLine', value: lineConfig, error: lineError },
+    { name: 'delimiterColumn', value: columnConfig, error: columnError },
+    { name: 'delimiterHash', value: hashConfig, error: hashError },
+    { name: 'delimiterRange', value: rangeConfig, error: rangeError },
+  ];
+
+  for (const v of validations) {
+    if (v.error === DelimiterValidationError.None) continue;
+    const errorCode = getErrorCode(v.error);
+    if (errorCode === RangeLinkMessageCode.CONFIG_ERR_UNKNOWN) {
+      logError(
+        errorCode,
+        `CRITICAL: Unknown validation error for ${v.name} value "${v.value}" (error type: ${v.error}). This indicates a bug in validation logic.`,
+      );
+    } else {
+      logError(errorCode, `Invalid ${v.name} value "${v.value}"`);
+    }
   }
 
-  const column = isValidDelimiter(columnConfig) ? columnConfig : defaults.column;
-  if (column !== columnConfig) {
-    logError(`Invalid delimiterColumn value "${columnConfig}". Using default "${column}".`);
-  }
-
-  const hash = isValidDelimiter(hashConfig) ? hashConfig : defaults.hash;
-  if (hash !== hashConfig) {
-    logError(`Invalid delimiterHash value "${hashConfig}". Using default "${hash}".`);
-  }
-
-  const range = isValidDelimiter(rangeConfig) ? rangeConfig : defaults.range;
-  if (range !== rangeConfig) {
-    logError(`Invalid delimiterRange value "${rangeConfig}". Using default "${range}".`);
-  }
-
-  const delimiters: DelimiterConfig = {
-    line,
-    column,
-    hash,
-    range,
+  const candidate: DelimiterConfig = {
+    line: lineError === DelimiterValidationError.None ? lineConfig : defaults.line,
+    column: columnError === DelimiterValidationError.None ? columnConfig : defaults.column,
+    hash: hashError === DelimiterValidationError.None ? hashConfig : defaults.hash,
+    range: rangeError === DelimiterValidationError.None ? rangeConfig : defaults.range,
   };
 
-  // Validate uniqueness
-  if (!areDelimitersUnique(delimiters)) {
-    logError('Delimiters must be unique. Custom settings ignored. Using defaults.');
+  if (!areDelimitersUnique(candidate)) {
+    logError(RangeLinkMessageCode.CONFIG_ERR_DELIMITER_NOT_UNIQUE, 'Delimiters must be unique');
+  }
+  if (haveSubstringConflicts(candidate)) {
+    logError(
+      RangeLinkMessageCode.CONFIG_ERR_DELIMITER_SUBSTRING_CONFLICT,
+      'Delimiters must not be substrings of one another',
+    );
+  }
+
+  // If any validation failed, use defaults
+  const hasValidationErrors =
+    lineError !== DelimiterValidationError.None ||
+    columnError !== DelimiterValidationError.None ||
+    hashError !== DelimiterValidationError.None ||
+    rangeError !== DelimiterValidationError.None ||
+    !areDelimitersUnique(candidate) ||
+    haveSubstringConflicts(candidate);
+
+  if (hasValidationErrors) {
+    logInfo(
+      RangeLinkMessageCode.CONFIG_USING_DEFAULTS,
+      `Using default delimiter configuration: line="${defaults.line}", column="${defaults.column}", hash="${defaults.hash}", range="${defaults.range}"`,
+    );
     return defaults;
   }
 
@@ -320,14 +550,29 @@ function loadDelimiterConfig(): DelimiterConfig {
     return 'default';
   };
 
-  log('Delimiter configuration loaded:');
-  log(`  - Line delimiter: "${line}" (from ${getSource(lineInspect)})`);
-  log(`  - Column delimiter: "${column}" (from ${getSource(columnInspect)})`);
-  log(`  - Hash delimiter: "${hash}" (from ${getSource(hashInspect)})`);
-  log(`  - Range delimiter: "${range}" (from ${getSource(rangeInspect)})`);
-  log(`  - Column mode: indicated by double hash delimiter (${hash}${hash})`);
+  logInfo(RangeLinkMessageCode.CONFIG_LOADED, 'Delimiter configuration loaded:');
+  logInfo(
+    RangeLinkMessageCode.CONFIG_LOADED,
+    `  - Line delimiter: "${candidate.line}" (from ${getSource(lineInspect)})`,
+  );
+  logInfo(
+    RangeLinkMessageCode.CONFIG_LOADED,
+    `  - Column delimiter: "${candidate.column}" (from ${getSource(columnInspect)})`,
+  );
+  logInfo(
+    RangeLinkMessageCode.CONFIG_LOADED,
+    `  - Hash delimiter: "${candidate.hash}" (from ${getSource(hashInspect)})`,
+  );
+  logInfo(
+    RangeLinkMessageCode.CONFIG_LOADED,
+    `  - Range delimiter: "${candidate.range}" (from ${getSource(rangeInspect)})`,
+  );
+  logInfo(
+    RangeLinkMessageCode.CONFIG_LOADED,
+    `  - Column mode: indicated by double hash delimiter (${candidate.hash}${candidate.hash})`,
+  );
 
-  return delimiters;
+  return candidate;
 }
 
 export function activate(context: vscode.ExtensionContext): void {
