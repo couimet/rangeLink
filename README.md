@@ -246,7 +246,96 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
 - [ ] Comprehensive parsing tests (100% branch coverage)
 - [ ] Parse all link formats with error handling
 
-### Phase 2: Navigation Features
+### Phase 2: Core Architecture and Monorepo
+
+We will modularize the project and adopt a monorepo to enable fast, iterative development with world-class code quality.
+
+Objectives:
+
+- Extract core logic into `rangelink-core-ts` (pure TypeScript, npm package):
+  - Build/parse links (regular, column-mode, portable/BYOD)
+  - Validate configuration (including reserved characters)
+  - Provide utilities for selections and ranges (line/column math)
+  - 100% branch coverage at the package level
+- Keep IDE extensions as thin wrappers:
+  - **VSCode extension**: Read editor/terminal selections via VSCode API, invoke core APIs, handle UI
+  - **Neovim plugin**: Extract selections via Neovim Lua API, call core via FFI or HTTP bridge, expose as Vim commands
+  - Each extension handles platform-specific UI/selection extraction only
+- Prepare for future consumers by keeping the core free of IDE dependencies
+
+Proposed monorepo structure:
+
+```
+rangeLink/
+  packages/
+    rangelink-core-ts/            # TypeScript core library (npm package)
+      src/
+      tests/
+      package.json
+      README.md
+      CHANGELOG.md
+    rangelink-vscode-extension/   # VSCode extension (publishes to Marketplace)
+      src/
+      tests/
+      package.json
+      README.md
+      CHANGELOG.md
+    rangelink-neovim-plugin/      # Neovim plugin (Lua-based)
+      lua/rangelink/               # Neovim Lua plugin structure
+        init.lua                   # Plugin entry point
+        commands.lua                # Vim commands (:RangeLinkCopy, :RangeLinkGo)
+        selection.lua               # Selection extraction (Neovim API)
+        parser.lua                   # Uses rangelink-core-ts via FFI or HTTP
+      plugin/                      # Vim plugin files
+        rangelink.vim              # Plugin initialization
+      tests/                       # Lua unit tests (busted, plenary.nvim)
+      README.md
+      CHANGELOG.md
+  package.json                    # workspaces config
+  pnpm-workspace.yaml             # or npm/yarn workspaces
+  tsconfig.base.json              # shared tsconfig
+  .github/workflows/              # per-package CI, shared jobs
+```
+
+Implementation examples:
+
+**VSCode Extension (`rangelink-vscode-extension`):**
+
+- Thin `extension.ts` that extracts selections from VSCode editor API
+- Calls `rangelink-core-ts` to build/parse links
+- Handles VSCode-specific UI (status bar, commands, context menus)
+- Publishes to VSCode Marketplace
+
+**Neovim Plugin (`rangelink-neovim-plugin`):**
+
+- Lua plugin following Neovim plugin structure (`lua/rangelink/`)
+- Extracts selections via Neovim Lua API (`vim.api.nvim_buf_get_mark`, etc.)
+- Calls `rangelink-core-ts` via:
+  - **Option A**: LuaJIT FFI binding (direct C library call if we build a C wrapper)
+  - **Option B**: HTTP bridge (rangelink-core-ts runs as a local server)
+  - **Option C**: Subprocess call (spawns Node.js process with core library)
+- Exposes Vim commands: `:RangeLinkCopy`, `:RangeLinkCopyPortable`, `:RangeLinkGo`
+- Uses Neovim's selection API for column-mode (visual block mode)
+- Publishes to LuaRocks or Neovim plugin managers (packer.nvim, lazy.nvim)
+- See `docs/neovim-integration.md` for detailed integration options and a recommended starting point
+
+Best practices (pragmatic):
+
+- Keep extension/plugin code as thin glue; no business logic
+- Public, documented APIs in `rangelink-core-ts` with stable types
+- Unit tests in each package; integration tests in extensions
+- Separate READMEs and CHANGELOGs per package
+- Independent versioning and publishing (core vs each extension)
+- Linting and formatting shared via root configs
+- CI runs tests and linting for changed packages; release per package
+
+Rationale:
+
+- Enables rapid iteration and solid testability
+- Encourages encapsulation and clean interfaces
+- Future-proofs for other editors/tools consuming the core
+
+### Phase 3: Navigation Features
 
 - [ ] **Consume RangeLinks from clipboard** (`RangeLink: Go to Range from Clipboard`)
   - Parse clipboard content for valid RangeLink
@@ -288,7 +377,14 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
   - Create multiple cursors/selections
   - Apply column selection across specified lines
 
-### Phase 3: Advanced Generation
+### Phase 4: Advanced Generation
+
+- [ ] **Multi-range selection support**
+  - Support multiple non-contiguous ranges in a single link
+  - Format: `path#L10-L20,L30-L40,L50C5-L60C10` (comma-separated ranges)
+  - All `rangelink-core-*` implementations must support this
+  - VSCode extension exposes multi-range UI
+  - Other IDEs expose based on platform capabilities
 
 - [ ] **Generate column-mode links from selection**
   - Detect when user has column selection
@@ -310,7 +406,7 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
   - Preview link before copying
   - Support multiple format selection
 
-### Phase 4: Workspace & Collaboration
+### Phase 5: Workspace & Collaboration
 
 - [ ] **Multi-workspace support**
   - Detect which workspace file belongs to
@@ -332,7 +428,7 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
   - Format as `[description](path#L10-L20)`
   - Customizable description templates
 
-### Phase 5: Productivity Features
+### Phase 6: Productivity Features
 
 - [ ] **Link history**
   - Store recently generated links
@@ -354,7 +450,7 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
   - Create index of code references
   - Export as markdown documentation
 
-### Phase 6: User Experience
+### Phase 7: User Experience
 
 - [ ] **Settings and preferences**
   - Opt-in/opt-out for portable link generation
@@ -374,7 +470,7 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
   - Keyboard navigation for all features
   - High contrast mode support
 
-### Phase 7: Integration & Extensions
+### Phase 8: Integration & Extensions
 
 - [ ] **VSCode API integration**
   - Register RangeLink as link provider for editors
@@ -396,7 +492,7 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
   - Security warnings for absolute paths
   - Sandboxed parsing
 
-### Phase 8: Developer Experience
+### Phase 9: Developer Experience
 
 - [ ] **Comprehensive test coverage**
   - 100% branch coverage for parsing
@@ -422,6 +518,12 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
   - Caching of workspace structure
 
 ### Nice-to-Have Features
+
+- [ ] **Circular/radius-based selection**
+  - Define selection based on starting point and character radius
+  - Format: `path#L10C5@radius:15` (line 10, column 5, radius of 15 chars)
+  - Useful for contextual selections around a point
+  - All `rangelink-core-*` implementations must support
 
 - [ ] **Code review integration**
   - Generate links for PR review comments
