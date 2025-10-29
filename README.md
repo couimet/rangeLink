@@ -533,6 +533,7 @@ Rationale:
   - All `rangelink-core-*` implementations must support
   - BYOD compatibility: preserve `@` and radius value in portable links (e.g., `path#L10C5@15~#~L~-~C~`)
   - Note: Format is simpler than `@radius:15` - just `@` + number for brevity
+  - Support note: Core always supports circular ranges; extensions/plugins may not. If an editor does not support multi-selections required to emulate a circular area, the extension will place the cursor at the provided line/column (`delimL`/`delimC`) and log a warning in the extension output.
 
 - [ ] **Code review integration**
   - Generate links for PR review comments
