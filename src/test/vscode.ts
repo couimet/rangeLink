@@ -1,36 +1,41 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 // Mock VSCode API for testing
-import { Event } from "vscode";
+import { Event } from 'vscode';
 
 // Simple Event implementation for mocks
-class MockEvent<T> implements vscode.Event<T> {
-  private handlers: Array<(e: T) => void> = [];
+function createMockEvent<T>(): vscode.Event<T> & { fire(data: T): void } {
+  const handlers: Array<(e: T) => void> = [];
 
-  fire(data: T): void {
-    this.handlers.forEach((h) => h(data));
+  function event(listener: (e: T) => any, thisArgs?: any, disposables?: any) {
+    handlers.push(listener);
+    return { dispose: () => {} };
   }
 
-  listener: (this: void, listener: (e: T) => void) => void = (listener) => {
-    this.handlers.push(listener);
-    return { dispose: () => {} };
+  (event as any).fire = (data: T) => {
+    handlers.forEach((h) => h(data));
   };
+
+  return event as any;
 }
 
 // Mock extension context
 export class MockExtensionContext implements vscode.ExtensionContext {
   subscriptions: Array<{ dispose(): void }> = [];
   workspaceState = new MockMemento();
-  globalState = new MockMemento();
+  globalState: MockMemento & { setKeysForSync(keys: readonly string[]): void } =
+    new MockMemento() as any;
   secrets = {} as any;
-  extensionUri = vscode.Uri.parse("file:///mock");
-  extensionPath = "/mock";
-  globalStorageUri = vscode.Uri.parse("file:///mock/global");
-  workspaceStorageUri = vscode.Uri.parse("file:///mock/workspace");
+  extensionUri = vscode.Uri.parse('file:///mock');
+  extension = {} as any;
+  extensionPath = '/mock';
+  globalStorageUri = vscode.Uri.parse('file:///mock/global');
+  workspaceStorageUri = vscode.Uri.parse('file:///mock/workspace');
   storageUri = undefined;
   storagePath = undefined;
-  globalStoragePath = undefined;
-  logPath = "/mock/log";
+  globalStoragePath = '/mock/global';
+  logPath = '/mock/log';
+  logUri = vscode.Uri.parse('file:///mock/log');
   extensionMode = vscode.ExtensionMode.Production;
   extensionKind = vscode.ExtensionKind.Workspace;
   asAbsolutePath = (relativePath: string) => `/mock/${relativePath}`;
@@ -53,11 +58,15 @@ class MockMemento implements vscode.Memento {
   keys(): readonly string[] {
     return Array.from(this.storage.keys());
   }
+
+  setKeysForSync(keys: readonly string[]): void {
+    // Mock implementation
+  }
 }
 
 // Export mocked module
 module.exports = {
   ...vscode,
-  Event: MockEvent,
+  createMockEvent,
   ExtensionContext: MockExtensionContext,
 };

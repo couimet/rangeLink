@@ -54,8 +54,34 @@
         "icon": "$(link-external)"
       }
     ],
+    "configuration": {
+      "title": "RangeLink",
+      "properties": {
+        "rangelink.delimiterLine": {
+          "type": "string",
+          "default": "L",
+          "description": "Delimiter used before line numbers (e.g., L in #L10-L20)",
+          "pattern": "^[^0-9]+$"
         },
+        "rangelink.delimiterColumn": {
+          "type": "string",
+          "default": "C",
+          "description": "Delimiter used before column numbers (e.g., C in #L10C5-L20C10)",
+          "pattern": "^[^0-9]+$"
+        },
+        "rangelink.delimiterHash": {
+          "type": "string",
+          "default": "#",
+          "description": "Delimiter used before the range specification (e.g., # in path#L10-L20)",
+          "pattern": "^[^0-9]+$"
+        },
+        "rangelink.delimiterRange": {
+          "type": "string",
+          "default": "-",
+          "description": "Delimiter used between start and end positions (e.g., - in #L10-L20)",
+          "pattern": "^[^0-9]+$"
         }
+      }
     },
     "keybindings": [
       {
