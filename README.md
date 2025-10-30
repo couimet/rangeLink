@@ -30,7 +30,7 @@ Note: R then L — the letters stand for the extension's name: **R**ange **L**in
 
 RangeLink generates local file paths with GitHub-inspired range notation:
 
-- **Full line selection**: `path/to/file.ts:42` - When selecting an entire line (including end of line)
+- **Full line selection**: `path/to/file.ts#L42` - When selecting an entire line (including end of line)
 - **Single line with columns**: `path/to/file.ts#L42C6-L42C15` - When selecting partial content on one line
 - **Multiple full lines**: `path/to/file.ts#L10-L25` - When selecting complete lines
 - **Multi-line with column precision**: `path/to/file.ts#L10C5-L25C20` - When start/end columns are specified across multiple lines
@@ -38,16 +38,26 @@ RangeLink generates local file paths with GitHub-inspired range notation:
 
 #### Column-Mode Selections
 
-When you use VSCode's column/box selection (Alt+drag or Shift+Alt+Arrow keys), RangeLink detects this and uses a double hash (`##`) to indicate column mode. This ensures the selection can be properly reconstructed when shared:
+When you use VSCode's column/box/rectangular selection (Alt+drag or Shift+Alt+Arrow keys), RangeLink detects this and uses a double hash (`##`) to indicate column mode. This ensures the selection can be properly reconstructed when shared:
 
 - **Normal multi-line**: `path#L10C5-L20C10` (creates a traditional multi-line selection)
 - **Column-mode**: `path##L10C5-L20C10` (creates a column selection across lines 10-20, columns 5-10)
 
 The double hash allows the extension to distinguish between these two selection types for proper reconstruction.
 
-#### Portable RangeLinks (BYOD - Bring Your Own Delimiters)
+#### Portable RangeLinks (BYOD - Bring Your Own Delimiters, aka BYODELI 🥪)
 
-For maximum portability across different delimiter configurations, RangeLink supports portable links that embed delimiter metadata. These links include the actual delimiter values used when creating the link, allowing recipients to parse them correctly regardless of their own delimiter settings.
+**Share code references with anyone, regardless of their delimiter settings.**
+
+Portable RangeLinks solve a critical collaboration problem: when you share a RangeLink with a colleague who uses different delimiter configurations, the link will still work perfectly. The secret? The link embeds delimiter metadata, allowing recipients to parse it correctly regardless of their own settings.
+
+This means you can:
+
+- **Share links freely** across teams with different configurations
+- **Collaborate seamlessly** without coordinating delimiter settings
+- **Future-proof your references** - links work even if someone changes their config later
+
+_A playful note:_ We often refer to this as BYODELI (Bring Your Own Deli—miters) 🥪. Slice your own delis—er, delimiters. Your sandwich, your specs. Share it with anyone.
 
 **Format for line-only selections:**
 
@@ -61,7 +71,7 @@ Where after the `~` separator, the metadata specifies:
 - `L` = line delimiter used
 - `-` = range delimiter used
 
-**Format for column selections:**
+**Format for line and position selections:**
 
 ```
 path#L10C5-L20C10~#~L~-~C~
@@ -72,26 +82,117 @@ Where the metadata includes:
 - `#` = hash delimiter
 - `L` = line delimiter
 - `-` = range delimiter
-- `C` = column delimiter
+- `C` = position delimiter
 
 **Examples with custom delimiters:**
 
-If the creator uses custom delimiters:
+To clearly demonstrate the power of portable links, here's an example using completely custom delimiters (not the defaults):
 
-- `delimiterHash: "##"`
-- `delimiterLine: "LINE"`
-- `delimiterRange: "TO"`
-- `delimiterColumn: "COL"`
+- `delimiterHash: ">>"`
+- `delimiterLine: "line"`
+- `delimiterRange: "thru"`
+- `delimiterPosition: "pos"`
 
 The portable link would be:
 
 ```
-path##LINE10COL5-COL10LINE20~##~LINE~TO~COL~
+path>>line10pos5thruline20pos10~>>~line~thru~pos~
 ```
 
-When parsing a portable rangelink, the extension uses the embedded delimiters instead of the recipient's current settings, ensuring the link works correctly regardless of their configuration.
+When a recipient clicks this link, RangeLink automatically uses these embedded delimiters (`>>`, `line`, `thru`, `pos`) to parse it correctly—even if their own settings use completely different delimiters like `#`, `L`, `-`, `C`.
 
-**Note:** For column-mode selections, use double hash in the range part: `path##L10C5-L20C10~#~L~-~C~`
+**How it works for recipients:**
+
+When someone receives a portable RangeLink, the extension automatically detects the embedded delimiter metadata and parses the link using those delimiters—completely ignoring their local settings. This means:
+
+- No setup required
+- No coordination needed between sender and recipient
+- Works immediately, even for users who have never configured delimiters
+
+**Note:** For column-mode selections, use double hash in the range part: `path##L10C5-L20C10~#~L~-~C~`. Column-mode? Hold the mayo, keep the double hash.
+
+#### BYOD Parsing and Validation
+
+When receiving a portable RangeLink, the extension performs comprehensive validation to ensure reliable parsing:
+
+**1. Metadata Format Validation**
+
+- Line-only format: `~<hash>~<line>~<range>~`
+- With positions: `~<hash>~<line>~<range>~<position>~`
+- Delimiters must appear in this exact order
+- All delimiters must be non-empty
+
+**2. Delimiter Validation**
+
+- No digits allowed in any delimiter
+- No reserved characters (`~`, `|`, `/`, `\`, `:`, `,`, `@`)
+- All delimiters must be unique (case-insensitive)
+- No substring conflicts (case-insensitive)
+- **Exception**: `delimiterHash` can be multi-character in BYOD
+  - Enables support for configurations not allowed locally
+  - Column mode = double the hash length (e.g., `>>>>` becomes `>>>>>>>>` for column mode)
+
+**3. Format Consistency Validation**
+
+**Scenario A - Extra delimiter (Valid)**:
+
+```
+Link: path#L10-L20~#~L~-~C~
+      Line-only, but BYOD includes position delimiter
+```
+
+✅ **Valid**: Extra delimiter is ignored. Useful when sharing the same BYOD config for multiple link types.
+
+**Scenario B - Missing delimiter (Recovery Attempt)**:
+
+```
+Link: path#L10C5-L20C10~#~L~-~
+      Has positions, but BYOD missing position delimiter
+```
+
+⚠️ **Recovery Strategy** (in priority order):
+
+1. Check user's local `delimiterPosition` setting
+   - If present in link AND doesn't conflict with BYOD delimiters → Use it (show WARNING)
+2. Fall back to default `"C"`
+   - If present in link AND doesn't conflict with BYOD delimiters → Use it (show WARNING)
+3. Otherwise → ERROR (cannot parse)
+
+**Warning notification**: "Position delimiter not in BYOD metadata. Used local setting 'X' to parse link."
+
+**Scenario C - Malformed (Error)**:
+
+- Metadata in wrong order or invalid structure
+- Delimiter contains reserved characters or digits
+- Delimiters have substring conflicts or duplicates
+- Cannot determine position delimiter for link with positions
+
+**Error Handling**:
+
+- User notification with actionable buttons: "View Details" (opens output channel), "Copy Link" (for debugging)
+- Detailed error logged to RangeLink output channel
+- Status bar shows error icon with extended display time (2× normal duration)
+
+**4. Column Mode Detection**
+
+- Count consecutive hash characters after path
+- Expected: `hash_length × 1` (regular) or `hash_length × 2` (column mode)
+- Any other count → ERROR (malformed hash prefix)
+
+**Error Codes for BYOD Parsing**:
+
+- `ERR_2001` (BYOD_ERR_INVALID_FORMAT) - Malformed metadata structure
+- `ERR_2002` (BYOD_ERR_HASH_INVALID) - Hash delimiter validation failed
+- `ERR_2003` (BYOD_ERR_DELIMITER_VALIDATION) - Delimiter validation failed (reserved chars, digits, conflicts)
+- `ERR_2004` (BYOD_ERR_FORMAT_MISMATCH) - Link format doesn't match metadata
+- `ERR_2005` (BYOD_ERR_POSITION_RECOVERY_FAILED) - Could not recover missing position delimiter
+- `ERR_2006` (BYOD_ERR_COLUMN_MODE_DETECTION) - Invalid hash prefix count
+
+**Warning Codes for BYOD Parsing**:
+
+- `WARN_2001` (BYOD_WARN_POSITION_FROM_LOCAL) - Used local position delimiter (not in BYOD)
+- `WARN_2002` (BYOD_WARN_POSITION_FROM_DEFAULT) - Used default position delimiter (not in BYOD)
+- `WARN_2003` (BYOD_WARN_EXTRA_DELIMITER) - BYOD contains unused delimiter (informational)
 
 #### Reserved Characters
 
@@ -113,19 +214,25 @@ When configuring custom delimiters, any attempt to use these reserved characters
 2. Cannot contain digits (ensures numeric tokens parse with priority)
 3. Must be unique (no duplicates)
 4. Cannot be subset/superset of another delimiter (prevents parsing ambiguity)
+5. **Case-insensitive**: `"L"` and `"l"` are treated as the same delimiter (prevents user errors from inconsistent casing)
+6. **delimiterHash must be exactly 1 character** (enables clean column-mode detection)
+   - ✅ Valid: `"#"`, `">"`, `"H"`, `"h"`
+   - ❌ Invalid: `"##"`, `">>"`, `"HASH"`, `"@"` (reserved)
+   - Rationale: Column mode uses double hash (e.g., `#` for regular, `##` for column mode)
+   - Note: Multi-character hashes are supported in BYOD metadata for received links
 
 #### Link Format Summary
 
-| Selection Type              | Format                               | Example                              |
-| --------------------------- | ------------------------------------ | ------------------------------------ |
-| Single line                 | `path:lineNum`                       | `src/file.ts:42`                     |
-| Single line with columns    | `path#LlineCcol-LlineCcol`           | `src/file.ts#L42C6-L42C15`           |
-| Multi-line (full lines)     | `path#Lstart-Lend`                   | `src/file.ts#L10-L25`                |
-| Multi-line with columns     | `path#LstartCstartCol-LendCendCol`   | `src/file.ts#L10C5-L25C20`           |
-| Column-mode (any format)    | `path##...` (double hash)            | `src/file.ts##L10C5-L20C10`          |
-| Portable link (full lines)  | `path#Lstart-Lend~#~L~-~`            | `src/file.ts#L10-L20~#~L~-~`         |
-| Portable link (columns)     | `path#LstartCcol-LendCcol~#~L~-~C~`  | `src/file.ts#L10C5-L20C10~#~L~-~C~`  |
-| Portable link (column-mode) | `path##LstartCcol-LendCcol~#~L~-~C~` | `src/file.ts##L10C5-L20C10~#~L~-~C~` |
+| Selection Type              | Format                                                       | Example                              |
+| --------------------------- | ------------------------------------------------------------ | ------------------------------------ |
+| Single line                 | `path#L<lineNum>`                                            | `src/file.ts#L42`                    |
+| Single line with columns    | `path#L<line>C<col>-L<line>C<col>`                           | `src/file.ts#L42C6-L42C15`           |
+| Multi-line (full lines)     | `path#L<startLine>-L<endLine>`                               | `src/file.ts#L10-L25`                |
+| Multi-line with columns     | `path#L<startLine>C<startCol>-L<endLine>C<endCol>`           | `src/file.ts#L10C5-L25C20`           |
+| Column-mode (any format)    | `path##<...>` (double hash)                                  | `src/file.ts##L10C5-L20C10`          |
+| Portable link (full lines)  | `path#L<startLine>-L<endLine>~#~L~-~`                        | `src/file.ts#L10-L20~#~L~-~`         |
+| Portable link (columns)     | `path#L<startLine>C<startCol>-L<endLine>C<endCol>~#~L~-~C~`  | `src/file.ts#L10C5-L20C10~#~L~-~C~`  |
+| Portable link (column-mode) | `path##L<startLine>C<startCol>-L<endLine>C<endCol>~#~L~-~C~` | `src/file.ts##L10C5-L20C10~#~L~-~C~` |
 
 **Note:** The hash convention:
 
@@ -140,21 +247,21 @@ When parsing RangeLinks, the extension handles the following scenarios:
 1. **Single hash detection**: `#` triggers regular mode parsing
 2. **Double hash detection**: `##` triggers column-mode and regular parsing of the range part
 3. **Triple+ hash detection**: `###` or more treated as error, logged, and parsed as single `#`
-4. **Portable link detection**: Presence of `~` after the range indicates BYOD format
-   - Expects 4 metadata fields for line-only ranges: `<hash>~<line>~<range>~`
-   - Expects 5 metadata fields for column ranges: `<hash>~<line>~<range>~<column>~`
+4. **Portable link detection**: Presence of `~` after the range indicates BYOD/BYODELI format
+   - Expects 3 metadata fields for line-only ranges: `<hash>~<line>~<range>~`
+   - Expects 4 metadata fields for line and position ranges: `<hash>~<line>~<range>~<position>~`
    - If metadata format is invalid, logs error and falls back to regular parsing
-5. **Line-only vs column selection**: Parsed from the presence of column notation (e.g., `C5`)
+5. **Line-only vs line and position selection**: Parsed from the presence of position notation (e.g., `C5`)
 6. **Single vs multi-line**: Determined by comparing start and end line numbers
 7. **Error recovery**: Any parsing error logs a warning to the extension output channel but continues gracefully
 
 **Comprehensive parsing tests cover:**
 
-- All link formats (single line, multi-line, column, column-mode, portable)
+- All link formats (single line, multi-line, line and position, column-mode, portable)
 - Custom delimiter configurations
 - Invalid delimiter values
 - Malformed links (triple hash, missing metadata, invalid numbers)
-- Edge cases (line 1, column 1, very large line/column numbers)
+- Edge cases (line 1, position 1, very large line/position numbers)
 - Unicode and special characters in paths
 
 ### Commands
@@ -163,6 +270,8 @@ You can also access the commands from the Command Palette:
 
 - `RangeLink: Create Link` - Create a link with relative path
 - `RangeLink: Create Absolute Link` - Create a link with absolute path
+- `RangeLink: Create Portable Link` - Create a portable link with embedded delimiter metadata
+- `RangeLink: Create Portable Link (Absolute)` - Create a portable link with absolute path and embedded delimiter metadata
 
 #### Future: Navigate to RangeLink (Coming Soon)
 
@@ -217,7 +326,7 @@ RangeLink allows you to customize the delimiters used in range links via VSCode 
 ```json
 {
   "rangelink.delimiterLine": "L", // Prefix for line numbers (default: "L")
-  "rangelink.delimiterColumn": "C", // Prefix for column numbers (default: "C")
+  "rangelink.delimiterPosition": "C", // Prefix for position numbers (default: "C")
   "rangelink.delimiterHash": "#", // Prefix before range (default: "#")
   "rangelink.delimiterRange": "-" // Separator between start and end (default: "-")
 }
@@ -264,9 +373,47 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
 
 ## Roadmap and Future Features
 
-### Phase 1: Core Enhancements (In Progress)
+> **Development Approach:** We use **micro-iterations** (1-2 hours each) to prevent feature creep and maintain momentum. Each iteration has clear scope, time estimates, and "done when" criteria. This allows for frequent commits, easy progress tracking, and natural stopping points.
 
-Phase 1 is split into three iterative sub-phases focusing on column-mode support, robust delimiter validation, and portable link generation.
+### Development Principles
+
+Our roadmap follows these core principles to ensure sustainable, high-quality development:
+
+1. **Micro-Iterations (1-2 hours max)**
+   - Each iteration is small enough to complete in one focused session
+   - Clear "done when" criteria prevent scope creep
+   - Time estimates help with planning and prioritization
+
+2. **One Focus Per Iteration**
+   - Feature work and refactoring are separate iterations
+   - Never mix unrelated changes in a single iteration
+   - Keeps commits clean and reviewable
+
+3. **Commit Early, Commit Often**
+   - Commit after each micro-iteration, even if incomplete
+   - Use `[WIP]` or `[PARTIAL]` tags when appropriate
+   - Git history reflects incremental progress
+
+4. **Explicit Scope Definition**
+   - Document what IS and IS NOT in scope upfront
+   - Prevents "just one more thing" syndrome
+   - Makes it easy to defer work to next iteration
+
+5. **Test-Driven Quality**
+   - Aim for 100% branch coverage
+   - Write tests during iteration, not after
+   - Skipped tests are documented with tracking issues
+
+### Phase 1: Core Enhancements — ✅ Mostly Complete
+
+Phase 1 is split into three iterative sub-phases focusing on column-mode support, robust delimiter validation, and portable link generation. Each sub-phase uses micro-iterations for focused, incremental progress.
+
+**Overall Status:**
+
+- ✅ 1A: Column-mode format (double hash) - Complete
+- ✅ 1B: Reserved character validation and delimiter constraints - Complete
+- 🔨 1C: Portable link (BYOD) generation - Complete; parsing in progress
+- 📦 Major refactoring: Test modernization with ES6 imports and TypeScript types - Complete
 
 #### 1A) Column-mode format (double hash) — ✅ Completed
 
@@ -320,8 +467,12 @@ Phase 1 is split into three iterative sub-phases focusing on column-mode support
 **Delimiter Subset/Superset Detection:**
 
 - For each delimiter pair (A, B), verify A is not a substring of B and B is not a substring of A (anywhere in the string)
-- Case-sensitive comparison (`"L"` ≠ `"l"`)
-- Delimiters cannot share any common substring (even in the middle)
+- **Case-insensitive comparison**: `"L"` and `"l"` are treated as the same
+  - ❌ Invalid: `line="L"` and `hash="l"` (same delimiter, different case)
+  - ❌ Invalid: `line="Line"` and `hash="line"` (substring conflict, case-insensitive)
+  - ❌ Invalid: `line="Line"` and `hash="LINE"` (exact match, case-insensitive)
+  - ✅ Valid: `line="Line"` and `hash="AT"` (no overlap when compared case-insensitively)
+- Delimiters cannot share any common substring (even in the middle), checked case-insensitively
   - Example: If `line="L"`, then `hash="L#"` is invalid (L at start) ❌
   - Example: If `range="-"`, then `hash="#-"` is invalid (- at end) ❌
   - Example: If `line="L"`, then `hash="XLY"` is invalid (L in middle) ❌
@@ -387,9 +538,29 @@ All validation errors are collected and reported together before falling back to
 
 ---
 
-#### 1C) Portable link (BYOD) generation — 📋 Planned
+#### 1C) Portable link (BYOD/BYODELI 🥪) generation and parsing — 🔨 Generation Complete, Parsing in Micro-Iterations
 
-**Objective:** Generate links with embedded delimiter metadata so recipients can parse them correctly regardless of their local configuration.
+**Objective:** Generate and parse links with embedded delimiter metadata so teams can share code references seamlessly regardless of delimiter configurations. In code and settings we use the canonical term BYOD; in docs we also use the friendly alias BYODELI 🥪.
+
+**Status (Micro-Iteration Approach):**
+
+- ✅ **Generation: Complete** (commands, keybindings, context menu, metadata composition)
+- ✅ **Single-character hash validation**: Enforced for user configuration
+- ✅ **Test suite modernization**: ES6 imports, proper TypeScript types, 114 passing tests
+- 📋 **Parsing** (broken into focused micro-iterations):
+  - 📋 **1C.1** (1.5h): Parse metadata structure, extract delimiters, format validation
+  - 📋 **1C.2** (1.5h): Validate extracted delimiters (reserved chars, digits, conflicts)
+  - 📋 **1C.3** (2h): Recovery logic (missing delimiters, fallbacks, error UI)
+  - 📋 **1C.4** (1h): Column mode detection with custom BYOD hash
+  - 📋 **1C.5** (30m): Documentation and cleanup
+- 📋 **Navigation: Planned** (Phase 3)
+
+**Micro-Iteration Benefits:**
+
+- Each iteration is 1-2 hours (completable in one session)
+- Clear scope and stopping points prevent feature creep
+- Can commit after each micro-iteration
+- Easy to track progress and estimate remaining work
 
 **Format:**
 
@@ -410,7 +581,7 @@ All validation errors are collected and reported together before falling back to
 - Context menu: "Copy Portable RangeLink"
 - Keybinding: `Cmd+R Cmd+P` / `Ctrl+R Ctrl+P` (two-key chord)
 
-**BYOD Compatibility for Future Formats:**
+**BYOD/BYODELI Compatibility for Future Formats:**
 
 - Multi-range: Preserve commas, embed metadata once
   - Example: `path#L10-L20,L30-L40~#~L~-~`
@@ -436,22 +607,57 @@ All validation errors are collected and reported together before falling back to
 - Presence of `~` after range → BYOD metadata present; use embedded delimiters
 - Any parsing error logs a warning and falls back gracefully without crashing
 
-### Phase 2: Core Architecture and Monorepo
+### Phase 2: Core Architecture and Monorepo — 📋 Broken into Micro-Iterations
 
 We will modularize the project and adopt a monorepo to enable fast, iterative development with world-class code quality.
 
-Objectives:
+**High-Level Objectives:**
 
-- Extract core logic into `rangelink-core-ts` (pure TypeScript, npm package):
-  - Build/parse links (regular, column-mode, portable/BYOD)
-  - Validate configuration (including reserved characters)
-  - Provide utilities for selections and ranges (line/column math)
-  - 100% branch coverage at the package level
-- Keep IDE extensions as thin wrappers:
-  - **VSCode extension**: Read editor/terminal selections via VSCode API, invoke core APIs, handle UI
-  - **Neovim plugin**: Extract selections via Neovim Lua API, call core via FFI or HTTP bridge, expose as Vim commands
-  - Each extension handles platform-specific UI/selection extraction only
-- Prepare for future consumers by keeping the core free of IDE dependencies
+- Extract core logic into `rangelink-core-ts` (pure TypeScript, npm package)
+- Keep IDE extensions as thin wrappers (VSCode, Neovim)
+- Enable rapid iteration with 100% branch coverage
+
+**Micro-Iterations (1-2 hours each):**
+
+#### 2A) Monorepo Setup (1 hour)
+
+- Create `pnpm-workspace.yaml` at root
+- Move `src/` to `packages/rangelink-vscode-extension/src/`
+- Update `package.json` and build scripts
+- Verify compilation and existing tests still pass
+- **Done when:** Can run `pnpm test` and all 114 tests pass in new structure
+
+#### 2B) Extract Core Library Foundation (2 hours)
+
+- Create `packages/rangelink-core-ts/` with basic structure
+- Move core types (Link, PathFormat, etc.) to core package
+- Move delimiter validation logic to core
+- Add unit tests for core (no VSCode dependencies)
+- **Done when:** Core package compiles independently, 50+ tests passing
+
+#### 2C) VSCode Extension Refactor (1.5 hours)
+
+- Update VSCode extension to import from `rangelink-core-ts`
+- Remove duplicate code (keep only VSCode-specific logic)
+- Update tests to use core package
+- Verify all 114 tests still pass
+- **Done when:** Extension uses core, no duplicate logic, all tests green
+
+#### 2D) Neovim Plugin Shell (1 hour)
+
+- Create `packages/rangelink-neovim-plugin/` with basic Lua structure
+- Implement one command: `:RangeLinkCopy` (calls core via Node CLI)
+- Basic README and installation instructions
+- **Done when:** Can install plugin and copy a basic link in Neovim
+
+#### 2E) CI/CD Pipeline (1 hour)
+
+- Add GitHub Actions workflow
+- Run tests on PR (per-package)
+- Automated npm publish on tag (core package only)
+- **Done when:** CI passes on PR, publishes on tag
+
+**Total Time Estimate:** 6.5 hours across 5 focused sessions
 
 Proposed monorepo structure:
 
@@ -525,34 +731,66 @@ Rationale:
 - Encourages encapsulation and clean interfaces
 - Future-proofs for other editors/tools consuming the core
 
-### Phase 3: Navigation Features
+### Phase 3: Navigation Features — 📋 Broken into Micro-Iterations
 
-- [ ] **Consume RangeLinks from clipboard** (`RangeLink: Go to Range from Clipboard`)
-  - Parse clipboard content for valid RangeLink
-  - Validate file path exists in workspace
-  - Open file and navigate to range
-  - Support column-mode reconstruction
+Navigate to code using RangeLinks (local workspace and BYOD).
 
-- [ ] **Consume RangeLinks from input** (`RangeLink: Go to Range from Input`)
-  - Quick pick input dialog
-  - Validate link format before attempting navigation
-  - Error feedback for invalid links
+**Micro-Iterations:**
 
-- [ ] **Right-click context menu actions**
-  - "Go to Range from Selection" - if text looks like a RangeLink
-  - Integrate with terminal link providers
+#### 3A) Basic Navigation from Clipboard (1.5 hours)
 
-- [ ] **Terminal link integration** (similar to file path detection)
-  - Detect RangeLinks in terminal output
-  - Show hover with "Open in Editor (Cmd+Click)"
-  - Click to navigate
+- Command: "RangeLink: Go to Range from Clipboard"
+- Parse clipboard for regular RangeLink (no BYOD yet)
+- Validate file exists in workspace
+- Open file and select range
+- **Done when:** Can copy a link, run command, and jump to code
+
+#### 3B) BYOD Navigation Support (1 hour)
+
+- Parse BYOD metadata from clipboard link
+- Use embedded delimiters to parse range
+- Handle validation and recovery (reuse Phase 1C parsing logic)
+- **Done when:** BYOD links from clipboard work correctly
+
+#### 3C) Column-Mode Navigation (1 hour)
+
+- Detect double hash in link
+- Reconstruct multiple selections in VSCode
+- Set editor to column/block selection mode
+- **Done when:** Column-mode links navigate to correct block selection
+
+#### 3D) Navigation from Input Dialog (1 hour)
+
+- Command: "RangeLink: Go to Range from Input"
+- Quick pick dialog for manual entry
+- Real-time validation feedback
+- Recent links history (last 10)
+- **Done when:** Can paste/type link in dialog and navigate
+
+#### 3E) Terminal Link Detection (2 hours)
+
+- Register terminal link provider
+- Detect RangeLinks in terminal output
+- Show hover: "Open in Editor (Cmd+Click)"
+- Handle both regular and BYOD links
+- **Done when:** Clicking link in terminal opens file
+
+#### 3F) Context Menu Integration (30 minutes)
+
+- "Go to Range" when text selection looks like RangeLink
+- Available in editor and terminal
+- **Done when:** Right-click selection → navigate works
+
+**Total Time Estimate:** 7 hours across 6 focused sessions
+
+- Click to navigate
 
 - [ ] **Parser for all link types**
   - Single line: `path:42`
   - Multi-line: `path#L10-L20`
   - With columns: `path#L10C5-L20C10`
   - Column-mode: `path##L10C5-L20C10`
-  - Portable links: parse BYOD metadata
+  - Portable links: parse BYOD/BYODELI metadata
   - Graceful error handling and recovery
 
 - [ ] **BYOD (Bring Your Own Delimiters) link consumption**
@@ -620,6 +858,18 @@ Rationale:
   - Format as `[description](path#L10-L20)`
   - Customizable description templates
 
+- [ ] **Share integration**
+  - "Share RangeLink..." command with platform selection
+  - Email integration (mailto: with pre-filled message)
+  - Messaging integration (Slack, Microsoft Teams, SMS/MMS via platform APIs)
+  - Pre-formatted message includes:
+    - The portable RangeLink
+    - Brief explanation of what RangeLink is
+    - Link to VSCode Marketplace for installation
+    - Optional: code snippet preview
+  - Customizable message templates per platform
+  - Deep linking support for supported platforms
+
 ### Phase 6: Productivity Features
 
 - [ ] **Link history**
@@ -651,6 +901,7 @@ Rationale:
   - Keyboard shortcut customization for all commands
   - Exclude certain file patterns from link generation
   - Custom settings panel with live delimiter validation (prevent invalid configs at input time)
+  - "Don't show again" option for BYOD recovery warnings
 
 - [ ] **Visual feedback**
   - Show generated link in notification instead of just status bar
@@ -703,6 +954,10 @@ Rationale:
   - Anonymous usage statistics (opt-in)
   - Most used features tracking
   - Error reporting
+  - BYOD parsing failure tracking (anonymously, with file paths ALWAYS redacted)
+    - Track which delimiter combinations cause issues
+    - Identify common malformed link patterns
+    - Help improve error messages and recovery logic
 
 - [ ] **Performance**
   - Lazy loading of link history

@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Link Format Support
 
-- Line number links: `file.ts:42`
+- Line number links: `file.ts#L42`
 - Single line with columns: `file.ts#L42C1-L42C10`
 - Multiple lines: `file.ts#L10-L25`
 - Multi-line with columns: `file.ts#L10C5-L25C20`

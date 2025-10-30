@@ -4,27 +4,55 @@ export interface Link {
   path: string;
   startLine: number;
   endLine: number;
-  startColumn?: number;
-  endColumn?: number;
+  startPosition?: number;
+  endPosition?: number;
   isAbsolute: boolean;
 }
 
 interface DelimiterConfig {
-  line: string;
-  column: string;
-  hash: string;
-  range: string;
+  readonly line: string;
+  readonly position: string;
+  readonly hash: string;
+  readonly range: string;
 }
 
-// Enums to clarify intent for anchor format and hash mode
-enum AnchorColumns {
-  WithColumns = 'WithColumns',
+/**
+ * Specifies how much detail to include in the range specification part of a link.
+ * - LineOnly: Only line numbers (e.g., L10-L20)
+ * - WithPositions: Line numbers + character positions (e.g., L10C5-L20C10)
+ */
+enum RangeFormat {
   LineOnly = 'LineOnly',
+  WithPositions = 'WithPositions',
 }
 
+/**
+ * Specifies the hash delimiter mode for the link.
+ * - Normal: Single hash delimiter (e.g., path#L10)
+ * - ColumnMode: Double hash delimiter for rectangular selections (e.g., path##L10C5-L20C10)
+ */
 enum HashMode {
   Normal = 'Normal',
   ColumnMode = 'ColumnMode',
+}
+
+/**
+ * Specifies whether to use relative or absolute file paths in generated links.
+ * - WorkspaceRelative: Path relative to workspace root (e.g., src/file.ts)
+ * - Absolute: Full filesystem path (e.g., /Users/name/project/src/file.ts)
+ */
+export enum PathFormat {
+  WorkspaceRelative = 'WorkspaceRelative',
+  Absolute = 'Absolute',
+}
+
+interface ComputedSelection {
+  readonly startLine: number;
+  readonly endLine: number;
+  readonly startPosition?: number;
+  readonly endPosition?: number;
+  readonly rangeFormat: RangeFormat;
+  readonly hashMode: HashMode;
 }
 
 export class RangeLinkService {
@@ -34,44 +62,127 @@ export class RangeLinkService {
     this.delimiters = delimiters;
   }
 
+  private composePortableMetadata = (includePosition: boolean): string => {
+    const { hash, line, range, position } = this.delimiters;
+    const parts = [hash, line, range];
+    if (includePosition) parts.push(position);
+    return `${PORTABLE_METADATA_SEPARATOR}${parts.join(PORTABLE_METADATA_SEPARATOR)}${PORTABLE_METADATA_SEPARATOR}`;
+  };
+
+  private formatPortableFromSelection = (
+    path: string,
+    selections: readonly vscode.Selection[],
+  ): string => {
+    const spec = this.computeRangeSpec(selections);
+    const anchor = this.buildAnchor(
+      spec.startLine,
+      spec.endLine,
+      spec.startPosition,
+      spec.endPosition,
+      spec.rangeFormat,
+    );
+    const core = this.joinWithHash(path, anchor, spec.hashMode);
+    const includePosition = spec.rangeFormat === RangeFormat.WithPositions;
+    return `${core}${this.composePortableMetadata(includePosition)}`;
+  };
+
+  async createPortableLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage('No active editor');
+      return;
+    }
+    const document = editor.document;
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+    let referencePath: string;
+    if (workspaceFolder && pathFormat === PathFormat.WorkspaceRelative) {
+      referencePath = vscode.workspace.asRelativePath(document.uri);
+    } else {
+      referencePath = document.uri.fsPath;
+    }
+    referencePath = referencePath.replace(/\\/g, '/');
+
+    const linkString = this.formatPortableFromSelection(referencePath, editor.selections);
+    await vscode.env.clipboard.writeText(linkString);
+    this.showFeedback(linkString);
+  }
+
   /**
-   * Build an anchor string for a range using current delimiters.
-   * When useColumns is false, columns are omitted (line-only anchor).
+   * Build a range specification string using current delimiters.
+   * When rangeFormat is LineOnly, positions are omitted (line-only format).
    */
-  private buildAnchor(
+  private buildAnchor = (
     startLine: number,
     endLine: number,
-    startColumn: number | undefined,
-    endColumn: number | undefined,
-    columns: AnchorColumns = AnchorColumns.WithColumns,
-  ): string {
-    const { line: delimL, column: delimC, range: delimRange } = this.delimiters;
-    if (columns === AnchorColumns.LineOnly) {
+    startPosition: number | undefined,
+    endPosition: number | undefined,
+    rangeFormat: RangeFormat = RangeFormat.WithPositions,
+  ): string => {
+    const { line: delimL, position: delimP, range: delimRange } = this.delimiters;
+    if (rangeFormat === RangeFormat.LineOnly) {
       return `${delimL}${startLine}${delimRange}${delimL}${endLine}`;
     }
-    const start = `${delimL}${startLine}${delimC}${startColumn ?? 1}`;
-    const end = `${delimL}${endLine}${delimC}${endColumn ?? 1}`;
+    const start = `${delimL}${startLine}${delimP}${startPosition ?? 1}`;
+    const end = `${delimL}${endLine}${delimP}${endPosition ?? 1}`;
     return `${start}${delimRange}${end}`;
-  }
+  };
 
   /**
    * Join a path with an anchor, adding one or two hash delimiters depending on columnMode.
    */
-  private joinWithHash(path: string, anchor: string, mode: HashMode = HashMode.Normal): string {
+  private joinWithHash = (
+    path: string,
+    anchor: string,
+    mode: HashMode = HashMode.Normal,
+  ): string => {
     const { hash: delimHash } = this.delimiters;
     const prefix = mode === HashMode.ColumnMode ? `${delimHash}${delimHash}` : `${delimHash}`;
     return `${path}${prefix}${anchor}`;
-  }
+  };
+
+  private computeRangeSpec = (selections: readonly vscode.Selection[]): ComputedSelection => {
+    const isColumnMode = this.isColumnSelection(selections);
+    const primary = selections[0];
+
+    const startLine = primary.start.line + 1;
+    const endLine =
+      (isColumnMode ? selections[selections.length - 1].start.line : primary.end.line) + 1;
+    const startPosition = primary.start.character + 1;
+    const endPosition = primary.end.character + 1;
+
+    if (isColumnMode) {
+      return {
+        startLine,
+        endLine,
+        startPosition,
+        endPosition,
+        rangeFormat: RangeFormat.WithPositions,
+        hashMode: HashMode.ColumnMode,
+      };
+    }
+
+    const isFullBlock = primary.start.character === 0 && primary.end.character === 0;
+    const usePositions = !isFullBlock;
+    return {
+      startLine,
+      endLine,
+      startPosition: usePositions ? startPosition : undefined,
+      endPosition: usePositions ? endPosition : undefined,
+      rangeFormat: usePositions ? RangeFormat.WithPositions : RangeFormat.LineOnly,
+      hashMode: HashMode.Normal,
+    };
+  };
 
   /**
-   * Format a simple line reference using colon separator (e.g., path:10).
-   * Used for empty selections and full-line selections that extend to end.
+   * Format a simple line reference using anchor notation (e.g., path#L10).
+   * Used for full-line selections that extend to end of line.
    */
-  private formatSimpleLineReference(path: string, line: number): string {
-    return `${path}:${line}`;
-  }
+  private formatSimpleLineReference = (path: string, line: number): string => {
+    const { hash: delimHash, line: delimLine } = this.delimiters;
+    return `${path}${delimHash}${delimLine}${line}`;
+  };
 
-  async createLink(useAbsolutePath: boolean = false): Promise<void> {
+  async createLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       vscode.window.showErrorMessage('No active editor');
@@ -83,7 +194,7 @@ export class RangeLinkService {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
 
     let referencePath: string;
-    if (workspaceFolder && !useAbsolutePath) {
+    if (workspaceFolder && pathFormat === PathFormat.WorkspaceRelative) {
       referencePath = vscode.workspace.asRelativePath(document.uri);
     } else {
       referencePath = document.uri.fsPath;
@@ -98,7 +209,7 @@ export class RangeLinkService {
     const selection = selections[0];
     const linkString = isColumnMode
       ? this.formatColumnModeSelectionLink(referencePath, selections)
-      : this.formatRegularSelectionLink(referencePath, selection);
+      : this.formatRegularSelectionLink(referencePath, selection, document);
 
     await vscode.env.clipboard.writeText(linkString);
 
@@ -109,7 +220,7 @@ export class RangeLinkService {
    * Detect if the current selection is a column (block) selection.
    * Column selections typically have multiple selections with the same character range across consecutive lines.
    */
-  private isColumnSelection(selections: readonly vscode.Selection[]): boolean {
+  private isColumnSelection = (selections: readonly vscode.Selection[]): boolean => {
     // Need at least 2 selections to be a column selection
     if (selections.length < 2) {
       return false;
@@ -137,39 +248,33 @@ export class RangeLinkService {
     }
 
     return true;
-  }
+  };
 
-  private formatColumnModeSelectionLink(
+  private formatColumnModeSelectionLink = (
     path: string,
     selections: readonly vscode.Selection[],
-  ): string {
-    // Sort selections by line number
-    const sortedSelections = [...selections].sort((a, b) => a.start.line - b.start.line);
-
-    const firstSelection = sortedSelections[0];
-    const lastSelection = sortedSelections[sortedSelections.length - 1];
-
-    const startLine = firstSelection.start.line + 1;
-    const endLine = lastSelection.start.line + 1;
-    const startColumn = firstSelection.start.character + 1;
-    const endColumn = firstSelection.end.character + 1;
-
+  ): string => {
+    const spec = this.computeRangeSpec(selections);
     const anchor = this.buildAnchor(
-      startLine,
-      endLine,
-      startColumn,
-      endColumn,
-      AnchorColumns.WithColumns,
+      spec.startLine,
+      spec.endLine,
+      spec.startPosition,
+      spec.endPosition,
+      spec.rangeFormat,
     );
-    return this.joinWithHash(path, anchor, HashMode.ColumnMode);
-  }
+    return this.joinWithHash(path, anchor, spec.hashMode);
+  };
 
-  private formatRegularSelectionLink(path: string, selection: vscode.Selection): string {
+  private formatRegularSelectionLink = (
+    path: string,
+    selection: vscode.Selection,
+    document: vscode.TextDocument,
+  ): string => {
     // Convert to 1-based indexing
     const startLine = selection.start.line + 1;
-    const startColumn = selection.start.character + 1;
+    const startPosition = selection.start.character + 1;
     const endLine = selection.end.line + 1;
-    const endColumn = selection.end.character + 1;
+    const endPosition = selection.end.character + 1;
 
     // Empty selections should be prevented by command enablement,
     // but guard here for safety
@@ -178,43 +283,34 @@ export class RangeLinkService {
     }
 
     // Special case: single-line selection extending to end of line
-    if (startLine === endLine && startColumn === 1 && endColumn > 1) {
-      const line = vscode.window.activeTextEditor!.document.lineAt(startLine - 1);
+    if (startLine === endLine && startPosition === 1 && endPosition > 1) {
+      const line = document.lineAt(startLine - 1);
       if (selection.end.character >= line.text.length) {
         return this.formatSimpleLineReference(path, startLine);
       }
     }
 
-    // Determine values to use for anchor
-    const isFullBlock = selection.start.character === 0 && selection.end.character === 0;
-    const useColumns = !isFullBlock;
-
-    const startLineToUse = startLine;
-    const endLineToUse = endLine;
-    const startColumnToUse = useColumns ? startColumn : undefined;
-    const endColumnToUse = useColumns ? endColumn : undefined;
-    const columnsMode = useColumns ? AnchorColumns.WithColumns : AnchorColumns.LineOnly;
-
-    // Build anchor and join with hash in a single location
+    const spec = this.computeRangeSpec([selection]);
     const anchor = this.buildAnchor(
-      startLineToUse,
-      endLineToUse,
-      startColumnToUse,
-      endColumnToUse,
-      columnsMode,
+      spec.startLine,
+      spec.endLine,
+      spec.startPosition,
+      spec.endPosition,
+      spec.rangeFormat,
     );
-    return this.joinWithHash(path, anchor, HashMode.Normal);
-  }
+    return this.joinWithHash(path, anchor, spec.hashMode);
+  };
 
-  private showFeedback(linkString: string): void {
+  private showFeedback = (linkString: string): void => {
     vscode.window.setStatusBarMessage(`$(check) Copied Range Link: ${linkString}`, 3000);
-  }
+  };
 }
 
 /**
  * Validate a delimiter value
  */
 const RESERVED_CHARS = ['~', '|', '/', '\\', ':', ',', '@'];
+const PORTABLE_METADATA_SEPARATOR = '~';
 
 /**
  * Log levels for structured logging
@@ -242,12 +338,27 @@ enum RangeLinkMessageCode {
   CONFIG_ERR_DELIMITER_RESERVED = 'ERR_1005',
   CONFIG_ERR_DELIMITER_NOT_UNIQUE = 'ERR_1006',
   CONFIG_ERR_DELIMITER_SUBSTRING_CONFLICT = 'ERR_1007',
+  CONFIG_ERR_HASH_NOT_SINGLE_CHAR = 'ERR_1008',
   CONFIG_ERR_UNKNOWN = 'ERR_1099', // Unexpected validation error - should never occur
-  // Reserved: ERR_1008-1098 for future configuration error messages
+  // Reserved: ERR_1009-1098 for future configuration error messages
 
-  // Link generation messages (2xxx)
-  // Reserved: MSG_2001-2010 for future link generation info messages
-  // Reserved: ERR_2001-2010 for future link generation errors (LINK_ERR_* pattern)
+  // BYOD parsing messages (2xxx)
+  // Reserved: MSG_2001-2010 for future BYOD info messages
+  BYOD_ERR_INVALID_FORMAT = 'ERR_2001',
+  BYOD_ERR_HASH_INVALID = 'ERR_2002',
+  BYOD_ERR_DELIMITER_VALIDATION = 'ERR_2003',
+  BYOD_ERR_FORMAT_MISMATCH = 'ERR_2004',
+  BYOD_ERR_POSITION_RECOVERY_FAILED = 'ERR_2005',
+  BYOD_ERR_COLUMN_MODE_DETECTION = 'ERR_2006',
+  // Reserved: ERR_2007-2099 for future BYOD parsing errors
+  BYOD_WARN_POSITION_FROM_LOCAL = 'WARN_2001',
+  BYOD_WARN_POSITION_FROM_DEFAULT = 'WARN_2002',
+  BYOD_WARN_EXTRA_DELIMITER = 'WARN_2003',
+  // Reserved: WARN_2004-2099 for future BYOD warnings
+
+  // Link generation messages (3xxx)
+  // Reserved: MSG_3001-3010 for future link generation info messages
+  // Reserved: ERR_3001-3010 for future link generation errors (LINK_ERR_* pattern)
   // Potential future codes:
   // LINK_COPIED = 'MSG_2001'
   // LINK_COPIED_ABSOLUTE = 'MSG_2002'
@@ -326,16 +437,25 @@ export enum DelimiterValidationError {
   ContainsDigits = 'ERR_DIGITS',
   ContainsWhitespace = 'ERR_WHITESPACE',
   ContainsReservedChar = 'ERR_RESERVED',
+  HashNotSingleChar = 'ERR_HASH_NOT_SINGLE',
 }
 
 /**
  * Validate a delimiter value and return an error code
  * @param value The delimiter value to validate
+ * @param isHash Optional flag to indicate if this is a hash delimiter (must be single character)
  * @returns DelimiterValidationError code (VALID if valid, error code otherwise)
  */
-export function validateDelimiter(value: string): DelimiterValidationError {
+export function validateDelimiter(
+  value: string,
+  isHash: boolean = false,
+): DelimiterValidationError {
   if (!value || value.trim() === '') {
     return DelimiterValidationError.Empty;
+  }
+  // Hash delimiter must be exactly 1 character
+  if (isHash && value.length !== 1) {
+    return DelimiterValidationError.HashNotSingleChar;
   }
   // Must not contain digits
   if (/\d/.test(value)) {
@@ -355,20 +475,26 @@ export function validateDelimiter(value: string): DelimiterValidationError {
 }
 
 /**
- * Validate all delimiters are unique
+ * Validate all delimiters are unique (case-insensitive comparison)
+ * This prevents user errors from inconsistent casing (e.g., "L" vs "l")
  */
 function areDelimitersUnique(delimiters: DelimiterConfig): boolean {
-  const values = [delimiters.line, delimiters.column, delimiters.hash, delimiters.range];
-  return new Set(values).size === values.length;
+  const values = [delimiters.line, delimiters.position, delimiters.hash, delimiters.range];
+  const lowerCaseValues = values.map((v) => v.toLowerCase());
+  return new Set(lowerCaseValues).size === lowerCaseValues.length;
 }
 
+/**
+ * Check for substring conflicts between delimiters (case-insensitive)
+ * Prevents ambiguous parsing by ensuring no delimiter is a substring of another
+ */
 function haveSubstringConflicts(delimiters: DelimiterConfig): boolean {
-  const values = [delimiters.line, delimiters.column, delimiters.hash, delimiters.range];
+  const values = [delimiters.line, delimiters.position, delimiters.hash, delimiters.range];
   for (let i = 0; i < values.length; i++) {
     for (let j = 0; j < values.length; j++) {
       if (i === j) continue;
-      const a = values[i];
-      const b = values[j];
+      const a = values[i].toLowerCase();
+      const b = values[j].toLowerCase();
       if (a.length === 0 || b.length === 0) continue;
       if (a.includes(b)) {
         return true;
@@ -443,6 +569,8 @@ export function getErrorCodeForTesting(error: DelimiterValidationError): RangeLi
       return RangeLinkMessageCode.CONFIG_ERR_DELIMITER_WHITESPACE;
     case DelimiterValidationError.ContainsReservedChar:
       return RangeLinkMessageCode.CONFIG_ERR_DELIMITER_RESERVED;
+    case DelimiterValidationError.HashNotSingleChar:
+      return RangeLinkMessageCode.CONFIG_ERR_HASH_NOT_SINGLE_CHAR;
     default:
       // This should never happen - indicates a bug in validation logic
       return RangeLinkMessageCode.CONFIG_ERR_UNKNOWN;
@@ -457,27 +585,28 @@ function loadDelimiterConfig(): DelimiterConfig {
 
   // Inspect all configuration values to get their source and defaults
   const lineInspect = config.inspect('delimiterLine');
-  const columnInspect = config.inspect('delimiterColumn');
+  const columnInspect = undefined as any; // legacy
+  const positionInspect = config.inspect('delimiterPosition');
   const hashInspect = config.inspect('delimiterHash');
   const rangeInspect = config.inspect('delimiterRange');
 
   // Extract default values from VS Code (these come from package.json)
   const defaults: DelimiterConfig = {
     line: (lineInspect?.defaultValue as string) || 'L',
-    column: (columnInspect?.defaultValue as string) || 'C',
+    position: (positionInspect?.defaultValue as string) || 'C',
     hash: (hashInspect?.defaultValue as string) || '#',
     range: (rangeInspect?.defaultValue as string) || '-',
   };
 
   const lineConfig = config.get<string>('delimiterLine', defaults.line);
-  const columnConfig = config.get<string>('delimiterColumn', defaults.column);
+  const positionConfig = config.get<string>('delimiterPosition', defaults.position);
   const hashConfig = config.get<string>('delimiterHash', defaults.hash);
   const rangeConfig = config.get<string>('delimiterRange', defaults.range);
 
   // Validate each delimiter and map to specific error codes
   const lineError = validateDelimiter(lineConfig);
-  const columnError = validateDelimiter(columnConfig);
-  const hashError = validateDelimiter(hashConfig);
+  const positionError = validateDelimiter(positionConfig);
+  const hashError = validateDelimiter(hashConfig, true); // Hash must be single character
   const rangeError = validateDelimiter(rangeConfig);
 
   // Use the exported function for actual use
@@ -485,12 +614,12 @@ function loadDelimiterConfig(): DelimiterConfig {
 
   // Log specific validation errors with their codes (de-duplicated)
   const validations: Array<{
-    name: 'delimiterLine' | 'delimiterColumn' | 'delimiterHash' | 'delimiterRange';
+    name: 'delimiterLine' | 'delimiterPosition' | 'delimiterHash' | 'delimiterRange';
     value: string;
     error: DelimiterValidationError;
   }> = [
     { name: 'delimiterLine', value: lineConfig, error: lineError },
-    { name: 'delimiterColumn', value: columnConfig, error: columnError },
+    { name: 'delimiterPosition', value: positionConfig, error: positionError },
     { name: 'delimiterHash', value: hashConfig, error: hashError },
     { name: 'delimiterRange', value: rangeConfig, error: rangeError },
   ];
@@ -510,7 +639,7 @@ function loadDelimiterConfig(): DelimiterConfig {
 
   const candidate: DelimiterConfig = {
     line: lineError === DelimiterValidationError.None ? lineConfig : defaults.line,
-    column: columnError === DelimiterValidationError.None ? columnConfig : defaults.column,
+    position: positionError === DelimiterValidationError.None ? positionConfig : defaults.position,
     hash: hashError === DelimiterValidationError.None ? hashConfig : defaults.hash,
     range: rangeError === DelimiterValidationError.None ? rangeConfig : defaults.range,
   };
@@ -528,7 +657,7 @@ function loadDelimiterConfig(): DelimiterConfig {
   // If any validation failed, use defaults
   const hasValidationErrors =
     lineError !== DelimiterValidationError.None ||
-    columnError !== DelimiterValidationError.None ||
+    positionError !== DelimiterValidationError.None ||
     hashError !== DelimiterValidationError.None ||
     rangeError !== DelimiterValidationError.None ||
     !areDelimitersUnique(candidate) ||
@@ -537,7 +666,7 @@ function loadDelimiterConfig(): DelimiterConfig {
   if (hasValidationErrors) {
     logInfo(
       RangeLinkMessageCode.CONFIG_USING_DEFAULTS,
-      `Using default delimiter configuration: line="${defaults.line}", column="${defaults.column}", hash="${defaults.hash}", range="${defaults.range}"`,
+      `Using default delimiter configuration: line="${defaults.line}", position="${defaults.position}", hash="${defaults.hash}", range="${defaults.range}"`,
     );
     return defaults;
   }
@@ -557,7 +686,7 @@ function loadDelimiterConfig(): DelimiterConfig {
   );
   logInfo(
     RangeLinkMessageCode.CONFIG_LOADED,
-    `  - Column delimiter: "${candidate.column}" (from ${getSource(columnInspect)})`,
+    `  - Position delimiter: "${candidate.position}" (from ${getSource(positionInspect)})`,
   );
   logInfo(
     RangeLinkMessageCode.CONFIG_LOADED,
@@ -586,20 +715,36 @@ export function activate(context: vscode.ExtensionContext): void {
   const copyLinkToSelectionWithRelativePath = vscode.commands.registerCommand(
     'rangelink.copyLinkToSelectionWithRelativePath',
     async () => {
-      await currentService.createLink(false);
+      await currentService.createLink(PathFormat.WorkspaceRelative);
     },
   );
 
   const copyLinkToSelectionWithAbsolutePath = vscode.commands.registerCommand(
     'rangelink.copyLinkToSelectionWithAbsolutePath',
     async () => {
-      await currentService.createLink(true);
+      await currentService.createLink(PathFormat.Absolute);
+    },
+  );
+
+  const copyPortableLinkRelative = vscode.commands.registerCommand(
+    'rangelink.copyPortableLinkToSelectionWithRelativePath',
+    async () => {
+      await currentService.createPortableLink(PathFormat.WorkspaceRelative);
+    },
+  );
+
+  const copyPortableLinkAbsolute = vscode.commands.registerCommand(
+    'rangelink.copyPortableLinkToSelectionWithAbsolutePath',
+    async () => {
+      await currentService.createPortableLink(PathFormat.Absolute);
     },
   );
 
   context.subscriptions.push(
     copyLinkToSelectionWithRelativePath,
     copyLinkToSelectionWithAbsolutePath,
+    copyPortableLinkRelative,
+    copyPortableLinkAbsolute,
   );
 }
 

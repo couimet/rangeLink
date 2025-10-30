@@ -27,7 +27,7 @@ Example CLI contract (Node side):
   ],
   "config": {
     "delimiterLine": "L",
-    "delimiterColumn": "C",
+    "delimiterPosition": "C",
     "delimiterHash": "#",
     "delimiterRange": "-"
   }

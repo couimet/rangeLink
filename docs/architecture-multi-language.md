@@ -145,7 +145,7 @@ rangeLink/
         ],
         "config": {
           "delimiterLine": "L",
-          "delimiterColumn": "C",
+          "delimiterPosition": "C",
           "delimiterHash": "#",
           "delimiterRange": "-"
         }
@@ -165,7 +165,7 @@ rangeLink/
         ],
         "config": {
           "delimiterLine": "LINE",
-          "delimiterColumn": "COL",
+          "delimiterPosition": "COL",
           "delimiterHash": "##",
           "delimiterRange": "TO"
         }
@@ -186,7 +186,7 @@ rangeLink/
   "testCases": [
     {
       "name": "parse_single_line",
-      "input": { "link": "src/file.ts:42" },
+      "input": { "link": "src/file.ts#L42" },
       "expected": {
         "path": "src/file.ts",
         "ranges": [{ "startLine": 42, "endLine": 42 }]
