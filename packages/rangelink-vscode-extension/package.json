@@ -150,6 +150,9 @@
     }
   },
   "activationEvents": [],
+  "dependencies": {
+    "rangelink-core-ts": "workspace:*"
+  },
   "devDependencies": {
     "@eslint/js": "^9.10.0",
     "@types/jest": "^29.5.0",
