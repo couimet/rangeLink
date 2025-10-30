@@ -662,6 +662,7 @@ packages/rangelink-core-ts/
 **Status:** ✅ Core integration complete, 34 test failures remaining (mostly expectations)
 
 **Achievements:**
+
 - ✅ Removed **~500 lines** of duplicate code (validation, formatting, selection logic)
 - ✅ Extension now imports all core functionality from `rangelink-core-ts`
 - ✅ Created `toCoreSelections()` adapter (Anti-Corruption Layer for VSCode types)
@@ -670,6 +671,7 @@ packages/rangelink-core-ts/
 - ✅ All VSCode-specific code properly isolated in extension
 
 **What's Integrated:**
+
 ```typescript
 // From rangelink-core-ts
 import {
@@ -682,12 +684,14 @@ import {
 ```
 
 **VSCode-Specific Code Retained:**
+
 - `RangeLinkService` orchestration (document/clipboard/error UI)
 - `loadDelimiterConfig()` with VSCode settings API
 - `getReferencePath()` and `isFullLineSelection()` helpers
 - Command registration in `activate()`
 
 **Remaining Work (34 test failures):**
+
 - Fix test expectations for new API (error messages, formats)
 - Update portable link test mocks
 - Fix full-line detection edge cases (selection extends past EOL)

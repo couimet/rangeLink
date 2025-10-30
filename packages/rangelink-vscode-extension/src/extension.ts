@@ -1,22 +1,24 @@
 import * as vscode from 'vscode';
+
 import {
+  DEFAULT_DELIMITERS,
   DelimiterConfig,
-  PathFormat,
-  RangeFormat,
+  DelimiterValidationError,
+  FormatOptions,
   HashMode,
+  PathFormat,
+  RESERVED_CHARS,
+  RangeFormat,
+  RangeLinkMessageCode,
   Selection,
+  areDelimitersUnique,
   formatLink,
   formatPortableLink,
-  DEFAULT_DELIMITERS,
-  RESERVED_CHARS,
-  DelimiterValidationError,
-  validateDelimiter,
-  areDelimitersUnique,
   haveSubstringConflicts,
-  RangeLinkMessageCode,
   setLogger,
-  FormatOptions,
+  validateDelimiter,
 } from 'rangelink-core-ts';
+
 import { VSCodeLogger } from './VSCodeLogger';
 
 // Re-export PathFormat for backward compatibility with tests
@@ -77,9 +79,9 @@ export class RangeLinkService {
     const referencePath = this.getReferencePath(document, pathFormat);
     const coreSelections = toCoreSelections(selections);
 
-    // Determine if this is a full-line selection
+    // Determine if this is a full-line selection (only for single selection)
     const options: FormatOptions = {
-      isFullLine: this.isFullLineSelection(editor, selections[0]),
+      isFullLine: selections.length === 1 ? this.isFullLineSelection(editor, selections[0]) : false,
     };
 
     const result = formatLink(referencePath, coreSelections, this.delimiters, options);
@@ -113,9 +115,9 @@ export class RangeLinkService {
     const referencePath = this.getReferencePath(document, pathFormat);
     const coreSelections = toCoreSelections(selections);
 
-    // Determine if this is a full-line selection
+    // Determine if this is a full-line selection (only for single selection)
     const options: FormatOptions = {
-      isFullLine: this.isFullLineSelection(editor, selections[0]),
+      isFullLine: selections.length === 1 ? this.isFullLineSelection(editor, selections[0]) : false,
     };
 
     const result = formatPortableLink(referencePath, coreSelections, this.delimiters, options);
@@ -150,6 +152,7 @@ export class RangeLinkService {
     const startsAtBeginning = selection.start.character === 0;
     const endsAtEndOfLine =
       selection.end.character === endLine.range.end.character ||
+      selection.end.character >= endLine.text.length || // Selection extends beyond line content
       (selection.end.line > selection.start.line && selection.end.character === 0);
 
     return startsAtBeginning && endsAtEndOfLine;

@@ -407,6 +407,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn((line: number) => ({
+            text: 'some code here',
+            range: { start: { character: 0 }, end: { character: 14 } },
+          })),
         },
       };
 
@@ -436,6 +440,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn((line: number) => ({
+            text: 'some code here that is longer',
+            range: { start: { character: 0 }, end: { character: 30 } },
+          })),
         },
       };
 
@@ -847,6 +855,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn((line: number) => ({
+            text: 'some code here',
+            range: { start: { character: 0 }, end: { character: 14 } },
+          })),
         },
       };
 
