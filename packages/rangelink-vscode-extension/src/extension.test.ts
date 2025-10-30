@@ -1193,7 +1193,15 @@ describe('Configuration loading and validation', () => {
   ])('Default values for %s', (setting, expectedDefault) => {
     it(`should use default value "${expectedDefault}" when no user/workspace settings exist`, () => {
       const mockConfig = {
-        get: jest.fn((key: string, defaultValue: string) => defaultValue),
+        get: jest.fn((key: string) => {
+          const defaults: Record<string, string> = {
+            delimiterLine: 'L',
+            delimiterPosition: 'C',
+            delimiterHash: '#',
+            delimiterRange: '-',
+          };
+          return defaults[key];
+        }),
         inspect: jest.fn((key: string) => ({
           key,
           defaultValue: expectedDefault,
@@ -1577,14 +1585,14 @@ describe('Configuration loading and validation', () => {
     describe('Subset/superset conflict detection (Phase 1B)', () => {
       it('should reject when delimiterLine is substring at start of delimiterRange', async () => {
         const mockConfig = {
-          get: jest.fn((key: string, defaultValue: string) => {
+          get: jest.fn((key: string) => {
             const custom: Record<string, string> = {
               delimiterLine: 'L',
               delimiterHash: '#',
               delimiterPosition: 'C',
               delimiterRange: 'LINE',
             };
-            return custom[key] || defaultValue;
+            return custom[key];
           }),
           inspect: jest.fn((key: string) => {
             const defaults: Record<string, string> = {
@@ -1621,14 +1629,14 @@ describe('Configuration loading and validation', () => {
 
       it('should reject when delimiterLine is substring at end of delimiterRange', async () => {
         const mockConfig = {
-          get: jest.fn((key: string, defaultValue: string) => {
+          get: jest.fn((key: string) => {
             const custom: Record<string, string> = {
               delimiterLine: 'L',
               delimiterHash: '#',
               delimiterPosition: 'C',
               delimiterRange: 'THRUL',
             };
-            return custom[key] || defaultValue;
+            return custom[key];
           }),
           inspect: jest.fn((key: string) => {
             const defaults: Record<string, string> = {
@@ -1659,14 +1667,14 @@ describe('Configuration loading and validation', () => {
 
       it('should reject when delimiterLine is substring in middle of delimiterRange', async () => {
         const mockConfig = {
-          get: jest.fn((key: string, defaultValue: string) => {
+          get: jest.fn((key: string) => {
             const custom: Record<string, string> = {
               delimiterLine: 'L',
               delimiterHash: '#',
               delimiterPosition: 'C',
               delimiterRange: 'XLYX',
             };
-            return custom[key] || defaultValue;
+            return custom[key];
           }),
           inspect: jest.fn((key: string) => {
             const defaults: Record<string, string> = {
@@ -1697,14 +1705,14 @@ describe('Configuration loading and validation', () => {
 
       it('should reject when delimiterPosition is substring of delimiterRange', async () => {
         const mockConfig = {
-          get: jest.fn((key: string, defaultValue: string) => {
+          get: jest.fn((key: string) => {
             const custom: Record<string, string> = {
               delimiterLine: 'L',
               delimiterPosition: 'POS',
               delimiterHash: '#',
               delimiterRange: 'POSRANGE',
             };
-            return custom[key] || defaultValue;
+            return custom[key];
           }),
           inspect: jest.fn((key: string) => {
             const defaults: Record<string, string> = {
@@ -1777,14 +1785,14 @@ describe('Configuration loading and validation', () => {
     describe('Aggregated error reporting (Phase 1B)', () => {
       it('should log multiple validation errors with specific codes', async () => {
         const mockConfig = {
-          get: jest.fn((key: string, defaultValue: string) => {
+          get: jest.fn((key: string) => {
             const invalid: Record<string, string> = {
               delimiterLine: 'L~', // reserved char -> ERR_1005
               delimiterPosition: 'C1', // contains digit -> ERR_1003
               delimiterHash: '#',
               delimiterRange: '-',
             };
-            return invalid[key] || defaultValue;
+            return invalid[key];
           }),
           inspect: jest.fn((key: string) => {
             const defaults: Record<string, string> = {
@@ -1831,7 +1839,7 @@ describe('Configuration loading and validation', () => {
 
       it('should log reserved char errors with uniqueness and substring errors using specific codes', async () => {
         const mockConfig = {
-          get: jest.fn((key: string, defaultValue: string) => {
+          get: jest.fn((key: string) => {
             // Position and Range are duplicates ('X'), and Position is substring of Line ('LX')
             const invalid: Record<string, string> = {
               delimiterLine: 'LX',
@@ -1839,7 +1847,7 @@ describe('Configuration loading and validation', () => {
               delimiterHash: '#',
               delimiterRange: 'X',
             };
-            return invalid[key] || defaultValue;
+            return invalid[key];
           }),
           inspect: jest.fn((key: string) => {
             const defaults: Record<string, string> = {
@@ -1876,14 +1884,14 @@ describe('Configuration loading and validation', () => {
 
       it('should log all error types with specific codes: empty, digit, reserved, duplicate, substring', async () => {
         const mockConfig = {
-          get: jest.fn((key: string, defaultValue: string) => {
+          get: jest.fn((key: string) => {
             const invalid: Record<string, string> = {
               delimiterLine: 'X', // will become duplicate
               delimiterPosition: 'C1', // contains digit -> ERR_1003
               delimiterHash: '~', // reserved char -> ERR_1005
               delimiterRange: 'X', // duplicate of line -> ERR_1006
             };
-            return invalid[key] || defaultValue;
+            return invalid[key];
           }),
           inspect: jest.fn((key: string) => {
             const defaults: Record<string, string> = {
@@ -1964,14 +1972,14 @@ describe('Configuration loading and validation', () => {
 
       it('should handle reverse substring conflict (larger contains smaller)', async () => {
         const mockConfig = {
-          get: jest.fn((key: string, defaultValue: string) => {
+          get: jest.fn((key: string) => {
             const custom: Record<string, string> = {
               delimiterLine: 'L',
               delimiterPosition: 'C',
               delimiterHash: '#',
               delimiterRange: 'ABC', // larger contains 'C' (smaller)
             };
-            return custom[key] || defaultValue;
+            return custom[key];
           }),
           inspect: jest.fn((key: string) => {
             const defaults: Record<string, string> = {
@@ -2009,14 +2017,14 @@ describe('Configuration loading and validation', () => {
       it('should handle all delimiter pairs in substring conflict check', async () => {
         // Test column-line conflict
         const mockConfig1 = {
-          get: jest.fn((key: string, defaultValue: string) => {
+          get: jest.fn((key: string) => {
             const custom: Record<string, string> = {
               delimiterLine: 'L',
               delimiterPosition: 'LX', // contains L
               delimiterHash: '#',
               delimiterRange: '-',
             };
-            return custom[key] || defaultValue;
+            return custom[key];
           }),
           inspect: jest.fn(() => ({
             defaultValue: 'L',
@@ -2104,14 +2112,14 @@ describe('Configuration loading and validation', () => {
 
       it('should detect substring conflict with different case in compound delimiter', async () => {
         const mockConfig = {
-          get: jest.fn((key: string, defaultValue: string) => {
+          get: jest.fn((key: string) => {
             const custom: Record<string, string> = {
               delimiterLine: 'Line', // mixed case
               delimiterPosition: 'C',
               delimiterHash: '#',
               delimiterRange: 'line', // lowercase version - substring conflict (case-insensitive)
             };
-            return custom[key] || defaultValue;
+            return custom[key];
           }),
           inspect: jest.fn((key: string) => {
             const defaults: Record<string, string> = {
@@ -2686,7 +2694,15 @@ describe('Configuration loading and validation', () => {
   describe('Configuration source logging', () => {
     it('should log source of each delimiter on startup (from default)', async () => {
       const mockConfig = {
-        get: jest.fn((key: string, defaultValue: string) => defaultValue),
+        get: jest.fn((key: string) => {
+          const defaults: Record<string, string> = {
+            delimiterLine: 'L',
+            delimiterPosition: 'C',
+            delimiterHash: '#',
+            delimiterRange: '-',
+          };
+          return defaults[key];
+        }),
         inspect: jest.fn((key: string) => {
           const defaults: Record<string, string> = {
             delimiterLine: 'L',
@@ -2810,8 +2826,14 @@ describe('Configuration loading and validation', () => {
 
     it('should log source as user when globalValue is set', async () => {
       const mockConfig = {
-        get: jest.fn((key: string, defaultValue: string) => {
-          return key === 'delimiterLine' ? 'UserL' : defaultValue;
+        get: jest.fn((key: string) => {
+          const defaults: Record<string, string> = {
+            delimiterLine: 'UserL', // User override
+            delimiterPosition: 'C',
+            delimiterHash: '#',
+            delimiterRange: '-',
+          };
+          return defaults[key];
         }),
         inspect: jest.fn((key: string) => {
           const defaults: Record<string, string> = {
