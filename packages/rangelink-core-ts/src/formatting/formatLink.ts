@@ -15,29 +15,26 @@ import { joinWithHash } from './joinWithHash';
  * Main orchestrator for link generation.
  *
  * @param path File path (workspace-relative or absolute)
- * @param selection Selection to format
+ * @param selections Array of selections (typically one, or multiple for column mode)
  * @param delimiters Delimiter configuration
  * @param options Optional formatting options
  * @returns Result<string, RangeLinkMessageCode> - formatted link or error
  */
 export function formatLink(
   path: string,
-  selection: Selection,
+  selections: ReadonlyArray<Selection>,
   delimiters: DelimiterConfig,
   options?: FormatOptions,
 ): Result<string, RangeLinkMessageCode> {
   const logger = getLogger();
 
-  // Check for empty selection (safety guard)
-  if (
-    selection.startLine === selection.endLine &&
-    selection.startCharacter === selection.endCharacter
-  ) {
-    logger.error({ fn: 'formatLink' }, 'Cannot format link for empty selection');
+  // Check for empty selections array (safety guard)
+  if (!selections || selections.length === 0) {
+    logger.error({ fn: 'formatLink' }, 'Cannot format link for empty selections array');
     return Err(RangeLinkMessageCode.CONFIG_ERR_DELIMITER_INVALID); // TODO: Add proper error code
   }
 
-  const spec = computeRangeSpec([selection], options);
+  const spec = computeRangeSpec(selections, options);
 
   // Special case: single-line full-line selection
   if (

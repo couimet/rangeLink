@@ -628,13 +628,34 @@ We will modularize the project and adopt a monorepo to enable fast, iterative de
 - ✅ Verified compilation and all 114 tests pass in new structure
 - **Result:** Clean monorepo structure, no code changes, all tests green
 
-#### 2B) Extract Core Library Foundation (2 hours)
+#### 2B) Extract Core Library Foundation — ✅ COMPLETE (~45 minutes)
 
-- Create `packages/rangelink-core-ts/` with basic structure
-- Move core types (Link, PathFormat, etc.) to core package
-- Move delimiter validation logic to core
-- Add unit tests for core (no VSCode dependencies)
-- **Done when:** Core package compiles independently, 50+ tests passing
+**Status:** ✅ Completed ahead of schedule (2h estimate → 45min actual)
+
+**Achievements:**
+
+- ✅ Created `packages/rangelink-core-ts/` with modular structure (types, constants, validation, selection, formatting, logging)
+- ✅ Implemented pure TypeScript core with **zero runtime dependencies**
+- ✅ Anti-corruption layer: Core defines its own `Selection` interface (no VSCode coupling)
+- ✅ Functional error handling with `Result<T, E>` type
+- ✅ Portable logging infrastructure (`Logger`, `LogManager`, `NoOpLogger`)
+- ✅ **100% branch coverage** (15 test suites, 95 passing tests)
+- ✅ All validation, selection, and formatting logic extracted and tested
+
+**Structure:**
+
+```
+packages/rangelink-core-ts/
+  src/
+    types/         # Domain types, enums (PathFormat, RangeFormat, etc.)
+    constants/     # RESERVED_CHARS, DEFAULT_DELIMITERS, etc.
+    validation/    # validateDelimiter, areDelimitersUnique, haveSubstringConflicts
+    selection/     # isColumnSelection, computeRangeSpec
+    formatting/    # buildAnchor, formatLink, formatPortableLink
+    logging/       # Logger interface, LogManager, NoOpLogger
+```
+
+**Test Coverage:** 100% branches, 100% functions, 100% lines (excluding index files)
 
 #### 2C) VSCode Extension Refactor (1.5 hours)
 
