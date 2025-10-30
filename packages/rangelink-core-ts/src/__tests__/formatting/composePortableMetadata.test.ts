@@ -1,5 +1,5 @@
-import { composePortableMetadata } from '../../formatting/composePortableMetadata';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
+import { composePortableMetadata } from '../../formatting/composePortableMetadata';
 
 describe('composePortableMetadata', () => {
   const defaultDelimiters: DelimiterConfig = {

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+
 import { Logger, LoggingContext } from 'rangelink-core-ts';
 
 /**

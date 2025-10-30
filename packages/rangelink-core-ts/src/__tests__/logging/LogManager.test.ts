@@ -1,4 +1,5 @@
 import { getLogger, setLogger } from '../../logging/LogManager';
+
 import { Logger } from '../../logging/Logger';
 import { NoOpLogger } from '../../logging/NoOpLogger';
 
