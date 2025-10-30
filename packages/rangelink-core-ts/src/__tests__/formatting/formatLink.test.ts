@@ -17,7 +17,7 @@ describe('formatLink', () => {
       endLine: 20,
       endCharacter: 15,
     };
-    const result = formatLink('src/file.ts', selection, defaultDelimiters);
+    const result = formatLink('src/file.ts', [selection], defaultDelimiters);
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -32,7 +32,7 @@ describe('formatLink', () => {
       endLine: 10,
       endCharacter: 15,
     };
-    const result = formatLink('src/file.ts', selection, defaultDelimiters);
+    const result = formatLink('src/file.ts', [selection], defaultDelimiters);
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -47,7 +47,7 @@ describe('formatLink', () => {
       endLine: 20,
       endCharacter: 0,
     };
-    const result = formatLink('src/file.ts', selection, defaultDelimiters);
+    const result = formatLink('src/file.ts', [selection], defaultDelimiters);
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -62,7 +62,7 @@ describe('formatLink', () => {
       endLine: 41,
       endCharacter: 50,
     };
-    const result = formatLink('src/file.ts', selection, defaultDelimiters, { isFullLine: true });
+    const result = formatLink('src/file.ts', [selection], defaultDelimiters, { isFullLine: true });
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -77,7 +77,7 @@ describe('formatLink', () => {
       endLine: 10,
       endCharacter: 5,
     };
-    const result = formatLink('src/file.ts', selection, defaultDelimiters);
+    const result = formatLink('src/file.ts', [selection], defaultDelimiters);
 
     expect(result.success).toBe(false);
   });
@@ -95,12 +95,17 @@ describe('formatLink', () => {
       endLine: 19,
       endCharacter: 14,
     };
-    const result = formatLink('path/to/file.ts', selection, customDelimiters);
+    const result = formatLink('path/to/file.ts', [selection], customDelimiters);
 
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value).toBe('path/to/file.ts>>LINE10COL5thruLINE20COL15');
     }
+  });
+
+  it('should reject empty selections array', () => {
+    const result = formatLink('src/file.ts', [], defaultDelimiters);
+    expect(result.success).toBe(false);
   });
 });
 

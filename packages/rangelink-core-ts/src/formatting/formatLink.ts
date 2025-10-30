@@ -34,6 +34,16 @@ export function formatLink(
     return Err(RangeLinkMessageCode.CONFIG_ERR_DELIMITER_INVALID); // TODO: Add proper error code
   }
 
+  // Check for empty selection (no range selected)
+  const primary = selections[0];
+  if (
+    primary.startLine === primary.endLine &&
+    primary.startCharacter === primary.endCharacter
+  ) {
+    logger.error({ fn: 'formatLink' }, 'Cannot format link for empty selection');
+    return Err(RangeLinkMessageCode.CONFIG_ERR_DELIMITER_INVALID); // TODO: Add proper error code
+  }
+
   const spec = computeRangeSpec(selections, options);
 
   // Special case: single-line full-line selection
