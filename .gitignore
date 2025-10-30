@@ -10,3 +10,9 @@ coverage/
 package-lock.json
 yarn.lock
 
+# Monorepo workspace
+packages/*/node_modules/
+packages/*/out/
+packages/*/dist/
+*.tsbuildinfo
+

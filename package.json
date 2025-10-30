@@ -1,177 +1,29 @@
 {
-  "name": "rangelink",
-  "displayName": "RangeLink",
+  "name": "rangelink-monorepo",
   "version": "0.1.0",
-  "description": "Create sharable links to code ranges in your files. Perfect for documentation, AI prompts, and team collaboration.",
-  "categories": [
-    "Other"
-  ],
-  "keywords": [
-    "reference",
-    "link",
-    "range",
-    "citation",
-    "documentation",
-    "ai"
-  ],
-  "homepage": "https://github.com/couimet/rangelink#readme",
-  "bugs": {
-    "url": "https://github.com/couimet/rangelink/issues"
-  },
+  "private": true,
+  "description": "RangeLink monorepo - Core library and IDE extensions",
   "repository": {
     "type": "git",
     "url": "https://github.com/couimet/rangelink"
   },
   "license": "MIT",
-  "publisher": "rangelink",
-  "main": "./out/extension.js",
   "scripts": {
-    "compile": "tsc -p ./",
-    "enable-pnpm": "corepack enable",
+    "clean": "pnpm -r run clean",
+    "compile": "pnpm -r run compile",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "setup": "pnpm run enable-pnpm && pnpm install && pnpm run compile",
-    "test": "jest --coverage",
-    "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
-    "test:watch": "jest --watch",
-    "vscode:prepublish": "pnpm run compile && pnpm run test",
-    "watch": "tsc -watch -p ./"
+    "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm -r run lint:fix",
+    "test": "pnpm -r run test"
   },
-  "contributes": {
-    "commands": [
-      {
-        "command": "rangelink.copyLinkToSelectionWithRelativePath",
-        "title": "Copy Range Link",
-        "category": "RangeLink",
-        "icon": "$(link)",
-        "enablement": "editorHasSelection"
-      },
-      {
-        "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
-        "title": "Copy Range Link (Absolute)",
-        "category": "RangeLink",
-        "icon": "$(link-external)",
-        "enablement": "editorHasSelection"
-      },
-      {
-        "command": "rangelink.copyPortableLinkToSelectionWithRelativePath",
-        "title": "Copy Portable RangeLink",
-        "category": "RangeLink",
-        "icon": "$(link-external)",
-        "enablement": "editorHasSelection"
-      },
-      {
-        "command": "rangelink.copyPortableLinkToSelectionWithAbsolutePath",
-        "title": "Copy Portable RangeLink (Absolute)",
-        "category": "RangeLink",
-        "icon": "$(link-external)",
-        "enablement": "editorHasSelection"
-      }
-    ],
-    "configuration": {
-      "title": "RangeLink",
-      "properties": {
-        "rangelink.delimiterLine": {
-          "type": "string",
-          "default": "L",
-          "description": "Delimiter used before line numbers (e.g., L in #L10-L20)",
-          "pattern": "^[^0-9]+$"
-        },
-        "rangelink.delimiterPosition": {
-          "type": "string",
-          "default": "C",
-          "description": "Delimiter used before position numbers (e.g., C in #L10C5-L20C10)",
-          "pattern": "^[^0-9]+$"
-        },
-        "rangelink.delimiterHash": {
-          "type": "string",
-          "default": "#",
-          "description": "Delimiter used before the range specification (e.g., # in path#L10-L20)",
-          "pattern": "^[^0-9]+$"
-        },
-        "rangelink.delimiterRange": {
-          "type": "string",
-          "default": "-",
-          "description": "Delimiter used between start and end positions (e.g., - in #L10-L20)",
-          "pattern": "^[^0-9]+$"
-        }
-      }
-    },
-    "keybindings": [
-      {
-        "command": "rangelink.copyLinkToSelectionWithRelativePath",
-        "key": "ctrl+r ctrl+l",
-        "mac": "cmd+r cmd+l",
-        "when": "editorHasSelection"
-      },
-      {
-        "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
-        "key": "ctrl+r ctrl+shift+l",
-        "mac": "cmd+r cmd+shift+l",
-        "when": "editorHasSelection"
-      },
-      {
-        "command": "rangelink.copyPortableLinkToSelectionWithRelativePath",
-        "key": "ctrl+r ctrl+p",
-        "mac": "cmd+r cmd+p",
-        "when": "editorHasSelection"
-      },
-      {
-        "command": "rangelink.copyPortableLinkToSelectionWithAbsolutePath",
-        "key": "ctrl+r ctrl+shift+p",
-        "mac": "cmd+r cmd+shift+p",
-        "when": "editorHasSelection"
-      }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyLinkToSelectionWithRelativePath",
-          "group": "9_cutcopypaste@1"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
-          "group": "9_cutcopypaste@1"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyPortableLinkToSelectionWithRelativePath",
-          "group": "9_cutcopypaste@1"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyPortableLinkToSelectionWithAbsolutePath",
-          "group": "9_cutcopypaste@1"
-        }
-      ]
-    }
-  },
-  "activationEvents": [],
   "devDependencies": {
-    "@eslint/js": "^9.10.0",
-    "@types/jest": "^29.5.0",
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.80.0",
-    "@typescript-eslint/eslint-plugin": "^8.8.0",
-    "@typescript-eslint/parser": "^8.8.0",
-    "eslint": "^9.10.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-n": "^17.10.0",
-    "eslint-plugin-unicorn": "^55.0.0",
-    "jest": "^29.7.0",
-    "prettier": "^3.3.3",
-    "prettier-plugin-packagejson": "^2.5.0",
-    "ts-jest": "^29.1.0",
-    "typescript": "^5.1.6"
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3"
   },
-  "packageManager": "pnpm@10.19.0",
   "engines": {
-    "vscode": "^1.80.0"
-  }
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eacdde311865e91c411f2774f618d82f320808ecb51718bfa82c060c4ba7c76a32b8"
 }
