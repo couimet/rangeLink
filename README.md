@@ -655,7 +655,7 @@ packages/rangelink-core-ts/
     logging/       # Logger interface, LogManager, NoOpLogger
 ```
 
-**Test Coverage:** 100% branches, 100% functions, 100% lines (excluding index files)
+**Test Coverage:** 100% branches, 100% functions, 100% lines (96/96 tests passing)
 
 #### 2C) VSCode Extension Refactor — ✅ COMPLETE (~2 hours, 112/117 tests passing)
 
