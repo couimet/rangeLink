@@ -1623,7 +1623,7 @@ describe('Configuration loading and validation', () => {
         require('./extension').activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-          expect.stringContaining('[ERROR] [ERR_1007] Delimiters must not be substrings'),
+          expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
         );
       });
 
@@ -1661,7 +1661,7 @@ describe('Configuration loading and validation', () => {
         require('./extension').activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-          expect.stringContaining('[ERROR] [ERR_1007] Delimiters must not be substrings'),
+          expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
         );
       });
 
@@ -1699,7 +1699,7 @@ describe('Configuration loading and validation', () => {
         require('./extension').activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-          expect.stringContaining('[ERROR] [ERR_1007] Delimiters must not be substrings'),
+          expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
         );
       });
 
@@ -1737,7 +1737,7 @@ describe('Configuration loading and validation', () => {
         require('./extension').activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-          expect.stringContaining('[ERROR] [ERR_1007] Delimiters must not be substrings'),
+          expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
         );
       });
 
@@ -1879,7 +1879,7 @@ describe('Configuration loading and validation', () => {
         expect(errorMessages).toContain('[ERROR] [ERR_1006]'); // Not unique
         expect(errorMessages).toContain('[ERROR] [ERR_1007]'); // Substring conflict
         expect(errorMessages).toContain('Delimiters must be unique');
-        expect(errorMessages).toContain('Delimiters must not be substrings');
+        expect(errorMessages).toContain('Delimiters cannot be substrings');
       });
 
       it('should log all error types with specific codes: empty, digit, reserved, duplicate, substring', async () => {
@@ -2010,7 +2010,7 @@ describe('Configuration loading and validation', () => {
         require('./extension').activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-          expect.stringContaining('[ERROR] [ERR_1007] Delimiters must not be substrings'),
+          expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
         );
       });
 
@@ -2040,7 +2040,7 @@ describe('Configuration loading and validation', () => {
         require('./extension').activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-          expect.stringContaining('Delimiters must not be substrings'),
+          expect.stringContaining('Delimiters cannot be substrings'),
         );
 
         // Test range-column conflict
@@ -2067,7 +2067,7 @@ describe('Configuration loading and validation', () => {
         require('./extension').activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-          expect.stringContaining('[ERROR] [ERR_1007] Delimiters must not be substrings'),
+          expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
         );
       });
 
@@ -2114,10 +2114,10 @@ describe('Configuration loading and validation', () => {
         const mockConfig = {
           get: jest.fn((key: string) => {
             const custom: Record<string, string> = {
-              delimiterLine: 'Line', // mixed case
+              delimiterLine: 'Lin', // shorter
               delimiterPosition: 'C',
               delimiterHash: '#',
-              delimiterRange: 'line', // lowercase version - substring conflict (case-insensitive)
+              delimiterRange: 'LINE', // contains "Lin" (case-insensitive substring)
             };
             return custom[key];
           }),
@@ -2143,7 +2143,7 @@ describe('Configuration loading and validation', () => {
         const context = { subscriptions: [] as any[] };
         require('./extension').activate(context as any);
 
-        // Should log substring conflict error (case-sensitive check finds "line" in "Line")
+        // Should log substring conflict error (case-insensitive check finds "Lin" in "LINE")
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1007]'),
         );

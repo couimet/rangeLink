@@ -224,7 +224,7 @@ function loadDelimiterConfig(): DelimiterConfig {
     for (const { name, code } of errors) {
       outputChannel.appendLine(`[ERROR] [${code}] Invalid ${name}: must be non-empty, non-numeric, and not contain reserved characters (${RESERVED_CHARS.join(', ')})`);
     }
-    outputChannel.appendLine('[INFO] Using default delimiters due to validation errors.');
+    outputChannel.appendLine(`[INFO] [${RangeLinkMessageCode.CONFIG_USING_DEFAULTS}] Using default delimiters due to validation errors.`);
     return DEFAULT_DELIMITERS;
   }
 
@@ -235,17 +235,23 @@ function loadDelimiterConfig(): DelimiterConfig {
     range: userRange,
   };
 
-  if (!areDelimitersUnique(userDelimiters)) {
+  // Check for uniqueness and substring conflicts (aggregate all errors before returning)
+  const hasUniquenessError = !areDelimitersUnique(userDelimiters);
+  const hasSubstringError = haveSubstringConflicts(userDelimiters);
+
+  if (hasUniquenessError) {
     outputChannel.appendLine(
       `[ERROR] [${RangeLinkMessageCode.CONFIG_ERR_DELIMITER_NOT_UNIQUE}] Delimiters must be unique (case-insensitive). Custom settings ignored. Using defaults.`,
     );
-    return DEFAULT_DELIMITERS;
   }
 
-  if (haveSubstringConflicts(userDelimiters)) {
+  if (hasSubstringError) {
     outputChannel.appendLine(
       `[ERROR] [${RangeLinkMessageCode.CONFIG_ERR_DELIMITER_SUBSTRING_CONFLICT}] Delimiters cannot be substrings of each other. Custom settings ignored. Using defaults.`,
     );
+  }
+
+  if (hasUniquenessError || hasSubstringError) {
     return DEFAULT_DELIMITERS;
   }
 
