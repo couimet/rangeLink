@@ -1164,8 +1164,8 @@ describe('RangeLinkService', () => {
       await service.createLink(PathFormat.WorkspaceRelative);
 
       expect(mockWindow.setStatusBarMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Copied Range Link'),
-        3000,
+        expect.stringContaining('RangeLink copied to clipboard'),
+        2000,
       );
     });
   });
