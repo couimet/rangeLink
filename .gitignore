@@ -16,3 +16,6 @@ packages/*/out/
 packages/*/dist/
 *.tsbuildinfo
 
+# pnpm store (should use global cache)
+.pnpm-store/
+
