@@ -2,8 +2,18 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
-      "script": "watch",
+      "label": "Build: rangelink-core-ts",
+      "type": "shell",
+      "command": "source ~/.nvm/nvm.sh && nvm use && pnpm -C packages/rangelink-core-ts run compile"
+    },
+    {
+      "label": "Watch: rangelink-vscode-extension",
+      "type": "shell",
+      "command": "source ~/.nvm/nvm.sh && nvm use && pnpm -C packages/rangelink-vscode-extension run watch",
+      "dependsOn": [
+        "Build: rangelink-core-ts"
+      ],
+      "dependsOrder": "sequence",
       "problemMatcher": "$tsc-watch",
       "isBackground": true,
       "presentation": {

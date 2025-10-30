@@ -1,5 +1,9 @@
 # Development Guide
 
+> Important: macOS/Linux required
+>
+> Development tasks currently assume a Unix-like shell with `nvm` available. The VS Code tasks source `~/.nvm/nvm.sh` and use the Node version from `.nvmrc`, then run `pnpm`. This setup is not supported on Windows yet. If you are on Windows, use WSL2 (Ubuntu) or adjust the tasks to suit your environment.
+
 Quick start guide for developing RangeLink.
 
 ## Quick Start (2 Minutes)

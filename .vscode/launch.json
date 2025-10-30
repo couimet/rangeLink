@@ -2,12 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Extension",
+      "name": "Run RangeLink VSCode Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: watch"
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/rangelink-vscode-extension"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/packages/rangelink-vscode-extension/out/**/*.js"
+      ],
+      "preLaunchTask": "Watch: rangelink-vscode-extension"
     }
   ]
 }
