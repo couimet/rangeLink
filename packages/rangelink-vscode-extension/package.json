@@ -1,5 +1,5 @@
 {
-  "name": "rangelink",
+  "name": "rangelink-vscode-extension",
   "displayName": "RangeLink",
   "version": "0.1.0",
   "icon": "icon.png",
@@ -31,13 +31,13 @@
   "publisher": "rangelink",
   "main": "./out/extension.js",
   "scripts": {
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "clean": "rm -rf out",
+    "compile": "tsc -p .",
     "test": "jest --coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
     "test:watch": "jest --watch",
-    "clean": "rm -rf out",
-    "vscode:prepublish": "pnpm run compile && pnpm run test"
+    "vscode:prepublish": "pnpm clean && pnpm compile && pnpm test",
+    "watch": "tsc -watch -p ./"
   },
   "contributes": {
     "commands": [

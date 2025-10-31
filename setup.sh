@@ -44,14 +44,13 @@ pnpm install
 
 # Compile
 echo "🔨 Compiling TypeScript..."
-pnpm run compile
+pnpm compile
 
 echo ""
 echo "✅ Setup complete!"
 echo ""
 echo "Next steps:"
 echo "  1. Press F5 in VS Code to launch Extension Development Host"
-echo "  2. Test your changes with Ctrl+K Ctrl+L (Windows) or Cmd+K Cmd+L (Mac)"
+echo "  2. Test your changes with Ctrl+R Ctrl+L (Windows) or Cmd+R Cmd+L (Mac)"
 echo ""
-echo "See QUICK_START.md for more details."
-
+echo "See DEVELOPMENT.md for more details."

@@ -22,30 +22,15 @@ vsce login <publisher-name>
 
 ## Building the Extension
 
-1. Install dependencies:
+For complete local setup and testing instructions, please see `DEVELOPMENT.md`. In a nutshell, you can use the following commands **from the root of the project**:
 
 ```bash
-# Use `setup` script to get started quickly
-npm setup
+# 1) Setup the project
+./setup.sh
+
+# 2) Package the extension
+pnpm publish:vscode-extension
 ```
-
-2. Compile TypeScript:
-
-```bash
-pnpm run compile
-```
-
-3. Package the extension:
-
-```bash
-# pnpm
-pnpm exec vsce package
-
-# or directly if installed globally
-vsce package
-```
-
-This creates a `.vsix` file (e.g., `rangelink-0.1.0.vsix`).
 
 ## Testing the Extension Locally
 
@@ -65,7 +50,7 @@ code --install-extension rangelink-0.1.0.vsix
 3. Test the functionality:
    - Open any file
    - Select some text
-   - Press `Ctrl+K Ctrl+L` (or `Cmd+K Cmd+L` on Mac)
+   - Press `Ctrl+R Ctrl+L` (or `Cmd+R Cmd+L` on Mac)
    - Verify the link is copied to clipboard
 
 ## Publishing to VS Code Marketplace
