@@ -237,13 +237,179 @@ For Neovim integration details, see [neovim-integration.md](./neovim-integration
 
 ---
 
-## Phase 3: Navigation Features — 📋 Planned
+## Phase 3: VSCode Marketplace Launch — 📋 Ready to Start
+
+**Goal:** Publish RangeLink extension to VSCode Marketplace and make it available to users.
+
+**Total Time Estimate:** 4 hours across 8 micro-iterations
+
+**Status:** 📋 Ready to start
+
+### Pre-Launch Status
+
+- ✅ Extension functionality complete (link generation, BYOD, rectangular mode)
+- ✅ Comprehensive tests (96% passing, 100% coverage target)
+- ✅ Documentation complete and professional
+- ✅ README marketplace-ready
+- ✅ Commands and keybindings configured
+- ⚠️ **Missing:** Extension icon/logo
+- ⚠️ **Missing:** Publisher account setup
+- ⚠️ **Missing:** CHANGELOG.md
+- ⚠️ **Missing:** Final testing on clean install
+
+### 3A) Create Extension Icon/Logo (1 hour)
+
+**Goal:** Design and add professional icon for marketplace listing.
+
+**Tasks:**
+- Use AI image generator with prompts from `docs/logo-design-prompts.md`
+- Generate 128x128px PNG icon (VSCode requirement)
+- Add icon to `packages/rangelink-vscode-extension/icon.png`
+- Update `package.json`: `"icon": "icon.png"`
+- Test icon appears in Extension Development Host
+
+**Resources:**
+- Prompts ready in `docs/logo-design-prompts.md`
+- Recommended: Option A (cheerful chicken with chain necklace)
+- Colors: Orange (#FF6B35) primary, Gold (#FFD23F) for chain
+
+**Done when:** Icon file exists, appears in extension list, meets VSCode requirements
+
+### 3B) Create CHANGELOG.md (20 minutes)
+
+**Goal:** Document version history for marketplace and users.
+
+**Tasks:**
+- Create `packages/rangelink-vscode-extension/CHANGELOG.md`
+- Document v0.1.0 initial release with all features
+- Follow Keep a Changelog format
+
+**Done when:** CHANGELOG.md exists with v0.1.0 documented
+
+### 3C) Publisher Account Setup (30 minutes)
+
+**Goal:** Create publisher account for VSCode Marketplace.
+
+**Tasks:**
+- Visit https://marketplace.visualstudio.com/manage
+- Sign in with Microsoft account (or create one)
+- Create new publisher with chosen publisher ID
+- Update `package.json`: `"publisher": "your-publisher-id"`
+- Save personal access token securely
+
+**Done when:** Publisher account created, ID updated in package.json, token saved
+
+### 3D) Pre-Publishing Testing (45 minutes)
+
+**Goal:** Test extension thoroughly on clean VSCode install.
+
+**Testing Checklist:**
+- [ ] All commands execute without errors
+- [ ] Links copied to clipboard correctly
+- [ ] Status bar feedback appears
+- [ ] Custom delimiters work
+- [ ] Invalid config falls back to defaults
+- [ ] Output channel shows structured logs
+- [ ] README displays correctly
+- [ ] Icon displays correctly
+- [ ] Commands appear in Command Palette
+- [ ] Context menu items appear
+- [ ] Keybindings work
+
+**Test all selection types:**
+- Single line, multi-line, with columns, rectangular (Alt+drag)
+
+**Done when:** All tests pass on clean install, no critical bugs
+
+### 3E) Version and Metadata Check (15 minutes)
+
+**Goal:** Verify all metadata is correct before publishing.
+
+**Review package.json fields:**
+- `publisher`: "[your-publisher-id]" ← UPDATE
+- `icon`: "icon.png" ← ADD
+- All other fields verified (name, version, description, repository, etc.)
+
+**Done when:** All package.json fields verified and correct
+
+### 3F) Package for Publishing (10 minutes)
+
+**Goal:** Create final VSIX package for marketplace submission.
+
+**Tasks:**
+```bash
+# Clean and rebuild
+pnpm -r clean
+pnpm install
+pnpm -r compile
+pnpm -r test
+
+# Package extension
+cd packages/rangelink-vscode-extension
+vsce package
+```
+
+**Done when:** Clean VSIX package created, installation test passes
+
+### 3G) Publish to Marketplace (20 minutes)
+
+**Goal:** Publish extension to VSCode Marketplace.
+
+**Tasks:**
+```bash
+vsce login [your-publisher-id]
+cd packages/rangelink-vscode-extension
+vsce publish
+```
+
+**Verify:**
+- Wait 5-10 minutes for marketplace to process
+- Visit marketplace listing
+- Test installation from marketplace
+
+**Done when:** Extension published, appears in search, installation works
+
+### 3H) Post-Launch Tasks (30 minutes)
+
+**Goal:** Announce launch and set up monitoring.
+
+**Tasks:**
+- Create GitHub release (v0.1.0 tag)
+- Update repository README with marketplace badge
+- Set up monitoring (star extension, watch issues)
+- Plan first patch/next features
+
+**Success Metrics (First Week):**
+- 10+ installs
+- No critical bugs reported
+- At least one positive review
+
+**Done when:** GitHub release created, monitoring in place
+
+### Time Summary
+
+| Task | Estimate | Cumulative |
+|------|----------|------------|
+| Icon/logo | 1h | 1h |
+| CHANGELOG | 20m | 1h 20m |
+| Publisher account | 30m | 1h 50m |
+| Testing | 45m | 2h 35m |
+| Metadata check | 15m | 2h 50m |
+| Package | 10m | 3h |
+| Publish | 20m | 3h 20m |
+| Post-launch | 30m | 3h 50m |
+
+**Total:** ~4 hours (can split across sessions)
+
+---
+
+## Phase 4: Navigation Features — 📋 Planned
 
 Navigate to code using RangeLinks (local workspace and BYOD).
 
 **Total Time Estimate:** 7 hours across 6 focused sessions
 
-### 3A) Basic Navigation from Clipboard (1.5 hours)
+### 4A) Basic Navigation from Clipboard (1.5 hours)
 
 - Command: "RangeLink: Go to Range from Clipboard"
 - Parse clipboard for regular RangeLink (no BYOD yet)
@@ -251,21 +417,21 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 - Open file and select range
 - **Done when:** Can copy a link, run command, and jump to code
 
-### 3B) BYOD Navigation Support (1 hour)
+### 4B) BYOD Navigation Support (1 hour)
 
 - Parse BYOD metadata from clipboard link
 - Use embedded delimiters to parse range
 - Handle validation and recovery (reuse Phase 1C parsing logic)
 - **Done when:** BYOD links from clipboard work correctly
 
-### 3C) Rectangular Mode Navigation (1 hour)
+### 4C) Rectangular Mode Navigation (1 hour)
 
 - Detect double hash in link
 - Reconstruct multiple selections in VSCode
 - Set editor to rectangular selection mode
 - **Done when:** Rectangular Mode links navigate to correct rectangular selection
 
-### 3D) Navigation from Input Dialog (1 hour)
+### 4D) Navigation from Input Dialog (1 hour)
 
 - Command: "RangeLink: Go to Range from Input"
 - Quick pick dialog for manual entry
@@ -273,7 +439,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 - Recent links history (last 10)
 - **Done when:** Can paste/type link in dialog and navigate
 
-### 3E) Terminal Link Detection (2 hours)
+### 4E) Terminal Link Detection (2 hours)
 
 - Register terminal link provider
 - Detect RangeLinks in terminal output
@@ -281,7 +447,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 - Handle both regular and BYOD links
 - **Done when:** Clicking link in terminal opens file
 
-### 3F) Context Menu Integration (30 minutes)
+### 4F) Context Menu Integration (30 minutes)
 
 - "Go to Range" when text selection looks like RangeLink
 - Available in editor and terminal
@@ -311,7 +477,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 
 ---
 
-## Phase 4: Advanced Generation
+## Phase 5: Advanced Generation
 
 - [ ] **Multi-range selection support**
   - Support multiple non-contiguous ranges in a single link
@@ -344,7 +510,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 
 ---
 
-## Phase 5: Workspace & Collaboration
+## Phase 6: Workspace & Collaboration
 
 - [ ] **Multi-workspace support**
   - Detect which workspace file belongs to
@@ -380,7 +546,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 
 ---
 
-## Phase 6: Productivity Features
+## Phase 7: Productivity Features
 
 - [ ] **Link history**
   - Store recently generated links
@@ -404,7 +570,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 
 ---
 
-## Phase 7: User Experience
+## Phase 8: User Experience
 
 - [ ] **Settings and preferences**
   - Opt-in/opt-out for portable link generation
@@ -428,7 +594,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 
 ---
 
-## Phase 8: Integration & Extensions
+## Phase 9: Integration & Extensions
 
 - [ ] **VSCode API integration**
   - Register RangeLink as link provider for editors
@@ -452,7 +618,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 
 ---
 
-## Phase 9: Developer Experience
+## Phase 10: Developer Experience
 
 - [ ] **Comprehensive test coverage**
   - 100% branch coverage for parsing
