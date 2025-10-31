@@ -1,5 +1,9 @@
 # RangeLink - Share Code Across Editors & Tools
 
+<div align="center">
+  <img src="./icon.png" alt="RangeLink Logo" width="128" />
+</div>
+
 [![Version](https://img.shields.io/visual-studio-marketplace/v/rangelink.rangelink)](https://marketplace.visualstudio.com/items?itemName=rangelink.rangelink)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/couimet/rangelink/blob/main/LICENSE)
 
