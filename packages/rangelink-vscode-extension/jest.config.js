@@ -17,11 +17,7 @@ module.exports = {
   moduleNameMapper: {
     '^vscode$': '<rootDir>/src/test/vscode',
   },
-  globals: {
-    'ts-jest': {
-      tsconfig: {
-        types: ['node', 'jest'],
-      },
-    },
+  transform: {
+    '^.+\\.ts$': 'ts-jest',
   },
 };
