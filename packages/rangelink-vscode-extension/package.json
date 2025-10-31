@@ -17,13 +17,14 @@
     "code sharing",
     "collaboration"
   ],
-  "homepage": "https://github.com/couimet/rangelink#readme",
+  "homepage": "https://github.com/couimet/rangelink/tree/main/packages/rangelink-vscode-extension#readme",
   "bugs": {
     "url": "https://github.com/couimet/rangelink/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/couimet/rangelink"
+    "url": "https://github.com/couimet/rangelink",
+    "directory": "packages/rangelink-vscode-extension"
   },
   "license": "MIT",
   "publisher": "rangelink",
