@@ -8,8 +8,6 @@
     "compile": "tsc -p .",
     "test": "jest --coverage",
     "clean": "rm -rf out coverage",
-    "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\""
   },
   "keywords": [
     "rangelink",

@@ -35,10 +35,6 @@
     "test": "jest --coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
     "test:watch": "jest --watch",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --check .",
-    "format:fix": "prettier --write .",
     "clean": "rm -rf out",
     "vscode:prepublish": "pnpm run compile && pnpm run test"
   },
