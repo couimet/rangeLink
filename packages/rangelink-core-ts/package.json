@@ -21,6 +21,15 @@
   ],
   "author": "RangeLink Contributors",
   "license": "MIT",
+  "homepage": "https://github.com/couimet/rangelink/tree/main/packages/rangelink-core-ts#readme",
+  "bugs": {
+    "url": "https://github.com/couimet/rangelink/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/couimet/rangelink",
+    "directory": "packages/rangelink-core-ts"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^18.0.0",
