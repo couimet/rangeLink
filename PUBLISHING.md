@@ -4,16 +4,10 @@ This guide explains how to build and publish the RangeLink extension to the VS C
 
 ## Prerequisites
 
-1. Install `vsce` (Visual Studio Code Extension manager):
+1. Create/Login to Azure DevOps (required for publishing to VS Code marketplace):
 
 ```bash
-npm install -g @vscode/vsce
-```
-
-2. Create/Login to Azure DevOps (required for publishing to VS Code marketplace):
-
-```bash
-vsce login <publisher-name>
+pnpx vsce login <publisher-name>
 ```
 
 3. Ensure you have a publisher account set up:
