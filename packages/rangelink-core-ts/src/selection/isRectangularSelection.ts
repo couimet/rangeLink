@@ -1,14 +1,14 @@
 import { Selection } from '../types/Selection';
 
 /**
- * Detect if the selections represent a column (block) selection.
- * Column selections typically have multiple selections with the same character range across consecutive lines.
+ * Detect if the selections represent a rectangular (block) selection.
+ * Rectangular selections typically have multiple selections with the same character range across consecutive lines.
  *
  * @param selections Array of selections to analyze
- * @returns true if this is a column selection, false otherwise
+ * @returns true if this is a rectangular selection, false otherwise
  */
-export function isColumnSelection(selections: ReadonlyArray<Selection>): boolean {
-  // Need at least 2 selections to be a column selection
+export function isRectangularSelection(selections: ReadonlyArray<Selection>): boolean {
+  // Need at least 2 selections to be a rectangular selection
   if (selections.length < 2) {
     return false;
   }

@@ -350,7 +350,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L5C1-L5C11');
     });
 
-    it('should handle selections with different character ranges (not column mode)', async () => {
+    it('should handle selections with different character ranges (not rectangular mode)', async () => {
       mockWindow.activeTextEditor = {
         selection: {
           start: { line: 5, character: 3 },
@@ -677,7 +677,7 @@ describe('RangeLinkService', () => {
 
       await customService.createLink(PathFormat.WorkspaceRelative);
 
-      // Custom delimiters: double @@@ indicates column mode (with @ as hash delimiter)
+      // Custom delimiters: double @@@ indicates rectangular mode (with @ as hash delimiter)
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts@@X6Y4..X8Y9');
     });
 
@@ -765,7 +765,7 @@ describe('RangeLinkService', () => {
 
       await service.createLink(PathFormat.WorkspaceRelative);
 
-      // Same line selections are not consecutive lines, so not column mode (single hash)
+      // Same line selections are not consecutive lines, so not rectangular mode (single hash)
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L6C1-L6C6');
     });
 
@@ -835,7 +835,7 @@ describe('RangeLinkService', () => {
 
       await service.createLink(PathFormat.WorkspaceRelative);
 
-      // Different character ranges = not column mode (single hash)
+      // Different character ranges = not rectangular mode (single hash)
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L11C4-L11C9');
     });
 
@@ -869,7 +869,7 @@ describe('RangeLinkService', () => {
 
       await service.createLink(PathFormat.WorkspaceRelative);
 
-      // Single selection = regular selection, not column mode (single hash)
+      // Single selection = regular selection, not rectangular mode (single hash)
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L11C6-L13C11');
     });
 
@@ -906,7 +906,7 @@ describe('RangeLinkService', () => {
 
       await service.createLink(PathFormat.Absolute);
 
-      // Absolute path with column mode (double hash)
+      // Absolute path with rectangular mode (double hash)
       const callArg = mockClipboard.writeText.mock.calls[0][0];
       expect(callArg).toBe('/absolute/path/to/file.ts##L2C1-L4C6');
     });
@@ -1098,7 +1098,7 @@ describe('RangeLinkService', () => {
 
       await service.createLink(PathFormat.WorkspaceRelative);
 
-      // Minimum 2 selections should work for column mode
+      // Minimum 2 selections should work for rectangular mode
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts##L6C4-L7C9');
     });
 
@@ -2926,9 +2926,9 @@ describe('Portable links (Phase 1C)', () => {
     (vscode.env.clipboard.writeText as jest.Mock).mockImplementation(mockClipboard.writeText);
   });
 
-  it.skip('should generate column-mode portable link using custom delimiters (LINE/COL/#/TO)', async () => {
+  it.skip('should generate rectangular-mode portable link using custom delimiters (LINE/COL/#/TO)', async () => {
     // Arrange editor with column selection across consecutive lines (same char range)
-    // For column mode: all selections must have same start/end chars AND be consecutive lines
+    // For rectangular mode: all selections must have same start/end chars AND be consecutive lines
     const sel1 = new (vscode as any).Selection(
       { line: 9, character: 4 },
       { line: 9, character: 9 },
@@ -2964,7 +2964,7 @@ describe('Portable links (Phase 1C)', () => {
     // Act
     await service.createPortableLink(PathFormat.WorkspaceRelative);
 
-    // Assert - column mode uses double hash (##)
+    // Assert - rectangular mode uses double hash (##)
     expect(mockClipboard.writeText).toHaveBeenCalledWith(
       'src/file.ts##LINE10COL5TOLINE20COL10~#~LINE~TO~COL~',
     );

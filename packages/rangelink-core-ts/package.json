@@ -15,7 +15,9 @@
     "rangelink",
     "code-navigation",
     "link-generation",
-    "domain-model"
+    "domain-model",
+    "rectangular selection",
+    "code reference"
   ],
   "author": "RangeLink Contributors",
   "license": "MIT",

@@ -12,7 +12,10 @@
     "range",
     "citation",
     "documentation",
-    "ai"
+    "ai",
+    "rectangular selection",
+    "code sharing",
+    "collaboration"
   ],
   "homepage": "https://github.com/couimet/rangelink#readme",
   "bugs": {

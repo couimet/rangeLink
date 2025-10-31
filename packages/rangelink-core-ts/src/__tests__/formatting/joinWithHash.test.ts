@@ -15,8 +15,8 @@ describe('joinWithHash', () => {
     expect(result).toBe('src/file.ts#L10C5-L20C10');
   });
 
-  it('should use double hash for column mode', () => {
-    const result = joinWithHash('src/file.ts', 'L10C5-L20C10', defaultDelimiters, HashMode.ColumnMode);
+  it('should use double hash for rectangular mode', () => {
+    const result = joinWithHash('src/file.ts', 'L10C5-L20C10', defaultDelimiters, HashMode.RectangularMode);
     expect(result).toBe('src/file.ts##L10C5-L20C10');
   });
 
@@ -36,14 +36,14 @@ describe('joinWithHash', () => {
     expect(result).toBe('path/file.ts>>L10-L20');
   });
 
-  it('should work with custom hash delimiter in column mode', () => {
+  it('should work with custom hash delimiter in rectangular mode', () => {
     const customDelimiters: DelimiterConfig = {
       line: 'L',
       position: 'C',
       hash: '>>',
       range: '-',
     };
-    const result = joinWithHash('path/file.ts', 'L10C5-L20C10', customDelimiters, HashMode.ColumnMode);
+    const result = joinWithHash('path/file.ts', 'L10C5-L20C10', customDelimiters, HashMode.RectangularMode);
     expect(result).toBe('path/file.ts>>>>L10C5-L20C10');
   });
 });

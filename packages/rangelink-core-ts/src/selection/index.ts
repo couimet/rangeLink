@@ -1,3 +1,3 @@
-export { isColumnSelection } from './isColumnSelection';
+export { isRectangularSelection } from './isRectangularSelection';
 export { computeRangeSpec } from './computeRangeSpec';
 

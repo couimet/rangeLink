@@ -34,14 +34,14 @@ RangeLink generates local file paths with GitHub-inspired range notation:
 - **Single line with columns**: `path/to/file.ts#L42C6-L42C15` - When selecting partial content on one line
 - **Multiple full lines**: `path/to/file.ts#L10-L25` - When selecting complete lines
 - **Multi-line with column precision**: `path/to/file.ts#L10C5-L25C20` - When start/end columns are specified across multiple lines
-- **Column-mode selection**: `path/to/file.ts##L10C5-L20C10` - When selecting a vertical column across multiple lines (notice the double `##` hash)
+- **Rectangular Mode selection**: `path/to/file.ts##L10C5-L20C10` - When selecting a vertical column across multiple lines (notice the double `##` hash)
 
-#### Column-Mode Selections
+#### Rectangular Mode Selections
 
-When you use VSCode's column/box/rectangular selection (Alt+drag or Shift+Alt+Arrow keys), RangeLink detects this and uses a double hash (`##`) to indicate column mode. This ensures the selection can be properly reconstructed when shared:
+When you use VSCode's rectangular selection (Alt+drag or Shift+Alt+Arrow keys, also called column or box selection), RangeLink detects this and uses a double hash (`##`) to indicate rectangular mode. This ensures the selection can be properly reconstructed when shared:
 
 - **Normal multi-line**: `path#L10C5-L20C10` (creates a traditional multi-line selection)
-- **Column-mode**: `path##L10C5-L20C10` (creates a column selection across lines 10-20, columns 5-10)
+- **Rectangular Mode**: `path##L10C5-L20C10` (creates a rectangular selection across lines 10-20, columns 5-10)
 
 The double hash allows the extension to distinguish between these two selection types for proper reconstruction.
 
@@ -109,7 +109,7 @@ When someone receives a portable RangeLink, the extension automatically detects 
 - No coordination needed between sender and recipient
 - Works immediately, even for users who have never configured delimiters
 
-**Note:** For column-mode selections, use double hash in the range part: `path##L10C5-L20C10~#~L~-~C~`. Column-mode? Hold the mayo, keep the double hash.
+**Note:** For rectangular mode selections, use double hash in the range part: `path##L10C5-L20C10~#~L~-~C~`. Rectangular Mode? Hold the mayo, keep the double hash.
 
 #### BYOD Parsing and Validation
 
@@ -130,7 +130,7 @@ When receiving a portable RangeLink, the extension performs comprehensive valida
 - No substring conflicts (case-insensitive)
 - **Exception**: `delimiterHash` can be multi-character in BYOD
   - Enables support for configurations not allowed locally
-  - Column mode = double the hash length (e.g., `>>>>` becomes `>>>>>>>>` for column mode)
+  - Rectangular mode = double the hash length (e.g., `>>>>` becomes `>>>>>>>>` for rectangular mode)
 
 **3. Format Consistency Validation**
 
@@ -176,7 +176,7 @@ Link: path#L10C5-L20C10~#~L~-~
 **4. Column Mode Detection**
 
 - Count consecutive hash characters after path
-- Expected: `hash_length × 1` (regular) or `hash_length × 2` (column mode)
+- Expected: `hash_length × 1` (regular) or `hash_length × 2` (rectangular mode)
 - Any other count → ERROR (malformed hash prefix)
 
 **Error Codes for BYOD Parsing**:
@@ -215,10 +215,10 @@ When configuring custom delimiters, any attempt to use these reserved characters
 3. Must be unique (no duplicates)
 4. Cannot be subset/superset of another delimiter (prevents parsing ambiguity)
 5. **Case-insensitive**: `"L"` and `"l"` are treated as the same delimiter (prevents user errors from inconsistent casing)
-6. **delimiterHash must be exactly 1 character** (enables clean column-mode detection)
+6. **delimiterHash must be exactly 1 character** (enables clean rectangular mode detection)
    - ✅ Valid: `"#"`, `">"`, `"H"`, `"h"`
    - ❌ Invalid: `"##"`, `">>"`, `"HASH"`, `"@"` (reserved)
-   - Rationale: Column mode uses double hash (e.g., `#` for regular, `##` for column mode)
+   - Rationale: Rectangular mode uses double hash (e.g., `#` for regular, `##` for rectangular mode)
    - Note: Multi-character hashes are supported in BYOD metadata for received links
 
 #### Link Format Summary
@@ -229,15 +229,15 @@ When configuring custom delimiters, any attempt to use these reserved characters
 | Single line with columns    | `path#L<line>C<col>-L<line>C<col>`                           | `src/file.ts#L42C6-L42C15`           |
 | Multi-line (full lines)     | `path#L<startLine>-L<endLine>`                               | `src/file.ts#L10-L25`                |
 | Multi-line with columns     | `path#L<startLine>C<startCol>-L<endLine>C<endCol>`           | `src/file.ts#L10C5-L25C20`           |
-| Column-mode (any format)    | `path##<...>` (double hash)                                  | `src/file.ts##L10C5-L20C10`          |
+| Rectangular Mode (any format)    | `path##<...>` (double hash)                                  | `src/file.ts##L10C5-L20C10`          |
 | Portable link (full lines)  | `path#L<startLine>-L<endLine>~#~L~-~`                        | `src/file.ts#L10-L20~#~L~-~`         |
 | Portable link (columns)     | `path#L<startLine>C<startCol>-L<endLine>C<endCol>~#~L~-~C~`  | `src/file.ts#L10C5-L20C10~#~L~-~C~`  |
-| Portable link (column-mode) | `path##L<startLine>C<startCol>-L<endLine>C<endCol>~#~L~-~C~` | `src/file.ts##L10C5-L20C10~#~L~-~C~` |
+| Portable link (rectangular mode) | `path##L<startLine>C<startCol>-L<endLine>C<endCol>~#~L~-~C~` | `src/file.ts##L10C5-L20C10~#~L~-~C~` |
 
 **Note:** The hash convention:
 
 - `#` = regular selection (single hash) - creates a standard selection
-- `##` = column-mode selection (double hash) - creates a column/box selection
+- `##` = rectangular mode selection (double hash) - creates a rectangular selection
 - `###` or more = error, falls back to treating as single `#` and logs a warning in the extension console
 
 #### Parsing Rules and Edge Cases
@@ -245,7 +245,7 @@ When configuring custom delimiters, any attempt to use these reserved characters
 When parsing RangeLinks, the extension handles the following scenarios:
 
 1. **Single hash detection**: `#` triggers regular mode parsing
-2. **Double hash detection**: `##` triggers column-mode and regular parsing of the range part
+2. **Double hash detection**: `##` triggers rectangular mode and regular parsing of the range part
 3. **Triple+ hash detection**: `###` or more treated as error, logged, and parsed as single `#`
 4. **Portable link detection**: Presence of `~` after the range indicates BYOD/BYODELI format
    - Expects 3 metadata fields for line-only ranges: `<hash>~<line>~<range>~`
@@ -257,7 +257,7 @@ When parsing RangeLinks, the extension handles the following scenarios:
 
 **Comprehensive parsing tests cover:**
 
-- All link formats (single line, multi-line, line and position, column-mode, portable)
+- All link formats (single line, multi-line, line and position, rectangular mode, portable)
 - Custom delimiter configurations
 - Invalid delimiter values
 - Malformed links (triple hash, missing metadata, invalid numbers)
@@ -406,25 +406,25 @@ Our roadmap follows these core principles to ensure sustainable, high-quality de
 
 ### Phase 1: Core Enhancements — ✅ Mostly Complete
 
-Phase 1 is split into three iterative sub-phases focusing on column-mode support, robust delimiter validation, and portable link generation. Each sub-phase uses micro-iterations for focused, incremental progress.
+Phase 1 is split into three iterative sub-phases focusing on rectangular mode support, robust delimiter validation, and portable link generation. Each sub-phase uses micro-iterations for focused, incremental progress.
 
 **Overall Status:**
 
-- ✅ 1A: Column-mode format (double hash) - Complete
+- ✅ 1A: Rectangular Mode format (double hash) - Complete
 - ✅ 1B: Reserved character validation and delimiter constraints - Complete
 - 🔨 1C: Portable link (BYOD) generation - Complete; parsing in progress
 - 📦 Major refactoring: Test modernization with ES6 imports and TypeScript types - Complete
 
-#### 1A) Column-mode format (double hash) — ✅ Completed
+#### 1A) Rectangular Mode format (double hash) — ✅ Completed
 
-**Objective:** Use double `delimHash` to indicate column-mode selections in a delimiter-agnostic way.
+**Objective:** Use double `delimHash` to indicate rectangular mode selections in a delimiter-agnostic way.
 
 **Implementation:**
 
-- Detects column-mode: multiple selections with identical character ranges across consecutive lines
-- Format: `path##L10C5-L20C10` (double hash indicates column-mode)
+- Detects rectangular mode: multiple selections with identical character ranges across consecutive lines
+- Format: `path##L10C5-L20C10` (double hash indicates rectangular mode)
 - Works with any `delimHash` value (single or multi-character)
-- Example: if `delimHash="##"`, column mode uses `####` (4 hash characters)
+- Example: if `delimHash="##"`, rectangular mode uses `####` (4 hash characters)
 
 **Test Coverage Achieved:**
 
@@ -435,8 +435,8 @@ Phase 1 is split into three iterative sub-phases focusing on column-mode support
 
 **Future Compatibility:**
 
-- Scales to multi-range column-mode: `path##L10C5-L20C10,L30C5-L40C10`
-- Circular ranges are mutually exclusive with column mode (circular takes precedence)
+- Scales to multi-range rectangular mode: `path##L10C5-L20C10,L30C5-L40C10`
+- Circular ranges are mutually exclusive with rectangular mode (circular takes precedence)
 
 ---
 
@@ -551,7 +551,7 @@ All validation errors are collected and reported together before falling back to
   - 📋 **1C.1** (1.5h): Parse metadata structure, extract delimiters, format validation
   - 📋 **1C.2** (1.5h): Validate extracted delimiters (reserved chars, digits, conflicts)
   - 📋 **1C.3** (2h): Recovery logic (missing delimiters, fallbacks, error UI)
-  - 📋 **1C.4** (1h): Column mode detection with custom BYOD hash
+  - 📋 **1C.4** (1h): Rectangular mode detection with custom BYOD hash
   - 📋 **1C.5** (30m): Documentation and cleanup
 - 📋 **Navigation: Planned** (Phase 3)
 
@@ -566,7 +566,7 @@ All validation errors are collected and reported together before falling back to
 
 - Line-only: `path#L10-L20~#~L~-~`
 - With columns: `path#L10C5-L20C10~#~L~-~C~`
-- Column-mode: `path##L10C5-L20C10~#~L~-~C~` (note double hash in range part)
+- Rectangular Mode: `path##L10C5-L20C10~#~L~-~C~` (note double hash in range part)
 
 **Metadata Order (after `~` separator):**
 
@@ -590,7 +590,7 @@ All validation errors are collected and reported together before falling back to
 
 **Test Coverage Requirements (100% branches):**
 
-- Generate all three portable variants (line-only, columns, column-mode)
+- Generate all three portable variants (line-only, columns, rectangular mode)
 - Custom, multi-character delimiters embedded and parsed back
 - Missing/extra metadata fields → log and fallback
 - Conflicts between current settings and embedded metadata → use embedded values
@@ -602,7 +602,7 @@ All validation errors are collected and reported together before falling back to
 **Parsing Rules and Error Recovery (applicable across 1A–1C):**
 
 - Single `#` → regular selection
-- Double `##` → column-mode selection
+- Double `##` → rectangular mode selection
 - `###` or more → error; treat as single `#`; log warning
 - Presence of `~` after range → BYOD metadata present; use embedded delimiters
 - Any parsing error logs a warning and falls back gracefully without crashing
@@ -669,7 +669,7 @@ packages/rangelink-core-ts/
 - ✅ Integrated `VSCodeLogger` with core's `LogManager`
 - ✅ **112/117 tests passing (96%)** - all core functionality verified
 - ✅ All VSCode-specific code properly isolated in extension
-- ✅ Column mode, multi-line, and full-line detection working correctly
+- ✅ Rectangular mode, multi-line, and full-line detection working correctly
 
 **What's Integrated:**
 
@@ -766,7 +766,7 @@ Implementation examples:
   - **Option B**: HTTP bridge (rangelink-core-ts runs as a local server)
   - **Option C**: Subprocess call (spawns Node.js process with core library)
 - Exposes Vim commands: `:RangeLinkCopy`, `:RangeLinkCopyPortable`, `:RangeLinkGo`
-- Uses Neovim's selection API for column-mode (visual block mode)
+- Uses Neovim's selection API for visual block mode
 - Publishes to LuaRocks or Neovim plugin managers (packer.nvim, lazy.nvim)
 - See `docs/neovim-integration.md` for detailed integration options and a recommended starting point
 
@@ -807,12 +807,12 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 - Handle validation and recovery (reuse Phase 1C parsing logic)
 - **Done when:** BYOD links from clipboard work correctly
 
-#### 3C) Column-Mode Navigation (1 hour)
+#### 3C) Rectangular Mode Navigation (1 hour)
 
 - Detect double hash in link
 - Reconstruct multiple selections in VSCode
-- Set editor to column/block selection mode
-- **Done when:** Column-mode links navigate to correct block selection
+- Set editor to rectangular selection mode
+- **Done when:** Rectangular Mode links navigate to correct rectangular selection
 
 #### 3D) Navigation from Input Dialog (1 hour)
 
@@ -844,7 +844,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
   - Single line: `path:42`
   - Multi-line: `path#L10-L20`
   - With columns: `path#L10C5-L20C10`
-  - Column-mode: `path##L10C5-L20C10`
+  - Rectangular Mode: `path##L10C5-L20C10`
   - Portable links: parse BYOD/BYODELI metadata
   - Graceful error handling and recovery
 
@@ -854,11 +854,11 @@ Navigate to code using RangeLinks (local workspace and BYOD).
   - Parse using embedded delimiters instead of user settings
   - Support custom delimiters in creator's configuration
 
-- [ ] **Column-mode range reconstruction**
+- [ ] **Rectangular Mode range reconstruction**
   - Detect `##` in link
   - Parse range coordinates
   - Create multiple cursors/selections
-  - Apply column selection across specified lines
+  - Apply rectangular selection across specified lines
 
 ### Phase 4: Advanced Generation
 
@@ -871,13 +871,13 @@ Navigate to code using RangeLinks (local workspace and BYOD).
   - BYOD compatibility: embed delimiters once and preserve comma-separated ranges
   - Validation: evaluate reserving `,` as a separator to avoid conflicts
 
-- [ ] **Generate column-mode links from selection**
-  - Detect when user has column selection
+- [ ] **Generate rectangular mode links from selection**
+  - Detect when user has rectangular selection
   - Auto-format as `##...` instead of `#...`
 
 - [ ] **Generate BYOD links** (`RangeLink: Create Portable Link`)
   - Generate link with delimiter metadata
-  - Support all selection types (line, column, column-mode)
+  - Support all selection types (line, column, rectangular mode)
   - Add `~` separator and metadata fields
 
 - [ ] **Contextual menu integration**
@@ -951,7 +951,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 
 - [ ] **Settings and preferences**
   - Opt-in/opt-out for portable link generation
-  - Toggle column-mode auto-detection
+  - Toggle rectangular mode auto-detection
   - Preferred link format (relative vs absolute)
   - Keyboard shortcut customization for all commands
   - Exclude certain file patterns from link generation

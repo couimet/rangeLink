@@ -7,7 +7,7 @@ import { HashMode } from '../types/HashMode';
  * @param path File path
  * @param anchor Anchor string (e.g., "L10C5-L20C10")
  * @param delimiters Delimiter configuration
- * @param mode Hash mode (Normal = single hash, ColumnMode = double hash)
+ * @param mode Hash mode (Normal = single hash, RectangularMode = double hash)
  * @returns Formatted link (e.g., "path#L10" or "path##L10C5-L20C10")
  */
 export function joinWithHash(
@@ -17,7 +17,7 @@ export function joinWithHash(
   mode: HashMode = HashMode.Normal,
 ): string {
   const { hash: delimHash } = delimiters;
-  const prefix = mode === HashMode.ColumnMode ? `${delimHash}${delimHash}` : `${delimHash}`;
+  const prefix = mode === HashMode.RectangularMode ? `${delimHash}${delimHash}` : `${delimHash}`;
   return `${path}${prefix}${anchor}`;
 }
 

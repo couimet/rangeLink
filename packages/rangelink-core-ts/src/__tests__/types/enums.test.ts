@@ -8,8 +8,8 @@ describe('Enums', () => {
       expect(HashMode.Normal).toBe('Normal');
     });
 
-    it('should have ColumnMode value', () => {
-      expect(HashMode.ColumnMode).toBe('ColumnMode');
+    it('should have RectangularMode value', () => {
+      expect(HashMode.RectangularMode).toBe('RectangularMode');
     });
   });
 

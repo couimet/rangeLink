@@ -16,7 +16,7 @@ import { joinWithHash } from './joinWithHash';
  * Embeds delimiter configuration in the link itself for cross-configuration sharing.
  *
  * @param path File path (workspace-relative or absolute)
- * @param selections Array of selections (multiple for column mode)
+ * @param selections Array of selections (multiple for rectangular mode)
  * @param delimiters Delimiter configuration
  * @param options Optional formatting options
  * @returns Result<string, RangeLinkMessageCode> - formatted portable link or error

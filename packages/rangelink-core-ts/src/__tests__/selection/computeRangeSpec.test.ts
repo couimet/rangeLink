@@ -70,8 +70,8 @@ describe('computeRangeSpec', () => {
     });
   });
 
-  describe('column mode selections', () => {
-    it('should detect column mode for multiple selections with same char range', () => {
+  describe('rectangular mode selections', () => {
+    it('should detect rectangular mode for multiple selections with same char range', () => {
       const selections: Selection[] = [
         { startLine: 10, startCharacter: 5, endLine: 10, endCharacter: 15 },
         { startLine: 11, startCharacter: 5, endLine: 11, endCharacter: 15 },
@@ -85,11 +85,11 @@ describe('computeRangeSpec', () => {
         startPosition: 6,
         endPosition: 16,
         rangeFormat: RangeFormat.WithPositions,
-        hashMode: HashMode.ColumnMode,
+        hashMode: HashMode.RectangularMode,
       });
     });
 
-    it('should use first and last selection lines for column mode', () => {
+    it('should use first and last selection lines for rectangular mode', () => {
       const selections: Selection[] = [
         { startLine: 9, startCharacter: 10, endLine: 9, endCharacter: 20 },
         { startLine: 10, startCharacter: 10, endLine: 10, endCharacter: 20 },
@@ -103,7 +103,7 @@ describe('computeRangeSpec', () => {
         startPosition: 11,
         endPosition: 21,
         rangeFormat: RangeFormat.WithPositions,
-        hashMode: HashMode.ColumnMode,
+        hashMode: HashMode.RectangularMode,
       });
     });
   });

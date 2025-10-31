@@ -3,13 +3,13 @@ import { FormatOptions } from '../types/FormatOptions';
 import { HashMode } from '../types/HashMode';
 import { RangeFormat } from '../types/RangeFormat';
 import { Selection } from '../types/Selection';
-import { isColumnSelection } from './isColumnSelection';
+import { isRectangularSelection } from './isRectangularSelection';
 
 /**
  * Analyze selections and compute the range specification for link generation.
  * Converts 0-based selection to 1-based line/position numbers.
  *
- * @param selections Array of selections (typically one, or multiple for column mode)
+ * @param selections Array of selections (typically one, or multiple for rectangular mode)
  * @param options Optional formatting options
  * @returns ComputedSelection with 1-based line/position numbers
  */
@@ -17,23 +17,23 @@ export function computeRangeSpec(
   selections: ReadonlyArray<Selection>,
   options?: FormatOptions,
 ): ComputedSelection {
-  const isColumn = isColumnSelection(selections);
+  const isRectangular = isRectangularSelection(selections);
   const primary = selections[0];
 
   // Convert to 1-based indexing
   const startLine = primary.startLine + 1;
-  const endLine = (isColumn ? selections[selections.length - 1].startLine : primary.endLine) + 1;
+  const endLine = (isRectangular ? selections[selections.length - 1].startLine : primary.endLine) + 1;
   const startPosition = primary.startCharacter + 1;
   const endPosition = primary.endCharacter + 1;
 
-  if (isColumn) {
+  if (isRectangular) {
     return {
       startLine,
       endLine,
       startPosition,
       endPosition,
       rangeFormat: RangeFormat.WithPositions,
-      hashMode: HashMode.ColumnMode,
+      hashMode: HashMode.RectangularMode,
     };
   }
 

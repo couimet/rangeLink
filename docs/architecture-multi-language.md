@@ -33,7 +33,7 @@ rangeLink/
       build-link/
         single-line.json            # Test cases for single-line links
         multi-line.json
-        column-mode.json
+        rectangular mode.json
         portable.json
       parse-link/
         all-formats.json            # Test cases for parsing
@@ -118,7 +118,7 @@ rangeLink/
         "startColumn": { "type": "integer", "minimum": 1 },
         "endLine": { "type": "integer", "minimum": 1 },
         "endColumn": { "type": "integer", "minimum": 1 },
-        "isColumnMode": { "type": "boolean" }
+        "isRectangularMode": { "type": "boolean" }
       },
       "required": ["startLine", "endLine"]
     }
@@ -129,9 +129,9 @@ rangeLink/
 ### Contract Tests (Behavioral)
 
 ```json
-// spec/contracts/build-link/column-mode.json
+// spec/contracts/build-link/rectangular mode.json
 {
-  "name": "column_mode_selection",
+  "name": "rectangular_mode_selection",
   "description": "Multiple selections with same column range should produce double hash",
   "testCases": [
     {
@@ -152,11 +152,11 @@ rangeLink/
       },
       "expected": {
         "link": "src/file.ts##L10C6-L12C11",
-        "isColumnMode": true
+        "isRectangularMode": true
       }
     },
     {
-      "name": "column_mode_with_custom_delimiters",
+      "name": "rectangular_mode_with_custom_delimiters",
       "input": {
         "path": "src/file.ts",
         "selections": [
@@ -172,7 +172,7 @@ rangeLink/
       },
       "expected": {
         "link": "src/file.ts####LINE5COL3-TOCOL8LINE6",
-        "isColumnMode": true
+        "isRectangularMode": true
       }
     }
   ]
@@ -193,7 +193,7 @@ rangeLink/
       }
     },
     {
-      "name": "parse_column_mode",
+      "name": "parse_rectangular_mode",
       "input": { "link": "src/file.ts##L10C5-L20C10" },
       "expected": {
         "path": "src/file.ts",
@@ -203,7 +203,7 @@ rangeLink/
             "startColumn": 5,
             "endLine": 20,
             "endColumn": 10,
-            "isColumnMode": true
+            "isRectangularMode": true
           }
         ]
       }
@@ -261,7 +261,7 @@ describe('Contract Tests: Build Link', () => {
           const result = builder.build(testCase.input.path, testCase.input.selections);
 
           expect(result.link).toBe(testCase.expected.link);
-          expect(result.isColumnMode).toBe(testCase.expected.isColumnMode);
+          expect(result.isRectangularMode).toBe(testCase.expected.isRectangularMode);
         });
       });
     });
@@ -285,7 +285,7 @@ public class BuildLinkContractTests {
             );
 
             assertEquals(testCase.getExpected().getLink(), result.getLink());
-            assertEquals(testCase.getExpected().isColumnMode(), result.isColumnMode());
+            assertEquals(testCase.getExpected().isRectangularMode(), result.isRectangularMode());
         }
     }
 }

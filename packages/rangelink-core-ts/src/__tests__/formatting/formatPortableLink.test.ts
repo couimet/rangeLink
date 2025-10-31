@@ -44,7 +44,7 @@ describe('formatPortableLink', () => {
     }
   });
 
-  it('should format column mode portable link', () => {
+  it('should format rectangular mode portable link', () => {
     const selections: Selection[] = [
       { startLine: 10, startCharacter: 5, endLine: 10, endCharacter: 15 },
       { startLine: 11, startCharacter: 5, endLine: 11, endCharacter: 15 },

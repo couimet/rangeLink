@@ -15,7 +15,7 @@ import { joinWithHash } from './joinWithHash';
  * Main orchestrator for link generation.
  *
  * @param path File path (workspace-relative or absolute)
- * @param selections Array of selections (typically one, or multiple for column mode)
+ * @param selections Array of selections (typically one, or multiple for rectangular mode)
  * @param delimiters Delimiter configuration
  * @param options Optional formatting options
  * @returns Result<string, RangeLinkMessageCode> - formatted link or error

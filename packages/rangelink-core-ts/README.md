@@ -8,7 +8,7 @@ This package contains the pure business logic for RangeLink, completely decouple
 
 - **Domain Types**: Selection, DelimiterConfig, PathFormat, etc.
 - **Validation Logic**: Delimiter validation with comprehensive rules
-- **Selection Analysis**: Column-mode detection, range computation
+- **Selection Analysis**: Rectangular Mode detection, range computation
 - **Link Formatting**: Anchor building, hash prefixing, portable metadata
 
 ## Design Principles

@@ -37,7 +37,7 @@ Example CLI contract (Node side):
 - Output (stdout):
 
 ```json
-{ "link": "src/file.ts##L11C6-L12C11", "isColumnMode": true }
+{ "link": "src/file.ts##L11C6-L12C11", "isRectangularMode": true }
 ```
 
 ### 2) Lua plugin + local HTTP server
@@ -81,10 +81,10 @@ rangelink-neovim-plugin/
 - `:RangeLinkCopyPortable` → build and copy BYOD link
 - `:RangeLinkGo` → parse and navigate to link (clipboard or input)
 
-## Column‑Mode Support
+## Visual Block Mode Support
 
-- Visual block mode in Neovim maps to column selections (multi-cursor semantics)
-- The plugin should detect visual block and request column‑mode output (double hash `##` for the range)
+- Neovim's visual block mode (`Ctrl-v` or `Ctrl-V`) creates rectangular selections
+- The plugin should detect visual block mode and generate rectangular mode links (double hash `##`)
 
 ## Portable (BYOD) Links
 
@@ -101,5 +101,5 @@ rangelink-neovim-plugin/
 ## Next Steps
 
 - Implement `transport.lua` with a minimal CLI contract
-- Add tests for: single/multi-line, column‑mode, BYOD, error paths
+- Add tests for: single/multi-line, visual block mode, BYOD, error paths
 - Wire commands and visual mode detection
