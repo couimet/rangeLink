@@ -133,22 +133,22 @@
         {
           "when": "editorHasSelection",
           "command": "rangelink.copyLinkToSelectionWithRelativePath",
-          "group": "9_cutcopypaste@1"
+          "group": "8_rangelink@1"
         },
         {
           "when": "editorHasSelection",
           "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
-          "group": "9_cutcopypaste@1"
+          "group": "8_rangelink@2"
         },
         {
           "when": "editorHasSelection",
           "command": "rangelink.copyPortableLinkToSelectionWithRelativePath",
-          "group": "9_cutcopypaste@1"
+          "group": "8_rangelink@3"
         },
         {
           "when": "editorHasSelection",
           "command": "rangelink.copyPortableLinkToSelectionWithAbsolutePath",
-          "group": "9_cutcopypaste@1"
+          "group": "8_rangelink@4"
         }
       ]
     }
