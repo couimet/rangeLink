@@ -16,7 +16,8 @@
     "format:fix": "prettier --write .",
     "lint": "pnpm -r run lint",
     "lint:fix": "pnpm -r run lint:fix",
-    "publish:vscode-extension": "pnpm --filter rangelink-vscode-extension exec vsce package",
+    "package:vscode-extension": "pnpm --filter rangelink-vscode-extension exec vsce package",
+    "publish:vscode-extension": "pnpm --filter rangelink-vscode-extension exec vsce publish",
     "test": "pnpm -r run test"
   },
   "devDependencies": {
