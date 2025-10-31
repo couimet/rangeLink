@@ -2,7 +2,6 @@
   "name": "rangelink-vscode-extension",
   "displayName": "RangeLink",
   "version": "0.1.0",
-  "icon": "icon.png",
   "description": "Create sharable links to code ranges in your files. Perfect for documentation, AI prompts, and team collaboration.",
   "categories": [
     "Other"
@@ -177,5 +176,6 @@
   "packageManager": "pnpm@10.19.0",
   "engines": {
     "vscode": "^1.80.0"
-  }
+  },
+  "icon": "icon.png"
 }
