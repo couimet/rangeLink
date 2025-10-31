@@ -11,6 +11,7 @@
   "scripts": {
     "clean": "pnpm -r run clean",
     "compile": "pnpm -r run compile",
+    "enable-pnpm": "corepack enable",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "lint": "pnpm -r run lint",
