@@ -386,6 +386,91 @@ vsce publish
 
 **Done when:** GitHub release created, monitoring in place
 
+### 3I) GitHub Social Preview Banner (45 minutes) — 📋 Optional Polish
+
+**Goal:** Create custom social preview image for better link sharing on social media, messaging apps, and GitHub.
+
+**Background:**
+When someone shares your GitHub repo link on SMS, WhatsApp, Slack, Twitter, etc., GitHub generates a preview card. By default, it uses a generic layout. A custom banner makes your project stand out and drives more clicks/installs.
+
+**Tasks:**
+- Design 1280×640px banner image featuring:
+  - RangeLink logo (your chicken + BYODELI badge)
+  - Project tagline: "Share Code Across Editors & Tools"
+  - Example code reference: `#L3C14-L314C16` (Pi reference)
+  - Visual elements: Code snippet background, subtle tech aesthetic
+  - Color palette: Orange (#FF6B35), cream/beige, with dark/light versions for contrast
+- Upload to GitHub: Repo Settings → General → Social preview
+- Test the preview by sharing repo link in messaging apps
+
+**Banner Description/Content Suggestions:**
+
+Option A - Clean & Professional:
+```
+Top: RangeLink logo (centered or left-aligned)
+Middle: Large tagline "Share Precise Code References"
+Bottom: Example link "src/auth.ts#L3C14-L314C16" in monospace font
+Background: Subtle gradient (cream to orange) or code snippet texture
+```
+
+Option B - Developer-Focused:
+```
+Left 40%: Large RangeLink logo + BYODELI badge
+Right 60%:
+  - "RangeLink" title
+  - "Cross-editor code references"
+  - Example: path#L3C14-L314C16
+  - Small icons: VSCode + Cursor + GitHub logos
+Background: Dark theme with syntax-highlighted code snippet
+```
+
+Option C - Minimal Hero:
+```
+Centered composition:
+  - RangeLink logo (large, 200px)
+  - "Share Code References That Just Work"
+  - "#L3C14-L314C16" in highlighted badge
+Background: Two-tone split (orange left, cream right) or solid with overlay
+```
+
+**Design Tools:**
+- Figma (recommended for precise control)
+- Canva (templates available, easier)
+- Shopp-E + Photoshop (AI-generated base + manual composition)
+- GitHub's own social preview generator (basic)
+
+**Testing:**
+After uploading, test by:
+1. Sharing repo link in Slack/Discord (preview should show your banner)
+2. Using Twitter Card Validator: https://cards-dev.twitter.com/validator
+3. Using Facebook Debugger: https://developers.facebook.com/tools/debug/
+4. Checking on mobile (SMS preview)
+
+**Resources & References:**
+- GitHub guide: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview
+- Recommended size: 1280×640px (2:1 ratio)
+- File size: Under 1MB (PNG or JPG)
+- Repository topics to highlight: vscode-extension, developer-tools, productivity, code-navigation, ai-tools
+
+**Banner Copy/Text Elements:**
+
+**Primary headline options:**
+- "Share Code Across Editors & Tools"
+- "Precise Code References for Developers"
+- "Cross-Editor Code Sharing Made Easy"
+- "From VSCode to Claude Code - Links That Just Work"
+
+**Supporting text:**
+- "GitHub-style notation • Portable links • AI-ready"
+- "Works with VSCode, Cursor, Claude Code & more"
+- "Perfect for documentation, code reviews, and AI prompts"
+
+**Call to action (optional):**
+- "Available on VSCode Marketplace"
+- "Install Extension →"
+
+**Done when:** Banner uploaded to GitHub, preview tested and looks professional across platforms
+
 ### Time Summary
 
 | Task | Estimate | Cumulative |
@@ -398,8 +483,9 @@ vsce publish
 | Package | 10m | 3h |
 | Publish | 20m | 3h 20m |
 | Post-launch | 30m | 3h 50m |
+| **GitHub social banner (optional)** | **45m** | **4h 35m** |
 
-**Total:** ~4 hours (can split across sessions)
+**Total:** ~4 hours for launch (up to 4.5 hours with optional banner)
 
 ---
 
