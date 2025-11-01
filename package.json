@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "clean": "pnpm -r clean",
-    "compile": "pnpm -r compile",
+    "compile": "pnpm clean && pnpm -r compile",
     "enable-pnpm": "corepack enable",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
