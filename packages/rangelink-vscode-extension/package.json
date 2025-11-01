@@ -32,6 +32,9 @@
   "scripts": {
     "clean": "rm -rf out",
     "compile": "tsc -p .",
+    "install-local": "./scripts/install-local.sh",
+    "install-local:cursor": "./scripts/install-local.sh cursor",
+    "install-local:vscode": "./scripts/install-local.sh vscode",
     "test": "jest --coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
     "test:watch": "jest --watch",
