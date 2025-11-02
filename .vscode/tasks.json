@@ -4,12 +4,12 @@
     {
       "label": "Build: rangelink-core-ts",
       "type": "shell",
-      "command": "nvm use && pnpm -C packages/rangelink-core-ts run compile"
+      "command": "pnpm -C packages/rangelink-core-ts run compile"
     },
     {
       "label": "Watch: rangelink-vscode-extension",
       "type": "shell",
-      "command": "nvm use && pnpm -C packages/rangelink-vscode-extension run watch",
+      "command": "pnpm -C packages/rangelink-vscode-extension run watch",
       "dependsOn": [
         "Build: rangelink-core-ts"
       ],
