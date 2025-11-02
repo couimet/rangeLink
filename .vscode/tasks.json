@@ -13,6 +13,17 @@
       "problemMatcher": []
     },
     {
+      "label": "Watch: rangelink-core-ts",
+      "type": "shell",
+      "command": "./scripts/pnpm-exec.sh -C packages/rangelink-core-ts watch",
+      "problemMatcher": "$tsc-watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never",
+        "panel": "dedicated"
+      }
+    },
+    {
       "label": "Watch: rangelink-vscode-extension",
       "type": "shell",
       "command": "pnpm -C packages/rangelink-vscode-extension watch",
@@ -24,12 +35,22 @@
       "problemMatcher": "$tsc-watch",
       "isBackground": true,
       "presentation": {
-        "reveal": "never"
+        "reveal": "never",
+        "panel": "dedicated"
       },
       "group": {
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "Watch: All (Parallel)",
+      "dependsOn": [
+        "Watch: rangelink-core-ts",
+        "Watch: rangelink-vscode-extension"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
     }
   ]
 }

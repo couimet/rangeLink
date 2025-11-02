@@ -9,9 +9,10 @@
         "--extensionDevelopmentPath=${workspaceFolder}/packages/rangelink-vscode-extension"
       ],
       "outFiles": [
-        "${workspaceFolder}/packages/rangelink-vscode-extension/out/**/*.js"
+        "${workspaceFolder}/packages/rangelink-vscode-extension/out/**/*.js",
+        "${workspaceFolder}/packages/rangelink-core-ts/out/**/*.js"
       ],
-      "preLaunchTask": "Watch: rangelink-vscode-extension"
+      "preLaunchTask": "Watch: All (Parallel)"
     }
   ]
 }
