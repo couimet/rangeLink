@@ -27,7 +27,7 @@
     "directory": "packages/rangelink-vscode-extension"
   },
   "license": "MIT",
-  "publisher": "rangelink",
+  "publisher": "couimet",
   "main": "./out/extension.js",
   "scripts": {
     "clean": "rm -rf out coverage *.tsbuildinfo *.vsix",
