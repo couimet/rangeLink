@@ -32,6 +32,7 @@ Share precise code locations with anyone—regardless of their editor or configu
 ## Use Cases
 
 ### AI Assistants
+
 Share code with Claude Code, GitHub Copilot, or any AI tool using precise links.
 
 ```
@@ -39,6 +40,7 @@ Share code with Claude Code, GitHub Copilot, or any AI tool using precise links.
 ```
 
 ### Cross-Editor Teams
+
 Your team uses VSCode, Cursor, and Sublime? No problem. RangeLink works everywhere.
 
 ```
@@ -47,6 +49,7 @@ src/utils/parser.ts#L120-L145
 ```
 
 ### Documentation
+
 Add precise code references to docs, READMEs, and technical writing.
 
 ```markdown
@@ -54,6 +57,7 @@ See the implementation in [parser.ts#L89-L102](src/parser.ts#L89-L102)
 ```
 
 ### Code Reviews
+
 Point teammates to specific code sections in Slack, Teams, or PR comments.
 
 ```
@@ -76,6 +80,7 @@ Point teammates to specific code sections in Slack, Teams, or PR comments.
 3. Link copied to clipboard!
 
 **Example output:**
+
 ```
 src/utils/parser.ts#L42C10-L58C25
 ```
@@ -86,11 +91,11 @@ src/utils/parser.ts#L42C10-L58C25
 
 All commands are available via keyboard shortcuts, Command Palette, and right-click context menu:
 
-| Command | Shortcut (Mac) | Shortcut (Win/Linux) | Description |
-|---------|----------------|----------------------|-------------|
-| Copy Range Link | `Cmd+R Cmd+L` | `Ctrl+R Ctrl+L` | Create relative path link |
-| Copy Range Link (Absolute) | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link |
-| Copy Portable Link | `Cmd+R Cmd+P` | `Ctrl+R Ctrl+P` | Create BYOD portable link |
+| Command                       | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description               |
+| ----------------------------- | ------------------- | --------------------- | ------------------------- |
+| Copy Range Link               | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Create relative path link |
+| Copy Range Link (Absolute)    | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link |
+| Copy Portable Link            | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link |
 | Copy Portable Link (Absolute) | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link |
 
 **Customizing Shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) to open Keyboard Shortcuts, then search for "RangeLink".
@@ -99,11 +104,11 @@ All commands are available via keyboard shortcuts, Command Palette, and right-cl
 
 RangeLink generates local file paths with GitHub-inspired range notation:
 
-| Selection Type | Format | Example |
-|----------------|--------|---------|
-| Single line | `path#L<line>` | `src/file.ts#L42` |
-| Multiple lines | `path#L<start>-L<end>` | `src/file.ts#L10-L25` |
-| With column precision | `path#L<line>C<col>-L<line>C<col>` | `src/file.ts#L42C6-L42C15` |
+| Selection Type        | Format                              | Example                     |
+| --------------------- | ----------------------------------- | --------------------------- |
+| Single line           | `path#L<line>`                      | `src/file.ts#L42`           |
+| Multiple lines        | `path#L<start>-L<end>`              | `src/file.ts#L10-L25`       |
+| With column precision | `path#L<line>C<col>-L<line>C<col>`  | `src/file.ts#L42C6-L42C15`  |
 | Rectangular selection | `path##L<start>C<col>-L<end>C<col>` | `src/file.ts##L10C5-L20C10` |
 
 ### Rectangular Selection
@@ -139,6 +144,7 @@ Customize delimiters in VSCode settings (Preferences > Settings > search "rangel
 ```
 
 **Validation Rules:**
+
 - Delimiters cannot contain digits
 - Delimiters cannot be empty
 - All delimiters must be unique
@@ -176,6 +182,7 @@ None at the moment. If you find a bug, please [report it](https://github.com/cou
 ## About
 
 RangeLink is a monorepo project with:
+
 - **rangelink-vscode-extension** - This VSCode extension (you are here)
 - **rangelink-core-ts** - Pure TypeScript core library (platform-agnostic)
 - **More plugins coming** - Neovim, Sublime Text, and more
