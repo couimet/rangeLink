@@ -35,6 +35,8 @@
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
     "install-local:vscode": "./scripts/install-local.sh vscode",
+    "package": "vsce package --no-dependencies",
+    "publish": "vsce publish --no-dependencies",
     "test": "jest --coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
     "test:watch": "jest --watch",
