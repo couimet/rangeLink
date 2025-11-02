@@ -40,7 +40,7 @@
     "test": "jest --coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
     "test:watch": "jest --watch",
-    "vscode:prepublish": "pnpm clean && pnpm compile && pnpm test",
+    "vscode:prepublish": "pnpm --filter rangelink-core-ts compile && pnpm compile && pnpm test",
     "watch": "tsc -watch -p ./"
   },
   "contributes": {
