@@ -602,49 +602,55 @@ Following the successful publication of the VSCode extension to the marketplace,
 
 ---
 
-#### 4B) Extension CHANGELOG.md — 📋 Next Up
+#### 4B) Extension CHANGELOG.md — ✅ Complete
 
 **Goal:** Create package-specific CHANGELOG for tracking extension releases.
 
 **Tasks:**
-- Create `packages/rangelink-vscode-extension/CHANGELOG.md`
-- Follow Keep a Changelog format
-- Document v0.1.0 with all features:
+- ✅ Create `packages/rangelink-vscode-extension/CHANGELOG.md`
+- ✅ Follow Keep a Changelog format
+- ✅ Document v0.1.0 with all features:
   - Link generation (relative/absolute)
   - Rectangular mode support
   - BYOD (portable links)
   - Custom delimiters
   - Validation and error handling
-- Link to root CHANGELOG for monorepo-wide changes
+- ✅ Create signpost root CHANGELOG pointing to package changelogs
+- ✅ Add ADR placeholder documentation
 
 **Deliverables:**
-- `packages/rangelink-vscode-extension/CHANGELOG.md`
-- Entry for v0.1.0 with comprehensive feature list
+- ✅ `packages/rangelink-vscode-extension/CHANGELOG.md` with v0.1.0 and v0.1.1 (unreleased)
+- ✅ Root `CHANGELOG.md` updated to signpost style (no maintenance overhead)
+- ✅ `docs/ADR/README.md` placeholder for future architectural decisions
+- ✅ Roadmap updated with ADR nice-to-have feature
 
-**Done when:** CHANGELOG.md exists, follows semver + keepachangelog standards, ready for v0.2.0
+**Done when:** CHANGELOG.md exists, follows semver + keepachangelog standards, ready for v0.1.1
+
+**Status:** Complete - Package and signpost changelogs in place, ADR framework documented
 
 ---
 
-#### 4C) Monorepo Release Strategy Documentation — 📋 Planned
+#### 4C) Monorepo Release Strategy Documentation — ✅ Complete (Phase 4A)
 
 **Goal:** Define and document release/tagging strategy for monorepo with multiple publishable packages.
 
 **Tasks:**
-- Define tagging convention: `{package-name}-v{version}` (e.g., `vscode-extension-v0.1.0`)
-- Document version management: independent versioning per package
-- Explain how to map published versions to git history
-- Document release workflow (manual for now)
-- Create `docs/RELEASE-STRATEGY.md`
+- ✅ Define tagging convention: `{package-name}-v{version}` (e.g., `vscode-extension-v0.1.0`)
+- ✅ Document version management: independent versioning per package
+- ✅ Explain how to map published versions to git history
+- ✅ Document release workflow (manual for now)
+- ✅ Create `docs/RELEASE-STRATEGY.md`
 
 **Out of Scope:**
 - GitHub Actions workflow (deferred to follow-up item 4D)
 
 **Deliverables:**
-- `docs/RELEASE-STRATEGY.md` with tagging conventions
-- Updated `PUBLISHING.md` referencing release strategy
-- Brief mention in root README
+- ✅ `docs/RELEASE-STRATEGY.md` with comprehensive tagging conventions and workflows
+- ✅ Step-by-step instructions for retroactive tagging and future releases
 
 **Done when:** Clear, documented process for tagging and tracking releases across packages
+
+**Status:** Complete - Comprehensive 544-line strategy document created in Phase 4A
 
 ---
 
@@ -666,7 +672,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 
 ### Priority 2: Documentation Content Strategy
 
-#### 4E) Root README Enhancement - Hero Section — 📋 Planned
+#### 4E) Root README Enhancement - Hero Section — 📋 Next Up
 
 **Goal:** Rewrite intro to be engaging, fun, and sell the product's real value.
 
