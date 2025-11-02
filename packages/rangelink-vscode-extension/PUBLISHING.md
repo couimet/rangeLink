@@ -2,165 +2,32 @@
 
 > **Note:** This guide covers publishing the RangeLink VS Code extension specifically. For an overview of all publishable packages in this monorepo, see the [root PUBLISHING.md](../../PUBLISHING.md).
 
-Guide for building, testing, and publishing the RangeLink VS Code extension.
+Guide for publishing the RangeLink VS Code extension to the marketplace.
 
-## Building the Extension
+## Development and Testing
 
-For complete local setup and testing instructions, please see `DEVELOPMENT.md`. In a nutshell, you can use the following commands **from the root of the project**:
+**Before publishing**, you should thoroughly test your changes locally. See [DEVELOPMENT.md](./DEVELOPMENT.md) for complete instructions on:
+
+- Extension Development Host workflow (F5 debugging)
+- Local installation for end-to-end testing
+- Building and packaging the extension
+- Testing strategies and checklists
+
+**Quick reference:**
 
 ```bash
-# 1) Setup the project
+# From project root
+
+# 1) Setup the project (first time only)
 ./setup.sh
 
-# 2) Package the extension
+# 2) Develop with live reload (F5 in VS Code)
+# See DEVELOPMENT.md for detailed workflow
+
+# 3) Test locally before publishing
 pnpm package:vscode-extension
-```
-
-## Testing the Extension Locally
-
-### Quick Comparison
-
-| Feature | Extension Dev Host (F5) | Local Install Script |
-|---------|-------------------------|----------------------|
-| **Reload speed** | ⚡ Instant (`Cmd+R`) | 🐌 Slow (full window reload) |
-| **Keeps terminals** | ✅ Yes | ❌ No (window reload needed) |
-| **Debugging** | ✅ Full breakpoint support | ❌ No debugging |
-| **Auto-compile** | ✅ Watch mode | ⚠️ Manual rebuild needed |
-| **Test environment** | Separate window | Your actual editor |
-| **Best for** | Active development | Final validation |
-
-**TL;DR:** Use F5 for development, use install script before publishing.
-
----
-
-### Extension Development Host (Recommended for Active Development)
-
-**Best for:** Active development, debugging, quick iterations
-
-The Extension Development Host runs your extension in a separate Cursor/VSCode window with live debugging support. This is the **fastest way to develop** because you can reload with a single keypress without losing your terminal sessions.
-
-**Setup (one-time):**
-
-1. Open the RangeLink monorepo in Cursor/VSCode
-2. The `.vscode/launch.json` is already configured
-
-**Development workflow:**
-
-1. Press `F5` (or Run > Start Debugging)
-   - This opens a new "[Extension Development Host]" window
-   - Your extension is loaded and ready to test
-   - TypeScript watch mode auto-compiles on file changes
-
-2. **View extension logs** (important for debugging):
-   - Open the Output panel in the Extension Development Host window
-   - Quick access: `Cmd+Shift+U` (Mac) or `Ctrl+Shift+U` (Windows/Linux)
-   - Or via Command Palette: "View: Toggle Output" (`Cmd+Shift+P` → type "output")
-   - Select "RangeLink" from the dropdown in the Output panel
-   - All extension logs (INFO, WARN, ERROR) appear here with structured formatting
-
-3. Make code changes in your main window
-   - Files are auto-compiled by the watch task
-   - Changes are ready immediately
-
-4. **Reload to see changes:** Press `Cmd+R` (Mac) or `Ctrl+R` (Windows/Linux) in the Extension Development Host window
-   - This reloads ONLY the dev host window
-   - Your main window and terminals stay intact
-   - Much faster than full window reload
-
-5. **Debug with breakpoints:**
-   - Set breakpoints in your TypeScript code
-   - They'll hit when you trigger commands in the dev host
-   - Inspect variables, step through code, etc.
-
-**Advantages:**
-- ✅ Instant reload (`Cmd+R`) without losing terminals
-- ✅ Full debugging support (breakpoints, call stack, variables)
-- ✅ Auto-compilation on file changes
-- ✅ Isolated from your main editor installation
-- ✅ Perfect for rapid iteration
-
-**Limitations:**
-- ⚠️ Testing happens in a separate window
-- ⚠️ Can't test integration with your real workflow/extensions
-
-### Quick Install (For End-to-End Testing)
-
-**Best for:** Final validation, dogfooding, testing with your real workflow
-
-Use this when you want to test the extension in your actual Cursor/VSCode instance with all your other extensions and settings. This is the "real world" test before publishing.
-
-Use the provided scripts that automatically detect the version from `package.json`:
-
-```bash
-# Install in both VS Code and Cursor
 pnpm install-local:vscode-extension:both
-
-# Install only in Cursor
-pnpm install-local:vscode-extension:cursor
-
-# Install only in VS Code
-pnpm install-local:vscode-extension:vscode
 ```
-
-The scripts will:
-
-- Auto-detect the version from `package.json` (works with changesets!)
-- Build the extension if the `.vsix` file is missing
-- Install in the specified editor(s)
-- Display version and commit hash information after installation
-- Provide helpful error messages if editor CLI is not found
-
-> [!IMPORTANT]
-> **After installation, you MUST reload your editor** for the extension to work properly:
->
-> - Use Command Palette → "Developer: Reload Window"
->
-> You can verify the installation by running "RangeLink: Show Version Info" from the Command Palette.
-
-### Manual Install
-
-If you prefer to install manually:
-
-> [!TIP]
-> **Check your current version:**
->
-> ```bash
-> # From project root
-> node -p "require('./packages/rangelink-vscode-extension/package.json').version"
->
-> # Or with jq if installed
-> jq -r '.version' packages/rangelink-vscode-extension/package.json
-> ```
->
-> Replace `0.1.0` in the commands below with your current version.
-
-**VS Code:**
-
-```bash
-code --install-extension packages/rangelink-vscode-extension/rangelink-vscode-extension-0.1.0.vsix
-```
-
-**Cursor:**
-
-```bash
-cursor --install-extension packages/rangelink-vscode-extension/rangelink-vscode-extension-0.1.0.vsix
-```
-
-**Or use the UI (works in both VS Code and Cursor):**
-
-- Open VS Code or Cursor
-- Go to Extensions view (`Ctrl+Shift+X` or `Cmd+Shift+X`)
-- Click the `...` menu (top-right of Extensions view)
-- Choose "Install from VSIX..."
-- Select the `.vsix` file from `packages/rangelink-vscode-extension/`
-- **Reload the window** after installation (see note above)
-
-### Test the Functionality
-
-- Open any file
-- Select some text
-- Press `Ctrl+R Ctrl+L` (or `Cmd+R Cmd+L` on Mac)
-- Verify the link is copied to clipboard
 
 ## Submitting Your Changes
 
