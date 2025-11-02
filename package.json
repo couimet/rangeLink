@@ -21,7 +21,8 @@
     "lint:fix": "pnpm -r lint:fix",
     "package:vscode-extension": "pnpm --filter rangelink-vscode-extension package",
     "publish:vscode-extension": "pnpm --filter rangelink-vscode-extension publish",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "watch": "pnpm -r --parallel watch"
   },
   "devDependencies": {
     "prettier": "^3.1.1",

@@ -7,6 +7,7 @@
   "scripts": {
     "clean": "rm -rf out coverage *.tsbuildinfo",
     "compile": "tsc -p .",
+    "watch": "tsc -p . --watch",
     "test": "jest --coverage"
   },
   "keywords": [
