@@ -1,0 +1,41 @@
+# Source files
+src/**
+**/*.ts
+
+# Build artifacts - exclude ALL .map and .d.ts files
+**/*.map
+**/*.d.ts
+**/*.d.ts.map
+tsconfig.json
+.eslintrc*
+.prettierrc*
+
+# Test files - exclude compiled tests
+**/*.test.js
+**/test/**
+out/index.js
+out/index.d.ts
+
+# Development files
+.vscode/**
+.vscode-test/**
+node_modules/**
+coverage/**
+jest.config.*
+scripts/**
+
+# Repository files
+.git*
+.github/**
+.editorconfig
+
+# Large assets not needed in package
+icon_large.png
+
+# Keep these (automatic):
+# - package.json
+# - README.md
+# - LICENSE
+# - icon.png
+# - out/extension.js (main entry)
+# - out/VSCodeLogger.js (runtime dependency)
