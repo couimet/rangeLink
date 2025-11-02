@@ -1212,6 +1212,18 @@ For i18n design details, see [LOGGING.md](./LOGGING.md#internationalization-read
   - Parse AI-provided code references
   - Context-aware link generation
 
+- [ ] **Architecture Decision Records (ADR)**
+  - Document architectural decisions chronologically in `docs/ADR/`
+  - Standard format: Status, Context, Decision, Consequences
+  - Track "why" behind major decisions (monorepo structure, versioning strategy, etc.)
+  - Examples:
+    - `0001-monorepo-structure.md` - Why we chose monorepo over multi-repo
+    - `0002-independent-package-versioning.md` - Why packages version independently
+    - `0003-git-tagging-convention.md` - Why we use `{package}-v{version}` format
+    - `0004-core-library-extraction.md` - Why we extracted platform-agnostic core
+  - Benefits: Onboarding new contributors, understanding trade-offs, preventing decision re-litigation
+  - See: [ADR GitHub organization](https://adr.github.io/) for format and examples
+
 ---
 
 ## Related Documentation
