@@ -4,7 +4,7 @@
   <img src="./icon.png" alt="RangeLink Logo" width="128" />
 </div>
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/rangelink.rangelink)](https://marketplace.visualstudio.com/items?itemName=rangelink.rangelink)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/couimet.rangelink-vscode-extension)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/couimet/rangelink/blob/main/LICENSE)
 
 > Create shareable links to code ranges. Perfect for AI assistants, cross-editor teams, documentation, and code reviews.
