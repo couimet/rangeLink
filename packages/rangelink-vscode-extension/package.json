@@ -30,7 +30,7 @@
   "publisher": "rangelink",
   "main": "./out/extension.js",
   "scripts": {
-    "clean": "rm -rf out",
+    "clean": "rm -rf out coverage *.tsbuildinfo *.vsix",
     "compile": "tsc -p .",
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
