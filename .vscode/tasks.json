@@ -4,7 +4,7 @@
     {
       "label": "Build: rangelink-core-ts",
       "type": "shell",
-      "command": "pnpm -C packages/rangelink-core-ts run compile"
+      "command": "pnpm -C packages/rangelink-core-ts compile"
     },
     {
       "label": "Generate version.json",
@@ -15,7 +15,7 @@
     {
       "label": "Watch: rangelink-vscode-extension",
       "type": "shell",
-      "command": "pnpm -C packages/rangelink-vscode-extension run watch",
+      "command": "pnpm -C packages/rangelink-vscode-extension watch",
       "dependsOn": [
         "Build: rangelink-core-ts",
         "Generate version.json"
