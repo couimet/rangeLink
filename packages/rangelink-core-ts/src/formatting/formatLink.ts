@@ -74,8 +74,10 @@ export function formatLink(
       fn: 'formatLink',
       hashMode: spec.hashMode,
       rangeFormat: spec.rangeFormat,
+      result,
+      resultLength: result?.length,
     },
-    `Generated link`,
+    `Generated link: ${result}`,
   );
 
   return Ok(result);
