@@ -333,7 +333,37 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
   );
 
-  outputChannel.appendLine('[INFO] RangeLink extension activated');
+  // Register version info command
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.showVersion', () => {
+      try {
+        const versionInfo = require('./version.json');
+        const isDirtyIndicator = versionInfo.isDirty ? ' (with uncommitted changes)' : '';
+        const message = `RangeLink v${versionInfo.version}\nCommit: ${versionInfo.commit}${isDirtyIndicator}\nBranch: ${versionInfo.branch}\nBuild: ${versionInfo.buildDate}`;
+        vscode.window.showInformationMessage(message, 'Copy Commit Hash').then((selection) => {
+          if (selection === 'Copy Commit Hash') {
+            vscode.env.clipboard.writeText(versionInfo.commitFull);
+            vscode.window.showInformationMessage('Commit hash copied to clipboard');
+          }
+        });
+        outputChannel.appendLine(`[INFO] Version Info:\n${JSON.stringify(versionInfo, null, 2)}`);
+      } catch (error) {
+        vscode.window.showErrorMessage('Version information not available');
+        outputChannel.appendLine(`[ERROR] Could not load version info: ${error}`);
+      }
+    }),
+  );
+
+  // Log version info on startup
+  let activationMessage = '[INFO] RangeLink extension activated';
+  try {
+    const versionInfo = require('./version.json');
+    const isDirtyIndicator = versionInfo.isDirty ? ' (dirty)' : '';
+    activationMessage += ` - v${versionInfo.version} (${versionInfo.commit}${isDirtyIndicator})`;
+  } catch (error) {
+    activationMessage += ' (version info unavailable)';
+  }
+  outputChannel.appendLine(activationMessage);
 }
 
 /**

@@ -31,7 +31,7 @@
   "main": "./out/extension.js",
   "scripts": {
     "clean": "rm -rf out coverage *.tsbuildinfo *.vsix",
-    "compile": "tsc -p .",
+    "compile": "node scripts/generate-version.js && tsc -p . && cp src/version.json out/version.json",
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
     "install-local:vscode": "./scripts/install-local.sh vscode",
@@ -72,6 +72,12 @@
         "category": "RangeLink",
         "icon": "$(link-external)",
         "enablement": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.showVersion",
+        "title": "Show Version Info",
+        "category": "RangeLink",
+        "icon": "$(info)"
       }
     ],
     "configuration": {
@@ -154,7 +160,9 @@
       ]
     }
   },
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "dependencies": {
     "rangelink-core-ts": "workspace:*"
   },

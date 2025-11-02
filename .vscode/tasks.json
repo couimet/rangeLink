@@ -7,11 +7,18 @@
       "command": "pnpm -C packages/rangelink-core-ts run compile"
     },
     {
+      "label": "Generate version.json",
+      "type": "shell",
+      "command": "cd packages/rangelink-vscode-extension && node scripts/generate-version.js && cp src/version.json out/version.json",
+      "problemMatcher": []
+    },
+    {
       "label": "Watch: rangelink-vscode-extension",
       "type": "shell",
       "command": "pnpm -C packages/rangelink-vscode-extension run watch",
       "dependsOn": [
-        "Build: rangelink-core-ts"
+        "Build: rangelink-core-ts",
+        "Generate version.json"
       ],
       "dependsOrder": "sequence",
       "problemMatcher": "$tsc-watch",

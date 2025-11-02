@@ -87,8 +87,30 @@ if [[ "$EDITOR" == "cursor" || "$EDITOR" == "both" ]]; then
 fi
 
 echo -e "\n${GREEN}Done!${NC}"
-echo -e "${BLUE}Test the extension:${NC}"
+
+# Show version info if version.json exists
+if [ -f "src/version.json" ]; then
+  echo -e "\n${BLUE}Version Information:${NC}"
+  COMMIT=$(node -p "require('./src/version.json').commit" 2>/dev/null)
+  IS_DIRTY=$(node -p "require('./src/version.json').isDirty" 2>/dev/null)
+  BRANCH=$(node -p "require('./src/version.json').branch" 2>/dev/null)
+  BUILD_DATE=$(node -p "require('./src/version.json').buildDate" 2>/dev/null)
+
+  if [ "$IS_DIRTY" = "true" ]; then
+    echo -e "  Version: ${GREEN}v${VERSION}${NC}"
+    echo -e "  Commit:  ${YELLOW}${COMMIT}${NC} ${RED}(with uncommitted changes)${NC}"
+  else
+    echo -e "  Version: ${GREEN}v${VERSION}${NC}"
+    echo -e "  Commit:  ${GREEN}${COMMIT}${NC}"
+  fi
+  echo -e "  Branch:  ${BLUE}${BRANCH}${NC}"
+  echo -e "  Built:   ${BLUE}${BUILD_DATE}${NC}"
+fi
+
+echo -e "\n${BLUE}Test the extension:${NC}"
 echo "  1. Open any file"
 echo "  2. Select some text"
 echo "  3. Press Ctrl+R Ctrl+L (or Cmd+R Cmd+L on Mac)"
 echo "  4. The link should be copied to clipboard"
+echo -e "\n${BLUE}Check version (Command Palette):${NC}"
+echo "  → RangeLink: Show Version Info"

@@ -19,3 +19,6 @@ packages/*/dist/
 # pnpm store (should use global cache)
 .pnpm-store/
 
+# Generated version files
+packages/*/src/version.json
+

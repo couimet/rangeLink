@@ -3071,7 +3071,7 @@ describe('Extension lifecycle', () => {
     // Extension imported at top
     require('./extension').activate(mockContext as any);
 
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(4); // 2 regular + 2 portable commands
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(5); // 2 regular + 2 portable commands + 1 version command
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
   });
