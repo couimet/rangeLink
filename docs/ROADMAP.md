@@ -293,6 +293,7 @@ pnpm install-local:vscode  # VS Code only
 - ✅ Commands and keybindings configured
 - ✅ **Extension icon/logo** (icon.png and icon_large.png present)
 - ✅ **Local installation tooling** (`install-local.sh` script with pnpm integration)
+- ⚠️ **Known Issue:** README logo doesn't display in installed extension view (see Phase 3J)
 - ⚠️ **Missing:** Publisher account setup
 - ⚠️ **Missing:** CHANGELOG.md
 - ⚠️ **Missing:** Final testing on clean install
@@ -502,6 +503,55 @@ After uploading, test by:
 - "Install Extension →"
 
 **Done when:** Banner uploaded to GitHub, preview tested and looks professional across platforms
+
+### 3J) Fix README Logo Display in Installed Extension — 📋 Planned
+
+**Goal:** Make the RangeLink logo display in the installed extension's README view for fully offline functionality.
+
+**Problem:** VS Code's extension view doesn't render markdown images with relative paths (`./icon.png`) when displaying the README in the installed extension details panel. The image works on GitHub but not in the local extension view.
+
+**Current Status:**
+- ✅ `icon.png` (35KB) exists in package root
+- ✅ `package.json` correctly specifies `"icon": "icon.png"` (this shows in marketplace listing)
+- ✅ `.vscodeignore` explicitly includes `icon.png` in packaged extension
+- ⚠️ README line 4 uses relative path: `<img src="./icon.png" alt="RangeLink Logo" width="128" />`
+
+**Solution: Base64 Data URI Embedding**
+
+Convert the icon to base64 and embed directly in the README markdown. This makes the README fully self-contained and works offline without any network requests.
+
+**Implementation Steps:**
+1. Generate base64 encoding of `icon.png`:
+   ```bash
+   base64 -i icon.png | tr -d '\n' > /tmp/icon_base64.txt
+   ```
+
+2. Create data URI format:
+   ```bash
+   echo -n "data:image/png;base64," > /tmp/data_uri.txt
+   cat /tmp/icon_base64.txt >> /tmp/data_uri.txt
+   ```
+
+3. Update README.md line 4:
+   ```markdown
+   <img src="data:image/png;base64,iVBORw0KGgoAAAANS..." alt="RangeLink Logo" width="128" />
+   ```
+
+**Testing:**
+- [ ] Logo displays in installed extension view (Extensions → RangeLink → Details)
+- [ ] Logo still displays on GitHub repository
+- [ ] Logo displays in VS Code marketplace listing
+- [ ] Logo displays in Cursor marketplace listing
+
+**Tradeoffs:**
+- **Pros:** Works completely offline, no external dependencies, single source of truth
+- **Cons:** Adds ~48KB to README file size (base64 encoding inflates by ~33%)
+
+**Alternative Considered (Rejected):**
+- Using absolute GitHub URL: `https://raw.githubusercontent.com/couimet/rangelink/main/packages/rangelink-vscode-extension/icon.png`
+- **Rejected because:** Requires internet connection, fails for users without network access
+
+**Done when:** Logo displays correctly in all contexts (installed extension, GitHub, marketplace), README is fully self-contained
 
 ### Time Summary
 
