@@ -581,26 +581,28 @@ Following the successful publication of the VSCode extension to the marketplace,
 
 ### Priority 1: Release Management & Tracking
 
-#### 4A) Git Tagging for Published Release — 📋 Next Up
+#### 4A) Git Tagging for Published Release — ✅ Complete
 
 **Goal:** Retroactively tag the published v0.1.0 release for version tracking.
 
 **Tasks:**
-- Identify commit hash for published v0.1.0
-- Create annotated tag: `vscode-extension-v0.1.0`
-- Push tag to remote
-- Create GitHub release from tag
-- Verify tag appears correctly in GitHub
+- ✅ Identify commit hash for published v0.1.0 (ff52f9a)
+- ✅ Create annotated tag: `vscode-extension-v0.1.0`
+- ✅ Push tag to remote
+- ✅ Create GitHub release from tag
+- ✅ Verify tag appears correctly in GitHub
 
 **Deliverables:**
-- Git tag for published release
-- GitHub release entry
+- ✅ Git tag for published release: `vscode-extension-v0.1.0` → ff52f9a
+- ✅ GitHub release entry: https://github.com/couimet/rangelink/releases/tag/vscode-extension-v0.1.0
 
 **Done when:** Can map marketplace version 0.1.0 to specific git commit via tag
 
+**Status:** Complete - v0.1.0 is now properly tagged and released on GitHub
+
 ---
 
-#### 4B) Extension CHANGELOG.md — 📋 Planned
+#### 4B) Extension CHANGELOG.md — 📋 Next Up
 
 **Goal:** Create package-specific CHANGELOG for tracking extension releases.
 
