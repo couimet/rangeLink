@@ -58,9 +58,12 @@ pnpm compile
 pnpm clean
 ```
 
-### Formatting
+### Linting & Formatting
 
 ```bash
+# Fix linting issues
+pnpm lint:fix
+
 # Format code
 pnpm format:fix
 ```

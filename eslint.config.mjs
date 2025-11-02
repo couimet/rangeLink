@@ -8,14 +8,34 @@ import unicorn from 'eslint-plugin-unicorn';
 
 export default [
   {
-    ignores: ['out/**', 'node_modules/**', 'coverage/**'],
+    ignores: [
+      '**/out/**',
+      '**/node_modules/**',
+      '**/coverage/**',
+      '**/*.vsix',
+      '**/*.config.js',
+      '**/*.config.mjs',
+      '**/*.config.cjs',
+    ],
   },
   {
-    files: ['**/*.ts', '**/*.js'],
+    files: ['**/*.ts'],
     languageOptions: {
       parser: tsParser,
       ecmaVersion: 2022,
-      sourceType: 'commonjs',
+      sourceType: 'module',
+      globals: {
+        // Jest globals
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        jest: 'readonly',
+      },
       parserOptions: {
         // Not enabling full type-checking to keep lint fast; can be enabled later
       },

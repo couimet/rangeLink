@@ -8,6 +8,33 @@ importers:
 
   .:
     devDependencies:
+      '@eslint/js':
+        specifier: ^9.10.0
+        version: 9.38.0
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^8.8.0
+        version: 8.46.2(@typescript-eslint/parser@8.46.2(eslint@9.38.0)(typescript@5.9.3))(eslint@9.38.0)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^8.8.0
+        version: 8.46.2(eslint@9.38.0)(typescript@5.9.3)
+      eslint:
+        specifier: ^9.10.0
+        version: 9.38.0
+      eslint-config-prettier:
+        specifier: ^9.1.0
+        version: 9.1.2(eslint@9.38.0)
+      eslint-import-resolver-typescript:
+        specifier: ^3.6.1
+        version: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.38.0)
+      eslint-plugin-import:
+        specifier: ^2.29.0
+        version: 2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.38.0)
+      eslint-plugin-n:
+        specifier: ^17.10.0
+        version: 17.23.1(eslint@9.38.0)(typescript@5.9.3)
+      eslint-plugin-unicorn:
+        specifier: ^55.0.0
+        version: 55.0.0(eslint@9.38.0)
       prettier:
         specifier: ^3.1.1
         version: 3.6.2
@@ -39,9 +66,6 @@ importers:
         specifier: workspace:*
         version: link:../rangelink-core-ts
     devDependencies:
-      '@eslint/js':
-        specifier: ^9.10.0
-        version: 9.38.0
       '@types/jest':
         specifier: ^29.5.0
         version: 29.5.14
@@ -51,36 +75,12 @@ importers:
       '@types/vscode':
         specifier: ^1.80.0
         version: 1.105.0
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^8.8.0
-        version: 8.46.2(@typescript-eslint/parser@8.46.2(eslint@9.38.0)(typescript@5.9.3))(eslint@9.38.0)(typescript@5.9.3)
-      '@typescript-eslint/parser':
-        specifier: ^8.8.0
-        version: 8.46.2(eslint@9.38.0)(typescript@5.9.3)
       '@vscode/vsce':
         specifier: ^3.6.2
         version: 3.6.2
       esbuild:
         specifier: ^0.25.12
         version: 0.25.12
-      eslint:
-        specifier: ^9.10.0
-        version: 9.38.0
-      eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.2(eslint@9.38.0)
-      eslint-import-resolver-typescript:
-        specifier: ^3.6.1
-        version: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.38.0)
-      eslint-plugin-import:
-        specifier: ^2.29.0
-        version: 2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.38.0)
-      eslint-plugin-n:
-        specifier: ^17.10.0
-        version: 17.23.1(eslint@9.38.0)(typescript@5.9.3)
-      eslint-plugin-unicorn:
-        specifier: ^55.0.0
-        version: 55.0.0(eslint@9.38.0)
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.19.24)
