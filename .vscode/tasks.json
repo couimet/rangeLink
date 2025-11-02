@@ -4,12 +4,12 @@
     {
       "label": "Build: rangelink-core-ts",
       "type": "shell",
-      "command": "pnpm -C packages/rangelink-core-ts compile"
+      "command": "./scripts/pnpm-exec.sh -C packages/rangelink-core-ts compile"
     },
     {
       "label": "Generate version.json",
       "type": "shell",
-      "command": "cd packages/rangelink-vscode-extension && node scripts/generate-version.js && cp src/version.json out/version.json",
+      "command": "./scripts/pnpm-exec.sh --filter rangelink-vscode-extension exec node scripts/generate-version.js && cp packages/rangelink-vscode-extension/src/version.json packages/rangelink-vscode-extension/out/version.json",
       "problemMatcher": []
     },
     {
@@ -26,7 +26,7 @@
     {
       "label": "Watch: rangelink-vscode-extension",
       "type": "shell",
-      "command": "pnpm -C packages/rangelink-vscode-extension watch",
+      "command": "./scripts/pnpm-exec.sh -C packages/rangelink-vscode-extension watch",
       "dependsOn": [
         "Build: rangelink-core-ts",
         "Generate version.json"
