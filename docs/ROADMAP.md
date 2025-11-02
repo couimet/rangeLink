@@ -571,13 +571,347 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
 
 ---
 
-## Phase 4: Navigation Features — 📋 Planned
+## Phase 4: Post-Publishing Enhancements — 🔨 In Progress
+
+Following the successful publication of the VSCode extension to the marketplace, this phase addresses critical gaps in release management, documentation, and tooling discovered during the publishing process.
+
+**Development Approach:** Slow and steady iterations with manual review between each commit. Focus on quality and completeness over speed.
+
+**Status:** 📋 Ready to start
+
+### Priority 1: Release Management & Tracking
+
+#### 4A) Git Tagging for Published Release — 📋 Next Up
+
+**Goal:** Retroactively tag the published v0.1.0 release for version tracking.
+
+**Tasks:**
+- Identify commit hash for published v0.1.0
+- Create annotated tag: `vscode-extension-v0.1.0`
+- Push tag to remote
+- Create GitHub release from tag
+- Verify tag appears correctly in GitHub
+
+**Deliverables:**
+- Git tag for published release
+- GitHub release entry
+
+**Done when:** Can map marketplace version 0.1.0 to specific git commit via tag
+
+---
+
+#### 4B) Extension CHANGELOG.md — 📋 Planned
+
+**Goal:** Create package-specific CHANGELOG for tracking extension releases.
+
+**Tasks:**
+- Create `packages/rangelink-vscode-extension/CHANGELOG.md`
+- Follow Keep a Changelog format
+- Document v0.1.0 with all features:
+  - Link generation (relative/absolute)
+  - Rectangular mode support
+  - BYOD (portable links)
+  - Custom delimiters
+  - Validation and error handling
+- Link to root CHANGELOG for monorepo-wide changes
+
+**Deliverables:**
+- `packages/rangelink-vscode-extension/CHANGELOG.md`
+- Entry for v0.1.0 with comprehensive feature list
+
+**Done when:** CHANGELOG.md exists, follows semver + keepachangelog standards, ready for v0.2.0
+
+---
+
+#### 4C) Monorepo Release Strategy Documentation — 📋 Planned
+
+**Goal:** Define and document release/tagging strategy for monorepo with multiple publishable packages.
+
+**Tasks:**
+- Define tagging convention: `{package-name}-v{version}` (e.g., `vscode-extension-v0.1.0`)
+- Document version management: independent versioning per package
+- Explain how to map published versions to git history
+- Document release workflow (manual for now)
+- Create `docs/RELEASE-STRATEGY.md`
+
+**Out of Scope:**
+- GitHub Actions workflow (deferred to follow-up item 4D)
+
+**Deliverables:**
+- `docs/RELEASE-STRATEGY.md` with tagging conventions
+- Updated `PUBLISHING.md` referencing release strategy
+- Brief mention in root README
+
+**Done when:** Clear, documented process for tagging and tracking releases across packages
+
+---
+
+#### 4D) GitHub Actions Release Workflow — 📋 Future
+
+**Goal:** Automate release tagging and GitHub release creation.
+
+**Deferred from:** Iteration 4C (Monorepo Release Strategy Design)
+
+**Tasks:**
+- Create `.github/workflows/release.yml`
+- Trigger on version tag push
+- Automate GitHub release creation
+- Extract changelog for release notes
+
+**Done when:** Pushing a tag automatically creates GitHub release
+
+---
+
+### Priority 2: Documentation Content Strategy
+
+#### 4E) Root README Enhancement - Hero Section — 📋 Planned
+
+**Goal:** Rewrite intro to be engaging, fun, and sell the product's real value.
+
+**Content Tone:** Fun and engaging for developers, with nerdy humor. Show real value, not just a toy.
+
+**Tasks:**
+- Rewrite opening paragraph with hook: "Stop sharing vague code references..."
+- Add compelling problem → solution → benefits flow
+- Add marketplace badge with install link
+- Improve use cases "above the fold"
+- Keep it developer-focused with personality
+
+**Deliverables:**
+- Rewritten hero section (lines 1-30)
+- Marketplace badge: ![VS Code Marketplace](...)
+- Link to marketplace page
+
+**Done when:** README opening is engaging, clearly communicates value, includes marketplace link
+
+---
+
+#### 4F) Logo Display Fix in Installed Extension — 📋 Planned
+
+**Goal:** Make the RangeLink logo display in the installed extension's README view.
+
+**Problem:** VS Code's extension view doesn't render markdown images with relative paths (`./icon.png`) in the installed extension details panel. Works on GitHub but not locally.
+
+**Solution:** Base64 encode the icon and embed as data URI in README.
+
+**Tasks:**
+1. Generate base64 encoding of `icon.png`
+2. Create data URI: `data:image/png;base64,{base64_data}`
+3. Update `packages/rangelink-vscode-extension/README.md` line 4
+4. Test in all contexts:
+   - Installed extension view (Extensions → RangeLink → Details)
+   - GitHub repository
+   - VS Code marketplace
+   - Cursor marketplace
+
+**Tradeoffs:**
+- **Pro:** Works completely offline, no network dependency
+- **Con:** Adds ~48KB to README (base64 inflation)
+
+**Deliverables:**
+- Base64-encoded logo in extension README
+- Verified display across all contexts
+
+**Done when:** Logo displays correctly everywhere, README fully self-contained
+
+---
+
+#### 4G) Logo Strategy for Multi-Extension Monorepo — 📋 Planned
+
+**Goal:** Define and implement centralized logo sourcing to avoid duplication across future extensions.
+
+**Approach:**
+- Store canonical logo at `/assets/logo.png` (root level)
+- Create `scripts/sync-assets.sh` to copy to package directories
+- Add pre-package hook to run asset sync
+- Document in `docs/ASSET-MANAGEMENT.md`
+
+**Tasks:**
+- Create `/assets/` directory with logo files
+- Write `scripts/sync-assets.sh` bash script
+- Add to vscode-extension pre-package workflow
+- Update `.vscodeignore` to include synced assets
+- Document strategy for future extensions
+
+**Deliverables:**
+- `/assets/logo.png` (canonical source)
+- `scripts/sync-assets.sh`
+- `docs/ASSET-MANAGEMENT.md`
+- Updated package.json with pre-package hook
+
+**Done when:** Logo managed centrally, easy to update across all extensions
+
+---
+
+#### 4H) Logo Origins - Nerdy Humor Section — 📋 Planned
+
+**Goal:** Add story about logo design with the Pi precision joke.
+
+**Content Tone:** Light, fun, nerdy humor - celebrates the thought behind the design.
+
+**Tasks:**
+- Add "About the Logo" section to root README (near bottom, before license)
+- Explain design elements:
+  - Free range chicken (code roams free across editors)
+  - Links (chains of collaboration)
+  - Pi precision: 3.14 vs 3.1416 (because precision matters!)
+- Add teaser to vscode-extension README linking back to root
+- Credit designer: Yann Bohler (Instagram: @ybohler)
+
+**Deliverables:**
+- "About the Logo" section in root README
+- Teaser link in extension README
+- Designer credit with Instagram link
+
+**Done when:** Logo story told, designer credited, links work
+
+---
+
+#### 4I) Contributors Section — 📋 Planned
+
+**Goal:** Add contributors section acknowledging logo designer and future contributors.
+
+**Tasks:**
+- Add "Contributors" section to root README
+- Credit Yann Bohler for logo design (Instagram: @ybohler)
+- Add placeholder for future code contributors
+- Link to `CONTRIBUTING.md`
+
+**Deliverables:**
+- Contributors section in root README
+- Link to CONTRIBUTING.md
+
+**Done when:** Designer credited, contributor framework in place
+
+---
+
+#### 4J) Content Drift Prevention Strategy — 📋 Planned
+
+**Goal:** Define strategy to prevent root and package READMEs from drifting apart.
+
+**Approach:**
+- **Root README:** Comprehensive, monorepo-focused, covers all packages/features
+- **Package README:** Marketplace-optimized, user-focused, package-specific features only
+- Document what content belongs where and when to update both
+
+**Tasks:**
+- Create `docs/README-CONTENT-STRATEGY.md`
+- Define "shared content" sections (features, use cases)
+- Define "package-specific" sections (installation, quickstart)
+- Create checklist for README updates
+- Update `CONTRIBUTING.md` with README guidelines
+
+**Deliverables:**
+- `docs/README-CONTENT-STRATEGY.md`
+- Updated CONTRIBUTING.md
+
+**Done when:** Clear guidelines exist, easy to maintain consistency
+
+---
+
+### Priority 3: Build Tooling & Metadata
+
+#### 4K) Enhanced Build Output with Metadata — 📋 Planned
+
+**Goal:** Display version, commit hash, date during package build for debugging.
+
+**Tasks:**
+- Enhance `scripts/generate-version.js` to output build metadata
+- Modify `package` script to show metadata table after build:
+  - Version
+  - Commit hash
+  - Commit date
+  - Branch name
+  - File count
+- Test output formatting
+
+**Deliverables:**
+- Enhanced build script with metadata output
+- Cleaner console output during packaging
+
+**Done when:** Running `pnpm package` shows useful metadata, helps debug published versions
+
+---
+
+#### 4L) Embed Commit Hash in Extension Metadata — 📋 Planned
+
+**Goal:** Add build metadata to extension for runtime debugging.
+
+**Tasks:**
+- Extend `version.json` to include:
+  - Commit hash (short and full)
+  - Build date/time
+  - Branch name
+  - Dirty working tree flag
+- Add "Show Version Info" command to display build metadata
+- Update README with debugging section: "Finding version info"
+
+**Note:** VS Code marketplace doesn't expose custom metadata in UI. This is for runtime debugging only.
+
+**Deliverables:**
+- Enhanced version.json with git metadata
+- Command: "RangeLink: Show Version Info"
+- Documentation on debugging published versions
+
+**Done when:** Can identify exact commit used to build any installed extension
+
+---
+
+#### 4M) Separate Dev vs. Production Package Scripts — 📋 Planned
+
+**Goal:** Create distinct packaging workflows for development and marketplace publishing.
+
+**Tasks:**
+- Create `package:dev` script:
+  - Allows dirty working tree
+  - Adds `-dev` suffix to version
+  - Faster iteration during development
+- Keep `package` script strict:
+  - Fails on uncommitted changes
+  - Clean build only
+  - For marketplace publishing
+- Add `package:force` for emergency overrides
+- Document when to use each in `PUBLISHING.md` and `DEVELOPMENT.md`
+
+**Deliverables:**
+- Three packaging scripts with clear semantics
+- Updated documentation
+
+**Done when:** Clear separation between dev and production builds, prevents accidental dirty publishes
+
+---
+
+### Known Limitations (Documented)
+
+#### Repository Link in Marketplace
+
+**Issue:** Marketplace "Repository" link points to monorepo root, not package directory.
+
+**Status:** VS Code marketplace limitation - cannot override.
+
+**Explanation:** The `repository.url` field in package.json determines the "Repository" link. The `homepage` field (correctly set) provides the package-specific "Homepage" link. This is expected behavior.
+
+**Action:** Document in `PUBLISHING.md` as expected behavior.
+
+---
+
+#### Commit Hash Display on Marketplace Page
+
+**Issue:** Cannot add commit hash or custom metadata to marketplace UI.
+
+**Status:** Not supported by VS Code marketplace.
+
+**Workaround:** Extension includes runtime command to show build metadata (see iteration 4L).
+
+**Action:** Already addressed via "Show Version Info" command.
+
+---
+
+## Phase 5: Navigation Features — 📋 Planned
 
 Navigate to code using RangeLinks (local workspace and BYOD).
 
-**Total Time Estimate:** 7 hours across 6 focused sessions
-
-### 4A) Basic Navigation from Clipboard (1.5 hours)
+### 5A) Basic Navigation from Clipboard
 
 - Command: "RangeLink: Go to Range from Clipboard"
 - Parse clipboard for regular RangeLink (no BYOD yet)
