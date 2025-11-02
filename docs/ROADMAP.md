@@ -245,6 +245,45 @@ For Neovim integration details, see [neovim-integration.md](./neovim-integration
 
 **Status:** 📋 Ready to start
 
+### Developer Tooling — ✅ Complete
+
+#### Local Installation Script (30 minutes) — ✅ Completed
+
+**Goal:** Simplify local testing of extension builds across VS Code and Cursor.
+
+**Achievements:**
+
+- ✅ Created `packages/rangelink-vscode-extension/scripts/install-local.sh`
+- ✅ Dynamic version detection from `package.json` (changeset-ready!)
+- ✅ Auto-builds extension if `.vsix` is missing
+- ✅ Support for both VS Code and Cursor
+- ✅ Helpful error messages when CLI tools not found
+- ✅ Exposed via pnpm scripts at package and root level
+
+**Usage:**
+
+```bash
+# From root
+pnpm install-local:vscode-extension:both    # Install in both editors
+pnpm install-local:vscode-extension:cursor  # Cursor only
+pnpm install-local:vscode-extension:vscode  # VS Code only
+
+# From package directory
+cd packages/rangelink-vscode-extension
+pnpm install-local         # Both editors (default)
+pnpm install-local:cursor  # Cursor only
+pnpm install-local:vscode  # VS Code only
+```
+
+**Benefits:**
+
+- No more hardcoded version numbers in commands
+- Works seamlessly with changesets version bumps
+- Clear, explicit editor targeting (`:both`, `:vscode`, `:cursor`)
+- YAGNI-compliant: package-level script, scalable for future extensions
+
+**Documentation:** Updated in `PUBLISHING.md` with quick install section
+
 ### Pre-Launch Status
 
 - ✅ Extension functionality complete (link generation, BYOD, rectangular mode)
@@ -253,6 +292,7 @@ For Neovim integration details, see [neovim-integration.md](./neovim-integration
 - ✅ README marketplace-ready
 - ✅ Commands and keybindings configured
 - ✅ **Extension icon/logo** (icon.png and icon_large.png present)
+- ✅ **Local installation tooling** (`install-local.sh` script with pnpm integration)
 - ⚠️ **Missing:** Publisher account setup
 - ⚠️ **Missing:** CHANGELOG.md
 - ⚠️ **Missing:** Final testing on clean install
