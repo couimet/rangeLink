@@ -46,8 +46,7 @@ if [ ! -f "$VSIX_FILE" ]; then
   echo -e "${BLUE}Building extension first...${NC}"
 
   # Run from package directory
-  pnpm run vscode:prepublish
-  pnpm exec vsce package --no-dependencies
+  pnpm package
 
   if [ ! -f "$VSIX_FILE" ]; then
     echo -e "${RED}Error: Failed to build extension${NC}"
