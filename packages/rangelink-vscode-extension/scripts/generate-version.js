@@ -5,9 +5,9 @@
  * This allows users to verify exactly which version of the extension they're running.
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { execSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 try {
   // Get the commit hash (short version)

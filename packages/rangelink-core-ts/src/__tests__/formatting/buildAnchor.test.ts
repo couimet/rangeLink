@@ -1,6 +1,6 @@
+import { buildAnchor } from '../../formatting/buildAnchor';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { RangeFormat } from '../../types/RangeFormat';
-import { buildAnchor } from '../../formatting/buildAnchor';
 
 describe('buildAnchor', () => {
   const defaultDelimiters: DelimiterConfig = {

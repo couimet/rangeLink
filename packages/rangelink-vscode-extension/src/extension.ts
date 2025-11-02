@@ -1,5 +1,3 @@
-import * as vscode from 'vscode';
-
 import {
   DEFAULT_DELIMITERS,
   DelimiterConfig,
@@ -18,6 +16,8 @@ import {
   setLogger,
   validateDelimiter,
 } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
+
 
 import { VSCodeLogger } from './VSCodeLogger';
 

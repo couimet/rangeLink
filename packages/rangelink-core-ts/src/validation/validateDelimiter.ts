@@ -1,7 +1,7 @@
+import { RESERVED_CHARS } from '../constants/RESERVED_CHARS';
+import { DelimiterValidationError } from '../types/DelimiterValidationError';
 import { Err, Ok, Result } from '../types/Result';
 
-import { DelimiterValidationError } from '../types/DelimiterValidationError';
-import { RESERVED_CHARS } from '../constants/RESERVED_CHARS';
 
 /**
  * Validate a delimiter value and return a result.

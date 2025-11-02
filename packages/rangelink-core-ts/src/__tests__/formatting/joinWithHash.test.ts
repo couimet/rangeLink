@@ -1,6 +1,6 @@
+import { joinWithHash } from '../../formatting/joinWithHash';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { HashMode } from '../../types/HashMode';
-import { joinWithHash } from '../../formatting/joinWithHash';
 
 describe('joinWithHash', () => {
   const defaultDelimiters: DelimiterConfig = {

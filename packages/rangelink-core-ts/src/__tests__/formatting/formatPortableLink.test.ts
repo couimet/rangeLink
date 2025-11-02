@@ -1,6 +1,6 @@
+import { formatPortableLink } from '../../formatting/formatPortableLink';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { Selection } from '../../types/Selection';
-import { formatPortableLink } from '../../formatting/formatPortableLink';
 
 describe('formatPortableLink', () => {
   const defaultDelimiters: DelimiterConfig = {

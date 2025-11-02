@@ -1,6 +1,6 @@
+import { Logger, LoggingContext } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import { Logger, LoggingContext } from 'rangelink-core-ts';
 
 /**
  * VSCode implementation of the Logger interface.

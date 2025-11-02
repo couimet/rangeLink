@@ -1,6 +1,6 @@
-import * as extension from './extension';
 import * as vscode from 'vscode';
 
+import * as extension from './extension';
 import {
   DelimiterValidationError,
   PathFormat,

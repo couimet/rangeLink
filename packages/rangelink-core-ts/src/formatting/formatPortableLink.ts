@@ -1,14 +1,14 @@
-import { Ok, Result } from '../types/Result';
-
+import { getLogger } from '../logging/LogManager';
+import { computeRangeSpec } from '../selection/computeRangeSpec';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { FormatOptions } from '../types/FormatOptions';
 import { RangeFormat } from '../types/RangeFormat';
 import { RangeLinkMessageCode } from '../types/RangeLinkMessageCode';
+import { Ok, Result } from '../types/Result';
 import { Selection } from '../types/Selection';
+
 import { buildAnchor } from './buildAnchor';
 import { composePortableMetadata } from './composePortableMetadata';
-import { computeRangeSpec } from '../selection/computeRangeSpec';
-import { getLogger } from '../logging/LogManager';
 import { joinWithHash } from './joinWithHash';
 
 /**

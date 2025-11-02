@@ -1,5 +1,5 @@
-import { DelimiterConfig } from '../types/DelimiterConfig';
 import { PORTABLE_METADATA_SEPARATOR } from '../constants/PORTABLE_METADATA_SEPARATOR';
+import { DelimiterConfig } from '../types/DelimiterConfig';
 
 /**
  * Compose portable metadata for BYOD (Bring Your Own Delimiters) links.

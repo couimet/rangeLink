@@ -1,7 +1,7 @@
+import { computeRangeSpec } from '../../selection/computeRangeSpec';
 import { HashMode } from '../../types/HashMode';
 import { RangeFormat } from '../../types/RangeFormat';
 import { Selection } from '../../types/Selection';
-import { computeRangeSpec } from '../../selection/computeRangeSpec';
 
 describe('computeRangeSpec', () => {
   describe('regular selections', () => {

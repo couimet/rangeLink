@@ -1,6 +1,6 @@
+import { formatLink } from '../../formatting/formatLink';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { Selection } from '../../types/Selection';
-import { formatLink } from '../../formatting/formatLink';
 
 describe('formatLink', () => {
   const defaultDelimiters: DelimiterConfig = {

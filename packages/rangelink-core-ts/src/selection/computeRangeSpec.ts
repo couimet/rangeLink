@@ -3,6 +3,7 @@ import { FormatOptions } from '../types/FormatOptions';
 import { HashMode } from '../types/HashMode';
 import { RangeFormat } from '../types/RangeFormat';
 import { Selection } from '../types/Selection';
+
 import { isRectangularSelection } from './isRectangularSelection';
 
 /**

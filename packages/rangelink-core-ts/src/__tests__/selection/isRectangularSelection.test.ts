@@ -1,5 +1,5 @@
-import { Selection } from '../../types/Selection';
 import { isRectangularSelection } from '../../selection/isRectangularSelection';
+import { Selection } from '../../types/Selection';
 
 describe('isRectangularSelection', () => {
   it('should return false for single selection', () => {

@@ -1,6 +1,5 @@
-import { getLogger, setLogger } from '../../logging/LogManager';
-
 import { Logger } from '../../logging/Logger';
+import { getLogger, setLogger } from '../../logging/LogManager';
 import { NoOpLogger } from '../../logging/NoOpLogger';
 
 describe('LogManager', () => {

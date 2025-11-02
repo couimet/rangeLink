@@ -1,5 +1,5 @@
-import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { formatSimpleLineReference } from '../../formatting/formatSimpleLineReference';
+import { DelimiterConfig } from '../../types/DelimiterConfig';
 
 describe('formatSimpleLineReference', () => {
   const defaultDelimiters: DelimiterConfig = {
