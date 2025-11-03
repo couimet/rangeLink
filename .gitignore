@@ -22,3 +22,5 @@ packages/*/dist/
 # Generated version files
 packages/*/src/version.json
 
+.commits/
+
