@@ -11,6 +11,7 @@ Example: `.commit-msgs/2025-01-03-remove-hashmode-enum.txt`
 ## Project Context
 
 RangeLink is a tool for generating and navigating code location links with support for:
+
 - Multiple editors (VSCode, Cursor, Neovim planned)
 - Multiple selection types (Normal, Rectangular)
 - Customizable delimiters and formats
@@ -31,6 +32,10 @@ RangeLink is a tool for generating and navigating code location links with suppo
 - Run full test suite before committing
 - Add tests for all new features and bug fixes
 - Use descriptive test names that explain the scenario
+- **Use string literals for enum values in test assertions** (not enum references)
+  - Tests the external-facing contract/API surface
+  - Example: `linkType: 'Regular'` instead of `linkType: LinkType.Regular`
+  - Catches accidental enum value changes
 
 ## Documentation
 
