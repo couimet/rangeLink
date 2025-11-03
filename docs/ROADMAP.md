@@ -789,21 +789,27 @@ Following the successful publication of the VSCode extension to the marketplace,
 
 ---
 
-#### 4I) Contributors Section — 📋 Planned
+#### 4I) Contributors Section — ✅ Complete
 
 **Goal:** Add contributors section acknowledging logo designer and future contributors.
 
 **Tasks:**
-- Add "Contributors" section to root README
-- Credit Yann Bohler for logo design (Instagram: @ybohler)
-- Add placeholder for future code contributors
-- Link to `CONTRIBUTING.md`
+
+- ✅ Add "Contributors" section to root README
+- ✅ Credit Yan Bohler for logo design (Instagram: @ybohler)
+- ✅ Clarify DALL-E generation + Yan's refinement
+- ✅ Add call-to-action for code contributors
+- ✅ Link to `CONTRIBUTING.md`
 
 **Deliverables:**
-- Contributors section in root README
-- Link to CONTRIBUTING.md
+
+- ✅ Contributors section in root README
+- ✅ Link to CONTRIBUTING.md
+- ✅ Proper attribution for logo work
 
 **Done when:** Designer credited, contributor framework in place
+
+**Status:** Complete - Yan Bohler properly credited for logo refinement, contributor pathway established
 
 ---
 

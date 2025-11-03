@@ -391,6 +391,12 @@ Contributions are welcome!
 - **[Logging](./docs/LOGGING.md)** - Structured logging approach
 - **[Multi-Language Vision](./docs/architecture-multi-language.md)** - Future expansion plans
 
+## Contributors
+
+- [Yan Bohler](https://www.instagram.com/ybohler/) - Refined the DALL-E generated logo with a designer's eye for developer-friendly details
+
+Want to contribute code? Check out our [Contributing Guide](./CONTRIBUTING.md)!
+
 ## Known Issues
 
 If you find a bug, please [report it](https://github.com/couimet/rangelink/issues).
