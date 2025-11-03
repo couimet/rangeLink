@@ -9,17 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed ESLint configuration moved to root for better monorepo management
-- Fixed improper version link in documentation
-- Explicitly delete target file during build to avoid potential issues
+- Fixed ESLint configuration for better monorepo build reliability
+- Fixed marketplace version badge URL in README (was using wrong publisher/extension name)
+- Build process now explicitly deletes target files to prevent stale artifacts
+- CHANGELOG now focuses only on extension changes (removed monorepo/internal documentation items)
 
-### Documentation
+### Changed
 
-- Added comprehensive monorepo release and tagging strategy (RELEASE-STRATEGY.md)
-- Reorganized documentation with minimalist root README and detailed package guides
-- Added post-publishing enhancements section to roadmap
-- Improved markdown formatting consistency
-- Marked Phase 4A complete in roadmap with v0.1.0 tagging details
+- Extension README now uses GitHub raw URL for logo (displays correctly in installed extensions, marketplace, and GitHub)
+- Centralized asset management with build-time sync from monorepo `/assets/` directory
 
 ## [0.1.0]
 
@@ -48,16 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Cmd+R Cmd+P` / `Ctrl+R Ctrl+P` - Copy Portable Link
   - `Cmd+R Cmd+Shift+P` / `Ctrl+R Ctrl+Shift+P` - Copy Portable Link (Absolute)
 
-### Documentation
-
-- Comprehensive README with usage examples and use cases
-- Link formats guide (LINK-FORMATS.md)
-- BYOD specification (BYOD.md)
-- Error handling reference (ERROR-HANDLING.md)
-- Logging approach documentation (LOGGING.md)
-- Architecture documentation (ARCHITECTURE.md)
-- Development roadmap (ROADMAP.md)
-
-[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.1.0...HEAD
-[0.1.1]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.1.0...HEAD
+[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.1.1...HEAD
+[0.1.1]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.1.0...vscode-extension-v0.1.1
 [0.1.0]: https://github.com/couimet/rangelink/releases/tag/vscode-extension-v0.1.0
