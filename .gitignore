@@ -26,5 +26,5 @@ packages/*/src/version.json
 packages/*/icon.png
 packages/*/icon_large.png
 
-.commits/
-
+# Commit message drafts (managed by Claude Code)
+.commit-msgs/
