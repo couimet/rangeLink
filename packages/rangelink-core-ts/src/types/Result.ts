@@ -19,4 +19,3 @@ export function Ok<T>(value: T): Result<T, never> {
 export function Err<E>(error: E): Result<never, E> {
   return { success: false, error };
 }
-

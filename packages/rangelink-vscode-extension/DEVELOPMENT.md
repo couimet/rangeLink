@@ -19,14 +19,14 @@ See [root DEVELOPMENT.md](../../DEVELOPMENT.md) for detailed setup instructions.
 
 ### Quick Comparison
 
-| Feature | Extension Dev Host (F5) | Local Install Script |
-|---------|-------------------------|----------------------|
-| **Reload speed** | ⚡ Instant (`Cmd+R`) | 🐌 Slow (full window reload) |
-| **Keeps terminals** | ✅ Yes | ❌ No (window reload needed) |
-| **Debugging** | ✅ Full breakpoint support | ❌ No debugging |
-| **Auto-compile** | ✅ Watch mode | ⚠️ Manual rebuild needed |
-| **Test environment** | Separate window | Your actual editor |
-| **Best for** | Active development | Final validation |
+| Feature              | Extension Dev Host (F5)    | Local Install Script         |
+| -------------------- | -------------------------- | ---------------------------- |
+| **Reload speed**     | ⚡ Instant (`Cmd+R`)       | 🐌 Slow (full window reload) |
+| **Keeps terminals**  | ✅ Yes                     | ❌ No (window reload needed) |
+| **Debugging**        | ✅ Full breakpoint support | ❌ No debugging              |
+| **Auto-compile**     | ✅ Watch mode              | ⚠️ Manual rebuild needed     |
+| **Test environment** | Separate window            | Your actual editor           |
+| **Best for**         | Active development         | Final validation             |
 
 **TL;DR:** Use F5 for development, use install script before publishing.
 
@@ -227,6 +227,7 @@ pnpm test:coverage
 ### Manual Testing Checklist
 
 See [root DEVELOPMENT.md](../../DEVELOPMENT.md#testing-checklist) for the comprehensive testing checklist covering:
+
 - Empty selections
 - Single/multi-line selections
 - Rectangular selections
@@ -240,21 +241,25 @@ See [root DEVELOPMENT.md](../../DEVELOPMENT.md#testing-checklist) for the compre
 ### Key Files
 
 **Extension Entry Point** (`src/extension.ts`):
+
 - Registers commands
 - Loads configuration
 - Creates output channel logger
 
 **Command Handlers** (`src/commands/`):
+
 - `copyLinkCommand.ts` - Standard link commands
 - `copyPortableLinkCommand.ts` - Portable link commands
 
 **Configuration** (`src/config/`):
+
 - `loadConfig.ts` - Load and validate configuration
 - Adapts VSCode settings to core library types
 
 ### Adding a New Command
 
 1. Define command in `package.json`:
+
    ```json
    {
      "command": "rangelink.myNewCommand",
@@ -264,6 +269,7 @@ See [root DEVELOPMENT.md](../../DEVELOPMENT.md#testing-checklist) for the compre
    ```
 
 2. Add keybinding in `package.json`:
+
    ```json
    {
      "command": "rangelink.myNewCommand",
@@ -273,6 +279,7 @@ See [root DEVELOPMENT.md](../../DEVELOPMENT.md#testing-checklist) for the compre
    ```
 
 3. Implement handler in `src/commands/`:
+
    ```typescript
    export function myNewCommand(context: vscode.ExtensionContext): void {
      // Implementation
@@ -281,10 +288,7 @@ See [root DEVELOPMENT.md](../../DEVELOPMENT.md#testing-checklist) for the compre
 
 4. Register in `src/extension.ts`:
    ```typescript
-   const disposable = vscode.commands.registerCommand(
-     'rangelink.myNewCommand',
-     myNewCommand
-   );
+   const disposable = vscode.commands.registerCommand('rangelink.myNewCommand', myNewCommand);
    context.subscriptions.push(disposable);
    ```
 
@@ -295,6 +299,7 @@ See [root DEVELOPMENT.md](../../DEVELOPMENT.md#testing-checklist) for the compre
 ### Viewing Extension Logs
 
 In the Extension Development Host:
+
 1. Open Output panel: `Cmd+Shift+U` (Mac) or `Ctrl+Shift+U` (Windows/Linux)
 2. Select "RangeLink" from the dropdown
 3. View structured logs with error codes
@@ -302,16 +307,19 @@ In the Extension Development Host:
 ### Common Issues
 
 **Extension not loading:**
+
 1. Check Output panel → "Extension Host" for errors
 2. Verify compilation succeeded: check `out/` directory
 3. Reload Extension Development Host: `Cmd+R` / `Ctrl+R`
 
 **Changes not appearing:**
+
 1. Ensure watch mode is running: `pnpm watch`
 2. Check for TypeScript compilation errors
 3. Reload the Extension Development Host window
 
 **Breakpoints not hitting:**
+
 1. Verify you're running in debug mode (F5)
 2. Check that source maps are generated
 3. Ensure breakpoint is in executed code path
@@ -321,6 +329,7 @@ In the Extension Development Host:
 ## Publishing
 
 Once you've tested your changes locally, see [PUBLISHING.md](./PUBLISHING.md) for:
+
 - Submitting changes (contributors)
 - Publishing to marketplace (maintainers)
 

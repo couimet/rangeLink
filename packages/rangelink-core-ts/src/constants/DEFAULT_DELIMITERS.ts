@@ -10,4 +10,3 @@ export const DEFAULT_DELIMITERS: DelimiterConfig = {
   hash: '#',
   range: '-',
 } as const;
-

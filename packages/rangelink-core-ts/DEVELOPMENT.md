@@ -29,18 +29,22 @@ The core library follows strict principles:
 ### Key Modules
 
 **Domain Models** (`src/types/`):
+
 - `Selection.ts` - Platform-agnostic selection interface
 - `RangeLinkConfig.ts` - Configuration interface
 - `HashMode.ts` - Selection mode enum
 - `RangeLinkMessageCode.ts` - Structured logging codes
 
 **Selection Analysis** (`src/selection/`):
+
 - `isRectangularSelection.ts` - Rectangular selection detection
 
 **Link Formatting** (`src/formatting/`):
+
 - `formatLink.ts` - Link generation logic
 
 **Validation** (`src/validation/`):
+
 - `validateConfig.ts` - Configuration validation
 - `validateDelimiter.ts` - Delimiter validation rules
 
@@ -92,6 +96,7 @@ pnpm format:fix
 ## Testing Strategy
 
 **Test categories:**
+
 - Unit tests (isolated components)
 - Integration tests (multi-component)
 - Edge cases (boundary values, empty inputs)
@@ -99,6 +104,7 @@ pnpm format:fix
 - Custom configurations (all delimiter combinations)
 
 **Coverage goals:**
+
 - 100% branch coverage
 - 100% function coverage
 - 100% line coverage

@@ -5,6 +5,7 @@ This document describes RangeLink's structured logging approach, message format,
 ## Overview
 
 RangeLink uses **structured logging** with stable message codes to enable:
+
 - **Future i18n support** - Decouple message identification from formatting
 - **Easier debugging** - Unique codes make issues searchable and trackable
 - **Consistent UX** - Users can rely on stable error identifiers
@@ -21,6 +22,7 @@ All logged messages follow this format:
 ```
 
 **Components:**
+
 - `[LEVEL]` - Log level (INFO, WARN, ERROR, CRITICAL)
 - `[CODE]` - Stable message code (MSG_xxxx, ERR_xxxx, WARN_xxxx)
 - `message` - Human-readable description
@@ -37,33 +39,41 @@ All logged messages follow this format:
 ## Log Levels
 
 ### INFO
+
 **Purpose:** Non-error informational messages
 **When to use:** Configuration loaded, defaults applied, feature usage
 **Examples:**
+
 - Configuration loaded successfully
 - Using default delimiter configuration
 - Link copied to clipboard
 
 ### WARN
+
 **Purpose:** Warnings that don't prevent operation
 **When to use:** Recoverable errors, deprecated features, non-ideal conditions
 **Examples:**
+
 - BYOD missing position delimiter (recoverable)
 - Extra delimiter in BYOD metadata (ignored)
 - Configuration validation warning
 
 ### ERROR
+
 **Purpose:** Errors that prevent operation or trigger fallback
 **When to use:** Validation failures, parsing errors, operation failures
 **Examples:**
+
 - Invalid delimiter configuration
 - BYOD parsing failure
 - File not found
 
 ### CRITICAL
+
 **Purpose:** Defensive logging for unexpected errors (indicates bugs)
 **When to use:** Catch-all for unknown errors, assertion failures
 **Examples:**
+
 - Unknown validation error (ERR_1099)
 - Unexpected exception in core logic
 - State inconsistency detected
@@ -76,20 +86,20 @@ All logged messages follow this format:
 
 Message codes are organized by functional area:
 
-| Range | Category | Type | Description |
-|-------|----------|------|-------------|
-| `MSG_1xxx` | Configuration | Info | Configuration status messages |
-| `ERR_1xxx` | Configuration | Error | Delimiter validation failures |
-| `ERR_2xxx` | BYOD Parsing | Error | Portable link parsing failures |
-| `WARN_2xxx` | BYOD Parsing | Warning | BYOD recovery and fallback warnings |
+| Range       | Category      | Type    | Description                         |
+| ----------- | ------------- | ------- | ----------------------------------- |
+| `MSG_1xxx`  | Configuration | Info    | Configuration status messages       |
+| `ERR_1xxx`  | Configuration | Error   | Delimiter validation failures       |
+| `ERR_2xxx`  | BYOD Parsing  | Error   | Portable link parsing failures      |
+| `WARN_2xxx` | BYOD Parsing  | Warning | BYOD recovery and fallback warnings |
 
 ### Future Categories (Reserved)
 
-| Range | Category | Type | Description |
-|-------|----------|------|-------------|
-| `MSG_3xxx` | Navigation | Info | Link navigation messages |
-| `ERR_3xxx` | Navigation | Error | Navigation failures |
-| `MSG_4xxx` | Multi-Range | Info | Multi-range link messages |
+| Range      | Category    | Type  | Description                  |
+| ---------- | ----------- | ----- | ---------------------------- |
+| `MSG_3xxx` | Navigation  | Info  | Link navigation messages     |
+| `ERR_3xxx` | Navigation  | Error | Navigation failures          |
+| `MSG_4xxx` | Multi-Range | Info  | Multi-range link messages    |
 | `ERR_4xxx` | Multi-Range | Error | Multi-range parsing failures |
 
 ## Code Organization
@@ -122,6 +132,7 @@ export enum RangeLinkMessageCode {
 ### Usage in Code
 
 **Logger interface:**
+
 ```typescript
 interface Logger {
   info(code: RangeLinkMessageCode, message: string): void;
@@ -132,31 +143,32 @@ interface Logger {
 ```
 
 **Example usage:**
+
 ```typescript
 import { RangeLinkMessageCode } from './types/RangeLinkMessageCode';
 
 // Configuration loaded
 logger.info(
   RangeLinkMessageCode.CONFIG_LOADED,
-  `Configuration loaded: line="${config.delimiterLine}", column="${config.delimiterPosition}"`
+  `Configuration loaded: line="${config.delimiterLine}", column="${config.delimiterPosition}"`,
 );
 
 // Validation error
 logger.error(
   RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY,
-  `Invalid delimiterLine value "" (empty string not allowed)`
+  `Invalid delimiterLine value "" (empty string not allowed)`,
 );
 
 // BYOD warning
 logger.warn(
   RangeLinkMessageCode.BYOD_WARN_POSITION_FROM_LOCAL,
-  `Position delimiter not in BYOD metadata. Used local setting '${localDelimiter}' to parse link.`
+  `Position delimiter not in BYOD metadata. Used local setting '${localDelimiter}' to parse link.`,
 );
 
 // Critical error (defensive)
 logger.critical(
   RangeLinkMessageCode.CONFIG_ERR_UNKNOWN,
-  `CRITICAL: Unknown validation error for delimiterLine value "${value}" (error type: ${errorType}). This indicates a bug in validation logic.`
+  `CRITICAL: Unknown validation error for delimiterLine value "${value}" (error type: ${errorType}). This indicates a bug in validation logic.`,
 );
 ```
 
@@ -165,6 +177,7 @@ logger.critical(
 ### Writing Good Messages
 
 **Guidelines:**
+
 1. **Be specific** - Include relevant values and context
 2. **Be actionable** - Suggest how to fix the issue when possible
 3. **Be concise** - Keep messages short and focused
@@ -172,6 +185,7 @@ logger.critical(
 5. **Include context** - Mention which delimiter or field failed validation
 
 **Good examples:**
+
 ```
 Invalid delimiterLine value "L~" (reserved character '~')
 Position delimiter not in BYOD metadata. Used local setting 'C' to parse link.
@@ -179,6 +193,7 @@ Configuration loaded: line="L", column="C", hash="#", range="-"
 ```
 
 **Bad examples:**
+
 ```
 Invalid delimiter  ← Too vague
 delimiterLine failed validation  ← Missing value and reason
@@ -188,21 +203,25 @@ Error  ← No context
 ### Message Templates
 
 **Configuration validation errors:**
+
 ```
 Invalid <fieldName> value "<value>" (<reason>)
 ```
 
 **BYOD parsing errors:**
+
 ```
 <operation> failed: <reason>
 ```
 
 **Recovery warnings:**
+
 ```
 <issue>. <recovery-action>.
 ```
 
 **Critical errors:**
+
 ```
 CRITICAL: <unexpected-condition>. This indicates a bug in <component>.
 ```
@@ -214,10 +233,12 @@ All logs are written to the **RangeLink** output channel in VSCode.
 ### Accessing the Output Channel
 
 **Via UI:**
+
 1. Open Output panel: View > Output (`Ctrl+Shift+U` / `Cmd+Shift+U`)
 2. Select "RangeLink" from dropdown
 
 **Via Command Palette:**
+
 1. Press `Ctrl+Shift+P` / `Cmd+Shift+P`
 2. Search "Output: Show Output Channels"
 3. Select "RangeLink"
@@ -225,6 +246,7 @@ All logs are written to the **RangeLink** output channel in VSCode.
 ### Output Channel Usage
 
 **Logger implementation (VSCode extension):**
+
 ```typescript
 import * as vscode from 'vscode';
 
@@ -261,25 +283,28 @@ class OutputChannelLogger implements Logger {
 The structured logging approach with message codes enables future internationalization (i18n) support:
 
 **Current approach:**
+
 ```typescript
 logger.error(
   RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY,
-  `Invalid delimiterLine value "" (empty string not allowed)`
+  `Invalid delimiterLine value "" (empty string not allowed)`,
 );
 ```
 
 **Future approach (with i18n):**
+
 ```typescript
 logger.error(
   RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY,
   i18n.formatMessage(RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY, {
     fieldName: 'delimiterLine',
     value: '',
-  })
+  }),
 );
 ```
 
 **Translation files:**
+
 ```json
 {
   "ERR_1002": {
@@ -304,11 +329,13 @@ logger.error(
 ### Log Output Verification
 
 Tests should verify:
+
 1. **Correct code** - Message uses expected `RangeLinkMessageCode`
 2. **Correct level** - INFO, WARN, ERROR, or CRITICAL
 3. **Message content** - Includes relevant values and context
 
 **Example test:**
+
 ```typescript
 it('logs error with code ERR_1002 when delimiter is empty', () => {
   const logger = new MockLogger();
@@ -352,12 +379,12 @@ class MockLogger implements Logger {
     return this.logs;
   }
 
-  getLastLog(): typeof this.logs[0] | undefined {
+  getLastLog(): (typeof this.logs)[0] | undefined {
     return this.logs[this.logs.length - 1];
   }
 
-  getLastError(): typeof this.logs[0] | undefined {
-    return [...this.logs].reverse().find(log => log.level === 'ERROR');
+  getLastError(): (typeof this.logs)[0] | undefined {
+    return [...this.logs].reverse().find((log) => log.level === 'ERROR');
   }
 
   clear(): void {
@@ -398,6 +425,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#error-code-reference) for complete l
 ### Quick Reference
 
 **Configuration Messages (1xxx):**
+
 - `MSG_1001` - CONFIG_LOADED
 - `MSG_1002` - CONFIG_USING_DEFAULTS
 - `ERR_1001` - CONFIG_ERR_DELIMITER_INVALID
@@ -411,6 +439,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#error-code-reference) for complete l
 - `ERR_1099` - CONFIG_ERR_UNKNOWN
 
 **BYOD Parsing Messages (2xxx):**
+
 - `ERR_2001` - BYOD_ERR_INVALID_FORMAT
 - `ERR_2002` - BYOD_ERR_HASH_INVALID
 - `ERR_2003` - BYOD_ERR_DELIMITER_VALIDATION
@@ -433,11 +462,13 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#error-code-reference) for complete l
 ### Configuration Loading
 
 **Success:**
+
 ```
 [INFO] [MSG_1001] Configuration loaded: line="L", column="C", hash="#", range="-"
 ```
 
 **Fallback to defaults:**
+
 ```
 [ERROR] [ERR_1005] Invalid delimiterLine value "L~" (reserved character '~')
 [ERROR] [ERR_1003] Invalid delimiterPosition value "C1" (cannot contain digits)
@@ -447,16 +478,19 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#error-code-reference) for complete l
 ### BYOD Parsing
 
 **Missing position delimiter (recovery):**
+
 ```
 [WARN] [WARN_2001] Position delimiter not in BYOD metadata. Used local setting 'C' to parse link.
 ```
 
 **Invalid delimiter (error):**
+
 ```
 [ERROR] [ERR_2003] Invalid BYOD line delimiter "L1" (cannot contain digits)
 ```
 
 **Format mismatch (error):**
+
 ```
 [ERROR] [ERR_2004] BYOD format mismatch: link has columns but metadata missing position delimiter
 ```
@@ -464,6 +498,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#error-code-reference) for complete l
 ### Critical Errors
 
 **Unknown validation error:**
+
 ```
 [CRITICAL] [ERR_1099] CRITICAL: Unknown validation error for delimiterLine value "L?" (error type: INVALID_ERROR_VALUE). This indicates a bug in validation logic.
 ```

@@ -17,4 +17,3 @@ export function formatSimpleLineReference(
   const { hash: delimHash, line: delimLine } = delimiters;
   return `${path}${delimHash}${delimLine}${line}`;
 }
-

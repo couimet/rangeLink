@@ -12,4 +12,3 @@ export function areDelimitersUnique(delimiters: DelimiterConfig): boolean {
   const lowerCaseValues = values.map((v) => v.toLowerCase());
   return new Set(lowerCaseValues).size === lowerCaseValues.length;
 }
-

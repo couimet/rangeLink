@@ -94,4 +94,3 @@ describe('haveSubstringConflicts', () => {
     expect(haveSubstringConflicts(delimiters)).toBe(false);
   });
 });
-

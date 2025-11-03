@@ -58,4 +58,3 @@ export function formatPortableLink(
 
   return Ok(result);
 }
-

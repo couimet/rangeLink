@@ -59,4 +59,3 @@ describe('isRectangularSelection', () => {
     expect(isRectangularSelection(selections)).toBe(false);
   });
 });
-

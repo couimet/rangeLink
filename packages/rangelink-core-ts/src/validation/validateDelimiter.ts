@@ -2,7 +2,6 @@ import { RESERVED_CHARS } from '../constants/RESERVED_CHARS';
 import { DelimiterValidationError } from '../types/DelimiterValidationError';
 import { Err, Ok, Result } from '../types/Result';
 
-
 /**
  * Validate a delimiter value and return a result.
  *
@@ -42,4 +41,3 @@ export function validateDelimiter(
 
   return Ok(undefined);
 }
-

@@ -2,14 +2,6 @@
   "name": "rangelink-core-ts",
   "version": "0.1.0",
   "description": "Pure TypeScript core library for RangeLink - zero dependencies, platform-agnostic",
-  "main": "./out/index.js",
-  "types": "./out/index.d.ts",
-  "scripts": {
-    "clean": "rm -rf out coverage *.tsbuildinfo",
-    "compile": "tsc -p .",
-    "watch": "tsc -p . --watch",
-    "test": "jest --coverage"
-  },
   "keywords": [
     "rangelink",
     "code-navigation",
@@ -18,8 +10,6 @@
     "rectangular selection",
     "code reference"
   ],
-  "author": "RangeLink Contributors",
-  "license": "MIT",
   "homepage": "https://github.com/couimet/rangelink/tree/main/packages/rangelink-core-ts#readme",
   "bugs": {
     "url": "https://github.com/couimet/rangelink/issues"
@@ -29,6 +19,16 @@
     "url": "https://github.com/couimet/rangelink",
     "directory": "packages/rangelink-core-ts"
   },
+  "license": "MIT",
+  "author": "RangeLink Contributors",
+  "main": "./out/index.js",
+  "types": "./out/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf out coverage *.tsbuildinfo",
+    "compile": "tsc -p .",
+    "test": "jest --coverage",
+    "watch": "tsc -p . --watch"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^18.0.0",
@@ -37,4 +37,3 @@
     "typescript": "^5.3.3"
   }
 }
-

@@ -15,4 +15,3 @@ export interface Logger {
   warn(ctx: LoggingContext, message: string): void;
   error(ctx: LoggingContext, message: string): void;
 }
-

@@ -20,4 +20,3 @@ export function composePortableMetadata(
   }
   return `${PORTABLE_METADATA_SEPARATOR}${parts.join(PORTABLE_METADATA_SEPARATOR)}${PORTABLE_METADATA_SEPARATOR}`;
 }
-

@@ -20,4 +20,3 @@ export * from './selection';
 
 // Formatting
 export * from './formatting';
-

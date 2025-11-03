@@ -46,6 +46,7 @@ rangeLink/
 ```
 
 **Key characteristics:**
+
 - **Zero dependencies** in core library (pure TypeScript)
 - **Platform-agnostic** core (no VSCode coupling)
 - **Thin extension layer** (minimal glue code)
@@ -99,11 +100,13 @@ rangeLink/
 **Rationale:** Enables reuse across editors, tools, and languages.
 
 **Implementation:**
+
 - Core library defines its own `Selection` interface
 - No imports from `vscode` namespace
 - Extension provides adapter layer: `vscode.Selection` → `core.Selection`
 
 **Example:**
+
 ```typescript
 // ❌ BAD: Core library coupled to VSCode
 import { Selection } from 'vscode';
@@ -132,10 +135,12 @@ export function formatLink(selection: Selection): string {
 **Rationale:** Minimize bundle size, maximize portability, reduce security surface.
 
 **Current dependencies:**
+
 - **Core:** None (only `typescript` as devDependency)
 - **Extension:** Only `rangelink-core-ts` (and VSCode engine)
 
 **Benefits:**
+
 - 📦 Small bundle size (~50KB core library)
 - 🔒 No supply chain vulnerabilities
 - 🚀 Fast installation
@@ -146,10 +151,12 @@ export function formatLink(selection: Selection): string {
 **Principle:** 100% branch coverage target with comprehensive test suites.
 
 **Coverage targets:**
+
 - Core library: 100% branch coverage
 - Extension: 90%+ coverage
 
 **Test organization:**
+
 ```
 tests/
   unit/                       # Unit tests (isolated)
@@ -158,6 +165,7 @@ tests/
 ```
 
 **Test categories:**
+
 - ✅ Happy path (standard use cases)
 - ✅ Edge cases (empty, boundary values)
 - ✅ Error conditions (validation failures)
@@ -171,12 +179,14 @@ tests/
 **Format:** `[LEVEL] [CODE] message`
 
 **Example:**
+
 ```typescript
 [INFO] [MSG_1001] Configuration loaded: line="L", column="C"
 [ERROR] [ERR_1005] Invalid delimiterLine value "L~" (reserved character '~')
 ```
 
 **Benefits:**
+
 - 🌍 i18n-ready (codes map to translations)
 - 🔍 Searchable (unique codes)
 - 📊 Analytics-friendly (aggregate by code)
@@ -188,6 +198,7 @@ See [LOGGING.md](./LOGGING.md) for complete logging specification.
 **Principle:** Micro-iterations (1-2 hours) with clear scope and "done when" criteria.
 
 **Workflow:**
+
 1. Define iteration scope (what IS and IS NOT included)
 2. Estimate time (1-2 hours)
 3. Implement with tests
@@ -195,6 +206,7 @@ See [LOGGING.md](./LOGGING.md) for complete logging specification.
 5. Move to next iteration
 
 **Benefits:**
+
 - 🎯 Prevents scope creep
 - 📈 Natural progress tracking
 - 🔄 Easy to pause/resume
@@ -215,24 +227,24 @@ See [ROADMAP.md](./ROADMAP.md) for detailed iteration planning.
 ```typescript
 // Selection.ts - Platform-agnostic selection
 export interface Selection {
-  readonly startLine: number;  // 1-indexed
-  readonly startChar: number;  // 0-indexed
-  readonly endLine: number;    // 1-indexed
-  readonly endChar: number;    // 0-indexed
+  readonly startLine: number; // 1-indexed
+  readonly startChar: number; // 0-indexed
+  readonly endLine: number; // 1-indexed
+  readonly endChar: number; // 0-indexed
 }
 
 // RangeLinkConfig.ts - Delimiter configuration
 export interface RangeLinkConfig {
-  readonly delimiterLine: string;      // Default: "L"
-  readonly delimiterPosition: string;  // Default: "C"
-  readonly delimiterHash: string;      // Default: "#"
-  readonly delimiterRange: string;     // Default: "-"
+  readonly delimiterLine: string; // Default: "L"
+  readonly delimiterPosition: string; // Default: "C"
+  readonly delimiterHash: string; // Default: "#"
+  readonly delimiterRange: string; // Default: "-"
 }
 
 // HashMode.ts - Selection mode
 export enum HashMode {
-  Normal = 'Normal',              // Single hash: #
-  RectangularMode = 'RectangularMode',  // Double hash: ##
+  Normal = 'Normal', // Single hash: #
+  RectangularMode = 'RectangularMode', // Double hash: ##
 }
 
 // RangeLinkMessageCode.ts - Structured logging codes
@@ -250,6 +262,7 @@ export enum RangeLinkMessageCode {
 **Purpose:** Determine if selections form a rectangular selection.
 
 **Algorithm:**
+
 ```typescript
 export function isRectangularSelection(selections: ReadonlyArray<Selection>): boolean {
   // Need at least 2 selections
@@ -268,10 +281,7 @@ export function isRectangularSelection(selections: ReadonlyArray<Selection>): bo
     const selection = selections[i];
 
     // Check column consistency
-    if (
-      selection.startChar !== expectedStartChar ||
-      selection.endChar !== expectedEndChar
-    ) {
+    if (selection.startChar !== expectedStartChar || selection.endChar !== expectedEndChar) {
       return false;
     }
 
@@ -289,6 +299,7 @@ export function isRectangularSelection(selections: ReadonlyArray<Selection>): bo
 ```
 
 **Test coverage:**
+
 - ✅ Single selection (false)
 - ✅ Two selections, same columns, consecutive lines (true)
 - ✅ Multiple selections, same columns, consecutive lines (true)
@@ -304,17 +315,16 @@ export function isRectangularSelection(selections: ReadonlyArray<Selection>): bo
 **Purpose:** Generate RangeLink strings from selections and configuration.
 
 **Key function:**
+
 ```typescript
 export function formatLink(
   path: string,
   selections: ReadonlyArray<Selection>,
   config: RangeLinkConfig,
-  options: { portable?: boolean; absolutePath?: boolean } = {}
+  options: { portable?: boolean; absolutePath?: boolean } = {},
 ): string {
   // 1. Determine hash mode (normal vs rectangular)
-  const hashMode = isRectangularSelection(selections)
-    ? HashMode.RectangularMode
-    : HashMode.Normal;
+  const hashMode = isRectangularSelection(selections) ? HashMode.RectangularMode : HashMode.Normal;
 
   // 2. Normalize selection (use first if multiple, non-rectangular)
   const selection = normalizeSelection(selections, hashMode);
@@ -325,19 +335,18 @@ export function formatLink(
   // 4. Add hash prefix (single or double)
   const hashPrefix =
     hashMode === HashMode.RectangularMode
-      ? config.delimiterHash.repeat(2)  // ##
-      : config.delimiterHash;           // #
+      ? config.delimiterHash.repeat(2) // ##
+      : config.delimiterHash; // #
 
   // 5. Optionally add BYOD metadata
-  const byodSuffix = options.portable
-    ? formatBYODMetadata(config, selection)
-    : '';
+  const byodSuffix = options.portable ? formatBYODMetadata(config, selection) : '';
 
   return `${path}${hashPrefix}${rangePart}${byodSuffix}`;
 }
 ```
 
 **Link format examples:**
+
 - Single line: `path#L42`
 - Multi-line: `path#L10-L20`
 - With columns: `path#L10C5-L20C10`
@@ -353,6 +362,7 @@ See [LINK-FORMATS.md](./LINK-FORMATS.md) for complete format specification.
 **Purpose:** Validate delimiter configuration and provide error codes.
 
 **Validation rules:**
+
 1. ✅ Not empty (min 1 character)
 2. ✅ No digits (0-9)
 3. ✅ No whitespace (spaces, tabs, newlines)
@@ -362,6 +372,7 @@ See [LINK-FORMATS.md](./LINK-FORMATS.md) for complete format specification.
 7. ✅ Hash single character (for local config only)
 
 **Error codes:**
+
 - `ERR_1002` - DELIMITER_EMPTY
 - `ERR_1003` - DELIMITER_DIGITS
 - `ERR_1004` - DELIMITER_WHITESPACE
@@ -379,6 +390,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md) for complete validation specificati
 **Purpose:** Generate and parse portable links with embedded delimiter metadata.
 
 **Format:**
+
 ```
 path#L10C5-L20C10~#~L~-~C~
                  └─┬──┘ Metadata
@@ -386,13 +398,10 @@ path#L10C5-L20C10~#~L~-~C~
 ```
 
 **Generation:**
+
 ```typescript
-export function formatBYODMetadata(
-  config: RangeLinkConfig,
-  selection: Selection
-): string {
-  const hasColumns =
-    selection.startChar !== undefined && selection.endChar !== undefined;
+export function formatBYODMetadata(config: RangeLinkConfig, selection: Selection): string {
+  const hasColumns = selection.startChar !== undefined && selection.endChar !== undefined;
 
   if (hasColumns) {
     // 4-field format: ~hash~line~range~position~
@@ -405,6 +414,7 @@ export function formatBYODMetadata(
 ```
 
 **Parsing:** (Phase 2 roadmap item)
+
 - Detect `~` separator
 - Extract metadata fields
 - Validate embedded delimiters
@@ -425,6 +435,7 @@ See [BYOD.md](./BYOD.md) for complete BYOD specification.
 **Solution:** Adapter layer converts VSCode types to core types.
 
 **Implementation:**
+
 ```typescript
 // extension.ts
 import * as vscode from 'vscode';
@@ -439,10 +450,7 @@ function adaptSelection(vscodeSelection: vscode.Selection): CoreSelection {
   };
 }
 
-export function copyLinkCommand(
-  editor: vscode.TextEditor,
-  config: RangeLinkConfig
-): void {
+export function copyLinkCommand(editor: vscode.TextEditor, config: RangeLinkConfig): void {
   const selections = editor.selections.map(adaptSelection);
   const path = vscode.workspace.asRelativePath(editor.document.uri);
 
@@ -454,6 +462,7 @@ export function copyLinkCommand(
 ```
 
 **Benefits:**
+
 - ✅ Core library remains platform-agnostic
 - ✅ Easy to add adapters for other editors
 - ✅ Clear separation of concerns
@@ -461,6 +470,7 @@ export function copyLinkCommand(
 ### Configuration Loading
 
 **Implementation:**
+
 ```typescript
 // config/loadConfig.ts
 import * as vscode from 'vscode';
@@ -496,6 +506,7 @@ export function loadConfig(): RangeLinkConfig {
 ### Command Registration
 
 **Implementation:**
+
 ```typescript
 // extension.ts
 export function activate(context: vscode.ExtensionContext): void {
@@ -515,10 +526,7 @@ export function activate(context: vscode.ExtensionContext): void {
   ];
 
   commands.forEach((command) => {
-    const disposable = vscode.commands.registerCommand(
-      command.id,
-      command.handler
-    );
+    const disposable = vscode.commands.registerCommand(command.id, command.handler);
     context.subscriptions.push(disposable);
   });
 }
@@ -540,6 +548,7 @@ When RangeLink expands to support multiple languages (TypeScript, Java, C/C++, R
 ### Solution: Specification-First + Contract Testing
 
 **Core principles:**
+
 1. **Single Source of Truth** - Specification defines behavior, not implementations
 2. **Contract-Driven** - All implementations pass same contract tests
 3. **Language-Agnostic Contracts** - Test cases defined in JSON, executable in any language
@@ -586,6 +595,7 @@ rangeLink/
 ### Contract Test Example
 
 **Specification (JSON):**
+
 ```json
 // spec/contracts/build-link/rectangular-mode.json
 {
@@ -617,6 +627,7 @@ rangeLink/
 ```
 
 **TypeScript implementation:**
+
 ```typescript
 // packages/rangelink-core-ts/tests/contracts/test-build-link.ts
 describe('Contract: Rectangular Mode', () => {
@@ -627,7 +638,7 @@ describe('Contract: Rectangular Mode', () => {
       const result = formatLink(
         testCase.input.path,
         testCase.input.selections,
-        testCase.input.config
+        testCase.input.config,
       );
 
       expect(result).toBe(testCase.expected.link);
@@ -637,6 +648,7 @@ describe('Contract: Rectangular Mode', () => {
 ```
 
 **Java implementation:**
+
 ```java
 // packages/rangelink-core-java/src/test/java/ContractTests.java
 @ParameterizedTest

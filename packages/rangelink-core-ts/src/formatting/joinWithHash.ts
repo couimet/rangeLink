@@ -20,4 +20,3 @@ export function joinWithHash(
   const prefix = mode === HashMode.RectangularMode ? `${delimHash}${delimHash}` : `${delimHash}`;
   return `${path}${prefix}${anchor}`;
 }
-

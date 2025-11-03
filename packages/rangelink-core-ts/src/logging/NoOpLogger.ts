@@ -22,4 +22,3 @@ export class NoOpLogger implements Logger {
     // No operation
   }
 }
-

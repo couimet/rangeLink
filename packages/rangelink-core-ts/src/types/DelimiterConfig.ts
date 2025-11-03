@@ -7,4 +7,3 @@ export interface DelimiterConfig {
   readonly hash: string;
   readonly range: string;
 }
-

@@ -9,7 +9,6 @@
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/couimet.rangelink-vscode-extension?label=VS%20Code%20Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
-
 > **"Hey, check out lines 42 to 58... or was it 48 to 62?"** 🤔
 > **Never again.** RangeLink gives you `src/auth.ts#L42C10-L58C25` — precise, portable, and **just works** across editors, tools, and teams.
 
@@ -18,6 +17,7 @@
 ## Why RangeLink?
 
 **For Developers Who Care About Precision:**
+
 - 🎯 **No more "around line 42"** — Share exact ranges: `auth.ts#L42C10-L58C25`
 - 🔗 **Works everywhere** — Claude Code, VSCode, Cursor, Sublime Text, GitHub, Slack, PRs
 - 🚀 **One keystroke** — `Cmd+R Cmd+L` → link copied, done
@@ -26,8 +26,9 @@
 - 📐 **Rectangular selection support** — Share column ranges with `##` notation
 
 **Perfect for:**
+
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`"
-- 🤖 **AI assistants** — Give Claude Code or Copilot *exact* context
+- 🤖 **AI assistants** — Give Claude Code or Copilot _exact_ context
 - 📚 **Documentation** — Precise references that don't break
 - 👥 **Team collaboration** — Universal format everyone can use
 
@@ -47,11 +48,13 @@ Or search for **"RangeLink"** in your editor's Extensions panel (`Ctrl+Shift+X` 
 3. **Done!** Link is in your clipboard 📋
 
 **Example output:**
+
 ```
 src/utils/parser.ts#L42C10-L58C25
 ```
 
 **Try it right now:**
+
 - Select lines 10-25 in any file → `Cmd+R Cmd+L` → Paste into Slack
 - Your teammate clicks → Opens exact location in their editor
 - **No more "wait, which file?" moments** ✨
@@ -70,11 +73,11 @@ src/utils/parser.ts#L42C10-L58C25
 
 ### Basic Formats
 
-| Selection Type | Format | Example |
-|----------------|--------|---------|
-| Single line | `path#L<line>` | `src/file.ts#L42` |
-| Multiple lines | `path#L<start>-L<end>` | `src/file.ts#L10-L25` |
-| With column precision | `path#L<line>C<col>-L<line>C<col>` | `src/file.ts#L42C6-L42C15` |
+| Selection Type        | Format                              | Example                     |
+| --------------------- | ----------------------------------- | --------------------------- |
+| Single line           | `path#L<line>`                      | `src/file.ts#L42`           |
+| Multiple lines        | `path#L<start>-L<end>`              | `src/file.ts#L10-L25`       |
+| With column precision | `path#L<line>C<col>-L<line>C<col>`  | `src/file.ts#L42C6-L42C15`  |
 | Rectangular selection | `path##L<start>C<col>-L<end>C<col>` | `src/file.ts##L10C5-L20C10` |
 
 ### Rectangular Mode
@@ -101,6 +104,7 @@ src/file.ts#L10C5-L20C10~#~L~-~C~
 The `~` separator marks embedded delimiters (`#`, `L`, `-`, `C`) that override recipient's local config.
 
 **Benefits:**
+
 - ✅ No coordination needed between sender and recipient
 - ✅ Works across different editors and tools
 - ✅ Future-proof - survives configuration changes
@@ -112,11 +116,11 @@ The `~` separator marks embedded delimiters (`#`, `L`, `-`, `C`) that override r
 
 All commands are available via keyboard shortcuts, Command Palette, and right-click context menu:
 
-| Command | Shortcut (Mac) | Shortcut (Win/Linux) | Description |
-|---------|----------------|----------------------|-------------|
-| Copy Range Link | `Cmd+R Cmd+L` | `Ctrl+R Ctrl+L` | Relative path link |
-| Copy Range Link (Absolute) | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Absolute path link |
-| Copy Portable Link | `Cmd+R Cmd+P` | `Ctrl+R Ctrl+P` | Portable BYOD link |
+| Command                       | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description        |
+| ----------------------------- | ------------------- | --------------------- | ------------------ |
+| Copy Range Link               | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Relative path link |
+| Copy Range Link (Absolute)    | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Absolute path link |
+| Copy Portable Link            | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Portable BYOD link |
 | Copy Portable Link (Absolute) | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Absolute BYOD link |
 
 **Customizing shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) → search "RangeLink"
@@ -158,7 +162,7 @@ Point teammates to specific code sections in Slack, Teams, or PR comments:
 
 ## History
 
-Even though I use Cursor daily, most of my AI work happens with `claude-code` running in a terminal *inside* Cursor. The constant copy-pasting between terminal and editor was exhausting.
+Even though I use Cursor daily, most of my AI work happens with `claude-code` running in a terminal _inside_ Cursor. The constant copy-pasting between terminal and editor was exhausting.
 
 One day, frustrated after the hundredth copy-paste, I tried something: I sent Claude Code a link like `auth.ts#L42C10-L58C25` pointing to a specific code snippet.
 
@@ -166,7 +170,7 @@ One day, frustrated after the hundredth copy-paste, I tried something: I sent Cl
 
 That was the lightbulb moment: **precise code references should be universal**. Not just for AI assistants, but for code reviews, documentation, team collaboration—anywhere developers share code.
 
-I built the VS Code extension first, then extracted a platform-agnostic core library. The goal: make this work *everywhere*, for *everyone*.
+I built the VS Code extension first, then extracted a platform-agnostic core library. The goal: make this work _everywhere_, for _everyone_.
 
 Today, RangeLink helps developers share code with precision across Claude Code, Cursor, VSCode, GitHub, Slack, and more. One format, zero friction.
 
@@ -199,6 +203,7 @@ Customize delimiters in VSCode settings (Preferences > Settings > search "rangel
 ### Validation Rules
 
 All delimiters must satisfy:
+
 - ✅ Not empty (min 1 character)
 - ✅ No digits (0-9)
 - ✅ No whitespace
@@ -253,11 +258,13 @@ The core library (`rangelink-core-ts`) follows these principles:
 ## Development
 
 **Quick start:**
+
 ```bash
 ./setup.sh      # One command setup: installs dependencies, builds all packages, runs tests
 ```
 
 **For complete development guide:** See [DEVELOPMENT.md](./DEVELOPMENT.md) for detailed instructions on:
+
 - Monorepo structure and commands
 - Debugging the extension
 - Core library development
@@ -287,16 +294,19 @@ RangeLink follows a **micro-iteration** development approach (1-2 hours per iter
 ### Upcoming Features
 
 **Phase 3 - Link Navigation (Planned):**
+
 - Click or paste RangeLinks to navigate directly to code
 - Hover tooltips showing file path and range
 - Integration with VSCode link detection
 
 **Phase 5 - Enhanced BYOD Support (Planned):**
+
 - Always-portable option (configuration)
 - Improved error messages and recovery
 - Performance optimizations
 
 **Phase 6 - Multi-Range Links (Planned):**
+
 - Reference multiple code sections in one link
 - Syntax: `path#L10-L20|L30-L40|L50-L60`
 - Non-contiguous code selections
@@ -310,11 +320,13 @@ RangeLink is designed for **multi-language expansion** with feature parity acros
 ### Specification-Driven Development
 
 Future implementations (Java, Rust, C/C++, Go) will:
+
 1. Share a common **JSON specification** defining behavior
 2. Pass the same **contract tests** (language-agnostic test cases)
 3. Enforce **feature parity** via CI
 
 **Architecture example:**
+
 ```
 spec/
   schema/              # JSON Schema for data structures
@@ -340,6 +352,7 @@ RangeLink uses **structured logging** with stable error codes for i18n readiness
 ```
 
 **Example logs:**
+
 ```
 [INFO] [MSG_1001] Configuration loaded: line="L", column="C", hash="#", range="-"
 [ERROR] [ERR_1005] Invalid delimiterLine value "L~" (reserved character '~')
@@ -348,14 +361,15 @@ RangeLink uses **structured logging** with stable error codes for i18n readiness
 
 ### Error Code Categories
 
-| Range | Category | Description |
-|-------|----------|-------------|
-| `MSG_1xxx` | Configuration Info | Configuration status messages |
-| `ERR_1xxx` | Configuration Errors | Delimiter validation failures |
-| `ERR_2xxx` | BYOD Errors | Portable link parsing failures |
-| `WARN_2xxx` | BYOD Warnings | BYOD recovery and fallback warnings |
+| Range       | Category             | Description                         |
+| ----------- | -------------------- | ----------------------------------- |
+| `MSG_1xxx`  | Configuration Info   | Configuration status messages       |
+| `ERR_1xxx`  | Configuration Errors | Delimiter validation failures       |
+| `ERR_2xxx`  | BYOD Errors          | Portable link parsing failures      |
+| `WARN_2xxx` | BYOD Warnings        | BYOD recovery and fallback warnings |
 
 **Accessing logs:**
+
 1. Open Output panel: View > Output (`Ctrl+Shift+U` / `Cmd+Shift+U`)
 2. Select "RangeLink" from dropdown
 
@@ -372,6 +386,7 @@ RangeLink uses **structured logging** with stable error codes for i18n readiness
 Contributions are welcome!
 
 **Getting started:**
+
 1. See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines
 2. See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and development workflow
 

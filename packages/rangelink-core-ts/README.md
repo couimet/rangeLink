@@ -53,12 +53,7 @@ if (!result.success) {
 ## Usage
 
 ```typescript
-import {
-  formatLink,
-  Selection,
-  DelimiterConfig,
-  PathFormat,
-} from 'rangelink-core-ts';
+import { formatLink, Selection, DelimiterConfig, PathFormat } from 'rangelink-core-ts';
 
 const selection: Selection = {
   startLine: 10,
@@ -74,12 +69,7 @@ const delimiters: DelimiterConfig = {
   range: '-',
 };
 
-const result = formatLink(
-  'src/file.ts',
-  selection,
-  delimiters,
-  PathFormat.WorkspaceRelative,
-);
+const result = formatLink('src/file.ts', selection, delimiters, PathFormat.WorkspaceRelative);
 
 if (result.success) {
   console.log(result.value); // "src/file.ts#L11C6-L21C16"
@@ -105,4 +95,3 @@ pnpm compile --noEmit
 ## License
 
 MIT
-

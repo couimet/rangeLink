@@ -72,4 +72,3 @@ describe('areDelimitersUnique', () => {
     expect(areDelimitersUnique(delimiters)).toBe(false);
   });
 });
-

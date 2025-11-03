@@ -8,4 +8,3 @@ export interface FormatOptions {
    */
   readonly isFullLine?: boolean;
 }
-

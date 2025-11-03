@@ -22,7 +22,14 @@ describe('buildAnchor', () => {
     });
 
     it('should default to position 1 when positions are undefined', () => {
-      const result = buildAnchor(11, 21, undefined, undefined, defaultDelimiters, RangeFormat.WithPositions);
+      const result = buildAnchor(
+        11,
+        21,
+        undefined,
+        undefined,
+        defaultDelimiters,
+        RangeFormat.WithPositions,
+      );
       expect(result).toBe('L11C1-L21C1');
     });
 
@@ -45,7 +52,14 @@ describe('buildAnchor', () => {
     });
 
     it('should ignore position values when format is LineOnly', () => {
-      const result = buildAnchor(11, 21, undefined, undefined, defaultDelimiters, RangeFormat.LineOnly);
+      const result = buildAnchor(
+        11,
+        21,
+        undefined,
+        undefined,
+        defaultDelimiters,
+        RangeFormat.LineOnly,
+      );
       expect(result).toBe('L11-L21');
     });
 
@@ -56,7 +70,14 @@ describe('buildAnchor', () => {
         hash: '>',
         range: 'thru',
       };
-      const result = buildAnchor(10, 20, undefined, undefined, customDelimiters, RangeFormat.LineOnly);
+      const result = buildAnchor(
+        10,
+        20,
+        undefined,
+        undefined,
+        customDelimiters,
+        RangeFormat.LineOnly,
+      );
       expect(result).toBe('LINE10thruLINE20');
     });
   });
@@ -68,9 +89,15 @@ describe('buildAnchor', () => {
     });
 
     it('should handle single-line selection without positions', () => {
-      const result = buildAnchor(11, 11, undefined, undefined, defaultDelimiters, RangeFormat.LineOnly);
+      const result = buildAnchor(
+        11,
+        11,
+        undefined,
+        undefined,
+        defaultDelimiters,
+        RangeFormat.LineOnly,
+      );
       expect(result).toBe('L11-L11');
     });
   });
 });
-

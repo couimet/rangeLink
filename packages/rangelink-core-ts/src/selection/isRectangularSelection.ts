@@ -36,4 +36,3 @@ export function isRectangularSelection(selections: ReadonlyArray<Selection>): bo
 
   return true;
 }
-

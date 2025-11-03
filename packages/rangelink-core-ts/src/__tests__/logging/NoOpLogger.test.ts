@@ -21,4 +21,3 @@ describe('NoOpLogger', () => {
     expect(() => logger.error({ fn: 'test' }, 'message')).not.toThrow();
   });
 });
-

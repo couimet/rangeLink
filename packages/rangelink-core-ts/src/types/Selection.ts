@@ -11,4 +11,3 @@ export interface Selection {
   readonly endLine: number;
   readonly endCharacter: number;
 }
-

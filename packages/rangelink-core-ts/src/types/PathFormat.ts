@@ -7,4 +7,3 @@ export enum PathFormat {
   WorkspaceRelative = 'WorkspaceRelative',
   Absolute = 'Absolute',
 }
-

@@ -31,4 +31,3 @@ export function buildAnchor(
   const end = `${delimL}${endLine}${delimP}${endPosition ?? 1}`;
   return `${start}${delimRange}${end}`;
 }
-

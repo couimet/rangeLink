@@ -10,4 +10,3 @@ export enum DelimiterValidationError {
   ContainsReservedChar = 'ERR_RESERVED',
   HashNotSingleChar = 'ERR_HASH_NOT_SINGLE',
 }
-

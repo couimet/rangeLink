@@ -16,7 +16,12 @@ describe('joinWithHash', () => {
   });
 
   it('should use double hash for rectangular mode', () => {
-    const result = joinWithHash('src/file.ts', 'L10C5-L20C10', defaultDelimiters, HashMode.RectangularMode);
+    const result = joinWithHash(
+      'src/file.ts',
+      'L10C5-L20C10',
+      defaultDelimiters,
+      HashMode.RectangularMode,
+    );
     expect(result).toBe('src/file.ts##L10C5-L20C10');
   });
 
@@ -43,8 +48,12 @@ describe('joinWithHash', () => {
       hash: '>>',
       range: '-',
     };
-    const result = joinWithHash('path/file.ts', 'L10C5-L20C10', customDelimiters, HashMode.RectangularMode);
+    const result = joinWithHash(
+      'path/file.ts',
+      'L10C5-L20C10',
+      customDelimiters,
+      HashMode.RectangularMode,
+    );
     expect(result).toBe('path/file.ts>>>>L10C5-L20C10');
   });
 });
-

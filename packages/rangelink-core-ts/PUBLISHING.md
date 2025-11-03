@@ -9,6 +9,7 @@ The `rangelink-core-ts` package will be published to npm as a standalone library
 ### What is rangelink-core-ts?
 
 A pure TypeScript core library for RangeLink with:
+
 - **Zero dependencies** - Completely standalone
 - **Platform-agnostic** - Works in Node.js, browsers, Deno, etc.
 - **Type-safe** - Full TypeScript support with comprehensive type definitions
@@ -22,11 +23,18 @@ When published, you'll be able to use it like this:
 import { formatLink, formatPortableLink } from 'rangelink-core-ts';
 
 // Generate a range link
-const link = formatLink('/path/to/file.ts', { start: { line: 10, position: 5 }, end: { line: 20, position: 15 } });
+const link = formatLink('/path/to/file.ts', {
+  start: { line: 10, position: 5 },
+  end: { line: 20, position: 15 },
+});
 // => "/path/to/file.ts#L10C5-L20C15"
 
 // Generate a portable link with metadata
-const portableLink = formatPortableLink('/path/to/file.ts', { start: { line: 10 }, end: { line: 20 } }, 'Selected code snippet');
+const portableLink = formatPortableLink(
+  '/path/to/file.ts',
+  { start: { line: 10 }, end: { line: 20 } },
+  'Selected code snippet',
+);
 // => "/path/to/file.ts#L10-L20|Selected code snippet"
 ```
 

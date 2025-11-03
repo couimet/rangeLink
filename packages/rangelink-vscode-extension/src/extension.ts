@@ -18,7 +18,6 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-
 import { VSCodeLogger } from './VSCodeLogger';
 
 // Re-export PathFormat for backward compatibility with tests
@@ -222,9 +221,13 @@ function loadDelimiterConfig(): DelimiterConfig {
 
   if (errors.length > 0) {
     for (const { name, code } of errors) {
-      outputChannel.appendLine(`[ERROR] [${code}] Invalid ${name}: must be non-empty, non-numeric, and not contain reserved characters (${RESERVED_CHARS.join(', ')})`);
+      outputChannel.appendLine(
+        `[ERROR] [${code}] Invalid ${name}: must be non-empty, non-numeric, and not contain reserved characters (${RESERVED_CHARS.join(', ')})`,
+      );
     }
-    outputChannel.appendLine(`[INFO] [${RangeLinkMessageCode.CONFIG_USING_DEFAULTS}] Using default delimiters due to validation errors.`);
+    outputChannel.appendLine(
+      `[INFO] [${RangeLinkMessageCode.CONFIG_USING_DEFAULTS}] Using default delimiters due to validation errors.`,
+    );
     return DEFAULT_DELIMITERS;
   }
 
@@ -256,7 +259,9 @@ function loadDelimiterConfig(): DelimiterConfig {
   }
 
   // Log successful configuration load with source info
-  outputChannel.appendLine(`[INFO] [${RangeLinkMessageCode.CONFIG_LOADED}] Delimiter configuration loaded:`);
+  outputChannel.appendLine(
+    `[INFO] [${RangeLinkMessageCode.CONFIG_LOADED}] Delimiter configuration loaded:`,
+  );
 
   const inspectLine = config.inspect<string>('delimiterLine');
   const inspectPosition = config.inspect<string>('delimiterPosition');

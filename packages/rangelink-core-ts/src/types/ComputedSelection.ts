@@ -13,4 +13,3 @@ export interface ComputedSelection {
   readonly rangeFormat: RangeFormat;
   readonly hashMode: HashMode;
 }
-

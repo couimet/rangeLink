@@ -5,9 +5,7 @@
       "name": "Run RangeLink VSCode Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}/packages/rangelink-vscode-extension"
-      ],
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/packages/rangelink-vscode-extension"],
       "outFiles": [
         "${workspaceFolder}/packages/rangelink-vscode-extension/out/**/*.js",
         "${workspaceFolder}/packages/rangelink-core-ts/out/**/*.js"

@@ -25,4 +25,3 @@ describe('formatSimpleLineReference', () => {
     expect(result).toBe('path/to/file.ts>>LINE10');
   });
 });
-

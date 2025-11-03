@@ -6,4 +6,3 @@ export interface LoggingContext {
   fn: string;
   [key: string]: unknown;
 }
-

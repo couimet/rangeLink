@@ -108,4 +108,3 @@ describe('formatLink', () => {
     expect(result.success).toBe(false);
   });
 });
-

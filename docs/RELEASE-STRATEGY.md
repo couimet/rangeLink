@@ -53,11 +53,11 @@ All git tags follow this format:
 
 ### Package Name Conventions
 
-| Package Directory | Tag Prefix | Example Tag |
-|-------------------|------------|-------------|
+| Package Directory                      | Tag Prefix          | Example Tag               |
+| -------------------------------------- | ------------------- | ------------------------- |
 | `packages/rangelink-vscode-extension/` | `vscode-extension-` | `vscode-extension-v0.1.0` |
-| `packages/rangelink-core-ts/` | `core-ts-` | `core-ts-v1.0.0` |
-| `packages/rangelink-neovim-plugin/` | `neovim-plugin-` | `neovim-plugin-v0.1.0` |
+| `packages/rangelink-core-ts/`          | `core-ts-`          | `core-ts-v1.0.0`          |
+| `packages/rangelink-neovim-plugin/`    | `neovim-plugin-`    | `neovim-plugin-v0.1.0`    |
 
 **Rule:** Use the shortest unambiguous package identifier, removing `rangelink-` prefix.
 
@@ -114,18 +114,21 @@ This is the current manual process for releasing a package. Automated workflows 
 #### Phase 1: Prepare Release
 
 1. **Ensure working tree is clean**
+
    ```bash
    git status
    # Should show: "nothing to commit, working tree clean"
    ```
 
 2. **Update package version**
+
    ```bash
    cd packages/rangelink-vscode-extension
    # Edit package.json: "version": "0.1.1"
    ```
 
 3. **Update CHANGELOG.md**
+
    ```bash
    # Edit packages/rangelink-vscode-extension/CHANGELOG.md
    # Add new version section with changes
@@ -141,6 +144,7 @@ This is the current manual process for releasing a package. Automated workflows 
 #### Phase 2: Build and Test
 
 5. **Clean and rebuild**
+
    ```bash
    pnpm clean
    pnpm install
@@ -149,6 +153,7 @@ This is the current manual process for releasing a package. Automated workflows 
    ```
 
 6. **Package extension**
+
    ```bash
    cd packages/rangelink-vscode-extension
    pnpm package
@@ -165,6 +170,7 @@ This is the current manual process for releasing a package. Automated workflows 
 #### Phase 3: Publish
 
 8. **Publish to marketplace**
+
    ```bash
    cd packages/rangelink-vscode-extension
    pnpm publish
@@ -180,6 +186,7 @@ This is the current manual process for releasing a package. Automated workflows 
 #### Phase 4: Tag and Release
 
 10. **Create annotated git tag**
+
     ```bash
     git tag -a vscode-extension-v0.1.1 -m "Release vscode-extension v0.1.1
 
@@ -191,6 +198,7 @@ This is the current manual process for releasing a package. Automated workflows 
     ```
 
 11. **Push tag to remote**
+
     ```bash
     git push origin vscode-extension-v0.1.1
     ```
@@ -229,18 +237,21 @@ If you've already published to the marketplace but forgot to create a git tag, f
 **Process:**
 
 1. **Identify the exact commit**
+
    ```bash
    # You know the commit hash: ff52f9a6de904681e5fac7785c1b1f896040a42b
    git log --oneline -1 ff52f9a
    ```
 
 2. **Verify the commit has the correct version**
+
    ```bash
    git show ff52f9a:packages/rangelink-vscode-extension/package.json | grep '"version"'
    # Should show: "version": "0.1.0"
    ```
 
 3. **Create annotated tag on that commit**
+
    ```bash
    git tag -a vscode-extension-v0.1.0 ff52f9a -m "Release vscode-extension v0.1.0
 
@@ -260,12 +271,14 @@ If you've already published to the marketplace but forgot to create a git tag, f
    ```
 
 4. **Verify tag was created correctly**
+
    ```bash
    git tag -l "vscode-extension-v*"
    git show vscode-extension-v0.1.0 --stat
    ```
 
 5. **Push tag to remote**
+
    ```bash
    git push origin vscode-extension-v0.1.0
    ```
@@ -275,6 +288,7 @@ If you've already published to the marketplace but forgot to create a git tag, f
    - Select tag: `vscode-extension-v0.1.0`
    - Title: `VS Code Extension v0.1.0`
    - Description:
+
      ```markdown
      Initial release of RangeLink VS Code Extension
 
@@ -296,10 +310,12 @@ If you've already published to the marketplace but forgot to create a git tag, f
 
      See [ROADMAP.md](https://github.com/couimet/rangelink/blob/main/docs/ROADMAP.md) for upcoming features.
      ```
+
    - Check "This is a pre-release" if applicable (NO for 0.1.0)
    - Publish release
 
 7. **Verify everything**
+
    ```bash
    # Check tag exists locally and remotely
    git tag -l "vscode-extension-v*"

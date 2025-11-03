@@ -27,10 +27,7 @@
       "label": "Watch: rangelink-vscode-extension",
       "type": "shell",
       "command": "./scripts/pnpm-exec.sh -C packages/rangelink-vscode-extension watch",
-      "dependsOn": [
-        "Build: rangelink-core-ts",
-        "Generate version.json"
-      ],
+      "dependsOn": ["Build: rangelink-core-ts", "Generate version.json"],
       "dependsOrder": "sequence",
       "problemMatcher": "$tsc-watch",
       "isBackground": true,
@@ -45,10 +42,7 @@
     },
     {
       "label": "Watch: All (Parallel)",
-      "dependsOn": [
-        "Watch: rangelink-core-ts",
-        "Watch: rangelink-vscode-extension"
-      ],
+      "dependsOn": ["Watch: rangelink-core-ts", "Watch: rangelink-vscode-extension"],
       "dependsOrder": "parallel",
       "problemMatcher": []
     }

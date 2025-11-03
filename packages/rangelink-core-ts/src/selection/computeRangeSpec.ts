@@ -23,7 +23,8 @@ export function computeRangeSpec(
 
   // Convert to 1-based indexing
   const startLine = primary.startLine + 1;
-  const endLine = (isRectangular ? selections[selections.length - 1].startLine : primary.endLine) + 1;
+  const endLine =
+    (isRectangular ? selections[selections.length - 1].startLine : primary.endLine) + 1;
   const startPosition = primary.startCharacter + 1;
   const endPosition = primary.endCharacter + 1;
 
@@ -52,4 +53,3 @@ export function computeRangeSpec(
     hashMode: HashMode.Normal,
   };
 }
-

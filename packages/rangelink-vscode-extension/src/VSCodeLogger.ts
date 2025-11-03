@@ -1,7 +1,6 @@
 import { Logger, LoggingContext } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-
 /**
  * VSCode implementation of the Logger interface.
  * Bridges the core logging interface to VSCode's OutputChannel.
@@ -30,4 +29,3 @@ export class VSCodeLogger implements Logger {
     this.outputChannel.appendLine(`[${level}] ${contextStr} ${message}`);
   }
 }
-

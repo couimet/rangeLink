@@ -7,6 +7,7 @@
 BYOD (Bring Your Own Delimiters, aka BYODELI 🥪) solves a critical collaboration problem: when you share a RangeLink with someone who uses different delimiter configurations, the link will still work perfectly.
 
 **The problem:**
+
 ```
 Alice: delimiterHash="#", delimiterLine="L"
 Bob:   delimiterHash="@", delimiterLine="line"
@@ -16,6 +17,7 @@ Bob sees:     src/file.ts# L10-L20  ← Parsing fails!
 ```
 
 **The solution:**
+
 ```
 Alice shares: src/file.ts#L10-L20~#~L~-~
 Bob receives: Parsed correctly with embedded delimiters (#, L, -)
@@ -24,15 +26,19 @@ Bob receives: Parsed correctly with embedded delimiters (#, L, -)
 ## Benefits
 
 ### 1. Share Links Freely
+
 No coordination needed between sender and recipient. Send links to anyone, regardless of their configuration.
 
 ### 2. Future-Proof References
+
 Links work even if someone changes their configuration later. Delimiter metadata is permanently embedded.
 
 ### 3. Cross-Tool Compatibility
+
 Share links between different editors and tools. As long as they support RangeLink format, portable links work.
 
 ### 4. Zero Setup
+
 Recipients don't need to configure anything. Links parse automatically using embedded metadata.
 
 ## Format Specification
@@ -44,11 +50,13 @@ path#L10-L20~#~L~-~
 ```
 
 **Structure:**
+
 ```
 <standard-link>~<hash>~<line>~<range>~
 ```
 
 **Components:**
+
 - `path#L10-L20` - Standard RangeLink using sender's delimiters
 - `~` - Fixed separator (not configurable)
 - `#` - Hash delimiter to use
@@ -63,11 +71,13 @@ path#L10C5-L20C10~#~L~-~C~
 ```
 
 **Structure:**
+
 ```
 <standard-link>~<hash>~<line>~<range>~<position>~
 ```
 
 **Components:**
+
 - `path#L10C5-L20C10` - Standard RangeLink with column positions
 - `~` - Fixed separator
 - `#` - Hash delimiter
@@ -83,6 +93,7 @@ path##L10C5-L20C10~#~L~-~C~
 ```
 
 **Structure:**
+
 ```
 <standard-link-with-double-hash>~<hash>~<line>~<range>~<position>~
 ```
@@ -96,6 +107,7 @@ path##L10C5-L20C10~#~L~-~C~
 ### Example 1: Extreme Custom Delimiters
 
 **Configuration:**
+
 ```json
 {
   "delimiterHash": ">>",
@@ -106,11 +118,13 @@ path##L10C5-L20C10~#~L~-~C~
 ```
 
 **Portable link:**
+
 ```
 path>>line10pos5thruline20pos10~>>~line~thru~pos~
 ```
 
 **How it works:**
+
 1. Recipient receives link
 2. Extension detects `~` separator
 3. Extracts metadata: hash=`>>`, line=`line`, range=`thru`, position=`pos`
@@ -120,6 +134,7 @@ path>>line10pos5thruline20pos10~>>~line~thru~pos~
 ### Example 2: Single Character Custom Delimiters
 
 **Configuration:**
+
 ```json
 {
   "delimiterHash": "@",
@@ -130,6 +145,7 @@ path>>line10pos5thruline20pos10~>>~line~thru~pos~
 ```
 
 **Portable link:**
+
 ```
 path@l10p5:l20p10~@~l~:~p~
 ```
@@ -137,6 +153,7 @@ path@l10p5:l20p10~@~l~:~p~
 ### Example 3: Default Delimiters (Still Portable)
 
 **Configuration:**
+
 ```json
 {
   "delimiterHash": "#",
@@ -147,6 +164,7 @@ path@l10p5:l20p10~@~l~:~p~
 ```
 
 **Portable link:**
+
 ```
 path#L10C5-L20C10~#~L~-~C~
 ```
@@ -158,10 +176,12 @@ Even with default delimiters, portable links ensure recipient parses correctly.
 ### Metadata Format Validation
 
 **Valid formats:**
+
 1. **Line-only** (3 fields): `~<hash>~<line>~<range>~`
 2. **With positions** (4 fields): `~<hash>~<line>~<range>~<position>~`
 
 **Invalid formats:**
+
 - Wrong field count (0, 1, 2, 5+)
 - Missing separator `~`
 - Wrong delimiter order
@@ -170,6 +190,7 @@ Even with default delimiters, portable links ensure recipient parses correctly.
 ### Delimiter Validation
 
 All embedded delimiters must satisfy:
+
 1. ✅ **Not empty** - At least 1 character
 2. ✅ **No digits** - Cannot contain 0-9
 3. ✅ **No reserved characters** - Cannot use: `~`, `|`, `/`, `\`, `:`, `,`, `@`
@@ -177,6 +198,7 @@ All embedded delimiters must satisfy:
 5. ✅ **No substring conflicts** - No delimiter can be a substring of another
 
 **Special exception:**
+
 - **Hash delimiter can be multi-character** in BYOD metadata
 - Enables support for configurations not allowed locally
 - Example: `>>`, `HASH`, `-->`
@@ -186,11 +208,13 @@ All embedded delimiters must satisfy:
 #### Scenario A: Extra Delimiter (Valid)
 
 **Link:**
+
 ```
 path#L10-L20~#~L~-~C~
 ```
 
 **Analysis:**
+
 - Link is line-only (no columns)
 - Metadata includes position delimiter (`C`)
 - Position delimiter is unused
@@ -202,15 +226,18 @@ path#L10-L20~#~L~-~C~
 #### Scenario B: Missing Delimiter (Recovery)
 
 **Link:**
+
 ```
 path#L10C5-L20C10~#~L~-~
 ```
 
 **Analysis:**
+
 - Link has columns (`C5`, `C10`)
 - Metadata missing position delimiter
 
 **Recovery strategy (priority order):**
+
 1. **Try local config** `delimiterPosition`
    - If present in link AND doesn't conflict with BYOD delimiters → Use it
    - Log: `[WARN] [WARN_2001] Position delimiter not in BYOD metadata. Used local setting 'C' to parse link.`
@@ -227,6 +254,7 @@ path#L10C5-L20C10~#~L~-~
 #### Scenario C: Malformed (Error)
 
 **Invalid links:**
+
 ```
 # Wrong delimiter order
 path#L10-L20~L~#~-~
@@ -246,10 +274,12 @@ path#L10-L20~LINE~L~-~
 ### Rectangular Mode Detection
 
 **Algorithm:**
+
 1. Count consecutive hash characters after path
 2. Compare to metadata hash delimiter length
 
 **Expected counts:**
+
 - **Regular mode:** `hash_length × 1`
   - Hash=`#` → Expect 1 hash (`#`)
   - Hash=`>>` → Expect 2 chars (`>>`)
@@ -258,6 +288,7 @@ path#L10-L20~LINE~L~-~
   - Hash=`>>` → Expect 4 chars (`>>>>`)
 
 **Invalid counts:**
+
 - Triple+ hash for single-char delimiter: `###`
 - Mismatched length for multi-char delimiter
 - Result: `[ERROR] [ERR_2006] BYOD rectangular mode detection failed: invalid hash sequence`
@@ -269,6 +300,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#byod-parsing-errors-2xxx) for comple
 ### Quick Reference
 
 **Errors:**
+
 - `ERR_2001` - BYOD_ERR_INVALID_FORMAT (malformed metadata structure)
 - `ERR_2002` - BYOD_ERR_HASH_INVALID (hash delimiter validation failed)
 - `ERR_2003` - BYOD_ERR_DELIMITER_VALIDATION (delimiter validation failed)
@@ -277,6 +309,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#byod-parsing-errors-2xxx) for comple
 - `ERR_2006` - BYOD_ERR_RECTANGULAR_MODE_DETECTION (invalid hash sequence)
 
 **Warnings:**
+
 - `WARN_2001` - BYOD_WARN_POSITION_FROM_LOCAL (used local position delimiter)
 - `WARN_2002` - BYOD_WARN_POSITION_FROM_DEFAULT (used default position delimiter)
 - `WARN_2003` - BYOD_WARN_EXTRA_DELIMITER (unused delimiter in metadata)
@@ -286,6 +319,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#byod-parsing-errors-2xxx) for comple
 ### User Notifications
 
 **When parsing fails:**
+
 1. **Notification toast** with actionable buttons:
    - "View Details" → Opens RangeLink output channel
    - "Copy Link" → Copies malformed link to clipboard (for debugging)
@@ -298,6 +332,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#byod-parsing-errors-2xxx) for comple
 ### Recovery Strategy
 
 **All BYOD errors trigger fallback:**
+
 1. Log detailed error to output channel
 2. Show user notification (if appropriate)
 3. **Fall back to regular parsing** using recipient's local delimiters
@@ -310,6 +345,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#byod-parsing-errors-2xxx) for comple
 ### Creating Portable Links
 
 **VSCode Extension:**
+
 1. Select text in editor
 2. Use one of these commands:
    - `Cmd+R Cmd+P` (Mac) / `Ctrl+R Ctrl+P` (Win/Linux) - Relative path
@@ -317,10 +353,12 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#byod-parsing-errors-2xxx) for comple
 3. Portable link copied to clipboard!
 
 **Command Palette:**
+
 - `RangeLink: Copy Portable Link` - Relative path
 - `RangeLink: Copy Portable Link (Absolute)` - Absolute path
 
 **Context Menu:**
+
 - Right-click selection → `Copy Portable RangeLink`
 - Right-click selection → `Copy Portable RangeLink (Absolute)`
 
@@ -329,12 +367,14 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#byod-parsing-errors-2xxx) for comple
 **No action required!**
 
 When you receive a portable RangeLink:
+
 1. Extension automatically detects `~` separator
 2. Extracts and validates delimiter metadata
 3. Parses link using embedded delimiters
 4. Your local configuration is completely ignored
 
 **If parsing fails:**
+
 - Check RangeLink output channel for detailed error
 - Report issue with malformed link to sender
 
@@ -343,12 +383,14 @@ When you receive a portable RangeLink:
 ### Why `~` as Separator?
 
 **Requirements:**
+
 - Must not conflict with common delimiters (`#`, `L`, `C`, `-`)
 - Must not conflict with file paths (`/`, `\`)
 - Must not conflict with future features (`|` for multi-range)
 - Should be visually distinct from other delimiters
 
 **Choice:** `~` (tilde)
+
 - Rarely used in delimiters
 - Visually distinct
 - Single character (compact format)
@@ -357,6 +399,7 @@ When you receive a portable RangeLink:
 ### Why Embed Delimiters After the Range?
 
 **Alternatives considered:**
+
 1. **Prefix format:** `~#~L~-~C~path#L10-L20`
    - ❌ Breaks file path parsing
    - ❌ Less intuitive
@@ -372,10 +415,12 @@ When you receive a portable RangeLink:
 **Problem:** Local config validation requires single-character hash (for rectangular mode detection)
 
 **Solution:** Relax validation for BYOD metadata only
+
 - Local config: `delimiterHash` must be exactly 1 character
 - BYOD metadata: `hash` can be any length
 
 **Rectangular mode handling:**
+
 - Single-char hash: `#` → `##` for rectangular mode
 - Multi-char hash: `>>` → `>>>>` for rectangular mode
 - Algorithm: Double the hash length
@@ -385,10 +430,12 @@ When you receive a portable RangeLink:
 **Problem:** Users might inconsistently use `"L"` and `"l"`
 
 **Solution:** Treat delimiters as case-insensitive during validation
+
 - Prevents user confusion
 - Avoids subtle parsing bugs
 
 **Example:**
+
 ```json
 {
   "delimiterLine": "L",
@@ -401,6 +448,7 @@ When you receive a portable RangeLink:
 ### When to Use Portable Links
 
 **Use portable links when:**
+
 - ✅ Sharing with external collaborators (unknown configs)
 - ✅ Publishing in documentation (future-proof)
 - ✅ Posting in public forums (wide audience)
@@ -408,6 +456,7 @@ When you receive a portable RangeLink:
 - ✅ Sharing with AI assistants (unpredictable parsing)
 
 **Use standard links when:**
+
 - Team has coordinated delimiter configuration
 - Sharing within a single tool/editor environment
 - Link format consistency is guaranteed
@@ -416,20 +465,23 @@ When you receive a portable RangeLink:
 ### Choosing Delimiters
 
 **Guidelines for custom delimiters:**
+
 1. **Keep them short** - Minimize link length
 2. **Make them distinctive** - Easy to visually parse
 3. **Avoid conflicts** - Check reserved characters
 4. **Consider audience** - Use familiar notation when possible
 
 **Good choices:**
+
 - `#`, `@`, `>`, `<`, `!`, `*`
 - Single letters: `L`, `l`, `C`, `c`, `P`, `p`
 - Short words: `line`, `col`, `pos`
 
 **Bad choices:**
+
 - Reserved: `~`, `|`, `/`, `\`, `:`, `,`, `@`
 - Digits: `L1`, `C2` (confuses parsing)
-- Whitespace: `L `, ` - ` (breaks parsing)
+- Whitespace: `L `, `-` (breaks parsing)
 - Substrings: `L` + `LINE` (parsing ambiguity)
 
 ## Testing Strategy
@@ -437,6 +489,7 @@ When you receive a portable RangeLink:
 ### Portable Link Generation Tests
 
 Coverage includes:
+
 - ✅ Line-only format (3 metadata fields)
 - ✅ Line and position format (4 metadata fields)
 - ✅ Rectangular mode format (double hash)
@@ -447,6 +500,7 @@ Coverage includes:
 ### Portable Link Parsing Tests
 
 Coverage includes:
+
 - ✅ Valid 3-field and 4-field formats
 - ✅ Invalid field counts (0, 1, 2, 5+)
 - ✅ Malformed metadata (wrong order, missing separators)
@@ -477,6 +531,7 @@ No. Portable link generation and parsing are always available. Use the "Portable
 Portable links only work with tools that support RangeLink format. If recipient doesn't have RangeLink extension installed, the link is just text.
 
 **For human readers:** The link is still human-readable:
+
 ```
 src/file.ts#L10C5-L20C10~#~L~-~C~
 → src/file.ts, lines 10-20, columns 5-10
@@ -498,6 +553,7 @@ Not currently. Standard links are the default for brevity. Use portable link com
 ### Are portable links longer?
 
 Yes. Portable links add metadata suffix:
+
 - **Standard:** `path#L10-L20` (15 chars)
 - **Portable:** `path#L10-L20~#~L~-~` (24 chars, +9 chars)
 

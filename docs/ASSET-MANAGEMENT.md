@@ -45,6 +45,7 @@ pnpm --filter rangelink-vscode-extension package:vscode-extension
 ## Validation
 
 Script validates:
+
 - Asset exists in `/assets/`
 - Checksum matches between source and destination
 - Build fails fast if validation fails

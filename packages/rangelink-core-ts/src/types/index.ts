@@ -8,4 +8,3 @@ export { DelimiterValidationError } from './DelimiterValidationError';
 export { RangeLinkMessageCode } from './RangeLinkMessageCode';
 export { ComputedSelection } from './ComputedSelection';
 export { FormatOptions } from './FormatOptions';
-

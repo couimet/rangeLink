@@ -28,4 +28,3 @@ export enum RangeLinkMessageCode {
   BYOD_WARN_POSITION_FROM_DEFAULT = 'WARN_2002',
   BYOD_WARN_EXTRA_DELIMITER = 'WARN_2003',
 }
-

@@ -26,4 +26,3 @@ export function setLogger(newLogger: Logger): void {
 export function getLogger(): Logger {
   return logger;
 }
-

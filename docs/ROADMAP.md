@@ -313,6 +313,7 @@ pnpm install-local:vscode  # VS Code only
 **Goal:** Document version history for marketplace and users.
 
 **Tasks:**
+
 - Create `packages/rangelink-vscode-extension/CHANGELOG.md`
 - Document v0.1.0 initial release with all features
 - Follow Keep a Changelog format
@@ -324,6 +325,7 @@ pnpm install-local:vscode  # VS Code only
 **Goal:** Create publisher account for VSCode Marketplace.
 
 **Tasks:**
+
 - Visit https://marketplace.visualstudio.com/manage
 - Sign in with Microsoft account (or create one)
 - Create new publisher with chosen publisher ID
@@ -337,6 +339,7 @@ pnpm install-local:vscode  # VS Code only
 **Goal:** Test extension thoroughly on clean VSCode install.
 
 **Testing Checklist:**
+
 - [ ] All commands execute without errors
 - [ ] Links copied to clipboard correctly
 - [ ] Status bar feedback appears
@@ -350,6 +353,7 @@ pnpm install-local:vscode  # VS Code only
 - [ ] Keybindings work
 
 **Test all selection types:**
+
 - Single line, multi-line, with columns, rectangular (Alt+drag)
 
 **Done when:** All tests pass on clean install, no critical bugs
@@ -359,6 +363,7 @@ pnpm install-local:vscode  # VS Code only
 **Goal:** Verify all metadata is correct before publishing.
 
 **Review package.json fields:**
+
 - `publisher`: "[your-publisher-id]" ← UPDATE
 - `icon`: "icon.png" ← ADD
 - All other fields verified (name, version, description, repository, etc.)
@@ -370,6 +375,7 @@ pnpm install-local:vscode  # VS Code only
 **Goal:** Create final VSIX package for marketplace submission.
 
 **Tasks:**
+
 ```bash
 # Clean and rebuild
 pnpm -r clean
@@ -389,6 +395,7 @@ vsce package
 **Goal:** Publish extension to VSCode Marketplace.
 
 **Tasks:**
+
 ```bash
 vsce login [your-publisher-id]
 cd packages/rangelink-vscode-extension
@@ -396,6 +403,7 @@ vsce publish
 ```
 
 **Verify:**
+
 - Wait 5-10 minutes for marketplace to process
 - Visit marketplace listing
 - Test installation from marketplace
@@ -407,12 +415,14 @@ vsce publish
 **Goal:** Announce launch and set up monitoring.
 
 **Tasks:**
+
 - Create GitHub release (v0.1.0 tag)
 - Update repository README with marketplace badge
 - Set up monitoring (star extension, watch issues)
 - Plan first patch/next features
 
 **Success Metrics (First Week):**
+
 - 10+ installs
 - No critical bugs reported
 - At least one positive review
@@ -427,6 +437,7 @@ vsce publish
 When someone shares your GitHub repo link on SMS, WhatsApp, Slack, Twitter, etc., GitHub generates a preview card. By default, it uses a generic layout. A custom banner makes your project stand out and drives more clicks/installs.
 
 **Tasks:**
+
 - Design 1280×640px banner image featuring:
   - RangeLink logo (your chicken + BYODELI badge)
   - Project tagline: "Share Code Across Editors & Tools"
@@ -439,6 +450,7 @@ When someone shares your GitHub repo link on SMS, WhatsApp, Slack, Twitter, etc.
 **Banner Description/Content Suggestions:**
 
 Option A - Clean & Professional:
+
 ```
 Top: RangeLink logo (centered or left-aligned)
 Middle: Large tagline "Share Precise Code References"
@@ -447,6 +459,7 @@ Background: Subtle gradient (cream to orange) or code snippet texture
 ```
 
 Option B - Developer-Focused:
+
 ```
 Left 40%: Large RangeLink logo + BYODELI badge
 Right 60%:
@@ -458,6 +471,7 @@ Background: Dark theme with syntax-highlighted code snippet
 ```
 
 Option C - Minimal Hero:
+
 ```
 Centered composition:
   - RangeLink logo (large, 200px)
@@ -467,6 +481,7 @@ Background: Two-tone split (orange left, cream right) or solid with overlay
 ```
 
 **Design Tools:**
+
 - Figma (recommended for precise control)
 - Canva (templates available, easier)
 - Shopp-E + Photoshop (AI-generated base + manual composition)
@@ -474,12 +489,14 @@ Background: Two-tone split (orange left, cream right) or solid with overlay
 
 **Testing:**
 After uploading, test by:
+
 1. Sharing repo link in Slack/Discord (preview should show your banner)
 2. Using Twitter Card Validator: https://cards-dev.twitter.com/validator
 3. Using Facebook Debugger: https://developers.facebook.com/tools/debug/
 4. Checking on mobile (SMS preview)
 
 **Resources & References:**
+
 - GitHub guide: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview
 - Recommended size: 1280×640px (2:1 ratio)
 - File size: Under 1MB (PNG or JPG)
@@ -488,17 +505,20 @@ After uploading, test by:
 **Banner Copy/Text Elements:**
 
 **Primary headline options:**
+
 - "Share Code Across Editors & Tools"
 - "Precise Code References for Developers"
 - "Cross-Editor Code Sharing Made Easy"
 - "From VSCode to Claude Code - Links That Just Work"
 
 **Supporting text:**
+
 - "GitHub-style notation • Portable links • AI-ready"
 - "Works with VSCode, Cursor, Claude Code & more"
 - "Perfect for documentation, code reviews, and AI prompts"
 
 **Call to action (optional):**
+
 - "Available on VSCode Marketplace"
 - "Install Extension →"
 
@@ -511,6 +531,7 @@ After uploading, test by:
 **Problem:** VS Code's extension view doesn't render markdown images with relative paths (`./icon.png`) when displaying the README in the installed extension details panel. The image works on GitHub but not in the local extension view.
 
 **Current Status:**
+
 - ✅ `icon.png` (35KB) exists in package root
 - ✅ `package.json` correctly specifies `"icon": "icon.png"` (this shows in marketplace listing)
 - ✅ `.vscodeignore` explicitly includes `icon.png` in packaged extension
@@ -521,12 +542,15 @@ After uploading, test by:
 Convert the icon to base64 and embed directly in the README markdown. This makes the README fully self-contained and works offline without any network requests.
 
 **Implementation Steps:**
+
 1. Generate base64 encoding of `icon.png`:
+
    ```bash
    base64 -i icon.png | tr -d '\n' > /tmp/icon_base64.txt
    ```
 
 2. Create data URI format:
+
    ```bash
    echo -n "data:image/png;base64," > /tmp/data_uri.txt
    cat /tmp/icon_base64.txt >> /tmp/data_uri.txt
@@ -538,16 +562,19 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
    ```
 
 **Testing:**
+
 - [ ] Logo displays in installed extension view (Extensions → RangeLink → Details)
 - [ ] Logo still displays on GitHub repository
 - [ ] Logo displays in VS Code marketplace listing
 - [ ] Logo displays in Cursor marketplace listing
 
 **Tradeoffs:**
+
 - **Pros:** Works completely offline, no external dependencies, single source of truth
 - **Cons:** Adds ~48KB to README file size (base64 encoding inflates by ~33%)
 
 **Alternative Considered (Rejected):**
+
 - Using absolute GitHub URL: `https://raw.githubusercontent.com/couimet/rangelink/main/packages/rangelink-vscode-extension/icon.png`
 - **Rejected because:** Requires internet connection, fails for users without network access
 
@@ -555,17 +582,17 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
 
 ### Time Summary
 
-| Task | Estimate | Cumulative |
-|------|----------|------------|
-| Icon/logo | 1h | 1h |
-| CHANGELOG | 20m | 1h 20m |
-| Publisher account | 30m | 1h 50m |
-| Testing | 45m | 2h 35m |
-| Metadata check | 15m | 2h 50m |
-| Package | 10m | 3h |
-| Publish | 20m | 3h 20m |
-| Post-launch | 30m | 3h 50m |
-| **GitHub social banner (optional)** | **45m** | **4h 35m** |
+| Task                                | Estimate | Cumulative |
+| ----------------------------------- | -------- | ---------- |
+| Icon/logo                           | 1h       | 1h         |
+| CHANGELOG                           | 20m      | 1h 20m     |
+| Publisher account                   | 30m      | 1h 50m     |
+| Testing                             | 45m      | 2h 35m     |
+| Metadata check                      | 15m      | 2h 50m     |
+| Package                             | 10m      | 3h         |
+| Publish                             | 20m      | 3h 20m     |
+| Post-launch                         | 30m      | 3h 50m     |
+| **GitHub social banner (optional)** | **45m**  | **4h 35m** |
 
 **Total:** ~4 hours for launch (up to 4.5 hours with optional banner)
 
@@ -586,6 +613,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 **Goal:** Retroactively tag the published v0.1.0 release for version tracking.
 
 **Tasks:**
+
 - ✅ Identify commit hash for published v0.1.0 (ff52f9a)
 - ✅ Create annotated tag: `vscode-extension-v0.1.0`
 - ✅ Push tag to remote
@@ -593,6 +621,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 - ✅ Verify tag appears correctly in GitHub
 
 **Deliverables:**
+
 - ✅ Git tag for published release: `vscode-extension-v0.1.0` → ff52f9a
 - ✅ GitHub release entry: https://github.com/couimet/rangelink/releases/tag/vscode-extension-v0.1.0
 
@@ -607,6 +636,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 **Goal:** Create package-specific CHANGELOG for tracking extension releases.
 
 **Tasks:**
+
 - ✅ Create `packages/rangelink-vscode-extension/CHANGELOG.md`
 - ✅ Follow Keep a Changelog format
 - ✅ Document v0.1.0 with all features:
@@ -619,6 +649,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 - ✅ Add ADR placeholder documentation
 
 **Deliverables:**
+
 - ✅ `packages/rangelink-vscode-extension/CHANGELOG.md` with v0.1.0 and v0.1.1 (unreleased)
 - ✅ Root `CHANGELOG.md` updated to signpost style (no maintenance overhead)
 - ✅ `docs/ADR/README.md` placeholder for future architectural decisions
@@ -635,6 +666,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 **Goal:** Define and document release/tagging strategy for monorepo with multiple publishable packages.
 
 **Tasks:**
+
 - ✅ Define tagging convention: `{package-name}-v{version}` (e.g., `vscode-extension-v0.1.0`)
 - ✅ Document version management: independent versioning per package
 - ✅ Explain how to map published versions to git history
@@ -642,9 +674,11 @@ Following the successful publication of the VSCode extension to the marketplace,
 - ✅ Create `docs/RELEASE-STRATEGY.md`
 
 **Out of Scope:**
+
 - GitHub Actions workflow (deferred to follow-up item 4D)
 
 **Deliverables:**
+
 - ✅ `docs/RELEASE-STRATEGY.md` with comprehensive tagging conventions and workflows
 - ✅ Step-by-step instructions for retroactive tagging and future releases
 
@@ -661,6 +695,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 **Deferred from:** Iteration 4C (Monorepo Release Strategy Design)
 
 **Tasks:**
+
 - Create `.github/workflows/release.yml`
 - Trigger on version tag push
 - Automate GitHub release creation
@@ -679,6 +714,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 **Content Tone:** Fun and engaging for developers, with nerdy humor. Show real value, not just a toy.
 
 **Tasks:**
+
 - ✅ Rewrite punchline emphasizing range links and interoperability
 - ✅ Add compelling problem → solution quote hook
 - ✅ Add marketplace badge with clickable install link
@@ -687,6 +723,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 - ✅ Keep it developer-focused with personality
 
 **Deliverables:**
+
 - ✅ Rewritten hero section with punchy tagline: "Range links that work everywhere—Cursor, VSCode, Claude Code, GitHub, your team."
 - ✅ VS Code Marketplace badge with live link
 - ✅ Origin story section explaining Claude Code → RangeLink journey
@@ -818,11 +855,13 @@ Following the successful publication of the VSCode extension to the marketplace,
 **Goal:** Define strategy to prevent root and package READMEs from drifting apart.
 
 **Approach:**
+
 - **Root README:** Comprehensive, monorepo-focused, covers all packages/features
 - **Package README:** Marketplace-optimized, user-focused, package-specific features only
 - Document what content belongs where and when to update both
 
 **Tasks:**
+
 - Create `docs/README-CONTENT-STRATEGY.md`
 - Define "shared content" sections (features, use cases)
 - Define "package-specific" sections (installation, quickstart)
@@ -830,6 +869,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 - Update `CONTRIBUTING.md` with README guidelines
 
 **Deliverables:**
+
 - `docs/README-CONTENT-STRATEGY.md`
 - Updated CONTRIBUTING.md
 
@@ -844,6 +884,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 **Goal:** Display version, commit hash, date during package build for debugging.
 
 **Tasks:**
+
 - Enhance `scripts/generate-version.js` to output build metadata
 - Modify `package` script to show metadata table after build:
   - Version
@@ -854,6 +895,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 - Test output formatting
 
 **Deliverables:**
+
 - Enhanced build script with metadata output
 - Cleaner console output during packaging
 
@@ -866,6 +908,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 **Goal:** Add build metadata to extension for runtime debugging.
 
 **Tasks:**
+
 - Extend `version.json` to include:
   - Commit hash (short and full)
   - Build date/time
@@ -877,6 +920,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 **Note:** VS Code marketplace doesn't expose custom metadata in UI. This is for runtime debugging only.
 
 **Deliverables:**
+
 - Enhanced version.json with git metadata
 - Command: "RangeLink: Show Version Info"
 - Documentation on debugging published versions
@@ -890,6 +934,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 **Goal:** Create distinct packaging workflows for development and marketplace publishing.
 
 **Tasks:**
+
 - Create `package:dev` script:
   - Allows dirty working tree
   - Adds `-dev` suffix to version
@@ -902,6 +947,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 - Document when to use each in `PUBLISHING.md` and `DEVELOPMENT.md`
 
 **Deliverables:**
+
 - Three packaging scripts with clear semantics
 - Updated documentation
 

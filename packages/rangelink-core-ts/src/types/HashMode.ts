@@ -7,4 +7,3 @@ export enum HashMode {
   Normal = 'Normal',
   RectangularMode = 'RectangularMode',
 }
-

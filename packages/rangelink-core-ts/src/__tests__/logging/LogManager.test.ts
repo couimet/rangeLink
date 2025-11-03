@@ -42,4 +42,3 @@ describe('LogManager', () => {
     setLogger(new NoOpLogger());
   });
 });
-

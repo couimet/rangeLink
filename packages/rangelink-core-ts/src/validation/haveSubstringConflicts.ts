@@ -27,4 +27,3 @@ export function haveSubstringConflicts(delimiters: DelimiterConfig): boolean {
 
   return false;
 }
-

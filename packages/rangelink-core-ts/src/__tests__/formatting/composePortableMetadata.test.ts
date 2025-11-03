@@ -41,4 +41,3 @@ describe('composePortableMetadata', () => {
     expect(result).toBe('~>>~line~thru~');
   });
 });
-

@@ -7,4 +7,3 @@ export enum RangeFormat {
   LineOnly = 'LineOnly',
   WithPositions = 'WithPositions',
 }
-

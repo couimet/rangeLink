@@ -4,4 +4,3 @@ export { formatLink } from './formatLink';
 export { formatPortableLink } from './formatPortableLink';
 export { formatSimpleLineReference } from './formatSimpleLineReference';
 export { joinWithHash } from './joinWithHash';
-
