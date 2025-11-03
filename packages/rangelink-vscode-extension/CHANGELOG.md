@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed ESLint configuration for better monorepo build reliability
 - Fixed marketplace version badge URL in README (was using wrong publisher/extension name)
 - Build process now explicitly deletes target files to prevent stale artifacts
-- CHANGELOG now focuses only on extension changes (removed monorepo/internal documentation items)
+- `CHANGELOG` now focuses only on extension changes (removed monorepo/internal documentation items)
 
 ### Changed
 
