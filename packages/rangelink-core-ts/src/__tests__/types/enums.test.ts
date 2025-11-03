@@ -1,4 +1,5 @@
 import { HashMode } from '../../types/HashMode';
+import { LinkType } from '../../types/LinkType';
 import { PathFormat } from '../../types/PathFormat';
 import { RangeFormat } from '../../types/RangeFormat';
 
@@ -14,6 +15,20 @@ describe('Enums', () => {
 
     it('should have RectangularMode value', () => {
       expect(HashMode.RectangularMode).toBe('RectangularMode');
+    });
+  });
+
+  describe('LinkType', () => {
+    it('should have exactly 2 values', () => {
+      expect(Object.keys(LinkType)).toHaveLength(2);
+    });
+
+    it('should have Regular value', () => {
+      expect(LinkType.Regular).toBe('regular');
+    });
+
+    it('should have Portable value', () => {
+      expect(LinkType.Portable).toBe('portable');
     });
   });
 

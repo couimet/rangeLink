@@ -4,6 +4,7 @@ export { DelimiterConfig } from './DelimiterConfig';
 export { RangeFormat } from './RangeFormat';
 export { HashMode } from './HashMode';
 export { PathFormat } from './PathFormat';
+export { LinkType } from './LinkType';
 export { DelimiterValidationError } from './DelimiterValidationError';
 export { RangeLinkMessageCode } from './RangeLinkMessageCode';
 export { ComputedSelection } from './ComputedSelection';
