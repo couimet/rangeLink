@@ -4,6 +4,7 @@ import { PathFormat } from '../../types/PathFormat';
 import { RangeFormat } from '../../types/RangeFormat';
 import { RangeNotation } from '../../types/RangeNotation';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
+import { SelectionType } from '../../types/SelectionType';
 
 describe('Enums', () => {
   describe('HashMode', () => {
@@ -91,6 +92,20 @@ describe('Enums', () => {
 
     it('should have PartialLine value', () => {
       expect(SelectionCoverage.PartialLine).toBe('PartialLine');
+    });
+  });
+
+  describe('SelectionType', () => {
+    it('should have exactly 2 values', () => {
+      expect(Object.keys(SelectionType)).toHaveLength(2);
+    });
+
+    it('should have Normal value', () => {
+      expect(SelectionType.Normal).toBe('Normal');
+    });
+
+    it('should have Rectangular value', () => {
+      expect(SelectionType.Rectangular).toBe('Rectangular');
     });
   });
 });
