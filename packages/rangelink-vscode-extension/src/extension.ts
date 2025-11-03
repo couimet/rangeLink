@@ -62,46 +62,36 @@ export class RangeLinkService {
    * Creates a standard RangeLink from the current editor selection
    */
   async createLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      vscode.window.showErrorMessage('No active editor');
-      return;
+    const link = await this.generateLinkFromSelection(pathFormat, false);
+    if (link) {
+      await this.copyAndNotify(link, 'RangeLink');
     }
-
-    const document = editor.document;
-    const selections = editor.selections;
-
-    if (!selections || selections.length === 0 || selections.every((s) => s.isEmpty)) {
-      throw new Error('RangeLink command invoked with empty selection');
-    }
-
-    const referencePath = this.getReferencePath(document, pathFormat);
-    const coreSelections = toCoreSelections(selections);
-
-    // Determine if this is a full-line selection (only for single selection)
-    const options: FormatOptions = {
-      isFullLine: selections.length === 1 ? this.isFullLineSelection(editor, selections[0]) : false,
-    };
-
-    const result = formatLink(referencePath, coreSelections, this.delimiters, options);
-
-    if (!result.success) {
-      vscode.window.showErrorMessage(`Failed to format link: ${result.error}`);
-      return;
-    }
-
-    await vscode.env.clipboard.writeText(result.value);
-    vscode.window.setStatusBarMessage(`✓ RangeLink copied to clipboard`, 2000);
   }
 
   /**
    * Creates a portable RangeLink with embedded delimiter metadata
    */
   async createPortableLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
+    const link = await this.generateLinkFromSelection(pathFormat, true);
+    if (link) {
+      await this.copyAndNotify(link, 'Portable RangeLink');
+    }
+  }
+
+  /**
+   * Generates a link from the current editor selection
+   * @param pathFormat Whether to use relative or absolute paths
+   * @param isPortable Whether to generate a portable link with embedded delimiters
+   * @returns The generated link, or null if generation failed
+   */
+  private async generateLinkFromSelection(
+    pathFormat: PathFormat,
+    isPortable: boolean,
+  ): Promise<string | null> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       vscode.window.showErrorMessage('No active editor');
-      return;
+      return null;
     }
 
     const document = editor.document;
@@ -119,15 +109,27 @@ export class RangeLinkService {
       isFullLine: selections.length === 1 ? this.isFullLineSelection(editor, selections[0]) : false,
     };
 
-    const result = formatPortableLink(referencePath, coreSelections, this.delimiters, options);
+    const result = isPortable
+      ? formatPortableLink(referencePath, coreSelections, this.delimiters, options)
+      : formatLink(referencePath, coreSelections, this.delimiters, options);
 
     if (!result.success) {
-      vscode.window.showErrorMessage(`Failed to format portable link: ${result.error}`);
-      return;
+      const linkType = isPortable ? 'portable link' : 'link';
+      vscode.window.showErrorMessage(`Failed to format ${linkType}: ${result.error}`);
+      return null;
     }
 
-    await vscode.env.clipboard.writeText(result.value);
-    vscode.window.setStatusBarMessage(`✓ Portable RangeLink copied to clipboard`, 2000);
+    return result.value;
+  }
+
+  /**
+   * Copies the link to clipboard and shows status bar notification
+   * @param link The link text to copy
+   * @param linkTypeName User-friendly name for status messages (e.g., "RangeLink", "Portable RangeLink")
+   */
+  private async copyAndNotify(link: string, linkTypeName: string): Promise<void> {
+    await vscode.env.clipboard.writeText(link);
+    vscode.window.setStatusBarMessage(`✓ ${linkTypeName} copied to clipboard`, 2000);
   }
 
   /**
