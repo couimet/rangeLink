@@ -7,63 +7,25 @@
 [![Version](https://img.shields.io/visual-studio-marketplace/v/couimet.rangelink-vscode-extension)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/couimet/rangelink/blob/main/LICENSE)
 
-> Create shareable links to code ranges. Perfect for AI assistants, cross-editor teams, documentation, and code reviews.
+> **"Hey, check out lines 42 to 58... or was it 48 to 62?"** 🤔
+> **Never again.** RangeLink gives you `src/auth.ts#L42C10-L58C25` — precise, portable, and **just works** across editors, tools, and teams.
 
 ## Why RangeLink?
 
-Share precise code locations with anyone—regardless of their editor or configuration.
+**For Developers Who Care About Precision:**
 
-- **Works everywhere:** Claude Code, VSCode, Cursor, Sublime Text, and more
-- **GitHub-style notation:** Familiar `#L10-L25` format everyone recognizes
-- **Flexible paths:** Workspace-relative or absolute paths, your choice
-- **Portable links:** Your links work even if recipients use different settings
+- 🎯 **No more "around line 42"** — Share exact ranges: `auth.ts#L42C10-L58C25`
+- 🔗 **Works everywhere** — Claude Code, Cursor, VSCode, Sublime Text, GitHub, Slack, PRs
+- 🚀 **One keystroke** — `Cmd+R Cmd+L` → link copied, done
+- 📁 **Flexible paths** — Workspace-relative or absolute paths, your choice
+- 🔧 **Portable by design** — Your links work even if teammates use different delimiter configs
+- 📐 **Rectangular selection support** — Share column ranges with `##` notation
 
-## Features
+**Perfect for:**
 
-🔗 **Universal Sharing** - Links work across editors and tools
-
-🎯 **GitHub-Style Notation** - `#L10C5-L25C20` format developers know
-
-📦 **BYOD (Bring Your Own Delimiters)** - Portable links adapt to any configuration
-
-🎨 **Rectangular Selection** - Share column selections too
-
-⚙️ **Customizable** - Configure delimiters to match your workflow
-
-## Use Cases
-
-### AI Assistants
-
-Share code with Claude Code, GitHub Copilot, or any AI tool using precise links.
-
-```
-"Check out the bug in auth/login.ts#L42C10-L58C25"
-```
-
-### Cross-Editor Teams
-
-Your team uses VSCode, Cursor, and Sublime? No problem. RangeLink works everywhere.
-
-```
-src/utils/parser.ts#L120-L145
-→ Works in any editor, any tool
-```
-
-### Documentation
-
-Add precise code references to docs, READMEs, and technical writing.
-
-```markdown
-See the implementation in [parser.ts#L89-L102](src/parser.ts#L89-L102)
-```
-
-### Code Reviews
-
-Point teammates to specific code sections in Slack, Teams, or PR comments.
-
-```
-"The issue is here: api/routes.ts#L215C8-L223C45"
-```
+- 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`"
+- 🤖 **AI assistants** — Give Claude Code or Copilot _exact_ context
+- 👥 **Team collaboration** — Universal format everyone can use
 
 ## Quick Start
 
