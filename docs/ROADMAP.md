@@ -1141,34 +1141,37 @@ RangeLink is an **AI workflow integration tool** that eliminates context-sharing
 
 **Feature Priority Implications:**
 
-- **Auto-paste to terminal** is the killer feature (not "nice-to-have")
+- **Bind to Terminal** is the killer feature (not "nice-to-have")
+- **Link History** amplifies terminal binding by enabling reference reuse
 - **Precision and portability** enable AI accuracy (AI gets exactly what you meant)
 - **Navigation features** are secondary (AI already "navigates" when reading links)
 - **Marketing narrative:** Position as "AI tooling extension" first, "code reference utility" second
 
 **Post-Launch Messaging Strategy:**
 
-After implementing auto-paste MVP (Iterations 1-3), update both READMEs with AI-first narrative (see draft below in this phase). This repositions RangeLink from "yet another link generator" to "essential AI development workflow tool."
+After implementing Bind to Terminal MVP (Iterations 1-3), update both READMEs with AI-first narrative (see draft below in this phase). This repositions RangeLink from "yet another link generator" to "essential AI development workflow tool."
 
 ---
 
-### **Draft README Messaging (Post Auto-Paste Implementation)**
+### **Draft README Messaging (Post Terminal Binding Implementation)**
 
 **Hero Section Bullet Points:**
+
 ```markdown
-- ⚡ **Zero-friction AI context** — Generate + auto-paste links to claude-code terminals. No manual copy/paste.
+- ⚡ **Zero-friction AI context** — Bind to your claude-code terminal. Links appear instantly, no copy/paste.
 - 🎯 **Precise references** — Line ranges, columns, rectangular selections. AI gets exactly what you meant.
 - 🔗 **Universal compatibility** — Paste into terminals, chat apps, comments, PRs, anywhere text works
 ```
 
 **New Section: "Why RangeLink for AI Development?"**
+
 ```markdown
 ## Why RangeLink for AI Development?
 
 Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates the context-sharing friction:
 
 1. **Select code** → Generate link (Cmd+R Cmd+L)
-2. **Auto-paste to terminal** → Link appears in claude-code instantly
+2. **Bind to terminal** → Link appears in claude-code instantly
 3. **AI reads precise context** → No manual copy/paste, no lost focus
 
 **Compete with Cursor's built-in AI** by making external AI assistants feel integrated. You get:
@@ -1178,17 +1181,19 @@ Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates
 
 ### Workflow Demo
 
-[GIF/video showing: Select code → Cmd+R Cmd+L → Link auto-pastes to claude-code terminal → AI responds with context-aware answer]
+[GIF/video showing: Select code → Cmd+R Cmd+L → Link sends to bound terminal → AI responds with context-aware answer]
 ```
 
 **Updated Feature Highlight:**
+
 ```markdown
 ## Features
 
 ### 🤖 AI Workflow Integration
-- **Auto-paste to terminal:** Links appear instantly in claude-code/AI sessions
+- **Bind to terminal:** Links appear instantly in claude-code/AI sessions
 - **Zero context switches:** No manual copy/paste, no terminal focusing
-- **Persistent binding:** Set once, paste forever (until terminal closes)
+- **Persistent binding:** Set once, send forever (until terminal closes)
+- **Link history with fuzzy search:** Re-send past references instantly
 - **Works everywhere:** claude-code, Claude Code, ChatGPT, any text-based AI
 
 ### 🎯 Precision Code References
@@ -1197,7 +1202,7 @@ Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates
 
 ---
 
-- [ ] **Auto-paste RangeLinks to Terminal** (High Priority)
+- [ ] **Bind to Terminal** (High Priority)
   - **Problem:** Manual workflow friction - After generating a link for claude-code (running in terminal), user must manually paste it from clipboard
   - **Solution:** Automatically paste generated links into a designated terminal, enabling seamless workflow
   - **Primary Use Case:** Running claude-code in VS Code/Cursor terminal - link generation automatically pastes into active claude-code session
@@ -1205,70 +1210,70 @@ Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates
   - **Scope:** All link generation commands (selection, file, symbol, portable)
   - **Platform:** Works in VS Code and Cursor
 
-  **MVP (Iteration 1): Active Terminal Paste** (2h)
-  - Add command: "RangeLink: Enable Auto-Paste to Terminal"
+  **MVP (Iteration 1): Terminal Binding** (2h)
+  - Add command: "RangeLink: Bind to Terminal"
   - **Binding behavior:** Captures the terminal that is active when command is executed - this becomes the bound terminal
-  - All subsequent link generation pastes to the BOUND terminal (not "whichever terminal is active at paste time")
-  - Paste using `terminal.sendText(link, false)` (no auto-submit - user presses Enter manually)
+  - All subsequent link generation sends to the BOUND terminal (not "whichever terminal is active at send time")
+  - Send using `terminal.sendText(link, false)` (no auto-submit - user presses Enter manually)
   - Store terminal reference in memory (session-scoped, not persisted)
-  - Status bar feedback: "Link pasted to terminal [terminal-name]"
-  - Command to disable: "RangeLink: Disable Auto-Paste"
-  - **Edge case:** If no terminal is active when enabling, show error: "No active terminal. Open a terminal and try again."
-  - **Done when:** Can enable/disable feature, links paste to BOUND terminal consistently, status bar shows confirmation
+  - Status bar feedback: "Bound: [terminal-name]"
+  - Command to disable: "RangeLink: Unbind Terminal"
+  - **Edge case:** If no terminal is active when binding, show error: "No active terminal. Open a terminal and try again."
+  - **Done when:** Can bind/unbind terminal, links send to BOUND terminal consistently, status bar shows confirmation
 
   **Iteration 2: Terminal Lifecycle Management** (1.5h)
   - Listen to `window.onDidCloseTerminal` event
-  - Auto-disable feature when bound terminal closes
-  - Show status bar message: "RangeLink auto-paste disabled (terminal closed)"
+  - Auto-unbind when bound terminal closes
+  - Show status bar message: "Terminal binding removed (terminal closed)"
   - Log terminal closure event
   - Clear stored terminal reference
-  - Add command: "RangeLink: Show Auto-Paste Status" - displays which terminal is bound (or "not enabled")
-  - Status includes: terminal name, index/position, enabled/disabled state
-  - **Done when:** Feature auto-disables on terminal closure with user feedback, user can query current binding state
+  - Add command: "RangeLink: Show Binding Status" - displays which terminal is bound (or "not bound")
+  - Status includes: terminal name, index/position, bound/unbound state
+  - **Done when:** Feature auto-unbinds on terminal closure with user feedback, user can query current binding state
 
   **Iteration 3: Terminal Selection with Quick Pick** (2h)
-  - Enhance enable command to show Quick Pick menu of available terminals
+  - Enhance bind command to show Quick Pick menu of available terminals
   - Display terminal info: name, position/index in list, process name
   - Handle terminals with duplicate names: Show "zsh (1)", "zsh (2)" with indices
   - Allow user to select which terminal to bind to
   - Preview format: `[1] zsh - /Users/username/project`
-  - **Re-binding behavior:** If feature is already enabled, show Quick Pick to switch to different terminal (no need to disable first)
-  - Confirmation message: "Auto-paste switched from [old-terminal] to [new-terminal]"
+  - **Re-binding behavior:** If already bound, show Quick Pick to switch to different terminal (no need to unbind first)
+  - Confirmation message: "Binding switched from [old-terminal] to [new-terminal]"
   - **Edge case:** If only one terminal exists, auto-select it (skip Quick Pick UI)
-  - **Done when:** User can pick specific terminal from list, can re-bind without disabling, handles edge cases gracefully
+  - **Done when:** User can pick specific terminal from list, can re-bind without unbinding, handles edge cases gracefully
 
   **Iteration 4: Context Menu Integration** (1h)
-  - Add "Auto-paste RangeLinks Here" to terminal tab context menu
-  - Right-click on terminal name in terminal list to enable auto-paste
-  - Show checkmark indicator when terminal is active auto-paste target
-  - **Done when:** Can enable feature via right-click on terminal, visual indicator shows active terminal
+  - Add "Bind RangeLink Here" to terminal tab context menu
+  - Right-click on terminal name in terminal list to bind
+  - Show checkmark indicator when terminal is the active binding target
+  - **Done when:** Can bind via right-click on terminal, visual indicator shows bound terminal
 
   **Iteration 5: Enhanced Status Bar Feedback** (1h)
-  - Status bar shows terminal identifier: "Link pasted to [zsh (2)]"
+  - Status bar shows terminal identifier: "Link sent to [zsh (2)]"
   - Include terminal index/position for disambiguation
-  - Click status bar message to focus the target terminal (brings terminal panel into view if hidden)
-  - Persistent status bar item shows auto-paste state: "🔗→ [terminal-name]"
-  - Status bar item tooltip: "RangeLink auto-paste enabled for terminal: [name]. Click to focus terminal."
-  - Status bar item changes color/icon when feature is disabled (dimmed: "🔗❌")
-  - Click disabled status bar item to re-enable (shows Quick Pick if multiple terminals)
-  - **Done when:** Clear feedback about where link was pasted, easy terminal navigation, persistent visual indicator of binding state
+  - Click status bar message to focus the bound terminal (brings terminal panel into view if hidden)
+  - Persistent status bar item shows binding state: "🔗→ [terminal-name]"
+  - Status bar item tooltip: "RangeLink bound to terminal: [name]. Click to focus terminal."
+  - Status bar item changes color/icon when unbound (dimmed: "🔗❌")
+  - Click unbound status bar item to bind (shows Quick Pick if multiple terminals)
+  - **Done when:** Clear feedback about where link was sent, easy terminal navigation, persistent visual indicator of binding state
 
   **Future Iterations (Defer):**
   - Visual indicator in terminal list (logo/icon next to bound terminal name) - VS Code API research needed
   - Persist terminal binding across sessions (complex: terminal IDs change on restart)
     - Potential approach: Store terminal name + cwd, attempt to match on startup
-    - Show notification if stored terminal no longer exists: "Previously bound terminal not found. Re-enable auto-paste?"
+    - Show notification if stored terminal no longer exists: "Previously bound terminal not found. Bind again?"
   - Multi-terminal support: Bind different link types to different terminals
     - Example: Portable links → Terminal 1, Regular links → Terminal 2
-  - Keyboard shortcut for quick toggle: `Cmd+R Cmd+T` / `Ctrl+R Ctrl+T` to enable/disable
+  - Keyboard shortcut for quick toggle: `Cmd+R Cmd+T` / `Ctrl+R Ctrl+T` to bind/unbind
   - Settings integration:
-    - `rangelink.autoPaste.enabled`: Enable by default on startup
-    - `rangelink.autoPaste.defaultTerminal`: "active" | "first" | "last" | terminal name pattern
-    - `rangelink.autoPaste.showStatusBarItem`: Show persistent indicator (default: true)
-  - Terminal profile integration: Auto-enable for specific terminal profiles (e.g., "claude-code")
+    - `rangelink.terminalBinding.enabled`: Enable binding by default on startup
+    - `rangelink.terminalBinding.defaultTerminal`: "active" | "first" | "last" | terminal name pattern
+    - `rangelink.terminalBinding.showStatusBarItem`: Show persistent indicator (default: true)
+  - Terminal profile integration: Auto-bind for specific terminal profiles (e.g., "claude-code")
   - Fallback to clipboard-only with graceful error handling improvements
   - Support for remote terminals (VS Code Remote Development)
-  - Smart detection: If clipboard contains claude-code prompt, suggest enabling auto-paste feature
+  - Smart detection: If clipboard contains claude-code prompt, suggest enabling terminal binding
 
   **Technical Notes:**
   - VS Code Terminal API: `window.activeTerminal`, `window.terminals`
@@ -1282,11 +1287,56 @@ Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates
   - Terminal unavailable during paste: Show warning toast, clipboard still contains link
   - Multiple windows open: Feature scoped to window (VS Code window.terminals is window-specific)
 
-- [ ] **Link history**
-  - Store recently generated links
-  - Quick access via command palette
-  - Search in history
-  - Export history as markdown/csv
+- [ ] **Link History with Fuzzy Search** (High Priority for AI Workflow)
+  - **Problem:** Need to reference previously shared code locations without regenerating links
+  - **AI Workflow Use Case:** "What was that auth function I showed claude-code 2 hours ago?"
+  - **Solution:** Searchable history with quick re-send to bound terminal
+
+  **Iteration 1: Basic History Storage** (1.5h)
+  - Store last 100 generated links in workspace state
+  - Track: link, timestamp, file path, range description
+  - Command: "RangeLink: Show Link History"
+  - Display in Quick Pick: `[2h ago] src/auth.ts:42-56 (login validation)`
+  - Copy selected link to clipboard
+  - **Done when:** Can view and copy from history
+
+  **Iteration 2: Fuzzy Search** (2h)
+  - Integrate fuzzy search library (fzy, fuse.js, or VSCode's built-in)
+  - Search across: file names, paths, range descriptions, timestamps
+  - Quick Pick with real-time filtering as you type
+  - Show match highlights in results
+  - Keyboard shortcuts: Up/Down to navigate, Enter to copy
+  - **Done when:** Can type "auth log" and instantly find relevant links
+
+  **Iteration 3: Quick Re-Send to Bound Terminal** (1h)
+  - If terminal binding is active, add "Send to Terminal" action in history Quick Pick
+  - Keyboard shortcut in history view: `Cmd+Enter` to send (vs `Enter` to copy)
+  - Status bar feedback: "Link re-sent to [terminal-name]"
+  - **Use case:** "Let me show claude-code that auth function again" → search → Cmd+Enter → done
+  - **Done when:** Can re-send historical links without leaving history UI
+
+  **Iteration 4: Smart Context Descriptions** (1.5h)
+  - Auto-generate human-readable descriptions from code
+  - Extract function/class names, variable declarations from selected ranges
+  - Example: `src/auth.ts:42-56` → `validateLogin function (src/auth.ts:42-56)`
+  - Fallback to first line of code if no clear symbol
+  - Allow manual description override in history view
+  - **Done when:** History is scannable without memorizing line numbers
+
+  **Iteration 5: History Management** (1h)
+  - Export history as markdown (for documentation/notes)
+  - Export as CSV (for analysis/reporting)
+  - Clear history command
+  - Configurable history size (default: 100, max: 500)
+  - Setting: `rangelink.history.enabled` (opt-out for privacy)
+  - **Done when:** Can manage history, export for external use
+
+  **Future Enhancements:**
+  - Sync history across devices (VSCode Settings Sync)
+  - Pin favorite links (persist separately from LRU history)
+  - Group by project/workspace
+  - Deduplicate identical links (merge timestamps)
+  - History analytics: most-shared files, time-of-day patterns
 
 - [ ] **Undo/redo support**
   - Track navigation history
