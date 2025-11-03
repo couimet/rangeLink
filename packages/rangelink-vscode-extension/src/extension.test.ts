@@ -620,6 +620,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -667,6 +671,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -714,6 +722,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -790,6 +802,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -825,6 +841,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -899,6 +919,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/absolute/path/to/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -937,6 +961,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -976,6 +1004,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -1015,6 +1047,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -1054,6 +1090,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -1088,6 +1128,10 @@ describe('RangeLinkService', () => {
         ],
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 
@@ -1117,6 +1161,10 @@ describe('RangeLinkService', () => {
         selections: manySelections,
         document: {
           uri: { fsPath: '/workspace/src/file.ts' },
+          lineAt: jest.fn().mockReturnValue({
+            text: 'sample text',
+            range: { start: { character: 0 }, end: { character: 11 } },
+          }),
         },
       };
 

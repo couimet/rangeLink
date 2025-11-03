@@ -733,6 +733,44 @@ Following the successful publication of the VSCode extension to the marketplace,
 
 ---
 
+### Priority 1.5: Test Coverage Improvements
+
+#### 4A.5) Error Logging Verification in Tests — 📋 Planned
+
+**Goal:** Add test coverage to verify that all catch blocks properly log errors via getLogger().
+
+**Background:** Phase 7 refactoring added comprehensive error logging to all catch blocks in the extension, but tests only verify that error messages are shown to users - they don't verify that errors are logged for debugging.
+
+**Current Gap:**
+
+- ✅ Tests verify `showErrorMessage()` is called with correct messages
+- ✅ Tests verify clipboard not written on errors
+- ❌ Tests DO NOT verify `getLogger().error()` or `getLogger().warn()` is called
+- ❌ No verification of logged context (fn, error object, metadata)
+
+**Tasks:**
+
+- Mock `getLogger()` in test setup
+- Add assertions for `mockLogger.error()` calls in error handling tests
+- Verify proper context is logged (function name, error object, additional metadata)
+- Add tests for all 4 catch blocks in extension.ts:
+  1. `toInputSelection()` error (document modified) - should call `getLogger().error()`
+  2. `generateLinkFromSelection()` catch - should call `getLogger().error()`
+  3. `showVersion` command failure - should call `getLogger().error()`
+  4. `activate()` version load failure - should call `getLogger().warn()`
+
+**Deliverables:**
+
+- Mock logger in test harness
+- Test assertions for error logging in all error paths
+- Documentation of logging test patterns in CONTRIBUTING.md
+
+**Done when:** Tests fail if error logging is removed from catch blocks, all 4 catch blocks covered
+
+**Estimated Time:** 1.5 hours
+
+---
+
 ### Priority 2: Documentation Content Strategy
 
 #### 4E) Root README Enhancement - Hero Section — ✅ Complete

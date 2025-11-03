@@ -3,21 +3,26 @@ import {
   DelimiterConfig,
   DelimiterValidationError,
   FormatOptions,
-  HashMode,
+  FormattedLink,
+  InputSelection,
+  LinkType,
   PathFormat,
   RESERVED_CHARS,
   RangeFormat,
   RangeLinkMessageCode,
   Selection,
+  SelectionCoverage,
+  SelectionType,
   areDelimitersUnique,
   formatLink,
-  formatPortableLink,
+  getLogger,
   haveSubstringConflicts,
   setLogger,
   validateDelimiter,
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { isRectangularSelection } from './isRectangularSelection';
 import { VSCodeLogger } from './VSCodeLogger';
 
 // Re-export PathFormat for backward compatibility with tests
@@ -36,15 +41,62 @@ export interface Link {
 }
 
 /**
- * Adapter: Converts VSCode Selection to core Selection interface
+ * Adapter: Converts VSCode Selections to core InputSelection interface
+ * Detects coverage (FullLine vs PartialLine) for each selection
  */
-function toCoreSelections(vscodeSelections: readonly vscode.Selection[]): Selection[] {
-  return vscodeSelections.map((sel) => ({
-    startLine: sel.start.line,
-    startCharacter: sel.start.character,
-    endLine: sel.end.line,
-    endCharacter: sel.end.character,
-  }));
+function toInputSelection(
+  editor: vscode.TextEditor,
+  vscodeSelections: readonly vscode.Selection[],
+): InputSelection {
+  // VSCode doesn't expose rectangular selection mode in API
+  // Use heuristic to detect rectangular selections based on patterns
+  const isRectangular = isRectangularSelection(vscodeSelections);
+
+  // When multiple selections exist but don't form a rectangular pattern,
+  // only use the primary (first) selection
+  const selectionsToConvert = isRectangular ? vscodeSelections : [vscodeSelections[0]];
+
+  const selections: Selection[] = [];
+
+  for (const sel of selectionsToConvert) {
+    // Detect if this is a full-line selection
+    // If lineAt throws, it means the document was modified and selection is invalid
+    let coverage = SelectionCoverage.PartialLine;
+
+    try {
+      const endLine = editor.document.lineAt(sel.end.line);
+      const startsAtBeginning = sel.start.character === 0;
+      const endsAtEndOfLine =
+        sel.end.character === endLine.range.end.character ||
+        sel.end.character >= endLine.text.length ||
+        (sel.end.line > sel.start.line && sel.end.character === 0);
+
+      if (startsAtBeginning && endsAtEndOfLine) {
+        coverage = SelectionCoverage.FullLine;
+      }
+    } catch (error) {
+      // Selection references invalid line numbers - document was modified
+      const message = 'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.';
+      getLogger().error(
+        { fn: 'toInputSelection', error, line: sel.end.line, documentLines: editor.document.lineCount },
+        'Document modified during link generation - selection out of bounds'
+      );
+      throw new Error(message);
+    }
+
+    selections.push({
+      startLine: sel.start.line,
+      startCharacter: sel.start.character,
+      endLine: sel.end.line,
+      endCharacter: sel.end.character,
+      coverage,
+    });
+  }
+
+  return {
+    selections,
+    selectionType: isRectangular ? SelectionType.Rectangular : SelectionType.Normal,
+  };
 }
 
 /**
@@ -102,24 +154,43 @@ export class RangeLinkService {
     }
 
     const referencePath = this.getReferencePath(document, pathFormat);
-    const coreSelections = toCoreSelections(selections);
 
-    // Determine if this is a full-line selection (only for single selection)
-    const options: FormatOptions = {
-      isFullLine: selections.length === 1 ? this.isFullLineSelection(editor, selections[0]) : false,
-    };
-
-    const result = isPortable
-      ? formatPortableLink(referencePath, coreSelections, this.delimiters, options)
-      : formatLink(referencePath, coreSelections, this.delimiters, options);
-
-    if (!result.success) {
-      const linkType = isPortable ? 'portable link' : 'link';
-      vscode.window.showErrorMessage(`Failed to format ${linkType}: ${result.error}`);
+    let inputSelection: InputSelection;
+    try {
+      inputSelection = toInputSelection(editor, selections);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to process selection';
+      getLogger().error(
+        { fn: 'generateLinkFromSelection', error },
+        'Failed to convert selections to InputSelection'
+      );
+      vscode.window.showErrorMessage(`RangeLink: ${message}`);
       return null;
     }
 
-    return result.value;
+    const options: FormatOptions = {
+      linkType: isPortable ? LinkType.Portable : LinkType.Regular,
+    };
+
+    const result = formatLink(referencePath, inputSelection, this.delimiters, options);
+
+    if (!result.success) {
+      const linkType = isPortable ? 'portable link' : 'link';
+      getLogger().error(
+        { fn: 'generateLinkFromSelection', errorCode: result.error },
+        `Failed to generate ${linkType}`
+      );
+      vscode.window.showErrorMessage(`RangeLink: Failed to generate ${linkType}`);
+      return null;
+    }
+
+    const formattedLink = result.value;
+    getLogger().info(
+      { fn: 'generateLinkFromSelection', formattedLink },
+      `Generated link: ${formattedLink.link}`,
+    );
+
+    return formattedLink.link;
   }
 
   /**
@@ -143,21 +214,6 @@ export class RangeLinkService {
     return document.uri.fsPath;
   }
 
-  /**
-   * Determines if a selection represents a full-line selection
-   */
-  private isFullLineSelection(editor: vscode.TextEditor, selection: vscode.Selection): boolean {
-    const startLine = editor.document.lineAt(selection.start.line);
-    const endLine = editor.document.lineAt(selection.end.line);
-
-    const startsAtBeginning = selection.start.character === 0;
-    const endsAtEndOfLine =
-      selection.end.character === endLine.range.end.character ||
-      selection.end.character >= endLine.text.length || // Selection extends beyond line content
-      (selection.end.line > selection.start.line && selection.end.character === 0);
-
-    return startsAtBeginning && endsAtEndOfLine;
-  }
 }
 
 // ============================================================================
@@ -355,6 +411,10 @@ export function activate(context: vscode.ExtensionContext): void {
         });
         outputChannel.appendLine(`[INFO] Version Info:\n${JSON.stringify(versionInfo, null, 2)}`);
       } catch (error) {
+        getLogger().error(
+          { fn: 'showVersion', error },
+          'Failed to load version info'
+        );
         vscode.window.showErrorMessage('Version information not available');
         outputChannel.appendLine(`[ERROR] Could not load version info: ${error}`);
       }
@@ -368,6 +428,10 @@ export function activate(context: vscode.ExtensionContext): void {
     const isDirtyIndicator = versionInfo.isDirty ? ' (dirty)' : '';
     activationMessage += ` - v${versionInfo.version} (${versionInfo.commit}${isDirtyIndicator})`;
   } catch (error) {
+    getLogger().warn(
+      { fn: 'activate', error },
+      'Version info unavailable at activation'
+    );
     activationMessage += ' (version info unavailable)';
   }
   outputChannel.appendLine(activationMessage);
