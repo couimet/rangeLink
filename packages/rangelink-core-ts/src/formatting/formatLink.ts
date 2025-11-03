@@ -56,12 +56,12 @@ export function formatLink(
     spec.rangeFormat,
   );
 
-  const result = joinWithHash(path, anchor, delimiters, spec.hashMode);
+  const result = joinWithHash(path, anchor, delimiters, spec.selectionType);
 
   logger.debug(
     {
       fn: 'formatLink',
-      hashMode: spec.hashMode,
+      selectionType: spec.selectionType,
       rangeFormat: spec.rangeFormat,
       result,
       resultLength: result?.length,

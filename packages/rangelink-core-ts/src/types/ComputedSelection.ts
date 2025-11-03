@@ -1,5 +1,5 @@
-import { HashMode } from './HashMode';
 import { RangeFormat } from './RangeFormat';
+import { SelectionType } from './SelectionType';
 
 /**
  * Result of analyzing a selection for link generation.
@@ -11,5 +11,5 @@ export interface ComputedSelection {
   readonly startPosition?: number;
   readonly endPosition?: number;
   readonly rangeFormat: RangeFormat;
-  readonly hashMode: HashMode;
+  readonly selectionType: SelectionType;
 }

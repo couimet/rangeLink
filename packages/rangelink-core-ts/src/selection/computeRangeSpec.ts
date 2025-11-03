@@ -1,7 +1,6 @@
 import { SelectionValidationError } from '../errors/SelectionValidationError';
 import { ComputedSelection } from '../types/ComputedSelection';
 import { FormatOptions } from '../types/FormatOptions';
-import { HashMode } from '../types/HashMode';
 import { InputSelection } from '../types/InputSelection';
 import { RangeFormat } from '../types/RangeFormat';
 import { RangeLinkMessageCode } from '../types/RangeLinkMessageCode';
@@ -54,7 +53,7 @@ export function computeRangeSpec(
       startPosition,
       endPosition,
       rangeFormat: RangeFormat.WithPositions,
-      hashMode: HashMode.RectangularMode,
+      selectionType: SelectionType.Rectangular,
     });
   }
 
@@ -81,6 +80,6 @@ export function computeRangeSpec(
     startPosition: usePositions ? startPosition : undefined,
     endPosition: usePositions ? endPosition : undefined,
     rangeFormat,
-    hashMode: HashMode.Normal,
+    selectionType: SelectionType.Normal,
   });
 }

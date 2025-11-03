@@ -1,4 +1,3 @@
-import { HashMode } from '../../types/HashMode';
 import { LinkType } from '../../types/LinkType';
 import { PathFormat } from '../../types/PathFormat';
 import { RangeFormat } from '../../types/RangeFormat';
@@ -7,20 +6,6 @@ import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
 
 describe('Enums', () => {
-  describe('HashMode', () => {
-    it('should have exactly 2 values', () => {
-      expect(Object.keys(HashMode)).toHaveLength(2);
-    });
-
-    it('should have Normal value', () => {
-      expect(HashMode.Normal).toBe('Normal');
-    });
-
-    it('should have RectangularMode value', () => {
-      expect(HashMode.RectangularMode).toBe('RectangularMode');
-    });
-  });
-
   describe('LinkType', () => {
     it('should have exactly 2 values', () => {
       expect(Object.keys(LinkType)).toHaveLength(2);
