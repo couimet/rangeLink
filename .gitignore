@@ -22,5 +22,9 @@ packages/*/dist/
 # Generated version files
 packages/*/src/version.json
 
+# Build-time assets (copied from /assets/ during package builds)
+packages/*/icon.png
+packages/*/icon_large.png
+
 .commits/
 

@@ -729,34 +729,41 @@ Following the successful publication of the VSCode extension to the marketplace,
 
 ---
 
-#### 4G) Logo Strategy for Multi-Extension Monorepo — 📋 Next Up
+#### 4G) Logo Strategy for Multi-Extension Monorepo — ✅ Complete
 
 **Goal:** Define and implement centralized logo sourcing to avoid duplication across future extensions.
 
 **Approach:**
-- Store canonical logo at `/assets/logo.png` (root level)
-- Create `scripts/sync-assets.sh` to copy to package directories
-- Add pre-package hook to run asset sync
-- Document in `docs/ASSET-MANAGEMENT.md`
+
+- Store canonical icons at `/assets/` (root level)
+- Create `scripts/sync-assets.sh` to copy to package directories during build
+- Gitignore copied icons (build-time artifacts)
+- Validate checksums to ensure consistency
 
 **Tasks:**
-- Create `/assets/` directory with logo files
-- Write `scripts/sync-assets.sh` bash script
-- Add to vscode-extension pre-package workflow
-- Update `.vscodeignore` to include synced assets
-- Document strategy for future extensions
+
+- ✅ Create `/assets/` directory with icon files
+- ✅ Write `scripts/sync-assets.sh` bash script with validation
+- ✅ Add to vscode-extension pre-package workflow
+- ✅ Gitignore copied icons in package directories
+- ✅ Document strategy in `docs/ASSET-MANAGEMENT.md`
+- ✅ Update root README to use `/assets/icon.png`
 
 **Deliverables:**
-- `/assets/logo.png` (canonical source)
-- `scripts/sync-assets.sh`
-- `docs/ASSET-MANAGEMENT.md`
-- Updated package.json with pre-package hook
 
-**Done when:** Logo managed centrally, easy to update across all extensions
+- ✅ `/assets/icon.png` + `/assets/icon_large.png` (canonical sources)
+- ✅ `scripts/sync-assets.sh` with checksum validation
+- ✅ `docs/ASSET-MANAGEMENT.md` (concise documentation)
+- ✅ Updated package.json pre-package hook
+- ✅ `.gitignore` entries for build-time icons
+
+**Done when:** Icons managed centrally, copied during build, validation ensures consistency
+
+**Status:** Complete - Single source of truth for assets, no duplication in git, build validates consistency
 
 ---
 
-#### 4H) Logo Origins - Nerdy Humor Section — 📋 Planned
+#### 4H) Logo Origins - Nerdy Humor Section — 📋 Next Up
 
 **Goal:** Add story about logo design with the Pi precision joke.
 

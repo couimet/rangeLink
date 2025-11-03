@@ -1,7 +1,7 @@
 # RangeLink
 
 <div align="center">
-  <img src="./icon.png" alt="RangeLink Logo" width="128" />
+  <img src="./assets/icon.png" alt="RangeLink Logo" width="128" />
 </div>
 
 **Range links that work everywhere—Claude Code, Cursor, VSCode, GitHub, your team.**
