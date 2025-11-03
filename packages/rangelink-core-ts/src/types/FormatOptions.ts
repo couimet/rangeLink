@@ -1,10 +1,21 @@
+import { LinkType } from './LinkType';
+import { RangeNotation } from './RangeNotation';
+
 /**
  * Optional formatting parameters for link generation.
  */
 export interface FormatOptions {
   /**
-   * Indicates if the selection extends to the full line.
-   * When true, may use simplified line-only format.
+   * Controls range notation format.
+   * See RangeNotation enum for detailed behavior.
+   * Defaults to RangeNotation.Auto if not specified.
    */
-  readonly isFullLine?: boolean;
+  readonly notation?: RangeNotation;
+
+  /**
+   * Type of link to generate.
+   * See LinkType enum for options.
+   * Defaults to LinkType.Regular if not specified.
+   */
+  readonly linkType?: LinkType;
 }
