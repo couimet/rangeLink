@@ -382,7 +382,7 @@ Contributions are welcome!
 
 ## Known Issues
 
-None at the moment. If you find a bug, please [report it](https://github.com/couimet/rangelink/issues).
+If you find a bug, please [report it](https://github.com/couimet/rangelink/issues).
 
 ## License
 
