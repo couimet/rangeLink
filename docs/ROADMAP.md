@@ -1124,6 +1124,91 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 
 ## Phase 7: Productivity Features
 
+- [ ] **Auto-paste RangeLinks to Terminal** (High Priority)
+  - **Problem:** Manual workflow friction - After generating a link for claude-code (running in terminal), user must manually paste it from clipboard
+  - **Solution:** Automatically paste generated links into a designated terminal, enabling seamless workflow
+  - **Primary Use Case:** Running claude-code in VS Code/Cursor terminal - link generation automatically pastes into active claude-code session
+  - **Behavior:** Copy to clipboard AND paste to terminal (both operations)
+  - **Scope:** All link generation commands (selection, file, symbol, portable)
+  - **Platform:** Works in VS Code and Cursor
+
+  **MVP (Iteration 1): Active Terminal Paste** (2h)
+  - Add command: "RangeLink: Enable Auto-Paste to Terminal"
+  - **Binding behavior:** Captures the terminal that is active when command is executed - this becomes the bound terminal
+  - All subsequent link generation pastes to the BOUND terminal (not "whichever terminal is active at paste time")
+  - Paste using `terminal.sendText(link, false)` (no auto-submit - user presses Enter manually)
+  - Store terminal reference in memory (session-scoped, not persisted)
+  - Status bar feedback: "Link pasted to terminal [terminal-name]"
+  - Command to disable: "RangeLink: Disable Auto-Paste"
+  - **Edge case:** If no terminal is active when enabling, show error: "No active terminal. Open a terminal and try again."
+  - **Done when:** Can enable/disable feature, links paste to BOUND terminal consistently, status bar shows confirmation
+
+  **Iteration 2: Terminal Lifecycle Management** (1.5h)
+  - Listen to `window.onDidCloseTerminal` event
+  - Auto-disable feature when bound terminal closes
+  - Show status bar message: "RangeLink auto-paste disabled (terminal closed)"
+  - Log terminal closure event
+  - Clear stored terminal reference
+  - Add command: "RangeLink: Show Auto-Paste Status" - displays which terminal is bound (or "not enabled")
+  - Status includes: terminal name, index/position, enabled/disabled state
+  - **Done when:** Feature auto-disables on terminal closure with user feedback, user can query current binding state
+
+  **Iteration 3: Terminal Selection with Quick Pick** (2h)
+  - Enhance enable command to show Quick Pick menu of available terminals
+  - Display terminal info: name, position/index in list, process name
+  - Handle terminals with duplicate names: Show "zsh (1)", "zsh (2)" with indices
+  - Allow user to select which terminal to bind to
+  - Preview format: `[1] zsh - /Users/username/project`
+  - **Re-binding behavior:** If feature is already enabled, show Quick Pick to switch to different terminal (no need to disable first)
+  - Confirmation message: "Auto-paste switched from [old-terminal] to [new-terminal]"
+  - **Edge case:** If only one terminal exists, auto-select it (skip Quick Pick UI)
+  - **Done when:** User can pick specific terminal from list, can re-bind without disabling, handles edge cases gracefully
+
+  **Iteration 4: Context Menu Integration** (1h)
+  - Add "Auto-paste RangeLinks Here" to terminal tab context menu
+  - Right-click on terminal name in terminal list to enable auto-paste
+  - Show checkmark indicator when terminal is active auto-paste target
+  - **Done when:** Can enable feature via right-click on terminal, visual indicator shows active terminal
+
+  **Iteration 5: Enhanced Status Bar Feedback** (1h)
+  - Status bar shows terminal identifier: "Link pasted to [zsh (2)]"
+  - Include terminal index/position for disambiguation
+  - Click status bar message to focus the target terminal (brings terminal panel into view if hidden)
+  - Persistent status bar item shows auto-paste state: "🔗→ [terminal-name]"
+  - Status bar item tooltip: "RangeLink auto-paste enabled for terminal: [name]. Click to focus terminal."
+  - Status bar item changes color/icon when feature is disabled (dimmed: "🔗❌")
+  - Click disabled status bar item to re-enable (shows Quick Pick if multiple terminals)
+  - **Done when:** Clear feedback about where link was pasted, easy terminal navigation, persistent visual indicator of binding state
+
+  **Future Iterations (Defer):**
+  - Visual indicator in terminal list (logo/icon next to bound terminal name) - VS Code API research needed
+  - Persist terminal binding across sessions (complex: terminal IDs change on restart)
+    - Potential approach: Store terminal name + cwd, attempt to match on startup
+    - Show notification if stored terminal no longer exists: "Previously bound terminal not found. Re-enable auto-paste?"
+  - Multi-terminal support: Bind different link types to different terminals
+    - Example: Portable links → Terminal 1, Regular links → Terminal 2
+  - Keyboard shortcut for quick toggle: `Cmd+R Cmd+T` / `Ctrl+R Ctrl+T` to enable/disable
+  - Settings integration:
+    - `rangelink.autoPaste.enabled`: Enable by default on startup
+    - `rangelink.autoPaste.defaultTerminal`: "active" | "first" | "last" | terminal name pattern
+    - `rangelink.autoPaste.showStatusBarItem`: Show persistent indicator (default: true)
+  - Terminal profile integration: Auto-enable for specific terminal profiles (e.g., "claude-code")
+  - Fallback to clipboard-only with graceful error handling improvements
+  - Support for remote terminals (VS Code Remote Development)
+  - Smart detection: If clipboard contains claude-code prompt, suggest enabling auto-paste feature
+
+  **Technical Notes:**
+  - VS Code Terminal API: `window.activeTerminal`, `window.terminals`
+  - Terminal identification: `terminal.name` (user-facing), `terminal.processId` (unreliable across sessions)
+  - Position tracking: Array index in `window.terminals` (reliable during session, changes on close)
+  - Status bar API: `window.createStatusBarItem()` with `command` for click handling
+
+  **Error Handling:**
+  - Terminal closed: Auto-disable with status bar notification
+  - No active terminal when enabling: Show error toast, guide to command palette
+  - Terminal unavailable during paste: Show warning toast, clipboard still contains link
+  - Multiple windows open: Feature scoped to window (VS Code window.terminals is window-specific)
+
 - [ ] **Link history**
   - Store recently generated links
   - Quick access via command palette
