@@ -2,7 +2,9 @@ import { getLogger } from '../logging/LogManager';
 import { computeRangeSpec } from '../selection/computeRangeSpec';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { FormatOptions } from '../types/FormatOptions';
+import { FormattedLink } from '../types/FormattedLink';
 import { InputSelection } from '../types/InputSelection';
+import { LinkType } from '../types/LinkType';
 import { RangeLinkMessageCode } from '../types/RangeLinkMessageCode';
 import { Ok, Result } from '../types/Result';
 
@@ -18,14 +20,14 @@ import { joinWithHash } from './joinWithHash';
  * @param inputSelection InputSelection containing selections and selectionType
  * @param delimiters Delimiter configuration
  * @param options Optional formatting options
- * @returns Result<string, RangeLinkMessageCode> - formatted link or error code
+ * @returns Result<FormattedLink, RangeLinkMessageCode> - formatted link with metadata or error code
  */
 export function formatLink(
   path: string,
   inputSelection: InputSelection,
   delimiters: DelimiterConfig,
   options?: FormatOptions,
-): Result<string, RangeLinkMessageCode> {
+): Result<FormattedLink, RangeLinkMessageCode> {
   const logger = getLogger();
 
   // Validate and compute range spec
@@ -35,15 +37,25 @@ export function formatLink(
   }
   const spec = specResult.value;
 
+  const linkType = options?.linkType ?? LinkType.Regular;
+
   // Special case: single-line full-line selection
   if (
     spec.startLine === spec.endLine &&
     spec.rangeFormat === 'LineOnly' &&
     spec.startPosition === undefined
   ) {
-    const result = formatSimpleLineReference(path, spec.startLine, delimiters);
+    const link = formatSimpleLineReference(path, spec.startLine, delimiters);
     logger.debug({ fn: 'formatLink', format: 'simple' }, `Generated simple line reference`);
-    return Ok(result);
+
+    return Ok({
+      link,
+      linkType,
+      delimiters,
+      computedSelection: spec,
+      rangeFormat: spec.rangeFormat,
+      selectionType: inputSelection.selectionType,
+    });
   }
 
   // Build standard anchor
@@ -56,18 +68,25 @@ export function formatLink(
     spec.rangeFormat,
   );
 
-  const result = joinWithHash(path, anchor, delimiters, inputSelection.selectionType);
+  const link = joinWithHash(path, anchor, delimiters, inputSelection.selectionType);
 
   logger.debug(
     {
       fn: 'formatLink',
       selectionType: inputSelection.selectionType,
       rangeFormat: spec.rangeFormat,
-      result,
-      resultLength: result?.length,
+      link,
+      linkLength: link?.length,
     },
-    `Generated link: ${result}`,
+    `Generated link: ${link}`,
   );
 
-  return Ok(result);
+  return Ok({
+    link,
+    linkType,
+    delimiters,
+    computedSelection: spec,
+    rangeFormat: spec.rangeFormat,
+    selectionType: inputSelection.selectionType,
+  });
 }
