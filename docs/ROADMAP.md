@@ -1175,6 +1175,7 @@ Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates
 3. **AI reads precise context** → No manual copy/paste, no lost focus
 
 **Compete with Cursor's built-in AI** by making external AI assistants feel integrated. You get:
+
 - Choice of AI model (Claude, GPT, Gemini)
 - Full control over context (precise line ranges, not full files)
 - Works across editors (VSCode, Cursor, Sublime)
@@ -1190,6 +1191,7 @@ Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates
 ## Features
 
 ### 🤖 AI Workflow Integration
+
 - **Bind to terminal:** Links appear instantly in claude-code/AI sessions
 - **Zero context switches:** No manual copy/paste, no terminal focusing
 - **Persistent binding:** Set once, send forever (until terminal closes)
@@ -1197,6 +1199,7 @@ Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates
 - **Works everywhere:** claude-code, Claude Code, ChatGPT, any text-based AI
 
 ### 🎯 Precision Code References
+
 [existing content...]
 ```
 

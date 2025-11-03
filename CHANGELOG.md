@@ -31,6 +31,6 @@ Each package is versioned independently following [Semantic Versioning](https://
 > [!TIP]
 > **Want to see all changes across the monorepo between versions?**
 >
-> Use GitHub's  `Compare` feature on the [releases page](https://github.com/couimet/rangeLink/releases).
+> Use GitHub's `Compare` feature on the [releases page](https://github.com/couimet/rangeLink/releases).
 >
 > This shows cross-package changes, documentation updates, and infrastructure improvements that might not appear in individual package changelogs.
