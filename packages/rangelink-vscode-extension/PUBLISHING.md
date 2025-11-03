@@ -108,35 +108,6 @@ To manually manage versions, edit `package.json`:
 
 Follow semantic versioning (major.minor.patch).
 
-## Troubleshooting
-
-### Error: "Missing publisher"
-
-Solution: Edit `package.json` and add:
-
-```json
-"publisher": "your-publisher-name"
-```
-
-### Error: "Missing repository URL"
-
-Solution: Add repository info to `package.json`:
-
-```json
-"repository": {
-  "type": "git",
-  "url": "https://github.com/couimet/rangelink.git"
-}
-```
-
-### Error: "Extension validation failed"
-
-Solution: Run with verbose flag to see details:
-
-```bash
-vsce package --verbose
-```
-
 ## Checklist Before Publishing
 
 - [ ] Code compiles without errors
