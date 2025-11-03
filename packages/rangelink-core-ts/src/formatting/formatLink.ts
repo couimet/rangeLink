@@ -2,9 +2,9 @@ import { getLogger } from '../logging/LogManager';
 import { computeRangeSpec } from '../selection/computeRangeSpec';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { FormatOptions } from '../types/FormatOptions';
+import { InputSelection } from '../types/InputSelection';
 import { RangeLinkMessageCode } from '../types/RangeLinkMessageCode';
-import { Err, Ok, Result } from '../types/Result';
-import { Selection } from '../types/Selection';
+import { Ok, Result } from '../types/Result';
 
 import { buildAnchor } from './buildAnchor';
 import { formatSimpleLineReference } from './formatSimpleLineReference';
@@ -15,33 +15,25 @@ import { joinWithHash } from './joinWithHash';
  * Main orchestrator for link generation.
  *
  * @param path File path (workspace-relative or absolute)
- * @param selections Array of selections (typically one, or multiple for rectangular mode)
+ * @param inputSelection InputSelection containing selections and selectionType
  * @param delimiters Delimiter configuration
  * @param options Optional formatting options
- * @returns Result<string, RangeLinkMessageCode> - formatted link or error
+ * @returns Result<string, RangeLinkMessageCode> - formatted link or error code
  */
 export function formatLink(
   path: string,
-  selections: ReadonlyArray<Selection>,
+  inputSelection: InputSelection,
   delimiters: DelimiterConfig,
   options?: FormatOptions,
 ): Result<string, RangeLinkMessageCode> {
   const logger = getLogger();
 
-  // Check for empty selections array (safety guard)
-  if (!selections || selections.length === 0) {
-    logger.error({ fn: 'formatLink' }, 'Cannot format link for empty selections array');
-    return Err(RangeLinkMessageCode.CONFIG_ERR_DELIMITER_INVALID); // TODO: Add proper error code
+  // Validate and compute range spec
+  const specResult = computeRangeSpec(inputSelection, options);
+  if (!specResult.success) {
+    return specResult;
   }
-
-  // Check for empty selection (no range selected)
-  const primary = selections[0];
-  if (primary.startLine === primary.endLine && primary.startCharacter === primary.endCharacter) {
-    logger.error({ fn: 'formatLink' }, 'Cannot format link for empty selection');
-    return Err(RangeLinkMessageCode.CONFIG_ERR_DELIMITER_INVALID); // TODO: Add proper error code
-  }
-
-  const spec = computeRangeSpec(selections, options);
+  const spec = specResult.value;
 
   // Special case: single-line full-line selection
   if (

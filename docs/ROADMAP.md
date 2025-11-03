@@ -155,6 +155,32 @@ For detailed format specifications, see [LINK-FORMATS.md](./LINK-FORMATS.md) and
 
 ---
 
+## Phase 1.5: Selection Architecture Refactoring — 🔨 In Progress
+
+Ongoing refactoring to improve selection semantics, validation, and error handling in core library. Tracked in `docs/REFACTOR_PLAN.md`.
+
+**Overall Status:**
+
+- ✅ Phase 0-2: Enums (RangeNotation, SelectionCoverage, SelectionType), InputSelection interface, Selection.coverage field
+- ✅ Phase 3-4: FormatOptions.notation system, computeRangeSpec updates, comprehensive validation (ERR_3001-ERR_3011)
+- ✅ Hybrid error handling architecture (exceptions internally, Result at boundaries)
+- ✅ Custom Jest matchers for Result testing
+- 📋 Phase 5: FormattedLink return type (rich object instead of string) — **PUNTED**
+- 📋 Phase 7: VSCode extension updates — **DEFERRED**
+- 📋 Phase 8: Documentation and cleanup — **DEFERRED**
+
+**Recent Commit:**
+- feat(core): Implement notation system and validation with hybrid error handling
+
+**What's Next:**
+- Phase 5: Change formatLink() to return FormattedLink (rich metadata object)
+- Phase 7: Update VSCode extension to use new APIs
+- Phase 8: Final documentation pass
+
+**Details:** See `docs/REFACTOR_PLAN.md` for complete phase breakdown and implementation plan.
+
+---
+
 ## Phase 2: Core Architecture and Monorepo — ✅ Complete
 
 We modularized the project and adopted a monorepo to enable fast, iterative development with world-class code quality.

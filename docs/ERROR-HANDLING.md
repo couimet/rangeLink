@@ -45,6 +45,68 @@ Error codes are organized by functional area:
 | `WARN_2xxx` | BYOD Warnings          | BYOD recovery and fallback warnings |
 | `ERR_3xxx`  | Selection Validation   | Input selection validation failures |
 
+## Hybrid Error Handling Architecture
+
+RangeLink uses a **hybrid error handling approach** that combines exceptions internally with Result types at public API boundaries:
+
+### Design Principles
+
+**Internal Functions (Private):**
+
+- Throw `SelectionValidationError` exceptions for validation failures
+- Natural exception flow simplifies validation logic
+- Easy to reason about sequential validation checks
+
+**Public API Functions:**
+
+- Catch exceptions at boundaries
+- Convert to `Result<T, RangeLinkMessageCode>` for callers
+- Never throw across module boundaries
+- Type-safe error handling without try-catch boilerplate
+
+### Example Pattern
+
+```typescript
+// Internal validation - throws exceptions
+function validateInputSelection(input: InputSelection): void {
+  if (selections.length === 0) {
+    throw new SelectionValidationError(
+      RangeLinkMessageCode.SELECTION_ERR_EMPTY,
+      'Selections array must not be empty',
+    );
+  }
+  // ... more validations
+}
+
+// Public API - catches and converts to Result
+export function computeRangeSpec(
+  inputSelection: InputSelection,
+): Result<ComputedSelection, RangeLinkMessageCode> {
+  try {
+    validateInputSelection(inputSelection);
+    // ... compute logic
+    return Ok(result);
+  } catch (error) {
+    if (error instanceof SelectionValidationError) {
+      return Err(error.code);
+    }
+    throw error; // Re-throw unexpected errors
+  }
+}
+```
+
+### Benefits
+
+1. **Developer Ergonomics**: Validation logic reads naturally without Result boilerplate
+2. **Type Safety**: Callers get Result type with exhaustive error checking
+3. **Clean Boundaries**: Exceptions never escape public APIs
+4. **Best of Both**: Combines exception convenience with Result safety
+
+### When to Use Each Pattern
+
+- **Use Exceptions**: Internal validation, sequential checks, helper functions
+- **Use Result**: Public API functions, cross-module boundaries, external consumers
+
 ## Error Code Reference
 
 See source code for error codes and validation rules:

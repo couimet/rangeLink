@@ -1,38 +1,29 @@
-import { DelimiterConfig } from '../../types/DelimiterConfig';
-import { FormattedLink } from '../../types/FormattedLink';
-import { HashMode } from '../../types/HashMode';
-import { LinkType } from '../../types/LinkType';
-import { RangeFormat } from '../../types/RangeFormat';
-import { RangeLinkMessageCode } from '../../types/RangeLinkMessageCode';
 import { Result } from '../../types/Result';
-import { SelectionMode } from '../../types/SelectionMode';
-
-/**
- * Expected FormattedLink for the custom matcher
- */
-interface ExpectedFormattedLink {
-  link: string;
-  linkType: LinkType;
-  delimiters: DelimiterConfig;
-  rangeFormat: RangeFormat;
-  hashMode: HashMode;
-  selectionMode: SelectionMode;
-}
 
 declare global {
   namespace jest {
     interface Matchers<R> {
-      toBeSuccessWithFormattedLink(expected: ExpectedFormattedLink): R;
+      toBeOk(): R;
+      toBeOkWith<T>(assertValue: (value: T) => void): R;
+      toBeErr(): R;
+      toBeErrWith<E>(assertError: (error: E) => void): R;
     }
   }
 }
 
 expect.extend({
-  toBeSuccessWithFormattedLink(
-    received: Result<FormattedLink, RangeLinkMessageCode>,
-    expected: ExpectedFormattedLink,
-  ) {
-    // Check if result is successful
+  toBeOk(received: Result<unknown, unknown>) {
+    const pass = received.success === true;
+    return {
+      pass,
+      message: () =>
+        pass
+          ? `Expected result to be an error, but it succeeded with value: ${JSON.stringify(received.value)}`
+          : `Expected result to be successful, but it failed with error: ${received.error}`,
+    };
+  },
+
+  toBeOkWith<T>(received: Result<T, unknown>, assertValue: (value: T) => void) {
     if (!received.success) {
       return {
         pass: false,
@@ -41,53 +32,54 @@ expect.extend({
       };
     }
 
-    const actual = received.value;
-
-    // Compare each field
-    const failures: string[] = [];
-
-    if (actual.link !== expected.link) {
-      failures.push(`  link: expected "${expected.link}", received "${actual.link}"`);
-    }
-
-    if (actual.linkType !== expected.linkType) {
-      failures.push(`  linkType: expected "${expected.linkType}", received "${actual.linkType}"`);
-    }
-
-    if (actual.rangeFormat !== expected.rangeFormat) {
-      failures.push(
-        `  rangeFormat: expected "${expected.rangeFormat}", received "${actual.rangeFormat}"`,
-      );
-    }
-
-    if (actual.hashMode !== expected.hashMode) {
-      failures.push(`  hashMode: expected "${expected.hashMode}", received "${actual.hashMode}"`);
-    }
-
-    if (actual.selectionMode !== expected.selectionMode) {
-      failures.push(
-        `  selectionMode: expected "${expected.selectionMode}", received "${actual.selectionMode}"`,
-      );
-    }
-
-    // Deep compare delimiters
-    if (JSON.stringify(actual.delimiters) !== JSON.stringify(expected.delimiters)) {
-      failures.push(
-        `  delimiters: expected ${JSON.stringify(expected.delimiters)}, received ${JSON.stringify(actual.delimiters)}`,
-      );
-    }
-
-    if (failures.length > 0) {
+    try {
+      assertValue(received.value);
+      return {
+        pass: true,
+        message: () => 'Result is successful and value assertions passed',
+      };
+    } catch (error) {
       return {
         pass: false,
-        message: () => `FormattedLink mismatch:\n${failures.join('\n')}`,
+        message: () =>
+          `Result is successful but value assertions failed:\n${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
+  },
+
+  toBeErr(received: Result<unknown, unknown>) {
+    const pass = received.success === false;
+    return {
+      pass,
+      message: () =>
+        pass
+          ? `Expected result to be successful, but it failed with error: ${received.error}`
+          : `Expected result to be an error, but it succeeded with value: ${JSON.stringify(received.value)}`,
+    };
+  },
+
+  toBeErrWith<E>(received: Result<unknown, E>, assertError: (error: E) => void) {
+    if (received.success) {
+      return {
+        pass: false,
+        message: () =>
+          `Expected result to be an error, but it succeeded with value: ${JSON.stringify(received.value)}`,
       };
     }
 
-    return {
-      pass: true,
-      message: () => 'FormattedLink matches expected values',
-    };
+    try {
+      assertError(received.error);
+      return {
+        pass: true,
+        message: () => 'Result is an error and error assertions passed',
+      };
+    } catch (error) {
+      return {
+        pass: false,
+        message: () =>
+          `Result is an error but error assertions failed:\n${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
   },
 });
 
