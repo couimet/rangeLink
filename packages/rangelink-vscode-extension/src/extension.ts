@@ -76,10 +76,16 @@ function toInputSelection(
       }
     } catch (error) {
       // Selection references invalid line numbers - document was modified
-      const message = 'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.';
+      const message =
+        'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.';
       getLogger().error(
-        { fn: 'toInputSelection', error, line: sel.end.line, documentLines: editor.document.lineCount },
-        'Document modified during link generation - selection out of bounds'
+        {
+          fn: 'toInputSelection',
+          error,
+          line: sel.end.line,
+          documentLines: editor.document.lineCount,
+        },
+        'Document modified during link generation - selection out of bounds',
       );
       throw new Error(message);
     }
@@ -162,7 +168,7 @@ export class RangeLinkService {
       const message = error instanceof Error ? error.message : 'Failed to process selection';
       getLogger().error(
         { fn: 'generateLinkFromSelection', error },
-        'Failed to convert selections to InputSelection'
+        'Failed to convert selections to InputSelection',
       );
       vscode.window.showErrorMessage(`RangeLink: ${message}`);
       return null;
@@ -178,7 +184,7 @@ export class RangeLinkService {
       const linkType = isPortable ? 'portable link' : 'link';
       getLogger().error(
         { fn: 'generateLinkFromSelection', errorCode: result.error },
-        `Failed to generate ${linkType}`
+        `Failed to generate ${linkType}`,
       );
       vscode.window.showErrorMessage(`RangeLink: Failed to generate ${linkType}`);
       return null;
@@ -213,7 +219,6 @@ export class RangeLinkService {
     }
     return document.uri.fsPath;
   }
-
 }
 
 // ============================================================================
@@ -333,18 +338,12 @@ function loadDelimiterConfig(): DelimiterConfig {
     return 'from default';
   };
 
-  outputChannel.appendLine(
-    `  - Line delimiter: '${userLine}' ${getSource(inspectLine)}`,
-  );
+  outputChannel.appendLine(`  - Line delimiter: '${userLine}' ${getSource(inspectLine)}`);
   outputChannel.appendLine(
     `  - Position delimiter: '${userPosition}' ${getSource(inspectPosition)}`,
   );
-  outputChannel.appendLine(
-    `  - Hash delimiter: '${userHash}' ${getSource(inspectHash)}`,
-  );
-  outputChannel.appendLine(
-    `  - Range delimiter: '${userRange}' ${getSource(inspectRange)}`,
-  );
+  outputChannel.appendLine(`  - Hash delimiter: '${userHash}' ${getSource(inspectHash)}`);
+  outputChannel.appendLine(`  - Range delimiter: '${userRange}' ${getSource(inspectRange)}`);
   outputChannel.appendLine(
     `  - Column mode: indicated by double hash delimiter (${userHash}${userHash})`,
   );
@@ -411,10 +410,7 @@ export function activate(context: vscode.ExtensionContext): void {
         });
         outputChannel.appendLine(`[INFO] Version Info:\n${JSON.stringify(versionInfo, null, 2)}`);
       } catch (error) {
-        getLogger().error(
-          { fn: 'showVersion', error },
-          'Failed to load version info'
-        );
+        getLogger().error({ fn: 'showVersion', error }, 'Failed to load version info');
         vscode.window.showErrorMessage('Version information not available');
         outputChannel.appendLine(`[ERROR] Could not load version info: ${error}`);
       }
@@ -428,10 +424,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const isDirtyIndicator = versionInfo.isDirty ? ' (dirty)' : '';
     activationMessage += ` - v${versionInfo.version} (${versionInfo.commit}${isDirtyIndicator})`;
   } catch (error) {
-    getLogger().warn(
-      { fn: 'activate', error },
-      'Version info unavailable at activation'
-    );
+    getLogger().warn({ fn: 'activate', error }, 'Version info unavailable at activation');
     activationMessage += ' (version info unavailable)';
   }
   outputChannel.appendLine(activationMessage);
