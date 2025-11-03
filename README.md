@@ -29,7 +29,6 @@
 
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`"
 - 🤖 **AI assistants** — Give Claude Code or Copilot _exact_ context
-- 📚 **Documentation** — Precise references that don't break
 - 👥 **Team collaboration** — Universal format everyone can use
 
 ## Quick Start
