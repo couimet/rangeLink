@@ -45,7 +45,7 @@ export function computeRangeSpec(
   const startPosition = primary.startCharacter + 1;
   const endPosition = primary.endCharacter + 1;
 
-  // Rectangular selection always uses positions and double-hash
+  // Rectangular selection always uses positions
   if (selectionType === SelectionType.Rectangular) {
     return Ok({
       startLine,
@@ -53,7 +53,6 @@ export function computeRangeSpec(
       startPosition,
       endPosition,
       rangeFormat: RangeFormat.WithPositions,
-      selectionType: SelectionType.Rectangular,
     });
   }
 
@@ -80,6 +79,5 @@ export function computeRangeSpec(
     startPosition: usePositions ? startPosition : undefined,
     endPosition: usePositions ? endPosition : undefined,
     rangeFormat,
-    selectionType: SelectionType.Normal,
   });
 }

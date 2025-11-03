@@ -29,7 +29,6 @@ describe('computeRangeSpec', () => {
           startPosition: 6,
           endPosition: 16,
           rangeFormat: RangeFormat.WithPositions,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -56,7 +55,6 @@ describe('computeRangeSpec', () => {
           startPosition: undefined,
           endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -85,7 +83,6 @@ describe('computeRangeSpec', () => {
           startPosition: 6, // 1-based
           endPosition: 16,
           rangeFormat: RangeFormat.WithPositions,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -112,7 +109,6 @@ describe('computeRangeSpec', () => {
           startPosition: 6,
           endPosition: 16,
           rangeFormat: RangeFormat.WithPositions,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -139,7 +135,6 @@ describe('computeRangeSpec', () => {
           startPosition: undefined,
           endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -166,7 +161,6 @@ describe('computeRangeSpec', () => {
           startPosition: undefined,
           endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -209,7 +203,6 @@ describe('computeRangeSpec', () => {
           startPosition: 6,
           endPosition: 16,
           rangeFormat: RangeFormat.WithPositions,
-          selectionType: SelectionType.Rectangular,
         });
       });
     });
@@ -250,7 +243,6 @@ describe('computeRangeSpec', () => {
           startPosition: 11,
           endPosition: 21,
           rangeFormat: RangeFormat.WithPositions,
-          selectionType: SelectionType.Rectangular,
         });
       });
     });
@@ -279,7 +271,6 @@ describe('computeRangeSpec', () => {
           startPosition: undefined,
           endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -306,7 +297,6 @@ describe('computeRangeSpec', () => {
           startPosition: undefined,
           endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -333,7 +323,6 @@ describe('computeRangeSpec', () => {
           startPosition: undefined,
           endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -362,7 +351,6 @@ describe('computeRangeSpec', () => {
           startPosition: 1,
           endPosition: 51,
           rangeFormat: RangeFormat.WithPositions,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -389,7 +377,6 @@ describe('computeRangeSpec', () => {
           startPosition: 1,
           endPosition: 1,
           rangeFormat: RangeFormat.WithPositions,
-          selectionType: SelectionType.Normal,
         });
       });
     });
@@ -416,7 +403,6 @@ describe('computeRangeSpec', () => {
           startPosition: 6,
           endPosition: 16,
           rangeFormat: RangeFormat.WithPositions,
-          selectionType: SelectionType.Normal,
         });
       });
     });
