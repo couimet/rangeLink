@@ -172,6 +172,17 @@ Today, RangeLink helps developers share code with precision across Claude Code, 
 
 **The best part?** Your teammates don't even need RangeLink installed to understand your links. The notation is GitHub-inspired—developers already know it.
 
+## About the Logo
+
+Ever notice the chicken in our logo? That's not just any chicken—it's a **free-range** chicken. Because your code should roam free across editors, tools, and teams. No fences, no boundaries. 🐔
+
+The chains? Those represent links—connections between developers, tools, and ideas. Collaboration without constraints.
+
+And here's the nerdy part: look closely at the numbers. You'll see **3.1416** instead of just 3.14. Because when you're sharing code references, **precision matters**. RangeLink shares exact ranges — period.
+
+> [!TIP]
+> **π Dad Joke:** Pi is irrational, and so are developers who don't use precise code references. At least Pi has an excuse.
+
 ## Configuration
 
 Customize delimiters in VSCode settings (Preferences > Settings > search "rangelink"):
