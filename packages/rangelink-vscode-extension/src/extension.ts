@@ -326,7 +326,7 @@ function loadDelimiterConfig(): DelimiterConfig {
   const inspectHash = config.inspect<string>('delimiterHash');
   const inspectRange = config.inspect<string>('delimiterRange');
 
-  const getSource = (inspect: any, key: string): string => {
+  const getSource = (inspect: any): string => {
     if (inspect?.workspaceFolderValue !== undefined) return 'from workspace folder';
     if (inspect?.workspaceValue !== undefined) return 'from workspace';
     if (inspect?.globalValue !== undefined) return 'from user settings';
@@ -334,16 +334,16 @@ function loadDelimiterConfig(): DelimiterConfig {
   };
 
   outputChannel.appendLine(
-    `  - Line delimiter: '${userLine}' ${getSource(inspectLine, 'delimiterLine')}`,
+    `  - Line delimiter: '${userLine}' ${getSource(inspectLine)}`,
   );
   outputChannel.appendLine(
-    `  - Position delimiter: '${userPosition}' ${getSource(inspectPosition, 'delimiterPosition')}`,
+    `  - Position delimiter: '${userPosition}' ${getSource(inspectPosition)}`,
   );
   outputChannel.appendLine(
-    `  - Hash delimiter: '${userHash}' ${getSource(inspectHash, 'delimiterHash')}`,
+    `  - Hash delimiter: '${userHash}' ${getSource(inspectHash)}`,
   );
   outputChannel.appendLine(
-    `  - Range delimiter: '${userRange}' ${getSource(inspectRange, 'delimiterRange')}`,
+    `  - Range delimiter: '${userRange}' ${getSource(inspectRange)}`,
   );
   outputChannel.appendLine(
     `  - Column mode: indicated by double hash delimiter (${userHash}${userHash})`,
