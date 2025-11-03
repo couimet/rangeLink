@@ -1,5 +1,6 @@
 export { Result, Ok, Err } from './Result';
 export { Selection } from './Selection';
+export { InputSelection } from './InputSelection';
 export { DelimiterConfig } from './DelimiterConfig';
 export { RangeFormat } from './RangeFormat';
 export { HashMode } from './HashMode';
