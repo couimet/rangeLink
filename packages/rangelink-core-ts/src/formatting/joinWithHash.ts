@@ -17,6 +17,7 @@ export function joinWithHash(
   selectionType: SelectionType = SelectionType.Normal,
 ): string {
   const { hash: delimHash } = delimiters;
-  const prefix = selectionType === SelectionType.Rectangular ? `${delimHash}${delimHash}` : `${delimHash}`;
+  const prefix =
+    selectionType === SelectionType.Rectangular ? `${delimHash}${delimHash}` : `${delimHash}`;
   return `${path}${prefix}${anchor}`;
 }
