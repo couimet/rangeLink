@@ -43,6 +43,7 @@ Error codes are organized by functional area:
 | `ERR_1xxx`  | Configuration Errors   | Delimiter validation failures       |
 | `ERR_2xxx`  | BYOD Parsing Errors    | Portable link parsing failures      |
 | `WARN_2xxx` | BYOD Warnings          | BYOD recovery and fallback warnings |
+| `ERR_3xxx`  | Selection Validation   | Input selection validation failures |
 
 ## Error Code Reference
 
@@ -50,6 +51,7 @@ See source code for error codes and validation rules:
 
 - **Configuration errors (ERR_1xxx)**: `packages/rangelink-core-ts/src/validation/validateDelimiter.ts`
 - **BYOD parsing errors (ERR_2xxx)**: BYOD parsing implementation (TBD)
+- **Selection validation (ERR_3xxx)**: `packages/rangelink-core-ts/src/selection/validateInputSelection.ts` and `packages/rangelink-core-ts/src/errors/SelectionValidationError.ts`
 
 ## Related Documentation
 
