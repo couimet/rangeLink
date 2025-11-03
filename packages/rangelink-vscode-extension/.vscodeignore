@@ -29,9 +29,6 @@ scripts/**
 .github/**
 .editorconfig
 
-# Large assets not needed in package
-icon_large.png
-
 # Keep these (automatic):
 # - package.json
 # - README.md

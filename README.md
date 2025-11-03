@@ -1,33 +1,60 @@
 # RangeLink
 
-Create sharable links to code ranges in your files. Perfect for documentation, AI prompts, and team collaboration.
+<div align="center">
+  <img src="./icon.png" alt="RangeLink Logo" width="128" />
+</div>
 
-By default, the link format uses GitHub-inspired notation (`#L10-L25` for lines or `#L10C5-L25C20` for lines with columns) for ranges, but generates local file paths suitable for your workspace, documentation, interactions with AI assistants, etc.
+**Range links that work everywhere—Claude Code, Cursor, VSCode, GitHub, your team.**
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tests](https://img.shields.io/badge/tests-100%25%20coverage-green)
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/couimet.rangelink-vscode-extension?label=VS%20Code%20Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+
+
+> **"Hey, check out lines 42 to 58... or was it 48 to 62?"** 🤔
+> **Never again.** RangeLink gives you `src/auth.ts#L42C10-L58C25` — precise, portable, and **just works** across editors, tools, and teams.
+
+> 🚀 **Ready to use it?** → [Install the VS Code Extension](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension) | 📖 [Read the origin story](#history)
+
+## Why RangeLink?
+
+**For Developers Who Care About Precision:**
+- 🎯 **No more "around line 42"** — Share exact ranges: `auth.ts#L42C10-L58C25`
+- 🔗 **Works everywhere** — Claude Code, VSCode, Cursor, Sublime Text, GitHub, Slack, PRs
+- 🚀 **One keystroke** — `Cmd+R Cmd+L` → link copied, done
+- 📁 **Flexible paths** — Workspace-relative or absolute paths, your choice
+- 🔧 **Portable by design** — Your links work even if teammates use different delimiter configs
+- 📐 **Rectangular selection support** — Share column ranges with `##` notation
+
+**Perfect for:**
+- 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`"
+- 🤖 **AI assistants** — Give Claude Code or Copilot *exact* context
+- 📚 **Documentation** — Precise references that don't break
+- 👥 **Team collaboration** — Universal format everyone can use
 
 ## Quick Start
 
 ### Installation
 
-1. Open VS Code or Cursor
-2. Go to Extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`)
-3. Search for "RangeLink"
-4. Click Install
+**[📦 Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)**
 
-### Create a Link
+Or search for **"RangeLink"** in your editor's Extensions panel (`Ctrl+Shift+X` / `Cmd+Shift+X`)
 
-1. **Select text** in the editor (non-empty selection required)
+### Create Your First Link (5 seconds)
+
+1. **Select some code** in your editor
 2. **Press `Cmd+R Cmd+L`** (Mac) or `Ctrl+R Ctrl+L` (Windows/Linux)
-3. Link copied to clipboard!
+   _Mnemonic: **R**ange **L**ink_
+3. **Done!** Link is in your clipboard 📋
 
-**Note:** `R` then `L` - the letters stand for **R**ange **L**ink.
-
-### Example Output
-
+**Example output:**
 ```
 src/utils/parser.ts#L42C10-L58C25
 ```
+
+**Try it right now:**
+- Select lines 10-25 in any file → `Cmd+R Cmd+L` → Paste into Slack
+- Your teammate clicks → Opens exact location in their editor
+- **No more "wait, which file?" moments** ✨
 
 ## Features
 
@@ -129,6 +156,22 @@ Point teammates to specific code sections in Slack, Teams, or PR comments:
 "The issue is here: api/routes.ts#L215C8-L223C45"
 ```
 
+## History
+
+Even though I use Cursor daily, most of my AI work happens with `claude-code` running in a terminal *inside* Cursor. The constant copy-pasting between terminal and editor was exhausting.
+
+One day, frustrated after the hundredth copy-paste, I tried something: I sent Claude Code a link like `auth.ts#L42C10-L58C25` pointing to a specific code snippet.
+
+**It just worked.** No explanation needed. Claude understood immediately.
+
+That was the lightbulb moment: **precise code references should be universal**. Not just for AI assistants, but for code reviews, documentation, team collaboration—anywhere developers share code.
+
+I built the VS Code extension first, then extracted a platform-agnostic core library. The goal: make this work *everywhere*, for *everyone*.
+
+Today, RangeLink helps developers share code with precision across Claude Code, Cursor, VSCode, GitHub, Slack, and more. One format, zero friction.
+
+**The best part?** Your teammates don't even need RangeLink installed to understand your links. The notation is GitHub-inspired—developers already know it.
+
 ## Configuration
 
 Customize delimiters in VSCode settings (Preferences > Settings > search "rangelink"):
@@ -183,8 +226,6 @@ rangeLink/
     - LOGGING.md                  # Structured logging approach
     - ROADMAP.md                  # Development roadmap
     - architecture-multi-language.md  # Multi-language vision
-
-  .commits/                       # Commit message templates
 ```
 
 ### Core Library Philosophy
@@ -202,9 +243,7 @@ The core library (`rangelink-core-ts`) follows these principles:
 
 **Quick start:**
 ```bash
-pnpm install    # Install dependencies
-pnpm -r compile # Build all packages
-pnpm -r test    # Run tests
+./setup.sh      # One command setup: installs dependencies, builds all packages, runs tests
 ```
 
 **For complete development guide:** See [DEVELOPMENT.md](./DEVELOPMENT.md) for detailed instructions on:

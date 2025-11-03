@@ -13,8 +13,9 @@
 
 Share precise code locations with anyone—regardless of their editor or configuration.
 
-- **Works everywhere:** VSCode, Cursor, Sublime Text, Claude Code, and more
+- **Works everywhere:** Claude Code, VSCode, Cursor, Sublime Text, and more
 - **GitHub-style notation:** Familiar `#L10-L25` format everyone recognizes
+- **Flexible paths:** Workspace-relative or absolute paths, your choice
 - **Portable links:** Your links work even if recipients use different settings
 
 ## Features
@@ -188,6 +189,15 @@ RangeLink is a monorepo project with:
 - **More plugins coming** - Neovim, Sublime Text, and more
 
 The extension is a thin wrapper around the core library, ensuring consistent behavior across all editor integrations.
+
+## Want to Learn More?
+
+Curious about how RangeLink came to be or want to contribute?
+
+- 📖 **[Project Origin Story](https://github.com/couimet/rangelink#history)** - Why RangeLink exists (spoiler: Claude Code changed everything)
+- 🏗️ **[Architecture & Monorepo](https://github.com/couimet/rangelink#monorepo-structure)** - How it's built and organized
+- 🤝 **[Contributing Guide](https://github.com/couimet/rangelink#contributing)** - Help make RangeLink even better
+- 🗺️ **[Roadmap](https://github.com/couimet/rangelink/blob/main/docs/ROADMAP.md)** - What's coming next (link navigation, multi-range support, and more!)
 
 ## License
 
