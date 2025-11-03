@@ -4,6 +4,10 @@ import { RangeFormat } from '../../types/RangeFormat';
 
 describe('Enums', () => {
   describe('HashMode', () => {
+    it('should have exactly 2 values', () => {
+      expect(Object.keys(HashMode)).toHaveLength(2);
+    });
+
     it('should have Normal value', () => {
       expect(HashMode.Normal).toBe('Normal');
     });
@@ -14,6 +18,10 @@ describe('Enums', () => {
   });
 
   describe('PathFormat', () => {
+    it('should have exactly 2 values', () => {
+      expect(Object.keys(PathFormat)).toHaveLength(2);
+    });
+
     it('should have WorkspaceRelative value', () => {
       expect(PathFormat.WorkspaceRelative).toBe('WorkspaceRelative');
     });
@@ -24,6 +32,10 @@ describe('Enums', () => {
   });
 
   describe('RangeFormat', () => {
+    it('should have exactly 2 values', () => {
+      expect(Object.keys(RangeFormat)).toHaveLength(2);
+    });
+
     it('should have LineOnly value', () => {
       expect(RangeFormat.LineOnly).toBe('LineOnly');
     });
