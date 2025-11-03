@@ -2,6 +2,8 @@ import { HashMode } from '../../types/HashMode';
 import { LinkType } from '../../types/LinkType';
 import { PathFormat } from '../../types/PathFormat';
 import { RangeFormat } from '../../types/RangeFormat';
+import { RangeNotation } from '../../types/RangeNotation';
+import { SelectionCoverage } from '../../types/SelectionCoverage';
 
 describe('Enums', () => {
   describe('HashMode', () => {
@@ -57,6 +59,38 @@ describe('Enums', () => {
 
     it('should have WithPositions value', () => {
       expect(RangeFormat.WithPositions).toBe('WithPositions');
+    });
+  });
+
+  describe('RangeNotation', () => {
+    it('should have exactly 3 values', () => {
+      expect(Object.keys(RangeNotation)).toHaveLength(3);
+    });
+
+    it('should have Auto value', () => {
+      expect(RangeNotation.Auto).toBe('Auto');
+    });
+
+    it('should have EnforceFullLine value', () => {
+      expect(RangeNotation.EnforceFullLine).toBe('EnforceFullLine');
+    });
+
+    it('should have EnforcePositions value', () => {
+      expect(RangeNotation.EnforcePositions).toBe('EnforcePositions');
+    });
+  });
+
+  describe('SelectionCoverage', () => {
+    it('should have exactly 2 values', () => {
+      expect(Object.keys(SelectionCoverage)).toHaveLength(2);
+    });
+
+    it('should have FullLine value', () => {
+      expect(SelectionCoverage.FullLine).toBe('FullLine');
+    });
+
+    it('should have PartialLine value', () => {
+      expect(SelectionCoverage.PartialLine).toBe('PartialLine');
     });
   });
 });
