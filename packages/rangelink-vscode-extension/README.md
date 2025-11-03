@@ -1,7 +1,7 @@
 # RangeLink - Share Code Across Editors & Tools
 
 <div align="center">
-  <img src="./icon.png" alt="RangeLink Logo" width="128" />
+  <img src="https://raw.githubusercontent.com/couimet/rangelink/main/icon.png" alt="RangeLink Logo" width="128" />
 </div>
 
 [![Version](https://img.shields.io/visual-studio-marketplace/v/couimet.rangelink-vscode-extension)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)

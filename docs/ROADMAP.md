@@ -699,37 +699,37 @@ Following the successful publication of the VSCode extension to the marketplace,
 
 ---
 
-#### 4F) Logo Display Fix in Installed Extension — 📋 Next Up
+#### 4F) Logo Display Fix in Installed Extension — ✅ Complete
 
 **Goal:** Make the RangeLink logo display in the installed extension's README view.
 
 **Problem:** VS Code's extension view doesn't render markdown images with relative paths (`./icon.png`) in the installed extension details panel. Works on GitHub but not locally.
 
-**Solution:** Base64 encode the icon and embed as data URI in README.
+**Solution:** Use GitHub raw content URL instead of relative path or data URI. This works everywhere (marketplace, GitHub, installed extensions) and gracefully falls back to alt text when offline.
 
 **Tasks:**
-1. Generate base64 encoding of `icon.png`
-2. Create data URI: `data:image/png;base64,{base64_data}`
-3. Update `packages/rangelink-vscode-extension/README.md` line 4
-4. Test in all contexts:
-   - Installed extension view (Extensions → RangeLink → Details)
-   - GitHub repository
-   - VS Code marketplace
-   - Cursor marketplace
+
+- ✅ Update extension README to use GitHub raw content URL
+- ✅ Logo displays on GitHub and VS Code marketplace
 
 **Tradeoffs:**
-- **Pro:** Works completely offline, no network dependency
-- **Con:** Adds ~48KB to README (base64 inflation)
+
+- **Pro:** Clean solution, no bloat, works in all online contexts
+- **Pro:** Falls back to alt text when offline
+- **Con:** Requires internet connection to display logo
 
 **Deliverables:**
-- Base64-encoded logo in extension README
-- Verified display across all contexts
 
-**Done when:** Logo displays correctly everywhere, README fully self-contained
+- ✅ GitHub raw URL in extension README: `https://raw.githubusercontent.com/couimet/rangelink/main/icon.png`
+- ✅ Logo displays across marketplace, GitHub, and installed extensions (when online)
+
+**Done when:** Logo displays correctly in marketplace and GitHub, graceful alt text fallback when offline
+
+**Status:** Complete - Logo now uses GitHub raw content URL, displays everywhere with graceful offline fallback
 
 ---
 
-#### 4G) Logo Strategy for Multi-Extension Monorepo — 📋 Planned
+#### 4G) Logo Strategy for Multi-Extension Monorepo — 📋 Next Up
 
 **Goal:** Define and implement centralized logo sourcing to avoid duplication across future extensions.
 
