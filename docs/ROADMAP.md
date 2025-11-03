@@ -170,9 +170,11 @@ Ongoing refactoring to improve selection semantics, validation, and error handli
 - 📋 Phase 8: Documentation and cleanup — **DEFERRED**
 
 **Recent Commit:**
+
 - feat(core): Implement notation system and validation with hybrid error handling
 
 **What's Next:**
+
 - Phase 5: Change formatLink() to return FormattedLink (rich metadata object)
 - Phase 7: Update VSCode extension to use new APIs
 - Phase 8: Final documentation pass
