@@ -1124,6 +1124,79 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 
 ## Phase 7: Productivity Features
 
+### Strategic Context: AI-First Development Workflow
+
+**RangeLink's Primary Value Proposition:**
+
+RangeLink is an **AI workflow integration tool** that eliminates context-sharing friction for developers using external AI assistants (claude-code, Claude Code, ChatGPT, Gemini). While link sharing and team collaboration are valuable secondary use cases, the primary driver is **high-frequency AI context feeding**.
+
+**Why AI-First Matters:**
+
+- **Workflow frequency:** Generating links for AI happens 50-100+ times per day (vs. sharing with teammates 5-10 times)
+- **Friction compounds:** 2-second manual paste × 100 times/day = 200+ context switches eliminated
+- **Competitive positioning:** Cursor's killer feature is integrated AI with automatic context. RangeLink makes external AI assistants feel just as integrated while preserving:
+  - Choice of AI model (Claude, GPT, Gemini, local models)
+  - Full control over context granularity (precise ranges, not full files)
+  - Editor independence (works in VSCode, Cursor, Sublime, etc.)
+
+**Feature Priority Implications:**
+
+- **Auto-paste to terminal** is the killer feature (not "nice-to-have")
+- **Precision and portability** enable AI accuracy (AI gets exactly what you meant)
+- **Navigation features** are secondary (AI already "navigates" when reading links)
+- **Marketing narrative:** Position as "AI tooling extension" first, "code reference utility" second
+
+**Post-Launch Messaging Strategy:**
+
+After implementing auto-paste MVP (Iterations 1-3), update both READMEs with AI-first narrative (see draft below in this phase). This repositions RangeLink from "yet another link generator" to "essential AI development workflow tool."
+
+---
+
+### **Draft README Messaging (Post Auto-Paste Implementation)**
+
+**Hero Section Bullet Points:**
+```markdown
+- ⚡ **Zero-friction AI context** — Generate + auto-paste links to claude-code terminals. No manual copy/paste.
+- 🎯 **Precise references** — Line ranges, columns, rectangular selections. AI gets exactly what you meant.
+- 🔗 **Universal compatibility** — Paste into terminals, chat apps, comments, PRs, anywhere text works
+```
+
+**New Section: "Why RangeLink for AI Development?"**
+```markdown
+## Why RangeLink for AI Development?
+
+Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates the context-sharing friction:
+
+1. **Select code** → Generate link (Cmd+R Cmd+L)
+2. **Auto-paste to terminal** → Link appears in claude-code instantly
+3. **AI reads precise context** → No manual copy/paste, no lost focus
+
+**Compete with Cursor's built-in AI** by making external AI assistants feel integrated. You get:
+- Choice of AI model (Claude, GPT, Gemini)
+- Full control over context (precise line ranges, not full files)
+- Works across editors (VSCode, Cursor, Sublime)
+
+### Workflow Demo
+
+[GIF/video showing: Select code → Cmd+R Cmd+L → Link auto-pastes to claude-code terminal → AI responds with context-aware answer]
+```
+
+**Updated Feature Highlight:**
+```markdown
+## Features
+
+### 🤖 AI Workflow Integration
+- **Auto-paste to terminal:** Links appear instantly in claude-code/AI sessions
+- **Zero context switches:** No manual copy/paste, no terminal focusing
+- **Persistent binding:** Set once, paste forever (until terminal closes)
+- **Works everywhere:** claude-code, Claude Code, ChatGPT, any text-based AI
+
+### 🎯 Precision Code References
+[existing content...]
+```
+
+---
+
 - [ ] **Auto-paste RangeLinks to Terminal** (High Priority)
   - **Problem:** Manual workflow friction - After generating a link for claude-code (running in terminal), user must manually paste it from clipboard
   - **Solution:** Automatically paste generated links into a designated terminal, enabling seamless workflow
