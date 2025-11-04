@@ -20,6 +20,14 @@ RangeLink is a tool for generating and navigating code location links with suppo
 ## Code Style
 
 - Use TypeScript strict mode
+- **Prefer arrow functions** for all new code and when refactoring existing code
+  - Arrow functions: `const myFunc = (param: string): string => { ... }`
+  - Avoid traditional function declarations: `function myFunc(param: string): string { ... }`
+  - Exception: Methods in classes use method syntax
+- **Use `undefined` instead of `null`** for TypeScript consistency
+  - TypeScript convention: optional/absent values are `undefined`
+  - Lighter: `field: Type | undefined;` (implicit initialization)
+  - Avoid: `field: Type | null = null;` (explicit, heavier)
 - Prefer functional error handling with `Result<T, E>` type
 - Use custom Jest matchers for Result testing (`toBeOkWith`, `toBeErrWith`)
 - Always use `.toStrictEqual()` for test assertions (not `.toEqual()`)
