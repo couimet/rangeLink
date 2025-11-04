@@ -884,75 +884,527 @@ src/
 
 ---
 
-## Phase 5: Navigation Features — 📋 Planned
+## Phase 5: Terminal Link Navigation — 📋 Planned
 
-Navigate to code using RangeLinks (local workspace and BYOD).
+**Goal:** Make RangeLinks in terminal output clickable (Cmd+Click to navigate)
 
-### 5A) Basic Navigation from Clipboard
+**Total Time:** ~4.5 hours (1 prerequisite + 7 micro-iterations)
 
-- Command: "RangeLink: Go to Range from Clipboard"
-- Parse clipboard for regular RangeLink (no BYOD yet)
-- Validate file exists in workspace
-- Open file and select range
-- **Done when:** Can copy a link, run command, and jump to code
+**Why This Matters:** Completes the AI workflow loop:
+1. Generate link → Terminal binding sends to claude-code
+2. claude-code responds with code reference
+3. **Click link in terminal → Jump to code** ← THIS
 
-### 4B) BYOD Navigation Support (1 hour)
+---
 
-- Parse BYOD metadata from clipboard link
-- Use embedded delimiters to parse range
-- Handle validation and recovery (reuse Phase 1C parsing logic)
-- **Done when:** BYOD links from clipboard work correctly
+### Iteration 1: Link Parser (PREREQUISITE - 1.5h)
 
-### 4C) Rectangular Mode Navigation (1 hour)
+**Status:** ❌ No parsing code exists in codebase
 
-- Detect double hash in link
-- Reconstruct multiple selections in VSCode
-- Set editor to rectangular selection mode
-- **Done when:** Rectangular Mode links navigate to correct rectangular selection
+**Build:** `packages/rangelink-core-ts/src/parsing/parseLink.ts`
 
-### 4D) Navigation from Input Dialog (1 hour)
+**What it does:**
+```typescript
+// Input: "src/auth.ts#L42C10-L58C25"
+// Output: {
+//   path: "src/auth.ts",
+//   start: { line: 42, char: 10 },
+//   end: { line: 58, char: 25 },
+//   linkType: 'Regular'
+// }
+```
 
-- Command: "RangeLink: Go to Range from Input"
-- Quick pick dialog for manual entry
-- Real-time validation feedback
-- Recent links history (last 10)
-- **Done when:** Can paste/type link in dialog and navigate
+**Formats to support:**
+- `#L10` (single line)
+- `#L10-L20` (multi-line)
+- `#L10C5-L20C10` (with columns)
+- `##L10C5-L20C10` (rectangular)
 
-### 4E) Terminal Link Detection (2 hours)
+**NOT in scope:** BYOD parsing (defer to later)
 
-- Register terminal link provider
-- Detect RangeLinks in terminal output
-- Show hover: "Open in Editor (Cmd+Click)"
-- Handle both regular and BYOD links
-- **Done when:** Clicking link in terminal opens file
+**Done when:** Parser has 100% test coverage for all non-BYOD formats
 
-### 4F) Context Menu Integration (30 minutes)
+**Status:** ✅ Complete (163 tests pass, 100% coverage on parseLink.ts)
 
-- "Go to Range" when text selection looks like RangeLink
-- Available in editor and terminal
-- **Done when:** Right-click selection → navigate works
+---
 
-**Parser Requirements:**
+### Iteration 1.1: Structured Error Codes for Parsing (30 min) — 📋 Planned
 
-- [ ] **Parser for all link types**
-  - Single line: `path:42`
-  - Multi-line: `path#L10-L20`
-  - With columns: `path#L10C5-L20C10`
-  - Rectangular Mode: `path##L10C5-L20C10`
-  - Portable links: parse BYOD/BYODELI metadata
-  - Graceful error handling and recovery
+**Goal:** Replace string error messages with RangeLinkMessageCode enum for consistency and future i18n support.
 
-- [ ] **BYOD link consumption**
-  - Detect portable links (contain `~`)
-  - Extract delimiter metadata
-  - Parse using embedded delimiters instead of user settings
-  - Support custom delimiters in creator's configuration
+**Current issue:** Parser returns `Result<ParsedLink, string>` with hardcoded error messages like `"Link cannot be empty"`.
 
-- [ ] **Rectangular Mode reconstruction**
-  - Detect `##` in link
-  - Parse range coordinates
-  - Create multiple cursors/selections
-  - Apply rectangular selection across specified lines
+**What to do:**
+
+1. Add parsing error codes to `RangeLinkMessageCode` (4xxx range):
+
+```typescript
+// Add to src/types/RangeLinkMessageCode.ts
+export enum RangeLinkMessageCode {
+  // ... existing codes ...
+
+  // Parsing errors (4xxx)
+  PARSE_ERR_EMPTY_LINK = 'ERR_4001',
+  PARSE_ERR_NO_HASH_SEPARATOR = 'ERR_4002',
+  PARSE_ERR_EMPTY_PATH = 'ERR_4003',
+  PARSE_ERR_INVALID_RANGE_FORMAT = 'ERR_4004',
+  PARSE_ERR_LINE_TOO_SMALL = 'ERR_4005',
+  PARSE_ERR_LINE_BACKWARD = 'ERR_4006',
+  PARSE_ERR_CHAR_TOO_SMALL = 'ERR_4007',
+  PARSE_ERR_CHAR_BACKWARD_SAME_LINE = 'ERR_4008',
+}
+```
+
+2. Update `parseLink` signature:
+   - From: `Result<ParsedLink, string>`
+   - To: `Result<ParsedLink, RangeLinkMessageCode>`
+
+3. Replace all `Err('message')` calls with `Err(RangeLinkMessageCode.PARSE_ERR_*)`
+
+4. Update all 36 tests to check for error codes instead of strings:
+   - From: `expect(error).toStrictEqual('Link cannot be empty')`
+   - To: `expect(error).toStrictEqual(RangeLinkMessageCode.PARSE_ERR_EMPTY_LINK)`
+
+**Tests:**
+- All existing tests should pass with enum-based assertions
+- Coverage remains 100%
+
+**Done when:**
+- All parsing errors use RangeLinkMessageCode
+- Tests validate error codes (not strings)
+- 100% test coverage maintained
+
+---
+
+### Iteration 1.2: Richer ParsedLink Interface (30 min) — 📋 Planned
+
+**Goal:** Return full metadata to match FormattedLink structure (symmetry between generation and parsing).
+
+**Current limitation:** `ParsedLink` only returns path, start/end positions, and linkType. Missing delimiter config, range format, selection type, computed selection.
+
+**What to do:**
+
+1. Create enhanced `ParsedLink` interface:
+
+```typescript
+export interface ParsedLink {
+  /**
+   * File path extracted from link
+   */
+  path: string;
+
+  /**
+   * Delimiter configuration used/detected in the link
+   */
+  delimiters: DelimiterConfig;
+
+  /**
+   * Computed selection with normalized coordinates
+   */
+  computedSelection: ComputedSelection;
+
+  /**
+   * Range format detected (LineOnly or WithPositions)
+   */
+  rangeFormat: RangeFormat;
+
+  /**
+   * Selection type (Normal or Rectangular)
+   */
+  selectionType: SelectionType;
+
+  /**
+   * Link type (Regular or Portable)
+   */
+  linkType: LinkType;
+}
+```
+
+2. Update `parseLink` to construct `ComputedSelection`:
+
+```typescript
+const computedSelection: ComputedSelection = {
+  startLine: startLine,
+  endLine: endLine,
+  startPosition: startChar,
+  endPosition: endChar,
+  rangeFormat: startChar !== undefined ? RangeFormat.WithPositions : RangeFormat.LineOnly,
+  selectionType: linkType === 'Rectangular' ? SelectionType.Rectangular : SelectionType.Normal,
+};
+```
+
+3. Update all tests to expect richer interface
+
+**Benefits:**
+- Symmetry with `FormattedLink` (generation ↔ parsing)
+- Enables round-trip testing (generate → parse → generate)
+- Provides full context for navigation and validation
+
+**Done when:**
+- `ParsedLink` includes all metadata fields
+- Tests validate complete parsed structure
+- 100% coverage maintained
+
+---
+
+### Iteration 1.3: DelimiterConfig Support (1 hour) — 📋 Planned
+
+**Goal:** Accept DelimiterConfig parameter to parse links with custom delimiters.
+
+**Current limitation:** Parser hardcodes `#`, `L`, `C`, `-` delimiters.
+
+**What to do:**
+
+1. Add `delimiters` parameter to `parseLink`:
+
+```typescript
+export const parseLink = (
+  link: string,
+  delimiters: DelimiterConfig = DEFAULT_DELIMITERS
+): Result<ParsedLink, RangeLinkMessageCode> => {
+  // Use delimiters.hash, delimiters.line, delimiters.position, delimiters.range
+}
+```
+
+2. Update regex pattern to use delimiter config:
+   - Extract path using `delimiters.hash` (single or multi-char)
+   - Detect rectangular mode: `delimiters.hash` repeated twice
+   - Parse range using `delimiters.line`, `delimiters.position`, `delimiters.range`
+
+3. Example with custom delimiters:
+
+```typescript
+const customDelimiters = { hash: '@', line: 'line', position: 'col', range: '..' };
+parseLink('file.ts@line10col5..line20col10', customDelimiters);
+// Should parse correctly
+```
+
+**Key challenges:**
+- Multi-character delimiter support (e.g., `hash: "##"` for regular links)
+- Regex escaping for special characters
+- Rectangular mode detection with custom hash delimiter
+
+**Tests:**
+- Parse with default delimiters (existing tests pass)
+- Parse with single-character custom delimiters
+- Parse with multi-character custom delimiters
+- Rectangular mode with custom hash delimiter
+- Edge case: `delimHash="#"` regular vs `delimHash="##"` (rectangular uses 4 hashes)
+
+**Done when:**
+- Parser accepts optional `DelimiterConfig` parameter
+- All delimiter characters are configurable
+- Tests cover default and custom delimiter scenarios
+- 100% coverage maintained
+
+---
+
+### Iteration 1.4: Round-Trip Integration Tests (1 hour) — 📋 Planned
+
+**Goal:** Verify parsing and generation are inverses of each other (round-trip integrity).
+
+**What to do:**
+
+1. Create `src/__tests__/integration/roundTrip.test.ts`:
+
+```typescript
+describe('Round-trip integration', () => {
+  describe('Generate → Parse → Generate', () => {
+    it('should produce identical link for single-line selection', () => {
+      const inputSelection: InputSelection = {
+        selections: [{
+          startLine: 10,
+          startCharacter: 0,
+          endLine: 10,
+          endCharacter: 0,
+          coverage: SelectionCoverage.FullLine,
+        }],
+        selectionType: SelectionType.Normal,
+      };
+
+      // Generate
+      const formatted = formatLink('src/file.ts', inputSelection, DEFAULT_DELIMITERS);
+      expect(formatted.success).toBe(true);
+      const originalLink = formatted.value.link;
+
+      // Parse
+      const parsed = parseLink(originalLink, DEFAULT_DELIMITERS);
+      expect(parsed.success).toBe(true);
+
+      // Regenerate from parsed data
+      const regenerated = formatLink(
+        parsed.value.path,
+        toInputSelection(parsed.value.computedSelection),
+        parsed.value.delimiters
+      );
+
+      expect(regenerated.value.link).toStrictEqual(originalLink);
+    });
+  });
+
+  describe('Parse → Generate → Parse', () => {
+    it('should produce identical parsed structure', () => {
+      const originalLink = 'src/auth.ts#L42C10-L58C25';
+
+      // Parse
+      const parsed1 = parseLink(originalLink);
+      expect(parsed1.success).toBe(true);
+
+      // Generate
+      const formatted = formatLink(
+        parsed1.value.path,
+        toInputSelection(parsed1.value.computedSelection),
+        parsed1.value.delimiters
+      );
+
+      // Re-parse
+      const parsed2 = parseLink(formatted.value.link);
+
+      expect(parsed2.value).toStrictEqual(parsed1.value);
+    });
+  });
+});
+```
+
+2. Test all formats:
+   - Single-line (`#L10`)
+   - Multi-line (`#L10-L20`)
+   - With columns (`#L10C5-L20C10`)
+   - Rectangular (`##L10C5-L20C10`)
+   - Custom delimiters
+   - BYOD links (when supported)
+
+3. Create helper: `toInputSelection(computedSelection: ComputedSelection): InputSelection`
+
+**Edge cases to test:**
+- Line-only vs with-positions round-trip
+- Rectangular mode preservation
+- Custom delimiter round-trip
+- Zero-indexed to one-indexed conversion correctness
+
+**Done when:**
+- Generate → Parse → Generate preserves original link
+- Parse → Generate → Parse preserves parsed structure
+- All link formats tested
+- Custom delimiters tested
+- Tests pass with 100% reliability
+
+---
+
+### Iteration 3.1: Pattern Detection (30 min)
+
+**File:** `packages/rangelink-vscode-extension/src/navigation/patterns.ts`
+
+**What:** Create regex patterns to detect RangeLinks in terminal output
+
+**Key challenge:** Distinguish RangeLinks from GitHub URLs
+
+**Solution:**
+```typescript
+// RangeLink: starts with ./ or / or word chars (no protocol)
+// GitHub URL: starts with http:// or https://
+const rangeLinkPattern = /(?<!https?:\/\/[^\s]*)([\w\./\\-]+\.[\w]+)(#{1,2})L\d+/g;
+```
+
+**Tests:**
+- ✅ Matches valid RangeLinks
+- ✅ Ignores GitHub URLs
+- ✅ Handles workspace-relative paths (`./src/file.ts`)
+- ✅ Handles absolute paths (`/Users/name/project/file.ts`)
+- ✅ Detects rectangular mode (`##`)
+
+**Done when:** Pattern detection has 100% test coverage
+
+---
+
+### Iteration 3.2: Terminal Link Provider Registration (20 min)
+
+**File:** `packages/rangelink-vscode-extension/src/navigation/TerminalLinkProvider.ts`
+
+**What:** Minimal provider that detects links but doesn't navigate yet
+
+**Implementation:**
+```typescript
+export class RangeLinkTerminalProvider implements vscode.TerminalLinkProvider {
+  provideTerminalLinks(
+    context: vscode.TerminalLinkContext,
+    token: vscode.CancellationToken
+  ): vscode.ProviderResult<RangeLinkTerminalLink[]> {
+    const line = context.line;
+    const matches = detectRangeLinkPatterns(line); // From 3.1
+
+    return matches.map(match => ({
+      startIndex: match.start,
+      length: match.end - match.start,
+      tooltip: 'Open in editor',
+      data: match.text, // Full link text
+    }));
+  }
+
+  handleTerminalLink(link: RangeLinkTerminalLink): void {
+    // Log for now - navigation comes in 3.4
+    getLogger().info({ link: link.data }, 'Terminal link clicked');
+    vscode.window.showInformationMessage(`Clicked: ${link.data}`);
+  }
+}
+```
+
+**Register in `extension.ts`:**
+```typescript
+context.subscriptions.push(
+  vscode.window.registerTerminalLinkProvider(new RangeLinkTerminalProvider())
+);
+```
+
+**Done when:**
+- Links appear in terminal (underlined/hoverable)
+- Click shows info message
+- No navigation yet (that's next!)
+
+---
+
+### Iteration 3.3: Path Resolution (30 min)
+
+**File:** `packages/rangelink-vscode-extension/src/navigation/pathResolver.ts`
+
+**What:** Given a path from link, resolve to actual file URI
+
+**Complexity:**
+- Workspace-relative: `src/file.ts` → `/Users/name/project/src/file.ts`
+- Already absolute: `/Users/name/project/src/file.ts` → use as-is
+- Multi-folder workspace: which folder?
+- File doesn't exist: error handling
+
+**Tests:**
+- ✅ Absolute paths resolve correctly
+- ✅ Workspace-relative paths resolve
+- ✅ Multi-folder workspace (tries each)
+- ✅ File not found returns null
+- ✅ No workspace open returns null
+
+**Done when:** Path resolution works for all scenarios with tests
+
+---
+
+### Iteration 3.4: Basic Navigation (Single Line) (20 min)
+
+**File:** Update `TerminalLinkProvider.handleTerminalLink()`
+
+**What:** Navigate to file and select range (single-line only for now)
+
+**Tests:**
+- ✅ Opens file
+- ✅ Selects correct line
+- ✅ Reveals in viewport
+- ✅ Error handling (file not found, invalid link)
+
+**Done when:** Can click `src/file.ts#L10` and jump to line 10
+
+---
+
+### Iteration 3.5: Multi-Line & Column Precision (20 min)
+
+**What:** Support multi-line ranges and column precision
+
+**Tests:**
+- ✅ `#L10-L20` selects lines 10-20
+- ✅ `#L10C5-L20C15` selects with column precision
+- ✅ `#L10` selects single line
+- ✅ Edge cases (end of file, long lines)
+
+**Done when:** All link formats navigate correctly (except rectangular)
+
+---
+
+### Iteration 3.6: Rectangular Mode Support (30 min)
+
+**What:** Detect double hash, create multiple cursors for rectangular selection
+
+**Challenge:** VSCode doesn't have native "rectangular selection" API. Need to create multiple cursors.
+
+**Tests:**
+- ✅ `##L10C5-L20C10` creates multi-cursor
+- ✅ Each line selected from column 5 to 10
+- ✅ Viewport shows first selection
+
+**Done when:** Rectangular links create proper multi-cursor selection
+
+---
+
+### Iteration 3.7: Error Handling & Polish (20 min)
+
+**What:** Comprehensive error handling and user feedback
+
+**Error scenarios:**
+1. File not found
+2. Invalid link format
+3. Line out of range (clamp to document bounds)
+4. Column out of range (clamp to line length)
+
+**Logging:**
+- All navigation attempts (success/failure)
+- User actions (which links clicked)
+- Performance (time to open file)
+
+**Done when:**
+- Robust error handling
+- Clear user feedback
+- Comprehensive logging
+
+---
+
+### Testing Strategy
+
+**Unit Tests:**
+- Pattern detection (3.1)
+- Path resolution (3.3)
+- Selection creation logic
+
+**Integration Tests:**
+- Mock terminal context
+- Mock file system
+- Verify end-to-end flow
+
+**Manual Testing Checklist:**
+- [ ] Generate link with terminal binding
+- [ ] claude-code prints link in response
+- [ ] Link is underlined/hoverable
+- [ ] Cmd+Click navigates to correct location
+- [ ] Works with relative paths
+- [ ] Works with absolute paths
+- [ ] Works with multi-line ranges
+- [ ] Works with column precision
+- [ ] Works with rectangular mode
+- [ ] Error messages are clear
+- [ ] File not found handled gracefully
+
+---
+
+### Feature Creep Prevention 🚧
+
+**NOT in these iterations:**
+
+❌ BYOD link parsing (defer to Phase 1C)
+❌ Link preview on hover (future enhancement)
+❌ Configurable link patterns (future enhancement)
+❌ History of clicked links (cemetery resident - see [CEMETERY.md](./CEMETERY.md))
+❌ Link validation before navigation (nice-to-have)
+
+**Stay focused:** Detect → Parse → Resolve → Navigate. That's it.
+
+---
+
+### Deliverable
+
+After these 8 iterations (1 prerequisite + 7 terminal link provider):
+
+✅ **Clickable terminal links** for RangeLink output
+✅ **Full format support** (single-line, multi-line, columns, rectangular)
+✅ **Robust error handling** (file not found, invalid format, etc.)
+✅ **Comprehensive tests** (unit + integration)
+✅ **AI workflow complete** (generate → send → click → navigate)
+
+**This is the killer feature** that makes RangeLink competitive with Cursor's AI integration.
 
 ---
 
