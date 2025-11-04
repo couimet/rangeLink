@@ -78,6 +78,18 @@
         "title": "Show Version Info",
         "category": "RangeLink",
         "icon": "$(info)"
+      },
+      {
+        "command": "rangelink.bindToTerminal",
+        "title": "Bind to Terminal",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.unbindTerminal",
+        "title": "Unbind Terminal",
+        "category": "RangeLink",
+        "icon": "$(close)"
       }
     ],
     "configuration": {

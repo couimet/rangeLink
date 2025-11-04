@@ -101,10 +101,7 @@ describe('isRectangularSelection', () => {
 
   describe('Valid rectangular selections', () => {
     it('should return true for 2 consecutive lines with same character range', () => {
-      const selections = [
-        createSelection(5, 10, 5, 20),
-        createSelection(6, 10, 6, 20),
-      ];
+      const selections = [createSelection(5, 10, 5, 20), createSelection(6, 10, 6, 20)];
       expect(isRectangularSelection(selections)).toBe(true);
     });
 
@@ -118,9 +115,7 @@ describe('isRectangularSelection', () => {
     });
 
     it('should return true for many consecutive lines (10+)', () => {
-      const selections = Array.from({ length: 15 }, (_, i) =>
-        createSelection(i, 10, i, 20),
-      );
+      const selections = Array.from({ length: 15 }, (_, i) => createSelection(i, 10, i, 20));
       expect(isRectangularSelection(selections)).toBe(true);
     });
 
@@ -145,10 +140,7 @@ describe('isRectangularSelection', () => {
     });
 
     it('should return true for selections starting at column 0', () => {
-      const selections = [
-        createSelection(0, 0, 0, 10),
-        createSelection(1, 0, 1, 10),
-      ];
+      const selections = [createSelection(0, 0, 0, 10), createSelection(1, 0, 1, 10)];
       expect(isRectangularSelection(selections)).toBe(true);
     });
 
@@ -162,10 +154,7 @@ describe('isRectangularSelection', () => {
     });
 
     it('should return true for large column numbers', () => {
-      const selections = [
-        createSelection(100, 500, 100, 600),
-        createSelection(101, 500, 101, 600),
-      ];
+      const selections = [createSelection(100, 500, 100, 600), createSelection(101, 500, 101, 600)];
       expect(isRectangularSelection(selections)).toBe(true);
     });
   });

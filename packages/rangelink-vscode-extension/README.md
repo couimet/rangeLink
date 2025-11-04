@@ -60,12 +60,15 @@ src/utils/parser.ts#L42C10-L58C25
 
 All commands are available via keyboard shortcuts, Command Palette, and right-click context menu:
 
-| Command                       | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description               |
-| ----------------------------- | ------------------- | --------------------- | ------------------------- |
-| Copy Range Link               | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Create relative path link |
-| Copy Range Link (Absolute)    | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link |
-| Copy Portable Link            | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link |
-| Copy Portable Link (Absolute) | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link |
+| Command                       | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                            |
+| ----------------------------- | ------------------- | --------------------- | -------------------------------------- |
+| Copy Range Link               | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Create relative path link              |
+| Copy Range Link (Absolute)    | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link              |
+| Copy Portable Link            | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link              |
+| Copy Portable Link (Absolute) | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link              |
+| Bind to Terminal              | —                   | —                     | Auto-send links to integrated terminal |
+| Unbind Terminal               | —                   | —                     | Stop sending links to terminal         |
+| Show Version Info             | —                   | —                     | Display version and build info         |
 
 **Customizing Shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) to open Keyboard Shortcuts, then search for "RangeLink".
 

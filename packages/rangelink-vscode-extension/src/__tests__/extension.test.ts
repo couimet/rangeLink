@@ -25,6 +25,18 @@ const mockOutputChannel = {
   dispose: jest.fn(),
 };
 
+// Helper to create mock terminal binding manager (not bound by default)
+function createMockTerminalBindingManager() {
+  return {
+    isBound: () => false,
+    sendToTerminal: () => false,
+    getBoundTerminal: () => undefined,
+    bind: () => false,
+    unbind: () => {},
+    dispose: () => {},
+  };
+}
+
 // Internal storage for activeTextEditor
 let _activeTextEditor: any = null;
 
@@ -61,11 +73,13 @@ const mockCommands = {
 jest.mock('vscode', () => ({
   window: {
     activeTextEditor: null,
+    activeTerminal: null,
     createStatusBarItem: jest.fn(),
     createOutputChannel: jest.fn(),
     showErrorMessage: jest.fn(),
     showInformationMessage: jest.fn(),
     setStatusBarMessage: jest.fn(),
+    onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
   },
   workspace: {
     getWorkspaceFolder: jest.fn(),
@@ -140,13 +154,16 @@ describe('RangeLinkService', () => {
     );
     (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
 
-    // Create service with default delimiters
-    service = new RangeLinkService({
-      line: 'L',
-      position: 'C',
-      hash: '#',
-      range: '-',
-    });
+    // Create service with default delimiters and mock terminal manager
+    service = new RangeLinkService(
+      {
+        line: 'L',
+        position: 'C',
+        hash: '#',
+        range: '-',
+      },
+      createMockTerminalBindingManager() as any,
+    );
   });
 
   afterEach(() => {
@@ -639,12 +656,15 @@ describe('RangeLinkService', () => {
     });
 
     it('should format column selection with custom single-character delimiters', async () => {
-      const customService = new RangeLinkService({
-        line: 'X',
-        position: 'Y',
-        hash: '@',
-        range: '..',
-      });
+      const customService = new RangeLinkService(
+        {
+          line: 'X',
+          position: 'Y',
+          hash: '@',
+          range: '..',
+        },
+        createMockTerminalBindingManager() as any,
+      );
 
       mockWindow.activeTextEditor = {
         selection: {
@@ -690,12 +710,15 @@ describe('RangeLinkService', () => {
     });
 
     it('should format column selection with custom multi-character delimiters', async () => {
-      const customService = new RangeLinkService({
-        line: 'LINE',
-        position: 'COL',
-        hash: '##',
-        range: 'TO',
-      });
+      const customService = new RangeLinkService(
+        {
+          line: 'LINE',
+          position: 'COL',
+          hash: '##',
+          range: 'TO',
+        },
+        createMockTerminalBindingManager() as any,
+      );
 
       mockWindow.activeTextEditor = {
         selection: {
@@ -3002,12 +3025,15 @@ describe('Portable links (Phase 1C)', () => {
     (vscode as any).workspace.asRelativePath.mockReturnValue('src/file.ts');
 
     // Custom delimiters (hash must be single char)
-    const service = new RangeLinkService({
-      line: 'LINE',
-      position: 'COL',
-      hash: '#',
-      range: 'TO',
-    });
+    const service = new RangeLinkService(
+      {
+        line: 'LINE',
+        position: 'COL',
+        hash: '#',
+        range: 'TO',
+      },
+      createMockTerminalBindingManager() as any,
+    );
 
     // Act
     await service.createPortableLink(PathFormat.WorkspaceRelative);
@@ -3119,7 +3145,7 @@ describe('Extension lifecycle', () => {
     // Extension imported at top
     require('../extension').activate(mockContext as any);
 
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(5); // 2 regular + 2 portable commands + 1 version command
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(7); // 2 regular + 2 portable + 1 version + 2 terminal binding commands
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
   });

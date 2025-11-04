@@ -2,19 +2,9 @@ import {
   DEFAULT_DELIMITERS,
   DelimiterConfig,
   DelimiterValidationError,
-  FormatOptions,
-  FormattedLink,
-  InputSelection,
-  LinkType,
-  PathFormat,
   RESERVED_CHARS,
-  RangeFormat,
   RangeLinkMessageCode,
-  Selection,
-  SelectionCoverage,
-  SelectionType,
   areDelimitersUnique,
-  formatLink,
   getLogger,
   haveSubstringConflicts,
   setLogger,
@@ -22,11 +12,12 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import { isRectangularSelection } from './isRectangularSelection';
+import { PathFormat, RangeLinkService } from './RangeLinkService';
+import { TerminalBindingManager } from './TerminalBindingManager';
 import { VSCodeLogger } from './VSCodeLogger';
 
-// Re-export PathFormat for backward compatibility with tests
-export { PathFormat, DelimiterValidationError, RangeLinkMessageCode };
+// Re-export for backward compatibility with tests
+export { PathFormat, DelimiterValidationError, RangeLinkMessageCode, RangeLinkService };
 
 /**
  * VSCode-specific link interface (kept for extension API)
@@ -38,187 +29,6 @@ export interface Link {
   startPosition?: number;
   endPosition?: number;
   isAbsolute: boolean;
-}
-
-/**
- * Adapter: Converts VSCode Selections to core InputSelection interface
- * Detects coverage (FullLine vs PartialLine) for each selection
- */
-function toInputSelection(
-  editor: vscode.TextEditor,
-  vscodeSelections: readonly vscode.Selection[],
-): InputSelection {
-  // VSCode doesn't expose rectangular selection mode in API
-  // Use heuristic to detect rectangular selections based on patterns
-  const isRectangular = isRectangularSelection(vscodeSelections);
-
-  // When multiple selections exist but don't form a rectangular pattern,
-  // only use the primary (first) selection
-  const selectionsToConvert = isRectangular ? vscodeSelections : [vscodeSelections[0]];
-
-  const selections: Selection[] = [];
-
-  for (const sel of selectionsToConvert) {
-    // Detect if this is a full-line selection
-    // If lineAt throws, it means the document was modified and selection is invalid
-    let coverage = SelectionCoverage.PartialLine;
-
-    try {
-      const endLine = editor.document.lineAt(sel.end.line);
-      const startsAtBeginning = sel.start.character === 0;
-      const endsAtEndOfLine =
-        sel.end.character === endLine.range.end.character ||
-        sel.end.character >= endLine.text.length ||
-        (sel.end.line > sel.start.line && sel.end.character === 0);
-
-      if (startsAtBeginning && endsAtEndOfLine) {
-        coverage = SelectionCoverage.FullLine;
-      }
-    } catch (error) {
-      // Selection references invalid line numbers - document was modified
-      const message =
-        'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.';
-      getLogger().error(
-        {
-          fn: 'toInputSelection',
-          error,
-          line: sel.end.line,
-          documentLines: editor.document.lineCount,
-        },
-        'Document modified during link generation - selection out of bounds',
-      );
-      throw new Error(message);
-    }
-
-    selections.push({
-      startLine: sel.start.line,
-      startCharacter: sel.start.character,
-      endLine: sel.end.line,
-      endCharacter: sel.end.character,
-      coverage,
-    });
-  }
-
-  return {
-    selections,
-    selectionType: isRectangular ? SelectionType.Rectangular : SelectionType.Normal,
-  };
-}
-
-/**
- * RangeLinkService: VSCode-specific orchestration layer
- * Core logic is handled by rangelink-core-ts functions
- */
-export class RangeLinkService {
-  private delimiters: DelimiterConfig;
-
-  constructor(delimiters: DelimiterConfig) {
-    this.delimiters = delimiters;
-  }
-
-  /**
-   * Creates a standard RangeLink from the current editor selection
-   */
-  async createLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const link = await this.generateLinkFromSelection(pathFormat, false);
-    if (link) {
-      await this.copyAndNotify(link, 'RangeLink');
-    }
-  }
-
-  /**
-   * Creates a portable RangeLink with embedded delimiter metadata
-   */
-  async createPortableLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const link = await this.generateLinkFromSelection(pathFormat, true);
-    if (link) {
-      await this.copyAndNotify(link, 'Portable RangeLink');
-    }
-  }
-
-  /**
-   * Generates a link from the current editor selection
-   * @param pathFormat Whether to use relative or absolute paths
-   * @param isPortable Whether to generate a portable link with embedded delimiters
-   * @returns The generated link, or null if generation failed
-   */
-  private async generateLinkFromSelection(
-    pathFormat: PathFormat,
-    isPortable: boolean,
-  ): Promise<string | null> {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      vscode.window.showErrorMessage('No active editor');
-      return null;
-    }
-
-    const document = editor.document;
-    const selections = editor.selections;
-
-    if (!selections || selections.length === 0 || selections.every((s) => s.isEmpty)) {
-      throw new Error('RangeLink command invoked with empty selection');
-    }
-
-    const referencePath = this.getReferencePath(document, pathFormat);
-
-    let inputSelection: InputSelection;
-    try {
-      inputSelection = toInputSelection(editor, selections);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to process selection';
-      getLogger().error(
-        { fn: 'generateLinkFromSelection', error },
-        'Failed to convert selections to InputSelection',
-      );
-      vscode.window.showErrorMessage(`RangeLink: ${message}`);
-      return null;
-    }
-
-    const options: FormatOptions = {
-      linkType: isPortable ? LinkType.Portable : LinkType.Regular,
-    };
-
-    const result = formatLink(referencePath, inputSelection, this.delimiters, options);
-
-    if (!result.success) {
-      const linkType = isPortable ? 'portable link' : 'link';
-      getLogger().error(
-        { fn: 'generateLinkFromSelection', errorCode: result.error },
-        `Failed to generate ${linkType}`,
-      );
-      vscode.window.showErrorMessage(`RangeLink: Failed to generate ${linkType}`);
-      return null;
-    }
-
-    const formattedLink = result.value;
-    getLogger().info(
-      { fn: 'generateLinkFromSelection', formattedLink },
-      `Generated link: ${formattedLink.link}`,
-    );
-
-    return formattedLink.link;
-  }
-
-  /**
-   * Copies the link to clipboard and shows status bar notification
-   * @param link The link text to copy
-   * @param linkTypeName User-friendly name for status messages (e.g., "RangeLink", "Portable RangeLink")
-   */
-  private async copyAndNotify(link: string, linkTypeName: string): Promise<void> {
-    await vscode.env.clipboard.writeText(link);
-    vscode.window.setStatusBarMessage(`✓ ${linkTypeName} copied to clipboard`, 2000);
-  }
-
-  /**
-   * Gets the reference path based on the path format preference
-   */
-  private getReferencePath(document: vscode.TextDocument, pathFormat: PathFormat): string {
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-    if (workspaceFolder && pathFormat === PathFormat.WorkspaceRelative) {
-      return vscode.workspace.asRelativePath(document.uri);
-    }
-    return document.uri.fsPath;
-  }
 }
 
 // ============================================================================
@@ -368,7 +178,8 @@ export function activate(context: vscode.ExtensionContext): void {
   setLogger(vscodeLogger);
 
   const delimiters = loadDelimiterConfig();
-  const service = new RangeLinkService(delimiters);
+  const terminalBindingManager = new TerminalBindingManager(context);
+  const service = new RangeLinkService(delimiters, terminalBindingManager);
 
   // Register commands
   context.subscriptions.push(
@@ -408,26 +219,49 @@ export function activate(context: vscode.ExtensionContext): void {
             vscode.window.showInformationMessage('Commit hash copied to clipboard');
           }
         });
-        outputChannel.appendLine(`[INFO] Version Info:\n${JSON.stringify(versionInfo, null, 2)}`);
+        getLogger().info(
+          { fn: 'showVersion', version: versionInfo.version, commit: versionInfo.commit },
+          'Version info displayed',
+        );
       } catch (error) {
         getLogger().error({ fn: 'showVersion', error }, 'Failed to load version info');
         vscode.window.showErrorMessage('Version information not available');
-        outputChannel.appendLine(`[ERROR] Could not load version info: ${error}`);
       }
     }),
   );
 
+  // Register terminal binding commands
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.bindToTerminal', () => {
+      terminalBindingManager.bind();
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.unbindTerminal', () => {
+      terminalBindingManager.unbind();
+    }),
+  );
+
   // Log version info on startup
-  let activationMessage = '[INFO] RangeLink extension activated';
   try {
     const versionInfo = require('./version.json');
-    const isDirtyIndicator = versionInfo.isDirty ? ' (dirty)' : '';
-    activationMessage += ` - v${versionInfo.version} (${versionInfo.commit}${isDirtyIndicator})`;
+    getLogger().info(
+      {
+        fn: 'activate',
+        version: versionInfo.version,
+        commit: versionInfo.commit,
+        isDirty: versionInfo.isDirty,
+        branch: versionInfo.branch,
+      },
+      `RangeLink extension activated - v${versionInfo.version} (${versionInfo.commit}${versionInfo.isDirty ? ' dirty' : ''})`,
+    );
   } catch (error) {
-    getLogger().warn({ fn: 'activate', error }, 'Version info unavailable at activation');
-    activationMessage += ' (version info unavailable)';
+    getLogger().warn(
+      { fn: 'activate', error },
+      'RangeLink extension activated (version info unavailable)',
+    );
   }
-  outputChannel.appendLine(activationMessage);
 }
 
 /**
