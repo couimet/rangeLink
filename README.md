@@ -4,7 +4,7 @@
   <img src="./assets/icon.png" alt="RangeLink Logo" width="128" />
 </div>
 
-**Range links that work everywhere—Claude Code, Cursor, VSCode, GitHub, your team.**
+**Range links that work everywhere — claude-code, Cursor, VSCode, GitHub, your team.**
 
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/couimet.rangelink-vscode-extension?label=VS%20Code%20Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
@@ -19,7 +19,7 @@
 **For Developers Who Care About Precision:**
 
 - 🎯 **No more "around line 42"** — Share exact ranges: `auth.ts#L42C10-L58C25`
-- 🔗 **Works everywhere** — Claude Code, VSCode, Cursor, Sublime Text, GitHub, Slack, PRs
+- 🔗 **Works everywhere** — claude-code, VSCode, Cursor, Sublime Text, GitHub, Slack, PRs
 - 🚀 **One keystroke** — `Cmd+R Cmd+L` → link copied, done
 - 📁 **Flexible paths** — Workspace-relative or absolute paths, your choice
 - 🔧 **Portable by design** — Your links work even if teammates use different delimiter configs
@@ -28,7 +28,7 @@
 **Perfect for:**
 
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`"
-- 🤖 **AI assistants** — Give Claude Code or Copilot _exact_ context
+- 🤖 **AI assistants** — Give claude-code or Copilot _exact_ context
 - 👥 **Team collaboration** — Universal format everyone can use
 
 ## Quick Start
@@ -124,62 +124,27 @@ All commands are available via keyboard shortcuts, Command Palette, and right-cl
 
 **Customizing shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) → search "RangeLink"
 
-## Use Cases
-
-### AI Assistants
-
-Share precise code locations with Claude Code, GitHub Copilot, or any AI tool:
-
-```
-"Check out the bug in auth/login.ts#L42C10-L58C25"
-```
-
-### Cross-Editor Teams
-
-Your team uses VSCode, Cursor, and Sublime? RangeLink works everywhere:
-
-```
-src/utils/parser.ts#L120-L145
-→ Works in any editor, any tool
-```
-
-### Documentation
-
-Add precise code references to docs, READMEs, and technical writing:
-
-```markdown
-See the implementation in [parser.ts#L89-L102](src/parser.ts#L89-L102)
-```
-
-### Code Reviews
-
-Point teammates to specific code sections in Slack, Teams, or PR comments:
-
-```
-"The issue is here: api/routes.ts#L215C8-L223C45"
-```
-
 ## History
 
 Even though I use Cursor daily, most of my AI work happens with `claude-code` running in a terminal _inside_ Cursor. The constant copy-pasting between terminal and editor was exhausting.
 
-One day, frustrated after the hundredth copy-paste, I tried something: I sent Claude Code a link like `auth.ts#L42C10-L58C25` pointing to a specific code snippet.
+One day, frustrated after the hundredth copy-paste, I tried something: I sent claude-code a link like `auth.ts#L42C10-L58C25` pointing to a specific code snippet.
 
 **It just worked.** No explanation needed. Claude understood immediately.
 
-That was the lightbulb moment: **precise code references should be universal**. Not just for AI assistants, but for code reviews, documentation, team collaboration—anywhere developers share code.
+That was the lightbulb moment: **precise code references should be universal**. Not just for AI assistants, but for code reviews, documentation, team collaboration — anywhere developers share code.
 
 I built the VS Code extension first, then extracted a platform-agnostic core library. The goal: make this work _everywhere_, for _everyone_.
 
-Today, RangeLink helps developers share code with precision across Claude Code, Cursor, VSCode, GitHub, Slack, and more. One format, zero friction.
+Today, with **terminal binding**, RangeLink sends links directly to your claude-code session — no more copy-paste friction. It helps developers share code with precision across claude-code, Cursor, VSCode, GitHub, Slack, and more. One format, zero friction.
 
-**The best part?** Your teammates don't even need RangeLink installed to understand your links. The notation is GitHub-inspired—developers already know it.
+**The best part?** Your teammates don't even need RangeLink installed to understand your links. The notation is GitHub-inspired — developers already know it.
 
 ## About the Logo
 
-Ever notice the chicken in our logo? That's not just any chicken—it's a **free-range** chicken. Because your code should roam free across editors, tools, and teams. No fences, no boundaries. 🐔
+Ever notice the chicken in our logo? That's not just any chicken — it's a **free-range** chicken. Because your code should roam free across editors, tools, and teams. No fences, no boundaries. 🐔
 
-The chains? Those represent links—connections between developers, tools, and ideas. Collaboration without constraints.
+The chains? Those represent links — connections between developers, tools, and ideas. Collaboration without constraints.
 
 And here's the nerdy part: look closely at the numbers. You'll see **3.1416** instead of just 3.14. Because when you're sharing code references, **precision matters**. RangeLink shares exact ranges — period.
 

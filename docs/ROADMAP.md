@@ -556,12 +556,12 @@ After uploading, test by:
 - "Share Code Across Editors & Tools"
 - "Precise Code References for Developers"
 - "Cross-Editor Code Sharing Made Easy"
-- "From VSCode to Claude Code - Links That Just Work"
+- "From VSCode to claude-code - Links That Just Work"
 
 **Supporting text:**
 
 - "GitHub-style notation • Portable links • AI-ready"
-- "Works with VSCode, Cursor, Claude Code & more"
+- "Works with VSCode, Cursor, claude-code & more"
 - "Perfect for documentation, code reviews, and AI prompts"
 
 **Call to action (optional):**
@@ -809,9 +809,9 @@ Following the successful publication of the VSCode extension to the marketplace,
 
 **Deliverables:**
 
-- ✅ Rewritten hero section with punchy tagline: "Range links that work everywhere—Cursor, VSCode, Claude Code, GitHub, your team."
+- ✅ Rewritten hero section with punchy tagline: "Range links that work everywhere — Cursor, VSCode, claude-code, GitHub, your team."
 - ✅ VS Code Marketplace badge with live link
-- ✅ Origin story section explaining Claude Code → RangeLink journey
+- ✅ Origin story section explaining claude-code → RangeLink journey
 - ✅ Breadcrumb links connecting root README ↔ extension README
 - ✅ Simplified development setup to use `./setup.sh`
 
@@ -1213,7 +1213,7 @@ Navigate to code using RangeLinks (local workspace and BYOD).
 
 **RangeLink's Primary Value Proposition:**
 
-RangeLink is an **AI workflow integration tool** that eliminates context-sharing friction for developers using external AI assistants (claude-code, Claude Code, ChatGPT, Gemini). While link sharing and team collaboration are valuable secondary use cases, the primary driver is **high-frequency AI context feeding**.
+RangeLink is an **AI workflow integration tool** that eliminates context-sharing friction for developers using external AI assistants (claude-code, ChatGPT, Gemini). While link sharing and team collaboration are valuable secondary use cases, the primary driver is **high-frequency AI context feeding**.
 
 **Why AI-First Matters:**
 
@@ -1248,15 +1248,17 @@ After implementing Bind to Terminal MVP (Iterations 1-3), update both READMEs wi
 - 🔗 **Universal compatibility** — Paste into terminals, chat apps, comments, PRs, anywhere text works
 ```
 
-**New Section: "Why RangeLink for AI Development?"**
+**New Section: "Why RangeLink?"**
 
 ```markdown
-## Why RangeLink for AI Development?
+## Why RangeLink?
 
-Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates the context-sharing friction:
+### For AI-Assisted Development
+
+Using claude-code or ChatGPT for development? RangeLink eliminates the context-sharing friction:
 
 1. **Select code** → Generate link (Cmd+R Cmd+L)
-2. **Bind to terminal** → Link appears in claude-code instantly
+2. **Bind to integrated terminal** → Link appears in claude-code instantly (within VSCode/Cursor)
 3. **AI reads precise context** → No manual copy/paste, no lost focus
 
 **Compete with Cursor's built-in AI** by making external AI assistants feel integrated. You get:
@@ -1277,11 +1279,11 @@ Using claude-code, Claude Code, or ChatGPT for development? RangeLink eliminates
 
 ### 🤖 AI Workflow Integration
 
-- **Bind to terminal:** Links appear instantly in claude-code/AI sessions
+- **Bind to integrated terminal:** Links appear instantly in claude-code/AI sessions (within VSCode/Cursor)
 - **Zero context switches:** No manual copy/paste, no terminal focusing
 - **Persistent binding:** Set once, send forever (until terminal closes)
 - **Link history with fuzzy search:** Re-send past references instantly
-- **Works everywhere:** claude-code, Claude Code, ChatGPT, any text-based AI
+- **Works everywhere:** claude-code, ChatGPT, any text-based AI
 
 ### 🎯 Precision Code References
 

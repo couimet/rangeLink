@@ -16,7 +16,7 @@ When RangeLink grows to support multiple languages (TypeScript, Java, C/C++, Rus
 1. **Single Source of Truth**: The specification defines behavior, not any implementation
 2. **Contract-Driven**: All implementations must pass the same contract tests
 3. **Language-Agnostic Contracts**: Test cases are defined in JSON/YAML, executable in any language
-4. **CI Enforcement**: Parity is not optional—CI will fail if implementations diverge
+4. **CI Enforcement**: Parity is not optional — CI will fail if implementations diverge
 
 ## Architecture
 

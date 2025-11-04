@@ -12,19 +12,25 @@
 
 ## Why RangeLink?
 
-**For Developers Who Care About Precision:**
+### For AI-Assisted Development
 
-- 🎯 **No more "around line 42"** — Share exact ranges: `auth.ts#L42C10-L58C25`
-- 🔗 **Works everywhere** — Claude Code, Cursor, VSCode, Sublime Text, GitHub, Slack, PRs
-- 🚀 **One keystroke** — `Cmd+R Cmd+L` → link copied, done
-- 📁 **Flexible paths** — Workspace-relative or absolute paths, your choice
-- 🔧 **Portable by design** — Your links work even if teammates use different delimiter configs
-- 📐 **Rectangular selection support** — Share column ranges with `##` notation
+**Using claude-code or ChatGPT for development?** RangeLink eliminates the context-sharing friction:
 
-**Perfect for:**
+1. **Select code** → Generate link (`Cmd+R Cmd+L`)
+2. **Bind to integrated terminal** → Link appears in claude-code instantly (within VSCode/Cursor)
+3. **AI reads precise context** → No manual copy/paste, no lost focus
 
+**Compete with Cursor's built-in AI** by making external AI assistants feel integrated. You get:
+
+- ⚡ **Zero-friction AI context** — Bind to your integrated terminal (within VSCode/Cursor). Links appear instantly, no copy/paste.
+- 🎯 **Choice of AI model** — Claude, GPT, Gemini, anything. Not locked into Cursor's AI.
+- 📐 **Full control over context** — Precise line ranges and column selections, not full files.
+- 🔗 **Universal compatibility** — Works across editors (VSCode, Cursor, Sublime) and in any text-based tool.
+
+### Perfect For
+
+- 🤖 **AI assistants** — claude-code, Copilot with _exact_ context
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`"
-- 🤖 **AI assistants** — Give Claude Code or Copilot _exact_ context
 - 👥 **Team collaboration** — Universal format everyone can use
 
 ## Quick Start
@@ -91,7 +97,7 @@ Portable RangeLinks embed delimiter metadata so they work everywhere:
 path#L10C5-L20C10~#~L~-~C~
 ```
 
-The `~` separator marks embedded delimiters that override recipient's local settings. No coordination needed—links just work.
+The `~` separator marks embedded delimiters that override recipient's local settings. No coordination needed — links just work.
 
 ## Configuration
 
@@ -156,7 +162,7 @@ The extension is a thin wrapper around the core library, ensuring consistent beh
 
 Curious about how RangeLink came to be or want to contribute?
 
-- 📖 **[Project Origin Story](https://github.com/couimet/rangelink#history)** - Why RangeLink exists (spoiler: Claude Code changed everything)
+- 📖 **[Project Origin Story](https://github.com/couimet/rangelink#history)** - Why RangeLink exists (spoiler: claude-code changed everything)
 - 🐔 **[About the Logo](https://github.com/couimet/rangelink#about-the-logo)** - Free-range chickens, precision, and Pi (yes, really)
 - 🏗️ **[Architecture & Monorepo](https://github.com/couimet/rangelink#monorepo-structure)** - How it's built and organized
 - 🤝 **[Contributing Guide](https://github.com/couimet/rangelink#contributing)** - Help make RangeLink even better

@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extension `README` now uses GitHub raw URL for logo (displays correctly in installed extensions, marketplace, and GitHub)
 - Centralized asset management with build-time sync from monorepo `/assets/` directory
 - `README` significantly streamlined: combined redundant sections, added compelling opening quote, removed overpromising claims
-- Tool mentions now lead with Claude Code (origin story) before other editors
+- Tool mentions now lead with claude-code (origin story) before other editors
 
 ## [0.1.0]
 
