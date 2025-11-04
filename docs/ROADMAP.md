@@ -909,88 +909,14 @@ Critical items for marketplace launch and user adoption. These should be tackled
 **What was done:**
 
 **VSCode Extension README:**
+
 - Added: "🔗 **Cross-file context** — Generate links from multiple files, paste all in one prompt. Built-in claude-code: single selection, current file only."
 
 **Root README:**
+
 - Updated: "🤖 **AI assistants** — Multi-file context in one prompt. Generate RangeLinks from auth.ts, tests.ts, config.ts — paste all. Built-in claude-code: single selection, current file only."
 
 **Messaging:** Direct comparison with practical workflow example. Technical, concise, no fluff.
-
----
-
-### 4.6C) Enrich Selection Type with Position Interface (1 hour) — 📋 Technical Improvement
-
-**Goal:** Evaluate using `Position` interface (from parsing) to improve `Selection` type ergonomics.
-
-**Current state:**
-
-`Selection` interface (packages/rangelink-core-ts/src/types/Selection.ts#L42-L45):
-
-```typescript
-export interface Selection {
-  readonly startLine: number;
-  readonly startCharacter: number;
-  readonly endLine: number;
-  readonly endCharacter: number;
-  readonly coverage: SelectionCoverage;
-}
-```
-
-`Position` interface (packages/rangelink-core-ts/src/types/Position.ts):
-
-```typescript
-export interface Position {
-  line: number;
-  char?: number;
-}
-```
-
-**Proposed enhancement:**
-
-```typescript
-export interface Selection {
-  readonly start: Position;
-  readonly end: Position;
-  readonly coverage: SelectionCoverage;
-}
-```
-
-**PROS:**
-
-✅ **Symmetry with parsing** - ParsedLink uses Position, Selection would match
-✅ **Cleaner API** - `selection.start.line` vs `selection.startLine` (more object-oriented)
-✅ **Type reuse** - DRY principle, Position used in multiple contexts
-✅ **Optional char support** - Position already handles optional `char` field
-✅ **Easier refactoring** - Change Position definition, affects all usages consistently
-
-**CONS:**
-
-❌ **Breaking API change** - All existing code using Selection would break
-❌ **Migration effort** - ~10+ files reference Selection fields directly
-❌ **Test updates** - ~100+ test assertions would need updating
-❌ **Nested access** - One more level of nesting (`selection.start.line` vs `selection.startLine`)
-❌ **Not pre-1.0 blocking** - Can defer until major version bump
-❌ **Ambiguous benefits** - Current API is clear and works well
-
-**Implementation considerations:**
-
-- Create `Selection2` or `RichSelection` interface for migration
-- Provide adapter functions: `toSelection`, `fromSelection`
-- Deprecate old Selection gradually
-- Document migration path in CHANGELOG
-
-**Decision factors:**
-
-- Is symmetry with ParsedLink worth the migration cost?
-- Do we gain enough from Position reuse to justify breaking changes?
-- Can we defer this to v2.0 when we're ready for breaking changes?
-- Would a v1.0 → v2.0 migration guide make this more palatable?
-
-**Done when:**
-
-- PROS/CONS documented in this roadmap (✅ Done above)
-- Team decision made: implement now, defer to v2.0, or reject
-- If implemented: migration guide created, all code updated, 100% tests passing
 
 ---
 

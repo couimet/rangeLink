@@ -37,13 +37,13 @@ export function computeRangeSpec(
   const primary = selections[0];
 
   // Convert to 1-based indexing
-  const startLine = primary.startLine + 1;
+  const startLine = primary.start.line + 1;
   const endLine =
     (selectionType === SelectionType.Rectangular
-      ? selections[selections.length - 1].startLine
-      : primary.endLine) + 1;
-  const startPosition = primary.startCharacter + 1;
-  const endPosition = primary.endCharacter + 1;
+      ? selections[selections.length - 1].start.line
+      : primary.end.line) + 1;
+  const startPosition = primary.start.char + 1;
+  const endPosition = primary.end.char + 1;
 
   // Rectangular selection always uses positions
   if (selectionType === SelectionType.Rectangular) {
@@ -76,8 +76,7 @@ export function computeRangeSpec(
   return Ok({
     startLine,
     endLine,
-    startPosition: usePositions ? startPosition : undefined,
-    endPosition: usePositions ? endPosition : undefined,
+    ...(usePositions && { startPosition, endPosition }),
     rangeFormat,
   });
 }

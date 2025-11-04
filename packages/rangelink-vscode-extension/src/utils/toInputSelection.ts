@@ -60,10 +60,8 @@ export const toInputSelection = (
     }
 
     selections.push({
-      startLine: sel.start.line,
-      startCharacter: sel.start.character,
-      endLine: sel.end.line,
-      endCharacter: sel.end.character,
+      start: { line: sel.start.line, char: sel.start.character },
+      end: { line: sel.end.line, char: sel.end.character },
       coverage,
     });
   }

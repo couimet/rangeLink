@@ -27,7 +27,7 @@ import { SelectionType } from './SelectionType';
  * // Normal multi-line selection
  * const input: InputSelection = {
  *   selections: [
- *     { startLine: 10, startCharacter: 0, endLine: 15, endCharacter: 0, coverage: SelectionCoverage.FullLine }
+ *     { start: { line: 10, char: 0 }, end: { line: 15, char: 0 }, coverage: SelectionCoverage.FullLine }
  *   ],
  *   selectionType: SelectionType.Normal
  * };
@@ -35,9 +35,9 @@ import { SelectionType } from './SelectionType';
  * // Rectangular column selection
  * const input: InputSelection = {
  *   selections: [
- *     { startLine: 10, startCharacter: 5, endLine: 10, endCharacter: 15, coverage: SelectionCoverage.PartialLine },
- *     { startLine: 11, startCharacter: 5, endLine: 11, endCharacter: 15, coverage: SelectionCoverage.PartialLine },
- *     { startLine: 12, startCharacter: 5, endLine: 12, endCharacter: 15, coverage: SelectionCoverage.PartialLine }
+ *     { start: { line: 10, char: 5 }, end: { line: 10, char: 15 }, coverage: SelectionCoverage.PartialLine },
+ *     { start: { line: 11, char: 5 }, end: { line: 11, char: 15 }, coverage: SelectionCoverage.PartialLine },
+ *     { start: { line: 12, char: 5 }, end: { line: 12, char: 15 }, coverage: SelectionCoverage.PartialLine }
  *   ],
  *   selectionType: SelectionType.Rectangular
  * };

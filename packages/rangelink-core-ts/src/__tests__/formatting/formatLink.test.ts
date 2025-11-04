@@ -19,10 +19,9 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          startLine: 10,
-          startCharacter: 5,
-          endLine: 20,
-          endCharacter: 15,
+          start: { line: 10, char: 5 },
+
+          end: { line: 20, char: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
@@ -52,10 +51,9 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          startLine: 10,
-          startCharacter: 5,
-          endLine: 10,
-          endCharacter: 15,
+          start: { line: 10, char: 5 },
+
+          end: { line: 10, char: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
@@ -85,10 +83,9 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          startLine: 10,
-          startCharacter: 0,
-          endLine: 20,
-          endCharacter: 0,
+          start: { line: 10, char: 0 },
+
+          end: { line: 20, char: 0 },
           coverage: SelectionCoverage.FullLine,
         },
       ],
@@ -106,8 +103,6 @@ describe('formatLink', () => {
         computedSelection: {
           startLine: 11,
           endLine: 21,
-          startPosition: undefined,
-          endPosition: undefined,
           rangeFormat: 'LineOnly',
         },
       });
@@ -118,10 +113,9 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          startLine: 41,
-          startCharacter: 0,
-          endLine: 41,
-          endCharacter: 50,
+          start: { line: 41, char: 0 },
+
+          end: { line: 41, char: 50 },
           coverage: SelectionCoverage.FullLine,
         },
       ],
@@ -139,8 +133,6 @@ describe('formatLink', () => {
         computedSelection: {
           startLine: 42,
           endLine: 42,
-          startPosition: undefined,
-          endPosition: undefined,
           rangeFormat: 'LineOnly',
         },
       });
@@ -151,10 +143,9 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          startLine: 10,
-          startCharacter: 5,
-          endLine: 10,
-          endCharacter: 15,
+          start: { line: 10, char: 5 },
+
+          end: { line: 10, char: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
@@ -174,8 +165,6 @@ describe('formatLink', () => {
         computedSelection: {
           startLine: 11,
           endLine: 11,
-          startPosition: undefined,
-          endPosition: undefined,
           rangeFormat: 'LineOnly',
         },
       });
@@ -204,10 +193,9 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          startLine: 9,
-          startCharacter: 4,
-          endLine: 19,
-          endCharacter: 14,
+          start: { line: 9, char: 4 },
+
+          end: { line: 19, char: 14 },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
@@ -237,24 +225,21 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          startLine: 5,
-          startCharacter: 10,
-          endLine: 5,
-          endCharacter: 20,
+          start: { line: 5, char: 10 },
+
+          end: { line: 5, char: 20 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          startLine: 6,
-          startCharacter: 10,
-          endLine: 6,
-          endCharacter: 20,
+          start: { line: 6, char: 10 },
+
+          end: { line: 6, char: 20 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          startLine: 7,
-          startCharacter: 10,
-          endLine: 7,
-          endCharacter: 20,
+          start: { line: 7, char: 10 },
+
+          end: { line: 7, char: 20 },
           coverage: SelectionCoverage.PartialLine,
         },
       ],
@@ -284,10 +269,9 @@ describe('formatLink', () => {
     const inputSelection: InputSelection = {
       selections: [
         {
-          startLine: 10,
-          startCharacter: 0,
-          endLine: 20,
-          endCharacter: 0,
+          start: { line: 10, char: 0 },
+
+          end: { line: 20, char: 0 },
           coverage: SelectionCoverage.FullLine,
         },
       ],

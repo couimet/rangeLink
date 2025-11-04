@@ -1,5 +1,5 @@
 import { LinkType } from './LinkType';
-import { Position } from './Position';
+import { LinkPosition } from './LinkPosition';
 import { SelectionType } from './SelectionType';
 
 /**
@@ -17,16 +17,14 @@ export interface ParsedLink {
 
   /**
    * Start position within the file.
-   * Line numbers and character positions are 1-indexed.
    */
-  start: Position;
+  start: LinkPosition;
 
   /**
    * End position within the file.
-   * Line numbers and character positions are 1-indexed.
    * For single-line references, end equals start.
    */
-  end: Position;
+  end: LinkPosition;
 
   /**
    * The link type (Regular or Portable/BYOD).

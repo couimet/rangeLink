@@ -1,5 +1,5 @@
 import { Result, Ok, Err } from '../types/Result';
-import { Position } from '../types/Position';
+import { LinkPosition } from '../types/LinkPosition';
 import { ParsedLink } from '../types/ParsedLink';
 import { LinkType } from '../types/LinkType';
 import { SelectionType } from '../types/SelectionType';
@@ -103,16 +103,16 @@ export const parseLink = (link: string): Result<ParsedLink, string> => {
   }
 
   // Build start position (only include char if defined)
-  const start: Position = { line: startLine };
-  if (startChar !== undefined) {
-    start.char = startChar;
-  }
+  const start: LinkPosition = {
+    line: startLine,
+    ...(startChar !== undefined && { char: startChar }),
+  };
 
   // Build end position (only include char if defined)
-  const end: Position = { line: endLine };
-  if (endChar !== undefined) {
-    end.char = endChar;
-  }
+  const end: LinkPosition = {
+    line: endLine,
+    ...(endChar !== undefined && { char: endChar }),
+  };
 
   return Ok({
     path,

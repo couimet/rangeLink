@@ -34,17 +34,15 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 15,
-            startCharacter: 0,
-            endLine: 15,
-            endCharacter: 10,
+            start: { line: 15, char: 0 },
+
+            end: { line: 15, char: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -72,10 +70,8 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 20,
-            startCharacter: 0,
-            endLine: 10, // Backward
-            endCharacter: 10,
+            start: { line: 20, char: 0 },
+            end: { line: 10, char: 10 }, // Backward
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -103,10 +99,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 20,
-            endLine: 10,
-            endCharacter: 5, // Backward on same line
+            start: { line: 10, char: 20 },
+
+            end: { line: 10, char: 5 }, // Backward on same line
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -132,10 +127,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 20,
-            endLine: 15,
-            endCharacter: 5, // Different line, OK
+            start: { line: 10, char: 20 },
+
+            end: { line: 15, char: 5 }, // Different line, OK
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -151,10 +145,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: -1,
-            startCharacter: 0,
-            endLine: 10,
-            endCharacter: 10,
+            start: { line: -1, char: 0 },
+
+            end: { line: 10, char: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -171,10 +164,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 0,
-            startCharacter: 0,
-            endLine: -1,
-            endCharacter: 10,
+            start: { line: 0, char: 0 },
+
+            end: { line: -1, char: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -188,10 +180,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 0,
-            startCharacter: -1,
-            endLine: 10,
-            endCharacter: 10,
+            start: { line: 0, char: -1 },
+
+            end: { line: 10, char: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -205,10 +196,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 0,
-            startCharacter: 0,
-            endLine: 10,
-            endCharacter: -1,
+            start: { line: 0, char: 0 },
+
+            end: { line: 10, char: -1 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -224,17 +214,14 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 8, // Out of order
-            startCharacter: 5,
-            endLine: 8,
-            endCharacter: 15,
+            start: { line: 8, char: 5 }, // Out of order
+            end: { line: 8, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -262,10 +249,8 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 12, // Multi-line
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+            end: { line: 12, char: 15 }, // Multi-line
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -293,17 +278,14 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 11,
-            startCharacter: 7, // Mismatched
-            endLine: 11,
-            endCharacter: 15,
+            start: { line: 11, char: 7 }, // Mismatched
+            end: { line: 11, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -329,17 +311,15 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 11,
-            startCharacter: 5,
-            endLine: 11,
-            endCharacter: 17, // Mismatched
+            start: { line: 11, char: 5 },
+
+            end: { line: 11, char: 17 }, // Mismatched
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -355,17 +335,14 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 12, // Gap (missing line 11)
-            startCharacter: 5,
-            endLine: 12,
-            endCharacter: 15,
+            start: { line: 12, char: 5 }, // Gap (missing line 11)
+            end: { line: 12, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -393,10 +370,9 @@ describe('validateInputSelection', () => {
       const inputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -424,10 +400,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 5, // Same position = zero-width
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 5 }, // Same position = zero-width
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -453,10 +428,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 0,
-            startCharacter: 0,
-            endLine: 0,
-            endCharacter: 0,
+            start: { line: 0, char: 0 },
+
+            end: { line: 0, char: 0 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -472,10 +446,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 20,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 20, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -489,24 +462,21 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 11,
-            startCharacter: 5,
-            endLine: 11,
-            endCharacter: 15,
+            start: { line: 11, char: 5 },
+
+            end: { line: 11, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 12,
-            startCharacter: 5,
-            endLine: 12,
-            endCharacter: 15,
+            start: { line: 12, char: 5 },
+
+            end: { line: 12, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],

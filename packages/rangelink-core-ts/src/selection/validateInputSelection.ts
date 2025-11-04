@@ -35,34 +35,34 @@ export function validateInputSelection(inputSelection: InputSelection): void {
     const sel = selections[i];
 
     // ERR_3005: Negative coordinates
-    if (sel.startLine < 0 || sel.endLine < 0 || sel.startCharacter < 0 || sel.endCharacter < 0) {
+    if (sel.start.line < 0 || sel.end.line < 0 || sel.start.char < 0 || sel.end.char < 0) {
       throw new SelectionValidationError(
         RangeLinkMessageCode.SELECTION_ERR_NEGATIVE_COORDINATES,
-        `Negative coordinates not allowed (startLine=${sel.startLine}, endLine=${sel.endLine}, startChar=${sel.startCharacter}, endChar=${sel.endCharacter})`,
+        `Negative coordinates not allowed (startLine=${sel.start.line}, endLine=${sel.end.line}, startChar=${sel.start.char}, endChar=${sel.end.char})`,
       );
     }
 
     // ERR_3003: Backward line selection
-    if (sel.startLine > sel.endLine) {
+    if (sel.start.line > sel.end.line) {
       throw new SelectionValidationError(
         RangeLinkMessageCode.SELECTION_ERR_BACKWARD_LINE,
-        `Backward selection not allowed (startLine=${sel.startLine} > endLine=${sel.endLine})`,
+        `Backward selection not allowed (startLine=${sel.start.line} > endLine=${sel.end.line})`,
       );
     }
 
     // ERR_3004: Backward character selection on same line
-    if (sel.startLine === sel.endLine && sel.startCharacter > sel.endCharacter) {
+    if (sel.start.line === sel.end.line && sel.start.char > sel.end.char) {
       throw new SelectionValidationError(
         RangeLinkMessageCode.SELECTION_ERR_BACKWARD_CHARACTER,
-        `Backward character selection not allowed (startChar=${sel.startCharacter} > endChar=${sel.endCharacter} on line ${sel.startLine})`,
+        `Backward character selection not allowed (startChar=${sel.start.char} > endChar=${sel.end.char} on line ${sel.start.line})`,
       );
     }
 
     // ERR_3011: Zero-width selection (cursor position, not a range)
-    if (sel.startLine === sel.endLine && sel.startCharacter === sel.endCharacter) {
+    if (sel.start.line === sel.end.line && sel.start.char === sel.end.char) {
       throw new SelectionValidationError(
         RangeLinkMessageCode.SELECTION_ERR_ZERO_WIDTH,
-        `Zero-width selection not allowed (cursor position at line ${sel.startLine}, char ${sel.startCharacter})`,
+        `Zero-width selection not allowed (cursor position at line ${sel.start.line}, char ${sel.start.char})`,
       );
     }
   }
@@ -105,24 +105,24 @@ function validateRectangularMode(selections: InputSelection['selections']): void
   // ERR_3007: All rectangular selections must be single-line
   for (let i = 0; i < selections.length; i++) {
     const sel = selections[i];
-    if (sel.startLine !== sel.endLine) {
+    if (sel.start.line !== sel.end.line) {
       throw new SelectionValidationError(
         RangeLinkMessageCode.SELECTION_ERR_RECTANGULAR_MULTILINE,
-        `Rectangular mode requires single-line selections (selection ${i} spans lines ${sel.startLine}-${sel.endLine})`,
+        `Rectangular mode requires single-line selections (selection ${i} spans lines ${sel.start.line}-${sel.end.line})`,
       );
     }
   }
 
   // ERR_3008: All selections must have same character range
-  const expectedStartChar = first.startCharacter;
-  const expectedEndChar = first.endCharacter;
+  const expectedStartChar = first.start.char;
+  const expectedEndChar = first.end.char;
 
   for (let i = 1; i < selections.length; i++) {
     const sel = selections[i];
-    if (sel.startCharacter !== expectedStartChar || sel.endCharacter !== expectedEndChar) {
+    if (sel.start.char !== expectedStartChar || sel.end.char !== expectedEndChar) {
       throw new SelectionValidationError(
         RangeLinkMessageCode.SELECTION_ERR_RECTANGULAR_MISMATCHED_COLUMNS,
-        `Rectangular mode requires consistent column range (expected ${expectedStartChar}-${expectedEndChar}, got ${sel.startCharacter}-${sel.endCharacter} at selection ${i})`,
+        `Rectangular mode requires consistent column range (expected ${expectedStartChar}-${expectedEndChar}, got ${sel.start.char}-${sel.end.char} at selection ${i})`,
       );
     }
   }
@@ -132,10 +132,10 @@ function validateRectangularMode(selections: InputSelection['selections']): void
     const prev = selections[i - 1];
     const curr = selections[i];
 
-    if (curr.startLine < prev.startLine) {
+    if (curr.start.line < prev.start.line) {
       throw new SelectionValidationError(
         RangeLinkMessageCode.SELECTION_ERR_RECTANGULAR_UNSORTED,
-        `Rectangular mode selections must be sorted by line number (line ${curr.startLine} comes after line ${prev.startLine})`,
+        `Rectangular mode selections must be sorted by line number (line ${curr.start.line} comes after line ${prev.start.line})`,
       );
     }
   }
@@ -145,10 +145,10 @@ function validateRectangularMode(selections: InputSelection['selections']): void
     const prev = selections[i - 1];
     const curr = selections[i];
 
-    if (curr.startLine !== prev.startLine + 1) {
+    if (curr.start.line !== prev.start.line + 1) {
       throw new SelectionValidationError(
         RangeLinkMessageCode.SELECTION_ERR_RECTANGULAR_NON_CONTIGUOUS,
-        `Rectangular mode requires contiguous lines (gap between line ${prev.startLine} and ${curr.startLine})`,
+        `Rectangular mode requires contiguous lines (gap between line ${prev.start.line} and ${curr.start.line})`,
       );
     }
   }

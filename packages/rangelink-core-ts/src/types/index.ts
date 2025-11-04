@@ -13,5 +13,6 @@ export { RangeLinkMessageCode } from './RangeLinkMessageCode';
 export { ComputedSelection } from './ComputedSelection';
 export { FormatOptions } from './FormatOptions';
 export { FormattedLink } from './FormattedLink';
-export { Position } from './Position';
+export { EditorPosition } from './EditorPosition';
+export { LinkPosition } from './LinkPosition';
 export { ParsedLink } from './ParsedLink';

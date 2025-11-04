@@ -11,10 +11,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -37,10 +36,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 0,
-            endLine: 10,
-            endCharacter: 50,
+            start: { line: 10, char: 0 },
+
+            end: { line: 10, char: 50 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -52,8 +50,6 @@ describe('computeRangeSpec', () => {
         expect(value).toStrictEqual({
           startLine: 11,
           endLine: 11,
-          startPosition: undefined,
-          endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
@@ -65,10 +61,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -91,10 +86,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 20,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 20, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -117,10 +111,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 0,
-            endLine: 15,
-            endCharacter: 0,
+            start: { line: 10, char: 0 },
+
+            end: { line: 15, char: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -132,8 +125,6 @@ describe('computeRangeSpec', () => {
         expect(value).toStrictEqual({
           startLine: 11,
           endLine: 16,
-          startPosition: undefined,
-          endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
@@ -143,10 +134,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 0,
-            endLine: 10,
-            endCharacter: 50,
+            start: { line: 10, char: 0 },
+
+            end: { line: 10, char: 50 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -158,8 +148,6 @@ describe('computeRangeSpec', () => {
         expect(value).toStrictEqual({
           startLine: 11,
           endLine: 11,
-          startPosition: undefined,
-          endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
@@ -171,24 +159,21 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 11,
-            startCharacter: 5,
-            endLine: 11,
-            endCharacter: 15,
+            start: { line: 11, char: 5 },
+
+            end: { line: 11, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 12,
-            startCharacter: 5,
-            endLine: 12,
-            endCharacter: 15,
+            start: { line: 12, char: 5 },
+
+            end: { line: 12, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -211,24 +196,21 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 9,
-            startCharacter: 10,
-            endLine: 9,
-            endCharacter: 20,
+            start: { line: 9, char: 10 },
+
+            end: { line: 9, char: 20 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 10,
-            startCharacter: 10,
-            endLine: 10,
-            endCharacter: 20,
+            start: { line: 10, char: 10 },
+
+            end: { line: 10, char: 20 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            startLine: 11,
-            startCharacter: 10,
-            endLine: 11,
-            endCharacter: 20,
+            start: { line: 11, char: 10 },
+
+            end: { line: 11, char: 20 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -253,10 +235,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -268,8 +249,6 @@ describe('computeRangeSpec', () => {
         expect(value).toStrictEqual({
           startLine: 11,
           endLine: 11,
-          startPosition: undefined,
-          endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
@@ -279,10 +258,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 20,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 20, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -294,8 +272,6 @@ describe('computeRangeSpec', () => {
         expect(value).toStrictEqual({
           startLine: 11,
           endLine: 21,
-          startPosition: undefined,
-          endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
@@ -305,10 +281,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 0,
-            endLine: 15,
-            endCharacter: 0,
+            start: { line: 10, char: 0 },
+
+            end: { line: 15, char: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -320,8 +295,6 @@ describe('computeRangeSpec', () => {
         expect(value).toStrictEqual({
           startLine: 11,
           endLine: 16,
-          startPosition: undefined,
-          endPosition: undefined,
           rangeFormat: RangeFormat.LineOnly,
         });
       });
@@ -333,10 +306,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 0,
-            endLine: 10,
-            endCharacter: 50,
+            start: { line: 10, char: 0 },
+
+            end: { line: 10, char: 50 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -359,10 +331,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 0,
-            endLine: 15,
-            endCharacter: 0,
+            start: { line: 10, char: 0 },
+
+            end: { line: 15, char: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -385,10 +356,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            startLine: 10,
-            startCharacter: 5,
-            endLine: 10,
-            endCharacter: 15,
+            start: { line: 10, char: 5 },
+
+            end: { line: 10, char: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],

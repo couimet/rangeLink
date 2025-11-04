@@ -499,9 +499,11 @@ Following the successful publication of the VSCode extension to the marketplace,
 Added concise competitive positioning to both READMEs with direct comparison:
 
 **VSCode Extension README:**
+
 - Added bullet: "🔗 **Cross-file context** — Generate links from multiple files, paste all in one prompt. Built-in claude-code: single selection, current file only."
 
 **Root README:**
+
 - Updated bullet: "🤖 **AI assistants** — Multi-file context in one prompt. Generate RangeLinks from auth.ts, tests.ts, config.ts — paste all. Built-in claude-code: single selection, current file only."
 
 **Messaging strategy:**
@@ -509,6 +511,7 @@ Added concise competitive positioning to both READMEs with direct comparison:
 For geek audience: Technical, direct, practical workflow example. No marketing fluff.
 
 **Key differentiator:**
+
 - Built-in claude-code: Single selection, current file
 - RangeLink: Multiple links from multiple files → paste all → richer AI context
 
@@ -520,6 +523,94 @@ For geek audience: Technical, direct, practical workflow example. No marketing f
 - ✅ Concise, technical messaging for developer audience
 
 **Status:** Complete - Clear competitive positioning established, 30 minutes
+
+---
+
+### 4.6C) Selection Type API Improvement with Position Interfaces — ✅ Complete
+
+**Goal:** Improve Selection API ergonomics and type safety by replacing flat fields with nested Position interfaces, while solving 0-indexed vs 1-indexed inconsistencies.
+
+**Problem:**
+
+- Selection interface used flat fields (startLine, startCharacter, endLine, endCharacter) creating duplication
+- Position interface was 1-indexed (for link parsing) but Selection was 0-indexed (internal), causing indexing confusion
+- 335 occurrences of flat fields across 12 core library files
+
+**Solution implemented:**
+
+Created dual Position types with clear semantic boundaries:
+
+1. **EditorPosition** (0-indexed, char REQUIRED):
+   - For internal editor selections
+   - `{ line: number, char: number }`
+   - Char is required because editors always provide it (VSCode's `vscode.Position` always has line + char)
+
+2. **LinkPosition** (1-indexed, char OPTIONAL):
+   - For link format parsing/generation
+   - `{ line: number, char?: number }`
+   - Char is optional for full-line references like `#L10`
+
+3. **Updated Selection interface:**
+
+   ```typescript
+   // Before:
+   interface Selection {
+     readonly startLine: number;
+     readonly startCharacter: number;
+     readonly endLine: number;
+     readonly endCharacter: number;
+     readonly coverage: SelectionCoverage;
+   }
+
+   // After:
+   interface Selection {
+     readonly start: EditorPosition;
+     readonly end: EditorPosition;
+     readonly coverage: SelectionCoverage;
+   }
+   ```
+
+**Files modified (16 files):**
+
+Core Library:
+
+- Created: `EditorPosition.ts`
+- Renamed: `Position.ts` → `LinkPosition.ts`
+- Updated: `Selection.ts`, `InputSelection.ts`, `ParsedLink.ts`, `index.ts`
+- Updated: `computeRangeSpec.ts`, `validateInputSelection.ts`, `parseLink.ts`
+- Updated: 3 test files (formatLink, computeRangeSpec, validateInputSelection)
+
+VSCode Extension:
+
+- Updated: `toInputSelection.ts` (adapter)
+- Updated: 2 test files (extension, isRectangularSelection)
+
+**Benefits achieved:**
+
+- ✅ **Better API ergonomics** - Nested position objects instead of flat fields (DRY principle)
+- ✅ **Type safety** - Compiler enforces 0-indexed (editor) vs 1-indexed (links) usage
+- ✅ **Required char** - EditorPosition makes char mandatory, matching editor reality
+- ✅ **Clearer semantics** - Names document purpose (EditorPosition vs LinkPosition)
+- ✅ **Better structured logging** - `{ selection: { start, end, coverage } }` instead of flat fields
+- ✅ **Future-proof** - Can add metadata to position types once, all usages benefit
+
+**Test results:**
+
+- ✅ Core library: 144 tests passing (95.74% coverage)
+- ✅ VSCode extension: 130 tests passing
+- ✅ All functionality verified working
+
+**Pre-release timing:** Perfect moment for breaking changes - no external users affected yet.
+
+**Deliverables:**
+
+- ✅ Two Position types with clear semantic boundaries (EditorPosition, LinkPosition)
+- ✅ Updated Selection interface using EditorPosition
+- ✅ 16 files updated across core library and VSCode extension
+- ✅ All tests passing with no regressions
+- ✅ ROADMAP.md updated with comprehensive analysis and decision rationale
+
+**Status:** Complete - API improved with better ergonomics and type safety, 2.5 hours
 
 ---
 

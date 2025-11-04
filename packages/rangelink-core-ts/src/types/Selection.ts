@@ -1,3 +1,4 @@
+import { EditorPosition } from './EditorPosition';
 import { SelectionCoverage } from './SelectionCoverage';
 
 /**
@@ -21,28 +22,29 @@ import { SelectionCoverage } from './SelectionCoverage';
  * ```typescript
  * // Full line selection (line has 80 characters)
  * const fullLine: Selection = {
- *   startLine: 10,
- *   startCharacter: 0,
- *   endLine: 10,
- *   endCharacter: 80,
+ *   start: { line: 10, char: 0 },
+ *   end: { line: 10, char: 80 },
  *   coverage: SelectionCoverage.FullLine
  * };
  *
  * // Partial line selection
  * const partial: Selection = {
- *   startLine: 10,
- *   startCharacter: 5,
- *   endLine: 10,
- *   endCharacter: 20,
+ *   start: { line: 10, char: 5 },
+ *   end: { line: 10, char: 20 },
  *   coverage: SelectionCoverage.PartialLine
  * };
  * ```
  */
 export interface Selection {
-  readonly startLine: number;
-  readonly startCharacter: number;
-  readonly endLine: number;
-  readonly endCharacter: number;
+  /**
+   * Start position of the selection (0-indexed)
+   */
+  readonly start: EditorPosition;
+
+  /**
+   * End position of the selection (0-indexed)
+   */
+  readonly end: EditorPosition;
 
   /**
    * Indicates whether this selection covers the full line or partial positions.
