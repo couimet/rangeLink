@@ -1066,6 +1066,102 @@ Following the successful publication of the VSCode extension to the marketplace,
 
 ---
 
+## Phase 4.5: Technical Debt & Refactoring — 📋 Planned
+
+### 4.5A) Remove Test Re-exports from extension.ts (30 minutes)
+
+**Problem:** `extension.ts` contains re-exports for backward compatibility with tests:
+```typescript
+// Re-export for backward compatibility with tests
+export { PathFormat, DelimiterValidationError, RangeLinkMessageCode, RangeLinkService };
+```
+
+**Goal:** Tests should import from actual source files, not from `extension.ts`
+
+**Changes:**
+- Update all test imports to use direct paths (`./RangeLinkService`, `rangelink-core-ts`)
+- Remove re-export line from `extension.ts`
+- Verify all 130 tests still pass
+
+**Done when:** No re-exports exist in `extension.ts` for test compatibility
+
+---
+
+### 4.5B) Eliminate getErrorCodeForTesting Function (1 hour)
+
+**Problem:** The `getErrorCodeForTesting` function in `extension.ts` maps between two enum systems (`DelimiterValidationError` → `RangeLinkMessageCode`). This mapping layer is ugly and shouldn't exist.
+
+**Root cause:** Two separate validation/error systems that need reconciliation
+
+**Options to evaluate:**
+1. Core library returns `RangeLinkMessageCode` directly (eliminate `DelimiterValidationError` enum)
+2. Extension maps errors at the boundary layer (config loading) instead of separate function
+3. Core library returns rich error objects that include both error type and message code
+
+**Changes:**
+- Evaluate which enum should be source of truth
+- Refactor validation to return correct type directly
+- Remove `getErrorCodeForTesting` function entirely
+- Update tests to not depend on this mapping function
+
+**Done when:**
+- `getErrorCodeForTesting` function deleted
+- All 130 tests pass
+- Error handling is cleaner and more direct
+
+---
+
+### 4.5C) Remove or Refactor Link Interface (15 minutes)
+
+**Problem:** `extension.ts` contains a `Link` interface marked as "kept for extension API" but it's unclear if it's actually used:
+
+```typescript
+/**
+ * VSCode-specific link interface (kept for extension API)
+ */
+export interface Link {
+  path: string;
+  startLine: number;
+  endLine: number;
+  startPosition?: number;
+  endPosition?: number;
+  isAbsolute: boolean;
+}
+```
+
+**Goal:** Determine if this interface is necessary and either remove it or document its purpose
+
+**Changes:**
+- Search codebase for all usages of `Link` interface
+- If unused: delete it
+- If used: move to appropriate file with clear documentation
+- Update tests if needed
+
+**Done when:** `Link` interface is either removed or properly documented with clear ownership
+
+---
+
+### 4.5D) Refactor Module-Level outputChannel Dependency (30 minutes)
+
+**Problem:** `getErrorCodeForTesting` function depends on module-level `outputChannel` variable:
+
+```typescript
+default: {
+  outputChannel.appendLine(
+    `[CRITICAL] Unhandled DelimiterValidationError in getErrorCodeForTesting: ${error}`,
+  );
+  return RangeLinkMessageCode.CONFIG_ERR_UNKNOWN;
+}
+```
+
+**Goal:** Eliminate implicit dependency on module-level global state
+
+**Note:** This will likely be resolved by 4.5B (eliminating the function entirely), but if the function remains, it should receive logger as parameter instead of accessing global.
+
+**Done when:** No functions in `extension.ts` directly access module-level variables (prefer dependency injection)
+
+---
+
 ## Phase 5: Navigation Features — 📋 Planned
 
 Navigate to code using RangeLinks (local workspace and BYOD).
