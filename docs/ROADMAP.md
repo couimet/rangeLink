@@ -1162,7 +1162,157 @@ default: {
 
 ---
 
-### 4.5E) Extract RangeLinkService Tests to Separate File (45 minutes)
+### 4.5E) Replace outputChannel.appendLine with getLogger() (30 minutes)
+
+**Problem:** `extension.ts` has inconsistent logging - some code uses `getLogger()` (proper abstraction) while other code uses raw `outputChannel.appendLine()` directly
+
+**Examples of raw outputChannel usage:**
+- `loadDelimiterConfig()` function (lines 151-160 and throughout)
+- Other config loading/validation code
+
+**Why it's wrong:**
+- Logger is initialized BEFORE these functions run (no lifecycle issue)
+- Bypasses the structured logging abstraction (`getLogger()` from core)
+- Inconsistent with rest of codebase
+- Makes code harder to test (implicit dependency on module-level variable)
+
+**Goal:** All logging should go through `getLogger()` for consistency
+
+**Changes:**
+- Replace all `outputChannel.appendLine()` calls with `getLogger().info()` / `.warn()` / `.error()`
+- Ensure structured logging format is maintained
+- Update any tests that mock `outputChannel` directly
+
+**Done when:**
+- No direct `outputChannel.appendLine()` calls remain in `extension.ts`
+- All logging goes through `getLogger()` abstraction
+- All tests pass
+
+---
+
+### 4.5F) Extract Command Registration from activate() Function (30 minutes)
+
+**Problem:** The `activate()` function is 90 lines long with 60+ lines of inline command registration. This creates:
+- Poor testability (can't test command registration separately)
+- High coupling (activate does setup + registration + logging)
+- Poor scoping (7 commands registered inline with duplicated patterns)
+
+**Current structure:**
+```typescript
+export function activate(context: vscode.ExtensionContext): void {
+  // Setup (lines 174-182)
+  outputChannel = ...
+  setLogger(...)
+  const service = ...
+  const terminalBindingManager = ...
+
+  // Command registration (lines 184-244) - 60 lines inline!
+  context.subscriptions.push(vscode.commands.registerCommand(...))
+  context.subscriptions.push(vscode.commands.registerCommand(...))
+  context.subscriptions.push(vscode.commands.registerCommand(...))
+  // ... 7 total commands
+
+  // Activation logging (lines 246-261)
+  getLogger().info(...)
+}
+```
+
+**Target structure:**
+```typescript
+export function activate(context: vscode.ExtensionContext): void {
+  outputChannel = vscode.window.createOutputChannel('RangeLink');
+  setLogger(new VSCodeLogger(outputChannel));
+
+  const delimiters = loadDelimiterConfig();
+  const terminalBindingManager = new TerminalBindingManager(context);
+  const service = new RangeLinkService(delimiters, terminalBindingManager);
+
+  registerCommands(context, service, terminalBindingManager);
+
+  logActivation();
+}
+
+function registerCommands(
+  context: vscode.ExtensionContext,
+  service: RangeLinkService,
+  terminalBindingManager: TerminalBindingManager,
+): void {
+  // All command registration logic here
+  // Can be tested separately
+  // Clear function boundary
+}
+
+function logActivation(): void {
+  // Activation logging logic
+}
+```
+
+**Benefits:**
+- ✅ Activate function becomes ~15 lines (setup → register → log)
+- ✅ Command registration testable in isolation
+- ✅ Clear separation of concerns
+- ✅ Easier to add new commands
+- ✅ Reduced coupling
+
+**Changes:**
+- Create `registerCommands()` helper function
+- Create `logActivation()` helper function
+- Update `activate()` to call helpers
+- Consider: Move helpers to separate file (`src/commands.ts`) if they grow
+
+**Done when:**
+- `activate()` function is ~15 lines
+- Command registration extracted to `registerCommands()`
+- All tests pass
+
+---
+
+### 4.5G) Fix TerminalBindingManager Resource Leak (5 minutes) 🐛
+
+**Problem:** `TerminalBindingManager` has a `dispose()` method but it's never called - **resource leak!**
+
+**Root cause:**
+- `terminalBindingManager` created as local variable in `activate()`
+- Never added to `context.subscriptions`
+- `deactivate()` has no reference to clean it up
+- Terminal close event listener never disposed
+
+**Current code:**
+```typescript
+export function activate(context: vscode.ExtensionContext): void {
+  const terminalBindingManager = new TerminalBindingManager(context);
+  // ← Not added to context.subscriptions!
+}
+
+export function deactivate(): void {
+  // Cleanup if needed  ← Can't access terminalBindingManager
+}
+```
+
+**Fix:**
+```typescript
+export function activate(context: vscode.ExtensionContext): void {
+  const terminalBindingManager = new TerminalBindingManager(context);
+  context.subscriptions.push(terminalBindingManager); // ← Add this line!
+  // VSCode will auto-call dispose() on deactivation
+}
+
+export function deactivate(): void {
+  // VSCode automatically disposes all items in context.subscriptions
+  // No manual cleanup needed
+}
+```
+
+**Changes:**
+- Add `context.subscriptions.push(terminalBindingManager)` in `activate()`
+- Document that VSCode handles cleanup automatically
+- Consider: Remove empty `deactivate()` function (optional, but it's valid to keep it)
+
+**Done when:** `terminalBindingManager.dispose()` is called when extension deactivates
+
+---
+
+### 4.5H) Extract RangeLinkService Tests to Separate File (45 minutes)
 
 **Problem:** `RangeLinkService` class was extracted to `RangeLinkService.ts` but its 1116 lines of tests remain in `extension.test.ts` (lines 129-1244)
 
