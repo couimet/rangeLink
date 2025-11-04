@@ -884,6 +884,203 @@ src/
 
 ---
 
+## Phase 4.6: Go-To-Market Readiness — 📋 High Priority
+
+Critical items for marketplace launch and user adoption. These should be tackled soon to improve user experience and reduce friction.
+
+### 4.6A) Keybinding Conflict Detection (Post-Install Hook) (2 hours) — 📋 High Priority
+
+**Goal:** Notify users if RangeLink's keybindings conflict with existing extensions, suggest how to reconfigure.
+
+**Problem:** `CMD+R CMD+L` keybinding is already registered in Cursor (unclear if default or from another extension). Users can't use RangeLink's mnemonic keybindings without manual intervention.
+
+**Questions to investigate:**
+
+1. **Does VSCode have a post-install hook?**
+   - `packages/rangelink-vscode-extension/src/extension.ts#L173` is the activation hook
+   - Need equivalent that runs once after installation
+   - Research: `onStartupFinished`, `globalState`, or activation timing
+
+2. **Can we detect keybinding conflicts programmatically?**
+   - Check `vscode.commands.getAll()` or keybinding registry
+   - Compare against our registered keybindings
+   - Identify conflicting extensions
+
+**Proposed solution:**
+
+```typescript
+// Check on first activation after install
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
+  const hasShownWelcome = context.globalState.get<boolean>('rangelink.welcomeShown');
+
+  if (!hasShownWelcome) {
+    await checkKeybindingConflicts(context);
+    await context.globalState.update('rangelink.welcomeShown', true);
+  }
+
+  // ... rest of activation
+}
+
+async function checkKeybindingConflicts(context: vscode.ExtensionContext): Promise<void> {
+  // Detect if CMD+R CMD+L is already bound
+  // Show notification with:
+  // - "RangeLink detected keybinding conflicts"
+  // - Action buttons: "View Conflicts", "Auto-fix", "Dismiss"
+  // - Link to keybinding settings
+}
+```
+
+**User experience:**
+
+1. Install RangeLink from marketplace
+2. First activation: notification appears if conflicts detected
+3. User clicks "View Conflicts" → opens keybinding UI with RangeLink keys highlighted
+4. User clicks "Auto-fix" → RangeLink unregisters conflicting keys, suggests alternatives
+5. User clicks "Dismiss" → saved in globalState, never shows again
+
+**Research tasks:**
+
+- [ ] Investigate VSCode extension lifecycle hooks
+- [ ] Test keybinding detection APIs
+- [ ] Design notification UX (non-intrusive, helpful)
+- [ ] Handle Cursor vs VSCode differences
+
+**Done when:**
+
+- Post-install notification detects keybinding conflicts
+- User can view conflicts and auto-fix them
+- Welcome message shown only once per install
+- Works in both VSCode and Cursor
+
+---
+
+### 4.6B) Multi-Selection Differentiator (README Update) (30 min) — 📋 High Priority
+
+**Goal:** Highlight that RangeLink supports multiple selections, unlike claude-code extension.
+
+**Problem:** Claude Code extension (built into IDE) only supports **single selection** at a time. RangeLink allows sending **multiple selections** to AI assistants simultaneously — a major differentiator that's not clearly communicated.
+
+**What to update:**
+
+1. **packages/rangelink-vscode-extension/README.md** - Add to "Why RangeLink?" section:
+
+```markdown
+### Why RangeLink?
+
+**Multi-Selection Support**
+
+The Claude Code extension in your IDE is limited to a **single selection** at a time. With RangeLink, you can:
+
+- Select multiple code snippets from different parts of your file
+- Select across multiple files
+- Send all selections to your AI assistant in one link
+- Provide richer context for AI-assisted development
+
+**Example:**
+
+Instead of copying/pasting 3 separate snippets, generate one RangeLink with:
+- Function definition (`#L10-L25`)
+- Test case (`#L50-L75`)
+- Error handling (`#L100-L120`)
+
+Your AI assistant sees the full picture.
+```
+
+2. **Root README.md** - Add similar messaging to "AI-Assisted Development" section
+
+3. **Marketplace description** - Include "Multi-selection support" in feature list
+
+**Benefits to highlight:**
+
+- ✅ Multiple selections in single link
+- ✅ Cross-file context sharing
+- ✅ Richer AI context = better suggestions
+- ✅ Fewer copy-paste cycles
+- ✅ Works with any AI assistant (claude-code, ChatGPT, etc.)
+
+**Done when:**
+
+- README clearly states multi-selection advantage
+- Comparison with claude-code extension is explicit
+- Examples show practical multi-selection use cases
+- Marketplace listing updated
+
+---
+
+### 4.6C) Enrich Selection Type with Position Interface (1 hour) — 📋 Technical Improvement
+
+**Goal:** Evaluate using `Position` interface (from parsing) to improve `Selection` type ergonomics.
+
+**Current state:**
+
+`Selection` interface (packages/rangelink-core-ts/src/types/Selection.ts#L42-L45):
+```typescript
+export interface Selection {
+  readonly startLine: number;
+  readonly startCharacter: number;
+  readonly endLine: number;
+  readonly endCharacter: number;
+  readonly coverage: SelectionCoverage;
+}
+```
+
+`Position` interface (packages/rangelink-core-ts/src/types/Position.ts):
+```typescript
+export interface Position {
+  line: number;
+  char?: number;
+}
+```
+
+**Proposed enhancement:**
+
+```typescript
+export interface Selection {
+  readonly start: Position;
+  readonly end: Position;
+  readonly coverage: SelectionCoverage;
+}
+```
+
+**PROS:**
+
+✅ **Symmetry with parsing** - ParsedLink uses Position, Selection would match
+✅ **Cleaner API** - `selection.start.line` vs `selection.startLine` (more object-oriented)
+✅ **Type reuse** - DRY principle, Position used in multiple contexts
+✅ **Optional char support** - Position already handles optional `char` field
+✅ **Easier refactoring** - Change Position definition, affects all usages consistently
+
+**CONS:**
+
+❌ **Breaking API change** - All existing code using Selection would break
+❌ **Migration effort** - ~10+ files reference Selection fields directly
+❌ **Test updates** - ~100+ test assertions would need updating
+❌ **Nested access** - One more level of nesting (`selection.start.line` vs `selection.startLine`)
+❌ **Not pre-1.0 blocking** - Can defer until major version bump
+❌ **Ambiguous benefits** - Current API is clear and works well
+
+**Implementation considerations:**
+
+- Create `Selection2` or `RichSelection` interface for migration
+- Provide adapter functions: `toSelection`, `fromSelection`
+- Deprecate old Selection gradually
+- Document migration path in CHANGELOG
+
+**Decision factors:**
+
+- Is symmetry with ParsedLink worth the migration cost?
+- Do we gain enough from Position reuse to justify breaking changes?
+- Can we defer this to v2.0 when we're ready for breaking changes?
+- Would a v1.0 → v2.0 migration guide make this more palatable?
+
+**Done when:**
+
+- PROS/CONS documented in this roadmap (✅ Done above)
+- Team decision made: implement now, defer to v2.0, or reject
+- If implemented: migration guide created, all code updated, 100% tests passing
+
+---
+
 ## Phase 5: Terminal Link Navigation — 📋 Planned
 
 **Goal:** Make RangeLinks in terminal output clickable (Cmd+Click to navigate)
