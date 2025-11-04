@@ -900,57 +900,21 @@ Critical items for marketplace launch and user adoption. These should be tackled
 
 ---
 
-### 4.6B) Multi-Selection Differentiator (README Update) (30 min) — 📋 High Priority
+### 4.6B) Cross-File Context Positioning — ✅ Complete
 
-**Goal:** Highlight that RangeLink supports multiple selections, unlike claude-code extension.
+**Goal:** Highlight RangeLink's cross-file context advantage vs built-in claude-code extension.
 
-**Problem:** Claude Code extension (built into IDE) only supports **single selection** at a time. RangeLink allows sending **multiple selections** to AI assistants simultaneously — a major differentiator that's not clearly communicated.
+**Problem:** Built-in claude-code extension only supports single selection from current file. RangeLink lets you generate multiple links from different files and paste all in one prompt for richer context.
 
-**What to update:**
+**What was done:**
 
-1. **packages/rangelink-vscode-extension/README.md** - Add to "Why RangeLink?" section:
+**VSCode Extension README:**
+- Added: "🔗 **Cross-file context** — Generate links from multiple files, paste all in one prompt. Built-in claude-code: single selection, current file only."
 
-```markdown
-### Why RangeLink?
+**Root README:**
+- Updated: "🤖 **AI assistants** — Multi-file context in one prompt. Generate RangeLinks from auth.ts, tests.ts, config.ts — paste all. Built-in claude-code: single selection, current file only."
 
-**Multi-Selection Support**
-
-The Claude Code extension in your IDE is limited to a **single selection** at a time. With RangeLink, you can:
-
-- Select multiple code snippets from different parts of your file
-- Select across multiple files
-- Send all selections to your AI assistant in one link
-- Provide richer context for AI-assisted development
-
-**Example:**
-
-Instead of copying/pasting 3 separate snippets, generate one RangeLink with:
-
-- Function definition (`#L10-L25`)
-- Test case (`#L50-L75`)
-- Error handling (`#L100-L120`)
-
-Your AI assistant sees the full picture.
-```
-
-2. **Root README.md** - Add similar messaging to "AI-Assisted Development" section
-
-3. **Marketplace description** - Include "Multi-selection support" in feature list
-
-**Benefits to highlight:**
-
-- ✅ Multiple selections in single link
-- ✅ Cross-file context sharing
-- ✅ Richer AI context = better suggestions
-- ✅ Fewer copy-paste cycles
-- ✅ Works with any AI assistant (claude-code, ChatGPT, etc.)
-
-**Done when:**
-
-- README clearly states multi-selection advantage
-- Comparison with claude-code extension is explicit
-- Examples show practical multi-selection use cases
-- Marketplace listing updated
+**Messaging:** Direct comparison with practical workflow example. Technical, concise, no fluff.
 
 ---
 

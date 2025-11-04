@@ -25,7 +25,8 @@
 - ⚡ **Zero-friction AI context** — Bind to your integrated terminal (within VSCode/Cursor). Links appear instantly, no copy/paste.
 - 🎯 **Choice of AI model** — Claude, GPT, Gemini, anything. Not locked into Cursor's AI.
 - 📐 **Full control over context** — Precise line ranges and column selections, not full files.
-- 🔗 **Universal compatibility** — Works across editors (VSCode, Cursor, Sublime) and in any text-based tool.
+- 🔗 **Cross-file context** — Generate links from multiple files, paste all in one prompt. Built-in claude-code: single selection, current file only.
+- 🌐 **Universal compatibility** — Works across editors (VSCode, Cursor, Sublime) and in any text-based tool.
 
 ### Perfect For
 

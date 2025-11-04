@@ -28,7 +28,7 @@
 **Perfect for:**
 
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`"
-- 🤖 **AI assistants** — Give claude-code or Copilot _exact_ context
+- 🤖 **AI assistants** — Multi-file context in one prompt. Generate RangeLinks from auth.ts, tests.ts, config.ts — paste all. Built-in claude-code: single selection, current file only.
 - 👥 **Team collaboration** — Universal format everyone can use
 
 ## Quick Start

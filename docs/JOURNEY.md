@@ -488,6 +488,41 @@ Following the successful publication of the VSCode extension to the marketplace,
 
 ---
 
+### 4.6B) Cross-File Context Positioning — ✅ Complete
+
+**Goal:** Position RangeLink's cross-file context capability as competitive advantage vs built-in claude-code extension.
+
+**Problem:** Built-in claude-code extension limited to single selection from current file only. Users don't realize RangeLink enables multi-file context by generating multiple links and pasting all in one prompt.
+
+**Solution implemented:**
+
+Added concise competitive positioning to both READMEs with direct comparison:
+
+**VSCode Extension README:**
+- Added bullet: "🔗 **Cross-file context** — Generate links from multiple files, paste all in one prompt. Built-in claude-code: single selection, current file only."
+
+**Root README:**
+- Updated bullet: "🤖 **AI assistants** — Multi-file context in one prompt. Generate RangeLinks from auth.ts, tests.ts, config.ts — paste all. Built-in claude-code: single selection, current file only."
+
+**Messaging strategy:**
+
+For geek audience: Technical, direct, practical workflow example. No marketing fluff.
+
+**Key differentiator:**
+- Built-in claude-code: Single selection, current file
+- RangeLink: Multiple links from multiple files → paste all → richer AI context
+
+**Deliverables:**
+
+- ✅ VSCode extension README updated with cross-file context positioning
+- ✅ Root README updated with practical workflow example
+- ✅ Direct comparison with built-in claude-code extension
+- ✅ Concise, technical messaging for developer audience
+
+**Status:** Complete - Clear competitive positioning established, 30 minutes
+
+---
+
 ## Related Documentation
 
 - [ROADMAP.md](./ROADMAP.md) - Future development plans
