@@ -1071,6 +1071,7 @@ Following the successful publication of the VSCode extension to the marketplace,
 ### 4.5A) Remove Test Re-exports from extension.ts (30 minutes)
 
 **Problem:** `extension.ts` contains re-exports for backward compatibility with tests:
+
 ```typescript
 // Re-export for backward compatibility with tests
 export { PathFormat, DelimiterValidationError, RangeLinkMessageCode, RangeLinkService };
@@ -1079,6 +1080,7 @@ export { PathFormat, DelimiterValidationError, RangeLinkMessageCode, RangeLinkSe
 **Goal:** Tests should import from actual source files, not from `extension.ts`
 
 **Changes:**
+
 - Update all test imports to use direct paths (`./RangeLinkService`, `rangelink-core-ts`)
 - Remove re-export line from `extension.ts`
 - Verify all 130 tests still pass
@@ -1094,17 +1096,20 @@ export { PathFormat, DelimiterValidationError, RangeLinkMessageCode, RangeLinkSe
 **Root cause:** Two separate validation/error systems that need reconciliation
 
 **Options to evaluate:**
+
 1. Core library returns `RangeLinkMessageCode` directly (eliminate `DelimiterValidationError` enum)
 2. Extension maps errors at the boundary layer (config loading) instead of separate function
 3. Core library returns rich error objects that include both error type and message code
 
 **Changes:**
+
 - Evaluate which enum should be source of truth
 - Refactor validation to return correct type directly
 - Remove `getErrorCodeForTesting` function entirely
 - Update tests to not depend on this mapping function
 
 **Done when:**
+
 - `getErrorCodeForTesting` function deleted
 - All 130 tests pass
 - Error handling is cleaner and more direct
@@ -1132,6 +1137,7 @@ export interface Link {
 **Goal:** Determine if this interface is necessary and either remove it or document its purpose
 
 **Changes:**
+
 - Search codebase for all usages of `Link` interface
 - If unused: delete it
 - If used: move to appropriate file with clear documentation
@@ -1167,10 +1173,12 @@ default: {
 **Problem:** `extension.ts` has inconsistent logging - some code uses `getLogger()` (proper abstraction) while other code uses raw `outputChannel.appendLine()` directly
 
 **Examples of raw outputChannel usage:**
+
 - `loadDelimiterConfig()` function (lines 151-160 and throughout)
 - Other config loading/validation code
 
 **Why it's wrong:**
+
 - Logger is initialized BEFORE these functions run (no lifecycle issue)
 - Bypasses the structured logging abstraction (`getLogger()` from core)
 - Inconsistent with rest of codebase
@@ -1179,11 +1187,13 @@ default: {
 **Goal:** All logging should go through `getLogger()` for consistency
 
 **Changes:**
+
 - Replace all `outputChannel.appendLine()` calls with `getLogger().info()` / `.warn()` / `.error()`
 - Ensure structured logging format is maintained
 - Update any tests that mock `outputChannel` directly
 
 **Done when:**
+
 - No direct `outputChannel.appendLine()` calls remain in `extension.ts`
 - All logging goes through `getLogger()` abstraction
 - All tests pass
@@ -1193,11 +1203,13 @@ default: {
 ### 4.5F) Extract Command Registration from activate() Function (30 minutes)
 
 **Problem:** The `activate()` function is 90 lines long with 60+ lines of inline command registration. This creates:
+
 - Poor testability (can't test command registration separately)
 - High coupling (activate does setup + registration + logging)
 - Poor scoping (7 commands registered inline with duplicated patterns)
 
 **Current structure:**
+
 ```typescript
 export function activate(context: vscode.ExtensionContext): void {
   // Setup (lines 174-182)
@@ -1218,6 +1230,7 @@ export function activate(context: vscode.ExtensionContext): void {
 ```
 
 **Target structure:**
+
 ```typescript
 export function activate(context: vscode.ExtensionContext): void {
   outputChannel = vscode.window.createOutputChannel('RangeLink');
@@ -1248,6 +1261,7 @@ function logActivation(): void {
 ```
 
 **Benefits:**
+
 - ✅ Activate function becomes ~15 lines (setup → register → log)
 - ✅ Command registration testable in isolation
 - ✅ Clear separation of concerns
@@ -1255,12 +1269,14 @@ function logActivation(): void {
 - ✅ Reduced coupling
 
 **Changes:**
+
 - Create `registerCommands()` helper function
 - Create `logActivation()` helper function
 - Update `activate()` to call helpers
 - Consider: Move helpers to separate file (`src/commands.ts`) if they grow
 
 **Done when:**
+
 - `activate()` function is ~15 lines
 - Command registration extracted to `registerCommands()`
 - All tests pass
@@ -1272,12 +1288,14 @@ function logActivation(): void {
 **Problem:** `TerminalBindingManager` has a `dispose()` method but it's never called - **resource leak!**
 
 **Root cause:**
+
 - `terminalBindingManager` created as local variable in `activate()`
 - Never added to `context.subscriptions`
 - `deactivate()` has no reference to clean it up
 - Terminal close event listener never disposed
 
 **Current code:**
+
 ```typescript
 export function activate(context: vscode.ExtensionContext): void {
   const terminalBindingManager = new TerminalBindingManager(context);
@@ -1290,6 +1308,7 @@ export function deactivate(): void {
 ```
 
 **Fix:**
+
 ```typescript
 export function activate(context: vscode.ExtensionContext): void {
   const terminalBindingManager = new TerminalBindingManager(context);
@@ -1304,6 +1323,7 @@ export function deactivate(): void {
 ```
 
 **Changes:**
+
 - Add `context.subscriptions.push(terminalBindingManager)` in `activate()`
 - Document that VSCode handles cleanup automatically
 - Consider: Remove empty `deactivate()` function (optional, but it's valid to keep it)
@@ -1319,6 +1339,7 @@ export function deactivate(): void {
 **Goal:** Test file structure should mirror source file structure
 
 **Current structure:**
+
 ```
 src/
   extension.ts
@@ -1328,6 +1349,7 @@ src/
 ```
 
 **Target structure:**
+
 ```
 src/
   extension.ts
@@ -1338,6 +1360,7 @@ src/
 ```
 
 **Changes:**
+
 - Create `__tests__/RangeLinkService.test.ts`
 - Move `describe('RangeLinkService', ...)` block and related helpers from `extension.test.ts`
 - Move `createMockTerminalBindingManager` helper if only used by RangeLinkService tests
@@ -1345,6 +1368,7 @@ src/
 - Ensure all 130 tests still pass
 
 **Done when:**
+
 - `RangeLinkService.test.ts` exists with ~1116 lines of tests
 - `extension.test.ts` reduced to ~2070 lines (config, lifecycle, portable link tests)
 - All tests pass with same coverage
