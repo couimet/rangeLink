@@ -28,6 +28,13 @@ RangeLink is a tool for generating and navigating code location links with suppo
   - TypeScript convention: optional/absent values are `undefined`
   - Lighter: `field: Type | undefined;` (implicit initialization)
   - Avoid: `field: Type | null = null;` (explicit, heavier)
+- **Proactive module extraction** - Extract to standalone module WITHOUT being asked when:
+  - Function exceeds 50 lines, OR
+  - Function has 3+ dependencies (hard to test), OR
+  - Logic mixes concerns (e.g., UI + business logic)
+  - Place in: `/utils/` (pure utilities), `/services/` (business logic), or root `/src/` (feature-specific)
+  - Always use arrow function exports with JSDoc
+  - Apply SOLID principles by default (Single Responsibility, minimal dependencies)
 - Prefer functional error handling with `Result<T, E>` type
 - Use custom Jest matchers for Result testing (`toBeOkWith`, `toBeErrWith`)
 - Always use `.toStrictEqual()` for test assertions (not `.toEqual()`)
@@ -69,7 +76,8 @@ RangeLink is a tool for generating and navigating code location links with suppo
 By default, **remove all code snippets** when moving to JOURNEY.md:
 
 - The commit contains the implementation - JOURNEY is for context/decisions, not code
-- Exception: Keep code ONLY when it illustrates a key architectural decision or you are explicitly prompted to
+- Exception: Keep code ONLY when it illustrates a key architectural decision
+- Keep interface definitions or API shapes that explain "why", not "what"
 
 ### General Documentation
 
