@@ -1,6 +1,6 @@
 # RangeLink Roadmap
 
-*Future development plans and in-progress work.*
+_Future development plans and in-progress work._
 
 > **Looking for completed work?** See [JOURNEY.md](./JOURNEY.md)
 >
@@ -925,6 +925,7 @@ The Claude Code extension in your IDE is limited to a **single selection** at a 
 **Example:**
 
 Instead of copying/pasting 3 separate snippets, generate one RangeLink with:
+
 - Function definition (`#L10-L25`)
 - Test case (`#L50-L75`)
 - Error handling (`#L100-L120`)
@@ -960,6 +961,7 @@ Your AI assistant sees the full picture.
 **Current state:**
 
 `Selection` interface (packages/rangelink-core-ts/src/types/Selection.ts#L42-L45):
+
 ```typescript
 export interface Selection {
   readonly startLine: number;
@@ -971,6 +973,7 @@ export interface Selection {
 ```
 
 `Position` interface (packages/rangelink-core-ts/src/types/Position.ts):
+
 ```typescript
 export interface Position {
   line: number;
@@ -1034,6 +1037,7 @@ export interface Selection {
 **Total Time:** ~4.5 hours (1 prerequisite + 7 micro-iterations)
 
 **Why This Matters:** Completes the AI workflow loop:
+
 1. Generate link → Terminal binding sends to claude-code
 2. claude-code responds with code reference
 3. **Click link in terminal → Jump to code** ← THIS
@@ -1047,6 +1051,7 @@ export interface Selection {
 **Build:** `packages/rangelink-core-ts/src/parsing/parseLink.ts`
 
 **What it does:**
+
 ```typescript
 // Input: "src/auth.ts#L42C10-L58C25"
 // Output: {
@@ -1058,6 +1063,7 @@ export interface Selection {
 ```
 
 **Formats to support:**
+
 - `#L10` (single line)
 - `#L10-L20` (multi-line)
 - `#L10C5-L20C10` (with columns)
@@ -1109,10 +1115,12 @@ export enum RangeLinkMessageCode {
    - To: `expect(error).toStrictEqual(RangeLinkMessageCode.PARSE_ERR_EMPTY_LINK)`
 
 **Tests:**
+
 - All existing tests should pass with enum-based assertions
 - Coverage remains 100%
 
 **Done when:**
+
 - All parsing errors use RangeLinkMessageCode
 - Tests validate error codes (not strings)
 - 100% test coverage maintained
@@ -1179,11 +1187,13 @@ const computedSelection: ComputedSelection = {
 3. Update all tests to expect richer interface
 
 **Benefits:**
+
 - Symmetry with `FormattedLink` (generation ↔ parsing)
 - Enables round-trip testing (generate → parse → generate)
 - Provides full context for navigation and validation
 
 **Done when:**
+
 - `ParsedLink` includes all metadata fields
 - Tests validate complete parsed structure
 - 100% coverage maintained
@@ -1203,10 +1213,10 @@ const computedSelection: ComputedSelection = {
 ```typescript
 export const parseLink = (
   link: string,
-  delimiters: DelimiterConfig = DEFAULT_DELIMITERS
+  delimiters: DelimiterConfig = DEFAULT_DELIMITERS,
 ): Result<ParsedLink, RangeLinkMessageCode> => {
   // Use delimiters.hash, delimiters.line, delimiters.position, delimiters.range
-}
+};
 ```
 
 2. Update regex pattern to use delimiter config:
@@ -1223,11 +1233,13 @@ parseLink('file.ts@line10col5..line20col10', customDelimiters);
 ```
 
 **Key challenges:**
+
 - Multi-character delimiter support (e.g., `hash: "##"` for regular links)
 - Regex escaping for special characters
 - Rectangular mode detection with custom hash delimiter
 
 **Tests:**
+
 - Parse with default delimiters (existing tests pass)
 - Parse with single-character custom delimiters
 - Parse with multi-character custom delimiters
@@ -1235,6 +1247,7 @@ parseLink('file.ts@line10col5..line20col10', customDelimiters);
 - Edge case: `delimHash="#"` regular vs `delimHash="##"` (rectangular uses 4 hashes)
 
 **Done when:**
+
 - Parser accepts optional `DelimiterConfig` parameter
 - All delimiter characters are configurable
 - Tests cover default and custom delimiter scenarios
@@ -1255,13 +1268,15 @@ describe('Round-trip integration', () => {
   describe('Generate → Parse → Generate', () => {
     it('should produce identical link for single-line selection', () => {
       const inputSelection: InputSelection = {
-        selections: [{
-          startLine: 10,
-          startCharacter: 0,
-          endLine: 10,
-          endCharacter: 0,
-          coverage: SelectionCoverage.FullLine,
-        }],
+        selections: [
+          {
+            startLine: 10,
+            startCharacter: 0,
+            endLine: 10,
+            endCharacter: 0,
+            coverage: SelectionCoverage.FullLine,
+          },
+        ],
         selectionType: SelectionType.Normal,
       };
 
@@ -1278,7 +1293,7 @@ describe('Round-trip integration', () => {
       const regenerated = formatLink(
         parsed.value.path,
         toInputSelection(parsed.value.computedSelection),
-        parsed.value.delimiters
+        parsed.value.delimiters,
       );
 
       expect(regenerated.value.link).toStrictEqual(originalLink);
@@ -1297,7 +1312,7 @@ describe('Round-trip integration', () => {
       const formatted = formatLink(
         parsed1.value.path,
         toInputSelection(parsed1.value.computedSelection),
-        parsed1.value.delimiters
+        parsed1.value.delimiters,
       );
 
       // Re-parse
@@ -1320,12 +1335,14 @@ describe('Round-trip integration', () => {
 3. Create helper: `toInputSelection(computedSelection: ComputedSelection): InputSelection`
 
 **Edge cases to test:**
+
 - Line-only vs with-positions round-trip
 - Rectangular mode preservation
 - Custom delimiter round-trip
 - Zero-indexed to one-indexed conversion correctness
 
 **Done when:**
+
 - Generate → Parse → Generate preserves original link
 - Parse → Generate → Parse preserves parsed structure
 - All link formats tested
@@ -1343,6 +1360,7 @@ describe('Round-trip integration', () => {
 **Key challenge:** Distinguish RangeLinks from GitHub URLs
 
 **Solution:**
+
 ```typescript
 // RangeLink: starts with ./ or / or word chars (no protocol)
 // GitHub URL: starts with http:// or https://
@@ -1350,6 +1368,7 @@ const rangeLinkPattern = /(?<!https?:\/\/[^\s]*)([\w\./\\-]+\.[\w]+)(#{1,2})L\d+
 ```
 
 **Tests:**
+
 - ✅ Matches valid RangeLinks
 - ✅ Ignores GitHub URLs
 - ✅ Handles workspace-relative paths (`./src/file.ts`)
@@ -1367,16 +1386,17 @@ const rangeLinkPattern = /(?<!https?:\/\/[^\s]*)([\w\./\\-]+\.[\w]+)(#{1,2})L\d+
 **What:** Minimal provider that detects links but doesn't navigate yet
 
 **Implementation:**
+
 ```typescript
 export class RangeLinkTerminalProvider implements vscode.TerminalLinkProvider {
   provideTerminalLinks(
     context: vscode.TerminalLinkContext,
-    token: vscode.CancellationToken
+    token: vscode.CancellationToken,
   ): vscode.ProviderResult<RangeLinkTerminalLink[]> {
     const line = context.line;
     const matches = detectRangeLinkPatterns(line); // From 3.1
 
-    return matches.map(match => ({
+    return matches.map((match) => ({
       startIndex: match.start,
       length: match.end - match.start,
       tooltip: 'Open in editor',
@@ -1393,13 +1413,15 @@ export class RangeLinkTerminalProvider implements vscode.TerminalLinkProvider {
 ```
 
 **Register in `extension.ts`:**
+
 ```typescript
 context.subscriptions.push(
-  vscode.window.registerTerminalLinkProvider(new RangeLinkTerminalProvider())
+  vscode.window.registerTerminalLinkProvider(new RangeLinkTerminalProvider()),
 );
 ```
 
 **Done when:**
+
 - Links appear in terminal (underlined/hoverable)
 - Click shows info message
 - No navigation yet (that's next!)
@@ -1413,12 +1435,14 @@ context.subscriptions.push(
 **What:** Given a path from link, resolve to actual file URI
 
 **Complexity:**
+
 - Workspace-relative: `src/file.ts` → `/Users/name/project/src/file.ts`
 - Already absolute: `/Users/name/project/src/file.ts` → use as-is
 - Multi-folder workspace: which folder?
 - File doesn't exist: error handling
 
 **Tests:**
+
 - ✅ Absolute paths resolve correctly
 - ✅ Workspace-relative paths resolve
 - ✅ Multi-folder workspace (tries each)
@@ -1436,6 +1460,7 @@ context.subscriptions.push(
 **What:** Navigate to file and select range (single-line only for now)
 
 **Tests:**
+
 - ✅ Opens file
 - ✅ Selects correct line
 - ✅ Reveals in viewport
@@ -1450,6 +1475,7 @@ context.subscriptions.push(
 **What:** Support multi-line ranges and column precision
 
 **Tests:**
+
 - ✅ `#L10-L20` selects lines 10-20
 - ✅ `#L10C5-L20C15` selects with column precision
 - ✅ `#L10` selects single line
@@ -1466,6 +1492,7 @@ context.subscriptions.push(
 **Challenge:** VSCode doesn't have native "rectangular selection" API. Need to create multiple cursors.
 
 **Tests:**
+
 - ✅ `##L10C5-L20C10` creates multi-cursor
 - ✅ Each line selected from column 5 to 10
 - ✅ Viewport shows first selection
@@ -1479,17 +1506,20 @@ context.subscriptions.push(
 **What:** Comprehensive error handling and user feedback
 
 **Error scenarios:**
+
 1. File not found
 2. Invalid link format
 3. Line out of range (clamp to document bounds)
 4. Column out of range (clamp to line length)
 
 **Logging:**
+
 - All navigation attempts (success/failure)
 - User actions (which links clicked)
 - Performance (time to open file)
 
 **Done when:**
+
 - Robust error handling
 - Clear user feedback
 - Comprehensive logging
@@ -1499,16 +1529,19 @@ context.subscriptions.push(
 ### Testing Strategy
 
 **Unit Tests:**
+
 - Pattern detection (3.1)
 - Path resolution (3.3)
 - Selection creation logic
 
 **Integration Tests:**
+
 - Mock terminal context
 - Mock file system
 - Verify end-to-end flow
 
 **Manual Testing Checklist:**
+
 - [ ] Generate link with terminal binding
 - [ ] claude-code prints link in response
 - [ ] Link is underlined/hoverable

@@ -1,6 +1,6 @@
 # RangeLink Journey
 
-*A chronological record of completed work, decisions, and milestones.*
+_A chronological record of completed work, decisions, and milestones._
 
 > **Looking for future plans?** See [ROADMAP.md](./ROADMAP.md)
 >

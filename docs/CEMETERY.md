@@ -1,6 +1,6 @@
 # The Feature Cemetery 🪦
 
-*"Where good ideas come to rest in peace"*
+_"Where good ideas come to rest in peace"_
 
 > Looking for a feature you can't find in the [Roadmap](./ROADMAP.md)? It might be here. We honor these fallen friends — rejected not from cruelty, but from wisdom.
 >
@@ -16,11 +16,12 @@
 
 ### Epitaph
 
-*"I wanted to remember your links, but Alfred already does."*
+_"I wanted to remember your links, but Alfred already does."_
 
 ### The Dream
 
 A command to show recently generated RangeLinks with:
+
 - Quick pick with fuzzy search
 - Last 10-20 links
 - Select to copy or resend to terminal
@@ -29,6 +30,7 @@ A command to show recently generated RangeLinks with:
 ### Why It Failed
 
 OS-level clipboard managers already do this **better**:
+
 - ✅ Universal clipboard history (not just RangeLinks)
 - ✅ Fuzzy search that Actually Works™
 - ✅ Sync across devices
