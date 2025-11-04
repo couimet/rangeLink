@@ -1162,6 +1162,45 @@ default: {
 
 ---
 
+### 4.5E) Extract RangeLinkService Tests to Separate File (45 minutes)
+
+**Problem:** `RangeLinkService` class was extracted to `RangeLinkService.ts` but its 1116 lines of tests remain in `extension.test.ts` (lines 129-1244)
+
+**Goal:** Test file structure should mirror source file structure
+
+**Current structure:**
+```
+src/
+  extension.ts
+  RangeLinkService.ts              ← Extracted
+  __tests__/
+    extension.test.ts               ← Contains RangeLinkService tests (1116 lines)
+```
+
+**Target structure:**
+```
+src/
+  extension.ts
+  RangeLinkService.ts
+  __tests__/
+    extension.test.ts               ← Config, lifecycle tests only
+    RangeLinkService.test.ts        ← Dedicated test file for service
+```
+
+**Changes:**
+- Create `__tests__/RangeLinkService.test.ts`
+- Move `describe('RangeLinkService', ...)` block and related helpers from `extension.test.ts`
+- Move `createMockTerminalBindingManager` helper if only used by RangeLinkService tests
+- Update imports in extracted test file
+- Ensure all 130 tests still pass
+
+**Done when:**
+- `RangeLinkService.test.ts` exists with ~1116 lines of tests
+- `extension.test.ts` reduced to ~2070 lines (config, lifecycle, portable link tests)
+- All tests pass with same coverage
+
+---
+
 ## Phase 5: Navigation Features — 📋 Planned
 
 Navigate to code using RangeLinks (local workspace and BYOD).
