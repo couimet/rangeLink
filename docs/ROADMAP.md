@@ -888,69 +888,15 @@ src/
 
 Critical items for marketplace launch and user adoption. These should be tackled soon to improve user experience and reduce friction.
 
-### 4.6A) Keybinding Conflict Detection (Post-Install Hook) (2 hours) — 📋 High Priority
+### 4.6A) Keybinding Conflict Detection — 🪦 Abandoned
 
-**Goal:** Notify users if RangeLink's keybindings conflict with existing extensions, suggest how to reconfigure.
+**Status:** Abandoned due to fundamental VSCode API limitations.
 
-**Problem:** `CMD+R CMD+L` keybinding is already registered in Cursor (unclear if default or from another extension). Users can't use RangeLink's mnemonic keybindings without manual intervention.
+**Why abandoned:** VSCode does not expose APIs to programmatically detect keybinding conflicts. GitHub issue #162433 requesting this capability was closed as "not planned". Implementation would show warnings without actual detection, creating noise rather than value.
 
-**Questions to investigate:**
+**See:** [CEMETERY.md](./CEMETERY.md#phase-46a-keybinding-conflict-awareness-notification-abandoned-2025-01-04) for full implementation, rationale, and lessons learned.
 
-1. **Does VSCode have a post-install hook?**
-   - `packages/rangelink-vscode-extension/src/extension.ts#L173` is the activation hook
-   - Need equivalent that runs once after installation
-   - Research: `onStartupFinished`, `globalState`, or activation timing
-
-2. **Can we detect keybinding conflicts programmatically?**
-   - Check `vscode.commands.getAll()` or keybinding registry
-   - Compare against our registered keybindings
-   - Identify conflicting extensions
-
-**Proposed solution:**
-
-```typescript
-// Check on first activation after install
-export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  const hasShownWelcome = context.globalState.get<boolean>('rangelink.welcomeShown');
-
-  if (!hasShownWelcome) {
-    await checkKeybindingConflicts(context);
-    await context.globalState.update('rangelink.welcomeShown', true);
-  }
-
-  // ... rest of activation
-}
-
-async function checkKeybindingConflicts(context: vscode.ExtensionContext): Promise<void> {
-  // Detect if CMD+R CMD+L is already bound
-  // Show notification with:
-  // - "RangeLink detected keybinding conflicts"
-  // - Action buttons: "View Conflicts", "Auto-fix", "Dismiss"
-  // - Link to keybinding settings
-}
-```
-
-**User experience:**
-
-1. Install RangeLink from marketplace
-2. First activation: notification appears if conflicts detected
-3. User clicks "View Conflicts" → opens keybinding UI with RangeLink keys highlighted
-4. User clicks "Auto-fix" → RangeLink unregisters conflicting keys, suggests alternatives
-5. User clicks "Dismiss" → saved in globalState, never shows again
-
-**Research tasks:**
-
-- [ ] Investigate VSCode extension lifecycle hooks
-- [ ] Test keybinding detection APIs
-- [ ] Design notification UX (non-intrusive, helpful)
-- [ ] Handle Cursor vs VSCode differences
-
-**Done when:**
-
-- Post-install notification detects keybinding conflicts
-- User can view conflicts and auto-fix them
-- Welcome message shown only once per install
-- Works in both VSCode and Cursor
+**Alternative:** Document keybinding conflicts in README with manual resolution steps.
 
 ---
 
