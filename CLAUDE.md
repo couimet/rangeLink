@@ -47,6 +47,24 @@ RangeLink is a tool for generating and navigating code location links with suppo
 
 ## Documentation
 
-- Update ROADMAP.md when completing phases
+### ROADMAP and JOURNEY Maintenance
+
+**When completing work items:**
+
+1. **Mark as complete in ROADMAP.md** first (change status to ✅ Complete)
+2. **After user commits**, move completed sections to JOURNEY.md:
+   - Copy entire completed section (with all context, tasks, deliverables)
+   - Preserve completion status and rationale
+   - Remove from ROADMAP.md
+   - Update ROADMAP.md with summary: `**Completed:** [brief list] (see JOURNEY.md for details)`
+3. **Don't batch moves** - move items to JOURNEY after each phase completes (keeps ROADMAP lean)
+
+**Examples:**
+
+- Phase 1A complete → Mark ✅ in ROADMAP → User commits → Move full section to JOURNEY → Update ROADMAP
+- Phase 4E-4I complete → Mark all ✅ → User commits → Move to JOURNEY → Add summary line in ROADMAP Phase 4
+
+### General Documentation
+
 - Document architectural decisions/ADRs in relevant docs/ files
 - Keep commit messages detailed -- yet concise -- with motivation, changes, and benefits
