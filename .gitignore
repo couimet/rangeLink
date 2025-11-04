@@ -28,3 +28,6 @@ packages/*/icon_large.png
 
 # Commit message drafts (managed by Claude Code)
 .commit-msgs/
+
+# Claude config
+.claude/settings.local.json
