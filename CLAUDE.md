@@ -64,6 +64,13 @@ RangeLink is a tool for generating and navigating code location links with suppo
 - Phase 1A complete → Mark ✅ in ROADMAP → User commits → Move full section to JOURNEY → Update ROADMAP
 - Phase 4E-4I complete → Mark all ✅ → User commits → Move to JOURNEY → Add summary line in ROADMAP Phase 4
 
+**Code snippet handling:**
+
+By default, **remove all code snippets** when moving to JOURNEY.md:
+
+- The commit contains the implementation - JOURNEY is for context/decisions, not code
+- Exception: Keep code ONLY when it illustrates a key architectural decision or you are explicitly prompted to
+
 ### General Documentation
 
 - Document architectural decisions/ADRs in relevant docs/ files
