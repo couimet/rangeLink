@@ -73,11 +73,12 @@ describe('RangeLinkTerminalProvider', () => {
       // Act
       await provider.handleTerminalLink(link);
 
-      // Assert: Logger should receive the full link object
+      // Assert: Logger should receive linkText in logCtx plus full link object
       expect(mockLogger.warn).toHaveBeenCalledTimes(1);
       const warnCall = (mockLogger.warn as jest.Mock).mock.calls[0];
       expect(warnCall[0]).toStrictEqual({
         fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+        linkText: 'file.ts#L0',
         link,
       });
       expect(warnCall[1]).toStrictEqual(
@@ -112,10 +113,11 @@ describe('RangeLinkTerminalProvider', () => {
       await provider.handleTerminalLink(link);
 
       // Assert: Should pass the safety net check and attempt navigation
+      // Logger should now include linkText in logCtx
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkTerminalProvider.handleTerminalLink',
-          link: 'file.ts#L10',
+          linkText: 'file.ts#L10',
           parsed: link.parsed,
         },
         'Terminal link clicked - attempting navigation',

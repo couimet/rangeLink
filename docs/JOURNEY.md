@@ -1875,7 +1875,21 @@ All scenarios detected links correctly with accurate capture groups.
     - Removed test for undefined case
     - **Result:** Clickability indicates validity - better UX
 
-**Time Taken:** 1 hour 25 minutes (1h implementation + 15m bug fix 1 + 10m bug fix 2)
+15. **Logging Improvement: Consistent logCtx Pattern** (ad-hoc improvement, 5 min)
+    - **Context:** Encountered bug during manual testing - needed better log visibility
+    - **Problem:** Logs in `handleTerminalLink()` weren't consistently including `linkText`
+    - Made debugging difficult when investigating terminal link navigation issues
+    - **Solution:** Introduced `logCtx` pattern at function start
+    - Created `logCtx = { fn: '...', linkText }` early in function
+    - All logging statements now spread `logCtx` for consistent context
+    - **Benefits:**
+      - Every log now includes the clicked link text for full traceability
+      - Easier to correlate logs when debugging multi-step navigation
+      - Consistent pattern enables LLM-assisted debugging (Claude reads logs better)
+      - No performance cost - just object spreading
+    - **Updated tests:** Added `linkText` expectations in all log assertions
+
+**Time Taken:** 1 hour 25 minutes (1h implementation + 15m bug fix 1 + 10m bug fix 2) + 5m logging improvement
 
 ---
 

@@ -144,6 +144,7 @@ export class RangeLinkTerminalProvider
    */
   async handleTerminalLink(link: RangeLinkTerminalLink): Promise<void> {
     const linkText = link.data;
+    const logCtx = { fn: 'RangeLinkTerminalProvider.handleTerminalLink', linkText };
 
     // Safety net: Validate link was successfully parsed
     // (Should never happen since provideTerminalLinks() filters these out,
@@ -151,7 +152,7 @@ export class RangeLinkTerminalProvider
     if (!link.parsed) {
       this.logger.warn(
         {
-          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          ...logCtx,
           link,
         },
         'Terminal link clicked but parse data missing (safety net triggered)',
@@ -167,8 +168,7 @@ export class RangeLinkTerminalProvider
 
     this.logger.info(
       {
-        fn: 'RangeLinkTerminalProvider.handleTerminalLink',
-        link: linkText,
+        ...logCtx,
         parsed: link.parsed,
       },
       'Terminal link clicked - attempting navigation',
@@ -179,8 +179,7 @@ export class RangeLinkTerminalProvider
     if (!fileUri) {
       this.logger.error(
         {
-          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
-          link: linkText,
+          ...logCtx,
           path,
         },
         'File not found',
@@ -197,8 +196,7 @@ export class RangeLinkTerminalProvider
     } catch (error) {
       this.logger.error(
         {
-          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
-          link: linkText,
+          ...logCtx,
           path,
           error,
         },
@@ -233,7 +231,7 @@ export class RangeLinkTerminalProvider
 
       this.logger.debug(
         {
-          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          ...logCtx,
           selectionType: 'Rectangular',
           selectionsCreated: selections.length,
           startLine: startPos.line + 1,
@@ -250,7 +248,7 @@ export class RangeLinkTerminalProvider
 
       this.logger.debug(
         {
-          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          ...logCtx,
           selectionType: 'Normal',
           startPos: `${startPos.line + 1}:${startPos.character + 1}`,
           endPos: `${endPos.line + 1}:${endPos.character + 1}`,
@@ -273,8 +271,7 @@ export class RangeLinkTerminalProvider
 
     this.logger.info(
       {
-        fn: 'RangeLinkTerminalProvider.handleTerminalLink',
-        link: linkText,
+        ...logCtx,
         path,
         selectionsApplied: selections.length,
       },
