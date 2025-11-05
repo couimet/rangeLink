@@ -140,6 +140,124 @@ Today, with **terminal binding**, RangeLink sends links directly to your claude-
 
 **The best part?** Your teammates don't even need RangeLink installed to understand your links. The notation is GitHub-inspired — developers already know it.
 
+<details>
+<summary><b>🕰️ The Original POC (Memorabilia)</b></summary>
+
+Before RangeLink became what it is today, it started as a rough-and-ready VS Code extension with just two files. Here's where it all began:
+
+**package.json:**
+
+```json
+{
+  "name": "copy-reference",
+  "displayName": "Copy GitHub Reference",
+  "description": "Copy GitHub-style file references with line and column numbers",
+  "version": "0.1.0",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": ["Other"],
+  "main": "./extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "copyReference.copy",
+        "title": "Copy GitHub-style Reference",
+        "category": "Copy"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "copyReference.copy",
+        "key": "cmd+shift+l",
+        "mac": "cmd+shift+l",
+        "win": "ctrl+shift+l",
+        "linux": "ctrl+shift+l",
+        "when": "editorTextFocus"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorTextFocus",
+          "command": "copyReference.copy",
+          "group": "9_cutcopypaste@4"
+        }
+      ]
+    }
+  }
+}
+```
+
+**extension.js:**
+
+```javascript
+const vscode = require('vscode');
+
+function activate(context) {
+  let disposable = vscode.commands.registerCommand('copyReference.copy', () => {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage('No active editor');
+      return;
+    }
+
+    const selection = editor.selection;
+    const document = editor.document;
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+
+    // Get relative path from workspace root
+    const relativePath = workspaceFolder
+      ? document.uri.path.substring(workspaceFolder.uri.path.length + 1)
+      : vscode.workspace.asRelativeUri(document.uri).path;
+
+    const startLine = selection.start.line + 1;
+    const startChar = selection.start.character + 1;
+    const endLine = selection.end.line + 1;
+    const endChar = selection.end.character + 1;
+
+    // Format: path/to/file.rb#L1C1-L2C10
+    let reference;
+    if (selection.isEmpty) {
+      // Just cursor position, no selection
+      reference = `${relativePath}:${startLine}`;
+    } else if (startLine === endLine && startChar === 1 && endChar > startChar) {
+      // Full line selection - use simple format
+      reference = `${relativePath}:${startLine}`;
+    } else if (startLine === endLine) {
+      // Single line selection with specific columns
+      reference = `${relativePath}#L${startLine}C${startChar}-L${endLine}C${endChar}`;
+    } else {
+      // Multi-line selection
+      reference = `${relativePath}#L${startLine}C${startChar}-L${endLine}C${endChar}`;
+    }
+
+    vscode.env.clipboard.writeText(reference);
+
+    // Show a subtle notification
+    vscode.window.setStatusBarMessage(`📋 Copied: ${reference}`, 3000);
+
+    // Optional: Also show as information message (can be disabled if too intrusive)
+    // vscode.window.showInformationMessage(`Copied: ${reference}`);
+  });
+
+  context.subscriptions.push(disposable);
+}
+
+function deactivate() {}
+
+module.exports = {
+  activate,
+  deactivate,
+};
+```
+
+From this humble beginning, RangeLink evolved into a comprehensive monorepo with a platform-agnostic core library, comprehensive testing, structured error handling, portable BYOD links, and support for advanced features like rectangular selections.
+
+</details>
+
 ## About the Logo
 
 Ever notice the chicken in our logo? That's not just any chicken — it's a **free-range** chicken. Because your code should roam free across editors, tools, and teams. No fences, no boundaries. 🐔
