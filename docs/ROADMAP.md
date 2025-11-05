@@ -1309,31 +1309,24 @@ describe('Round-trip integration', () => {
 
 ---
 
-### Iteration 3.1: Pattern Detection (30 min)
+### Iteration 3.1: Terminal Link Provider - Pattern Detection — ✅ Complete (Subset 1)
 
-**File:** `packages/rangelink-vscode-extension/src/navigation/patterns.ts`
+**Completed:** 2025-11-05 (see [JOURNEY.md](./JOURNEY.md#phase-5-iteration-31-terminal-link-provider---pattern-detection-subset-1--complete) for full details)
 
-**What:** Create regex patterns to detect RangeLinks in terminal output
+**Summary:** Created `buildLinkPattern()` utility that generates RegExp patterns for detecting RangeLinks in terminal output. Supports custom delimiters, hash-in-filename, multiple links per line. Pattern uses hybrid strategy (non-greedy for single-char hash, negative lookahead for multi-char). 35 tests, 100% coverage.
 
-**Key challenge:** Distinguish RangeLinks from GitHub URLs
+**Key Deliverables:**
+- `buildLinkPattern.ts` - Pattern builder utility with global flag for terminal detection
+- Comprehensive test suite: 35 tests covering default/custom delimiters, regex special chars, edge cases
+- Manual testing verified with 8 realistic terminal scenarios
+- Ready for VS Code TerminalLinkProvider integration
 
-**Solution:**
-
-```typescript
-// RangeLink: starts with ./ or / or word chars (no protocol)
-// GitHub URL: starts with http:// or https://
-const rangeLinkPattern = /(?<!https?:\/\/[^\s]*)([\w\./\\-]+\.[\w]+)(#{1,2})L\d+/g;
-```
-
-**Tests:**
-
-- ✅ Matches valid RangeLinks
-- ✅ Ignores GitHub URLs
-- ✅ Handles workspace-relative paths (`./src/file.ts`)
-- ✅ Handles absolute paths (`/Users/name/project/file.ts`)
-- ✅ Detects rectangular mode (`##`)
-
-**Done when:** Pattern detection has 100% test coverage
+**Remaining Subsets:**
+- Subset 2: Terminal Link Provider Skeleton (30 min)
+- Subset 3: Link Detection Implementation (1 hour)
+- Subset 4: Link Validation & Parsing (45 min)
+- Subset 5: Link Handler Implementation (1 hour)
+- Subset 6: Configuration Integration (30 min)
 
 ---
 

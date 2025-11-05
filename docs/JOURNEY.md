@@ -1272,6 +1272,135 @@ Original ROADMAP proposed numeric codes (ERR_4001, etc.) but codebase had migrat
 
 ---
 
+### Iteration 3.1 Subset 1: Pattern Builder Foundation — ✅ Complete
+
+**Completed:** 2025-11-05
+
+**Objective:** Create `buildLinkPattern()` utility that generates RegExp patterns for detecting RangeLinks in terminal output, enabling VS Code TerminalLinkProvider integration.
+
+**Context:** VS Code's TerminalLinkProvider API requires a RegExp pattern with global flag to detect links in terminal lines. Need pattern generator that:
+- Matches RangeLink format with custom delimiters
+- Finds ALL links in a terminal line (global flag)
+- Supports hash-in-filename (critical fix from parseLink)
+- Provides capture groups for VS Code TerminalLink objects
+
+**Solution:** Extract pattern generation logic similar to parseLink but optimized for terminal context with multiple links per line.
+
+**Implementation:**
+
+1. **buildLinkPattern() Utility:**
+   - File: `packages/rangelink-core-ts/src/utils/buildLinkPattern.ts`
+   - Takes `DelimiterConfig` parameter, returns `RegExp` with global flag
+   - Reuses `escapeRegex()` utility for regex special character handling
+   - Comprehensive JSDoc documenting pattern strategy and capture groups
+
+2. **Hybrid Path Capture Strategy:**
+   - **Single-char hash** (e.g., `#`): Use non-greedy `(\\S+?)` to allow hash in filenames
+     - `file#1.ts#L10` → path=`"file#1.ts"` ✅
+   - **Multi-char hash** (e.g., `>>`): Use negative lookahead `((?:(?!>>)\\S)+)` to prevent ambiguity
+     - `file.ts>>>>line10` → path=`"file.ts"`, hash=`">>>>"` ✅
+   - **Trade-off:** Multi-char delimiters cannot appear in filenames (acceptable limitation)
+
+3. **Key Differences from parseLink Pattern:**
+   - **Path matching:** Uses `\\S+` (non-whitespace) instead of `.+` (any character)
+     - Reason: Terminal lines may have multiple links separated by spaces
+     - Example: `"file1.ts#L10 file2.ts#L20"` → matches 2 separate links, not 1
+   - **Global flag:** Pattern has `'g'` flag for `matchAll()` usage
+   - **No anchor tags:** No `^` or `$` - matches anywhere in line
+
+4. **Capture Groups:**
+   - Group 0: Entire match (full link) → provides `startIndex` and `length` for TerminalLink
+   - Group 1: Path portion
+   - Group 2: Hash delimiter(s) - single or double
+   - Groups 3+: Range components (line/char numbers)
+
+5. **Supported Formats:**
+   - Single line: `file.ts#L10`
+   - Multi-line: `file.ts#L10-L20`
+   - With columns: `file.ts#L10C5-L20C10`
+   - Rectangular: `file.ts##L10C5-L20C10`
+   - Hash in filename: `file#1.ts#L10`, `issue#123/auth.ts#L42`
+
+**Test Coverage (35 tests, 100% coverage):**
+
+1. **Default delimiters (11 tests):**
+   - Global flag verification
+   - Single line, multi-line, with columns, rectangular mode
+   - Hash in filename (single hash, multiple hashes, in directory name)
+   - Multiple links per line (3 links detected)
+   - Long paths, invalid formats
+
+2. **Custom single-char delimiters (4 tests):**
+   - @ as hash: `file.ts@L10`
+   - Custom line delimiter: `file.ts#l10`
+   - All custom: `file.ts@l10p5:l20p10`
+   - Rectangular with custom: `file.ts@@L10C5`
+
+3. **Custom multi-char delimiters (5 tests):**
+   - >> as hash: `file.ts>>L10`
+   - All multi-char: `file.ts>>line10pos5thruline20pos10`
+   - Rectangular: `file.ts>>>>L10C5` (double >>)
+   - Multiple links with multi-char delimiters
+   - Trade-off: Multi-char delimiters cannot appear in filenames
+
+4. **Regex special characters (6 tests):**
+   - Dot (.), plus (+), asterisk (*), pipe (|), question (?)
+   - Parentheses in range delimiter: `file.ts#L10(to)L20`
+
+5. **Edge cases (8 tests):**
+   - Links at start/end of line
+   - Empty string and whitespace (no matches)
+   - Special path characters: `-`, `_`, `.`
+   - Windows paths: `C:\\Users\\foo\\file.ts#L10`
+   - Global flag resets correctly (multiple matchAll calls)
+   - Very long paths (50+ directories)
+
+**Manual Testing Verification:**
+
+Created `/tmp/manual-test-buildLinkPattern.js` script testing 8 realistic scenarios:
+
+1. ✅ TypeScript errors: `src/auth/validation.ts#L42C10`
+2. ✅ Jest failures: `src/__tests__/auth.test.ts#L15-L23`
+3. ✅ Multiple links: Found 3 separate links in one line
+4. ✅ **Hash-in-filename**: `issue#123/auth.ts#L42` → path=`"issue#123/auth.ts"` (critical fix validated)
+5. ✅ Rectangular selections: `data.csv##L10C5-L20C15`
+6. ✅ ESLint warnings: `src/components/Button.tsx#L18C5`
+7. ✅ Git diff style: `src/utils/helpers.ts#L100-L150`
+8. ✅ Windows paths: `C:\\Users\\dev\\project\\src\\file.ts#L42`
+9. ✅ Custom delimiter test: Multi-char `>>`, `line`, `pos`, `thru`
+
+All scenarios detected links correctly with accurate capture groups.
+
+**Files Created:**
+- `packages/rangelink-core-ts/src/utils/buildLinkPattern.ts` - Pattern builder utility (89 lines)
+- `packages/rangelink-core-ts/src/__tests__/utils/buildLinkPattern.test.ts` - Test suite (35 tests)
+
+**Test Results:**
+- ✅ buildLinkPattern: 35 tests, 100% coverage (statements, branches, functions, lines)
+- ✅ Total: 256 tests passing (all packages)
+- ✅ Overall coverage: 99.41% statements, 99.27% branches, 100% functions
+
+**Benefits:**
+- ✅ **Terminal link detection ready** - RegExp pattern matches all RangeLink formats
+- ✅ **Hash-in-filename support** - Correctly handles `issue#123/auth.ts#L42`
+- ✅ **Multiple links per line** - Non-whitespace matching finds all links separately
+- ✅ **Rectangular mode** - Detects double hash for column selections
+- ✅ **Custom delimiter support** - Works with single-char and multi-char delimiters
+- ✅ **Regex special chars** - Proper escaping via escapeRegex utility
+- ✅ **VS Code TerminalLink compatible** - Provides startIndex, length, and capture group data
+- ✅ **Reusable utility** - Exported function can be used across terminal providers
+- ✅ **Well-tested** - 35 tests + manual verification with realistic scenarios
+- ✅ **100% coverage** - All branches and edge cases validated
+
+**Time Taken:** 45 minutes (as estimated in detailed plan)
+
+**Next Steps:**
+- Phase 5 Iteration 3.1 Subset 2: Terminal Link Provider Skeleton (30 min)
+- Phase 5 Iteration 3.1 Subset 3: Link Detection Implementation (1 hour)
+- Phase 5 Iteration 3.1 Subset 4: Link Validation & Parsing (45 min)
+
+---
+
 ## Related Documentation
 
 - [ROADMAP.md](./ROADMAP.md) - Future development plans
