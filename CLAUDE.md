@@ -40,6 +40,28 @@ RangeLink is a tool for generating and navigating code location links with suppo
 - Always use `.toStrictEqual()` for test assertions (not `.toEqual()`)
 - Comprehensive JSDoc comments for public APIs
 - Internal validation functions throw exceptions, public APIs catch and return Result
+- **Log optional parameter usage explicitly:**
+  - Use optional params (`param?: Type`) instead of default values when you need to track usage
+  - When param not provided: Log at DEBUG level "No [param] provided, using [DEFAULT]"
+  - When param provided: Log "Using provided [param]"
+  - Include the resolved value in log context for traceability
+  - Example:
+    ```typescript
+    export const parseLink = (link: string, delimiters?: DelimiterConfig): Result<...> => {
+      const useFallback = delimiters === undefined;
+      const activeDelimiters = useFallback ? DEFAULT_DELIMITERS : delimiters;
+
+      if (useFallback) {
+        logger.debug({ fn: 'parseLink', delimiters: activeDelimiters },
+          'No delimiter config provided, using DEFAULT_DELIMITERS');
+      } else {
+        logger.debug({ fn: 'parseLink', delimiters: activeDelimiters },
+          'Using provided delimiter config');
+      }
+      // ... use activeDelimiters everywhere
+    }
+    ```
+  - Rationale: Makes it clear in logs whether defaults were used vs custom config provided
 
 ## Testing Requirements
 
