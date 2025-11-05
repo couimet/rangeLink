@@ -181,6 +181,9 @@ export function activate(context: vscode.ExtensionContext): void {
   const terminalBindingManager = new TerminalBindingManager(context);
   const service = new RangeLinkService(delimiters, terminalBindingManager);
 
+  // Register terminalBindingManager for automatic disposal on deactivation
+  context.subscriptions.push(terminalBindingManager);
+
   // Register commands
   context.subscriptions.push(
     vscode.commands.registerCommand('rangelink.copyLinkToSelectionWithRelativePath', () =>

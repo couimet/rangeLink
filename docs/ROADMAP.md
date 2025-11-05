@@ -792,52 +792,13 @@ function logActivation(): void {
 
 ---
 
-### 4.5G) Fix TerminalBindingManager Resource Leak (5 minutes) 🐛
+### 4.5G) Fix TerminalBindingManager Resource Leak — ✅ Complete
 
-**Problem:** `TerminalBindingManager` has a `dispose()` method but it's never called - **resource leak!**
+**Completed:** 2025-11-05
 
-**Root cause:**
+**Summary:** Fixed resource leak by adding `context.subscriptions.push(terminalBindingManager)` to ensure VSCode automatically calls `dispose()` on deactivation. Terminal close event listeners are now properly cleaned up.
 
-- `terminalBindingManager` created as local variable in `activate()`
-- Never added to `context.subscriptions`
-- `deactivate()` has no reference to clean it up
-- Terminal close event listener never disposed
-
-**Current code:**
-
-```typescript
-export function activate(context: vscode.ExtensionContext): void {
-  const terminalBindingManager = new TerminalBindingManager(context);
-  // ← Not added to context.subscriptions!
-}
-
-export function deactivate(): void {
-  // Cleanup if needed  ← Can't access terminalBindingManager
-}
-```
-
-**Fix:**
-
-```typescript
-export function activate(context: vscode.ExtensionContext): void {
-  const terminalBindingManager = new TerminalBindingManager(context);
-  context.subscriptions.push(terminalBindingManager); // ← Add this line!
-  // VSCode will auto-call dispose() on deactivation
-}
-
-export function deactivate(): void {
-  // VSCode automatically disposes all items in context.subscriptions
-  // No manual cleanup needed
-}
-```
-
-**Changes:**
-
-- Add `context.subscriptions.push(terminalBindingManager)` in `activate()`
-- Document that VSCode handles cleanup automatically
-- Consider: Remove empty `deactivate()` function (optional, but it's valid to keep it)
-
-**Done when:** `terminalBindingManager.dispose()` is called when extension deactivates
+**See [JOURNEY.md](./JOURNEY.md#phase-45g-fix-terminalbindingmanager-resource-leak--complete) for full details.**
 
 ---
 

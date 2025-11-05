@@ -764,6 +764,72 @@ When i18n is implemented, `RangeLinkMessageCode` will achieve natural test cover
 
 ---
 
+## Phase 4.5G: Fix TerminalBindingManager Resource Leak — ✅ Complete
+
+**Completed:** 2025-11-05
+
+**Problem:** `TerminalBindingManager` has a `dispose()` method but it was never called when the extension deactivates, causing a resource leak. The terminal close event listener was never cleaned up, potentially causing memory leaks over time.
+
+**Root Cause:**
+
+- `terminalBindingManager` created as local variable in `activate()`
+- Never added to `context.subscriptions`
+- `deactivate()` had no reference to clean it up
+- Terminal close event listener never disposed
+
+**Before (Resource Leak):**
+
+```typescript
+export function activate(context: vscode.ExtensionContext): void {
+  const terminalBindingManager = new TerminalBindingManager(context);
+  // ← Not added to context.subscriptions!
+  const service = new RangeLinkService(delimiters, terminalBindingManager);
+  // ... commands registered ...
+}
+
+export function deactivate(): void {
+  // Cleanup if needed  ← Can't access terminalBindingManager
+}
+```
+
+**After (Fixed):**
+
+```typescript
+export function activate(context: vscode.ExtensionContext): void {
+  const terminalBindingManager = new TerminalBindingManager(context);
+  const service = new RangeLinkService(delimiters, terminalBindingManager);
+
+  // Register terminalBindingManager for automatic disposal on deactivation
+  context.subscriptions.push(terminalBindingManager);
+
+  // ... commands registered ...
+}
+
+export function deactivate(): void {
+  // VSCode automatically disposes all items in context.subscriptions
+  // No manual cleanup needed
+}
+```
+
+**The Fix:**
+
+Added one line: `context.subscriptions.push(terminalBindingManager);`
+
+This registers the terminalBindingManager with VSCode's subscription system. When the extension deactivates, VSCode automatically calls `dispose()` on all registered subscriptions, ensuring proper cleanup.
+
+**Files Modified:**
+
+- `packages/rangelink-vscode-extension/src/extension.ts` - Added terminalBindingManager to subscriptions (1 line)
+
+**Benefits:**
+
+- Proper resource cleanup on extension deactivation
+- No memory leaks from undisposed event listeners
+- Follows standard VSCode extension patterns
+- Zero risk - uses built-in VSCode disposal mechanism
+
+---
+
 ## Related Documentation
 
 - [ROADMAP.md](./ROADMAP.md) - Future development plans
