@@ -12,10 +12,14 @@ let logger: Logger = new NoOpLogger();
  * Set the global logger instance.
  * This should be called once at application startup.
  *
+ * Automatically confirms the logger is working by emitting a debug message.
+ *
  * @param newLogger The logger implementation to use
  */
 export function setLogger(newLogger: Logger): void {
   logger = newLogger;
+  // Confirm communication channel works immediately
+  logger.debug({ fn: 'setLogger' }, 'Logger initialized');
 }
 
 /**

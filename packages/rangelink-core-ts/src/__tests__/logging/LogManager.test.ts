@@ -41,4 +41,21 @@ describe('LogManager', () => {
     // Reset to default
     setLogger(new NoOpLogger());
   });
+
+  it('should call debug() immediately when logger is set to confirm initialization', () => {
+    const mockLogger: Logger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    };
+
+    setLogger(mockLogger);
+
+    // Verify debug was called immediately with initialization message
+    expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'setLogger' }, 'Logger initialized');
+
+    // Reset to default
+    setLogger(new NoOpLogger());
+  });
 });

@@ -3190,3 +3190,96 @@ describe('Extension lifecycle', () => {
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
   });
 });
+
+describe('Logger verification and communication channel', () => {
+  beforeEach(() => {
+    mockOutputChannel.appendLine.mockClear();
+  });
+
+  it('should confirm logger initialization by calling debug() when setLogger is called', () => {
+    const mockConfig = {
+      get: jest.fn((key: string, defaultValue: string) => defaultValue),
+      inspect: jest.fn(() => ({
+        globalValue: undefined,
+        workspaceValue: undefined,
+        workspaceFolderValue: undefined,
+      })),
+    };
+    mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
+
+    const context = { subscriptions: [] as any[] };
+    require('../extension').activate(context as any);
+
+    // Verify debug() was called during setLogger with initialization message
+    const debugCalls = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
+      call[0]?.includes('[DEBUG]'),
+    );
+    const initializationCall = debugCalls.find((call: string[]) =>
+      call[0]?.includes('Logger initialized'),
+    );
+
+    expect(initializationCall).toBeDefined();
+    expect(initializationCall[0]).toContain('setLogger');
+  });
+
+  it('should support pingLog() to exercise all logger levels', () => {
+    const { pingLog, setLogger } = require('rangelink-core-ts');
+    const { VSCodeLogger } = require('../VSCodeLogger');
+
+    // Create a fresh logger with our mock output channel
+    const logger = new VSCodeLogger(mockOutputChannel);
+    mockOutputChannel.appendLine.mockClear();
+
+    // Set the logger and clear the initialization message
+    setLogger(logger);
+    mockOutputChannel.appendLine.mockClear();
+
+    // Call pingLog to exercise all levels
+    pingLog();
+
+    // Verify all 4 ping messages were logged
+    const calls = mockOutputChannel.appendLine.mock.calls;
+
+    const debugCall = calls.find((call: string[]) => call[0]?.includes('Ping for DEBUG'));
+    const infoCall = calls.find((call: string[]) => call[0]?.includes('Ping for INFO'));
+    const warnCall = calls.find((call: string[]) => call[0]?.includes('Ping for WARN'));
+    const errorCall = calls.find((call: string[]) => call[0]?.includes('Ping for ERROR'));
+
+    expect(debugCall).toBeDefined();
+    expect(debugCall[0]).toContain('[DEBUG]');
+    expect(debugCall[0]).toContain('pingLog');
+
+    expect(infoCall).toBeDefined();
+    expect(infoCall[0]).toContain('[INFO]');
+    expect(infoCall[0]).toContain('pingLog');
+
+    expect(warnCall).toBeDefined();
+    expect(warnCall[0]).toContain('[WARNING]');
+    expect(warnCall[0]).toContain('pingLog');
+
+    expect(errorCall).toBeDefined();
+    expect(errorCall[0]).toContain('[ERROR]');
+    expect(errorCall[0]).toContain('pingLog');
+  });
+
+  it('should verify VSCodeLogger properly formats debug messages', () => {
+    const { setLogger } = require('rangelink-core-ts');
+    const { VSCodeLogger } = require('../VSCodeLogger');
+
+    const logger = new VSCodeLogger(mockOutputChannel);
+    mockOutputChannel.appendLine.mockClear();
+
+    // Manually call debug to test formatting
+    logger.debug({ fn: 'testFunction', extraContext: 'value' }, 'Test debug message');
+
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+      expect.stringContaining('[DEBUG]'),
+    );
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+      expect.stringContaining('testFunction'),
+    );
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+      expect.stringContaining('Test debug message'),
+    );
+  });
+});

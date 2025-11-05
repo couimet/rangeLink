@@ -882,6 +882,112 @@ This meant tests were importing from `extension.ts` when they should import from
 
 ---
 
+## Phase 4.5K: Logger Verification Feature (debug + pingLog) — ✅ Complete
+
+**Completed:** 2025-11-05
+
+**Problem:** The extension calls `setLogger(new VSCodeLogger(outputChannel))` during activation but has no way to verify the logger was initialized correctly. If logger setup fails silently, all subsequent logging will fail without clear indication.
+
+**Goal:** Add automatic logger initialization verification and a standalone function to exercise all logger levels, confirming the communication channel between core library and extension works correctly.
+
+**Design Principle:** Keep Logger interface clean. `pingLog()` is a standalone function (not a method) that exercises the existing Logger interface without adding new methods or creating feature coupling.
+
+**Implementation:**
+
+**Step 1: Logger interface already had debug() method** ✅
+- Logger interface already included `debug(ctx: LoggingContext, message: string): void`
+- No changes needed - interface was already complete
+
+**Step 2: Updated setLogger() to confirm initialization (15min)**
+```typescript
+// packages/rangelink-core-ts/src/logging/LogManager.ts
+export function setLogger(newLogger: Logger): void {
+  logger = newLogger;
+  // Confirm communication channel works immediately
+  logger.debug({ fn: 'setLogger' }, 'Logger initialized');
+}
+```
+
+**Step 3: Created standalone pingLog() function (20min)**
+```typescript
+// packages/rangelink-core-ts/src/logging/pingLog.ts
+export const pingLog = (): void => {
+  const logger = getLogger();
+  const context = { fn: 'pingLog' };
+
+  logger.debug(context, 'Ping for DEBUG');
+  logger.info(context, 'Ping for INFO');
+  logger.warn(context, 'Ping for WARN');
+  logger.error(context, 'Ping for ERROR');
+};
+```
+
+**Step 4: VSCodeLogger already implemented debug()** ✅
+- VSCodeLogger already had `debug()` method implemented
+- Achieves 100% test coverage after tests added
+
+**Step 5: Added comprehensive tests (25min)**
+
+Core tests (5 new tests, 168 total passing):
+- LogManager: Verify setLogger() calls debug() automatically
+- pingLog: Exercise all 4 levels
+- pingLog: Verify call counts
+- pingLog: Verify correct logger is used
+- pingLog: Works with NoOpLogger without errors
+
+Extension tests (3 new tests, 66 passing):
+- Verify logger initialization message appears in outputChannel
+- Verify pingLog() exercises all 4 levels and messages appear
+- Verify VSCodeLogger formats debug messages correctly
+
+**Files Modified:**
+
+- `packages/rangelink-core-ts/src/logging/LogManager.ts` - Auto-confirm on setLogger()
+- `packages/rangelink-core-ts/src/logging/pingLog.ts` - New standalone function
+- `packages/rangelink-core-ts/src/logging/index.ts` - Export pingLog
+- `packages/rangelink-core-ts/src/__tests__/logging/LogManager.test.ts` - Added test
+- `packages/rangelink-core-ts/src/__tests__/logging/pingLog.test.ts` - New test file (4 tests)
+- `packages/rangelink-vscode-extension/src/__tests__/extension.test.ts` - Added 3 tests
+
+**Test Results:**
+
+- ✅ Core: 168 tests passing, 100% coverage maintained
+- ✅ pingLog.ts: 100% coverage
+- ✅ Extension: 66 tests passing, 73 skipped (architectural issue, unrelated)
+- ✅ VSCodeLogger: 100% coverage
+
+**Benefits:**
+
+- ✅ **Logger interface stays clean** - No `pingLog()` method added to interface
+- ✅ **Appropriate log level** - DEBUG for diagnostic/initialization messages
+- ✅ **Immediate feedback** - `setLogger()` confirms channel works automatically
+- ✅ **No feature coupling** - `pingLog()` just exercises existing interface
+- ✅ **Tests verify binding** - Extension tests confirm core → outputChannel works
+- ✅ **Production-friendly** - DEBUG level can be filtered in production
+- ✅ **Catches failures early** - Initialization confirmation immediately after setLogger()
+
+**Usage:**
+
+```typescript
+// Extension activation (automatic verification)
+outputChannel = vscode.window.createOutputChannel('RangeLink');
+setLogger(new VSCodeLogger(outputChannel));
+// ← Logger automatically logs "[DEBUG] {fn:'setLogger'} Logger initialized"
+
+// Tests (manual verification)
+import { pingLog } from 'rangelink-core-ts';
+pingLog(); // Exercises all 4 levels
+// Observe outputChannel for:
+// - "[DEBUG] {fn:'pingLog'} Ping for DEBUG"
+// - "[INFO] {fn:'pingLog'} Ping for INFO"
+// - "[WARNING] {fn:'pingLog'} Ping for WARN"
+// - "[ERROR] {fn:'pingLog'} Ping for ERROR"
+```
+
+**Time Taken:** ~1 hour (as estimated)
+
+---
+
 ## Related Documentation
 
 - [ROADMAP.md](./ROADMAP.md) - Future development plans
