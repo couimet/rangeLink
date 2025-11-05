@@ -1407,7 +1407,7 @@ describe('Round-trip integration', () => {
 
 ---
 
-### Iteration 3.1: Terminal Link Provider — In Progress (Subsets 1-2 Complete)
+### Iteration 3.1: Terminal Link Provider — In Progress (Subsets 1-5 Complete)
 
 **Started:** 2025-11-05 (see [JOURNEY.md](./JOURNEY.md#phase-5-iteration-31-terminal-link-provider) for full details)
 
@@ -1450,14 +1450,24 @@ describe('Round-trip integration', () => {
 - Extracted `formatLinkTooltip()` utility (platform-aware tooltip generation)
 - Created `getPlatformModifierKey()` utility (Cmd on macOS, Ctrl on Windows/Linux)
 - All presentation logic testable in isolation
-- 100% test coverage for all new utilities (33 tests)
+- 100% test coverage for all new utilities (34 tests)
+
+**Subset 5: Link Handler Implementation** — ✅ Complete
+
+- Implemented full file opening and navigation in `handleTerminalLink()`
+- Created `resolveWorkspacePath()` utility (workspace-relative and absolute paths)
+- Created `convertRangeLinkPosition()` utility (coordinate conversion + clamping)
+- All selection types: single position, ranges, rectangular mode (multi-cursor)
+- Comprehensive error handling (file not found, open failures, invalid positions)
+- 35 tests for utilities (12 path resolution + 23 coordinate conversion), 100% coverage
+- Total: 135 tests passing (7 test suites)
 
 **Remaining Subsets:**
 
 - ~~Subset 3: Link Detection Implementation~~ — ✅ Complete (merged into Subset 2)
 - ~~Subset 4: Link Validation & Parsing~~ — ✅ Complete
-- Subset 5: Link Handler Implementation (1 hour) — **NEXT**
-- Subset 6: Configuration Integration (30 min)
+- ~~Subset 5: Link Handler Implementation~~ — ✅ Complete
+- Subset 6: Configuration Integration (30 min) — **NEXT**
 
 **Future UX Enhancement (deferred):**
 

@@ -3,8 +3,10 @@ import { buildLinkPattern, parseLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { RangeLinkTerminalLink } from '../types';
+import { convertRangeLinkPosition } from '../utils/convertRangeLinkPosition';
 import { formatLinkPosition } from '../utils/formatLinkPosition';
 import { formatLinkTooltip } from '../utils/formatLinkTooltip';
+import { resolveWorkspacePath } from '../utils/resolveWorkspacePath';
 
 /**
  * Terminal link provider for RangeLink format detection.
@@ -130,30 +132,16 @@ export class RangeLinkTerminalProvider
   /**
    * Handle terminal link activation (click).
    *
-   * Currently shows an information message with parsed data.
-   * Navigation will be implemented in Subset 5.
+   * Opens the file and navigates to the specified position.
+   * Supports single positions, ranges, and rectangular mode.
    *
    * @param link - The terminal link that was clicked
    */
-  handleTerminalLink(link: RangeLinkTerminalLink): vscode.ProviderResult<void> {
+  async handleTerminalLink(link: RangeLinkTerminalLink): Promise<void> {
     const linkText = link.data;
 
-    if (link.parsed) {
-      const { path, start, end, selectionType } = link.parsed;
-
-      this.logger.info(
-        {
-          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
-          link: linkText,
-          parsed: link.parsed,
-        },
-        'Terminal link clicked (parsed successfully)',
-      );
-
-      const position = formatLinkPosition(start, end);
-
-      vscode.window.showInformationMessage(`RangeLink: ${path} @ ${position} [${selectionType}]`);
-    } else {
+    // Parse failed - show warning and return
+    if (!link.parsed) {
       this.logger.warn(
         {
           fn: 'RangeLinkTerminalProvider.handleTerminalLink',
@@ -163,6 +151,128 @@ export class RangeLinkTerminalProvider
       );
 
       vscode.window.showWarningMessage(`RangeLink detected but failed to parse: ${linkText}`);
+      return;
     }
+
+    const { path, start, end, selectionType } = link.parsed;
+
+    this.logger.info(
+      {
+        fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+        link: linkText,
+        parsed: link.parsed,
+      },
+      'Terminal link clicked - attempting navigation',
+    );
+
+    // Resolve path to file URI
+    const fileUri = await resolveWorkspacePath(path);
+    if (!fileUri) {
+      this.logger.error(
+        {
+          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          link: linkText,
+          path,
+        },
+        'File not found',
+      );
+
+      vscode.window.showErrorMessage(`RangeLink: File not found: ${path}`);
+      return;
+    }
+
+    // Open document
+    let document: vscode.TextDocument;
+    try {
+      document = await vscode.workspace.openTextDocument(fileUri);
+    } catch (error) {
+      this.logger.error(
+        {
+          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          link: linkText,
+          path,
+          error,
+        },
+        'Failed to open document',
+      );
+
+      vscode.window.showErrorMessage(`RangeLink: Failed to open file: ${path}`);
+      return;
+    }
+
+    // Convert 1-indexed RangeLink positions to 0-indexed VSCode positions (with clamping)
+    const startPos = convertRangeLinkPosition(start, document);
+    const endPos = convertRangeLinkPosition(end, document);
+
+    // Create selections based on selection type
+    let selections: vscode.Selection[];
+
+    if (selectionType === 'Rectangular') {
+      // Rectangular mode: Create multiple selections (one per line)
+      selections = [];
+      for (let line = startPos.line; line <= endPos.line; line++) {
+        const lineStartPos = convertRangeLinkPosition(
+          { line: line + 1, char: start.char },
+          document,
+        );
+        const lineEndPos = convertRangeLinkPosition({ line: line + 1, char: end.char }, document);
+
+        const anchor = new vscode.Position(line, lineStartPos.character);
+        const active = new vscode.Position(line, lineEndPos.character);
+        selections.push(new vscode.Selection(anchor, active));
+      }
+
+      this.logger.debug(
+        {
+          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          selectionType: 'Rectangular',
+          selectionsCreated: selections.length,
+          startLine: startPos.line + 1,
+          endLine: endPos.line + 1,
+          columnRange: `${startPos.character + 1}-${endPos.character + 1}`,
+        },
+        'Created rectangular selections',
+      );
+    } else {
+      // Normal mode: Single selection from start to end
+      const anchor = new vscode.Position(startPos.line, startPos.character);
+      const active = new vscode.Position(endPos.line, endPos.character);
+      selections = [new vscode.Selection(anchor, active)];
+
+      this.logger.debug(
+        {
+          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          selectionType: 'Normal',
+          startPos: `${startPos.line + 1}:${startPos.character + 1}`,
+          endPos: `${endPos.line + 1}:${endPos.character + 1}`,
+        },
+        'Created normal selection',
+      );
+    }
+
+    // Show document with selections
+    const editor = await vscode.window.showTextDocument(document, {
+      selection: selections[0], // Primary selection for viewport positioning
+      preserveFocus: false,
+    });
+
+    // Apply all selections (for rectangular mode)
+    editor.selections = selections;
+
+    // Reveal the first selection in the viewport
+    editor.revealRange(selections[0], vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+
+    this.logger.info(
+      {
+        fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+        link: linkText,
+        path,
+        selectionsApplied: selections.length,
+      },
+      'Navigation completed successfully',
+    );
+
+    const position = formatLinkPosition(start, end);
+    vscode.window.showInformationMessage(`RangeLink: Navigated to ${path} @ ${position}`);
   }
 }

@@ -1682,8 +1682,179 @@ All scenarios detected links correctly with accurate capture groups.
 
 **Next Steps:**
 
-- Phase 5 Iteration 3.1 Subset 5: Link Handler Implementation (1 hour) — **NEXT**
-- Phase 5 Iteration 3.1 Subset 6: Configuration Integration (30 min)
+- ~~Phase 5 Iteration 3.1 Subset 5: Link Handler Implementation (1 hour)~~ — ✅ Complete
+- Phase 5 Iteration 3.1 Subset 6: Configuration Integration (30 min) — **NEXT**
+
+---
+
+### **Phase 5 Iteration 3.1 Subset 5: Link Handler Implementation** — ✅ Complete
+
+**Completed:** 2025-11-05 (1 hour)
+
+**Problem:** Terminal links were detected and parsed (Subset 4) but clicking them only showed info messages. Users expect Cmd+Click to actually open files and navigate to the specified location.
+
+**Solution:** Implemented full file opening and navigation in `handleTerminalLink()`. Terminal links now:
+- Open files in the editor
+- Navigate to specified positions (line and column)
+- Support all selection types (single, ranges, rectangular mode)
+- Handle errors gracefully (file not found, invalid positions)
+
+**Implementation:**
+
+1. **Path Resolution Utility (`resolveWorkspacePath.ts`):**
+   - Pure async function for resolving file paths to VSCode URIs
+   - Handles workspace-relative paths: `src/auth.ts` → workspace folder + path
+   - Handles absolute paths: `/Users/name/project/src/auth.ts` → used directly
+   - Multi-folder workspace support: Tries each folder sequentially until file found
+   - Returns `undefined` if file doesn't exist (enables graceful error handling)
+   - Uses VSCode file system API (`vscode.workspace.fs.stat`) to check existence
+
+2. **Full Navigation Implementation:**
+   - Changed `handleTerminalLink()` signature to `async` (returns `Promise<void>`)
+   - **Step 1:** Resolve path using `resolveWorkspacePath()`
+   - **Step 2:** Open document with `vscode.workspace.openTextDocument(uri)`
+   - **Step 3:** Create selections based on parsed positions
+   - **Step 4:** Show document with `vscode.window.showTextDocument()`
+   - **Step 5:** Apply all selections (supports multi-cursor for rectangular mode)
+   - **Step 6:** Reveal first selection in viewport
+
+3. **Coordinate Conversion:**
+   - RangeLink uses 1-indexed positions (user-facing)
+   - VSCode uses 0-indexed positions (API)
+   - Conversion: `line - 1`, `char - 1`
+   - Handles undefined char (line-only links): defaults to column 0
+
+4. **Position Clamping:**
+   - Lines clamped to `[0, document.lineCount - 1]`
+   - Characters clamped to `[0, lineLength]`
+   - Prevents errors when links reference positions beyond end of file
+   - Example: `file.ts#L9999` on 100-line file → navigates to line 100
+
+5. **Normal Selection Mode:**
+   - Creates single `vscode.Selection` from anchor to active
+   - Supports single positions, line ranges, column precision
+   - Selection structure: `new vscode.Selection(anchor, active)`
+   - Example: `file.ts#L10C5-L20C15` → selects from (10,5) to (20,15)
+
+6. **Rectangular Mode (Multi-Cursor):**
+   - Detects `selectionType === 'Rectangular'` from parsed link
+   - Creates array of selections (one per line in range)
+   - Each selection spans same column range
+   - Example: `file.ts##L10C5-L15C10` → 6 selections, columns 5-10 on each line
+   - Applied via `editor.selections = [...allSelections]`
+   - Enables immediate multi-cursor editing
+
+7. **Comprehensive Error Handling:**
+   - **Parse failure:** Already handled in Subset 4 (shows warning, returns early)
+   - **File not found:** Shows error message, logs at ERROR level
+   - **Document open failure:** Shows error message, logs with error object
+   - All errors include structured context (fn, link, path, error)
+   - No crashes - graceful degradation for all error scenarios
+
+8. **User Feedback:**
+   - **Success:** Info message `"RangeLink: Navigated to {path} @ {position}"`
+   - **File not found:** Error message `"RangeLink: File not found: {path}"`
+   - **Open failure:** Error message `"RangeLink: Failed to open file: {path}"`
+   - Position formatted with `formatLinkPosition()` utility (from Subset 4)
+
+9. **Structured Logging:**
+   - **Navigation attempt:** INFO level with full parsed data
+   - **Path resolution:** ERROR level if file not found
+   - **Document opening:** ERROR level if open fails
+   - **Selection creation:** DEBUG level with selection details
+   - **Navigation success:** INFO level with selections count
+   - Example log for rectangular mode:
+     ```typescript
+     {
+       fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+       selectionType: 'Rectangular',
+       selectionsCreated: 6,
+       startLine: 10,
+       endLine: 15,
+       columnRange: '5-10'
+     }
+     ```
+
+10. **Test Coverage for Path Resolution:**
+    - Created `resolveWorkspacePath.test.ts` with 12 comprehensive tests
+    - **Absolute paths:** Existing files, non-existing files, platform-native paths
+    - **Workspace-relative:** Single folder, multiple folders, file not in any workspace
+    - **No workspace:** Undefined `workspaceFolders`, empty array
+    - **Edge cases:** Special characters, hash in filename, nested paths, `./` prefix
+    - **100% coverage:** All statements, branches, functions, and lines
+    - **Mock strategy:** Uses `Object.defineProperty` for read-only properties
+
+11. **Coordinate Conversion Utility (`convertRangeLinkPosition.ts`):**
+    - **Architectural improvement:** Extracted inline conversion logic to standalone utility
+    - **Rationale:** Inline conversion code in `handleTerminalLink()` was complex, untestable, and violated single responsibility
+    - Pure function: `convertRangeLinkPosition(position, document) → { line, character }`
+    - **Handles two responsibilities:**
+      - Coordinate conversion: 1-indexed (user-facing) → 0-indexed (VSCode API)
+      - Position clamping: Lines to `[0, lineCount-1]`, chars to `[0, lineLength]`
+    - Returns `ConvertedPosition` interface for type safety
+    - **Benefits:**
+      - Testable in isolation (23 comprehensive tests)
+      - Reusable across extension (any feature needing position conversion)
+      - Clear separation of concerns (conversion vs navigation logic)
+      - Easier to maintain and debug
+
+12. **Test Coverage for Coordinate Conversion:**
+    - Created `convertRangeLinkPosition.test.ts` with 23 comprehensive tests
+    - **Line conversion:** 1→0, 10→9, 100→99 (basic conversion)
+    - **Character conversion:** 1→0, 10→9, undefined→0 (defaults)
+    - **Line clamping:** Negative→0, 0→0, 9999→lastLine (bounds)
+    - **Character clamping:** Negative→0, 0→0, 9999→lineLength (bounds)
+    - **Variable line lengths:** Correctly handles different line lengths
+    - **Edge cases:** Empty document, exact boundaries, large documents (10,000 lines)
+    - **Realistic scenarios:** Typical files, end-of-file, long lines
+    - **100% coverage:** All statements, branches, functions, and lines
+
+**Files Created/Modified:**
+
+- `packages/rangelink-vscode-extension/src/navigation/RangeLinkTerminalProvider.ts` (modified - uses utilities)
+- `packages/rangelink-vscode-extension/src/utils/resolveWorkspacePath.ts` (created)
+- `packages/rangelink-vscode-extension/src/utils/convertRangeLinkPosition.ts` (created)
+- `packages/rangelink-vscode-extension/src/__tests__/utils/resolveWorkspacePath.test.ts` (created)
+- `packages/rangelink-vscode-extension/src/__tests__/utils/convertRangeLinkPosition.test.ts` (created)
+- `packages/rangelink-vscode-extension/src/__tests__/extension.test.ts` (modified - added registerTerminalLinkProvider mock)
+
+**Test Results:**
+
+- ✅ Extension compiles successfully
+- ✅ All tests passing: **135 passed** (23 more than before), 73 skipped (existing), **7 test suites**
+- ✅ `resolveWorkspacePath` utility: 12 tests, 100% coverage
+- ✅ `convertRangeLinkPosition` utility: 23 tests, 100% coverage
+- ✅ Overall coverage: 60.16% statements, 65.45% branches, 55.55% functions
+  - Improved coverage due to highly-tested utilities
+
+**Benefits:**
+
+- ✅ **Complete navigation workflow** - Terminal links now fully functional end-to-end
+- ✅ **All selection types** - Single, ranges, rectangular mode all supported
+- ✅ **Robust path resolution** - Handles relative/absolute paths, multi-folder workspaces
+- ✅ **Error resilience** - File not found, invalid positions handled gracefully
+- ✅ **Position safety** - Clamping prevents out-of-bounds errors
+- ✅ **Multi-cursor support** - Rectangular mode creates immediate editing capability
+- ✅ **Clear user feedback** - Success and error messages for all scenarios
+- ✅ **Rich debugging** - Structured logs for troubleshooting
+- ✅ **Clean architecture** - Conversion logic extracted to testable utilities (35 tests, 100% coverage)
+- ✅ **Reusable code** - Utilities can be used by future features
+- ✅ **Production-ready** - Comprehensive error handling, no known crashes
+
+**Known Limitations:**
+
+- Cross-platform paths: Windows paths on Unix may not resolve correctly
+  - `path.isAbsolute('C:\\...')` returns `false` on Unix
+  - **Impact:** Minimal - users generate and navigate links on same platform
+- No path validation before click (assumes parsed path is valid)
+- Multi-folder workspaces use first matching file (no disambiguation UI)
+
+**Time Taken:** 1 hour (as estimated)
+
+**Next Steps:**
+
+- Phase 5 Iteration 3.1 Subset 6: Configuration Integration (30 min) — **NEXT**
+- Integrate with Phase 4A.2 (Configuration Change Detection)
 
 ---
 

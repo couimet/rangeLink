@@ -76,6 +76,7 @@ jest.mock('vscode', () => ({
     showInformationMessage: jest.fn(),
     setStatusBarMessage: jest.fn(),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
+    registerTerminalLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),
   },
   workspace: {
     getWorkspaceFolder: jest.fn(),
