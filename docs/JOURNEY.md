@@ -614,6 +614,94 @@ VSCode Extension:
 
 ---
 
+### 4.7) Error Handling Foundation with DetailedError Pattern — ✅ Complete
+
+**Goal:** Implement structured error handling infrastructure with clear separation between error codes (for exception handling) and message codes (for i18n logging).
+
+**Problem:**
+
+- Legacy `SelectionValidationError` provided minimal context (code + message only)
+- Mixed concerns: error handling and i18n message codes were combined
+- Numeric error code values (ERR_1001) required lookups, defeating immediate log clarity
+- No structured way to capture contextual details for debugging
+
+**Solution implemented:**
+
+Created dual-purpose error system following `SharedErrorCodes` pattern:
+
+1. **RangeLinkErrorCodes** (Error Handling):
+   - Error codes WITHOUT prefixes (no ERR_, no WARN_)
+   - Descriptive string values: `SELECTION_EMPTY = 'SELECTION_EMPTY'`
+   - Provides immediate context in logs without lookups
+   - 29 error codes, alphabetically sorted within categories
+   - Warning is a logging level decision, not an error type
+
+2. **RangeLinkMessageCode** (i18n Support):
+   - Contains ONLY MSG_xxxx codes (informational messages)
+   - Stable identifiers for translation keys
+   - Will contain only user-facing messages after migration
+
+3. **RangeLinkError class**:
+   - Extends `DetailedError` with type-safe structure
+   - Fields: code, message, functionName, details, cause
+   - Maintains proper stack traces (V8 optimization)
+
+4. **Custom Jest matcher** (`toBeRangeLinkError`):
+   - Validates full error structure with strict equality
+   - Checks: code, message, functionName, details
+   - Provides clear failure messages
+
+5. **i18n Architecture** (docs/I18N.md):
+   - Complete specification for getMessage() function
+   - Template syntax with {paramName} placeholders
+   - LocaleManager for locale injection from extension layer
+   - Platform-agnostic core design
+
+**Key architectural principle:**
+
+Logging level is independent of error type. Descriptive values provide immediate context in logs without requiring code lookups.
+
+**Files created (4):**
+
+- `errors/RangeLinkErrorCodes.ts` - Error codes with descriptive values
+- `errors/RangeLinkError.ts` - Extends DetailedError with type safety
+- `src/__tests__/matchers/toBeRangeLinkError.ts` - Custom Jest matcher
+- `docs/I18N.md` - Complete i18n spec with getMessage() design
+
+**Files modified (7):**
+
+- `src/__tests__/setup/matchers.ts` - Registered custom matcher
+- `errors/index.ts` - Added exports, kept legacy for compatibility
+- `errors/RangeLinkErrorCodes.ts` - Added @deprecated to CONFIG_UNKNOWN
+- `docs/ERROR-HANDLING.md` - Updated architecture with descriptive values
+- `docs/ARCHITECTURE.md` - Updated error handling section
+- `docs/LOGGING.md` - Clarified error vs message distinction
+- `docs/ROADMAP.md` - Added tech debt items (4.5I, 4.5J)
+
+**Tech debt identified:**
+
+- Phase 4.5I: Eliminate CONFIG_UNKNOWN catch-all error code (1 hour)
+- Phase 4.5J: Convert RangeLinkMessageCode to descriptive values (1.5 hours)
+
+**Benefits:**
+
+- Clear separation: errors are errors, messages are messages
+- Descriptive values provide immediate context in logs
+- Type-safe error handling with structured context
+- Custom Jest matcher for robust error assertions
+- i18n-ready architecture with locale injection pattern
+- Follows SharedErrorCodes pattern for consistency
+
+**Next steps:**
+
+- Phase 2: Migrate selection validation to use RangeLinkError
+- Phase 3: Update VSCode extension error handling
+- Phase 4: Cleanup and remove legacy SelectionValidationError
+
+**Status:** Complete - Error handling foundation ready for migration, ~2 hours
+
+---
+
 ## Related Documentation
 
 - [ROADMAP.md](./ROADMAP.md) - Future development plans
