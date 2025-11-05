@@ -28,6 +28,24 @@ RangeLink is a tool for generating and navigating code location links with suppo
   - TypeScript convention: optional/absent values are `undefined`
   - Lighter: `field: Type | undefined;` (implicit initialization)
   - Avoid: `field: Type | null = null;` (explicit, heavier)
+- **No magic numbers** - Define constants for all numeric literals with semantic meaning
+  - Always use named constants instead of inline numbers
+  - Place constants in appropriate files: feature-specific constants in same file, shared constants in `/constants/`
+  - Use SCREAMING_SNAKE_CASE for constant names
+  - Example:
+    ```typescript
+    // ❌ BAD - Magic number
+    if (link.length > 3000) {
+      throw new Error('Link too long');
+    }
+
+    // ✅ GOOD - Named constant
+    const MAX_LINK_LENGTH = 3000;
+    if (link.length > MAX_LINK_LENGTH) {
+      throw new Error(`Link exceeds maximum length of ${MAX_LINK_LENGTH}`);
+    }
+    ```
+  - Rationale: Makes code self-documenting, easier to maintain and update limits
 - **Proactive module extraction** - Extract to standalone module WITHOUT being asked when:
   - Function exceeds 50 lines, OR
   - Function has 3+ dependencies (hard to test), OR
