@@ -577,24 +577,13 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
 
 ## Phase 4.5: Technical Debt & Refactoring — 📋 Planned
 
-### 4.5A) Remove Test Re-exports from extension.ts (30 minutes)
+### 4.5A) Remove Test Re-exports from extension.ts — ✅ Complete
 
-**Problem:** `extension.ts` contains re-exports for backward compatibility with tests:
+**Completed:** 2025-11-05
 
-```typescript
-// Re-export for backward compatibility with tests
-export { PathFormat, DelimiterValidationError, RangeLinkMessageCode, RangeLinkService };
-```
+**Summary:** Updated test and public API imports to use direct source file paths instead of re-exporting through extension.ts. Tests now import from actual source files for clearer dependencies.
 
-**Goal:** Tests should import from actual source files, not from `extension.ts`
-
-**Changes:**
-
-- Update all test imports to use direct paths (`./RangeLinkService`, `rangelink-core-ts`)
-- Remove re-export line from `extension.ts`
-- Verify all 130 tests still pass
-
-**Done when:** No re-exports exist in `extension.ts` for test compatibility
+**See [JOURNEY.md](./JOURNEY.md#phase-45a-remove-test-re-exports-from-extensionts--complete) for full details.**
 
 ---
 

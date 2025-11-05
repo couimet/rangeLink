@@ -16,9 +16,6 @@ import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { TerminalBindingManager } from './TerminalBindingManager';
 import { VSCodeLogger } from './VSCodeLogger';
 
-// Re-export for backward compatibility with tests
-export { PathFormat, DelimiterValidationError, RangeLinkMessageCode, RangeLinkService };
-
 /**
  * VSCode-specific link interface (kept for extension API)
  */

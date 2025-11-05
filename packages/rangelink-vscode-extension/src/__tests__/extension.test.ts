@@ -1,12 +1,8 @@
 import * as vscode from 'vscode';
 
 import * as extension from '../extension';
-import {
-  DelimiterValidationError,
-  PathFormat,
-  RangeLinkService,
-  getErrorCodeForTesting,
-} from '../extension';
+import { getErrorCodeForTesting } from '../extension';
+import { PathFormat, RangeLinkService } from '../RangeLinkService';
 
 // Mock vscode module
 const mockStatusBarItem = {

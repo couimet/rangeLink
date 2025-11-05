@@ -830,6 +830,58 @@ This registers the terminalBindingManager with VSCode's subscription system. Whe
 
 ---
 
+## Phase 4.5A: Remove Test Re-exports from extension.ts — ✅ Complete
+
+**Completed:** 2025-11-05
+
+**Problem:** `extension.ts` contained re-exports for backward compatibility with tests, creating an unnecessary layer that obscured the actual source of imported types:
+
+```typescript
+// Re-export for backward compatibility with tests
+export { PathFormat, DelimiterValidationError, RangeLinkMessageCode, RangeLinkService };
+```
+
+This meant tests were importing from `extension.ts` when they should import from the actual source files (`RangeLinkService.ts`, `rangelink-core-ts`).
+
+**Goal:** Tests should import from actual source files, not from `extension.ts`. Clean module boundaries and clear dependencies.
+
+**Changes Made:**
+
+1. **extension.test.ts** - Updated imports to use direct paths:
+   - `PathFormat`, `RangeLinkService` → from `'../RangeLinkService'`
+   - `DelimiterValidationError` → from `'rangelink-core-ts'`
+   - `getErrorCodeForTesting` → still from `'../extension'` (correctly defined there)
+
+2. **index.ts** (public API) - Updated to export from correct sources:
+   - `PathFormat`, `RangeLinkService` → from `'./RangeLinkService'`
+   - `DelimiterValidationError` → from `'rangelink-core-ts'`
+
+3. **extension.ts** - Removed the re-export line entirely
+
+**Files Modified:**
+
+- `packages/rangelink-vscode-extension/src/__tests__/extension.test.ts` - Updated imports
+- `packages/rangelink-vscode-extension/src/index.ts` - Updated public API exports
+- `packages/rangelink-vscode-extension/src/extension.ts` - Removed re-export line
+
+**Test Results:**
+
+- ✅ TypeScript compilation errors resolved
+- ⚠️ 61 test failures (pre-existing from Phase 4.5J enum conversion, unrelated to this change)
+- ✅ No new test failures introduced by re-export removal
+
+**Benefits:**
+
+- Tests import from actual source files (clearer dependencies)
+- Eliminates unnecessary re-export layer
+- Cleaner module structure and boundaries
+- Public API (index.ts) exports from correct sources
+- Easier to understand code organization
+
+**Time Taken:** 30 minutes (as estimated)
+
+---
+
 ## Related Documentation
 
 - [ROADMAP.md](./ROADMAP.md) - Future development plans
