@@ -41,19 +41,29 @@ Our roadmap follows these core principles to ensure sustainable, high-quality de
 
 ---
 
-## Phase 1C: BYOD Parsing — 📋 Planned
+## Phase 1C: BYOD Parsing — 📋 Deferred
 
 **Objective:** Parse links with embedded delimiter metadata so teams can consume code references seamlessly regardless of delimiter configurations.
 
 For comprehensive BYOD documentation, see [BYOD.md](./BYOD.md).
 
-**Status:** Generation complete, parsing split into focused micro-iterations:
+**Status:** Generation complete (v0.1.0). **Parsing deferred until after terminal navigation** (Phase 5) to deliver user value faster.
+
+**Rationale for deferral:**
+- Terminal link navigation is higher priority for user workflow (click links in terminal output)
+- BYOD parsing adds complexity without immediate benefit (most users use default delimiters)
+- Basic parsing with local delimiters unblocks terminal navigation feature
+- BYOD parsing can be added later without breaking existing functionality
+
+**Parsing iterations (deferred):**
 
 - 📋 **1C.1** (1.5h): Parse metadata structure, extract delimiters, format validation
 - 📋 **1C.2** (1.5h): Validate extracted delimiters (reserved chars, digits, conflicts)
 - 📋 **1C.3** (2h): Recovery logic (missing delimiters, fallbacks, error UI)
 - 📋 **1C.4** (1h): Rectangular mode detection with custom BYOD hash
 - 📋 **1C.5** (30m): Documentation and cleanup
+
+**When to revisit:** After Phase 5 (Terminal Link Navigation) is complete and stable.
 
 **Format Examples:**
 
