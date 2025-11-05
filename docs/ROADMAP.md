@@ -404,6 +404,57 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
 
 ---
 
+### Priority 1.5: Extension Lifecycle & Configuration
+
+#### 4A.2) Configuration Change Detection (30 minutes) — 🔴 Critical Bug
+
+**Goal:** React to VSCode configuration changes without requiring window reload.
+
+**Current Problem:** Delimiter configuration is loaded once at activation (extension.ts:165) and never updated. If user changes `rangelink.*` settings during a session, the extension continues using stale config until window reload. This is poor UX.
+
+**VSCode API:** `vscode.workspace.onDidChangeConfiguration(event)`
+
+**Implementation:**
+
+1. **Register config listener in activate():**
+   ```typescript
+   context.subscriptions.push(
+     vscode.workspace.onDidChangeConfiguration((event) => {
+       if (event.affectsConfiguration('rangelink')) {
+         reloadConfiguration();
+       }
+     })
+   );
+   ```
+
+2. **Extract reloadConfiguration() function:**
+   - Reload delimiter config (call loadDelimiterConfig())
+   - Recreate RangeLinkService with new delimiters
+   - Log to output channel: "Configuration reloaded"
+   - Show status bar notification (optional)
+
+3. **Handle RangeLinkService recreation:**
+   - Store service reference in module-level variable
+   - Dispose old service (if needed)
+   - Create new service with updated delimiters
+   - Commands continue to work seamlessly
+
+**Edge Cases:**
+
+- Terminal binding persists (doesn't need recreation)
+- If invalid config, fall back to defaults and notify user
+- Multiple rapid changes: debounce with 500ms delay
+
+**Testing:**
+
+- Change delimiter in settings → Extension uses new delimiters immediately
+- Change to invalid delimiter → Falls back to defaults, shows notification
+- Terminal binding survives config reload
+
+**Done when:** User can change settings during session without window reload, extension updates immediately
+
+---
+
 ### Priority 1.5: Test Coverage Improvements
 
 #### 4A.5) Error Logging Verification in Tests — 📋 Planned
@@ -1850,13 +1901,29 @@ Using claude-code or ChatGPT for development? RangeLink eliminates the context-s
 
 ## Phase 8: User Experience
 
+- [ ] **Settings validation and UX improvements** (1 hour)
+  - **Pre-save validation:** Improve JSON Schema in package.json to catch invalid delimiters before save
+    - Add pattern constraints for delimiters (no digits, no reserved chars)
+    - Custom error messages in settings UI
+  - **"Test Configuration" command:** Allow users to validate settings before applying
+    - Command: "RangeLink: Validate Settings"
+    - Shows validation result in notification
+    - Lists any conflicts or invalid values
+    - Suggests fixes
+  - **Better error notifications:** When validation fails on load
+    - Current: Errors only in output channel (users miss them)
+    - Improved: Show error notification with "View Details" button
+    - Include specific field name and reason
+  - **Live validation feedback:** In settings editor (if VSCode API supports)
+    - Show checkmark/warning icon next to each setting
+    - Instant feedback as user types
+
 - [ ] **Settings and preferences**
   - Opt-in/opt-out for portable link generation
   - Toggle rectangular mode auto-detection
   - Preferred link format (relative vs absolute)
   - Keyboard shortcut customization for all commands
   - Exclude certain file patterns from link generation
-  - Custom settings panel with live delimiter validation
   - "Don't show again" option for BYOD recovery warnings
 
 - [ ] **Visual feedback**
