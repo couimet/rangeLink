@@ -52,6 +52,49 @@ RangeLink is a tool for generating and navigating code location links with suppo
   - Example: `linkType: 'Regular'` instead of `linkType: LinkType.Regular`
   - Catches accidental enum value changes
 
+### Custom Jest Matchers
+
+**Prefer `toThrowRangeLinkError` for testing functions that throw errors:**
+
+```typescript
+// ✅ PREFERRED - Clean, validates all error properties
+expect(() => validateInputSelection(input)).toThrowRangeLinkError({
+  code: RangeLinkErrorCodes.SELECTION_EMPTY,
+  message: 'Selections array must not be empty',
+  functionName: 'validateInputSelection',
+});
+
+// ❌ AVOID - Old verbose pattern
+let caughtError: unknown;
+try {
+  validateInputSelection(input);
+} catch (error) {
+  caughtError = error;
+}
+expect(caughtError).toBeRangeLinkError({...});
+```
+
+**Use `toBeRangeLinkError` only for Result types:**
+
+```typescript
+// When testing functions that return Result<T, RangeLinkError>
+const result = computeRangeSpec(input);
+expect(result).toBeErrWith((error: RangeLinkError) => {
+  expect(error).toBeRangeLinkError({
+    code: RangeLinkErrorCodes.SELECTION_EMPTY,
+    message: 'Selections array must not be empty',
+    functionName: 'validateInputSelection',
+  });
+});
+```
+
+**Matcher validation:**
+
+- Uses `instanceof RangeLinkError` (strict type checking)
+- `functionName` is **required** (all errors must specify throwing function)
+- `details` validated with `toStrictEqual` if provided
+- `cause` validated if error chaining is used
+
 ## Documentation
 
 ### ROADMAP and JOURNEY Maintenance
