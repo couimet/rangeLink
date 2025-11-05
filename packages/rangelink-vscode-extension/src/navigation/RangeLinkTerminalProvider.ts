@@ -1,16 +1,10 @@
-import type { DelimiterConfig, Logger } from 'rangelink-core-ts';
-import { buildLinkPattern } from 'rangelink-core-ts';
+import type { DelimiterConfig, Logger, ParsedLink } from 'rangelink-core-ts';
+import { buildLinkPattern, parseLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-/**
- * Custom terminal link with typed data property.
- */
-interface RangeLinkTerminalLink extends vscode.TerminalLink {
-  /**
-   * The full link text that was detected in the terminal.
-   */
-  data: string;
-}
+import type { RangeLinkTerminalLink } from '../types';
+import { formatLinkPosition } from '../utils/formatLinkPosition';
+import { formatLinkTooltip } from '../utils/formatLinkTooltip';
 
 /**
  * Terminal link provider for RangeLink format detection.
@@ -46,7 +40,7 @@ export class RangeLinkTerminalProvider
    * @param logger - Logger instance for structured logging
    */
   constructor(
-    delimiters: DelimiterConfig,
+    private readonly delimiters: DelimiterConfig,
     private readonly logger: Logger,
   ) {
     this.pattern = buildLinkPattern(delimiters);
@@ -89,21 +83,42 @@ export class RangeLinkTerminalProvider
       const startIndex = match.index!;
       const length = fullMatch.length;
 
+      // Parse the link to extract path and positions
+      const parseResult = parseLink(fullMatch, this.delimiters);
+
+      let parsed: ParsedLink | undefined;
+      if (parseResult.success) {
+        parsed = parseResult.value;
+      } else {
+        // Log parse failure but still create clickable link
+        this.logger.debug(
+          {
+            fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
+            link: fullMatch,
+            error: parseResult.error, // Full error object with code, message, details
+          },
+          'Failed to parse detected link',
+        );
+      }
+
       links.push({
         startIndex,
         length,
-        tooltip: 'Open in editor (Cmd+Click)',
+        tooltip: formatLinkTooltip(parsed),
         data: fullMatch,
+        parsed,
       });
     }
 
     if (links.length > 0) {
+      const parsedCount = links.filter(l => l.parsed).length;
       this.logger.debug(
         {
           fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
           lineLength: line.length,
           linksDetected: links.length,
-          links,
+          parsedSuccessfully: parsedCount,
+          parseFailed: links.length - parsedCount,
         },
         'Detected RangeLinks in terminal line',
       );
@@ -115,7 +130,7 @@ export class RangeLinkTerminalProvider
   /**
    * Handle terminal link activation (click).
    *
-   * Currently shows an information message to confirm detection works.
+   * Currently shows an information message with parsed data.
    * Navigation will be implemented in Subset 5.
    *
    * @param link - The terminal link that was clicked
@@ -123,11 +138,35 @@ export class RangeLinkTerminalProvider
   handleTerminalLink(link: RangeLinkTerminalLink): vscode.ProviderResult<void> {
     const linkText = link.data;
 
-    this.logger.info(
-      { fn: 'RangeLinkTerminalProvider.handleTerminalLink', link: linkText },
-      'Terminal link clicked',
-    );
+    if (link.parsed) {
+      const { path, start, end, selectionType } = link.parsed;
 
-    vscode.window.showInformationMessage(`RangeLink detected: ${linkText}`);
+      this.logger.info(
+        {
+          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          link: linkText,
+          parsed: link.parsed,
+        },
+        'Terminal link clicked (parsed successfully)',
+      );
+
+      const position = formatLinkPosition(start, end);
+
+      vscode.window.showInformationMessage(
+        `RangeLink: ${path} @ ${position} [${selectionType}]`,
+      );
+    } else {
+      this.logger.warn(
+        {
+          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          link: linkText,
+        },
+        'Terminal link clicked but parse failed',
+      );
+
+      vscode.window.showWarningMessage(
+        `RangeLink detected but failed to parse: ${linkText}`,
+      );
+    }
   }
 }

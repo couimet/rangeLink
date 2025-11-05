@@ -1511,8 +1511,153 @@ All scenarios detected links correctly with accurate capture groups.
 **Subset 3 Status:** ✅ **Merged into Subset 2** - Link detection was implemented as part of the provider (regex-based detection with `pattern.matchAll()`, clickable links). No additional work needed.
 
 **Next Steps:**
-- Phase 5 Iteration 3.1 Subset 4: Link Validation & Parsing (45 min) — **NEXT**
-- Phase 5 Iteration 3.1 Subset 5: Link Handler Implementation (1 hour)
+
+- Phase 5 Iteration 3.1 Subset 4: Link Validation & Parsing (45 min) — ✅ Complete
+- Phase 5 Iteration 3.1 Subset 5: Link Handler Implementation (1 hour) — **NEXT**
+- Phase 5 Iteration 3.1 Subset 6: Configuration Integration (30 min)
+
+---
+
+### Iteration 3.1 Subset 4: Link Validation & Parsing — ✅ Complete
+
+**Completed:** 2025-11-05
+
+**Objective:** Parse detected terminal links to extract structured data (path, line, column) for navigation and better UX. Handle parse failures gracefully.
+
+**Context:** Subset 2 detects links via regex and makes them clickable, but link text is stored as raw string. Need to parse links using `parseLink()` to extract:
+
+- File path
+- Line/column positions
+- Selection type (Normal vs Rectangular)
+- Handle parse failures without breaking UX
+
+**Solution:** Enhance RangeLinkTerminalLink interface, parse links in provideTerminalLinks(), display parsed data in tooltips and messages.
+
+**Implementation:**
+
+1. **Enhanced RangeLinkTerminalLink Interface:**
+   - Added `parsed?: ParsedLink` field for structured data
+   - Keeps `data: string` for raw link text (debugging)
+   - Optional field - `undefined` if parsing failed
+   - Imported ParsedLink type from core
+
+2. **Store Delimiters in Provider:**
+   - Changed constructor to accept `private readonly delimiters: DelimiterConfig`
+   - Enables passing delimiters to `parseLink()` during detection
+   - Maintains consistency between pattern detection and parsing
+
+3. **Parse Links in provideTerminalLinks():**
+   - Call `parseLink(fullMatch, this.delimiters)` for each match
+   - Store `ParsedLink` in `link.parsed` if success
+   - If parse fails: log error at DEBUG level but still create clickable link
+   - **Parse failures log full RangeLinkError object** (includes code, message, functionName, details)
+   - Example log: `{ link, error: { code, message, functionName, details: { received, minimum, position } } }`
+
+4. **Enhanced Tooltips:**
+   - **Parse success:** `Open {path}:{position}` showing FULL range
+     - Single: "Open src/auth.ts:42:10 (Cmd+Click)"
+     - Range: "Open src/auth.ts:10-20 (Cmd+Click)" - highlights value prop!
+     - Full range: "Open src/auth.ts:10:5-25:30 (Cmd+Click)"
+   - **Parse failure:** `Open in editor (Cmd+Click)` (generic fallback)
+   - Provides immediate visual feedback on parse status AND selection scope
+   - Platform-aware modifier keys (Cmd/Ctrl)
+
+5. **Enhanced Logging:**
+   - Added counters: `parsedSuccessfully` and `parseFailed`
+   - Example: `{ linksDetected: 3, parsedSuccessfully: 2, parseFailed: 1 }`
+   - Helps diagnose parsing issues in production
+
+6. **Updated handleTerminalLink():**
+   - **Parse success:**
+     - Display: `RangeLink: {path} @ {position} [{selectionType}]`
+     - Example: `RangeLink: src/auth.ts @ 42:10-58:25 [Normal]`
+     - Log at INFO level with full parsed data
+   - **Parse failure:**
+     - Display warning: `RangeLink detected but failed to parse: {linkText}`
+     - Log at WARN level
+   - Position formatting delegated to `formatLinkPosition()` utility
+
+7. **Architectural Improvements:**
+
+   **Type Organization:**
+   - Moved `RangeLinkTerminalLink` interface to `src/types/` folder
+   - Created `src/types/index.ts` for re-exports
+   - Follows core's pattern of standalone type files
+   - Better separation of concerns
+
+   **Utility Extraction:**
+   - `formatLinkPosition.ts` - Position range formatting (single, ranges, line-only)
+   - `formatLinkTooltip.ts` - Platform-aware tooltip generation
+   - `getPlatformModifierKey.ts` - Platform detection (Cmd/Ctrl)
+   - All presentation logic testable in isolation
+   - Pure functions for reusability
+
+   **Platform-Aware Features:**
+   - Tooltips show "Cmd+Click" on macOS, "Ctrl+Click" on Windows/Linux
+   - Dynamic modifier key based on `process.platform`
+   - Consistent UX across all platforms
+
+   **Test Coverage:**
+   - Created 3 comprehensive test files (33 tests total)
+   - `formatLinkPosition.test.ts`: 14 tests, 100% coverage
+   - `formatLinkTooltip.test.ts`: 13 tests, 100% coverage (with platform mocking)
+   - `getPlatformModifierKey.test.ts`: 6 tests, 100% coverage
+   - Tests use enum references for inputs (type safety)
+   - All utilities achieve 100% branch coverage
+
+**Files Modified:**
+
+- `packages/rangelink-vscode-extension/src/navigation/RangeLinkTerminalProvider.ts`
+- `packages/rangelink-vscode-extension/src/types/RangeLinkTerminalLink.ts` (created)
+- `packages/rangelink-vscode-extension/src/types/index.ts` (created)
+- `packages/rangelink-vscode-extension/src/utils/formatLinkPosition.ts` (created)
+- `packages/rangelink-vscode-extension/src/utils/formatLinkTooltip.ts` (created)
+- `packages/rangelink-vscode-extension/src/utils/getPlatformModifierKey.ts` (created)
+- `packages/rangelink-vscode-extension/src/__tests__/utils/formatLinkPosition.test.ts` (created)
+- `packages/rangelink-vscode-extension/src/__tests__/utils/formatLinkTooltip.test.ts` (created)
+- `packages/rangelink-vscode-extension/src/__tests__/utils/getPlatformModifierKey.test.ts` (created)
+- `docs/ROADMAP.md` (added Phase 4.5L for future type consolidation)
+
+**Test Results:**
+
+- ✅ Extension compiles successfully
+- ✅ Core: 256 tests passing
+- ✅ Overall coverage: 99.41% statements, 99.27% branches, 100% functions
+
+**Manual Testing Verified (10 test cases):**
+
+1. ✅ Single line (line only): `src/auth.ts#L42` → `@ 42 [Normal]`
+2. ✅ With column: `src/validation.ts#L10C5` → `@ 10:5 [Normal]`
+3. ✅ Multi-line range: `src/file.ts#L10-L20` → `@ 10-20 [Normal]`
+4. ✅ Full range: `src/code.ts#L10C5-L20C10` → `@ 10:5-20:10 [Normal]`
+5. ✅ Hash in filename: `issue#123/auth.ts#L42` → path includes hash ✓
+6. ✅ Rectangular mode: `data.csv##L10C5-L20C10` → `[Rectangular]` ✓
+7. ✅ Multiple links: 2 links parsed successfully
+8. ✅ Parse failure: `file.ts#L0` → Warning message, still clickable
+9. ✅ Windows path: `C:\Users\...\file.ts#L42C10` → Parses correctly
+10. ✅ Same position: `src/file.ts#L10C5-L10C5` → Displays as single `10:5`
+
+**Benefits:**
+
+- ✅ **Structured data** - ParsedLink stored, ready for navigation
+- ✅ **Better tooltips** - Show actual file and FULL RANGE (platform-aware)
+  - Tooltip shows `10-20` not just `10` - users see selection scope immediately
+  - Highlights RangeLink's value prop before clicking
+- ✅ **Graceful degradation** - Parse failures don't break detection
+- ✅ **Rich error logging** - Full RangeLinkError object with details field for debugging
+- ✅ **Rich feedback** - Formatted parsed data in messages
+- ✅ **Ready for navigation** - Subset 5 can use `link.parsed` to open files
+- ✅ **Type-safe** - Compiler ensures correct ParsedLink structure
+- ✅ **Clean architecture** - Types in `types/`, utilities in `utils/`, following core's pattern
+- ✅ **Testable utilities** - All formatting logic extracted to pure functions with 100% coverage
+- ✅ **Platform awareness** - Tooltips adapt to macOS (Cmd) vs Windows/Linux (Ctrl)
+- ✅ **Reusable code** - Utilities can be used by other components
+
+**Time Taken:** 45 minutes (as estimated)
+
+**Next Steps:**
+
+- Phase 5 Iteration 3.1 Subset 5: Link Handler Implementation (1 hour) — **NEXT**
 - Phase 5 Iteration 3.1 Subset 6: Configuration Integration (30 min)
 
 ---

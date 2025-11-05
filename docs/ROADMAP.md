@@ -1033,6 +1033,60 @@ src/
 
 ---
 
+### 4.5L) Consolidate Extension Types to Standalone Modules (1-2 hours) — 📋 Planned
+
+**Goal:** Organize all TypeScript types/interfaces in the extension package following core's pattern (standalone type files in `types/` folder with index.ts re-exports).
+
+**Current State:**
+
+- ✅ `RangeLinkTerminalLink` already moved to `types/` folder (Phase 5 Iteration 3.1 Subset 4)
+- ❌ Other types scattered across source files
+
+**Why This Matters:**
+
+- Consistency with core architecture
+- Better separation of concerns (types vs implementation)
+- Easier imports and reusability
+- Clear API surface
+
+**Implementation:**
+
+1. **Identify all interfaces/types in extension** (~15 min)
+   - Audit `src/` files for type definitions
+   - Document which types should be extracted
+   - Note any types that should stay co-located with implementations
+
+2. **Create standalone type files** (~30-45 min)
+   - Move each type to `src/types/TypeName.ts`
+   - Add comprehensive JSDoc comments
+   - Follow core's naming and documentation patterns
+
+3. **Update `src/types/index.ts`** (~15 min)
+   - Add exports for all new types
+   - Maintain alphabetical order
+
+4. **Update imports across extension** (~30 min)
+   - Replace inline type imports with `from '../types'`
+   - Verify all files compile
+   - Check for any circular dependencies
+
+5. **Tests and verification** (~15 min)
+   - Run full test suite
+   - Verify extension compiles and runs
+   - Check manual functionality
+
+**Done When:**
+
+- [ ] All reusable types moved to `types/` folder
+- [ ] All source files updated to import from `types/`
+- [ ] Extension compiles with no errors
+- [ ] All tests passing
+- [ ] Documentation updated
+
+**Deferred to:** After Phase 5 completion (post-terminal navigation feature)
+
+---
+
 ## Phase 4.6: Go-To-Market Readiness — 📋 High Priority
 
 Critical items for marketplace launch and user adoption. These should be tackled soon to improve user experience and reduce friction.
@@ -1362,11 +1416,44 @@ describe('Round-trip integration', () => {
 - Registered in extension.ts activation
 - **Note:** Subset 3 merged into Subset 2 - detection was implemented as part of provider
 
+**Subset 4: Link Validation & Parsing** — ✅ Complete
+
+**Core Features:**
+- Parse detected links using `parseLink()` from core
+- Store `ParsedLink` data in `RangeLinkTerminalLink.parsed` field
+- Enhanced tooltips show parsed path and FULL RANGE (platform-aware)
+  - Shows `10-20` not just `10` - highlights value prop immediately!
+- Parse failures handled gracefully (still clickable, warning message)
+- Logging shows parse success/failure counts with full error details
+- Info messages display formatted parsed data
+
+**Architectural Improvements:**
+- Moved `RangeLinkTerminalLink` to `src/types/` folder (follows core's pattern)
+- Extracted `formatLinkPosition()` utility (position range formatting)
+- Extracted `formatLinkTooltip()` utility (platform-aware tooltip generation)
+- Created `getPlatformModifierKey()` utility (Cmd on macOS, Ctrl on Windows/Linux)
+- All presentation logic testable in isolation
+- 100% test coverage for all new utilities (33 tests)
+
 **Remaining Subsets:**
-- ~~Subset 3: Link Detection Implementation~~ — **✅ Complete** (merged into Subset 2)
-- Subset 4: Link Validation & Parsing (45 min) — **NEXT**
-- Subset 5: Link Handler Implementation (1 hour)
+
+- ~~Subset 3: Link Detection Implementation~~ — ✅ Complete (merged into Subset 2)
+- ~~Subset 4: Link Validation & Parsing~~ — ✅ Complete
+- Subset 5: Link Handler Implementation (1 hour) — **NEXT**
 - Subset 6: Configuration Integration (30 min)
+
+**Future UX Enhancement (deferred):**
+
+- **Subset 7: Rectangular Mode Tooltip Indicator** (15 min) — 📋 Planned
+  - **Goal:** Indicate rectangular mode in tooltips to highlight unique feature
+  - **Current:** `Open data.csv:10:5-20:10 (Cmd+Click)` - no indication of rectangular mode
+  - **Options:**
+    - `Open data.csv:10:5-20:10 [Block] (Cmd+Click)`
+    - `Open data.csv:10:5-20:10 (column) (Cmd+Click)`
+    - `Select column data.csv:10:5-20:10 (Cmd+Click)`
+  - **Implementation:** Update `formatLinkTooltip()` to check `parsed.selectionType === 'Rectangular'`
+  - **When:** After Subset 6, if tooltip space allows without overwhelming users
+  - **Rationale:** Shows RangeLink's unique rectangular selection capability vs built-in features
 
 ---
 
