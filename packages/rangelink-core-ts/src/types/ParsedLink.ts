@@ -28,8 +28,8 @@ export interface ParsedLink {
 
   /**
    * The link type (Regular or Portable/BYOD).
-   * - 'regular': Standard RangeLink (e.g., "file.ts#L10-L20")
-   * - 'portable': BYOD link with embedded delimiter metadata
+   * - 'Regular': Standard RangeLink (e.g., "file.ts#L10-L20")
+   * - 'Portable': BYOD link with embedded delimiter metadata (not yet supported in parsing)
    */
   linkType: LinkType;
 

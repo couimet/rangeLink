@@ -1050,6 +1050,228 @@ Searched entire codebase for all usages of `Link` interface:
 
 ---
 
+## Phase 5: Terminal Link Navigation — In Progress
+
+### Iteration 1: Link Parser with Custom Delimiter Support — ✅ Complete
+
+**Completed:** 2025-11-05
+
+**Objective:** Enable parseLink() to accept custom delimiter configurations for terminal link navigation. Parser must handle user-configured delimiters to correctly parse links appearing in terminal output.
+
+**Context:** Terminal link navigation (Phase 5) requires parsing RangeLinks that appear in terminal output. However, the original parser hardcoded GitHub-style delimiters (#, L, C, -). Users with custom delimiter configurations would be unable to navigate their own links.
+
+**Solution:** Add optional `DelimiterConfig` parameter to parseLink() with dynamic regex pattern building.
+
+**Implementation:**
+
+1. **Updated parseLink() signature:**
+   ```typescript
+   export const parseLink = (
+     link: string,
+     delimiters: DelimiterConfig = DEFAULT_DELIMITERS,
+   ): Result<ParsedLink, string>
+   ```
+
+2. **Dynamic Regex Pattern Building:**
+   - Added `escapeRegex()` helper for special character handling
+   - Build pattern from delimiter config at runtime
+   - Pattern: `^${line}(\\d+)(?:${pos}(\\d+))?(?:${range}${line}(\\d+)...)?$`
+   - Properly escapes special regex characters (., *, +, |, etc.)
+
+3. **Multi-Character Delimiter Support:**
+   - Hash delimiter can be multi-character (e.g., ">>", "HASH")
+   - Rectangular mode detection: double the hash length
+   - Example: hash=">>" → regular uses ">>", rectangular uses ">>>>"
+
+4. **Backward Compatibility:**
+   - Optional parameter defaults to DEFAULT_DELIMITERS
+   - All 36 existing tests pass unchanged
+   - No breaking changes to existing code
+
+**Test Coverage:**
+
+Added 7 new test cases (43 total, all passing):
+
+1. Custom single-character delimiters (@, l, p, :)
+2. Custom multi-character delimiters (>>, line, pos, thru)
+3. Rectangular mode with custom hash
+4. Rectangular mode with multi-char hash (>>>>)
+5. Special regex characters in delimiters (!, *, +, |)
+6. Line-only format with custom delimiters
+7. Error handling: wrong delimiter rejection
+
+**Coverage:** 100% maintained on parseLink.ts
+
+**Examples:**
+
+```typescript
+// Default delimiters
+parseLink("src/auth.ts#L42C10-L58C25")
+// → { path: "src/auth.ts", start: { line: 42, char: 10 }, ... }
+
+// Custom delimiters
+const custom = { hash: '@', line: 'line', position: 'pos', range: ':' };
+parseLink("file.ts@line10pos5:line20pos10", custom)
+// → Parses correctly with custom delimiters
+
+// Multi-character delimiters
+const multi = { hash: '>>', line: 'line', position: 'pos', range: 'thru' };
+parseLink("file.ts>>line10pos5thruline20pos10", multi)
+// → Supports verbose delimiter style
+```
+
+**Files Modified:**
+
+- `packages/rangelink-core-ts/src/parsing/parseLink.ts` - Added delimiter config support
+- `packages/rangelink-core-ts/src/__tests__/parsing/parseLink.test.ts` - 7 new test cases
+
+**Test Results:**
+
+- ✅ Core: 43 tests passing (36 existing + 7 new)
+- ✅ Coverage: 100% on parseLink.ts
+- ✅ Backward compatible: All existing tests pass unchanged
+
+**Benefits:**
+
+- ✅ **Terminal navigation ready** - Parser can handle custom delimiters
+- ✅ **Multi-character support** - Future-proofs for BYOD parsing
+- ✅ **Safe regex handling** - Special characters properly escaped
+- ✅ **Clean API** - Optional parameter with sensible default
+- ✅ **100% coverage** - Comprehensive test suite
+
+**BYOD Parsing Decision:**
+
+During this iteration, started implementing BYOD parsing support (BYODMetadata.ts, parseBYODMetadata.ts) but decided to defer it:
+
+- **Rationale:** Terminal navigation is higher priority for immediate user value
+- **Status:** BYOD parsing files created and staged (not committed)
+- **When to revisit:** After Phase 5 (Terminal Link Navigation) is stable
+- **Updated ROADMAP:** Phase 1C marked as deferred with clear rationale
+
+**Roadmap Side Quest:**
+
+Also added critical items discovered during this work:
+
+1. **Phase 4A.2**: Configuration Change Detection (🔴 critical bug)
+   - Extension loads delimiter config once at activation, never reloads
+   - Users must reload window to apply settings changes (poor UX)
+   - Solution: Add VSCode config change listener
+
+2. **Phase 8**: Settings Validation UX Improvements
+   - Pre-save validation via enhanced JSON Schema
+   - "Test Configuration" command for validation before applying
+   - Better error notifications (not just output channel)
+
+**Time Taken:** 1.5 hours (as estimated)
+
+**Next Steps:**
+- Phase 5 Iteration 3.1: Terminal Link Provider - Pattern Detection
+- Phase 4A.2: Fix configuration change listener bug
+- Phase 1C: BYOD Parsing (deferred until terminal navigation complete)
+
+---
+
+### Iteration 1.1: Structured Error Handling — ✅ Complete
+
+**Completed:** 2025-11-05
+
+**Objective:** Replace string error messages with rich RangeLinkError objects for better debugging and error handling.
+
+**Context:** The parseLink() function was returning `Result<ParsedLink, string>` with hardcoded error messages. This made it difficult to programmatically handle specific error cases and provided poor debugging context.
+
+**Solution:** Implement full RangeLinkError objects with codes, messages, functionName, and contextual details.
+
+**Implementation:**
+
+1. **Added 8 Parsing Error Codes to RangeLinkErrorCodes:**
+   ```typescript
+   // Link parsing errors
+   PARSE_CHAR_BACKWARD_SAME_LINE = 'PARSE_CHAR_BACKWARD_SAME_LINE',
+   PARSE_CHAR_BELOW_MINIMUM = 'PARSE_CHAR_BELOW_MINIMUM',
+   PARSE_EMPTY_LINK = 'PARSE_EMPTY_LINK',
+   PARSE_EMPTY_PATH = 'PARSE_EMPTY_PATH',
+   PARSE_INVALID_RANGE_FORMAT = 'PARSE_INVALID_RANGE_FORMAT',
+   PARSE_LINE_BACKWARD = 'PARSE_LINE_BACKWARD',
+   PARSE_LINE_BELOW_MINIMUM = 'PARSE_LINE_BELOW_MINIMUM',
+   PARSE_NO_HASH_SEPARATOR = 'PARSE_NO_HASH_SEPARATOR',
+   ```
+
+2. **Updated parseLink() Signature:**
+   - From: `Result<ParsedLink, string>`
+   - To: `Result<ParsedLink, RangeLinkError>`
+
+3. **Rich Error Context:**
+   All errors now include debugging-friendly details:
+   - **BELOW_MINIMUM errors:** Include `{ received, minimum, position }`
+     - Example: `{ received: 0, minimum: 1, position: 'start' }`
+   - **BACKWARD errors:** Include actual values
+     - Line: `{ startLine: 20, endLine: 10 }`
+     - Char: `{ startChar: 20, endChar: 5, line: 10 }`
+   - **NO_HASH_SEPARATOR:** Include expected delimiter
+     - `{ hash: '@' }` (helpful for custom delimiter debugging)
+   - **INVALID_RANGE_FORMAT:** Include anchor content and delimiters
+     - `{ anchorContent: 'invalid', delimiters: {...} }`
+
+4. **Error Naming Convention:**
+   - Used `*_BELOW_MINIMUM` instead of `*_TOO_SMALL` (more natural)
+   - Descriptive string values matching keys (no numeric codes)
+   - Follows existing pattern: `PARSE_*` prefix for parsing errors
+
+5. **Updated All 43 Tests:**
+   - Changed from string assertions to RangeLinkError assertions
+   - Use `.toBeRangeLinkError()` custom Jest matcher
+   - Verify error codes, messages, functionName, and details
+
+**Test Changes Examples:**
+
+```typescript
+// Before
+expect(result).toBeErrWith((error: string) => {
+  expect(error).toStrictEqual('Start line must be >= 1');
+});
+
+// After
+expect(result).toBeErrWith((error: RangeLinkError) => {
+  expect(error).toBeRangeLinkError({
+    code: RangeLinkErrorCodes.PARSE_LINE_BELOW_MINIMUM,
+    message: 'Start line must be >= 1',
+    functionName: 'parseLink',
+    details: { received: 0, minimum: 1, position: 'start' },
+  });
+});
+```
+
+**Files Modified:**
+- `packages/rangelink-core-ts/src/errors/RangeLinkErrorCodes.ts` - Added 8 parsing error codes
+- `packages/rangelink-core-ts/src/parsing/parseLink.ts` - Converted all string errors to RangeLinkError
+- `packages/rangelink-core-ts/src/__tests__/parsing/parseLink.test.ts` - Updated all 43 tests
+
+**Test Results:**
+- ✅ Core: 43 tests passing (all parseLink tests)
+- ✅ Coverage: 100% on parseLink.ts maintained
+- ✅ All error codes verified with rich context
+
+**Benefits:**
+
+- ✅ **Programmatic error handling** - Can switch on error codes
+- ✅ **Rich debugging context** - Errors include actual/expected values
+- ✅ **Consistent with codebase** - Uses RangeLinkError pattern
+- ✅ **Better logging** - Structured error details automatically logged
+- ✅ **Type-safe** - Compiler ensures all errors are RangeLinkError
+- ✅ **Testable** - Custom matcher validates all error properties
+
+**Error Code Migration Note:**
+
+Original ROADMAP proposed numeric codes (ERR_4001, etc.) but codebase had migrated to descriptive string values. We followed the current pattern using descriptive strings like `PARSE_EMPTY_LINK` instead of `ERR_4001`.
+
+**Time Taken:** Approximately 1.5 hours (30min estimate was for codes only, full RangeLinkError implementation took longer but delivers more value)
+
+**Next Steps:**
+- Phase 5 Iteration 3.1: Terminal Link Provider - Pattern Detection
+- Phase 5 Iteration 1.2: Richer ParsedLink Interface (optional enhancement)
+
+---
+
 ## Related Documentation
 
 - [ROADMAP.md](./ROADMAP.md) - Future development plans

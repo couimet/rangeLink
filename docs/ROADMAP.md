@@ -1052,86 +1052,36 @@ Critical items for marketplace launch and user adoption. These should be tackled
 
 ---
 
-### Iteration 1: Link Parser (PREREQUISITE - 1.5h)
+### Iteration 1: Link Parser (PREREQUISITE - 1.5h) — ✅ Complete
 
-**Status:** ❌ No parsing code exists in codebase
+**Completed:** 2025-11-05 (see [JOURNEY.md](./JOURNEY.md#iteration-1-link-parser-with-custom-delimiter-support--complete) for full details)
 
-**Build:** `packages/rangelink-core-ts/src/parsing/parseLink.ts`
+**Summary:** Added custom delimiter support to parseLink(). Parser now accepts optional DelimiterConfig parameter and dynamically builds regex patterns. Supports single/multi-character delimiters, rectangular mode, and special regex characters. 43 tests passing, 100% coverage maintained.
 
-**What it does:**
+**Key Changes:**
+- parseLink() signature: added optional `delimiters` parameter
+- Dynamic regex pattern building with proper escaping
+- Multi-character hash delimiter support (e.g., ">>", "HASH")
+- 7 new test cases for custom delimiter scenarios
 
-```typescript
-// Input: "src/auth.ts#L42C10-L58C25"
-// Output: {
-//   path: "src/auth.ts",
-//   start: { line: 42, char: 10 },
-//   end: { line: 58, char: 25 },
-//   linkType: 'Regular'
-// }
-```
-
-**Formats to support:**
-
-- `#L10` (single line)
-- `#L10-L20` (multi-line)
-- `#L10C5-L20C10` (with columns)
-- `##L10C5-L20C10` (rectangular)
-
-**NOT in scope:** BYOD parsing (defer to later)
-
-**Done when:** Parser has 100% test coverage for all non-BYOD formats
-
-**Status:** ✅ Complete (163 tests pass, 100% coverage on parseLink.ts)
+**Next:** Iteration 3.1 (Terminal Link Provider - Pattern Detection)
 
 ---
 
-### Iteration 1.1: Structured Error Codes for Parsing (30 min) — 📋 Planned
+### Iteration 1.1: Structured Error Handling for Parsing — ✅ Complete
 
-**Goal:** Replace string error messages with RangeLinkMessageCode enum for consistency and future i18n support.
+**Completed:** 2025-11-05 (see [JOURNEY.md](./JOURNEY.md#iteration-11-structured-error-handling--complete) for full details)
 
-**Current issue:** Parser returns `Result<ParsedLink, string>` with hardcoded error messages like `"Link cannot be empty"`.
+**Summary:** Replaced string errors with rich RangeLinkError objects containing codes, messages, functionName, and contextual details. Went beyond original plan by implementing full RangeLinkError (better than just codes) with debugging-friendly details like `{ received, minimum }` for validation errors.
 
-**What to do:**
-
-1. Add parsing error codes to `RangeLinkMessageCode` (4xxx range):
-
-```typescript
-// Add to src/types/RangeLinkMessageCode.ts
-export enum RangeLinkMessageCode {
-  // ... existing codes ...
-
-  // Parsing errors (4xxx)
-  PARSE_ERR_EMPTY_LINK = 'ERR_4001',
-  PARSE_ERR_NO_HASH_SEPARATOR = 'ERR_4002',
-  PARSE_ERR_EMPTY_PATH = 'ERR_4003',
-  PARSE_ERR_INVALID_RANGE_FORMAT = 'ERR_4004',
-  PARSE_ERR_LINE_TOO_SMALL = 'ERR_4005',
-  PARSE_ERR_LINE_BACKWARD = 'ERR_4006',
-  PARSE_ERR_CHAR_TOO_SMALL = 'ERR_4007',
-  PARSE_ERR_CHAR_BACKWARD_SAME_LINE = 'ERR_4008',
-}
-```
-
-2. Update `parseLink` signature:
-   - From: `Result<ParsedLink, string>`
-   - To: `Result<ParsedLink, RangeLinkMessageCode>`
-
-3. Replace all `Err('message')` calls with `Err(RangeLinkMessageCode.PARSE_ERR_*)`
-
-4. Update all 36 tests to check for error codes instead of strings:
-   - From: `expect(error).toStrictEqual('Link cannot be empty')`
-   - To: `expect(error).toStrictEqual(RangeLinkMessageCode.PARSE_ERR_EMPTY_LINK)`
-
-**Tests:**
-
-- All existing tests should pass with enum-based assertions
-- Coverage remains 100%
-
-**Done when:**
-
-- All parsing errors use RangeLinkMessageCode
-- Tests validate error codes (not strings)
+**Key Changes:**
+- Added 8 parsing error codes: PARSE_EMPTY_LINK, PARSE_NO_HASH_SEPARATOR, PARSE_EMPTY_PATH, PARSE_INVALID_RANGE_FORMAT, PARSE_LINE_BELOW_MINIMUM, PARSE_LINE_BACKWARD, PARSE_CHAR_BELOW_MINIMUM, PARSE_CHAR_BACKWARD_SAME_LINE
+- Updated parseLink signature: `Result<ParsedLink, RangeLinkError>`
+- All errors include rich context (received/minimum values, delimiter info, etc.)
+- All 43 tests updated to use `.toBeRangeLinkError()` matcher
 - 100% test coverage maintained
+
+**Next:** Iteration 3.1 (Terminal Link Provider - Pattern Detection)
 
 ---
 
