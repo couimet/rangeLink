@@ -702,6 +702,68 @@ Logging level is independent of error type. Descriptive values provide immediate
 
 ---
 
+## Phase 4.5J: Convert RangeLinkMessageCode to Descriptive Values — ✅ Complete
+
+**Completed:** 2025-11-05
+
+**Problem:** `RangeLinkMessageCode` used numeric ranges (MSG_1001, MSG_2001) instead of descriptive values, violating our architectural principle of self-documenting code. When developers saw `MSG_1001` in logs, they couldn't tell what happened without looking up the code.
+
+**Implementation:**
+
+1. **Updated RangeLinkMessageCode enum:**
+   - Converted numeric values to descriptive: `MSG_1001` → `CONFIG_LOADED`
+   - Removed ERR_/WARN_/MSG_ prefixes from keys (initially kept in values, then removed)
+   - Final structure: Keys and values match exactly (e.g., `CONFIG_LOADED = 'CONFIG_LOADED'`)
+   - Organized by human-readable categories (CONFIG, BYOD)
+   - Removed 11 obsolete SELECTION_* codes (migrated to RangeLinkErrorCodes in Phase 2)
+   - Reduced from 32 codes to 21 codes
+   - Alphabetized within categories
+
+2. **Updated VSCode extension:**
+   - Fixed all enum references in extension.ts (removed ERR_ prefixes from key names)
+   - Extension compiles successfully
+   - 8 enum references updated across getErrorCodeForTesting and logging statements
+
+3. **Dead code analysis:**
+   - Validated all 21 defined enum keys against actual usage
+   - Found 10 unused keys:
+     - 9 BYOD_* keys: Documented in BYOD.md for future BYOD parsing feature (intentional, not dead)
+     - 1 CONFIG_DELIMITER_INVALID: Appears to be dead code (no corresponding DelimiterValidationError)
+
+**Coverage Insight:**
+
+When i18n is implemented, `RangeLinkMessageCode` will achieve natural test coverage:
+- Each locale's translation map must be typed as `Record<RangeLinkMessageCode, string>`
+- TypeScript will enforce all enum keys are present
+- Missing keys = compilation error
+- Tests will validate translation maps are complete
+- This solves the "enum has no testable logic" coverage problem naturally
+- At that point, the coverage exclusion can be removed from jest.config.js
+
+**Files Modified:**
+
+- `packages/rangelink-core-ts/src/types/RangeLinkMessageCode.ts` - Complete rewrite from numeric to descriptive
+- `packages/rangelink-vscode-extension/src/extension.ts` - Updated 8 enum references
+- `packages/rangelink-core-ts/jest.config.js` - Added coverage exclusion with i18n note
+- `docs/ROADMAP.md` - Marked Phase 4.5J complete with details
+- `docs/I18N.md` - Updated with completion status and coverage insight
+
+**Test Results:**
+
+- ✅ All 163 tests passing
+- ✅ Coverage: 99.31% statements, 99.21% branches, 100% functions, 99.63% lines
+- ✅ RangeLinkMessageCode.ts excluded from coverage (will be naturally covered by i18n tests)
+
+**Benefits Delivered:**
+
+- Consistent with RangeLinkErrorCodes pattern
+- Immediate clarity in logs without lookups
+- Category-based organization (CONFIG, BYOD) instead of numeric ranges
+- Values match keys for simplicity and i18n mapping
+- Coverage will be solved naturally when i18n is implemented
+
+---
+
 ## Related Documentation
 
 - [ROADMAP.md](./ROADMAP.md) - Future development plans

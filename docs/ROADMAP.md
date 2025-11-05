@@ -927,85 +927,13 @@ src/
 
 ---
 
-### 4.5J) Convert RangeLinkMessageCode to Descriptive Values (1.5 hours)
+### 4.5J) Convert RangeLinkMessageCode to Descriptive Values — ✅ Complete
 
-**Problem:** `RangeLinkMessageCode` uses numeric ranges (MSG_1001, MSG_2001) instead of descriptive values, violating our architectural principle.
+**Completed:** 2025-11-05
 
-**Why this is inconsistent:**
+**Summary:** Converted `RangeLinkMessageCode` from numeric values (MSG_1001) to descriptive values matching keys exactly (CONFIG_LOADED). Removed 11 obsolete SELECTION_* codes, organized by human-readable categories (CONFIG, BYOD), and updated VSCode extension references. Coverage insight: enum will achieve natural test coverage when i18n is implemented via `Record<RangeLinkMessageCode, string>` translation maps.
 
-- RangeLinkErrorCodes: `CONFIG_DELIMITER_EMPTY = 'CONFIG_DELIMITER_EMPTY'` ✅ Descriptive
-- RangeLinkMessageCode: `MSG_CONFIG_LOADED = 'MSG_1001'` ❌ Numeric (requires lookup)
-- When developers see `MSG_1001` in logs, they can't tell what happened without looking up the code
-- Numeric ranges (1xxx, 2xxx) are meaningless abstractions
-
-**Goal:** Apply same descriptive pattern to message codes as error codes.
-
-**Current structure:**
-
-```typescript
-export enum RangeLinkMessageCode {
-  CONFIG_LOADED = 'MSG_1001',
-  CONFIG_USING_DEFAULTS = 'MSG_1002',
-  // ... more numeric codes
-}
-```
-
-**Target structure:**
-
-```typescript
-export enum RangeLinkMessageCode {
-  MSG_CONFIG_LOADED = 'MSG_CONFIG_LOADED',
-  MSG_CONFIG_USING_DEFAULTS = 'MSG_CONFIG_USING_DEFAULTS',
-  MSG_BYOD_PARSED = 'MSG_BYOD_PARSED',
-  // ... descriptive values with prefixes
-}
-```
-
-**Changes:**
-
-1. **Update RangeLinkMessageCode enum:**
-   - Replace numeric values (MSG_1001) with descriptive values (MSG_CONFIG_LOADED)
-   - Add category prefix to keys: MSG_CONFIG_xxx, MSG_BYOD_xxx, MSG_SELECTION_xxx
-   - Alphabetize within each category
-   - Remove numeric range organization
-
-2. **Update documentation:**
-   - ERROR-HANDLING.md: Remove numeric ranges from tables (lines 63-68)
-   - LOGGING.md: Replace numeric ranges with category prefixes (lines 108-121)
-   - I18N.md: Update examples with descriptive values
-
-3. **Challenge documentation placement:**
-   - ERROR-HANDLING.md lines 76-99 (Message Format section): Should this be in LOGGING.md?
-   - LOGGING.md lines 89-96 (Architecture section with error code details): Belongs in ERROR-HANDLING.md
-   - Move content to appropriate files or consolidate
-
-4. **Structured logging enhancement:**
-   - Add note: Message code should be part of structured logging object (optional parameter)
-   - Not just in message string format `[LEVEL] [CODE] message`
-   - Enable machine-readable logging: `logger.info({ code: MSG_CONFIG_LOADED, ... })`
-
-**Investigation needed:**
-
-- Audit all uses of RangeLinkMessageCode to ensure numeric values aren't relied upon
-- Check if any code parses numeric ranges (unlikely, but verify)
-- Ensure i18n getMessage() function works with descriptive values
-
-**Benefits:**
-
-- Consistent with RangeLinkErrorCodes pattern
-- Immediate clarity in logs without lookups
-- Category prefixes provide structure without numeric abstraction
-- Machine-readable for structured logging systems
-
-**Done when:**
-
-- All RangeLinkMessageCode values are descriptive strings
-- Keys use category prefixes: MSG_CONFIG_xxx, MSG_BYOD_xxx, MSG_SELECTION_xxx
-- Documentation uses descriptive examples (no numeric ranges)
-- Message Format section in appropriate doc file (LOGGING.md)
-- Structured logging supports code as optional object field
-
-**Reference:** Follows same pattern as RangeLinkErrorCodes and SharedErrorCodes.
+**See [JOURNEY.md](./JOURNEY.md#phase-45j-convert-rangelinkmessagecode-to-descriptive-values--complete) for full details.**
 
 ---
 

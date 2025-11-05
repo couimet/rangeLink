@@ -43,20 +43,20 @@ export function getErrorCodeForTesting(error: DelimiterValidationError): RangeLi
     case DelimiterValidationError.None:
       return RangeLinkMessageCode.CONFIG_LOADED;
     case DelimiterValidationError.Empty:
-      return RangeLinkMessageCode.CONFIG_ERR_DELIMITER_EMPTY;
+      return RangeLinkMessageCode.CONFIG_DELIMITER_EMPTY;
     case DelimiterValidationError.ContainsDigits:
-      return RangeLinkMessageCode.CONFIG_ERR_DELIMITER_DIGITS;
+      return RangeLinkMessageCode.CONFIG_DELIMITER_DIGITS;
     case DelimiterValidationError.ContainsWhitespace:
-      return RangeLinkMessageCode.CONFIG_ERR_DELIMITER_WHITESPACE;
+      return RangeLinkMessageCode.CONFIG_DELIMITER_WHITESPACE;
     case DelimiterValidationError.ContainsReservedChar:
-      return RangeLinkMessageCode.CONFIG_ERR_DELIMITER_RESERVED;
+      return RangeLinkMessageCode.CONFIG_DELIMITER_RESERVED;
     case DelimiterValidationError.HashNotSingleChar:
-      return RangeLinkMessageCode.CONFIG_ERR_HASH_NOT_SINGLE_CHAR;
+      return RangeLinkMessageCode.CONFIG_HASH_NOT_SINGLE_CHAR;
     default: {
       outputChannel.appendLine(
         `[CRITICAL] Unhandled DelimiterValidationError in getErrorCodeForTesting: ${error}`,
       );
-      return RangeLinkMessageCode.CONFIG_ERR_UNKNOWN;
+      return RangeLinkMessageCode.CONFIG_UNKNOWN;
     }
   }
 }
@@ -117,13 +117,13 @@ function loadDelimiterConfig(): DelimiterConfig {
 
   if (hasUniquenessError) {
     outputChannel.appendLine(
-      `[ERROR] [${RangeLinkMessageCode.CONFIG_ERR_DELIMITER_NOT_UNIQUE}] Delimiters must be unique (case-insensitive). Custom settings ignored. Using defaults.`,
+      `[ERROR] [${RangeLinkMessageCode.CONFIG_DELIMITER_NOT_UNIQUE}] Delimiters must be unique (case-insensitive). Custom settings ignored. Using defaults.`,
     );
   }
 
   if (hasSubstringError) {
     outputChannel.appendLine(
-      `[ERROR] [${RangeLinkMessageCode.CONFIG_ERR_DELIMITER_SUBSTRING_CONFLICT}] Delimiters cannot be substrings of each other. Custom settings ignored. Using defaults.`,
+      `[ERROR] [${RangeLinkMessageCode.CONFIG_DELIMITER_SUBSTRING_CONFLICT}] Delimiters cannot be substrings of each other. Custom settings ignored. Using defaults.`,
     );
   }
 

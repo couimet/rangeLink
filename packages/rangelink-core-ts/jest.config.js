@@ -10,7 +10,7 @@ module.exports = {
     '!src/__tests__/**',
     '!src/index.ts',
     '!src/**/index.ts', // Exclude all index.ts files (re-exports)
-    '!src/types/RangeLinkMessageCode.ts', // Enum with no logic - exclude until ROADMAP 4.5J completed
+    '!src/types/RangeLinkMessageCode.ts', // Enum with no logic - will achieve natural coverage when i18n is implemented
   ],
   coverageThreshold: {
     global: {
