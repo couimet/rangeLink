@@ -107,11 +107,11 @@ RangeLink separates **errors** from **messages**:
 
 Informational message codes organized by functional area:
 
-| Range       | Category      | Description                    |
-| ----------- | ------------- | ------------------------------ |
-| `MSG_1xxx`  | Configuration | Configuration status messages  |
-| `MSG_2xxx`  | BYOD Parsing  | BYOD parsing status messages   |
-| `MSG_3xxx`  | Selection     | Selection processing messages  |
+| Range      | Category      | Description                   |
+| ---------- | ------------- | ----------------------------- |
+| `MSG_1xxx` | Configuration | Configuration status messages |
+| `MSG_2xxx` | BYOD Parsing  | BYOD parsing status messages  |
+| `MSG_3xxx` | Selection     | Selection processing messages |
 
 ### Future Categories (Reserved)
 
@@ -180,12 +180,14 @@ export type RangeLinkErrorCodes = RangeLinkSpecificCodes | SharedErrorCodes;
 ### When to Use Each System
 
 **Use RangeLinkErrorCodes when:**
+
 - Throwing errors in internal functions
 - Returning errors in Result types
 - Need structured error context (details, functionName, cause)
 - Building error objects for programmatic handling
 
 **Use RangeLinkMessageCode when:**
+
 - Logging informational messages to output channel
 - Preparing non-error messages for i18n translation
 - Displaying status updates to users

@@ -889,6 +889,7 @@ src/
 **Problem:** `CONFIG_UNKNOWN = 'CONFIG_UNKNOWN'` is a catch-all error code that defeats the purpose of descriptive error handling.
 
 **Why this is tech debt:**
+
 - Catch-all codes make debugging difficult - you can't tell what actually went wrong
 - When someone sees `CONFIG_UNKNOWN` in logs, they have no context
 - Goes against our architectural principle: "descriptive values provide immediate context"
@@ -899,12 +900,14 @@ src/
 **Goal:** Replace `CONFIG_UNKNOWN` with specific error codes for each actual failure scenario.
 
 **Investigation needed:**
+
 - Audit all code paths that could throw `CONFIG_UNKNOWN`
 - Identify distinct error scenarios (e.g., `CONFIG_VALIDATION_FAILED`, `CONFIG_PARSE_ERROR`, `CONFIG_UNSUPPORTED_VALUE`)
 - Create specific error codes with clear names
 - Update error handling to use specific codes
 
 **Changes:**
+
 - Analyze usage of `CONFIG_UNKNOWN` in codebase
 - Define specific error codes for each scenario
 - Update `RangeLinkErrorCodes` enum with new codes
@@ -914,6 +917,7 @@ src/
 - Update documentation
 
 **Done when:**
+
 - `CONFIG_UNKNOWN` deleted from `RangeLinkErrorCodes`
 - All error scenarios have descriptive, specific error codes
 - Tests verify specific error codes (not catch-all)
@@ -928,6 +932,7 @@ src/
 **Problem:** `RangeLinkMessageCode` uses numeric ranges (MSG_1001, MSG_2001) instead of descriptive values, violating our architectural principle.
 
 **Why this is inconsistent:**
+
 - RangeLinkErrorCodes: `CONFIG_DELIMITER_EMPTY = 'CONFIG_DELIMITER_EMPTY'` ✅ Descriptive
 - RangeLinkMessageCode: `MSG_CONFIG_LOADED = 'MSG_1001'` ❌ Numeric (requires lookup)
 - When developers see `MSG_1001` in logs, they can't tell what happened without looking up the code
@@ -936,6 +941,7 @@ src/
 **Goal:** Apply same descriptive pattern to message codes as error codes.
 
 **Current structure:**
+
 ```typescript
 export enum RangeLinkMessageCode {
   CONFIG_LOADED = 'MSG_1001',
@@ -945,6 +951,7 @@ export enum RangeLinkMessageCode {
 ```
 
 **Target structure:**
+
 ```typescript
 export enum RangeLinkMessageCode {
   MSG_CONFIG_LOADED = 'MSG_CONFIG_LOADED',
@@ -978,17 +985,20 @@ export enum RangeLinkMessageCode {
    - Enable machine-readable logging: `logger.info({ code: MSG_CONFIG_LOADED, ... })`
 
 **Investigation needed:**
+
 - Audit all uses of RangeLinkMessageCode to ensure numeric values aren't relied upon
 - Check if any code parses numeric ranges (unlikely, but verify)
 - Ensure i18n getMessage() function works with descriptive values
 
 **Benefits:**
+
 - Consistent with RangeLinkErrorCodes pattern
 - Immediate clarity in logs without lookups
 - Category prefixes provide structure without numeric abstraction
 - Machine-readable for structured logging systems
 
 **Done when:**
+
 - All RangeLinkMessageCode values are descriptive strings
 - Keys use category prefixes: MSG_CONFIG_xxx, MSG_BYOD_xxx, MSG_SELECTION_xxx
 - Documentation uses descriptive examples (no numeric ranges)
