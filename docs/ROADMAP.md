@@ -884,6 +884,45 @@ src/
 
 ---
 
+### 4.5I) Eliminate CONFIG_UNKNOWN Catch-All Error Code (1 hour)
+
+**Problem:** `CONFIG_UNKNOWN = 'CONFIG_UNKNOWN'` is a catch-all error code that defeats the purpose of descriptive error handling.
+
+**Why this is tech debt:**
+- Catch-all codes make debugging difficult - you can't tell what actually went wrong
+- When someone sees `CONFIG_UNKNOWN` in logs, they have no context
+- Goes against our architectural principle: "descriptive values provide immediate context"
+- Forces developers to read full error messages instead of recognizing the error by code
+
+**Root cause:** Defensive programming without identifying all specific error cases upfront.
+
+**Goal:** Replace `CONFIG_UNKNOWN` with specific error codes for each actual failure scenario.
+
+**Investigation needed:**
+- Audit all code paths that could throw `CONFIG_UNKNOWN`
+- Identify distinct error scenarios (e.g., `CONFIG_VALIDATION_FAILED`, `CONFIG_PARSE_ERROR`, `CONFIG_UNSUPPORTED_VALUE`)
+- Create specific error codes with clear names
+- Update error handling to use specific codes
+
+**Changes:**
+- Analyze usage of `CONFIG_UNKNOWN` in codebase
+- Define specific error codes for each scenario
+- Update `RangeLinkErrorCodes` enum with new codes
+- Replace all `CONFIG_UNKNOWN` throws with specific codes
+- Remove `CONFIG_UNKNOWN` from enum
+- Update tests to expect specific error codes
+- Update documentation
+
+**Done when:**
+- `CONFIG_UNKNOWN` deleted from `RangeLinkErrorCodes`
+- All error scenarios have descriptive, specific error codes
+- Tests verify specific error codes (not catch-all)
+- Error logs provide immediate clarity about what went wrong
+
+**Reference:** See `SharedErrorCodes` pattern - even generic codes like `VALIDATION` are more specific than "UNKNOWN".
+
+---
+
 ### 4.5J) Convert RangeLinkMessageCode to Descriptive Values (1.5 hours)
 
 **Problem:** `RangeLinkMessageCode` uses numeric ranges (MSG_1001, MSG_2001) instead of descriptive values, violating our architectural principle.

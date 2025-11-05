@@ -27,6 +27,11 @@ export enum RangeLinkSpecificCodes {
   CONFIG_DELIMITER_SUBSTRING_CONFLICT = 'CONFIG_DELIMITER_SUBSTRING_CONFLICT',
   CONFIG_DELIMITER_WHITESPACE = 'CONFIG_DELIMITER_WHITESPACE',
   CONFIG_HASH_NOT_SINGLE_CHAR = 'CONFIG_HASH_NOT_SINGLE_CHAR',
+  /**
+   * @deprecated Tech debt: Catch-all error code defeats descriptive error handling.
+   * See docs/ROADMAP.md Phase 4.5I for elimination plan.
+   * TODO: Replace with specific error codes for each failure scenario.
+   */
   CONFIG_UNKNOWN = 'CONFIG_UNKNOWN',
 
   //
