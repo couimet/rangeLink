@@ -587,30 +587,95 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
 
 ---
 
-### 4.5B) Eliminate getErrorCodeForTesting Function (1 hour)
+### 4.5B) Separate Extension Config Loading from Core Validation (3-4 hours)
 
-**Problem:** The `getErrorCodeForTesting` function in `extension.ts` maps between two enum systems (`DelimiterValidationError` → `RangeLinkMessageCode`). This mapping layer is ugly and shouldn't exist.
+**ARCHITECTURAL PROBLEM:** Extension and core responsibilities are badly intertwined. Extension tests are testing core validation logic instead of extension concerns. This created technical debt including `getErrorCodeForTesting()` mapping function.
 
-**Root cause:** Two separate validation/error systems that need reconciliation
+**Current Problems:**
 
-**Options to evaluate:**
+1. **Improperly scoped tests** (`extension.test.ts` lines 1347-2635, now skipped):
+   - Tests check core validation logic (digits, whitespace, reserved chars)
+   - Tests check core error codes (`ERR_1002`, `ERR_1003`)
+   - Should test extension behavior (config source, delimiter usage)
 
-1. Core library returns `RangeLinkMessageCode` directly (eliminate `DelimiterValidationError` enum)
-2. Extension maps errors at the boundary layer (config loading) instead of separate function
-3. Core library returns rich error objects that include both error type and message code
+2. **`getErrorCodeForTesting()` is a symptom**:
+   - Maps `DelimiterValidationError` → `RangeLinkMessageCode`
+   - Exists because extension does validation instead of delegating to core
+   - Brittle: breaks when enum values change (Phase 4.5J)
 
-**Changes:**
+3. **`loadDelimiterConfig()` does too much** (`extension.ts` lines 67-162):
+   - Calls core validation directly (`validateDelimiter()`)
+   - Maps validation errors to message codes
+   - Logs errors using extension's `outputChannel`
+   - Should just: load config, call core, log result
 
-- Evaluate which enum should be source of truth
-- Refactor validation to return correct type directly
-- Remove `getErrorCodeForTesting` function entirely
-- Update tests to not depend on this mapping function
+**Extension Responsibilities (What SHOULD Be Tested):**
+
+- ✅ **Config source priority**: Workspace folder > Workspace > User > Default
+- ✅ **Source logging**: "Loaded from workspace folder", "Using defaults"
+- ✅ **Resulting delimiters**: "Using: line='L', position='C', hash='#', range='-'"
+- ❌ **NOT validation logic**: That's core's job
+
+**Refactoring Plan:**
+
+**Step 1: Core provides validation result with message code (1h)**
+- Core's `validateDelimiter()` returns: `Result<string, RangeLinkMessageCode>`
+- Eliminates `DelimiterValidationError` enum
+- Core includes message code directly in error result
+
+**Step 2: Extension delegates validation to core (1h)**
+- `loadDelimiterConfig()` becomes thin wrapper:
+  ```typescript
+  function loadDelimiterConfig(): DelimiterConfig {
+    const config = vscode.workspace.getConfiguration('rangelink');
+    const userDelimiters = { /* ... load from config ... */ };
+
+    // Delegate to core for validation
+    const validationResult = core.validateDelimiterConfig(userDelimiters);
+
+    if (!validationResult.success) {
+      logValidationErrors(validationResult.errors); // Just log, don't validate
+      return DEFAULT_DELIMITERS;
+    }
+
+    logConfigSource(config); // Extension-specific logging
+    return validationResult.value;
+  }
+  ```
+
+**Step 3: Delete `getErrorCodeForTesting()` (15min)**
+- No longer needed - core provides message codes directly
+- Remove function and all references
+
+**Step 4: Rewrite extension tests (1-2h)**
+- Un-skip the 73 tests
+- Focus on extension concerns:
+  - Mock core validation (success/failure)
+  - Test config source detection
+  - Test logging of results
+  - NOT validation logic itself
+
+**Files Modified:**
+
+- `packages/rangelink-core-ts/src/validation/validateDelimiter.ts` - Return message codes
+- `packages/rangelink-vscode-extension/src/extension.ts` - Thin config loading
+- `packages/rangelink-vscode-extension/src/__tests__/extension.test.ts` - Proper scope
+
+**Benefits:**
+
+- Clear separation of concerns (extension vs core)
+- Tests test the right layer
+- No more brittle mapping function
+- Easier to maintain and extend
+- Eliminates technical debt
 
 **Done when:**
 
-- `getErrorCodeForTesting` function deleted
-- All 130 tests pass
-- Error handling is cleaner and more direct
+- `getErrorCodeForTesting()` deleted
+- Core returns `Result<T, RangeLinkMessageCode>` for validation
+- Extension delegates validation to core
+- All tests pass (including un-skipped ones)
+- Tests properly scoped to extension concerns
 
 ---
 
@@ -884,6 +949,147 @@ src/
 **Summary:** Converted `RangeLinkMessageCode` from numeric values (MSG_1001) to descriptive values matching keys exactly (CONFIG_LOADED). Removed 11 obsolete SELECTION_* codes, organized by human-readable categories (CONFIG, BYOD), and updated VSCode extension references. Coverage insight: enum will achieve natural test coverage when i18n is implemented via `Record<RangeLinkMessageCode, string>` translation maps.
 
 **See [JOURNEY.md](./JOURNEY.md#phase-45j-convert-rangelinkmessagecode-to-descriptive-values--complete) for full details.**
+
+---
+
+### 4.5K) Logger Verification Feature (debug + pingLog) (1 hour) — 📋 Planned
+
+**Problem:** The extension calls `setLogger(new VSCodeLogger(outputChannel))` during activation but has no way to verify the logger was initialized correctly. If logger setup fails silently, all subsequent logging will fail without clear indication.
+
+**Goal:** Add `debug()` log level and `pingLog()` standalone function to verify logging communication channel works at all levels.
+
+**Design Principle:** Keep Logger interface clean. `pingLog()` is a standalone function (not a method) that exercises the Logger interface without coupling.
+
+**Implementation:**
+
+**Step 1: Add debug() method to Logger interface (15min)**
+
+```typescript
+// packages/rangelink-core-ts/src/logging/Logger.ts
+export interface Logger {
+  debug(context: object, message: string): void;  // ← New: diagnostic level
+  info(context: object, message: string): void;
+  warn(context: object, message: string): void;
+  error(context: object, message: string): void;
+}
+```
+
+**Step 2: setLogger() confirms initialization immediately (15min)**
+
+```typescript
+// packages/rangelink-core-ts/src/logging/LogManager.ts
+export const setLogger = (newLogger: Logger): void => {
+  logger = newLogger;
+  // Confirm communication channel works immediately
+  logger.debug({ fn: 'setLogger' }, 'Logger initialized');
+};
+```
+
+**Step 3: Create standalone pingLog() function (20min)**
+
+```typescript
+// packages/rangelink-core-ts/src/logging/pingLog.ts
+import { getLogger } from './LogManager';
+
+/**
+ * Exercise all logger levels to verify communication channel.
+ * Extension tests use this to confirm core → outputChannel binding works.
+ *
+ * No return value - extension observes outputChannel for messages.
+ */
+export const pingLog = (): void => {
+  const logger = getLogger();
+  const context = { fn: 'pingLog' };
+
+  logger.debug(context, 'Ping for DEBUG');
+  logger.info(context, 'Ping for INFO');
+  logger.warn(context, 'Ping for WARN');
+  logger.error(context, 'Ping for ERROR');
+};
+```
+
+**Step 4: Implement debug() in VSCodeLogger (10min)**
+
+```typescript
+// packages/rangelink-vscode-extension/src/VSCodeLogger.ts
+export class VSCodeLogger implements Logger {
+  constructor(private outputChannel: vscode.OutputChannel) {}
+
+  debug(context: object, message: string): void {
+    this.log('[DEBUG]', context, message);
+  }
+
+  info(context: object, message: string): void {
+    this.log('[INFO]', context, message);
+  }
+
+  // ... other methods
+}
+```
+
+**Step 5: Tests verify communication channel (remainder)**
+
+```typescript
+// Extension tests use pingLog() to verify binding
+import { pingLog } from 'rangelink-core-ts';
+
+it('should verify logger communication channel', () => {
+  const mockOutputChannel = { appendLine: jest.fn() };
+  const logger = new VSCodeLogger(mockOutputChannel);
+  setLogger(logger);
+
+  // Exercise all log levels
+  pingLog();
+
+  // Verify outputChannel received all 4 messages
+  expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+    expect.stringContaining('[DEBUG]')
+  );
+  expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+    expect.stringContaining('Ping for DEBUG')
+  );
+  // ... verify INFO, WARN, ERROR too
+});
+```
+
+**Benefits:**
+
+- ✅ **Logger interface stays clean** - No `pingLog()` method added
+- ✅ **Appropriate log level** - DEBUG for diagnostic/initialization messages
+- ✅ **Immediate feedback** - `setLogger()` confirms channel works right away
+- ✅ **No feature coupling** - `pingLog()` just exercises existing interface
+- ✅ **Tests verify binding** - Extension tests can confirm core → outputChannel works
+- ✅ **Production-friendly** - DEBUG can be filtered in production
+
+**Usage:**
+
+```typescript
+// Extension activation (automatic verification)
+outputChannel = vscode.window.createOutputChannel('RangeLink');
+setLogger(new VSCodeLogger(outputChannel));
+// ← Logger automatically logs "Logger initialized" via debug()
+
+// Tests (manual verification)
+pingLog(); // Exercises all 4 levels
+// Observe outputChannel for "Ping for DEBUG/INFO/WARN/ERROR" messages
+```
+
+**Files Modified:**
+
+- `packages/rangelink-core-ts/src/logging/Logger.ts` - Add debug() method
+- `packages/rangelink-core-ts/src/logging/LogManager.ts` - Call debug() in setLogger()
+- `packages/rangelink-core-ts/src/logging/pingLog.ts` - New standalone function
+- `packages/rangelink-vscode-extension/src/VSCodeLogger.ts` - Implement debug()
+- `packages/rangelink-vscode-extension/src/__tests__/extension.test.ts` - Test pingLog()
+
+**Done when:**
+
+- `debug()` method added to Logger interface
+- `setLogger()` calls `debug()` to confirm initialization
+- `pingLog()` standalone function created and exported
+- VSCodeLogger implements debug()
+- Tests verify communication channel using pingLog()
+- All tests pass
 
 ---
 

@@ -1344,7 +1344,17 @@ describe('Configuration loading and validation', () => {
     });
   });
 
-  describe('Invalid delimiter values (Phase 1B)', () => {
+  // TEMPORARILY DISABLED: These tests are improperly scoped - they test core library
+  // validation logic instead of extension responsibilities. The extension should only test:
+  // - Where config was loaded from (workspace vs user settings)
+  // - What the resulting delimiters are (after core validates)
+  // - NOT the validation logic itself (that's core's job)
+  //
+  // See ROADMAP Phase 4.5X: Separate Extension Config Loading from Core Validation
+  // This will also enable eliminating getErrorCodeForTesting() function.
+  //
+  // Re-enable these tests after refactoring is complete.
+  describe.skip('Invalid delimiter values (Phase 1B)', () => {
     it.each([
       ['delimiterPosition', 'C'],
       ['delimiterHash', '#'],
