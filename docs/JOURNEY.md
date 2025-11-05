@@ -1687,11 +1687,11 @@ All scenarios detected links correctly with accurate capture groups.
 
 ---
 
-### **Phase 5 Iteration 3.1 Subset 5: Link Handler Implementation** — ✅ Complete
+### **Phase 5 Iteration 3.1 Subset 5: Link Handler Implementation + Bug Fixes** — ✅ Complete
 
-**Completed:** 2025-11-05 (1 hour)
+**Completed:** 2025-11-05 (1 hour 25 minutes: 1h implementation + 25m bug fixes)
 
-**Problem:** Terminal links were detected and parsed (Subset 4) but clicking them only showed info messages. Users expect Cmd+Click to actually open files and navigate to the specified location.
+**Problem:** Terminal links were detected and parsed (Subset 4) but clicking them only showed info messages. Users expect Cmd+Click to actually open files and navigate to the specified location. Additionally, two UX issues were discovered during manual testing.
 
 **Solution:** Implemented full file opening and navigation in `handleTerminalLink()`. Terminal links now:
 - Open files in the editor
@@ -1849,12 +1849,32 @@ All scenarios detected links correctly with accurate capture groups.
 - No path validation before click (assumes parsed path is valid)
 - Multi-folder workspaces use first matching file (no disambiguation UI)
 
-**Time Taken:** 1 hour (as estimated)
+13. **Bug Fix 1: Remove Redundant Tooltip Modifiers** (discovered during manual testing)
+    - **Problem:** VSCode automatically adds ` (cmd + click)` to tooltips
+    - We were manually adding `(Cmd+Click)`, creating duplication:
+      ```
+      "Open file.ts:10 (Cmd+Click) • RangeLink (cmd + click)"
+                       ^^^^^^^^^^^              ^^^^^^^^^^^^^
+                       Our redundant text       VSCode's text
+      ```
+    - **Solution:** Remove our custom platform detection
+    - Deleted `getPlatformModifierKey.ts` utility (~30 lines)
+    - Deleted `getPlatformModifierKey.test.ts` (6 tests)
+    - Updated `formatLinkTooltip()` to remove modifier key logic
+    - **Result:** Clean tooltips matching VSCode format
 
-**Next Steps:**
+14. **Bug Fix 2: Skip Unparsable Terminal Links** (discovered during code review)
+    - **Problem:** Links that failed to parse were still made clickable
+    - Created false expectations - users click and get error message
+    - Example: `file.ts#L0` (invalid) was clickable
+    - **Solution:** Only create clickable links for successfully parsed RangeLinks
+    - Updated `provideTerminalLinks()` to skip parse failures (use `continue`)
+    - Removed parse failure handling from `handleTerminalLink()`
+    - Updated `formatLinkTooltip()` parameter: `ParsedLink | undefined` → `ParsedLink`
+    - Removed test for undefined case
+    - **Result:** Clickability indicates validity - better UX
 
-- Phase 5 Iteration 3.1 Subset 6: Configuration Integration (30 min) — **NEXT**
-- Integrate with Phase 4A.2 (Configuration Change Detection)
+**Time Taken:** 1 hour 25 minutes (1h implementation + 15m bug fix 1 + 10m bug fix 2)
 
 ---
 

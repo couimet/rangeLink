@@ -1,4 +1,4 @@
-import type { DelimiterConfig, Logger, ParsedLink } from 'rangelink-core-ts';
+import type { DelimiterConfig, Logger } from 'rangelink-core-ts';
 import { buildLinkPattern, parseLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -75,6 +75,8 @@ export class RangeLinkTerminalProvider
 
     // Find all matches in the line
     const matches = [...line.matchAll(this.pattern)];
+    const totalMatches = matches.length;
+    let parseFailures = 0;
 
     for (const match of matches) {
       if (token.isCancellationRequested) {
@@ -88,41 +90,40 @@ export class RangeLinkTerminalProvider
       // Parse the link to extract path and positions
       const parseResult = parseLink(fullMatch, this.delimiters);
 
-      let parsed: ParsedLink | undefined;
-      if (parseResult.success) {
-        parsed = parseResult.value;
-      } else {
-        // Log parse failure but still create clickable link
+      if (!parseResult.success) {
+        parseFailures++;
+        // Skip links that fail to parse - don't create clickable links for invalid syntax
         this.logger.debug(
           {
             fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
             link: fullMatch,
             error: parseResult.error, // Full error object with code, message, details
           },
-          'Failed to parse detected link',
+          'Skipping link that failed to parse',
         );
+        continue; // Skip this match
       }
 
+      // Parse succeeded - create clickable link
       links.push({
         startIndex,
         length,
-        tooltip: formatLinkTooltip(parsed),
+        tooltip: formatLinkTooltip(parseResult.value),
         data: fullMatch,
-        parsed,
+        parsed: parseResult.value,
       });
     }
 
-    if (links.length > 0) {
-      const parsedCount = links.filter((l) => l.parsed).length;
+    if (totalMatches > 0) {
       this.logger.debug(
         {
           fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
           lineLength: line.length,
-          linksDetected: links.length,
-          parsedSuccessfully: parsedCount,
-          parseFailed: links.length - parsedCount,
+          matchesFound: totalMatches,
+          linksCreated: links.length,
+          parseFailed: parseFailures,
         },
-        'Detected RangeLinks in terminal line',
+        'Processed RangeLink matches in terminal line',
       );
     }
 
@@ -135,22 +136,28 @@ export class RangeLinkTerminalProvider
    * Opens the file and navigates to the specified position.
    * Supports single positions, ranges, and rectangular mode.
    *
+   * **Safety net:** While we only create links for successfully parsed RangeLinks
+   * in provideTerminalLinks(), this validation acts as a defensive safety net
+   * in case of future changes or bugs.
+   *
    * @param link - The terminal link that was clicked
    */
   async handleTerminalLink(link: RangeLinkTerminalLink): Promise<void> {
     const linkText = link.data;
 
-    // Parse failed - show warning and return
+    // Safety net: Validate link was successfully parsed
+    // (Should never happen since provideTerminalLinks() filters these out,
+    // but defensive programming prevents crashes if assumptions change)
     if (!link.parsed) {
       this.logger.warn(
         {
           fn: 'RangeLinkTerminalProvider.handleTerminalLink',
-          link: linkText,
+          link,
         },
-        'Terminal link clicked but parse failed',
+        'Terminal link clicked but parse data missing (safety net triggered)',
       );
 
-      vscode.window.showWarningMessage(`RangeLink detected but failed to parse: ${linkText}`);
+      vscode.window.showWarningMessage(`RangeLink: Cannot navigate - invalid link format: ${linkText}`);
       return;
     }
 

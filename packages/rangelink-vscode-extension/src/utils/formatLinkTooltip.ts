@@ -1,25 +1,27 @@
 import type { ParsedLink } from 'rangelink-core-ts';
 
 import { formatLinkPosition } from './formatLinkPosition';
-import { getPlatformModifierKey } from './getPlatformModifierKey';
 
 /**
- * Format tooltip text for a terminal link based on parse result.
+ * Format tooltip text for a terminal link.
  *
- * Generates user-friendly tooltip text for RangeLink terminal links with
- * platform-aware modifier key labels (Cmd on macOS, Ctrl on Windows/Linux).
+ * Generates user-friendly tooltip text for RangeLink terminal links.
  * Shows the full selection range to highlight RangeLink's value prop.
  * Includes subtle branding suffix to build awareness.
  *
- * - **Parse success:** Shows "Open {path}:{position} ({modifier}+Click) • RangeLink" with full range
- * - **Parse failure:** Shows generic "Open in editor ({modifier}+Click) • RangeLink" fallback
+ * VSCode automatically appends the platform-specific click instruction
+ * (e.g., "(cmd + click)" on macOS), so we don't include it manually.
  *
- * @param parsed - Parsed link data, or undefined if parsing failed
- * @returns Formatted tooltip text with platform-specific modifier key and branding
+ * **Defensive validation:** Returns `undefined` if the parsed data is invalid
+ * or missing required fields. VSCode will show no tooltip for the link, but
+ * the link remains clickable.
+ *
+ * @param parsed - Parsed link data. Should contain valid path and position data.
+ * @returns Formatted tooltip text with branding, or `undefined` if data is invalid
  *
  * @example
  * ```typescript
- * // Single position (macOS)
+ * // Single position
  * const parsed: ParsedLink = {
  *   path: 'src/auth.ts',
  *   start: { line: 42, char: 10 },
@@ -28,7 +30,8 @@ import { getPlatformModifierKey } from './getPlatformModifierKey';
  *   selectionType: 'Normal'
  * };
  * formatLinkTooltip(parsed);
- * // => "Open src/auth.ts:42:10 (Cmd+Click) • RangeLink"
+ * // => "Open src/auth.ts:42:10 • RangeLink"
+ * // VSCode adds: " (cmd + click)" automatically
  *
  * // Range selection - shows RangeLink's power!
  * const parsed2: ParsedLink = {
@@ -39,22 +42,46 @@ import { getPlatformModifierKey } from './getPlatformModifierKey';
  *   selectionType: 'Normal'
  * };
  * formatLinkTooltip(parsed2);
- * // => "Open src/file.ts:10-20 (Cmd+Click) • RangeLink"
+ * // => "Open src/file.ts:10-20 • RangeLink"
  *
- * // Parse failure
- * formatLinkTooltip(undefined);
- * // => "Open in editor (Cmd+Click) • RangeLink"
+ * // Invalid data - returns undefined
+ * formatLinkTooltip(null as any);
+ * // => undefined
  * ```
  */
-export const formatLinkTooltip = (parsed: ParsedLink | undefined): string => {
-  const modifier = getPlatformModifierKey();
-
-  if (parsed === undefined) {
-    return `Open in editor (${modifier}+Click) • RangeLink`;
+export const formatLinkTooltip = (parsed: ParsedLink): string | undefined => {
+  // Defensive validation: Check parsed data is usable
+  if (!parsed) {
+    return undefined;
   }
 
+  // Validate path exists and is non-empty
+  if (!parsed.path || typeof parsed.path !== 'string' || parsed.path.trim() === '') {
+    return undefined;
+  }
+
+  // Validate start position exists and has valid line number
+  if (!parsed.start || typeof parsed.start.line !== 'number' || parsed.start.line < 1) {
+    return undefined;
+  }
+
+  // Validate end position exists and has valid line number
+  if (!parsed.end || typeof parsed.end.line !== 'number' || parsed.end.line < 1) {
+    return undefined;
+  }
+
+  // Validate char properties if present (must be non-negative)
+  if (parsed.start.char !== undefined && parsed.start.char < 0) {
+    return undefined;
+  }
+
+  if (parsed.end.char !== undefined && parsed.end.char < 0) {
+    return undefined;
+  }
+
+  // All validations passed - format the tooltip
   // Use formatLinkPosition to show full range (highlights RangeLink's value prop)
   const position = formatLinkPosition(parsed.start, parsed.end);
 
-  return `Open ${parsed.path}:${position} (${modifier}+Click) • RangeLink`;
+  return `Open ${parsed.path}:${position} • RangeLink`;
 };
