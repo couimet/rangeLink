@@ -1395,15 +1395,17 @@ All scenarios detected links correctly with accurate capture groups.
 **Time Taken:** 45 minutes (as estimated in detailed plan)
 
 **Next Steps:**
-- Phase 5 Iteration 3.1 Subset 2: Terminal Link Provider Skeleton (30 min)
-- Phase 5 Iteration 3.1 Subset 3: Link Detection Implementation (1 hour)
+- Phase 5 Iteration 3.1 Subset 2: Terminal Link Provider Skeleton (30 min) — ✅ Complete (includes detection)
+- ~~Phase 5 Iteration 3.1 Subset 3: Link Detection Implementation~~ — Merged into Subset 2
 - Phase 5 Iteration 3.1 Subset 4: Link Validation & Parsing (45 min)
 
 ---
 
-### Iteration 3.1 Subset 2: Terminal Link Provider Skeleton — ✅ Complete
+### Iteration 3.1 Subset 2: Terminal Link Provider Skeleton + Detection — ✅ Complete
 
 **Completed:** 2025-11-05
+
+**Note:** This subset delivered both the provider skeleton AND full link detection implementation. Subset 3 "Link Detection Implementation" was merged into this work as detection naturally belongs with the provider implementation.
 
 **Objective:** Implement VS Code TerminalLinkProvider that detects RangeLinks in terminal output and makes them clickable. Show feedback on click (navigation comes later).
 
@@ -1506,10 +1508,12 @@ All scenarios detected links correctly with accurate capture groups.
 
 **Time Taken:** 30 minutes (as estimated)
 
+**Subset 3 Status:** ✅ **Merged into Subset 2** - Link detection was implemented as part of the provider (regex-based detection with `pattern.matchAll()`, clickable links). No additional work needed.
+
 **Next Steps:**
-- Phase 5 Iteration 3.1 Subset 3: Link Detection Implementation (1 hour)
-- Phase 5 Iteration 3.1 Subset 4: Link Validation & Parsing (45 min)
+- Phase 5 Iteration 3.1 Subset 4: Link Validation & Parsing (45 min) — **NEXT**
 - Phase 5 Iteration 3.1 Subset 5: Link Handler Implementation (1 hour)
+- Phase 5 Iteration 3.1 Subset 6: Configuration Integration (30 min)
 
 ---
 

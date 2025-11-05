@@ -1353,16 +1353,18 @@ describe('Round-trip integration', () => {
 - 35 tests, 100% coverage
 - Manual testing verified with 8 realistic terminal scenarios
 
-**Subset 2: Terminal Link Provider Skeleton** — ✅ Complete
+**Subset 2: Terminal Link Provider Skeleton + Detection** — ✅ Complete
 - Implemented `RangeLinkTerminalProvider` class with dependency injection
-- Uses `buildLinkPattern()` for link detection in terminal output
+- **Link detection fully implemented** - Uses `buildLinkPattern()` with `pattern.matchAll()`
+- Links are clickable in terminal output with proper tooltips
 - Shows info message on click (navigation comes in Subset 5)
 - Proper structured logging with LoggingContext
 - Registered in extension.ts activation
+- **Note:** Subset 3 merged into Subset 2 - detection was implemented as part of provider
 
 **Remaining Subsets:**
-- Subset 3: Link Detection Implementation (1 hour)
-- Subset 4: Link Validation & Parsing (45 min)
+- ~~Subset 3: Link Detection Implementation~~ — **✅ Complete** (merged into Subset 2)
+- Subset 4: Link Validation & Parsing (45 min) — **NEXT**
 - Subset 5: Link Handler Implementation (1 hour)
 - Subset 6: Configuration Integration (30 min)
 
