@@ -8,9 +8,6 @@
 // Re-export main service class
 export { RangeLinkService, PathFormat } from './RangeLinkService';
 
-// Re-export public types and interfaces
-export type { Link } from './extension';
-
 // Re-export public enums
 export { DelimiterValidationError } from 'rangelink-core-ts';
 

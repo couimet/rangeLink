@@ -16,18 +16,6 @@ import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { TerminalBindingManager } from './TerminalBindingManager';
 import { VSCodeLogger } from './VSCodeLogger';
 
-/**
- * VSCode-specific link interface (kept for extension API)
- */
-export interface Link {
-  path: string;
-  startLine: number;
-  endLine: number;
-  startPosition?: number;
-  endPosition?: number;
-  isAbsolute: boolean;
-}
-
 // ============================================================================
 // Configuration & Validation
 // ============================================================================

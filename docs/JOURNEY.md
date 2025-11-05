@@ -988,6 +988,68 @@ pingLog(); // Exercises all 4 levels
 
 ---
 
+## Phase 4.5C: Remove Link Interface — ✅ Complete
+
+**Completed:** 2025-11-05
+
+**Problem:** `extension.ts` contained a `Link` interface marked as "kept for extension API" with no clear purpose or usage:
+
+```typescript
+/**
+ * VSCode-specific link interface (kept for extension API)
+ */
+export interface Link {
+  path: string;
+  startLine: number;
+  endLine: number;
+  startPosition?: number;
+  endPosition?: number;
+  isAbsolute: boolean;
+}
+```
+
+**Investigation:**
+
+Searched entire codebase for all usages of `Link` interface:
+
+1. **Defined:** `extension.ts` (lines 22-29)
+2. **Exported:** `index.ts` (line 12) - as public API
+3. **Used:** NOWHERE
+   - ❌ Not used in RangeLinkService
+   - ❌ Not used in tests
+   - ❌ Not used internally in extension.ts
+   - ❌ Not documented anywhere (except ROADMAP task)
+
+**Verdict:** Dead code - exported as public API but completely unused.
+
+**Changes Made:**
+
+1. Removed `Link` interface definition from `extension.ts`
+2. Removed `export type { Link }` from `index.ts`
+3. Verified with tests - all pass unchanged
+
+**Files Modified:**
+
+- `packages/rangelink-vscode-extension/src/extension.ts` - Removed interface
+- `packages/rangelink-vscode-extension/src/index.ts` - Removed export
+
+**Test Results:**
+
+- ✅ Extension: 66 tests passing, 73 skipped
+- ✅ No test failures introduced
+- ✅ Confirms interface was truly unused
+
+**Benefits:**
+
+- ✅ **Cleaner public API** - Removes confusing unused type
+- ✅ **Reduced maintenance** - One less interface to document/maintain
+- ✅ **No breaking changes** - Since it was never used, nothing breaks
+- ✅ **Clarity** - API surface now reflects actual usage
+
+**Time Taken:** 15 minutes (as estimated)
+
+---
+
 ## Related Documentation
 
 - [ROADMAP.md](./ROADMAP.md) - Future development plans
