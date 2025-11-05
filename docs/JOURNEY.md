@@ -1401,6 +1401,118 @@ All scenarios detected links correctly with accurate capture groups.
 
 ---
 
+### Iteration 3.1 Subset 2: Terminal Link Provider Skeleton — ✅ Complete
+
+**Completed:** 2025-11-05
+
+**Objective:** Implement VS Code TerminalLinkProvider that detects RangeLinks in terminal output and makes them clickable. Show feedback on click (navigation comes later).
+
+**Context:** VS Code's TerminalLinkProvider API allows making terminal text clickable. Need skeleton implementation that:
+- Uses `buildLinkPattern()` for link detection
+- Creates TerminalLink objects with proper structure
+- Shows feedback message on click (stub for navigation)
+- Uses dependency injection for testability
+
+**Solution:** Implemented RangeLinkTerminalProvider class with constructor injection and proper VS Code integration.
+
+**Implementation:**
+
+1. **RangeLinkTerminalProvider Class:**
+   - File: `packages/rangelink-vscode-extension/src/navigation/RangeLinkTerminalProvider.ts`
+   - Implements `TerminalLinkProvider<RangeLinkTerminalLink>` interface
+   - Constructor accepts `delimiters: DelimiterConfig` and `logger: Logger`
+   - Dependency injection pattern enables testing with mock logger
+   - Uses `buildLinkPattern()` to generate detection regex
+
+2. **provideTerminalLinks() Method:**
+   - Scans terminal line for RangeLink patterns
+   - Uses `pattern.matchAll()` with global flag to find all matches
+   - Returns array of TerminalLink objects with:
+     - `startIndex`: Match position in line (from `match.index`)
+     - `length`: Match length (from `match[0].length`)
+     - `tooltip`: "Open in editor (Cmd+Click)"
+     - `data`: Full link text (stored for handleTerminalLink)
+   - Supports VS Code cancellation tokens (best practice)
+   - Debug logs when links detected: `{ fn, lineLength, linksDetected }`
+   - Resets `pattern.lastIndex` for global flag correctness
+
+3. **handleTerminalLink() Stub:**
+   - Currently shows info message: "RangeLink detected: {linkText}"
+   - Logs click event at INFO level: `{ fn, link }`
+   - Navigation implementation deferred to Subset 5
+   - Provides user feedback that detection is working
+
+4. **Extension Integration:**
+   - Updated `extension.ts` to register provider in activate()
+   - Passes delimiter config from extension settings
+   - Passes logger instance: `getLogger()`
+   - Registered via: `vscode.window.registerTerminalLinkProvider()`
+   - Automatic cleanup through `context.subscriptions`
+   - Debug log confirms registration: "Terminal link provider registered"
+
+5. **Core Library Exports:**
+   - Created `packages/rangelink-core-ts/src/utils/index.ts`
+   - Exports `buildLinkPattern` and `escapeRegex`
+   - Updated `src/index.ts` to export utils: `export * from './utils'`
+   - Enables clean imports: `import { buildLinkPattern } from 'rangelink-core-ts'`
+
+6. **Dependency Injection Pattern:**
+   - Logger injected via constructor (not `getLogger()` global)
+   - Improves testability - can inject mock logger
+   - All logging calls include required `fn` property
+   - Examples:
+     - `{ fn: 'RangeLinkTerminalProvider.constructor', delimiters }`
+     - `{ fn: 'RangeLinkTerminalProvider.provideTerminalLinks', lineLength, linksDetected }`
+     - `{ fn: 'RangeLinkTerminalProvider.handleTerminalLink', link }`
+
+**Files Created:**
+- `packages/rangelink-vscode-extension/src/navigation/RangeLinkTerminalProvider.ts` - Provider class (128 lines)
+- `packages/rangelink-core-ts/src/utils/index.ts` - Utils barrel export
+
+**Files Modified:**
+- `packages/rangelink-vscode-extension/src/extension.ts` - Register provider in activate()
+- `packages/rangelink-core-ts/src/index.ts` - Export utils module
+
+**Test Results:**
+- ✅ Extension compiles successfully
+- ✅ Core: 256 tests passing (all packages)
+- ✅ Overall coverage: 99.41% statements, 99.27% branches, 100% functions
+
+**Manual Testing Verified (8 test cases):**
+1. ✅ Single line link: `src/auth.ts#L42` is clickable
+2. ✅ Link with columns: `src/validation.ts#L10C5-L20C10` is clickable
+3. ✅ Multiple links: Both `file1.ts#L10` and `file2.ts#L20` work independently
+4. ✅ **Hash-in-filename**: `issue#123/auth.ts#L42` detected correctly (not split at first #)
+5. ✅ Rectangular mode: `data.csv##L10C5-L20C10` detected with double hash
+6. ✅ Windows paths: `C:\\Users\\dev\\project\\src\\file.ts#L42` works
+7. ✅ No false positives: Plain text has no links
+8. ✅ Multiple terminal lines: Each line's links work independently
+
+**Debug Logging Verified:**
+- Constructor: "RangeLinkTerminalProvider initialized with delimiter config"
+- Detection: "Detected RangeLinks in terminal line"
+- Click: "Terminal link clicked"
+
+**Benefits:**
+- ✅ **Links are clickable** - RangeLinks underlined/hoverable in terminal
+- ✅ **Hash-in-filename works** - Correctly detects `issue#123/auth.ts#L42`
+- ✅ **Multiple links per line** - Detects all links independently
+- ✅ **Custom delimiters** - Uses extension settings automatically
+- ✅ **Structured logging** - All events logged with proper context
+- ✅ **Dependency injection** - Logger injected for testability
+- ✅ **VS Code best practices** - Cancellation support, proper cleanup
+- ✅ **Ready for navigation** - Clean separation, easy to add file opening in Subset 5
+- ✅ **User feedback** - Info message confirms detection works
+
+**Time Taken:** 30 minutes (as estimated)
+
+**Next Steps:**
+- Phase 5 Iteration 3.1 Subset 3: Link Detection Implementation (1 hour)
+- Phase 5 Iteration 3.1 Subset 4: Link Validation & Parsing (45 min)
+- Phase 5 Iteration 3.1 Subset 5: Link Handler Implementation (1 hour)
+
+---
+
 ## Related Documentation
 
 - [ROADMAP.md](./ROADMAP.md) - Future development plans

@@ -440,6 +440,7 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
 2. **Extract reloadConfiguration() function:**
    - Reload delimiter config (call loadDelimiterConfig())
    - Recreate RangeLinkService with new delimiters
+   - **🔴 CRITICAL: Recreate TerminalLinkProvider with new delimiters**
    - Log to output channel: "Configuration reloaded"
    - Show status bar notification (optional)
 
@@ -449,9 +450,32 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
    - Create new service with updated delimiters
    - Commands continue to work seamlessly
 
+4. **🔴 CRITICAL: Handle TerminalLinkProvider recreation:**
+   - **Location:** `extension.ts:173-178` (registered during activation)
+   - **Problem:** Provider stores delimiter config in constructor and builds regex pattern once
+   - **Current code:** `new RangeLinkTerminalProvider(delimiters, getLogger())`
+   - **Why critical:** Pattern uses `buildLinkPattern(delimiters)` - stale pattern won't detect links with new delimiters
+   - **Solution:**
+     - Dispose old provider registration (store Disposable from `registerTerminalLinkProvider`)
+     - Create new TerminalLinkProvider with updated delimiters
+     - Re-register with `vscode.window.registerTerminalLinkProvider()`
+     - Add to `context.subscriptions` for cleanup
+   - **Example:**
+     ```typescript
+     // Store disposable at module level
+     let terminalLinkProviderDisposable: vscode.Disposable;
+
+     // On config change:
+     terminalLinkProviderDisposable?.dispose();
+     const newProvider = new RangeLinkTerminalProvider(newDelimiters, getLogger());
+     terminalLinkProviderDisposable = vscode.window.registerTerminalLinkProvider(newProvider);
+     context.subscriptions.push(terminalLinkProviderDisposable);
+     ```
+
 **Edge Cases:**
 
 - Terminal binding persists (doesn't need recreation)
+- **TerminalLinkProvider MUST be recreated** - regex pattern is built in constructor
 - If invalid config, fall back to defaults and notify user
 - Multiple rapid changes: debounce with 500ms delay
 
@@ -460,8 +484,15 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
 - Change delimiter in settings → Extension uses new delimiters immediately
 - Change to invalid delimiter → Falls back to defaults, shows notification
 - Terminal binding survives config reload
+- **TerminalLinkProvider recreation:**
+  - Change delimiter from `#` to `@` → Terminal links use new `@` pattern
+  - Type `echo "file.ts#L10"` → No longer detected (old pattern)
+  - Type `echo "file.ts@L10"` → Now detected and clickable (new pattern)
+  - Verify log shows: "RangeLinkTerminalProvider initialized with delimiter config"
 
-**Done when:** User can change settings during session without window reload, extension updates immediately
+**Done when:**
+- User can change settings during session without window reload, extension updates immediately
+- **TerminalLinkProvider detects links with new delimiters in terminal output**
 
 ---
 
@@ -1309,20 +1340,27 @@ describe('Round-trip integration', () => {
 
 ---
 
-### Iteration 3.1: Terminal Link Provider - Pattern Detection — ✅ Complete (Subset 1)
+### Iteration 3.1: Terminal Link Provider — In Progress (Subsets 1-2 Complete)
 
-**Completed:** 2025-11-05 (see [JOURNEY.md](./JOURNEY.md#phase-5-iteration-31-terminal-link-provider---pattern-detection-subset-1--complete) for full details)
+**Started:** 2025-11-05 (see [JOURNEY.md](./JOURNEY.md#phase-5-iteration-31-terminal-link-provider) for full details)
 
-**Summary:** Created `buildLinkPattern()` utility that generates RegExp patterns for detecting RangeLinks in terminal output. Supports custom delimiters, hash-in-filename, multiple links per line. Pattern uses hybrid strategy (non-greedy for single-char hash, negative lookahead for multi-char). 35 tests, 100% coverage.
+**Completed Subsets:**
 
-**Key Deliverables:**
-- `buildLinkPattern.ts` - Pattern builder utility with global flag for terminal detection
-- Comprehensive test suite: 35 tests covering default/custom delimiters, regex special chars, edge cases
+**Subset 1: Pattern Builder Foundation** — ✅ Complete
+- Created `buildLinkPattern()` utility that generates RegExp patterns for detecting RangeLinks
+- Supports custom delimiters, hash-in-filename, multiple links per line
+- Hybrid strategy: non-greedy for single-char hash, negative lookahead for multi-char
+- 35 tests, 100% coverage
 - Manual testing verified with 8 realistic terminal scenarios
-- Ready for VS Code TerminalLinkProvider integration
+
+**Subset 2: Terminal Link Provider Skeleton** — ✅ Complete
+- Implemented `RangeLinkTerminalProvider` class with dependency injection
+- Uses `buildLinkPattern()` for link detection in terminal output
+- Shows info message on click (navigation comes in Subset 5)
+- Proper structured logging with LoggingContext
+- Registered in extension.ts activation
 
 **Remaining Subsets:**
-- Subset 2: Terminal Link Provider Skeleton (30 min)
 - Subset 3: Link Detection Implementation (1 hour)
 - Subset 4: Link Validation & Parsing (45 min)
 - Subset 5: Link Handler Implementation (1 hour)

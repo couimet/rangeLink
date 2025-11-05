@@ -12,6 +12,7 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { TerminalBindingManager } from './TerminalBindingManager';
 import { VSCodeLogger } from './VSCodeLogger';
@@ -168,6 +169,13 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register terminalBindingManager for automatic disposal on deactivation
   context.subscriptions.push(terminalBindingManager);
+
+  // Register terminal link provider for clickable links
+  const terminalLinkProvider = new RangeLinkTerminalProvider(delimiters, getLogger());
+  context.subscriptions.push(
+    vscode.window.registerTerminalLinkProvider(terminalLinkProvider),
+  );
+  getLogger().debug({ fn: 'activate' }, 'Terminal link provider registered');
 
   // Register commands
   context.subscriptions.push(
