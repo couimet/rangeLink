@@ -82,56 +82,138 @@ All logged messages follow this format:
 
 ## Message Codes
 
-### Code Categories
+### Architecture
 
-Message codes are organized by functional area:
+RangeLink separates **errors** from **messages**:
 
-| Range       | Category      | Type    | Description                         |
-| ----------- | ------------- | ------- | ----------------------------------- |
-| `MSG_1xxx`  | Configuration | Info    | Configuration status messages       |
-| `ERR_1xxx`  | Configuration | Error   | Delimiter validation failures       |
-| `ERR_2xxx`  | BYOD Parsing  | Error   | Portable link parsing failures      |
-| `WARN_2xxx` | BYOD Parsing  | Warning | BYOD recovery and fallback warnings |
+1. **RangeLinkErrorCodes** (Error Handling):
+   - Location: `packages/rangelink-core-ts/src/errors/RangeLinkErrorCodes.ts`
+   - Contains: Error codes WITHOUT prefixes (no `ERR_`, no `WARN_`)
+   - Values: Descriptive strings (same as keys) for log clarity
+   - Pattern: `SELECTION_EMPTY = 'SELECTION_EMPTY'` (follows `SharedErrorCodes`)
+   - Purpose: Exception handling with structured error objects
+   - Principle: If defined here, it's an error. Warning is a logging level.
+   - Usage: `throw new RangeLinkError({ code: RangeLinkErrorCodes.SELECTION_EMPTY, ... })`
+
+2. **RangeLinkMessageCode** (Informational Logging):
+   - Location: `packages/rangelink-core-ts/src/types/RangeLinkMessageCode.ts`
+   - Contains: ONLY `MSG_xxxx` codes
+   - Purpose: Informational messages for i18n logging
+   - Usage: `logger.info(RangeLinkMessageCode.MSG_CONFIG_LOADED, 'Configuration loaded successfully')`
+
+**Key principle:** Logging level is independent of error type. You can catch an error and log it at any level (INFO, WARN, ERROR) based on context.
+
+### Message Code Categories
+
+Informational message codes organized by functional area:
+
+| Range       | Category      | Description                    |
+| ----------- | ------------- | ------------------------------ |
+| `MSG_1xxx`  | Configuration | Configuration status messages  |
+| `MSG_2xxx`  | BYOD Parsing  | BYOD parsing status messages   |
+| `MSG_3xxx`  | Selection     | Selection processing messages  |
 
 ### Future Categories (Reserved)
 
-| Range      | Category    | Type  | Description                  |
-| ---------- | ----------- | ----- | ---------------------------- |
-| `MSG_3xxx` | Navigation  | Info  | Link navigation messages     |
-| `ERR_3xxx` | Navigation  | Error | Navigation failures          |
-| `MSG_4xxx` | Multi-Range | Info  | Multi-range link messages    |
-| `ERR_4xxx` | Multi-Range | Error | Multi-range parsing failures |
+| Range      | Category    | Description               |
+| ---------- | ----------- | ------------------------- |
+| `MSG_4xxx` | Navigation  | Link navigation messages  |
+| `MSG_5xxx` | Multi-Range | Multi-range link messages |
 
 ## Code Organization
 
-### Centralized Enum
+### Informational Message Codes
 
-All message codes are defined in `RangeLinkMessageCode.ts`:
+Message codes for informational logging are defined in `RangeLinkMessageCode.ts`:
 
 ```typescript
 /**
- * Centralized message codes for all RangeLink messages
+ * Informational message codes for logging and i18n.
+ * Contains ONLY MSG_xxxx codes.
  * Organized by category (1xxx = Configuration, 2xxx = BYOD, etc.)
- * These codes enable future i18n support by decoupling message identification from formatting
  */
 export enum RangeLinkMessageCode {
   // Configuration messages (1xxx)
   CONFIG_LOADED = 'MSG_1001',
   CONFIG_USING_DEFAULTS = 'MSG_1002',
-  CONFIG_ERR_DELIMITER_INVALID = 'ERR_1001',
-  CONFIG_ERR_DELIMITER_EMPTY = 'ERR_1002',
-  // ... more codes
+  // ... more MSG_ codes
 
   // BYOD parsing messages (2xxx)
-  BYOD_ERR_INVALID_FORMAT = 'ERR_2001',
-  BYOD_ERR_HASH_INVALID = 'ERR_2002',
-  // ... more codes
+  BYOD_PARSED_SUCCESSFULLY = 'MSG_2001',
+  // ... more MSG_ codes
+
+  // Selection messages (3xxx)
+  SELECTION_PROCESSED = 'MSG_3001',
+  // ... more MSG_ codes
 }
 ```
 
+### Error Codes
+
+Error codes for exception handling are defined in `RangeLinkErrorCodes.ts`:
+
+```typescript
+/**
+ * Error codes for exception handling.
+ * No prefixes: if defined here, it's an error.
+ * Warning is a logging level, not an error type.
+ * Values are descriptive strings (same as keys) for log clarity.
+ */
+export enum RangeLinkSpecificCodes {
+  // Configuration errors
+  CONFIG_DELIMITER_EMPTY = 'CONFIG_DELIMITER_EMPTY',
+  CONFIG_DELIMITER_INVALID = 'CONFIG_DELIMITER_INVALID',
+  // ... more codes
+
+  // BYOD parsing errors
+  BYOD_INVALID_FORMAT = 'BYOD_INVALID_FORMAT',
+  // ... more codes
+
+  // Selection validation errors
+  SELECTION_EMPTY = 'SELECTION_EMPTY',
+  // ... more codes
+}
+
+export type RangeLinkErrorCodes = RangeLinkSpecificCodes | SharedErrorCodes;
+```
+
+### When to Use Each System
+
+**Use RangeLinkErrorCodes when:**
+- Throwing errors in internal functions
+- Returning errors in Result types
+- Need structured error context (details, functionName, cause)
+- Building error objects for programmatic handling
+
+**Use RangeLinkMessageCode when:**
+- Logging informational messages to output channel
+- Preparing non-error messages for i18n translation
+- Displaying status updates to users
+- Tracking successful operations
+
 ### Usage in Code
 
-**Logger interface:**
+**Error handling (RangeLinkErrorCodes):**
+
+```typescript
+import { RangeLinkError, RangeLinkErrorCodes } from 'rangelink-core-ts';
+
+// Throw structured error
+throw new RangeLinkError({
+  code: RangeLinkErrorCodes.SELECTION_EMPTY,
+  message: 'Selections array must not be empty',
+  functionName: 'validateInputSelection',
+  details: { selectionsLength: 0 }
+});
+
+// Return error in Result
+return Err(new RangeLinkError({
+  code: RangeLinkErrorCodes.CONFIG_DELIMITER_EMPTY,
+  message: 'Delimiter cannot be empty'
+}));
+```
+
+**Logger interface (RangeLinkMessageCode):**
 
 ```typescript
 interface Logger {

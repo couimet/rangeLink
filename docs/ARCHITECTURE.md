@@ -172,26 +172,67 @@ tests/
 - ✅ Custom configurations (all delimiter combinations)
 - ✅ BYOD parsing (portable links)
 
-### 4. Structured Logging
+### 4. Structured Error Handling
 
-**Principle:** All messages use stable error codes for i18n readiness.
+**Principle:** Separate errors from informational messages.
 
-**Format:** `[LEVEL] [CODE] message`
+**Two-tier system:**
+
+1. **RangeLinkErrorCodes** (Error Handling):
+   - Error codes WITHOUT prefixes (no `ERR_`, no `WARN_`)
+   - Values are descriptive strings (same as keys): `SELECTION_EMPTY = 'SELECTION_EMPTY'`
+   - Used with `RangeLinkError` for structured exception handling
+   - Includes: code, message, functionName, details, cause
+   - Purpose: Programmatic error handling
+   - Principle: If defined here, it's an error. Warning is a logging level.
+   - Follows `SharedErrorCodes` pattern for immediate log clarity
+
+2. **RangeLinkMessageCode** (Informational Logging):
+   - Contains ONLY `MSG_xxxx` codes
+   - Used for informational logging and i18n
+   - Purpose: Status updates, successful operations
+   - Stable identifiers for message templates
+
+**Key principle:** Logging level is independent of error type. You can catch an error and log it at any level (INFO, WARN, ERROR) based on context.
 
 **Example:**
 
 ```typescript
-[INFO] [MSG_1001] Configuration loaded: line="L", column="C"
-[ERROR] [ERR_1005] Invalid delimiterLine value "L~" (reserved character '~')
+// Error handling - structured exception
+throw new RangeLinkError({
+  code: RangeLinkErrorCodes.SELECTION_EMPTY,
+  message: 'Selections array must not be empty',
+  functionName: 'validateInputSelection',
+  details: { selectionsLength: 0 }
+});
+
+// Informational logging - status update
+logger.info(
+  RangeLinkMessageCode.MSG_CONFIG_LOADED,
+  'Configuration loaded: line="L", column="C", hash="#", range="-"'
+);
+
+// Flexible logging - catch error, log at any level
+try {
+  validateSelection(input);
+} catch (error) {
+  if (error instanceof RangeLinkError) {
+    // Log validation error as INFO if we're using defaults
+    logger.info(RangeLinkMessageCode.MSG_CONFIG_USING_DEFAULTS,
+      `Using defaults due to: ${error.message}`);
+  }
+}
 ```
 
 **Benefits:**
 
-- 🌍 i18n-ready (codes map to translations)
-- 🔍 Searchable (unique codes)
-- 📊 Analytics-friendly (aggregate by code)
+- 🎯 Clear separation: errors are errors, messages are messages
+- 🔒 Type-safe error structures with rich context
+- 🌍 i18n-ready (message codes map to translations)
+- 🔄 Flexible logging (error level independent of error type)
+- 🧪 Testable (custom Jest matchers for error validation)
 
-See [LOGGING.md](./LOGGING.md) for complete logging specification.
+See [ERROR-HANDLING.md](./ERROR-HANDLING.md) for complete error handling specification.
 
 ### 5. Incremental Development
 
