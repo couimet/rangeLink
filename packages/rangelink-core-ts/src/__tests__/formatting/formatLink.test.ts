@@ -1,8 +1,9 @@
 import { formatLink } from '../../formatting/formatLink';
+import { RangeLinkError } from '../../errors/RangeLinkError';
+import { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { FormattedLink } from '../../types/FormattedLink';
 import { InputSelection } from '../../types/InputSelection';
-import { RangeLinkMessageCode } from '../../types/RangeLinkMessageCode';
 import { RangeNotation } from '../../types/RangeNotation';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
@@ -178,8 +179,13 @@ describe('formatLink', () => {
     };
 
     const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
-    expect(result).toBeErrWith((error) => {
-      expect(error).toBe(RangeLinkMessageCode.SELECTION_ERR_EMPTY);
+    expect(result).toBeErrWith((error: RangeLinkError) => {
+      expect(error).toBeRangeLinkError({
+        code: RangeLinkErrorCodes.SELECTION_EMPTY,
+        message: 'Selections array must not be empty',
+        functionName: 'validateInputSelection',
+        details: { selectionsLength: 0 },
+      });
     });
   });
 

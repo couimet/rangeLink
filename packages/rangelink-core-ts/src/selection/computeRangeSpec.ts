@@ -1,9 +1,8 @@
-import { SelectionValidationError } from '../errors/SelectionValidationError';
+import { RangeLinkError } from '../errors/RangeLinkError';
 import { ComputedSelection } from '../types/ComputedSelection';
 import { FormatOptions } from '../types/FormatOptions';
 import { InputSelection } from '../types/InputSelection';
 import { RangeFormat } from '../types/RangeFormat';
-import { RangeLinkMessageCode } from '../types/RangeLinkMessageCode';
 import { RangeNotation } from '../types/RangeNotation';
 import { Err, Ok, Result } from '../types/Result';
 import { SelectionCoverage } from '../types/SelectionCoverage';
@@ -16,18 +15,17 @@ import { validateInputSelection } from './validateInputSelection';
  *
  * @param inputSelection InputSelection containing selections array and selectionType
  * @param options Optional formatting parameters (notation, linkType, etc.)
- * @returns Result<ComputedSelection, RangeLinkMessageCode> - Ok with computed selection or Err with error code
+ * @returns Result<ComputedSelection, RangeLinkError> - Ok with computed selection or Err with error
  */
 export function computeRangeSpec(
   inputSelection: InputSelection,
   options?: FormatOptions,
-): Result<ComputedSelection, RangeLinkMessageCode> {
-  // Validate input selection (throws SelectionValidationError on failure)
+): Result<ComputedSelection, RangeLinkError> {
   try {
     validateInputSelection(inputSelection);
   } catch (error) {
-    if (error instanceof SelectionValidationError) {
-      return Err(error.code);
+    if (error instanceof RangeLinkError) {
+      return Err(error);
     }
     throw error; // Re-throw unexpected errors
   }

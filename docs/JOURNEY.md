@@ -630,7 +630,7 @@ VSCode Extension:
 Created dual-purpose error system following `SharedErrorCodes` pattern:
 
 1. **RangeLinkErrorCodes** (Error Handling):
-   - Error codes WITHOUT prefixes (no ERR_, no WARN_)
+   - Error codes WITHOUT prefixes (no ERR*, no WARN*)
    - Descriptive string values: `SELECTION_EMPTY = 'SELECTION_EMPTY'`
    - Provides immediate context in logs without lookups
    - 29 error codes, alphabetically sorted within categories

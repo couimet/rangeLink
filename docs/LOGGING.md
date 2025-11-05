@@ -203,14 +203,16 @@ throw new RangeLinkError({
   code: RangeLinkErrorCodes.SELECTION_EMPTY,
   message: 'Selections array must not be empty',
   functionName: 'validateInputSelection',
-  details: { selectionsLength: 0 }
+  details: { selectionsLength: 0 },
 });
 
 // Return error in Result
-return Err(new RangeLinkError({
-  code: RangeLinkErrorCodes.CONFIG_DELIMITER_EMPTY,
-  message: 'Delimiter cannot be empty'
-}));
+return Err(
+  new RangeLinkError({
+    code: RangeLinkErrorCodes.CONFIG_DELIMITER_EMPTY,
+    message: 'Delimiter cannot be empty',
+  }),
+);
 ```
 
 **Logger interface (RangeLinkMessageCode):**

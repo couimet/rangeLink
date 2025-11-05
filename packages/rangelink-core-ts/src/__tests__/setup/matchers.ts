@@ -1,5 +1,9 @@
 import { Result } from '../../types/Result';
-import { toBeRangeLinkError, type ExpectedRangeLinkError } from '../matchers/toBeRangeLinkError';
+import {
+  toBeRangeLinkError,
+  toThrowRangeLinkError,
+  type ExpectedRangeLinkError,
+} from '../matchers/toBeRangeLinkError';
 
 declare global {
   namespace jest {
@@ -9,12 +13,14 @@ declare global {
       toBeErr(): R;
       toBeErrWith<E>(assertError: (error: E) => void): R;
       toBeRangeLinkError(expected: ExpectedRangeLinkError): R;
+      toThrowRangeLinkError(expected: ExpectedRangeLinkError): R;
     }
   }
 }
 
 expect.extend({
   toBeRangeLinkError,
+  toThrowRangeLinkError,
 
   toBeOk(received: Result<unknown, unknown>) {
     const pass = received.success === true;

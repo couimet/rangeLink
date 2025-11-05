@@ -1,30 +1,34 @@
-import type { RangeLinkError } from '../../errors/RangeLinkError';
+import { RangeLinkError } from '../../errors/RangeLinkError';
 import type { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import type { ErrorDetails } from '../../errors/detailedError';
 
 /**
- * Expected error properties for strict validation
+ * Expected error properties for strict validation.
  */
 export interface ExpectedRangeLinkError {
-  /** Expected error code */
+  /** Expected error code (required) */
   code: RangeLinkErrorCodes;
-  /** Expected error message (exact match) */
+  /** Expected error message - exact match (required) */
   message: string;
-  /** Expected function name (optional) */
-  functionName?: string;
-  /** Expected error details (optional, uses strict equality) */
+  /** Expected function name (required - all RangeLinkErrors must have this) */
+  functionName: string;
+  /** Expected error details - uses toStrictEqual (optional) */
   details?: ErrorDetails;
+  /** Expected cause error (optional) */
+  cause?: Error;
 }
 
 /**
  * Custom Jest matcher to validate RangeLinkError objects with strict equality.
+ * Enforces that all required properties from DetailedError are present and correct.
  *
  * Validates:
- * - Error is instance of RangeLinkError
- * - Code matches exactly
- * - Message matches exactly
- * - Function name matches (if provided)
- * - Details match with strict equality (if provided)
+ * - Error is actual instance of RangeLinkError class (not just duck-typed)
+ * - Code matches exactly (required)
+ * - Message matches exactly (required)
+ * - Function name matches exactly (required - all errors must have this)
+ * - Details match with toStrictEqual (optional)
+ * - Cause matches (optional)
  *
  * @example
  * ```typescript
@@ -36,51 +40,63 @@ export interface ExpectedRangeLinkError {
  * });
  * ```
  */
-export function toBeRangeLinkError(
+export const toBeRangeLinkError = (
   received: unknown,
   expected: ExpectedRangeLinkError,
-): jest.CustomMatcherResult {
-  // Type guard check
-  if (!(received && typeof received === 'object' && 'code' in received && 'message' in received)) {
+): jest.CustomMatcherResult => {
+  const failures: string[] = [];
+
+  // CRITICAL: Enforce actual RangeLinkError instance (not duck-typed)
+  if (!(received instanceof RangeLinkError)) {
     return {
       pass: false,
-      message: () =>
-        `Expected value to be a RangeLinkError, but received: ${JSON.stringify(received)}`,
+      message: () => {
+        const receivedType = received?.constructor?.name || typeof received;
+        return `Expected value to be an instance of RangeLinkError, but received: ${receivedType}\n  Value: ${JSON.stringify(received)}`;
+      },
     };
   }
 
   const error = received as RangeLinkError;
-  const failures: string[] = [];
 
-  // Check error code (exact match)
+  // Validate required property: code (exact match)
   if (error.code !== expected.code) {
-    failures.push(`  Code: expected ${expected.code}, received ${error.code}`);
+    failures.push(`  Code: expected "${expected.code}", received "${error.code}"`);
   }
 
-  // Check message (exact match)
+  // Validate required property: message (exact match)
   if (error.message !== expected.message) {
     failures.push(
-      `  Message: expected "${expected.message}", received "${error.message}"`,
+      `  Message:\n    expected: "${expected.message}"\n    received: "${error.message}"`,
     );
   }
 
-  // Check function name if provided
-  if (expected.functionName !== undefined) {
-    if (error.functionName !== expected.functionName) {
-      failures.push(
-        `  Function name: expected "${expected.functionName}", received "${error.functionName}"`,
-      );
-    }
+  // Validate required property: functionName (exact match)
+  if (error.functionName !== expected.functionName) {
+    failures.push(
+      `  Function name: expected "${expected.functionName}", received "${error.functionName || 'undefined'}"`,
+    );
   }
 
-  // Check details if provided (strict equality)
+  // Validate optional property: details (strict equality)
   if (expected.details !== undefined) {
     try {
       expect(error.details).toStrictEqual(expected.details);
     } catch (e) {
       failures.push(
-        `  Details: expected ${JSON.stringify(expected.details, null, 2)}, received ${JSON.stringify(error.details, null, 2)}`,
+        `  Details (toStrictEqual):\n    expected: ${JSON.stringify(expected.details, null, 2)}\n    received: ${JSON.stringify(error.details, null, 2)}`,
       );
+    }
+  }
+
+  // Validate optional property: cause
+  if (expected.cause !== undefined) {
+    if (error.cause !== expected.cause) {
+      const expectedCauseMsg =
+        expected.cause instanceof Error ? expected.cause.message : 'undefined';
+      const receivedCauseMsg =
+        error.cause instanceof Error ? (error.cause as Error).message : 'undefined';
+      failures.push(`  Cause: expected ${expectedCauseMsg}, received ${receivedCauseMsg}`);
     }
   }
 
@@ -89,18 +105,59 @@ export function toBeRangeLinkError(
   return {
     pass,
     message: pass
-      ? () => `Expected error not to match RangeLinkError, but it did`
-      : () => `Expected RangeLinkError to match:\n${failures.join('\n')}`,
+      ? () =>
+          `Expected error not to match RangeLinkError with properties:\n${JSON.stringify(expected, null, 2)}`
+      : () => `Expected RangeLinkError to match all properties:\n${failures.join('\n')}`,
   };
-}
+};
 
 /**
- * TypeScript declaration for Jest matcher
+ * Custom Jest matcher for testing functions that throw RangeLinkError.
+ * Follows Jest's standard `.toThrow()` pattern.
+ *
+ * @example
+ * ```typescript
+ * expect(() => validateInputSelection(input)).toThrowRangeLinkError({
+ *   code: RangeLinkErrorCodes.SELECTION_EMPTY,
+ *   message: 'Selections array must not be empty',
+ *   functionName: 'validateInputSelection'
+ * });
+ * ```
+ */
+export const toThrowRangeLinkError = (
+  received: () => void,
+  expected: ExpectedRangeLinkError,
+): jest.CustomMatcherResult => {
+  let caughtError: unknown;
+
+  // Execute the function and catch any error
+  try {
+    received();
+  } catch (error) {
+    caughtError = error;
+  }
+
+  // If nothing was thrown
+  if (caughtError === undefined) {
+    return {
+      pass: false,
+      message: () =>
+        `Expected function to throw RangeLinkError with code "${expected.code}", but nothing was thrown`,
+    };
+  }
+
+  // Use the existing validation logic from toBeRangeLinkError
+  return toBeRangeLinkError(caughtError, expected);
+};
+
+/**
+ * TypeScript declaration for Jest matchers
  */
 declare global {
   namespace jest {
     interface Matchers<R> {
       toBeRangeLinkError(expected: ExpectedRangeLinkError): R;
+      toThrowRangeLinkError(expected: ExpectedRangeLinkError): R;
     }
   }
 }

@@ -1,3 +1,4 @@
+import { RangeLinkError } from '../errors/RangeLinkError';
 import { getLogger } from '../logging/LogManager';
 import { computeRangeSpec } from '../selection/computeRangeSpec';
 import { DelimiterConfig } from '../types/DelimiterConfig';
@@ -5,7 +6,6 @@ import { FormatOptions } from '../types/FormatOptions';
 import { FormattedLink } from '../types/FormattedLink';
 import { InputSelection } from '../types/InputSelection';
 import { LinkType } from '../types/LinkType';
-import { RangeLinkMessageCode } from '../types/RangeLinkMessageCode';
 import { Ok, Result } from '../types/Result';
 
 import { buildAnchor } from './buildAnchor';
@@ -20,14 +20,14 @@ import { joinWithHash } from './joinWithHash';
  * @param inputSelection InputSelection containing selections and selectionType
  * @param delimiters Delimiter configuration
  * @param options Optional formatting options
- * @returns Result<FormattedLink, RangeLinkMessageCode> - formatted link with metadata or error code
+ * @returns Result<FormattedLink, RangeLinkError> - formatted link with metadata or error
  */
 export function formatLink(
   path: string,
   inputSelection: InputSelection,
   delimiters: DelimiterConfig,
   options?: FormatOptions,
-): Result<FormattedLink, RangeLinkMessageCode> {
+): Result<FormattedLink, RangeLinkError> {
   const logger = getLogger();
 
   // Validate and compute range spec
