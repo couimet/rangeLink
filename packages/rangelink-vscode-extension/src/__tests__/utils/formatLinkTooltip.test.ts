@@ -161,7 +161,9 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual('Open bigfile.ts:9999:99-10000:1 • RangeLink');
+      expect(formatLinkTooltip(parsed)).toStrictEqual(
+        'Open bigfile.ts:9999:99-10000:1 • RangeLink',
+      );
     });
 
     it('should handle character position 0', () => {

@@ -74,9 +74,10 @@ describe('resolveWorkspacePath', () => {
     it('should handle platform-native absolute paths', async () => {
       // Use platform-appropriate absolute path
       // This test verifies absolute path handling on the current platform
-      const absolutePath = process.platform === 'win32'
-        ? 'C:\\Users\\name\\project\\src\\file.ts'
-        : '/Users/name/project/src/file.ts';
+      const absolutePath =
+        process.platform === 'win32'
+          ? 'C:\\Users\\name\\project\\src\\file.ts'
+          : '/Users/name/project/src/file.ts';
 
       mockStat.mockResolvedValueOnce({} as any);
 
@@ -115,10 +116,7 @@ describe('resolveWorkspacePath', () => {
       const expectedPath = path.join(workspace2, relativePath);
 
       Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: [
-          { uri: { fsPath: workspace1 } },
-          { uri: { fsPath: workspace2 } },
-        ],
+        value: [{ uri: { fsPath: workspace1 } }, { uri: { fsPath: workspace2 } }],
         writable: true,
         configurable: true,
       });
@@ -146,10 +144,7 @@ describe('resolveWorkspacePath', () => {
       const relativePath = 'src/nonexistent.ts';
 
       Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: [
-          { uri: { fsPath: workspace1 } },
-          { uri: { fsPath: workspace2 } },
-        ],
+        value: [{ uri: { fsPath: workspace1 } }, { uri: { fsPath: workspace2 } }],
         writable: true,
         configurable: true,
       });

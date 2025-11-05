@@ -80,7 +80,9 @@ describe('RangeLinkTerminalProvider', () => {
         fn: 'RangeLinkTerminalProvider.handleTerminalLink',
         link,
       });
-      expect(warnCall[1]).toStrictEqual('Terminal link clicked but parse data missing (safety net triggered)');
+      expect(warnCall[1]).toStrictEqual(
+        'Terminal link clicked but parse data missing (safety net triggered)',
+      );
 
       expect(vscode.window.showWarningMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot navigate - invalid link format: file.ts#L0',

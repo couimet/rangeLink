@@ -1694,6 +1694,7 @@ All scenarios detected links correctly with accurate capture groups.
 **Problem:** Terminal links were detected and parsed (Subset 4) but clicking them only showed info messages. Users expect Cmd+Click to actually open files and navigate to the specified location. Additionally, two UX issues were discovered during manual testing.
 
 **Solution:** Implemented full file opening and navigation in `handleTerminalLink()`. Terminal links now:
+
 - Open files in the editor
 - Navigate to specified positions (line and column)
 - Support all selection types (single, ranges, rectangular mode)

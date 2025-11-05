@@ -157,7 +157,9 @@ export class RangeLinkTerminalProvider
         'Terminal link clicked but parse data missing (safety net triggered)',
       );
 
-      vscode.window.showWarningMessage(`RangeLink: Cannot navigate - invalid link format: ${linkText}`);
+      vscode.window.showWarningMessage(
+        `RangeLink: Cannot navigate - invalid link format: ${linkText}`,
+      );
       return;
     }
 

@@ -30,9 +30,7 @@ import * as vscode from 'vscode';
  * // => undefined
  * ```
  */
-export const resolveWorkspacePath = async (
-  linkPath: string,
-): Promise<vscode.Uri | undefined> => {
+export const resolveWorkspacePath = async (linkPath: string): Promise<vscode.Uri | undefined> => {
   // Try as absolute path first
   if (path.isAbsolute(linkPath)) {
     const uri = vscode.Uri.file(linkPath);
