@@ -87,9 +87,7 @@ describe('escapeRegex', () => {
     });
 
     it('should escape all special characters in complex pattern', () => {
-      expect(escapeRegex('(a|b).{1,3}[cd]+')).toStrictEqual(
-        '\\(a\\|b\\)\\.\\{1,3\\}\\[cd\\]\\+',
-      );
+      expect(escapeRegex('(a|b).{1,3}[cd]+')).toStrictEqual('\\(a\\|b\\)\\.\\{1,3\\}\\[cd\\]\\+');
     });
 
     it('should escape repeated special characters', () => {

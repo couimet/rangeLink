@@ -92,10 +92,7 @@ export const parseLink = (
       'No delimiter config provided, using DEFAULT_DELIMITERS',
     );
   } else {
-    logger.debug(
-      { ...logCtx, delimiters: activeDelimiters },
-      'Using provided delimiter config',
-    );
+    logger.debug({ ...logCtx, delimiters: activeDelimiters }, 'Using provided delimiter config');
   }
 
   // Escape delimiters for regex matching
@@ -118,7 +115,7 @@ export const parseLink = (
   // This is acceptable since multi-char delimiters are rare in practice.
   const pathPattern =
     activeDelimiters.hash.length === 1
-      ? '(.+?)'  // Single-char: allow in path, non-greedy matching
+      ? '(.+?)' // Single-char: allow in path, non-greedy matching
       : `((?:(?!${escapedHash}).)+)`; // Multi-char: prevent in path with negative lookahead
 
   const fullLinkPattern = new RegExp(

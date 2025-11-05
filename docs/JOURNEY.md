@@ -733,6 +733,7 @@ Logging level is independent of error type. Descriptive values provide immediate
 **Coverage Insight:**
 
 When i18n is implemented, `RangeLinkMessageCode` will achieve natural test coverage:
+
 - Each locale's translation map must be typed as `Record<RangeLinkMessageCode, string>`
 - TypeScript will enforce all enum keys are present
 - Missing keys = compilation error
@@ -895,10 +896,12 @@ This meant tests were importing from `extension.ts` when they should import from
 **Implementation:**
 
 **Step 1: Logger interface already had debug() method** ✅
+
 - Logger interface already included `debug(ctx: LoggingContext, message: string): void`
 - No changes needed - interface was already complete
 
 **Step 2: Updated setLogger() to confirm initialization (15min)**
+
 ```typescript
 // packages/rangelink-core-ts/src/logging/LogManager.ts
 export function setLogger(newLogger: Logger): void {
@@ -909,6 +912,7 @@ export function setLogger(newLogger: Logger): void {
 ```
 
 **Step 3: Created standalone pingLog() function (20min)**
+
 ```typescript
 // packages/rangelink-core-ts/src/logging/pingLog.ts
 export const pingLog = (): void => {
@@ -923,12 +927,14 @@ export const pingLog = (): void => {
 ```
 
 **Step 4: VSCodeLogger already implemented debug()** ✅
+
 - VSCodeLogger already had `debug()` method implemented
 - Achieves 100% test coverage after tests added
 
 **Step 5: Added comprehensive tests (25min)**
 
 Core tests (5 new tests, 168 total passing):
+
 - LogManager: Verify setLogger() calls debug() automatically
 - pingLog: Exercise all 4 levels
 - pingLog: Verify call counts
@@ -936,6 +942,7 @@ Core tests (5 new tests, 168 total passing):
 - pingLog: Works with NoOpLogger without errors
 
 Extension tests (3 new tests, 66 passing):
+
 - Verify logger initialization message appears in outputChannel
 - Verify pingLog() exercises all 4 levels and messages appear
 - Verify VSCodeLogger formats debug messages correctly
@@ -1065,6 +1072,7 @@ Searched entire codebase for all usages of `Link` interface:
 **Implementation:**
 
 1. **Updated parseLink() signature:**
+
    ```typescript
    export const parseLink = (
      link: string,
@@ -1076,7 +1084,7 @@ Searched entire codebase for all usages of `Link` interface:
    - Added `escapeRegex()` helper for special character handling
    - Build pattern from delimiter config at runtime
    - Pattern: `^${line}(\\d+)(?:${pos}(\\d+))?(?:${range}${line}(\\d+)...)?$`
-   - Properly escapes special regex characters (., *, +, |, etc.)
+   - Properly escapes special regex characters (., \*, +, |, etc.)
 
 3. **Multi-Character Delimiter Support:**
    - Hash delimiter can be multi-character (e.g., ">>", "HASH")
@@ -1096,7 +1104,7 @@ Added 7 new test cases (43 total, all passing):
 2. Custom multi-character delimiters (>>, line, pos, thru)
 3. Rectangular mode with custom hash
 4. Rectangular mode with multi-char hash (>>>>)
-5. Special regex characters in delimiters (!, *, +, |)
+5. Special regex characters in delimiters (!, \*, +, |)
 6. Line-only format with custom delimiters
 7. Error handling: wrong delimiter rejection
 
@@ -1106,17 +1114,17 @@ Added 7 new test cases (43 total, all passing):
 
 ```typescript
 // Default delimiters
-parseLink("src/auth.ts#L42C10-L58C25")
+parseLink('src/auth.ts#L42C10-L58C25');
 // → { path: "src/auth.ts", start: { line: 42, char: 10 }, ... }
 
 // Custom delimiters
 const custom = { hash: '@', line: 'line', position: 'pos', range: ':' };
-parseLink("file.ts@line10pos5:line20pos10", custom)
+parseLink('file.ts@line10pos5:line20pos10', custom);
 // → Parses correctly with custom delimiters
 
 // Multi-character delimiters
 const multi = { hash: '>>', line: 'line', position: 'pos', range: 'thru' };
-parseLink("file.ts>>line10pos5thruline20pos10", multi)
+parseLink('file.ts>>line10pos5thruline20pos10', multi);
 // → Supports verbose delimiter style
 ```
 
@@ -1165,6 +1173,7 @@ Also added critical items discovered during this work:
 **Time Taken:** 1.5 hours (as estimated)
 
 **Next Steps:**
+
 - Phase 5 Iteration 3.1: Terminal Link Provider - Pattern Detection
 - Phase 4A.2: Fix configuration change listener bug
 - Phase 1C: BYOD Parsing (deferred until terminal navigation complete)
@@ -1184,6 +1193,7 @@ Also added critical items discovered during this work:
 **Implementation:**
 
 1. **Added 8 Parsing Error Codes to RangeLinkErrorCodes:**
+
    ```typescript
    // Link parsing errors
    PARSE_CHAR_BACKWARD_SAME_LINE = 'PARSE_CHAR_BACKWARD_SAME_LINE',
@@ -1242,11 +1252,13 @@ expect(result).toBeErrWith((error: RangeLinkError) => {
 ```
 
 **Files Modified:**
+
 - `packages/rangelink-core-ts/src/errors/RangeLinkErrorCodes.ts` - Added 8 parsing error codes
 - `packages/rangelink-core-ts/src/parsing/parseLink.ts` - Converted all string errors to RangeLinkError
 - `packages/rangelink-core-ts/src/__tests__/parsing/parseLink.test.ts` - Updated all 43 tests
 
 **Test Results:**
+
 - ✅ Core: 43 tests passing (all parseLink tests)
 - ✅ Coverage: 100% on parseLink.ts maintained
 - ✅ All error codes verified with rich context
@@ -1267,6 +1279,7 @@ Original ROADMAP proposed numeric codes (ERR_4001, etc.) but codebase had migrat
 **Time Taken:** Approximately 1.5 hours (30min estimate was for codes only, full RangeLinkError implementation took longer but delivers more value)
 
 **Next Steps:**
+
 - Phase 5 Iteration 3.1: Terminal Link Provider - Pattern Detection
 - Phase 5 Iteration 1.2: Richer ParsedLink Interface (optional enhancement)
 
@@ -1279,6 +1292,7 @@ Original ROADMAP proposed numeric codes (ERR_4001, etc.) but codebase had migrat
 **Objective:** Create `buildLinkPattern()` utility that generates RegExp patterns for detecting RangeLinks in terminal output, enabling VS Code TerminalLinkProvider integration.
 
 **Context:** VS Code's TerminalLinkProvider API requires a RegExp pattern with global flag to detect links in terminal lines. Need pattern generator that:
+
 - Matches RangeLink format with custom delimiters
 - Finds ALL links in a terminal line (global flag)
 - Supports hash-in-filename (critical fix from parseLink)
@@ -1337,14 +1351,14 @@ Original ROADMAP proposed numeric codes (ERR_4001, etc.) but codebase had migrat
    - Rectangular with custom: `file.ts@@L10C5`
 
 3. **Custom multi-char delimiters (5 tests):**
-   - >> as hash: `file.ts>>L10`
+   - > > as hash: `file.ts>>L10`
    - All multi-char: `file.ts>>line10pos5thruline20pos10`
    - Rectangular: `file.ts>>>>L10C5` (double >>)
    - Multiple links with multi-char delimiters
    - Trade-off: Multi-char delimiters cannot appear in filenames
 
 4. **Regex special characters (6 tests):**
-   - Dot (.), plus (+), asterisk (*), pipe (|), question (?)
+   - Dot (.), plus (+), asterisk (\*), pipe (|), question (?)
    - Parentheses in range delimiter: `file.ts#L10(to)L20`
 
 5. **Edge cases (8 tests):**
@@ -1372,15 +1386,18 @@ Created `/tmp/manual-test-buildLinkPattern.js` script testing 8 realistic scenar
 All scenarios detected links correctly with accurate capture groups.
 
 **Files Created:**
+
 - `packages/rangelink-core-ts/src/utils/buildLinkPattern.ts` - Pattern builder utility (89 lines)
 - `packages/rangelink-core-ts/src/__tests__/utils/buildLinkPattern.test.ts` - Test suite (35 tests)
 
 **Test Results:**
+
 - ✅ buildLinkPattern: 35 tests, 100% coverage (statements, branches, functions, lines)
 - ✅ Total: 256 tests passing (all packages)
 - ✅ Overall coverage: 99.41% statements, 99.27% branches, 100% functions
 
 **Benefits:**
+
 - ✅ **Terminal link detection ready** - RegExp pattern matches all RangeLink formats
 - ✅ **Hash-in-filename support** - Correctly handles `issue#123/auth.ts#L42`
 - ✅ **Multiple links per line** - Non-whitespace matching finds all links separately
@@ -1395,6 +1412,7 @@ All scenarios detected links correctly with accurate capture groups.
 **Time Taken:** 45 minutes (as estimated in detailed plan)
 
 **Next Steps:**
+
 - Phase 5 Iteration 3.1 Subset 2: Terminal Link Provider Skeleton (30 min) — ✅ Complete (includes detection)
 - ~~Phase 5 Iteration 3.1 Subset 3: Link Detection Implementation~~ — Merged into Subset 2
 - Phase 5 Iteration 3.1 Subset 4: Link Validation & Parsing (45 min)
@@ -1410,6 +1428,7 @@ All scenarios detected links correctly with accurate capture groups.
 **Objective:** Implement VS Code TerminalLinkProvider that detects RangeLinks in terminal output and makes them clickable. Show feedback on click (navigation comes later).
 
 **Context:** VS Code's TerminalLinkProvider API allows making terminal text clickable. Need skeleton implementation that:
+
 - Uses `buildLinkPattern()` for link detection
 - Creates TerminalLink objects with proper structure
 - Shows feedback message on click (stub for navigation)
@@ -1468,19 +1487,23 @@ All scenarios detected links correctly with accurate capture groups.
      - `{ fn: 'RangeLinkTerminalProvider.handleTerminalLink', link }`
 
 **Files Created:**
+
 - `packages/rangelink-vscode-extension/src/navigation/RangeLinkTerminalProvider.ts` - Provider class (128 lines)
 - `packages/rangelink-core-ts/src/utils/index.ts` - Utils barrel export
 
 **Files Modified:**
+
 - `packages/rangelink-vscode-extension/src/extension.ts` - Register provider in activate()
 - `packages/rangelink-core-ts/src/index.ts` - Export utils module
 
 **Test Results:**
+
 - ✅ Extension compiles successfully
 - ✅ Core: 256 tests passing (all packages)
 - ✅ Overall coverage: 99.41% statements, 99.27% branches, 100% functions
 
 **Manual Testing Verified (8 test cases):**
+
 1. ✅ Single line link: `src/auth.ts#L42` is clickable
 2. ✅ Link with columns: `src/validation.ts#L10C5-L20C10` is clickable
 3. ✅ Multiple links: Both `file1.ts#L10` and `file2.ts#L20` work independently
@@ -1491,11 +1514,13 @@ All scenarios detected links correctly with accurate capture groups.
 8. ✅ Multiple terminal lines: Each line's links work independently
 
 **Debug Logging Verified:**
+
 - Constructor: "RangeLinkTerminalProvider initialized with delimiter config"
 - Detection: "Detected RangeLinks in terminal line"
 - Click: "Terminal link clicked"
 
 **Benefits:**
+
 - ✅ **Links are clickable** - RangeLinks underlined/hoverable in terminal
 - ✅ **Hash-in-filename works** - Correctly detects `issue#123/auth.ts#L42`
 - ✅ **Multiple links per line** - Detects all links independently

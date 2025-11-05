@@ -172,9 +172,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register terminal link provider for clickable links
   const terminalLinkProvider = new RangeLinkTerminalProvider(delimiters, getLogger());
-  context.subscriptions.push(
-    vscode.window.registerTerminalLinkProvider(terminalLinkProvider),
-  );
+  context.subscriptions.push(vscode.window.registerTerminalLinkProvider(terminalLinkProvider));
   getLogger().debug({ fn: 'activate' }, 'Terminal link provider registered');
 
   // Register commands

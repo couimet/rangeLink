@@ -52,7 +52,9 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual('Open src/auth.ts:42:10 (Cmd+Click) • RangeLink');
+      expect(formatLinkTooltip(parsed)).toStrictEqual(
+        'Open src/auth.ts:42:10 (Cmd+Click) • RangeLink',
+      );
       expect(mockGetPlatformModifierKey).toHaveBeenCalledTimes(1);
     });
 
@@ -67,7 +69,9 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual('Open src/validation.ts:10:5 (Ctrl+Click) • RangeLink');
+      expect(formatLinkTooltip(parsed)).toStrictEqual(
+        'Open src/validation.ts:10:5 (Ctrl+Click) • RangeLink',
+      );
       expect(mockGetPlatformModifierKey).toHaveBeenCalledTimes(1);
     });
   });
@@ -84,7 +88,9 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual('Open src/file.ts:10-20 (Cmd+Click) • RangeLink');
+      expect(formatLinkTooltip(parsed)).toStrictEqual(
+        'Open src/file.ts:10-20 (Cmd+Click) • RangeLink',
+      );
       expect(mockGetPlatformModifierKey).toHaveBeenCalledTimes(1);
     });
 
@@ -136,7 +142,9 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual('Open data.csv:10:5-20:10 (Cmd+Click) • RangeLink');
+      expect(formatLinkTooltip(parsed)).toStrictEqual(
+        'Open data.csv:10:5-20:10 (Cmd+Click) • RangeLink',
+      );
       expect(mockGetPlatformModifierKey).toHaveBeenCalledTimes(1);
     });
   });
@@ -169,7 +177,9 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual('Open issue#123/auth.ts:42 (Cmd+Click) • RangeLink');
+      expect(formatLinkTooltip(parsed)).toStrictEqual(
+        'Open issue#123/auth.ts:42 (Cmd+Click) • RangeLink',
+      );
     });
 
     it('should handle relative path', () => {
@@ -183,7 +193,9 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual('Open ./src/utils/helper.ts:5:0 (Cmd+Click) • RangeLink');
+      expect(formatLinkTooltip(parsed)).toStrictEqual(
+        'Open ./src/utils/helper.ts:5:0 (Cmd+Click) • RangeLink',
+      );
     });
 
     it('should handle absolute Unix path', () => {
@@ -245,7 +257,9 @@ describe('formatLinkTooltip', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(formatLinkTooltip(parsed)).toStrictEqual('Open src/index.ts:10:0 (Cmd+Click) • RangeLink');
+      expect(formatLinkTooltip(parsed)).toStrictEqual(
+        'Open src/index.ts:10:0 (Cmd+Click) • RangeLink',
+      );
     });
   });
 });

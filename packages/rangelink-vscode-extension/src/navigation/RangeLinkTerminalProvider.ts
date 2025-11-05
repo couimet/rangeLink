@@ -111,7 +111,7 @@ export class RangeLinkTerminalProvider
     }
 
     if (links.length > 0) {
-      const parsedCount = links.filter(l => l.parsed).length;
+      const parsedCount = links.filter((l) => l.parsed).length;
       this.logger.debug(
         {
           fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
@@ -152,9 +152,7 @@ export class RangeLinkTerminalProvider
 
       const position = formatLinkPosition(start, end);
 
-      vscode.window.showInformationMessage(
-        `RangeLink: ${path} @ ${position} [${selectionType}]`,
-      );
+      vscode.window.showInformationMessage(`RangeLink: ${path} @ ${position} [${selectionType}]`);
     } else {
       this.logger.warn(
         {
@@ -164,9 +162,7 @@ export class RangeLinkTerminalProvider
         'Terminal link clicked but parse failed',
       );
 
-      vscode.window.showWarningMessage(
-        `RangeLink detected but failed to parse: ${linkText}`,
-      );
+      vscode.window.showWarningMessage(`RangeLink detected but failed to parse: ${linkText}`);
     }
   }
 }

@@ -66,7 +66,7 @@ export const buildLinkPattern = (delimiters: DelimiterConfig): RegExp => {
   // Trade-off: Multi-char delimiters cannot appear in filenames
   const pathPattern =
     delimiters.hash.length === 1
-      ? '(\\S+?)'  // Single-char: non-whitespace, non-greedy
+      ? '(\\S+?)' // Single-char: non-whitespace, non-greedy
       : `((?:(?!${escapedHash})\\S)+)`; // Multi-char: non-whitespace excluding hash
 
   // Build complete pattern

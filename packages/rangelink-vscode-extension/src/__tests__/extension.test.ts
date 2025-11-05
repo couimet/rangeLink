@@ -3272,9 +3272,7 @@ describe('Logger verification and communication channel', () => {
     // Manually call debug to test formatting
     logger.debug({ fn: 'testFunction', extraContext: 'value' }, 'Test debug message');
 
-    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      expect.stringContaining('[DEBUG]'),
-    );
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringContaining('[DEBUG]'));
     expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
       expect.stringContaining('testFunction'),
     );

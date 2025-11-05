@@ -50,6 +50,7 @@ For comprehensive BYOD documentation, see [BYOD.md](./BYOD.md).
 **Status:** Generation complete (v0.1.0). **Parsing deferred until after terminal navigation** (Phase 5) to deliver user value faster.
 
 **Rationale for deferral:**
+
 - Terminal link navigation is higher priority for user workflow (click links in terminal output)
 - BYOD parsing adds complexity without immediate benefit (most users use default delimiters)
 - Basic parsing with local delimiters unblocks terminal navigation feature
@@ -427,13 +428,14 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
 **Implementation:**
 
 1. **Register config listener in activate():**
+
    ```typescript
    context.subscriptions.push(
      vscode.workspace.onDidChangeConfiguration((event) => {
        if (event.affectsConfiguration('rangelink')) {
          reloadConfiguration();
        }
-     })
+     }),
    );
    ```
 
@@ -461,6 +463,7 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
      - Re-register with `vscode.window.registerTerminalLinkProvider()`
      - Add to `context.subscriptions` for cleanup
    - **Example:**
+
      ```typescript
      // Store disposable at module level
      let terminalLinkProviderDisposable: vscode.Disposable;
@@ -491,6 +494,7 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
   - Verify log shows: "RangeLinkTerminalProvider initialized with delimiter config"
 
 **Done when:**
+
 - User can change settings during session without window reload, extension updates immediately
 - **TerminalLinkProvider detects links with new delimiters in terminal output**
 
@@ -711,16 +715,21 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
 **Refactoring Plan:**
 
 **Step 1: Core provides validation result with message code (1h)**
+
 - Core's `validateDelimiter()` returns: `Result<string, RangeLinkMessageCode>`
 - Eliminates `DelimiterValidationError` enum
 - Core includes message code directly in error result
 
 **Step 2: Extension delegates validation to core (1h)**
+
 - `loadDelimiterConfig()` becomes thin wrapper:
+
   ```typescript
   function loadDelimiterConfig(): DelimiterConfig {
     const config = vscode.workspace.getConfiguration('rangelink');
-    const userDelimiters = { /* ... load from config ... */ };
+    const userDelimiters = {
+      /* ... load from config ... */
+    };
 
     // Delegate to core for validation
     const validationResult = core.validateDelimiterConfig(userDelimiters);
@@ -736,10 +745,12 @@ Convert the icon to base64 and embed directly in the README markdown. This makes
   ```
 
 **Step 3: Delete `getErrorCodeForTesting()` (15min)**
+
 - No longer needed - core provides message codes directly
 - Remove function and all references
 
 **Step 4: Rewrite extension tests (1-2h)**
+
 - Un-skip the 73 tests
 - Focus on extension concerns:
   - Mock core validation (success/failure)
@@ -1017,7 +1028,7 @@ src/
 
 **Completed:** 2025-11-05
 
-**Summary:** Converted `RangeLinkMessageCode` from numeric values (MSG_1001) to descriptive values matching keys exactly (CONFIG_LOADED). Removed 11 obsolete SELECTION_* codes, organized by human-readable categories (CONFIG, BYOD), and updated VSCode extension references. Coverage insight: enum will achieve natural test coverage when i18n is implemented via `Record<RangeLinkMessageCode, string>` translation maps.
+**Summary:** Converted `RangeLinkMessageCode` from numeric values (MSG*1001) to descriptive values matching keys exactly (CONFIG_LOADED). Removed 11 obsolete SELECTION*\* codes, organized by human-readable categories (CONFIG, BYOD), and updated VSCode extension references. Coverage insight: enum will achieve natural test coverage when i18n is implemented via `Record<RangeLinkMessageCode, string>` translation maps.
 
 **See [JOURNEY.md](./JOURNEY.md#phase-45j-convert-rangelinkmessagecode-to-descriptive-values--complete) for full details.**
 
@@ -1144,6 +1155,7 @@ Critical items for marketplace launch and user adoption. These should be tackled
 **Summary:** Added custom delimiter support to parseLink(). Parser now accepts optional DelimiterConfig parameter and dynamically builds regex patterns. Supports single/multi-character delimiters, rectangular mode, and special regex characters. 43 tests passing, 100% coverage maintained.
 
 **Key Changes:**
+
 - parseLink() signature: added optional `delimiters` parameter
 - Dynamic regex pattern building with proper escaping
 - Multi-character hash delimiter support (e.g., ">>", "HASH")
@@ -1160,6 +1172,7 @@ Critical items for marketplace launch and user adoption. These should be tackled
 **Summary:** Replaced string errors with rich RangeLinkError objects containing codes, messages, functionName, and contextual details. Went beyond original plan by implementing full RangeLinkError (better than just codes) with debugging-friendly details like `{ received, minimum }` for validation errors.
 
 **Key Changes:**
+
 - Added 8 parsing error codes: PARSE_EMPTY_LINK, PARSE_NO_HASH_SEPARATOR, PARSE_EMPTY_PATH, PARSE_INVALID_RANGE_FORMAT, PARSE_LINE_BELOW_MINIMUM, PARSE_LINE_BACKWARD, PARSE_CHAR_BELOW_MINIMUM, PARSE_CHAR_BACKWARD_SAME_LINE
 - Updated parseLink signature: `Result<ParsedLink, RangeLinkError>`
 - All errors include rich context (received/minimum values, delimiter info, etc.)
@@ -1401,6 +1414,7 @@ describe('Round-trip integration', () => {
 **Completed Subsets:**
 
 **Subset 1: Pattern Builder Foundation** — ✅ Complete
+
 - Created `buildLinkPattern()` utility that generates RegExp patterns for detecting RangeLinks
 - Supports custom delimiters, hash-in-filename, multiple links per line
 - Hybrid strategy: non-greedy for single-char hash, negative lookahead for multi-char
@@ -1408,6 +1422,7 @@ describe('Round-trip integration', () => {
 - Manual testing verified with 8 realistic terminal scenarios
 
 **Subset 2: Terminal Link Provider Skeleton + Detection** — ✅ Complete
+
 - Implemented `RangeLinkTerminalProvider` class with dependency injection
 - **Link detection fully implemented** - Uses `buildLinkPattern()` with `pattern.matchAll()`
 - Links are clickable in terminal output with proper tooltips
@@ -1419,6 +1434,7 @@ describe('Round-trip integration', () => {
 **Subset 4: Link Validation & Parsing** — ✅ Complete
 
 **Core Features:**
+
 - Parse detected links using `parseLink()` from core
 - Store `ParsedLink` data in `RangeLinkTerminalLink.parsed` field
 - Enhanced tooltips show parsed path and FULL RANGE (platform-aware)
@@ -1428,6 +1444,7 @@ describe('Round-trip integration', () => {
 - Info messages display formatted parsed data
 
 **Architectural Improvements:**
+
 - Moved `RangeLinkTerminalLink` to `src/types/` folder (follows core's pattern)
 - Extracted `formatLinkPosition()` utility (position range formatting)
 - Extracted `formatLinkTooltip()` utility (platform-aware tooltip generation)

@@ -172,16 +172,16 @@ describe('parseLink', () => {
     it('should parse filename with multiple hashes', () => {
       const result = parseLink('issue#123#fix.ts#L42C5');
 
-        expect(result).toBeOkWith((value: ParsedLink) => {
+      expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
-            path: 'issue#123#fix.ts',
-            start: { line: 42, char: 5 },
-            end: { line: 42, char: 5 },
-            linkType: 'regular',
-            selectionType: 'Normal',
-          });
+          path: 'issue#123#fix.ts',
+          start: { line: 42, char: 5 },
+          end: { line: 42, char: 5 },
+          linkType: 'regular',
+          selectionType: 'Normal',
         });
       });
+    });
 
     it('should parse path with hash in directory name', () => {
       const result = parseLink('issue#123/auth.ts#L42');

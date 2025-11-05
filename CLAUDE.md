@@ -33,6 +33,7 @@ RangeLink is a tool for generating and navigating code location links with suppo
   - Place constants in appropriate files: feature-specific constants in same file, shared constants in `/constants/`
   - Use SCREAMING_SNAKE_CASE for constant names
   - Example:
+
     ```typescript
     // ❌ BAD - Magic number
     if (link.length > 3000) {
@@ -45,7 +46,9 @@ RangeLink is a tool for generating and navigating code location links with suppo
       throw new Error(`Link exceeds maximum length of ${MAX_LINK_LENGTH}`);
     }
     ```
+
   - Rationale: Makes code self-documenting, easier to maintain and update limits
+
 - **Proactive module extraction** - Extract to standalone module WITHOUT being asked when:
   - Function exceeds 50 lines, OR
   - Function has 3+ dependencies (hard to test), OR
@@ -64,6 +67,7 @@ RangeLink is a tool for generating and navigating code location links with suppo
   - When param provided: Log "Using provided [param]"
   - Include the resolved value in log context for traceability
   - Example:
+
     ```typescript
     export const parseLink = (link: string, delimiters?: DelimiterConfig): Result<...> => {
       const useFallback = delimiters === undefined;
@@ -79,6 +83,7 @@ RangeLink is a tool for generating and navigating code location links with suppo
       // ... use activeDelimiters everywhere
     }
     ```
+
   - Rationale: Makes it clear in logs whether defaults were used vs custom config provided
 
 ## Testing Requirements
