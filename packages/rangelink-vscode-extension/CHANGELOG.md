@@ -5,21 +5,41 @@ All notable changes to the RangeLink VS Code extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.1]
+## [0.2.0]
+
+### Added
+
+- **Terminal Link Navigation** - The killer feature for AI-assisted workflows
+  - Click RangeLinks in your terminal to jump directly to code
+  - **Cmd+Click** (Mac) or **Ctrl+Click** (Windows/Linux) to navigate
+  - Instant file opening with precise cursor positioning
+  - Works with single-line, and multi-line ranges
+  - Smart path resolution for workspace-relative and absolute paths
+  - Helpful tooltips showing the exact location that will be opened
+  - Parse validation prevents navigation on invalid links
+- **Terminal Binding** - Auto-send generated links to integrated terminal
+  - Zero copy/paste friction for AI-assisted development
+  - Links appear instantly where claude-code and other tools can see them
+- Link validation with informative tooltips displaying full range context
+
+### Changed
+
+- **Broader VSCode compatibility** - Minimum version lowered from 1.80.0 to 1.49.0
+  - Now supports 31 additional VSCode versions (3 years of releases)
+  - Benefits users on stable corporate environments and older machines
+  - Based on `registerTerminalLinkProvider` API availability (introduced in v1.49.0)
+- Centralized asset management with build-time sync from monorepo `/assets/` directory
+- `README` significantly streamlined: combined redundant sections, added compelling opening quote, removed overpromising claims
+- Tool mentions now lead with claude-code (origin story) before other editors
+- Refactored internal architecture with `RangeLinkService` for better maintainability
 
 ### Fixed
 
+- Extension `README` now uses GitHub raw URL for logo (displays correctly in installed extensions, marketplace, and GitHub)
 - Fixed ESLint configuration for better monorepo build reliability
 - Fixed marketplace version badge URL in `README` (was using wrong publisher/extension name)
 - Build process now explicitly deletes target files to prevent stale artifacts
 - `CHANGELOG` now focuses only on extension changes (removed monorepo/internal documentation items)
-
-### Changed
-
-- Extension `README` now uses GitHub raw URL for logo (displays correctly in installed extensions, marketplace, and GitHub)
-- Centralized asset management with build-time sync from monorepo `/assets/` directory
-- `README` significantly streamlined: combined redundant sections, added compelling opening quote, removed overpromising claims
-- Tool mentions now lead with claude-code (origin story) before other editors
 
 ## [0.1.0]
 
@@ -48,6 +68,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Cmd+R Cmd+P` / `Ctrl+R Ctrl+P` - Copy Portable Link
   - `Cmd+R Cmd+Shift+P` / `Ctrl+R Ctrl+Shift+P` - Copy Portable Link (Absolute)
 
-[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.1.1...HEAD
-[0.1.1]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.1.0...vscode-extension-v0.1.1
+[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.2.0...HEAD
+[0.2.0]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.1.0...vscode-extension-v0.2.0
 [0.1.0]: https://github.com/couimet/rangelink/releases/tag/vscode-extension-v0.1.0
