@@ -8,6 +8,62 @@ Use filename format: `.commit-msgs/YYYY-MM-DD-short-description.txt`
 
 Example: `.commit-msgs/2025-01-03-remove-hashmode-enum.txt`
 
+### Writing Concise Commit Messages
+
+**Focus on "why", not "what":**
+
+- ✅ Explain the motivation, problem solved, and benefits
+- ❌ Do NOT list files modified/added/deleted (the commit is the source of truth)
+- ❌ Do NOT duplicate information available in `git diff`
+
+**Structure:**
+
+```
+<type>(scope): <short summary>
+
+<Body: Why this change? What problem does it solve?>
+
+Benefits:
+- Key benefit 1
+- Key benefit 2
+
+```
+
+**Good example:**
+
+```
+refactor(vscode-ext): separate dist/ and out/ to follow VSCode conventions
+
+Prevents "Cannot find module" errors by separating development and production builds.
+Following official conventions eliminates conflicts where tsc could overwrite esbuild's bundle.
+
+Benefits:
+- Impossible for tsc --watch to interfere with packaging
+- Standard convention matching VSCode templates
+```
+
+**Bad example (too verbose):**
+
+```
+refactor(vscode-ext): update build output structure
+
+Modified files:
+- esbuild.config.js: Changed outfile from out/ to dist/
+- package.json: Updated main field, clean script, compile script
+- .vscodeignore: Added out/** exclusion
+- Deleted: validate-bundle.sh, validate-vsix.sh, scripts/README.md
+
+Changed esbuild to output to dist/ and updated package.json accordingly...
+```
+
+**Key principles:**
+
+- Keep it concise (aim for < 15 lines total)
+- First line: conventional commit format (`type(scope): summary`)
+- Body: 1-3 sentences explaining context
+- Benefits: Bulleted list of key improvements
+- Omit file lists (redundant with commit diff)
+
 ## Project Context
 
 RangeLink is a tool for generating and navigating code location links with support for:
