@@ -190,7 +190,7 @@
   },
   "packageManager": "pnpm@10.19.0",
   "engines": {
-    "vscode": "^1.80.0"
+    "vscode": "^1.49.0"
   },
   "icon": "icon.png"
 }

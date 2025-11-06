@@ -170,7 +170,7 @@ RangeLink is under active development. See the [full roadmap](https://github.com
 
 ## Requirements
 
-- VSCode or Cursor version 1.80.0 or higher
+- VSCode or Cursor version 1.49.0 or higher
 
 ## Known Issues
 
