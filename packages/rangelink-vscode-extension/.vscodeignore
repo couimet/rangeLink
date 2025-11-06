@@ -13,10 +13,9 @@ tsconfig.json
 # Test files - exclude compiled tests
 **/*.test.js
 **/test/**
-out/index.js
-out/index.d.ts
 
-# Development files
+# Development files - exclude tsc output (use dist/ for production)
+out/**
 .vscode/**
 .vscode-test/**
 node_modules/**
@@ -34,5 +33,4 @@ scripts/**
 # - README.md
 # - LICENSE
 # - icon.png
-# - out/extension.js (main entry)
-# - out/VSCodeLogger.js (runtime dependency)
+# - dist/extension.js (bundled main entry)

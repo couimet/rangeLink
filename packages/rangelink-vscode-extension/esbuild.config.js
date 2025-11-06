@@ -3,7 +3,7 @@ const esbuild = require('esbuild');
 const config = {
   entryPoints: ['src/extension.ts'],
   bundle: true,
-  outfile: 'out/extension.js',
+  outfile: 'dist/extension.js',
   external: ['vscode'],
   format: 'cjs',
   platform: 'node',
