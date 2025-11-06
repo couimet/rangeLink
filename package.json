@@ -20,7 +20,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "package:vscode-extension": "pnpm --filter rangelink-vscode-extension package",
-    "publish:vscode-extension": "pnpm --filter rangelink-vscode-extension publish",
+    "publish:vscode-extension:vsix": "pnpm --filter rangelink-vscode-extension publish:vsix",
     "test": "pnpm -r test",
     "watch": "pnpm -r --parallel watch"
   },

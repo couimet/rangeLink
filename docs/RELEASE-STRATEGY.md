@@ -169,15 +169,27 @@ This is the current manual process for releasing a package. Automated workflows 
 
 #### Phase 3: Publish
 
-8. **Publish to marketplace**
+8. **Pre-publishing checklist**
+
+   Before publishing, verify:
+   - [ ] Code compiles without errors
+   - [ ] All commands are registered
+   - [ ] README is comprehensive
+   - [ ] CHANGELOG is updated
+   - [ ] License is included
+   - [ ] Icon/logo is added (optional but recommended)
+   - [ ] Extension is tested thoroughly
+   - [ ] Version number is appropriate (following semver)
+   - [ ] VSIX file built and tested locally
+
+9. **Publish to marketplace**
 
    ```bash
-   cd packages/rangelink-vscode-extension
-   pnpm publish
-   # Or: vsce publish --no-dependencies
+   # From project root
+   pnpm publish:vscode-extension:vsix
    ```
 
-9. **Verify publication**
+10. **Verify publication**
    - Wait 5-10 minutes
    - Visit: https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension
    - Verify version number updated
@@ -185,7 +197,7 @@ This is the current manual process for releasing a package. Automated workflows 
 
 #### Phase 4: Tag and Release
 
-10. **Create annotated git tag**
+11. **Create annotated git tag**
 
     ```bash
     git tag -a vscode-extension-v0.1.1 -m "Release vscode-extension v0.1.1
@@ -197,13 +209,13 @@ This is the current manual process for releasing a package. Automated workflows 
     "
     ```
 
-11. **Push tag to remote**
+12. **Push tag to remote**
 
     ```bash
     git push origin vscode-extension-v0.1.1
     ```
 
-12. **Create GitHub Release**
+13. **Create GitHub Release**
     - Go to: https://github.com/couimet/rangelink/releases/new
     - Select tag: `vscode-extension-v0.1.1`
     - Title: `VS Code Extension v0.1.1`
@@ -213,12 +225,12 @@ This is the current manual process for releasing a package. Automated workflows 
 
 #### Phase 5: Post-Release
 
-13. **Verify release**
+14. **Verify release**
     - Check GitHub release page
     - Test installing from marketplace
     - Verify tag appears in git log
 
-14. **Update documentation** (if needed)
+15. **Update documentation** (if needed)
     - Update root README if announcing new features
     - Update roadmap to mark completed items
 
