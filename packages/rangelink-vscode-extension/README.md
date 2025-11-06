@@ -123,7 +123,7 @@ Customize delimiters in VSCode settings (Preferences > Settings > search "rangel
 - All delimiters must be unique
 - Reserved characters (`~`, `|`, `/`, `\`, `:`, `,`, `@`) cannot be used
 
-Invalid configurations will fall back to defaults with a warning in the output channel.
+Invalid configurations will fall back to defaults with a warning in the output channel (`Cmd+Shift+U` / `Ctrl+Shift+U`, select "RangeLink"). See [DEVELOPMENT.md](./DEVELOPMENT.md#development-workflow) for details.
 
 [Full configuration guide →](https://github.com/couimet/rangelink#configuration)
 
@@ -143,7 +143,14 @@ RangeLink is under active development. Coming soon:
 
 ## Known Issues
 
-None at the moment. If you find a bug, please [report it](https://github.com/couimet/rangelink/issues).
+If you find a bug, please [report it](https://github.com/couimet/rangelink/issues).
+
+When filing a bug report, please include:
+
+- **Extension version:** Command Palette → "RangeLink: Show Version Info"
+- **IDE:** VSCode or Cursor (with version number)
+- **Operating system:** e.g., macOS 14.0, Windows 11, Ubuntu 22.04
+- **Extension logs:** Open Output panel (`Cmd+Shift+U` / `Ctrl+Shift+U`), select "RangeLink", copy relevant logs. [More details →](./DEVELOPMENT.md#development-workflow)
 
 ## Links
 
