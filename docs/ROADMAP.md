@@ -34,7 +34,11 @@ RangeLinks in terminal output are clickable (Cmd/Ctrl+Click) with proper selecti
 
 **Goal:** Make RangeLinks clickable in editor text files (any type: .md, .txt, code, untitled).
 
-**Use Case:** Preparing prompts in editor scratch files. Click RangeLink to navigate without leaving editor.
+**Primary Use Case:** Preparing prompts in **scratchpads/untitled files** for claude-code.
+
+- Scratchpads are easier to edit than terminal (multi-line, syntax highlighting, undo/redo)
+- Need to **validate/revisit links** before pasting to claude-code terminal
+- Click RangeLink to verify it points to correct code location
 
 **Iterations:**
 
@@ -356,6 +360,36 @@ Extend `version.json` with commit hash, build date, branch, dirty flag. Add "Sho
 - `package`: Strict, clean build only, for marketplace
 - `package:force`: Emergency overrides
 
+### 4N) Unsaved File Warning — 📋 Future Exploration
+
+**Problem:** Building RangeLinks from files with unsaved modifications leads to position mismatch.
+
+**Scenario:**
+- User edits file but doesn't save
+- RangeLink generated from unsaved buffer positions (e.g., Line 50)
+- claude-code interprets positions from saved file content
+- Result: Link points to wrong code location (confusion)
+
+**Potential Solutions (to be explored):**
+
+1. **Prompt to save before building** - Show dialog: "Save file before generating link?"
+   - Pro: Ensures accuracy
+   - Con: Feels intrusive, interrupts workflow
+
+2. **Warning toast** - Build link but show: "⚠️ Link generated from unsaved file"
+   - Pro: Non-intrusive, user stays in flow
+   - Con: User might ignore warning
+
+3. **Auto-save on link generation** - Silently save file before building
+   - Pro: Zero friction, always accurate
+   - Con: Unexpected auto-save behavior
+
+4. **Visual indicator in link** - Append marker like `~unsaved` to link
+   - Pro: Explicit tracking
+   - Con: Breaks link format, non-standard
+
+**Decision:** Deferred for user feedback and testing. Track real-world frequency of this issue.
+
 ---
 
 ## Phase 4.5: Technical Debt & Refactoring
@@ -506,9 +540,15 @@ RangeLink is an **AI workflow integration tool** eliminating context-sharing fri
 
 Allow rebinding without manual unbind. Show toast: "Already bound. Switch to [new]?"
 
-**📋 Iteration 4: Persistent Status Bar** (1h)
+**📋 Iteration 4: Persistent Status Bar** (1h) — Low Priority
 
 Status bar item: `🔗→ [terminal]` (bound) or `🔗❌` (unbound). Click to manage.
+
+**Discoverability Concerns:**
+
+- Users may not recognize what the icon means without context
+- **Potential solutions:** Use RangeLink logo in status bar, or `RL` prefix as mnemonic (e.g., `RL: terminal-name`)
+- Need clear branding/labeling for discoverability
 
 **📋 Iteration 5: Terminal Selection Quick Pick** (2h)
 
@@ -536,45 +576,6 @@ Setting to control terminal focus after link generation:
 Currently always focuses terminal (productivity feature).
 
 **Future:** Visual indicator, persist across sessions, multi-terminal support, keyboard shortcuts, settings integration.
-
----
-
-### 📋 Link History with Fuzzy Search — High Priority
-
-**Problem:** Need to reference previous code locations without regenerating.
-
-**AI Use Case:** "What was that auth function I showed claude-code 2 hours ago?"
-
-**Iteration 1: Basic Storage** (1.5h)
-
-- Store last 100 links in workspace state
-- Command: "Show Link History"
-- Quick Pick: `[2h ago] src/auth.ts:42-56`
-- Copy selected link
-
-**Iteration 2: Fuzzy Search** (2h)
-
-- Search file names, paths, ranges, timestamps
-- Real-time filtering, match highlights
-- Keyboard shortcuts
-
-**Iteration 3: Quick Re-Send** (1h)
-
-- If terminal bound, add "Send to Terminal"
-- `Cmd+Enter` to send vs `Enter` to copy
-
-**Iteration 4: Smart Descriptions** (1.5h)
-
-- Auto-generate from code (function/class names)
-- Manual override option
-
-**Iteration 5: Management** (1h)
-
-- Export as markdown/CSV
-- Clear history command
-- Configurable size (default 100, max 500)
-
-**Future:** Sync across devices, pin favorites, group by project, deduplicate, analytics.
 
 ---
 
