@@ -1889,7 +1889,33 @@ All scenarios detected links correctly with accurate capture groups.
       - No performance cost - just object spreading
     - **Updated tests:** Added `linkText` expectations in all log assertions
 
-**Time Taken:** 1 hour 25 minutes (1h implementation + 15m bug fix 1 + 10m bug fix 2) + 5m logging improvement
+16. **Bug Fix 3: Single-Position Selection Visibility** (Phase 5.1 Task 2, 30 min)
+    - **Context:** Manual testing revealed single-position terminal links showed no visible selection
+    - **Problem:** When `startPos == endPos` (e.g., `file.ts#L32C1`), VSCode creates zero-width selection (invisible cursor)
+    - Users clicked links but saw no visual feedback - confused about navigation success
+    - **Root Cause:** VSCode's Selection API with identical anchor/active positions renders as cursor only
+    - **Solution:** Extend single-position selections by 1 character forward for visibility
+    - **Implementation:**
+      - Detect same-position condition: `startPos.line === endPos.line && startPos.character === endPos.character`
+      - Extend `endPos.character` by 1 when line has content and not at end of line
+      - Edge cases handled:
+        - End of line (`startPos.character >= lineLength`): no extension, keep cursor
+        - Empty line (`lineLength === 0`): no extension, keep cursor
+        - Multi-line ranges: not affected (already visible)
+      - Comprehensive logging with 1-indexed positions for debugging
+    - **Test Coverage:** Added 5 new tests (152 total, all passing)
+      - Normal case: extends `32:1` → `32:2` (1-character selection visible)
+      - End of line boundary: no extension
+      - Empty line boundary: no extension
+      - Line-only position (`#L20`): extends from char 1 to 2
+      - Multi-line range: not affected
+    - **Files Modified:**
+      - `RangeLinkTerminalProvider.ts` (35 lines: detection + extension logic)
+      - `RangeLinkTerminalProvider.test.ts` (239 lines: comprehensive test suite)
+    - **Coverage Impact:** RangeLinkTerminalProvider 54% → 58% statements, 68.75% → 75% branches
+    - **Result:** Users now see visible 1-character selection when clicking single-position terminal links
+
+**Time Taken:** 1 hour 25 minutes (1h implementation + 15m bug fix 1 + 10m bug fix 2) + 5m logging improvement + 30m bug fix 3
 
 ---
 

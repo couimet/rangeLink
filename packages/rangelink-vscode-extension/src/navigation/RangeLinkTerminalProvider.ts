@@ -209,7 +209,41 @@ export class RangeLinkTerminalProvider
 
     // Convert 1-indexed RangeLink positions to 0-indexed VSCode positions (with clamping)
     const startPos = convertRangeLinkPosition(start, document);
-    const endPos = convertRangeLinkPosition(end, document);
+    let endPos = convertRangeLinkPosition(end, document);
+
+    // Extend single-position selections for visibility
+    // When startPos == endPos, VSCode creates a zero-width selection (just cursor), which is invisible
+    // Extend by 1 character to make the selection visible to the user
+    if (startPos.line === endPos.line && startPos.character === endPos.character) {
+      const lineLength = document.lineAt(startPos.line).text.length;
+
+      if (lineLength > 0 && startPos.character < lineLength) {
+        // Extend by 1 character for visibility
+        const originalPos = `${startPos.line + 1}:${startPos.character + 1}`;
+        endPos = { line: endPos.line, character: endPos.character + 1 };
+
+        this.logger.debug(
+          {
+            ...logCtx,
+            originalPos,
+            extendedTo: `${endPos.line + 1}:${endPos.character + 1}`,
+            reason: 'single-position selection needs visibility',
+          },
+          'Extended single-position selection by 1 character',
+        );
+      } else {
+        // Empty line or at end of line - keep cursor only
+        this.logger.debug(
+          {
+            ...logCtx,
+            position: `${startPos.line + 1}:${startPos.character + 1}`,
+            lineLength,
+            reason: lineLength === 0 ? 'empty line' : 'end of line',
+          },
+          'Single-position selection at line boundary - keeping cursor only',
+        );
+      }
+    }
 
     // Create selections based on selection type
     let selections: vscode.Selection[];

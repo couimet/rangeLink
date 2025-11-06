@@ -1739,7 +1739,7 @@ Only first line was detected/parsed, leading to navigation to `32:1` instead of 
 
 ---
 
-### Task 2: Fix Same-Position Selection Visual Feedback (30 min) — 📋 Planned
+### Task 2: Fix Same-Position Selection Visual Feedback (30 min) — ✅ Complete
 
 **Goal:** Make single-position selections visible by extending them by 1 character.
 
@@ -1805,12 +1805,14 @@ if (startPos.line === endPos.line && startPos.character === endPos.character) {
 
 **Done When:**
 
-- [ ] Single-position selections show 1-character highlight
-- [ ] Edge cases handled (end of line, empty line)
-- [ ] Tests cover single-position scenarios
-- [ ] Logging includes position extension details
+- [x] Single-position selections show 1-character highlight
+- [x] Edge cases handled (end of line, empty line)
+- [x] Tests cover single-position scenarios
+- [x] Logging includes position extension details
 
 **Priority:** HIGH (user-facing bug, affects usability)
+
+**Completed:** Phase 5.1 Task 2 - Single-position terminal link selections now extend by 1 character for visibility (see JOURNEY.md for details)
 
 **Questions:**
 
