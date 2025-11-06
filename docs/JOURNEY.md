@@ -8,6 +8,51 @@ _A chronological record of completed work, decisions, and milestones._
 
 ---
 
+## Phase 7: Terminal Auto-Focus — ✅ Complete (2025-01-06)
+
+**Objective:** Auto-focus terminal after link generation for seamless AI workflow (like Cursor's `Cmd+L`).
+
+**Problem:** After generating links for bound terminals, users had to manually click the terminal to continue typing their prompts. This created friction in AI-assisted workflows where rapid context sharing is critical.
+
+**Solution:** Automatically focus the bound terminal after sending links, enabling immediate prompt continuation without manual terminal clicks.
+
+**Implementation:**
+
+Modified `TerminalBindingManager.sendToTerminal()`:
+- Added space padding: ` ${text} ` (before and after link)
+- Added `terminal.show(false)` for immediate focus
+- Preserves existing workflow when terminal not bound
+
+**Rationale:**
+
+- **Space before**: Prevents link from gluing to existing terminal text (e.g., `claude-code` + link = `claude-codesrc/file.ts`)
+- **Space after**: Enables immediate typing without arrow keys
+- **Auto-focus**: Mirrors Cursor's UX - select code → generate link → keep typing prompt
+
+**Test Coverage:**
+
+Created comprehensive test suite (17 tests, 100% coverage):
+- Space padding verification (empty, special chars, existing spaces)
+- Auto-focus behavior (show called with false)
+- Workflow integration (send + focus ordering, immediate typing)
+- Edge cases (no terminal bound, return values, logging)
+
+**Benefits:**
+
+- ✅ Zero-friction workflow for claude-code and AI assistants
+- ✅ Cursor-like UX: Select → Generate → Type (no manual clicks)
+- ✅ Better spacing prevents terminal text gluing
+- ✅ Immediate productivity improvement
+
+**Future Enhancements (Roadmap):**
+
+- Iteration 7: Configurable spacing (`rangelink.terminal.addSpaceBefore/After`)
+- Iteration 8: Configurable auto-focus (`rangelink.terminal.autoFocus`)
+
+**Time Taken:** ~1 hour (30min implementation + 30min tests/docs)
+
+---
+
 ## Phase 1: Core Enhancements — ✅ Complete
 
 Phase 1 focused on three iterative sub-phases: rectangular mode support, robust delimiter validation, and portable link generation. Each sub-phase used micro-iterations for focused, incremental progress.

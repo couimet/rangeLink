@@ -121,8 +121,17 @@ export class TerminalBindingManager {
       `Sent text to terminal: ${terminalName}`,
     );
 
+    // Add space before and after link for better UX
+    // TODO: Make spacing configurable via settings (Iteration 7)
+    const paddedText = ` ${text} `;
+
     // Send text without auto-submit (addNewLine = false)
-    this.boundTerminal.sendText(text, false);
+    this.boundTerminal.sendText(paddedText, false);
+
+    // Auto-focus terminal for seamless workflow (like Cursor's Cmd+L)
+    // TODO: Make auto-focus configurable via settings (Iteration 8)
+    this.boundTerminal.show(false);
+
     return true;
   }
 
