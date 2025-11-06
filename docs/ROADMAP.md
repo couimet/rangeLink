@@ -223,100 +223,186 @@ vsce publish
 
 **Done when:** GitHub release created, monitoring in place
 
-### 3I) GitHub Social Preview Banner (45 minutes) — 📋 Optional Polish
+### 3I) GitHub Social Preview Banner
 
-**Goal:** Create custom social preview image for better link sharing on social media, messaging apps, and GitHub.
+**Goal:** Create GitHub social preview banner showcasing RangeLink's bidirectional workflow for AI-assisted development.
 
-**Background:**
-When someone shares your GitHub repo link on SMS, WhatsApp, Slack, Twitter, etc., GitHub generates a preview card. By default, it uses a generic layout. A custom banner makes your project stand out and drives more clicks/installs.
+**Banner Composition:**
 
-**Tasks:**
+Visual concept: IDE window (VSCode/Cursor aesthetic) demonstrating the link creation and navigation workflow.
 
-- Design 1280×640px banner image featuring:
-  - RangeLink logo (your chicken + BYODELI badge)
-  - Project tagline: "Share Code Across Editors & Tools"
-  - Example code reference: `#L3C14-L314C16` (Pi reference)
-  - Visual elements: Code snippet background, subtle tech aesthetic
-  - Color palette: Orange (#FF6B35), cream/beige, with dark/light versions for contrast
-- Upload to GitHub: Repo Settings → General → Social preview
-- Test the preview by sharing repo link in messaging apps
+**Core elements:**
 
-**Banner Description/Content Suggestions:**
+- **IDE mockup** showing split view:
+  - **Text editor panel** (top/larger): Code snippet with partial-line selection
+    - Show lines 42-58 with visible line numbers
+    - Selection spans multiple lines with different column start/end positions (e.g., L42C10-L58C25)
+    - Highlight showing selection doesn't have to be full lines
+  - **Integrated terminal panel** (bottom): Displays clickable RangeLink
+    - Example: `src/auth.ts#L42C10-L58C25`
+    - Subtle visual indicator showing link is clickable (cursor icon, underline, or hover state)
+- **Bidirectional arrow**: Between editor and terminal showing two-way navigation flow
+- **RangeLink logo**: Chicken mascot (top-left corner or as tasteful overlay)
+- **Headline**: "RangeLink gives you `src/auth.ts#L42C10-L58C25` — precise, portable, and just works across editors, tools, and teams"
+  - Adapt as needed for visual balance (can split into title + subtitle)
+- **Tone**: Friendly and accessible (matching mascot personality)
 
-Option A - Clean & Professional:
+**Visual Identity:**
+
+**Logo description** (for DALL-E prompt; actual logo will be uploaded separately):
+
+- Friendly cartoon chicken mascot
+- Orange feathers (#FF6B35)
+- Wearing an infinity necklace (∞ symbol pendant)
+- Circular badge design with "RANGELINK" text curved at top
+- Code reference "#L3C14-L314C16" curved at bottom
+- Cream/beige background circle
+- Dark brown border
+- Overall vibe: Playful, approachable, tech-savvy
+
+**Brand colors:**
+
+- Primary: Orange #FF6B35
+- Secondary: Cream/beige #F5E6D3
+- Accent: Dark brown #3E2723
+- UI elements: VSCode dark theme aesthetic (dark grays, subtle syntax highlighting)
+
+**DALL-E Prompts:**
+
+<details>
+<summary><strong>Prescriptive Version (Click to expand)</strong></summary>
 
 ```
-Top: RangeLink logo (centered or left-aligned)
-Middle: Large tagline "Share Precise Code References"
-Bottom: Example link "src/auth.ts#L3C14-L314C16" in monospace font
-Background: Subtle gradient (cream to orange) or code snippet texture
+Create a 1280x640px GitHub social preview banner for RangeLink, a VSCode extension for AI-assisted development workflows.
+
+LAYOUT & COMPOSITION:
+- Canvas: 1280x640px
+- Background: Subtle gradient from cream (#F5E6D3) on left to light orange tint on right
+- Main element: Realistic IDE window mockup (VSCode or Cursor style), centered, occupying ~75% of banner width and height
+
+IDE WINDOW MOCKUP STRUCTURE:
+- Title bar: Dark (#1E1E1E), show "VSCode" or "Cursor" branding
+- Split panel layout (horizontal split):
+  * Top panel (60% height): Text editor
+  * Bottom panel (40% height): Integrated terminal
+  * Subtle divider line between panels
+
+TEXT EDITOR PANEL (Top):
+- Background: Dark theme (#1E1E1E or similar)
+- Show code snippet (TypeScript or JavaScript):
+  * Line numbers visible on left (lines 42-58)
+  * Syntax highlighting (subtle blues, yellows, greens typical of VSCode dark theme)
+  * Selection highlighted: Partial-line selection spanning multiple lines
+  * Selection example: Line 42 starting at column 10, ending at line 58 column 25
+  * Make it clear selection doesn't span full lines (different column positions)
+  * Use standard VSCode selection highlight color (blue-ish overlay)
+- Tab bar showing filename: "src/auth.ts"
+
+TERMINAL PANEL (Bottom):
+- Background: Very dark (#0C0C0C or similar)
+- Show terminal prompt and RangeLink output:
+  * Prompt: "$ " or ">" in typical terminal green
+  * Link text: "src/auth.ts#L42C10-L58C25" in a clickable style
+  * Visual indicator: Subtle underline or hand cursor icon near link
+  * Optional: AI assistant response context (e.g., "claude: Check out this code:")
+
+BIDIRECTIONAL ARROW:
+- Position: Between editor and terminal (vertically centered on the divider)
+- Style: Orange (#FF6B35), ~50-60px length, double-headed (⟷)
+- Subtle glow or shadow for visibility
+- Shows connection: "Select code → Generate link" and "Click link → Navigate back"
+
+LOGO & BRANDING:
+- RangeLink logo: Top-left corner (or bottom-right if composition works better)
+- Size: ~100-120px
+- Circular badge with friendly cartoon chicken:
+  * Orange chicken with infinity necklace
+  * "RANGELINK" text curved at top
+  * "#L3C14-L314C16" at bottom
+  * Cream background circle with dark brown border
+- Logo should be prominent but not overwhelming
+
+HEADLINE TEXT:
+- Position: Bottom of banner (below IDE window) or integrated tastefully
+- Text: "precise, portable, and just works"
+- Alternative: "RangeLink: Precise code references for AI assistants"
+- Font: Modern sans-serif (Inter, SF Pro, or similar)
+- Color: Dark brown (#3E2723) for contrast, or white if positioned over darker area
+- Size: ~32-40px, readable at social preview size
+
+OVERALL STYLE:
+- Professional but friendly (not corporate/sterile)
+- Modern developer tools aesthetic
+- Clean, approachable UI
+- Realistic IDE mockup (should feel like a screenshot, but polished)
+- Ensure text is readable when scaled down to thumbnail size
+
+TECHNICAL REQUIREMENTS:
+- Dimensions: 1280x640px (2:1 aspect ratio)
+- Format: PNG with transparency where appropriate, or solid background
+- Optimize for social media preview (clear even at small sizes)
 ```
 
-Option B - Developer-Focused:
+</details>
+
+<details>
+<summary><strong>Open-Ended Version (Click to expand)</strong></summary>
 
 ```
-Left 40%: Large RangeLink logo + BYODELI badge
-Right 60%:
-  - "RangeLink" title
-  - "Cross-editor code references"
-  - Example: path#L3C14-L314C16
-  - Small icons: VSCode + Cursor + GitHub logos
-Background: Dark theme with syntax-highlighted code snippet
+Create a 1280x640px GitHub social preview banner for RangeLink, a VSCode extension that helps developers share precise code references with AI assistants.
+
+CORE CONCEPT:
+Show a modern code editor (VSCode or Cursor style) with an integrated terminal, demonstrating RangeLink's bidirectional workflow:
+1. Developer selects code in the editor → generates a precise link
+2. Link appears in the terminal (clickable)
+3. Clicking the link navigates back to the exact code location
+
+ESSENTIAL ELEMENTS TO INCLUDE:
+- IDE window showing both text editor and integrated terminal
+- Text editor: Code with a partial-line selection (not full lines — show different start/end column positions)
+- Terminal: A clickable RangeLink like `src/auth.ts#L42C10-L58C25`
+- Bidirectional arrow: Visual connector showing the two-way workflow
+- RangeLink logo: Friendly orange chicken mascot with infinity necklace (circular badge design)
+- Headline: Adapt from "precise, portable, and just works across editors, tools, and teams"
+
+VISUAL DIRECTION:
+- Tone: Friendly and accessible (not sterile or overly corporate)
+- Style: Modern developer tools aesthetic, clean UI
+- Colors: Orange (#FF6B35), cream (#F5E6D3), dark browns, VSCode dark theme
+- Make it feel like a polished screenshot of a real workflow
+
+LOGO DESCRIPTION (will be uploaded separately, but for context):
+- Circular badge with friendly cartoon chicken
+- Orange feathers, wearing infinity (∞) necklace
+- "RANGELINK" text at top, "#L3C14-L314C16" at bottom
+- Cream background, dark brown border
+- Playful, approachable mascot
+
+LAYOUT FREEDOM:
+Feel free to interpret the composition creatively while keeping the core workflow concept clear. The goal is to instantly communicate: "This tool helps you share precise code with AI assistants and navigate back via clickable links."
+
+TECHNICAL SPECS:
+- Size: 1280x640px (2:1 ratio)
+- Readable at thumbnail sizes
+- Professional but friendly vibe
 ```
 
-Option C - Minimal Hero:
+</details>
 
-```
-Centered composition:
-  - RangeLink logo (large, 200px)
-  - "Share Code References That Just Work"
-  - "#L3C14-L314C16" in highlighted badge
-Background: Two-tone split (orange left, cream right) or solid with overlay
-```
+**Technical Specifications:**
 
-**Design Tools:**
+- Dimensions: 1280×640px (2:1 aspect ratio)
+- Format: PNG or JPG
+- File size: Under 1MB
+- Upload location: GitHub → Repo Settings → General → Social preview
 
-- Figma (recommended for precise control)
-- Canva (templates available, easier)
-- Shopp-E + Photoshop (AI-generated base + manual composition)
-- GitHub's own social preview generator (basic)
+**Upload & Testing:**
 
-**Testing:**
-After uploading, test by:
+1. Generate banner using DALL-E with one of the prompts above
+2. Upload to GitHub: Repository Settings → General → Social preview
+3. Test by sharing repo link on Slack/messaging apps to verify preview appears correctly
 
-1. Sharing repo link in Slack/Discord (preview should show your banner)
-2. Using Twitter Card Validator: https://cards-dev.twitter.com/validator
-3. Using Facebook Debugger: https://developers.facebook.com/tools/debug/
-4. Checking on mobile (SMS preview)
-
-**Resources & References:**
-
-- GitHub guide: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview
-- Recommended size: 1280×640px (2:1 ratio)
-- File size: Under 1MB (PNG or JPG)
-- Repository topics to highlight: vscode-extension, developer-tools, productivity, code-navigation, ai-tools
-
-**Banner Copy/Text Elements:**
-
-**Primary headline options:**
-
-- "Share Code Across Editors & Tools"
-- "Precise Code References for Developers"
-- "Cross-Editor Code Sharing Made Easy"
-- "From VSCode to claude-code - Links That Just Work"
-
-**Supporting text:**
-
-- "GitHub-style notation • Portable links • AI-ready"
-- "Works with VSCode, Cursor, claude-code & more"
-- "Perfect for documentation, code reviews, and AI prompts"
-
-**Call to action (optional):**
-
-- "Available on VSCode Marketplace"
-- "Install Extension →"
-
-**Done when:** Banner uploaded to GitHub, preview tested and looks professional across platforms
+**Done when:** Banner uploaded to GitHub and displays correctly in social media previews
 
 ### 3J) Fix README Logo Display in Installed Extension — 📋 Planned
 
