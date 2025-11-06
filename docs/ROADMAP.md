@@ -2835,6 +2835,13 @@ For i18n design details, see [LOGGING.md](./LOGGING.md#internationalization-read
   - Benefits: Onboarding new contributors, understanding trade-offs, preventing decision re-litigation
   - See: [ADR GitHub organization](https://adr.github.io/) for format and examples
 
+- [ ] **README logo and hero layout improvement**
+  - Improve visual presentation of logo to blend better with header/hero section
+  - Inspired by [awesome-readme examples](https://github.com/matiassingers/awesome-readme/blob/master/readme.md)
+  - Apply to both root README.md and extension's README.md
+  - Goal: More polished, professional visual appearance with better logo integration
+  - Low priority, polish item for future refinement
+
 ---
 
 ## Related Documentation
