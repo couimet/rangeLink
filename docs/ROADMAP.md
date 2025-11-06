@@ -410,68 +410,23 @@ Highlighted RangeLink's cross-file context advantage vs built-in claude-code ext
 
 **Goal:** Make RangeLinks in terminal clickable (Cmd+Click).
 
-**Total Time:** ~4.5 hours
+**Completed:** Iterations 1, 1.1, 3.1 Subsets 1-5. See [JOURNEY.md](./JOURNEY.md).
 
-### Iteration 1: Link Parser — ✅ Complete (2025-11-05)
-
-Added custom delimiter support to `parseLink()`. Dynamic regex, multi-char delimiters, rectangular mode. 43 tests, 100% coverage. See [JOURNEY.md](./JOURNEY.md).
-
-### Iteration 1.1: Structured Error Handling — ✅ Complete (2025-11-05)
-
-Replaced string errors with `RangeLinkError`. 8 parsing error codes, rich context. See [JOURNEY.md](./JOURNEY.md).
-
-### Iteration 1.2: Richer ParsedLink Interface (30 min) — 📋 Planned
+### Iteration 1.2: Richer ParsedLink Interface (30 min)
 
 Return full metadata (delimiter config, computed selection, range format, selection type) to match `FormattedLink` symmetry.
 
-### Iteration 1.3: DelimiterConfig Support (1h) — 📋 Planned
+### Iteration 1.3: DelimiterConfig Support (1h)
 
 Accept DelimiterConfig parameter. Update regex to use config. Handle multi-char delimiters, rectangular mode detection.
 
-### Iteration 1.4: Round-Trip Integration Tests (1h) — 📋 Planned
+### Iteration 1.4: Round-Trip Integration Tests (1h)
 
 Verify parsing and generation are inverses. Test: Generate → Parse → Generate and Parse → Generate → Parse. Cover all formats.
 
-### Iteration 3.1: Terminal Link Provider — In Progress (Subsets 1-5 Complete)
+### Iteration 3.1 Subset 6: Configuration Integration (30 min)
 
-**Subset 1: Pattern Builder** — ✅ Complete
-
-- `buildLinkPattern()` utility with hybrid strategy (non-greedy + negative lookahead)
-- 35 tests, 100% coverage
-
-**Subset 2: Provider Skeleton + Detection** — ✅ Complete
-
-- `RangeLinkTerminalProvider` with dependency injection
-- Full detection using `buildLinkPattern()`, clickable with tooltips
-- Registered in extension.ts
-
-**Subset 4: Validation & Parsing** — ✅ Complete
-
-- Parse with `parseLink()`, store in `RangeLinkTerminalLink.parsed`
-- Enhanced tooltips show full range (platform-aware)
-- Parse failures handled gracefully
-- Moved `RangeLinkTerminalLink` to `types/` folder
-- Extracted utilities: `formatLinkPosition()`, `formatLinkTooltip()`, `getPlatformModifierKey()`
-- 34 tests, 100% coverage
-
-**Subset 5: Link Handler** — ✅ Complete
-
-- Full file opening and navigation in `handleTerminalLink()`
-- Created utilities: `resolveWorkspacePath()`, `convertRangeLinkPosition()`
-- All selection types: single, ranges, rectangular (multi-cursor)
-- Comprehensive error handling
-- 35 tests (12 path + 23 coordinate), 100% coverage
-- **Total: 135 tests passing (7 suites)**
-
-**Remaining:** Subset 6 (Configuration Integration) — 30 min
-
-**Future (deferred):** Subset 7 - Rectangular Mode Tooltip Indicator (15 min)
-
-See [JOURNEY.md](./JOURNEY.md#phase-5-iteration-31-terminal-link-provider) for full details.
-
-### Iteration 3.2-3.7: Additional Iterations
-
-Originally planned but merged into Subset implementations above.
+Final subset to complete terminal link provider implementation.
 
 ---
 
