@@ -1,5 +1,35 @@
 # Claude Code Instructions
 
+## Asking Questions and Design Decisions
+
+When Claude needs to ask questions or gather design decisions before implementing:
+
+1. **Never print questions directly in terminal** - this causes confusion with duplicate numbering and makes tracking answers difficult
+2. **Always save questions to a file** in `.claude-questions/NNNN-topic-slug.txt` where:
+   - `NNNN` is sequential (0001, 0002, etc.) - check existing files with Glob and increment from highest
+   - `topic-slug` is auto-generated kebab-case description (max 50 chars)
+3. **Print only the filepath** in terminal output
+4. **File format:**
+
+   ```markdown
+   # Question Topic
+
+   ## Question 1: <question with options/recommendations>
+
+   Answer: [prefilled recommended answer when available]
+
+   ---
+
+   ## Question 2: <question with options/recommendations>
+
+   Answer: [prefilled recommended answer when available]
+   ```
+
+5. **Number questions sequentially starting from 1** within each file
+6. **The questions file is the single source of truth** - user will edit answers there
+
+Claude can still share summaries and thought processes in terminal to provide context, but all questions must go in the file.
+
 ## Commit Messages
 
 **Always save commit messages to `.commit-msgs/` folder** (not root directory).
