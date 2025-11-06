@@ -2493,6 +2493,12 @@ Using claude-code or ChatGPT for development? RangeLink eliminates the context-s
     - `rangelink.terminalBinding.defaultTerminal`: "active" | "first" | "last" | terminal name pattern
     - `rangelink.terminalBinding.showStatusBarItem`: Show persistent indicator (default: true)
   - Terminal profile integration: Auto-bind for specific terminal profiles (e.g., "claude-code")
+  - Auto-focus terminal after pasting link: Automatically set focus to bound terminal after link is pasted
+    - Improves workflow: Generate link → terminal focused → continue typing immediately
+    - Setting: `rangelink.terminalBinding.autoFocusAfterPaste`: Enable auto-focus (default: true)
+  - Auto-append space after link: Automatically add trailing space after pasting link to bound terminal
+    - Improves workflow: Generate link with space → keep typing without manual space insertion
+    - Setting: `rangelink.terminalBinding.appendSpaceAfterPaste`: Enable auto-space (default: true)
   - Fallback to clipboard-only with graceful error handling improvements
   - Support for remote terminals (VS Code Remote Development)
   - Smart detection: If clipboard contains claude-code prompt, suggest enabling terminal binding
