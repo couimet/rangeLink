@@ -177,6 +177,7 @@ By default, **remove all code snippets** when moving to JOURNEY.md:
 **When modifying markdown files, verify cross-file references don't break:**
 
 1. **Search for incoming references** before renaming sections:
+
    ```bash
    # Check if any files reference the section you're changing
    grep -r "Section Name" docs/ packages/*/README.md packages/*/*.md
@@ -188,6 +189,7 @@ By default, **remove all code snippets** when moving to JOURNEY.md:
    - **Add redundant info:** Include key details (keyboard shortcuts, brief steps) inline so link breakage doesn't block users
 
    Example:
+
    ```markdown
    Invalid configurations show warnings in the output channel
    (`Cmd+Shift+U` / `Ctrl+Shift+U`, select "RangeLink").

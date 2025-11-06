@@ -1694,10 +1694,12 @@ After these 8 iterations (1 prerequisite + 7 terminal link provider):
 **Context:** During manual testing of terminal link navigation (Phase 5 Iteration 3.1), discovered issues with line wrapping and same-position selections. These tasks address UX issues and test coverage gaps.
 
 **Discovery:** User clicked `Hack/LICENSE.txtOM32DS11_M49DS32` but terminal wrapped it:
+
 ```
 Hack/LICENSE.txtOM32DS1
 1_M49DS32
 ```
+
 Only first line was detected/parsed, leading to navigation to `32:1` instead of `32:11-49:32`, with no visible selection.
 
 **Total Time:** ~2 hours (5 tasks, can be tackled independently for incremental releases)
@@ -1746,6 +1748,7 @@ Only first line was detected/parsed, leading to navigation to `32:1` instead of 
 **Problem:** When `startPos == endPos` (e.g., `32:1` to `32:1`), VSCode creates zero-width selection (just cursor), which is invisible. Users expect to see something highlighted.
 
 **Example:**
+
 - Link: `file.ts#L32C1` (single position)
 - Current behavior: Cursor at line 32, column 1, nothing visible
 - Desired behavior: Character at 32:1 is highlighted
@@ -1963,8 +1966,10 @@ Multi-line link detection is not supported by the platform.
 **Example:**
 Terminal output:
 ```
+
 Check this: Hack/LICENSE.txt#L32C11
 -L49C32
+
 ```
 
 Only `Hack/LICENSE.txt#L32C11` is detected (incomplete link).
@@ -2042,7 +2047,10 @@ export const isPossiblyTruncated = (link: string, delimiters: DelimiterConfig): 
   // Check if ends with incomplete digit sequence (wrapped mid-number)
   const lastChar = link[link.length - 1];
   const secondLastChar = link[link.length - 2];
-  if (/\d/.test(lastChar) && (secondLastChar === delimiters.line || secondLastChar === delimiters.position)) {
+  if (
+    /\d/.test(lastChar) &&
+    (secondLastChar === delimiters.line || secondLastChar === delimiters.position)
+  ) {
     // Ends with single digit after delimiter - suspicious
     return true;
   }

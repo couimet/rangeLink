@@ -244,9 +244,7 @@ describe('RangeLinkTerminalProvider', () => {
 
       // Assert: Should log that it's keeping cursor only
       const debugCalls = (mockLogger.debug as jest.Mock).mock.calls;
-      const boundaryLog = debugCalls.find((call) =>
-        call[1]?.includes('keeping cursor only'),
-      );
+      const boundaryLog = debugCalls.find((call) => call[1]?.includes('keeping cursor only'));
 
       expect(boundaryLog).toBeDefined();
       expect(boundaryLog[0]).toMatchObject({
@@ -289,9 +287,7 @@ describe('RangeLinkTerminalProvider', () => {
 
       // Assert: Should log that it's an empty line
       const debugCalls = (mockLogger.debug as jest.Mock).mock.calls;
-      const boundaryLog = debugCalls.find((call) =>
-        call[1]?.includes('keeping cursor only'),
-      );
+      const boundaryLog = debugCalls.find((call) => call[1]?.includes('keeping cursor only'));
 
       expect(boundaryLog).toBeDefined();
       expect(boundaryLog[0]).toMatchObject({
