@@ -1863,6 +1863,7 @@ Investigated VSCode v1.80's "multi-line link support" feature to determine if it
 - ✅ **Workarounds:** Shorter delimiters, wider terminal, quote links, add newlines
 
 **Sources:**
+
 - VSCode v1.80 release notes: https://code.visualstudio.com/updates/v1_80
 - GitHub issue #91290: Terminal Link Provider API proposal
 - RangeLinkTerminalProvider.ts implementation (line 70: `context.line`)

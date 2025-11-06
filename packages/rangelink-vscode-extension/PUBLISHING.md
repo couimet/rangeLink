@@ -94,7 +94,7 @@ Before publishing, ensure you have:
    # From project root
    pnpm package:vscode-extension
    # Creates: packages/rangelink-vscode-extension/rangelink-vscode-extension-0.1.1.vsix
-   
+
    # Test locally
    pnpm install-local:vscode-extension:vscode
    # Verify extension works correctly
@@ -112,9 +112,10 @@ Before publishing, ensure you have:
 ✅ **Publish exactly what you tested** - No risk of discrepancies between test and production  
 ✅ **No file modifications** - Version and tags are managed in your git workflow  
 ✅ **Repeatable** - You can publish the same VSIX multiple times if needed  
-✅ **Safe** - Build and test locally, then publish with confidence  
+✅ **Safe** - Build and test locally, then publish with confidence
 
 This workflow is ideal for:
+
 - Pre-tagged releases (version already committed and tagged)
 - GitHub releases (attach VSIX to release, then publish)
 - CI/CD pipelines (build once, test, then publish)
@@ -131,6 +132,7 @@ However, if you want to publish separately:
 ## Version Management & Release Workflow
 
 For complete information on:
+
 - Version management and semantic versioning
 - Git tagging conventions
 - Release workflow phases (prepare, build, test, publish, tag)

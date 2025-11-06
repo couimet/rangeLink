@@ -190,10 +190,11 @@ This is the current manual process for releasing a package. Automated workflows 
    ```
 
 10. **Verify publication**
-   - Wait 5-10 minutes
-   - Visit: https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension
-   - Verify version number updated
-   - Test installation from marketplace
+
+- Wait 5-10 minutes
+- Visit: https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension
+- Verify version number updated
+- Test installation from marketplace
 
 #### Phase 4: Tag and Release
 
