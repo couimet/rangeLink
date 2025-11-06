@@ -8,36 +8,15 @@ _Future development plans and in-progress work._
 
 ---
 
-> **Development Approach:** We use **micro-iterations** (1-2 hours each) to prevent feature creep and maintain momentum. Each iteration has clear scope, time estimates, and "done when" criteria. This allows for frequent commits, easy progress tracking, and natural stopping points.
+> **Development Approach:** We use **micro-iterations** (1-2 hours each) to prevent feature creep and maintain momentum. Each iteration has clear scope, time estimates, and "done when" criteria.
 
 ## Development Principles
 
-Our roadmap follows these core principles to ensure sustainable, high-quality development:
-
-1. **Micro-Iterations (1-2 hours max)**
-   - Each iteration is small enough to complete in one focused session
-   - Clear "done when" criteria prevent scope creep
-   - Time estimates help with planning and prioritization
-
-2. **One Focus Per Iteration**
-   - Feature work and refactoring are separate iterations
-   - Never mix unrelated changes in a single iteration
-   - Keeps commits clean and reviewable
-
-3. **Commit Early, Commit Often**
-   - Commit after each micro-iteration, even if incomplete
-   - Use `[WIP]` or `[PARTIAL]` tags when appropriate
-   - Git history reflects incremental progress
-
-4. **Explicit Scope Definition**
-   - Document what IS and IS NOT in scope upfront
-   - Prevents "just one more thing" syndrome
-   - Makes it easy to defer work to next iteration
-
-5. **Test-Driven Quality**
-   - Aim for 100% branch coverage
-   - Write tests during iteration, not after
-   - Skipped tests are documented with tracking issues
+1. **Micro-Iterations (1-2 hours max)** - Clear "done when" criteria prevent scope creep
+2. **One Focus Per Iteration** - Never mix unrelated changes
+3. **Commit Early, Commit Often** - Use `[WIP]` or `[PARTIAL]` tags when appropriate
+4. **Explicit Scope Definition** - Document what IS and IS NOT in scope upfront
+5. **Test-Driven Quality** - Aim for 100% branch coverage
 
 ---
 
