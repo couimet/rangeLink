@@ -19,6 +19,7 @@
 1. **Select code** → Generate link (`Cmd+R Cmd+L`)
 2. **Bind to integrated terminal** → Link appears in claude-code instantly (within VSCode/Cursor)
 3. **AI reads precise context** → No manual copy/paste, no lost focus
+4. **AI responds with links** → **Click to jump directly to code** (Cmd+Click in terminal)
 
 **Compete with Cursor's built-in AI** by making external AI assistants feel integrated. You get:
 
@@ -30,9 +31,9 @@
 
 ### Perfect For
 
-- 🤖 **AI assistants** — claude-code, Copilot with _exact_ context
-- 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`"
-- 👥 **Team collaboration** — Universal format everyone can use
+- 🤖 **AI assistants** — claude-code, Copilot with _exact_ context + clickable navigation
+- 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`" (click to view)
+- 👥 **Team collaboration** — Universal format everyone can use and navigate
 
 ## Quick Start
 
@@ -57,25 +58,61 @@ src/utils/parser.ts#L42C10-L58C25
 
 **Note:** `R` then `L` - the letters stand for **R**ange **L**ink.
 
+## Features
+
+### 🖱️ Terminal Link Navigation
+
+**Click RangeLinks in your terminal to jump directly to code** — the killer feature for AI-assisted workflows.
+
+Any RangeLink in the terminal becomes clickable — whether from claude-code responses, your own links you're validating before sending, or references shared by teammates:
+
+- **Cmd+Click** (Mac) or **Ctrl+Click** (Windows/Linux) to navigate
+- **Instant file opening** with precise cursor positioning
+- **Works with all formats:** single-line, ranges, columns, rectangular selections
+- **Smart path resolution:** workspace-relative and absolute paths supported
+
+**Example:** AI suggests checking `src/auth.ts#L42C10-L58C25` → Click → VSCode opens file at exact selection.
+
+### 🔗 Flexible Link Formats
+
+- **Single line:** `src/file.ts#L42`
+- **Line ranges:** `src/file.ts#L10-L25`
+- **Column precision:** `src/file.ts#L42C6-L42C15`
+- **Rectangular selections:** `src/file.ts##L10C5-L20C10` (double hash)
+
+### 🔀 Terminal Binding
+
+Auto-send generated links to your integrated terminal where claude-code can see them instantly. Zero copy/paste friction.
+
+### ⚙️ Custom Delimiters
+
+Personalize delimiters to match your workflow or organizational standards. Full validation ensures configurations always work.
+
+### 📦 Portable Links (BYOD)
+
+Share code references with teammates who use different delimiter configurations. Portable links embed metadata so they work everywhere — no coordination needed.
+
 ## Commands
 
 All commands are available via keyboard shortcuts, Command Palette, and right-click context menu:
 
-| Command                       | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                            |
-| ----------------------------- | ------------------- | --------------------- | -------------------------------------- |
-| Copy Range Link               | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Create relative path link              |
-| Copy Range Link (Absolute)    | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link              |
-| Copy Portable Link            | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link              |
-| Copy Portable Link (Absolute) | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link              |
-| Bind to Terminal              | —                   | —                     | Auto-send links to integrated terminal |
-| Unbind Terminal               | —                   | —                     | Stop sending links to terminal         |
-| Show Version Info             | —                   | —                     | Display version and build info         |
+| Command                       | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                                             |
+| ----------------------------- | ------------------- | --------------------- | ------------------------------------------------------- |
+| Copy Range Link               | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Create relative path link                               |
+| Copy Range Link (Absolute)    | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link                               |
+| Copy Portable Link            | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link                               |
+| Copy Portable Link (Absolute) | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link                               |
+| Bind to Terminal              | —                   | —                     | Auto-send links to integrated terminal for AI workflows |
+| Unbind Terminal               | —                   | —                     | Stop auto-sending links to terminal                     |
+| Show Version Info             | —                   | —                     | Display version and build info                          |
 
 **Customizing Shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) to open Keyboard Shortcuts, then search for "RangeLink".
 
 ## Link Formats
 
-RangeLink generates local file paths with GitHub-inspired range notation:
+RangeLink generates local file paths with GitHub-inspired range notation.
+
+**💡 Pro Tip:** All these formats are clickable in the terminal! Cmd+Click any RangeLink to navigate — whether it's from claude-code responses, your own references you're validating, or links shared by teammates.
 
 | Selection Type        | Format                              | Example                     |
 | --------------------- | ----------------------------------- | --------------------------- |
@@ -129,13 +166,7 @@ Invalid configurations will fall back to defaults with a warning in the output c
 
 ## What's Next
 
-RangeLink is under active development. Coming soon:
-
-- **Link Navigation** - Click RangeLinks to jump directly to code
-- **Multi-Range Support** - Reference multiple code sections in one link
-- **Enhanced BYOD** - More delimiter options and validation improvements
-
-[View Full Roadmap →](https://github.com/couimet/rangelink/blob/main/docs/ROADMAP.md)
+RangeLink is under active development. See the [full roadmap](https://github.com/couimet/rangelink/blob/main/docs/ROADMAP.md) for planned features and other editor integrations.
 
 ## Requirements
 
