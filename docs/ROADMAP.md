@@ -41,6 +41,93 @@ Our roadmap follows these core principles to ensure sustainable, high-quality de
 
 ---
 
+## Navigation Features — High Priority
+
+**Overview:** Making RangeLinks navigable across different contexts (terminal, editor, clipboard).
+
+### ✅ Terminal Link Navigation — COMPLETE
+
+**Status:** Fully implemented in Phase 5
+
+RangeLinks in terminal output are clickable (Cmd/Ctrl+Click) and navigate to the correct location with proper selection handling (single-line, multi-line, rectangular mode).
+
+See [Phase 5: Terminal Link Navigation](#phase-5-terminal-link-navigation---planned) for implementation details.
+
+---
+
+### 📋 Editor Link Navigation — HIGH PRIORITY (Planned: 2-3 hours)
+
+**Goal:** Make RangeLinks clickable in editor text files (any file type: .md, .txt, code files, untitled/unsaved buffers).
+
+**Use Case:** Preparing prompts for claude-code in editor scratch files. Click a RangeLink to navigate to that location without leaving the editor.
+
+**Scope:**
+- VSCode/Cursor only (first iteration)
+- Any text file type (markdown, code, untitled files)
+- Same navigation behavior as terminal links (proper selection, rectangular mode support)
+
+**Implementation Approach:**
+
+#### Iteration 1: Document Link Provider (1.5h)
+- Implement `vscode.DocumentLinkProvider` for all file types
+- Reuse existing `parseLink()` from core (same as terminal navigation)
+- Reuse existing `handleTerminalLink()` navigation logic from Phase 5
+- Register provider for all text documents (`{ scheme: '*', language: '*' }`)
+
+**Tasks:**
+- Create `src/navigation/DocumentLinkProvider.ts`
+- Register in `extension.ts` activation
+- Add tests for link detection in various file types
+- Handle relative vs absolute paths (reuse `resolveWorkspacePath()`)
+
+#### Iteration 2: Testing & Edge Cases (30min)
+- Test in .md, .txt, code files, untitled files
+- Test with workspace-relative and absolute paths
+- Verify rectangular mode links work (`##` prefix)
+- Test BYOD links (when parsing is available)
+
+#### Iteration 3: Polish & Documentation (30min)
+- Add hover tooltips showing target location
+- Log link clicks with structured context
+- Update README with editor navigation examples
+- Add demo GIF showing click-to-navigate in editor
+
+**Done When:**
+- [ ] RangeLinks clickable in any editor text file
+- [ ] Clicking navigates to correct location with proper selection
+- [ ] Works with rectangular mode links
+- [ ] Tests cover all file types and edge cases
+- [ ] Documentation updated with examples
+
+**Benefits:**
+- Seamless workflow: Prepare prompts in editor, click links to verify context
+- No context switching between terminal and editor for navigation
+- BYOD parsing (when added) will work automatically in both terminal and editor
+
+---
+
+### 📋 Navigate from Clipboard/Selection — Future Enhancement
+
+**Goal:** Command to navigate to a RangeLink from clipboard or current selection.
+
+**Use Case:**
+- Paste RangeLink in editor, select it, run command to navigate
+- Copy RangeLink elsewhere, return to editor, navigate from clipboard
+
+**Commands:**
+- `RangeLink: Navigate to Link in Clipboard`
+- `RangeLink: Navigate to Selected Link`
+
+**Implementation Notes:**
+- Reuse existing `parseLink()` and navigation logic
+- Handle clipboard/selection text extraction
+- Validate link format before attempting navigation
+- Provide clear error messages for invalid links
+
+**Status:** Captured for future implementation. Will prioritize after editor link navigation is complete.
+
+---
+
 ## Phase 1C: BYOD Parsing — 📋 Deferred
 
 **Objective:** Parse links with embedded delimiter metadata so teams can consume code references seamlessly regardless of delimiter configurations.
