@@ -171,3 +171,39 @@ By default, **remove all code snippets** when moving to JOURNEY.md:
 
 - Document architectural decisions/ADRs in relevant docs/ files
 - Keep commit messages detailed -- yet concise -- with motivation, changes, and benefits
+
+### Markdown Cross-References and Link Maintenance
+
+**When modifying markdown files, verify cross-file references don't break:**
+
+1. **Search for incoming references** before renaming sections:
+   ```bash
+   # Check if any files reference the section you're changing
+   grep -r "Section Name" docs/ packages/*/README.md packages/*/*.md
+   ```
+
+2. **Use resilient link patterns** when creating cross-references:
+   - **Relative links with section anchors:** `[text](./FILE.md#section-anchor)`
+   - **Include quoted context:** `see [DEVELOPMENT.md → "View extension logs"](./DEVELOPMENT.md#section)`
+   - **Add redundant info:** Include key details (keyboard shortcuts, brief steps) inline so link breakage doesn't block users
+
+   Example:
+   ```markdown
+   Invalid configurations show warnings in the output channel
+   (`Cmd+Shift+U` / `Ctrl+Shift+U`, select "RangeLink").
+   See [DEVELOPMENT.md](./DEVELOPMENT.md#development-workflow) for details.
+   ```
+
+3. **Test links when changing section headings:**
+   - Section anchors in GitHub: lowercase, spaces → hyphens, special chars removed
+   - Example: `### View Extension Logs` → `#view-extension-logs`
+   - When renaming sections, search codebase for the old anchor slug
+
+4. **Common cross-reference pairs to watch:**
+   - `README.md` ↔ `DEVELOPMENT.md` (user-facing ↔ developer instructions)
+   - `ROADMAP.md` ↔ `JOURNEY.md` (planned ↔ completed work)
+   - Package READMEs ↔ root `docs/` (specific ↔ architectural)
+
+5. **When breaking a link is unavoidable:**
+   - Update all incoming references in the same commit
+   - Use grep/ripgrep to find them: `rg "old-section-name" --type md`
