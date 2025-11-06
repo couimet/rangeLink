@@ -31,11 +31,15 @@ Modified `TerminalBindingManager.sendToTerminal()`:
 
 **Test Coverage:**
 
-Created comprehensive test suite (17 tests, 100% coverage):
-- Space padding verification (empty, special chars, existing spaces)
-- Auto-focus behavior (show called with false)
-- Workflow integration (send + focus ordering, immediate typing)
-- Edge cases (no terminal bound, return values, logging)
+Created comprehensive test suite (37 tests, 100% coverage):
+
+- **sendToTerminal** (17 tests): Space padding, auto-focus, workflow integration, edge cases
+- **bind** (6 tests): Success cases, no terminal, already bound, error messages
+- **unbind** (3 tests): Success, nothing bound, status messages
+- **isBound/getBoundTerminal** (6 tests): State verification across lifecycle
+- **getTerminalDisplayName** (2 tests): Named and unnamed terminals
+- **onDidCloseTerminal** (2 tests): Auto-unbind on close, different terminal handling
+- **dispose** (1 test): Resource cleanup
 
 **Benefits:**
 

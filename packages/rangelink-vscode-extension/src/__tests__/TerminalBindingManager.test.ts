@@ -188,4 +188,263 @@ describe('TerminalBindingManager', () => {
       });
     });
   });
+
+  describe('bind', () => {
+    it('should bind to active terminal successfully', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+
+      const result = manager.bind();
+
+      expect(result).toBe(true);
+      expect(manager.isBound()).toBe(true);
+      expect(manager.getBoundTerminal()).toBe(mockTerminal);
+    });
+
+    it('should log success and show status message', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+
+      manager.bind();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'bind', terminalName: 'Test Terminal' },
+        'Successfully bound to terminal: Test Terminal',
+      );
+      expect(vscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink bound to Test Terminal',
+        3000,
+      );
+    });
+
+    it('should return false when no active terminal', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = undefined;
+
+      const result = manager.bind();
+
+      expect(result).toBe(false);
+      expect(manager.isBound()).toBe(false);
+    });
+
+    it('should show error when no active terminal', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = undefined;
+
+      manager.bind();
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'bind' },
+        'Failed to bind: No active terminal',
+      );
+      expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: No active terminal. Open a terminal and try again.',
+      );
+    });
+
+    it('should return false when already bound', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind(); // First bind
+
+      const newTerminal = { name: 'New Terminal', sendText: jest.fn(), show: jest.fn() };
+      (vscode.window as Record<string, unknown>).activeTerminal =
+        newTerminal as unknown as vscode.Terminal;
+
+      const result = manager.bind(); // Try to bind again
+
+      expect(result).toBe(false);
+      expect(manager.getBoundTerminal()).toBe(mockTerminal); // Still bound to first
+    });
+
+    it('should show error when already bound', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind();
+
+      const newTerminal = { name: 'New Terminal', sendText: jest.fn(), show: jest.fn() };
+      (vscode.window as Record<string, unknown>).activeTerminal =
+        newTerminal as unknown as vscode.Terminal;
+
+      manager.bind();
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'bind',
+          currentTerminal: 'Test Terminal',
+          requestedTerminal: 'New Terminal',
+        },
+        'Already bound to a terminal',
+      );
+      expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: Already bound to Test Terminal. Unbind first to bind to a different terminal.',
+      );
+    });
+  });
+
+  describe('unbind', () => {
+    it('should unbind successfully when terminal is bound', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind();
+
+      manager.unbind();
+
+      expect(manager.isBound()).toBe(false);
+      expect(manager.getBoundTerminal()).toBeUndefined();
+    });
+
+    it('should log success and show status message', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind();
+      jest.clearAllMocks();
+
+      manager.unbind();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'unbind', terminalName: 'Test Terminal' },
+        'Successfully unbound from terminal: Test Terminal',
+      );
+      expect(vscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink unbound from Test Terminal',
+        2000,
+      );
+    });
+
+    it('should handle unbind when nothing is bound', () => {
+      manager.unbind();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'unbind' },
+        'No terminal bound, nothing to unbind',
+      );
+      expect(vscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        'RangeLink: No terminal bound',
+        2000,
+      );
+    });
+  });
+
+  describe('isBound', () => {
+    it('should return false initially', () => {
+      expect(manager.isBound()).toBe(false);
+    });
+
+    it('should return true after binding', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind();
+
+      expect(manager.isBound()).toBe(true);
+    });
+
+    it('should return false after unbinding', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind();
+      manager.unbind();
+
+      expect(manager.isBound()).toBe(false);
+    });
+  });
+
+  describe('getBoundTerminal', () => {
+    it('should return undefined initially', () => {
+      expect(manager.getBoundTerminal()).toBeUndefined();
+    });
+
+    it('should return bound terminal after binding', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind();
+
+      expect(manager.getBoundTerminal()).toBe(mockTerminal);
+    });
+
+    it('should return undefined after unbinding', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind();
+      manager.unbind();
+
+      expect(manager.getBoundTerminal()).toBeUndefined();
+    });
+  });
+
+  describe('getTerminalDisplayName', () => {
+    it('should return terminal name when present', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind();
+
+      const result = manager.sendToTerminal('test');
+
+      expect(result).toBe(true);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.objectContaining({ terminalName: 'Test Terminal' }),
+        expect.any(String),
+      );
+    });
+
+    it('should return "Unnamed Terminal" when name is missing', () => {
+      const unnamedTerminal = { sendText: jest.fn(), show: jest.fn() };
+      (vscode.window as Record<string, unknown>).activeTerminal =
+        unnamedTerminal as unknown as vscode.Terminal;
+      manager.bind();
+
+      manager.sendToTerminal('test');
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.objectContaining({ terminalName: 'Unnamed Terminal' }),
+        expect.any(String),
+      );
+    });
+  });
+
+  describe('onDidCloseTerminal', () => {
+    let terminalCloseCallback: (terminal: vscode.Terminal) => void;
+
+    beforeEach(() => {
+      // Capture the callback registered with onDidCloseTerminal
+      (vscode.window.onDidCloseTerminal as jest.Mock).mockImplementation((callback) => {
+        terminalCloseCallback = callback;
+        return { dispose: jest.fn() };
+      });
+
+      // Create new manager to register the callback
+      manager = new TerminalBindingManager(mockContext);
+    });
+
+    it('should auto-unbind when bound terminal closes', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind();
+      jest.clearAllMocks();
+
+      // Simulate terminal close
+      terminalCloseCallback(mockTerminal);
+
+      expect(manager.isBound()).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'onDidCloseTerminal', terminalName: 'Test Terminal' },
+        'Bound terminal closed: Test Terminal - auto-unbinding',
+      );
+      expect(vscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        'Terminal binding removed (terminal closed)',
+        3000,
+      );
+    });
+
+    it('should not unbind when different terminal closes', () => {
+      (vscode.window as Record<string, unknown>).activeTerminal = mockTerminal;
+      manager.bind();
+
+      const otherTerminal = { name: 'Other Terminal', sendText: jest.fn(), show: jest.fn() };
+
+      // Simulate different terminal close
+      terminalCloseCallback(otherTerminal as unknown as vscode.Terminal);
+
+      expect(manager.isBound()).toBe(true);
+      expect(manager.getBoundTerminal()).toBe(mockTerminal);
+    });
+  });
+
+  describe('dispose', () => {
+    it('should dispose all disposables', () => {
+      const disposeSpy = jest.fn();
+      (vscode.window.onDidCloseTerminal as jest.Mock).mockReturnValue({ dispose: disposeSpy });
+
+      const testManager = new TerminalBindingManager(mockContext);
+      testManager.dispose();
+
+      expect(disposeSpy).toHaveBeenCalled();
+    });
+  });
 });
