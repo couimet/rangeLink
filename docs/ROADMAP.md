@@ -1739,6 +1739,48 @@ Only first line was detected/parsed, leading to navigation to `32:1` instead of 
 
 **Priority:** Medium (helps inform other task implementations)
 
+**Research Findings (2025-01-05):**
+
+Investigated VSCode v1.80's "multi-line link support" feature to determine if it solves terminal line wrapping issues.
+
+**Key Discoveries:**
+
+1. **`TerminalLinkContext` Provides Single Lines Only**
+   - API signature: `context.line: string` (singular)
+   - Called once per terminal line
+   - No API to request adjacent lines or multi-line context
+   - Confirmed in RangeLinkTerminalProvider.ts:70
+
+2. **v1.80's "Multi-Line Link Support" ≠ Wrapped Link Detection**
+   - v1.80 feature refers to links that **REFERENCE multi-line source ranges**, NOT links that **SPAN multiple terminal lines**
+   - Example: `File 'src/cli.js', lines 15-19, characters 1-5:` (link on ONE terminal line referencing lines 15-19 in source)
+   - Supported formats: Git range links (`@@ - + @@`), OCaml Dune, ESLint, Ripgrep output
+   - These are all single-line terminal output that reference multi-line source code
+
+3. **Terminal Line Wrapping is Unsolvable with Current API**
+   - When terminal wraps `Hack/LICENSE.txt#L32C11_M49DS32`:
+     - Line 1: `Hack/LICENSE.txtOM32DS1` (detected, incomplete)
+     - Line 2: `1_M49DS32` (NOT detected - no pattern match, no context)
+   - Provider never sees both lines together
+   - No VSCode API to detect wrapping or request multi-line context
+
+4. **API Design Rationale** (from GitHub issue #91290)
+   - Original proposal uses `LinkHoverContext` with `line: string` (singular)
+   - Documented: "files deal with ranges, the terminal doesn't"
+   - Intentionally line-based, not multi-line
+
+**Conclusion:**
+
+- ✅ **Limitation is platform-level** - not solvable by extensions
+- ✅ **Minimum version remains 1.49.0** - v1.80 doesn't add APIs we need
+- ✅ **Must document limitation** - Task 4 (user-facing docs)
+- ✅ **Workarounds:** Shorter delimiters, wider terminal, quote links, add newlines
+
+**Sources:**
+- VSCode v1.80 release notes: https://code.visualstudio.com/updates/v1_80
+- GitHub issue #91290: Terminal Link Provider API proposal
+- RangeLinkTerminalProvider.ts implementation (line 70: `context.line`)
+
 ---
 
 ### Task 2: Fix Same-Position Selection Visual Feedback (30 min) — ✅ Complete
