@@ -518,7 +518,24 @@ Quick Pick of available terminals with name, position, process. Auto-select if o
 
 "Bind RangeLink Here" on terminal tab with checkmark indicator.
 
-**Future:** Visual indicator, persist across sessions, multi-terminal support, keyboard shortcuts, settings integration, auto-focus/auto-space after paste.
+**📋 Iteration 7: Configurable Link Spacing** (30min)
+
+Settings to control space padding around links sent to terminal:
+
+- `rangelink.terminal.addSpaceBefore` (default: true)
+- `rangelink.terminal.addSpaceAfter` (default: true)
+
+Currently hardcoded to add space before and after for better UX.
+
+**📋 Iteration 8: Configurable Auto-Focus** (15min)
+
+Setting to control terminal focus after link generation:
+
+- `rangelink.terminal.autoFocus` (default: true)
+
+Currently always focuses terminal (productivity feature).
+
+**Future:** Visual indicator, persist across sessions, multi-terminal support, keyboard shortcuts, settings integration.
 
 ---
 
