@@ -432,29 +432,21 @@ Final subset to complete terminal link provider implementation.
 
 ## Phase 5.1: Terminal Link Navigation Bug Fixes — 📋 Planned (~2 hours)
 
-### Task 1: Research VSCode Multi-Line API (15 min) — 📋 Planned
+**Completed:** Task 2 (Same-Position Selection). See [JOURNEY.md](./JOURNEY.md).
 
-**Findings (2025-01-05):**
+### Task 1: Research VSCode Multi-Line API (15 min)
 
-- `TerminalLinkContext` provides single lines only (no multi-line API)
-- v1.80 "multi-line support" refers to links referencing multi-line source ranges (NOT wrapped links)
-- Terminal line wrapping unsolvable with current API - platform limitation
+**Findings:** `TerminalLinkContext` provides single lines only. Terminal line wrapping unsolvable with current API - platform limitation. Must document.
 
-**Conclusion:** Must document limitation, not solvable by extensions.
-
-### Task 2: Fix Same-Position Selection (30 min) — ✅ Complete (2025-11-05)
-
-Single-position selections now extend by 1 character for visibility. See [JOURNEY.md](./JOURNEY.md).
-
-### Task 3: Audit Test Coverage (45 min) — 📋 Planned
+### Task 3: Audit Test Coverage (45 min)
 
 Ensure parsing, formatting, navigation modules have comprehensive single-position tests.
 
-### Task 4: Document Terminal Wrapping Limitation (15 min) — 📋 Planned
+### Task 4: Document Terminal Wrapping Limitation (15 min)
 
 Document VSCode API limitation in JOURNEY.md, README (Known Limitations), architecture docs. Provide workarounds (shorter delimiters, wider terminal, quotes, newlines).
 
-### Task 5: Link Truncation Detection (30 min) — 📋 Planned (Optional)
+### Task 5: Link Truncation Detection (30 min) — Optional
 
 Detect truncated links (end with delimiter prefix) and warn user. Low priority - doesn't fix underlying issue.
 
@@ -502,48 +494,29 @@ RangeLink is an **AI workflow integration tool** eliminating context-sharing fri
 
 ---
 
-### ✅ Bind to Terminal — MVP Complete (Iterations 1-2)
+### Bind to Terminal — High Priority
 
 **Problem:** Manual clipboard paste friction after generating links for claude-code in terminal.
 
 **Solution:** Auto-paste generated links into bound terminal.
 
-**✅ Iteration 1: Terminal Binding** (Complete)
+**Completed:** Iterations 1-2 (Terminal Binding, Lifecycle Management). See [JOURNEY.md](./JOURNEY.md).
 
-- Commands: "Bind to Terminal", "Unbind Terminal"
-- Bind to ACTIVE terminal (not "whichever is active at send time")
-- `terminal.sendText(link, false)` - no auto-submit
-- Status bar feedback
-- Edge case: No active terminal shows error
+**📋 Iteration 3: Enhanced Rebinding UX** (0.5h)
 
-**✅ Iteration 2: Lifecycle Management** (Complete)
+Allow rebinding without manual unbind. Show toast: "Already bound. Switch to [new]?"
 
-- Listen `window.onDidCloseTerminal`
-- Auto-unbind when bound terminal closes
-- Status bar notification
-- Comprehensive logging
+**📋 Iteration 4: Persistent Status Bar** (1h)
 
-**📋 Iteration 3: Enhanced Rebinding UX** (0.5h) - Low Priority
-
-- Allow rebinding without manual unbind
-- Show info toast: "Already bound. Switch to [new]?" with buttons
-
-**📋 Iteration 4: Persistent Status Bar** (1h) - Low Priority
-
-- Status bar item: `🔗→ [terminal]` (bound) or `🔗❌` (unbound)
-- Click to manage binding
+Status bar item: `🔗→ [terminal]` (bound) or `🔗❌` (unbound). Click to manage.
 
 **📋 Iteration 5: Terminal Selection Quick Pick** (2h)
 
-- Show Quick Pick of available terminals
-- Display name, position, process
-- Re-binding without unbind first
-- Auto-select if only one terminal
+Quick Pick of available terminals with name, position, process. Auto-select if only one.
 
 **📋 Iteration 6: Context Menu** (1h)
 
-- "Bind RangeLink Here" on terminal tab
-- Checkmark indicator for bound terminal
+"Bind RangeLink Here" on terminal tab with checkmark indicator.
 
 **Future:** Visual indicator, persist across sessions, multi-terminal support, keyboard shortcuts, settings integration, auto-focus/auto-space after paste.
 
