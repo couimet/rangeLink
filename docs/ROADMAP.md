@@ -1689,6 +1689,437 @@ After these 8 iterations (1 prerequisite + 7 terminal link provider):
 
 ---
 
+## Phase 5.1: Terminal Link Navigation Bug Fixes & Improvements — 📋 Planned
+
+**Context:** During manual testing of terminal link navigation (Phase 5 Iteration 3.1), discovered issues with line wrapping and same-position selections. These tasks address UX issues and test coverage gaps.
+
+**Discovery:** User clicked `Hack/LICENSE.txtOM32DS11_M49DS32` but terminal wrapped it:
+```
+Hack/LICENSE.txtOM32DS1
+1_M49DS32
+```
+Only first line was detected/parsed, leading to navigation to `32:1` instead of `32:11-49:32`, with no visible selection.
+
+**Total Time:** ~2 hours (5 tasks, can be tackled independently for incremental releases)
+
+---
+
+### Task 1: Research VSCode Terminal Link API Multi-Line Capabilities (15 min) — 📋 Planned
+
+**Goal:** Determine if VSCode's Terminal Link Provider API can detect links spanning multiple lines.
+
+**Questions to Answer:**
+
+1. Does `TerminalLinkContext` ever include multi-line content?
+2. Is there a way to detect terminal line wrapping?
+3. Do other VSCode extensions handle wrapped links? (search GitHub/VSCode source)
+4. Can we request multi-line context from VSCode API?
+
+**What to Do:**
+
+- Read VSCode Terminal Link Provider API documentation
+- Search VSCode source code for `TerminalLinkProvider` implementation details
+- Search GitHub for extensions using `registerTerminalLinkProvider`
+- Check VSCode issues for terminal link wrapping discussions
+- Test with VSCode built-in terminal link detection (URLs, file paths)
+
+**Document Findings:**
+
+- Update JOURNEY.md with API capabilities/limitations
+- If multi-line detection is impossible, document why
+- If workarounds exist, document them with examples
+
+**Done When:**
+
+- [ ] API capabilities/limitations documented
+- [ ] Findings added to JOURNEY.md
+- [ ] Decision made: implement workaround OR document limitation
+
+**Priority:** Medium (helps inform other task implementations)
+
+---
+
+### Task 2: Fix Same-Position Selection Visual Feedback (30 min) — 📋 Planned
+
+**Goal:** Make single-position selections visible by extending them by 1 character.
+
+**Problem:** When `startPos == endPos` (e.g., `32:1` to `32:1`), VSCode creates zero-width selection (just cursor), which is invisible. Users expect to see something highlighted.
+
+**Example:**
+- Link: `file.ts#L32C1` (single position)
+- Current behavior: Cursor at line 32, column 1, nothing visible
+- Desired behavior: Character at 32:1 is highlighted
+
+**Subtasks:**
+
+1. **Update `handleTerminalLink()` logic** (15 min)
+   - Detect when `startPos.line == endPos.line && startPos.character == endPos.character`
+   - Extend `endPos.character` by 1 to create 1-character selection
+   - Handle edge cases:
+     - End of line: don't extend beyond line length
+     - Empty line: select nothing (keep cursor)
+     - Single character remaining: extend by 1
+
+2. **Add logging** (5 min)
+   - Log when extending single position: `"Extended single-position selection"`
+   - Include original and extended positions in log context
+
+3. **Add tests** (10 min)
+   - Test single position → extended selection
+   - Test end of line (no extension beyond line length)
+   - Test empty line (no selection)
+   - Update existing tests if they rely on same-position behavior
+
+**Edge Cases to Handle:**
+
+- End of line: `startPos.character == lineLength` → don't extend
+- Empty line: `lineLength == 0` → keep cursor only
+- Last character in line: extend by 1 (select that character)
+- Document bounds: `endPos.line == document.lineCount - 1` → no issue
+
+**Implementation Example:**
+
+```typescript
+// After creating startPos and endPos
+if (startPos.line === endPos.line && startPos.character === endPos.character) {
+  // Single position - extend by 1 character for visibility
+  const lineLength = document.lineAt(startPos.line).text.length;
+  if (startPos.character < lineLength) {
+    endPos = { line: endPos.line, character: endPos.character + 1 };
+    this.logger.debug(
+      {
+        ...logCtx,
+        originalPos: `${startPos.line + 1}:${startPos.character + 1}`,
+        extendedTo: `${endPos.line + 1}:${endPos.character + 1}`,
+      },
+      'Extended single-position selection for visibility',
+    );
+  }
+}
+```
+
+**Files to Modify:**
+
+- `packages/rangelink-vscode-extension/src/navigation/RangeLinkTerminalProvider.ts`
+- `packages/rangelink-vscode-extension/src/__tests__/navigation/RangeLinkTerminalProvider.test.ts`
+
+**Done When:**
+
+- [ ] Single-position selections show 1-character highlight
+- [ ] Edge cases handled (end of line, empty line)
+- [ ] Tests cover single-position scenarios
+- [ ] Logging includes position extension details
+
+**Priority:** HIGH (user-facing bug, affects usability)
+
+**Questions:**
+
+1. **Extension strategy:** Should we extend forward (32:1 → 32:1-32:2) or backward (32:1 → 32:0-32:1)?
+   - Recommendation: Forward (matches reading direction)
+2. **Empty lines:** Should we show error or just leave cursor?
+   - Recommendation: Just leave cursor (user can see cursor location)
+3. **Whole word extension:** Should we extend to end of word instead of 1 char?
+   - Recommendation: No, keep it simple (1 char is predictable)
+
+---
+
+### Task 3: Audit Test Coverage for Same-Position Scenarios (45 min) — 📋 Planned
+
+**Goal:** Ensure all parsing, formatting, and navigation modules have comprehensive tests for single-position selections.
+
+**Problem:** Current tests may not explicitly cover `start == end` scenarios, which is a common case (single cursor position).
+
+**Subtasks:**
+
+1. **Audit `rangelink-core-ts` parsing tests** (10 min)
+   - Check if `parseLink.test.ts` has tests for single positions
+   - Expected: `file.ts#L32` and `file.ts#L32C1` scenarios
+   - Add missing tests if needed
+   - Verify: `start.line == end.line && start.char == end.char`
+
+2. **Audit `formatLinkTooltip.test.ts`** (5 min)
+   - Check if it formats single positions correctly
+   - Expected: `"Open file.ts:32:1 • RangeLink"`
+   - Test exists: ✅ Already has single position tests
+
+3. **Audit `formatLinkPosition.test.ts`** (5 min)
+   - Check if it handles `start == end` correctly
+   - Expected: Returns `"32:1"` not `"32:1-32:1"`
+   - Test exists: Needs verification
+
+4. **Audit `convertRangeLinkPosition.test.ts`** (5 min)
+   - Check if it converts single positions correctly
+   - Expected: Same conversion logic for start/end when equal
+   - Test exists: Needs verification
+
+5. **Audit `RangeLinkTerminalProvider.test.ts`** (10 min)
+   - Check if it tests navigation with single positions
+   - Expected: Mock link with `start == end`, verify navigation
+   - Test exists: Needs verification
+   - Add test for single-position → extended selection (after Task 2)
+
+6. **Add missing tests** (10 min)
+   - For each module missing single-position tests
+   - Use `.toStrictEqual()` for assertions
+   - Test both with and without character position: `#L32` vs `#L32C1`
+
+**Test Scenarios to Cover:**
+
+- Parse: `file.ts#L32` → `{ start: {line:32}, end: {line:32} }`
+- Parse: `file.ts#L32C1` → `{ start: {line:32,char:1}, end: {line:32,char:1} }`
+- Format tooltip: Single position shows correctly
+- Format position: Returns single position not range format
+- Convert position: Handles same start/end correctly
+- Navigate: Single position works (will extend after Task 2)
+
+**Files to Check:**
+
+- `packages/rangelink-core-ts/src/__tests__/parseLink.test.ts`
+- `packages/rangelink-vscode-extension/src/__tests__/utils/formatLinkTooltip.test.ts`
+- `packages/rangelink-vscode-extension/src/__tests__/utils/formatLinkPosition.test.ts`
+- `packages/rangelink-vscode-extension/src/__tests__/utils/convertRangeLinkPosition.test.ts`
+- `packages/rangelink-vscode-extension/src/__tests__/navigation/RangeLinkTerminalProvider.test.ts`
+
+**Documentation:**
+
+- List all missing tests found in commit message
+- Document coverage improvement (e.g., "Added 8 tests for single-position scenarios")
+
+**Done When:**
+
+- [ ] All modules have explicit single-position tests
+- [ ] Test coverage audit documented in commit message
+- [ ] No gaps in same-position scenario coverage
+
+**Priority:** Medium (technical debt, prevents future bugs)
+
+---
+
+### Task 4: Document Terminal Line Wrapping Limitation (15 min) — 📋 Planned
+
+**Goal:** Document VSCode Terminal Link Provider API limitation in user-facing and developer documentation.
+
+**Problem:** Terminal link detection operates per-line only. When terminal wraps long links, only the first line is detected, leading to truncated/invalid links.
+
+**Subtasks:**
+
+1. **Add to JOURNEY.md** (5 min)
+   - Document the line wrapping discovery
+   - Explain VSCode API limitation (per-line context only)
+   - Include the specific example: `Hack/LICENSE.txtOM32DS11_M49DS32` wrapped
+
+2. **Add "Known Limitations" to README** (5 min)
+   - Create "Known Limitations" section in VSCode extension README
+   - Explain terminal line wrapping issue
+   - Provide workarounds:
+     - Use shorter delimiter configurations
+     - Manually rewrap terminal to avoid splitting links
+     - Add quotes around links (if shell supports)
+
+3. **Add to ARCHITECTURE.md or new doc** (5 min)
+   - Document technical limitation in architecture docs
+   - Explain `TerminalLinkContext` API constraint
+   - Note: This is a VSCode platform limitation, not RangeLink bug
+
+**Workarounds to Suggest:**
+
+1. **Use shorter delimiters:**
+   - Default: `#`, `L`, `C`, `-` (short)
+   - Bad: `HASH`, `LINE`, `COLUMN`, `RANGE` (long, more likely to wrap)
+
+2. **Wider terminal window:**
+   - Increase terminal width to prevent wrapping
+   - Use split terminal with wider pane
+
+3. **Quote links in output:**
+   - If generating links programmatically, wrap in quotes
+   - Example: `"Hack/LICENSE.txt#L32C11-L49C32"` (shell-safe, less likely to wrap)
+   - Note: Quotes visible but worth it for reliability
+
+4. **Break links before path:**
+   - Better: `\nHack/LICENSE.txt#L32C11-L49C32\n` (newlines before/after)
+   - Terminal will wrap whole link to next line if it doesn't fit
+
+**Files to Update:**
+
+- `docs/JOURNEY.md` (add section to Phase 5 Iteration 3.1 findings)
+- `packages/rangelink-vscode-extension/README.md` (add Known Limitations)
+- `docs/ARCHITECTURE.md` or create `docs/TERMINAL-LIMITATIONS.md`
+
+**Example Documentation:**
+
+```markdown
+## Known Limitations
+
+### Terminal Line Wrapping
+
+**Problem:** Long RangeLinks may be split across multiple lines when terminal wraps text.
+
+**Cause:** VSCode's Terminal Link Provider API provides context one line at a time.
+Multi-line link detection is not supported by the platform.
+
+**Example:**
+Terminal output:
+```
+Check this: Hack/LICENSE.txt#L32C11
+-L49C32
+```
+
+Only `Hack/LICENSE.txt#L32C11` is detected (incomplete link).
+
+**Workarounds:**
+1. Use shorter delimiter configurations
+2. Widen terminal window to prevent wrapping
+3. Wrap links in quotes: `"file.ts#L10-L20"` (shell-safe)
+4. Add newlines before links to prevent mid-link wrapping
+```
+
+**Done When:**
+
+- [ ] Limitation documented in JOURNEY.md
+- [ ] Limitation documented in extension README
+- [ ] Workarounds provided for users
+- [ ] Technical explanation in architecture docs
+
+**Priority:** Low (documentation only, no code changes)
+
+---
+
+### Task 5: Add Link Truncation Detection Heuristic (30 min) — 📋 Planned (Optional)
+
+**Goal:** Detect when a parsed link appears truncated and warn the user.
+
+**Problem:** Terminal wrapping causes links to be truncated mid-parse. Clicking truncated links navigates to wrong location with no indication why.
+
+**Heuristics to Detect Truncation:**
+
+1. **Link ends with delimiter prefix:**
+   - `Hack/LICENSE.txtOM32DS1` ends with `1` (expected digit after `DS`)
+   - `file.ts#L10-` ends with `-` (expected line number after range separator)
+   - `file.ts#L10C` ends with `C` (expected column number after position prefix)
+
+2. **Path contains partial position data:**
+   - Path ends with delimiter character: `file.txt#` or `file.txtO`
+   - Suggests link was cut off during wrapping
+
+3. **Incomplete range:**
+   - Has start but looks cut mid-range: `#L10-` or `#L10_` (no end position)
+
+**Subtasks:**
+
+1. **Create truncation detector** (15 min)
+   - Function: `isPossiblyTruncated(link: string, delimiters: DelimiterConfig): boolean`
+   - Check if link ends with delimiter-related characters
+   - Check for incomplete range patterns
+   - Location: `src/utils/detectLinkTruncation.ts`
+
+2. **Integrate into `provideTerminalLinks()`** (10 min)
+   - After successful parse, check if link is possibly truncated
+   - If yes, log warning with `WARN` level
+   - Include: `{ linkText, possibleTruncation: true, reason: "..." }`
+
+3. **Show warning toast (optional)** (5 min)
+   - When user clicks truncated link, show warning
+   - Message: "Link may be truncated due to terminal wrapping. Try rewrapping terminal."
+   - Only show once per session (avoid spam)
+
+**Implementation Example:**
+
+```typescript
+export const isPossiblyTruncated = (link: string, delimiters: DelimiterConfig): boolean => {
+  // Check if ends with delimiter prefixes (incomplete)
+  if (link.endsWith(delimiters.line) || link.endsWith(delimiters.position)) {
+    return true;
+  }
+
+  // Check if ends with range separator (incomplete range)
+  if (link.endsWith(delimiters.range)) {
+    return true;
+  }
+
+  // Check if ends with incomplete digit sequence (wrapped mid-number)
+  const lastChar = link[link.length - 1];
+  const secondLastChar = link[link.length - 2];
+  if (/\d/.test(lastChar) && (secondLastChar === delimiters.line || secondLastChar === delimiters.position)) {
+    // Ends with single digit after delimiter - suspicious
+    return true;
+  }
+
+  return false;
+};
+```
+
+**Files to Create/Modify:**
+
+- Create: `packages/rangelink-vscode-extension/src/utils/detectLinkTruncation.ts`
+- Create: `packages/rangelink-vscode-extension/src/__tests__/utils/detectLinkTruncation.test.ts`
+- Modify: `packages/rangelink-vscode-extension/src/navigation/RangeLinkTerminalProvider.ts`
+
+**Test Cases:**
+
+- `file.ts#L10-` → truncated (ends with range separator)
+- `file.ts#L` → truncated (ends with line prefix)
+- `file.ts#L10C` → truncated (ends with column prefix)
+- `file.ts#L10C5` → NOT truncated (complete)
+- `file.ts#L10-L20` → NOT truncated (complete range)
+
+**Warning Message Examples:**
+
+- Info message: "Link may be incomplete (terminal wrapping?): file.ts#L10-"
+- Tooltip: "⚠️ Open file.ts:10 (link may be truncated)"
+- Toast: "Navigated to file.ts:10 (link appears truncated - check terminal wrapping)"
+
+**Done When:**
+
+- [ ] Truncation detector implemented and tested
+- [ ] Warning logged when truncation detected
+- [ ] User sees indication of possible truncation
+- [ ] Tests cover truncation detection heuristics
+
+**Priority:** Low (nice-to-have, doesn't fix underlying issue)
+
+**Questions:**
+
+1. **Show toast or just log?**
+   - Option A: Just log at WARN level (less intrusive)
+   - Option B: Show warning toast once (more visible)
+   - Recommendation: Option A (log only) - avoid alert fatigue
+
+2. **Heuristics accuracy?**
+   - May have false positives (link legitimately ends with delimiter)
+   - Example: `config#L10` where filename is `config#L10` (rare)
+   - Recommendation: Accept false positives, use "may be" language
+
+3. **Worth implementing?**
+   - Doesn't fix the issue (API limitation)
+   - Helps debugging but adds complexity
+   - Recommendation: Defer unless users frequently report this issue
+
+---
+
+## Phase 5.2: Configuration Integration — 📋 Planned
+
+**Note:** This was originally "Phase 5 Iteration 3.1 Subset 6" but being promoted to its own phase section for clarity.
+
+**Goal:** Integrate terminal link provider with Phase 4A.2 configuration change detection.
+
+**Time:** 30 minutes
+
+**Implementation:**
+
+- Terminal provider needs to rebuild pattern when delimiter config changes
+- Listen to config change events from Phase 4A.2
+- Recreate `RangeLinkTerminalProvider` with new delimiters
+- Re-register provider (dispose old, register new)
+
+**Done When:**
+
+- [ ] Config changes update terminal link detection
+- [ ] Tests verify pattern rebuilding
+- [ ] No stale patterns after config change
+
+---
+
 ## Phase 5: Advanced Generation
 
 - [ ] **Multi-range selection support**
