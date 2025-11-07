@@ -328,13 +328,15 @@ the RangeLink VS Code extension to marketplaces and creating releases.
 
 ---
 
-## ✅ Prerequisites
+## ✅ Validated Prerequisites
 
-Before proceeding, ensure:
+The following were validated when generating this file:
 
-- [ ] VSIX file built and tested locally: \`${VSIX_FILE}\`
-
-**This script assumes the VSIX is already built and validated.**
+- ✓ VSIX file exists: \`${VSIX_FILE}\`
+- ✓ CHANGELOG.md has version section: \`## [${VERSION}]\`
+- ✓ CHANGELOG.md has reference link: \`[${VERSION}]: ...\`
+- ✓ Git tag does not exist: \`${GIT_TAG}\`
+- ✓ Working tree is clean (or \`--allow-dirty\` used for testing)
 
 ---
 
