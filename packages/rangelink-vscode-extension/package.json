@@ -32,6 +32,7 @@
   "scripts": {
     "clean": "rm -rf out dist coverage *.tsbuildinfo *.vsix",
     "compile": "node scripts/generate-version.js && node esbuild.config.js && cp src/version.json dist/version.json && mkdir -p out && cp src/version.json out/version.json",
+    "generate:publish-instructions": "./scripts/generate-publishing-instructions.sh",
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
     "install-local:vscode": "./scripts/install-local.sh vscode",

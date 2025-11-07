@@ -14,6 +14,7 @@
     "enable-pnpm": "corepack enable",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
+    "generate:publish-instructions:vscode-extension": "pnpm --filter rangelink-vscode-extension run generate:publish-instructions",
     "install-local:vscode-extension:both": "pnpm --filter rangelink-vscode-extension install-local",
     "install-local:vscode-extension:cursor": "pnpm --filter rangelink-vscode-extension install-local:cursor",
     "install-local:vscode-extension:vscode": "pnpm --filter rangelink-vscode-extension install-local:vscode",
