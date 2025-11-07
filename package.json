@@ -10,6 +10,7 @@
   "license": "MIT",
   "scripts": {
     "clean": "pnpm -r clean",
+    "clean:all": "pnpm clean && find . -name '*.vsix' -delete && find . -name 'node_modules' -type d -prune -exec rm -rf {} + && find . -name 'out' -type d -prune -exec rm -rf {} + && find . -name 'dist' -type d -prune -exec rm -rf {} + && find . -name 'coverage' -type d -prune -exec rm -rf {} + && find . -name '*.tsbuildinfo' -delete",
     "compile": "pnpm clean && pnpm -r compile",
     "enable-pnpm": "corepack enable",
     "format": "prettier --check .",
@@ -20,7 +21,8 @@
     "install-local:vscode-extension:vscode": "pnpm --filter rangelink-vscode-extension install-local:vscode",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "package:vscode-extension": "pnpm --filter rangelink-vscode-extension package",
+    "package:prepare": "pnpm clean:all && pnpm install",
+    "package:vscode-extension": "pnpm --filter rangelink-vscode-extension clean && pnpm --filter rangelink-vscode-extension compile && pnpm --filter rangelink-vscode-extension test && pnpm --filter rangelink-vscode-extension package",
     "publish:vscode-extension:vsix": "pnpm --filter rangelink-vscode-extension publish:vsix",
     "test": "pnpm -r test",
     "watch": "pnpm -r --parallel watch"
