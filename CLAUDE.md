@@ -2,10 +2,16 @@
 
 ## Asking Questions and Design Decisions
 
+**Important:** All files in `.claude-questions/` and `.commit-msgs/` must be `.txt` format (not `.md`), even if they contain markdown-style formatting.
+
+**Example paths:**
+- Questions: `.claude-questions/0001-navigation-approach.txt` ⚠️ (folder is `.claude-questions/`, not `.questions/`)
+- Commit messages: `.commit-msgs/2025-01-06-fix-infinite-recursion.txt`
+
 When Claude needs to ask questions or gather design decisions before implementing:
 
 1. **Never print questions directly in terminal** - this causes confusion with duplicate numbering and makes tracking answers difficult
-2. **Always save questions to a file** in `.claude-questions/NNNN-topic-slug.txt` where:
+2. **Always save questions to a text file** in `.claude-questions/NNNN-topic-slug.txt` where:
    - `NNNN` is sequential (0001, 0002, etc.) - check existing files with Glob and increment from highest
    - `topic-slug` is auto-generated kebab-case description (max 50 chars)
 3. **Print only the filepath** in terminal output
