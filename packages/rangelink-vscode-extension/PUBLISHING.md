@@ -82,6 +82,7 @@ pnpm generate:publish-instructions:vscode-extension
 ```
 
 The script will:
+
 - ✓ Validate VSIX exists
 - ✓ Validate CHANGELOG.md is updated
 - ✓ Validate git tag doesn't already exist
@@ -91,6 +92,7 @@ The script will:
 **Output:** `publishing-instructions/publish-vscode-extension-v{VERSION}.md`
 
 This file contains copy-paste ready commands for:
+
 1. Creating git tags
 2. Creating GitHub releases
 3. Publishing to VS Code Marketplace
@@ -99,11 +101,11 @@ This file contains copy-paste ready commands for:
 
 ### Why This Approach?
 
-✅ **Version-specific** - Instructions tailored to the exact version you're publishing
-✅ **Validated** - Script checks prerequisites before generating instructions
-✅ **Reproducible** - Generated instructions are committed for audit trail
-✅ **Safe** - Validates clean working tree (or use `--allow-dirty` for testing)
-✅ **Complete** - Covers all marketplaces (VS Code, Open-VSX) and GitHub releases
+- ✅ **Version-specific** - Instructions tailored to the exact version you're publishing
+- ✅ **Validated** - Script checks prerequisites before generating instructions
+- ✅ **Reproducible** - Generated instructions are committed for audit trail
+- ✅ **Safe** - Validates clean working tree (or use `--allow-dirty` for testing)
+- ✅ **Complete** - Covers all marketplaces (VS Code, Open-VSX) and GitHub releases
 
 ## Publishing to Cursor Marketplace
 
