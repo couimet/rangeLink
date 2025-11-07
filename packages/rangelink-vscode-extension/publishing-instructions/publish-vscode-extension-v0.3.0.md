@@ -2,7 +2,7 @@
 
 ## ❌ Cannot Generate Publishing Instructions
 
-**Error:** No section found for version [0.3.0] in CHANGELOG.md (expected: ## [0.3.0])
+**Error:** VSIX file not found: `rangelink-vscode-extension-0.3.0.vsix`
 
 ---
 
@@ -23,41 +23,24 @@ For production releases:
 
 ### Resolution Steps:
 
-1. **Add version section to CHANGELOG.md:**
+1. **Build the VSIX package:**
 
-   ```markdown
-   ## [0.3.0]
-
-   ### Added
-   - New feature 1
-   - New feature 2
-
-   ### Fixed
-   - Bug fix 1
+   ```bash
+   pnpm package:vscode-extension
    ```
 
-2. **Add reference link at bottom of CHANGELOG.md:**
+2. **Test the extension locally:**
 
-   ```markdown
-   [0.3.0]: https://github.com/couimet/rangelink/compare/vscode-extension-vPREV...vscode-extension-v0.3.0
+   ```bash
+   pnpm install-local:vscode-extension:vscode
    ```
 
-   Replace `vPREV` with the previous version (e.g., v0.2.1).
-
-3. **Commit changes:**
-
-4. **Regenerate instructions:**
+3. **Regenerate publishing instructions:**
 
    ```bash
    pnpm generate:publish-instructions:vscode-extension
    ```
 
-### Why This Matters
-
-The CHANGELOG documents all changes for each release. Marketplace listings and GitHub
-releases reference this file. Complete changelogs help users understand what changed
-and decide whether to upgrade.
-
 ---
 
-**Generated:** 2025-11-07 15:31:46 UTC
+**Generated:** 2025-11-07 16:24:19 UTC

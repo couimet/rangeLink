@@ -59,40 +59,7 @@ if git rev-parse "$GIT_TAG" >/dev/null 2>&1; then
   TAG_EXISTS=true
 fi
 
-# Check CHANGELOG.md has version section and reference link
-CHANGELOG_PATH="CHANGELOG.md"
-CHANGELOG_VALID=true
-CHANGELOG_ERROR=""
-
-if [ ! -f "$CHANGELOG_PATH" ]; then
-  CHANGELOG_VALID=false
-  CHANGELOG_ERROR="CHANGELOG.md not found"
-else
-  # Check version section exists
-  # When --allow-dirty is used, tolerate suffixes like "- Unreleased"
-  # Otherwise, require exact format
-  if [ "$ALLOW_DIRTY" = "true" ]; then
-    # Flexible: allow "## [0.3.0]" or "## [0.3.0] - Unreleased"
-    if ! grep -q "^## \[${VERSION}\]" "$CHANGELOG_PATH"; then
-      CHANGELOG_VALID=false
-      CHANGELOG_ERROR="No section found for version [${VERSION}] in CHANGELOG.md (expected: ## [${VERSION}] or ## [${VERSION}] - Unreleased)"
-    fi
-  else
-    # Strict: require exact format "## [0.3.0]"
-    if ! grep -q "^## \[${VERSION}\]$" "$CHANGELOG_PATH"; then
-      CHANGELOG_VALID=false
-      CHANGELOG_ERROR="No section found for version [${VERSION}] in CHANGELOG.md (expected: ## [${VERSION}])"
-    fi
-  fi
-
-  # Always check reference link exists
-  if [ "$CHANGELOG_VALID" = "true" ] && ! grep -q "^\[${VERSION}\]:" "$CHANGELOG_PATH"; then
-    CHANGELOG_VALID=false
-    CHANGELOG_ERROR="No reference link found for [${VERSION}] at bottom of CHANGELOG.md"
-  fi
-fi
-
-# Prepare output directory and file
+# Prepare output directory and file early for error handling
 OUTPUT_DIR="publishing-instructions"
 mkdir -p "$OUTPUT_DIR"
 OUTPUT_FILE="$OUTPUT_DIR/publish-vscode-extension-v${VERSION}.md"
@@ -231,6 +198,26 @@ The CHANGELOG documents all changes for each release. Marketplace listings and G
 releases reference this file. Complete changelogs help users understand what changed
 and decide whether to upgrade.
 EOF
+  elif [ "$error_type" = "vsix_missing" ]; then
+    cat >> "$OUTPUT_FILE" <<EOF
+1. **Build the VSIX package:**
+
+   \`\`\`bash
+   pnpm package:vscode-extension
+   \`\`\`
+
+2. **Test the extension locally:**
+
+   \`\`\`bash
+   pnpm install-local:vscode-extension:vscode
+   \`\`\`
+
+3. **Regenerate publishing instructions:**
+
+   \`\`\`bash
+   pnpm generate:publish-instructions:vscode-extension
+   \`\`\`
+EOF
   fi
 
   cat >> "$OUTPUT_FILE" <<EOF
@@ -240,6 +227,53 @@ EOF
 **Generated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
 EOF
 }
+
+# Check if VSIX file exists
+VSIX_FILE="rangelink-vscode-extension-${VERSION}.vsix"
+if [ ! -f "$VSIX_FILE" ]; then
+  echo -e "${RED}Error: VSIX file not found: $VSIX_FILE${NC}" >&2
+  echo -e "${YELLOW}Build the VSIX first:${NC}" >&2
+  echo -e "  pnpm package:vscode-extension" >&2
+  echo -e "" >&2
+  echo -e "${YELLOW}Then regenerate instructions:${NC}" >&2
+  echo -e "  pnpm generate:publish-instructions:vscode-extension" >&2
+  generate_error_markdown "vsix_missing" "VSIX file not found: \`$VSIX_FILE\`"
+  echo -e "${BLUE}Error details written to: $OUTPUT_FILE${NC}" >&2
+  exit 1
+fi
+
+# Check CHANGELOG.md has version section and reference link
+CHANGELOG_PATH="CHANGELOG.md"
+CHANGELOG_VALID=true
+CHANGELOG_ERROR=""
+
+if [ ! -f "$CHANGELOG_PATH" ]; then
+  CHANGELOG_VALID=false
+  CHANGELOG_ERROR="CHANGELOG.md not found"
+else
+  # Check version section exists
+  # When --allow-dirty is used, tolerate suffixes like "- Unreleased"
+  # Otherwise, require exact format
+  if [ "$ALLOW_DIRTY" = "true" ]; then
+    # Flexible: allow "## [0.3.0]" or "## [0.3.0] - Unreleased"
+    if ! grep -q "^## \[${VERSION}\]" "$CHANGELOG_PATH"; then
+      CHANGELOG_VALID=false
+      CHANGELOG_ERROR="No section found for version [${VERSION}] in CHANGELOG.md (expected: ## [${VERSION}] or ## [${VERSION}] - Unreleased)"
+    fi
+  else
+    # Strict: require exact format "## [0.3.0]"
+    if ! grep -q "^## \[${VERSION}\]$" "$CHANGELOG_PATH"; then
+      CHANGELOG_VALID=false
+      CHANGELOG_ERROR="No section found for version [${VERSION}] in CHANGELOG.md (expected: ## [${VERSION}])"
+    fi
+  fi
+
+  # Always check reference link exists
+  if [ "$CHANGELOG_VALID" = "true" ] && ! grep -q "^\[${VERSION}\]:" "$CHANGELOG_PATH"; then
+    CHANGELOG_VALID=false
+    CHANGELOG_ERROR="No reference link found for [${VERSION}] at bottom of CHANGELOG.md"
+  fi
+fi
 
 # Check for errors and generate appropriate output
 if [ "$IS_DIRTY" = "true" ] && [ "$ALLOW_DIRTY" = "false" ]; then
@@ -294,77 +328,62 @@ the RangeLink VS Code extension to marketplaces and creating releases.
 
 ---
 
-## ✅ Prerequisites Checklist
+## ✅ Prerequisites
 
 Before proceeding, ensure:
 
-- [ ] VSIX file built and tested locally
+- [ ] VSIX file built and tested locally: \`${VSIX_FILE}\`
+
+**This script assumes the VSIX is already built and validated.**
 
 ---
 
-## Phase 1: Prepare Environment
+## Phase 1: Create Git Tag
+
+### Tag the Release
 
 Run from **monorepo root**:
 
 \`\`\`bash
-pnpm package:prepare
+git tag -a ${GIT_TAG} -m "Release vscode-extension v${VERSION}"
 \`\`\`
 
-This command:
-- Runs \`clean:all\` (removes all build artifacts, node_modules, *.vsix files)
-- Reinstalls dependencies (\`pnpm install\`)
-
----
-
-## Phase 2: Build and Package
-
-### Build VSIX Package
-
-Run from **monorepo root**:
+### Push Tag
 
 \`\`\`bash
-pnpm package:vscode-extension
+git push origin ${GIT_TAG}
 \`\`\`
 
-This creates: \`packages/rangelink-vscode-extension/${VSIX_FILE}\`
-
-### Verify VSIX Created
+### Verify Tag
 
 \`\`\`bash
-ls -lh packages/rangelink-vscode-extension/${VSIX_FILE}
+git tag -l "vscode-extension-v*"
+git show ${GIT_TAG} --stat
 \`\`\`
 
 ---
 
-## Phase 3: Local Testing (CRITICAL)
+## Phase 2: Create GitHub Release
 
-### Install in VS Code
+### Navigate to GitHub Releases
 
-Run from **monorepo root**:
+Open: ${GITHUB_RELEASE_URL}
 
-\`\`\`bash
-pnpm install-local:vscode-extension:vscode
-\`\`\`
+### Fill Release Form
 
-### Install in Cursor (Optional)
+- **Tag:** \`${GIT_TAG}\` (should auto-populate)
+- **Title:** \`VS Code Extension v${VERSION}\`
+- **Description:** Copy from \`CHANGELOG.md\` for v${VERSION}
+- **Attach file:** \`packages/rangelink-vscode-extension/${VSIX_FILE}\`
+- **Pre-release:** Check only if this is alpha/beta/rc
 
-\`\`\`bash
-pnpm install-local:vscode-extension:cursor
-\`\`\`
+### Publish Release
 
-### Manual Testing Checklist
-
-- [ ] Extension loads without errors
-- [ ] Copy Range Link command works (\`Cmd+R Cmd+L\` / \`Ctrl+R Ctrl+L\`)
-- [ ] Copy Range Link (Absolute) works
-- [ ] Copy Portable RangeLink commands work
-- [ ] Context menu items appear on selection
-- [ ] Status bar shows success messages
-- [ ] Check output channel for errors (\`Cmd+Shift+U\`, select "RangeLink")
+Click "Publish release"
 
 ---
 
-## Phase 4: Publish to VS Code Marketplace
+## Phase 3: Publish to VS Code Marketplace
 
 ### Ensure Logged In
 
@@ -385,17 +404,13 @@ pnpm publish:vscode-extension:vsix
 
 ### Verify Publication
 
-Wait 5-10 minutes, then visit:
-${MARKETPLACE_URL}
-
-Check:
-- [ ] Version number shows \`${VERSION}\`
-- [ ] Extension installs correctly from marketplace
-- [ ] README displays properly
+Wait 5-10 minutes, then check:
+- Marketplace URL: ${MARKETPLACE_URL}
+- Version number shows \`${VERSION}\`
 
 ---
 
-## Phase 5: Publish to Open-VSX Registry
+## Phase 4: Publish to Open-VSX Registry
 
 ### Login (First Time Setup)
 
@@ -424,116 +439,21 @@ cd ../..
 
 ### Verify Publication
 
-Visit: https://open-vsx.org/extension/${PUBLISHER}/rangelink-vscode-extension
-
 Check:
-- [ ] Version shows \`${VERSION}\`
-- [ ] Extension details display correctly
+- Open-VSX URL: https://open-vsx.org/extension/${PUBLISHER}/rangelink-vscode-extension
+- Version shows \`${VERSION}\`
 
 ---
 
-## Phase 6: Create Git Tag
+## Phase 5: Post-Publishing Verification
 
-### Tag the Release
-
-Run from **monorepo root**:
-
-\`\`\`bash
-git tag -a ${GIT_TAG} -m "Release vscode-extension v${VERSION}
-
-Changes:
-- [Copy key changes from CHANGELOG.md]
-"
-\`\`\`
-
-### Push Tag
-
-\`\`\`bash
-git push origin ${GIT_TAG}
-\`\`\`
-
-### Verify Tag
-
-\`\`\`bash
-git tag -l "vscode-extension-v*"
-git show ${GIT_TAG} --stat
-\`\`\`
-
----
-
-## Phase 7: Create GitHub Release
-
-### Navigate to GitHub Releases
-
-Open: ${GITHUB_RELEASE_URL}
-
-### Fill Release Form
-
-- **Tag:** \`${GIT_TAG}\` (should auto-populate)
-- **Title:** \`VS Code Extension v${VERSION}\`
-- **Description:** Copy from \`CHANGELOG.md\` for v${VERSION}
-- **Attach file:** \`packages/rangelink-vscode-extension/${VSIX_FILE}\`
-- **Pre-release:** Check only if this is alpha/beta/rc
-
-### Publish Release
-
-Click "Publish release"
-
-### Verify Release
-
-- [ ] Release appears at: https://github.com/couimet/rangelink/releases
-- [ ] VSIX file is attached and downloadable
-- [ ] Tag shows correct commit
-
----
-
-## Phase 8: Post-Publishing Verification
-
-### Check All Marketplaces
+### Check All Locations
 
 - [ ] VS Code Marketplace: ${MARKETPLACE_URL}
 - [ ] Open-VSX: https://open-vsx.org/extension/${PUBLISHER}/rangelink-vscode-extension
 - [ ] GitHub Release: https://github.com/couimet/rangelink/releases/tag/${GIT_TAG}
 
-### Install from Marketplace
-
-Test clean installation in fresh VS Code instance:
-
-\`\`\`bash
-code --install-extension ${PUBLISHER}.rangelink-vscode-extension
-\`\`\`
-
-### Update Documentation (If Needed)
-
-- [ ] Update root README.md if announcing new features
-- [ ] Update \`docs/ROADMAP.md\` to mark completed items
-- [ ] Move completed work to \`docs/JOURNEY.md\` if applicable
-
----
-
-## Troubleshooting
-
-### "Extension not found" Error
-
-- Wait 10-15 minutes for marketplace indexing
-- Clear VS Code cache: \`rm -rf ~/.vscode/extensions/${PUBLISHER}.rangelink-vscode-extension-*\`
-- Restart VS Code
-
-### "Tag already exists" Error
-
-See error resolution steps in script output.
-
-### "Authentication failed" Error
-
-Regenerate Personal Access Token and login again with \`pnpx vsce login\`
-
----
-
-**Next Steps After Publishing:**
-
-1. Monitor marketplace for install counts and ratings
-2. Watch GitHub issues for bug reports
-3. Plan next release based on roadmap
+All locations should show version \`${VERSION}\`.
 
 ---
 
