@@ -146,6 +146,6 @@ export class TerminalBindingManager {
    * Disposes of resources
    */
   dispose(): void {
-    this.disposables.forEach((d) => d.dispose());
+    this.disposables.forEach((d) => d?.dispose());
   }
 }

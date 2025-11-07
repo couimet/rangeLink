@@ -122,11 +122,11 @@ describe('RangeLinkTerminalProvider', () => {
       // Logger should now include linkText in logCtx
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
-          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
           linkText: 'file.ts#L10',
           parsed: link.parsed,
         },
-        'Terminal link clicked - attempting navigation',
+        'Navigating to RangeLink',
       );
 
       // Should NOT trigger the safety net warning
