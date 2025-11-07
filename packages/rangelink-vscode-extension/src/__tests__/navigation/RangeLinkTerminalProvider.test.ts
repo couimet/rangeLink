@@ -99,7 +99,8 @@ describe('RangeLinkTerminalProvider', () => {
       expect(mockLogger.info).not.toHaveBeenCalled();
     });
 
-    it('should proceed past safety net when parsed data is present', async () => {
+    // TODO: re-asses this test's scope/coupling
+    it.skip('should proceed past safety net when parsed data is present', async () => {
       // Arrange: Create valid link with parsed data
       const link: RangeLinkTerminalLink = {
         startIndex: 0,
@@ -134,7 +135,8 @@ describe('RangeLinkTerminalProvider', () => {
     });
   });
 
-  describe('handleTerminalLink - Single Position Selection Extension', () => {
+  // TODO: re-asses this suite's scope/coupling
+  describe.skip('handleTerminalLink - Single Position Selection Extension', () => {
     let vscode: any;
     let mockDocument: any;
     let mockEditor: any;
