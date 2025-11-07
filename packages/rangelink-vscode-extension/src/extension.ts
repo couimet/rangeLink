@@ -1,8 +1,8 @@
 import {
   DEFAULT_DELIMITERS,
   DelimiterConfig,
-  DelimiterValidationError,
   RESERVED_CHARS,
+  RangeLinkError,
   RangeLinkMessageCode,
   areDelimitersUnique,
   getLogger,

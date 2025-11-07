@@ -1,6 +1,7 @@
 import { RangeLinkError } from '../../errors/RangeLinkError';
 import type { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import type { ErrorDetails } from '../../errors/detailedError';
+import type { Result } from '../../types/Result';
 
 /**
  * Expected error properties for strict validation.
@@ -158,6 +159,42 @@ export const toThrowRangeLinkError = (
 };
 
 /**
+ * Custom Jest matcher for Result<T, RangeLinkError> types.
+ * Combines toBeErrWith and toBeRangeLinkError into a single assertion for cleaner tests.
+ *
+ * @param received - The Result to test
+ * @param expectedCode - Expected error code as string literal (e.g., 'ERR_3001')
+ * @param expected - Expected error properties (message, functionName, details, cause)
+ *
+ * @example
+ * ```typescript
+ * const result = validateDelimiter('');
+ * expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_EMPTY', {
+ *   message: 'Delimiter must not be empty',
+ *   functionName: 'validateDelimiter',
+ *   details: { value: '', isHash: false }
+ * });
+ * ```
+ */
+export const toBeRangeLinkErrorErr = (
+  received: Result<unknown, unknown>,
+  expectedCode: string,
+  expected: ExpectedRangeLinkError,
+): jest.CustomMatcherResult => {
+  // First check if it's an error Result
+  if (received.success) {
+    return {
+      pass: false,
+      message: () =>
+        `Expected result to be an error, but it succeeded with value: ${JSON.stringify(received.value)}`,
+    };
+  }
+
+  // Then validate it's a RangeLinkError with correct properties
+  return toBeRangeLinkError(received.error, expectedCode, expected);
+};
+
+/**
  * TypeScript declaration for Jest matchers
  */
 declare global {
@@ -165,6 +202,7 @@ declare global {
     interface Matchers<R> {
       toBeRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
       toThrowRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
+      toBeRangeLinkErrorErr(code: string, expected: ExpectedRangeLinkError): R;
     }
   }
 }

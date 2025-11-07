@@ -1,6 +1,7 @@
 import { Result } from '../../types/Result';
 import {
   toBeRangeLinkError,
+  toBeRangeLinkErrorErr,
   toThrowRangeLinkError,
   type ExpectedRangeLinkError,
 } from '../matchers/toBeRangeLinkError';
@@ -13,6 +14,7 @@ declare global {
       toBeErr(): R;
       toBeErrWith<E>(assertError: (error: E) => void): R;
       toBeRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
+      toBeRangeLinkErrorErr(code: string, expected: ExpectedRangeLinkError): R;
       toThrowRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
     }
   }
@@ -20,6 +22,7 @@ declare global {
 
 expect.extend({
   toBeRangeLinkError,
+  toBeRangeLinkErrorErr,
   toThrowRangeLinkError,
 
   toBeOk(received: Result<unknown, unknown>) {
