@@ -26,34 +26,11 @@ _Future development plans and in-progress work._
 
 ### ✅ Terminal Link Navigation — COMPLETE
 
-RangeLinks in terminal output are clickable (Cmd/Ctrl+Click) with proper selection handling. See [Phase 5](#phase-5-terminal-link-navigation---planned) for details.
+RangeLinks in terminal output are clickable (Cmd/Ctrl+Click) with proper selection handling. See [JOURNEY.md](./JOURNEY.md) for details.
 
----
+### ✅ Editor Link Navigation — COMPLETE
 
-### 📋 Editor Link Navigation — HIGH PRIORITY (2-3 hours)
-
-**Goal:** Make RangeLinks clickable in editor text files (any type: .md, .txt, code, untitled).
-
-**Primary Use Case:** Preparing prompts in **scratchpads/untitled files** for claude-code.
-
-- Scratchpads are easier to edit than terminal (multi-line, syntax highlighting, undo/redo)
-- Need to **validate/revisit links** before pasting to claude-code terminal
-- Click RangeLink to verify it points to correct code location
-
-**Iterations:**
-
-1. **Document Link Provider** (1.5h) - Implement `vscode.DocumentLinkProvider`, reuse terminal navigation logic
-2. **Testing & Edge Cases** (30min) - Test all file types, workspace paths, rectangular mode
-3. **Polish & Documentation** (30min) - Hover tooltips, logging, README updates, demo GIF
-
-**Done When:**
-
-- [ ] RangeLinks clickable in any editor file
-- [ ] Proper navigation with selection
-- [ ] Rectangular mode support
-- [ ] Tests cover all file types
-
-**Benefits:** Seamless workflow - prepare prompts, click links to verify context. BYOD parsing (when added) works automatically.
+RangeLinks in editor files are clickable for scratchpad validation workflows. See [JOURNEY.md](./JOURNEY.md) for details.
 
 ---
 
