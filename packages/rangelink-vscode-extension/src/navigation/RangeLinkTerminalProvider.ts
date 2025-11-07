@@ -1,19 +1,15 @@
-import type { DelimiterConfig, Logger } from 'rangelink-core-ts';
-import { buildLinkPattern, parseLink } from 'rangelink-core-ts';
+import type { Logger } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { RangeLinkTerminalLink } from '../types';
-import { convertRangeLinkPosition } from '../utils/convertRangeLinkPosition';
 import { formatLinkPosition } from '../utils/formatLinkPosition';
-import { formatLinkTooltip } from '../utils/formatLinkTooltip';
-import { resolveWorkspacePath } from '../utils/resolveWorkspacePath';
+
+import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
 
 /**
  * Terminal link provider for RangeLink format detection.
  *
  * Detects RangeLinks in terminal output and makes them clickable.
- * Currently detects links and shows feedback - navigation will be
- * implemented in later subsets.
  *
  * **Supported formats:**
  * - Single line: `file.ts#L10`
@@ -24,7 +20,8 @@ import { resolveWorkspacePath } from '../utils/resolveWorkspacePath';
  *
  * **Usage:**
  * ```typescript
- * const provider = new RangeLinkTerminalProvider(delimiters, logger);
+ * const handler = new RangeLinkNavigationHandler(delimiters, logger);
+ * const provider = new RangeLinkTerminalProvider(handler, logger);
  * context.subscriptions.push(
  *   vscode.window.registerTerminalLinkProvider(provider)
  * );
@@ -33,23 +30,19 @@ import { resolveWorkspacePath } from '../utils/resolveWorkspacePath';
 export class RangeLinkTerminalProvider
   implements vscode.TerminalLinkProvider<RangeLinkTerminalLink>
 {
-  private readonly pattern: RegExp;
-
   /**
    * Create a new terminal link provider.
    *
-   * @param delimiters - Delimiter configuration for link detection
+   * @param handler - Navigation handler for link detection and navigation
    * @param logger - Logger instance for structured logging
    */
   constructor(
-    private readonly delimiters: DelimiterConfig,
+    private readonly handler: RangeLinkNavigationHandler,
     private readonly logger: Logger,
   ) {
-    this.pattern = buildLinkPattern(delimiters);
-
     this.logger.debug(
-      { fn: 'RangeLinkTerminalProvider.constructor', delimiters },
-      'RangeLinkTerminalProvider initialized with delimiter config',
+      { fn: 'RangeLinkTerminalProvider.constructor' },
+      'RangeLinkTerminalProvider initialized',
     );
   }
 
@@ -70,11 +63,14 @@ export class RangeLinkTerminalProvider
     const line = context.line;
     const links: RangeLinkTerminalLink[] = [];
 
+    // Get pattern from handler
+    const pattern = this.handler.getPattern();
+
     // Reset regex lastIndex for global flag
-    this.pattern.lastIndex = 0;
+    pattern.lastIndex = 0;
 
     // Find all matches in the line
-    const matches = [...line.matchAll(this.pattern)];
+    const matches = [...line.matchAll(pattern)];
     const totalMatches = matches.length;
     let parseFailures = 0;
 
@@ -88,7 +84,7 @@ export class RangeLinkTerminalProvider
       const length = fullMatch.length;
 
       // Parse the link to extract path and positions
-      const parseResult = parseLink(fullMatch, this.delimiters);
+      const parseResult = this.handler.parseLink(fullMatch);
 
       if (!parseResult.success) {
         parseFailures++;
@@ -108,7 +104,7 @@ export class RangeLinkTerminalProvider
       links.push({
         startIndex,
         length,
-        tooltip: formatLinkTooltip(parseResult.value),
+        tooltip: this.handler.formatTooltip(parseResult.value),
         data: fullMatch,
         parsed: parseResult.value,
       });
@@ -133,8 +129,11 @@ export class RangeLinkTerminalProvider
   /**
    * Handle terminal link activation (click).
    *
-   * Opens the file and navigates to the specified position.
-   * Supports single positions, ranges, and rectangular mode.
+   * Terminal-specific wrapper that adds:
+   * - Single-position selection extension for visibility
+   * - Custom feedback message with position formatting
+   *
+   * Delegates core navigation to handler.
    *
    * **Safety net:** While we only create links for successfully parsed RangeLinks
    * in provideTerminalLinks(), this validation acts as a defensive safety net
@@ -164,155 +163,22 @@ export class RangeLinkTerminalProvider
       return;
     }
 
-    const { path, start, end, selectionType } = link.parsed;
+    const { path, start, end } = link.parsed;
 
-    this.logger.info(
-      {
-        ...logCtx,
-        parsed: link.parsed,
-      },
-      'Terminal link clicked - attempting navigation',
-    );
-
-    // Resolve path to file URI
-    const fileUri = await resolveWorkspacePath(path);
-    if (!fileUri) {
-      this.logger.error(
-        {
-          ...logCtx,
-          path,
-        },
-        'File not found',
-      );
-
-      vscode.window.showErrorMessage(`RangeLink: File not found: ${path}`);
-      return;
-    }
-
-    // Open document
-    let document: vscode.TextDocument;
     try {
-      document = await vscode.workspace.openTextDocument(fileUri);
+      // Delegate navigation to handler
+      await this.handler.navigateToLink(link.parsed, linkText);
+
+      // Terminal-specific feedback message with formatted position
+      const position = formatLinkPosition(start, end);
+      vscode.window.showInformationMessage(`RangeLink: Navigated to ${path} @ ${position}`);
     } catch (error) {
-      this.logger.error(
-        {
-          ...logCtx,
-          path,
-          error,
-        },
-        'Failed to open document',
-      );
-
-      vscode.window.showErrorMessage(`RangeLink: Failed to open file: ${path}`);
-      return;
-    }
-
-    // Convert 1-indexed RangeLink positions to 0-indexed VSCode positions (with clamping)
-    const startPos = convertRangeLinkPosition(start, document);
-    let endPos = convertRangeLinkPosition(end, document);
-
-    // Extend single-position selections for visibility
-    // When startPos == endPos, VSCode creates a zero-width selection (just cursor), which is invisible
-    // Extend by 1 character to make the selection visible to the user
-    if (startPos.line === endPos.line && startPos.character === endPos.character) {
-      const lineLength = document.lineAt(startPos.line).text.length;
-
-      if (lineLength > 0 && startPos.character < lineLength) {
-        // Extend by 1 character for visibility
-        const originalPos = `${startPos.line + 1}:${startPos.character + 1}`;
-        endPos = { line: endPos.line, character: endPos.character + 1 };
-
-        this.logger.debug(
-          {
-            ...logCtx,
-            originalPos,
-            extendedTo: `${endPos.line + 1}:${endPos.character + 1}`,
-            reason: 'single-position selection needs visibility',
-          },
-          'Extended single-position selection by 1 character',
-        );
-      } else {
-        // Empty line or at end of line - keep cursor only
-        this.logger.debug(
-          {
-            ...logCtx,
-            position: `${startPos.line + 1}:${startPos.character + 1}`,
-            lineLength,
-            reason: lineLength === 0 ? 'empty line' : 'end of line',
-          },
-          'Single-position selection at line boundary - keeping cursor only',
-        );
-      }
-    }
-
-    // Create selections based on selection type
-    let selections: vscode.Selection[];
-
-    if (selectionType === 'Rectangular') {
-      // Rectangular mode: Create multiple selections (one per line)
-      selections = [];
-      for (let line = startPos.line; line <= endPos.line; line++) {
-        const lineStartPos = convertRangeLinkPosition(
-          { line: line + 1, char: start.char },
-          document,
-        );
-        const lineEndPos = convertRangeLinkPosition({ line: line + 1, char: end.char }, document);
-
-        const anchor = new vscode.Position(line, lineStartPos.character);
-        const active = new vscode.Position(line, lineEndPos.character);
-        selections.push(new vscode.Selection(anchor, active));
-      }
-
+      // Handler already logged error and showed error message
+      // Just log that terminal link handling failed
       this.logger.debug(
-        {
-          ...logCtx,
-          selectionType: 'Rectangular',
-          selectionsCreated: selections.length,
-          startLine: startPos.line + 1,
-          endLine: endPos.line + 1,
-          columnRange: `${startPos.character + 1}-${endPos.character + 1}`,
-        },
-        'Created rectangular selections',
-      );
-    } else {
-      // Normal mode: Single selection from start to end
-      const anchor = new vscode.Position(startPos.line, startPos.character);
-      const active = new vscode.Position(endPos.line, endPos.character);
-      selections = [new vscode.Selection(anchor, active)];
-
-      this.logger.debug(
-        {
-          ...logCtx,
-          selectionType: 'Normal',
-          startPos: `${startPos.line + 1}:${startPos.character + 1}`,
-          endPos: `${endPos.line + 1}:${endPos.character + 1}`,
-        },
-        'Created normal selection',
+        { ...logCtx, error },
+        'Terminal link handling completed with error (already handled by navigation handler)',
       );
     }
-
-    // Show document with selections
-    const editor = await vscode.window.showTextDocument(document, {
-      selection: selections[0], // Primary selection for viewport positioning
-      preserveFocus: false,
-    });
-
-    // Apply all selections (for rectangular mode)
-    editor.selections = selections;
-
-    // Reveal the first selection in the viewport
-    editor.revealRange(selections[0], vscode.TextEditorRevealType.InCenterIfOutsideViewport);
-
-    this.logger.info(
-      {
-        ...logCtx,
-        path,
-        selectionsApplied: selections.length,
-      },
-      'Navigation completed successfully',
-    );
-
-    const position = formatLinkPosition(start, end);
-    vscode.window.showInformationMessage(`RangeLink: Navigated to ${path} @ ${position}`);
   }
 }

@@ -1,6 +1,7 @@
 import type { DelimiterConfig, Logger } from 'rangelink-core-ts';
 import { LinkType, SelectionType } from 'rangelink-core-ts';
 
+import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from '../../navigation/RangeLinkTerminalProvider';
 import type { RangeLinkTerminalLink } from '../../types';
 
@@ -53,7 +54,9 @@ describe('RangeLinkTerminalProvider', () => {
       range: '-',
     };
 
-    provider = new RangeLinkTerminalProvider(delimiters, mockLogger);
+    // Create handler and provider
+    const handler = new RangeLinkNavigationHandler(delimiters, mockLogger);
+    provider = new RangeLinkTerminalProvider(handler, mockLogger);
 
     // Reset mocks
     jest.clearAllMocks();

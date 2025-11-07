@@ -12,6 +12,8 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
+import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { TerminalBindingManager } from './TerminalBindingManager';
@@ -170,10 +172,21 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register terminalBindingManager for automatic disposal on deactivation
   context.subscriptions.push(terminalBindingManager);
 
+  // Create shared navigation handler (used by both terminal and document providers)
+  const navigationHandler = new RangeLinkNavigationHandler(delimiters, getLogger());
+  getLogger().debug({ fn: 'activate' }, 'Navigation handler created');
+
   // Register terminal link provider for clickable links
-  const terminalLinkProvider = new RangeLinkTerminalProvider(delimiters, getLogger());
+  const terminalLinkProvider = new RangeLinkTerminalProvider(navigationHandler, getLogger());
   context.subscriptions.push(vscode.window.registerTerminalLinkProvider(terminalLinkProvider));
   getLogger().debug({ fn: 'activate' }, 'Terminal link provider registered');
+
+  // Register document link provider for clickable links in editor files
+  const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, getLogger());
+  context.subscriptions.push(
+    vscode.languages.registerDocumentLinkProvider({ scheme: '*' }, documentLinkProvider),
+  );
+  getLogger().debug({ fn: 'activate' }, 'Document link provider registered');
 
   // Register commands
   context.subscriptions.push(
@@ -234,6 +247,13 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand('rangelink.unbindTerminal', () => {
       terminalBindingManager.unbind();
+    }),
+  );
+
+  // Register document link navigation command
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.handleDocumentLinkClick', (args) => {
+      return documentLinkProvider.handleLinkClick(args);
     }),
   );
 

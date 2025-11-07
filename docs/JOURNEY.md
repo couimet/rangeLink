@@ -8,6 +8,48 @@ _A chronological record of completed work, decisions, and milestones._
 
 ---
 
+## Editor Link Navigation — ✅ Complete (2025-01-06)
+
+**Objective:** Enable clickable RangeLinks in editor files for scratchpad validation workflows.
+
+**Problem:** Users prepare prompts in scratchpad/untitled files (easier editing than terminal) but couldn't validate links before pasting to claude-code. No way to verify links point to correct code.
+
+**Solution:** Implemented `DocumentLinkProvider` to make RangeLinks clickable in any editor file type.
+
+**Implementation:**
+
+Created `RangeLinkDocumentProvider`:
+- Reuses `buildLinkPattern()` and `parseLink()` from terminal navigation
+- Registers for all file schemes (`{ scheme: '*' }`)
+- Creates clickable links with hover tooltips
+- Navigation via command URI: `command:rangelink.navigateToLink`
+- Supports all formats: single-line, ranges, columns, rectangular mode
+
+**Key Features:**
+
+- **Universal file support**: Works in .md, .txt, code files, untitled files
+- **Hover tooltips**: Show full navigation details before clicking
+- **Reused logic**: Shares parsing/navigation with terminal provider (DRY)
+- **Error handling**: Graceful failures with user-friendly messages
+
+**Test Coverage:**
+
+Created comprehensive test suite (18 tests):
+- **provideDocumentLinks** (9 tests): Detection, multiple links, invalid links, cancellation
+- **handleLinkClick** (4 tests): Navigation, rectangular mode, file not found, errors
+- **Edge cases**: Empty documents, encoded URIs, tooltip formatting
+
+**Benefits:**
+
+- ✅ Validate links in scratchpads before sending to claude-code
+- ✅ Click to verify code location (no manual navigation)
+- ✅ Works in all editor contexts (consistency with terminal)
+- ✅ Immediate productivity boost for AI-assisted workflows
+
+**Time Taken:** ~2 hours (1.5h implementation + 30min tests/docs)
+
+---
+
 ## Phase 7: Terminal Auto-Focus — ✅ Complete (2025-01-06)
 
 **Objective:** Auto-focus terminal after link generation for seamless AI workflow (like Cursor's `Cmd+L`).

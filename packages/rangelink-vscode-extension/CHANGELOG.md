@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Editor Link Navigation** - Click RangeLinks in any editor file to navigate
+  - Primary use case: Validate links in scratchpad files before sending to claude-code
+  - Works in all file types: markdown, text, code, untitled files
+  - Hover tooltips show full navigation details
+  - Supports all link formats: single-line, ranges, columns, rectangular mode
+  - Reuses terminal navigation logic for consistency
 - **Auto-focus bound terminal after link generation** - Seamless AI workflow like Cursor's `Cmd+L`
   - When terminal is bound, focus automatically switches to terminal after generating link
   - Enables immediate prompt continuation without manual terminal clicks

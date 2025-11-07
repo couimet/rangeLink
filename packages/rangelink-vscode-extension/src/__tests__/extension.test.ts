@@ -83,6 +83,9 @@ jest.mock('vscode', () => ({
     asRelativePath: jest.fn(),
     getConfiguration: jest.fn(),
   },
+  languages: {
+    registerDocumentLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),
+  },
   env: { clipboard: { writeText: jest.fn() } },
   commands: {
     registerCommand: jest.fn(),
