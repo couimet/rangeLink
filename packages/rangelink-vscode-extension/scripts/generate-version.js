@@ -20,7 +20,13 @@ try {
   const commitDate = execSync('git log -1 --format=%cI', { encoding: 'utf-8' }).trim();
 
   // Check if there are uncommitted changes
-  const isDirty = execSync('git status --porcelain', { encoding: 'utf-8' }).trim() !== '';
+  // Ignore publishing-instructions/ to avoid circular dependency
+  const statusOutput = execSync('git status --porcelain', { encoding: 'utf-8' }).trim();
+  const filteredStatus = statusOutput
+    .split('\n')
+    .filter((line) => line && !line.includes('publishing-instructions/'))
+    .join('\n');
+  const isDirty = filteredStatus !== '';
 
   // Get the branch name
   const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim();
