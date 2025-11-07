@@ -3,6 +3,7 @@ import { buildLinkPattern, parseLink, RangeLinkError, SelectionType } from 'rang
 import * as vscode from 'vscode';
 
 import { convertRangeLinkPosition } from '../utils/convertRangeLinkPosition';
+import { formatLinkPosition } from '../utils/formatLinkPosition';
 import { formatLinkTooltip } from '../utils/formatLinkTooltip';
 import { resolveWorkspacePath } from '../utils/resolveWorkspacePath';
 
@@ -152,6 +153,10 @@ export class RangeLinkNavigationHandler {
       );
 
       this.logger.info({ ...logCtx }, 'Navigation completed successfully');
+
+      // Show success toast with formatted position
+      const position = formatLinkPosition(start, end);
+      vscode.window.showInformationMessage(`RangeLink: Navigated to ${path} @ ${position}`);
     } catch (error) {
       this.logger.error({ ...logCtx, error }, 'Navigation failed');
       vscode.window.showErrorMessage(

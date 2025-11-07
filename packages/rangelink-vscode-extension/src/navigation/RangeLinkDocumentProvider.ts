@@ -147,8 +147,20 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
    */
   async handleLinkClick(args: RangeLinkClickArgs): Promise<void> {
     const { linkText, parsed } = args;
+    const logCtx = { fn: 'RangeLinkDocumentProvider.handleLinkClick', linkText };
 
-    // Delegate to handler
-    await this.handler.navigateToLink(parsed, linkText);
+    this.logger.debug({ ...logCtx, parsed }, 'Document link clicked - delegating to handler');
+
+    try {
+      // Delegate navigation to handler (shows success toast)
+      await this.handler.navigateToLink(parsed, linkText);
+    } catch (error) {
+      // Handler already logged error and showed error message
+      // Just log that document link handling failed
+      this.logger.debug(
+        { ...logCtx, error },
+        'Document link handling completed with error (already handled by navigation handler)',
+      );
+    }
   }
 }

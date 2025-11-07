@@ -2,7 +2,6 @@ import type { Logger } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { RangeLinkTerminalLink } from '../types';
-import { formatLinkPosition } from '../utils/formatLinkPosition';
 
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
 
@@ -163,15 +162,9 @@ export class RangeLinkTerminalProvider
       return;
     }
 
-    const { path, start, end } = link.parsed;
-
     try {
-      // Delegate navigation to handler
+      // Delegate navigation to handler (shows success toast)
       await this.handler.navigateToLink(link.parsed, linkText);
-
-      // Terminal-specific feedback message with formatted position
-      const position = formatLinkPosition(start, end);
-      vscode.window.showInformationMessage(`RangeLink: Navigated to ${path} @ ${position}`);
     } catch (error) {
       // Handler already logged error and showed error message
       // Just log that terminal link handling failed
