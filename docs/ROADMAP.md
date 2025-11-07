@@ -70,6 +70,45 @@ RangeLinks in terminal output are clickable (Cmd/Ctrl+Click) with proper selecti
 
 ---
 
+### 📋 Enhanced Navigation Feedback — Future (2-3 hours)
+
+**Goal:** Improve navigation feedback with contextual toasts and settings.
+
+**Iterations:**
+
+1. **Clamping Detection** (1.5h)
+   - Add enum-based clamping detection to `convertRangeLinkPosition`
+   - **Do NOT use `wasClamped: boolean`** - use rich enum instead
+   - Options:
+     - Simple: `ClampingType = 'none' | 'vertical' | 'horizontal' | 'both'`
+     - Rich: Two enums for vertical/horizontal granularity
+     - Note: Can't clamp at top (line 0) or left (column 0) - only at bottom/right
+   - Return type: `{ position: ConvertedPosition; clamping: ClampingInfo }`
+   - Handler uses clamping info for warning toasts
+
+2. **Toast Classification** (30min)
+   - Info toast: Exact navigation (no clamping)
+   - Warning toast: Partial navigation (file too short/narrow)
+   - Format: `RangeLink: Partially navigated (line XX exceeds file length)`
+
+3. **Settings & Configuration** (1h)
+   - `rangelink.navigation.showSuccessToasts` (boolean, default: true)
+   - `rangelink.navigation.showClampingWarnings` (boolean, default: true)
+   - `rangelink.navigation.toastDelay` (number ms, default: 2000)
+   - Respect settings in handler
+
+**Done When:**
+
+- [ ] Clamping detection with enum (not boolean)
+- [ ] Info/warning toasts based on clamping
+- [ ] Settings to configure toast behavior
+- [ ] Tests cover all clamping scenarios
+- [ ] Documentation updated
+
+**Benefits:** Users get clear feedback when links point to out-of-bounds locations. Settings allow muting toasts for power users.
+
+---
+
 ## Phase 1C: BYOD Parsing — 📋 Deferred
 
 **Status:** Generation complete (v0.1.0). Parsing deferred until after terminal navigation (Phase 5).
