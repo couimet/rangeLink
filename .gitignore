@@ -31,3 +31,4 @@ packages/*/icon_large.png
 
 # Claude config
 .claude/settings.local.json
+.claude-questions/
