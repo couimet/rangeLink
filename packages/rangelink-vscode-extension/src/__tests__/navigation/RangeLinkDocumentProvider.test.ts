@@ -46,6 +46,8 @@ jest.mock('rangelink-core-ts', () => ({
 }));
 
 describe('RangeLinkDocumentProvider', () => {
+  it.todo('re-enable tests after navigation refactor is complete');
+
   // let provider: RangeLinkDocumentProvider;
   // let mockLogger: ReturnType<typeof getLogger>;
   // const delimiters = { line: 'L', position: 'C', hash: '#', range: '-' };
