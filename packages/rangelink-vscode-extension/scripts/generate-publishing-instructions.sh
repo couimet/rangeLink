@@ -59,6 +59,39 @@ if git rev-parse "$GIT_TAG" >/dev/null 2>&1; then
   TAG_EXISTS=true
 fi
 
+# Check CHANGELOG.md has version section and reference link
+CHANGELOG_PATH="CHANGELOG.md"
+CHANGELOG_VALID=true
+CHANGELOG_ERROR=""
+
+if [ ! -f "$CHANGELOG_PATH" ]; then
+  CHANGELOG_VALID=false
+  CHANGELOG_ERROR="CHANGELOG.md not found"
+else
+  # Check version section exists
+  # When --allow-dirty is used, tolerate suffixes like "- Unreleased"
+  # Otherwise, require exact format
+  if [ "$ALLOW_DIRTY" = "true" ]; then
+    # Flexible: allow "## [0.3.0]" or "## [0.3.0] - Unreleased"
+    if ! grep -q "^## \[${VERSION}\]" "$CHANGELOG_PATH"; then
+      CHANGELOG_VALID=false
+      CHANGELOG_ERROR="No section found for version [${VERSION}] in CHANGELOG.md (expected: ## [${VERSION}] or ## [${VERSION}] - Unreleased)"
+    fi
+  else
+    # Strict: require exact format "## [0.3.0]"
+    if ! grep -q "^## \[${VERSION}\]$" "$CHANGELOG_PATH"; then
+      CHANGELOG_VALID=false
+      CHANGELOG_ERROR="No section found for version [${VERSION}] in CHANGELOG.md (expected: ## [${VERSION}])"
+    fi
+  fi
+
+  # Always check reference link exists
+  if [ "$CHANGELOG_VALID" = "true" ] && ! grep -q "^\[${VERSION}\]:" "$CHANGELOG_PATH"; then
+    CHANGELOG_VALID=false
+    CHANGELOG_ERROR="No reference link found for [${VERSION}] at bottom of CHANGELOG.md"
+  fi
+fi
+
 # Prepare output directory and file
 OUTPUT_DIR="publishing-instructions"
 mkdir -p "$OUTPUT_DIR"
@@ -161,6 +194,43 @@ EOF
 Each git tag should represent a unique published version. Reusing tags creates
 ambiguity about which commit was actually published.
 EOF
+  elif [ "$error_type" = "changelog" ]; then
+    cat >> "$OUTPUT_FILE" <<EOF
+1. **Add version section to CHANGELOG.md:**
+
+   \`\`\`markdown
+   ## [${VERSION}]
+
+   ### Added
+   - New feature 1
+   - New feature 2
+
+   ### Fixed
+   - Bug fix 1
+   \`\`\`
+
+2. **Add reference link at bottom of CHANGELOG.md:**
+
+   \`\`\`markdown
+   [${VERSION}]: https://github.com/couimet/rangelink/compare/vscode-extension-vPREV...vscode-extension-v${VERSION}
+   \`\`\`
+
+   Replace \`vPREV\` with the previous version (e.g., v0.2.1).
+
+3. **Commit changes:**
+
+4. **Regenerate instructions:**
+
+   \`\`\`bash
+   pnpm generate:publish-instructions:vscode-extension
+   \`\`\`
+
+### Why This Matters
+
+The CHANGELOG documents all changes for each release. Marketplace listings and GitHub
+releases reference this file. Complete changelogs help users understand what changed
+and decide whether to upgrade.
+EOF
   fi
 
   cat >> "$OUTPUT_FILE" <<EOF
@@ -188,6 +258,14 @@ fi
 if [ "$TAG_EXISTS" = "true" ]; then
   echo -e "${RED}Error: Git tag $GIT_TAG already exists${NC}" >&2
   generate_error_markdown "tag_exists" "Git tag \`$GIT_TAG\` already exists"
+  echo -e "${BLUE}Error details written to: $OUTPUT_FILE${NC}" >&2
+  exit 1
+fi
+
+if [ "$CHANGELOG_VALID" = "false" ]; then
+  echo -e "${RED}Error: CHANGELOG.md validation failed${NC}" >&2
+  echo -e "${YELLOW}$CHANGELOG_ERROR${NC}" >&2
+  generate_error_markdown "changelog" "$CHANGELOG_ERROR"
   echo -e "${BLUE}Error details written to: $OUTPUT_FILE${NC}" >&2
   exit 1
 fi
@@ -220,9 +298,6 @@ the RangeLink VS Code extension to marketplaces and creating releases.
 
 Before proceeding, ensure:
 
-- [ ] \`CHANGELOG.md\` updated with release notes for v${VERSION}
-- [ ] All tests passing (\`pnpm test\`)
-- [ ] Working tree is clean (no uncommitted changes)
 - [ ] VSIX file built and tested locally
 
 ---
