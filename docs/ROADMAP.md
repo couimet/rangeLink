@@ -381,6 +381,7 @@ Extend `version.json` with commit hash, build date, branch, dirty flag. Add "Sho
 **Problem:** Building RangeLinks from files with unsaved modifications leads to position mismatch.
 
 **Scenario:**
+
 - User edits file but doesn't save
 - RangeLink generated from unsaved buffer positions (e.g., Line 50)
 - claude-code interprets positions from saved file content

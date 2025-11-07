@@ -5,6 +5,7 @@
 **Important:** All files in `.claude-questions/` and `.commit-msgs/` must be `.txt` format (not `.md`), even if they contain markdown-style formatting.
 
 **Example paths:**
+
 - Questions: `.claude-questions/0001-navigation-approach.txt` ⚠️ (folder is `.claude-questions/`, not `.questions/`)
 - Commit messages: `.commit-msgs/2025-01-06-fix-infinite-recursion.txt`
 

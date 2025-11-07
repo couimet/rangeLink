@@ -19,6 +19,7 @@ _A chronological record of completed work, decisions, and milestones._
 **Implementation:**
 
 Created `RangeLinkDocumentProvider`:
+
 - Reuses `buildLinkPattern()` and `parseLink()` from terminal navigation
 - Registers for all file schemes (`{ scheme: '*' }`)
 - Creates clickable links with hover tooltips
@@ -35,6 +36,7 @@ Created `RangeLinkDocumentProvider`:
 **Test Coverage:**
 
 Created comprehensive test suite (18 tests):
+
 - **provideDocumentLinks** (9 tests): Detection, multiple links, invalid links, cancellation
 - **handleLinkClick** (4 tests): Navigation, rectangular mode, file not found, errors
 - **Edge cases**: Empty documents, encoded URIs, tooltip formatting

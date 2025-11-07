@@ -11,11 +11,14 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_EMPTY', {
-        message: 'Selections array must not be empty',
-        functionName: 'validateInputSelection',
-        details: { selectionsLength: 0 },
-      });
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_EMPTY',
+        {
+          message: 'Selections array must not be empty',
+          functionName: 'validateInputSelection',
+          details: { selectionsLength: 0 },
+        },
+      );
     });
   });
 
@@ -39,12 +42,15 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_NORMAL_MULTIPLE', {
-        message:
-          'Normal mode does not support multiple selections (got 2). Multiple non-contiguous selections are not yet implemented.',
-        functionName: 'validateNormalMode',
-        details: { selectionsLength: 2 },
-      });
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_NORMAL_MULTIPLE',
+        {
+          message:
+            'Normal mode does not support multiple selections (got 2). Multiple non-contiguous selections are not yet implemented.',
+          functionName: 'validateNormalMode',
+          details: { selectionsLength: 2 },
+        },
+      );
     });
   });
 
@@ -61,15 +67,18 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_BACKWARD_LINE', {
-        message: 'Backward selection not allowed (startLine=20 > endLine=10)',
-        functionName: 'validateInputSelection',
-        details: {
-          selectionIndex: 0,
-          startLine: 20,
-          endLine: 10,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_BACKWARD_LINE',
+        {
+          message: 'Backward selection not allowed (startLine=20 > endLine=10)',
+          functionName: 'validateInputSelection',
+          details: {
+            selectionIndex: 0,
+            startLine: 20,
+            endLine: 10,
+          },
         },
-      });
+      );
     });
   });
 
@@ -87,16 +96,19 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_BACKWARD_CHARACTER', {
-        message: 'Backward character selection not allowed (startChar=20 > endChar=5 on line 10)',
-        functionName: 'validateInputSelection',
-        details: {
-          selectionIndex: 0,
-          line: 10,
-          startChar: 20,
-          endChar: 5,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_BACKWARD_CHARACTER',
+        {
+          message: 'Backward character selection not allowed (startChar=20 > endChar=5 on line 10)',
+          functionName: 'validateInputSelection',
+          details: {
+            selectionIndex: 0,
+            line: 10,
+            startChar: 20,
+            endChar: 5,
+          },
         },
-      });
+      );
     });
 
     it('should allow startCharacter > endCharacter when on different lines', () => {
@@ -130,18 +142,21 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_NEGATIVE_COORDINATES', {
-        message:
-          'Negative coordinates not allowed (startLine=-1, endLine=10, startChar=0, endChar=10)',
-        functionName: 'validateInputSelection',
-        details: {
-          selectionIndex: 0,
-          startLine: -1,
-          endLine: 10,
-          startChar: 0,
-          endChar: 10,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_NEGATIVE_COORDINATES',
+        {
+          message:
+            'Negative coordinates not allowed (startLine=-1, endLine=10, startChar=0, endChar=10)',
+          functionName: 'validateInputSelection',
+          details: {
+            selectionIndex: 0,
+            startLine: -1,
+            endLine: 10,
+            startChar: 0,
+            endChar: 10,
+          },
         },
-      });
+      );
     });
 
     it('should throw error for negative endLine', () => {
@@ -157,18 +172,21 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_NEGATIVE_COORDINATES', {
-        message:
-          'Negative coordinates not allowed (startLine=0, endLine=-1, startChar=0, endChar=10)',
-        functionName: 'validateInputSelection',
-        details: {
-          selectionIndex: 0,
-          startLine: 0,
-          endLine: -1,
-          startChar: 0,
-          endChar: 10,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_NEGATIVE_COORDINATES',
+        {
+          message:
+            'Negative coordinates not allowed (startLine=0, endLine=-1, startChar=0, endChar=10)',
+          functionName: 'validateInputSelection',
+          details: {
+            selectionIndex: 0,
+            startLine: 0,
+            endLine: -1,
+            startChar: 0,
+            endChar: 10,
+          },
         },
-      });
+      );
     });
 
     it('should throw error for negative startCharacter', () => {
@@ -184,18 +202,21 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_NEGATIVE_COORDINATES', {
-        message:
-          'Negative coordinates not allowed (startLine=0, endLine=10, startChar=-1, endChar=10)',
-        functionName: 'validateInputSelection',
-        details: {
-          selectionIndex: 0,
-          startLine: 0,
-          endLine: 10,
-          startChar: -1,
-          endChar: 10,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_NEGATIVE_COORDINATES',
+        {
+          message:
+            'Negative coordinates not allowed (startLine=0, endLine=10, startChar=-1, endChar=10)',
+          functionName: 'validateInputSelection',
+          details: {
+            selectionIndex: 0,
+            startLine: 0,
+            endLine: 10,
+            startChar: -1,
+            endChar: 10,
+          },
         },
-      });
+      );
     });
 
     it('should throw error for negative endCharacter', () => {
@@ -211,18 +232,21 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_NEGATIVE_COORDINATES', {
-        message:
-          'Negative coordinates not allowed (startLine=0, endLine=10, startChar=0, endChar=-1)',
-        functionName: 'validateInputSelection',
-        details: {
-          selectionIndex: 0,
-          startLine: 0,
-          endLine: 10,
-          startChar: 0,
-          endChar: -1,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_NEGATIVE_COORDINATES',
+        {
+          message:
+            'Negative coordinates not allowed (startLine=0, endLine=10, startChar=0, endChar=-1)',
+          functionName: 'validateInputSelection',
+          details: {
+            selectionIndex: 0,
+            startLine: 0,
+            endLine: 10,
+            startChar: 0,
+            endChar: -1,
+          },
         },
-      });
+      );
     });
   });
 
@@ -245,16 +269,19 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_RECTANGULAR_UNSORTED', {
-        message:
-          'Rectangular mode selections must be sorted by line number (line 8 comes after line 10)',
-        functionName: 'validateRectangularMode',
-        details: {
-          selectionIndex: 1,
-          previousLine: 10,
-          currentLine: 8,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_RECTANGULAR_UNSORTED',
+        {
+          message:
+            'Rectangular mode selections must be sorted by line number (line 8 comes after line 10)',
+          functionName: 'validateRectangularMode',
+          details: {
+            selectionIndex: 1,
+            previousLine: 10,
+            currentLine: 8,
+          },
         },
-      });
+      );
     });
   });
 
@@ -271,15 +298,19 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_RECTANGULAR_MULTILINE', {
-        message: 'Rectangular mode requires single-line selections (selection 0 spans lines 10-12)',
-        functionName: 'validateRectangularMode',
-        details: {
-          selectionIndex: 0,
-          startLine: 10,
-          endLine: 12,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_RECTANGULAR_MULTILINE',
+        {
+          message:
+            'Rectangular mode requires single-line selections (selection 0 spans lines 10-12)',
+          functionName: 'validateRectangularMode',
+          details: {
+            selectionIndex: 0,
+            startLine: 10,
+            endLine: 12,
+          },
         },
-      });
+      );
     });
   });
 
@@ -302,18 +333,21 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_RECTANGULAR_MISMATCHED_COLUMNS', {
-        message:
-          'Rectangular mode requires consistent column range (expected 5-15, got 7-15 at selection 1)',
-        functionName: 'validateRectangularMode',
-        details: {
-          selectionIndex: 1,
-          expectedStartChar: 5,
-          expectedEndChar: 15,
-          actualStartChar: 7,
-          actualEndChar: 15,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_RECTANGULAR_MISMATCHED_COLUMNS',
+        {
+          message:
+            'Rectangular mode requires consistent column range (expected 5-15, got 7-15 at selection 1)',
+          functionName: 'validateRectangularMode',
+          details: {
+            selectionIndex: 1,
+            expectedStartChar: 5,
+            expectedEndChar: 15,
+            actualStartChar: 7,
+            actualEndChar: 15,
+          },
         },
-      });
+      );
     });
 
     it('should throw error for mismatched endCharacter', () => {
@@ -335,18 +369,21 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_RECTANGULAR_MISMATCHED_COLUMNS', {
-        message:
-          'Rectangular mode requires consistent column range (expected 5-15, got 5-17 at selection 1)',
-        functionName: 'validateRectangularMode',
-        details: {
-          selectionIndex: 1,
-          expectedStartChar: 5,
-          expectedEndChar: 15,
-          actualStartChar: 5,
-          actualEndChar: 17,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_RECTANGULAR_MISMATCHED_COLUMNS',
+        {
+          message:
+            'Rectangular mode requires consistent column range (expected 5-15, got 5-17 at selection 1)',
+          functionName: 'validateRectangularMode',
+          details: {
+            selectionIndex: 1,
+            expectedStartChar: 5,
+            expectedEndChar: 15,
+            actualStartChar: 5,
+            actualEndChar: 17,
+          },
         },
-      });
+      );
     });
   });
 
@@ -369,16 +406,19 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_RECTANGULAR_NON_CONTIGUOUS', {
-        message: 'Rectangular mode requires contiguous lines (gap between line 10 and 12)',
-        functionName: 'validateRectangularMode',
-        details: {
-          selectionIndex: 1,
-          previousLine: 10,
-          currentLine: 12,
-          gap: 1,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_RECTANGULAR_NON_CONTIGUOUS',
+        {
+          message: 'Rectangular mode requires contiguous lines (gap between line 10 and 12)',
+          functionName: 'validateRectangularMode',
+          details: {
+            selectionIndex: 1,
+            previousLine: 10,
+            currentLine: 12,
+            gap: 1,
+          },
         },
-      });
+      );
     });
   });
 
@@ -396,11 +436,14 @@ describe('validateInputSelection', () => {
         selectionType: 'InvalidType' as any, // Force invalid type
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_UNKNOWN_TYPE', {
-        message: 'Unknown SelectionType: "InvalidType"',
-        functionName: 'validateInputSelection',
-        details: { selectionType: 'InvalidType' },
-      });
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_UNKNOWN_TYPE',
+        {
+          message: 'Unknown SelectionType: "InvalidType"',
+          functionName: 'validateInputSelection',
+          details: { selectionType: 'InvalidType' },
+        },
+      );
     });
   });
 
@@ -418,15 +461,18 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_ZERO_WIDTH', {
-        message: 'Zero-width selection not allowed (cursor position at line 10, char 5)',
-        functionName: 'validateInputSelection',
-        details: {
-          selectionIndex: 0,
-          line: 10,
-          char: 5,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_ZERO_WIDTH',
+        {
+          message: 'Zero-width selection not allowed (cursor position at line 10, char 5)',
+          functionName: 'validateInputSelection',
+          details: {
+            selectionIndex: 0,
+            line: 10,
+            char: 5,
+          },
         },
-      });
+      );
     });
 
     it('should throw error for zero-width selection at line start', () => {
@@ -442,15 +488,18 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_ZERO_WIDTH', {
-        message: 'Zero-width selection not allowed (cursor position at line 0, char 0)',
-        functionName: 'validateInputSelection',
-        details: {
-          selectionIndex: 0,
-          line: 0,
-          char: 0,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
+        'SELECTION_ZERO_WIDTH',
+        {
+          message: 'Zero-width selection not allowed (cursor position at line 0, char 0)',
+          functionName: 'validateInputSelection',
+          details: {
+            selectionIndex: 0,
+            line: 0,
+            char: 0,
+          },
         },
-      });
+      );
     });
   });
 
