@@ -113,14 +113,28 @@ EOF
 
   if [ "$error_type" = "dirty" ]; then
     cat >> "$OUTPUT_FILE" <<EOF
-1. **Commit or stash your changes:**
+**Hint:** If you just committed changes and \`git status\` shows clean, version.json may be stale.
 
-2. **Rebuild package with clean working tree:**
+1. **Check if version.json is stale:**
+   \`\`\`bash
+   # Regenerate version.json with current git state
+   pnpm --filter rangelink-vscode-extension compile
+
+   # Try again
+   pnpm generate:publish-instructions:vscode-extension
+   \`\`\`
+
+2. **If still dirty, check what git sees:**
+   \`\`\`bash
+   git status --porcelain
+   \`\`\`
+
+3. **Commit or stash your changes, then rebuild:**
    \`\`\`bash
    pnpm package:vscode-extension
    \`\`\`
 
-3. **Regenerate instructions:**
+4. **Regenerate instructions:**
    \`\`\`bash
    pnpm generate:publish-instructions:vscode-extension
    \`\`\`
@@ -279,6 +293,10 @@ fi
 if [ "$IS_DIRTY" = "true" ] && [ "$ALLOW_DIRTY" = "false" ]; then
   echo -e "${RED}Error: Cannot publish from dirty working tree${NC}" >&2
   echo -e "${YELLOW}version.json shows isDirty: true${NC}" >&2
+  echo -e "" >&2
+  echo -e "${YELLOW}Hint: If you just committed changes, version.json may be stale.${NC}" >&2
+  echo -e "${YELLOW}Regenerate it with: pnpm --filter rangelink-vscode-extension compile${NC}" >&2
+  echo -e "" >&2
   generate_error_markdown "dirty" "Working tree is dirty (uncommitted changes detected)"
   echo -e "${BLUE}Error details written to: $OUTPUT_FILE${NC}" >&2
   exit 1
