@@ -95,7 +95,7 @@ generate_error_markdown() {
   local error_message=$2
 
   cat > "$OUTPUT_FILE" <<EOF
-# ⚠️ Publishing Instructions - ERROR
+# ⚠️ Publishing Instructions: RangeLink VS Code Extension v${VERSION} - ERROR
 
 ## ❌ Cannot Generate Publishing Instructions
 

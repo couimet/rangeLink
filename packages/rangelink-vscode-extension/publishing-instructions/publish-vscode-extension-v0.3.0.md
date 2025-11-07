@@ -1,4 +1,4 @@
-# Publishing Instructions: RangeLink VS Code Extension v0.3.0
+# ⚠️ Publishing Instructions: RangeLink VS Code Extension v0.3.0 - ERROR
 
 **Generated:** 2025-11-07 17:08:48 UTC
 
