@@ -13,21 +13,23 @@ jest.mock('vscode', () => ({
   },
 }));
 
+// Create a single mock logger instance that will be returned by all getLogger() calls
+const mockLogger = {
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  debug: jest.fn(),
+};
+
 // Mock logger
 jest.mock('rangelink-core-ts', () => ({
-  getLogger: jest.fn(() => ({
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-  })),
+  getLogger: jest.fn(() => mockLogger),
 }));
 
 describe('TerminalBindingManager', () => {
   let manager: TerminalBindingManager;
   let mockContext: vscode.ExtensionContext;
   let mockTerminal: vscode.Terminal;
-  let mockLogger: ReturnType<typeof getLogger>;
 
   beforeEach(() => {
     // Reset mocks
@@ -44,9 +46,6 @@ describe('TerminalBindingManager', () => {
       sendText: jest.fn(),
       show: jest.fn(),
     } as unknown as vscode.Terminal;
-
-    // Get mock logger
-    mockLogger = getLogger();
 
     // Create manager
     manager = new TerminalBindingManager(mockContext);
