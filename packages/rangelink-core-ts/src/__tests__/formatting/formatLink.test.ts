@@ -1,5 +1,4 @@
 import { formatLink } from '../../formatting/formatLink';
-import { RangeLinkError } from '../../errors/RangeLinkError';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { FormattedLink } from '../../types/FormattedLink';
 import { InputSelection } from '../../types/InputSelection';
@@ -178,12 +177,10 @@ describe('formatLink', () => {
     };
 
     const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
-    expect(result).toBeErrWith((error: RangeLinkError) => {
-      expect(error).toBeRangeLinkError('SELECTION_EMPTY', {
-        message: 'Selections array must not be empty',
-        functionName: 'validateInputSelection',
-        details: { selectionsLength: 0 },
-      });
+    expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
+      message: 'Selections array must not be empty',
+      functionName: 'validateInputSelection',
+      details: { selectionsLength: 0 },
     });
   });
 
