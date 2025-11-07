@@ -66,59 +66,44 @@ You'll need a publisher account to publish to the VS Code Marketplace:
 
 </details>
 
-## Recommended Workflow: Publishing from VSIX File
+## Publishing Workflow
 
-**This is the recommended workflow** because it ensures you're publishing **exactly the same VSIX file you built and tested**, avoiding any potential discrepancies.
+### Quick Start
 
-### Prerequisites
+Publishing is **automated through a script** that generates version-specific, copy-paste ready instructions:
 
-Before publishing, ensure you have:
+```bash
+# 1. Build and test the VSIX package
+pnpm package:vscode-extension
+pnpm install-local:vscode-extension:vscode
 
-1. **Version updated in `package.json`** (e.g., `"version": "0.1.1"`)
-2. **CHANGELOG.md updated** with release notes
-3. **VSIX file built and tested locally**
+# 2. Generate publishing instructions
+pnpm generate:publish-instructions:vscode-extension
+```
 
-> **📋 For the complete release workflow**, including detailed steps for preparing, building, testing, and tagging, see [RELEASE-STRATEGY.md](../../docs/RELEASE-STRATEGY.md#release-workflow).
+The script will:
+- ✓ Validate VSIX exists
+- ✓ Validate CHANGELOG.md is updated
+- ✓ Validate git tag doesn't already exist
+- ✓ Check working tree is clean
+- ✓ Generate a markdown file with version-specific commands
 
-### Publishing Steps
+**Output:** `publishing-instructions/publish-vscode-extension-v{VERSION}.md`
 
-1. **Verify you're logged in:**
+This file contains copy-paste ready commands for:
+1. Creating git tags
+2. Creating GitHub releases
+3. Publishing to VS Code Marketplace
+4. Publishing to Open-VSX Registry
+5. Post-publishing verification
 
-   ```bash
-   pnpx vsce login <publisher-name>
-   ```
+### Why This Approach?
 
-2. **Build and test the VSIX package:**
-
-   ```bash
-   # From project root
-   pnpm package:vscode-extension
-   # Creates: packages/rangelink-vscode-extension/rangelink-vscode-extension-0.1.1.vsix
-
-   # Test locally
-   pnpm install-local:vscode-extension:vscode
-   # Verify extension works correctly
-   ```
-
-3. **Publish using the pre-built VSIX file:**
-
-   ```bash
-   # From project root
-   pnpm publish:vscode-extension:vsix
-   ```
-
-### Why This Workflow?
-
-✅ **Publish exactly what you tested** - No risk of discrepancies between test and production  
-✅ **No file modifications** - Version and tags are managed in your git workflow  
-✅ **Repeatable** - You can publish the same VSIX multiple times if needed  
-✅ **Safe** - Build and test locally, then publish with confidence
-
-This workflow is ideal for:
-
-- Pre-tagged releases (version already committed and tagged)
-- GitHub releases (attach VSIX to release, then publish)
-- CI/CD pipelines (build once, test, then publish)
+✅ **Version-specific** - Instructions tailored to the exact version you're publishing
+✅ **Validated** - Script checks prerequisites before generating instructions
+✅ **Reproducible** - Generated instructions are committed for audit trail
+✅ **Safe** - Validates clean working tree (or use `--allow-dirty` for testing)
+✅ **Complete** - Covers all marketplaces (VS Code, Open-VSX) and GitHub releases
 
 ## Publishing to Cursor Marketplace
 

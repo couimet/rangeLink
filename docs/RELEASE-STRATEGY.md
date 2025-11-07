@@ -107,133 +107,21 @@ vscode-extension-v0.2.0-rc.1
 
 ## Release Workflow
 
-### Manual Release Process (Current)
+### High-Level Process
 
-This is the current manual process for releasing a package. Automated workflows will be added in the future.
+Releasing a package involves these phases:
 
-#### Phase 1: Prepare Release
+1. **Prepare** - Bump version, update CHANGELOG, commit changes
+2. **Build & Test** - Package and validate locally
+3. **Publish** - Deploy to marketplace(s) and create GitHub release
+4. **Tag** - Create annotated git tag following [tagging convention](#tagging-convention)
+5. **Verify** - Confirm publication and test installation
 
-1. **Ensure working tree is clean**
+### Package-Specific Instructions
 
-   ```bash
-   git status
-   # Should show: "nothing to commit, working tree clean"
-   ```
+Each package has its own publishing workflow. See package-specific documentation:
 
-2. **Update package version**
-
-   ```bash
-   cd packages/rangelink-vscode-extension
-   # Edit package.json: "version": "0.1.1"
-   ```
-
-3. **Update CHANGELOG.md**
-
-   ```bash
-   # Edit packages/rangelink-vscode-extension/CHANGELOG.md
-   # Add new version section with changes
-   ```
-
-4. **Commit version bump**
-   ```bash
-   git add packages/rangelink-vscode-extension/package.json
-   git add packages/rangelink-vscode-extension/CHANGELOG.md
-   git commit -m "chore(vscode-ext): bump version to 0.1.1"
-   ```
-
-#### Phase 2: Build and Test
-
-5. **Clean and rebuild**
-
-   ```bash
-   pnpm clean
-   pnpm install
-   pnpm -r compile
-   pnpm -r test
-   ```
-
-6. **Package extension**
-
-   ```bash
-   cd packages/rangelink-vscode-extension
-   pnpm package
-   # Creates: rangelink-vscode-extension-0.1.1.vsix
-   ```
-
-7. **Test locally** (CRITICAL - don't skip!)
-   ```bash
-   pnpm install-local:vscode
-   # Or: pnpm install-local:cursor
-   # Verify extension loads and works correctly
-   ```
-
-#### Phase 3: Publish
-
-8. **Pre-publishing checklist**
-
-   Before publishing, verify:
-   - [ ] Code compiles without errors
-   - [ ] All commands are registered
-   - [ ] README is comprehensive
-   - [ ] CHANGELOG is updated
-   - [ ] License is included
-   - [ ] Icon/logo is added (optional but recommended)
-   - [ ] Extension is tested thoroughly
-   - [ ] Version number is appropriate (following semver)
-   - [ ] VSIX file built and tested locally
-
-9. **Publish to marketplace**
-
-   ```bash
-   # From project root
-   pnpm publish:vscode-extension:vsix
-   ```
-
-10. **Verify publication**
-
-- Wait 5-10 minutes
-- Visit: https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension
-- Verify version number updated
-- Test installation from marketplace
-
-#### Phase 4: Tag and Release
-
-11. **Create annotated git tag**
-
-    ```bash
-    git tag -a vscode-extension-v0.1.1 -m "Release vscode-extension v0.1.1
-
-    Changes:
-    - Fix ESLint configuration
-    - Reorganize documentation
-    - Update roadmap with post-publishing enhancements
-    "
-    ```
-
-12. **Push tag to remote**
-
-    ```bash
-    git push origin vscode-extension-v0.1.1
-    ```
-
-13. **Create GitHub Release**
-    - Go to: https://github.com/couimet/rangelink/releases/new
-    - Select tag: `vscode-extension-v0.1.1`
-    - Title: `VS Code Extension v0.1.1`
-    - Description: Copy from CHANGELOG.md
-    - Attach: `rangelink-vscode-extension-0.1.1.vsix`
-    - Publish release
-
-#### Phase 5: Post-Release
-
-14. **Verify release**
-    - Check GitHub release page
-    - Test installing from marketplace
-    - Verify tag appears in git log
-
-15. **Update documentation** (if needed)
-    - Update root README if announcing new features
-    - Update roadmap to mark completed items
+- **VS Code Extension:** [packages/rangelink-vscode-extension/PUBLISHING.md](../packages/rangelink-vscode-extension/PUBLISHING.md)
 
 ---
 
