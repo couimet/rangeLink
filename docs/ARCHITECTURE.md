@@ -15,42 +15,7 @@ This document describes RangeLink's architecture, design principles, and impleme
 
 ## Current Architecture
 
-### Monorepo Structure
-
-RangeLink uses a **pnpm workspace** monorepo with two primary packages:
-
-```
-rangeLink/
-  packages/
-    rangelink-core-ts/        # Pure TypeScript core library
-      src/
-        types/                # Domain models and enums
-        selection/            # Selection analysis
-        formatting/           # Link generation
-        validation/           # Configuration validation
-        parsing/              # Link parsing (future)
-      tests/                  # Comprehensive test suite
-      package.json
-
-    rangelink-vscode-extension/ # VSCode extension (thin wrapper)
-      src/
-        extension.ts          # Extension entry point
-        commands/             # Command implementations
-        config/               # Configuration loading
-      tests/                  # Extension-specific tests
-      package.json
-
-  docs/                       # Comprehensive documentation
-  .commits/                   # Commit message templates
-  README.md                   # Monorepo overview
-```
-
-**Key characteristics:**
-
-- **Zero dependencies** in core library (pure TypeScript)
-- **Platform-agnostic** core (no VSCode coupling)
-- **Thin extension layer** (minimal glue code)
-- **Comprehensive tests** (100% coverage target)
+For details on the monorepo structure and package organization, see **[packages/README.md](../packages/README.md)**.
 
 ### Package Relationship
 
