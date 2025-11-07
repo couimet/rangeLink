@@ -114,27 +114,11 @@ However, if you want to publish separately:
 1. Follow the same steps as VS Code
 2. Use a different publisher name if desired
 
-## Version Management & Release Workflow
+## Version Management
 
-For complete information on:
+The generated publishing instructions include all release workflow steps (tagging, GitHub releases, marketplace verification).
 
-- Version management and semantic versioning
-- Git tagging conventions
-- Release workflow phases (prepare, build, test, publish, tag)
-- GitHub release creation
-- Retroactive tagging
-
-See [RELEASE-STRATEGY.md](../../docs/RELEASE-STRATEGY.md#release-workflow) for detailed steps, including the pre-publishing checklist.
-
-## Post-Publishing
-
-After publishing:
-
-1. Wait 5-10 minutes for the marketplace to update
-2. Search for your extension by name
-3. Verify it appears correctly
-4. Test installing it in a clean VS Code instance
-5. Visit: https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension
+For monorepo-wide version strategy and tagging format, see [RELEASE-STRATEGY.md](../../docs/RELEASE-STRATEGY.md).
 
 ## Additional Resources
 
