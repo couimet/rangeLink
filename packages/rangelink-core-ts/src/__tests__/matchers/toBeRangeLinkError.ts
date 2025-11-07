@@ -4,10 +4,9 @@ import type { ErrorDetails } from '../../errors/detailedError';
 
 /**
  * Expected error properties for strict validation.
+ * Note: Error code is passed as a separate string parameter to enforce string literal usage.
  */
 export interface ExpectedRangeLinkError {
-  /** Expected error code (required) */
-  code: RangeLinkErrorCodes;
   /** Expected error message - exact match (required) */
   message: string;
   /** Expected function name (required - all RangeLinkErrors must have this) */
@@ -24,16 +23,19 @@ export interface ExpectedRangeLinkError {
  *
  * Validates:
  * - Error is actual instance of RangeLinkError class (not just duck-typed)
- * - Code matches exactly (required)
+ * - Code matches exactly (required, passed as string literal)
  * - Message matches exactly (required)
  * - Function name matches exactly (required - all errors must have this)
  * - Details match with toStrictEqual (optional)
  * - Cause matches (optional)
  *
+ * @param received - The value to test
+ * @param expectedCode - Expected error code as string literal (e.g., 'ERR_3001')
+ * @param expected - Expected error properties (message, functionName, details, cause)
+ *
  * @example
  * ```typescript
- * expect(error).toBeRangeLinkError({
- *   code: RangeLinkErrorCodes.SELECTION_EMPTY,
+ * expect(error).toBeRangeLinkError('ERR_3001', {
  *   message: 'Selections array must not be empty',
  *   functionName: 'validateInputSelection',
  *   details: { selectionsLength: 0 }
@@ -42,6 +44,7 @@ export interface ExpectedRangeLinkError {
  */
 export const toBeRangeLinkError = (
   received: unknown,
+  expectedCode: string,
   expected: ExpectedRangeLinkError,
 ): jest.CustomMatcherResult => {
   const failures: string[] = [];
@@ -59,9 +62,9 @@ export const toBeRangeLinkError = (
 
   const error = received as RangeLinkError;
 
-  // Validate required property: code (exact match)
-  if (error.code !== expected.code) {
-    failures.push(`  Code: expected "${expected.code}", received "${error.code}"`);
+  // Validate required property: code (exact match with string literal)
+  if (error.code !== expectedCode) {
+    failures.push(`  Code: expected "${expectedCode}", received "${error.code}"`);
   }
 
   // Validate required property: message (exact match)
@@ -115,10 +118,13 @@ export const toBeRangeLinkError = (
  * Custom Jest matcher for testing functions that throw RangeLinkError.
  * Follows Jest's standard `.toThrow()` pattern.
  *
+ * @param received - Function to execute that should throw
+ * @param expectedCode - Expected error code as string literal (e.g., 'ERR_3001')
+ * @param expected - Expected error properties (message, functionName, details, cause)
+ *
  * @example
  * ```typescript
- * expect(() => validateInputSelection(input)).toThrowRangeLinkError({
- *   code: RangeLinkErrorCodes.SELECTION_EMPTY,
+ * expect(() => validateInputSelection(input)).toThrowRangeLinkError('ERR_3001', {
  *   message: 'Selections array must not be empty',
  *   functionName: 'validateInputSelection'
  * });
@@ -126,6 +132,7 @@ export const toBeRangeLinkError = (
  */
 export const toThrowRangeLinkError = (
   received: () => void,
+  expectedCode: string,
   expected: ExpectedRangeLinkError,
 ): jest.CustomMatcherResult => {
   let caughtError: unknown;
@@ -142,12 +149,12 @@ export const toThrowRangeLinkError = (
     return {
       pass: false,
       message: () =>
-        `Expected function to throw RangeLinkError with code "${expected.code}", but nothing was thrown`,
+        `Expected function to throw RangeLinkError with code "${expectedCode}", but nothing was thrown`,
     };
   }
 
   // Use the existing validation logic from toBeRangeLinkError
-  return toBeRangeLinkError(caughtError, expected);
+  return toBeRangeLinkError(caughtError, expectedCode, expected);
 };
 
 /**
@@ -156,8 +163,8 @@ export const toThrowRangeLinkError = (
 declare global {
   namespace jest {
     interface Matchers<R> {
-      toBeRangeLinkError(expected: ExpectedRangeLinkError): R;
-      toThrowRangeLinkError(expected: ExpectedRangeLinkError): R;
+      toBeRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
+      toThrowRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
     }
   }
 }

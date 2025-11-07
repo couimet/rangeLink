@@ -1,6 +1,5 @@
 import { MAX_LINK_LENGTH } from '../../constants/MAX_LINK_LENGTH';
 import { RangeLinkError } from '../../errors/RangeLinkError';
-import { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import { getLogger } from '../../logging/LogManager';
 import { parseLink } from '../../parsing/parseLink';
 import { ParsedLink } from '../../types/ParsedLink';
@@ -467,8 +466,7 @@ describe('parseLink', () => {
         const result = parseLink(longPath);
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_LINK_TOO_LONG,
+          expect(error).toBeRangeLinkError('PARSE_LINK_TOO_LONG', {
             message: `Link exceeds maximum length of ${MAX_LINK_LENGTH} characters`,
             functionName: 'parseLink',
             details: { received: longPath.length, maximum: MAX_LINK_LENGTH },
@@ -489,8 +487,7 @@ describe('parseLink', () => {
         const result = parseLink('');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_EMPTY_LINK,
+          expect(error).toBeRangeLinkError('PARSE_EMPTY_LINK', {
             message: 'Link cannot be empty',
             functionName: 'parseLink',
           });
@@ -501,8 +498,7 @@ describe('parseLink', () => {
         const result = parseLink('   ');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_EMPTY_LINK,
+          expect(error).toBeRangeLinkError('PARSE_EMPTY_LINK', {
             message: 'Link cannot be empty',
             functionName: 'parseLink',
           });
@@ -515,8 +511,7 @@ describe('parseLink', () => {
         const result = parseLink('#L10');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_EMPTY_PATH,
+          expect(error).toBeRangeLinkError('PARSE_EMPTY_PATH', {
             message: 'Path cannot be empty',
             functionName: 'parseLink',
           });
@@ -527,8 +522,7 @@ describe('parseLink', () => {
         const result = parseLink('##L10C5');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_EMPTY_PATH,
+          expect(error).toBeRangeLinkError('PARSE_EMPTY_PATH', {
             message: 'Path cannot be empty',
             functionName: 'parseLink',
           });
@@ -546,8 +540,7 @@ describe('parseLink', () => {
         const result = parseLink('@L10', customDelimiters);
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_EMPTY_PATH,
+          expect(error).toBeRangeLinkError('PARSE_EMPTY_PATH', {
             message: 'Path cannot be empty',
             functionName: 'parseLink',
           });
@@ -560,8 +553,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
+          expect(error).toBeRangeLinkError('PARSE_NO_HASH_SEPARATOR', {
             message: 'Link must contain # separator',
             functionName: 'parseLink',
             details: { hash: '#' },
@@ -580,8 +572,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L10', customDelimiters);
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
+          expect(error).toBeRangeLinkError('PARSE_NO_HASH_SEPARATOR', {
             message: 'Link must contain @ separator',
             functionName: 'parseLink',
             details: { hash: '@' },
@@ -595,8 +586,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_INVALID_RANGE_FORMAT,
+          expect(error).toBeRangeLinkError('PARSE_INVALID_RANGE_FORMAT', {
             message: 'Invalid range format',
             functionName: 'parseLink',
           });
@@ -607,8 +597,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_INVALID_RANGE_FORMAT,
+          expect(error).toBeRangeLinkError('PARSE_INVALID_RANGE_FORMAT', {
             message: 'Invalid range format',
             functionName: 'parseLink',
           });
@@ -619,8 +608,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L10_L20');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_INVALID_RANGE_FORMAT,
+          expect(error).toBeRangeLinkError('PARSE_INVALID_RANGE_FORMAT', {
             message: 'Invalid range format',
             functionName: 'parseLink',
           });
@@ -631,8 +619,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L10C');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_INVALID_RANGE_FORMAT,
+          expect(error).toBeRangeLinkError('PARSE_INVALID_RANGE_FORMAT', {
             message: 'Invalid range format',
             functionName: 'parseLink',
           });
@@ -643,8 +630,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L10-L20C');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_INVALID_RANGE_FORMAT,
+          expect(error).toBeRangeLinkError('PARSE_INVALID_RANGE_FORMAT', {
             message: 'Invalid range format',
             functionName: 'parseLink',
           });
@@ -657,8 +643,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L0');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_LINE_BELOW_MINIMUM,
+          expect(error).toBeRangeLinkError('PARSE_LINE_BELOW_MINIMUM', {
             message: 'Start line must be >= 1',
             functionName: 'parseLink',
             details: { received: 0, minimum: 1, position: 'start' },
@@ -671,8 +656,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L-5');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_INVALID_RANGE_FORMAT,
+          expect(error).toBeRangeLinkError('PARSE_INVALID_RANGE_FORMAT', {
             message: 'Invalid range format',
             functionName: 'parseLink',
           });
@@ -685,8 +669,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L20-L10');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_LINE_BACKWARD,
+          expect(error).toBeRangeLinkError('PARSE_LINE_BACKWARD', {
             message: 'End line cannot be before start line',
             functionName: 'parseLink',
             details: { startLine: 20, endLine: 10 },
@@ -700,8 +683,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L10C0');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_CHAR_BELOW_MINIMUM,
+          expect(error).toBeRangeLinkError('PARSE_CHAR_BELOW_MINIMUM', {
             message: 'Start character must be >= 1',
             functionName: 'parseLink',
             details: { received: 0, minimum: 1, position: 'start' },
@@ -713,8 +695,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L10-L20C0');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_CHAR_BELOW_MINIMUM,
+          expect(error).toBeRangeLinkError('PARSE_CHAR_BELOW_MINIMUM', {
             message: 'End character must be >= 1',
             functionName: 'parseLink',
             details: { received: 0, minimum: 1, position: 'end' },
@@ -728,8 +709,7 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L10C20-L10C5');
 
         expect(result).toBeErrWith((error: RangeLinkError) => {
-          expect(error).toBeRangeLinkError({
-            code: RangeLinkErrorCodes.PARSE_CHAR_BACKWARD_SAME_LINE,
+          expect(error).toBeRangeLinkError('PARSE_CHAR_BACKWARD_SAME_LINE', {
             message: 'End character cannot be before start character on same line',
             functionName: 'parseLink',
             details: { startChar: 20, endChar: 5, line: 10 },

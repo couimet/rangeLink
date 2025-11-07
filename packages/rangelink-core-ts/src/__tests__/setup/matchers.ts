@@ -12,8 +12,8 @@ declare global {
       toBeOkWith<T>(assertValue: (value: T) => void): R;
       toBeErr(): R;
       toBeErrWith<E>(assertError: (error: E) => void): R;
-      toBeRangeLinkError(expected: ExpectedRangeLinkError): R;
-      toThrowRangeLinkError(expected: ExpectedRangeLinkError): R;
+      toBeRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
+      toThrowRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
     }
   }
 }

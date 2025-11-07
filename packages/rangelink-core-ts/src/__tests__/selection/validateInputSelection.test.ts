@@ -1,4 +1,3 @@
-import { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import { validateInputSelection } from '../../selection/validateInputSelection';
 import { InputSelection } from '../../types/InputSelection';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
@@ -12,8 +11,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_EMPTY,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_EMPTY', {
         message: 'Selections array must not be empty',
         functionName: 'validateInputSelection',
         details: { selectionsLength: 0 },
@@ -41,8 +39,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_NORMAL_MULTIPLE,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_NORMAL_MULTIPLE', {
         message:
           'Normal mode does not support multiple selections (got 2). Multiple non-contiguous selections are not yet implemented.',
         functionName: 'validateNormalMode',
@@ -64,8 +61,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_BACKWARD_LINE,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_BACKWARD_LINE', {
         message: 'Backward selection not allowed (startLine=20 > endLine=10)',
         functionName: 'validateInputSelection',
         details: {
@@ -91,8 +87,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_BACKWARD_CHARACTER,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_BACKWARD_CHARACTER', {
         message: 'Backward character selection not allowed (startChar=20 > endChar=5 on line 10)',
         functionName: 'validateInputSelection',
         details: {
@@ -135,8 +130,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_NEGATIVE_COORDINATES,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_NEGATIVE_COORDINATES', {
         message:
           'Negative coordinates not allowed (startLine=-1, endLine=10, startChar=0, endChar=10)',
         functionName: 'validateInputSelection',
@@ -163,8 +157,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_NEGATIVE_COORDINATES,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_NEGATIVE_COORDINATES', {
         message:
           'Negative coordinates not allowed (startLine=0, endLine=-1, startChar=0, endChar=10)',
         functionName: 'validateInputSelection',
@@ -191,8 +184,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_NEGATIVE_COORDINATES,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_NEGATIVE_COORDINATES', {
         message:
           'Negative coordinates not allowed (startLine=0, endLine=10, startChar=-1, endChar=10)',
         functionName: 'validateInputSelection',
@@ -219,8 +211,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_NEGATIVE_COORDINATES,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_NEGATIVE_COORDINATES', {
         message:
           'Negative coordinates not allowed (startLine=0, endLine=10, startChar=0, endChar=-1)',
         functionName: 'validateInputSelection',
@@ -254,8 +245,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_UNSORTED,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_RECTANGULAR_UNSORTED', {
         message:
           'Rectangular mode selections must be sorted by line number (line 8 comes after line 10)',
         functionName: 'validateRectangularMode',
@@ -281,8 +271,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_MULTILINE,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_RECTANGULAR_MULTILINE', {
         message: 'Rectangular mode requires single-line selections (selection 0 spans lines 10-12)',
         functionName: 'validateRectangularMode',
         details: {
@@ -313,8 +302,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_MISMATCHED_COLUMNS,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_RECTANGULAR_MISMATCHED_COLUMNS', {
         message:
           'Rectangular mode requires consistent column range (expected 5-15, got 7-15 at selection 1)',
         functionName: 'validateRectangularMode',
@@ -347,8 +335,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_MISMATCHED_COLUMNS,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_RECTANGULAR_MISMATCHED_COLUMNS', {
         message:
           'Rectangular mode requires consistent column range (expected 5-15, got 5-17 at selection 1)',
         functionName: 'validateRectangularMode',
@@ -382,8 +369,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_NON_CONTIGUOUS,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_RECTANGULAR_NON_CONTIGUOUS', {
         message: 'Rectangular mode requires contiguous lines (gap between line 10 and 12)',
         functionName: 'validateRectangularMode',
         details: {
@@ -410,8 +396,7 @@ describe('validateInputSelection', () => {
         selectionType: 'InvalidType' as any, // Force invalid type
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_UNKNOWN_TYPE,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_UNKNOWN_TYPE', {
         message: 'Unknown SelectionType: "InvalidType"',
         functionName: 'validateInputSelection',
         details: { selectionType: 'InvalidType' },
@@ -433,8 +418,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_ZERO_WIDTH,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_ZERO_WIDTH', {
         message: 'Zero-width selection not allowed (cursor position at line 10, char 5)',
         functionName: 'validateInputSelection',
         details: {
@@ -458,8 +442,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_ZERO_WIDTH,
+      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError('SELECTION_ZERO_WIDTH', {
         message: 'Zero-width selection not allowed (cursor position at line 0, char 0)',
         functionName: 'validateInputSelection',
         details: {
