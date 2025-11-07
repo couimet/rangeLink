@@ -182,9 +182,16 @@ export function activate(context: vscode.ExtensionContext): void {
   getLogger().debug({ fn: 'activate' }, 'Terminal link provider registered');
 
   // Register document link provider for clickable links in editor files
+  // Only register for specific schemes to prevent infinite recursion when scanning output channels
   const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, getLogger());
   context.subscriptions.push(
-    vscode.languages.registerDocumentLinkProvider({ scheme: '*' }, documentLinkProvider),
+    vscode.languages.registerDocumentLinkProvider(
+      [
+        { scheme: 'file' }, // Regular files (markdown, code, etc.)
+        { scheme: 'untitled' }, // Unsaved/new files (scratchpad workflow)
+      ],
+      documentLinkProvider,
+    ),
   );
   getLogger().debug({ fn: 'activate' }, 'Document link provider registered');
 

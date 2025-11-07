@@ -7,7 +7,7 @@ import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
 /**
  * Document link provider for RangeLink format detection in editor files.
  *
- * Makes RangeLinks clickable in any editor file (markdown, text, code, untitled).
+ * Makes RangeLinks clickable in editor files (markdown, text, code, untitled, notebook cells).
  * Primary use case: Validating links in scratchpad files before pasting to claude-code.
  *
  * **Supported formats:**
@@ -17,13 +17,20 @@ import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
  * - Rectangular: `file.ts##L10C5-L20C10`
  * - Hash in filename: `file#1.ts#L10`
  *
+ * **Important:** Do NOT register for all schemes (`{ scheme: '*' }`). This causes infinite
+ * recursion when the provider scans output channels containing its own logs. Explicitly
+ * register only for desired schemes: `file`, `untitled`.
+ *
  * **Usage:**
  * ```typescript
  * const handler = new RangeLinkNavigationHandler(delimiters, logger);
  * const provider = new RangeLinkDocumentProvider(handler, logger);
  * context.subscriptions.push(
  *   vscode.languages.registerDocumentLinkProvider(
- *     { scheme: '*' }, // All file types
+ *     [
+ *       { scheme: 'file' },
+ *       { scheme: 'untitled' }
+ *     ],
  *     provider
  *   )
  * );
