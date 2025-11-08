@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
+import { pingLog, setLogger } from 'barebone-logger';
 
 import * as extension from '../extension';
 import { PathFormat, RangeLinkService } from '../RangeLinkService';
+import { VSCodeLogger } from '../VSCodeLogger';
 
 // Mock vscode module
 const mockStatusBarItem = {
@@ -3191,11 +3193,8 @@ describe('Logger verification and communication channel', () => {
   });
 
   it('should support pingLog() to exercise all logger levels', () => {
-    const { pingLog, setLogger } = require('barebone-logger');
-    const { VSCodeLogger } = require('../VSCodeLogger');
-
     // Create a fresh logger with our mock output channel
-    const logger = new VSCodeLogger(mockOutputChannel);
+    const logger = new VSCodeLogger(mockOutputChannel as unknown as vscode.OutputChannel);
     mockOutputChannel.appendLine.mockClear();
 
     // Set the logger and clear the initialization message
@@ -3231,10 +3230,7 @@ describe('Logger verification and communication channel', () => {
   });
 
   it('should verify VSCodeLogger properly formats debug messages', () => {
-    const { setLogger } = require('barebone-logger');
-    const { VSCodeLogger } = require('../VSCodeLogger');
-
-    const logger = new VSCodeLogger(mockOutputChannel);
+    const logger = new VSCodeLogger(mockOutputChannel as unknown as vscode.OutputChannel);
     mockOutputChannel.appendLine.mockClear();
 
     // Manually call debug to test formatting
