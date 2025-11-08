@@ -1,3 +1,14 @@
+<!--
+  This file is excluded from automatic formatting (.prettierignore) to preserve
+  specific formatting choices (e.g., spaces in inline code, unescaped underscores).
+  
+  To manually format this file when needed:
+  pnpm format:fix --ignore-path /dev/null docs/JOURNEY.md
+  
+  Or using npx directly:
+  npx prettier --write --ignore-path /dev/null docs/JOURNEY.md
+-->
+
 # RangeLink Journey
 
 _A chronological record of completed work, decisions, and milestones._
