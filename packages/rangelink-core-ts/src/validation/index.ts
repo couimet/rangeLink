@@ -1,3 +1,3 @@
 export { validateDelimiter } from './validateDelimiter';
-export { areDelimitersUnique } from './areDelimitersUnique';
-export { haveSubstringConflicts } from './haveSubstringConflicts';
+export { validateUniqueness, areDelimitersUnique } from './validateUniqueness';
+export { validateSubstringConflicts, haveSubstringConflicts } from './validateSubstringConflicts';

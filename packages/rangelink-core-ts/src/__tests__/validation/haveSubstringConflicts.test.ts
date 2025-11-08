@@ -1,5 +1,5 @@
 import { DelimiterConfig } from '../../types/DelimiterConfig';
-import { haveSubstringConflicts } from '../../validation/haveSubstringConflicts';
+import { haveSubstringConflicts } from '../../validation/validateSubstringConflicts';
 
 describe('haveSubstringConflicts', () => {
   it('should return false for non-conflicting delimiters', () => {

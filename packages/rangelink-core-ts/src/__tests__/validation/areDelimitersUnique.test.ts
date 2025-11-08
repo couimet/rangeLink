@@ -1,5 +1,5 @@
 import { DelimiterConfig } from '../../types/DelimiterConfig';
-import { areDelimitersUnique } from '../../validation/areDelimitersUnique';
+import { areDelimitersUnique } from '../../validation/validateUniqueness';
 
 describe('areDelimitersUnique', () => {
   it('should return true for unique delimiters', () => {
