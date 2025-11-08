@@ -6,36 +6,6 @@
 
 This directory contains the RangeLink monorepo packages. Each package has its own `README` with detailed usage information.
 
-## 📁 Structure
-
-RangeLink uses a **pnpm workspace** monorepo with two primary packages:
-
-```
-rangeLink/
-  packages/
-    rangelink-core-ts/        # Pure TypeScript core library
-      src/
-        types/                # Domain models and enums
-        selection/            # Selection analysis
-        formatting/           # Link generation
-        validation/           # Configuration validation
-        parsing/              # Link parsing (future)
-      tests/                  # Comprehensive test suite
-      package.json
-
-    rangelink-vscode-extension/ # VSCode extension (thin wrapper)
-      src/
-        extension.ts          # Extension entry point
-        commands/             # Command implementations
-        config/               # Configuration loading
-      tests/                  # Extension-specific tests
-      package.json
-
-  docs/                       # Comprehensive documentation
-  .commits/                   # Commit message templates
-  README.md                   # Monorepo overview
-```
-
 ## 📦 Packages
 
 ### [`rangelink-core-ts/`](./rangelink-core-ts)
