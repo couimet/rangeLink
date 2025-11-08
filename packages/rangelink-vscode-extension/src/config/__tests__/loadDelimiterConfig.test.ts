@@ -1,4 +1,5 @@
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import { createMockLogger } from 'barebone-logger-testing';
 
 import { loadDelimiterConfig } from '../loadDelimiterConfig';
 import type { ConfigGetter, ConfigInspection } from '../types';
@@ -33,13 +34,6 @@ const createMockConfig = (overrides: Partial<Record<string, string>> = {}): Conf
     },
   };
 };
-
-const createMockLogger = (): Logger => ({
-  error: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn(),
-});
 
 // ============================================================================
 // Tests

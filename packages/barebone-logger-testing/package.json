@@ -1,0 +1,38 @@
+{
+  "name": "barebone-logger-testing",
+  "version": "0.1.0",
+  "description": "Testing utilities and mocks for barebone-logger",
+  "keywords": [
+    "barebone-logger",
+    "testing",
+    "mock",
+    "logger",
+    "jest",
+    "typescript"
+  ],
+  "homepage": "https://github.com/couimet/rangelink/tree/main/packages/barebone-logger-testing#readme",
+  "bugs": {
+    "url": "https://github.com/couimet/rangelink/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/couimet/rangelink",
+    "directory": "packages/barebone-logger-testing"
+  },
+  "license": "MIT",
+  "author": "RangeLink Contributors",
+  "main": "./out/index.js",
+  "types": "./out/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf out *.tsbuildinfo",
+    "compile": "tsc -p ."
+  },
+  "dependencies": {
+    "barebone-logger": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.3.3"
+  }
+}

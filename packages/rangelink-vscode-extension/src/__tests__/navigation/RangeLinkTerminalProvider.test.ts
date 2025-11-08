@@ -1,3 +1,5 @@
+import type { Logger } from 'barebone-logger';
+import { createMockLogger } from 'barebone-logger-testing';
 import type { DelimiterConfig } from 'rangelink-core-ts';
 import { LinkType, SelectionType } from 'rangelink-core-ts';
 
@@ -39,12 +41,7 @@ describe('RangeLinkTerminalProvider', () => {
 
   beforeEach(() => {
     // Mock logger
-    mockLogger = {
-      debug: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-    };
+    mockLogger = createMockLogger();
 
     // Standard delimiters
     delimiters = {

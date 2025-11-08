@@ -63,6 +63,22 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
+  packages/barebone-logger-testing:
+    dependencies:
+      barebone-logger:
+        specifier: workspace:*
+        version: link:../barebone-logger
+    devDependencies:
+      '@types/jest':
+        specifier: ^29.5.0
+        version: 29.5.14
+      '@types/node':
+        specifier: ^18.0.0
+        version: 18.19.130
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
   packages/rangelink-core-ts:
     dependencies:
       barebone-logger:
@@ -75,6 +91,9 @@ importers:
       '@types/node':
         specifier: ^18.0.0
         version: 18.19.130
+      barebone-logger-testing:
+        specifier: workspace:*
+        version: link:../barebone-logger-testing
       jest:
         specifier: ^29.5.0
         version: 29.7.0(@types/node@18.19.130)
@@ -106,6 +125,9 @@ importers:
       '@vscode/vsce':
         specifier: ^3.6.2
         version: 3.6.2
+      barebone-logger-testing:
+        specifier: workspace:*
+        version: link:../barebone-logger-testing
       esbuild:
         specifier: ^0.25.12
         version: 0.25.12
