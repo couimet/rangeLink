@@ -27,6 +27,7 @@
   "types": "./out/index.d.ts",
   "scripts": {
     "clean": "rm -rf out coverage *.tsbuildinfo",
+    "clean:all": "pnpm clean && rm -rf node_modules .eslintcache *.log",
     "compile": "tsc -p .",
     "test": "jest --coverage",
     "watch": "tsc -p . --watch"

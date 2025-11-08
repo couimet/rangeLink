@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "clean": "pnpm -r clean",
-    "clean:all": "pnpm clean && find . -name '*.vsix' -delete && find . -name 'node_modules' -type d -prune -exec rm -rf {} + && find . -name 'out' -type d -prune -exec rm -rf {} + && find . -name 'dist' -type d -prune -exec rm -rf {} + && find . -name 'coverage' -type d -prune -exec rm -rf {} + && find . -name '*.tsbuildinfo' -delete",
+    "clean:all": "pnpm -r clean:all",
     "compile": "pnpm clean && pnpm -r compile",
     "enable-pnpm": "corepack enable",
     "format": "prettier --check .",
