@@ -30,6 +30,18 @@ VS Code extension — thin wrapper around the core library.
 
 **[📖 Extension README](./rangelink-vscode-extension/README.md)** | **[🔧 Development Guide](./rangelink-vscode-extension/DEVELOPMENT.md)**
 
+### [`barebone-logger/`](./barebone-logger)
+
+Minimal logging interface — zero dependencies, framework-agnostic. Enables dependency injection for logging in any TypeScript project.
+
+**[📖 README](./barebone-logger/README.md)**
+
+### [`barebone-logger-testing/`](./barebone-logger-testing)
+
+Testing companion for barebone-logger — provides mock logger factory for Jest test suites.
+
+**[📖 README](./barebone-logger-testing/README.md)**
+
 ---
 
 ## 📚 Understanding the Architecture
