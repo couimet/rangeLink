@@ -11,6 +11,7 @@ source ~/.zshrc && nvm use && npm run enable-pnpm
 ```
 
 **Explanation:**
+
 - `source ~/.zshrc` loads nvm and sets up the shell environment
 - `nvm use` switches to the Node.js version specified in `.nvmrc` (v22)
 - `npm run enable-pnpm` enables pnpm via corepack
@@ -28,7 +29,7 @@ source ~/.zshrc && nvm use && pnpm <command>
 **Example paths:**
 
 - Questions: `.claude-questions/0001-navigation-approach.txt` ⚠️ (folder is `.claude-questions/`, not `.questions/`)
-- Commit messages: `.commit-msgs/2025-01-06-fix-infinite-recursion.txt`
+- Commit messages: `.commit-msgs/0001-fix-infinite-recursion.txt`
 
 When Claude needs to ask questions or gather design decisions before implementing:
 
@@ -62,9 +63,11 @@ Claude can still share summaries and thought processes in terminal to provide co
 
 **Always save commit messages to `.commit-msgs/` folder** (not root directory).
 
-Use filename format: `.commit-msgs/YYYY-MM-DD-short-description.txt`
+Use filename format: `.commit-msgs/NNNN-short-description.txt`
 
-Example: `.commit-msgs/2025-01-03-remove-hashmode-enum.txt`
+Example: `.commit-msgs/0001-remove-hashmode-enum.txt`
+
+- `NNNN` is sequential (0001, 0002, etc.) - check existing files with Glob and increment from highest
 
 ### Writing Concise Commit Messages
 
