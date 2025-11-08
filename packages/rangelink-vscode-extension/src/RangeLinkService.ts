@@ -1,8 +1,8 @@
+import { getLogger } from 'barebone-logger';
 import {
   DelimiterConfig,
   formatLink,
   FormatOptions,
-  getLogger,
   InputSelection,
   LinkType,
 } from 'rangelink-core-ts';

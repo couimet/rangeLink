@@ -1,8 +1,9 @@
+import { getLogger } from 'barebone-logger';
+
 import { DEFAULT_DELIMITERS } from '../constants/DEFAULT_DELIMITERS';
 import { MAX_LINK_LENGTH } from '../constants/MAX_LINK_LENGTH';
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
-import { getLogger } from '../logging/LogManager';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { LinkPosition } from '../types/LinkPosition';
 import { LinkType } from '../types/LinkType';

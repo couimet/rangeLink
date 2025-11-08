@@ -177,6 +177,7 @@
     "onStartupFinished"
   ],
   "dependencies": {
+    "barebone-logger": "workspace:*",
     "rangelink-core-ts": "workspace:*"
   },
   "devDependencies": {

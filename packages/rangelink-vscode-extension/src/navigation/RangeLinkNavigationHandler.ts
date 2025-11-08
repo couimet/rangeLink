@@ -1,4 +1,5 @@
-import type { DelimiterConfig, Logger, ParsedLink, Result } from 'rangelink-core-ts';
+import type { Logger } from 'barebone-logger';
+import type { DelimiterConfig, ParsedLink, Result } from 'rangelink-core-ts';
 import { buildLinkPattern, parseLink, RangeLinkError, SelectionType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 

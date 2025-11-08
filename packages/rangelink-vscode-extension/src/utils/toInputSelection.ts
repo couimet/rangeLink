@@ -1,5 +1,5 @@
+import { getLogger } from 'barebone-logger';
 import {
-  getLogger,
   InputSelection,
   Selection,
   SelectionCoverage,

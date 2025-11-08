@@ -1,4 +1,4 @@
-import { getLogger } from 'rangelink-core-ts';
+import { getLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 /**

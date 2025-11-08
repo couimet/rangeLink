@@ -1,4 +1,4 @@
-import { DEFAULT_DELIMITERS, type Logger } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
 import { loadDelimiterConfig } from '../loadDelimiterConfig';
 import type { ConfigGetter, ConfigInspection } from '../types';

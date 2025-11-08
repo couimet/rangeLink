@@ -1,5 +1,6 @@
+import { getLogger } from 'barebone-logger';
+
 import { RangeLinkError } from '../errors/RangeLinkError';
-import { getLogger } from '../logging/LogManager';
 import { computeRangeSpec } from '../selection/computeRangeSpec';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { FormatOptions } from '../types/FormatOptions';

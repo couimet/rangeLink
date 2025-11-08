@@ -1,4 +1,4 @@
-import { Logger, LoggingContext } from 'rangelink-core-ts';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 /**

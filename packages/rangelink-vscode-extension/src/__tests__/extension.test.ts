@@ -3191,7 +3191,7 @@ describe('Logger verification and communication channel', () => {
   });
 
   it('should support pingLog() to exercise all logger levels', () => {
-    const { pingLog, setLogger } = require('rangelink-core-ts');
+    const { pingLog, setLogger } = require('barebone-logger');
     const { VSCodeLogger } = require('../VSCodeLogger');
 
     // Create a fresh logger with our mock output channel
@@ -3231,7 +3231,7 @@ describe('Logger verification and communication channel', () => {
   });
 
   it('should verify VSCodeLogger properly formats debug messages', () => {
-    const { setLogger } = require('rangelink-core-ts');
+    const { setLogger } = require('barebone-logger');
     const { VSCodeLogger } = require('../VSCodeLogger');
 
     const logger = new VSCodeLogger(mockOutputChannel);

@@ -1,4 +1,4 @@
-import type { DelimiterConfig, Logger } from 'rangelink-core-ts';
+import type { DelimiterConfig } from 'rangelink-core-ts';
 import { LinkType, SelectionType } from 'rangelink-core-ts';
 
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';

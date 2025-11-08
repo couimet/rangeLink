@@ -1,4 +1,5 @@
-import { DEFAULT_DELIMITERS, type Logger, RangeLinkMessageCode } from 'rangelink-core-ts';
+import type { Logger } from 'barebone-logger';
+import { DEFAULT_DELIMITERS, RangeLinkMessageCode } from 'rangelink-core-ts';
 
 import { logSuccessfulConfig, logValidationErrors } from './logging';
 import { determineAllSources } from './sources';

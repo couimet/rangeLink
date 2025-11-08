@@ -1,4 +1,5 @@
-import { type DelimiterConfig, getLogger, setLogger } from 'rangelink-core-ts';
+import { getLogger, setLogger } from 'barebone-logger';
+import { type DelimiterConfig } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { loadDelimiterConfig as loadDelimiterConfigFromModule } from './config';

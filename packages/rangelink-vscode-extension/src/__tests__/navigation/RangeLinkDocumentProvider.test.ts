@@ -1,4 +1,4 @@
-import { getLogger } from 'rangelink-core-ts';
+import { getLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { RangeLinkDocumentProvider } from '../../navigation/RangeLinkDocumentProvider';
@@ -35,8 +35,8 @@ jest.mock('vscode', () => ({
 }));
 
 // Mock logger
-jest.mock('rangelink-core-ts', () => ({
-  ...jest.requireActual('rangelink-core-ts'),
+jest.mock('barebone-logger', () => ({
+  ...jest.requireActual('barebone-logger'),
   getLogger: jest.fn(() => ({
     debug: jest.fn(),
     info: jest.fn(),

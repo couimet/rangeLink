@@ -1,4 +1,4 @@
-import type { Logger } from 'rangelink-core-ts';
+import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import type { RangeLinkClickArgs } from '../types';

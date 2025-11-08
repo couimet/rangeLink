@@ -1,4 +1,5 @@
-import type { DelimiterConfig, Logger, RangeLinkError } from 'rangelink-core-ts';
+import type { Logger } from 'barebone-logger';
+import type { DelimiterConfig, RangeLinkError } from 'rangelink-core-ts';
 import { RangeLinkMessageCode } from 'rangelink-core-ts';
 
 import type { DelimiterConfigSources } from './types';

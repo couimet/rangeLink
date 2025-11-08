@@ -29,6 +29,9 @@
     "test": "jest --coverage",
     "watch": "tsc -p . --watch"
   },
+  "dependencies": {
+    "barebone-logger": "workspace:*"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^18.0.0",

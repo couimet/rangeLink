@@ -5,5 +5,9 @@
     "rootDir": "./src"
   },
   "include": ["src"],
-  "exclude": ["node_modules", "out"]
+  "exclude": ["node_modules", "out"],
+  "references": [
+    { "path": "../barebone-logger" },
+    { "path": "../rangelink-core-ts" }
+  ]
 }
