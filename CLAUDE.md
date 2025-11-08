@@ -1,5 +1,26 @@
 # Claude Code Instructions
 
+## Node.js and pnpm Setup
+
+**Important:** Claude Code runs non-interactive shells, so `node` and `pnpm` may not be available in the PATH by default.
+
+**Before running any pnpm commands:**
+
+```bash
+source ~/.zshrc && nvm use && npm run enable-pnpm
+```
+
+**Explanation:**
+- `source ~/.zshrc` loads nvm and sets up the shell environment
+- `nvm use` switches to the Node.js version specified in `.nvmrc` (v22)
+- `npm run enable-pnpm` enables pnpm via corepack
+
+**Use this pattern for all pnpm commands:**
+
+```bash
+source ~/.zshrc && nvm use && pnpm <command>
+```
+
 ## Asking Questions and Design Decisions
 
 **Important:** All files in `.claude-questions/` and `.commit-msgs/` must be `.txt` format (not `.md`), even if they contain markdown-style formatting.
