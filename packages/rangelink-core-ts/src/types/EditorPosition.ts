@@ -7,15 +7,6 @@
  *
  * Line numbers and character positions are 0-indexed (editor-native format).
  * When formatting links, these are converted to 1-indexed LinkPosition.
- *
- * @example
- * ```typescript
- * // Editor selection at line 10, character 5 (0-indexed)
- * const pos: EditorPosition = {
- *   line: 10,
- *   char: 5
- * };
- * ```
  */
 export interface EditorPosition {
   /**

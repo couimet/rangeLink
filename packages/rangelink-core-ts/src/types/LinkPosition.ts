@@ -9,21 +9,6 @@
  *
  * When navigating to code, this is converted to EditorPosition (0-indexed)
  * by querying document line length for full-line cases.
- *
- * @example
- * ```typescript
- * // Full line reference: src/file.ts#L10
- * const fullLine: LinkPosition = {
- *   line: 10,
- *   char: undefined
- * };
- *
- * // Precise position: src/file.ts#L10C5
- * const precise: LinkPosition = {
- *   line: 10,
- *   char: 5
- * };
- * ```
  */
 export interface LinkPosition {
   /**

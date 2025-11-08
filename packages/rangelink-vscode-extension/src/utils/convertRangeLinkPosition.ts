@@ -30,21 +30,6 @@ export interface ConvertedPosition {
  * @param position - RangeLink position (1-indexed, char may be undefined)
  * @param document - VSCode document for bounds checking
  * @returns Converted position (0-indexed, clamped to document bounds)
- *
- * @example
- * ```typescript
- * // Line only (char undefined)
- * const pos = convertRangeLinkPosition({ line: 10 }, document);
- * // => { line: 9, character: 0 }
- *
- * // With character
- * const pos = convertRangeLinkPosition({ line: 10, char: 5 }, document);
- * // => { line: 9, character: 4 }
- *
- * // Out of bounds - clamped
- * const pos = convertRangeLinkPosition({ line: 9999, char: 500 }, document);
- * // => { line: document.lineCount - 1, character: lineLength }
- * ```
  */
 export const convertRangeLinkPosition = (
   position: LinkPosition,

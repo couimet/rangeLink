@@ -18,27 +18,6 @@
  * Override the Auto behavior for specific use cases:
  * - **EnforceFullLine**: Always output LineOnly format, discarding position information
  * - **EnforcePositions**: Always output WithPositions format, including positions even for FullLine
- *
- * @example
- * ```typescript
- * // Auto: All FullLine → LineOnly
- * const selections = [
- *   { ..., coverage: SelectionCoverage.FullLine }
- * ];
- * formatLink(path, { selections, selectionType }, delims, { notation: RangeNotation.Auto });
- * // Result: "file.ts#L10-L20"
- *
- * // Auto: Any PartialLine → WithPositions
- * const selections = [
- *   { ..., coverage: SelectionCoverage.PartialLine }
- * ];
- * formatLink(path, { selections, selectionType }, delims, { notation: RangeNotation.Auto });
- * // Result: "file.ts#L10C5-L20C15"
- *
- * // EnforceFullLine: Override to LineOnly
- * formatLink(path, { selections, selectionType }, delims, { notation: RangeNotation.EnforceFullLine });
- * // Result: "file.ts#L10-L20" (positions discarded)
- * ```
  */
 export enum RangeNotation {
   /**

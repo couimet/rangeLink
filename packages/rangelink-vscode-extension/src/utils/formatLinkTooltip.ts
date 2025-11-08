@@ -18,36 +18,6 @@ import { formatLinkPosition } from './formatLinkPosition';
  *
  * @param parsed - Parsed link data. Should contain valid path and position data.
  * @returns Formatted tooltip text with branding, or `undefined` if data is invalid
- *
- * @example
- * ```typescript
- * // Single position
- * const parsed: ParsedLink = {
- *   path: 'src/auth.ts',
- *   start: { line: 42, char: 10 },
- *   end: { line: 42, char: 10 },
- *   linkType: 'Regular',
- *   selectionType: 'Normal'
- * };
- * formatLinkTooltip(parsed);
- * // => "Open src/auth.ts:42:10 • RangeLink"
- * // VSCode adds: " (cmd + click)" automatically
- *
- * // Range selection - shows RangeLink's power!
- * const parsed2: ParsedLink = {
- *   path: 'src/file.ts',
- *   start: { line: 10 },
- *   end: { line: 20 },
- *   linkType: 'Regular',
- *   selectionType: 'Normal'
- * };
- * formatLinkTooltip(parsed2);
- * // => "Open src/file.ts:10-20 • RangeLink"
- *
- * // Invalid data - returns undefined
- * formatLinkTooltip(null as any);
- * // => undefined
- * ```
  */
 export const formatLinkTooltip = (parsed: ParsedLink): string | undefined => {
   // Defensive validation: Check parsed data is usable

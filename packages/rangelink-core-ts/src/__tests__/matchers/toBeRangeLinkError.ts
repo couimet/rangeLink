@@ -33,15 +33,6 @@ export interface ExpectedRangeLinkError {
  * @param received - The value to test
  * @param expectedCode - Expected error code as string literal (e.g., 'ERR_3001')
  * @param expected - Expected error properties (message, functionName, details, cause)
- *
- * @example
- * ```typescript
- * expect(error).toBeRangeLinkError('ERR_3001', {
- *   message: 'Selections array must not be empty',
- *   functionName: 'validateInputSelection',
- *   details: { selectionsLength: 0 }
- * });
- * ```
  */
 export const toBeRangeLinkError = (
   received: unknown,
@@ -122,14 +113,6 @@ export const toBeRangeLinkError = (
  * @param received - Function to execute that should throw
  * @param expectedCode - Expected error code as string literal (e.g., 'ERR_3001')
  * @param expected - Expected error properties (message, functionName, details, cause)
- *
- * @example
- * ```typescript
- * expect(() => validateInputSelection(input)).toThrowRangeLinkError('ERR_3001', {
- *   message: 'Selections array must not be empty',
- *   functionName: 'validateInputSelection'
- * });
- * ```
  */
 export const toThrowRangeLinkError = (
   received: () => void,
@@ -165,16 +148,6 @@ export const toThrowRangeLinkError = (
  * @param received - The Result to test
  * @param expectedCode - Expected error code as string literal (e.g., 'ERR_3001')
  * @param expected - Expected error properties (message, functionName, details, cause)
- *
- * @example
- * ```typescript
- * const result = validateDelimiter('');
- * expect(result).toBeRangeLinkErrorErr('CONFIG_DELIMITER_EMPTY', {
- *   message: 'Delimiter must not be empty',
- *   functionName: 'validateDelimiter',
- *   details: { value: '', isHash: false }
- * });
- * ```
  */
 export const toBeRangeLinkErrorErr = (
   received: Result<unknown, unknown>,

@@ -14,21 +14,6 @@ import * as vscode from 'vscode';
  *
  * @param linkPath - File path from RangeLink (may be relative or absolute)
  * @returns File URI if found, undefined otherwise
- *
- * @example
- * ```typescript
- * // Workspace-relative path
- * const uri = await resolveWorkspacePath('src/auth.ts');
- * // => file:///Users/name/project/src/auth.ts
- *
- * // Absolute path
- * const uri = await resolveWorkspacePath('/Users/name/project/src/auth.ts');
- * // => file:///Users/name/project/src/auth.ts
- *
- * // File not found
- * const uri = await resolveWorkspacePath('nonexistent.ts');
- * // => undefined
- * ```
  */
 export const resolveWorkspacePath = async (linkPath: string): Promise<vscode.Uri | undefined> => {
   // Try as absolute path first

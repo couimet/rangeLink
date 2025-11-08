@@ -21,27 +21,6 @@ import { SelectionType } from './SelectionType';
  *
  * The core library trusts the extension's determination and uses `selectionType`
  * directly instead of applying heuristics.
- *
- * @example
- * ```typescript
- * // Normal multi-line selection
- * const input: InputSelection = {
- *   selections: [
- *     { start: { line: 10, char: 0 }, end: { line: 15, char: 0 }, coverage: SelectionCoverage.FullLine }
- *   ],
- *   selectionType: SelectionType.Normal
- * };
- *
- * // Rectangular column selection
- * const input: InputSelection = {
- *   selections: [
- *     { start: { line: 10, char: 5 }, end: { line: 10, char: 15 }, coverage: SelectionCoverage.PartialLine },
- *     { start: { line: 11, char: 5 }, end: { line: 11, char: 15 }, coverage: SelectionCoverage.PartialLine },
- *     { start: { line: 12, char: 5 }, end: { line: 12, char: 15 }, coverage: SelectionCoverage.PartialLine }
- *   ],
- *   selectionType: SelectionType.Rectangular
- * };
- * ```
  */
 export interface InputSelection {
   /**

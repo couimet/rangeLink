@@ -13,29 +13,6 @@ import type { LinkPosition } from 'rangelink-core-ts';
  * @param start - Start position (line and optional character)
  * @param end - End position (line and optional character)
  * @returns Formatted position string
- *
- * @example
- * ```typescript
- * // Single position with column
- * formatLinkPosition({ line: 42, char: 10 }, { line: 42, char: 10 });
- * // => "42:10"
- *
- * // Single line (no column)
- * formatLinkPosition({ line: 42 }, { line: 42 });
- * // => "42"
- *
- * // Range across multiple lines
- * formatLinkPosition({ line: 10, char: 5 }, { line: 20, char: 10 });
- * // => "10:5-20:10"
- *
- * // Range on same line
- * formatLinkPosition({ line: 10, char: 5 }, { line: 10, char: 15 });
- * // => "10:5-10:15"
- *
- * // Line-only range
- * formatLinkPosition({ line: 10 }, { line: 20 });
- * // => "10-20"
- * ```
  */
 export const formatLinkPosition = (start: LinkPosition, end: LinkPosition): string => {
   // Format individual positions

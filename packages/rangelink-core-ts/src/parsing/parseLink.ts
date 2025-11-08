@@ -35,24 +35,6 @@ import { escapeRegex } from '../utils/escapeRegex';
  * @param link - The RangeLink string to parse (e.g., "src/auth.ts#L42C10-L58C25")
  * @param delimiters - Optional delimiter configuration. If not provided, falls back to DEFAULT_DELIMITERS
  * @returns Result with ParsedLink on success, RangeLinkError on failure
- *
- * @example
- * ```typescript
- * // Using default delimiters (not provided)
- * const result = parseLink("src/auth.ts#L42C10-L58C25");
- * if (result.success) {
- *   console.log(result.value.path); // "src/auth.ts"
- *   console.log(result.value.start); // { line: 42, char: 10 }
- * }
- *
- * // Providing custom delimiters explicitly
- * const customDelimiters = { hash: '@', line: 'line', position: 'pos', range: ':' };
- * const result2 = parseLink("file.ts@line10pos5:line20pos10", customDelimiters);
- *
- * // Hash in filename (correctly handled)
- * const result3 = parseLink("file#1.ts#L10");
- * // → path: "file#1.ts", start: { line: 10 }
- * ```
  */
 export const parseLink = (
   link: string,

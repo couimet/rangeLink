@@ -9,16 +9,6 @@ import type { RangeLinkErrorCodes } from './RangeLinkErrorCodes';
  * - Function name tracking
  * - Contextual details object
  * - Cause chaining
- *
- * @example
- * ```typescript
- * throw new RangeLinkError({
- *   code: RangeLinkErrorCodes.SELECTION_ERR_EMPTY,
- *   message: 'Selections array must not be empty',
- *   functionName: 'validateInputSelection',
- *   details: { selectionsLength: 0, selectionType: 'Normal' }
- * });
- * ```
  */
 export class RangeLinkError extends DetailedError<RangeLinkErrorCodes> {
   constructor(options: ErrorOptions<RangeLinkErrorCodes>) {

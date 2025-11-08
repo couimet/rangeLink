@@ -13,21 +13,6 @@ import { getLogger } from './LogManager';
  * **Design Note:** This is a standalone function (not a Logger method) to keep
  * the Logger interface clean and avoid feature coupling. It simply exercises
  * the existing Logger interface without adding new methods.
- *
- * @example
- * ```typescript
- * // In extension tests
- * const mockOutputChannel = { appendLine: jest.fn() };
- * const logger = new VSCodeLogger(mockOutputChannel);
- * setLogger(logger);
- *
- * pingLog(); // Exercise all log levels
- *
- * // Verify messages were received
- * expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
- *   expect.stringContaining('Ping for DEBUG')
- * );
- * ```
  */
 export const pingLog = (): void => {
   const logger = getLogger();

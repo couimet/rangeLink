@@ -8,31 +8,6 @@ import { DelimiterConfig } from './DelimiterConfig';
  *
  * Format: `path#L10-L20~#~L~-~` (line-only)
  * Format: `path#L10C5-L20C10~#~L~-~C~` (with positions)
- *
- * @example
- * ```typescript
- * // Line-only format (3 fields)
- * const metadata: BYODMetadata = {
- *   delimiters: {
- *     hash: '#',
- *     line: 'L',
- *     range: '-',
- *     position: '',
- *   },
- *   hasPosition: false,
- * };
- *
- * // With positions format (4 fields)
- * const metadata: BYODMetadata = {
- *   delimiters: {
- *     hash: '#',
- *     line: 'L',
- *     range: '-',
- *     position: 'C',
- *   },
- *   hasPosition: true,
- * };
- * ```
  */
 export interface BYODMetadata {
   /**

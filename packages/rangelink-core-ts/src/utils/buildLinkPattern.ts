@@ -27,26 +27,6 @@ import { escapeRegex } from './escapeRegex';
  *
  * @param delimiters - Delimiter configuration to use for pattern
  * @returns RegExp with global flag for detecting all links in text
- *
- * @example
- * ```typescript
- * const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
- * const line = "Check src/file.ts#L10 and test.ts#L20";
- * const matches = [...line.matchAll(pattern)];
- * // matches.length === 2
- * // matches[0][0] === "src/file.ts#L10"
- * // matches[1][0] === "test.ts#L20"
- * ```
- *
- * @example
- * ```typescript
- * // Hash in filename
- * const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
- * const line = "Error in file#1.ts#L42";
- * const match = pattern.exec(line);
- * // match[0] === "file#1.ts#L42"
- * // match[1] === "file#1.ts" (path with hash)
- * ```
  */
 export const buildLinkPattern = (delimiters: DelimiterConfig): RegExp => {
   // Escape delimiters for regex matching

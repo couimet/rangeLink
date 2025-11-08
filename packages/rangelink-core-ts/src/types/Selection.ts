@@ -17,23 +17,6 @@ import { SelectionCoverage } from './SelectionCoverage';
  * - **PartialLine**: Selection covers specific character positions within line
  *   - Any selection that doesn't cover the entire line
  *   - Example: User selected specific word or phrase
- *
- * @example
- * ```typescript
- * // Full line selection (line has 80 characters)
- * const fullLine: Selection = {
- *   start: { line: 10, char: 0 },
- *   end: { line: 10, char: 80 },
- *   coverage: SelectionCoverage.FullLine
- * };
- *
- * // Partial line selection
- * const partial: Selection = {
- *   start: { line: 10, char: 5 },
- *   end: { line: 10, char: 20 },
- *   coverage: SelectionCoverage.PartialLine
- * };
- * ```
  */
 export interface Selection {
   /**
