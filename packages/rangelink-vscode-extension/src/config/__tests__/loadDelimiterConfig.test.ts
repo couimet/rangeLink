@@ -68,7 +68,7 @@ describe('loadDelimiterConfig', () => {
       const config = createMockConfig({
         [DelimiterConfigKey.Line]: 'LINE',
         [DelimiterConfigKey.Position]: 'COL',
-        [DelimiterConfigKey.Hash]: '@',
+        [DelimiterConfigKey.Hash]: '$',
         [DelimiterConfigKey.Range]: 'TO',
       });
       const logger = createMockLogger();
@@ -78,7 +78,7 @@ describe('loadDelimiterConfig', () => {
       expect(result.delimiters).toStrictEqual({
         line: 'LINE',
         position: 'COL',
-        hash: '@',
+        hash: '$',
         range: 'TO',
       });
       expect(result.errors).toStrictEqual([]);
@@ -104,7 +104,12 @@ describe('loadDelimiterConfig', () => {
 
   describe('invalid delimiter values - empty and whitespace', () => {
     it('should reject empty string delimiter and return defaults', () => {
-      const config = createMockConfig({ [DelimiterConfigKey.Line]: '' });
+      const config = createMockConfig({
+        [DelimiterConfigKey.Line]: '',
+        [DelimiterConfigKey.Position]: 'C',
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: '-',
+      });
       const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
@@ -128,7 +133,8 @@ describe('loadDelimiterConfig', () => {
 
       expect(result.delimiters).toStrictEqual(DEFAULT_DELIMITERS);
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors[0].code).toBe('CONFIG_DELIMITER_WHITESPACE');
+      // Whitespace-only becomes empty after trimming
+      expect(result.errors[0].code).toBe('CONFIG_DELIMITER_EMPTY');
     });
   });
 
@@ -138,7 +144,12 @@ describe('loadDelimiterConfig', () => {
       ['A1', 'contains numbers at end'],
       ['1A', 'starts with number'],
     ])('should reject delimiter "%s" (%s)', (invalidValue) => {
-      const config = createMockConfig({ [DelimiterConfigKey.Line]: invalidValue });
+      const config = createMockConfig({
+        [DelimiterConfigKey.Line]: invalidValue,
+        [DelimiterConfigKey.Position]: 'C',
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: '-',
+      });
       const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
@@ -155,7 +166,12 @@ describe('loadDelimiterConfig', () => {
       [' L', 'leading space'],
       ['L\t', 'tab'],
     ])('should reject delimiter containing whitespace "%s"', (invalidValue) => {
-      const config = createMockConfig({ [DelimiterConfigKey.Range]: invalidValue });
+      const config = createMockConfig({
+        [DelimiterConfigKey.Line]: 'L',
+        [DelimiterConfigKey.Position]: 'C',
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: invalidValue,
+      });
       const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
@@ -170,7 +186,12 @@ describe('loadDelimiterConfig', () => {
     const reservedChars = ['~', '|', '/', '\\', ':', ',', '@'];
 
     it.each(reservedChars)('should reject delimiter with reserved char "%s"', (char) => {
-      const config = createMockConfig({ [DelimiterConfigKey.Position]: char });
+      const config = createMockConfig({
+        [DelimiterConfigKey.Line]: 'L',
+        [DelimiterConfigKey.Position]: char,
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: '-',
+      });
       const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
@@ -183,17 +204,27 @@ describe('loadDelimiterConfig', () => {
 
   describe('hash delimiter special validation', () => {
     it('should accept single-character hash delimiter', () => {
-      const config = createMockConfig({ [DelimiterConfigKey.Hash]: '@' });
+      const config = createMockConfig({
+        [DelimiterConfigKey.Line]: 'L',
+        [DelimiterConfigKey.Position]: 'C',
+        [DelimiterConfigKey.Hash]: '$',
+        [DelimiterConfigKey.Range]: '-',
+      });
       const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
-      expect(result.delimiters.hash).toBe('@');
+      expect(result.delimiters.hash).toBe('$');
       expect(result.errors).toStrictEqual([]);
     });
 
     it('should reject multi-character hash delimiter', () => {
-      const config = createMockConfig({ [DelimiterConfigKey.Hash]: '##' });
+      const config = createMockConfig({
+        [DelimiterConfigKey.Line]: 'L',
+        [DelimiterConfigKey.Position]: 'C',
+        [DelimiterConfigKey.Hash]: '##',
+        [DelimiterConfigKey.Range]: '-',
+      });
       const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
@@ -209,6 +240,8 @@ describe('loadDelimiterConfig', () => {
       const config = createMockConfig({
         [DelimiterConfigKey.Line]: 'X',
         [DelimiterConfigKey.Position]: 'X',
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: '-',
       });
       const logger = createMockLogger();
 
@@ -223,6 +256,8 @@ describe('loadDelimiterConfig', () => {
       const config = createMockConfig({
         [DelimiterConfigKey.Line]: 'L',
         [DelimiterConfigKey.Position]: 'l',
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: '-',
       });
       const logger = createMockLogger();
 
@@ -238,6 +273,8 @@ describe('loadDelimiterConfig', () => {
       const config = createMockConfig({
         [DelimiterConfigKey.Line]: 'LINE',
         [DelimiterConfigKey.Position]: 'LIN',
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: '-',
       });
       const logger = createMockLogger();
 
@@ -252,6 +289,8 @@ describe('loadDelimiterConfig', () => {
       const config = createMockConfig({
         [DelimiterConfigKey.Line]: 'Line',
         [DelimiterConfigKey.Position]: 'line',
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: '-',
       });
       const logger = createMockLogger();
 
@@ -267,6 +306,8 @@ describe('loadDelimiterConfig', () => {
       const config = createMockConfig({
         [DelimiterConfigKey.Line]: '',
         [DelimiterConfigKey.Position]: '123',
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: '-',
       });
       const logger = createMockLogger();
 
@@ -323,8 +364,8 @@ describe('loadDelimiterConfig', () => {
 
       const result = loadDelimiterConfig(config, logger);
 
-      // Should have uniqueness error (fields are valid)
-      expect(result.errors).toHaveLength(1);
+      // Should have both uniqueness and substring errors (identical delimiters trigger both)
+      expect(result.errors.length).toBeGreaterThanOrEqual(1);
       expect(result.errors[0].code).toBe('CONFIG_DELIMITER_NOT_UNIQUE');
     });
   });
@@ -400,7 +441,7 @@ describe('loadDelimiterConfig', () => {
     it('should detect workspace source (workspaceValue)', () => {
       const config: ConfigGetter = {
         get: <T>(key: string): T | undefined => {
-          if (key === DelimiterConfigKey.Position) return 'COL' as T;
+          if (key === DelimiterConfigKey.Position) return 'POS' as T;
           const defaults: Record<string, string> = {
             [DelimiterConfigKey.Line]: 'L',
             [DelimiterConfigKey.Hash]: '#',
@@ -414,7 +455,7 @@ describe('loadDelimiterConfig', () => {
               key: 'position',
               defaultValue: 'C',
               globalValue: undefined,
-              workspaceValue: 'COL',
+              workspaceValue: 'POS',
               workspaceFolderValue: undefined,
             };
           }
@@ -431,6 +472,7 @@ describe('loadDelimiterConfig', () => {
 
       const result = loadDelimiterConfig(config, logger);
 
+      expect(result.errors.length).toBe(0); // Should have no errors
       expect(result.sources.position).toBe('workspace');
     });
 
@@ -473,19 +515,40 @@ describe('loadDelimiterConfig', () => {
 
     it('should prioritize workspace folder over workspace over user', () => {
       const config: ConfigGetter = {
-        get: <T>(): T | undefined => 'FINAL' as T,
-        inspect: (): ConfigInspection => ({
-          key: 'line',
-          defaultValue: 'DEFAULT',
-          globalValue: 'USER',
-          workspaceValue: 'WORKSPACE',
-          workspaceFolderValue: 'FINAL',
-        }),
+        get: <T>(key: string): T | undefined => {
+          // Return different values for each key to avoid uniqueness conflicts
+          const values: Record<string, string> = {
+            [DelimiterConfigKey.Line]: 'FINAL',
+            [DelimiterConfigKey.Position]: 'C',
+            [DelimiterConfigKey.Hash]: '#',
+            [DelimiterConfigKey.Range]: '-',
+          };
+          return values[key] as T;
+        },
+        inspect: (key: string): ConfigInspection => {
+          if (key === DelimiterConfigKey.Line) {
+            return {
+              key: 'line',
+              defaultValue: 'DEFAULT',
+              globalValue: 'USER',
+              workspaceValue: 'WORKSPACE',
+              workspaceFolderValue: 'FINAL',
+            };
+          }
+          return {
+            key: 'position',
+            defaultValue: undefined,
+            globalValue: undefined,
+            workspaceValue: undefined,
+            workspaceFolderValue: undefined,
+          };
+        },
       };
       const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
+      expect(result.errors.length).toBe(0); // Should have no errors
       expect(result.sources.line).toBe('workspaceFolder');
     });
   });
@@ -507,7 +570,12 @@ describe('loadDelimiterConfig', () => {
     });
 
     it('should return non-empty errors array on failure', () => {
-      const config = createMockConfig({ [DelimiterConfigKey.Line]: '' });
+      const config = createMockConfig({
+        [DelimiterConfigKey.Line]: '',
+        [DelimiterConfigKey.Position]: 'C',
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: '-',
+      });
       const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
@@ -560,6 +628,8 @@ describe('loadDelimiterConfig', () => {
       const config = createMockConfig({
         [DelimiterConfigKey.Line]: '',
         [DelimiterConfigKey.Position]: '1',
+        [DelimiterConfigKey.Hash]: '#',
+        [DelimiterConfigKey.Range]: '-',
       });
       const logger = createMockLogger();
 

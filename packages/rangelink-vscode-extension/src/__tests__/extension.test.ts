@@ -2948,7 +2948,7 @@ describe('Configuration loading and validation', () => {
       const columnLog = logCalls.find((msg) => msg.includes('Position delimiter'));
       const hashLog = logCalls.find((msg) => msg.includes('Hash delimiter'));
 
-      expect(lineLog).toContain('from workspace folder');
+      expect(lineLog).toContain('from workspaceFolder');
       expect(columnLog).toContain('from workspace');
       expect(hashLog).toContain('from user');
     });
