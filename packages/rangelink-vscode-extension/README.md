@@ -82,7 +82,7 @@ Any RangeLink in the terminal becomes clickable — whether from claude-code res
 
 ### 🔀 Terminal Binding
 
-Auto-send generated links to your integrated terminal where claude-code can see them instantly. Zero copy/paste friction.
+Bind a terminal to RangeLink (Command Palette → "Bind Terminal"), and all generated links auto-paste to that terminal — even if you switch to other terminals for work. Perfect for claude-code workflows: your links appear exactly where your AI assistant can see them. Zero copy/paste friction.
 
 ### ⚙️ Custom Delimiters
 
