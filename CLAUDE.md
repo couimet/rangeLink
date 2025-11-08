@@ -212,6 +212,64 @@ RangeLink is a tool for generating and navigating code location links with suppo
 
   - Rationale: Makes it clear in logs whether defaults were used vs custom config provided
 
+### JSDoc Documentation Style
+
+**DO NOT add usage examples to JSDoc comments:**
+
+- ❌ **Never** include `@example` blocks with code snippets in JSDoc
+- ✅ **Use unit tests** as the single source of truth for usage examples
+- ✅ Keep JSDoc focused on **what** the function does and **why** design decisions were made
+- ✅ Document parameters, return types, and important behavioral notes
+
+**Rationale:**
+
+- Unit tests already demonstrate all usage patterns comprehensively
+- Code examples in JSDoc become stale and require maintenance
+- Tests are executable and verified, JSDoc examples are not
+- Examples belong in README files and other documentation, not inline comments
+
+**When modifying files with JSDoc examples:**
+
+- Proactively suggest removing `@example` blocks when you see them
+- Point user to relevant test files for usage examples
+
+**Good JSDoc (concise, no examples):**
+
+```typescript
+/**
+ * Parse a RangeLink string into structured components.
+ *
+ * Supported formats:
+ * - `#L10` (single line)
+ * - `#L10-L20` (multi-line)
+ * - `#L10C5-L20C10` (with columns)
+ * - `##L10C5-L20C10` (rectangular)
+ *
+ * @param link - The RangeLink string to parse
+ * @param delimiters - Optional delimiter configuration
+ * @returns Result with ParsedLink on success, RangeLinkError on failure
+ */
+export const parseLink = (link: string, delimiters?: DelimiterConfig): Result<ParsedLink, RangeLinkError> => {
+  // ...
+};
+```
+
+**Bad JSDoc (verbose with examples):**
+
+```typescript
+/**
+ * Parse a RangeLink string into structured components.
+ *
+ * @example
+ * ```typescript
+ * const result = parseLink("src/auth.ts#L42C10");
+ * if (result.success) {
+ *   console.log(result.value.path); // "src/auth.ts"
+ * }
+ * ```
+ */
+```
+
 ## Testing Requirements
 
 - Maintain 99%+ test coverage
