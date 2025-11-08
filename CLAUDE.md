@@ -63,11 +63,20 @@ Claude can still share summaries and thought processes in terminal to provide co
 
 **Always save commit messages to `.commit-msgs/` folder** (not root directory).
 
-Use filename format: `.commit-msgs/NNNN-short-description.txt`
+**IMPORTANT: BEFORE creating a commit message file:**
+1. Use `Glob(pattern="*.txt", path=".commit-msgs/")` to check existing files
+2. Find the highest NNNN number
+3. Increment by 1 for your new file
 
-Example: `.commit-msgs/0001-remove-hashmode-enum.txt`
+**Filename format:** `.commit-msgs/NNNN-short-description.txt`
 
-- `NNNN` is sequential (0001, 0002, etc.) - check existing files with Glob and increment from highest
+⚠️ **DO NOT use dates** (e.g., `2025-11-08-description.txt`) - Always use sequential NNNN numbers!
+
+**Examples:**
+- ✅ `.commit-msgs/0001-remove-hashmode-enum.txt`
+- ✅ `.commit-msgs/0042-fix-validation-bug.txt`
+- ❌ `.commit-msgs/2025-11-08-fix-bug.txt` (WRONG - uses date instead of NNNN)
+- ❌ `.commit-msgs/fix-bug.txt` (WRONG - missing NNNN prefix)
 
 ### Writing Concise Commit Messages
 
