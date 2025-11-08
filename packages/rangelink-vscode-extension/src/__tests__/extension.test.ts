@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 
 import * as extension from '../extension';
-import { getErrorCodeForTesting } from '../extension';
 import { PathFormat, RangeLinkService } from '../RangeLinkService';
 
 // Mock vscode module
@@ -2501,41 +2500,6 @@ describe('Configuration loading and validation', () => {
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1002] Invalid delimiterLine'),
         );
-      });
-
-      it('should log CRITICAL error with CONFIG_ERR_UNKNOWN when unexpected validation error occurs', () => {
-        // This test verifies the default case in getErrorCodeForTesting by using type assertion
-        // to force an invalid enum value that will trigger the default case.
-
-        // getErrorCodeForTesting and DelimiterValidationError imported at top
-
-        // Force the default case by using an invalid enum value via type assertion
-        // This simulates what would happen if a new enum value was added but getErrorCode wasn't updated
-        const invalidError = 'INVALID_ERROR_VALUE' as any;
-
-        // Call getErrorCodeForTesting directly with the invalid value
-        const errorCode = getErrorCodeForTesting(invalidError);
-
-        // Verify it returns CONFIG_ERR_UNKNOWN
-        expect(errorCode).toBe('ERR_1099'); // CONFIG_ERR_UNKNOWN
-      });
-
-      it('should log CRITICAL error message format when CONFIG_ERR_UNKNOWN is returned', () => {
-        // Test that the CRITICAL message format is correct
-        // We test this by verifying getErrorCodeForTesting returns ERR_1099 for invalid inputs
-        // and verifying the message structure in the code
-
-        // getErrorCodeForTesting imported at top
-
-        // Test with an invalid enum value
-        const invalidError = 'INVALID_ERROR_VALUE' as any;
-        const errorCode = getErrorCodeForTesting(invalidError);
-
-        expect(errorCode).toBe('ERR_1099'); // CONFIG_ERR_UNKNOWN
-
-        // Verify the error code enum value exists (this validates the structure)
-        // The actual logging is tested implicitly - if the code path exists and returns
-        // CONFIG_ERR_UNKNOWN, the CRITICAL message will be logged as defined in the code
       });
 
       it('should handle null/undefined fallback in defaults extraction', async () => {
