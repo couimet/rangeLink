@@ -11,7 +11,7 @@
   "scripts": {
     "clean": "pnpm -r clean",
     "clean:all": "pnpm -r clean:all",
-    "compile": "pnpm clean && pnpm -r compile",
+    "compile": "pnpm clean && find . -name '*.tsbuildinfo' -delete && pnpm -r --workspace-concurrency=1 compile",
     "enable-pnpm": "corepack enable",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
