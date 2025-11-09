@@ -56,6 +56,7 @@ export const toInputSelection = (
         },
         'Document modified during link generation - selection out of bounds',
       );
+      // TODO: Replace with RangeLinkExtensionError using RangeLinkExtensionErrorCodes.SELECTION_CONVERSION_FAILED
       throw new Error(message);
     }
 

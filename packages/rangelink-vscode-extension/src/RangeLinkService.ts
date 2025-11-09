@@ -68,6 +68,7 @@ export class RangeLinkService {
     const selections = editor.selections;
 
     if (!selections || selections.length === 0 || selections.every((s) => s.isEmpty)) {
+      // TODO: Replace with RangeLinkExtensionError using RangeLinkExtensionErrorCodes.EMPTY_SELECTION
       throw new Error('RangeLink command invoked with empty selection');
     }
 
