@@ -44,10 +44,10 @@ describe('DestinationFactory', () => {
       expect(mockLogger.warn).toHaveBeenCalled(); // paste() logs warning when no terminal bound
     });
 
-    it('should throw RangeLinkExtensionError for claude-code type (not yet implemented)', () => {
+    it('should throw RangeLinkExtensionError for github-copilot type (not yet implemented)', () => {
       let caughtError: unknown;
       try {
-        factory.create('claude-code');
+        factory.create('github-copilot');
       } catch (error) {
         caughtError = error;
       }
@@ -55,9 +55,9 @@ describe('DestinationFactory', () => {
       expect(caughtError).toBeInstanceOf(RangeLinkExtensionError);
       const error = caughtError as RangeLinkExtensionError;
       expect(error.code).toBe(RangeLinkExtensionErrorCodes.DESTINATION_NOT_IMPLEMENTED);
-      expect(error.message).toBe('Destination type not yet implemented: claude-code');
+      expect(error.message).toBe('Destination type not yet implemented: github-copilot');
       expect(error.functionName).toBe('DestinationFactory.create');
-      expect(error.details).toStrictEqual({ destinationType: 'claude-code' });
+      expect(error.details).toStrictEqual({ destinationType: 'github-copilot' });
     });
 
     it('should throw RangeLinkExtensionError for cursor-ai type (not yet implemented)', () => {
@@ -106,8 +106,10 @@ describe('DestinationFactory', () => {
 
       expect(displayNames).toEqual({
         terminal: 'Terminal',
-        'claude-code': 'Claude Code Chat',
+        'text-editor': 'Text Editor',
         'cursor-ai': 'Cursor AI Assistant',
+        'github-copilot': 'GitHub Copilot Chat',
+        'claude-code': 'Claude Code Chat',
       });
     });
 
@@ -116,17 +118,20 @@ describe('DestinationFactory', () => {
 
       // Display names should be capitalized and readable
       expect(displayNames.terminal).toMatch(/^[A-Z]/);
-      expect(displayNames['claude-code']).toMatch(/^[A-Z]/);
+      expect(displayNames['text-editor']).toMatch(/^[A-Z]/);
       expect(displayNames['cursor-ai']).toMatch(/^[A-Z]/);
+      expect(displayNames['github-copilot']).toMatch(/^[A-Z]/);
+      expect(displayNames['claude-code']).toMatch(/^[A-Z]/);
     });
 
     it('should include future destination types in display names', () => {
       const displayNames = factory.getDisplayNames();
 
-      // Even though claude-code and cursor-ai aren't implemented yet,
-      // display names should be available for UI components
-      expect(displayNames['claude-code']).toBeDefined();
+      // Even though these aren't implemented yet, display names should be available for UI
+      expect(displayNames['text-editor']).toBeDefined();
       expect(displayNames['cursor-ai']).toBeDefined();
+      expect(displayNames['github-copilot']).toBeDefined();
+      expect(displayNames['claude-code']).toBeDefined();
     });
   });
 

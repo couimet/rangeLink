@@ -1,10 +1,15 @@
 # Implementation Plan: Universal Paste Destinations
 
-**Status:** Ready for Review
+**Status:** In Progress - Phase 1 Complete
 **Created:** 2025-11-08
+**Updated:** 2025-01-09
 **Related Docs:**
+
 - Research findings: `docs/RESEARCH-UNIVERSAL-PASTE.md`
+- Claude Code integration research: `docs/RESEARCH-CLAUDE-CODE-INTEGRATION.md`
+- Claude Code workaround findings: `docs/RESEARCH-CLAUDE-CODE-INTEGRATION-UPDATE.md`
 - User questions: `.claude-questions/0013-universal-paste-destinations-design.txt`
+- Phase 2 questions: `.claude-questions/0018-phase2-chat-destinations-implementation.txt`
 
 ---
 
@@ -34,23 +39,32 @@
 ### Vision
 
 Enable RangeLink to paste automatically to **any writable destination** in VSCode/Cursor:
+
 - Terminal (existing)
-- Claude Code chat
+- Text Editor at cursor position (new)
 - Cursor AI assistant
+- GitHub Copilot Chat
+- Claude Code chat (experimental - hybrid approach)
 - Future: Any extension-provided input
 
 **Key principle:** Extend, don't replace. Terminal binding remains a first-class feature.
 
 ### Goals
 
-#### Phase 1 MVP
+#### Phase 1 MVP ✅ Complete
 
 1. ✅ **Generic destination abstraction** - Support multiple paste targets
-2. ✅ **Claude Code integration** - Paste directly to chat input
-3. ✅ **Cursor AI integration** - Paste to Cursor's assistant
-4. ✅ **Backward compatibility** - Terminal binding continues working
-5. ✅ **Plain text paste** - Simple, consistent format (padded link text)
-6. ✅ **One destination at a time** - User explicitly binds preferred target
+2. ✅ **Backward compatibility** - Terminal binding continues working
+3. ✅ **Plain text paste** - Simple, consistent format (padded link text)
+4. ✅ **One destination at a time** - User explicitly binds preferred target
+5. ✅ **Comprehensive tests** - 99%+ coverage maintained
+
+#### Phase 2 Chat & Editor Destinations (In Progress)
+
+1. **Text Editor integration** - Paste at cursor position in active editor
+2. **Cursor AI integration** - Paste to Cursor's assistant (standard VSCode chat API)
+3. **GitHub Copilot integration** - Paste to Copilot Chat (standard VSCode chat API)
+4. **Claude Code integration** - Experimental hybrid approach (focus + paste command)
 
 #### Phase 2 Future Enhancements
 
@@ -121,15 +135,15 @@ Enable RangeLink to paste automatically to **any writable destination** in VSCod
 │   - Factory: creates destination instances          │
 │   - Delegates paste to active destination           │
 └─────────────────────────────────────────────────────┘
-           │                    │                    │
-           ▼                    ▼                    ▼
-┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│TerminalDest     │  │ClaudeCodeDest   │  │CursorAIDest     │
-│                 │  │                 │  │                 │
-│.paste()         │  │.paste()         │  │.paste()         │
-│  sendText()     │  │  executeCommand │  │  executeCommand │
-│  show()         │  │  (chat.open)    │  │  (chat.open)    │
-└─────────────────┘  └─────────────────┘  └─────────────────┘
+       │           │           │             │            │
+       ▼           ▼           ▼             ▼            ▼
+┌───────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+│Terminal   │ │TextEditor│ │CursorAI  │ │Copilot   │ │ClaudeCode│
+│           │ │          │ │          │ │          │ │          │
+│.paste()   │ │.paste()  │ │.paste()  │ │.paste()  │ │.paste()  │
+│sendText() │ │insertText│ │chat.open │ │chat.open │ │focus +   │
+│show()     │ │atCursor  │ │(command) │ │(command) │ │pasteCmd  │
+└───────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
 ```
 
 ### Key Design Decisions
@@ -148,6 +162,7 @@ interface PasteDestination {
 ```
 
 **Benefits:**
+
 - Open/closed principle (open for extension, closed for modification)
 - Easy to test (mock destinations)
 - Future-proof (GitHub Copilot Chat, other extensions)
@@ -160,15 +175,19 @@ interface PasteDestination {
 class DestinationFactory {
   create(type: DestinationType, context: ExtensionContext): PasteDestination {
     switch (type) {
-      case 'terminal': return new TerminalDestination();
-      case 'claude-code': return new ClaudeCodeDestination();
-      case 'cursor-ai': return new CursorAIDestination();
+      case 'terminal':
+        return new TerminalDestination();
+      case 'claude-code':
+        return new ClaudeCodeDestination();
+      case 'cursor-ai':
+        return new CursorAIDestination();
     }
   }
 }
 ```
 
 **Benefits:**
+
 - Single source of truth for supported destinations
 - Easy to add destination-specific dependencies (logger, config)
 
@@ -177,6 +196,7 @@ class DestinationFactory {
 **Why:** Existing users have `rangelink.autoPaste.boundTerminal` setting.
 
 **Strategy:**
+
 - Check for legacy setting on activation
 - Auto-migrate: `boundTerminal: "bash"` → `destinationType: "terminal"`
 - Preserve terminal name for future use
@@ -191,12 +211,14 @@ class DestinationFactory {
 **Goal:** Ensure foundation is solid before refactoring.
 
 **Tasks:**
+
 1. Run full test suite to establish baseline ✅
 2. Review current terminal binding implementation ✅
 3. Document API contracts for destinations ✅
-4. Create feature branch: `feature/universal-paste` ✅
+4. ~~Create feature branch: `feature/universal-paste`~~ I don't want a feature branch; I'll go straight in `main`
 
 **Deliverables:**
+
 - All tests passing
 - Research document (`RESEARCH-UNIVERSAL-PASTE.md`)
 - Implementation plan (this document)
@@ -212,7 +234,7 @@ class DestinationFactory {
 **New file:** `packages/rangelink-vscode-extension/src/destinations/PasteDestination.ts`
 
 ```typescript
-export type DestinationType = 'terminal' | 'claude-code' | 'cursor-ai';
+export type DestinationType = 'terminal' | 'text-editor' | 'cursor-ai' | 'github-copilot' | 'claude-code';
 
 export interface PasteDestination {
   /** Unique identifier for this destination type */
@@ -237,6 +259,7 @@ export interface PasteDestination {
 ```
 
 **Design notes:**
+
 - Async methods (some destinations need command execution)
 - Boolean return (success/failure), not throwing (silent failure pattern from terminal)
 - Readonly properties (immutable after construction)
@@ -254,7 +277,7 @@ export class TerminalDestination implements PasteDestination {
 
   constructor(
     private readonly logger: Logger,
-    private boundTerminal?: vscode.Terminal
+    private boundTerminal?: vscode.Terminal,
   ) {}
 
   async isAvailable(): Promise<boolean> {
@@ -273,7 +296,7 @@ export class TerminalDestination implements PasteDestination {
 
     this.logger.info(
       { fn: 'TerminalDestination.paste', terminalName: this.boundTerminal.name },
-      `Pasted to terminal: ${this.boundTerminal.name}`
+      `Pasted to terminal: ${this.boundTerminal.name}`,
     );
 
     return true;
@@ -294,6 +317,7 @@ export class TerminalDestination implements PasteDestination {
 ```
 
 **Key changes from TerminalBindingManager:**
+
 - Extracted `sendToTerminal()` → `paste()`
 - Terminal reference managed externally (by manager)
 - No binding logic (manager handles that)
@@ -307,20 +331,23 @@ export class DestinationFactory {
   constructor(private readonly logger: Logger) {}
 
   create(type: DestinationType): PasteDestination {
-    this.logger.debug(
-      { fn: 'DestinationFactory.create', type },
-      `Creating destination: ${type}`
-    );
+    this.logger.debug({ fn: 'DestinationFactory.create', type }, `Creating destination: ${type}`);
 
     switch (type) {
       case 'terminal':
         return new TerminalDestination(this.logger);
 
-      case 'claude-code':
-        return new ClaudeCodeDestination(this.logger);
+      case 'text-editor':
+        return new TextEditorDestination(this.logger);
 
       case 'cursor-ai':
         return new CursorAIDestination(this.logger);
+
+      case 'github-copilot':
+        return new GitHubCopilotDestination(this.logger);
+
+      case 'claude-code':
+        return new ClaudeCodeDestination(this.logger);
 
       default:
         throw new Error(`Unknown destination type: ${type}`);
@@ -331,7 +358,7 @@ export class DestinationFactory {
    * Get all available destination types (for UI pickers)
    */
   getSupportedTypes(): DestinationType[] {
-    return ['terminal', 'claude-code', 'cursor-ai'];
+    return ['terminal', 'text-editor', 'cursor-ai', 'github-copilot', 'claude-code'];
   }
 
   /**
@@ -339,9 +366,11 @@ export class DestinationFactory {
    */
   getDisplayNames(): Record<DestinationType, string> {
     return {
-      'terminal': 'Terminal',
+      terminal: 'Terminal',
+      'text-editor': 'Text Editor',
+      'cursor-ai': 'Cursor AI Assistant',
+      'github-copilot': 'GitHub Copilot Chat',
       'claude-code': 'Claude Code Chat',
-      'cursor-ai': 'Cursor AI Assistant'
     };
   }
 }
@@ -362,7 +391,7 @@ describe('TerminalDestination', () => {
     const mockTerminal = {
       sendText: jest.fn(),
       show: jest.fn(),
-      name: 'bash'
+      name: 'bash',
     };
     const dest = new TerminalDestination(mockLogger);
     dest.setTerminal(mockTerminal as any);
@@ -377,6 +406,7 @@ describe('TerminalDestination', () => {
 ```
 
 **Testing coverage:**
+
 - Interface contract (isAvailable, paste)
 - Padding behavior (spaces before/after)
 - Terminal focus after paste
@@ -384,40 +414,36 @@ describe('TerminalDestination', () => {
 
 ---
 
-### Phase 2: Chat Destinations (1-2 days)
+### Phase 2: Editor & Chat Destinations (2-3 days)
 
-**Goal:** Add Claude Code and Cursor AI paste targets.
+**Goal:** Add Text Editor, Cursor AI, GitHub Copilot, and Claude Code paste targets.
 
-#### Step 2.1: Implement ClaudeCodeDestination
+**Updated Priority (based on research findings):**
+1. **High:** Text Editor (user request, straightforward implementation)
+2. **High:** Cursor AI (standard VSCode chat API)
+3. **High:** GitHub Copilot (standard VSCode chat API, documented)
+4. **Medium:** Claude Code (experimental hybrid approach, requires testing)
 
-**New file:** `packages/rangelink-vscode-extension/src/destinations/ClaudeCodeDestination.ts`
+**Research Notes:** See `docs/RESEARCH-CLAUDE-CODE-INTEGRATION.md` and `docs/RESEARCH-CLAUDE-CODE-INTEGRATION-UPDATE.md` for Claude Code integration findings.
+
+#### Step 2.1: Implement TextEditorDestination
+
+**New file:** `packages/rangelink-vscode-extension/src/destinations/TextEditorDestination.ts`
 
 ```typescript
-const CLAUDE_CODE_EXTENSION_ID = 'Anthropic.claude-code';
-const CHAT_OPEN_COMMAND = 'workbench.action.chat.open';
-
-export class ClaudeCodeDestination implements PasteDestination {
-  readonly id: DestinationType = 'claude-code';
-  readonly displayName = 'Claude Code Chat';
+export class TextEditorDestination implements PasteDestination {
+  readonly id: DestinationType = 'text-editor';
+  readonly displayName = 'Text Editor';
 
   constructor(private readonly logger: Logger) {}
 
   async isAvailable(): Promise<boolean> {
-    // Check if Claude Code extension is installed and active
-    const extension = vscode.extensions.getExtension(CLAUDE_CODE_EXTENSION_ID);
+    const editor = vscode.window.activeTextEditor;
 
-    if (!extension) {
+    if (!editor) {
       this.logger.debug(
-        { fn: 'ClaudeCodeDestination.isAvailable' },
-        'Claude Code extension not installed'
-      );
-      return false;
-    }
-
-    if (!extension.isActive) {
-      this.logger.debug(
-        { fn: 'ClaudeCodeDestination.isAvailable' },
-        'Claude Code extension not active'
+        { fn: 'TextEditorDestination.isAvailable' },
+        'No active text editor',
       );
       return false;
     }
@@ -426,33 +452,34 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   async paste(text: string): Promise<boolean> {
-    if (!await this.isAvailable()) {
+    const editor = vscode.window.activeTextEditor;
+
+    if (!editor) {
       this.logger.warn(
-        { fn: 'ClaudeCodeDestination.paste' },
-        'Cannot paste: Claude Code not available'
+        { fn: 'TextEditorDestination.paste' },
+        'Cannot paste: No active text editor',
       );
       return false;
     }
 
     try {
-      // Pad text like terminal (consistent UX)
       const paddedText = ` ${text} `;
+      const position = editor.selection.active;
 
-      // Execute VSCode's built-in chat open command
-      await vscode.commands.executeCommand(CHAT_OPEN_COMMAND, {
-        query: paddedText
+      await editor.edit((editBuilder) => {
+        editBuilder.insert(position, paddedText);
       });
 
       this.logger.info(
-        { fn: 'ClaudeCodeDestination.paste', textLength: text.length },
-        'Successfully pasted to Claude Code chat'
+        { fn: 'TextEditorDestination.paste', textLength: text.length },
+        'Successfully pasted to text editor at cursor',
       );
 
       return true;
     } catch (error) {
       this.logger.error(
-        { fn: 'ClaudeCodeDestination.paste', error },
-        'Failed to paste to Claude Code chat'
+        { fn: 'TextEditorDestination.paste', error },
+        'Failed to paste to text editor',
       );
       return false;
     }
@@ -461,10 +488,11 @@ export class ClaudeCodeDestination implements PasteDestination {
 ```
 
 **Key implementation details:**
-- Extension detection before paste
-- Try/catch for command execution (graceful failure)
-- Consistent padding with terminal (` ${text} `)
-- Structured logging for debugging
+
+- Checks for active text editor
+- Inserts at cursor position (selection.active)
+- Consistent padding with terminal
+- User-requested feature for pasting into documents/comments
 
 #### Step 2.2: Implement CursorAIDestination
 
@@ -486,17 +514,17 @@ export class CursorAIDestination implements PasteDestination {
 
     this.logger.debug(
       { fn: 'CursorAIDestination.isAvailable', isCursor },
-      isCursor ? 'Running in Cursor' : 'Not running in Cursor'
+      isCursor ? 'Running in Cursor' : 'Not running in Cursor',
     );
 
     return isCursor;
   }
 
   async paste(text: string): Promise<boolean> {
-    if (!await this.isAvailable()) {
+    if (!(await this.isAvailable())) {
       this.logger.warn(
         { fn: 'CursorAIDestination.paste' },
-        'Cannot paste: Not running in Cursor IDE'
+        'Cannot paste: Not running in Cursor IDE',
       );
       return false;
     }
@@ -506,20 +534,14 @@ export class CursorAIDestination implements PasteDestination {
 
       // Cursor uses same VSCode command architecture
       await vscode.commands.executeCommand(CHAT_OPEN_COMMAND, {
-        query: paddedText
+        query: paddedText,
       });
 
-      this.logger.info(
-        { fn: 'CursorAIDestination.paste' },
-        'Successfully pasted to Cursor AI'
-      );
+      this.logger.info({ fn: 'CursorAIDestination.paste' }, 'Successfully pasted to Cursor AI');
 
       return true;
     } catch (error) {
-      this.logger.error(
-        { fn: 'CursorAIDestination.paste', error },
-        'Failed to paste to Cursor AI'
-      );
+      this.logger.error({ fn: 'CursorAIDestination.paste', error }, 'Failed to paste to Cursor AI');
 
       // TODO: Try cursor-specific command if standard one fails
       // await vscode.commands.executeCommand('cursor.chat.open', ...);
@@ -540,9 +562,7 @@ export class CursorAIDestination implements PasteDestination {
     }
 
     // Method 2: Check for Cursor-specific extensions
-    const cursorExtensions = vscode.extensions.all.filter(ext =>
-      ext.id.startsWith('cursor.')
-    );
+    const cursorExtensions = vscode.extensions.all.filter((ext) => ext.id.startsWith('cursor.'));
     if (cursorExtensions.length > 0) {
       return true;
     }
@@ -558,11 +578,182 @@ export class CursorAIDestination implements PasteDestination {
 ```
 
 **Cursor-specific considerations:**
+
 - No extension check (AI assistant is built-in)
 - Environment detection (multiple heuristics)
 - Fallback to cursor-specific commands (TODO for testing)
 
-#### Step 2.3: Tests for Chat Destinations
+#### Step 2.3: Implement GitHubCopilotDestination
+
+**New file:** `packages/rangelink-vscode-extension/src/destinations/GitHubCopilotDestination.ts`
+
+```typescript
+const COPILOT_EXTENSION_ID = 'GitHub.copilot-chat';
+const CHAT_OPEN_COMMAND = 'workbench.action.chat.open';
+
+export class GitHubCopilotDestination implements PasteDestination {
+  readonly id: DestinationType = 'github-copilot';
+  readonly displayName = 'GitHub Copilot Chat';
+
+  constructor(private readonly logger: Logger) {}
+
+  async isAvailable(): Promise<boolean> {
+    const extension = vscode.extensions.getExtension(COPILOT_EXTENSION_ID);
+
+    if (!extension) {
+      this.logger.debug(
+        { fn: 'GitHubCopilotDestination.isAvailable' },
+        'GitHub Copilot extension not installed',
+      );
+      return false;
+    }
+
+    if (!extension.isActive) {
+      this.logger.debug(
+        { fn: 'GitHubCopilotDestination.isAvailable' },
+        'GitHub Copilot extension not active',
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  async paste(text: string): Promise<boolean> {
+    if (!(await this.isAvailable())) {
+      this.logger.warn(
+        { fn: 'GitHubCopilotDestination.paste' },
+        'Cannot paste: GitHub Copilot not available',
+      );
+      return false;
+    }
+
+    try {
+      const paddedText = ` ${text} `;
+
+      // GitHub Copilot uses standard VSCode chat API
+      await vscode.commands.executeCommand(CHAT_OPEN_COMMAND, {
+        query: paddedText,
+      });
+
+      this.logger.info(
+        { fn: 'GitHubCopilotDestination.paste', textLength: text.length },
+        'Successfully pasted to GitHub Copilot Chat',
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        { fn: 'GitHubCopilotDestination.paste', error },
+        'Failed to paste to GitHub Copilot Chat',
+      );
+      return false;
+    }
+  }
+}
+```
+
+**Key implementation details:**
+
+- Extension detection (GitHub.copilot-chat)
+- Uses standard VSCode chat API (well-documented)
+- Consistent with other chat destinations
+- High priority (large user base, stable API)
+
+#### Step 2.4: Implement ClaudeCodeDestination (Experimental)
+
+**New file:** `packages/rangelink-vscode-extension/src/destinations/ClaudeCodeDestination.ts`
+
+```typescript
+const CLAUDE_CODE_EXTENSION_ID = 'anthropic.claude-code';
+const CLAUDE_CODE_FOCUS_COMMAND = 'claude-vscode.focus';
+
+export class ClaudeCodeDestination implements PasteDestination {
+  readonly id: DestinationType = 'claude-code';
+  readonly displayName = 'Claude Code Chat';
+
+  constructor(private readonly logger: Logger) {}
+
+  async isAvailable(): Promise<boolean> {
+    const extension = vscode.extensions.getExtension(CLAUDE_CODE_EXTENSION_ID);
+
+    if (!extension || !extension.isActive) {
+      this.logger.debug(
+        { fn: 'ClaudeCodeDestination.isAvailable' },
+        'Claude Code extension not available',
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  async paste(text: string): Promise<boolean> {
+    if (!(await this.isAvailable())) {
+      this.logger.warn(
+        { fn: 'ClaudeCodeDestination.paste' },
+        'Cannot paste: Claude Code not available',
+      );
+      return false;
+    }
+
+    try {
+      // Hybrid approach: focus + paste command
+      // See docs/RESEARCH-CLAUDE-CODE-INTEGRATION-UPDATE.md
+
+      // 1. Focus Claude Code input
+      await vscode.commands.executeCommand(CLAUDE_CODE_FOCUS_COMMAND);
+
+      // 2. Try programmatic paste
+      try {
+        await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
+        this.logger.info(
+          { fn: 'ClaudeCodeDestination.paste' },
+          'Successfully pasted to Claude Code (automatic)',
+        );
+        return true;
+      } catch (pasteError) {
+        // 3. Fallback: Show notification for manual paste
+        this.logger.warn(
+          { fn: 'ClaudeCodeDestination.paste', error: pasteError },
+          'Automatic paste failed, prompting user for manual paste',
+        );
+
+        vscode.window.showInformationMessage(
+          'RangeLink focused in Claude Code - press Cmd+V (Mac) or Ctrl+V (Win/Linux) to paste',
+          { modal: false },
+        );
+
+        return true; // Still count as success (focused)
+      }
+    } catch (error) {
+      this.logger.error(
+        { fn: 'ClaudeCodeDestination.paste', error },
+        'Failed to paste to Claude Code',
+      );
+      return false;
+    }
+  }
+}
+```
+
+**Key implementation details (experimental approach):**
+
+- **Hybrid strategy:** Focus + paste command with manual fallback
+- Uses `claude-vscode.focus` command (discovered via reverse engineering)
+- Attempts `editor.action.clipboardPasteAction` (may not work in webview)
+- Graceful degradation: shows notification if automatic paste fails
+- **Requires testing** in Cursor environment
+- See research docs for architectural details
+
+**Why experimental:**
+
+- Claude Code uses custom sidebar (not VSCode native chat)
+- No public API for external extensions
+- Workaround relies on internal commands that may change
+- User may need to manually paste (Cmd+V)
+
+#### Step 2.5: Tests for All Destinations
 
 **New file:** `packages/rangelink-vscode-extension/src/__tests__/destinations/ClaudeCodeDestination.test.ts`
 
@@ -570,7 +761,7 @@ export class CursorAIDestination implements PasteDestination {
 describe('ClaudeCodeDestination', () => {
   it('should detect Claude Code extension', async () => {
     vscode.extensions.getExtension = jest.fn().mockReturnValue({
-      isActive: true
+      isActive: true,
     });
 
     const dest = new ClaudeCodeDestination(mockLogger);
@@ -585,10 +776,9 @@ describe('ClaudeCodeDestination', () => {
     const result = await dest.paste('src/file.ts#L10');
 
     expect(result).toBe(true);
-    expect(vscode.commands.executeCommand).toHaveBeenCalledWith(
-      'workbench.action.chat.open',
-      { query: ' src/file.ts#L10 ' }
-    );
+    expect(vscode.commands.executeCommand).toHaveBeenCalledWith('workbench.action.chat.open', {
+      query: ' src/file.ts#L10 ',
+    });
   });
 
   it('should return false if extension not installed', async () => {
@@ -619,14 +809,14 @@ export class PasteDestinationManager implements vscode.Disposable {
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly factory: DestinationFactory,
-    private readonly logger: Logger
+    private readonly logger: Logger,
   ) {
     // Listen for terminal closure (backward compatibility)
     const terminalCloseListener = vscode.window.onDidCloseTerminal((closedTerminal) => {
       if (this.boundTerminal === closedTerminal) {
         this.logger.info(
           { fn: 'PasteDestinationManager.onDidCloseTerminal' },
-          'Bound terminal closed - auto-unbinding'
+          'Bound terminal closed - auto-unbinding',
         );
         this.unbind();
         vscode.window.setStatusBarMessage('Destination binding removed (terminal closed)', 3000);
@@ -647,10 +837,10 @@ export class PasteDestinationManager implements vscode.Disposable {
       const currentType = this.boundDestination.id;
       this.logger.warn(
         { fn: 'bind', currentType, requestedType: type },
-        'Already bound to a destination'
+        'Already bound to a destination',
       );
       vscode.window.showErrorMessage(
-        `RangeLink: Already bound to ${this.boundDestination.displayName}. Unbind first.`
+        `RangeLink: Already bound to ${this.boundDestination.displayName}. Unbind first.`,
       );
       return false;
     }
@@ -663,29 +853,23 @@ export class PasteDestinationManager implements vscode.Disposable {
     // Generic destination binding
     const destination = this.factory.create(type);
 
-    if (!await destination.isAvailable()) {
+    if (!(await destination.isAvailable())) {
       this.logger.warn(
         { fn: 'bind', type },
-        `Cannot bind: ${destination.displayName} not available`
+        `Cannot bind: ${destination.displayName} not available`,
       );
       vscode.window.showErrorMessage(
         `RangeLink: ${destination.displayName} is not available. ` +
-        `Make sure the extension is installed and active.`
+          `Make sure the extension is installed and active.`,
       );
       return false;
     }
 
     this.boundDestination = destination;
 
-    this.logger.info(
-      { fn: 'bind', type },
-      `Successfully bound to ${destination.displayName}`
-    );
+    this.logger.info({ fn: 'bind', type }, `Successfully bound to ${destination.displayName}`);
 
-    vscode.window.setStatusBarMessage(
-      `✓ RangeLink bound to ${destination.displayName}`,
-      3000
-    );
+    vscode.window.setStatusBarMessage(`✓ RangeLink bound to ${destination.displayName}`, 3000);
 
     return true;
   }
@@ -700,7 +884,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     if (!activeTerminal) {
       this.logger.warn({ fn: 'bindTerminal' }, 'No active terminal');
       vscode.window.showErrorMessage(
-        'RangeLink: No active terminal. Open a terminal and try again.'
+        'RangeLink: No active terminal. Open a terminal and try again.',
       );
       return false;
     }
@@ -713,12 +897,12 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.logger.info(
       { fn: 'bindTerminal', terminalName: activeTerminal.name },
-      `Successfully bound to terminal: ${activeTerminal.name}`
+      `Successfully bound to terminal: ${activeTerminal.name}`,
     );
 
     vscode.window.setStatusBarMessage(
       `✓ RangeLink bound to terminal: ${activeTerminal.name}`,
-      3000
+      3000,
     );
 
     return true;
@@ -738,10 +922,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.boundDestination = undefined;
     this.boundTerminal = undefined;
 
-    this.logger.info(
-      { fn: 'unbind', displayName },
-      `Successfully unbound from ${displayName}`
-    );
+    this.logger.info({ fn: 'unbind', displayName }, `Successfully unbound from ${displayName}`);
 
     vscode.window.setStatusBarMessage(`✓ RangeLink unbound from ${displayName}`, 2000);
   }
@@ -766,10 +947,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   async sendToDestination(text: string): Promise<boolean> {
     if (!this.boundDestination) {
-      this.logger.warn(
-        { fn: 'sendToDestination' },
-        'Cannot send: No destination bound'
-      );
+      this.logger.warn({ fn: 'sendToDestination' }, 'Cannot send: No destination bound');
       return false;
     }
 
@@ -778,7 +956,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     if (!result) {
       this.logger.error(
         { fn: 'sendToDestination', destinationType: this.boundDestination.id },
-        'Paste failed'
+        'Paste failed',
       );
       // Don't show error toast (paste() already logged, user sees no action)
     }
@@ -797,12 +975,13 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   dispose(): void {
-    this.disposables.forEach(d => d.dispose());
+    this.disposables.forEach((d) => d.dispose());
   }
 }
 ```
 
 **Key features:**
+
 - Generic binding for all destination types
 - Special terminal handling (needs terminal reference)
 - Terminal closure detection (backward compatibility)
@@ -934,14 +1113,14 @@ context.subscriptions.push(
 ```typescript
 context.subscriptions.push(
   vscode.commands.registerCommand('rangelink.bindToDestination', async () => {
-    const items = factory.getSupportedTypes().map(type => ({
+    const items = factory.getSupportedTypes().map((type) => ({
       label: factory.getDisplayNames()[type],
       description: type,
-      type: type
+      type: type,
     }));
 
     const selected = await vscode.window.showQuickPick(items, {
-      placeHolder: 'Select destination for RangeLink auto-paste'
+      placeHolder: 'Select destination for RangeLink auto-paste',
     });
 
     if (selected) {
@@ -1015,6 +1194,7 @@ context.subscriptions.push(
 ```
 
 **Backward compatibility:**
+
 - Keep `boundTerminal` setting (mark deprecated)
 - Migration reads it once and updates `destinationType`
 
@@ -1027,7 +1207,7 @@ const MIGRATION_KEY = 'rangelink.settingsMigrated.v2';
 
 export const migrateSettingsIfNeeded = async (
   context: vscode.ExtensionContext,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> => {
   const migrated = context.globalState.get<boolean>(MIGRATION_KEY, false);
 
@@ -1042,7 +1222,7 @@ export const migrateSettingsIfNeeded = async (
   if (boundTerminal) {
     logger.info(
       { fn: 'migrateSettingsIfNeeded', boundTerminal },
-      'Migrating legacy terminal binding setting'
+      'Migrating legacy terminal binding setting',
     );
 
     // Migrate: boundTerminal set → destinationType = 'terminal'
@@ -1053,7 +1233,7 @@ export const migrateSettingsIfNeeded = async (
 
     vscode.window.showInformationMessage(
       'RangeLink: Your terminal binding has been migrated to the new system. ' +
-      'Use "RangeLink: Bind terminal" to re-bind.'
+        'Use "RangeLink: Bind terminal" to re-bind.',
     );
   } else {
     logger.debug({ fn: 'migrateSettingsIfNeeded' }, 'No legacy settings to migrate');
@@ -1117,23 +1297,23 @@ RangeLink can automatically paste generated links to your preferred destination:
 
 **Comparison: CMD+L vs RangeLink**
 
-| Feature | CMD+L (Cursor/VSCode) | RangeLink |
-|---------|----------------------|-----------|
-| Line precision | ❌ Captures visible range | ✅ Exact line/column ranges |
-| Multi-range | ❌ Continuous blocks only | ✅ Multiple disjoint ranges |
-| Cross-editor | ❌ Editor-specific | ✅ Works everywhere (terminal, ChatGPT, etc.) |
-| Click to verify | ❌ No link back to code | ✅ Clickable links in prompts |
-| Rectangular selection | ❌ Not supported | ✅ Column-based selections |
+| Feature               | CMD+L (Cursor/VSCode)     | RangeLink                                     |
+| --------------------- | ------------------------- | --------------------------------------------- |
+| Line precision        | ❌ Captures visible range | ✅ Exact line/column ranges                   |
+| Multi-range           | ❌ Continuous blocks only | ✅ Multiple disjoint ranges                   |
+| Cross-editor          | ❌ Editor-specific        | ✅ Works everywhere (terminal, ChatGPT, etc.) |
+| Click to verify       | ❌ No link back to code   | ✅ Clickable links in prompts                 |
+| Rectangular selection | ❌ Not supported          | ✅ Column-based selections                    |
 
 ### Commands
 
-| Command | Description | Keyboard Shortcut |
-|---------|-------------|-------------------|
-| `RangeLink: Choose paste destination...` | Select where to auto-paste links | - |
-| `RangeLink: Bind terminal for auto-paste` | Bind active terminal | - |
-| `RangeLink: Bind Claude Code chat` | Bind Claude Code input | - |
-| `RangeLink: Bind Cursor AI` | Bind Cursor assistant | - |
-| `RangeLink: Unbind paste destination` | Disable auto-paste | - |
+| Command                                   | Description                      | Keyboard Shortcut |
+| ----------------------------------------- | -------------------------------- | ----------------- |
+| `RangeLink: Choose paste destination...`  | Select where to auto-paste links | -                 |
+| `RangeLink: Bind terminal for auto-paste` | Bind active terminal             | -                 |
+| `RangeLink: Bind Claude Code chat`        | Bind Claude Code input           | -                 |
+| `RangeLink: Bind Cursor AI`               | Bind Cursor assistant            | -                 |
+| `RangeLink: Unbind paste destination`     | Disable auto-paste               | -                 |
 ```
 
 #### Step 5.2: Update DEVELOPMENT.md
@@ -1163,8 +1343,11 @@ Add troubleshooting section:
 
 **Workaround:** Use markdown syntax manually:
 ```
+
 [src/file.ts#L10](src/file.ts#L10)
+
 ```
+
 ```
 
 #### Step 5.3: Update ROADMAP.md
@@ -1369,6 +1552,7 @@ Extension activation: < 150ms
 ```
 
 **Migration notification:**
+
 > "RangeLink: Your terminal binding has been migrated to the new system. Use 'RangeLink: Bind terminal' to re-bind."
 
 **Scenario 2: User has no binding**
@@ -1388,6 +1572,7 @@ If critical issues arise post-release:
    - Phase 1 (abstraction) - delete interfaces
 
 **Git strategy:**
+
 - Merge phases as separate commits (atomic)
 - Tag before each merge: `v1.x.0-phase1`, `v1.x.0-phase2`, etc.
 
@@ -1469,23 +1654,26 @@ If critical issues arise post-release:
 
 ### Positioning Against Competitors
 
-| Feature | CMD+L (Cursor) | VSCode Selection | RangeLink |
-|---------|----------------|------------------|-----------|
-| **Precision** | Captures visible range (ambiguous) | No link format | Exact L10C5-L20C15 |
-| **Universality** | Editor-specific | No sharing format | Works everywhere |
-| **Validation** | No click-back | N/A | Click to navigate |
-| **AI integration** | Inline only | Manual copy/paste | Auto-paste to chat |
-| **Multi-range** | Continuous blocks | Manual selection | Multiple disjoint ranges |
+| Feature            | CMD+L (Cursor)                     | VSCode Selection  | RangeLink                |
+| ------------------ | ---------------------------------- | ----------------- | ------------------------ |
+| **Precision**      | Captures visible range (ambiguous) | No link format    | Exact L10C5-L20C15       |
+| **Universality**   | Editor-specific                    | No sharing format | Works everywhere         |
+| **Validation**     | No click-back                      | N/A               | Click to navigate        |
+| **AI integration** | Inline only                        | Manual copy/paste | Auto-paste to chat       |
+| **Multi-range**    | Continuous blocks                  | Manual selection  | Multiple disjoint ranges |
 
 ### Key Messages
 
 **Message 1: Precision**
+
 > "Stop sending ambiguous code references. RangeLink's line and column notation ensures AI knows exactly what you're referring to."
 
 **Message 2: Universality**
+
 > "One notation, every tool. RangeLink works in Cursor, Claude Code, terminals, ChatGPT, GitHub comments, and Slack."
 
 **Message 3: Productivity**
+
 > "Click RangeLinks in your prompts to jump back to code. Verify AI suggestions before applying changes."
 
 ### Content Ideas (Phase 2)
@@ -1552,10 +1740,12 @@ If critical issues arise post-release:
 ### API References
 
 **VSCode Commands:**
+
 - `workbench.action.chat.open` - [Documentation](https://code.visualstudio.com/api/references/commands)
 - `vscode.extensions.getExtension()` - [API Reference](https://code.visualstudio.com/api/references/vscode-api#extensions)
 
 **Extension IDs:**
+
 - Claude Code: `Anthropic.claude-code`
 - Cursor: Detection via `vscode.env.appName`
 
@@ -1567,26 +1757,26 @@ If critical issues arise post-release:
 
 ### Timeline Estimate
 
-| Phase | Estimated Time | Cumulative |
-|-------|---------------|------------|
-| Phase 0: Preparation | 0.5 days | 0.5 days |
-| Phase 1: Core Abstraction | 1-2 days | 2.5 days |
-| Phase 2: Chat Destinations | 1-2 days | 4.5 days |
-| Phase 3: Destination Manager | 1-2 days | 6.5 days |
-| Phase 4: Settings & Config | 0.5-1 day | 7.5 days |
-| Phase 5: Documentation | 1 day | 8.5 days |
+| Phase                        | Estimated Time | Cumulative |
+| ---------------------------- | -------------- | ---------- |
+| Phase 0: Preparation         | 0.5 days       | 0.5 days   |
+| Phase 1: Core Abstraction    | 1-2 days       | 2.5 days   |
+| Phase 2: Chat Destinations   | 1-2 days       | 4.5 days   |
+| Phase 3: Destination Manager | 1-2 days       | 6.5 days   |
+| Phase 4: Settings & Config   | 0.5-1 day      | 7.5 days   |
+| Phase 5: Documentation       | 1 day          | 8.5 days   |
 
 **Total: ~8-9 days** (1.5-2 weeks)
 
 ### Risk Mitigation Summary
 
-| Risk | Mitigation |
-|------|------------|
-| VSCode API unavailable | Document minimum version requirement |
-| Cursor incompatibility | Fallback to standard commands, log errors |
-| Breaking changes | Atomic commits, git tags, rollback plan |
-| User confusion | Clear error messages, migration notification |
-| Performance regression | Benchmark activation time, monitor metrics |
+| Risk                   | Mitigation                                   |
+| ---------------------- | -------------------------------------------- |
+| VSCode API unavailable | Document minimum version requirement         |
+| Cursor incompatibility | Fallback to standard commands, log errors    |
+| Breaking changes       | Atomic commits, git tags, rollback plan      |
+| User confusion         | Clear error messages, migration notification |
+| Performance regression | Benchmark activation time, monitor metrics   |
 
 ---
 

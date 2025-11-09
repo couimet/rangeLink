@@ -32,15 +32,21 @@ export class DestinationFactory {
       case 'terminal':
         return new TerminalDestination(this.logger);
 
-      // Future: Phase 2 implementations
-      // case 'claude-code':
-      //   return new ClaudeCodeDestination(this.logger);
+      // Future implementations:
+      // case 'text-editor':
+      //   return new TextEditorDestination(this.logger);
       //
       // case 'cursor-ai':
       //   return new CursorAIDestination(this.logger);
+      //
+      // case 'github-copilot':
+      //   return new GitHubCopilotDestination(this.logger);
+      //
+      // case 'claude-code':
+      //   return new ClaudeCodeDestination(this.logger);
 
       default:
-        // Phase 2: Will implement claude-code and cursor-ai destinations
+        // Phase 2+: Will implement text-editor, cursor-ai, github-copilot, and claude-code
         throw new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_IMPLEMENTED,
           message: `Destination type not yet implemented: ${type}`,
@@ -60,9 +66,11 @@ export class DestinationFactory {
   getSupportedTypes(): DestinationType[] {
     return [
       'terminal',
-      // Future: Phase 2 additions
-      // 'claude-code',
+      // Future: Phase 2+ additions
+      // 'text-editor',
       // 'cursor-ai',
+      // 'github-copilot',
+      // 'claude-code',
     ];
   }
 
@@ -80,8 +88,10 @@ export class DestinationFactory {
   getDisplayNames(): Record<DestinationType, string> {
     return {
       terminal: 'Terminal',
-      'claude-code': 'Claude Code Chat',
+      'text-editor': 'Text Editor',
       'cursor-ai': 'Cursor AI Assistant',
+      'github-copilot': 'GitHub Copilot Chat',
+      'claude-code': 'Claude Code Chat',
     };
   }
 }

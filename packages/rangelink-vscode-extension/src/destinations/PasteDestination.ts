@@ -2,10 +2,12 @@
  * Supported paste destination types
  *
  * - `terminal`: Active terminal (existing feature)
- * - `claude-code`: Claude Code chat input
- * - `cursor-ai`: Cursor AI assistant input
+ * - `text-editor`: Active text editor at cursor position (future)
+ * - `cursor-ai`: Cursor AI assistant input (future)
+ * - `github-copilot`: GitHub Copilot Chat (future)
+ * - `claude-code`: Claude Code chat (experimental - hybrid approach, see docs/RESEARCH-CLAUDE-CODE-INTEGRATION-UPDATE.md)
  */
-export type DestinationType = 'terminal' | 'claude-code' | 'cursor-ai';
+export type DestinationType = 'terminal' | 'text-editor' | 'cursor-ai' | 'github-copilot' | 'claude-code';
 
 /**
  * Interface for RangeLink paste destinations
@@ -27,7 +29,7 @@ export interface PasteDestination {
   /**
    * User-friendly display name shown in status messages and UI
    *
-   * Examples: "Terminal", "Claude Code Chat", "Cursor AI Assistant"
+   * Examples: "Terminal", "Text Editor", "Cursor AI Assistant", "GitHub Copilot Chat", "Claude Code Chat"
    */
   readonly displayName: string;
 
@@ -36,8 +38,10 @@ export interface PasteDestination {
    *
    * Availability criteria vary by destination:
    * - Terminal: Must have bound terminal reference
-   * - Claude Code: Extension must be installed and active
+   * - Text Editor: Must have active text editor with cursor position
    * - Cursor AI: Must be running in Cursor IDE
+   * - GitHub Copilot: Extension must be installed and active
+   * - Claude Code: Extension must be installed and active
    *
    * @returns Promise resolving to true if paste() can succeed, false otherwise
    */
