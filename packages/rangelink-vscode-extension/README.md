@@ -190,6 +190,10 @@ When filing a bug report, please include:
 - 📚 [Monorepo Documentation](https://github.com/couimet/rangelink#readme)
 - 🤝 [Contributing Guide](https://github.com/couimet/rangelink/blob/main/CONTRIBUTING.md)
 
+## Featured In
+
+- [I Built a VS Code Extension to Stop the Copy-Paste Madness](https://dev.to/couimet/i-built-a-vs-code-extension-to-stop-the-copy-paste-madness-3d7l) - DEV Community
+
 ## About
 
 RangeLink is a monorepo project with:
