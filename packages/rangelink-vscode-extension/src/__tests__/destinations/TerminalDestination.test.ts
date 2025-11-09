@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
 import { TerminalDestination } from '../../destinations/TerminalDestination';
@@ -10,12 +11,7 @@ describe('TerminalDestination', () => {
 
   beforeEach(() => {
     // Create mock logger
-    mockLogger = {
-      debug: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-    } as unknown as Logger;
+    mockLogger = createMockLogger();
 
     // Create mock terminal
     mockTerminal = {
@@ -142,7 +138,7 @@ describe('TerminalDestination', () => {
           fn: 'TerminalDestination.paste',
           text: '',
         }),
-        'Text not eligible for paste (null/undefined/empty/whitespace-only)',
+        'Text not eligible for paste',
       );
     });
 
@@ -172,7 +168,7 @@ describe('TerminalDestination', () => {
           fn: 'TerminalDestination.paste',
           text: '   ',
         }),
-        'Text not eligible for paste (null/undefined/empty/whitespace-only)',
+        'Text not eligible for paste',
       );
     });
 
