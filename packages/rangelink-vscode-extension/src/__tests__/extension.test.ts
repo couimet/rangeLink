@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { pingLog, setLogger } from 'barebone-logger';
 
 import * as extension from '../extension';
+import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { VSCodeLogger } from '../VSCodeLogger';
 
@@ -31,6 +32,15 @@ function createMockTerminalBindingManager() {
     bind: () => false,
     unbind: () => {},
     dispose: () => {},
+  };
+}
+
+// Helper to create mock IDE adapter
+function createMockIdeAdapter() {
+  return {
+    writeTextToClipboard: jest.fn().mockResolvedValue(undefined),
+    setStatusBarMessage: jest.fn().mockReturnValue({ dispose: jest.fn() }),
+    showWarningMessage: jest.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -155,7 +165,8 @@ describe('RangeLinkService', () => {
     );
     (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
 
-    // Create service with default delimiters and mock terminal manager
+    // Create service with default delimiters, real VscodeAdapter, and mock terminal manager
+    const ideAdapter = new VscodeAdapter();
     service = new RangeLinkService(
       {
         line: 'L',
@@ -163,6 +174,7 @@ describe('RangeLinkService', () => {
         hash: '#',
         range: '-',
       },
+      ideAdapter,
       createMockTerminalBindingManager() as any,
     );
   });
@@ -664,6 +676,7 @@ describe('RangeLinkService', () => {
           hash: '@',
           range: '..',
         },
+        new VscodeAdapter(),
         createMockTerminalBindingManager() as any,
       );
 
@@ -718,6 +731,7 @@ describe('RangeLinkService', () => {
           hash: '##',
           range: 'TO',
         },
+        new VscodeAdapter(),
         createMockTerminalBindingManager() as any,
       );
 
@@ -3008,6 +3022,7 @@ describe('Portable links (Phase 1C)', () => {
         hash: '#',
         range: 'TO',
       },
+      new VscodeAdapter(),
       createMockTerminalBindingManager() as any,
     );
 

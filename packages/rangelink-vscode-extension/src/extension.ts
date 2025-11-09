@@ -3,6 +3,7 @@ import { type DelimiterConfig } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { loadDelimiterConfig as loadDelimiterConfigFromModule } from './config';
+import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
@@ -56,8 +57,9 @@ export function activate(context: vscode.ExtensionContext): void {
   setLogger(vscodeLogger);
 
   const delimiters = getDelimitersForExtension();
+  const ideAdapter = new VscodeAdapter();
   const terminalBindingManager = new TerminalBindingManager(context);
-  const service = new RangeLinkService(delimiters, terminalBindingManager);
+  const service = new RangeLinkService(delimiters, ideAdapter, terminalBindingManager);
 
   // Register terminalBindingManager for automatic disposal on deactivation
   context.subscriptions.push(terminalBindingManager);

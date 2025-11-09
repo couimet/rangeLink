@@ -8,6 +8,7 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { IdeAdapter } from './ide/IdeAdapter';
 import { TerminalBindingManager } from './TerminalBindingManager';
 import { toInputSelection } from './utils/toInputSelection';
 
@@ -23,6 +24,7 @@ export enum PathFormat {
 export class RangeLinkService {
   constructor(
     private readonly delimiters: DelimiterConfig,
+    private readonly ideAdapter: IdeAdapter,
     private readonly terminalBindingManager: TerminalBindingManager,
   ) {}
 
@@ -115,7 +117,7 @@ export class RangeLinkService {
    * @param linkTypeName User-friendly name for status messages (e.g., "RangeLink", "Portable RangeLink")
    */
   private async copyAndNotify(link: string, linkTypeName: string): Promise<void> {
-    await vscode.env.clipboard.writeText(link);
+    await this.ideAdapter.writeTextToClipboard(link);
 
     let statusMessage = `✓ ${linkTypeName} copied to clipboard`;
     // Send to bound terminal if one is bound
@@ -124,17 +126,17 @@ export class RangeLinkService {
       if (sent) {
         const terminal = this.terminalBindingManager.getBoundTerminal();
         const terminalName = terminal?.name || 'terminal';
-        vscode.window.setStatusBarMessage(`${statusMessage} & sent to ${terminalName}`, 2000);
+        this.ideAdapter.setStatusBarMessage(`${statusMessage} & sent to ${terminalName}`, 2000);
       } else {
         // Unexpected: binding exists but send failed
         getLogger().error(
           { fn: 'copyAndNotify', linkTypeName },
           'Failed to send link to bound terminal (terminal may have closed)',
         );
-        vscode.window.showWarningMessage(`${statusMessage}; BUT failed to send to bound terminal.`);
+        this.ideAdapter.showWarningMessage(`${statusMessage}; BUT failed to send to bound terminal.`);
       }
     } else {
-      vscode.window.setStatusBarMessage(statusMessage, 2000);
+      this.ideAdapter.setStatusBarMessage(statusMessage, 2000);
     }
   }
 
