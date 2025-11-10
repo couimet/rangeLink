@@ -33,4 +33,11 @@ export interface IdeAdapter {
    * @returns Promise that resolves to the selected button (if any)
    */
   showWarningMessage(message: string): Promise<string | undefined>;
+
+  /**
+   * Show an error message notification to the user
+   * @param message - The error message to display
+   * @returns Promise that resolves to the selected button (if any)
+   */
+  showErrorMessage(message: string): Promise<string | undefined>;
 }

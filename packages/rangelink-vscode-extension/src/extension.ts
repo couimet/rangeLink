@@ -1,8 +1,7 @@
 import { getLogger, setLogger } from 'barebone-logger';
-import { type DelimiterConfig } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import { loadDelimiterConfig as loadDelimiterConfigFromModule } from './config';
+import { getDelimitersForExtension } from './config';
 import { DestinationFactory } from './destinations/DestinationFactory';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
@@ -10,36 +9,8 @@ import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvide
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
+import { registerWithLogging } from './utils/registerWithLogging';
 import { VSCodeLogger } from './VSCodeLogger';
-
-// ============================================================================
-// Configuration & Validation
-// ============================================================================
-
-/**
- * Thin wrapper that adapts VSCode config to loadDelimiterConfig
- * Handles VSCode-specific concerns: output channel visibility on errors
- */
-const getDelimitersForExtension = (): DelimiterConfig => {
-  const vscodeConfig = vscode.workspace.getConfiguration('rangelink');
-  const logger = getLogger();
-
-  // Adapt VSCode WorkspaceConfiguration to ConfigGetter interface
-  // VSCode's inspect() returns extra language-specific fields we don't need
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const config = vscodeConfig as any;
-
-  const result = loadDelimiterConfigFromModule(config, logger);
-
-  // Extension-specific: Show error notification if there were errors
-  if (result.errors.length > 0) {
-    vscode.window.showErrorMessage(
-      `RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.`,
-    );
-  }
-
-  return result.delimiters;
-};
 
 // ============================================================================
 // Extension Lifecycle
@@ -57,8 +28,11 @@ export function activate(context: vscode.ExtensionContext): void {
   const vscodeLogger = new VSCodeLogger(outputChannel);
   setLogger(vscodeLogger);
 
-  const delimiters = getDelimitersForExtension();
+  // Load delimiter configuration
+  const vscodeConfig = vscode.workspace.getConfiguration('rangelink');
   const ideAdapter = new VscodeAdapter();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const delimiters = getDelimitersForExtension(vscodeConfig as any, ideAdapter, getLogger());
 
   // Create unified destination manager (Phase 3)
   const factory = new DestinationFactory(getLogger());
@@ -75,22 +49,28 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register terminal link provider for clickable links
   const terminalLinkProvider = new RangeLinkTerminalProvider(navigationHandler, getLogger());
-  context.subscriptions.push(vscode.window.registerTerminalLinkProvider(terminalLinkProvider));
-  getLogger().debug({ fn: 'activate' }, 'Terminal link provider registered');
+  context.subscriptions.push(
+    registerWithLogging(
+      vscode.window.registerTerminalLinkProvider(terminalLinkProvider),
+      'Terminal link provider registered',
+    ),
+  );
 
   // Register document link provider for clickable links in editor files
   // Only register for specific schemes to prevent infinite recursion when scanning output channels
   const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, getLogger());
   context.subscriptions.push(
-    vscode.languages.registerDocumentLinkProvider(
-      [
-        { scheme: 'file' }, // Regular files (markdown, code, etc.)
-        { scheme: 'untitled' }, // Unsaved/new files (scratchpad workflow)
-      ],
-      documentLinkProvider,
+    registerWithLogging(
+      vscode.languages.registerDocumentLinkProvider(
+        [
+          { scheme: 'file' }, // Regular files (markdown, code, etc.)
+          { scheme: 'untitled' }, // Unsaved/new files (scratchpad workflow)
+        ],
+        documentLinkProvider,
+      ),
+      'Document link provider registered',
     ),
   );
-  getLogger().debug({ fn: 'activate' }, 'Document link provider registered');
 
   // Register commands
   context.subscriptions.push(
