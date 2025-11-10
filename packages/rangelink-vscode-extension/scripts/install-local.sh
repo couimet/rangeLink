@@ -69,10 +69,42 @@ install_in_editor() {
     return 1
   fi
 
+  # Get absolute path to VSIX file
+  local vsix_absolute
+  vsix_absolute="$(cd "$(dirname "$VSIX_FILE")" && pwd)/$(basename "$VSIX_FILE")"
+
+  # Get absolute path to editor binary
+  local editor_absolute
+  editor_absolute="$(command -v "$editor_cmd")"
+
   echo -e "${BLUE}Installing in ${editor_name}...${NC}"
-  "$editor_cmd" --install-extension "$VSIX_FILE"
-  echo -e "${GREEN}✓ Installed in ${editor_name}${NC}"
-  return 0
+  echo -e "${BLUE}Command:${NC} ${editor_absolute} --install-extension \"${vsix_absolute}\""
+  echo ""
+
+  # Run command and capture output
+  local install_output
+  local exit_code
+
+  install_output=$("$editor_cmd" --install-extension "$vsix_absolute" 2>&1)
+  exit_code=$?
+
+  echo "$install_output"
+  echo ""
+
+  if [ $exit_code -eq 0 ]; then
+    echo -e "${GREEN}✓ Installation command succeeded (exit code: ${exit_code})${NC}"
+
+    # Verify extension is listed
+    if "$editor_cmd" --list-extensions 2>/dev/null | grep -q "couimet.rangelink"; then
+      echo -e "${GREEN}✓ Extension 'couimet.rangelink' confirmed in installed extensions${NC}"
+    else
+      echo -e "${YELLOW}⚠ Warning: Extension ID not found in --list-extensions output${NC}"
+    fi
+    return 0
+  else
+    echo -e "${RED}✗ Installation failed (exit code: ${exit_code})${NC}"
+    return 1
+  fi
 }
 
 # Install based on editor selection
