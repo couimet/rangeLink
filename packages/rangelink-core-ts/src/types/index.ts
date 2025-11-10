@@ -1,4 +1,4 @@
-export { Result, Ok, Err } from './Result';
+export { Result } from './Result';
 export { Selection } from './Selection';
 export { InputSelection } from './InputSelection';
 export { DelimiterConfig } from './DelimiterConfig';
