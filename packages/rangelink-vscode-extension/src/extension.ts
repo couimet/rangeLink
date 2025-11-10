@@ -153,6 +153,17 @@ export function activate(context: vscode.ExtensionContext): void {
         }),
       );
     }
+
+    const claudeCodeDestination = factory.create('claude-code');
+    const isClaudeCodeAvailable = await claudeCodeDestination.isAvailable();
+
+    if (isClaudeCodeAvailable) {
+      context.subscriptions.push(
+        vscode.commands.registerCommand('rangelink.bindToClaudeCode', async () => {
+          await destinationManager.bind('claude-code');
+        }),
+      );
+    }
   })();
 
   context.subscriptions.push(
