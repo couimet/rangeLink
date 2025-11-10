@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  # Trigger on pull requests to any branch
+  pull_request:
+
+  # Trigger on pushes to main branch
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Test & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Fetch more history for TODO comparison in PRs
+          fetch-depth: 0
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+
+      - name: Check formatting and linting
+        uses: ./.github/actions/check-formatting
+
+      - name: Run tests with coverage
+        uses: ./.github/actions/run-tests
+
+      - name: Check TODOs/FIXMEs
+        uses: ./.github/actions/check-todos
+        with:
+          # For PRs: compare with base branch
+          # For pushes to main: just count current TODOs
+          base-ref: ${{ github.event_name == 'pull_request' && github.base_ref || '' }}

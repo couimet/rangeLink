@@ -1,0 +1,40 @@
+name: 'Check Formatting and Linting'
+description: 'Run format check, linting, and type checking'
+
+inputs:
+  skip-format:
+    description: 'Skip format checking'
+    required: false
+    default: 'false'
+  skip-lint:
+    description: 'Skip linting'
+    required: false
+    default: 'false'
+  skip-types:
+    description: 'Skip type checking'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check formatting with Prettier
+      if: inputs.skip-format != 'true'
+      shell: bash
+      run: |
+        echo "Running format check..."
+        pnpm format
+
+    - name: Run ESLint
+      if: inputs.skip-lint != 'true'
+      shell: bash
+      run: |
+        echo "Running linter..."
+        pnpm lint
+
+    - name: Type check with TypeScript
+      if: inputs.skip-types != 'true'
+      shell: bash
+      run: |
+        echo "Running type check..."
+        pnpm compile
