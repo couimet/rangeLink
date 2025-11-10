@@ -1,4 +1,5 @@
 import { computeRangeSpec } from '../../selection/computeRangeSpec';
+import * as validateInputSelectionModule from '../../selection/validateInputSelection';
 import { InputSelection } from '../../types/InputSelection';
 import { RangeFormat } from '../../types/RangeFormat';
 import { RangeNotation } from '../../types/RangeNotation';
@@ -392,6 +393,27 @@ describe('computeRangeSpec', () => {
         message: 'Selections array must not be empty',
         functionName: 'validateInputSelection',
       });
+    });
+
+    it('should re-throw unexpected errors from validateInputSelection', () => {
+      // Input doesn't matter - mock will intercept before validation
+      const inputSelection = {} as InputSelection;
+
+      // Define expected error as test-scoped constant
+      const expectedError = new TypeError('Unexpected validation error');
+
+      // Mock validateInputSelection to throw unexpected error
+      const spy = jest
+        .spyOn(validateInputSelectionModule, 'validateInputSelection')
+        .mockImplementationOnce(() => {
+          throw expectedError;
+        });
+
+      expect(() => computeRangeSpec(inputSelection)).toThrow(expectedError);
+
+      // Verify spy was called with the input (validates integration point)
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(inputSelection);
     });
   });
 });
