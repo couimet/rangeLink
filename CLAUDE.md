@@ -362,6 +362,65 @@ expect(result).toBeErrWith((error: RangeLinkError) => {
 });
 ```
 
+**Extract error objects as test-scoped constants when testing error re-throw:**
+
+```typescript
+// ✅ PREFERRED - Assert on error object (type + message + reference equality)
+const expectedError = new TypeError('Unexpected validation error');
+jest.spyOn(module, 'fn').mockImplementationOnce(() => {
+  throw expectedError;
+});
+expect(() => myFunction()).toThrow(expectedError);
+
+// ❌ AVOID - Brittle string-only assertion
+jest.spyOn(module, 'fn').mockImplementationOnce(() => {
+  throw new TypeError('Unexpected validation error');
+});
+expect(() => myFunction()).toThrow('Unexpected validation error');
+```
+
+**Rationale for error object extraction:**
+- Asserts on error **type** (TypeError, RangeError, etc.), not just message
+- Asserts on **reference equality** (exact error object was re-thrown)
+- Less brittle: message changes won't break test if error type changes too
+- Self-documenting: error object definition shows exactly what's being tested
+
+**Always verify jest.spyOn() calls:**
+
+```typescript
+// ✅ REQUIRED - Verify spy was called with exact parameters
+const spy = jest.spyOn(module, 'functionName').mockImplementation(...);
+
+myFunction(input);
+
+expect(spy).toHaveBeenCalledTimes(1);
+expect(spy).toHaveBeenCalledWith(input); // Exact parameter validation
+
+spy.mockRestore(); // Or use afterEach cleanup
+```
+
+**Simplify mock test inputs (don't test too deep):**
+
+```typescript
+// ✅ PREFERRED - Input doesn't matter when dependency is mocked
+const input = {} as InputType; // Mock will intercept before validation
+const spy = jest.spyOn(dependency, 'validate').mockImplementation(...);
+
+// ❌ AVOID - Over-specifying input that mock will intercept anyway
+const input: InputType = {
+  field1: 'value',
+  field2: { nested: 'data' },
+  field3: [1, 2, 3],
+}; // All this detail is unnecessary if mock intercepts
+```
+
+**Rationale for spy verification:**
+- Ensures mock actually intercepted the call (validates test setup)
+- Validates integration contract between layers
+- Catches parameter drift when refactoring
+- Prevents dangling/unused spy setups
+- Self-documenting: shows exactly what's being tested
+
 **Matcher validation:**
 
 - Uses `instanceof RangeLinkError` (strict type checking)
