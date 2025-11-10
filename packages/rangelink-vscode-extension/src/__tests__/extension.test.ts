@@ -71,6 +71,7 @@ const mockWorkspace = {
   getWorkspaceFolder: jest.fn(),
   asRelativePath: jest.fn(),
   getConfiguration: jest.fn(),
+  onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
 };
 
 const mockCommands = {
@@ -93,6 +94,7 @@ jest.mock('vscode', () => ({
     getWorkspaceFolder: jest.fn(),
     asRelativePath: jest.fn(),
     getConfiguration: jest.fn(),
+    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
   },
   languages: {
     registerDocumentLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),
@@ -3143,9 +3145,8 @@ describe('Extension lifecycle', () => {
     // Wait for async IIFE to complete
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    // 2 regular + 2 portable + 1 version + 1 bindToTerminal + 1 unbindDestination + 1 document link click = 8
     // Note: bindToCursorAI NOT registered in non-Cursor IDE
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(8);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(9);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
@@ -3198,8 +3199,7 @@ describe('Extension lifecycle', () => {
     // Wait for async IIFE to complete
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    // 2 regular + 2 portable + 1 version + 1 bindToTerminal + 1 bindToCursorAI + 1 unbindDestination + 1 document link click = 9
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(9);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(10);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
 
     // Verify bindToCursorAI WAS registered
@@ -3249,6 +3249,8 @@ describe('Extension lifecycle', () => {
 describe('Logger verification and communication channel', () => {
   beforeEach(() => {
     mockOutputChannel.appendLine.mockClear();
+    // Ensure vscode.window.createOutputChannel returns mockOutputChannel
+    (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
   });
 
   it('should confirm logger initialization by calling debug() when setLogger is called', () => {
@@ -3261,6 +3263,7 @@ describe('Logger verification and communication channel', () => {
       })),
     };
     mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
+    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
     const context = { subscriptions: [] as any[] };
     require('../extension').activate(context as any);

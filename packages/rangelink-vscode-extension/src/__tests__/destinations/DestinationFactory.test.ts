@@ -4,6 +4,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 import { CursorAIDestination } from '../../destinations/CursorAIDestination';
 import { DestinationFactory } from '../../destinations/DestinationFactory';
 import { TerminalDestination } from '../../destinations/TerminalDestination';
+import { TextEditorDestination } from '../../destinations/TextEditorDestination';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 
 describe('DestinationFactory', () => {
@@ -69,6 +70,14 @@ describe('DestinationFactory', () => {
       expect(destination.displayName).toBe('Cursor AI Assistant');
     });
 
+    it('should create TextEditorDestination for text-editor type', () => {
+      const destination = factory.create('text-editor');
+
+      expect(destination).toBeInstanceOf(TextEditorDestination);
+      expect(destination.id).toBe('text-editor');
+      expect(destination.displayName).toBe('Text Editor');
+    });
+
     it('should create new instance on each call', () => {
       const dest1 = factory.create('terminal');
       const dest2 = factory.create('terminal');
@@ -79,17 +88,17 @@ describe('DestinationFactory', () => {
   });
 
   describe('getSupportedTypes()', () => {
-    it('should return array with terminal and cursor-ai types', () => {
+    it('should return array with terminal, cursor-ai, and text-editor types', () => {
       const types = factory.getSupportedTypes();
 
-      expect(types).toEqual(['terminal', 'cursor-ai']);
+      expect(types).toEqual(['terminal', 'cursor-ai', 'text-editor']);
     });
 
     it('should return array (not frozen or readonly)', () => {
       const types = factory.getSupportedTypes();
 
       expect(Array.isArray(types)).toBe(true);
-      expect(types.length).toBe(2);
+      expect(types.length).toBe(3);
     });
   });
 

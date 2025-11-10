@@ -133,6 +133,12 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.bindToTextEditor', async () => {
+      await destinationManager.bind('text-editor');
+    }),
+  );
+
   // Register chat destination binding commands (conditionally based on IDE)
   // Only register Cursor AI command when running in Cursor IDE
   // Use IIFE to detect IDE asynchronously at activation
