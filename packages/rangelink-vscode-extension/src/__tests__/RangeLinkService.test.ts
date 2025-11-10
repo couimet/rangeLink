@@ -35,6 +35,7 @@ describe('RangeLinkService', () => {
         writeTextToClipboard: jest.fn().mockResolvedValue(undefined),
         setStatusBarMessage: jest.fn().mockReturnValue({ dispose: jest.fn() }),
         showWarningMessage: jest.fn().mockResolvedValue(undefined),
+        showErrorMessage: jest.fn().mockResolvedValue(undefined),
       };
 
       // Create mock destination manager

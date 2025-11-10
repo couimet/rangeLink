@@ -1,33 +1,34 @@
-import { getLogger } from 'barebone-logger';
+import type { Logger } from 'barebone-logger';
 import { type DelimiterConfig } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
 
+import type { IdeAdapter } from '../ide/IdeAdapter';
 import { loadDelimiterConfig } from './loadDelimiterConfig';
+import type { ConfigGetter } from './types';
 
 /**
- * Loads delimiter configuration from VSCode workspace settings.
+ * Loads delimiter configuration from workspace settings.
  *
- * Handles VSCode-specific concerns:
- * - Adapts VSCode WorkspaceConfiguration to ConfigGetter interface
- * - Shows error notification if configuration is invalid
+ * Pure function that accepts dependencies as parameters for better testability.
+ * Handles configuration-specific concerns:
+ * - Validates configuration using loadDelimiterConfig
+ * - Shows error notification via ideAdapter if configuration is invalid
  * - Returns default delimiters on error (never throws)
  *
+ * @param config - Configuration getter (e.g., VSCode WorkspaceConfiguration)
+ * @param ideAdapter - IDE adapter for showing error notifications
+ * @param logger - Logger instance for debugging
  * @returns DelimiterConfig - validated delimiters (defaults if invalid)
  */
-export const getDelimitersForExtension = (): DelimiterConfig => {
-  const vscodeConfig = vscode.workspace.getConfiguration('rangelink');
-  const logger = getLogger();
-
-  // Adapt VSCode WorkspaceConfiguration to ConfigGetter interface
-  // VSCode's inspect() returns extra language-specific fields we don't need
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const config = vscodeConfig as any;
-
+export const getDelimitersForExtension = (
+  config: ConfigGetter,
+  ideAdapter: IdeAdapter,
+  logger: Logger,
+): DelimiterConfig => {
   const result = loadDelimiterConfig(config, logger);
 
-  // Extension-specific: Show error notification if there were errors
+  // Show error notification if there were validation errors
   if (result.errors.length > 0) {
-    vscode.window.showErrorMessage(
+    void ideAdapter.showErrorMessage(
       `RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.`,
     );
   }

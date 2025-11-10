@@ -28,8 +28,11 @@ export function activate(context: vscode.ExtensionContext): void {
   const vscodeLogger = new VSCodeLogger(outputChannel);
   setLogger(vscodeLogger);
 
-  const delimiters = getDelimitersForExtension();
+  // Load delimiter configuration
+  const vscodeConfig = vscode.workspace.getConfiguration('rangelink');
   const ideAdapter = new VscodeAdapter();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const delimiters = getDelimitersForExtension(vscodeConfig as any, ideAdapter, getLogger());
 
   // Create unified destination manager (Phase 3)
   const factory = new DestinationFactory(getLogger());
