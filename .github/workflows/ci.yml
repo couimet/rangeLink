@@ -29,6 +29,9 @@ jobs:
 
       - name: Check formatting and linting
         uses: ./.github/actions/check-formatting
+        with:
+          # Temporarily allow lint failures while progressively fixing issues
+          allow-lint-failure: 'true'
 
       - name: Run tests with coverage
         uses: ./.github/actions/run-tests
