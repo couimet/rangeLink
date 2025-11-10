@@ -122,7 +122,7 @@ All commands are available via keyboard shortcuts, Command Palette, and right-cl
 | Copy Portable Link (Absolute) | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link                               |
 | Bind to Terminal              | —                   | —                     | Auto-send links to integrated terminal for AI workflows |
 | Bind to Text Editor           | —                   | —                     | Auto-send links at cursor in active bound text editor   |
-| Unbind Terminal               | —                   | —                     | Stop auto-sending links to terminal                     |
+| Unbind Destination            | —                   | —                     | Stop auto-sending links to bound destination            |
 | Show Version Info             | —                   | —                     | Display version and build info                          |
 
 **Customizing Shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) to open Keyboard Shortcuts, then search for "RangeLink".
