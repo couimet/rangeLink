@@ -126,7 +126,12 @@ export function activate(context: vscode.ExtensionContext): void {
           }
         });
         getLogger().info(
-          { fn: 'showVersion', version: versionInfo.version, commit: versionInfo.commit },
+          {
+            fn: 'showVersion',
+            version: versionInfo.version,
+            commit: versionInfo.commit,
+            buildDate: versionInfo.buildDate,
+          },
           'Version info displayed',
         );
       } catch (error) {
@@ -166,6 +171,7 @@ export function activate(context: vscode.ExtensionContext): void {
         commit: versionInfo.commit,
         isDirty: versionInfo.isDirty,
         branch: versionInfo.branch,
+        buildDate: versionInfo.buildDate,
       },
       `RangeLink extension activated - v${versionInfo.version} (${versionInfo.commit}${versionInfo.isDirty ? ' dirty' : ''})`,
     );
