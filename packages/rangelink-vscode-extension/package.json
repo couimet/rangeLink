@@ -37,7 +37,7 @@
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
     "install-local:vscode": "./scripts/install-local.sh vscode",
-    "package": "../../scripts/sync-assets.sh && rm -f rangelink-vscode-extension-*.vsix && vsce package --no-dependencies",
+    "package": "rm -rf *.vsix && ../../scripts/sync-assets.sh && rm -f rangelink-vscode-extension-*.vsix && vsce package --no-dependencies",
     "publish:vsix": "./scripts/publish-from-vsix.sh",
     "test": "jest --coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
