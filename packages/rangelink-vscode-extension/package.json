@@ -32,7 +32,8 @@
   "scripts": {
     "clean": "rm -rf out dist coverage *.tsbuildinfo *.vsix",
     "clean:all": "pnpm clean && rm -rf node_modules .eslintcache *.log .vscode-test",
-    "compile": "node scripts/generate-version.js && node esbuild.config.js && cp src/version.json dist/version.json && mkdir -p out && cp src/version.json out/version.json",
+    "compile": "pnpm compile:deps && node scripts/generate-version.js && node esbuild.config.js && cp src/version.json dist/version.json && mkdir -p out && cp src/version.json out/version.json",
+    "compile:deps": "cd ../barebone-logger && pnpm clean && pnpm compile && cd ../barebone-logger-testing && pnpm clean && pnpm compile && cd ../rangelink-core-ts && pnpm clean && pnpm compile",
     "generate:publish-instructions": "./scripts/generate-publishing-instructions.sh",
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
