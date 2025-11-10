@@ -9,23 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Text Editor Destination Binding** - Paste generated links directly into scratchpad files
+- **Paste Destinations System** - Universal paste destination framework for auto-sending links
+  - Unified architecture supports terminal, text editor, and chat integrations
+  - One destination active at a time (terminal OR text editor OR Cursor AI)
+  - Seamless workflow: select code → link appears where you need it
+- **Text Editor Destination** - Paste generated links directly into scratchpad files
   - Perfect for drafting AI prompts in untitled/scratch documents before sending to claude-code
   - Bind any text editor as paste destination (Command Palette → "Bind RangeLink to Text Editor Destination")
   - Auto-paste links at cursor position with smart padding
   - Blocks binary files (images, PDFs, archives) - only text-like files
   - Auto-unbinds when editor closes with notification
+- **Cursor AI Integration** - Streamlined clipboard workflow for Cursor IDE
+  - Automatically copies link and opens Cursor chat panel
+  - User pastes with Cmd/Ctrl+V (workaround for API limitation)
+  - Cuts workflow from 5 manual steps to 1
 - **Editor Link Navigation** - Click RangeLinks in any editor file to navigate
   - Primary use case: Validate links in scratchpad files before sending to claude-code
   - Works in all file types: markdown, text, code, untitled files
   - Hover tooltips show full navigation details
   - Supports all link formats: single-line, ranges, columns, rectangular mode
   - Reuses terminal navigation logic for consistency
-- **Auto-focus bound terminal after link generation** - Seamless AI workflow like Cursor's `Cmd+L`
-  - When terminal is bound, focus automatically switches to terminal after generating link
-  - Enables immediate prompt continuation without manual terminal clicks
-  - Mirrors Cursor's UX: select code → generate link → keep typing prompt
-  - Zero-friction workflow for claude-code and AI assistant interactions
+
+### Changed
+
+- **Unified Paste Destination Management** - Single manager replaces separate terminal/chat systems
+  - Command renamed: `rangelink.unbindTerminal` → `rangelink.unbindDestination`
+  - Simplified bind/unbind commands work consistently across all destination types
+  - Improved error handling and user feedback
+- **Terminology Updates** - Harmonized vocabulary across extension
+  - "Terminal Binding" → "Terminal Paste Destination"
+  - Consistent "Paste Destinations" terminology in UI and docs
 
 ## [0.2.1]
 

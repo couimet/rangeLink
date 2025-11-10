@@ -20,19 +20,19 @@ _Future development plans and in-progress work._
 
 ---
 
-## Navigation Features — High Priority
+## Completed Work
 
-**Overview:** Making RangeLinks navigable across different contexts (terminal, editor, clipboard).
+**Looking for completed features?** See [JOURNEY.md](./JOURNEY.md) for full details on:
 
-### ✅ Terminal Link Navigation — COMPLETE
-
-RangeLinks in terminal output are clickable (Cmd/Ctrl+Click) with proper selection handling. See [JOURNEY.md](./JOURNEY.md) for details.
-
-### ✅ Editor Link Navigation — COMPLETE
-
-RangeLinks in editor files are clickable for scratchpad validation workflows. See [JOURNEY.md](./JOURNEY.md) for details.
+- ✅ **Universal Paste Destinations** - Terminal, text editor, and Cursor AI integration
+- ✅ **Terminal Link Navigation** - Click RangeLinks in terminal output
+- ✅ **Editor Link Navigation** - Click RangeLinks in scratchpad files
+- ✅ **Terminal Auto-Focus** - Seamless workflow after link generation
+- ✅ **Result Type Value Object** - Runtime type safety with validated getters
 
 ---
+
+## Active Development — Navigation Enhancements
 
 ### 📋 Navigate from Clipboard/Selection — Future
 
@@ -86,18 +86,18 @@ RangeLinks in editor files are clickable for scratchpad validation workflows. Se
 
 ---
 
-## Phase 1C: BYOD Parsing — 📋 Deferred
+## BYOD Parsing — 📋 Deferred
 
-**Status:** Generation complete (v0.1.0). Parsing deferred until after terminal navigation (Phase 5).
+**Status:** Generation complete (v0.1.0). Parsing deferred until after core navigation features.
 
-**Rationale:** Terminal navigation is higher priority for user workflow. Basic parsing with local delimiters unblocks terminal navigation. BYOD parsing adds complexity without immediate benefit.
+**Rationale:** Navigation and paste destinations are higher priority for user workflow. Basic parsing with local delimiters unblocks navigation. BYOD parsing adds complexity without immediate benefit.
 
 **Parsing iterations (deferred):**
 
-- 📋 **1C.1** (1.5h): Parse metadata, extract delimiters, format validation
-- 📋 **1C.2** (1.5h): Validate extracted delimiters
-- 📋 **1C.3** (2h): Recovery logic (missing delimiters, fallbacks)
-- 📋 **1C.4** (1h): Rectangular mode detection with custom BYOD hash
+- 📋 Parse metadata, extract delimiters, format validation
+- 📋 Validate extracted delimiters
+- 📋 Recovery logic (missing delimiters, fallbacks)
+- 📋 Rectangular mode detection with custom BYOD hash
 - 📋 **1C.5** (30m): Documentation and cleanup
 
 **When to revisit:** After Phase 5 complete and stable.

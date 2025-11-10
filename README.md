@@ -28,7 +28,7 @@
 **Perfect for:**
 
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`"
-- 🤖 **AI assistants** — Multi-file context in one prompt. Generate RangeLinks from auth.ts, tests.ts, config.ts — paste all. Built-in claude-code: single selection, current file only.
+- 🤖 **AI assistants** — Multi-file context in one prompt. Paste destinations auto-send links to terminals, text editors, or Cursor AI. Built-in claude-code: single selection, current file only.
 - 👥 **Team collaboration** — Universal format everyone can use
 
 ## Quick Start
@@ -136,7 +136,7 @@ That was the lightbulb moment: **precise code references should be universal**. 
 
 I built the VS Code extension first, then extracted a platform-agnostic core library. The goal: make this work _everywhere_, for _everyone_.
 
-Today, with **terminal binding**, RangeLink sends links directly to your claude-code session — no more copy-paste friction. It helps developers share code with precision across claude-code, Cursor, VSCode, GitHub, Slack, and more. One format, zero friction.
+Today, with **paste destinations**, RangeLink sends links directly where you need them — terminals, text editors, even Cursor AI chat. No more copy-paste friction. It helps developers share code with precision across claude-code, Cursor, VSCode, GitHub, Slack, and more. One format, zero friction.
 
 **The best part?** Your teammates don't even need RangeLink installed to understand your links. The notation is GitHub-inspired — developers already know it.
 
@@ -368,30 +368,37 @@ RangeLink follows a **micro-iteration** development approach (1-2 hours per iter
 
 ### Current Status
 
-- ✅ **Phase 1: Core Enhancements** - Mostly complete (rectangular mode, validation, BYOD generation)
-- 🔨 **Phase 2: Core Architecture** - In progress (monorepo, testing, documentation)
-- 📋 **Phase 3: Link Navigation** - Planned (click/paste to navigate)
-- 📋 **Phase 4: Publishing** - Planned (VSCode Marketplace launch)
+- ✅ **Phase 1: Core Enhancements** - Complete (rectangular mode, validation, BYOD generation)
+- ✅ **Phase 2: Core Architecture** - Complete (monorepo, testing, documentation)
+- ✅ **Phase 3: Universal Paste Destinations** - Complete (terminal, text editor, Cursor AI)
+- ✅ **Phase 4: Link Navigation** - Complete (terminal + editor navigation)
+- 🔨 **Current Focus** - Documentation harmonization and marketplace presence
 
 ### Upcoming Features
 
-**Phase 3 - Link Navigation (Planned):**
+**Enhanced Navigation (Planned):**
 
-- Click or paste RangeLinks to navigate directly to code
-- Hover tooltips showing file path and range
-- Integration with VSCode link detection
+- Navigate from clipboard/selection command
+- Clamping detection with contextual feedback
+- Settings for toast notifications
 
-**Phase 5 - Enhanced BYOD Support (Planned):**
+**Enhanced BYOD Support (Planned):**
 
 - Always-portable option (configuration)
 - Improved error messages and recovery
 - Performance optimizations
 
-**Phase 6 - Multi-Range Links (Planned):**
+**Multi-Range Links (Planned):**
 
 - Reference multiple code sections in one link
 - Syntax: `path#L10-L20|L30-L40|L50-L60`
 - Non-contiguous code selections
+
+**Additional Editor Integrations (Planned):**
+
+- Neovim plugin
+- Sublime Text integration
+- JetBrains IDEs support
 
 **Full roadmap:** [docs/ROADMAP.md](./docs/ROADMAP.md)
 
