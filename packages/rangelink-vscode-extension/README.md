@@ -84,6 +84,24 @@ Any RangeLink in the terminal becomes clickable — whether from claude-code res
 
 Bind a terminal to RangeLink (Command Palette → "Bind Terminal"), and all generated links auto-paste to that terminal — even if you switch to other terminals for work. Perfect for claude-code workflows: your links appear exactly where your AI assistant can see them. Zero copy/paste friction.
 
+### 📝 Text Editor Destination Binding
+
+**Build AI prompts in a scratchpad before sending to claude-code?** Bind a text editor as your paste destination:
+
+1. Open an untitled file (`Cmd+N` / `Ctrl+N`) or any text file
+2. Command Palette → "Bind RangeLink to Text Editor Destination"
+3. Select code → Generate links → They paste at your cursor automatically
+
+**Perfect for:**
+
+- **Drafting complex AI prompts** - Gather multiple code references in one place before sending to terminal
+- **Reviewing context** - See all links together, validate navigation (Cmd+Click to test)
+- **Iterating on prompts** - Edit, rearrange, add notes around links before finalizing
+
+Links auto-paste at cursor position with smart spacing. When you close the bound editor, RangeLink auto-unbinds with a notification.
+
+**Note:** Binary files (images, PDFs, archives) are blocked — text-like files only.
+
 ### ⚙️ Custom Delimiters
 
 Personalize delimiters to match your workflow or organizational standards. Full validation ensures configurations always work.
@@ -103,6 +121,7 @@ All commands are available via keyboard shortcuts, Command Palette, and right-cl
 | Copy Portable Link            | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link                               |
 | Copy Portable Link (Absolute) | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link                               |
 | Bind to Terminal              | —                   | —                     | Auto-send links to integrated terminal for AI workflows |
+| Bind to Text Editor           | —                   | —                     | Auto-send links at cursor in active bound text editor   |
 | Unbind Terminal               | —                   | —                     | Stop auto-sending links to terminal                     |
 | Show Version Info             | —                   | —                     | Display version and build info                          |
 
