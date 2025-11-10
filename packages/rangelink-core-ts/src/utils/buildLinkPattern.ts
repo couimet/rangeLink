@@ -1,4 +1,5 @@
 import { DelimiterConfig } from '../types/DelimiterConfig';
+
 import { escapeRegex } from './escapeRegex';
 
 /**

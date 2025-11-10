@@ -1,8 +1,8 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import type { DestinationType, PasteDestination } from './PasteDestination';
 import { DestinationFactory } from './DestinationFactory';
+import type { DestinationType, PasteDestination } from './PasteDestination';
 import { TerminalDestination } from './TerminalDestination';
 import { TextEditorDestination } from './TextEditorDestination';
 
@@ -121,7 +121,10 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   async sendToDestination(text: string): Promise<boolean> {
     if (!this.boundDestination) {
-      this.logger.debug({ fn: 'PasteDestinationManager.sendToDestination' }, 'No destination bound');
+      this.logger.debug(
+        { fn: 'PasteDestinationManager.sendToDestination' },
+        'No destination bound',
+      );
       return false;
     }
 

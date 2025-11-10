@@ -11,7 +11,10 @@ import * as vscode from 'vscode';
  * @param message - Human-readable description of what was registered
  * @returns The disposable (for fluent chaining if needed)
  */
-export const registerWithLogging = <T extends vscode.Disposable>(disposable: T, message: string): T => {
+export const registerWithLogging = <T extends vscode.Disposable>(
+  disposable: T,
+  message: string,
+): T => {
   getLogger().debug({ fn: 'activate' }, message);
   return disposable;
 };

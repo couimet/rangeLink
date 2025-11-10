@@ -2,6 +2,7 @@ import type { Logger } from 'barebone-logger';
 import { type DelimiterConfig } from 'rangelink-core-ts';
 
 import type { IdeAdapter } from '../ide/IdeAdapter';
+
 import { loadDelimiterConfig } from './loadDelimiterConfig';
 import type { ConfigGetter } from './types';
 

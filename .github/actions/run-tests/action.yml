@@ -1,0 +1,51 @@
+name: 'Run Tests'
+description: 'Run pnpm test with coverage enforcement (thresholds from jest.config.js)'
+
+inputs:
+  package-filter:
+    description: 'Optional package filter (e.g., "rangelink-core-ts") for per-package testing'
+    required: false
+    default: ''
+
+outputs:
+  coverage-summary:
+    description: 'Coverage summary output'
+    value: ${{ steps.test.outputs.summary }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run tests with coverage
+      id: test
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.package-filter }}" ]; then
+          echo "Running tests for package: ${{ inputs.package-filter }}"
+          pnpm --filter "${{ inputs.package-filter }}" test
+        else
+          echo "Running tests for all packages"
+          pnpm test
+        fi
+
+    - name: Generate coverage summary
+      if: always()
+      shell: bash
+      run: |
+        if [ -d "coverage" ]; then
+          echo "## Test Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Find all coverage-summary.json files
+          for summary in $(find . -name "coverage-summary.json" -path "*/coverage/*"); do
+            package_name=$(echo "$summary" | sed 's|./packages/||' | sed 's|/coverage/coverage-summary.json||')
+            echo "### Package: \`$package_name\`" >> $GITHUB_STEP_SUMMARY
+
+            # Extract coverage percentages using jq if available, otherwise use grep
+            if command -v jq &> /dev/null; then
+              jq -r '.total | "- **Lines:** \(.lines.pct)%\n- **Statements:** \(.statements.pct)%\n- **Functions:** \(.functions.pct)%\n- **Branches:** \(.branches.pct)%"' "$summary" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "Coverage report available at: \`$summary\`" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          done
+        fi

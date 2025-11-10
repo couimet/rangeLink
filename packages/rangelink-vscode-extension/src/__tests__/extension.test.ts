@@ -1,5 +1,5 @@
-import * as vscode from 'vscode';
 import { pingLog, setLogger } from 'barebone-logger';
+import * as vscode from 'vscode';
 
 import * as extension from '../extension';
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';

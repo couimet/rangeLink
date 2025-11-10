@@ -83,10 +83,7 @@ setLogger(new ConsoleLogger());
 
 // Use it anywhere in your codebase
 const logger = getLogger();
-logger.info(
-  { userId: 123, action: 'login' },
-  'User logged in successfully'
-);
+logger.info({ userId: 123, action: 'login' }, 'User logged in successfully');
 ```
 
 ### Library/Package Usage Pattern
@@ -103,10 +100,7 @@ export const processData = (data: unknown) => {
     // ... your logic
     logger.info({ fn: 'processData' }, 'Data processed successfully');
   } catch (error) {
-    logger.error(
-      { fn: 'processData', error },
-      'Failed to process data'
-    );
+    logger.error({ fn: 'processData', error }, 'Failed to process data');
     throw error;
   }
 };
@@ -117,24 +111,30 @@ export const processData = (data: unknown) => {
 ### Logger Interface
 
 #### `debug(context, message)`
+
 Log debug-level information (verbose, diagnostic details).
 
 #### `info(context, message)`
+
 Log informational messages (normal operation events).
 
 #### `warn(context, message)`
+
 Log warning messages (potential issues, deprecated usage).
 
 #### `error(context, message)`
+
 Log error messages (failures, exceptions).
 
 **Parameters:**
+
 - `context: LogContext` — Structured data providing context (e.g., `{ userId, action, error }`)
 - `message: string` — Human-readable log message
 
 ### Global Logger Management
 
 #### `setLogger(logger: Logger): void`
+
 Set the global logger implementation. Call once at application startup.
 
 ```typescript
@@ -145,6 +145,7 @@ setLogger(new MyLogger());
 ```
 
 #### `getLogger(): Logger`
+
 Get the current logger instance. Returns `NoOpLogger` if no logger has been set.
 
 ```typescript
@@ -155,6 +156,7 @@ logger.info({}, 'Application started');
 ```
 
 #### `pingLog(): void`
+
 Exercise all logger levels (DEBUG, INFO, WARN, ERROR) to verify logger is configured correctly. Useful for smoke testing logger initialization.
 
 ```typescript

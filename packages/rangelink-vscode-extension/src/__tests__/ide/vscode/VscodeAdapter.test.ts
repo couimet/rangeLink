@@ -177,7 +177,8 @@ describe('VscodeAdapter', () => {
     });
 
     it('should handle error message with details', async () => {
-      const detailedError = 'RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.';
+      const detailedError =
+        'RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.';
 
       await adapter.showErrorMessage(detailedError);
 

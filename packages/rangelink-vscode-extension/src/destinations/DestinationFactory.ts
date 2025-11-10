@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+
 import { CursorAIDestination } from './CursorAIDestination';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 import { TerminalDestination } from './TerminalDestination';

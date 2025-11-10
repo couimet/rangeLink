@@ -1,0 +1,73 @@
+name: 'Check TODOs/FIXMEs'
+description: 'Count TODOs and FIXMEs in codebase, show delta for PRs'
+
+inputs:
+  base-ref:
+    description: 'Base branch for comparison (optional, for PR workflows)'
+    required: false
+    default: ''
+
+outputs:
+  todo-count:
+    description: 'Current TODO/FIXME count'
+    value: ${{ steps.count-current.outputs.count }}
+  todo-delta:
+    description: 'Change in TODO/FIXME count (for PRs)'
+    value: ${{ steps.compare.outputs.delta }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Count current TODOs/FIXMEs
+      id: count-current
+      shell: bash
+      run: |
+        CURRENT_COUNT=$(grep -r "TODO\|FIXME" packages/ --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" 2>/dev/null | wc -l | tr -d ' ')
+        echo "count=$CURRENT_COUNT" >> $GITHUB_OUTPUT
+        echo "Current TODO/FIXME count: $CURRENT_COUNT"
+
+    - name: Compare with base branch (PR only)
+      id: compare
+      if: inputs.base-ref != ''
+      shell: bash
+      run: |
+        CURRENT_COUNT="${{ steps.count-current.outputs.count }}"
+
+        # Fetch base branch
+        git fetch origin "${{ inputs.base-ref }}" --depth=1
+
+        # Count TODOs in base branch
+        BASE_COUNT=$(git show "origin/${{ inputs.base-ref }}":packages/ 2>/dev/null | grep -c "TODO\|FIXME" || echo "0")
+
+        # Calculate delta
+        DELTA=$((CURRENT_COUNT - BASE_COUNT))
+
+        echo "delta=$DELTA" >> $GITHUB_OUTPUT
+        echo "Base TODO/FIXME count: $BASE_COUNT"
+        echo "Delta: $DELTA"
+
+        # Add to GitHub Actions summary
+        echo "## TODO/FIXME Analysis" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Base branch (\`${{ inputs.base-ref }}\`):** $BASE_COUNT" >> $GITHUB_STEP_SUMMARY
+        echo "- **Current branch:** $CURRENT_COUNT" >> $GITHUB_STEP_SUMMARY
+
+        if [ "$DELTA" -gt 0 ]; then
+          echo "- **Change:** ⚠️ +$DELTA (increased)" >> $GITHUB_STEP_SUMMARY
+        elif [ "$DELTA" -lt 0 ]; then
+          echo "- **Change:** ✅ $DELTA (decreased)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **Change:** ➖ No change" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Add summary for non-PR runs
+      if: inputs.base-ref == ''
+      shell: bash
+      run: |
+        CURRENT_COUNT="${{ steps.count-current.outputs.count }}"
+
+        echo "## TODO/FIXME Analysis" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Current count:** $CURRENT_COUNT" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "_No base branch comparison (direct push to main)_" >> $GITHUB_STEP_SUMMARY

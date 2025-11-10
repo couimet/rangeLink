@@ -103,6 +103,7 @@ Claude can still share summaries and thought processes in terminal to provide co
 **Always save commit messages to `.commit-msgs/` folder** (not root directory).
 
 **IMPORTANT: BEFORE creating a commit message file:**
+
 1. Use `Glob(pattern="*.txt", path=".commit-msgs/")` to check existing files
 2. Find the highest NNNN number
 3. Increment by 1 for your new file
@@ -112,6 +113,7 @@ Claude can still share summaries and thought processes in terminal to provide co
 ⚠️ **DO NOT use dates** (e.g., `2025-11-08-description.txt`) - Always use sequential NNNN numbers!
 
 **Examples:**
+
 - ✅ `.commit-msgs/0001-remove-hashmode-enum.txt`
 - ✅ `.commit-msgs/0042-fix-validation-bug.txt`
 - ❌ `.commit-msgs/2025-11-08-fix-bug.txt` (WRONG - uses date instead of NNNN)
@@ -288,14 +290,17 @@ RangeLink is a tool for generating and navigating code location links with suppo
  * @param delimiters - Optional delimiter configuration
  * @returns Result with ParsedLink on success, RangeLinkError on failure
  */
-export const parseLink = (link: string, delimiters?: DelimiterConfig): Result<ParsedLink, RangeLinkError> => {
+export const parseLink = (
+  link: string,
+  delimiters?: DelimiterConfig,
+): Result<ParsedLink, RangeLinkError> => {
   // ...
 };
 ```
 
 **Bad JSDoc (verbose with examples):**
 
-```typescript
+````typescript
 /**
  * Parse a RangeLink string into structured components.
  *
@@ -307,7 +312,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): Result<Pa
  * }
  * ```
  */
-```
+````
 
 ## Testing Requirements
 
@@ -380,6 +385,7 @@ expect(() => myFunction()).toThrow('Unexpected validation error');
 ```
 
 **Rationale for error object extraction:**
+
 - Asserts on error **type** (TypeError, RangeError, etc.), not just message
 - Asserts on **reference equality** (exact error object was re-thrown)
 - Less brittle: message changes won't break test if error type changes too
@@ -415,6 +421,7 @@ const input: InputType = {
 ```
 
 **Rationale for spy verification:**
+
 - Ensures mock actually intercepted the call (validates test setup)
 - Validates integration contract between layers
 - Catches parameter drift when refactoring
