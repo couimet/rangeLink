@@ -43,7 +43,10 @@ export const loadDelimiterConfig = (
 
   // If no config provided at all (all undefined), use defaults silently (no errors)
   const hasNoConfig =
-    userLine === undefined && userPosition === undefined && userHash === undefined && userRange === undefined;
+    userLine === undefined &&
+    userPosition === undefined &&
+    userHash === undefined &&
+    userRange === undefined;
   if (hasNoConfig) {
     logger.debug(
       { fn: 'loadDelimiterConfig', code: RangeLinkMessageCode.CONFIG_USING_DEFAULTS },
@@ -59,7 +62,12 @@ export const loadDelimiterConfig = (
   const rangeToValidate = userRange ?? '';
 
   // Validate individual fields (accumulate errors)
-  const fieldErrors = validateDelimiterFields(lineToValidate, positionToValidate, hashToValidate, rangeToValidate);
+  const fieldErrors = validateDelimiterFields(
+    lineToValidate,
+    positionToValidate,
+    hashToValidate,
+    rangeToValidate,
+  );
 
   // If field validation failed, log and return defaults
   if (fieldErrors.length > 0) {
