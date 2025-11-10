@@ -377,4 +377,21 @@ describe('computeRangeSpec', () => {
       });
     });
   });
+
+  describe('Error handling', () => {
+    it('should return Err Result when validateInputSelection throws RangeLinkError', () => {
+      // Create invalid input that will cause validateInputSelection to throw RangeLinkError
+      const inputSelection: InputSelection = {
+        selections: [], // Empty selections array is invalid
+        selectionType: SelectionType.Normal,
+      };
+
+      const result = computeRangeSpec(inputSelection);
+
+      expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
+        message: 'Selections array must not be empty',
+        functionName: 'validateInputSelection',
+      });
+    });
+  });
 });
