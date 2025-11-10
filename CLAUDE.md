@@ -342,14 +342,20 @@ try {
 expect(caughtError).toBeRangeLinkError({...});
 ```
 
-**Use `toBeRangeLinkError` only for Result types:**
+**Use `toBeRangeLinkErrorErr` for Result-returning functions (not nested matchers):**
 
 ```typescript
-// When testing functions that return Result<T, RangeLinkError>
+// ✅ PREFERRED - Clean, single matcher for Result types
+const result = computeRangeSpec(input);
+expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
+  message: 'Selections array must not be empty',
+  functionName: 'validateInputSelection',
+});
+
+// ❌ AVOID - Old nested pattern
 const result = computeRangeSpec(input);
 expect(result).toBeErrWith((error: RangeLinkError) => {
-  expect(error).toBeRangeLinkError({
-    code: RangeLinkErrorCodes.SELECTION_EMPTY,
+  expect(error).toBeRangeLinkError('SELECTION_EMPTY', {
     message: 'Selections array must not be empty',
     functionName: 'validateInputSelection',
   });
