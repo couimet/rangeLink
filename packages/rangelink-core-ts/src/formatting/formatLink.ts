@@ -7,7 +7,7 @@ import { FormatOptions } from '../types/FormatOptions';
 import { FormattedLink } from '../types/FormattedLink';
 import { InputSelection } from '../types/InputSelection';
 import { LinkType } from '../types/LinkType';
-import { Ok, Result } from '../types/Result';
+import { Result } from '../types/Result';
 
 import { buildAnchor } from './buildAnchor';
 import { formatSimpleLineReference } from './formatSimpleLineReference';
@@ -49,7 +49,7 @@ export function formatLink(
     const link = formatSimpleLineReference(path, spec.startLine, delimiters);
     logger.debug({ fn: 'formatLink', format: 'simple' }, `Generated simple line reference`);
 
-    return Ok({
+    return Result.ok({
       link,
       linkType,
       delimiters,
@@ -82,7 +82,7 @@ export function formatLink(
     `Generated link: ${link}`,
   );
 
-  return Ok({
+  return Result.ok({
     link,
     linkType,
     delimiters,

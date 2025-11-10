@@ -1,7 +1,7 @@
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
 import { DelimiterConfig } from '../types/DelimiterConfig';
-import { Err, Ok, Result } from '../types/Result';
+import { Result } from '../types/Result';
 
 /**
  * Validates that no delimiter is a substring of another (case-insensitive)
@@ -28,7 +28,7 @@ export const validateSubstringConflicts = (
       if (a.length === 0 || b.length === 0) continue;
 
       if (a.includes(b)) {
-        return Err(
+        return Result.err(
           new RangeLinkError({
             code: RangeLinkErrorCodes.CONFIG_DELIMITER_SUBSTRING_CONFLICT,
             message: 'Delimiters cannot be substrings of each other',
@@ -40,7 +40,7 @@ export const validateSubstringConflicts = (
     }
   }
 
-  return Ok(undefined);
+  return Result.ok(undefined);
 };
 
 /**

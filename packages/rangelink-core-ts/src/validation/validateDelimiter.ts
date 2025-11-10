@@ -1,7 +1,7 @@
 import { RESERVED_CHARS } from '../constants/RESERVED_CHARS';
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
-import { Err, Ok, Result } from '../types/Result';
+import { Result } from '../types/Result';
 
 /**
  * Validate a delimiter value and return a result.
@@ -15,7 +15,7 @@ export function validateDelimiter(
   isHash: boolean = false,
 ): Result<void, RangeLinkError> {
   if (!value || value.trim() === '') {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.CONFIG_DELIMITER_EMPTY,
         message: 'Delimiter must not be empty',
@@ -27,7 +27,7 @@ export function validateDelimiter(
 
   // Hash delimiter must be exactly 1 character
   if (isHash && value.length !== 1) {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.CONFIG_HASH_NOT_SINGLE_CHAR,
         message: 'Hash delimiter must be exactly one character',
@@ -39,7 +39,7 @@ export function validateDelimiter(
 
   // Must not contain digits
   if (/\d/.test(value)) {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.CONFIG_DELIMITER_DIGITS,
         message: 'Delimiter cannot contain digits',
@@ -51,7 +51,7 @@ export function validateDelimiter(
 
   // Must not contain whitespace
   if (/\s/.test(value)) {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.CONFIG_DELIMITER_WHITESPACE,
         message: 'Delimiter cannot contain whitespace',
@@ -64,7 +64,7 @@ export function validateDelimiter(
   // Must not contain any reserved characters anywhere
   for (const ch of RESERVED_CHARS) {
     if (value.includes(ch)) {
-      return Err(
+      return Result.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.CONFIG_DELIMITER_RESERVED,
           message: `Delimiter cannot contain reserved character '${ch}'`,
@@ -75,5 +75,5 @@ export function validateDelimiter(
     }
   }
 
-  return Ok(undefined);
+  return Result.ok(undefined);
 }
