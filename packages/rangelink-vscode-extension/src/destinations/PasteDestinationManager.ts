@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 import { DestinationFactory } from './DestinationFactory';
 import { TerminalDestination } from './TerminalDestination';
+import { TextEditorDestination } from './TextEditorDestination';
 
 /**
  * Unified destination manager for RangeLink (Phase 3)
@@ -21,6 +22,7 @@ import { TerminalDestination } from './TerminalDestination';
 export class PasteDestinationManager implements vscode.Disposable {
   private boundDestination: PasteDestination | undefined;
   private boundTerminal: vscode.Terminal | undefined; // Track for closure events
+  private boundEditor: vscode.TextEditor | undefined; // Track for closure events
   private disposables: vscode.Disposable[] = [];
 
   constructor(
@@ -30,15 +32,18 @@ export class PasteDestinationManager implements vscode.Disposable {
   ) {
     // Listen for terminal closure (terminal-only auto-unbind)
     this.setupTerminalCloseListener();
+    // Listen for text document closure (text-editor-only auto-unbind)
+    this.setupTextDocumentCloseListener();
   }
 
   /**
    * Bind to a destination type
    *
    * For terminal: requires active terminal via vscode.window.activeTerminal
+   * For text-editor: requires active text editor via vscode.window.activeTextEditor
    * For chat: checks destination.isAvailable() (e.g., Cursor IDE detection)
    *
-   * @param type - The destination type to bind (e.g., 'terminal', 'cursor-ai')
+   * @param type - The destination type to bind (e.g., 'terminal', 'text-editor', 'cursor-ai')
    * @returns true if binding succeeded, false otherwise
    */
   async bind(type: DestinationType): Promise<boolean> {
@@ -62,6 +67,11 @@ export class PasteDestinationManager implements vscode.Disposable {
       return this.bindTerminal();
     }
 
+    // Special handling for text editor (needs active text editor reference)
+    if (type === 'text-editor') {
+      return this.bindTextEditor();
+    }
+
     // Generic destination binding (chat destinations, etc.)
     return this.bindGenericDestination(type);
   }
@@ -79,6 +89,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     const displayName = this.boundDestination.displayName;
     this.boundDestination = undefined;
     this.boundTerminal = undefined;
+    this.boundEditor = undefined;
 
     this.logger.info(
       { fn: 'PasteDestinationManager.unbind', displayName },
@@ -196,7 +207,56 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Bind to generic destination (chat destinations, text editor, etc.)
+   * Bind to text editor (special case requiring active text editor)
+   *
+   * @returns true if binding succeeded, false if no active text editor or not text-like file
+   */
+  private async bindTextEditor(): Promise<boolean> {
+    const activeEditor = vscode.window.activeTextEditor;
+
+    if (!activeEditor) {
+      this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
+      vscode.window.showErrorMessage(
+        'RangeLink: No active text editor. Open a file and try again.',
+      );
+      return false;
+    }
+
+    // Check if editor is text-like (not binary)
+    if (!TextEditorDestination.isTextLikeFile(activeEditor)) {
+      const fileName = activeEditor.document.uri.fsPath.split('/').pop() || 'Unknown';
+      this.logger.warn(
+        { fn: 'PasteDestinationManager.bindTextEditor', fileName },
+        'Cannot bind: Editor is not a text-like file',
+      );
+      vscode.window.showErrorMessage(
+        `RangeLink: Cannot bind to ${fileName} - not a text-like file (binary or special scheme)`,
+      );
+      return false;
+    }
+
+    // Create text editor destination and set editor reference
+    const destination = this.factory.create('text-editor') as TextEditorDestination;
+    destination.setEditor(activeEditor);
+
+    this.boundDestination = destination;
+    this.boundEditor = activeEditor; // Track for closure events
+
+    const editorDisplayName = destination.getEditorDisplayName() || 'Unknown';
+    const editorPath = destination.getEditorPath();
+
+    this.logger.info(
+      { fn: 'PasteDestinationManager.bindTextEditor', editorDisplayName, editorPath },
+      `Successfully bound to text editor: ${editorDisplayName}`,
+    );
+
+    vscode.window.setStatusBarMessage(`✓ RangeLink bound to ${editorDisplayName}`, 3000);
+
+    return true;
+  }
+
+  /**
+   * Bind to generic destination (chat destinations, etc.)
    *
    * @param type - The destination type (e.g., 'cursor-ai', 'github-copilot')
    * @returns true if binding succeeded, false if destination not available
@@ -229,5 +289,29 @@ export class PasteDestinationManager implements vscode.Disposable {
     vscode.window.setStatusBarMessage(`✓ RangeLink bound to ${destination.displayName}`, 3000);
 
     return true;
+  }
+
+  /**
+   * Setup text document closure listener for auto-unbind
+   *
+   * Text-editor-only behavior: auto-unbind when document closes.
+   * Similar to terminal closure behavior.
+   */
+  private setupTextDocumentCloseListener(): void {
+    const documentCloseDisposable = vscode.workspace.onDidCloseTextDocument((closedDocument) => {
+      if (this.boundEditor && this.boundEditor.document === closedDocument) {
+        const editorDisplayName =
+          (this.boundDestination as TextEditorDestination).getEditorDisplayName() || 'Unknown';
+        this.logger.info(
+          { fn: 'PasteDestinationManager.onDidCloseTextDocument', editorDisplayName },
+          `Bound text editor closed: ${editorDisplayName} - auto-unbinding`,
+        );
+        this.unbind();
+        vscode.window.setStatusBarMessage('Destination binding removed (editor closed)', 3000);
+      }
+    });
+
+    this.context.subscriptions.push(documentCloseDisposable);
+    this.disposables.push(documentCloseDisposable);
   }
 }

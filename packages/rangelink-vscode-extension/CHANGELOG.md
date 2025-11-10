@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Text Editor Destination Binding** - Paste generated links directly into scratchpad files
+  - Perfect for drafting AI prompts in untitled/scratch documents before sending to claude-code
+  - Bind any text editor as paste destination (Command Palette → "Bind RangeLink to Text Editor Destination")
+  - Auto-paste links at cursor position with smart padding
+  - Blocks binary files (images, PDFs, archives) - only text-like files
+  - Auto-unbinds when editor closes with notification
 - **Editor Link Navigation** - Click RangeLinks in any editor file to navigate
   - Primary use case: Validate links in scratchpad files before sending to claude-code
   - Works in all file types: markdown, text, code, untitled files
