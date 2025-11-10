@@ -1,8 +1,7 @@
 import { getLogger, setLogger } from 'barebone-logger';
-import { type DelimiterConfig } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import { loadDelimiterConfig as loadDelimiterConfigFromModule } from './config';
+import { getDelimitersForExtension } from './config';
 import { DestinationFactory } from './destinations/DestinationFactory';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
@@ -12,35 +11,6 @@ import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvide
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { registerWithLogging } from './utils/registerWithLogging';
 import { VSCodeLogger } from './VSCodeLogger';
-
-// ============================================================================
-// Configuration & Validation
-// ============================================================================
-
-/**
- * Thin wrapper that adapts VSCode config to loadDelimiterConfig
- * Handles VSCode-specific concerns: output channel visibility on errors
- */
-const getDelimitersForExtension = (): DelimiterConfig => {
-  const vscodeConfig = vscode.workspace.getConfiguration('rangelink');
-  const logger = getLogger();
-
-  // Adapt VSCode WorkspaceConfiguration to ConfigGetter interface
-  // VSCode's inspect() returns extra language-specific fields we don't need
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const config = vscodeConfig as any;
-
-  const result = loadDelimiterConfigFromModule(config, logger);
-
-  // Extension-specific: Show error notification if there were errors
-  if (result.errors.length > 0) {
-    vscode.window.showErrorMessage(
-      `RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.`,
-    );
-  }
-
-  return result.delimiters;
-};
 
 // ============================================================================
 // Extension Lifecycle
