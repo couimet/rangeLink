@@ -234,7 +234,12 @@ class DestinationFactory {
 **New file:** `packages/rangelink-vscode-extension/src/destinations/PasteDestination.ts`
 
 ```typescript
-export type DestinationType = 'terminal' | 'text-editor' | 'cursor-ai' | 'github-copilot' | 'claude-code';
+export type DestinationType =
+  | 'terminal'
+  | 'text-editor'
+  | 'cursor-ai'
+  | 'github-copilot'
+  | 'claude-code';
 
 export interface PasteDestination {
   /** Unique identifier for this destination type */
@@ -419,6 +424,7 @@ describe('TerminalDestination', () => {
 **Goal:** Add Text Editor, Cursor AI, GitHub Copilot, and Claude Code paste targets.
 
 **Updated Priority (based on research findings):**
+
 1. **High:** Text Editor (user request, straightforward implementation)
 2. **High:** Cursor AI (standard VSCode chat API)
 3. **High:** GitHub Copilot (standard VSCode chat API, documented)
@@ -444,10 +450,7 @@ export class TextEditorDestination implements PasteDestination {
     const editor = vscode.window.activeTextEditor;
 
     if (!editor) {
-      this.logger.debug(
-        { fn: 'TextEditorDestination.isAvailable' },
-        'No active text editor',
-      );
+      this.logger.debug({ fn: 'TextEditorDestination.isAvailable' }, 'No active text editor');
       return false;
     }
 

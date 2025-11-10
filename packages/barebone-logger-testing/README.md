@@ -50,10 +50,7 @@ describe('MyService', () => {
     service.processData({ id: 123 });
 
     // Assert logger was called
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'processData', id: 123 },
-      'Processing data'
-    );
+    expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'processData', id: 123 }, 'Processing data');
   });
 });
 ```
@@ -79,7 +76,7 @@ describe('myFunction', () => {
     expect(mockLogger.error).toHaveBeenCalledTimes(1);
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({ fn: 'myFunction' }),
-      expect.stringContaining('Failed')
+      expect.stringContaining('Failed'),
     );
   });
 });
@@ -92,12 +89,14 @@ describe('myFunction', () => {
 Creates a mock logger with all methods stubbed as Jest mock functions.
 
 **Returns:** `jest.Mocked<Logger>` with mocked methods:
+
 - `debug: jest.Mock`
 - `info: jest.Mock`
 - `warn: jest.Mock`
 - `error: jest.Mock`
 
 All methods are initialized with `jest.fn()` and can be used with standard Jest assertions:
+
 - `toHaveBeenCalled()`
 - `toHaveBeenCalledWith(...)`
 - `toHaveBeenCalledTimes(n)`
@@ -116,7 +115,7 @@ it('should include userId in log context', () => {
 
   expect(mockLogger.warn).toHaveBeenCalledWith(
     expect.objectContaining({ userId: 123 }),
-    expect.any(String)
+    expect.any(String),
   );
 });
 ```
@@ -132,7 +131,7 @@ it('should log specific warning message', () => {
 
   expect(mockLogger.warn).toHaveBeenCalledWith(
     expect.any(Object),
-    'Validation incomplete - missing required fields'
+    'Validation incomplete - missing required fields',
   );
 });
 ```

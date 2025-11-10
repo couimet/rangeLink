@@ -147,7 +147,8 @@ describe('Result Value Object', () => {
         const result = Result.ok(42);
 
         expect(() => result.error).toThrowRangeLinkError('RESULT_ERROR_ACCESS_ON_SUCCESS', {
-          message: 'Cannot access error on a successful Result. Check .success before accessing .error',
+          message:
+            'Cannot access error on a successful Result. Check .success before accessing .error',
           functionName: 'Result.error',
         });
       });
@@ -156,7 +157,8 @@ describe('Result Value Object', () => {
         const result = Result.ok({ foo: 'bar', num: 123 });
 
         expect(() => result.error).toThrowRangeLinkError('RESULT_ERROR_ACCESS_ON_SUCCESS', {
-          message: 'Cannot access error on a successful Result. Check .success before accessing .error',
+          message:
+            'Cannot access error on a successful Result. Check .success before accessing .error',
           functionName: 'Result.error',
         });
       });

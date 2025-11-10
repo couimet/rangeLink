@@ -32,6 +32,7 @@ vscode.commands.executeCommand('workbench.action.chat.open', {
 ```
 
 **Parameters:**
+
 - **String form:** Direct prompt text
 - **Object form:**
   - `query: string` - The prompt text (can include participant references like `@workspace`)
@@ -60,6 +61,7 @@ vscode.commands.executeCommand('workbench.action.chat.open', {
 **Status:** ✅ VSCode commands should work (Cursor is a VSCode fork)
 
 **Findings:**
+
 - Cursor IDE is built on VSCode, maintaining compatibility with VSCode extensions
 - Extensions work across "VS Code forks such as Insiders, Cursor, or Windsurf" (source: Codex IDE extension)
 - Cursor uses `Cmd+L` / `Ctrl+L` as keyboard shortcut to open chat
@@ -67,11 +69,13 @@ vscode.commands.executeCommand('workbench.action.chat.open', {
 - Some users reported issues with "Cursor: Open Chat" command (bug report from community forum)
 
 **Cursor-Specific Commands:**
+
 - No documented `cursor.chat` or `cursor.chat.open` commands found in official Cursor docs
 - Cursor docs focus on user-defined slash commands (e.g., `/fix`, `/explain`), not programmatic extension commands
 - **Assumption:** Cursor likely uses standard VSCode chat commands due to fork architecture
 
 **Sources:**
+
 - [Cursor Community Forum: Open Chat command not working](https://forum.cursor.com/t/cursor-open-chat-command-not-working/13921)
 - [Cursor Docs: Commands](https://cursor.com/docs/agent/chat/commands) (no extension API info)
 
@@ -104,6 +108,7 @@ await vscode.commands.executeCommand('workbench.action.chat.open', {
 ```
 
 **Why:**
+
 - Confirmed working for GitHub Copilot Chat
 - Widely used pattern in extensions
 - Supports pre-filling chat input
@@ -117,6 +122,7 @@ await vscode.commands.executeCommand('workbench.action.chat.open', {
 **Testing revealed:** The command `workbench.action.chat.open` is not available in Cursor IDE.
 
 **Actual Cursor commands found:**
+
 - `aichat.newchataction` - Opens chat panel (Cmd/Ctrl+L) but **cannot accept text parameters**
 - `workbench.action.toggleAuxiliaryBar` - Toggles secondary sidebar (fallback)
 - `aichat.opensidebar` - Opens chat sidebar with most recent session
@@ -125,6 +131,7 @@ await vscode.commands.executeCommand('workbench.action.chat.open', {
 **Limitation:** No working command exists to programmatically send text to Cursor chat as of Jan 2025.
 
 **Workaround implemented:**
+
 1. Copy text to clipboard using `vscode.env.clipboard.writeText()`
 2. Open chat panel using `aichat.newchataction` (with fallback to `toggleAuxiliaryBar`)
 3. Show notification prompting user to paste with Cmd/Ctrl+V
@@ -136,11 +143,15 @@ await vscode.commands.executeCommand('workbench.action.chat.open', {
 ## Implementation Status
 
 ### GitHubCopilotDestination
+
 ✅ **Uses:** `workbench.action.chat.open` with object parameter `{ query: text }`
+
 - Status: Not yet implemented (planned)
 
 ### CursorAIDestination
+
 ✅ **Implemented** with clipboard workaround (Jan 2025)
+
 - Clipboard API: `vscode.env.clipboard.writeText()`
 - Chat commands: `aichat.newchataction` (primary) → `workbench.action.toggleAuxiliaryBar` (fallback)
 - User notification: Shows "RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use."
@@ -150,12 +161,12 @@ await vscode.commands.executeCommand('workbench.action.chat.open', {
 
 ## Risks and Mitigations
 
-| Risk | Likelihood | Status | Mitigation |
-|------|------------|--------|------------|
-| `workbench.action.chat.open` doesn't work in Cursor | ~~Low~~ **CONFIRMED** | ✅ Resolved | Implemented clipboard workaround |
-| Command is undocumented and may change | Medium | Ongoing | Wrap in try/catch; graceful failure pattern |
-| Chat opens but doesn't focus input | Low | Acceptable | User sees chat opened with notification |
-| Clipboard workaround adds friction | Medium | Acceptable | One extra keystroke (Cmd/Ctrl+V) is minimal UX cost |
+| Risk                                                | Likelihood            | Status      | Mitigation                                          |
+| --------------------------------------------------- | --------------------- | ----------- | --------------------------------------------------- |
+| `workbench.action.chat.open` doesn't work in Cursor | ~~Low~~ **CONFIRMED** | ✅ Resolved | Implemented clipboard workaround                    |
+| Command is undocumented and may change              | Medium                | Ongoing     | Wrap in try/catch; graceful failure pattern         |
+| Chat opens but doesn't focus input                  | Low                   | Acceptable  | User sees chat opened with notification             |
+| Clipboard workaround adds friction                  | Medium                | Acceptable  | One extra keystroke (Cmd/Ctrl+V) is minimal UX cost |
 
 ---
 
@@ -172,10 +183,12 @@ await vscode.commands.executeCommand('workbench.action.chat.open', {
 ## Future Improvements
 
 **If Cursor adds extension API for chat:**
+
 - Monitor Cursor changelog for chat API additions
 - Replace clipboard workaround with direct API call
 - Keep tests for both implementations (backward compatibility)
 
 **References for tracking:**
+
 - Cursor Feature Request: [Adding text to chat from extension](https://forum.cursor.com/t/adding-text-to-chat-from-extension/43555)
 - Cursor Feature Request: [Command for passing prompt to chat](https://forum.cursor.com/t/a-command-for-passing-a-prompt-to-the-chat/138049)

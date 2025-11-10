@@ -100,7 +100,8 @@ export class Result<T, E> {
     if (this._success) {
       throw new RangeLinkError({
         code: RangeLinkErrorCodes.RESULT_ERROR_ACCESS_ON_SUCCESS,
-        message: 'Cannot access error on a successful Result. Check .success before accessing .error',
+        message:
+          'Cannot access error on a successful Result. Check .success before accessing .error',
         functionName: 'Result.error',
       });
     }

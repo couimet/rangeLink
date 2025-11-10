@@ -299,10 +299,7 @@ describe('RangeLinkService', () => {
       it('should pass 2000ms timeout to setStatusBarMessage', async () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          expect.any(String),
-          2000,
-        );
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
       });
 
       it('should pass 2000ms timeout when destination is bound and succeeds', async () => {
@@ -314,10 +311,7 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          expect.any(String),
-          2000,
-        );
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
       });
     });
   });

@@ -1,10 +1,5 @@
 import { getLogger } from 'barebone-logger';
-import {
-  InputSelection,
-  Selection,
-  SelectionCoverage,
-  SelectionType,
-} from 'rangelink-core-ts';
+import { InputSelection, Selection, SelectionCoverage, SelectionType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { isRectangularSelection } from '../isRectangularSelection';
