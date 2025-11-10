@@ -3,14 +3,13 @@ import { type DelimiterConfig } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { loadDelimiterConfig as loadDelimiterConfigFromModule } from './config';
-import { ChatDestinationManager } from './destinations/ChatDestinationManager';
 import { DestinationFactory } from './destinations/DestinationFactory';
+import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
-import { TerminalBindingManager } from './TerminalBindingManager';
 import { VSCodeLogger } from './VSCodeLogger';
 
 // ============================================================================
@@ -60,21 +59,15 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const delimiters = getDelimitersForExtension();
   const ideAdapter = new VscodeAdapter();
-  const terminalBindingManager = new TerminalBindingManager(context);
 
-  // Create chat destination manager (Phase 2 - minimal implementation)
+  // Create unified destination manager (Phase 3)
   const factory = new DestinationFactory(getLogger());
-  const chatDestinationManager = new ChatDestinationManager(factory, getLogger());
+  const destinationManager = new PasteDestinationManager(context, factory, getLogger());
 
-  const service = new RangeLinkService(
-    delimiters,
-    ideAdapter,
-    terminalBindingManager,
-    chatDestinationManager,
-  );
+  const service = new RangeLinkService(delimiters, ideAdapter, destinationManager);
 
-  // Register terminalBindingManager for automatic disposal on deactivation
-  context.subscriptions.push(terminalBindingManager);
+  // Register destinationManager for automatic disposal on deactivation
+  context.subscriptions.push(destinationManager);
 
   // Create shared navigation handler (used by both terminal and document providers)
   const navigationHandler = new RangeLinkNavigationHandler(delimiters, getLogger());
@@ -153,16 +146,10 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  // Register terminal binding commands
+  // Register destination binding commands
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.bindToTerminal', () => {
-      terminalBindingManager.bind();
-    }),
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.unbindTerminal', () => {
-      terminalBindingManager.unbind();
+    vscode.commands.registerCommand('rangelink.bindToTerminal', async () => {
+      await destinationManager.bind('terminal');
     }),
   );
 
@@ -176,7 +163,7 @@ export function activate(context: vscode.ExtensionContext): void {
     if (isCursorIDE) {
       context.subscriptions.push(
         vscode.commands.registerCommand('rangelink.bindToCursorAI', async () => {
-          await chatDestinationManager.bind('cursor-ai');
+          await destinationManager.bind('cursor-ai');
         }),
       );
     }
@@ -184,7 +171,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('rangelink.unbindDestination', () => {
-      chatDestinationManager.unbind();
+      destinationManager.unbind();
     }),
   );
 

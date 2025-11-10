@@ -84,25 +84,19 @@
       },
       {
         "command": "rangelink.bindToTerminal",
-        "title": "Bind to Terminal",
+        "title": "Bind RangeLink to Terminal Destination",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
-        "command": "rangelink.unbindTerminal",
-        "title": "Unbind Terminal",
-        "category": "RangeLink",
-        "icon": "$(close)"
-      },
-      {
         "command": "rangelink.bindToCursorAI",
-        "title": "Bind to Cursor AI",
+        "title": "Bind RangeLink to Cursor AI Destination",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.unbindDestination",
-        "title": "Unbind Destination",
+        "title": "Unbind RangeLink Destination",
         "category": "RangeLink",
         "icon": "$(close)"
       }

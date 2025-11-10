@@ -23,26 +23,15 @@ const mockOutputChannel = {
   dispose: jest.fn(),
 };
 
-// Helper to create mock terminal binding manager (not bound by default)
-function createMockTerminalBindingManager() {
-  return {
-    isBound: () => false,
-    sendToTerminal: () => false,
-    getBoundTerminal: () => undefined,
-    bind: () => false,
-    unbind: () => {},
-    dispose: () => {},
-  };
-}
-
-// Helper to create mock chat destination manager (not bound by default)
-function createMockChatDestinationManager() {
+// Helper to create mock destination manager (not bound by default)
+function createMockDestinationManager() {
   return {
     isBound: () => false,
     sendToDestination: async () => false,
     getBoundDestination: () => undefined,
     bind: async () => false,
     unbind: () => {},
+    dispose: () => {},
   };
 }
 
@@ -194,8 +183,7 @@ describe('RangeLinkService', () => {
         range: '-',
       },
       ideAdapter,
-      createMockTerminalBindingManager() as any,
-      createMockChatDestinationManager() as any,
+      createMockDestinationManager() as any,
     );
   });
 
@@ -697,8 +685,7 @@ describe('RangeLinkService', () => {
           range: '..',
         },
         new VscodeAdapter(),
-        createMockTerminalBindingManager() as any,
-        createMockChatDestinationManager() as any,
+        createMockDestinationManager() as any,
       );
 
       mockWindow.activeTextEditor = {
@@ -753,8 +740,7 @@ describe('RangeLinkService', () => {
           range: 'TO',
         },
         new VscodeAdapter(),
-        createMockTerminalBindingManager() as any,
-        createMockChatDestinationManager() as any,
+        createMockDestinationManager() as any,
       );
 
       mockWindow.activeTextEditor = {
@@ -3045,8 +3031,7 @@ describe('Portable links (Phase 1C)', () => {
         range: 'TO',
       },
       new VscodeAdapter(),
-      createMockTerminalBindingManager() as any,
-      createMockChatDestinationManager() as any,
+      createMockDestinationManager() as any,
     );
 
     // Act
@@ -3169,13 +3154,13 @@ describe('Extension lifecycle', () => {
     // Wait for async IIFE to complete
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    // 2 regular + 2 portable + 1 version + 2 terminal binding + 1 chat destination unbind + 1 document link click = 9
+    // 2 regular + 2 portable + 1 version + 1 bindToTerminal + 1 unbindDestination + 1 document link click = 8
     // Note: bindToCursorAI NOT registered in non-Cursor IDE
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(9);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(8);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
-    // Verify bindToCursorAI was NOT registered
+    // Verify bindToCursorAI was NOT registered (only registered in Cursor IDE)
     const registeredCommands = (mockCommands.registerCommand as jest.Mock).mock.calls.map(
       (call) => call[0],
     );
@@ -3224,9 +3209,8 @@ describe('Extension lifecycle', () => {
     // Wait for async IIFE to complete
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    // 2 regular + 2 portable + 1 version + 2 terminal binding + 2 chat destination binding + 1 document link click = 10
-    // Note: bindToCursorAI IS registered in Cursor IDE
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(10);
+    // 2 regular + 2 portable + 1 version + 1 bindToTerminal + 1 bindToCursorAI + 1 unbindDestination + 1 document link click = 9
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(9);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
 
     // Verify bindToCursorAI WAS registered

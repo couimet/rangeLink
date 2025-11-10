@@ -8,9 +8,8 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import type { ChatDestinationManager } from './destinations/ChatDestinationManager';
+import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import type { IdeAdapter } from './ide/IdeAdapter';
-import { TerminalBindingManager } from './TerminalBindingManager';
 import { toInputSelection } from './utils/toInputSelection';
 
 export enum PathFormat {
@@ -26,8 +25,7 @@ export class RangeLinkService {
   constructor(
     private readonly delimiters: DelimiterConfig,
     private readonly ideAdapter: IdeAdapter,
-    private readonly terminalBindingManager: TerminalBindingManager,
-    private readonly chatDestinationManager: ChatDestinationManager,
+    private readonly destinationManager: PasteDestinationManager,
   ) {}
 
   /**
@@ -122,40 +120,24 @@ export class RangeLinkService {
   private async copyAndNotify(link: string, linkTypeName: string): Promise<void> {
     await this.ideAdapter.writeTextToClipboard(link);
 
-    let statusMessage = `✓ ${linkTypeName} copied to clipboard`;
+    const statusMessage = `✓ ${linkTypeName} copied to clipboard`;
 
-    // Send to bound terminal if one is bound
-    if (this.terminalBindingManager && this.terminalBindingManager.isBound()) {
-      const sent = this.terminalBindingManager.sendToTerminal(link);
+    // Send to bound destination if one is bound
+    if (this.destinationManager.isBound()) {
+      const sent = await this.destinationManager.sendToDestination(link);
       if (sent) {
-        const terminal = this.terminalBindingManager.getBoundTerminal();
-        const terminalName = terminal?.name || 'terminal';
-        this.ideAdapter.setStatusBarMessage(`${statusMessage} & sent to ${terminalName}`, 2000);
+        const destination = this.destinationManager.getBoundDestination();
+        const displayName = destination?.displayName || 'destination';
+        this.ideAdapter.setStatusBarMessage(`${statusMessage} & sent to ${displayName}`, 2000);
       } else {
         // Unexpected: binding exists but send failed
         getLogger().error(
           { fn: 'copyAndNotify', linkTypeName },
-          'Failed to send link to bound terminal (terminal may have closed)',
+          'Failed to send link to bound destination',
         );
-        this.ideAdapter.showWarningMessage(`${statusMessage}; BUT failed to send to bound terminal.`);
-      }
-      return;
-    }
-
-    // Send to bound chat destination if one is bound
-    if (this.chatDestinationManager && this.chatDestinationManager.isBound()) {
-      const sent = await this.chatDestinationManager.sendToDestination(link);
-      if (sent) {
-        const destination = this.chatDestinationManager.getBoundDestination();
-        const destinationName = destination?.displayName || 'chat';
-        this.ideAdapter.setStatusBarMessage(`${statusMessage} & sent to ${destinationName}`, 2000);
-      } else {
-        // Unexpected: binding exists but send failed
-        getLogger().error(
-          { fn: 'copyAndNotify', linkTypeName },
-          'Failed to send link to bound chat destination',
+        this.ideAdapter.showWarningMessage(
+          `${statusMessage}; BUT failed to send to bound destination.`,
         );
-        this.ideAdapter.showWarningMessage(`${statusMessage}; BUT failed to send to bound destination.`);
       }
       return;
     }
