@@ -1,5 +1,44 @@
 # Claude Code Instructions
 
+## Autonomous Operation Guidelines
+
+**Claude should operate autonomously for standard development tasks without asking for permission.**
+
+### Always Proceed Without Asking For
+
+1. **Reading files** - Read any project files to understand context
+2. **Running tests** - `pnpm test`, `pnpm --filter <package> test`, etc.
+3. **Compiling/building** - `pnpm compile`, `pnpm clean`, `tsc`, etc.
+4. **Checking git status** - `git status`, `git log`, `git diff`
+5. **Searching code** - `grep`, `find`, `rg` (ripgrep)
+6. **Installing dependencies** - `pnpm install` (after package.json changes)
+7. **Formatting code** - `pnpm format:fix`
+8. **Linting** - Running eslint or other linters
+9. **Reading documentation** - Web searches, fetching docs from official sites
+10. **Creating test files** - When implementing features, always add corresponding tests
+11. **Editing files** - To fix bugs, implement features, refactor code
+12. **Writing new files** - When required for features (but prefer editing existing files)
+
+### Ask Permission Before
+
+1. **Git commits** - Always ask before committing (user reviews first)
+2. **Publishing** - Never publish packages without explicit approval
+3. **Deleting files** - Confirm before removing files (unless clearly obsolete)
+4. **Major architectural changes** - Discuss before large refactors
+5. **External API calls** - When consuming third-party services
+6. **Changing dependencies** - Adding/removing packages in package.json
+7. **Modifying configuration** - Changes to tsconfig.json, jest.config.js, etc.
+
+### Default Behavior
+
+- **Be proactive** - If tests fail, investigate and fix without asking
+- **Run verification** - After making changes, automatically run tests
+- **Self-correct** - If a command fails, try alternative approaches
+- **Provide context** - Explain what you're doing, but don't wait for approval for standard tasks
+- **Use parallel operations** - Run multiple independent commands concurrently when possible
+
+**Rationale:** This enables efficient parallel development across multiple worktrees without constant approval prompts for routine operations.
+
 ## Node.js and pnpm Setup
 
 **Important:** Claude Code runs non-interactive shells, so `node` and `pnpm` may not be available in the PATH by default.
