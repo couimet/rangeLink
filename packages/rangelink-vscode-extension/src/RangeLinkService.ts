@@ -8,6 +8,7 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { ChatDestinationManager } from './destinations/ChatDestinationManager';
 import type { IdeAdapter } from './ide/IdeAdapter';
 import { TerminalBindingManager } from './TerminalBindingManager';
 import { toInputSelection } from './utils/toInputSelection';
@@ -26,6 +27,7 @@ export class RangeLinkService {
     private readonly delimiters: DelimiterConfig,
     private readonly ideAdapter: IdeAdapter,
     private readonly terminalBindingManager: TerminalBindingManager,
+    private readonly chatDestinationManager: ChatDestinationManager,
   ) {}
 
   /**
@@ -121,6 +123,7 @@ export class RangeLinkService {
     await this.ideAdapter.writeTextToClipboard(link);
 
     let statusMessage = `✓ ${linkTypeName} copied to clipboard`;
+
     // Send to bound terminal if one is bound
     if (this.terminalBindingManager && this.terminalBindingManager.isBound()) {
       const sent = this.terminalBindingManager.sendToTerminal(link);
@@ -136,9 +139,29 @@ export class RangeLinkService {
         );
         this.ideAdapter.showWarningMessage(`${statusMessage}; BUT failed to send to bound terminal.`);
       }
-    } else {
-      this.ideAdapter.setStatusBarMessage(statusMessage, 2000);
+      return;
     }
+
+    // Send to bound chat destination if one is bound
+    if (this.chatDestinationManager && this.chatDestinationManager.isBound()) {
+      const sent = await this.chatDestinationManager.sendToDestination(link);
+      if (sent) {
+        const destination = this.chatDestinationManager.getBoundDestination();
+        const destinationName = destination?.displayName || 'chat';
+        this.ideAdapter.setStatusBarMessage(`${statusMessage} & sent to ${destinationName}`, 2000);
+      } else {
+        // Unexpected: binding exists but send failed
+        getLogger().error(
+          { fn: 'copyAndNotify', linkTypeName },
+          'Failed to send link to bound chat destination',
+        );
+        this.ideAdapter.showWarningMessage(`${statusMessage}; BUT failed to send to bound destination.`);
+      }
+      return;
+    }
+
+    // No destination bound - just show clipboard message
+    this.ideAdapter.setStatusBarMessage(statusMessage, 2000);
   }
 
   /**

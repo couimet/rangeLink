@@ -3,6 +3,8 @@ import { type DelimiterConfig } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { loadDelimiterConfig as loadDelimiterConfigFromModule } from './config';
+import { ChatDestinationManager } from './destinations/ChatDestinationManager';
+import { DestinationFactory } from './destinations/DestinationFactory';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
@@ -59,7 +61,17 @@ export function activate(context: vscode.ExtensionContext): void {
   const delimiters = getDelimitersForExtension();
   const ideAdapter = new VscodeAdapter();
   const terminalBindingManager = new TerminalBindingManager(context);
-  const service = new RangeLinkService(delimiters, ideAdapter, terminalBindingManager);
+
+  // Create chat destination manager (Phase 2 - minimal implementation)
+  const factory = new DestinationFactory(getLogger());
+  const chatDestinationManager = new ChatDestinationManager(factory, getLogger());
+
+  const service = new RangeLinkService(
+    delimiters,
+    ideAdapter,
+    terminalBindingManager,
+    chatDestinationManager,
+  );
 
   // Register terminalBindingManager for automatic disposal on deactivation
   context.subscriptions.push(terminalBindingManager);
@@ -151,6 +163,28 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand('rangelink.unbindTerminal', () => {
       terminalBindingManager.unbind();
+    }),
+  );
+
+  // Register chat destination binding commands (conditionally based on IDE)
+  // Only register Cursor AI command when running in Cursor IDE
+  // Use IIFE to detect IDE asynchronously at activation
+  void (async () => {
+    const cursorDestination = factory.create('cursor-ai');
+    const isCursorIDE = await cursorDestination.isAvailable();
+
+    if (isCursorIDE) {
+      context.subscriptions.push(
+        vscode.commands.registerCommand('rangelink.bindToCursorAI', async () => {
+          await chatDestinationManager.bind('cursor-ai');
+        }),
+      );
+    }
+  })();
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.unbindDestination', () => {
+      chatDestinationManager.unbind();
     }),
   );
 

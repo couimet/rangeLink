@@ -426,6 +426,9 @@ describe('TerminalDestination', () => {
 
 **Research Notes:** See `docs/RESEARCH-CLAUDE-CODE-INTEGRATION.md` and `docs/RESEARCH-CLAUDE-CODE-INTEGRATION-UPDATE.md` for Claude Code integration findings.
 
+**Known Limitation - Command Visibility:**
+Currently, IDE-specific binding commands (e.g., `rangelink.bindToCursorAI`) are visible in all IDEs but fail gracefully with error messages when not running in the correct environment. Future Phase 3 work should implement conditional command visibility based on IDE detection (see extension.ts:165-167 TODO comments).
+
 #### Step 2.1: Implement TextEditorDestination
 
 **New file:** `packages/rangelink-vscode-extension/src/destinations/TextEditorDestination.ts`

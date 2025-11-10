@@ -92,6 +92,18 @@
         "title": "Unbind Terminal",
         "category": "RangeLink",
         "icon": "$(close)"
+      },
+      {
+        "command": "rangelink.bindToCursorAI",
+        "title": "Bind to Cursor AI",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.unbindDestination",
+        "title": "Unbind Destination",
+        "category": "RangeLink",
+        "icon": "$(close)"
       }
     ],
     "configuration": {

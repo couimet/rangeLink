@@ -1,6 +1,7 @@
 import type { DelimiterConfig } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { ChatDestinationManager } from '../destinations/ChatDestinationManager';
 import type { IdeAdapter } from '../ide/IdeAdapter';
 import { RangeLinkService } from '../RangeLinkService';
 import type { TerminalBindingManager } from '../TerminalBindingManager';
@@ -22,6 +23,7 @@ describe('RangeLinkService', () => {
     let service: RangeLinkService;
     let mockIdeAdapter: IdeAdapter;
     let mockTerminalBindingManager: TerminalBindingManager;
+    let mockChatDestinationManager: ChatDestinationManager;
     const delimiters: DelimiterConfig = {
       line: 'L',
       position: 'C',
@@ -44,8 +46,20 @@ describe('RangeLinkService', () => {
         getBoundTerminal: jest.fn(),
       } as unknown as TerminalBindingManager;
 
+      // Create mock chat destination manager
+      mockChatDestinationManager = {
+        isBound: jest.fn().mockReturnValue(false),
+        sendToDestination: jest.fn(),
+        getBoundDestination: jest.fn(),
+      } as unknown as ChatDestinationManager;
+
       // Create service
-      service = new RangeLinkService(delimiters, mockIdeAdapter, mockTerminalBindingManager);
+      service = new RangeLinkService(
+        delimiters,
+        mockIdeAdapter,
+        mockTerminalBindingManager,
+        mockChatDestinationManager,
+      );
 
       jest.clearAllMocks();
     });
