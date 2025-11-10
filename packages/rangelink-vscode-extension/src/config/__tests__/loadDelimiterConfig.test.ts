@@ -1,5 +1,5 @@
-import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import { createMockLogger } from 'barebone-logger-testing';
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
 import { loadDelimiterConfig } from '../loadDelimiterConfig';
 import type { ConfigGetter, ConfigInspection } from '../types';

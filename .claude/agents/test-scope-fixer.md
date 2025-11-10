@@ -16,14 +16,16 @@ Detect tests that are "badly scoped" - tests that verify implementation details 
 ## Pattern You're Looking For
 
 **Badly Scoped Test Pattern:**
+
 ```typescript
 // Class method that delegates to utilities
 class SomeClass {
   async doSomething(input: string): Promise<boolean> {
-    if (!isValidInput(input)) {  // ← Utility function
+    if (!isValidInput(input)) {
+      // ← Utility function
       return false;
     }
-    const processed = processInput(input);  // ← Utility function
+    const processed = processInput(input); // ← Utility function
     // ... use processed value
   }
 }
@@ -48,6 +50,7 @@ it('should add padding to input without spaces', async () => {
 These tests should be in the utility function's test file (`isValidInput.test.ts`, `processInput.test.ts`), NOT in the class test.
 
 **Correctly Scoped Test Pattern:**
+
 ```typescript
 // ✅ CORRECTLY SCOPED TEST (mocks utilities, tests only delegation)
 jest.mock('../utils/isValidInput');
@@ -96,10 +99,11 @@ it('should process valid input', async () => {
 
 **Present the plan in this format:**
 
-```markdown
+````markdown
 ## Test Scope Analysis Report
 
 ### Summary
+
 - Total tests analyzed: X
 - Badly scoped tests: Y
 - Tests to remove/refactor: Z
@@ -108,12 +112,14 @@ it('should process valid input', async () => {
 ### Badly Scoped Tests Detected
 
 #### Test: "should reject empty strings" (Line XX)
+
 - **Problem**: Tests `isValidInput` implementation detail (empty string rejection)
 - **Utility**: `isValidInput` in `src/utils/isValidInput.ts`
 - **Coverage check**: ✅ Equivalent test exists in `isValidInput.test.ts:25`
 - **Action**: Remove test, add mock-based test
 
 #### Test: "should add padding to input" (Line YY)
+
 - **Problem**: Tests `processInput` padding logic
 - **Utility**: `processInput` in `src/utils/processInput.ts`
 - **Coverage check**: ⚠️ No equivalent test found in `processInput.test.ts`
@@ -122,31 +128,39 @@ it('should process valid input', async () => {
 ### Proposed Changes
 
 #### 1. Add module-level mocks
+
 ```typescript
 jest.mock('../utils/isValidInput');
 jest.mock('../utils/processInput');
 ```
+````
 
 #### 2. Remove badly scoped tests
+
 - Lines XX-YY: "should reject empty strings"
 - Lines ZZ-AA: "should add padding to input"
-(X tests total)
+  (X tests total)
 
 #### 3. Add properly scoped tests
+
 - Test delegation when `isValidInput` returns false
 - Test delegation when `isValidInput` returns true
 - Test that `processInput` result is used correctly
-(Y new tests)
+  (Y new tests)
 
 ### Coverage Gaps (⚠️)
+
 The following badly scoped tests have NO equivalent in utility tests:
+
 - "should add padding to input" → Missing in `processInput.test.ts`
 
 **Recommendation**: Add these tests to utility test files before refactoring.
 
 ---
+
 **Awaiting approval to proceed with refactoring...**
-```
+
+````
 
 **STOP HERE and wait for user approval.**
 
@@ -158,7 +172,7 @@ Once the user approves, proceed with:
    ```typescript
    jest.mock('../utils/utilityFunction');
    import { utilityFunction } from '../utils/utilityFunction';
-   ```
+````
 
 2. **Remove badly scoped tests** completely
 
@@ -179,40 +193,48 @@ Once the user approves, proceed with:
 
 ### Phase 3: Final Report
 
-```markdown
+````markdown
 ## Refactoring Complete
 
 ### Changes Made
+
 - ✅ Added X module-level mocks
 - ✅ Removed Y badly scoped tests
 - ✅ Added Z properly scoped tests
 - ✅ All tests passing
 
 ### Mock Setup Added
+
 ```typescript
 jest.mock('../utils/isValidInput');
 jest.mock('../utils/processInput');
 ```
+````
 
 ### Tests Removed (Lines)
+
 - XX-YY: "should reject empty strings" (now in isValidInput.test.ts)
 - ZZ-AA: "should add padding..." (now in processInput.test.ts)
 
 ### Tests Added
+
 - "should return false when isValidInput returns false"
 - "should call processInput with input when valid"
 - "should use processInput result correctly"
 
 ### Coverage Gaps Still Present (⚠️)
+
 - processInput.test.ts missing test for padding behavior
 
 ### Test Results
+
 ```
 PASS  src/__tests__/SomeClass.test.ts
   ✓ should return false when isValidInput returns false (2ms)
   ✓ should call processInput with input when valid (1ms)
   ...
 ```
+
 ```
 
 ## Key Principles
@@ -237,3 +259,4 @@ PASS  src/__tests__/SomeClass.test.ts
 - Run tests after refactoring to ensure they pass
 - Report coverage gaps but don't block the refactoring
 - Each new test should assert on BOTH behavior AND mock calls
+```

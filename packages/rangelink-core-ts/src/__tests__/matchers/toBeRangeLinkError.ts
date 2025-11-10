@@ -1,6 +1,6 @@
+import type { ErrorDetails } from '../../errors/detailedError';
 import { RangeLinkError } from '../../errors/RangeLinkError';
 import type { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
-import type { ErrorDetails } from '../../errors/detailedError';
 import type { Result } from '../../types/Result';
 
 /**

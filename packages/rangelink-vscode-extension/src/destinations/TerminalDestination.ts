@@ -1,9 +1,10 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import type { DestinationType, PasteDestination } from './PasteDestination';
 import { applySmartPadding } from '../utils/applySmartPadding';
 import { isEligibleForPaste } from '../utils/isEligibleForPaste';
+
+import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**
  * Terminal destination implementation for pasting RangeLinks

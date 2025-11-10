@@ -7,6 +7,7 @@ import { RangeNotation } from '../types/RangeNotation';
 import { Result } from '../types/Result';
 import { SelectionCoverage } from '../types/SelectionCoverage';
 import { SelectionType } from '../types/SelectionType';
+
 import { validateInputSelection } from './validateInputSelection';
 
 /**

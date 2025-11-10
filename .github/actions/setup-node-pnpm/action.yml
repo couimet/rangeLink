@@ -1,0 +1,28 @@
+name: 'Setup Node.js and pnpm'
+description: 'Sets up Node.js from .nvmrc and enables pnpm via Corepack'
+
+outputs:
+  node-version:
+    description: 'The Node.js version that was installed'
+    value: ${{ steps.setup-node.outputs.node-version }}
+  pnpm-version:
+    description: 'The pnpm version that was enabled'
+    value: ${{ steps.get-pnpm-version.outputs.version }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js from .nvmrc
+      id: setup-node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+
+    - name: Enable pnpm via Corepack
+      shell: bash
+      run: corepack enable
+
+    - name: Get pnpm version
+      id: get-pnpm-version
+      shell: bash
+      run: echo "version=$(pnpm --version)" >> $GITHUB_OUTPUT

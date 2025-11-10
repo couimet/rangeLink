@@ -68,9 +68,7 @@ export const createMockEnv = (options?: {
  * @param extensionIds - Array of extension IDs to mock as installed
  * @returns Mock extensions object
  */
-export const createMockExtensions = (
-  extensionIds: string[] = [],
-): typeof vscode.extensions => {
+export const createMockExtensions = (extensionIds: string[] = []): typeof vscode.extensions => {
   const mockExtensions = extensionIds.map((id) => ({
     id,
     isActive: true,

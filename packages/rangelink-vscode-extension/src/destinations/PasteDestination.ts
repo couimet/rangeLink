@@ -7,7 +7,12 @@
  * - `github-copilot`: GitHub Copilot Chat (future)
  * - `claude-code`: Claude Code chat (experimental - hybrid approach, see docs/RESEARCH-CLAUDE-CODE-INTEGRATION-UPDATE.md)
  */
-export type DestinationType = 'terminal' | 'text-editor' | 'cursor-ai' | 'github-copilot' | 'claude-code';
+export type DestinationType =
+  | 'terminal'
+  | 'text-editor'
+  | 'cursor-ai'
+  | 'github-copilot'
+  | 'claude-code';
 
 /**
  * Interface for RangeLink paste destinations

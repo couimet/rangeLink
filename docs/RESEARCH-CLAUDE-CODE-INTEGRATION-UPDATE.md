@@ -9,6 +9,7 @@
 ## Reverse Engineering Findings
 
 ### Extension Location
+
 ```
 ~/.cursor/extensions/anthropic.claude-code-2.0.34-darwin-arm64/
 ```
@@ -16,6 +17,7 @@
 ### Discovered Commands (from package.json)
 
 **Promising for integration:**
+
 1. **`claude-vscode.focus`** - Focus Claude Code input
    - Keybinding: `Cmd+Escape` (Mac) / `Ctrl+Escape` (Win/Linux)
    - Context: `!config.claudeCode.useTerminal && editorTextFocus`
@@ -32,9 +34,10 @@
 ### Architecture Analysis (from extension.js)
 
 **Event-Based Communication:**
+
 ```javascript
 // Extension creates EventEmitter
-let o = new Ue.EventEmitter;
+let o = new Ue.EventEmitter();
 
 // Commands fire events to webview
 e.fire(mentionText); // Example: '@file.ts#L10-20'
@@ -43,14 +46,15 @@ e.fire(mentionText); // Example: '@file.ts#L10-20'
 ```
 
 **The insertAtMention implementation:**
+
 ```javascript
-Ue.commands.registerCommand("claude-vscode.insertAtMention", async () => {
+Ue.commands.registerCommand('claude-vscode.insertAtMention', async () => {
   let s = Ue.window.activeTextEditor;
   if (!s) return;
 
   let a = s.document,
-      i = Ue.workspace.asRelativePath(a.fileName),
-      n = s.selection;
+    i = Ue.workspace.asRelativePath(a.fileName),
+    n = s.selection;
 
   if (n.isEmpty) {
     e.fire(`@${i}`);
@@ -58,11 +62,11 @@ Ue.commands.registerCommand("claude-vscode.insertAtMention", async () => {
   }
 
   let o = n.start.line + 1,
-      l = n.end.line + 1,
-      c = o !== l ? `@${i}#${o}-${l}` : `@${i}#${o}`;
+    l = n.end.line + 1,
+    c = o !== l ? `@${i}#${o}-${l}` : `@${i}#${o}`;
 
   e.fire(c);
-})
+});
 ```
 
 ### The Challenge
@@ -70,6 +74,7 @@ Ue.commands.registerCommand("claude-vscode.insertAtMention", async () => {
 **EventEmitter is internal** - Not exposed to external extensions like RangeLink.
 
 The communication flow is:
+
 1. Command → Internal EventEmitter
 2. EventEmitter → Webview (via postMessage)
 3. Webview → Updates input field
@@ -83,6 +88,7 @@ External extensions cannot access this EventEmitter.
 ### Option A: Clipboard + Focus + Paste Command
 
 **Strategy:**
+
 ```typescript
 // 1. Copy RangeLink to clipboard (already done)
 await vscode.env.clipboard.writeText(rangeLink);
@@ -95,11 +101,13 @@ await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
 ```
 
 **Pros:**
+
 - Uses existing commands
 - No need for EventEmitter access
 - Works with current Claude Code architecture
 
 **Cons:**
+
 - Overwrites clipboard temporarily
 - `editor.action.clipboardPasteAction` may not work in webview context
 - Race condition between focus and paste
@@ -109,6 +117,7 @@ await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
 ### Option B: Focus + User Manual Paste
 
 **Strategy:**
+
 ```typescript
 // 1. Copy to clipboard
 await vscode.env.clipboard.writeText(rangeLink);
@@ -121,11 +130,13 @@ vscode.window.showInformationMessage('RangeLink copied - press Cmd+V to paste');
 ```
 
 **Pros:**
+
 - Simple, reliable
 - No clipboard conflicts
 - User sees what's happening
 
 **Cons:**
+
 - Requires manual user action (Cmd+V)
 - Not truly "auto-paste"
 
@@ -134,6 +145,7 @@ vscode.window.showInformationMessage('RangeLink copied - press Cmd+V to paste');
 ### Option C: Mimic insertAtMention Pattern
 
 **Strategy:**
+
 ```typescript
 // Hijack the insertAtMention command by:
 // 1. Setting a selection in active editor (temporary)
@@ -144,6 +156,7 @@ vscode.window.showInformationMessage('RangeLink copied - press Cmd+V to paste');
 ```
 
 **Cons:**
+
 - Only works for @mention format
 - Would break user's selection
 - Not designed for arbitrary text
@@ -154,7 +167,7 @@ vscode.window.showInformationMessage('RangeLink copied - press Cmd+V to paste');
 
 ## Recommended Approach
 
-###Hybrid Strategy: Smart Paste with Fallback**
+###Hybrid Strategy: Smart Paste with Fallback\*\*
 
 ```typescript
 export class ClaudeCodeDestination implements PasteDestination {
@@ -185,7 +198,7 @@ export class ClaudeCodeDestination implements PasteDestination {
         this.logger.warn('Automatic paste failed, prompting user');
         vscode.window.showInformationMessage(
           'RangeLink focused in Claude Code - press Cmd+V to paste',
-          { modal: false }
+          { modal: false },
         );
         return true; // Still count as success (focused)
       }
@@ -198,6 +211,7 @@ export class ClaudeCodeDestination implements PasteDestination {
 ```
 
 **Benefits:**
+
 - Graceful degradation
 - User always gets feedback
 - Works with current Claude Code architecture
@@ -226,12 +240,14 @@ export class ClaudeCodeDestination implements PasteDestination {
 **Claude Code integration is POSSIBLE but not fully automatic.**
 
 **Recommendation for Phase 2:**
+
 1. Implement hybrid approach (focus + paste command with fallback)
 2. Mark as "experimental" in documentation
 3. Gather user feedback
 4. Contact Anthropic to request public API for external extensions
 
 **Priority adjustment:**
+
 - **High:** Cursor AI (standard VSCode chat API)
 - **High:** GitHub Copilot (standard VSCode chat API)
 - **Medium:** Claude Code (hybrid workaround, requires testing)

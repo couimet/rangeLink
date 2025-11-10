@@ -19,8 +19,8 @@ jest.mock('vscode', () => ({
 }));
 
 import { DestinationFactory } from '../../destinations/DestinationFactory';
-import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
 import type { PasteDestination } from '../../destinations/PasteDestination';
+import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
 import { TerminalDestination } from '../../destinations/TerminalDestination';
 
 describe('PasteDestinationManager', () => {

@@ -157,10 +157,7 @@ export class CursorAIDestination implements PasteDestination {
       }
 
       if (!chatOpened) {
-        this.logger.warn(
-          { fn: 'CursorAIDestination.paste' },
-          'All chat open commands failed',
-        );
+        this.logger.warn({ fn: 'CursorAIDestination.paste' }, 'All chat open commands failed');
       }
 
       // Step 3: Show notification (regardless of whether chat opened)
