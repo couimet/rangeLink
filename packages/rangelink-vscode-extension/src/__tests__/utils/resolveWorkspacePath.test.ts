@@ -34,10 +34,6 @@ describe('resolveWorkspacePath', () => {
   const mockUri = vscode.Uri as jest.Mocked<typeof vscode.Uri>;
   const mockStat = mockWorkspace.fs.stat as jest.MockedFunction<typeof mockWorkspace.fs.stat>;
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   afterEach(() => {
     // Reset workspaceFolders to undefined
     Object.defineProperty(mockWorkspace, 'workspaceFolders', {
