@@ -6,13 +6,17 @@ import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
 
 // Mock vscode module
 jest.mock('vscode', () => {
+  const mockUriFile = jest.fn();
+  // Set default implementation that persists across test resets
+  mockUriFile.mockImplementation((fsPath: string) => ({
+    fsPath,
+    scheme: 'file',
+    path: fsPath,
+    toString: () => `file://${fsPath}`,
+  }));
+
   const mockUri = {
-    file: jest.fn((fsPath: string) => ({
-      fsPath,
-      scheme: 'file',
-      path: fsPath,
-      toString: () => `file://${fsPath}`,
-    })),
+    file: mockUriFile,
   };
 
   const mockWorkspace = {
@@ -34,6 +38,18 @@ describe('resolveWorkspacePath', () => {
   const mockWorkspace = vscode.workspace as jest.Mocked<typeof vscode.workspace>;
   const mockUri = vscode.Uri as jest.Mocked<typeof vscode.Uri>;
   const mockStat = mockWorkspace.fs.stat as jest.MockedFunction<typeof mockWorkspace.fs.stat>;
+
+  beforeEach(() => {
+    mockUri.file.mockImplementation(
+      (fsPath: string) =>
+        ({
+          fsPath,
+          scheme: 'file',
+          path: fsPath,
+          toString: () => `file://${fsPath}`,
+        }) as any,
+    );
+  });
 
   afterEach(() => {
     // Reset workspaceFolders to undefined
