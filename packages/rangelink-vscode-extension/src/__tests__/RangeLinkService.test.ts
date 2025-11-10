@@ -46,8 +46,6 @@ describe('RangeLinkService', () => {
 
       // Create service
       service = new RangeLinkService(delimiters, mockIdeAdapter, mockDestinationManager);
-
-      jest.clearAllMocks();
     });
 
     describe('when no destination is bound', () => {

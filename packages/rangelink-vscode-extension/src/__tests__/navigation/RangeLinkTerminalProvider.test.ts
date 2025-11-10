@@ -54,9 +54,6 @@ describe('RangeLinkTerminalProvider', () => {
     // Create handler and provider
     const handler = new RangeLinkNavigationHandler(delimiters, mockLogger);
     provider = new RangeLinkTerminalProvider(handler, mockLogger);
-
-    // Reset mocks
-    jest.clearAllMocks();
   });
 
   describe('handleTerminalLink - Safety Net Validation', () => {

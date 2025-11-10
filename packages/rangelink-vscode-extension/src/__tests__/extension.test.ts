@@ -149,8 +149,6 @@ describe('RangeLinkService', () => {
   let service: RangeLinkService;
 
   beforeEach(() => {
-    // Clear all mocks
-    jest.clearAllMocks();
     mockClipboard.writeText.mockResolvedValue(undefined);
 
     // Wire up the external mock objects to the vscode mock
@@ -185,10 +183,6 @@ describe('RangeLinkService', () => {
       ideAdapter,
       createMockDestinationManager() as any,
     );
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
   });
 
   describe('createLink - Empty selection handling', () => {
@@ -1267,7 +1261,6 @@ describe('RangeLinkService', () => {
 
 describe('Configuration loading and validation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
     mockOutputChannel.appendLine.mockClear();
 
     // Wire up mocks - use arrow function to allow dynamic reassignment
@@ -2979,8 +2972,6 @@ describe('Configuration loading and validation', () => {
 
 describe('Portable links (Phase 1C)', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-
     // Wire up mocks
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
     (vscode.window.showErrorMessage as jest.Mock).mockImplementation(mockWindow.showErrorMessage);
@@ -3104,8 +3095,6 @@ describe('Portable links (Phase 1C)', () => {
 });
 describe('Extension lifecycle', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-
     // Wire up mocks
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
     (vscode.window.showErrorMessage as jest.Mock).mockImplementation(mockWindow.showErrorMessage);
