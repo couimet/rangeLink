@@ -2,7 +2,7 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
-// Mock vscode.window for status bar messages
+// Mock vscode.window and vscode.workspace for status bar messages and event listeners
 jest.mock('vscode', () => ({
   ...jest.requireActual('vscode'),
   window: {
@@ -12,6 +12,9 @@ jest.mock('vscode', () => ({
     showInformationMessage: jest.fn(),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
     activeTerminal: undefined,
+  },
+  workspace: {
+    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
   },
 }));
 

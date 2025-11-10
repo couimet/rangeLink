@@ -5,6 +5,7 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors
 import { CursorAIDestination } from './CursorAIDestination';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 import { TerminalDestination } from './TerminalDestination';
+import { TextEditorDestination } from './TextEditorDestination';
 
 /**
  * Factory for creating paste destination instances
@@ -37,10 +38,10 @@ export class DestinationFactory {
       case 'cursor-ai':
         return new CursorAIDestination(this.logger);
 
+      case 'text-editor':
+        return new TextEditorDestination(this.logger);
+
       // Future implementations:
-      // case 'text-editor':
-      //   return new TextEditorDestination(this.logger);
-      //
       // case 'github-copilot':
       //   return new GitHubCopilotDestination(this.logger);
       //
@@ -69,8 +70,8 @@ export class DestinationFactory {
     return [
       'terminal',
       'cursor-ai',
+      'text-editor',
       // Future: Phase 2+ additions
-      // 'text-editor',
       // 'github-copilot',
       // 'claude-code',
     ];

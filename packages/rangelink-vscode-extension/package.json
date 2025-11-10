@@ -89,6 +89,12 @@
         "icon": "$(link)"
       },
       {
+        "command": "rangelink.bindToTextEditor",
+        "title": "Bind RangeLink to Text Editor Destination",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.bindToCursorAI",
         "title": "Bind RangeLink to Cursor AI Destination",
         "category": "RangeLink",
