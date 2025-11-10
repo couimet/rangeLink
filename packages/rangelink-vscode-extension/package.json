@@ -10,12 +10,14 @@
     "reference",
     "link",
     "range",
-    "citation",
-    "documentation",
     "ai",
-    "rectangular selection",
+    "cursor",
+    "terminal",
+    "navigation",
     "code sharing",
-    "collaboration"
+    "collaboration",
+    "clipboard",
+    "paste"
   ],
   "homepage": "https://github.com/couimet/rangelink/tree/main/packages/rangelink-vscode-extension#readme",
   "bugs": {
