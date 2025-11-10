@@ -15,6 +15,7 @@ export enum RangeLinkExtensionSpecificCodes {
   //
   // Destination errors
   //
+  DESTINATION_NOT_AVAILABLE = 'DESTINATION_NOT_AVAILABLE',
   DESTINATION_NOT_IMPLEMENTED = 'DESTINATION_NOT_IMPLEMENTED',
 
   //
