@@ -1,6 +1,6 @@
 import { RangeLinkError } from '../../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
-import { Result, Ok, Err } from '../../types/Result';
+import { Result } from '../../types/Result';
 
 describe('Result Value Object', () => {
   describe('Factory methods', () => {
@@ -262,79 +262,6 @@ describe('Result Value Object', () => {
           success: false,
           error: 'test error',
         });
-      });
-    });
-  });
-
-  describe('Backward compatibility', () => {
-    describe('Ok() function', () => {
-      it('should create a successful Result', () => {
-        const result = Ok(42);
-
-        expect(result.success).toBe(true);
-        expect(result.value).toBe(42);
-      });
-
-      it('should work with string values', () => {
-        const result = Ok('hello');
-
-        expect(result.success).toBe(true);
-        expect(result.value).toBe('hello');
-      });
-
-      it('should work with object values', () => {
-        const obj = { foo: 'bar', num: 123 };
-        const result = Ok(obj);
-
-        expect(result.success).toBe(true);
-        expect(result.value).toStrictEqual(obj);
-      });
-
-      it('should be equivalent to Result.ok', () => {
-        const value = { test: 123 };
-        const result1 = Ok(value);
-        const result2 = Result.ok(value);
-
-        expect(result1.success).toBe(result2.success);
-        expect(result1.value).toStrictEqual(result2.value);
-      });
-    });
-
-    describe('Err() function', () => {
-      it('should create an error Result', () => {
-        const error = new Error('test error');
-        const result = Err(error);
-
-        expect(result.success).toBe(false);
-        expect(result.error).toBe(error);
-      });
-
-      it('should work with string errors', () => {
-        const result = Err('error message');
-
-        expect(result.success).toBe(false);
-        expect(result.error).toBe('error message');
-      });
-
-      it('should work with RangeLinkError', () => {
-        const error = new RangeLinkError({
-          code: RangeLinkErrorCodes.PARSE_EMPTY_LINK,
-          message: 'Link cannot be empty',
-          functionName: 'parseLink',
-        });
-        const result = Err(error);
-
-        expect(result.success).toBe(false);
-        expect(result.error).toBe(error);
-      });
-
-      it('should be equivalent to Result.err', () => {
-        const error = 'test error';
-        const result1 = Err(error);
-        const result2 = Result.err(error);
-
-        expect(result1.success).toBe(result2.success);
-        expect(result1.error).toBe(result2.error);
       });
     });
   });

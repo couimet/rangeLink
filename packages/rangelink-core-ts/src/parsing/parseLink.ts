@@ -8,7 +8,7 @@ import { DelimiterConfig } from '../types/DelimiterConfig';
 import { LinkPosition } from '../types/LinkPosition';
 import { LinkType } from '../types/LinkType';
 import { ParsedLink } from '../types/ParsedLink';
-import { Result, Ok, Err } from '../types/Result';
+import { Result } from '../types/Result';
 import { SelectionType } from '../types/SelectionType';
 import { escapeRegex } from '../utils/escapeRegex';
 
@@ -42,7 +42,7 @@ export const parseLink = (
 ): Result<ParsedLink, RangeLinkError> => {
   // Check link length for safety
   if (link.length > MAX_LINK_LENGTH) {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_LINK_TOO_LONG,
         message: `Link exceeds maximum length of ${MAX_LINK_LENGTH} characters`,
@@ -53,7 +53,7 @@ export const parseLink = (
   }
 
   if (!link || link.trim() === '') {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_EMPTY_LINK,
         message: 'Link cannot be empty',
@@ -110,7 +110,7 @@ export const parseLink = (
   if (!match) {
     // Check for empty path (link starts with hash)
     if (link.startsWith(activeDelimiters.hash)) {
-      return Err(
+      return Result.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.PARSE_EMPTY_PATH,
           message: 'Path cannot be empty',
@@ -121,7 +121,7 @@ export const parseLink = (
 
     // Check if hash separator is missing entirely
     if (!link.includes(activeDelimiters.hash)) {
-      return Err(
+      return Result.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
           message: `Link must contain ${activeDelimiters.hash} separator`,
@@ -132,7 +132,7 @@ export const parseLink = (
     }
 
     // Hash exists but format is invalid
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_INVALID_RANGE_FORMAT,
         message: 'Invalid range format',
@@ -148,7 +148,7 @@ export const parseLink = (
   // Validate that path is not just the hash delimiter or empty
   // Edge case: ##L10 could match with path="#" if regex captures first # as path
   if (path === activeDelimiters.hash || path.trim() === '') {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_EMPTY_PATH,
         message: 'Path cannot be empty',
@@ -183,7 +183,7 @@ export const parseLink = (
 
   // Validation
   if (startLine < 1) {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_LINE_BELOW_MINIMUM,
         message: 'Start line must be >= 1',
@@ -194,7 +194,7 @@ export const parseLink = (
   }
 
   if (endLine < startLine) {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_LINE_BACKWARD,
         message: 'End line cannot be before start line',
@@ -205,7 +205,7 @@ export const parseLink = (
   }
 
   if (startChar !== undefined && startChar < 1) {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_CHAR_BELOW_MINIMUM,
         message: 'Start character must be >= 1',
@@ -216,7 +216,7 @@ export const parseLink = (
   }
 
   if (endChar !== undefined && endChar < 1) {
-    return Err(
+    return Result.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_CHAR_BELOW_MINIMUM,
         message: 'End character must be >= 1',
@@ -229,7 +229,7 @@ export const parseLink = (
   // If on same line, end char must be >= start char
   if (startLine === endLine && startChar !== undefined && endChar !== undefined) {
     if (endChar < startChar) {
-      return Err(
+      return Result.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.PARSE_CHAR_BACKWARD_SAME_LINE,
           message: 'End character cannot be before start character on same line',
@@ -252,7 +252,7 @@ export const parseLink = (
     ...(endChar !== undefined && { char: endChar }),
   };
 
-  return Ok({
+  return Result.ok({
     path,
     start,
     end,

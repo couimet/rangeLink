@@ -117,15 +117,3 @@ export class Result<T, E> {
       : { success: false, error: this._error as E };
   }
 }
-
-/**
- * Create a successful result (backward compatibility wrapper).
- * @deprecated Prefer Result.ok() for new code
- */
-export const Ok = <T>(value: T): Result<T, never> => Result.ok(value);
-
-/**
- * Create an error result (backward compatibility wrapper).
- * @deprecated Prefer Result.err() for new code
- */
-export const Err = <E>(error: E): Result<never, E> => Result.err(error);
