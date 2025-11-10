@@ -10,6 +10,7 @@ import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvide
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
+import { registerWithLogging } from './utils/registerWithLogging';
 import { VSCodeLogger } from './VSCodeLogger';
 
 // ============================================================================
@@ -75,22 +76,28 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register terminal link provider for clickable links
   const terminalLinkProvider = new RangeLinkTerminalProvider(navigationHandler, getLogger());
-  context.subscriptions.push(vscode.window.registerTerminalLinkProvider(terminalLinkProvider));
-  getLogger().debug({ fn: 'activate' }, 'Terminal link provider registered');
+  context.subscriptions.push(
+    registerWithLogging(
+      vscode.window.registerTerminalLinkProvider(terminalLinkProvider),
+      'Terminal link provider registered',
+    ),
+  );
 
   // Register document link provider for clickable links in editor files
   // Only register for specific schemes to prevent infinite recursion when scanning output channels
   const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, getLogger());
   context.subscriptions.push(
-    vscode.languages.registerDocumentLinkProvider(
-      [
-        { scheme: 'file' }, // Regular files (markdown, code, etc.)
-        { scheme: 'untitled' }, // Unsaved/new files (scratchpad workflow)
-      ],
-      documentLinkProvider,
+    registerWithLogging(
+      vscode.languages.registerDocumentLinkProvider(
+        [
+          { scheme: 'file' }, // Regular files (markdown, code, etc.)
+          { scheme: 'untitled' }, // Unsaved/new files (scratchpad workflow)
+        ],
+        documentLinkProvider,
+      ),
+      'Document link provider registered',
     ),
   );
-  getLogger().debug({ fn: 'activate' }, 'Document link provider registered');
 
   // Register commands
   context.subscriptions.push(
