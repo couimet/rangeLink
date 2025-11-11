@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Bind any text editor as paste destination (Command Palette → "Bind RangeLink to Text Editor Destination")
   - Requires split editor (2+ tab groups) and bound file must be topmost tab for auto-paste
   - Auto-paste links at cursor position with smart padding
+  - Auto-focuses bound editor after paste (RangeLink's unified UX pattern across all destinations)
   - Clipboard fallback with reminder when bound file hidden behind other tabs
   - Blocks binary files (images, PDFs, archives) - only text-like files
   - Auto-unbinds when editor closes with notification

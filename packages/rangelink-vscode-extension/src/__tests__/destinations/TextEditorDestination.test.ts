@@ -17,6 +17,7 @@ jest.mock('vscode', () => {
         all: [],
       },
       visibleTextEditors: [],
+      showTextDocument: jest.fn(),
     },
     workspace: {
       getWorkspaceFolder: jest.fn(),
@@ -113,6 +114,9 @@ describe('TextEditorDestination', () => {
 
       // Mock visibleTextEditors to include the bound editor
       (vscode.window as any).visibleTextEditors = [mockEditor];
+
+      // Mock showTextDocument to resolve successfully
+      (vscode.window.showTextDocument as jest.Mock).mockResolvedValue(mockEditor);
     });
 
     it('should paste text at cursor position', async () => {
@@ -183,6 +187,35 @@ describe('TextEditorDestination', () => {
       const result = await destination.paste('src/file.ts#L1');
 
       expect(result).toBe(false);
+    });
+
+    it('should focus editor after successful paste', async () => {
+      const text = 'src/auth.ts#L10-L20';
+      const result = await destination.paste(text);
+
+      expect(result).toBe(true);
+      expect(vscode.window.showTextDocument).toHaveBeenCalledWith(mockEditor.document, {
+        preserveFocus: false,
+        viewColumn: mockEditor.viewColumn,
+      });
+    });
+
+    it('should not focus editor when edit fails', async () => {
+      (mockEditor.edit as jest.Mock).mockResolvedValue(false);
+
+      const result = await destination.paste('src/file.ts#L1');
+
+      expect(result).toBe(false);
+      expect(vscode.window.showTextDocument).not.toHaveBeenCalled();
+    });
+
+    it('should not focus editor when paste validation fails', async () => {
+      destination.setEditor(undefined);
+
+      const result = await destination.paste('src/file.ts#L1');
+
+      expect(result).toBe(false);
+      expect(vscode.window.showTextDocument).not.toHaveBeenCalled();
     });
   });
 

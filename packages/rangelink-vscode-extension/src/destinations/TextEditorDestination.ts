@@ -77,6 +77,10 @@ export class TextEditorDestination implements PasteDestination {
    * - Only adds trailing space if text doesn't end with whitespace
    * - Consistent with TerminalDestination behavior
    *
+   * **Auto-focus behavior:**
+   * - After successful paste, focuses the bound editor
+   * - Consistent with TerminalDestination and AI assistant destinations
+   *
    * @param text - The text to paste
    * @returns true if paste succeeded, false if validation failed or cannot paste
    */
@@ -190,6 +194,12 @@ export class TextEditorDestination implements PasteDestination {
         );
         return false;
       }
+
+      // Focus the editor (similar to terminal.show(false) behavior)
+      await vscode.window.showTextDocument(editor.document, {
+        preserveFocus: false, // Steal focus to bring user to paste destination
+        viewColumn: editor.viewColumn, // Keep in same tab group
+      });
 
       this.logger.info(
         {

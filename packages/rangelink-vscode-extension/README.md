@@ -64,11 +64,13 @@ src/utils/parser.ts#L42C10-L58C25
 
 **The killer feature for AI-assisted workflows:** Auto-send generated links to your preferred destination.
 
+**RangeLink's unified pattern:** All paste destinations share the same seamless workflow—links paste exactly at your cursor position, the destination auto-focuses, and you immediately continue typing. No copy/paste friction, no manual clicking, no context switching. This is what makes RangeLink competitive with integrated AI assistants like Cursor's `Cmd+L`, but works across any destination and any AI.
+
 #### Terminal Paste Destination
 
 Bind a terminal to RangeLink, and all generated links auto-paste directly there — even if you switch to other terminals for work.
 
-**Perfect for terminal-based AI workflows (claude-code CLI):** Links paste **exactly at your cursor position** in the terminal (not appended at the end), **and the terminal auto-focuses** so you can immediately continue typing your prompt. Zero copy/paste friction—just like Cursor's `Cmd+L`.
+**Perfect for terminal-based AI workflows (claude-code CLI):** Links paste **exactly at your cursor position** in the terminal (not appended at the end), **and the terminal auto-focuses** so you can immediately continue typing your prompt.
 
 **How to use:**
 
@@ -76,19 +78,19 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 2. Command Palette → "Bind RangeLink to Terminal Destination"
 3. Select code → Generate link → Link pastes **at cursor position** + **terminal focuses automatically**
 
-**Why this matters:** This cursor-position paste and auto-focus behavior is what makes RangeLink competitive with integrated AI assistants. No manual clicking, no context switching—your workflow stays uninterrupted.
-
 #### Text Editor Destination
 
 **Build AI prompts in any text document before sending to your AI assistant?** Bind any text editor as your paste destination—works with untitled files, markdown, code files, notes, anything text-based.
 
-**Perfect for complex prompts:**
+**Perfect for complex prompts:** Links paste **exactly at your cursor position** in the bound editor, **and the editor auto-focuses** so you can immediately continue typing.
+
+**How to use:**
 
 1. Split your editor (2+ tab groups) — side-by-side or vertical split
 2. Open scratchpad file in one pane: untitled (`Cmd+N` / `Ctrl+N`) or any text file
 3. Command Palette → "Bind RangeLink to Text Editor Destination"
 4. Keep scratchpad visible (active tab in its pane)
-5. Select code in other pane → Generate links → They paste at cursor automatically
+5. Select code in other pane → Generate links → They paste **at cursor position** + **editor focuses automatically**
 
 **Workflow:**
 
@@ -102,7 +104,7 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 - **Bound file must be topmost tab** - Auto-paste only works when it's the active tab in its pane
 - **Text-like files only** - Binary files (images, PDFs, archives) are blocked
 
-Links auto-paste at cursor position with smart spacing. If bound file is hidden behind other tabs, link copies to clipboard with a reminder to make it active. When you close the bound file, RangeLink auto-unbinds with a notification.
+If bound file is hidden behind other tabs, link copies to clipboard with a reminder to make it active. When you close the bound file, RangeLink auto-unbinds with a notification.
 
 #### AI Chat Integrations (Claude Code & Cursor AI)
 
