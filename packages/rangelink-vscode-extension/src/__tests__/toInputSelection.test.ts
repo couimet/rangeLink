@@ -62,10 +62,7 @@ describe('toInputSelection', () => {
     describe('FullLine coverage', () => {
       it('should detect FullLine when selection starts at column 0 and ends at line end', () => {
         const lineText = 'const x = 5;';
-        const editor = createMockEditor(
-          [createSelection(0, 0, 0, lineText.length)],
-          [lineText],
-        );
+        const editor = createMockEditor([createSelection(0, 0, 0, lineText.length)], [lineText]);
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
@@ -172,10 +169,7 @@ describe('toInputSelection', () => {
     });
 
     it('should return SelectionType.Rectangular when isRectangularSelection returns true', () => {
-      const selections = [
-        createSelection(0, 5, 0, 10),
-        createSelection(1, 5, 1, 10),
-      ];
+      const selections = [createSelection(0, 5, 0, 10), createSelection(1, 5, 1, 10)];
       const editor = createMockEditor(selections, ['line one', 'line two']);
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
@@ -257,10 +251,7 @@ describe('toInputSelection', () => {
   describe('Multi-line selections', () => {
     it('should handle multi-line selection with FullLine coverage', () => {
       const lineTexts = ['const x = 5;', 'const y = 10;', 'const z = 15;'];
-      const editor = createMockEditor(
-        [createSelection(0, 0, 2, lineTexts[2].length)],
-        lineTexts,
-      );
+      const editor = createMockEditor([createSelection(0, 0, 2, lineTexts[2].length)], lineTexts);
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
