@@ -84,19 +84,25 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 **Perfect for complex prompts:**
 
-1. Open untitled file (`Cmd+N` / `Ctrl+N`) or any text file
-2. Command Palette → "Bind RangeLink to Text Editor Destination"
-3. Select code → Generate links → They paste at your cursor automatically
+1. Split your editor (2+ tab groups) — side-by-side or vertical split
+2. Open scratchpad file in one pane: untitled (`Cmd+N` / `Ctrl+N`) or any text file
+3. Command Palette → "Bind RangeLink to Text Editor Destination"
+4. Keep scratchpad visible (active tab in its pane)
+5. Select code in other pane → Generate links → They paste at cursor automatically
 
 **Workflow:**
 
-- **Draft complex prompts** - Gather multiple code references in one place
+- **Draft complex prompts** - Gather multiple code references in scratchpad
 - **Review context** - See all links together, validate navigation (Cmd+Click to test)
 - **Iterate on prompts** - Edit, rearrange, add notes around links before sending to terminal
 
-Links auto-paste at cursor position with smart spacing. When you close the bound editor, RangeLink auto-unbinds with a notification.
+**Requirements:**
 
-**Note:** Binary files (images, PDFs, archives) are blocked — text-like files only.
+- **Split editor (2+ tab groups)** - Ensures bound file stays visible while you browse code
+- **Bound file must be topmost tab** - Auto-paste only works when it's the active tab in its pane
+- **Text-like files only** - Binary files (images, PDFs, archives) are blocked
+
+Links auto-paste at cursor position with smart spacing. If bound file is hidden behind other tabs, link copies to clipboard with a reminder to make it active. When you close the bound file, RangeLink auto-unbinds with a notification.
 
 #### Cursor AI Integration
 
@@ -151,7 +157,7 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 
 Share code references with teammates who use different delimiter configurations. Portable links embed metadata so they work everywhere — no coordination needed.
 
-```
+```text
 path#L10C5-L20C10~#~L~-~C~
 ```
 

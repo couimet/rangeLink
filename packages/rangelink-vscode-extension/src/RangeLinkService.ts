@@ -114,6 +114,12 @@ export class RangeLinkService {
 
   /**
    * Copies the link to clipboard and shows status bar notification
+   *
+   * **Auto-paste behavior (text editor destination):**
+   * - Skips auto-paste if creating link FROM the bound editor itself
+   * - Shows "not topmost" warning if bound editor hidden behind other tabs
+   * - Pastes successfully if bound editor is topmost in its tab group
+   *
    * @param link The link text to copy
    * @param linkTypeName User-friendly name for status messages (e.g., "RangeLink", "Portable RangeLink")
    */
@@ -124,19 +130,52 @@ export class RangeLinkService {
 
     // Send to bound destination if one is bound
     if (this.destinationManager.isBound()) {
+      const destination = this.destinationManager.getBoundDestination();
+      const displayName = destination?.displayName || 'destination';
+
+      // Skip auto-paste if creating link FROM the bound editor itself
+      if (destination?.id === 'text-editor') {
+        const textEditorDest = destination as any; // TextEditorDestination
+        const boundDocumentUri = textEditorDest.getBoundDocumentUri();
+        const activeEditor = vscode.window.activeTextEditor;
+
+        if (activeEditor && boundDocumentUri) {
+          const activeDocumentUri = activeEditor.document.uri.toString();
+          const boundUriString = boundDocumentUri.toString();
+
+          if (activeDocumentUri === boundUriString) {
+            // Creating link FROM bound editor - skip auto-paste
+            getLogger().debug(
+              {
+                fn: 'copyAndNotify',
+                linkTypeName,
+                boundDocumentUri: boundUriString,
+              },
+              'Skipping auto-paste: creating link from bound editor itself',
+            );
+            this.ideAdapter.setStatusBarMessage(statusMessage, 2000);
+            return;
+          }
+        }
+      }
+
+      getLogger().debug(
+        { fn: 'copyAndNotify', linkTypeName, boundDestination: displayName },
+        `Attempting to send link to bound destination: ${displayName}`,
+      );
+
       const sent = await this.destinationManager.sendToDestination(link);
       if (sent) {
-        const destination = this.destinationManager.getBoundDestination();
-        const displayName = destination?.displayName || 'destination';
         this.ideAdapter.setStatusBarMessage(`${statusMessage} & sent to ${displayName}`, 2000);
       } else {
-        // Unexpected: binding exists but send failed
-        getLogger().error(
-          { fn: 'copyAndNotify', linkTypeName },
+        // Paste failed - could be "not topmost" or document closed
+        getLogger().warn(
+          { fn: 'copyAndNotify', linkTypeName, boundDestination: displayName },
           'Failed to send link to bound destination',
         );
+        // Show warning with guidance
         this.ideAdapter.showWarningMessage(
-          `${statusMessage}; BUT failed to send to bound destination.`,
+          `RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.`,
         );
       }
       return;

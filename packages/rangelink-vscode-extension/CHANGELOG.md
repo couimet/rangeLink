@@ -16,9 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Text Editor Destination** - Paste generated links directly into scratchpad files
   - Perfect for drafting AI prompts in untitled/scratch documents before sending to claude-code
   - Bind any text editor as paste destination (Command Palette → "Bind RangeLink to Text Editor Destination")
+  - Requires split editor (2+ tab groups) and bound file must be topmost tab for auto-paste
   - Auto-paste links at cursor position with smart padding
+  - Clipboard fallback with reminder when bound file hidden behind other tabs
   - Blocks binary files (images, PDFs, archives) - only text-like files
   - Auto-unbinds when editor closes with notification
+  - See README for full workflow details
 - **Cursor AI Integration** - Streamlined clipboard workflow for Cursor IDE
   - Automatically copies link and opens Cursor chat panel
   - User pastes with Cmd/Ctrl+V (workaround for API limitation)

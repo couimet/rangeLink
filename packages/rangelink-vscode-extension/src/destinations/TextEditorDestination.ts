@@ -1,9 +1,9 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import type { DestinationType, PasteDestination } from './PasteDestination';
 import { applySmartPadding } from '../utils/applySmartPadding';
 import { isEligibleForPaste } from '../utils/isEligibleForPaste';
+import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**
  * Text Editor destination implementation for pasting RangeLinks
@@ -46,32 +46,39 @@ export class TextEditorDestination implements PasteDestination {
     '.sqlite',
   ];
 
-  private boundEditor: vscode.TextEditor | undefined;
+  private boundDocumentUri: vscode.Uri | undefined;
 
   constructor(private readonly logger: Logger) {}
 
   /**
-   * Check if text editor destination is available (has bound editor)
+   * Check if text editor destination is available (has bound document)
    */
   async isAvailable(): Promise<boolean> {
-    return this.boundEditor !== undefined;
+    return this.boundDocumentUri !== undefined;
   }
 
   /**
    * Paste text to bound text editor at cursor position with smart padding
    *
-   * Validation:
-   * - Checks text eligibility (not null/undefined/empty/whitespace-only)
-   * - Checks if editor is still valid (not closed)
-   * - Logs INFO and returns false if validation fails
+   * **Tab Group Binding Strategy (MVP):**
+   * - Requires 2+ tab groups (split editor)
+   * - Bound document must be topmost (active tab) in its tab group
+   * - Dynamically finds bound document across all tab groups
+   * - Allows user to move bound document between tab groups
+   * - Skips auto-paste when creating link FROM bound editor itself
    *
-   * Smart padding behavior:
+   * **Lazy Validation:**
+   * - Only validates on paste attempt (no event listeners for tab switches)
+   * - Shows warning if bound document not topmost (keeps binding intact)
+   * - User can switch back to make document topmost again
+   *
+   * **Smart padding behavior:**
    * - Only adds leading space if text doesn't start with whitespace
    * - Only adds trailing space if text doesn't end with whitespace
    * - Consistent with TerminalDestination behavior
    *
    * @param text - The text to paste
-   * @returns true if paste succeeded, false if validation failed or no editor bound
+   * @returns true if paste succeeded, false if validation failed or cannot paste
    */
   async paste(text: string): Promise<boolean> {
     if (!isEligibleForPaste(text)) {
@@ -79,7 +86,7 @@ export class TextEditorDestination implements PasteDestination {
       return false;
     }
 
-    if (!this.boundEditor) {
+    if (!this.boundDocumentUri) {
       this.logger.warn(
         { fn: 'TextEditorDestination.paste', textLength: text.length },
         'Cannot paste: No text editor bound',
@@ -87,33 +94,96 @@ export class TextEditorDestination implements PasteDestination {
       return false;
     }
 
-    // Check if editor is still valid (not closed)
-    if (this.boundEditor.document.isClosed) {
+    // Get display name for logging and messages
+    const boundDisplayName = this.getEditorDisplayName();
+
+    // LAZY VALIDATION: Find which tab group contains the bound document
+    const boundTabGroup = this.findTabGroupContainingDocument(this.boundDocumentUri);
+
+    if (!boundTabGroup) {
+      // Document not found in any tab group - likely closed or tab group closed
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.paste',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document not found in any tab group - likely closed',
+      );
+      // Return false to trigger unbind in PasteDestinationManager
+      return false;
+    }
+
+    // Check if bound document is the active (topmost) tab in its group
+    const activeTab = boundTabGroup.activeTab;
+    if (!activeTab) {
       this.logger.warn(
-        { fn: 'TextEditorDestination.paste', editorPath: this.getEditorPath() },
-        'Cannot paste: Bound editor was closed',
+        { fn: 'TextEditorDestination.paste', boundDisplayName },
+        'Tab group has no active tab',
       );
       return false;
     }
 
-    const editorDisplayName = this.getEditorDisplayName();
-    const editorPath = this.getEditorPath();
+    // Check that active tab is a text editor (not terminal)
+    if (!(activeTab.input instanceof vscode.TabInputText)) {
+      this.logger.warn(
+        {
+          fn: 'TextEditorDestination.paste',
+          boundDisplayName,
+          tabInputType: typeof activeTab.input,
+        },
+        'Active tab is not a text editor',
+      );
+      return false;
+    }
 
+    const activeTabUri = activeTab.input.uri;
+    if (activeTabUri.toString() !== this.boundDocumentUri.toString()) {
+      // Bound document exists but is not topmost - show warning but keep binding
+      this.logger.warn(
+        {
+          fn: 'TextEditorDestination.paste',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          activeTabUri: activeTabUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document is not topmost in its tab group',
+      );
+      // Return false with special marker - caller should show "not topmost" warning
+      return false;
+    }
+
+    // Find the TextEditor object for the bound document
+    const editor = vscode.window.visibleTextEditors.find(
+      (e) => e.document.uri.toString() === this.boundDocumentUri!.toString(),
+    );
+
+    if (!editor) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.paste',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document is topmost but TextEditor object not found in visibleTextEditors',
+      );
+      return false;
+    }
+
+    // All validations passed - perform the paste
     try {
-      // Apply smart padding for consistency with terminal
       const paddedText = applySmartPadding(text);
 
-      // Insert at cursor position
-      const success = await this.boundEditor.edit((editBuilder) => {
-        editBuilder.insert(this.boundEditor!.selection.active, paddedText);
+      const success = await editor.edit((editBuilder) => {
+        editBuilder.insert(editor.selection.active, paddedText);
       });
 
       if (!success) {
         this.logger.error(
           {
             fn: 'TextEditorDestination.paste',
-            editorDisplayName,
-            editorPath,
+            boundDisplayName,
+            boundDocumentUri: this.boundDocumentUri.toString(),
             textLength: text.length,
           },
           'Edit operation failed',
@@ -124,12 +194,12 @@ export class TextEditorDestination implements PasteDestination {
       this.logger.info(
         {
           fn: 'TextEditorDestination.paste',
-          editorDisplayName,
-          editorPath,
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri.toString(),
           originalLength: text.length,
           paddedLength: paddedText.length,
         },
-        `Pasted to text editor: ${editorDisplayName}`,
+        `Pasted to text editor: ${boundDisplayName}`,
       );
 
       return true;
@@ -137,8 +207,8 @@ export class TextEditorDestination implements PasteDestination {
       this.logger.error(
         {
           fn: 'TextEditorDestination.paste',
-          editorDisplayName,
-          editorPath,
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri.toString(),
           error,
         },
         'Failed to paste to text editor',
@@ -148,77 +218,106 @@ export class TextEditorDestination implements PasteDestination {
   }
 
   /**
-   * Update bound text editor reference
+   * Find which tab group contains the given document URI
+   *
+   * Dynamically searches all tab groups to find the one containing the document.
+   * This allows the bound document to be moved between tab groups.
+   *
+   * @param documentUri - The document URI to search for
+   * @returns The tab group containing the document, or undefined if not found
+   */
+  private findTabGroupContainingDocument(documentUri: vscode.Uri): vscode.TabGroup | undefined {
+    for (const tabGroup of vscode.window.tabGroups.all) {
+      for (const tab of tabGroup.tabs) {
+        // Only check text editor tabs (skip terminals, etc.)
+        if (tab.input instanceof vscode.TabInputText) {
+          if (tab.input.uri.toString() === documentUri.toString()) {
+            return tabGroup;
+          }
+        }
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Update bound document URI
    *
    * Called by PasteDestinationManager when user binds/unbinds text editor.
    * This is external state management - the manager owns the binding logic.
    *
+   * Stores only the document URI (not the editor reference) to enable:
+   * - Dynamic tab group lookup (user can move document between groups)
+   * - Lazy validation (only check topmost status on paste)
+   *
    * @param editor - The editor to bind, or undefined to unbind
    */
   setEditor(editor: vscode.TextEditor | undefined): void {
-    this.boundEditor = editor;
-    const displayName = editor ? this.getEditorDisplayName() : undefined;
-    const path = editor ? this.getEditorPath() : undefined;
+    this.boundDocumentUri = editor ? editor.document.uri : undefined;
 
-    this.logger.debug(
-      { fn: 'TextEditorDestination.setEditor', editorDisplayName: displayName, editorPath: path },
-      editor ? `Text editor set: ${displayName}` : 'Text editor cleared',
-    );
+    if (editor) {
+      const displayName = this.getEditorDisplayName();
+      const path = this.getEditorPath();
+      this.logger.debug(
+        { fn: 'TextEditorDestination.setEditor', editorDisplayName: displayName, editorPath: path },
+        `Text editor bound: ${displayName}`,
+      );
+    } else {
+      this.logger.debug({ fn: 'TextEditorDestination.setEditor' }, 'Text editor unbound');
+    }
   }
 
   /**
-   * Get bound text editor
+   * Get bound document URI
    *
-   * @returns The bound editor or undefined if none bound
+   * @returns The bound document URI or undefined if none bound
    */
-  getEditor(): vscode.TextEditor | undefined {
-    return this.boundEditor;
+  getBoundDocumentUri(): vscode.Uri | undefined {
+    return this.boundDocumentUri;
   }
 
   /**
-   * Get user-friendly display name for bound editor (workspace-relative)
+   * Get user-friendly display name for bound document (workspace-relative)
    *
    * Returns workspace-relative path for file:// scheme, or "Untitled-N" for untitled files.
    * Used in user-facing status messages and notifications.
    *
-   * @returns Workspace-relative path or "Untitled-N", or undefined if no editor bound
+   * @returns Workspace-relative path or "Untitled-N", or undefined if no document bound
    */
   getEditorDisplayName(): string | undefined {
-    if (!this.boundEditor) {
+    if (!this.boundDocumentUri) {
       return undefined;
     }
 
-    const document = this.boundEditor.document;
-
     // Handle untitled files
-    if (document.uri.scheme === 'untitled') {
-      return document.isUntitled ? `Untitled-${document.uri.path.replace(/^\//, '')}` : 'Untitled';
+    if (this.boundDocumentUri.scheme === 'untitled') {
+      return `Untitled-${this.boundDocumentUri.path.replace(/^\//, '')}`;
     }
 
     // Get workspace-relative path for file:// scheme
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(this.boundDocumentUri);
     if (workspaceFolder) {
-      const relativePath = vscode.workspace.asRelativePath(document.uri, false);
+      const relativePath = vscode.workspace.asRelativePath(this.boundDocumentUri, false);
       return relativePath;
     }
 
     // Fallback to filename if not in workspace
-    return document.uri.fsPath.split('/').pop() || 'Unknown';
+    return this.boundDocumentUri.fsPath.split('/').pop() || 'Unknown';
   }
 
   /**
-   * Get absolute path for bound editor (for logging)
+   * Get absolute path for bound document (for logging)
    *
    * Returns full absolute path for debugging and log analysis.
    *
-   * @returns Absolute path, or undefined if no editor bound
+   * @returns Absolute path, or undefined if no document bound
    */
   getEditorPath(): string | undefined {
-    if (!this.boundEditor) {
+    if (!this.boundDocumentUri) {
       return undefined;
     }
 
-    return this.boundEditor.document.uri.toString();
+    return this.boundDocumentUri.toString();
   }
 
   /**
