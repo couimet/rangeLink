@@ -88,17 +88,17 @@ describe('DestinationFactory', () => {
   });
 
   describe('getSupportedTypes()', () => {
-    it('should return array with terminal, cursor-ai, and text-editor types', () => {
+    it('should return array with terminal, cursor-ai, text-editor, and claude-code types', () => {
       const types = factory.getSupportedTypes();
 
-      expect(types).toEqual(['terminal', 'cursor-ai', 'text-editor']);
+      expect(types).toEqual(['terminal', 'cursor-ai', 'text-editor', 'claude-code']);
     });
 
     it('should return array (not frozen or readonly)', () => {
       const types = factory.getSupportedTypes();
 
       expect(Array.isArray(types)).toBe(true);
-      expect(types.length).toBe(3);
+      expect(types.length).toBe(4);
     });
   });
 

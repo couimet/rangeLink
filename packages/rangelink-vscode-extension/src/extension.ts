@@ -139,9 +139,10 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  // Register chat destination binding commands (conditionally based on IDE)
+  // Register AI assistant destination binding commands (conditionally based on IDE/extensions)
   // Only register Cursor AI command when running in Cursor IDE
-  // Use IIFE to detect IDE asynchronously at activation
+  // Only register Claude Code command when Claude Code extension is installed
+  // Use IIFE to detect availability asynchronously at activation
   void (async () => {
     const cursorDestination = factory.create('cursor-ai');
     const isCursorIDE = await cursorDestination.isAvailable();
@@ -150,6 +151,17 @@ export function activate(context: vscode.ExtensionContext): void {
       context.subscriptions.push(
         vscode.commands.registerCommand('rangelink.bindToCursorAI', async () => {
           await destinationManager.bind('cursor-ai');
+        }),
+      );
+    }
+
+    const claudeCodeDestination = factory.create('claude-code');
+    const isClaudeCodeAvailable = await claudeCodeDestination.isAvailable();
+
+    if (isClaudeCodeAvailable) {
+      context.subscriptions.push(
+        vscode.commands.registerCommand('rangelink.bindToClaudeCode', async () => {
+          await destinationManager.bind('claude-code');
         }),
       );
     }

@@ -9,13 +9,13 @@ import { TextEditorDestination } from './TextEditorDestination';
 /**
  * Unified destination manager for RangeLink (Phase 3)
  *
- * Manages binding to any paste destination (terminals, chat assistants, etc.)
+ * Manages binding to any paste destination (terminals, text editors, AI assistants, etc.)
  * Replaces TerminalBindingManager and ChatDestinationManager with single unified system.
  *
  * **Design:**
- * - Only one destination bound at a time (terminal OR chat, not both)
+ * - Only one destination bound at a time (terminal OR text-editor OR AI assistant)
  * - Terminal binding requires active terminal reference
- * - Chat destinations use availability check (e.g., Cursor IDE detection)
+ * - AI assistant destinations use availability check (e.g., Cursor IDE detection, Claude Code extension)
  * - Terminal-only auto-unbind on terminal close (different semantics)
  * - No state persistence across reloads (same as legacy behavior)
  */
@@ -40,9 +40,9 @@ export class PasteDestinationManager implements vscode.Disposable {
    *
    * For terminal: requires active terminal via vscode.window.activeTerminal
    * For text-editor: requires active text editor via vscode.window.activeTextEditor
-   * For chat: checks destination.isAvailable() (e.g., Cursor IDE detection)
+   * For AI assistants: checks destination.isAvailable() (e.g., Cursor IDE detection, Claude Code extension)
    *
-   * @param type - The destination type to bind (e.g., 'terminal', 'text-editor', 'cursor-ai')
+   * @param type - The destination type to bind (e.g., 'terminal', 'text-editor', 'cursor-ai', 'claude-code')
    * @returns true if binding succeeded, false otherwise
    */
   async bind(type: DestinationType): Promise<boolean> {
@@ -71,7 +71,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       return this.bindTextEditor();
     }
 
-    // Generic destination binding (chat destinations, etc.)
+    // Generic destination binding (AI assistant destinations, etc.)
     return this.bindGenericDestination(type);
   }
 
@@ -182,7 +182,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * Setup terminal closure listener for auto-unbind
    *
    * Terminal-only behavior: auto-unbind when terminal closes.
-   * Chat destinations don't need this (persistent across extension lifecycle).
+   * AI assistant destinations don't need this (persistent across extension lifecycle).
    */
   private setupTerminalCloseListener(): void {
     const terminalCloseDisposable = vscode.window.onDidCloseTerminal((closedTerminal) => {
@@ -308,15 +308,15 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Bind to generic destination (chat destinations, etc.)
+   * Bind to generic destination (AI assistant destinations, etc.)
    *
-   * @param type - The destination type (e.g., 'cursor-ai', 'github-copilot')
+   * @param type - The destination type (e.g., 'cursor-ai', 'claude-code', 'github-copilot')
    * @returns true if binding succeeded, false if destination not available
    */
   private async bindGenericDestination(type: DestinationType): Promise<boolean> {
     const destination = this.factory.create(type);
 
-    // Check if destination is available (e.g., Cursor IDE detection)
+    // Check if destination is available (e.g., Cursor IDE detection, Claude Code extension)
     if (!(await destination.isAvailable())) {
       this.logger.warn(
         { fn: 'PasteDestinationManager.bindGenericDestination', type },
