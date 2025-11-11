@@ -1,5 +1,9 @@
 # RangeLink v0.3.0: One Keybinding to Rule Them All
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/couimet/rangeLink/main/assets/icon_large.png" alt="RangeLink Logo" width="256" />
+</div>
+
 Hey folks! Just shipped **RangeLink v0.3.0**, and I'm genuinely excited about this one.
 
 If you caught my [previous post about v0.2.1](https://vault.shopify.io/posts/330080), you know RangeLink started as a way to share precise code references with `claude-code` in the terminal. That's still there, but v0.3.0 takes it further: **one keybinding (`Cmd+R Cmd+L`) now sends your code references anywhere you need them.**
