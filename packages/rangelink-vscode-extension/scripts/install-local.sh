@@ -115,6 +115,7 @@ install_in_editor() {
 
   echo -e "${BLUE}Installing in ${editor_name}...${NC}"
   echo -e "${BLUE}Command:${NC} ${editor_absolute} --install-extension \"${vsix_absolute}\""
+  echo -e "${BLUE}Actual binary path:${NC} ${editor_absolute}"
   echo ""
 
   # Run command and capture output
@@ -131,11 +132,14 @@ install_in_editor() {
     echo -e "${GREEN}✓ Installation command succeeded (exit code: ${exit_code})${NC}"
 
     # Verify extension is listed (use full extension ID)
+    echo -e "${BLUE}Verifying with:${NC} ${editor_absolute} --list-extensions"
     if "$editor_absolute" --list-extensions 2>/dev/null | grep -q "couimet.rangelink-vscode-extension"; then
       echo -e "${GREEN}✓ Extension 'couimet.rangelink-vscode-extension' confirmed in installed extensions${NC}"
     else
       echo -e "${YELLOW}⚠ Warning: Extension ID not found in --list-extensions output${NC}"
       echo -e "${YELLOW}   This may be a VSCode caching issue${NC}"
+      echo -e "${YELLOW}   Listing all extensions to verify:${NC}"
+      "$editor_absolute" --list-extensions 2>/dev/null | head -10
     fi
     return 0
   else
