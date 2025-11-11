@@ -114,6 +114,4 @@ For vim/neovim users interested in building a plugin: the [core library is platf
 
 **Links:**
 
-- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
 - [GitHub Repository](https://github.com/couimet/rangeLink)
-- [Full README](https://github.com/couimet/rangeLink#readme)
