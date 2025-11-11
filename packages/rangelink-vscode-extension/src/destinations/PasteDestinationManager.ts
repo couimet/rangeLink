@@ -22,7 +22,6 @@ import { TextEditorDestination } from './TextEditorDestination';
 export class PasteDestinationManager implements vscode.Disposable {
   private boundDestination: PasteDestination | undefined;
   private boundTerminal: vscode.Terminal | undefined; // Track for closure events
-  private boundEditor: vscode.TextEditor | undefined; // Track for closure events
   private disposables: vscode.Disposable[] = [];
 
   constructor(
@@ -89,7 +88,6 @@ export class PasteDestinationManager implements vscode.Disposable {
     const displayName = this.boundDestination.displayName;
     this.boundDestination = undefined;
     this.boundTerminal = undefined;
-    this.boundEditor = undefined;
 
     this.logger.info(
       { fn: 'PasteDestinationManager.unbind', displayName },
@@ -128,15 +126,44 @@ export class PasteDestinationManager implements vscode.Disposable {
       return false;
     }
 
+    const destinationType = this.boundDestination.id;
+    const displayName = this.boundDestination.displayName;
+
+    // Get destination-specific details for logging
+    let destinationDetails: Record<string, unknown> = {};
+    if (destinationType === 'text-editor') {
+      const textEditorDest = this.boundDestination as TextEditorDestination;
+      destinationDetails = {
+        editorDisplayName: textEditorDest.getEditorDisplayName(),
+        editorPath: textEditorDest.getEditorPath(),
+      };
+    } else if (destinationType === 'terminal' && this.boundTerminal) {
+      destinationDetails = {
+        terminalName: this.boundTerminal.name || 'Unnamed Terminal',
+      };
+    }
+
+    this.logger.debug(
+      {
+        fn: 'PasteDestinationManager.sendToDestination',
+        destinationType,
+        displayName,
+        ...destinationDetails,
+      },
+      `Sending text to ${displayName}`,
+    );
+
     const result = await this.boundDestination.paste(text);
 
     if (!result) {
       this.logger.error(
         {
           fn: 'PasteDestinationManager.sendToDestination',
-          destinationType: this.boundDestination.id,
+          destinationType,
+          displayName,
+          ...destinationDetails,
         },
-        'Paste failed',
+        `Paste failed to ${displayName}`,
       );
     }
 
@@ -212,9 +239,27 @@ export class PasteDestinationManager implements vscode.Disposable {
   /**
    * Bind to text editor (special case requiring active text editor)
    *
-   * @returns true if binding succeeded, false if no active text editor or not text-like file
+   * **MVP Requirements:**
+   * - Requires 2+ tab groups (split editor)
+   * - Active editor must be text-like file (not binary, not terminal)
+   * - Active editor must have focus
+   *
+   * @returns true if binding succeeded, false if validation fails
    */
   private async bindTextEditor(): Promise<boolean> {
+    // Validate: Require 2+ tab groups for split editor workflow
+    const tabGroupCount = vscode.window.tabGroups.all.length;
+    if (tabGroupCount < 2) {
+      this.logger.warn(
+        { fn: 'PasteDestinationManager.bindTextEditor', tabGroupCount },
+        'Cannot bind: Requires 2+ tab groups',
+      );
+      vscode.window.showErrorMessage(
+        'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
+      );
+      return false;
+    }
+
     const activeEditor = vscode.window.activeTextEditor;
 
     if (!activeEditor) {
@@ -238,19 +283,23 @@ export class PasteDestinationManager implements vscode.Disposable {
       return false;
     }
 
-    // Create text editor destination and set editor reference
+    // Create text editor destination and store document URI
     const destination = this.factory.create('text-editor') as TextEditorDestination;
     destination.setEditor(activeEditor);
 
     this.boundDestination = destination;
-    this.boundEditor = activeEditor; // Track for closure events
 
     const editorDisplayName = destination.getEditorDisplayName() || 'Unknown';
     const editorPath = destination.getEditorPath();
 
     this.logger.info(
-      { fn: 'PasteDestinationManager.bindTextEditor', editorDisplayName, editorPath },
-      `Successfully bound to text editor: ${editorDisplayName}`,
+      {
+        fn: 'PasteDestinationManager.bindTextEditor',
+        editorDisplayName,
+        editorPath,
+        tabGroupCount,
+      },
+      `Successfully bound to text editor: ${editorDisplayName} (${tabGroupCount} tab groups)`,
     );
 
     vscode.window.setStatusBarMessage(`✓ RangeLink bound to ${editorDisplayName}`, 3000);
@@ -295,22 +344,41 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Setup text document closure listener for auto-unbind
+   * Setup document close listener for document closure detection
    *
-   * Text-editor-only behavior: auto-unbind when document closes.
-   * Similar to terminal closure behavior.
+   * **Lazy unbind strategy:**
+   * - Only unbinds when bound document is actually closed (not just hidden)
+   * - Allows user to move document between tab groups or switch to other files
+   * - Paste attempt will show "not topmost" warning if document exists but not visible
    */
   private setupTextDocumentCloseListener(): void {
     const documentCloseDisposable = vscode.workspace.onDidCloseTextDocument((closedDocument) => {
-      if (this.boundEditor && this.boundEditor.document === closedDocument) {
-        const editorDisplayName =
-          (this.boundDestination as TextEditorDestination).getEditorDisplayName() || 'Unknown';
+      // Only check if we have a text editor destination bound
+      if (!this.boundDestination || this.boundDestination.id !== 'text-editor') {
+        return;
+      }
+
+      const textEditorDest = this.boundDestination as TextEditorDestination;
+      const boundDocumentUri = textEditorDest.getBoundDocumentUri();
+
+      if (!boundDocumentUri) {
+        return;
+      }
+
+      // Check if the closed document matches the bound document
+      if (closedDocument.uri.toString() === boundDocumentUri.toString()) {
+        // Document actually closed - auto-unbind
+        const editorDisplayName = textEditorDest.getEditorDisplayName() || 'Unknown';
         this.logger.info(
-          { fn: 'PasteDestinationManager.onDidCloseTextDocument', editorDisplayName },
-          `Bound text editor closed: ${editorDisplayName} - auto-unbinding`,
+          {
+            fn: 'PasteDestinationManager.onDidCloseTextDocument',
+            editorDisplayName,
+            boundDocumentUri: boundDocumentUri.toString(),
+          },
+          `Bound document closed: ${editorDisplayName} - auto-unbinding`,
         );
         this.unbind();
-        vscode.window.setStatusBarMessage('Destination binding removed (editor closed)', 3000);
+        vscode.window.showInformationMessage(`RangeLink: Bound editor closed. Unbound.`);
       }
     });
 

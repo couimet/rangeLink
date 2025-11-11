@@ -233,16 +233,16 @@ describe('RangeLinkService', () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard; BUT failed to send to bound destination.',
+          'RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
         );
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledTimes(1);
       });
 
-      it('should include link type name in warning message', async () => {
+      it('should show same warning for all link types', async () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'Portable RangeLink');
 
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          '✓ Portable RangeLink copied to clipboard; BUT failed to send to bound destination.',
+          'RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
         );
       });
 

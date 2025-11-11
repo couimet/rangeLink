@@ -11,6 +11,7 @@ jest.mock('vscode', () => ({
     showErrorMessage: jest.fn(),
     showInformationMessage: jest.fn(),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
+    onDidChangeVisibleTextEditors: jest.fn(() => ({ dispose: jest.fn() })),
     activeTerminal: undefined,
   },
   workspace: {
