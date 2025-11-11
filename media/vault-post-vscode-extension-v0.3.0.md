@@ -73,8 +73,8 @@ And honestly? The paste destinations architecture feels like the right foundatio
 **Quick start:**
 
 1. Command Palette → "Bind RangeLink to [your preferred destination]"
-2. Select code → `Cmd+R Cmd+L`
-3. Your link appears where you need it
+2. Select code → `Cmd+R Cmd+L` (or Command Palette → "Copy Range Link" if you have keybinding conflicts)
+3. Your link is ready where you need it
 
 Try the text editor destination with a split-screen scratchpad — it's a game-changer for complex AI prompts.
 
