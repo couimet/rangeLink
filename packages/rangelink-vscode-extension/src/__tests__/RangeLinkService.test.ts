@@ -37,6 +37,8 @@ describe('RangeLinkService', () => {
       displayName,
       isAvailable: jest.fn().mockResolvedValue(true),
       paste: jest.fn().mockResolvedValue(true),
+      // TextEditorDestination-specific method (only used when id === 'text-editor')
+      getBoundDocumentUri: jest.fn().mockReturnValue(undefined),
     });
 
     beforeEach(() => {
@@ -219,7 +221,10 @@ describe('RangeLinkService', () => {
 
     describe('when destination is bound but paste fails', () => {
       beforeEach(() => {
+        // Use generic destination for backward compatibility tests
+        const genericDest = createMockDestination('generic', 'Some Destination');
         (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
+        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(genericDest);
         (mockDestinationManager.sendToDestination as jest.Mock).mockResolvedValue(false);
       });
 
@@ -231,7 +236,7 @@ describe('RangeLinkService', () => {
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
       });
 
-      it('should attempt to send to terminal', async () => {
+      it('should attempt to send to destination', async () => {
         const link = 'src/auth.ts#L10-L20';
 
         await (service as any).copyAndNotify(link, 'RangeLink');
@@ -239,21 +244,21 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendToDestination).toHaveBeenCalledWith(link);
       });
 
-      it('should show warning message about paste failure', async () => {
+      it('should show generic warning message with displayName', async () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
+          'RangeLink: Copied to clipboard. Could not send to Some Destination.',
         );
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledTimes(1);
       });
 
-      it('should show same warning for all link types', async () => {
+      it('should show same warning structure for all link types', async () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'Portable RangeLink');
 
-        expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
-        );
+        const warningCall = (mockIdeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
+        expect(warningCall).toContain('RangeLink: Copied to clipboard.');
+        expect(warningCall).toContain('Some Destination');
       });
 
       it('should not call setStatusBarMessage when paste fails', async () => {
