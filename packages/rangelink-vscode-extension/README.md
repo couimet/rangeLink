@@ -14,24 +14,24 @@
 
 ### For AI-Assisted Development
 
-**Using claude-code, ChatGPT, or Cursor for development?** RangeLink eliminates the context-sharing friction:
+**Using Claude Code Extension, terminal claude-code, ChatGPT, or Cursor for development?** RangeLink eliminates the context-sharing friction:
 
 1. **Select code** → Generate link (`Cmd+R Cmd+L`)
 2. **Paste Destination handles delivery** → Link appears where your AI can see it
 3. **AI reads precise context** → No manual copy/paste, no lost focus
 4. **AI responds with links** → **Click to jump directly to code** (Cmd+Click in terminal)
 
-**Compete with Cursor's built-in AI** by making external AI assistants feel integrated. You get:
+**Compete with built-in AI features** by making external AI assistants feel integrated. You get:
 
 - ⚡ **Zero-friction AI context** — Paste destinations auto-send links. No clipboard juggling.
-- 🎯 **Choice of AI model** — Claude, GPT, Gemini, anything. Not locked into Cursor's AI.
-- 📐 **Full control over context** — Precise line ranges and column selections, not full files.
-- 🔗 **Cross-file context** — Generate links from multiple files, paste all in one prompt. Built-in claude-code: single selection, current file only.
+- 🎯 **Choice of AI model** — Claude, GPT, Gemini, anything. Not locked into one vendor.
+- 📐 **Full control over context** — Character-level precision (`#L42C10`), not just line-level.
+- 🔗 **Cross-file context** — Generate links from multiple files, paste all in one prompt.
 - 🌐 **Universal compatibility** — Works across editors (VSCode, Cursor) and in any text-based tool.
 
 ### Perfect For
 
-- 🤖 **AI assistants** — claude-code, Copilot with _exact_ context + clickable navigation
+- 🤖 **AI assistants** — Claude Code Extension, Cursor AI, terminal claude-code, Copilot with _exact_ context + clickable navigation
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`" (click to view)
 - 👥 **Team collaboration** — Universal format everyone can use and navigate
 
@@ -68,19 +68,19 @@ src/utils/parser.ts#L42C10-L58C25
 
 Bind a terminal to RangeLink, and all generated links auto-paste directly there — even if you switch to other terminals for work.
 
-**Perfect for claude-code workflows:** Your links appear exactly where your AI assistant can see them. Zero copy/paste friction.
+**Perfect for terminal-based AI workflows (claude-code CLI):** Links paste **exactly at your cursor position** in the terminal (not appended at the end), **and the terminal auto-focuses** so you can immediately continue typing your prompt. Zero copy/paste friction—just like Cursor's `Cmd+L`.
 
 **How to use:**
 
 1. Open integrated terminal
 2. Command Palette → "Bind RangeLink to Terminal Destination"
-3. Select code → Generate link → Appears instantly in terminal
+3. Select code → Generate link → Link pastes **at cursor position** + **terminal focuses automatically**
 
-**Bonus:** Terminal auto-focuses after paste, so you can immediately continue typing your prompt. Just like Cursor's `Cmd+L`.
+**Why this matters:** This cursor-position paste and auto-focus behavior is what makes RangeLink competitive with integrated AI assistants. No manual clicking, no context switching—your workflow stays uninterrupted.
 
 #### Text Editor Destination
 
-**Build AI prompts in a scratchpad before sending to claude-code?** Bind a text editor as your paste destination.
+**Build AI prompts in any text document before sending to your AI assistant?** Bind any text editor as your paste destination—works with untitled files, markdown, code files, notes, anything text-based.
 
 **Perfect for complex prompts:**
 
@@ -92,9 +92,9 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 **Workflow:**
 
-- **Draft complex prompts** - Gather multiple code references in scratchpad
+- **Draft complex prompts** - Gather multiple code references in one place (any file type)
 - **Review context** - See all links together, validate navigation (Cmd+Click to test)
-- **Iterate on prompts** - Edit, rearrange, add notes around links before sending to terminal
+- **Iterate on prompts** - Edit, rearrange, add notes around links before sending to AI
 
 **Requirements:**
 
@@ -104,20 +104,26 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 Links auto-paste at cursor position with smart spacing. If bound file is hidden behind other tabs, link copies to clipboard with a reminder to make it active. When you close the bound file, RangeLink auto-unbinds with a notification.
 
-#### Cursor AI Integration
+#### AI Chat Integrations (Claude Code & Cursor AI)
 
-**Streamlined workflow for Cursor users.** When you generate a link, RangeLink copies it to your clipboard and opens the Cursor chat panel — one `Cmd+V` / `Ctrl+V` away from sending context to AI.
+**One keybinding to rule them all.** Both Claude Code Extension and Cursor AI have their own ways to share code with AI — but each uses different shortcuts, different formats, and only works with _their_ AI. RangeLink unifies it all: **one keybinding** (`Cmd+R Cmd+L`), **character-level precision** (not just lines), and works with **any AI assistant**.
 
-**How to use:**
+**The precision advantage:** Claude Code Extension and Cursor AI share code at _line-level_ precision. RangeLink goes deeper with _character-level_ ranges (`#L42C10-L58C25`), letting you highlight exactly the function signature, the problematic condition, or that one sneaky semicolon — not the whole block.
 
-1. Command Palette → "Bind RangeLink to Cursor AI Destination"
-2. Select code → Generate link
-3. RangeLink copies link + opens chat
-4. Paste (`Cmd+V` / `Ctrl+V`) to send
+**Supported extensions:**
 
-**Why this approach?** Cursor's extension API doesn't yet support programmatic text insertion (as of Nov 2025). RangeLink handles clipboard management and focus changes, cutting your workflow from 5 manual steps to 1.
+- **[Claude Code Extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)** — Anthropic's official extension (works in VSCode and Cursor)
+- **Cursor AI** — Built into Cursor IDE
 
-**One destination at a time:** You can bind to terminal, text editor, OR Cursor AI. Use "Unbind Destination" to switch.
+**How it works:**
+
+1. Command Palette → "Bind RangeLink to Claude Code Destination" (or Cursor AI)
+2. Select code → Hit `Cmd+R Cmd+L` → Link copied + chat opens
+3. Paste (`Cmd+V`) to send
+
+**Technical note:** Neither extension's API supports programmatic text insertion yet (as of Nov 2025), so RangeLink uses a clipboard-based workaround. It cuts your workflow from 5 manual steps to 1.
+
+**One destination at a time:** Bind to Claude Code, Cursor AI, terminal, OR text editor. Switch with "Unbind Destination."
 
 ---
 
@@ -175,9 +181,10 @@ All commands are available via keyboard shortcuts, Command Palette, and right-cl
 | Copy Range Link (Absolute)                | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link                               |
 | Copy Portable Link                        | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link                               |
 | Copy Portable Link (Absolute)             | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link                               |
+| Bind RangeLink to Claude Code Destination | —                   | —                     | Copy link + open Claude Code chat (clipboard workflow)  |
+| Bind RangeLink to Cursor AI Destination   | —                   | —                     | Copy link + open Cursor AI chat (clipboard workflow)    |
 | Bind RangeLink to Terminal Destination    | —                   | —                     | Auto-send links to integrated terminal for AI workflows |
 | Bind RangeLink to Text Editor Destination | —                   | —                     | Auto-send links at cursor in active bound text editor   |
-| Bind RangeLink to Cursor AI Destination   | —                   | —                     | Copy link + open Cursor chat (clipboard workflow)       |
 | Unbind Destination                        | —                   | —                     | Stop auto-sending links to bound destination            |
 | Show Version Info                         | —                   | —                     | Display version and build info                          |
 

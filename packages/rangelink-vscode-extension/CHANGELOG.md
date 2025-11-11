@@ -10,11 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Paste Destinations System** - Universal paste destination framework for auto-sending links
-  - Unified architecture supports terminal, text editor, and chat integrations
-  - One destination active at a time (terminal OR text editor OR Cursor AI)
+  - Unified architecture supports AI chat integrations, terminal and text editor
+  - One destination active at a time (Claude Code OR Cursor AI OR terminal OR text editor)
   - Seamless workflow: select code → link appears where you need it
-- **Text Editor Destination** - Paste generated links directly into scratchpad files
-  - Perfect for drafting AI prompts in untitled/scratch documents before sending to claude-code
+- **Claude Code Extension Integration** - Streamlined clipboard workflow for Anthropic's official Claude extension
+  - Automatically copies link and opens Claude Code chat panel
+  - Works in both VSCode and Cursor IDE
+  - One-paste workflow: user pastes with Cmd/Ctrl+V (workaround for API limitation)
+  - Command: "Bind RangeLink to Claude Code Destination"
+- **Cursor AI Integration** - Streamlined clipboard workflow for Cursor IDE
+  - Automatically copies link and opens Cursor chat panel
+  - One-paste workflow: user pastes with Cmd/Ctrl+V (workaround for API limitation)
+  - Cursor IDE only
+  - Command: "Bind RangeLink to Cursor AI"
+- **Text Editor Destination** - Paste generated links directly into any text-based editor
+  - Works with untitled/scratch files, markdown, code files, any text document
+  - Perfect for drafting AI prompts before sending to AI assistants
   - Bind any text editor as paste destination (Command Palette → "Bind RangeLink to Text Editor Destination")
   - Requires split editor (2+ tab groups) and bound file must be topmost tab for auto-paste
   - Auto-paste links at cursor position with smart padding
@@ -22,10 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Blocks binary files (images, PDFs, archives) - only text-like files
   - Auto-unbinds when editor closes with notification
   - See README for full workflow details
-- **Cursor AI Integration** - Streamlined clipboard workflow for Cursor IDE
-  - Automatically copies link and opens Cursor chat panel
-  - User pastes with Cmd/Ctrl+V (workaround for API limitation)
-  - Cuts workflow from 5 manual steps to 1
 - **Editor Link Navigation** - Click RangeLinks in any editor file to navigate
   - Primary use case: Validate links in scratchpad files before sending to claude-code
   - Works in all file types: markdown, text, code, untitled files
