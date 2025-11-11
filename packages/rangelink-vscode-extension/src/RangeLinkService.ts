@@ -8,6 +8,7 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import type { IdeAdapter } from './ide/IdeAdapter';
 import { toInputSelection } from './utils/toInputSelection';
@@ -168,15 +169,15 @@ export class RangeLinkService {
       if (sent) {
         this.ideAdapter.setStatusBarMessage(`${statusMessage} & sent to ${displayName}`, 2000);
       } else {
-        // Paste failed - could be "not topmost" or document closed
+        // Paste failed - show destination-aware error message
         getLogger().warn(
           { fn: 'copyAndNotify', linkTypeName, boundDestination: displayName },
           'Failed to send link to bound destination',
         );
-        // Show warning with guidance
-        this.ideAdapter.showWarningMessage(
-          `RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.`,
-        );
+        const errorMessage = destination
+          ? this.buildPasteFailureMessage(destination)
+          : 'RangeLink: Copied to clipboard. Could not send to destination.';
+        this.ideAdapter.showWarningMessage(errorMessage);
       }
       return;
     }
@@ -194,5 +195,36 @@ export class RangeLinkService {
       return vscode.workspace.asRelativePath(document.uri);
     }
     return document.uri.fsPath;
+  }
+
+  /**
+   * Build destination-aware error message for paste failures
+   *
+   * Provides specific guidance based on the destination type that failed.
+   * Text editor failures mention "hidden behind tabs", terminal failures mention
+   * closure/input issues, AI assistant failures suggest keyboard shortcuts, etc.
+   *
+   * @param destination - The destination that failed to receive the paste
+   * @returns User-friendly error message with destination-specific guidance
+   */
+  private buildPasteFailureMessage(destination: PasteDestination): string {
+    const baseMessage = 'RangeLink: Copied to clipboard.';
+
+    switch (destination.id) {
+      case 'text-editor':
+        return `${baseMessage} Bound editor is hidden behind other tabs - make it active to resume auto-paste.`;
+
+      case 'terminal':
+        return `${baseMessage} Could not send to terminal. Terminal may be closed or not accepting input.`;
+
+      case 'claude-code':
+        return `${baseMessage} Could not open Claude Code chat. Try opening it manually (Cmd+Escape).`;
+
+      case 'cursor-ai':
+        return `${baseMessage} Could not open Cursor AI chat. Try opening it manually (Cmd+L).`;
+
+      default:
+        return `${baseMessage} Could not send to ${destination.displayName}.`;
+    }
   }
 }

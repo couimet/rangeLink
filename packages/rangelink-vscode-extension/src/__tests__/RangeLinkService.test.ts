@@ -29,6 +29,18 @@ describe('RangeLinkService', () => {
       range: '-',
     };
 
+    /**
+     * Helper to create mock destination
+     */
+    const createMockDestination = (id: string, displayName: string) => ({
+      id,
+      displayName,
+      isAvailable: jest.fn().mockResolvedValue(true),
+      paste: jest.fn().mockResolvedValue(true),
+      // TextEditorDestination-specific method (only used when id === 'text-editor')
+      getBoundDocumentUri: jest.fn().mockReturnValue(undefined),
+    });
+
     beforeEach(() => {
       // Create mock IDE adapter
       mockIdeAdapter = {
@@ -209,7 +221,10 @@ describe('RangeLinkService', () => {
 
     describe('when destination is bound but paste fails', () => {
       beforeEach(() => {
+        // Use generic destination for backward compatibility tests
+        const genericDest = createMockDestination('generic', 'Some Destination');
         (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
+        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(genericDest);
         (mockDestinationManager.sendToDestination as jest.Mock).mockResolvedValue(false);
       });
 
@@ -221,7 +236,7 @@ describe('RangeLinkService', () => {
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
       });
 
-      it('should attempt to send to terminal', async () => {
+      it('should attempt to send to destination', async () => {
         const link = 'src/auth.ts#L10-L20';
 
         await (service as any).copyAndNotify(link, 'RangeLink');
@@ -229,27 +244,128 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendToDestination).toHaveBeenCalledWith(link);
       });
 
-      it('should show warning message about paste failure', async () => {
+      it('should show generic warning message with displayName', async () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
+          'RangeLink: Copied to clipboard. Could not send to Some Destination.',
         );
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledTimes(1);
       });
 
-      it('should show same warning for all link types', async () => {
+      it('should show same warning structure for all link types', async () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'Portable RangeLink');
 
-        expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
-        );
+        const warningCall = (mockIdeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
+        expect(warningCall).toContain('RangeLink: Copied to clipboard.');
+        expect(warningCall).toContain('Some Destination');
       });
 
       it('should not call setStatusBarMessage when paste fails', async () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
         expect(mockIdeAdapter.setStatusBarMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('paste failure with different destination types', () => {
+      beforeEach(() => {
+        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
+        (mockDestinationManager.sendToDestination as jest.Mock).mockResolvedValue(false);
+      });
+
+      describe('text-editor destination', () => {
+        it('should show text-editor-specific warning about hidden tabs', async () => {
+          const textEditorDest = createMockDestination('text-editor', 'Text Editor');
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(textEditorDest);
+
+          await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+
+          expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
+            'RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
+          );
+        });
+      });
+
+      describe('terminal destination', () => {
+        it('should NOT show text-editor-specific warning', async () => {
+          const terminalDest = createMockDestination('terminal', 'Terminal');
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(terminalDest);
+
+          await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+
+          const warningCall = (mockIdeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
+          expect(warningCall).not.toContain('editor');
+          expect(warningCall).not.toContain('tabs');
+        });
+
+        it('should show terminal-specific guidance', async () => {
+          const terminalDest = createMockDestination('terminal', 'Terminal');
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(terminalDest);
+
+          await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+
+          const warningCall = (mockIdeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
+          expect(warningCall).toContain('Terminal');
+        });
+      });
+
+      describe('claude-code destination', () => {
+        it('should NOT show text-editor-specific warning', async () => {
+          const claudeCodeDest = createMockDestination('claude-code', 'Claude Code Chat');
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(claudeCodeDest);
+
+          await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+
+          const warningCall = (mockIdeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
+          expect(warningCall).not.toContain('editor');
+          expect(warningCall).not.toContain('tabs');
+        });
+
+        it('should show claude-code-specific guidance', async () => {
+          const claudeCodeDest = createMockDestination('claude-code', 'Claude Code Chat');
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(claudeCodeDest);
+
+          await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+
+          const warningCall = (mockIdeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
+          expect(warningCall).toContain('Claude Code');
+        });
+      });
+
+      describe('cursor-ai destination', () => {
+        it('should NOT show text-editor-specific warning', async () => {
+          const cursorAIDest = createMockDestination('cursor-ai', 'Cursor AI Assistant');
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(cursorAIDest);
+
+          await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+
+          const warningCall = (mockIdeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
+          expect(warningCall).not.toContain('editor');
+          expect(warningCall).not.toContain('tabs');
+        });
+
+        it('should show cursor-ai-specific guidance', async () => {
+          const cursorAIDest = createMockDestination('cursor-ai', 'Cursor AI Assistant');
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(cursorAIDest);
+
+          await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+
+          const warningCall = (mockIdeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
+          expect(warningCall).toContain('Cursor');
+        });
+      });
+
+      describe('unknown destination type', () => {
+        it('should show generic fallback message with displayName', async () => {
+          const unknownDest = createMockDestination('some-future-dest', 'Future Destination');
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(unknownDest);
+
+          await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+
+          const warningCall = (mockIdeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
+          expect(warningCall).toContain('Future Destination');
+        });
       });
     });
 
