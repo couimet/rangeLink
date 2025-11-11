@@ -103,6 +103,12 @@
         "icon": "$(link)"
       },
       {
+        "command": "rangelink.bindToClaudeCode",
+        "title": "Bind RangeLink to Claude Code Destination",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.unbindDestination",
         "title": "Unbind RangeLink Destination",
         "category": "RangeLink",

@@ -3,14 +3,29 @@ import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
 // Mock vscode.workspace for text editor tests
-jest.mock('vscode', () => ({
-  ...jest.requireActual('vscode'),
-  workspace: {
-    getWorkspaceFolder: jest.fn(),
-    asRelativePath: jest.fn(),
-    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
-  },
-}));
+jest.mock('vscode', () => {
+  // Define MockTabInputText inside the factory function
+  class MockTabInputText {
+    constructor(public uri: any) {}
+  }
+
+  return {
+    ...jest.requireActual('vscode'),
+    window: {
+      ...jest.requireActual('vscode').window,
+      tabGroups: {
+        all: [],
+      },
+      visibleTextEditors: [],
+    },
+    workspace: {
+      getWorkspaceFolder: jest.fn(),
+      asRelativePath: jest.fn(),
+      onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
+    },
+    TabInputText: MockTabInputText,
+  };
+});
 
 import { TextEditorDestination } from '../../destinations/TextEditorDestination';
 
@@ -79,6 +94,25 @@ describe('TextEditorDestination', () => {
   describe('paste()', () => {
     beforeEach(() => {
       destination.setEditor(mockEditor);
+
+      // Mock tab groups to simulate editor being topmost in a tab group
+      (vscode.window as any).tabGroups = {
+        all: [
+          {
+            activeTab: {
+              input: new vscode.TabInputText(mockEditor.document.uri),
+            },
+            tabs: [
+              {
+                input: new vscode.TabInputText(mockEditor.document.uri),
+              },
+            ],
+          },
+        ],
+      };
+
+      // Mock visibleTextEditors to include the bound editor
+      (vscode.window as any).visibleTextEditors = [mockEditor];
     });
 
     it('should paste text at cursor position', async () => {
@@ -126,6 +160,10 @@ describe('TextEditorDestination', () => {
 
       destination.setEditor(closedEditor);
 
+      // Simulate closed editor: no longer in tab groups or visibleTextEditors
+      (vscode.window as any).tabGroups = { all: [] };
+      (vscode.window as any).visibleTextEditors = [];
+
       const result = await destination.paste('src/file.ts#L1');
 
       expect(result).toBe(false);
@@ -149,20 +187,20 @@ describe('TextEditorDestination', () => {
   });
 
   describe('setEditor()', () => {
-    it('should set editor reference', () => {
+    it('should set bound document URI', () => {
       destination.setEditor(mockEditor);
 
-      expect(destination.getEditor()).toBe(mockEditor);
+      expect(destination.getBoundDocumentUri()).toBe(mockEditor.document.uri);
     });
 
-    it('should clear editor reference when undefined', () => {
+    it('should clear bound document URI when undefined', () => {
       destination.setEditor(mockEditor);
       destination.setEditor(undefined);
 
-      expect(destination.getEditor()).toBeUndefined();
+      expect(destination.getBoundDocumentUri()).toBeUndefined();
     });
 
-    it('should log when editor is set', () => {
+    it('should log when editor is bound', () => {
       destination.setEditor(mockEditor);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -170,7 +208,7 @@ describe('TextEditorDestination', () => {
           fn: 'TextEditorDestination.setEditor',
           editorDisplayName: 'src/file.ts',
         }),
-        expect.stringContaining('Text editor set'),
+        expect.stringContaining('Text editor bound'),
       );
     });
 
@@ -181,7 +219,7 @@ describe('TextEditorDestination', () => {
         expect.objectContaining({
           fn: 'TextEditorDestination.setEditor',
         }),
-        'Text editor cleared',
+        'Text editor unbound',
       );
     });
   });
@@ -334,15 +372,15 @@ describe('TextEditorDestination', () => {
     });
   });
 
-  describe('getEditor()', () => {
-    it('should return bound editor', () => {
+  describe('getBoundDocumentUri()', () => {
+    it('should return bound document URI', () => {
       destination.setEditor(mockEditor);
 
-      expect(destination.getEditor()).toBe(mockEditor);
+      expect(destination.getBoundDocumentUri()).toBe(mockEditor.document.uri);
     });
 
-    it('should return undefined when no editor bound', () => {
-      expect(destination.getEditor()).toBeUndefined();
+    it('should return undefined when no document bound', () => {
+      expect(destination.getBoundDocumentUri()).toBeUndefined();
     });
   });
 });

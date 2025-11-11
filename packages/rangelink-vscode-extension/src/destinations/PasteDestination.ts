@@ -21,7 +21,7 @@ export type DestinationType =
  * All destinations follow the same contract: check availability, paste text, handle errors gracefully.
  *
  * Design principles:
- * - Async operations (chat destinations require command execution)
+ * - Async operations (AI assistant destinations require command execution)
  * - Boolean return values (silent failure pattern, no throwing)
  * - Readonly properties (immutable after construction)
  */
