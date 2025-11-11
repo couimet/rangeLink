@@ -121,7 +121,7 @@ install_in_editor() {
   local install_output
   local exit_code
 
-  install_output=$("$editor_cmd" --install-extension "$vsix_absolute" 2>&1)
+  install_output=$("$editor_absolute" --install-extension "$vsix_absolute" 2>&1)
   exit_code=$?
 
   echo "$install_output"
@@ -131,7 +131,7 @@ install_in_editor() {
     echo -e "${GREEN}✓ Installation command succeeded (exit code: ${exit_code})${NC}"
 
     # Verify extension is listed (use full extension ID)
-    if "$editor_cmd" --list-extensions 2>/dev/null | grep -q "couimet.rangelink-vscode-extension"; then
+    if "$editor_absolute" --list-extensions 2>/dev/null | grep -q "couimet.rangelink-vscode-extension"; then
       echo -e "${GREEN}✓ Extension 'couimet.rangelink-vscode-extension' confirmed in installed extensions${NC}"
     else
       echo -e "${YELLOW}⚠ Warning: Extension ID not found in --list-extensions output${NC}"
