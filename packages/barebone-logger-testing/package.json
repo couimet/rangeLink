@@ -26,7 +26,7 @@
   "scripts": {
     "clean": "rm -rf out coverage *.tsbuildinfo",
     "clean:all": "pnpm clean && rm -rf node_modules .eslintcache *.log",
-    "compile": "tsc -p ."
+    "compile": "tsc --build"
   },
   "dependencies": {
     "barebone-logger": "workspace:*"

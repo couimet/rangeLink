@@ -13,6 +13,7 @@ The working tree contains uncommitted changes. These instructions are for **TEST
 **DO NOT publish to production marketplaces from a dirty working tree.**
 
 For production releases:
+
 1. Commit or stash all changes
 2. Rebuild with clean working tree: `pnpm package:vscode-extension`
 3. Regenerate instructions: `pnpm generate:publish-instructions:vscode-extension`
@@ -103,6 +104,7 @@ pnpm publish:vscode-extension:vsix
 ### Verify Publication
 
 Wait 5-10 minutes, then check:
+
 - Marketplace URL: https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension
 - Version number shows `0.3.0`
 
@@ -138,6 +140,7 @@ cd ../..
 ### Verify Publication
 
 Check:
+
 - Open-VSX URL: https://open-vsx.org/extension/couimet/rangelink-vscode-extension
 - Version shows `0.3.0`
 

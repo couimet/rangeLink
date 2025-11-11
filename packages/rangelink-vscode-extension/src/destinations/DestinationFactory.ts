@@ -1,8 +1,12 @@
 import type { Logger } from 'barebone-logger';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+
+import { ClaudeCodeDestination } from './ClaudeCodeDestination';
+import { CursorAIDestination } from './CursorAIDestination';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 import { TerminalDestination } from './TerminalDestination';
+import { TextEditorDestination } from './TextEditorDestination';
 
 /**
  * Factory for creating paste destination instances
@@ -32,18 +36,18 @@ export class DestinationFactory {
       case 'terminal':
         return new TerminalDestination(this.logger);
 
+      case 'cursor-ai':
+        return new CursorAIDestination(this.logger);
+
+      case 'text-editor':
+        return new TextEditorDestination(this.logger);
+
+      case 'claude-code':
+        return new ClaudeCodeDestination(this.logger);
+
       // Future implementations:
-      // case 'text-editor':
-      //   return new TextEditorDestination(this.logger);
-      //
-      // case 'cursor-ai':
-      //   return new CursorAIDestination(this.logger);
-      //
       // case 'github-copilot':
       //   return new GitHubCopilotDestination(this.logger);
-      //
-      // case 'claude-code':
-      //   return new ClaudeCodeDestination(this.logger);
 
       default:
         // Phase 2+: Will implement text-editor, cursor-ai, github-copilot, and claude-code
@@ -66,11 +70,11 @@ export class DestinationFactory {
   getSupportedTypes(): DestinationType[] {
     return [
       'terminal',
+      'cursor-ai',
+      'text-editor',
+      'claude-code',
       // Future: Phase 2+ additions
-      // 'text-editor',
-      // 'cursor-ai',
       // 'github-copilot',
-      // 'claude-code',
     ];
   }
 

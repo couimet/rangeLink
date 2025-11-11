@@ -33,4 +33,11 @@ export class VscodeAdapter implements IdeAdapter {
   async showWarningMessage(message: string): Promise<string | undefined> {
     return vscode.window.showWarningMessage(message);
   }
+
+  /**
+   * Show error notification using VSCode API
+   */
+  async showErrorMessage(message: string): Promise<string | undefined> {
+    return vscode.window.showErrorMessage(message);
+  }
 }

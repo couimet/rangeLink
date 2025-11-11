@@ -1,11 +1,23 @@
 import type { Logger } from 'barebone-logger';
-import { DEFAULT_DELIMITERS, RangeLinkMessageCode } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, type RangeLinkError, RangeLinkMessageCode } from 'rangelink-core-ts';
 
 import { logSuccessfulConfig, logValidationErrors } from './logging';
 import { determineAllSources } from './sources';
 import type { ConfigGetter, LoadDelimiterConfigResult } from './types';
 import { DelimiterConfigKey } from './types';
 import { validateDelimiterFields, validateDelimiterRelationships } from './validation';
+
+/**
+ * Creates a LoadDelimiterConfigResult that uses default delimiters.
+ *
+ * @param errors - Validation errors that caused fallback to defaults (empty array = no errors)
+ * @returns Result with default delimiters and sources
+ */
+const createDefaultResult = (errors: RangeLinkError[]): LoadDelimiterConfigResult => ({
+  delimiters: DEFAULT_DELIMITERS,
+  sources: { line: 'default', position: 'default', hash: 'default', range: 'default' },
+  errors,
+});
 
 /**
  * Validates and loads delimiter configuration
@@ -23,13 +35,39 @@ export const loadDelimiterConfig = (
   logger: Logger,
 ): LoadDelimiterConfigResult => {
   // Get raw config values using enum keys (type-safe, prevents typos)
-  const userLine = config.get<string>(DelimiterConfigKey.Line) ?? '';
-  const userPosition = config.get<string>(DelimiterConfigKey.Position) ?? '';
-  const userHash = config.get<string>(DelimiterConfigKey.Hash) ?? '';
-  const userRange = config.get<string>(DelimiterConfigKey.Range) ?? '';
+  // Keep undefined separate from empty string (undefined = not set, '' = explicitly set to invalid)
+  const userLine = config.get<string>(DelimiterConfigKey.Line);
+  const userPosition = config.get<string>(DelimiterConfigKey.Position);
+  const userHash = config.get<string>(DelimiterConfigKey.Hash);
+  const userRange = config.get<string>(DelimiterConfigKey.Range);
+
+  // If no config provided at all (all undefined), use defaults silently (no errors)
+  const hasNoConfig =
+    userLine === undefined &&
+    userPosition === undefined &&
+    userHash === undefined &&
+    userRange === undefined;
+  if (hasNoConfig) {
+    logger.debug(
+      { fn: 'loadDelimiterConfig', code: RangeLinkMessageCode.CONFIG_USING_DEFAULTS },
+      'No delimiter config provided, using defaults',
+    );
+    return createDefaultResult([]);
+  }
+
+  // Convert undefined to empty string for validation
+  const lineToValidate = userLine ?? '';
+  const positionToValidate = userPosition ?? '';
+  const hashToValidate = userHash ?? '';
+  const rangeToValidate = userRange ?? '';
 
   // Validate individual fields (accumulate errors)
-  const fieldErrors = validateDelimiterFields(userLine, userPosition, userHash, userRange);
+  const fieldErrors = validateDelimiterFields(
+    lineToValidate,
+    positionToValidate,
+    hashToValidate,
+    rangeToValidate,
+  );
 
   // If field validation failed, log and return defaults
   if (fieldErrors.length > 0) {
@@ -39,19 +77,15 @@ export const loadDelimiterConfig = (
       'Using default delimiters due to validation errors',
     );
 
-    return {
-      delimiters: DEFAULT_DELIMITERS,
-      sources: { line: 'default', position: 'default', hash: 'default', range: 'default' },
-      errors: fieldErrors,
-    };
+    return createDefaultResult(fieldErrors);
   }
 
   // Build user delimiter config (all fields valid at this point)
   const userDelimiters = {
-    line: userLine,
-    position: userPosition,
-    hash: userHash,
-    range: userRange,
+    line: lineToValidate,
+    position: positionToValidate,
+    hash: hashToValidate,
+    range: rangeToValidate,
   };
 
   // Validate relationships ONLY if all fields valid (Option C)
@@ -64,11 +98,7 @@ export const loadDelimiterConfig = (
       'Using default delimiters due to validation errors',
     );
 
-    return {
-      delimiters: DEFAULT_DELIMITERS,
-      sources: { line: 'default', position: 'default', hash: 'default', range: 'default' },
-      errors: relationshipErrors,
-    };
+    return createDefaultResult(relationshipErrors);
   }
 
   // Success - determine sources

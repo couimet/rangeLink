@@ -3,6 +3,11 @@ import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
 import { TerminalDestination } from '../../destinations/TerminalDestination';
+import { applySmartPadding } from '../../utils/applySmartPadding';
+import { isEligibleForPaste } from '../../utils/isEligibleForPaste';
+
+jest.mock('../../utils/isEligibleForPaste');
+jest.mock('../../utils/applySmartPadding');
 
 describe('TerminalDestination', () => {
   let destination: TerminalDestination;
@@ -21,6 +26,10 @@ describe('TerminalDestination', () => {
     } as unknown as vscode.Terminal;
 
     destination = new TerminalDestination(mockLogger);
+
+    // Set up default mock implementations
+    (isEligibleForPaste as jest.Mock).mockReturnValue(true);
+    (applySmartPadding as jest.Mock).mockImplementation((text: string) => ` ${text} `);
   });
 
   describe('Interface compliance', () => {
@@ -69,8 +78,11 @@ describe('TerminalDestination', () => {
     });
 
     it('should call terminal.sendText with padded text', async () => {
+      (applySmartPadding as jest.Mock).mockReturnValue(' link ');
+
       await destination.paste('link');
 
+      expect(applySmartPadding).toHaveBeenCalledWith('link');
       expect(mockTerminal.sendText).toHaveBeenCalledWith(' link ', false);
     });
 
@@ -119,20 +131,21 @@ describe('TerminalDestination', () => {
     });
   });
 
-  describe('paste() - Text eligibility validation', () => {
+  describe('paste() - Delegation to utilities', () => {
     beforeEach(() => {
       destination.setTerminal(mockTerminal);
     });
 
-    it('should return false for empty string', async () => {
+    it('should return false and skip terminal operations when text is ineligible', async () => {
+      (isEligibleForPaste as jest.Mock).mockReturnValue(false);
+
       const result = await destination.paste('');
 
+      expect(isEligibleForPaste).toHaveBeenCalledWith('');
       expect(result).toBe(false);
-    });
-
-    it('should log INFO when empty string is rejected', async () => {
-      await destination.paste('');
-
+      expect(applySmartPadding).not.toHaveBeenCalled();
+      expect(mockTerminal.sendText).not.toHaveBeenCalled();
+      expect(mockTerminal.show).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({
           fn: 'TerminalDestination.paste',
@@ -142,159 +155,58 @@ describe('TerminalDestination', () => {
       );
     });
 
-    it('should return false for whitespace-only string (single space)', async () => {
-      const result = await destination.paste(' ');
+    it('should check eligibility before checking terminal binding', async () => {
+      (isEligibleForPaste as jest.Mock).mockReturnValue(false);
+      destination.setTerminal(undefined);
 
-      expect(result).toBe(false);
-    });
+      await destination.paste('invalid-text');
 
-    it('should return false for whitespace-only string (multiple spaces)', async () => {
-      const result = await destination.paste('   ');
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false for whitespace-only string (mixed whitespace)', async () => {
-      const result = await destination.paste(' \t\n ');
-
-      expect(result).toBe(false);
-    });
-
-    it('should log INFO when whitespace-only string is rejected', async () => {
-      await destination.paste('   ');
-
+      expect(isEligibleForPaste).toHaveBeenCalledWith('invalid-text');
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({
           fn: 'TerminalDestination.paste',
-          text: '   ',
         }),
         'Text not eligible for paste',
       );
+      expect(mockLogger.warn).not.toHaveBeenCalled();
     });
 
-    it('should not call terminal.sendText when text is ineligible', async () => {
-      await destination.paste('');
+    it('should apply smart padding when text is eligible', async () => {
+      (isEligibleForPaste as jest.Mock).mockReturnValue(true);
+      (applySmartPadding as jest.Mock).mockReturnValue(' padded-text ');
 
-      expect(mockTerminal.sendText).not.toHaveBeenCalled();
+      await destination.paste('original-text');
+
+      expect(isEligibleForPaste).toHaveBeenCalledWith('original-text');
+      expect(applySmartPadding).toHaveBeenCalledWith('original-text');
+      expect(mockTerminal.sendText).toHaveBeenCalledWith(' padded-text ', false);
     });
 
-    it('should not call terminal.show when text is ineligible', async () => {
-      await destination.paste('');
+    it('should use applySmartPadding result for terminal sendText', async () => {
+      (isEligibleForPaste as jest.Mock).mockReturnValue(true);
+      (applySmartPadding as jest.Mock).mockReturnValue('\tcustom-padded\n');
 
-      expect(mockTerminal.show).not.toHaveBeenCalled();
+      await destination.paste('src/file.ts#L10');
+
+      expect(applySmartPadding).toHaveBeenCalledWith('src/file.ts#L10');
+      expect(mockTerminal.sendText).toHaveBeenCalledWith('\tcustom-padded\n', false);
     });
 
-    it('should validate eligibility before checking terminal binding', async () => {
-      // Unbind terminal to test order of checks
-      destination.setTerminal(undefined);
+    it('should log success with original and padded lengths', async () => {
+      (isEligibleForPaste as jest.Mock).mockReturnValue(true);
+      (applySmartPadding as jest.Mock).mockReturnValue(' short ');
 
-      await destination.paste('');
+      await destination.paste('short');
 
-      // Should log INFO (eligibility check), not WARN (terminal check)
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({
           fn: 'TerminalDestination.paste',
+          terminalName: 'bash',
+          originalLength: 5,
+          paddedLength: 7,
         }),
-        expect.stringContaining('not eligible'),
+        expect.stringContaining('Pasted to terminal: bash'),
       );
-      expect(mockLogger.warn).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('paste() - Smart padding', () => {
-    beforeEach(() => {
-      destination.setTerminal(mockTerminal);
-    });
-
-    it('should add leading and trailing spaces for text without padding', async () => {
-      await destination.paste('link');
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith(' link ', false);
-    });
-
-    it('should preserve existing leading space', async () => {
-      await destination.paste(' link');
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith(' link ', false);
-    });
-
-    it('should preserve existing trailing space', async () => {
-      await destination.paste('link ');
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith(' link ', false);
-    });
-
-    it('should not add padding when text already has both leading and trailing spaces', async () => {
-      await destination.paste(' link ');
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith(' link ', false);
-    });
-
-    // Note: Empty and whitespace-only strings are now rejected by eligibility check
-    // See "paste() - Text eligibility validation" tests above
-
-    it('should handle text with tabs as whitespace', async () => {
-      await destination.paste('\tlink\t');
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith('\tlink\t', false);
-    });
-
-    it('should handle text with newlines as whitespace', async () => {
-      await destination.paste('\nlink\n');
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith('\nlink\n', false);
-    });
-
-    it('should add padding to multiline text without leading/trailing whitespace', async () => {
-      await destination.paste('line1\nline2');
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith(' line1\nline2 ', false);
-    });
-  });
-
-  describe('paste() - Edge cases', () => {
-    beforeEach(() => {
-      destination.setTerminal(mockTerminal);
-    });
-
-    it('should handle very long strings', async () => {
-      const longLink = 'src/' + 'a'.repeat(1000) + '.ts#L1000-L2000';
-
-      await destination.paste(longLink);
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith(` ${longLink} `, false);
-    });
-
-    it('should handle special characters in link', async () => {
-      const specialLink = 'src/file#123.ts##L10C5-L20C10';
-
-      await destination.paste(specialLink);
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith(` ${specialLink} `, false);
-    });
-
-    it('should handle unicode characters', async () => {
-      const unicodeLink = 'src/文件.ts#L10';
-
-      await destination.paste(unicodeLink);
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith(` ${unicodeLink} `, false);
-    });
-
-    it('should handle emoji in link', async () => {
-      const emojiLink = 'src/🚀file.ts#L10';
-
-      await destination.paste(emojiLink);
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith(` ${emojiLink} `, false);
-    });
-
-    it('should handle link with shell special characters', async () => {
-      const shellLink = 'src/file$var.ts#L10';
-
-      await destination.paste(shellLink);
-
-      expect(mockTerminal.sendText).toHaveBeenCalledWith(` ${shellLink} `, false);
     });
   });
 

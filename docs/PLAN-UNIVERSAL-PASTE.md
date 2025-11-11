@@ -234,7 +234,12 @@ class DestinationFactory {
 **New file:** `packages/rangelink-vscode-extension/src/destinations/PasteDestination.ts`
 
 ```typescript
-export type DestinationType = 'terminal' | 'text-editor' | 'cursor-ai' | 'github-copilot' | 'claude-code';
+export type DestinationType =
+  | 'terminal'
+  | 'text-editor'
+  | 'cursor-ai'
+  | 'github-copilot'
+  | 'claude-code';
 
 export interface PasteDestination {
   /** Unique identifier for this destination type */
@@ -419,12 +424,16 @@ describe('TerminalDestination', () => {
 **Goal:** Add Text Editor, Cursor AI, GitHub Copilot, and Claude Code paste targets.
 
 **Updated Priority (based on research findings):**
+
 1. **High:** Text Editor (user request, straightforward implementation)
 2. **High:** Cursor AI (standard VSCode chat API)
 3. **High:** GitHub Copilot (standard VSCode chat API, documented)
 4. **Medium:** Claude Code (experimental hybrid approach, requires testing)
 
 **Research Notes:** See `docs/RESEARCH-CLAUDE-CODE-INTEGRATION.md` and `docs/RESEARCH-CLAUDE-CODE-INTEGRATION-UPDATE.md` for Claude Code integration findings.
+
+**Known Limitation - Command Visibility:**
+Currently, IDE-specific binding commands (e.g., `rangelink.bindToCursorAI`) are visible in all IDEs but fail gracefully with error messages when not running in the correct environment. Future Phase 3 work should implement conditional command visibility based on IDE detection (see extension.ts:165-167 TODO comments).
 
 #### Step 2.1: Implement TextEditorDestination
 
@@ -441,10 +450,7 @@ export class TextEditorDestination implements PasteDestination {
     const editor = vscode.window.activeTextEditor;
 
     if (!editor) {
-      this.logger.debug(
-        { fn: 'TextEditorDestination.isAvailable' },
-        'No active text editor',
-      );
+      this.logger.debug({ fn: 'TextEditorDestination.isAvailable' }, 'No active text editor');
       return false;
     }
 

@@ -131,6 +131,69 @@ Created comprehensive test suite (18 tests):
 
 ---
 
+## Phase 3: Universal Paste Destinations — ✅ Complete (2025-11-09)
+
+**Objective:** Unified architecture for auto-sending links to multiple destination types (terminal, text editor, Cursor AI).
+
+**Problem:** Two parallel managers (TerminalBindingManager + ChatDestinationManager) created duplication and maintenance burden. RangeLinkService had identical code paths for terminal vs chat destinations (44 lines with 40% duplication).
+
+**Solution:** Single `PasteDestinationManager` handles all destination types with consistent bind/unbind/send API.
+
+**Implementation:**
+
+**Phase 3.1 - Cursor AI Integration (2025-11-09):**
+- Created `CursorAIDestination` with clipboard + focus workaround
+- Multi-layered IDE detection (appName → extensions → URI scheme)
+- Graceful fallback when chat commands unavailable
+- Comprehensive test suite (11 tests for CursorAIDestination)
+- **API Limitation:** Cursor doesn't support programmatic text insertion (as of Nov 2025)
+- **Workaround:** Copy to clipboard + open chat panel + user pastes manually
+- **User Value:** Cuts workflow from 5 manual steps to 1
+
+**Phase 3.2 - Unified Architecture (2025-11-09):**
+- Replaced TerminalBindingManager + ChatDestinationManager with single `PasteDestinationManager`
+- Generic `bind(type)` / `unbind()` / `sendToDestination()` API
+- Terminal-specific: Active terminal reference required, closure handling for auto-unbind
+- Chat-specific: Uses `isAvailable()` check (e.g., Cursor IDE detection)
+- Simplified RangeLinkService.copyAndNotify() from 44 lines to 26 lines (~40% reduction)
+
+**Phase 3.3 - Text Editor Destination (2025-11-09):**
+- Created `TextEditorDestination` for scratchpad workflows
+- Auto-paste at cursor position with smart padding
+- Binary file blocking (images, PDFs, archives)
+- Auto-unbind on editor close with notification
+- **Perfect for:** Drafting complex prompts, gathering multiple references, validating before sending
+
+**Architecture:**
+- `PasteDestination` interface: Common contract for all destinations
+- `DestinationFactory`: Creates appropriate destination instances
+- `PasteDestinationManager`: Unified lifecycle management
+- Three destination implementations: `TerminalDestination`, `TextEditorDestination`, `CursorAIDestination`
+
+**Breaking Changes:**
+- Command renamed: `rangelink.unbindTerminal` → `rangelink.unbindDestination`
+- Command titles updated: "Bind RangeLink to X Destination" (consistent pattern)
+
+**Benefits:**
+- ✅ Single architecture for all paste destinations
+- ✅ Eliminated code duplication (40% reduction in RangeLinkService)
+- ✅ Consistent user experience across destination types
+- ✅ Easy to add new destinations (GitHub Copilot, future chat integrations)
+- ✅ Comprehensive test coverage maintained (99%+)
+
+**Time Taken:** ~8 hours (3 phases: Cursor AI → Unification → Text Editor)
+
+**Files Modified:**
+- `PasteDestinationManager.ts` (new, unified manager)
+- `CursorAIDestination.ts` (new)
+- `TextEditorDestination.ts` (new)
+- `TerminalDestination.ts` (refactored from TerminalBindingManager)
+- `extension.ts` (uses unified manager)
+- `RangeLinkService.ts` (simplified copyAndNotify logic)
+- Deleted: `TerminalBindingManager.ts`, `ChatDestinationManager.ts`
+
+---
+
 ## Phase 7: Terminal Auto-Focus — ✅ Complete (2025-01-06)
 
 **Objective:** Auto-focus terminal after link generation for seamless AI workflow (like Cursor's `Cmd+L`).

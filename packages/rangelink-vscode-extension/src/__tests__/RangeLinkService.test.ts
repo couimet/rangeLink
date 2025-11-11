@@ -1,9 +1,9 @@
 import type { DelimiterConfig } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { IdeAdapter } from '../ide/IdeAdapter';
 import { RangeLinkService } from '../RangeLinkService';
-import type { TerminalBindingManager } from '../TerminalBindingManager';
 
 // Mock vscode module
 jest.mock('vscode', () => ({
@@ -21,7 +21,7 @@ describe('RangeLinkService', () => {
   describe('copyAndNotify', () => {
     let service: RangeLinkService;
     let mockIdeAdapter: IdeAdapter;
-    let mockTerminalBindingManager: TerminalBindingManager;
+    let mockDestinationManager: PasteDestinationManager;
     const delimiters: DelimiterConfig = {
       line: 'L',
       position: 'C',
@@ -35,24 +35,23 @@ describe('RangeLinkService', () => {
         writeTextToClipboard: jest.fn().mockResolvedValue(undefined),
         setStatusBarMessage: jest.fn().mockReturnValue({ dispose: jest.fn() }),
         showWarningMessage: jest.fn().mockResolvedValue(undefined),
+        showErrorMessage: jest.fn().mockResolvedValue(undefined),
       };
 
-      // Create mock terminal binding manager
-      mockTerminalBindingManager = {
+      // Create mock destination manager
+      mockDestinationManager = {
         isBound: jest.fn().mockReturnValue(false),
-        sendToTerminal: jest.fn(),
-        getBoundTerminal: jest.fn(),
-      } as unknown as TerminalBindingManager;
+        sendToDestination: jest.fn().mockResolvedValue(true),
+        getBoundDestination: jest.fn(),
+      } as unknown as PasteDestinationManager;
 
       // Create service
-      service = new RangeLinkService(delimiters, mockIdeAdapter, mockTerminalBindingManager);
-
-      jest.clearAllMocks();
+      service = new RangeLinkService(delimiters, mockIdeAdapter, mockDestinationManager);
     });
 
     describe('when no destination is bound', () => {
       beforeEach(() => {
-        (mockTerminalBindingManager.isBound as jest.Mock).mockReturnValue(false);
+        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
       });
 
       it('should copy link to clipboard', async () => {
@@ -112,23 +111,19 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyAndNotify(link, 'RangeLink');
 
-        expect(mockTerminalBindingManager.sendToTerminal).not.toHaveBeenCalled();
+        expect(mockDestinationManager.sendToDestination).not.toHaveBeenCalled();
       });
     });
 
     describe('when destination is bound and paste succeeds', () => {
-      let mockTerminal: vscode.Terminal;
-
       beforeEach(() => {
-        mockTerminal = {
-          name: 'bash',
-          sendText: jest.fn(),
-          show: jest.fn(),
-        } as unknown as vscode.Terminal;
+        const mockDestination = {
+          displayName: 'bash',
+        };
 
-        (mockTerminalBindingManager.isBound as jest.Mock).mockReturnValue(true);
-        (mockTerminalBindingManager.sendToTerminal as jest.Mock).mockReturnValue(true);
-        (mockTerminalBindingManager.getBoundTerminal as jest.Mock).mockReturnValue(mockTerminal);
+        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
+        (mockDestinationManager.sendToDestination as jest.Mock).mockResolvedValue(true);
+        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
       });
 
       it('should copy link to clipboard', async () => {
@@ -145,11 +140,11 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyAndNotify(link, 'RangeLink');
 
-        expect(mockTerminalBindingManager.sendToTerminal).toHaveBeenCalledWith(link);
-        expect(mockTerminalBindingManager.sendToTerminal).toHaveBeenCalledTimes(1);
+        expect(mockDestinationManager.sendToDestination).toHaveBeenCalledWith(link);
+        expect(mockDestinationManager.sendToDestination).toHaveBeenCalledTimes(1);
       });
 
-      it('should show status message with terminal name', async () => {
+      it('should show status message with destination name', async () => {
         const link = 'src/auth.ts#L10';
 
         await (service as any).copyAndNotify(link, 'RangeLink');
@@ -160,28 +155,30 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should use terminal name from getBoundTerminal()', async () => {
-        const customTerminal = { name: 'zsh' } as vscode.Terminal;
-        (mockTerminalBindingManager.getBoundTerminal as jest.Mock).mockReturnValue(customTerminal);
+      it('should use destination displayName from getBoundDestination()', async () => {
+        const customDestination = { displayName: 'Terminal' };
+        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
+          customDestination,
+        );
 
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard & sent to zsh',
+          '✓ RangeLink copied to clipboard & sent to Terminal',
           2000,
         );
       });
 
-      it('should use "terminal" as fallback when terminal has no name', async () => {
-        const unnamedTerminal = {} as vscode.Terminal;
-        (mockTerminalBindingManager.getBoundTerminal as jest.Mock).mockReturnValue(
-          unnamedTerminal,
+      it('should use "destination" as fallback when destination has no displayName', async () => {
+        const unknownDestination = {};
+        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
+          unknownDestination,
         );
 
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard & sent to terminal',
+          '✓ RangeLink copied to clipboard & sent to destination',
           2000,
         );
       });
@@ -200,7 +197,7 @@ describe('RangeLinkService', () => {
         // Verify call order
         const clipboardCall = (mockIdeAdapter.writeTextToClipboard as jest.Mock).mock
           .invocationCallOrder[0];
-        const terminalCall = (mockTerminalBindingManager.sendToTerminal as jest.Mock).mock
+        const terminalCall = (mockDestinationManager.sendToDestination as jest.Mock).mock
           .invocationCallOrder[0];
         const statusCall = (mockIdeAdapter.setStatusBarMessage as jest.Mock).mock
           .invocationCallOrder[0];
@@ -212,8 +209,8 @@ describe('RangeLinkService', () => {
 
     describe('when destination is bound but paste fails', () => {
       beforeEach(() => {
-        (mockTerminalBindingManager.isBound as jest.Mock).mockReturnValue(true);
-        (mockTerminalBindingManager.sendToTerminal as jest.Mock).mockReturnValue(false);
+        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
+        (mockDestinationManager.sendToDestination as jest.Mock).mockResolvedValue(false);
       });
 
       it('should copy link to clipboard', async () => {
@@ -229,23 +226,23 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyAndNotify(link, 'RangeLink');
 
-        expect(mockTerminalBindingManager.sendToTerminal).toHaveBeenCalledWith(link);
+        expect(mockDestinationManager.sendToDestination).toHaveBeenCalledWith(link);
       });
 
       it('should show warning message about paste failure', async () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard; BUT failed to send to bound terminal.',
+          'RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
         );
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledTimes(1);
       });
 
-      it('should include link type name in warning message', async () => {
+      it('should show same warning for all link types', async () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'Portable RangeLink');
 
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          '✓ Portable RangeLink copied to clipboard; BUT failed to send to bound terminal.',
+          'RangeLink: Copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
         );
       });
 
@@ -258,7 +255,7 @@ describe('RangeLinkService', () => {
 
     describe('edge cases', () => {
       beforeEach(() => {
-        (mockTerminalBindingManager.isBound as jest.Mock).mockReturnValue(false);
+        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
       });
 
       it('should handle empty link string', async () => {
@@ -296,31 +293,25 @@ describe('RangeLinkService', () => {
 
     describe('timeout parameter', () => {
       beforeEach(() => {
-        (mockTerminalBindingManager.isBound as jest.Mock).mockReturnValue(false);
+        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
       });
 
       it('should pass 2000ms timeout to setStatusBarMessage', async () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          expect.any(String),
-          2000,
-        );
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
       });
 
       it('should pass 2000ms timeout when destination is bound and succeeds', async () => {
-        (mockTerminalBindingManager.isBound as jest.Mock).mockReturnValue(true);
-        (mockTerminalBindingManager.sendToTerminal as jest.Mock).mockReturnValue(true);
-        (mockTerminalBindingManager.getBoundTerminal as jest.Mock).mockReturnValue({
+        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
+        (mockDestinationManager.sendToDestination as jest.Mock).mockReturnValue(true);
+        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue({
           name: 'bash',
         });
 
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          expect.any(String),
-          2000,
-        );
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
       });
     });
   });

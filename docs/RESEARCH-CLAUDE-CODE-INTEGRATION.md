@@ -57,10 +57,12 @@ Instead, Claude Code architecture:
 ## Evidence
 
 **From Claude Code VSCode Extension Marketplace:**
+
 - "Powerful agentic features like subagents, custom slash commands, and MCP are supported but can only be configured using the command-line interface."
 - No commands listed for external integration
 
 **From Claude Code Documentation (code.claude.com):**
+
 - "Dedicated Claude Code sidebar panel accessed via the Spark icon"
 - "Access most CLI slash commands directly in the extension"
 - No API documentation for programmatic interaction
@@ -71,6 +73,7 @@ Instead, Claude Code architecture:
 **RangeLink requirement:** Paste text to destination without user interaction
 
 **Claude Code limitation:** No documented way to:
+
 - Send text to Claude Code sidebar programmatically
 - Trigger chat input focus via command
 - Integrate with VSCode's native chat interface
@@ -83,12 +86,12 @@ Instead, Claude Code architecture:
 
 ## Comparison with Other Destinations
 
-| Destination     | Chat Interface      | Programmatic Access | RangeLink Viable? |
-| --------------- | ------------------- | ------------------- | ----------------- |
-| Terminal        | Terminal.sendText() | ✅ Native API       | ✅ Yes            |
-| GitHub Copilot  | VSCode chat         | ✅ chat.open        | ✅ Yes            |
-| Cursor AI       | VSCode chat (fork)  | ✅ chat.open        | ✅ Likely         |
-| Claude Code     | Custom sidebar      | ❌ No API           | ❌ Blocked        |
+| Destination    | Chat Interface      | Programmatic Access | RangeLink Viable? |
+| -------------- | ------------------- | ------------------- | ----------------- |
+| Terminal       | Terminal.sendText() | ✅ Native API       | ✅ Yes            |
+| GitHub Copilot | VSCode chat         | ✅ chat.open        | ✅ Yes            |
+| Cursor AI      | VSCode chat (fork)  | ✅ chat.open        | ✅ Likely         |
+| Claude Code    | Custom sidebar      | ❌ No API           | ❌ Blocked        |
 
 ## Recommendations
 
@@ -124,9 +127,11 @@ Instead of Claude Code, prioritize destinations with documented APIs:
 ## Updated Destination Priority
 
 **Phase 2 (Current):**
+
 - ✅ Cursor AI (primary focus)
 
 **Phase 3 (Future):**
+
 - ⏳ GitHub Copilot Chat (high value, documented API)
 - ⏳ Claude Code (pending API availability)
 - ⏳ Windsurf (if viable)

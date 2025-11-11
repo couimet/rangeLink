@@ -11,7 +11,7 @@
   "scripts": {
     "clean": "pnpm -r clean",
     "clean:all": "pnpm -r clean:all",
-    "compile": "pnpm clean && pnpm -r compile",
+    "compile": "pnpm clean && find . -name '*.tsbuildinfo' -delete && pnpm -r --workspace-concurrency=1 compile",
     "enable-pnpm": "corepack enable",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
@@ -23,6 +23,7 @@
     "lint:fix": "eslint . --fix",
     "package:prepare": "pnpm clean:all && pnpm install",
     "package:vscode-extension": "pnpm --filter rangelink-vscode-extension clean && pnpm --filter rangelink-vscode-extension compile && pnpm --filter rangelink-vscode-extension test && pnpm --filter rangelink-vscode-extension package",
+    "package:vscode-extension:withInstall:both": "pnpm package:vscode-extension && pnpm install-local:vscode-extension:both",
     "publish:vscode-extension:vsix": "pnpm --filter rangelink-vscode-extension publish:vsix",
     "test": "pnpm -r test",
     "watch": "pnpm -r --parallel watch"

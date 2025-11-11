@@ -9,17 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Paste Destinations System** - Universal paste destination framework for auto-sending links
+  - Unified architecture supports AI chat integrations, terminal and text editor
+  - One destination active at a time (Claude Code OR Cursor AI OR terminal OR text editor)
+  - Seamless workflow: select code → link appears where you need it
+- **Claude Code Extension Integration** - Streamlined clipboard workflow for Anthropic's official Claude extension
+  - Automatically copies link and opens Claude Code chat panel
+  - Works in both VSCode and Cursor IDE
+  - One-paste workflow: user pastes with Cmd/Ctrl+V (workaround for API limitation)
+  - Command: "Bind RangeLink to Claude Code Destination"
+- **Cursor AI Integration** - Streamlined clipboard workflow for Cursor IDE
+  - Automatically copies link and opens Cursor chat panel
+  - One-paste workflow: user pastes with Cmd/Ctrl+V (workaround for API limitation)
+  - Cursor IDE only
+  - Command: "Bind RangeLink to Cursor AI"
+- **Text Editor Destination** - Paste generated links directly into any text-based editor
+  - Works with untitled/scratch files, markdown, code files, any text document
+  - Perfect for drafting AI prompts before sending to AI assistants
+  - Bind any text editor as paste destination (Command Palette → "Bind RangeLink to Text Editor Destination")
+  - Requires split editor (2+ tab groups) and bound file must be topmost tab for auto-paste
+  - Auto-paste links at cursor position with smart padding
+  - Clipboard fallback with reminder when bound file hidden behind other tabs
+  - Blocks binary files (images, PDFs, archives) - only text-like files
+  - Auto-unbinds when editor closes with notification
+  - See README for full workflow details
 - **Editor Link Navigation** - Click RangeLinks in any editor file to navigate
   - Primary use case: Validate links in scratchpad files before sending to claude-code
   - Works in all file types: markdown, text, code, untitled files
   - Hover tooltips show full navigation details
   - Supports all link formats: single-line, ranges, columns, rectangular mode
   - Reuses terminal navigation logic for consistency
-- **Auto-focus bound terminal after link generation** - Seamless AI workflow like Cursor's `Cmd+L`
-  - When terminal is bound, focus automatically switches to terminal after generating link
-  - Enables immediate prompt continuation without manual terminal clicks
-  - Mirrors Cursor's UX: select code → generate link → keep typing prompt
-  - Zero-friction workflow for claude-code and AI assistant interactions
+
+### Changed
+
+- **Unified Paste Destination Management** - Single manager replaces separate terminal/chat systems
+  - Command renamed: `rangelink.unbindTerminal` → `rangelink.unbindDestination`
+  - Simplified bind/unbind commands work consistently across all destination types
+  - Improved error handling and user feedback
+- **Terminology Updates** - Harmonized vocabulary across extension
+  - "Terminal Binding" → "Terminal Paste Destination"
+  - Consistent "Paste Destinations" terminology in UI and docs
 
 ## [0.2.1]
 

@@ -64,9 +64,38 @@ class MockMemento implements vscode.Memento {
   }
 }
 
+// Mock env, extensions, and commands for destination tests
+const mockEnv = {
+  appName: 'Visual Studio Code',
+  uriScheme: 'vscode',
+  clipboard: {
+    writeText: jest.fn(),
+    readText: jest.fn().mockResolvedValue(''),
+  },
+};
+
+const mockExtensions = {
+  all: [],
+  getExtension: jest.fn(),
+};
+
+const mockCommands = {
+  executeCommand: jest.fn().mockResolvedValue(undefined),
+};
+
+const mockWindow = {
+  showInformationMessage: jest.fn().mockResolvedValue(undefined),
+  showWarningMessage: jest.fn().mockResolvedValue(undefined),
+  showErrorMessage: jest.fn().mockResolvedValue(undefined),
+};
+
 // Export mocked module
 module.exports = {
   ...vscode,
   createMockEvent,
   ExtensionContext: MockExtensionContext,
+  env: mockEnv,
+  extensions: mockExtensions,
+  commands: mockCommands,
+  window: mockWindow,
 };

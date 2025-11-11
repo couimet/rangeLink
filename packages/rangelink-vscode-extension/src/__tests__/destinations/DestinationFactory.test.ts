@@ -1,8 +1,10 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 
+import { CursorAIDestination } from '../../destinations/CursorAIDestination';
 import { DestinationFactory } from '../../destinations/DestinationFactory';
 import { TerminalDestination } from '../../destinations/TerminalDestination';
+import { TextEditorDestination } from '../../destinations/TextEditorDestination';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 
 describe('DestinationFactory', () => {
@@ -60,20 +62,20 @@ describe('DestinationFactory', () => {
       expect(error.details).toStrictEqual({ destinationType: 'github-copilot' });
     });
 
-    it('should throw RangeLinkExtensionError for cursor-ai type (not yet implemented)', () => {
-      let caughtError: unknown;
-      try {
-        factory.create('cursor-ai');
-      } catch (error) {
-        caughtError = error;
-      }
+    it('should create CursorAIDestination for cursor-ai type', () => {
+      const destination = factory.create('cursor-ai');
 
-      expect(caughtError).toBeInstanceOf(RangeLinkExtensionError);
-      const error = caughtError as RangeLinkExtensionError;
-      expect(error.code).toBe(RangeLinkExtensionErrorCodes.DESTINATION_NOT_IMPLEMENTED);
-      expect(error.message).toBe('Destination type not yet implemented: cursor-ai');
-      expect(error.functionName).toBe('DestinationFactory.create');
-      expect(error.details).toStrictEqual({ destinationType: 'cursor-ai' });
+      expect(destination).toBeInstanceOf(CursorAIDestination);
+      expect(destination.id).toBe('cursor-ai');
+      expect(destination.displayName).toBe('Cursor AI Assistant');
+    });
+
+    it('should create TextEditorDestination for text-editor type', () => {
+      const destination = factory.create('text-editor');
+
+      expect(destination).toBeInstanceOf(TextEditorDestination);
+      expect(destination.id).toBe('text-editor');
+      expect(destination.displayName).toBe('Text Editor');
     });
 
     it('should create new instance on each call', () => {
@@ -86,17 +88,17 @@ describe('DestinationFactory', () => {
   });
 
   describe('getSupportedTypes()', () => {
-    it('should return array with terminal type', () => {
+    it('should return array with terminal, cursor-ai, text-editor, and claude-code types', () => {
       const types = factory.getSupportedTypes();
 
-      expect(types).toEqual(['terminal']);
+      expect(types).toEqual(['terminal', 'cursor-ai', 'text-editor', 'claude-code']);
     });
 
     it('should return array (not frozen or readonly)', () => {
       const types = factory.getSupportedTypes();
 
       expect(Array.isArray(types)).toBe(true);
-      expect(types.length).toBe(1);
+      expect(types.length).toBe(4);
     });
   });
 

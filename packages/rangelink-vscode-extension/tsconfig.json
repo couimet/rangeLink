@@ -6,8 +6,5 @@
   },
   "include": ["src"],
   "exclude": ["node_modules", "out"],
-  "references": [
-    { "path": "../barebone-logger" },
-    { "path": "../rangelink-core-ts" }
-  ]
+  "references": [{ "path": "../barebone-logger" }, { "path": "../rangelink-core-ts" }]
 }

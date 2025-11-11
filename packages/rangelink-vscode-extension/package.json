@@ -10,12 +10,14 @@
     "reference",
     "link",
     "range",
-    "citation",
-    "documentation",
     "ai",
-    "rectangular selection",
+    "cursor",
+    "terminal",
+    "navigation",
     "code sharing",
-    "collaboration"
+    "collaboration",
+    "clipboard",
+    "paste"
   ],
   "homepage": "https://github.com/couimet/rangelink/tree/main/packages/rangelink-vscode-extension#readme",
   "bugs": {
@@ -32,12 +34,13 @@
   "scripts": {
     "clean": "rm -rf out dist coverage *.tsbuildinfo *.vsix",
     "clean:all": "pnpm clean && rm -rf node_modules .eslintcache *.log .vscode-test",
-    "compile": "node scripts/generate-version.js && node esbuild.config.js && cp src/version.json dist/version.json && mkdir -p out && cp src/version.json out/version.json",
+    "compile": "pnpm compile:deps && node scripts/generate-version.js && node esbuild.config.js && cp src/version.json dist/version.json && mkdir -p out && cp src/version.json out/version.json",
+    "compile:deps": "cd ../barebone-logger && pnpm clean && pnpm compile && cd ../barebone-logger-testing && pnpm clean && pnpm compile && cd ../rangelink-core-ts && pnpm clean && pnpm compile",
     "generate:publish-instructions": "./scripts/generate-publishing-instructions.sh",
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
     "install-local:vscode": "./scripts/install-local.sh vscode",
-    "package": "../../scripts/sync-assets.sh && rm -f rangelink-vscode-extension-*.vsix && vsce package --no-dependencies",
+    "package": "rm -rf *.vsix && ../../scripts/sync-assets.sh && rm -f rangelink-vscode-extension-*.vsix && vsce package --no-dependencies",
     "publish:vsix": "./scripts/publish-from-vsix.sh",
     "test": "jest --coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
@@ -83,13 +86,31 @@
       },
       {
         "command": "rangelink.bindToTerminal",
-        "title": "Bind to Terminal",
+        "title": "Bind RangeLink to Terminal Destination",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
-        "command": "rangelink.unbindTerminal",
-        "title": "Unbind Terminal",
+        "command": "rangelink.bindToTextEditor",
+        "title": "Bind RangeLink to Text Editor Destination",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.bindToCursorAI",
+        "title": "Bind RangeLink to Cursor AI Destination",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.bindToClaudeCode",
+        "title": "Bind RangeLink to Claude Code Destination",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.unbindDestination",
+        "title": "Unbind RangeLink Destination",
         "category": "RangeLink",
         "icon": "$(close)"
       }

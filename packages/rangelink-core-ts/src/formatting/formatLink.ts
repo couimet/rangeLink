@@ -34,7 +34,7 @@ export function formatLink(
   // Validate and compute range spec
   const specResult = computeRangeSpec(inputSelection, options);
   if (!specResult.success) {
-    return specResult;
+    return Result.err(specResult.error);
   }
   const spec = specResult.value;
 

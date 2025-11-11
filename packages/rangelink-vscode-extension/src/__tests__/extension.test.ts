@@ -1,5 +1,5 @@
-import * as vscode from 'vscode';
 import { pingLog, setLogger } from 'barebone-logger';
+import * as vscode from 'vscode';
 
 import * as extension from '../extension';
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -23,13 +23,13 @@ const mockOutputChannel = {
   dispose: jest.fn(),
 };
 
-// Helper to create mock terminal binding manager (not bound by default)
-function createMockTerminalBindingManager() {
+// Helper to create mock destination manager (not bound by default)
+function createMockDestinationManager() {
   return {
     isBound: () => false,
-    sendToTerminal: () => false,
-    getBoundTerminal: () => undefined,
-    bind: () => false,
+    sendToDestination: async () => false,
+    getBoundDestination: () => undefined,
+    bind: async () => false,
     unbind: () => {},
     dispose: () => {},
   };
@@ -71,6 +71,7 @@ const mockWorkspace = {
   getWorkspaceFolder: jest.fn(),
   asRelativePath: jest.fn(),
   getConfiguration: jest.fn(),
+  onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
 };
 
 const mockCommands = {
@@ -87,17 +88,27 @@ jest.mock('vscode', () => ({
     showInformationMessage: jest.fn(),
     setStatusBarMessage: jest.fn(),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
+    onDidChangeVisibleTextEditors: jest.fn(() => ({ dispose: jest.fn() })),
     registerTerminalLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),
   },
   workspace: {
     getWorkspaceFolder: jest.fn(),
     asRelativePath: jest.fn(),
     getConfiguration: jest.fn(),
+    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
   },
   languages: {
     registerDocumentLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),
   },
-  env: { clipboard: { writeText: jest.fn() } },
+  env: {
+    clipboard: { writeText: jest.fn() },
+    appName: 'Visual Studio Code',
+    uriScheme: 'vscode',
+  },
+  extensions: {
+    all: [],
+    getExtension: jest.fn(),
+  },
   commands: {
     registerCommand: jest.fn(),
   },
@@ -141,8 +152,6 @@ describe('RangeLinkService', () => {
   let service: RangeLinkService;
 
   beforeEach(() => {
-    // Clear all mocks
-    jest.clearAllMocks();
     mockClipboard.writeText.mockResolvedValue(undefined);
 
     // Wire up the external mock objects to the vscode mock
@@ -165,7 +174,7 @@ describe('RangeLinkService', () => {
     );
     (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
 
-    // Create service with default delimiters, real VscodeAdapter, and mock terminal manager
+    // Create service with default delimiters, real VscodeAdapter, and mock managers
     const ideAdapter = new VscodeAdapter();
     service = new RangeLinkService(
       {
@@ -175,12 +184,8 @@ describe('RangeLinkService', () => {
         range: '-',
       },
       ideAdapter,
-      createMockTerminalBindingManager() as any,
+      createMockDestinationManager() as any,
     );
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
   });
 
   describe('createLink - Empty selection handling', () => {
@@ -677,7 +682,7 @@ describe('RangeLinkService', () => {
           range: '..',
         },
         new VscodeAdapter(),
-        createMockTerminalBindingManager() as any,
+        createMockDestinationManager() as any,
       );
 
       mockWindow.activeTextEditor = {
@@ -732,7 +737,7 @@ describe('RangeLinkService', () => {
           range: 'TO',
         },
         new VscodeAdapter(),
-        createMockTerminalBindingManager() as any,
+        createMockDestinationManager() as any,
       );
 
       mockWindow.activeTextEditor = {
@@ -1259,7 +1264,6 @@ describe('RangeLinkService', () => {
 
 describe('Configuration loading and validation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
     mockOutputChannel.appendLine.mockClear();
 
     // Wire up mocks - use arrow function to allow dynamic reassignment
@@ -2971,8 +2975,6 @@ describe('Configuration loading and validation', () => {
 
 describe('Portable links (Phase 1C)', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-
     // Wire up mocks
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
     (vscode.window.showErrorMessage as jest.Mock).mockImplementation(mockWindow.showErrorMessage);
@@ -3023,7 +3025,7 @@ describe('Portable links (Phase 1C)', () => {
         range: 'TO',
       },
       new VscodeAdapter(),
-      createMockTerminalBindingManager() as any,
+      createMockDestinationManager() as any,
     );
 
     // Act
@@ -3096,8 +3098,6 @@ describe('Portable links (Phase 1C)', () => {
 });
 describe('Extension lifecycle', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-
     // Wire up mocks
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
     (vscode.window.showErrorMessage as jest.Mock).mockImplementation(mockWindow.showErrorMessage);
@@ -3107,14 +3107,14 @@ describe('Extension lifecycle', () => {
     (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
   });
 
-  it('should register commands on activate', () => {
+  it('should register commands on activate (non-Cursor IDE)', async () => {
     const mockContext = {
       subscriptions: [] as any[],
     };
 
     // Mock configuration
     const mockConfig = {
-      get: jest.fn((key: string, defaultValue: string) => defaultValue),
+      get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
       inspect: jest.fn((key: string) => {
         const defaults: Record<string, string> = {
           delimiterLine: 'L',
@@ -3131,14 +3131,83 @@ describe('Extension lifecycle', () => {
         };
       }),
     };
-    mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
+
+    // Set up mocks BEFORE activate
+    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
+
+    // Ensure non-Cursor environment (default)
+    (vscode.env as any).appName = 'Visual Studio Code';
+    (vscode.env as any).uriScheme = 'vscode';
+    (vscode.extensions as any).all = [];
 
     // Extension imported at top
     require('../extension').activate(mockContext as any);
 
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(8); // 2 regular + 2 portable + 1 version + 2 terminal binding + 1 document link click
+    // Wait for async IIFE to complete
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    // Note: bindToCursorAI NOT registered in non-Cursor IDE
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(9);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
+
+    // Verify bindToCursorAI was NOT registered (only registered in Cursor IDE)
+    const registeredCommands = (mockCommands.registerCommand as jest.Mock).mock.calls.map(
+      (call) => call[0],
+    );
+    expect(registeredCommands).not.toContain('rangelink.bindToCursorAI');
+  });
+
+  it('should register bindToCursorAI command when running in Cursor IDE', async () => {
+    const mockContext = {
+      subscriptions: [] as any[],
+    };
+
+    // Mock configuration
+    const mockConfig = {
+      get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
+      inspect: jest.fn((key: string) => {
+        const defaults: Record<string, string> = {
+          delimiterLine: 'L',
+          delimiterPosition: 'C',
+          delimiterHash: '#',
+          delimiterRange: '-',
+        };
+        return {
+          key,
+          defaultValue: defaults[key] || 'L',
+          globalValue: undefined,
+          workspaceValue: undefined,
+          workspaceFolderValue: undefined,
+        };
+      }),
+    };
+
+    // Mock Cursor IDE environment (via appName)
+    (vscode.env as any).appName = 'Cursor';
+    (vscode.env as any).uriScheme = 'cursor';
+    (vscode.extensions as any).all = [];
+
+    // Clear previous calls and set up mocks BEFORE activate
+    jest.clearAllMocks();
+    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
+    (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
+    (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
+
+    // Extension imported at top
+    require('../extension').activate(mockContext as any);
+
+    // Wait for async IIFE to complete
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(10);
+    expect(mockContext.subscriptions.length).toBeGreaterThan(0);
+
+    // Verify bindToCursorAI WAS registered
+    const registeredCommands = (mockCommands.registerCommand as jest.Mock).mock.calls.map(
+      (call) => call[0],
+    );
+    expect(registeredCommands).toContain('rangelink.bindToCursorAI');
   });
 
   it('should clean up on deactivate', () => {
@@ -3148,7 +3217,7 @@ describe('Extension lifecycle', () => {
 
     // Mock configuration
     const mockConfig = {
-      get: jest.fn((key: string, defaultValue: string) => defaultValue),
+      get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
       inspect: jest.fn((key: string) => {
         const defaults: Record<string, string> = {
           delimiterLine: 'L',
@@ -3165,7 +3234,9 @@ describe('Extension lifecycle', () => {
         };
       }),
     };
-    mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
+
+    // Set up mocks BEFORE activate
+    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
     // Extension imported at top
     require('../extension').activate(mockContext as any);
@@ -3179,6 +3250,8 @@ describe('Extension lifecycle', () => {
 describe('Logger verification and communication channel', () => {
   beforeEach(() => {
     mockOutputChannel.appendLine.mockClear();
+    // Ensure vscode.window.createOutputChannel returns mockOutputChannel
+    (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
   });
 
   it('should confirm logger initialization by calling debug() when setLogger is called', () => {
@@ -3191,6 +3264,7 @@ describe('Logger verification and communication channel', () => {
       })),
     };
     mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
+    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
     const context = { subscriptions: [] as any[] };
     require('../extension').activate(context as any);

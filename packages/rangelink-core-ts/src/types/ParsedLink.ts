@@ -1,5 +1,5 @@
-import { LinkType } from './LinkType';
 import { LinkPosition } from './LinkPosition';
+import { LinkType } from './LinkType';
 import { SelectionType } from './SelectionType';
 
 /**

@@ -1,5 +1,44 @@
 # Claude Code Instructions
 
+## Autonomous Operation Guidelines
+
+**Claude should operate autonomously for standard development tasks without asking for permission.**
+
+### Always Proceed Without Asking For
+
+1. **Reading files** - Read any project files to understand context
+2. **Running tests** - `pnpm test`, `pnpm --filter <package> test`, etc.
+3. **Compiling/building** - `pnpm compile`, `pnpm clean`, `tsc`, etc.
+4. **Checking git status** - `git status`, `git log`, `git diff`
+5. **Searching code** - `grep`, `find`, `rg` (ripgrep)
+6. **Installing dependencies** - `pnpm install` (after package.json changes)
+7. **Formatting code** - `pnpm format:fix`
+8. **Linting** - Running eslint or other linters
+9. **Reading documentation** - Web searches, fetching docs from official sites
+10. **Creating test files** - When implementing features, always add corresponding tests
+11. **Editing files** - To fix bugs, implement features, refactor code
+12. **Writing new files** - When required for features (but prefer editing existing files)
+
+### Ask Permission Before
+
+1. **Git commits** - Always ask before committing (user reviews first)
+2. **Publishing** - Never publish packages without explicit approval
+3. **Deleting files** - Confirm before removing files (unless clearly obsolete)
+4. **Major architectural changes** - Discuss before large refactors
+5. **External API calls** - When consuming third-party services
+6. **Changing dependencies** - Adding/removing packages in package.json
+7. **Modifying configuration** - Changes to tsconfig.json, jest.config.js, etc.
+
+### Default Behavior
+
+- **Be proactive** - If tests fail, investigate and fix without asking
+- **Run verification** - After making changes, automatically run tests
+- **Self-correct** - If a command fails, try alternative approaches
+- **Provide context** - Explain what you're doing, but don't wait for approval for standard tasks
+- **Use parallel operations** - Run multiple independent commands concurrently when possible
+
+**Rationale:** This enables efficient parallel development across multiple worktrees without constant approval prompts for routine operations.
+
 ## Node.js and pnpm Setup
 
 **Important:** Claude Code runs non-interactive shells, so `node` and `pnpm` may not be available in the PATH by default.
@@ -64,6 +103,7 @@ Claude can still share summaries and thought processes in terminal to provide co
 **Always save commit messages to `.commit-msgs/` folder** (not root directory).
 
 **IMPORTANT: BEFORE creating a commit message file:**
+
 1. Use `Glob(pattern="*.txt", path=".commit-msgs/")` to check existing files
 2. Find the highest NNNN number
 3. Increment by 1 for your new file
@@ -73,6 +113,7 @@ Claude can still share summaries and thought processes in terminal to provide co
 ⚠️ **DO NOT use dates** (e.g., `2025-11-08-description.txt`) - Always use sequential NNNN numbers!
 
 **Examples:**
+
 - ✅ `.commit-msgs/0001-remove-hashmode-enum.txt`
 - ✅ `.commit-msgs/0042-fix-validation-bug.txt`
 - ❌ `.commit-msgs/2025-11-08-fix-bug.txt` (WRONG - uses date instead of NNNN)
@@ -249,14 +290,17 @@ RangeLink is a tool for generating and navigating code location links with suppo
  * @param delimiters - Optional delimiter configuration
  * @returns Result with ParsedLink on success, RangeLinkError on failure
  */
-export const parseLink = (link: string, delimiters?: DelimiterConfig): Result<ParsedLink, RangeLinkError> => {
+export const parseLink = (
+  link: string,
+  delimiters?: DelimiterConfig,
+): Result<ParsedLink, RangeLinkError> => {
   // ...
 };
 ```
 
 **Bad JSDoc (verbose with examples):**
 
-```typescript
+````typescript
 /**
  * Parse a RangeLink string into structured components.
  *
@@ -268,7 +312,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): Result<Pa
  * }
  * ```
  */
-```
+````
 
 ## Testing Requirements
 
@@ -303,19 +347,86 @@ try {
 expect(caughtError).toBeRangeLinkError({...});
 ```
 
-**Use `toBeRangeLinkError` only for Result types:**
+**Use `toBeRangeLinkErrorErr` for Result-returning functions (not nested matchers):**
 
 ```typescript
-// When testing functions that return Result<T, RangeLinkError>
+// ✅ PREFERRED - Clean, single matcher for Result types
+const result = computeRangeSpec(input);
+expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
+  message: 'Selections array must not be empty',
+  functionName: 'validateInputSelection',
+});
+
+// ❌ AVOID - Old nested pattern
 const result = computeRangeSpec(input);
 expect(result).toBeErrWith((error: RangeLinkError) => {
-  expect(error).toBeRangeLinkError({
-    code: RangeLinkErrorCodes.SELECTION_EMPTY,
+  expect(error).toBeRangeLinkError('SELECTION_EMPTY', {
     message: 'Selections array must not be empty',
     functionName: 'validateInputSelection',
   });
 });
 ```
+
+**Extract error objects as test-scoped constants when testing error re-throw:**
+
+```typescript
+// ✅ PREFERRED - Assert on error object (type + message + reference equality)
+const expectedError = new TypeError('Unexpected validation error');
+jest.spyOn(module, 'fn').mockImplementationOnce(() => {
+  throw expectedError;
+});
+expect(() => myFunction()).toThrow(expectedError);
+
+// ❌ AVOID - Brittle string-only assertion
+jest.spyOn(module, 'fn').mockImplementationOnce(() => {
+  throw new TypeError('Unexpected validation error');
+});
+expect(() => myFunction()).toThrow('Unexpected validation error');
+```
+
+**Rationale for error object extraction:**
+
+- Asserts on error **type** (TypeError, RangeError, etc.), not just message
+- Asserts on **reference equality** (exact error object was re-thrown)
+- Less brittle: message changes won't break test if error type changes too
+- Self-documenting: error object definition shows exactly what's being tested
+
+**Always verify jest.spyOn() calls:**
+
+```typescript
+// ✅ REQUIRED - Verify spy was called with exact parameters
+const spy = jest.spyOn(module, 'functionName').mockImplementation(...);
+
+myFunction(input);
+
+expect(spy).toHaveBeenCalledTimes(1);
+expect(spy).toHaveBeenCalledWith(input); // Exact parameter validation
+
+spy.mockRestore(); // Or use afterEach cleanup
+```
+
+**Simplify mock test inputs (don't test too deep):**
+
+```typescript
+// ✅ PREFERRED - Input doesn't matter when dependency is mocked
+const input = {} as InputType; // Mock will intercept before validation
+const spy = jest.spyOn(dependency, 'validate').mockImplementation(...);
+
+// ❌ AVOID - Over-specifying input that mock will intercept anyway
+const input: InputType = {
+  field1: 'value',
+  field2: { nested: 'data' },
+  field3: [1, 2, 3],
+}; // All this detail is unnecessary if mock intercepts
+```
+
+**Rationale for spy verification:**
+
+- Ensures mock actually intercepted the call (validates test setup)
+- Validates integration contract between layers
+- Catches parameter drift when refactoring
+- Prevents dangling/unused spy setups
+- Self-documenting: shows exactly what's being tested
 
 **Matcher validation:**
 

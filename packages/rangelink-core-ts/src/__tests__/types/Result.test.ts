@@ -147,7 +147,8 @@ describe('Result Value Object', () => {
         const result = Result.ok(42);
 
         expect(() => result.error).toThrowRangeLinkError('RESULT_ERROR_ACCESS_ON_SUCCESS', {
-          message: 'Cannot access error on a successful Result. Check .success before accessing .error',
+          message:
+            'Cannot access error on a successful Result. Check .success before accessing .error',
           functionName: 'Result.error',
         });
       });
@@ -156,7 +157,8 @@ describe('Result Value Object', () => {
         const result = Result.ok({ foo: 'bar', num: 123 });
 
         expect(() => result.error).toThrowRangeLinkError('RESULT_ERROR_ACCESS_ON_SUCCESS', {
-          message: 'Cannot access error on a successful Result. Check .success before accessing .error',
+          message:
+            'Cannot access error on a successful Result. Check .success before accessing .error',
           functionName: 'Result.error',
         });
       });
@@ -367,15 +369,21 @@ describe('Result Value Object', () => {
         //
         // This prevents invalid states like { success: true, error: 'oops' }
         //
-        // Since the constructor is private, this is tested indirectly via
-        // Result.ok() which should never pass an error parameter.
-        //
-        // If someone accidentally modifies Result.ok() to pass both value and error,
-        // the constructor validation will catch it during testing.
+        // To test this private validation, we need to access the constructor directly.
+        // We use type assertion to bypass TypeScript's private access control.
+        const ResultConstructor = Result as unknown as new (
+          success: boolean,
+          value?: unknown,
+          error?: unknown,
+        ) => Result<unknown, unknown>;
 
-        const result = Result.ok(42);
-        expect(result.success).toBe(true);
-        expect(() => result.error).toThrow(); // Validates getter also prevents access
+        expect(() => new ResultConstructor(true, 42, 'error')).toThrowRangeLinkError(
+          'RESULT_INVALID_STATE',
+          {
+            message: 'Result marked as success cannot have an error defined',
+            functionName: 'Result.constructor',
+          },
+        );
       });
 
       it('documents that constructor prevents success=false with value defined', () => {
@@ -385,15 +393,21 @@ describe('Result Value Object', () => {
         //
         // This prevents invalid states like { success: false, value: 42 }
         //
-        // Since the constructor is private, this is tested indirectly via
-        // Result.err() which should never pass a value parameter.
-        //
-        // If someone accidentally modifies Result.err() to pass both value and error,
-        // the constructor validation will catch it during testing.
+        // To test this private validation, we need to access the constructor directly.
+        // We use type assertion to bypass TypeScript's private access control.
+        const ResultConstructor = Result as unknown as new (
+          success: boolean,
+          value?: unknown,
+          error?: unknown,
+        ) => Result<unknown, unknown>;
 
-        const result = Result.err('error');
-        expect(result.success).toBe(false);
-        expect(() => result.value).toThrow(); // Validates getter also prevents access
+        expect(() => new ResultConstructor(false, 42, 'error')).toThrowRangeLinkError(
+          'RESULT_INVALID_STATE',
+          {
+            message: 'Result marked as error cannot have a value defined',
+            functionName: 'Result.constructor',
+          },
+        );
       });
     });
   });
