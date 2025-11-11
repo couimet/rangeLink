@@ -344,15 +344,15 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Setup visible editors change listener for document closure detection
+   * Setup document close listener for document closure detection
    *
    * **Lazy unbind strategy:**
-   * - Only unbinds when bound document is no longer visible anywhere
-   * - Allows user to move document between tab groups
-   * - Paste attempt will show "not topmost" warning if document exists but hidden
+   * - Only unbinds when bound document is actually closed (not just hidden)
+   * - Allows user to move document between tab groups or switch to other files
+   * - Paste attempt will show "not topmost" warning if document exists but not visible
    */
   private setupTextDocumentCloseListener(): void {
-    const editorsChangeDisposable = vscode.window.onDidChangeVisibleTextEditors((editors) => {
+    const documentCloseDisposable = vscode.workspace.onDidCloseTextDocument((closedDocument) => {
       // Only check if we have a text editor destination bound
       if (!this.boundDestination || this.boundDestination.id !== 'text-editor') {
         return;
@@ -365,17 +365,13 @@ export class PasteDestinationManager implements vscode.Disposable {
         return;
       }
 
-      // Check if bound document is still visible in any editor
-      const isStillVisible = editors.some(
-        (editor) => editor.document.uri.toString() === boundDocumentUri.toString(),
-      );
-
-      if (!isStillVisible) {
-        // Document closed or no longer visible - auto-unbind
+      // Check if the closed document matches the bound document
+      if (closedDocument.uri.toString() === boundDocumentUri.toString()) {
+        // Document actually closed - auto-unbind
         const editorDisplayName = textEditorDest.getEditorDisplayName() || 'Unknown';
         this.logger.info(
           {
-            fn: 'PasteDestinationManager.onDidChangeVisibleTextEditors',
+            fn: 'PasteDestinationManager.onDidCloseTextDocument',
             editorDisplayName,
             boundDocumentUri: boundDocumentUri.toString(),
           },
@@ -386,7 +382,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       }
     });
 
-    this.context.subscriptions.push(editorsChangeDisposable);
-    this.disposables.push(editorsChangeDisposable);
+    this.context.subscriptions.push(documentCloseDisposable);
+    this.disposables.push(documentCloseDisposable);
   }
 }
