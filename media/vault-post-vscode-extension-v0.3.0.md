@@ -29,12 +29,14 @@ The best part? **You don't give up any convenience.** Select code, hit `Cmd+R Cm
 
 Bind RangeLink to one destination at a time:
 
-- **Claude Code Extension** — Links open Claude's chat panel (works in VSCode and Cursor)
-- **Cursor AI** — Links open Cursor's AI chat
+- **Claude Code Extension** — Links open Claude's chat panel (works in VSCode and Cursor)\*
+- **Cursor AI** — Links open Cursor's AI chat\*
 - **Terminal** — Auto-paste links for terminal-based AI assistants
 - **Text Editor** — Draft complex prompts in any file (markdown, untitled, whatever)
 
 All destinations share the same seamless UX: select code → `Cmd+R Cmd+L` → link appears at your cursor position → destination auto-focuses → keep typing.
+
+> (\*) **FULL DISCLAIMER:** Claude Code Extension and Cursor AI destinations use a clipboard-based workaround because their APIs don't support programmatic text insertion yet (as of Nov 2025). RangeLink copies the link and opens the chat panel, but you need to paste (`Cmd+V` / `Ctrl+V`) yourself. Terminal and Text Editor destinations fully auto-paste without manual intervention.
 
 ### Editor Link Navigation
 
