@@ -277,9 +277,7 @@ describe('RangeLinkService', () => {
       describe('text-editor destination', () => {
         it('should show text-editor-specific warning about hidden tabs', async () => {
           const textEditorDest = createMockDestination('text-editor', 'Text Editor');
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
-            textEditorDest,
-          );
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(textEditorDest);
 
           await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
@@ -315,9 +313,7 @@ describe('RangeLinkService', () => {
       describe('claude-code destination', () => {
         it('should NOT show text-editor-specific warning', async () => {
           const claudeCodeDest = createMockDestination('claude-code', 'Claude Code Chat');
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
-            claudeCodeDest,
-          );
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(claudeCodeDest);
 
           await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
@@ -328,9 +324,7 @@ describe('RangeLinkService', () => {
 
         it('should show claude-code-specific guidance', async () => {
           const claudeCodeDest = createMockDestination('claude-code', 'Claude Code Chat');
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
-            claudeCodeDest,
-          );
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(claudeCodeDest);
 
           await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
