@@ -155,16 +155,20 @@ export function activate(context: vscode.ExtensionContext): void {
       );
     }
 
-    const claudeCodeDestination = factory.create('claude-code');
-    const isClaudeCodeAvailable = await claudeCodeDestination.isAvailable();
-
-    if (isClaudeCodeAvailable) {
-      context.subscriptions.push(
-        vscode.commands.registerCommand('rangelink.bindToClaudeCode', async () => {
-          await destinationManager.bind('claude-code');
-        }),
-      );
-    }
+    // Always register Claude Code command to make it discoverable
+    // Show helpful message if extension not installed/active
+    context.subscriptions.push(
+      vscode.commands.registerCommand('rangelink.bindToClaudeCode', async () => {
+        const claudeCodeDestination = factory.create('claude-code');
+        if (!(await claudeCodeDestination.isAvailable())) {
+          void vscode.window.showInformationMessage(
+            'RangeLink can seamlessly integrate with Claude Code for faster context sharing of precise code ranges.\n\nInstall and activate the Claude Code extension to use it as a paste destination.',
+          );
+          return;
+        }
+        await destinationManager.bind('claude-code');
+      }),
+    );
   })();
 
   context.subscriptions.push(

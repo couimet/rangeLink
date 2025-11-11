@@ -97,12 +97,6 @@
         "icon": "$(link)"
       },
       {
-        "command": "rangelink.bindToCursorAI",
-        "title": "Bind RangeLink to Cursor AI Destination",
-        "category": "RangeLink",
-        "icon": "$(link)"
-      },
-      {
         "command": "rangelink.bindToClaudeCode",
         "title": "Bind RangeLink to Claude Code Destination",
         "category": "RangeLink",

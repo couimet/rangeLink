@@ -3147,7 +3147,8 @@ describe('Extension lifecycle', () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     // Note: bindToCursorAI NOT registered in non-Cursor IDE
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(9);
+    // bindToClaudeCode IS always registered (even if not available)
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(10);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
@@ -3156,6 +3157,8 @@ describe('Extension lifecycle', () => {
       (call) => call[0],
     );
     expect(registeredCommands).not.toContain('rangelink.bindToCursorAI');
+    // Verify bindToClaudeCode WAS registered (always registered for discoverability)
+    expect(registeredCommands).toContain('rangelink.bindToClaudeCode');
   });
 
   it('should register bindToCursorAI command when running in Cursor IDE', async () => {
@@ -3200,7 +3203,8 @@ describe('Extension lifecycle', () => {
     // Wait for async IIFE to complete
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(10);
+    // bindToCursorAI IS registered in Cursor IDE + bindToClaudeCode always registered
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(11);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
 
     // Verify bindToCursorAI WAS registered
@@ -3208,6 +3212,8 @@ describe('Extension lifecycle', () => {
       (call) => call[0],
     );
     expect(registeredCommands).toContain('rangelink.bindToCursorAI');
+    // Verify bindToClaudeCode WAS also registered
+    expect(registeredCommands).toContain('rangelink.bindToClaudeCode');
   });
 
   it('should clean up on deactivate', () => {
