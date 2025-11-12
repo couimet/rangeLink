@@ -324,24 +324,11 @@ TECHNICAL SPECS:
 - Automate GitHub release creation
 - Extract changelog for release notes
 
-### 4A.2) Configuration Change Detection (30 min) — 🔴 Critical Bug
+### 4A.2) Configuration Change Detection — [GitHub #43](https://github.com/couimet/rangeLink/issues/43)
 
-**Problem:** Delimiter config loaded once at activation, never updated. Requires window reload.
+**Goal:** Enable dynamic configuration reloading so users don't need to reload VSCode window when changing delimiter settings.
 
-**Implementation:**
-
-1. Register config listener: `vscode.workspace.onDidChangeConfiguration()`
-2. Extract `reloadConfiguration()` - reload delimiters, recreate RangeLinkService
-3. **🔴 CRITICAL: Recreate TerminalLinkProvider** - pattern uses `buildLinkPattern(delimiters)`, stale pattern won't detect links with new delimiters
-4. Handle edge cases: invalid config (fallback), debounce (500ms)
-
-**Testing:**
-
-- Change delimiter → Extension uses new delimiters immediately
-- Terminal links detect new delimiter pattern
-- Verify log shows provider recreation
-
-**Done when:** User can change settings during session, extension updates immediately including terminal link detection.
+**Status:** See GitHub issue #43 for detailed implementation steps and progress.
 
 ### 4A.5) Error Logging Verification in Tests — 📋 Planned (1.5h)
 
