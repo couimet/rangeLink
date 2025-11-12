@@ -4,6 +4,8 @@ import { InputSelection } from '../types/InputSelection';
 import { SelectionType } from '../types/SelectionType';
 
 import { validateNormalMode } from './validateNormalMode';
+import { validateRectangularMode } from './validateRectangularMode';
+
 /**
  * Validates InputSelection structure and constraints.
  * Internal validation function - throws on invalid input.
@@ -98,91 +100,5 @@ export function validateInputSelection(inputSelection: InputSelection): void {
     validateNormalMode(selections);
   } else if (selectionType === SelectionType.Rectangular) {
     validateRectangularMode(selections);
-  }
-}
-
-/**
- * Validates Rectangular mode selections.
- *
- * @param selections Array of selections
- * @throws {RangeLinkError} If validation fails
- */
-function validateRectangularMode(selections: InputSelection['selections']): void {
-  if (selections.length === 0) return; // Already validated above
-
-  const first = selections[0];
-
-  for (let i = 0; i < selections.length; i++) {
-    const sel = selections[i];
-    if (sel.start.line !== sel.end.line) {
-      throw new RangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_MULTILINE,
-        message: `Rectangular mode requires single-line selections (selection ${i} spans lines ${sel.start.line}-${sel.end.line})`,
-        functionName: 'validateRectangularMode',
-        details: {
-          selectionIndex: i,
-          startLine: sel.start.line,
-          endLine: sel.end.line,
-        },
-      });
-    }
-  }
-
-  const expectedStartChar = first.start.char;
-  const expectedEndChar = first.end.char;
-
-  for (let i = 1; i < selections.length; i++) {
-    const sel = selections[i];
-    if (sel.start.char !== expectedStartChar || sel.end.char !== expectedEndChar) {
-      throw new RangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_MISMATCHED_COLUMNS,
-        message: `Rectangular mode requires consistent column range (expected ${expectedStartChar}-${expectedEndChar}, got ${sel.start.char}-${sel.end.char} at selection ${i})`,
-        functionName: 'validateRectangularMode',
-        details: {
-          selectionIndex: i,
-          expectedStartChar,
-          expectedEndChar,
-          actualStartChar: sel.start.char,
-          actualEndChar: sel.end.char,
-        },
-      });
-    }
-  }
-
-  for (let i = 1; i < selections.length; i++) {
-    const prev = selections[i - 1];
-    const curr = selections[i];
-
-    if (curr.start.line < prev.start.line) {
-      throw new RangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_UNSORTED,
-        message: `Rectangular mode selections must be sorted by line number (line ${curr.start.line} comes after line ${prev.start.line})`,
-        functionName: 'validateRectangularMode',
-        details: {
-          selectionIndex: i,
-          previousLine: prev.start.line,
-          currentLine: curr.start.line,
-        },
-      });
-    }
-  }
-
-  for (let i = 1; i < selections.length; i++) {
-    const prev = selections[i - 1];
-    const curr = selections[i];
-
-    if (curr.start.line !== prev.start.line + 1) {
-      throw new RangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_NON_CONTIGUOUS,
-        message: `Rectangular mode requires contiguous lines (gap between line ${prev.start.line} and ${curr.start.line})`,
-        functionName: 'validateRectangularMode',
-        details: {
-          selectionIndex: i,
-          previousLine: prev.start.line,
-          currentLine: curr.start.line,
-          gap: curr.start.line - prev.start.line - 1,
-        },
-      });
-    }
   }
 }
