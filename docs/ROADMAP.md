@@ -47,42 +47,11 @@ _Future development plans and in-progress work._
 
 ---
 
-### 📋 Enhanced Navigation Feedback — Future (2-3 hours)
+### 📋 Enhanced Navigation Feedback — [GitHub #47](https://github.com/couimet/rangeLink/issues/47)
 
-**Goal:** Improve navigation feedback with contextual toasts and settings.
+**Goal:** Improve navigation feedback with contextual toasts and settings for clamping detection.
 
-**Iterations:**
-
-1. **Clamping Detection** (1.5h)
-   - Add enum-based clamping detection to `convertRangeLinkPosition`
-   - **Do NOT use `wasClamped: boolean`** - use rich enum instead
-   - Options:
-     - Simple: `ClampingType = 'none' | 'vertical' | 'horizontal' | 'both'`
-     - Rich: Two enums for vertical/horizontal granularity
-     - Note: Can't clamp at top (line 0) or left (column 0) - only at bottom/right
-   - Return type: `{ position: ConvertedPosition; clamping: ClampingInfo }`
-   - Handler uses clamping info for warning toasts
-
-2. **Toast Classification** (30min)
-   - Info toast: Exact navigation (no clamping)
-   - Warning toast: Partial navigation (file too short/narrow)
-   - Format: `RangeLink: Partially navigated (line XX exceeds file length)`
-
-3. **Settings & Configuration** (1h)
-   - `rangelink.navigation.showSuccessToasts` (boolean, default: true)
-   - `rangelink.navigation.showClampingWarnings` (boolean, default: true)
-   - `rangelink.navigation.toastDelay` (number ms, default: 2000)
-   - Respect settings in handler
-
-**Done When:**
-
-- [ ] Clamping detection with enum (not boolean)
-- [ ] Info/warning toasts based on clamping
-- [ ] Settings to configure toast behavior
-- [ ] Tests cover all clamping scenarios
-- [ ] Documentation updated
-
-**Benefits:** Users get clear feedback when links point to out-of-bounds locations. Settings allow muting toasts for power users.
+**Status:** See GitHub issue #47 for detailed breakdown and progress.
 
 ---
 
@@ -117,199 +86,15 @@ See [neovim-integration.md](./neovim-integration.md).
 
 ---
 
-## Phase 2E: CI/CD Pipeline — 📋 Planned (1 hour)
-
-- GitHub Actions workflow
-- Run tests on PR (per-package)
-- Automated npm publish on tag (core only)
-- **Done when:** CI passes on PR, publishes on tag
-
----
-
 ## Phase 3: VSCode Marketplace Launch — 📋 Remaining Items
 
 **Completed:** Developer tooling, extension icon/logo (see [JOURNEY.md](./JOURNEY.md))
 
-### 3I) GitHub Social Preview Banner
+### 3I) GitHub Social Preview Banner — [GitHub #74](https://github.com/couimet/rangeLink/issues/74)
 
 **Goal:** Create GitHub social preview banner showcasing RangeLink's bidirectional workflow for AI-assisted development.
 
-**Banner Composition:**
-
-Visual concept: IDE window (VSCode/Cursor aesthetic) demonstrating the link creation and navigation workflow.
-
-**Core elements:**
-
-- **IDE mockup** showing split view:
-  - **Text editor panel** (top/larger): Code snippet with partial-line selection
-    - Show lines 42-58 with visible line numbers
-    - Selection spans multiple lines with different column start/end positions (e.g., L42C10-L58C25)
-    - Highlight showing selection doesn't have to be full lines
-  - **Integrated terminal panel** (bottom): Displays clickable RangeLink
-    - Example: `src/auth.ts#L42C10-L58C25`
-    - Subtle visual indicator showing link is clickable (cursor icon, underline, or hover state)
-- **Bidirectional arrow**: Between editor and terminal showing two-way navigation flow
-- **RangeLink logo**: Chicken mascot (top-left corner or as tasteful overlay)
-- **Headline**: "RangeLink gives you `src/auth.ts#L42C10-L58C25` — precise, portable, and just works across editors, tools, and teams"
-  - Adapt as needed for visual balance (can split into title + subtitle)
-- **Tone**: Friendly and accessible (matching mascot personality)
-
-**Visual Identity:**
-
-**Logo description** (for DALL-E prompt; actual logo will be uploaded separately):
-
-- Friendly cartoon chicken mascot
-- Orange feathers (#FF6B35)
-- Wearing an infinity necklace (∞ symbol pendant)
-- Circular badge design with "RANGELINK" text curved at top
-- Code reference "#L3C14-L314C16" curved at bottom
-- Cream/beige background circle
-- Dark brown border
-- Overall vibe: Playful, approachable, tech-savvy
-
-**Brand colors:**
-
-- Primary: Orange #FF6B35
-- Secondary: Cream/beige #F5E6D3
-- Accent: Dark brown #3E2723
-- UI elements: VSCode dark theme aesthetic (dark grays, subtle syntax highlighting)
-
-**DALL-E Prompts:**
-
-<details>
-<summary><strong>Prescriptive Version (Click to expand)</strong></summary>
-
-```
-Create a 1280x640px GitHub social preview banner for RangeLink, a VSCode extension for AI-assisted development workflows.
-
-LAYOUT & COMPOSITION:
-- Canvas: 1280x640px
-- Background: Subtle gradient from cream (#F5E6D3) on left to light orange tint on right
-- Main element: Realistic IDE window mockup (VSCode or Cursor style), centered, occupying ~75% of banner width and height
-
-IDE WINDOW MOCKUP STRUCTURE:
-- Title bar: Dark (#1E1E1E), show "VSCode" or "Cursor" branding
-- Split panel layout (horizontal split):
-  * Top panel (60% height): Text editor
-  * Bottom panel (40% height): Integrated terminal
-  * Subtle divider line between panels
-
-TEXT EDITOR PANEL (Top):
-- Background: Dark theme (#1E1E1E or similar)
-- Show code snippet (TypeScript or JavaScript):
-  * Line numbers visible on left (lines 42-58)
-  * Syntax highlighting (subtle blues, yellows, greens typical of VSCode dark theme)
-  * Selection highlighted: Partial-line selection spanning multiple lines
-  * Selection example: Line 42 starting at column 10, ending at line 58 column 25
-  * Make it clear selection doesn't span full lines (different column positions)
-  * Use standard VSCode selection highlight color (blue-ish overlay)
-- Tab bar showing filename: "src/auth.ts"
-
-TERMINAL PANEL (Bottom):
-- Background: Very dark (#0C0C0C or similar)
-- Show terminal prompt and RangeLink output:
-  * Prompt: "$ " or ">" in typical terminal green
-  * Link text: "src/auth.ts#L42C10-L58C25" in a clickable style
-  * Visual indicator: Subtle underline or hand cursor icon near link
-  * Optional: AI assistant response context (e.g., "claude: Check out this code:")
-
-BIDIRECTIONAL ARROW:
-- Position: Between editor and terminal (vertically centered on the divider)
-- Style: Orange (#FF6B35), ~50-60px length, double-headed (⟷)
-- Subtle glow or shadow for visibility
-- Shows connection: "Select code → Generate link" and "Click link → Navigate back"
-
-LOGO & BRANDING:
-- RangeLink logo: Top-left corner (or bottom-right if composition works better)
-- Size: ~100-120px
-- Circular badge with friendly cartoon chicken:
-  * Orange chicken with infinity necklace
-  * "RANGELINK" text curved at top
-  * "#L3C14-L314C16" at bottom
-  * Cream background circle with dark brown border
-- Logo should be prominent but not overwhelming
-
-HEADLINE TEXT:
-- Position: Bottom of banner (below IDE window) or integrated tastefully
-- Text: "precise, portable, and just works"
-- Alternative: "RangeLink: Precise code references for AI assistants"
-- Font: Modern sans-serif (Inter, SF Pro, or similar)
-- Color: Dark brown (#3E2723) for contrast, or white if positioned over darker area
-- Size: ~32-40px, readable at social preview size
-
-OVERALL STYLE:
-- Professional but friendly (not corporate/sterile)
-- Modern developer tools aesthetic
-- Clean, approachable UI
-- Realistic IDE mockup (should feel like a screenshot, but polished)
-- Ensure text is readable when scaled down to thumbnail size
-
-TECHNICAL REQUIREMENTS:
-- Dimensions: 1280x640px (2:1 aspect ratio)
-- Format: PNG with transparency where appropriate, or solid background
-- Optimize for social media preview (clear even at small sizes)
-```
-
-</details>
-
-<details>
-<summary><strong>Open-Ended Version (Click to expand)</strong></summary>
-
-```
-Create a 1280x640px GitHub social preview banner for RangeLink, a VSCode extension that helps developers share precise code references with AI assistants.
-
-CORE CONCEPT:
-Show a modern code editor (VSCode or Cursor style) with an integrated terminal, demonstrating RangeLink's bidirectional workflow:
-1. Developer selects code in the editor → generates a precise link
-2. Link appears in the terminal (clickable)
-3. Clicking the link navigates back to the exact code location
-
-ESSENTIAL ELEMENTS TO INCLUDE:
-- IDE window showing both text editor and integrated terminal
-- Text editor: Code with a partial-line selection (not full lines — show different start/end column positions)
-- Terminal: A clickable RangeLink like `src/auth.ts#L42C10-L58C25`
-- Bidirectional arrow: Visual connector showing the two-way workflow
-- RangeLink logo: Friendly orange chicken mascot with infinity necklace (circular badge design)
-- Headline: Adapt from "precise, portable, and just works across editors, tools, and teams"
-
-VISUAL DIRECTION:
-- Tone: Friendly and accessible (not sterile or overly corporate)
-- Style: Modern developer tools aesthetic, clean UI
-- Colors: Orange (#FF6B35), cream (#F5E6D3), dark browns, VSCode dark theme
-- Make it feel like a polished screenshot of a real workflow
-
-LOGO DESCRIPTION (will be uploaded separately, but for context):
-- Circular badge with friendly cartoon chicken
-- Orange feathers, wearing infinity (∞) necklace
-- "RANGELINK" text at top, "#L3C14-L314C16" at bottom
-- Cream background, dark brown border
-- Playful, approachable mascot
-
-LAYOUT FREEDOM:
-Feel free to interpret the composition creatively while keeping the core workflow concept clear. The goal is to instantly communicate: "This tool helps you share precise code with AI assistants and navigate back via clickable links."
-
-TECHNICAL SPECS:
-- Size: 1280x640px (2:1 ratio)
-- Readable at thumbnail sizes
-- Professional but friendly vibe
-```
-
-</details>
-
-**Technical Specifications:**
-
-- Dimensions: 1280×640px (2:1 aspect ratio)
-- Format: PNG or JPG
-- File size: Under 1MB
-- Upload location: GitHub → Repo Settings → General → Social preview
-
-**Upload & Testing:**
-
-1. Generate banner using DALL-E with one of the prompts above
-2. Upload to GitHub: Repository Settings → General → Social preview
-3. Test by sharing repo link on Slack/messaging apps to verify preview appears correctly
-
-**Done when:** Banner uploaded to GitHub and displays correctly in social media previews
+**Status:** See GitHub issue #74 for complete design specifications, DALL-E prompts, and implementation steps.
 
 ---
 
@@ -324,24 +109,11 @@ TECHNICAL SPECS:
 - Automate GitHub release creation
 - Extract changelog for release notes
 
-### 4A.2) Configuration Change Detection (30 min) — 🔴 Critical Bug
+### 4A.2) Configuration Change Detection — [GitHub #43](https://github.com/couimet/rangeLink/issues/43)
 
-**Problem:** Delimiter config loaded once at activation, never updated. Requires window reload.
+**Goal:** Enable dynamic configuration reloading so users don't need to reload VSCode window when changing delimiter settings.
 
-**Implementation:**
-
-1. Register config listener: `vscode.workspace.onDidChangeConfiguration()`
-2. Extract `reloadConfiguration()` - reload delimiters, recreate RangeLinkService
-3. **🔴 CRITICAL: Recreate TerminalLinkProvider** - pattern uses `buildLinkPattern(delimiters)`, stale pattern won't detect links with new delimiters
-4. Handle edge cases: invalid config (fallback), debounce (500ms)
-
-**Testing:**
-
-- Change delimiter → Extension uses new delimiters immediately
-- Terminal links detect new delimiter pattern
-- Verify log shows provider recreation
-
-**Done when:** User can change settings during session, extension updates immediately including terminal link detection.
+**Status:** See GitHub issue #43 for detailed implementation steps and progress.
 
 ### 4A.5) Error Logging Verification in Tests — 📋 Planned (1.5h)
 
@@ -529,82 +301,7 @@ Integrate terminal link provider with Phase 4A.2 config change detection. Rebuil
 
 ---
 
-## Phase 7: Productivity Features
-
-### Strategic Context: AI-First Development Workflow
-
-RangeLink is an **AI workflow integration tool** eliminating context-sharing friction for developers using external AI assistants (claude-code, ChatGPT, Gemini).
-
-**Why AI-First:**
-
-- Workflow frequency: 50-100+ link generations/day for AI vs 5-10 for team sharing
-- Friction compounds: 2s manual paste × 100 = 200+ context switches eliminated
-- Competitive positioning: Makes external AI feel integrated like Cursor while preserving model choice, context control, editor independence
-
-**Feature Priority:** Bind to Terminal is killer feature (not nice-to-have). Link History amplifies it.
-
----
-
-### Bind to Terminal — High Priority
-
-**Problem:** Manual clipboard paste friction after generating links for claude-code in terminal.
-
-**Solution:** Auto-paste generated links into bound terminal.
-
-**Completed:** Iterations 1-2 (Terminal Binding, Lifecycle Management). See [JOURNEY.md](./JOURNEY.md).
-
-**📋 Iteration 3: Enhanced Rebinding UX** (0.5h)
-
-Allow rebinding without manual unbind. Show toast: "Already bound. Switch to [new]?"
-
-**📋 Iteration 4: Persistent Status Bar** (1h) — Low Priority
-
-Status bar item: `🔗→ [terminal]` (bound) or `🔗❌` (unbound). Click to manage.
-
-**Discoverability Concerns:**
-
-- Users may not recognize what the icon means without context
-- **Potential solutions:** Use RangeLink logo in status bar, or `RL` prefix as mnemonic (e.g., `RL: terminal-name`)
-- Need clear branding/labeling for discoverability
-
-**📋 Iteration 5: Terminal Selection Quick Pick** (2h)
-
-Quick Pick of available terminals with name, position, process. Auto-select if only one.
-
-**📋 Iteration 6: Context Menu** (1h)
-
-"Bind RangeLink Here" on terminal tab with checkmark indicator.
-
-**📋 Iteration 7: Configurable Link Spacing** (30min)
-
-Settings to control space padding around links sent to terminal:
-
-- `rangelink.terminal.addSpaceBefore` (default: true)
-- `rangelink.terminal.addSpaceAfter` (default: true)
-
-Currently hardcoded to add space before and after for better UX.
-
-**📋 Iteration 8: Configurable Auto-Focus** (15min)
-
-Setting to control terminal focus after link generation:
-
-- `rangelink.terminal.autoFocus` (default: true)
-
-Currently always focuses terminal (productivity feature).
-
-**Future:** Visual indicator, persist across sessions, multi-terminal support, keyboard shortcuts, settings integration.
-
----
-
-### Other Productivity Features
-
-- [ ] **Undo/redo support** - Track navigation history
-- [ ] **Batch operations** - Multi-selection, function + usages
-- [ ] **Documentation generation** - Links for public APIs
-
----
-
-## Phase 8: User Experience
+## Phase 7: User Experience
 
 - [ ] **Settings validation UX** (1h) - Pre-save validation, "Test Configuration" command, better error notifications
 - [ ] **Settings and preferences** - Opt-in/out, format preferences, keyboard customization, exclusion patterns
@@ -613,7 +310,7 @@ Currently always focuses terminal (productivity feature).
 
 ---
 
-## Phase 9: Integration & Extensions
+## Phase 8: Integration & Extensions
 
 - [ ] **VSCode API integration** - Register as link provider
 - [ ] **Terminal integration** - Parse links in terminal output
@@ -622,7 +319,7 @@ Currently always focuses terminal (productivity feature).
 
 ---
 
-## Phase 10: Developer Experience
+## Phase 9: Developer Experience
 
 - [ ] **Comprehensive tests** - 100% branch coverage, edge cases, performance, integration
 - [ ] **Documentation** - API docs, contributing guidelines, video tutorials, best practices
