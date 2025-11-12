@@ -79,6 +79,8 @@ Git worktrees allow you to work on multiple features in parallel without switchi
 - **Clean State:** Each worktree maintains its own working directory and index
 - **Zero Context Loss:** No need to stash or commit WIP changes when switching tasks
 
+**Naming Strategy:** Use generic numbered names (`rangeLink-001`, `rangeLink-002`, etc.) for maximum reusability. The branch name contains the feature description, while the worktree directory name stays generic and can be reused for any future work. You can also use descriptive names like `rangeLink-feature-name`, but generic numbers reduce cognitive overhead and make cleanup easier.
+
 ### Quick Reference
 
 ```bash
@@ -106,15 +108,16 @@ Let's walk through developing a new feature using a worktree:
 cd ~/geek/src/rangeLink
 
 # Create a new worktree in a sibling directory
-git worktree add ../rangeLink-add-copy-link-feature -b feature/add-copy-link-command
+# Using generic worktree name - branch name contains the feature description
+git worktree add ../rangeLink-001 -b feature/add-copy-link-command
 
 # Navigate to the new worktree
-cd ../rangeLink-add-copy-link-feature
+cd ../rangeLink-001
 ```
 
 **What happened:**
 
-- Created a new directory `rangeLink-add-copy-link-feature` alongside your main repo
+- Created a new directory `rangeLink-001` alongside your main repo
 - Created and checked out branch `feature/add-copy-link-command`
 - The worktree is fully independent but shares the same Git repository
 
@@ -146,7 +149,7 @@ cd ~/geek/src/rangeLink
 git status
 
 # Create another worktree for a different feature
-git worktree add ../rangeLink-fix-bug-123 -b fix/bug-123
+git worktree add ../rangeLink-002 -b fix/bug-123
 ```
 
 #### 4. Clean Up After PR is Merged
@@ -160,7 +163,7 @@ git checkout main
 git pull
 
 # Remove the feature worktree
-git worktree remove ../rangeLink-add-copy-link-feature
+git worktree remove ../rangeLink-001
 
 # Delete the local branch (already merged)
 git branch -d feature/add-copy-link-command
@@ -176,11 +179,11 @@ cd ~/geek/src/rangeLink
 cursor .
 
 # Terminal 2: AI agent working on feature A
-cd ~/geek/src/rangeLink-feature-a
+cd ~/geek/src/rangeLink-001
 cursor .
 
 # Terminal 3: AI agent working on feature B
-cd ~/geek/src/rangeLink-feature-b
+cd ~/geek/src/rangeLink-002
 cursor .
 ```
 
@@ -189,6 +192,27 @@ All worktrees share the same Git configuration, branches, tags, and remotes. Onl
 
 **Node Modules:**
 Each worktree needs its own `node_modules`. Always run `pnpm install` in new worktrees.
+
+### Renaming Worktrees (Fixing Naming Mistakes)
+
+`git` doesn't support renaming worktrees in-place. To rename a worktree:
+
+```bash
+# 1. Navigate out of the worktree you want to rename
+cd ~/geek/src/rangeLink
+
+# 2. Create new worktree with desired name, reusing the branch
+git worktree add ../rangeLink-002 existing-branch-name
+
+# 3. Remove old worktree registration
+git worktree remove ../rangeLink-old-specific-name
+
+# 4. Navigate to renamed worktree and reinstall dependencies
+cd ../rangeLink-002
+./setup.sh
+```
+
+**Note:** Stashes are stored in the shared Git repository and remain accessible after removing a worktree. However, uncommitted changes in the working directory will be lost unless stashed or committed first. Untracked files and build artifacts (like `node_modules/`) are also lost when removing a worktree.
 
 ## Publishing
 
