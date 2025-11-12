@@ -1,5 +1,6 @@
 import { composePortableMetadata } from '../../formatting/composePortableMetadata';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
+import { RangeFormat } from '../../types/RangeFormat';
 
 describe('composePortableMetadata', () => {
   const defaultDelimiters: DelimiterConfig = {
@@ -10,12 +11,12 @@ describe('composePortableMetadata', () => {
   };
 
   it('should compose metadata with position delimiter', () => {
-    const result = composePortableMetadata(defaultDelimiters, true);
+    const result = composePortableMetadata(defaultDelimiters, RangeFormat.WithPositions);
     expect(result).toBe('~#~L~-~C~');
   });
 
   it('should compose metadata without position delimiter', () => {
-    const result = composePortableMetadata(defaultDelimiters, false);
+    const result = composePortableMetadata(defaultDelimiters, RangeFormat.LineOnly);
     expect(result).toBe('~#~L~-~');
   });
 
@@ -26,7 +27,7 @@ describe('composePortableMetadata', () => {
       hash: '>>',
       range: 'thru',
     };
-    const result = composePortableMetadata(customDelimiters, true);
+    const result = composePortableMetadata(customDelimiters, RangeFormat.WithPositions);
     expect(result).toBe('~>>~line~thru~pos~');
   });
 
@@ -37,7 +38,7 @@ describe('composePortableMetadata', () => {
       hash: '>>',
       range: 'thru',
     };
-    const result = composePortableMetadata(customDelimiters, false);
+    const result = composePortableMetadata(customDelimiters, RangeFormat.LineOnly);
     expect(result).toBe('~>>~line~thru~');
   });
 });

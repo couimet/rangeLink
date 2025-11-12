@@ -1,5 +1,3 @@
-import { getLogger } from 'barebone-logger';
-
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { computeRangeSpec } from '../selection/computeRangeSpec';
 import { DelimiterConfig } from '../types/DelimiterConfig';
@@ -10,6 +8,7 @@ import { LinkType } from '../types/LinkType';
 import { Result } from '../types/Result';
 
 import { buildAnchor } from './buildAnchor';
+import { finalizeLinkGeneration } from './finalizeLinkGeneration';
 import { formatSimpleLineReference } from './formatSimpleLineReference';
 import { joinWithHash } from './joinWithHash';
 
@@ -29,8 +28,6 @@ export function formatLink(
   delimiters: DelimiterConfig,
   options?: FormatOptions,
 ): Result<FormattedLink, RangeLinkError> {
-  const logger = getLogger();
-
   // Validate and compute range spec
   const specResult = computeRangeSpec(inputSelection, options);
   if (!specResult.success) {
@@ -46,17 +43,18 @@ export function formatLink(
     spec.rangeFormat === 'LineOnly' &&
     spec.startPosition === undefined
   ) {
-    const link = formatSimpleLineReference(path, spec.startLine, delimiters);
-    logger.debug({ fn: 'formatLink', format: 'simple' }, `Generated simple line reference`);
-
-    return Result.ok({
-      link,
+    return finalizeLinkGeneration(
+      () => ({
+        link: formatSimpleLineReference(path, spec.startLine, delimiters),
+        logContext: {
+          format: 'simple',
+        },
+      }),
+      spec,
+      inputSelection,
       linkType,
       delimiters,
-      computedSelection: spec,
-      rangeFormat: spec.rangeFormat,
-      selectionType: inputSelection.selectionType,
-    });
+    );
   }
 
   // Build standard anchor
@@ -69,25 +67,17 @@ export function formatLink(
     spec.rangeFormat,
   );
 
-  const link = joinWithHash(path, anchor, delimiters, inputSelection.selectionType);
-
-  logger.debug(
-    {
-      fn: 'formatLink',
-      selectionType: inputSelection.selectionType,
-      rangeFormat: spec.rangeFormat,
-      link,
-      linkLength: link?.length,
-    },
-    `Generated link: ${link}`,
-  );
-
-  return Result.ok({
-    link,
+  return finalizeLinkGeneration(
+    () => ({
+      link: joinWithHash(path, anchor, delimiters, inputSelection.selectionType),
+      logContext: {
+        selectionType: inputSelection.selectionType,
+        rangeFormat: spec.rangeFormat,
+      },
+    }),
+    spec,
+    inputSelection,
     linkType,
     delimiters,
-    computedSelection: spec,
-    rangeFormat: spec.rangeFormat,
-    selectionType: inputSelection.selectionType,
-  });
+  );
 }
