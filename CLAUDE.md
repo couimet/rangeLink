@@ -19,12 +19,6 @@
 - Focus on "why", not "what" (git diff shows "what")
 - Keep concise (< 15 lines)
 
-### Testing Style
-
-- **NO** `expect().not.toThrow()` for happy paths - just call the function directly
-- **USE** `.toStrictEqual()` not `.toEqual()`
-- **USE** string literals for enum values in assertions: `'Regular'` not `LinkType.Regular`
-
 ---
 
 ## Autonomous Operation Guidelines
