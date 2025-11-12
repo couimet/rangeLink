@@ -86,7 +86,7 @@ Ask: **"Ready to create these issues and commit? (yes/no)"**
 If no: Ask what to adjust and regenerate
 If yes: Proceed to step 6
 
-### STEP 6: Create GitHub Issues
+### STEP 6: Create GitHub Issues with Native Parent-Child Relationships
 
 ```bash
 # Create labels if needed
@@ -99,13 +99,33 @@ PARENT_URL=$(gh issue create --title "<title>" --body "<body>" --label "<labels>
 PARENT_NUM=$(echo "$PARENT_URL" | grep -oE '[0-9]+$')
 echo "Created parent: #$PARENT_NUM"
 
-# Create child issues (if any) with 1s delays
+# Get parent issue node ID (required for GraphQL API)
+PARENT_ID=$(gh api repos/:owner/:repo/issues/$PARENT_NUM --jq '.node_id')
+
+# Create child issues (if any) with native sub-issue relationships
 sleep 1
-gh issue create --title "Phase 1: <title>" --body "<body with #$PARENT_NUM>" --label "<labels>"
+CHILD_URL=$(gh issue create --title "Phase 1: <title>" --body "<body with #$PARENT_NUM>" --label "<labels>")
+CHILD_NUM=$(echo "$CHILD_URL" | grep -oE '[0-9]+$')
+CHILD_ID=$(gh api repos/:owner/:repo/issues/$CHILD_NUM --jq '.node_id')
+
+# Link child to parent using GitHub's native sub-issue API
+gh api graphql -H "GraphQL-Features: sub_issues" -f query="
+  mutation {
+    addSubIssue(input: {issueId: \"$PARENT_ID\", subIssueId: \"$CHILD_ID\"}) {
+      clientMutationId
+    }
+  }
+"
+
 sleep 1
-gh issue create --title "Phase 2: <title>" --body "<body with #$PARENT_NUM>" --label "<labels>"
-# ... etc
+# Repeat for each child issue...
 ```
+
+**Why native relationships?**
+- Shows sub-issues in GitHub UI with progress tracking
+- Enables filtering: `has:sub-issues` and `has:parent-issue`
+- Better project board integration
+- Automatic progress calculation on parent issue
 
 ### STEP 7: Update ROADMAP.md
 
@@ -180,16 +200,18 @@ Based on `.claude-questions/0031-roadmap-github-migration-strategy.txt`:
 1. **Autonomous issues** - Full context, no ROADMAP.md dependency
 2. **Phase N naming** - Use "Phase N: description" for children (following #42)
 3. **Labels** - Create `type:` and `priority:` labels as needed
-4. **No milestones** - Parent/child relationships only
-5. **Skip completed** - Don't migrate ✅ items (they're in JOURNEY.md)
-6. **Single commit** - Parent + children + ROADMAP update
-7. **Lightweight template** - Parent link + Goal + Done When
-8. **Throttling** - 1s delay between issue creations
-9. **One at a time** - Migrate ONE parent item per invocation
+4. **Native sub-issues** - Use GitHub's GraphQL API to create proper parent-child relationships
+5. **No milestones** - Parent/child relationships only
+6. **Skip completed** - Don't migrate ✅ items (they're in JOURNEY.md)
+7. **Single commit** - Parent + children + ROADMAP update
+8. **Lightweight template** - Parent link + Goal + Done When
+9. **Throttling** - 1s delay between issue creations
+10. **One at a time** - Migrate ONE parent item per invocation
 
 ## Label Strategy
 
 Create labels as needed:
+
 - `type:bug` - Bug or defect
 - `type:enhancement` - New feature
 - `type:refactor` - Code quality improvement
@@ -199,6 +221,7 @@ Create labels as needed:
 - `priority:low` - Nice to have
 
 Apply based on ROADMAP markers:
+
 - 🔴 Critical → `priority:critical`
 - Bug/fix → `type:bug`
 - Enhancement/feature → `type:enhancement`
