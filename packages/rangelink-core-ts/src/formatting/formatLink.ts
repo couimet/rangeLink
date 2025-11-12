@@ -10,6 +10,7 @@ import { LinkType } from '../types/LinkType';
 import { Result } from '../types/Result';
 
 import { buildAnchor } from './buildAnchor';
+import { composePortableMetadata } from './composePortableMetadata';
 import { formatSimpleLineReference } from './formatSimpleLineReference';
 import { joinWithHash } from './joinWithHash';
 
@@ -46,7 +47,13 @@ export function formatLink(
     spec.rangeFormat === 'LineOnly' &&
     spec.startPosition === undefined
   ) {
-    const link = formatSimpleLineReference(path, spec.startLine, delimiters);
+    let link = formatSimpleLineReference(path, spec.startLine, delimiters);
+
+    // Append BYOD metadata for portable links
+    if (linkType === LinkType.Portable) {
+      link += composePortableMetadata(delimiters, spec.rangeFormat);
+    }
+
     logger.debug({ fn: 'formatLink', format: 'simple' }, `Generated simple line reference`);
 
     return Result.ok({
@@ -69,7 +76,12 @@ export function formatLink(
     spec.rangeFormat,
   );
 
-  const link = joinWithHash(path, anchor, delimiters, inputSelection.selectionType);
+  let link = joinWithHash(path, anchor, delimiters, inputSelection.selectionType);
+
+  // Append BYOD metadata for portable links
+  if (linkType === LinkType.Portable) {
+    link += composePortableMetadata(delimiters, spec.rangeFormat);
+  }
 
   logger.debug(
     {
