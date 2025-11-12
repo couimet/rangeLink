@@ -301,43 +301,7 @@ Integrate terminal link provider with Phase 4A.2 config change detection. Rebuil
 
 ---
 
-## Phase 7: Productivity Features
-
-### Strategic Context: AI-First Development Workflow
-
-RangeLink is an **AI workflow integration tool** eliminating context-sharing friction for developers using external AI assistants (claude-code, ChatGPT, Gemini).
-
-**Why AI-First:**
-
-- Workflow frequency: 50-100+ link generations/day for AI vs 5-10 for team sharing
-- Friction compounds: 2s manual paste × 100 = 200+ context switches eliminated
-- Competitive positioning: Makes external AI feel integrated like Cursor while preserving model choice, context control, editor independence
-
-**Feature Priority:** Bind to Terminal is killer feature (not nice-to-have). Link History amplifies it.
-
----
-
-### Bind to Terminal — High Priority
-
-**Problem:** Manual clipboard paste friction after generating links for claude-code in terminal.
-
-**Solution:** Auto-paste generated links into bound terminal.
-
-**Completed:** Iterations 1-2 (Terminal Binding, Lifecycle Management). See [JOURNEY.md](./JOURNEY.md).
-
-**Remaining iterations:** See GitHub issues [#25](https://github.com/couimet/rangeLink/issues/25) (Enhanced Rebinding UX), [#70](https://github.com/couimet/rangeLink/issues/70) (Terminal Binding Settings), [#73](https://github.com/couimet/rangeLink/issues/73) (Context Menu).
-
----
-
-### Other Productivity Features
-
-- [ ] **Undo/redo support** - Track navigation history
-- [ ] **Batch operations** - Multi-selection, function + usages
-- [ ] **Documentation generation** - Links for public APIs
-
----
-
-## Phase 8: User Experience
+## Phase 7: User Experience
 
 - [ ] **Settings validation UX** (1h) - Pre-save validation, "Test Configuration" command, better error notifications
 - [ ] **Settings and preferences** - Opt-in/out, format preferences, keyboard customization, exclusion patterns
@@ -346,7 +310,7 @@ RangeLink is an **AI workflow integration tool** eliminating context-sharing fri
 
 ---
 
-## Phase 9: Integration & Extensions
+## Phase 8: Integration & Extensions
 
 - [ ] **VSCode API integration** - Register as link provider
 - [ ] **Terminal integration** - Parse links in terminal output
@@ -355,7 +319,7 @@ RangeLink is an **AI workflow integration tool** eliminating context-sharing fri
 
 ---
 
-## Phase 10: Developer Experience
+## Phase 9: Developer Experience
 
 - [ ] **Comprehensive tests** - 100% branch coverage, edge cases, performance, integration
 - [ ] **Documentation** - API docs, contributing guidelines, video tutorials, best practices
