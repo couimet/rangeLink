@@ -3,6 +3,7 @@ import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
 import { InputSelection } from '../types/InputSelection';
 import { SelectionType } from '../types/SelectionType';
 
+import { validateNormalMode } from './validateNormalMode';
 /**
  * Validates InputSelection structure and constraints.
  * Internal validation function - throws on invalid input.
@@ -97,23 +98,6 @@ export function validateInputSelection(inputSelection: InputSelection): void {
     validateNormalMode(selections);
   } else if (selectionType === SelectionType.Rectangular) {
     validateRectangularMode(selections);
-  }
-}
-
-/**
- * Validates Normal mode selections.
- *
- * @param selections Array of selections
- * @throws {RangeLinkError} If validation fails
- */
-function validateNormalMode(selections: InputSelection['selections']): void {
-  if (selections.length !== 1) {
-    throw new RangeLinkError({
-      code: RangeLinkErrorCodes.SELECTION_NORMAL_MULTIPLE,
-      message: `Normal mode does not support multiple selections (got ${selections.length}). Multiple non-contiguous selections are not yet implemented.`,
-      functionName: 'validateNormalMode',
-      details: { selectionsLength: selections.length },
-    });
   }
 }
 
