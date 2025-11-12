@@ -5,41 +5,15 @@ import * as vscode from 'vscode';
 
 import { RangeLinkDocumentProvider } from '../../navigation/RangeLinkDocumentProvider';
 import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
+import { createMockCancellationToken, createMockDocument } from '../helpers';
 
 // Test pattern that matches common RangeLink formats for provider integration tests
 // Provider doesn't validate pattern correctness (handler's responsibility)
 const TEST_RANGELINK_PATTERN = /[^#]+##?L\d+(C\d+)?(-L\d+(C\d+)?)?/g;
 
-// Mock vscode module
-jest.mock('vscode', () => ({
-  Uri: {
-    parse: jest.fn((str) => ({ scheme: 'command', toString: () => str })),
-  },
-  Range: jest.fn((start, end) => ({ start, end })),
-  Position: jest.fn((line, char) => ({ line, character: char })),
-  Selection: jest.fn((start, end) => ({ start, end, anchor: start, active: end })),
-  DocumentLink: jest.fn(function (this: any, range: any) {
-    this.range = range;
-    this.tooltip = undefined;
-    this.target = undefined;
-  }),
-  TextEditorRevealType: {
-    InCenterIfOutsideViewport: 2,
-  },
-  workspace: {
-    openTextDocument: jest.fn(),
-    getWorkspaceFolder: jest.fn(),
-    workspaceFolders: undefined,
-  },
-  window: {
-    showTextDocument: jest.fn(),
-    showWarningMessage: jest.fn(),
-    showErrorMessage: jest.fn(),
-  },
-  languages: {
-    registerDocumentLinkProvider: jest.fn(),
-  },
-}));
+// VSCode module is globally mocked via __mocks__/vscode.ts
+// This provides baseline mocks for Uri, Range, Position, etc.
+jest.mock('vscode');
 
 // Mock logger
 jest.mock('barebone-logger', () => ({
@@ -79,32 +53,18 @@ describe('RangeLinkDocumentProvider', () => {
   //   mockHandler = createMockHandler();
   //   provider = new RangeLinkDocumentProvider(mockHandler, mockLogger);
   // });
+  //
   // describe('provideDocumentLinks', () => {
-  //   const createMockDocument = (text: string): vscode.TextDocument => ({
-  //     getText: () => text,
-  //     positionAt: (index: number) => {
-  //       // Simple implementation: each char is a position
-  //       const lines = text.substring(0, index).split('\n');
-  //       const line = lines.length - 1;
-  //       const character = lines[lines.length - 1].length;
-  //       return new vscode.Position(line, character);
-  //     },
-  //     uri: vscode.Uri.parse('file:///test.md'),
-  //   } as any);
-  //   const createMockToken = (): vscode.CancellationToken => ({
-  //     isCancellationRequested: false,
-  //     onCancellationRequested: jest.fn(),
-  //   } as any);
   //   it('should detect single-line link', () => {
   //     const document = createMockDocument('Check src/auth.ts#L10');
-  //     const token = createMockToken();
+  //     const token = createMockCancellationToken();
   //     const links = provider.provideDocumentLinks(document, token);
   //     expect(links).toHaveLength(1);
   //     expect(links![0].tooltip).toContain('Navigate to src/auth.ts at line 11');
   //   });
   //   it('should detect multi-line range link', () => {
   //     const document = createMockDocument('See src/auth.ts#L10-L20 for details');
-  //     const token = createMockToken();
+  //     const token = createMockCancellationToken();
   //     const links = provider.provideDocumentLinks(document, token);
   //     expect(links).toHaveLength(1);
   //     expect(links![0].tooltip).toContain('Navigate to src/auth.ts: line 11');
@@ -112,14 +72,14 @@ describe('RangeLinkDocumentProvider', () => {
   //   });
   //   it('should detect link with columns', () => {
   //     const document = createMockDocument('src/file.ts#L5C10-L10C20');
-  //     const token = createMockToken();
+  //     const token = createMockCancellationToken();
   //     const links = provider.provideDocumentLinks(document, token);
   //     expect(links).toHaveLength(1);
   //     expect(links![0].tooltip).toContain('line 6, col 11');
   //   });
   //   it('should detect rectangular mode link', () => {
   //     const document = createMockDocument('src/file.ts##L5C10-L10C20');
-  //     const token = createMockToken();
+  //     const token = createMockCancellationToken();
   //     const links = provider.provideDocumentLinks(document, token);
   //     expect(links).toHaveLength(1);
   //     expect(links![0].tooltip).toContain('rectangular selection');
@@ -128,13 +88,13 @@ describe('RangeLinkDocumentProvider', () => {
   //     const document = createMockDocument(
   //       'First: src/a.ts#L1 and second: src/b.ts#L2-L3',
   //     );
-  //     const token = createMockToken();
+  //     const token = createMockCancellationToken();
   //     const links = provider.provideDocumentLinks(document, token);
   //     expect(links).toHaveLength(2);
   //   });
   //   it('should skip invalid links', () => {
   //     const document = createMockDocument('Invalid: src/file.ts#INVALID');
-  //     const token = createMockToken();
+  //     const token = createMockCancellationToken();
   //     const links = provider.provideDocumentLinks(document, token);
   //     expect(links).toHaveLength(0);
   //     expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -144,7 +104,7 @@ describe('RangeLinkDocumentProvider', () => {
   //   });
   //   it('should handle empty document', () => {
   //     const document = createMockDocument('');
-  //     const token = createMockToken();
+  //     const token = createMockCancellationToken();
   //     const links = provider.provideDocumentLinks(document, token);
   //     expect(links).toHaveLength(0);
   //   });
@@ -159,7 +119,7 @@ describe('RangeLinkDocumentProvider', () => {
   //   });
   //   it('should create command URI with encoded arguments', () => {
   //     const document = createMockDocument('src/file.ts#L10');
-  //     const token = createMockToken();
+  //     const token = createMockCancellationToken();
   //     const links = provider.provideDocumentLinks(document, token);
   //     expect(links![0].target).toBeDefined();
   //     expect(links![0].target!.toString()).toContain('command:rangelink.navigateToLink');

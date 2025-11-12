@@ -93,3 +93,46 @@ export const createMockCommands = (): typeof vscode.commands => {
     executeCommand: jest.fn().mockResolvedValue(undefined),
   } as unknown as typeof vscode.commands;
 };
+
+/**
+ * Create a mock TextDocument with working getText() and positionAt() for link detection tests.
+ *
+ * The positionAt() implementation converts string indices to line/character positions
+ * by counting newlines and character offsets. This is essential for provider tests
+ * that detect links in document text.
+ *
+ * @param text - Document content
+ * @param uri - Optional document URI (defaults to file:///test.md)
+ * @returns Mock TextDocument with functional getText and positionAt
+ */
+export const createMockDocument = (
+  text: string,
+  uri?: vscode.Uri,
+): vscode.TextDocument => {
+  return {
+    getText: () => text,
+    positionAt: (index: number) => {
+      // Calculate line and character from string index
+      const lines = text.substring(0, index).split('\n');
+      const line = lines.length - 1;
+      const character = lines[lines.length - 1].length;
+      return new vscode.Position(line, character);
+    },
+    uri: uri || vscode.Uri.parse('file:///test.md'),
+  } as unknown as vscode.TextDocument;
+};
+
+/**
+ * Create a mock CancellationToken for provider tests.
+ *
+ * @param isCancelled - Whether the token should report as cancelled (default: false)
+ * @returns Mock CancellationToken
+ */
+export const createMockCancellationToken = (
+  isCancelled = false,
+): vscode.CancellationToken => {
+  return {
+    isCancellationRequested: isCancelled,
+    onCancellationRequested: jest.fn(),
+  } as unknown as vscode.CancellationToken;
+};

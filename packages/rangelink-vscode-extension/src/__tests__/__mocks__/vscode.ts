@@ -87,6 +87,39 @@ const mockWindow = {
   showInformationMessage: jest.fn().mockResolvedValue(undefined),
   showWarningMessage: jest.fn().mockResolvedValue(undefined),
   showErrorMessage: jest.fn().mockResolvedValue(undefined),
+  showTextDocument: jest.fn(),
+};
+
+const mockWorkspace = {
+  openTextDocument: jest.fn(),
+  getWorkspaceFolder: jest.fn(),
+  workspaceFolders: undefined,
+};
+
+const mockLanguages = {
+  registerDocumentLinkProvider: jest.fn(),
+};
+
+// Mock constructor functions for VSCode types
+const mockUri = {
+  parse: jest.fn((str) => ({ scheme: 'command', toString: () => str })),
+  file: jest.fn((path) => ({ scheme: 'file', path, toString: () => `file://${path}` })),
+};
+
+const mockRange = jest.fn((start, end) => ({ start, end }));
+
+const mockPosition = jest.fn((line, char) => ({ line, character: char }));
+
+const mockSelection = jest.fn((start, end) => ({ start, end, anchor: start, active: end }));
+
+const mockDocumentLink = jest.fn(function (this: any, range: any) {
+  this.range = range;
+  this.tooltip = undefined;
+  this.target = undefined;
+});
+
+const mockTextEditorRevealType = {
+  InCenterIfOutsideViewport: 2,
 };
 
 // Export mocked module
@@ -98,4 +131,12 @@ module.exports = {
   extensions: mockExtensions,
   commands: mockCommands,
   window: mockWindow,
+  workspace: mockWorkspace,
+  languages: mockLanguages,
+  Uri: mockUri,
+  Range: mockRange,
+  Position: mockPosition,
+  Selection: mockSelection,
+  DocumentLink: mockDocumentLink,
+  TextEditorRevealType: mockTextEditorRevealType,
 };
