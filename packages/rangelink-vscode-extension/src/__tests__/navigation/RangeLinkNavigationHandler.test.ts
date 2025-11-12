@@ -325,19 +325,13 @@ describe('RangeLinkNavigationHandler', () => {
       it('should convert start position using convertRangeLinkPosition', async () => {
         await handler.navigateToLink(mockParsed, 'src/file.ts#L10C5-L20C10');
 
-        expect(convertRangeLinkPosition).toHaveBeenCalledWith(
-          { line: 10, char: 5 },
-          mockDocument,
-        );
+        expect(convertRangeLinkPosition).toHaveBeenCalledWith({ line: 10, char: 5 }, mockDocument);
       });
 
       it('should convert end position using convertRangeLinkPosition', async () => {
         await handler.navigateToLink(mockParsed, 'src/file.ts#L10C5-L20C10');
 
-        expect(convertRangeLinkPosition).toHaveBeenCalledWith(
-          { line: 20, char: 10 },
-          mockDocument,
-        );
+        expect(convertRangeLinkPosition).toHaveBeenCalledWith({ line: 20, char: 10 }, mockDocument);
       });
 
       it('should use start position as end when end is undefined', async () => {
