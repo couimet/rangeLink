@@ -1,3 +1,5 @@
+import { getLogger } from 'barebone-logger';
+
 import { formatLink } from '../../formatting/formatLink';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { FormattedLink } from '../../types/FormattedLink';
@@ -687,6 +689,117 @@ describe('formatLink', () => {
         functionName: 'validateInputSelection',
         details: { selectionsLength: 0 },
       });
+    });
+  });
+
+  describe('logging integration', () => {
+    it('should log with correct attributes through standard anchor path', () => {
+      // Integration test: Verifies formatLink → finalizeLinkGeneration → logger flow
+      // Tests standard anchor path (multi-line PartialLine selection)
+
+      const mockDebug = jest.fn();
+      jest.spyOn(getLogger(), 'debug').mockImplementation(mockDebug);
+
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 10, char: 5 },
+            end: { line: 20, char: 15 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+
+      // Call formatLink (internally generates logContext that would collide)
+      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'src/file.ts#L11C6-L21C16',
+          linkType: 'regular',
+          rangeFormat: 'WithPositions',
+          selectionType: 'Normal',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 11,
+            endLine: 21,
+            startPosition: 6,
+            endPosition: 16,
+            rangeFormat: 'WithPositions',
+          },
+        });
+      });
+
+      // Verify logger.debug was called
+      expect(mockDebug).toHaveBeenCalledTimes(1);
+
+      // Extract the actual context object passed to logger.debug
+      const [[loggedContext, loggedMessage]] = mockDebug.mock.calls;
+
+      // Verify core logging attributes
+      expect(loggedContext).toHaveProperty('fn', 'formatLink');
+      expect(loggedContext).toHaveProperty('link', 'src/file.ts#L11C6-L21C16');
+      expect(loggedContext).toHaveProperty('linkLength', 24);
+
+      // Verify extra context attributes from generator
+      expect(loggedContext).toHaveProperty('selectionType', 'Normal');
+      expect(loggedContext).toHaveProperty('rangeFormat', 'WithPositions');
+
+      // Verify log message
+      expect(loggedMessage).toBe('Generated link');
+
+      mockDebug.mockRestore();
+    });
+
+    it('should log with correct attributes through simple line reference path', () => {
+      // Integration test: Verifies portable link generation through simple line reference path
+      // Tests single-line FullLine selection (uses formatSimpleLineReference)
+      const mockDebug = jest.fn();
+      jest.spyOn(getLogger(), 'debug').mockImplementation(mockDebug);
+
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 41, char: 0 },
+            end: { line: 41, char: 50 },
+            coverage: SelectionCoverage.FullLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+
+      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+        linkType: LinkType.Portable,
+      });
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'src/file.ts#L42~#~L~-~',
+          linkType: 'portable',
+          rangeFormat: 'LineOnly',
+          selectionType: 'Normal',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 42,
+            endLine: 42,
+            rangeFormat: 'LineOnly',
+          },
+        });
+      });
+
+      expect(mockDebug).toHaveBeenCalledTimes(1);
+      const [[loggedContext]] = mockDebug.mock.calls;
+
+      // Verify core logging attributes
+      expect(loggedContext).toHaveProperty('fn', 'formatLink');
+      expect(loggedContext).toHaveProperty('link', 'src/file.ts#L42~#~L~-~');
+      expect(loggedContext).toHaveProperty('linkLength', 22);
+
+      // Verify simple line reference context
+      expect(loggedContext).toHaveProperty('format', 'simple');
+
+      mockDebug.mockRestore();
     });
   });
 });
