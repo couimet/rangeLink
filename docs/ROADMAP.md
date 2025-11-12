@@ -509,46 +509,7 @@ RangeLink is an **AI workflow integration tool** eliminating context-sharing fri
 
 **Completed:** Iterations 1-2 (Terminal Binding, Lifecycle Management). See [JOURNEY.md](./JOURNEY.md).
 
-**📋 Iteration 3: Enhanced Rebinding UX** (0.5h)
-
-Allow rebinding without manual unbind. Show toast: "Already bound. Switch to [new]?"
-
-**📋 Iteration 4: Persistent Status Bar** (1h) — Low Priority
-
-Status bar item: `🔗→ [terminal]` (bound) or `🔗❌` (unbound). Click to manage.
-
-**Discoverability Concerns:**
-
-- Users may not recognize what the icon means without context
-- **Potential solutions:** Use RangeLink logo in status bar, or `RL` prefix as mnemonic (e.g., `RL: terminal-name`)
-- Need clear branding/labeling for discoverability
-
-**📋 Iteration 5: Terminal Selection Quick Pick** (2h)
-
-Quick Pick of available terminals with name, position, process. Auto-select if only one.
-
-**📋 Iteration 6: Context Menu** (1h)
-
-"Bind RangeLink Here" on terminal tab with checkmark indicator.
-
-**📋 Iteration 7: Configurable Link Spacing** (30min)
-
-Settings to control space padding around links sent to terminal:
-
-- `rangelink.terminal.addSpaceBefore` (default: true)
-- `rangelink.terminal.addSpaceAfter` (default: true)
-
-Currently hardcoded to add space before and after for better UX.
-
-**📋 Iteration 8: Configurable Auto-Focus** (15min)
-
-Setting to control terminal focus after link generation:
-
-- `rangelink.terminal.autoFocus` (default: true)
-
-Currently always focuses terminal (productivity feature).
-
-**Future:** Visual indicator, persist across sessions, multi-terminal support, keyboard shortcuts, settings integration.
+**Remaining iterations:** See GitHub issues [#25](https://github.com/couimet/rangeLink/issues/25) (Enhanced Rebinding UX), [#70](https://github.com/couimet/rangeLink/issues/70) (Terminal Binding Settings), [#73](https://github.com/couimet/rangeLink/issues/73) (Context Menu).
 
 ---
 
