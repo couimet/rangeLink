@@ -1,7 +1,14 @@
 import { getLogger } from 'barebone-logger';
+import type { Result } from 'rangelink-core-ts';
+import { RangeLinkError } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { RangeLinkDocumentProvider } from '../../navigation/RangeLinkDocumentProvider';
+import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
+
+// Test pattern that matches common RangeLink formats for provider integration tests
+// Provider doesn't validate pattern correctness (handler's responsibility)
+const TEST_RANGELINK_PATTERN = /[^#]+##?L\d+(C\d+)?(-L\d+(C\d+)?)?/g;
 
 // Mock vscode module
 jest.mock('vscode', () => ({
@@ -45,16 +52,32 @@ jest.mock('barebone-logger', () => ({
   })),
 }));
 
+/**
+ * Create a mock RangeLinkNavigationHandler for integration tests.
+ *
+ * Mocks all handler methods to focus tests on provider orchestration logic.
+ * Tests verify delegation patterns, not handler implementation details.
+ */
+const createMockHandler = (): jest.Mocked<RangeLinkNavigationHandler> =>
+  ({
+    getPattern: jest.fn(() => TEST_RANGELINK_PATTERN),
+    parseLink: jest.fn(),
+    formatTooltip: jest.fn(),
+    navigateToLink: jest.fn(),
+  }) as unknown as jest.Mocked<RangeLinkNavigationHandler>;
+
 describe('RangeLinkDocumentProvider', () => {
   it.todo('re-enable tests after navigation refactor is complete');
 
   // let provider: RangeLinkDocumentProvider;
   // let mockLogger: ReturnType<typeof getLogger>;
-  // const delimiters = { line: 'L', position: 'C', hash: '#', range: '-' };
+  // let mockHandler: jest.Mocked<RangeLinkNavigationHandler>;
+  //
   // beforeEach(() => {
   //   jest.clearAllMocks();
   //   mockLogger = getLogger();
-  //   provider = new RangeLinkDocumentProvider(delimiters, mockLogger);
+  //   mockHandler = createMockHandler();
+  //   provider = new RangeLinkDocumentProvider(mockHandler, mockLogger);
   // });
   // describe('provideDocumentLinks', () => {
   //   const createMockDocument = (text: string): vscode.TextDocument => ({
