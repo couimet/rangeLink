@@ -606,10 +606,20 @@ describe('formatLink', () => {
         });
 
         expect(result).toBeOkWith((value: FormattedLink) => {
-          expect(value.link).toBe(`src/file.ts#L11C6-L21C16${suffix}`);
-          expect(value.linkType).toBe(linkType === LinkType.Regular ? 'regular' : 'portable');
-          expect(value.rangeFormat).toBe('WithPositions');
-          expect(value.selectionType).toBe('Normal');
+          expect(value).toStrictEqual({
+            link: `src/file.ts#L11C6-L21C16${suffix}`,
+            linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
+            rangeFormat: 'WithPositions',
+            selectionType: 'Normal',
+            delimiters: defaultDelimiters,
+            computedSelection: {
+              startLine: 11,
+              endLine: 21,
+              startPosition: 6,
+              endPosition: 16,
+              rangeFormat: 'WithPositions',
+            },
+          });
         });
       },
     );
@@ -641,9 +651,20 @@ describe('formatLink', () => {
         });
 
         expect(result).toBeOkWith((value: FormattedLink) => {
-          expect(value.link).toBe(`src/file.ts##L6C11-L7C21${suffix}`);
-          expect(value.linkType).toBe(linkType === LinkType.Regular ? 'regular' : 'portable');
-          expect(value.selectionType).toBe('Rectangular');
+          expect(value).toStrictEqual({
+            link: `src/file.ts##L6C11-L7C21${suffix}`,
+            linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
+            rangeFormat: 'WithPositions',
+            selectionType: 'Rectangular',
+            delimiters: defaultDelimiters,
+            computedSelection: {
+              startLine: 6,
+              endLine: 7,
+              startPosition: 11,
+              endPosition: 21,
+              rangeFormat: 'WithPositions',
+            },
+          });
         });
       },
     );
