@@ -193,6 +193,27 @@ All worktrees share the same Git configuration, branches, tags, and remotes. Onl
 **Node Modules:**
 Each worktree needs its own `node_modules`. Always run `pnpm install` in new worktrees.
 
+### Renaming Worktrees (Fixing Naming Mistakes)
+
+`git` doesn't support renaming worktrees in-place. To rename a worktree:
+
+```bash
+# 1. Navigate out of the worktree you want to rename
+cd ~/geek/src/rangeLink
+
+# 2. Create new worktree with desired name, reusing the branch
+git worktree add ../rangeLink-002 existing-branch-name
+
+# 3. Remove old worktree registration
+git worktree remove ../rangeLink-old-specific-name
+
+# 4. Navigate to renamed worktree and reinstall dependencies
+cd ../rangeLink-002
+./setup.sh
+```
+
+**Note:** Stashes are stored in the shared Git repository and remain accessible after removing a worktree. However, uncommitted changes in the working directory will be lost unless stashed or committed first. Untracked files and build artifacts (like `node_modules/`) are also lost when removing a worktree.
+
 ## Publishing
 
 For publishing instructions:
