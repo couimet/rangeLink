@@ -381,11 +381,13 @@ validateInputSelection(input);
 ```
 
 **Rationale:**
+
 - Tests fail automatically if unexpected exceptions occur (Jest default behavior)
 - Direct calls are clearer: "this should work" vs "this should not throw"
 - `.not.toThrow()` implies exception testing, but happy paths aren't about exceptions
 
 **When `.not.toThrow()` IS appropriate:**
+
 - Explicitly testing that edge cases don't crash: `expect(() => parse('')).not.toThrow()`
 - Documenting surprising valid inputs: `expect(() => validate({unusual: 'case'})).not.toThrow()`
 - After fixing a bug where something used to throw incorrectly
