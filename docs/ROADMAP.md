@@ -86,15 +86,6 @@ See [neovim-integration.md](./neovim-integration.md).
 
 ---
 
-## Phase 2E: CI/CD Pipeline — 📋 Planned (1 hour)
-
-- GitHub Actions workflow
-- Run tests on PR (per-package)
-- Automated npm publish on tag (core only)
-- **Done when:** CI passes on PR, publishes on tag
-
----
-
 ## Phase 3: VSCode Marketplace Launch — 📋 Remaining Items
 
 **Completed:** Developer tooling, extension icon/logo (see [JOURNEY.md](./JOURNEY.md))
