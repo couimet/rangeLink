@@ -139,37 +139,35 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  // Register AI assistant destination binding commands (conditionally based on IDE/extensions)
-  // Only register Cursor AI command when running in Cursor IDE
-  // Only register Claude Code command when Claude Code extension is installed
-  // Use IIFE to detect availability asynchronously at activation
-  void (async () => {
-    const cursorDestination = factory.create('cursor-ai');
-    const isCursorIDE = await cursorDestination.isAvailable();
+  // Register AI assistant destination binding commands
+  // Both commands are always registered to make them discoverable in Command Palette
+  // Runtime availability checks show helpful messages when IDE/extension not available
+  // This prevents "command not found" errors while maintaining discoverability
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.bindToCursorAI', async () => {
+      const cursorDestination = factory.create('cursor-ai');
+      if (!(await cursorDestination.isAvailable())) {
+        void vscode.window.showInformationMessage(
+          "This command is designed for Cursor IDE, which has built-in AI chat.\n\nRangeLink can paste code ranges directly into Cursor's AI chat for faster context sharing. To use this feature, open your project in Cursor IDE instead of VS Code.",
+        );
+        return;
+      }
+      await destinationManager.bind('cursor-ai');
+    }),
+  );
 
-    if (isCursorIDE) {
-      context.subscriptions.push(
-        vscode.commands.registerCommand('rangelink.bindToCursorAI', async () => {
-          await destinationManager.bind('cursor-ai');
-        }),
-      );
-    }
-
-    // Always register Claude Code command to make it discoverable
-    // Show helpful message if extension not installed/active
-    context.subscriptions.push(
-      vscode.commands.registerCommand('rangelink.bindToClaudeCode', async () => {
-        const claudeCodeDestination = factory.create('claude-code');
-        if (!(await claudeCodeDestination.isAvailable())) {
-          void vscode.window.showInformationMessage(
-            'RangeLink can seamlessly integrate with Claude Code for faster context sharing of precise code ranges.\n\nInstall and activate the Claude Code extension to use it as a paste destination.',
-          );
-          return;
-        }
-        await destinationManager.bind('claude-code');
-      }),
-    );
-  })();
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.bindToClaudeCode', async () => {
+      const claudeCodeDestination = factory.create('claude-code');
+      if (!(await claudeCodeDestination.isAvailable())) {
+        void vscode.window.showInformationMessage(
+          'RangeLink can seamlessly integrate with Claude Code for faster context sharing of precise code ranges.\n\nInstall and activate the Claude Code extension to use it as a paste destination.',
+        );
+        return;
+      }
+      await destinationManager.bind('claude-code');
+    }),
+  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand('rangelink.unbindDestination', () => {

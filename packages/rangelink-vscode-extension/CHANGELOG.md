@@ -21,7 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Cursor AI Integration** - Streamlined clipboard workflow for Cursor IDE
   - Automatically copies link and opens Cursor chat panel
   - One-paste workflow: user pastes with Cmd/Ctrl+V (workaround for API limitation)
-  - Cursor IDE only
+  - Command always discoverable in Command Palette for both VSCode and Cursor
+  - Shows helpful message in VSCode directing users to Cursor IDE
   - Command: "Bind RangeLink to Cursor AI"
 - **Text Editor Destination** - Paste generated links directly into any text-based editor
   - Works with untitled/scratch files, markdown, code files, any text document

@@ -3143,25 +3143,21 @@ describe('Extension lifecycle', () => {
     // Extension imported at top
     require('../extension').activate(mockContext as any);
 
-    // Wait for async IIFE to complete
-    await new Promise((resolve) => setTimeout(resolve, 10));
-
-    // Note: bindToCursorAI NOT registered in non-Cursor IDE
-    // bindToClaudeCode IS always registered (even if not available)
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(10);
+    // Both AI commands are always registered for discoverability
+    // Runtime checks show helpful messages when IDE/extension not available
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(11);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
-    // Verify bindToCursorAI was NOT registered (only registered in Cursor IDE)
+    // Verify both AI assistant commands are registered for discoverability
     const registeredCommands = (mockCommands.registerCommand as jest.Mock).mock.calls.map(
       (call) => call[0],
     );
-    expect(registeredCommands).not.toContain('rangelink.bindToCursorAI');
-    // Verify bindToClaudeCode WAS registered (always registered for discoverability)
+    expect(registeredCommands).toContain('rangelink.bindToCursorAI');
     expect(registeredCommands).toContain('rangelink.bindToClaudeCode');
   });
 
-  it('should register bindToCursorAI command when running in Cursor IDE', async () => {
+  it('should register both AI commands regardless of IDE (discoverability)', async () => {
     const mockContext = {
       subscriptions: [] as any[],
     };
@@ -3200,19 +3196,16 @@ describe('Extension lifecycle', () => {
     // Extension imported at top
     require('../extension').activate(mockContext as any);
 
-    // Wait for async IIFE to complete
-    await new Promise((resolve) => setTimeout(resolve, 10));
-
-    // bindToCursorAI IS registered in Cursor IDE + bindToClaudeCode always registered
+    // Both AI commands always registered (even in Cursor IDE)
+    // Runtime availability determines whether they work or show help message
     expect(mockCommands.registerCommand).toHaveBeenCalledTimes(11);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
 
-    // Verify bindToCursorAI WAS registered
+    // Verify both AI assistant commands are registered
     const registeredCommands = (mockCommands.registerCommand as jest.Mock).mock.calls.map(
       (call) => call[0],
     );
     expect(registeredCommands).toContain('rangelink.bindToCursorAI');
-    // Verify bindToClaudeCode WAS also registered
     expect(registeredCommands).toContain('rangelink.bindToClaudeCode');
   });
 
