@@ -1,5 +1,32 @@
 # Claude Code Instructions
 
+## ⚠️ CRITICAL WORKFLOW REMINDERS
+
+**STOP AND READ BEFORE RESPONDING:**
+
+### Questions & Design Decisions
+
+- **NEVER print questions directly in terminal output**
+- **ALWAYS save to:** `.claude-questions/NNNN-topic-slug.txt` (`.txt` format, NOT `.md`)
+- Check existing files with `Glob` to find next NNNN number
+- Print only the filepath in terminal
+- User edits the file - it's the single source of truth
+
+### Commit Messages
+
+- **ALWAYS save to:** `.commit-msgs/NNNN-description.txt` (`.txt` format, NOT `.md`)
+- Check existing files with `Glob` to find next NNNN number
+- Focus on "why", not "what" (git diff shows "what")
+- Keep concise (< 15 lines)
+
+### Testing Style
+
+- **NO** `expect().not.toThrow()` for happy paths - just call the function directly
+- **USE** `.toStrictEqual()` not `.toEqual()`
+- **USE** string literals for enum values in assertions: `'Regular'` not `LinkType.Regular`
+
+---
+
 ## Autonomous Operation Guidelines
 
 **Claude should operate autonomously for standard development tasks without asking for permission.**
