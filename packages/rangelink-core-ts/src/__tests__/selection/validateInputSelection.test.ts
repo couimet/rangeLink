@@ -1,7 +1,22 @@
+import { RangeLinkError } from '../../errors/RangeLinkError';
+import { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import { validateInputSelection } from '../../selection/validateInputSelection';
+import { validateNormalMode } from '../../selection/validateNormalMode';
+import { validateRectangularMode } from '../../selection/validateRectangularMode';
 import { InputSelection } from '../../types/InputSelection';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
+
+// Mock the mode-specific validators to test only validateInputSelection's logic
+jest.mock('../../selection/validateNormalMode');
+jest.mock('../../selection/validateRectangularMode');
+
+const mockValidateNormalMode = validateNormalMode as jest.MockedFunction<
+  typeof validateNormalMode
+>;
+const mockValidateRectangularMode = validateRectangularMode as jest.MockedFunction<
+  typeof validateRectangularMode
+>;
 
 describe('validateInputSelection', () => {
   describe('Empty selections array', () => {
@@ -17,38 +32,6 @@ describe('validateInputSelection', () => {
           message: 'Selections array must not be empty',
           functionName: 'validateInputSelection',
           details: { selectionsLength: 0 },
-        },
-      );
-    });
-  });
-
-  describe('Normal mode multiple selections', () => {
-    it('should throw error for multiple selections in Normal mode', () => {
-      const inputSelection: InputSelection = {
-        selections: [
-          {
-            start: { line: 10, char: 5 },
-
-            end: { line: 10, char: 15 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-          {
-            start: { line: 15, char: 0 },
-
-            end: { line: 15, char: 10 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-        ],
-        selectionType: SelectionType.Normal,
-      };
-
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
-        'SELECTION_NORMAL_MULTIPLE',
-        {
-          message:
-            'Normal mode does not support multiple selections (got 2). Multiple non-contiguous selections are not yet implemented.',
-          functionName: 'validateNormalMode',
-          details: { selectionsLength: 2 },
         },
       );
     });
@@ -250,178 +233,6 @@ describe('validateInputSelection', () => {
     });
   });
 
-  describe('ERR_3006: Rectangular mode unsorted selections', () => {
-    it('should throw error for unsorted rectangular selections', () => {
-      const inputSelection: InputSelection = {
-        selections: [
-          {
-            start: { line: 10, char: 5 },
-
-            end: { line: 10, char: 15 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-          {
-            start: { line: 8, char: 5 }, // Out of order
-            end: { line: 8, char: 15 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-        ],
-        selectionType: SelectionType.Rectangular,
-      };
-
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
-        'SELECTION_RECTANGULAR_UNSORTED',
-        {
-          message:
-            'Rectangular mode selections must be sorted by line number (line 8 comes after line 10)',
-          functionName: 'validateRectangularMode',
-          details: {
-            selectionIndex: 1,
-            previousLine: 10,
-            currentLine: 8,
-          },
-        },
-      );
-    });
-  });
-
-  describe('ERR_3007: Rectangular mode multiline selection', () => {
-    it('should throw error when rectangular selection spans multiple lines', () => {
-      const inputSelection: InputSelection = {
-        selections: [
-          {
-            start: { line: 10, char: 5 },
-            end: { line: 12, char: 15 }, // Multi-line
-            coverage: SelectionCoverage.PartialLine,
-          },
-        ],
-        selectionType: SelectionType.Rectangular,
-      };
-
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
-        'SELECTION_RECTANGULAR_MULTILINE',
-        {
-          message:
-            'Rectangular mode requires single-line selections (selection 0 spans lines 10-12)',
-          functionName: 'validateRectangularMode',
-          details: {
-            selectionIndex: 0,
-            startLine: 10,
-            endLine: 12,
-          },
-        },
-      );
-    });
-  });
-
-  describe('ERR_3008: Rectangular mode mismatched columns', () => {
-    it('should throw error for mismatched startCharacter', () => {
-      const inputSelection: InputSelection = {
-        selections: [
-          {
-            start: { line: 10, char: 5 },
-
-            end: { line: 10, char: 15 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-          {
-            start: { line: 11, char: 7 }, // Mismatched
-            end: { line: 11, char: 15 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-        ],
-        selectionType: SelectionType.Rectangular,
-      };
-
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
-        'SELECTION_RECTANGULAR_MISMATCHED_COLUMNS',
-        {
-          message:
-            'Rectangular mode requires consistent column range (expected 5-15, got 7-15 at selection 1)',
-          functionName: 'validateRectangularMode',
-          details: {
-            selectionIndex: 1,
-            expectedStartChar: 5,
-            expectedEndChar: 15,
-            actualStartChar: 7,
-            actualEndChar: 15,
-          },
-        },
-      );
-    });
-
-    it('should throw error for mismatched endCharacter', () => {
-      const inputSelection: InputSelection = {
-        selections: [
-          {
-            start: { line: 10, char: 5 },
-
-            end: { line: 10, char: 15 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-          {
-            start: { line: 11, char: 5 },
-
-            end: { line: 11, char: 17 }, // Mismatched
-            coverage: SelectionCoverage.PartialLine,
-          },
-        ],
-        selectionType: SelectionType.Rectangular,
-      };
-
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
-        'SELECTION_RECTANGULAR_MISMATCHED_COLUMNS',
-        {
-          message:
-            'Rectangular mode requires consistent column range (expected 5-15, got 5-17 at selection 1)',
-          functionName: 'validateRectangularMode',
-          details: {
-            selectionIndex: 1,
-            expectedStartChar: 5,
-            expectedEndChar: 15,
-            actualStartChar: 5,
-            actualEndChar: 17,
-          },
-        },
-      );
-    });
-  });
-
-  describe('ERR_3009: Rectangular mode non-contiguous lines', () => {
-    it('should throw error for non-contiguous lines', () => {
-      const inputSelection: InputSelection = {
-        selections: [
-          {
-            start: { line: 10, char: 5 },
-
-            end: { line: 10, char: 15 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-          {
-            start: { line: 12, char: 5 }, // Gap (missing line 11)
-            end: { line: 12, char: 15 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-        ],
-        selectionType: SelectionType.Rectangular,
-      };
-
-      expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
-        'SELECTION_RECTANGULAR_NON_CONTIGUOUS',
-        {
-          message: 'Rectangular mode requires contiguous lines (gap between line 10 and 12)',
-          functionName: 'validateRectangularMode',
-          details: {
-            selectionIndex: 1,
-            previousLine: 10,
-            currentLine: 12,
-            gap: 1,
-          },
-        },
-      );
-    });
-  });
-
   describe('ERR_3010: Unknown SelectionType', () => {
     it('should throw error for unknown SelectionType', () => {
       const inputSelection = {
@@ -503,8 +314,174 @@ describe('validateInputSelection', () => {
     });
   });
 
-  describe('Valid selections', () => {
+  describe('Mode-specific validation delegation', () => {
+    describe('Normal mode', () => {
+      it('should call validateNormalMode with selections array', () => {
+        mockValidateNormalMode.mockImplementation(() => {
+          // Mock successful validation
+        });
+
+        const inputSelection: InputSelection = {
+          selections: [
+            {
+              start: { line: 10, char: 5 },
+              end: { line: 20, char: 15 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Normal,
+        };
+
+        validateInputSelection(inputSelection);
+
+        expect(mockValidateNormalMode).toHaveBeenCalledTimes(1);
+        expect(mockValidateNormalMode).toHaveBeenCalledWith(inputSelection.selections);
+      });
+
+      it('should propagate errors from validateNormalMode', () => {
+        const expectedError = new RangeLinkError({
+          code: RangeLinkErrorCodes.SELECTION_NORMAL_MULTIPLE,
+          message: 'Normal mode does not support multiple selections (got 2)',
+          functionName: 'validateNormalMode',
+        });
+
+        mockValidateNormalMode.mockImplementation(() => {
+          throw expectedError;
+        });
+
+        const inputSelection: InputSelection = {
+          selections: [
+            {
+              start: { line: 10, char: 5 },
+              end: { line: 10, char: 15 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+            {
+              start: { line: 15, char: 0 },
+              end: { line: 15, char: 10 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Normal,
+        };
+
+        expect(() => validateInputSelection(inputSelection)).toThrow(expectedError);
+      });
+
+      it('should not call validateRectangularMode for Normal mode', () => {
+        mockValidateNormalMode.mockImplementation(() => {
+          // Mock successful validation
+        });
+
+        const inputSelection: InputSelection = {
+          selections: [
+            {
+              start: { line: 10, char: 5 },
+              end: { line: 20, char: 15 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Normal,
+        };
+
+        validateInputSelection(inputSelection);
+
+        expect(mockValidateRectangularMode).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Rectangular mode', () => {
+      it('should call validateRectangularMode with selections array', () => {
+        mockValidateRectangularMode.mockImplementation(() => {
+          // Mock successful validation
+        });
+
+        const inputSelection: InputSelection = {
+          selections: [
+            {
+              start: { line: 10, char: 5 },
+              end: { line: 10, char: 15 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+            {
+              start: { line: 11, char: 5 },
+              end: { line: 11, char: 15 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Rectangular,
+        };
+
+        validateInputSelection(inputSelection);
+
+        expect(mockValidateRectangularMode).toHaveBeenCalledTimes(1);
+        expect(mockValidateRectangularMode).toHaveBeenCalledWith(inputSelection.selections);
+      });
+
+      it('should propagate errors from validateRectangularMode', () => {
+        const expectedError = new RangeLinkError({
+          code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_UNSORTED,
+          message: 'Rectangular mode selections must be sorted by line number',
+          functionName: 'validateRectangularMode',
+        });
+
+        mockValidateRectangularMode.mockImplementation(() => {
+          throw expectedError;
+        });
+
+        const inputSelection: InputSelection = {
+          selections: [
+            {
+              start: { line: 10, char: 5 },
+              end: { line: 10, char: 15 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+            {
+              start: { line: 8, char: 5 },
+              end: { line: 8, char: 15 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Rectangular,
+        };
+
+        expect(() => validateInputSelection(inputSelection)).toThrow(expectedError);
+      });
+
+      it('should not call validateNormalMode for Rectangular mode', () => {
+        mockValidateRectangularMode.mockImplementation(() => {
+          // Mock successful validation
+        });
+
+        const inputSelection: InputSelection = {
+          selections: [
+            {
+              start: { line: 10, char: 5 },
+              end: { line: 10, char: 15 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+            {
+              start: { line: 11, char: 5 },
+              end: { line: 11, char: 15 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Rectangular,
+        };
+
+        validateInputSelection(inputSelection);
+
+        expect(mockValidateNormalMode).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('Integration: Valid selections', () => {
     it('should not throw for valid Normal selection', () => {
+      mockValidateNormalMode.mockImplementation(() => {
+        // Mock successful validation
+      });
+
       const inputSelection: InputSelection = {
         selections: [
           {
@@ -518,9 +495,14 @@ describe('validateInputSelection', () => {
       };
 
       expect(() => validateInputSelection(inputSelection)).not.toThrow();
+      expect(mockValidateNormalMode).toHaveBeenCalledWith(inputSelection.selections);
     });
 
     it('should not throw for valid Rectangular selections', () => {
+      mockValidateRectangularMode.mockImplementation(() => {
+        // Mock successful validation
+      });
+
       const inputSelection: InputSelection = {
         selections: [
           {
@@ -546,6 +528,7 @@ describe('validateInputSelection', () => {
       };
 
       expect(() => validateInputSelection(inputSelection)).not.toThrow();
+      expect(mockValidateRectangularMode).toHaveBeenCalledWith(inputSelection.selections);
     });
   });
 });
