@@ -435,6 +435,51 @@ const input: InputType = {
 - `details` validated with `toStrictEqual` if provided
 - `cause` validated if error chaining is used
 
+## GitHub Issue Management
+
+### Parent-Child Issue Relationships
+
+**When creating GitHub issues with parent-child relationships, ALWAYS use GitHub's native sub-issue API:**
+
+- ❌ **NEVER** rely only on text links in issue descriptions/comments (e.g., "Parent Issue: #47")
+- ✅ **ALWAYS** use the GraphQL `addSubIssue` mutation to create native relationships
+- ✅ Native relationships enable GitHub UI features: progress tracking, filtering, project board integration
+
+**Implementation pattern:**
+
+```bash
+# Create parent issue
+PARENT_URL=$(gh issue create --title "Parent" --body "..." --label "...")
+PARENT_NUM=$(echo "$PARENT_URL" | grep -oE '[0-9]+$')
+
+# Get parent node ID (required for GraphQL)
+PARENT_ID=$(gh api repos/:owner/:repo/issues/$PARENT_NUM --jq '.node_id')
+
+# Create child issue
+CHILD_URL=$(gh issue create --title "Child" --body "..." --label "...")
+CHILD_NUM=$(echo "$CHILD_URL" | grep -oE '[0-9]+$')
+CHILD_ID=$(gh api repos/:owner/:repo/issues/$CHILD_NUM --jq '.node_id')
+
+# Link child to parent using native API
+gh api graphql -H "GraphQL-Features: sub_issues" -f query="
+  mutation {
+    addSubIssue(input: {issueId: \"$PARENT_ID\", subIssueId: \"$CHILD_ID\"}) {
+      clientMutationId
+    }
+  }
+"
+```
+
+**Benefits of native relationships:**
+
+- Sub-issues appear in GitHub UI with visual hierarchy
+- Parent shows progress bar based on closed sub-issues
+- Filters: `has:sub-issues`, `has:parent-issue`
+- Project boards show nested structure
+- Better organization and tracking
+
+**Rationale:** Text-only references in descriptions are fragile and don't integrate with GitHub's project management features. Native relationships provide proper tooling support.
+
 ## Documentation
 
 ### ROADMAP and JOURNEY Maintenance
