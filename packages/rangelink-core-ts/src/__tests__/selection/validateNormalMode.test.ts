@@ -104,7 +104,7 @@ describe('validateNormalMode', () => {
         },
       ];
 
-      expect(() => validateNormalMode(selections)).not.toThrow();
+      validateNormalMode(selections);
     });
 
     it('should not throw for single-line selection', () => {
@@ -116,7 +116,7 @@ describe('validateNormalMode', () => {
         },
       ];
 
-      expect(() => validateNormalMode(selections)).not.toThrow();
+      validateNormalMode(selections);
     });
 
     it('should not throw for multi-line selection', () => {
@@ -128,7 +128,7 @@ describe('validateNormalMode', () => {
         },
       ];
 
-      expect(() => validateNormalMode(selections)).not.toThrow();
+      validateNormalMode(selections);
     });
 
     it('should not throw for selection at line 0', () => {
@@ -140,7 +140,7 @@ describe('validateNormalMode', () => {
         },
       ];
 
-      expect(() => validateNormalMode(selections)).not.toThrow();
+      validateNormalMode(selections);
     });
   });
 });

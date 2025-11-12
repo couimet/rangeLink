@@ -107,7 +107,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).not.toThrow();
+      validateInputSelection(inputSelection);
     });
   });
 
@@ -494,7 +494,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Normal,
       };
 
-      expect(() => validateInputSelection(inputSelection)).not.toThrow();
+      validateInputSelection(inputSelection);
       expect(mockValidateNormalMode).toHaveBeenCalledWith(inputSelection.selections);
     });
 
@@ -527,7 +527,7 @@ describe('validateInputSelection', () => {
         selectionType: SelectionType.Rectangular,
       };
 
-      expect(() => validateInputSelection(inputSelection)).not.toThrow();
+      validateInputSelection(inputSelection);
       expect(mockValidateRectangularMode).toHaveBeenCalledWith(inputSelection.selections);
     });
   });

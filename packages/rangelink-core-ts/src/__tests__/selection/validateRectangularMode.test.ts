@@ -9,7 +9,7 @@ describe('validateRectangularMode', () => {
 
       // This tests the defensive guard at line 127 (now line 18 in new module)
       // Should not throw - just returns early
-      expect(() => validateRectangularMode(selections)).not.toThrow();
+      validateRectangularMode(selections);
     });
   });
 
@@ -76,7 +76,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).not.toThrow();
+      validateRectangularMode(selections);
     });
   });
 
@@ -193,7 +193,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).not.toThrow();
+      validateRectangularMode(selections);
     });
   });
 
@@ -280,7 +280,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).not.toThrow();
+      validateRectangularMode(selections);
     });
   });
 
@@ -367,7 +367,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).not.toThrow();
+      validateRectangularMode(selections);
     });
   });
 
@@ -381,7 +381,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).not.toThrow();
+      validateRectangularMode(selections);
     });
 
     it('should not throw for valid rectangular block (3 lines)', () => {
@@ -403,7 +403,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).not.toThrow();
+      validateRectangularMode(selections);
     });
 
     it('should not throw for valid rectangular block starting at line 0', () => {
@@ -420,7 +420,7 @@ describe('validateRectangularMode', () => {
         },
       ];
 
-      expect(() => validateRectangularMode(selections)).not.toThrow();
+      validateRectangularMode(selections);
     });
 
     it('should not throw for large rectangular block (10 lines)', () => {
@@ -430,7 +430,7 @@ describe('validateRectangularMode', () => {
         coverage: SelectionCoverage.PartialLine,
       }));
 
-      expect(() => validateRectangularMode(selections)).not.toThrow();
+      validateRectangularMode(selections);
     });
   });
 });
