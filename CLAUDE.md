@@ -343,6 +343,8 @@ export const parseLink = (
 
 ## Testing Requirements
 
+**REMINDER: Questions about test design? Save to `.claude-questions/NNNN-topic.txt` (see top of file)**
+
 - Maintain 99%+ test coverage
 - Run full test suite before committing
 - Add tests for all new features and bug fixes
