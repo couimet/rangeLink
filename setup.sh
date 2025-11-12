@@ -3,6 +3,14 @@
 
 set -e
 
+# Helper function to display Node.js installation instructions
+print_install_node_instructions() {
+    echo "To fix this, run:"
+    echo "  nvm install && nvm use"
+    echo ""
+    echo "Or install Node.js 22 manually from: https://nodejs.org/"
+}
+
 # Helper function to display "run setup.sh again" instructions
 print_rerun_instructions() {
     echo "After fixing this, run setup again:"
@@ -21,7 +29,8 @@ fi
 # Check if Node.js is installed
 if ! command -v node &> /dev/null; then
     echo "❌ Error: Node.js is not installed."
-    echo "   Install it from: https://nodejs.org/"
+    echo ""
+    print_install_node_instructions
     echo ""
     print_rerun_instructions
 fi
@@ -33,10 +42,7 @@ REQUIRED_VERSION=22
 if [[ "$NODE_VERSION" -lt "$REQUIRED_VERSION" ]]; then
     echo "❌ Error: Node.js version 22 or higher is required (currently on v$NODE_VERSION)."
     echo ""
-    echo "To fix this, run:"
-    echo "  nvm install && nvm use"
-    echo ""
-    echo "Or install Node.js 22 from: https://nodejs.org/"
+    print_install_node_instructions
     echo ""
     print_rerun_instructions
 fi
