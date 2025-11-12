@@ -429,14 +429,31 @@ describe('RangeLinkNavigationHandler', () => {
           selectionType: SelectionType.Rectangular,
         };
 
-        jest.clearAllMocks(); // Clear mocks from parent beforeEach
-        (resolveWorkspacePath as jest.Mock).mockResolvedValue(vscode.Uri.file('data.csv'));
-        (vscode.workspace.openTextDocument as jest.Mock).mockResolvedValue(mockDocument);
-        (vscode.window.showTextDocument as jest.Mock).mockResolvedValue(mockEditor);
+        // Restore vscode mocks that were cleared by jest.clearAllMocks() in afterEach
+        // These must be restored with their original implementations
+        (vscode.Position as jest.Mock).mockImplementation((line: number, character: number) => ({
+          line,
+          character,
+        }));
+        (vscode.Range as jest.Mock).mockImplementation((start: any, end: any) => ({ start, end }));
+        (vscode.Selection as jest.Mock).mockImplementation((anchor: any, active: any) => ({
+          anchor,
+          active,
+        }));
+
+        // Reset only the specific mocks we need to reconfigure
+        (resolveWorkspacePath as jest.Mock)
+          .mockClear()
+          .mockResolvedValue(vscode.Uri.file('data.csv'));
+        (vscode.workspace.openTextDocument as jest.Mock)
+          .mockClear()
+          .mockResolvedValue(mockDocument);
+        (vscode.window.showTextDocument as jest.Mock).mockClear().mockResolvedValue(mockEditor);
         (convertRangeLinkPosition as jest.Mock)
+          .mockClear()
           .mockReturnValueOnce({ line: 9, character: 4 })
           .mockReturnValueOnce({ line: 14, character: 9 });
-        (formatLinkPosition as jest.Mock).mockReturnValue('10:5-15:10');
+        (formatLinkPosition as jest.Mock).mockClear().mockReturnValue('10:5-15:10');
       });
 
       it('should create multi-cursor selections for rectangular mode', async () => {
@@ -445,6 +462,7 @@ describe('RangeLinkNavigationHandler', () => {
         // Should create selections for lines 9-14 (converted from 10-15)
         // Verify Position was called (the loop creates Position objects)
         expect(vscode.Position).toHaveBeenCalled();
+
         // The actual rectangular selection path was executed (check log was called)
         expect(mockLogger.info).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -482,19 +500,35 @@ describe('RangeLinkNavigationHandler', () => {
       });
 
       it('should handle single-line rectangular selection', async () => {
-        jest.clearAllMocks(); // Clear previous test's mocks
         const singleLineRect: ParsedLink = {
           ...mockParsed,
           start: { line: 10, char: 5 },
           end: { line: 10, char: 10 },
         };
-        (resolveWorkspacePath as jest.Mock).mockResolvedValue(vscode.Uri.file('data.csv'));
-        (vscode.workspace.openTextDocument as jest.Mock).mockResolvedValue(mockDocument);
-        (vscode.window.showTextDocument as jest.Mock).mockResolvedValue(mockEditor);
+        // Re-setup mocks for this specific test case
+        (vscode.Position as jest.Mock).mockImplementation((line: number, character: number) => ({
+          line,
+          character,
+        }));
+        (vscode.Range as jest.Mock).mockImplementation((start: any, end: any) => ({ start, end }));
+        (vscode.Selection as jest.Mock).mockImplementation((anchor: any, active: any) => ({
+          anchor,
+          active,
+        }));
+
+        (resolveWorkspacePath as jest.Mock)
+          .mockClear()
+          .mockResolvedValue(vscode.Uri.file('data.csv'));
+        (vscode.workspace.openTextDocument as jest.Mock)
+          .mockClear()
+          .mockResolvedValue(mockDocument);
+        (vscode.window.showTextDocument as jest.Mock).mockClear().mockResolvedValue(mockEditor);
+        // Use mockReset() to fully clear previous test's return values
         (convertRangeLinkPosition as jest.Mock)
+          .mockReset()
           .mockReturnValueOnce({ line: 9, character: 4 })
           .mockReturnValueOnce({ line: 9, character: 9 });
-        (formatLinkPosition as jest.Mock).mockReturnValue('10:5-10:10');
+        (formatLinkPosition as jest.Mock).mockClear().mockReturnValue('10:5-10:10');
 
         await handler.navigateToLink(singleLineRect, 'data.csv##L10C5-L10C10');
 
@@ -597,7 +631,7 @@ describe('RangeLinkNavigationHandler', () => {
           await handler.navigateToLink(mockParsed, 'src/file.ts#L10C5-L20C10');
           // Should not reach here
           expect(true).toBe(false);
-        } catch (error) {
+        } catch {
           // Error was thrown as expected
           expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
             'RangeLink: Failed to navigate to src/file.ts: String error',
