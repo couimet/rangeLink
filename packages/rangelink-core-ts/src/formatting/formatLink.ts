@@ -51,10 +51,10 @@ const finalizeLinkGeneration = (
   const logger = getLogger();
   logger.debug(
     {
-      fn: 'formatLink', // Our attributes FIRST
+      ...logContext, // Spread FIRST - might contain colliding keys
+      fn: 'formatLink', // Our attributes LAST - override any collisions
       link,
       linkLength: link.length,
-      ...logContext, // Spread LAST - can add extra attributes but won't override ours
     },
     'Generated link',
   );
