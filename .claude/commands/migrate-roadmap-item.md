@@ -5,6 +5,7 @@ You are a specialized command for migrating ROADMAP.md items to GitHub issues on
 ## Usage
 
 The user will specify which ROADMAP section to migrate. If not specified, default to the next priority item following this order:
+
 1. 🔴 Critical bugs
 2. 📋 Planned items
 3. 📋 Future items
@@ -14,6 +15,7 @@ The user will specify which ROADMAP section to migrate. If not specified, defaul
 ### STEP 1: Parse ROADMAP Section
 
 Read `docs/ROADMAP.md` and extract the specified section with ALL context:
+
 - Title/heading
 - Goal/Problem statement
 - Implementation details
@@ -26,6 +28,7 @@ Read `docs/ROADMAP.md` and extract the specified section with ALL context:
 ### STEP 2: Generate Parent Issue Content
 
 Create autonomous, self-contained issue body with:
+
 - Full context from ROADMAP (no dependency on ROADMAP.md)
 - Implementation overview (if applicable)
 - Done when criteria as checkboxes
@@ -33,24 +36,30 @@ Create autonomous, self-contained issue body with:
 - Note about sub-issues if applicable
 
 **Title format:** Use ROADMAP title, remove numbering
+
 - ✅ "Configuration Change Detection"
 - ❌ "4A.2) Configuration Change Detection"
 
 ### STEP 3: Generate Child Issues (if applicable)
 
 For items with sub-sections/iterations/phases:
+
 - **Title:** "Phase N: <descriptive name>" (following #42 convention)
 - **Body template:**
+
   ```markdown
   **Parent Issue:** #<will-be-filled>
 
   ## Goal
+
   [What this phase accomplishes]
 
   ## Implementation
+
   [Key steps from ROADMAP]
 
   ## Done When
+
   - [ ] Criterion 1
   - [ ] Criterion 2
   ```
@@ -58,6 +67,7 @@ For items with sub-sections/iterations/phases:
 ### STEP 4: Show Preview
 
 Display ALL generated content in a formatted preview:
+
 ```
 === PARENT ISSUE ===
 Title: <title>
@@ -122,6 +132,7 @@ sleep 1
 ```
 
 **Why native relationships?**
+
 - Shows sub-issues in GitHub UI with progress tracking
 - Enables filtering: `has:sub-issues` and `has:parent-issue`
 - Better project board integration
@@ -130,6 +141,7 @@ sleep 1
 ### STEP 7: Update ROADMAP.md
 
 Replace the migrated section with:
+
 ```markdown
 ### <original heading> — [GitHub #XX](https://github.com/couimet/rangeLink/issues/XX)
 
@@ -141,6 +153,7 @@ Replace the migrated section with:
 ### STEP 8: Create Commit Message File
 
 Check highest numbered file in `.commit-msgs/`:
+
 ```bash
 HIGHEST=$(ls .commit-msgs/*.txt 2>/dev/null | grep -oE '[0-9]+' | sort -n | tail -1)
 NEXT=$((HIGHEST + 1))
@@ -148,6 +161,7 @@ NEXT_PADDED=$(printf "%04d" $NEXT)
 ```
 
 Create `.commit-msgs/${NEXT_PADDED}-migrate-<slug>.txt`:
+
 ```
 migrate: move <item name> to GitHub issues
 
