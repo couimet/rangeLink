@@ -629,67 +629,64 @@ describe('formatLink', () => {
     it.each([
       { linkType: LinkType.Regular, suffix: '' },
       { linkType: LinkType.Portable, suffix: '~#~L~-~C~' },
-    ])(
-      'should handle rectangular selection with linkType=$linkType',
-      ({ linkType, suffix }) => {
-        const inputSelection: InputSelection = {
-          selections: [
-            {
-              start: { line: 5, char: 10 },
-              end: { line: 5, char: 20 },
-              coverage: SelectionCoverage.PartialLine,
-            },
-            {
-              start: { line: 6, char: 10 },
-              end: { line: 6, char: 20 },
-              coverage: SelectionCoverage.PartialLine,
-            },
-          ],
-          selectionType: SelectionType.Rectangular,
-        };
-
-        const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
-          linkType,
-        });
-
-        expect(result).toBeOkWith((value: FormattedLink) => {
-          expect(value).toStrictEqual({
-            link: `src/file.ts##L6C11-L7C21${suffix}`,
-            linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
-            rangeFormat: 'WithPositions',
-            selectionType: 'Rectangular',
-            delimiters: defaultDelimiters,
-            computedSelection: {
-              startLine: 6,
-              endLine: 7,
-              startPosition: 11,
-              endPosition: 21,
-              rangeFormat: 'WithPositions',
-            },
-          });
-        });
-      },
-    );
-
-    it.each([
-      { linkType: LinkType.Regular },
-      { linkType: LinkType.Portable },
-    ])('should propagate errors correctly with linkType=$linkType', ({ linkType }) => {
+    ])('should handle rectangular selection with linkType=$linkType', ({ linkType, suffix }) => {
       const inputSelection: InputSelection = {
-        selections: [],
-        selectionType: SelectionType.Normal,
+        selections: [
+          {
+            start: { line: 5, char: 10 },
+            end: { line: 5, char: 20 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+          {
+            start: { line: 6, char: 10 },
+            end: { line: 6, char: 20 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+        ],
+        selectionType: SelectionType.Rectangular,
       };
 
       const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
         linkType,
       });
 
-      expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
-        message: 'Selections array must not be empty',
-        functionName: 'validateInputSelection',
-        details: { selectionsLength: 0 },
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: `src/file.ts##L6C11-L7C21${suffix}`,
+          linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
+          rangeFormat: 'WithPositions',
+          selectionType: 'Rectangular',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 6,
+            endLine: 7,
+            startPosition: 11,
+            endPosition: 21,
+            rangeFormat: 'WithPositions',
+          },
+        });
       });
     });
+
+    it.each([{ linkType: LinkType.Regular }, { linkType: LinkType.Portable }])(
+      'should propagate errors correctly with linkType=$linkType',
+      ({ linkType }) => {
+        const inputSelection: InputSelection = {
+          selections: [],
+          selectionType: SelectionType.Normal,
+        };
+
+        const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+          linkType,
+        });
+
+        expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
+          message: 'Selections array must not be empty',
+          functionName: 'validateInputSelection',
+          details: { selectionsLength: 0 },
+        });
+      },
+    );
   });
 
   describe('logging integration', () => {

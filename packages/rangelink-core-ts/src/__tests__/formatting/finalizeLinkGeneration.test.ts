@@ -1,6 +1,9 @@
 import { getLogger } from 'barebone-logger';
 
-import { finalizeLinkGeneration, LinkGenerationResult } from '../../formatting/finalizeLinkGeneration';
+import {
+  finalizeLinkGeneration,
+  LinkGenerationResult,
+} from '../../formatting/finalizeLinkGeneration';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { LinkType } from '../../types/LinkType';
 import { RangeFormat } from '../../types/RangeFormat';
