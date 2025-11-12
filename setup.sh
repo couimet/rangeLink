@@ -3,6 +3,13 @@
 
 set -e
 
+# Helper function to display "run setup.sh again" instructions
+print_rerun_instructions() {
+    echo "After fixing this, run setup again:"
+    echo "  ./setup.sh"
+    exit 1
+}
+
 echo "🚀 Setting up RangeLink..."
 
 # Check if we're in the right directory
@@ -15,7 +22,8 @@ fi
 if ! command -v node &> /dev/null; then
     echo "❌ Error: Node.js is not installed."
     echo "   Install it from: https://nodejs.org/"
-    exit 1
+    echo ""
+    print_rerun_instructions
 fi
 
 # Check Node.js version (requires version 22)
@@ -29,7 +37,8 @@ if [[ "$NODE_VERSION" -lt "$REQUIRED_VERSION" ]]; then
     echo "  nvm install && nvm use"
     echo ""
     echo "Or install Node.js 22 from: https://nodejs.org/"
-    exit 1
+    echo ""
+    print_rerun_instructions
 fi
 
 echo "✓ Node.js version: $(node -v)"
