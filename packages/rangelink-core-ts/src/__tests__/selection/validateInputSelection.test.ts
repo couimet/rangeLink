@@ -11,9 +11,7 @@ import { SelectionType } from '../../types/SelectionType';
 jest.mock('../../selection/validateNormalMode');
 jest.mock('../../selection/validateRectangularMode');
 
-const mockValidateNormalMode = validateNormalMode as jest.MockedFunction<
-  typeof validateNormalMode
->;
+const mockValidateNormalMode = validateNormalMode as jest.MockedFunction<typeof validateNormalMode>;
 const mockValidateRectangularMode = validateRectangularMode as jest.MockedFunction<
   typeof validateRectangularMode
 >;
