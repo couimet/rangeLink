@@ -26,15 +26,6 @@ export function validateInputSelection(inputSelection: InputSelection): void {
     });
   }
 
-  if (selectionType !== SelectionType.Normal && selectionType !== SelectionType.Rectangular) {
-    throw new RangeLinkError({
-      code: RangeLinkErrorCodes.SELECTION_UNKNOWN_TYPE,
-      message: `Unknown SelectionType: "${selectionType as string}"`,
-      functionName: 'validateInputSelection',
-      details: { selectionType },
-    });
-  }
-
   // Validate each selection
   for (let i = 0; i < selections.length; i++) {
     const sel = selections[i];
@@ -95,10 +86,21 @@ export function validateInputSelection(inputSelection: InputSelection): void {
     }
   }
 
-  // Mode-specific validation
-  if (selectionType === SelectionType.Normal) {
-    validateNormalMode(selections);
-  } else if (selectionType === SelectionType.Rectangular) {
-    validateRectangularMode(selections);
+  switch (selectionType) {
+    case SelectionType.Normal:
+      validateNormalMode(selections);
+      break;
+    case SelectionType.Rectangular:
+      validateRectangularMode(selections);
+      break;
+    default: {
+      const _exhaustive: never = selectionType;
+      throw new RangeLinkError({
+        code: RangeLinkErrorCodes.SELECTION_UNKNOWN_TYPE,
+        message: `Unknown SelectionType: "${_exhaustive}"`,
+        functionName: 'validateInputSelection',
+        details: { selectionType: _exhaustive },
+      });
+    }
   }
 }
