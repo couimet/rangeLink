@@ -2,6 +2,7 @@ import { getLogger } from 'barebone-logger';
 
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { computeRangeSpec } from '../selection/computeRangeSpec';
+import { ComputedSelection } from '../types/ComputedSelection';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { FormatOptions } from '../types/FormatOptions';
 import { FormattedLink } from '../types/FormattedLink';
@@ -13,6 +14,60 @@ import { buildAnchor } from './buildAnchor';
 import { composePortableMetadata } from './composePortableMetadata';
 import { formatSimpleLineReference } from './formatSimpleLineReference';
 import { joinWithHash } from './joinWithHash';
+
+/**
+ * Result of link generation containing the link and its logging context.
+ */
+type LinkGenerationResult = {
+  readonly link: string;
+  readonly logContext: Record<string, unknown>;
+};
+
+/**
+ * Helper to finalize link generation with portable metadata and logging.
+ *
+ * @param generateLink Function that produces the base link and logging context
+ * @param spec Computed selection specification
+ * @param inputSelection Original input selection
+ * @param linkType Regular or Portable
+ * @param delimiters Delimiter configuration
+ * @returns FormattedLink wrapped in Result.ok
+ */
+const finalizeLinkGeneration = (
+  generateLink: () => LinkGenerationResult,
+  spec: ComputedSelection,
+  inputSelection: InputSelection,
+  linkType: LinkType,
+  delimiters: DelimiterConfig,
+): Result<FormattedLink, RangeLinkError> => {
+  const { link: baseLink, logContext } = generateLink();
+
+  // Append BYOD metadata for portable links (creates new string, doesn't mutate)
+  const link =
+    linkType === LinkType.Portable
+      ? baseLink + composePortableMetadata(delimiters, spec.rangeFormat)
+      : baseLink;
+
+  const logger = getLogger();
+  logger.debug(
+    {
+      fn: 'formatLink', // Our attributes FIRST
+      link,
+      linkLength: link.length,
+      ...logContext, // Spread LAST - can add extra attributes but won't override ours
+    },
+    'Generated link',
+  );
+
+  return Result.ok({
+    link,
+    linkType,
+    delimiters,
+    computedSelection: spec,
+    rangeFormat: spec.rangeFormat,
+    selectionType: inputSelection.selectionType,
+  });
+};
 
 /**
  * Format a regular RangeLink from a selection.
@@ -30,8 +85,6 @@ export function formatLink(
   delimiters: DelimiterConfig,
   options?: FormatOptions,
 ): Result<FormattedLink, RangeLinkError> {
-  const logger = getLogger();
-
   // Validate and compute range spec
   const specResult = computeRangeSpec(inputSelection, options);
   if (!specResult.success) {
@@ -47,23 +100,18 @@ export function formatLink(
     spec.rangeFormat === 'LineOnly' &&
     spec.startPosition === undefined
   ) {
-    let link = formatSimpleLineReference(path, spec.startLine, delimiters);
-
-    // Append BYOD metadata for portable links
-    if (linkType === LinkType.Portable) {
-      link += composePortableMetadata(delimiters, spec.rangeFormat);
-    }
-
-    logger.debug({ fn: 'formatLink', format: 'simple' }, `Generated simple line reference`);
-
-    return Result.ok({
-      link,
+    return finalizeLinkGeneration(
+      () => ({
+        link: formatSimpleLineReference(path, spec.startLine, delimiters),
+        logContext: {
+          format: 'simple',
+        },
+      }),
+      spec,
+      inputSelection,
       linkType,
       delimiters,
-      computedSelection: spec,
-      rangeFormat: spec.rangeFormat,
-      selectionType: inputSelection.selectionType,
-    });
+    );
   }
 
   // Build standard anchor
@@ -76,30 +124,17 @@ export function formatLink(
     spec.rangeFormat,
   );
 
-  let link = joinWithHash(path, anchor, delimiters, inputSelection.selectionType);
-
-  // Append BYOD metadata for portable links
-  if (linkType === LinkType.Portable) {
-    link += composePortableMetadata(delimiters, spec.rangeFormat);
-  }
-
-  logger.debug(
-    {
-      fn: 'formatLink',
-      selectionType: inputSelection.selectionType,
-      rangeFormat: spec.rangeFormat,
-      link,
-      linkLength: link?.length,
-    },
-    `Generated link: ${link}`,
-  );
-
-  return Result.ok({
-    link,
+  return finalizeLinkGeneration(
+    () => ({
+      link: joinWithHash(path, anchor, delimiters, inputSelection.selectionType),
+      logContext: {
+        selectionType: inputSelection.selectionType,
+        rangeFormat: spec.rangeFormat,
+      },
+    }),
+    spec,
+    inputSelection,
     linkType,
     delimiters,
-    computedSelection: spec,
-    rangeFormat: spec.rangeFormat,
-    selectionType: inputSelection.selectionType,
-  });
+  );
 }
