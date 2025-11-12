@@ -2,6 +2,7 @@ import { formatLink } from '../../formatting/formatLink';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { FormattedLink } from '../../types/FormattedLink';
 import { InputSelection } from '../../types/InputSelection';
+import { LinkType } from '../../types/LinkType';
 import { RangeNotation } from '../../types/RangeNotation';
 import { SelectionCoverage } from '../../types/SelectionCoverage';
 import { SelectionType } from '../../types/SelectionType';
@@ -296,6 +297,374 @@ describe('formatLink', () => {
           endPosition: 1,
           rangeFormat: 'WithPositions',
         },
+      });
+    });
+  });
+
+  describe('portable links', () => {
+    it('should append BYOD metadata for single-line FullLine selection', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 41, char: 0 },
+            end: { line: 41, char: 50 },
+            coverage: SelectionCoverage.FullLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+        linkType: LinkType.Portable,
+      });
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'src/file.ts#L42~#~L~-~',
+          linkType: 'portable',
+          rangeFormat: 'LineOnly',
+          selectionType: 'Normal',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 42,
+            endLine: 42,
+            rangeFormat: 'LineOnly',
+          },
+        });
+      });
+    });
+
+    it('should append BYOD metadata for multi-line FullLine selection', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 10, char: 0 },
+            end: { line: 20, char: 0 },
+            coverage: SelectionCoverage.FullLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+        linkType: LinkType.Portable,
+      });
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'src/file.ts#L11-L21~#~L~-~',
+          linkType: 'portable',
+          rangeFormat: 'LineOnly',
+          selectionType: 'Normal',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 11,
+            endLine: 21,
+            rangeFormat: 'LineOnly',
+          },
+        });
+      });
+    });
+
+    it('should append BYOD metadata with positions for PartialLine selection', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 10, char: 5 },
+            end: { line: 20, char: 15 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+        linkType: LinkType.Portable,
+      });
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'src/file.ts#L11C6-L21C16~#~L~-~C~',
+          linkType: 'portable',
+          rangeFormat: 'WithPositions',
+          selectionType: 'Normal',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 11,
+            endLine: 21,
+            startPosition: 6,
+            endPosition: 16,
+            rangeFormat: 'WithPositions',
+          },
+        });
+      });
+    });
+
+    it('should append BYOD metadata for rectangular selection', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 5, char: 10 },
+            end: { line: 5, char: 20 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+          {
+            start: { line: 6, char: 10 },
+            end: { line: 6, char: 20 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+          {
+            start: { line: 7, char: 10 },
+            end: { line: 7, char: 20 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+        ],
+        selectionType: SelectionType.Rectangular,
+      };
+      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+        linkType: LinkType.Portable,
+      });
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'src/file.ts##L6C11-L8C21~#~L~-~C~',
+          linkType: 'portable',
+          rangeFormat: 'WithPositions',
+          selectionType: 'Rectangular',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 6,
+            endLine: 8,
+            startPosition: 11,
+            endPosition: 21,
+            rangeFormat: 'WithPositions',
+          },
+        });
+      });
+    });
+
+    it('should append BYOD metadata with custom delimiters (line-only)', () => {
+      const customDelimiters: DelimiterConfig = {
+        line: 'LINE',
+        position: 'COL',
+        hash: '>>',
+        range: 'thru',
+      };
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 9, char: 0 },
+            end: { line: 19, char: 0 },
+            coverage: SelectionCoverage.FullLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+      const result = formatLink('path/to/file.ts', inputSelection, customDelimiters, {
+        linkType: LinkType.Portable,
+      });
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'path/to/file.ts>>LINE10thruLINE20~>>~LINE~thru~',
+          linkType: 'portable',
+          rangeFormat: 'LineOnly',
+          selectionType: 'Normal',
+          delimiters: customDelimiters,
+          computedSelection: {
+            startLine: 10,
+            endLine: 20,
+            rangeFormat: 'LineOnly',
+          },
+        });
+      });
+    });
+
+    it('should append BYOD metadata with custom delimiters (with positions)', () => {
+      const customDelimiters: DelimiterConfig = {
+        line: 'LINE',
+        position: 'COL',
+        hash: '>>',
+        range: 'thru',
+      };
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 9, char: 4 },
+            end: { line: 19, char: 14 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+      const result = formatLink('path/to/file.ts', inputSelection, customDelimiters, {
+        linkType: LinkType.Portable,
+      });
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'path/to/file.ts>>LINE10COL5thruLINE20COL15~>>~LINE~thru~COL~',
+          linkType: 'portable',
+          rangeFormat: 'WithPositions',
+          selectionType: 'Normal',
+          delimiters: customDelimiters,
+          computedSelection: {
+            startLine: 10,
+            endLine: 20,
+            startPosition: 5,
+            endPosition: 15,
+            rangeFormat: 'WithPositions',
+          },
+        });
+      });
+    });
+
+    it('should append BYOD metadata for EnforceFullLine notation', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 10, char: 5 },
+            end: { line: 10, char: 15 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+        notation: RangeNotation.EnforceFullLine,
+        linkType: LinkType.Portable,
+      });
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'src/file.ts#L11~#~L~-~',
+          linkType: 'portable',
+          rangeFormat: 'LineOnly',
+          selectionType: 'Normal',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 11,
+            endLine: 11,
+            rangeFormat: 'LineOnly',
+          },
+        });
+      });
+    });
+
+    it('should append BYOD metadata for EnforcePositions notation', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 10, char: 0 },
+            end: { line: 20, char: 0 },
+            coverage: SelectionCoverage.FullLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+        notation: RangeNotation.EnforcePositions,
+        linkType: LinkType.Portable,
+      });
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'src/file.ts#L11C1-L21C1~#~L~-~C~',
+          linkType: 'portable',
+          rangeFormat: 'WithPositions',
+          selectionType: 'Normal',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 11,
+            endLine: 21,
+            startPosition: 1,
+            endPosition: 1,
+            rangeFormat: 'WithPositions',
+          },
+        });
+      });
+    });
+  });
+
+  describe('integration', () => {
+    it.each([
+      { linkType: LinkType.Regular, suffix: '' },
+      { linkType: LinkType.Portable, suffix: '~#~L~-~C~' },
+    ])(
+      'should handle end-to-end link generation with linkType=$linkType',
+      ({ linkType, suffix }) => {
+        const inputSelection: InputSelection = {
+          selections: [
+            {
+              start: { line: 10, char: 5 },
+              end: { line: 20, char: 15 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Normal,
+        };
+
+        const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+          linkType,
+        });
+
+        expect(result).toBeOkWith((value: FormattedLink) => {
+          expect(value.link).toBe(`src/file.ts#L11C6-L21C16${suffix}`);
+          expect(value.linkType).toBe(linkType === LinkType.Regular ? 'regular' : 'portable');
+          expect(value.rangeFormat).toBe('WithPositions');
+          expect(value.selectionType).toBe('Normal');
+        });
+      },
+    );
+
+    it.each([
+      { linkType: LinkType.Regular, suffix: '' },
+      { linkType: LinkType.Portable, suffix: '~#~L~-~C~' },
+    ])(
+      'should handle rectangular selection with linkType=$linkType',
+      ({ linkType, suffix }) => {
+        const inputSelection: InputSelection = {
+          selections: [
+            {
+              start: { line: 5, char: 10 },
+              end: { line: 5, char: 20 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+            {
+              start: { line: 6, char: 10 },
+              end: { line: 6, char: 20 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Rectangular,
+        };
+
+        const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+          linkType,
+        });
+
+        expect(result).toBeOkWith((value: FormattedLink) => {
+          expect(value.link).toBe(`src/file.ts##L6C11-L7C21${suffix}`);
+          expect(value.linkType).toBe(linkType === LinkType.Regular ? 'regular' : 'portable');
+          expect(value.selectionType).toBe('Rectangular');
+        });
+      },
+    );
+
+    it.each([
+      { linkType: LinkType.Regular },
+      { linkType: LinkType.Portable },
+    ])('should propagate errors correctly with linkType=$linkType', ({ linkType }) => {
+      const inputSelection: InputSelection = {
+        selections: [],
+        selectionType: SelectionType.Normal,
+      };
+
+      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters, {
+        linkType,
+      });
+
+      expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
+        message: 'Selections array must not be empty',
+        functionName: 'validateInputSelection',
+        details: { selectionsLength: 0 },
       });
     });
   });
