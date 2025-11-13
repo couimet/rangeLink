@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Single-position navigation** - Fixed regression introduced in v0.3.0 where navigating to single-position links (e.g., `file.ts#L32C1`) showed invisible cursors instead of visible 1-character selections.
+
 ## [0.3.0]
 
 ### Added
