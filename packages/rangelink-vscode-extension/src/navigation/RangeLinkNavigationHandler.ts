@@ -125,8 +125,41 @@ export class RangeLinkNavigationHandler {
       const convertedStart = convertRangeLinkPosition(start, document);
       const convertedEnd = end ? convertRangeLinkPosition(end, document) : convertedStart;
 
-      const vsStart = new vscode.Position(convertedStart.line, convertedStart.character);
-      const vsEnd = new vscode.Position(convertedEnd.line, convertedEnd.character);
+      let vsStart = new vscode.Position(convertedStart.line, convertedStart.character);
+      let vsEnd = new vscode.Position(convertedEnd.line, convertedEnd.character);
+
+      // Single-position selection extension for visibility
+      // When navigating to a single position (e.g., file.ts#L32C1), extend the selection
+      // by 1 character to make it visible. Without this, users see only an invisible cursor.
+      if (vsStart.line === vsEnd.line && vsStart.character === vsEnd.character) {
+        const lineLength = document.lineAt(vsStart.line).text.length;
+
+        if (lineLength > 0 && vsStart.character < lineLength) {
+          // Normal case: Extend by 1 character for visibility
+          vsEnd = new vscode.Position(vsEnd.line, vsEnd.character + 1);
+
+          this.logger.debug(
+            {
+              ...logCtx,
+              originalPos: `${vsStart.line + 1}:${vsStart.character + 1}`,
+              extendedTo: `${vsEnd.line + 1}:${vsEnd.character + 1}`,
+              reason: 'single-position selection needs visibility',
+            },
+            'Extended single-position selection by 1 character',
+          );
+        } else {
+          // Edge case: Empty line or end of line - keep cursor only
+          this.logger.debug(
+            {
+              ...logCtx,
+              position: `${vsStart.line + 1}:${vsStart.character + 1}`,
+              lineLength,
+              reason: lineLength === 0 ? 'empty line' : 'end of line',
+            },
+            'Single-position selection at line boundary - keeping cursor only',
+          );
+        }
+      }
 
       // Handle rectangular mode (multi-cursor)
       if (selectionType === SelectionType.Rectangular) {
