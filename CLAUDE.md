@@ -536,6 +536,7 @@ gh api graphql -H "GraphQL-Features: sub_issues" -f query="
 **ALL issues MUST have both a `type:*` label AND a `priority:*` label.**
 
 **Type labels (required - pick ONE):**
+
 - `type:bug` - Bug or defect in existing functionality
 - `type:enhancement` - New feature or enhancement
 - `type:debt` - Technical debt that needs to be addressed
@@ -544,12 +545,14 @@ gh api graphql -H "GraphQL-Features: sub_issues" -f query="
 - `type:test` - Test coverage improvements
 
 **Priority labels (required - pick ONE):**
+
 - `priority:critical` - Critical priority - must be fixed ASAP
 - `priority:high` - High priority
 - `priority:medium` - Medium priority
 - `priority:low` - Low priority / nice to have
 
 **Scope labels (optional - pick one or more):**
+
 - `scope:core` - rangelink-core-ts package
 - `scope:vscode-ext` - rangelink-vscode-extension package
 - `scope:test-utils` - rangelink-test-utils package
