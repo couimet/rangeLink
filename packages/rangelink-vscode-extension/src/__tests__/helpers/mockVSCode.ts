@@ -109,6 +109,14 @@ export const createMockDocument = (
   text: string,
   uri?: vscode.Uri,
 ): vscode.TextDocument => {
+  // Create a default mock URI if not provided
+  const defaultUri = uri || {
+    scheme: 'file',
+    path: '/test.md',
+    toString: () => 'file:///test.md',
+    fsPath: '/test.md',
+  };
+
   return {
     getText: () => text,
     positionAt: (index: number) => {
@@ -118,7 +126,7 @@ export const createMockDocument = (
       const character = lines[lines.length - 1].length;
       return new vscode.Position(line, character);
     },
-    uri: uri || vscode.Uri.parse('file:///test.md'),
+    uri: defaultUri,
   } as unknown as vscode.TextDocument;
 };
 

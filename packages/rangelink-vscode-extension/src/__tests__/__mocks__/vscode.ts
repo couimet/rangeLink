@@ -102,8 +102,18 @@ const mockLanguages = {
 
 // Mock constructor functions for VSCode types
 const mockUri = {
-  parse: jest.fn((str) => ({ scheme: 'command', toString: () => str })),
-  file: jest.fn((path) => ({ scheme: 'file', path, toString: () => `file://${path}` })),
+  parse: jest.fn((str) => ({
+    scheme: str.startsWith('file:') ? 'file' : 'command',
+    path: str,
+    toString: () => str,
+    fsPath: str.replace(/^file:\/\//, ''),
+  })),
+  file: jest.fn((path) => ({
+    scheme: 'file',
+    path,
+    toString: () => `file://${path}`,
+    fsPath: path,
+  })),
 };
 
 const mockRange = jest.fn((start, end) => ({ start, end }));
