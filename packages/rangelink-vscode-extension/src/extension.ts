@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Load delimiter configuration
   const vscodeConfig = vscode.workspace.getConfiguration('rangelink');
-  const ideAdapter = new VscodeAdapter();
+  const ideAdapter = new VscodeAdapter(vscode);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const delimiters = getDelimitersForExtension(vscodeConfig as any, ideAdapter, getLogger());
 
@@ -44,11 +44,15 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(destinationManager);
 
   // Create shared navigation handler (used by both terminal and document providers)
-  const navigationHandler = new RangeLinkNavigationHandler(delimiters, getLogger());
+  const navigationHandler = new RangeLinkNavigationHandler(delimiters, ideAdapter, getLogger());
   getLogger().debug({ fn: 'activate' }, 'Navigation handler created');
 
   // Register terminal link provider for clickable links
-  const terminalLinkProvider = new RangeLinkTerminalProvider(navigationHandler, getLogger());
+  const terminalLinkProvider = new RangeLinkTerminalProvider(
+    navigationHandler,
+    ideAdapter,
+    getLogger(),
+  );
   context.subscriptions.push(
     registerWithLogging(
       vscode.window.registerTerminalLinkProvider(terminalLinkProvider),

@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
+import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { RangeLinkTerminalLink } from '../types';
 
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
@@ -33,10 +34,12 @@ export class RangeLinkTerminalProvider
    * Create a new terminal link provider.
    *
    * @param handler - Navigation handler for link detection and navigation
+   * @param ideAdapter - VSCode adapter for UI operations (warnings)
    * @param logger - Logger instance for structured logging
    */
   constructor(
     private readonly handler: RangeLinkNavigationHandler,
+    private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
@@ -156,7 +159,7 @@ export class RangeLinkTerminalProvider
         'Terminal link clicked but parse data missing (safety net triggered)',
       );
 
-      vscode.window.showWarningMessage(
+      await this.ideAdapter.showWarningMessage(
         `RangeLink: Cannot navigate - invalid link format: ${linkText}`,
       );
       return;

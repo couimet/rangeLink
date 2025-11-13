@@ -14,6 +14,11 @@ jest.mock('vscode', () => ({
     })),
     showWarningMessage: jest.fn().mockResolvedValue(undefined),
     showErrorMessage: jest.fn().mockResolvedValue(undefined),
+    showInformationMessage: jest.fn().mockResolvedValue(undefined),
+    showTextDocument: jest.fn().mockResolvedValue(undefined),
+  },
+  workspace: {
+    openTextDocument: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -36,7 +41,7 @@ describe('VscodeAdapter', () => {
       dispose: jest.fn(),
     }));
 
-    adapter = new VscodeAdapter();
+    adapter = new VscodeAdapter(vscode);
   });
 
   describe('writeTextToClipboard', () => {

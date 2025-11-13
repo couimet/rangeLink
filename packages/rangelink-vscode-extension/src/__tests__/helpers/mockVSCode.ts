@@ -39,6 +39,7 @@ export const createMockWindow = () => {
     showInformationMessage: jest.fn(),
     showWarningMessage: jest.fn(),
     showErrorMessage: jest.fn(),
+    showTextDocument: jest.fn(),
   };
 };
 
@@ -139,3 +140,166 @@ export const createMockCancellationToken = (isCancelled = false): vscode.Cancell
     onCancellationRequested: jest.fn(),
   } as unknown as vscode.CancellationToken;
 };
+
+/**
+ * Create a mock workspace object for navigation tests.
+ *
+ * @returns Mock workspace with file operations and document handling
+ */
+export const createMockWorkspace = () => ({
+  workspaceFolders: [],
+  openTextDocument: jest.fn(),
+  fs: {
+    stat: jest.fn(),
+  },
+});
+
+/**
+ * Create a mock Uri namespace for navigation tests.
+ *
+ * @returns Mock Uri with file and parse methods
+ */
+export const createMockUri = () => ({
+  file: jest.fn(),
+  parse: jest.fn(),
+});
+
+/**
+ * Create a mock Position constructor for navigation tests.
+ *
+ * Creates Position objects with line and character properties.
+ *
+ * @returns Mock Position constructor that creates {line, character} objects
+ */
+export const createMockPosition = () =>
+  jest.fn((line: number, character: number) => ({ line, character }));
+
+/**
+ * Create a mock Selection constructor for navigation tests.
+ *
+ * Creates Selection objects with anchor and active properties.
+ *
+ * @returns Mock Selection constructor that creates {anchor, active} objects
+ */
+export const createMockSelection = () =>
+  jest.fn((anchor: vscode.Position, active: vscode.Position) => ({ anchor, active }));
+
+/**
+ * Create a mock Range constructor for navigation tests.
+ *
+ * Creates Range objects with start and end properties.
+ *
+ * @returns Mock Range constructor that creates {start, end} objects
+ */
+export const createMockRange = () =>
+  jest.fn((start: vscode.Position, end: vscode.Position) => ({ start, end }));
+
+/**
+ * Options for configuring the vscode module mock.
+ */
+export interface VSCodeMockOptions {
+  /**
+   * Optional TextEditorRevealType enum values to include.
+   * Defaults to {InCenterIfOutsideViewport: 2} if not provided.
+   */
+  textEditorRevealType?: Record<string, number>;
+}
+
+/**
+ * Canonical vscode navigation mock structure for jest.mock() calls.
+ *
+ * Use this constant directly in jest.mock() factories with spread operator:
+ *
+ * @example
+ * ```typescript
+ * // ✅ CORRECT - Use with spread operator
+ * jest.mock('vscode', () => ({ ...VSCODE_NAVIGATION_MOCK }));
+ *
+ * // ✅ Also works - Reference without spread (but less flexible)
+ * jest.mock('vscode', () => VSCODE_NAVIGATION_MOCK);
+ * ```
+ */
+export const VSCODE_NAVIGATION_MOCK = {
+  window: {
+    activeTerminal: undefined,
+    activeTextEditor: undefined,
+    showInformationMessage: jest.fn(),
+    showWarningMessage: jest.fn(),
+    showErrorMessage: jest.fn(),
+    showTextDocument: jest.fn(),
+  },
+  workspace: {
+    workspaceFolders: [],
+    openTextDocument: jest.fn(),
+    fs: {
+      stat: jest.fn(),
+    },
+  },
+  Uri: {
+    file: jest.fn(),
+    parse: jest.fn(),
+  },
+  Position: jest.fn((line: number, character: number) => ({ line, character })),
+  Selection: jest.fn(
+    (anchor: { line: number; character: number }, active: { line: number; character: number }) => ({
+      anchor,
+      active,
+    }),
+  ),
+  Range: jest.fn(
+    (start: { line: number; character: number }, end: { line: number; character: number }) => ({
+      start,
+      end,
+    }),
+  ),
+  TextEditorRevealType: {
+    InCenterIfOutsideViewport: 2,
+  },
+} as const;
+
+/**
+ * Create a complete vscode module mock for navigation tests.
+ *
+ * Composes from existing mock components to provide all necessary mocks
+ * for file operations, document handling, and UI interactions.
+ *
+ * **⚠️ Cannot be used in jest.mock() factories** due to Jest hoisting + ES/CJS module issues.
+ * This factory serves as:
+ * 1. **Runtime usage** - Call directly in test setup code (not in jest.mock())
+ * 2. **Reference documentation** - Canonical structure for inline jest.mock() calls
+ *
+ * For jest.mock() calls, you MUST inline the structure:
+ *
+ * @param options - Optional configuration for the mock
+ * @example
+ * ```typescript
+ * // ❌ DOES NOT WORK - Jest hoisting + module resolution prevents this
+ * jest.mock('vscode', () => {
+ *   const { createVSCodeNavigationMock } = require('../helpers/mockVSCode');
+ *   return createVSCodeNavigationMock();  // Module not found / not a function
+ * });
+ *
+ * // ✅ CORRECT - Inline the mock structure
+ * // Canonical structure defined in mockVSCode.ts createVSCodeNavigationMock()
+ * jest.mock('vscode', () => ({
+ *   window: { showTextDocument: jest.fn(), ... },
+ *   workspace: { openTextDocument: jest.fn(), ... },
+ *   // ... (see createVSCodeNavigationMock for full structure)
+ * }));
+ *
+ * // ✅ ALSO WORKS - Use in runtime test setup (not jest.mock factory)
+ * const mockVSCode = createVSCodeNavigationMock();
+ * // Then manually assign to module system if needed
+ * ```
+ */
+export const createVSCodeNavigationMock = (options?: VSCodeMockOptions) => ({
+  window: createMockWindow(),
+  workspace: createMockWorkspace(),
+  Uri: createMockUri(),
+  Position: createMockPosition(),
+  Selection: createMockSelection(),
+  Range: createMockRange(),
+  TextEditorRevealType: options?.textEditorRevealType ?? {
+    InCenterIfOutsideViewport: 2,
+  },
+});

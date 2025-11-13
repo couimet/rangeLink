@@ -86,6 +86,7 @@ jest.mock('vscode', () => ({
     createOutputChannel: jest.fn(),
     showErrorMessage: jest.fn(),
     showInformationMessage: jest.fn(),
+    showTextDocument: jest.fn().mockResolvedValue(undefined),
     setStatusBarMessage: jest.fn(),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
     onDidChangeVisibleTextEditors: jest.fn(() => ({ dispose: jest.fn() })),
@@ -95,6 +96,7 @@ jest.mock('vscode', () => ({
     getWorkspaceFolder: jest.fn(),
     asRelativePath: jest.fn(),
     getConfiguration: jest.fn(),
+    openTextDocument: jest.fn().mockResolvedValue(undefined),
     onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
   },
   languages: {
@@ -175,7 +177,7 @@ describe('RangeLinkService', () => {
     (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
 
     // Create service with default delimiters, real VscodeAdapter, and mock managers
-    const ideAdapter = new VscodeAdapter();
+    const ideAdapter = new VscodeAdapter(vscode);
     service = new RangeLinkService(
       {
         line: 'L',
@@ -681,7 +683,7 @@ describe('RangeLinkService', () => {
           hash: '@',
           range: '..',
         },
-        new VscodeAdapter(),
+        new VscodeAdapter(vscode),
         createMockDestinationManager() as any,
       );
 
@@ -736,7 +738,7 @@ describe('RangeLinkService', () => {
           hash: '##',
           range: 'TO',
         },
-        new VscodeAdapter(),
+        new VscodeAdapter(vscode),
         createMockDestinationManager() as any,
       );
 
@@ -3024,7 +3026,7 @@ describe('Portable links (Phase 1C)', () => {
         hash: '#',
         range: 'TO',
       },
-      new VscodeAdapter(),
+      new VscodeAdapter(vscode),
       createMockDestinationManager() as any,
     );
 

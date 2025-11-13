@@ -2,7 +2,7 @@ import type { DelimiterConfig } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
-import type { IdeAdapter } from '../ide/IdeAdapter';
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { RangeLinkService } from '../RangeLinkService';
 
 // Mock vscode module
@@ -20,7 +20,7 @@ jest.mock('vscode', () => ({
 describe('RangeLinkService', () => {
   describe('copyAndNotify', () => {
     let service: RangeLinkService;
-    let mockIdeAdapter: IdeAdapter;
+    let mockIdeAdapter: VscodeAdapter;
     let mockDestinationManager: PasteDestinationManager;
     const delimiters: DelimiterConfig = {
       line: 'L',
@@ -48,7 +48,9 @@ describe('RangeLinkService', () => {
         setStatusBarMessage: jest.fn().mockReturnValue({ dispose: jest.fn() }),
         showWarningMessage: jest.fn().mockResolvedValue(undefined),
         showErrorMessage: jest.fn().mockResolvedValue(undefined),
-      };
+        showInformationMessage: jest.fn().mockResolvedValue(undefined),
+        showTextDocument: jest.fn(),
+      } as any;
 
       // Create mock destination manager
       mockDestinationManager = {
