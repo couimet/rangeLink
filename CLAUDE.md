@@ -531,6 +531,45 @@ gh api graphql -H "GraphQL-Features: sub_issues" -f query="
 
 **Rationale:** Text-only references in descriptions are fragile and don't integrate with GitHub's project management features. Native relationships provide proper tooling support.
 
+### Issue Label Requirements
+
+**ALL issues MUST have both a `type:*` label AND a `priority:*` label.**
+
+**Type labels (required - pick ONE):**
+
+- `type:bug` - Bug or defect in existing functionality
+- `type:enhancement` - New feature or enhancement
+- `type:debt` - Technical debt that needs to be addressed
+- `type:docs` - Documentation improvements
+- `type:refactor` - Code refactoring without behavior change
+- `type:test` - Test coverage improvements
+
+**Priority labels (required - pick ONE):**
+
+- `priority:critical` - Critical priority - must be fixed ASAP
+- `priority:high` - High priority
+- `priority:medium` - Medium priority
+- `priority:low` - Low priority / nice to have
+
+**Scope labels (optional - pick one or more):**
+
+- `scope:core` - rangelink-core-ts package
+- `scope:vscode-ext` - rangelink-vscode-extension package
+- `scope:test-utils` - rangelink-test-utils package
+- `scope:tooling` - Build tools, scripts, CI/CD
+- `scope:docs` - Documentation files (README, ROADMAP, etc.)
+
+**Example issue creation:**
+
+```bash
+gh issue create \
+  --title "Fix validation bug in parseLink" \
+  --body "..." \
+  --label "type:bug,priority:high,scope:core"
+```
+
+**Rationale:** Consistent labeling enables better filtering, prioritization, and project management. All issues must be categorized by type and priority for effective triage.
+
 ## Documentation
 
 ### ROADMAP and JOURNEY Maintenance
