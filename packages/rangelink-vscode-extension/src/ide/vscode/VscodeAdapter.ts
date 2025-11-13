@@ -14,6 +14,16 @@ import * as vscode from 'vscode';
  */
 export class VscodeAdapter {
   /**
+   * Create a new VSCode adapter.
+   *
+   * @param ideInstance - The vscode module instance to use for all operations
+   */
+  constructor(private readonly ideInstance: typeof vscode) {}
+
+  // TODO(#98): The methods below still use global `vscode` instead of `this.ideInstance`.
+  // Update these to use `this.ideInstance` for proper dependency injection.
+
+  /**
    * Write text to clipboard using VSCode API
    */
   async writeTextToClipboard(text: string): Promise<void> {
@@ -42,5 +52,23 @@ export class VscodeAdapter {
    */
   async showErrorMessage(message: string): Promise<string | undefined> {
     return vscode.window.showErrorMessage(message);
+  }
+
+  /**
+   * Show information notification using VSCode API
+   */
+  async showInformationMessage(message: string): Promise<string | undefined> {
+    return this.ideInstance.window.showInformationMessage(message);
+  }
+
+  /**
+   * Open a document and show it in the editor
+   *
+   * @param uri - URI of the document to open
+   * @returns Promise resolving to the text editor showing the document
+   */
+  async showTextDocument(uri: vscode.Uri): Promise<vscode.TextEditor> {
+    const document = await this.ideInstance.workspace.openTextDocument(uri);
+    return this.ideInstance.window.showTextDocument(document);
   }
 }

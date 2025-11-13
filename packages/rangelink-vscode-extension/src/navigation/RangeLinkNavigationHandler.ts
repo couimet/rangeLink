@@ -3,6 +3,7 @@ import type { DelimiterConfig, ParsedLink, Result } from 'rangelink-core-ts';
 import { buildLinkPattern, parseLink, RangeLinkError, SelectionType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { convertRangeLinkPosition } from '../utils/convertRangeLinkPosition';
 import { formatLinkPosition } from '../utils/formatLinkPosition';
 import { formatLinkTooltip } from '../utils/formatLinkTooltip';
@@ -39,10 +40,12 @@ export class RangeLinkNavigationHandler {
    * Create a new navigation handler.
    *
    * @param delimiters - Delimiter configuration for link detection
+   * @param ideAdapter - VSCode adapter for UI operations (notifications, document display)
    * @param logger - Logger instance for structured logging
    */
   constructor(
     private readonly delimiters: DelimiterConfig,
+    private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
     this.pattern = buildLinkPattern(delimiters);
@@ -109,16 +112,16 @@ export class RangeLinkNavigationHandler {
 
     if (!fileUri) {
       this.logger.warn({ ...logCtx, path }, 'Failed to resolve workspace path');
-      vscode.window.showWarningMessage(`RangeLink: Cannot find file: ${path}`);
+      await this.ideAdapter.showWarningMessage(`RangeLink: Cannot find file: ${path}`);
       return;
     }
 
     try {
-      // Open the document
-      const document = await vscode.workspace.openTextDocument(fileUri);
-      const editor = await vscode.window.showTextDocument(document);
+      // Open document and get editor
+      const editor = await this.ideAdapter.showTextDocument(fileUri);
 
       // Convert positions (LinkPosition → ConvertedPosition → vscode.Position)
+      const document = editor.document;
       const convertedStart = convertRangeLinkPosition(start, document);
       const convertedEnd = end ? convertRangeLinkPosition(end, document) : convertedStart;
 
@@ -157,10 +160,10 @@ export class RangeLinkNavigationHandler {
 
       // Show success toast with formatted position
       const position = formatLinkPosition(start, end);
-      vscode.window.showInformationMessage(`RangeLink: Navigated to ${path} @ ${position}`);
+      await this.ideAdapter.showInformationMessage(`RangeLink: Navigated to ${path} @ ${position}`);
     } catch (error) {
       this.logger.error({ ...logCtx, error }, 'Navigation failed');
-      vscode.window.showErrorMessage(
+      await this.ideAdapter.showErrorMessage(
         `RangeLink: Failed to navigate to ${path}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error; // Re-throw for caller to handle if needed
