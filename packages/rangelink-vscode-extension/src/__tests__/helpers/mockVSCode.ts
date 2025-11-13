@@ -247,10 +247,10 @@ export const VSCODE_NAVIGATION_MOCK = {
     }),
   ),
   Range: jest.fn(
-    (
-      start: { line: number; character: number },
-      end: { line: number; character: number },
-    ) => ({ start, end }),
+    (start: { line: number; character: number }, end: { line: number; character: number }) => ({
+      start,
+      end,
+    }),
   ),
   TextEditorRevealType: {
     InCenterIfOutsideViewport: 2,

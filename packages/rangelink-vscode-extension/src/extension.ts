@@ -48,7 +48,11 @@ export function activate(context: vscode.ExtensionContext): void {
   getLogger().debug({ fn: 'activate' }, 'Navigation handler created');
 
   // Register terminal link provider for clickable links
-  const terminalLinkProvider = new RangeLinkTerminalProvider(navigationHandler, ideAdapter, getLogger());
+  const terminalLinkProvider = new RangeLinkTerminalProvider(
+    navigationHandler,
+    ideAdapter,
+    getLogger(),
+  );
   context.subscriptions.push(
     registerWithLogging(
       vscode.window.registerTerminalLinkProvider(terminalLinkProvider),

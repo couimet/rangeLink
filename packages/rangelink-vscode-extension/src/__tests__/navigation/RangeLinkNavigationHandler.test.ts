@@ -36,10 +36,10 @@ jest.mock('vscode', () => ({
     }),
   ),
   Range: jest.fn(
-    (
-      start: { line: number; character: number },
-      end: { line: number; character: number },
-    ) => ({ start, end }),
+    (start: { line: number; character: number }, end: { line: number; character: number }) => ({
+      start,
+      end,
+    }),
   ),
   TextEditorRevealType: {
     InCenterIfOutsideViewport: 2,
@@ -81,12 +81,14 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     (vscode.Uri.file as jest.Mock).mockReturnValue({ fsPath: '/workspace/file.ts' });
     (vscode.workspace.fs.stat as jest.Mock).mockResolvedValue({});
     mockIdeAdapter.showTextDocument.mockResolvedValue(mockEditor);
-    (vscode.Position as jest.Mock).mockImplementation(
-      (line: number, char: number) => ({ line, character: char }),
-    );
-    (vscode.Selection as jest.Mock).mockImplementation(
-      (anchor: any, active: any) => ({ anchor, active }),
-    );
+    (vscode.Position as jest.Mock).mockImplementation((line: number, char: number) => ({
+      line,
+      character: char,
+    }));
+    (vscode.Selection as jest.Mock).mockImplementation((anchor: any, active: any) => ({
+      anchor,
+      active,
+    }));
     (vscode.Range as jest.Mock).mockImplementation((start: any, end: any) => ({ start, end }));
   });
 

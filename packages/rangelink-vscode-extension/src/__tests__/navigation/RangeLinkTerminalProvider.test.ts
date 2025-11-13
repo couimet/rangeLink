@@ -38,10 +38,10 @@ jest.mock('vscode', () => ({
     }),
   ),
   Range: jest.fn(
-    (
-      start: { line: number; character: number },
-      end: { line: number; character: number },
-    ) => ({ start, end }),
+    (start: { line: number; character: number }, end: { line: number; character: number }) => ({
+      start,
+      end,
+    }),
   ),
   TextEditorRevealType: {
     InCenterIfOutsideViewport: 2,
