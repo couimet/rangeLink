@@ -48,7 +48,9 @@ describe('RangeLinkService', () => {
         setStatusBarMessage: jest.fn().mockReturnValue({ dispose: jest.fn() }),
         showWarningMessage: jest.fn().mockResolvedValue(undefined),
         showErrorMessage: jest.fn().mockResolvedValue(undefined),
-      };
+        showInformationMessage: jest.fn().mockResolvedValue(undefined),
+        showTextDocument: jest.fn(),
+      } as any;
 
       // Create mock destination manager
       mockDestinationManager = {

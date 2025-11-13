@@ -2,17 +2,21 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import type { DelimiterConfig } from 'rangelink-core-ts';
 import { LinkType, SelectionType } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from '../../navigation/RangeLinkTerminalProvider';
 import type { RangeLinkTerminalLink } from '../../types';
 
-// Mock vscode module
+// Mock vscode module - must be inline due to Jest hoisting
+// Canonical structure: mockVSCode.ts VSCODE_NAVIGATION_MOCK
 jest.mock('vscode', () => ({
   window: {
+    activeTerminal: undefined,
+    activeTextEditor: undefined,
+    showInformationMessage: jest.fn(),
     showWarningMessage: jest.fn(),
     showErrorMessage: jest.fn(),
-    showInformationMessage: jest.fn(),
     showTextDocument: jest.fn(),
   },
   workspace: {
@@ -26,22 +30,41 @@ jest.mock('vscode', () => ({
     file: jest.fn(),
     parse: jest.fn(),
   },
-  Selection: jest.fn(),
-  Position: jest.fn(),
-  Range: jest.fn(),
+  Position: jest.fn((line: number, character: number) => ({ line, character })),
+  Selection: jest.fn(
+    (anchor: { line: number; character: number }, active: { line: number; character: number }) => ({
+      anchor,
+      active,
+    }),
+  ),
+  Range: jest.fn(
+    (
+      start: { line: number; character: number },
+      end: { line: number; character: number },
+    ) => ({ start, end }),
+  ),
   TextEditorRevealType: {
-    InCenterIfOutsideViewport: 1,
+    InCenterIfOutsideViewport: 2,
   },
 }));
 
 describe('RangeLinkTerminalProvider', () => {
   let provider: RangeLinkTerminalProvider;
   let mockLogger: Logger;
+  let mockIdeAdapter: any;
   let delimiters: DelimiterConfig;
 
   beforeEach(() => {
     // Mock logger
     mockLogger = createMockLogger();
+
+    // Mock IDE adapter
+    mockIdeAdapter = {
+      showWarningMessage: jest.fn(),
+      showInformationMessage: jest.fn(),
+      showErrorMessage: jest.fn(),
+      showTextDocument: jest.fn(),
+    };
 
     // Standard delimiters
     delimiters = {
@@ -52,8 +75,8 @@ describe('RangeLinkTerminalProvider', () => {
     };
 
     // Create handler and provider
-    const handler = new RangeLinkNavigationHandler(delimiters, mockLogger);
-    provider = new RangeLinkTerminalProvider(handler, mockLogger);
+    const handler = new RangeLinkNavigationHandler(delimiters, mockIdeAdapter, mockLogger);
+    provider = new RangeLinkTerminalProvider(handler, mockIdeAdapter, mockLogger);
   });
 
   describe('handleTerminalLink - Safety Net Validation', () => {
@@ -67,8 +90,6 @@ describe('RangeLinkTerminalProvider', () => {
         data: 'file.ts#L0',
         parsed: undefined, // Safety net case
       };
-
-      const vscode = require('vscode');
 
       // Act
       await provider.handleTerminalLink(link);
@@ -85,7 +106,7 @@ describe('RangeLinkTerminalProvider', () => {
         'Terminal link clicked but parse data missing (safety net triggered)',
       );
 
-      expect(vscode.window.showWarningMessage).toHaveBeenCalledWith(
+      expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot navigate - invalid link format: file.ts#L0',
       );
 

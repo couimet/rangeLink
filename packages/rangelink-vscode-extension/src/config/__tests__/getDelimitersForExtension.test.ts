@@ -31,12 +31,14 @@ const createMockConfig = (overrides: Partial<Record<string, string>> = {}): Conf
   };
 };
 
-const createMockIdeAdapter = (): jest.Mocked<VscodeAdapter> => {
+const createMockIdeAdapter = (): any => {
   return {
     writeTextToClipboard: jest.fn().mockResolvedValue(undefined),
     setStatusBarMessage: jest.fn(),
     showWarningMessage: jest.fn().mockResolvedValue(undefined),
     showErrorMessage: jest.fn().mockResolvedValue(undefined),
+    showInformationMessage: jest.fn().mockResolvedValue(undefined),
+    showTextDocument: jest.fn(),
   };
 };
 
