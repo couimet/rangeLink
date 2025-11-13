@@ -1,6 +1,12 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
-import { LinkType, RangeLinkError, RangeLinkErrorCodes, Result, SelectionType } from 'rangelink-core-ts';
+import {
+  LinkType,
+  RangeLinkError,
+  RangeLinkErrorCodes,
+  Result,
+  SelectionType,
+} from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -155,9 +161,7 @@ describe('RangeLinkDocumentProvider', () => {
         .mockReturnValueOnce('Navigate to src/a.ts')
         .mockReturnValueOnce('Navigate to src/b.ts');
 
-      const document = createMockDocument(
-        'First: src/a.ts#L1 and second: src/b.ts#L2-L3',
-      );
+      const document = createMockDocument('First: src/a.ts#L1 and second: src/b.ts#L2-L3');
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 

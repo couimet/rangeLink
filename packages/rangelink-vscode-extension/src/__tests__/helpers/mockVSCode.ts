@@ -105,10 +105,7 @@ export const createMockCommands = (): typeof vscode.commands => {
  * @param uri - Optional document URI (defaults to file:///test.md)
  * @returns Mock TextDocument with functional getText and positionAt
  */
-export const createMockDocument = (
-  text: string,
-  uri?: vscode.Uri,
-): vscode.TextDocument => {
+export const createMockDocument = (text: string, uri?: vscode.Uri): vscode.TextDocument => {
   // Create a default mock URI if not provided
   const defaultUri = uri || {
     scheme: 'file',
@@ -136,9 +133,7 @@ export const createMockDocument = (
  * @param isCancelled - Whether the token should report as cancelled (default: false)
  * @returns Mock CancellationToken
  */
-export const createMockCancellationToken = (
-  isCancelled = false,
-): vscode.CancellationToken => {
+export const createMockCancellationToken = (isCancelled = false): vscode.CancellationToken => {
   return {
     isCancellationRequested: isCancelled,
     onCancellationRequested: jest.fn(),
