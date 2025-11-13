@@ -1,7 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
-import type { IdeAdapter } from '../../ide/IdeAdapter';
+import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { getDelimitersForExtension } from '../getDelimitersForExtension';
 import type { ConfigGetter, ConfigInspection } from '../types';
 import { DelimiterConfigKey } from '../types';
@@ -31,7 +31,7 @@ const createMockConfig = (overrides: Partial<Record<string, string>> = {}): Conf
   };
 };
 
-const createMockIdeAdapter = (): jest.Mocked<IdeAdapter> => {
+const createMockIdeAdapter = (): jest.Mocked<VscodeAdapter> => {
   return {
     writeTextToClipboard: jest.fn().mockResolvedValue(undefined),
     setStatusBarMessage: jest.fn(),

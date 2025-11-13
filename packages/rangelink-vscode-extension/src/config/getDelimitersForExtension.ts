@@ -1,7 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import { type DelimiterConfig } from 'rangelink-core-ts';
 
-import type { IdeAdapter } from '../ide/IdeAdapter';
+import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 
 import { loadDelimiterConfig } from './loadDelimiterConfig';
 import type { ConfigGetter } from './types';
@@ -22,7 +22,7 @@ import type { ConfigGetter } from './types';
  */
 export const getDelimitersForExtension = (
   config: ConfigGetter,
-  ideAdapter: IdeAdapter,
+  ideAdapter: VscodeAdapter,
   logger: Logger,
 ): DelimiterConfig => {
   const result = loadDelimiterConfig(config, logger);

@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
-import type { IdeAdapter } from './ide/IdeAdapter';
+import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { toInputSelection } from './utils/toInputSelection';
 
 export enum PathFormat {
@@ -25,7 +25,7 @@ export enum PathFormat {
 export class RangeLinkService {
   constructor(
     private readonly delimiters: DelimiterConfig,
-    private readonly ideAdapter: IdeAdapter,
+    private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
   ) {}
 

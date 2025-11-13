@@ -1,15 +1,18 @@
 import * as vscode from 'vscode';
 
-import type { IdeAdapter } from '../IdeAdapter';
-
 /**
- * VSCode implementation of IdeAdapter interface.
+ * VSCode adapter for IDE-specific operations.
  *
- * Delegates to VSCode API for clipboard, status bar, and notification operations.
- * This adapter is a thin wrapper with no business logic - it simply forwards calls
- * to the appropriate VSCode APIs.
+ * Thin wrapper around VSCode API for:
+ * - Clipboard operations
+ * - Status bar messages
+ * - User notifications (warning, error, info)
+ * - Document/editor operations
+ *
+ * Enables testing by abstracting VSCode API calls and avoiding direct
+ * vscode module imports in business logic classes.
  */
-export class VscodeAdapter implements IdeAdapter {
+export class VscodeAdapter {
   /**
    * Write text to clipboard using VSCode API
    */
