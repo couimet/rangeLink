@@ -2,6 +2,7 @@ import type { Logger } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**
@@ -39,7 +40,10 @@ export class ClaudeCodeDestination implements PasteDestination {
 
   private static readonly EXTENSION_ID = 'anthropic.claude-code';
 
-  constructor(private readonly logger: Logger) {}
+  constructor(
+    private readonly ideAdapter: VscodeAdapter,
+    private readonly logger: Logger,
+  ) {}
 
   /**
    * Check if Claude Code extension is installed and active
@@ -142,6 +146,89 @@ export class ClaudeCodeDestination implements PasteDestination {
     } catch (error) {
       this.logger.error(
         { fn: 'ClaudeCodeDestination.pasteLink', formattedLink, error },
+        'Failed to execute clipboard workaround',
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Paste text content to Claude Code chat
+   *
+   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
+   * Used for pasting selected text directly to Claude Code (issue #89).
+   *
+   * **Implementation:** Since Claude Code doesn't support programmatic text insertion,
+   * this method uses a clipboard-based workaround:
+   * 1. Copy content to clipboard
+   * 2. Try opening Claude Code with multiple fallback commands
+   * 3. Show notification prompting user to paste
+   *
+   * @param content - The text content to paste
+   * @returns true if clipboard copy and chat open succeeded, false otherwise
+   */
+  async pasteContent(content: string): Promise<boolean> {
+    if (!(await this.isAvailable())) {
+      this.logger.warn(
+        { fn: 'ClaudeCodeDestination.pasteContent', contentLength: content.length },
+        'Cannot paste: Claude Code extension not available',
+      );
+      return false;
+    }
+
+    try {
+      // Step 1: Copy to clipboard
+      await this.ideAdapter.writeTextToClipboard(content);
+      this.logger.debug(
+        { fn: 'ClaudeCodeDestination.pasteContent', contentLength: content.length },
+        `Copied content to clipboard (${content.length} chars)`,
+      );
+
+      // Step 2: Try opening Claude Code with multiple fallback commands
+      let chatOpened = false;
+      for (const command of ClaudeCodeDestination.CLAUDE_CODE_COMMANDS) {
+        try {
+          await this.ideAdapter.executeCommand(command);
+          this.logger.debug(
+            { fn: 'ClaudeCodeDestination.pasteContent', command, contentLength: content.length },
+            'Successfully executed Claude Code open command',
+          );
+          chatOpened = true;
+          break;
+        } catch (commandError) {
+          this.logger.debug(
+            {
+              fn: 'ClaudeCodeDestination.pasteContent',
+              command,
+              contentLength: content.length,
+              error: commandError,
+            },
+            'Command failed, trying next fallback',
+          );
+        }
+      }
+
+      if (!chatOpened) {
+        this.logger.warn(
+          { fn: 'ClaudeCodeDestination.pasteContent', contentLength: content.length },
+          'All Claude Code open commands failed',
+        );
+      }
+
+      // Step 3: Show notification (regardless of whether chat opened)
+      void this.ideAdapter.showInformationMessage(
+        'Text copied to clipboard. Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
+      );
+
+      this.logger.info(
+        { fn: 'ClaudeCodeDestination.pasteContent', contentLength: content.length, chatOpened },
+        `Clipboard workaround completed for content (${content.length} chars)`,
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        { fn: 'ClaudeCodeDestination.pasteContent', contentLength: content.length, error },
         'Failed to execute clipboard workaround',
       );
       return false;

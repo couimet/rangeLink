@@ -306,4 +306,101 @@ describe('TerminalDestination', () => {
       expect(destination.getTerminalName()).toBe('fish');
     });
   });
+
+  describe('pasteContent()', () => {
+    beforeEach(() => {
+      destination.setTerminal(mockTerminal);
+    });
+
+    it('should return false when content is ineligible', async () => {
+      (isEligibleForPaste as jest.Mock).mockReturnValue(false);
+
+      const result = await destination.pasteContent('');
+
+      expect(result).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'TerminalDestination.pasteContent',
+          contentLength: 0,
+        },
+        'Content not eligible for paste',
+      );
+    });
+
+    it('should return false when no terminal bound', async () => {
+      destination.setTerminal(undefined);
+
+      const result = await destination.pasteContent('some text');
+
+      expect(result).toBe(false);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'TerminalDestination.pasteContent',
+          contentLength: 9,
+        },
+        'Cannot paste: No terminal bound',
+      );
+    });
+
+    it('should return true when paste succeeds', async () => {
+      const result = await destination.pasteContent('some text');
+
+      expect(result).toBe(true);
+    });
+
+    it('should call terminal.sendText with padded content', async () => {
+      const testContent = 'selected text';
+      (applySmartPadding as jest.Mock).mockReturnValue(' selected text ');
+
+      await destination.pasteContent(testContent);
+
+      expect(applySmartPadding).toHaveBeenCalledWith(testContent);
+      expect(mockTerminal.sendText).toHaveBeenCalledWith(' selected text ', false);
+    });
+
+    it('should call terminal.show to focus terminal', async () => {
+      await destination.pasteContent('text');
+
+      expect(mockTerminal.show).toHaveBeenCalledWith(false);
+    });
+
+    it('should call sendText before show (correct order)', async () => {
+      const sendTextSpy = mockTerminal.sendText as jest.Mock;
+      const showSpy = mockTerminal.show as jest.Mock;
+
+      await destination.pasteContent('text');
+
+      expect(sendTextSpy.mock.invocationCallOrder[0]).toBeLessThan(
+        showSpy.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('should log success with terminal name and content length', async () => {
+      const testContent = 'selected text';
+      (applySmartPadding as jest.Mock).mockReturnValue(' selected text ');
+
+      await destination.pasteContent(testContent);
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'TerminalDestination.pasteContent',
+          terminalName: 'bash',
+          originalLength: testContent.length,
+          paddedLength: testContent.length + 2,
+        },
+        'Pasted content to terminal: bash',
+      );
+    });
+
+    it('should apply smart padding when content is eligible', async () => {
+      (isEligibleForPaste as jest.Mock).mockReturnValue(true);
+      (applySmartPadding as jest.Mock).mockReturnValue(' padded-content ');
+
+      await destination.pasteContent('original-content');
+
+      expect(isEligibleForPaste).toHaveBeenCalledWith('original-content');
+      expect(applySmartPadding).toHaveBeenCalledWith('original-content');
+      expect(mockTerminal.sendText).toHaveBeenCalledWith(' padded-content ', false);
+    });
+  });
 });

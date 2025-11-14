@@ -67,4 +67,21 @@ export interface PasteDestination {
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
   pasteLink(formattedLink: FormattedLink): Promise<boolean>;
+
+  /**
+   * Paste text content to this destination with appropriate padding and focus
+   *
+   * Used for pasting selected text directly to bound destinations (issue #89).
+   * Unlike pasteLink(), this accepts raw text content without link formatting.
+   *
+   * Implementation requirements:
+   * - Add padding if needed (smart padding: skip if already padded)
+   * - Focus destination after paste (terminal.show(), chat.open(), etc.)
+   * - Log success/failure for debugging
+   * - Return false on failure (no throwing)
+   *
+   * @param content - The text content to paste
+   * @returns Promise resolving to true if paste succeeded, false otherwise
+   */
+  pasteContent(content: string): Promise<boolean>;
 }

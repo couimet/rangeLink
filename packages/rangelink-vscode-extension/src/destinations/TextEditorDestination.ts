@@ -237,6 +237,187 @@ export class TextEditorDestination implements PasteDestination {
   }
 
   /**
+   * Paste text content to bound text editor at cursor position with smart padding
+   *
+   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
+   * Used for pasting selected text directly to editor (issue #89).
+   *
+   * Follows same validation and tab group binding strategy as pasteLink():
+   * - Requires 2+ tab groups (split editor)
+   * - Bound document must be topmost (active tab) in its tab group
+   * - Dynamically finds bound document across all tab groups
+   * - Skips auto-paste when creating from bound editor itself
+   *
+   * @param content - The text content to paste
+   * @returns true if paste succeeded, false if validation failed or cannot paste
+   */
+  async pasteContent(content: string): Promise<boolean> {
+    if (!isEligibleForPaste(content)) {
+      this.logger.info(
+        { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
+        'Content not eligible for paste',
+      );
+      return false;
+    }
+
+    if (!this.boundDocumentUri) {
+      this.logger.warn(
+        { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
+        'Cannot paste: No text editor bound',
+      );
+      return false;
+    }
+
+    // Get display name for logging and messages
+    const boundDisplayName = this.getEditorDisplayName();
+
+    // LAZY VALIDATION: Find which tab group contains the bound document
+    const boundTabGroup = this.ideAdapter.findTabGroupForDocument(this.boundDocumentUri);
+
+    if (!boundTabGroup) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document not found in any tab group - likely closed',
+      );
+      return false;
+    }
+
+    // Check if bound document is the active (topmost) tab in its group
+    const activeTab = boundTabGroup.activeTab;
+    if (!activeTab) {
+      this.logger.warn(
+        { fn: 'TextEditorDestination.pasteContent', boundDisplayName },
+        'Tab group has no active tab',
+      );
+      return false;
+    }
+
+    // Check that active tab is a text editor (not terminal)
+    if (!this.ideAdapter.isTextEditorTab(activeTab)) {
+      this.logger.warn(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDisplayName,
+          tabInputType: typeof activeTab.input,
+        },
+        'Active tab is not a text editor',
+      );
+      return false;
+    }
+
+    const activeTabUri = (activeTab.input as any).uri;
+    if (activeTabUri.toString() !== this.boundDocumentUri.toString()) {
+      this.logger.warn(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          activeTabUri: activeTabUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document is not topmost in its tab group',
+      );
+      return false;
+    }
+
+    // Find the TextEditor object for the bound document
+    const editor = this.ideAdapter.visibleTextEditors.find(
+      (e) => e.document.uri.toString() === this.boundDocumentUri!.toString(),
+    );
+
+    if (!editor) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document is topmost but TextEditor object not found in visibleTextEditors',
+      );
+      return false;
+    }
+
+    // All validations passed - perform the paste
+    try {
+      const paddedContent = applySmartPadding(content);
+
+      const success = await editor.edit((editBuilder) => {
+        editBuilder.insert(editor.selection.active, paddedContent);
+      });
+
+      if (!success) {
+        this.logger.error(
+          {
+            fn: 'TextEditorDestination.pasteContent',
+            boundDisplayName,
+            boundDocumentUri: this.boundDocumentUri.toString(),
+            contentLength: content.length,
+          },
+          'Edit operation failed',
+        );
+        return false;
+      }
+
+      // Focus the editor (similar to terminal.show(false) behavior)
+      await this.ideAdapter.showTextDocument(editor.document.uri, {
+        preserveFocus: false, // Steal focus to bring user to paste destination
+        viewColumn: editor.viewColumn, // Keep in same tab group
+      });
+
+      this.logger.info(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          originalLength: content.length,
+          paddedLength: paddedContent.length,
+        },
+        `Pasted content to text editor (${content.length} chars)`,
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          contentLength: content.length,
+          error,
+        },
+        'Failed to paste content to text editor',
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Find which tab group contains the given document URI
+   *
+   * Dynamically searches all tab groups to find the one containing the document.
+   * This allows the bound document to be moved between tab groups.
+   *
+   * @param documentUri - The document URI to search for
+   * @returns The tab group containing the document, or undefined if not found
+   */
+  private findTabGroupContainingDocument(documentUri: vscode.Uri): vscode.TabGroup | undefined {
+    for (const tabGroup of vscode.window.tabGroups.all) {
+      for (const tab of tabGroup.tabs) {
+        // Only check text editor tabs (skip terminals, etc.)
+        if (tab.input instanceof vscode.TabInputText) {
+          if (tab.input.uri.toString() === documentUri.toString()) {
+            return tabGroup;
+          }
+        }
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * Update bound document URI
    *
    * Called by PasteDestinationManager when user binds/unbinds text editor.

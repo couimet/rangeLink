@@ -329,4 +329,135 @@ describe('CursorAIDestination', () => {
       expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith(longText);
     });
   });
+
+  describe('pasteContent() - Clipboard workaround for text', () => {
+    beforeEach(() => {
+      (vscode.env as any).appName = 'Cursor';
+    });
+
+    it('should return false when not running in Cursor IDE', async () => {
+      (vscode.env as any).appName = 'Visual Studio Code';
+
+      const result = await destination.pasteContent('selected text');
+
+      expect(result).toBe(false);
+    });
+
+    it('should copy content to clipboard', async () => {
+      const testContent = 'selected text from editor';
+
+      await destination.pasteContent(testContent);
+
+      expect(vscode.env.clipboard.writeText).toHaveBeenCalledWith(testContent);
+    });
+
+    it('should try opening chat with aichat.newchataction command first', async () => {
+      await destination.pasteContent('text');
+
+      expect(vscode.commands.executeCommand).toHaveBeenCalledWith('aichat.newchataction');
+    });
+
+    it('should try fallback command if primary fails', async () => {
+      (vscode.commands.executeCommand as jest.Mock)
+        .mockRejectedValueOnce(new Error('aichat.newchataction not found'))
+        .mockResolvedValueOnce(undefined);
+
+      await destination.pasteContent('text');
+
+      expect(vscode.commands.executeCommand).toHaveBeenCalledWith('aichat.newchataction');
+      expect(vscode.commands.executeCommand).toHaveBeenCalledWith(
+        'workbench.action.toggleAuxiliaryBar',
+      );
+    });
+
+    it('should show notification prompting user to paste', async () => {
+      await destination.pasteContent('text');
+
+      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
+        'Text copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
+      );
+    });
+
+    it('should return true when clipboard copy succeeds', async () => {
+      const result = await destination.pasteContent('text');
+
+      expect(result).toBe(true);
+    });
+
+    it('should log clipboard workaround completion', async () => {
+      const testContent = 'selected text';
+
+      await destination.pasteContent(testContent);
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'CursorAIDestination.pasteContent',
+          contentLength: testContent.length,
+          chatOpened: true,
+        },
+        `Clipboard workaround completed for content (${testContent.length} chars)`,
+      );
+    });
+
+    it('should log warning when not available', async () => {
+      (vscode.env as any).appName = 'Visual Studio Code';
+      const testContent = 'text';
+
+      await destination.pasteContent(testContent);
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'CursorAIDestination.pasteContent',
+          contentLength: testContent.length,
+        },
+        'Cannot paste: Not running in Cursor IDE',
+      );
+    });
+
+    it('should return false and log error when clipboard write fails', async () => {
+      const testContent = 'text';
+      const expectedError = new Error('Clipboard access denied');
+      (vscode.env.clipboard.writeText as jest.Mock).mockRejectedValueOnce(expectedError);
+
+      const result = await destination.pasteContent(testContent);
+
+      expect(result).toBe(false);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          fn: 'CursorAIDestination.pasteContent',
+          contentLength: testContent.length,
+          error: expectedError,
+        },
+        'Failed to execute clipboard workaround',
+      );
+    });
+
+    it('should log warning when all chat commands fail', async () => {
+      const testContent = 'text';
+      (vscode.commands.executeCommand as jest.Mock).mockRejectedValue(
+        new Error('Command not found'),
+      );
+
+      await destination.pasteContent(testContent);
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'CursorAIDestination.pasteContent',
+          contentLength: testContent.length,
+        },
+        'All chat open commands failed',
+      );
+    });
+
+    it('should still return true and show notification when chat commands fail', async () => {
+      (vscode.commands.executeCommand as jest.Mock).mockRejectedValue(
+        new Error('Command not found'),
+      );
+
+      const result = await destination.pasteContent('text');
+
+      expect(result).toBe(true);
+      expect(vscode.window.showInformationMessage).toHaveBeenCalled();
+    });
+  });
 });

@@ -51,6 +51,106 @@ export class RangeLinkService {
   }
 
   /**
+   * Paste selected text to bound destination (issue #89)
+   *
+   * Extracts the currently selected text from the active editor and sends it
+   * directly to the bound destination (terminal, text editor, or AI assistant).
+   *
+   * **Behavior:**
+   * - Supports single and multi-selection (concatenates with newlines)
+   * - Copies to clipboard as fallback if no destination bound
+   * - Shows appropriate success/failure messages
+   * - Skips empty selections
+   */
+  async pasteSelectedTextToDestination(): Promise<void> {
+    // Get active editor
+    const editor = this.ideAdapter.activeTextEditor;
+    if (!editor) {
+      this.ideAdapter.showErrorMessage('RangeLink: No active editor');
+      return;
+    }
+
+    const selections = editor.selections;
+
+    // Check for empty selections
+    if (!selections || selections.length === 0 || selections.every((s) => s.isEmpty)) {
+      this.ideAdapter.showErrorMessage('RangeLink: No text selected. Select text and try again.');
+      return;
+    }
+
+    // Extract selected text (concatenate with newlines for multi-selection)
+    const selectedTexts = selections
+      .filter((s) => !s.isEmpty)
+      .map((s) => editor.document.getText(s));
+
+    if (selectedTexts.length === 0) {
+      this.ideAdapter.showErrorMessage('RangeLink: No text selected. Select text and try again.');
+      return;
+    }
+
+    const content = selectedTexts.join('\n');
+
+    getLogger().debug(
+      {
+        fn: 'pasteSelectedTextToDestination',
+        selectionCount: selectedTexts.length,
+        contentLength: content.length,
+      },
+      `Extracted ${content.length} chars from ${selectedTexts.length} selection(s)`,
+    );
+
+    // Copy to clipboard first (always available as fallback)
+    await this.ideAdapter.writeTextToClipboard(content);
+
+    // Check if destination is bound
+    if (!this.destinationManager.isBound()) {
+      getLogger().info(
+        { fn: 'pasteSelectedTextToDestination', contentLength: content.length },
+        'No destination bound - copied to clipboard only',
+      );
+      this.ideAdapter.setStatusBarMessage(
+        `✓ Selected text copied to clipboard (${content.length} chars)`,
+        2000,
+      );
+      return;
+    }
+
+    const destination = this.destinationManager.getBoundDestination();
+    const displayName = destination?.displayName || 'destination';
+
+    getLogger().debug(
+      {
+        fn: 'pasteSelectedTextToDestination',
+        contentLength: content.length,
+        boundDestination: displayName,
+      },
+      `Attempting to send selected text to bound destination: ${displayName}`,
+    );
+
+    // Send to bound destination
+    const sent = await this.destinationManager.sendTextToDestination(content);
+
+    if (sent) {
+      this.ideAdapter.setStatusBarMessage(
+        `✓ Selected text sent to ${displayName} (${content.length} chars)`,
+        2000,
+      );
+    } else {
+      // Paste failed - show destination-aware error message
+      getLogger().warn(
+        { fn: 'pasteSelectedTextToDestination', contentLength: content.length, boundDestination: displayName },
+        'Failed to send text to bound destination',
+      );
+
+      const errorMessage = destination
+        ? this.buildPasteFailureMessage(destination)
+        : 'RangeLink: Copied to clipboard. Could not send to destination.';
+
+      this.ideAdapter.showWarningMessage(errorMessage);
+    }
+  }
+
+  /**
    * Generates a link from the current editor selection
    * @param pathFormat Whether to use relative or absolute paths
    * @param isPortable Whether to generate a portable link with embedded delimiters
