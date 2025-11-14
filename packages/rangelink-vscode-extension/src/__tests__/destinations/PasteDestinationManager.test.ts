@@ -128,7 +128,8 @@ describe('PasteDestinationManager', () => {
   describe('bind() - chat destinations', () => {
     it('should bind to cursor-ai when available', async () => {
       // Mock Cursor IDE detection (appName check)
-      (vscode.env as any).appName = 'Cursor';
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
 
       const result = await manager.bind('cursor-ai');
 
@@ -141,11 +142,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should fail when cursor-ai not available', async () => {
-      // Mock non-Cursor IDE
-      (vscode.env as any).appName = 'Visual Studio Code';
-      (vscode.extensions.all as any) = [];
-      (vscode.env as any).uriScheme = 'vscode';
-
+      // Mock non-Cursor IDE (already configured in beforeEach as non-Cursor)
       const result = await manager.bind('cursor-ai');
 
       expect(result).toBe(false);
@@ -156,7 +153,8 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should fail when already bound to chat destination', async () => {
-      (vscode.env as any).appName = 'Cursor';
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
       await manager.bind('cursor-ai');
 
       // Try binding again
@@ -181,7 +179,8 @@ describe('PasteDestinationManager', () => {
       await manager.bind('terminal');
 
       // Try binding to Cursor AI
-      (vscode.env as any).appName = 'Cursor';
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
       const result = await manager.bind('cursor-ai');
 
       expect(result).toBe(false);
@@ -191,7 +190,8 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should prevent binding terminal when chat already bound', async () => {
-      (vscode.env as any).appName = 'Cursor';
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
       await manager.bind('cursor-ai');
 
       // Try binding to terminal
@@ -232,7 +232,8 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should unbind chat destination successfully', async () => {
-      (vscode.env as any).appName = 'Cursor';
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
       await manager.bind('cursor-ai');
 
       manager.unbind();
@@ -273,17 +274,18 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should send to bound chat destination successfully', async () => {
-      (vscode.env as any).appName = 'Cursor';
-      (vscode.env.clipboard.writeText as jest.Mock) = jest.fn().mockResolvedValue(undefined);
-      (vscode.commands.executeCommand as jest.Mock) = jest.fn().mockResolvedValue(undefined);
-      (vscode.window.showInformationMessage as jest.Mock) = jest.fn().mockResolvedValue(undefined);
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
+      (mockVscode.env.clipboard.writeText as jest.Mock) = jest.fn().mockResolvedValue(undefined);
+      (mockVscode.commands.executeCommand as jest.Mock) = jest.fn().mockResolvedValue(undefined);
+      (mockVscode.window.showInformationMessage as jest.Mock) = jest.fn().mockResolvedValue(undefined);
 
       await manager.bind('cursor-ai');
 
       const result = await manager.sendToDestination('src/file.ts#L10');
 
       expect(result).toBe(true);
-      expect(vscode.env.clipboard.writeText).toHaveBeenCalledWith('src/file.ts#L10');
+      expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith('src/file.ts#L10');
     });
 
     it('should return false when no destination bound', async () => {
@@ -355,7 +357,8 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not auto-unbind for chat destinations', async () => {
-      (vscode.env as any).appName = 'Cursor';
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
       await manager.bind('cursor-ai');
 
       const mockTerminal = {
@@ -411,7 +414,8 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should return true when chat destination bound', async () => {
-      (vscode.env as any).appName = 'Cursor';
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
       await manager.bind('cursor-ai');
 
       expect(manager.isBound()).toBe(true);
