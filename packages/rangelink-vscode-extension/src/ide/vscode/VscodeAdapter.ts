@@ -20,14 +20,11 @@ export class VscodeAdapter {
    */
   constructor(private readonly ideInstance: typeof vscode) {}
 
-  // TODO(#98): The methods below still use global `vscode` instead of `this.ideInstance`.
-  // Update these to use `this.ideInstance` for proper dependency injection.
-
   /**
    * Write text to clipboard using VSCode API
    */
   async writeTextToClipboard(text: string): Promise<void> {
-    return vscode.env.clipboard.writeText(text);
+    return this.ideInstance.env.clipboard.writeText(text);
   }
 
   /**
@@ -35,23 +32,23 @@ export class VscodeAdapter {
    */
   setStatusBarMessage(message: string, timeout?: number): vscode.Disposable {
     if (timeout !== undefined) {
-      return vscode.window.setStatusBarMessage(message, timeout);
+      return this.ideInstance.window.setStatusBarMessage(message, timeout);
     }
-    return vscode.window.setStatusBarMessage(message);
+    return this.ideInstance.window.setStatusBarMessage(message);
   }
 
   /**
    * Show warning notification using VSCode API
    */
   async showWarningMessage(message: string): Promise<string | undefined> {
-    return vscode.window.showWarningMessage(message);
+    return this.ideInstance.window.showWarningMessage(message);
   }
 
   /**
    * Show error notification using VSCode API
    */
   async showErrorMessage(message: string): Promise<string | undefined> {
-    return vscode.window.showErrorMessage(message);
+    return this.ideInstance.window.showErrorMessage(message);
   }
 
   /**
