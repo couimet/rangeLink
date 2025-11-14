@@ -27,10 +27,6 @@ export const createMockTerminal = (name = 'bash'): vscode.Terminal => {
  *
  * Use this to mock window-related functions like activeTextEditor, showInformationMessage, etc.
  *
- * @example
- * ```typescript
- * jest.spyOn(vscode.window, 'showInformationMessage').mockImplementation(mockWindow.showInformationMessage);
- * ```
  */
 export const createMockWindow = () => {
   return {
@@ -208,16 +204,7 @@ export interface VSCodeMockOptions {
 /**
  * Canonical vscode navigation mock structure for jest.mock() calls.
  *
- * Use this constant directly in jest.mock() factories with spread operator:
- *
- * @example
- * ```typescript
- * // ✅ CORRECT - Use with spread operator
- * jest.mock('vscode', () => ({ ...VSCODE_NAVIGATION_MOCK }));
- *
- * // ✅ Also works - Reference without spread (but less flexible)
- * jest.mock('vscode', () => VSCODE_NAVIGATION_MOCK);
- * ```
+ * Use this constant directly in jest.mock() factories with spread operator.
  */
 export const VSCODE_NAVIGATION_MOCK = {
   window: {
@@ -268,29 +255,9 @@ export const VSCODE_NAVIGATION_MOCK = {
  * 1. **Runtime usage** - Call directly in test setup code (not in jest.mock())
  * 2. **Reference documentation** - Canonical structure for inline jest.mock() calls
  *
- * For jest.mock() calls, you MUST inline the structure:
+ * For jest.mock() calls, you MUST inline the structure. See unit tests for usage patterns.
  *
  * @param options - Optional configuration for the mock
- * @example
- * ```typescript
- * // ❌ DOES NOT WORK - Jest hoisting + module resolution prevents this
- * jest.mock('vscode', () => {
- *   const { createVSCodeNavigationMock } = require('../helpers/mockVSCode');
- *   return createVSCodeNavigationMock();  // Module not found / not a function
- * });
- *
- * // ✅ CORRECT - Inline the mock structure
- * // Canonical structure defined in mockVSCode.ts createVSCodeNavigationMock()
- * jest.mock('vscode', () => ({
- *   window: { showTextDocument: jest.fn(), ... },
- *   workspace: { openTextDocument: jest.fn(), ... },
- *   // ... (see createVSCodeNavigationMock for full structure)
- * }));
- *
- * // ✅ ALSO WORKS - Use in runtime test setup (not jest.mock factory)
- * const mockVSCode = createVSCodeNavigationMock();
- * // Then manually assign to module system if needed
- * ```
  */
 export const createVSCodeNavigationMock = (options?: VSCodeMockOptions) => ({
   window: createMockWindow(),
