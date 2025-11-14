@@ -41,7 +41,7 @@ export class DestinationFactory {
         return new TerminalDestination(this.logger);
 
       case 'cursor-ai':
-        return new CursorAIDestination(this.logger);
+        return new CursorAIDestination(this.ideAdapter, this.logger);
 
       case 'text-editor':
         return new TextEditorDestination(this.ideAdapter, this.logger);
