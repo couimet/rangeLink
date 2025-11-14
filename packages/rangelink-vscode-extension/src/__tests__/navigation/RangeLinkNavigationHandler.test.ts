@@ -2,48 +2,9 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import { LinkType, SelectionType, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
 
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
-
-// Mock vscode module - must be inline due to Jest hoisting
-jest.mock('vscode', () => ({
-  window: {
-    activeTerminal: undefined,
-    activeTextEditor: undefined,
-    showInformationMessage: jest.fn(),
-    showWarningMessage: jest.fn(),
-    showErrorMessage: jest.fn(),
-    showTextDocument: jest.fn(),
-  },
-  workspace: {
-    workspaceFolders: [],
-    openTextDocument: jest.fn(),
-    fs: {
-      stat: jest.fn(),
-    },
-  },
-  Uri: {
-    file: jest.fn(),
-    parse: jest.fn(),
-  },
-  Position: jest.fn((line: number, character: number) => ({ line, character })),
-  Selection: jest.fn(
-    (anchor: { line: number; character: number }, active: { line: number; character: number }) => ({
-      anchor,
-      active,
-    }),
-  ),
-  Range: jest.fn(
-    (start: { line: number; character: number }, end: { line: number; character: number }) => ({
-      start,
-      end,
-    }),
-  ),
-  TextEditorRevealType: {
-    InCenterIfOutsideViewport: 2,
-  },
-}));
+import { createMockIdeAdapter, createMockDocument, createMockEditor } from '../helpers/mockVSCode';
 
 describe('RangeLinkNavigationHandler - Single Position Selection Extension', () => {
   let handler: RangeLinkNavigationHandler;
@@ -54,41 +15,24 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
 
   beforeEach(() => {
     mockLogger = createMockLogger();
-    mockIdeAdapter = {
-      showWarningMessage: jest.fn(),
-      showInformationMessage: jest.fn(),
-      showErrorMessage: jest.fn(),
-      showTextDocument: jest.fn(),
-    };
-    handler = new RangeLinkNavigationHandler(DEFAULT_DELIMITERS, mockIdeAdapter, mockLogger);
 
-    // Mock document with default line content (can be overridden in tests)
-    mockDocument = {
+    // Create mock document with navigation-specific overrides
+    mockDocument = createMockDocument('const x = 42; // Sample line content', undefined, {
       lineCount: 100,
-      lineAt: jest.fn(() => ({ text: 'const x = 42; // Sample line content' })),
-    };
+      lineAt: jest.fn(() => ({ text: 'const x = 42; // Sample line content' })) as any,
+    });
 
-    mockEditor = {
+    // Create mock editor with our custom document
+    mockEditor = createMockEditor({
       document: mockDocument,
-      selection: null,
-      selections: [],
-      revealRange: jest.fn(),
-    };
+    });
 
-    // Configure vscode mocks for navigation
-    (vscode.workspace as any).workspaceFolders = [{ uri: { fsPath: '/workspace' } }];
-    (vscode.Uri.file as jest.Mock).mockReturnValue({ fsPath: '/workspace/file.ts' });
-    (vscode.workspace.fs.stat as jest.Mock).mockResolvedValue({});
-    mockIdeAdapter.showTextDocument.mockResolvedValue(mockEditor);
-    (vscode.Position as jest.Mock).mockImplementation((line: number, char: number) => ({
-      line,
-      character: char,
-    }));
-    (vscode.Selection as jest.Mock).mockImplementation((anchor: any, active: any) => ({
-      anchor,
-      active,
-    }));
-    (vscode.Range as jest.Mock).mockImplementation((start: any, end: any) => ({ start, end }));
+    // Create IDE adapter mock with test-specific overrides
+    mockIdeAdapter = createMockIdeAdapter({
+      showTextDocument: jest.fn().mockResolvedValue(mockEditor),
+    });
+
+    handler = new RangeLinkNavigationHandler(DEFAULT_DELIMITERS, mockIdeAdapter, mockLogger);
   });
 
   it('should extend single-position selection by 1 character (normal case)', async () => {
@@ -121,7 +65,7 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     });
 
     // Should create selection from (31,0) to (31,1) in 0-indexed coords
-    expect(vscode.Selection).toHaveBeenCalledWith(
+    expect(mockIdeAdapter.createSelection).toHaveBeenCalledWith(
       expect.objectContaining({ line: 31, character: 0 }),
       expect.objectContaining({ line: 31, character: 1 }),
     );
@@ -159,7 +103,7 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     });
 
     // Should NOT extend - selection remains at same position (clamped to lineLength)
-    expect(vscode.Selection).toHaveBeenCalledWith(
+    expect(mockIdeAdapter.createSelection).toHaveBeenCalledWith(
       expect.objectContaining({ line: 9, character: 5 }),
       expect.objectContaining({ line: 9, character: 5 }), // Same position
     );
@@ -247,7 +191,7 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     expect(extensionLog).toBeUndefined();
 
     // Should create selection from line 10 to line 20 (not extended)
-    expect(vscode.Selection).toHaveBeenCalledWith(
+    expect(mockIdeAdapter.createSelection).toHaveBeenCalledWith(
       expect.objectContaining({ line: 9 }), // 0-indexed
       expect.objectContaining({ line: 19 }), // 0-indexed
     );

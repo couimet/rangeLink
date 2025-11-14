@@ -5,7 +5,8 @@ import type { PasteDestinationManager } from '../destinations/PasteDestinationMa
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { RangeLinkService } from '../RangeLinkService';
 
-// Mock vscode module
+// Mock vscode module - RangeLinkService still uses vscode directly
+// TODO: Refactor RangeLinkService to use VscodeAdapter exclusively, then remove this mock
 jest.mock('vscode', () => ({
   window: {
     activeTextEditor: undefined,

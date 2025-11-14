@@ -1,63 +1,29 @@
 import * as path from 'node:path';
 
-import * as vscode from 'vscode';
-
 import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
-
-// Mock vscode module
-jest.mock('vscode', () => {
-  const mockUriFile = jest.fn();
-  // Set default implementation that persists across test resets
-  mockUriFile.mockImplementation((fsPath: string) => ({
-    fsPath,
-    scheme: 'file',
-    path: fsPath,
-    toString: () => `file://${fsPath}`,
-  }));
-
-  const mockUri = {
-    file: mockUriFile,
-  };
-
-  const mockWorkspace = {
-    fs: {
-      stat: jest.fn(),
-    },
-  };
-
-  return {
-    Uri: mockUri,
-    workspace: mockWorkspace,
-    FileSystemError: {
-      FileNotFound: jest.fn((message: string) => new Error(message)),
-    },
-  };
-});
+import { createMockUriInstance, createMockWorkspaceFolder } from '../helpers/mockVSCode';
 
 describe('resolveWorkspacePath', () => {
-  const mockWorkspace = vscode.workspace as jest.Mocked<typeof vscode.workspace>;
-  const mockUri = vscode.Uri as jest.Mocked<typeof vscode.Uri>;
-  const mockStat = mockWorkspace.fs.stat as jest.MockedFunction<typeof mockWorkspace.fs.stat>;
+  let mockVscode: any;
+  let mockStat: jest.Mock;
+  let mockUriFile: jest.Mock;
 
   beforeEach(() => {
-    mockUri.file.mockImplementation(
-      (fsPath: string) =>
-        ({
-          fsPath,
-          scheme: 'file',
-          path: fsPath,
-          toString: () => `file://${fsPath}`,
-        }) as any,
-    );
-  });
+    // Create fresh mocks for each test
+    mockStat = jest.fn();
+    mockUriFile = jest.fn((fsPath: string) => createMockUriInstance(fsPath));
 
-  afterEach(() => {
-    // Reset workspaceFolders to undefined
-    Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-      value: undefined,
-      writable: true,
-      configurable: true,
-    });
+    mockVscode = {
+      Uri: {
+        file: mockUriFile,
+      },
+      workspace: {
+        fs: {
+          stat: mockStat,
+        },
+        workspaceFolders: undefined,
+      },
+    };
   });
 
   describe('Absolute paths', () => {
@@ -65,11 +31,11 @@ describe('resolveWorkspacePath', () => {
       const absolutePath = '/Users/name/project/src/auth.ts';
       mockStat.mockResolvedValueOnce({} as any); // File exists
 
-      const result = await resolveWorkspacePath(absolutePath);
+      const result = await resolveWorkspacePath(absolutePath, mockVscode);
 
       expect(result).toBeDefined();
       expect(result?.fsPath).toStrictEqual(absolutePath);
-      expect(mockUri.file).toHaveBeenCalledWith(absolutePath);
+      expect(mockUriFile).toHaveBeenCalledWith(absolutePath);
       expect(mockStat).toHaveBeenCalledTimes(1);
     });
 
@@ -77,10 +43,10 @@ describe('resolveWorkspacePath', () => {
       const absolutePath = '/Users/name/project/nonexistent.ts';
       mockStat.mockRejectedValueOnce(new Error('File not found'));
 
-      const result = await resolveWorkspacePath(absolutePath);
+      const result = await resolveWorkspacePath(absolutePath, mockVscode);
 
       expect(result).toBeUndefined();
-      expect(mockUri.file).toHaveBeenCalledWith(absolutePath);
+      expect(mockUriFile).toHaveBeenCalledWith(absolutePath);
       expect(mockStat).toHaveBeenCalledTimes(1);
     });
 
@@ -94,11 +60,11 @@ describe('resolveWorkspacePath', () => {
 
       mockStat.mockResolvedValueOnce({} as any);
 
-      const result = await resolveWorkspacePath(absolutePath);
+      const result = await resolveWorkspacePath(absolutePath, mockVscode);
 
       expect(result).toBeDefined();
       expect(result?.fsPath).toStrictEqual(absolutePath);
-      expect(mockUri.file).toHaveBeenCalledWith(absolutePath);
+      expect(mockUriFile).toHaveBeenCalledWith(absolutePath);
     });
   });
 
@@ -108,18 +74,14 @@ describe('resolveWorkspacePath', () => {
       const relativePath = 'src/auth.ts';
       const expectedPath = path.join(workspaceRoot, relativePath);
 
-      Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: [{ uri: { fsPath: workspaceRoot } }],
-        writable: true,
-        configurable: true,
-      });
+      mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder(workspaceRoot)];
       mockStat.mockResolvedValueOnce({} as any); // File exists
 
-      const result = await resolveWorkspacePath(relativePath);
+      const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       expect(result).toBeDefined();
       expect(result?.fsPath).toStrictEqual(expectedPath);
-      expect(mockUri.file).toHaveBeenCalledWith(expectedPath);
+      expect(mockUriFile).toHaveBeenCalledWith(expectedPath);
     });
 
     it('should try multiple workspace folders', async () => {
@@ -128,11 +90,10 @@ describe('resolveWorkspacePath', () => {
       const relativePath = 'src/auth.ts';
       const expectedPath = path.join(workspace2, relativePath);
 
-      Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: [{ uri: { fsPath: workspace1 } }, { uri: { fsPath: workspace2 } }],
-        writable: true,
-        configurable: true,
-      });
+      mockVscode.workspace.workspaceFolders = [
+        createMockWorkspaceFolder(workspace1),
+        createMockWorkspaceFolder(workspace2),
+      ];
 
       // Mock implementation to check which path is being accessed
       mockStat.mockImplementation((uri: any) => {
@@ -144,7 +105,7 @@ describe('resolveWorkspacePath', () => {
         return Promise.reject(new Error('Unexpected path'));
       });
 
-      const result = await resolveWorkspacePath(relativePath);
+      const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       expect(result).toBeDefined();
       expect(result?.fsPath).toStrictEqual(expectedPath);
@@ -156,16 +117,15 @@ describe('resolveWorkspacePath', () => {
       const workspace2 = '/Users/name/project2';
       const relativePath = 'src/nonexistent.ts';
 
-      Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: [{ uri: { fsPath: workspace1 } }, { uri: { fsPath: workspace2 } }],
-        writable: true,
-        configurable: true,
-      });
+      mockVscode.workspace.workspaceFolders = [
+        createMockWorkspaceFolder(workspace1),
+        createMockWorkspaceFolder(workspace2),
+      ];
 
       // All workspaces: file not found - use mockImplementation to ensure all calls fail
       mockStat.mockImplementation(() => Promise.reject(new Error('File not found')));
 
-      const result = await resolveWorkspacePath(relativePath);
+      const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       expect(result).toBeUndefined();
       expect(mockStat).toHaveBeenCalledTimes(2);
@@ -174,26 +134,18 @@ describe('resolveWorkspacePath', () => {
 
   describe('No workspace', () => {
     it('should return undefined when no workspace is open', async () => {
-      Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: undefined,
-        writable: true,
-        configurable: true,
-      });
+      mockVscode.workspace.workspaceFolders = undefined;
 
-      const result = await resolveWorkspacePath('src/auth.ts');
+      const result = await resolveWorkspacePath('src/auth.ts', mockVscode);
 
       expect(result).toBeUndefined();
       expect(mockStat).not.toHaveBeenCalled();
     });
 
     it('should return undefined when workspace folders array is empty', async () => {
-      Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: [],
-        writable: true,
-        configurable: true,
-      });
+      mockVscode.workspace.workspaceFolders = [];
 
-      const result = await resolveWorkspacePath('src/auth.ts');
+      const result = await resolveWorkspacePath('src/auth.ts', mockVscode);
 
       expect(result).toBeUndefined();
       expect(mockStat).not.toHaveBeenCalled();
@@ -206,14 +158,10 @@ describe('resolveWorkspacePath', () => {
       const relativePath = 'src/file with spaces.ts';
       const expectedPath = path.join(workspaceRoot, relativePath);
 
-      Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: [{ uri: { fsPath: workspaceRoot } }],
-        writable: true,
-        configurable: true,
-      });
+      mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder(workspaceRoot)];
       mockStat.mockResolvedValueOnce({} as any);
 
-      const result = await resolveWorkspacePath(relativePath);
+      const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       expect(result).toBeDefined();
       expect(result?.fsPath).toStrictEqual(expectedPath);
@@ -224,14 +172,10 @@ describe('resolveWorkspacePath', () => {
       const relativePath = 'issue#123/auth.ts';
       const expectedPath = path.join(workspaceRoot, relativePath);
 
-      Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: [{ uri: { fsPath: workspaceRoot } }],
-        writable: true,
-        configurable: true,
-      });
+      mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder(workspaceRoot)];
       mockStat.mockResolvedValueOnce({} as any);
 
-      const result = await resolveWorkspacePath(relativePath);
+      const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       expect(result).toBeDefined();
       expect(result?.fsPath).toStrictEqual(expectedPath);
@@ -242,14 +186,10 @@ describe('resolveWorkspacePath', () => {
       const relativePath = 'src/nested/deep/path/file.ts';
       const expectedPath = path.join(workspaceRoot, relativePath);
 
-      Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: [{ uri: { fsPath: workspaceRoot } }],
-        writable: true,
-        configurable: true,
-      });
+      mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder(workspaceRoot)];
       mockStat.mockResolvedValueOnce({} as any);
 
-      const result = await resolveWorkspacePath(relativePath);
+      const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       expect(result).toBeDefined();
       expect(result?.fsPath).toStrictEqual(expectedPath);
@@ -260,14 +200,10 @@ describe('resolveWorkspacePath', () => {
       const relativePath = './src/auth.ts';
       const expectedPath = path.join(workspaceRoot, relativePath);
 
-      Object.defineProperty(mockWorkspace, 'workspaceFolders', {
-        value: [{ uri: { fsPath: workspaceRoot } }],
-        writable: true,
-        configurable: true,
-      });
+      mockVscode.workspace.workspaceFolders = [createMockWorkspaceFolder(workspaceRoot)];
       mockStat.mockResolvedValueOnce({} as any);
 
-      const result = await resolveWorkspacePath(relativePath);
+      const result = await resolveWorkspacePath(relativePath, mockVscode);
 
       expect(result).toBeDefined();
       expect(result?.fsPath).toStrictEqual(expectedPath);

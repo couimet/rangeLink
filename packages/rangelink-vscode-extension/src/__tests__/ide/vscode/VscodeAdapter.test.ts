@@ -1,4 +1,5 @@
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
+import * as resolveWorkspacePathModule from '../../../utils/resolveWorkspacePath';
 import { createVSCodeAdapterMock } from '../../helpers/mockVSCode';
 
 // ============================================================================
@@ -193,6 +194,78 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledTimes(1);
       expect(mockVSCode.window.showErrorMessage).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('resolveWorkspacePath', () => {
+    it('should delegate to resolveWorkspacePath utility with ideInstance', async () => {
+      const linkPath = 'src/auth.ts';
+      const mockUri = { fsPath: '/workspace/src/auth.ts' };
+      const spy = jest
+        .spyOn(resolveWorkspacePathModule, 'resolveWorkspacePath')
+        .mockResolvedValue(mockUri as any);
+
+      const result = await adapter.resolveWorkspacePath(linkPath);
+
+      expect(result).toStrictEqual(mockUri);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(linkPath, mockVSCode);
+    });
+  });
+
+  describe('createPosition', () => {
+    it('should create Position with line and character', () => {
+      const position = adapter.createPosition(10, 5);
+
+      expect(position).toStrictEqual({ line: 10, character: 5 });
+      expect(mockVSCode.Position).toHaveBeenCalledWith(10, 5);
+    });
+
+    it('should create Position at line start (character 0)', () => {
+      const position = adapter.createPosition(0, 0);
+
+      expect(position).toStrictEqual({ line: 0, character: 0 });
+    });
+  });
+
+  describe('createSelection', () => {
+    it('should create Selection with anchor and active positions', () => {
+      const anchor = { line: 10, character: 5 } as any;
+      const active = { line: 15, character: 10 } as any;
+
+      const selection = adapter.createSelection(anchor, active);
+
+      expect(selection).toStrictEqual({ anchor, active });
+      expect(mockVSCode.Selection).toHaveBeenCalledWith(anchor, active);
+    });
+
+    it('should create single-position selection (anchor === active)', () => {
+      const position = { line: 5, character: 3 } as any;
+
+      const selection = adapter.createSelection(position, position);
+
+      expect(selection).toStrictEqual({ anchor: position, active: position });
+    });
+  });
+
+  describe('createRange', () => {
+    it('should create Range with start and end positions', () => {
+      const start = { line: 10, character: 5 } as any;
+      const end = { line: 15, character: 10 } as any;
+
+      const range = adapter.createRange(start, end);
+
+      expect(range).toStrictEqual({ start, end });
+      expect(mockVSCode.Range).toHaveBeenCalledWith(start, end);
+    });
+
+    it('should create single-line range', () => {
+      const start = { line: 5, character: 0 } as any;
+      const end = { line: 5, character: 10 } as any;
+
+      const range = adapter.createRange(start, end);
+
+      expect(range).toStrictEqual({ start, end });
     });
   });
 });

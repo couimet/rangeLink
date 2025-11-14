@@ -2,50 +2,11 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import type { DelimiterConfig } from 'rangelink-core-ts';
 import { LinkType, SelectionType } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
 
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from '../../navigation/RangeLinkTerminalProvider';
 import type { RangeLinkTerminalLink } from '../../types';
-
-// Mock vscode module - must be inline due to Jest hoisting
-jest.mock('vscode', () => ({
-  window: {
-    activeTerminal: undefined,
-    activeTextEditor: undefined,
-    showInformationMessage: jest.fn(),
-    showWarningMessage: jest.fn(),
-    showErrorMessage: jest.fn(),
-    showTextDocument: jest.fn(),
-  },
-  workspace: {
-    workspaceFolders: [],
-    openTextDocument: jest.fn(),
-    fs: {
-      stat: jest.fn(),
-    },
-  },
-  Uri: {
-    file: jest.fn(),
-    parse: jest.fn(),
-  },
-  Position: jest.fn((line: number, character: number) => ({ line, character })),
-  Selection: jest.fn(
-    (anchor: { line: number; character: number }, active: { line: number; character: number }) => ({
-      anchor,
-      active,
-    }),
-  ),
-  Range: jest.fn(
-    (start: { line: number; character: number }, end: { line: number; character: number }) => ({
-      start,
-      end,
-    }),
-  ),
-  TextEditorRevealType: {
-    InCenterIfOutsideViewport: 2,
-  },
-}));
+import { createMockIdeAdapter } from '../helpers/mockVSCode';
 
 describe('RangeLinkTerminalProvider', () => {
   let provider: RangeLinkTerminalProvider;
@@ -57,13 +18,8 @@ describe('RangeLinkTerminalProvider', () => {
     // Mock logger
     mockLogger = createMockLogger();
 
-    // Mock IDE adapter
-    mockIdeAdapter = {
-      showWarningMessage: jest.fn(),
-      showInformationMessage: jest.fn(),
-      showErrorMessage: jest.fn(),
-      showTextDocument: jest.fn(),
-    };
+    // Create IDE adapter mock with sensible defaults
+    mockIdeAdapter = createMockIdeAdapter();
 
     // Standard delimiters
     delimiters = {

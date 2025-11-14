@@ -2,17 +2,18 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
-// Mock vscode.window and vscode.workspace for status bar messages and event listeners
+// Mock vscode module - PasteDestinationManager still uses vscode directly
+// TODO: Refactor PasteDestinationManager to use VscodeAdapter exclusively, then remove this mock
 jest.mock('vscode', () => ({
-  ...jest.requireActual('vscode'),
   window: {
-    ...jest.requireActual('vscode').window,
     setStatusBarMessage: jest.fn(),
     showErrorMessage: jest.fn(),
     showInformationMessage: jest.fn(),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
     onDidChangeVisibleTextEditors: jest.fn(() => ({ dispose: jest.fn() })),
     activeTerminal: undefined,
+    activeTextEditor: undefined,
+    tabGroups: { all: [] },
   },
   workspace: {
     onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),

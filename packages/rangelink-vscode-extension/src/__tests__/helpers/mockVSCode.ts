@@ -108,17 +108,26 @@ export const createMockCommands = (): typeof vscode.commands => {
 };
 
 /**
- * Create a mock TextDocument with working getText() and positionAt() for link detection tests.
+ * Create a mock TextDocument with sensible defaults and optional overrides.
  *
- * The positionAt() implementation converts string indices to line/character positions
- * by counting newlines and character offsets. This is essential for provider tests
- * that detect links in document text.
+ * **Default behavior (for link detection tests):**
+ * - `getText()` returns full text content
+ * - `positionAt()` converts string indices to Position objects
  *
- * @param text - Document content
+ * **For navigation tests, provide overrides:**
+ * - `lineAt: jest.fn(() => ({ text: 'line content' }))`
+ * - `lineCount: 100`
+ *
+ * @param text - Document content (used for getText and positionAt)
  * @param uri - Optional document URI (defaults to file:///test.md)
- * @returns Mock TextDocument with functional getText and positionAt
+ * @param overrides - Optional property overrides for specialized behavior
+ * @returns Mock TextDocument with default + overridden properties
  */
-export const createMockDocument = (text: string, uri?: vscode.Uri): vscode.TextDocument => {
+export const createMockDocument = (
+  text: string,
+  uri?: vscode.Uri,
+  overrides?: Partial<vscode.TextDocument>,
+): vscode.TextDocument => {
   // Create a default mock URI if not provided
   const defaultUri = uri || {
     scheme: 'file',
@@ -127,7 +136,7 @@ export const createMockDocument = (text: string, uri?: vscode.Uri): vscode.TextD
     fsPath: '/test.md',
   };
 
-  return {
+  const baseDocument = {
     getText: () => text,
     positionAt: (index: number) => {
       // Calculate line and character from string index
@@ -137,7 +146,51 @@ export const createMockDocument = (text: string, uri?: vscode.Uri): vscode.TextD
       return new vscode.Position(line, character);
     },
     uri: defaultUri,
+    lineCount: text.split('\n').length,
+    lineAt: jest.fn((line: number) => ({
+      text: text.split('\n')[line] || '',
+      lineNumber: line,
+    })),
+  };
+
+  return {
+    ...baseDocument,
+    ...overrides,
   } as unknown as vscode.TextDocument;
+};
+
+/**
+ * Create a mock TextEditor with sensible defaults and optional overrides.
+ *
+ * **Default behavior:**
+ * - `document` with default line content
+ * - `selection` set to null
+ * - `selections` set to empty array
+ * - `revealRange` mock function
+ *
+ * **For specialized tests, provide overrides:**
+ * - Custom document: `document: createMockDocument(...)`
+ * - Pre-set selection: `selection: { anchor: ..., active: ... }`
+ *
+ * @param overrides - Optional property overrides for specialized behavior
+ * @returns Mock TextEditor with default + overridden properties
+ */
+export const createMockEditor = (
+  overrides?: Partial<vscode.TextEditor>,
+): vscode.TextEditor => {
+  const defaultDocument = createMockDocument('const x = 42; // Sample line content');
+
+  const baseEditor = {
+    document: defaultDocument,
+    selection: null as any,
+    selections: [] as any[],
+    revealRange: jest.fn(),
+  };
+
+  return {
+    ...baseEditor,
+    ...overrides,
+  } as unknown as vscode.TextEditor;
 };
 
 /**
@@ -156,15 +209,30 @@ export const createMockCancellationToken = (isCancelled = false): vscode.Cancell
 /**
  * Create a mock workspace object for navigation tests.
  *
+ * Accepts either string paths (for convenience) or full WorkspaceFolder objects.
+ * String paths are automatically converted to WorkspaceFolder objects.
+ *
+ * @param workspaceFolders - Optional workspace folders (defaults to single workspace at /workspace)
+ *                          Can be string paths or WorkspaceFolder objects
  * @returns Mock workspace with file operations and document handling
  */
-export const createMockWorkspace = () => ({
-  workspaceFolders: [],
-  openTextDocument: jest.fn(),
-  fs: {
-    stat: jest.fn(),
-  },
-});
+export const createMockWorkspace = (
+  workspaceFolders:
+    | Array<string | vscode.WorkspaceFolder>
+    | undefined = ['/workspace'],
+) => {
+  const folders = workspaceFolders?.map((folder) =>
+    typeof folder === 'string' ? createMockWorkspaceFolder(folder) : folder,
+  );
+
+  return {
+    workspaceFolders: folders,
+    openTextDocument: jest.fn(),
+    fs: {
+      stat: jest.fn(),
+    },
+  };
+};
 
 /**
  * Create a complete vscode module mock for VscodeAdapter tests.
@@ -175,6 +243,11 @@ export const createMockWorkspace = () => ({
  * - window.show*Message for notifications (async, return Promise)
  * - window.showTextDocument for document display
  * - workspace.openTextDocument for document loading
+ * - workspace.fs.stat for file system operations
+ * - workspace.workspaceFolders for workspace path resolution
+ * - Uri.file for URI creation
+ * - Position, Selection, Range constructors
+ * - TextEditorRevealType enum
  *
  * Composes from existing factories (createMockEnv, createMockWindow, createMockWorkspace)
  * to ensure consistency across all tests.
@@ -186,18 +259,89 @@ export const createVSCodeAdapterMock = (): typeof vscode => {
     env: createMockEnv(),
     window: createMockWindow(),
     workspace: createMockWorkspace(),
+    Uri: createMockUri(),
+    Position: jest.fn((line: number, character: number) => ({ line, character })),
+    Selection: jest.fn((anchor: any, active: any) => ({ anchor, active })),
+    Range: jest.fn((start: any, end: any) => ({ start, end })),
   } as unknown as typeof vscode;
 };
 
 /**
  * Create a mock Uri namespace for navigation tests.
  *
+ * Provides mock implementations for Uri.file() and Uri.parse() methods.
+ * For creating actual URI instances, use createMockUriInstance().
+ *
+ * @param overrides - Optional overrides for file/parse implementations
  * @returns Mock Uri with file and parse methods
  */
-export const createMockUri = () => ({
-  file: jest.fn(),
-  parse: jest.fn(),
+export const createMockUri = (overrides?: {
+  file?: jest.Mock;
+  parse?: jest.Mock;
+}) => ({
+  file:
+    overrides?.file ||
+    jest.fn((fsPath: string) => ({
+      fsPath,
+      scheme: 'file',
+      path: fsPath,
+      toString: () => `file://${fsPath}`,
+    })),
+  parse:
+    overrides?.parse ||
+    jest.fn((str: string) => ({
+      scheme: str.startsWith('file:') ? 'file' : 'command',
+      path: str,
+      toString: () => str,
+      fsPath: str.replace(/^file:\/\//, ''),
+    })),
 });
+
+/**
+ * Create a mock URI instance with sensible defaults.
+ *
+ * Provides a mock vscode.Uri object with file:// scheme by default.
+ * Use this for creating workspace folder URIs, file URIs in tests, etc.
+ *
+ * @param fsPath - File system path for the URI
+ * @param overrides - Optional property overrides (scheme, path, etc.)
+ * @returns Mock URI instance
+ */
+export const createMockUriInstance = (
+  fsPath: string,
+  overrides?: Partial<vscode.Uri>,
+): vscode.Uri => {
+  return {
+    fsPath,
+    scheme: 'file',
+    path: fsPath,
+    toString: () => `file://${fsPath}`,
+    ...overrides,
+  } as vscode.Uri;
+};
+
+/**
+ * Create a mock workspace folder with sensible defaults.
+ *
+ * Provides a mock vscode.WorkspaceFolder object for testing
+ * workspace-relative path resolution.
+ *
+ * @param fsPath - File system path for the workspace root
+ * @param overrides - Optional property overrides (name, index, etc.)
+ * @returns Mock workspace folder
+ */
+export const createMockWorkspaceFolder = (
+  fsPath: string,
+  overrides?: Partial<vscode.WorkspaceFolder>,
+): vscode.WorkspaceFolder => {
+  const uri = createMockUriInstance(fsPath);
+  return {
+    uri,
+    name: fsPath.split('/').pop() || 'workspace',
+    index: 0,
+    ...overrides,
+  } as vscode.WorkspaceFolder;
+};
 
 /**
  * Create a mock Position constructor for navigation tests.
@@ -230,39 +374,66 @@ export const createMockRange = () =>
   jest.fn((start: vscode.Position, end: vscode.Position) => ({ start, end }));
 
 /**
- * Options for configuring the vscode module mock.
+ * Mock IDE adapter interface matching VscodeAdapter public API.
+ * Used for type-safe overrides in createMockIdeAdapter.
  */
-export interface VSCodeMockOptions {
-  /**
-   * Optional TextEditorRevealType enum values to include.
-   * Defaults to {InCenterIfOutsideViewport: 2} if not provided.
-   */
-  textEditorRevealType?: Record<string, number>;
+interface MockIdeAdapter {
+  writeTextToClipboard: jest.Mock;
+  setStatusBarMessage: jest.Mock;
+  showWarningMessage: jest.Mock;
+  showInformationMessage: jest.Mock;
+  showErrorMessage: jest.Mock;
+  showTextDocument: jest.Mock;
+  resolveWorkspacePath: jest.Mock;
+  createPosition: jest.Mock;
+  createSelection: jest.Mock;
+  createRange: jest.Mock;
 }
 
 /**
- * Create a complete vscode module mock for navigation tests.
+ * Create a mock IDE adapter for testing VscodeAdapter-dependent code.
  *
- * Composes from existing mock components to provide all necessary mocks
- * for file operations, document handling, and UI interactions.
+ * Provides complete mock of VscodeAdapter interface with sensible defaults:
+ * - UI operations (notifications, status bar)
+ * - Document operations (showTextDocument)
+ * - Workspace operations (resolveWorkspacePath)
+ * - Primitive factories (Position, Selection, Range)
  *
- * **⚠️ Cannot be used in jest.mock() factories** due to Jest hoisting + ES/CJS module issues.
- * This factory serves as:
- * 1. **Runtime usage** - Call directly in test setup code (not in jest.mock())
- * 2. **Reference documentation** - Canonical structure for inline jest.mock() calls
+ * Composes from existing mock components for consistency across tests.
  *
- * For jest.mock() calls, you MUST inline the structure. See unit tests for usage patterns.
- *
- * @param options - Optional configuration for the mock
+ * @param overrides - Optional overrides for specific methods
+ * @returns Mock IDE adapter with all VscodeAdapter methods
  */
-export const createVSCodeNavigationMock = (options?: VSCodeMockOptions) => ({
-  window: createMockWindow(),
-  workspace: createMockWorkspace(),
-  Uri: createMockUri(),
-  Position: createMockPosition(),
-  Selection: createMockSelection(),
-  Range: createMockRange(),
-  TextEditorRevealType: options?.textEditorRevealType ?? {
-    InCenterIfOutsideViewport: 2,
-  },
-});
+export const createMockIdeAdapter = (overrides?: Partial<MockIdeAdapter>) => {
+  const window = createMockWindow();
+  const mockPosition = createMockPosition();
+  const mockSelection = createMockSelection();
+  const mockRange = createMockRange();
+
+  return {
+    // Clipboard operations
+    writeTextToClipboard: jest.fn().mockResolvedValue(undefined),
+
+    // Status bar
+    setStatusBarMessage: window.setStatusBarMessage,
+
+    // Notifications
+    showWarningMessage: window.showWarningMessage,
+    showInformationMessage: window.showInformationMessage,
+    showErrorMessage: window.showErrorMessage,
+
+    // Document/editor operations
+    showTextDocument: window.showTextDocument,
+
+    // Workspace operations
+    resolveWorkspacePath: jest.fn().mockResolvedValue({ fsPath: '/workspace/file.ts' }),
+
+    // Primitive factories
+    createPosition: mockPosition,
+    createSelection: mockSelection,
+    createRange: mockRange,
+
+    // Apply overrides
+    ...overrides,
+  };
+};

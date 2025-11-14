@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 /**
  * Resolve a file path from a RangeLink to an absolute file URI.
@@ -14,14 +14,19 @@ import * as vscode from 'vscode';
  * in order until a matching file is found.
  *
  * @param linkPath - File path from RangeLink (may be relative or absolute)
+ * @param ideInstance - VSCode module instance for workspace/URI operations
  * @returns File URI if found, undefined otherwise
  */
-export const resolveWorkspacePath = async (linkPath: string): Promise<vscode.Uri | undefined> => {
+export const resolveWorkspacePath = async (
+  linkPath: string,
+  ideInstance: typeof vscode,
+): Promise<vscode.Uri | undefined> => {
+
   // Try as absolute path first
   if (path.isAbsolute(linkPath)) {
-    const uri = vscode.Uri.file(linkPath);
+    const uri = ideInstance.Uri.file(linkPath);
     try {
-      await vscode.workspace.fs.stat(uri);
+      await ideInstance.workspace.fs.stat(uri);
       return uri;
     } catch {
       // File doesn't exist at absolute path, try workspace resolution
@@ -29,17 +34,17 @@ export const resolveWorkspacePath = async (linkPath: string): Promise<vscode.Uri
   }
 
   // Try resolving relative to each workspace folder
-  const workspaceFolders = vscode.workspace.workspaceFolders;
+  const workspaceFolders = ideInstance.workspace.workspaceFolders;
   if (!workspaceFolders || workspaceFolders.length === 0) {
     return undefined;
   }
 
   for (const folder of workspaceFolders) {
     const absolutePath = path.join(folder.uri.fsPath, linkPath);
-    const uri = vscode.Uri.file(absolutePath);
+    const uri = ideInstance.Uri.file(absolutePath);
 
     try {
-      await vscode.workspace.fs.stat(uri);
+      await ideInstance.workspace.fs.stat(uri);
       return uri;
     } catch {
       // File doesn't exist in this workspace folder, try next

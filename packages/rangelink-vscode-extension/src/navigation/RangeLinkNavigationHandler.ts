@@ -7,7 +7,6 @@ import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { convertRangeLinkPosition } from '../utils/convertRangeLinkPosition';
 import { formatLinkPosition } from '../utils/formatLinkPosition';
 import { formatLinkTooltip } from '../utils/formatLinkTooltip';
-import { resolveWorkspacePath } from '../utils/resolveWorkspacePath';
 
 /**
  * Core navigation handler for RangeLink format detection and navigation.
@@ -40,7 +39,7 @@ export class RangeLinkNavigationHandler {
    * Create a new navigation handler.
    *
    * @param delimiters - Delimiter configuration for link detection
-   * @param ideAdapter - VSCode adapter for UI operations (notifications, document display)
+   * @param ideAdapter - VSCode adapter providing complete VSCode API facade
    * @param logger - Logger instance for structured logging
    */
   constructor(
@@ -108,7 +107,7 @@ export class RangeLinkNavigationHandler {
     const { path, start, end, selectionType } = parsed;
 
     // Resolve path to file URI (async)
-    const fileUri = await resolveWorkspacePath(path);
+    const fileUri = await this.ideAdapter.resolveWorkspacePath(path);
 
     if (!fileUri) {
       this.logger.warn({ ...logCtx, path }, 'Failed to resolve workspace path');
@@ -125,8 +124,8 @@ export class RangeLinkNavigationHandler {
       const convertedStart = convertRangeLinkPosition(start, document);
       const convertedEnd = end ? convertRangeLinkPosition(end, document) : convertedStart;
 
-      let vsStart = new vscode.Position(convertedStart.line, convertedStart.character);
-      let vsEnd = new vscode.Position(convertedEnd.line, convertedEnd.character);
+      let vsStart = this.ideAdapter.createPosition(convertedStart.line, convertedStart.character);
+      let vsEnd = this.ideAdapter.createPosition(convertedEnd.line, convertedEnd.character);
 
       // Single-position selection extension for visibility
       // When navigating to a single position (e.g., file.ts#L32C1), extend the selection
@@ -136,7 +135,7 @@ export class RangeLinkNavigationHandler {
 
         if (lineLength > 0 && vsStart.character < lineLength) {
           // Normal case: Extend by 1 character for visibility
-          vsEnd = new vscode.Position(vsEnd.line, vsEnd.character + 1);
+          vsEnd = this.ideAdapter.createPosition(vsEnd.line, vsEnd.character + 1);
 
           this.logger.debug(
             {
@@ -165,9 +164,9 @@ export class RangeLinkNavigationHandler {
       if (selectionType === SelectionType.Rectangular) {
         const selections: vscode.Selection[] = [];
         for (let line = vsStart.line; line <= vsEnd.line; line++) {
-          const lineStart = new vscode.Position(line, vsStart.character);
-          const lineEnd = new vscode.Position(line, vsEnd.character);
-          selections.push(new vscode.Selection(lineStart, lineEnd));
+          const lineStart = this.ideAdapter.createPosition(line, vsStart.character);
+          const lineEnd = this.ideAdapter.createPosition(line, vsEnd.character);
+          selections.push(this.ideAdapter.createSelection(lineStart, lineEnd));
         }
         editor.selections = selections;
 
@@ -177,7 +176,7 @@ export class RangeLinkNavigationHandler {
         );
       } else {
         // Single or range selection
-        const selection = new vscode.Selection(vsStart, vsEnd);
+        const selection = this.ideAdapter.createSelection(vsStart, vsEnd);
         editor.selection = selection;
 
         this.logger.info({ ...logCtx, selectionType }, 'Set selection');
@@ -185,7 +184,7 @@ export class RangeLinkNavigationHandler {
 
       // Reveal the selection
       editor.revealRange(
-        new vscode.Range(vsStart, vsEnd),
+        this.ideAdapter.createRange(vsStart, vsEnd),
         vscode.TextEditorRevealType.InCenterIfOutsideViewport,
       );
 
