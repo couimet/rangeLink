@@ -6,8 +6,56 @@
  */
 
 import type { Logger } from 'barebone-logger';
+import type {
+  ComputedSelection,
+  DelimiterConfig,
+  FormattedLink,
+  RangeFormat,
+  SelectionType,
+} from 'rangelink-core-ts';
+import { LinkType } from 'rangelink-core-ts';
 
 import type { DestinationType, PasteDestination } from '../../destinations/PasteDestination';
+
+/**
+ * Create a mock FormattedLink for testing
+ *
+ * Provides sensible defaults for all required properties. Individual properties
+ * can be overridden via the partial parameter.
+ *
+ * @param link - The RangeLink string (default: 'test-link')
+ * @param overrides - Optional partial FormattedLink to override defaults
+ * @returns Mock FormattedLink with all required properties
+ */
+export const createMockFormattedLink = (
+  link = 'test-link',
+  overrides: Partial<FormattedLink> = {},
+): FormattedLink => {
+  const defaultDelimiters: DelimiterConfig = {
+    line: 'L',
+    position: 'C',
+    range: '-',
+    hash: '#',
+  };
+
+  const defaultSelection: ComputedSelection = {
+    startLine: 1,
+    startPosition: 1,
+    endLine: 1,
+    endPosition: 10,
+    rangeFormat: 'LineOnly' as RangeFormat,
+  };
+
+  return {
+    link,
+    linkType: LinkType.Regular,
+    delimiters: defaultDelimiters,
+    computedSelection: defaultSelection,
+    rangeFormat: 'LineOnly' as RangeFormat,
+    selectionType: 'Normal' as SelectionType,
+    ...overrides,
+  };
+};
 
 /**
  * Test interface compliance for a destination
@@ -51,7 +99,7 @@ export const testDestinationInterfaceCompliance = (
     });
 
     it('should have async pasteLink method', async () => {
-      const result = destination.pasteLink('test');
+      const result = destination.pasteLink(createMockFormattedLink('test'));
       expect(result).toBeInstanceOf(Promise);
       await result; // Wait for promise to resolve
     });
@@ -108,13 +156,13 @@ export const testPasteReturnValues = (
   describe('pasteLink() return values', () => {
     it('should return true on successful paste', async () => {
       await successScenario();
-      const result = await destination.pasteLink('test');
+      const result = await destination.pasteLink(createMockFormattedLink('test'));
       expect(result).toBe(true);
     });
 
     it('should return false when destination not available', async () => {
       await failureScenario();
-      const result = await destination.pasteLink('test');
+      const result = await destination.pasteLink(createMockFormattedLink('test'));
       expect(result).toBe(false);
     });
   });

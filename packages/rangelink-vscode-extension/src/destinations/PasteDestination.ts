@@ -1,3 +1,5 @@
+import type { FormattedLink } from 'rangelink-core-ts';
+
 /**
  * Supported paste destination types
  *
@@ -61,8 +63,8 @@ export interface PasteDestination {
    * - Log success/failure for debugging
    * - Return false on failure (no throwing)
    *
-   * @param link - The RangeLink to paste
+   * @param formattedLink - The formatted RangeLink with metadata
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  pasteLink(link: string): Promise<boolean>;
+  pasteLink(formattedLink: FormattedLink): Promise<boolean>;
 }

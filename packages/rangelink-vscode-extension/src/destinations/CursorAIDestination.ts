@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import type { FormattedLink } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { DestinationType, PasteDestination } from './PasteDestination';
@@ -122,13 +123,15 @@ export class CursorAIDestination implements PasteDestination {
    * 2. Open Cursor chat panel
    * 3. Show notification prompting user to paste
    *
-   * @param link - The RangeLink to paste
+   * @param formattedLink - The formatted RangeLink with metadata
    * @returns true if clipboard copy and chat open succeeded, false otherwise
    */
-  async pasteLink(link: string): Promise<boolean> {
+  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
+    const link = formattedLink.link;
+
     if (!(await this.isAvailable())) {
       this.logger.warn(
-        { fn: 'CursorAIDestination.pasteLink' },
+        { fn: 'CursorAIDestination.pasteLink', formattedLink },
         'Cannot paste: Not running in Cursor IDE',
       );
       return false;
@@ -138,8 +141,8 @@ export class CursorAIDestination implements PasteDestination {
       // Step 1: Copy to clipboard
       await this.ideAdapter.writeTextToClipboard(link);
       this.logger.debug(
-        { fn: 'CursorAIDestination.pasteLink', linkLength: link.length },
-        'Copied link to clipboard',
+        { fn: 'CursorAIDestination.pasteLink', formattedLink, linkLength: link.length },
+        `Copied link to clipboard: ${link}`,
       );
 
       // Step 2: Try opening chat panel with multiple fallback commands
@@ -148,21 +151,24 @@ export class CursorAIDestination implements PasteDestination {
         try {
           await this.ideAdapter.executeCommand(command);
           this.logger.debug(
-            { fn: 'CursorAIDestination.pasteLink', command },
+            { fn: 'CursorAIDestination.pasteLink', command, formattedLink },
             'Successfully executed chat open command',
           );
           chatOpened = true;
           break;
         } catch (commandError) {
           this.logger.debug(
-            { fn: 'CursorAIDestination.pasteLink', command, error: commandError },
+            { fn: 'CursorAIDestination.pasteLink', command, formattedLink, error: commandError },
             'Command failed, trying next fallback',
           );
         }
       }
 
       if (!chatOpened) {
-        this.logger.warn({ fn: 'CursorAIDestination.pasteLink' }, 'All chat open commands failed');
+        this.logger.warn(
+          { fn: 'CursorAIDestination.pasteLink', formattedLink },
+          'All chat open commands failed',
+        );
       }
 
       // Step 3: Show notification (regardless of whether chat opened)
@@ -171,14 +177,14 @@ export class CursorAIDestination implements PasteDestination {
       );
 
       this.logger.info(
-        { fn: 'CursorAIDestination.pasteLink', linkLength: link.length, chatOpened },
-        'Clipboard workaround completed',
+        { fn: 'CursorAIDestination.pasteLink', formattedLink, linkLength: link.length, chatOpened },
+        'Clipboard workaround completed for link',
       );
 
       return true;
     } catch (error) {
       this.logger.error(
-        { fn: 'CursorAIDestination.pasteLink', error },
+        { fn: 'CursorAIDestination.pasteLink', formattedLink, error },
         'Failed to execute clipboard workaround',
       );
       return false;

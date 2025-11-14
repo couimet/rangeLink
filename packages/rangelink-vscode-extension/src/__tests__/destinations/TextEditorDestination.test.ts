@@ -2,7 +2,14 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
+// Mock utility functions
+jest.mock('../../utils/isEligibleForPaste');
+jest.mock('../../utils/applySmartPadding');
+
 import { TextEditorDestination } from '../../destinations/TextEditorDestination';
+import { applySmartPadding } from '../../utils/applySmartPadding';
+import { isEligibleForPaste } from '../../utils/isEligibleForPaste';
+import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
 import {
   configureWorkspaceMocks,
   createMockDocument,
@@ -98,18 +105,22 @@ describe('TextEditorDestination', () => {
       (mockAdapter.__getVscodeInstance().window.showTextDocument as jest.Mock) = jest
         .fn()
         .mockResolvedValue(mockEditor);
+
+      // Mock utility functions
+      (isEligibleForPaste as jest.Mock).mockReturnValue(true);
+      (applySmartPadding as jest.Mock).mockImplementation((text: string) => ` ${text} `);
     });
 
     it('should paste text at cursor position', async () => {
       const text = 'src/auth.ts#L10-L20';
-      const result = await destination.pasteLink(text);
+      const result = await destination.pasteLink(createMockFormattedLink(text));
 
       expect(result).toBe(true);
       expect(mockEditor.edit).toHaveBeenCalled();
     });
 
     it('should return true on successful paste', async () => {
-      const result = await destination.pasteLink('src/file.ts#L1');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L1'));
 
       expect(result).toBe(true);
     });
@@ -117,19 +128,23 @@ describe('TextEditorDestination', () => {
     it('should return false when no editor bound', async () => {
       destination.setEditor(undefined);
 
-      const result = await destination.pasteLink('src/file.ts#L1');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L1'));
 
       expect(result).toBe(false);
     });
 
     it('should return false when text is empty', async () => {
-      const result = await destination.pasteLink('');
+      (isEligibleForPaste as jest.Mock).mockReturnValue(false);
+
+      const result = await destination.pasteLink(createMockFormattedLink(''));
 
       expect(result).toBe(false);
     });
 
     it('should return false when text is whitespace only', async () => {
-      const result = await destination.pasteLink('   ');
+      (isEligibleForPaste as jest.Mock).mockReturnValue(false);
+
+      const result = await destination.pasteLink(createMockFormattedLink('   '));
 
       expect(result).toBe(false);
     });
@@ -148,7 +163,7 @@ describe('TextEditorDestination', () => {
       // Simulate closed editor: no longer in tab groups or visibleTextEditors
       simulateClosedEditor(mockAdapter.__getVscodeInstance());
 
-      const result = await destination.pasteLink('src/file.ts#L1');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L1'));
 
       expect(result).toBe(false);
     });
@@ -156,7 +171,7 @@ describe('TextEditorDestination', () => {
     it('should return false when edit operation fails', async () => {
       (mockEditor.edit as jest.Mock).mockResolvedValue(false);
 
-      const result = await destination.pasteLink('src/file.ts#L1');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L1'));
 
       expect(result).toBe(false);
     });
@@ -164,14 +179,14 @@ describe('TextEditorDestination', () => {
     it('should handle edit operation errors', async () => {
       (mockEditor.edit as jest.Mock).mockRejectedValue(new Error('Edit failed'));
 
-      const result = await destination.pasteLink('src/file.ts#L1');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L1'));
 
       expect(result).toBe(false);
     });
 
     it('should focus editor after successful paste', async () => {
       const text = 'src/auth.ts#L10-L20';
-      const result = await destination.pasteLink(text);
+      const result = await destination.pasteLink(createMockFormattedLink(text));
 
       expect(result).toBe(true);
       // VscodeAdapter.showTextDocument() calls workspace.openTextDocument() first,
@@ -188,7 +203,7 @@ describe('TextEditorDestination', () => {
     it('should not focus editor when edit fails', async () => {
       (mockEditor.edit as jest.Mock).mockResolvedValue(false);
 
-      const result = await destination.pasteLink('src/file.ts#L1');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L1'));
 
       expect(result).toBe(false);
       expect(mockAdapter.__getVscodeInstance().window.showTextDocument).not.toHaveBeenCalled();
@@ -197,7 +212,7 @@ describe('TextEditorDestination', () => {
     it('should not focus editor when paste validation fails', async () => {
       destination.setEditor(undefined);
 
-      const result = await destination.pasteLink('src/file.ts#L1');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L1'));
 
       expect(result).toBe(false);
       expect(mockAdapter.__getVscodeInstance().window.showTextDocument).not.toHaveBeenCalled();
@@ -222,11 +237,12 @@ describe('TextEditorDestination', () => {
       destination.setEditor(mockEditor);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'TextEditorDestination.setEditor',
           editorDisplayName: 'src/file.ts',
-        }),
-        expect.stringContaining('Text editor bound'),
+          editorPath: mockEditor.document.uri.toString(),
+        },
+        'Text editor bound: src/file.ts',
       );
     });
 
@@ -234,9 +250,9 @@ describe('TextEditorDestination', () => {
       destination.setEditor(undefined);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'TextEditorDestination.setEditor',
-        }),
+        },
         'Text editor unbound',
       );
     });

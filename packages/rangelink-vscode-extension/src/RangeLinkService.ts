@@ -2,6 +2,7 @@ import { getLogger } from 'barebone-logger';
 import {
   DelimiterConfig,
   formatLink,
+  type FormattedLink,
   FormatOptions,
   InputSelection,
   LinkType,
@@ -33,9 +34,9 @@ export class RangeLinkService {
    * Creates a standard RangeLink from the current editor selection
    */
   async createLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const link = await this.generateLinkFromSelection(pathFormat, false);
-    if (link) {
-      await this.copyAndNotify(link, 'RangeLink');
+    const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
+    if (formattedLink) {
+      await this.copyAndNotify(formattedLink, 'RangeLink');
     }
   }
 
@@ -43,9 +44,9 @@ export class RangeLinkService {
    * Creates a portable RangeLink with embedded delimiter metadata
    */
   async createPortableLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const link = await this.generateLinkFromSelection(pathFormat, true);
-    if (link) {
-      await this.copyAndNotify(link, 'Portable RangeLink');
+    const formattedLink = await this.generateLinkFromSelection(pathFormat, true);
+    if (formattedLink) {
+      await this.copyAndNotify(formattedLink, 'Portable RangeLink');
     }
   }
 
@@ -53,12 +54,12 @@ export class RangeLinkService {
    * Generates a link from the current editor selection
    * @param pathFormat Whether to use relative or absolute paths
    * @param isPortable Whether to generate a portable link with embedded delimiters
-   * @returns The generated link, or null if generation failed
+   * @returns The generated FormattedLink with metadata, or null if generation failed
    */
   private async generateLinkFromSelection(
     pathFormat: PathFormat,
     isPortable: boolean,
-  ): Promise<string | null> {
+  ): Promise<FormattedLink | null> {
     const editor = this.ideAdapter.activeTextEditor;
     if (!editor) {
       this.ideAdapter.showErrorMessage('No active editor');
@@ -110,7 +111,7 @@ export class RangeLinkService {
       `Generated link: ${formattedLink.link}`,
     );
 
-    return formattedLink.link;
+    return formattedLink;
   }
 
   /**
@@ -121,11 +122,11 @@ export class RangeLinkService {
    * - Shows "not topmost" warning if bound editor hidden behind other tabs
    * - Pastes successfully if bound editor is topmost in its tab group
    *
-   * @param link The link text to copy
+   * @param formattedLink The formatted RangeLink with metadata
    * @param linkTypeName User-friendly name for status messages (e.g., "RangeLink", "Portable RangeLink")
    */
-  private async copyAndNotify(link: string, linkTypeName: string): Promise<void> {
-    await this.ideAdapter.writeTextToClipboard(link);
+  private async copyAndNotify(formattedLink: FormattedLink, linkTypeName: string): Promise<void> {
+    await this.ideAdapter.writeTextToClipboard(formattedLink.link);
 
     const statusMessage = `✓ ${linkTypeName} copied to clipboard`;
 
@@ -161,11 +162,11 @@ export class RangeLinkService {
       }
 
       getLogger().debug(
-        { fn: 'copyAndNotify', linkTypeName, boundDestination: displayName },
+        { fn: 'copyAndNotify', linkTypeName, formattedLink, boundDestination: displayName },
         `Attempting to send link to bound destination: ${displayName}`,
       );
 
-      const sent = await this.destinationManager.sendToDestination(link);
+      const sent = await this.destinationManager.sendToDestination(formattedLink);
       if (sent) {
         this.ideAdapter.setStatusBarMessage(`${statusMessage} & sent to ${displayName}`, 2000);
       } else {

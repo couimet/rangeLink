@@ -2,7 +2,7 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { CursorAIDestination } from '../../destinations/CursorAIDestination';
-import { testDestinationInterfaceCompliance } from '../helpers';
+import { createMockFormattedLink, testDestinationInterfaceCompliance } from '../helpers';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('CursorAIDestination', () => {
@@ -60,12 +60,12 @@ describe('CursorAIDestination', () => {
       await destination.isAvailable();
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'CursorAIDestination.isAvailable',
           method: 'appName',
           appName: 'cursor',
           detected: true,
-        }),
+        },
         'Cursor detected via appName',
       );
     });
@@ -98,12 +98,12 @@ describe('CursorAIDestination', () => {
       await destination.isAvailable();
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'CursorAIDestination.isAvailable',
           method: 'extensions',
           extensionCount: 1,
           detected: true,
-        }),
+        },
         'Cursor detected via extensions (found 1)',
       );
     });
@@ -130,12 +130,12 @@ describe('CursorAIDestination', () => {
       await destination.isAvailable();
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'CursorAIDestination.isAvailable',
           method: 'uriScheme',
           uriScheme: 'cursor',
           detected: true,
-        }),
+        },
         'Cursor detected via uriScheme',
       );
     });
@@ -147,10 +147,10 @@ describe('CursorAIDestination', () => {
       await destination.isAvailable();
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'CursorAIDestination.isAvailable',
           detected: false,
-        }),
+        },
         'Cursor IDE not detected by any method',
       );
     });
@@ -168,7 +168,7 @@ describe('CursorAIDestination', () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
       (mockVscode.env as any).appName = 'Visual Studio Code';
 
-      const result = await destination.pasteLink('src/file.ts#L10');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(false);
     });
@@ -176,7 +176,7 @@ describe('CursorAIDestination', () => {
     it('should copy text to clipboard', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
 
-      await destination.pasteLink('src/file.ts#L10');
+      await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith('src/file.ts#L10');
     });
@@ -184,7 +184,7 @@ describe('CursorAIDestination', () => {
     it('should try opening chat with aichat.newchataction command first', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
 
-      await destination.pasteLink('src/file.ts#L10');
+      await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(mockVscode.commands.executeCommand).toHaveBeenCalledWith('aichat.newchataction');
     });
@@ -195,7 +195,7 @@ describe('CursorAIDestination', () => {
         .mockRejectedValueOnce(new Error('aichat.newchataction not found'))
         .mockResolvedValueOnce(undefined); // workbench.action.toggleAuxiliaryBar succeeds
 
-      await destination.pasteLink('src/file.ts#L10');
+      await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(mockVscode.commands.executeCommand).toHaveBeenCalledWith('aichat.newchataction');
       expect(mockVscode.commands.executeCommand).toHaveBeenCalledWith(
@@ -206,7 +206,7 @@ describe('CursorAIDestination', () => {
     it('should show notification prompting user to paste', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
 
-      await destination.pasteLink('src/file.ts#L10');
+      await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
         'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
@@ -214,64 +214,79 @@ describe('CursorAIDestination', () => {
     });
 
     it('should return true when clipboard copy succeeds', async () => {
-      const result = await destination.pasteLink('src/file.ts#L10');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(true);
     });
 
     it('should log clipboard workaround completion', async () => {
-      await destination.pasteLink('src/file.ts#L10');
+      const testLink = 'src/file.ts#L10';
+      const formattedLink = createMockFormattedLink(testLink);
+      await destination.pasteLink(formattedLink);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'CursorAIDestination.pasteLink',
-          linkLength: 15, // "src/file.ts#L10".length
+          formattedLink,
+          linkLength: testLink.length,
           chatOpened: true,
-        }),
-        'Clipboard workaround completed',
+        },
+        'Clipboard workaround completed for link',
       );
     });
 
     it('should log warning when not available', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
       (mockVscode.env as any).appName = 'Visual Studio Code';
+      const testLink = 'link';
+      const formattedLink = createMockFormattedLink(testLink);
 
-      await destination.pasteLink('link');
+      await destination.pasteLink(formattedLink);
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.objectContaining({ fn: 'CursorAIDestination.pasteLink' }),
+        {
+          fn: 'CursorAIDestination.pasteLink',
+          formattedLink,
+        },
         'Cannot paste: Not running in Cursor IDE',
       );
     });
 
     it('should return false and log error when clipboard write fails', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env.clipboard.writeText as jest.Mock).mockRejectedValueOnce(
-        new Error('Clipboard access denied'),
-      );
+      const testLink = 'link';
+      const formattedLink = createMockFormattedLink(testLink);
+      const expectedError = new Error('Clipboard access denied');
+      (mockVscode.env.clipboard.writeText as jest.Mock).mockRejectedValueOnce(expectedError);
 
-      const result = await destination.pasteLink('link');
+      const result = await destination.pasteLink(formattedLink);
 
       expect(result).toBe(false);
       expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'CursorAIDestination.pasteLink',
-          error: expect.any(Error),
-        }),
+          formattedLink,
+          error: expectedError,
+        },
         'Failed to execute clipboard workaround',
       );
     });
 
     it('should log warning when all chat commands fail', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
+      const testLink = 'link';
+      const formattedLink = createMockFormattedLink(testLink);
       (mockVscode.commands.executeCommand as jest.Mock).mockRejectedValue(
         new Error('Command not found'),
       );
 
-      await destination.pasteLink('link');
+      await destination.pasteLink(formattedLink);
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.objectContaining({ fn: 'CursorAIDestination.pasteLink' }),
+        {
+          fn: 'CursorAIDestination.pasteLink',
+          formattedLink,
+        },
         'All chat open commands failed',
       );
     });
@@ -282,7 +297,7 @@ describe('CursorAIDestination', () => {
         new Error('Command not found'),
       );
 
-      const result = await destination.pasteLink('link');
+      const result = await destination.pasteLink(createMockFormattedLink('link'));
 
       expect(result).toBe(true); // Clipboard copy succeeded
       expect(mockVscode.window.showInformationMessage).toHaveBeenCalled();
@@ -298,7 +313,7 @@ describe('CursorAIDestination', () => {
     it('should handle empty text in paste', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
 
-      const result = await destination.pasteLink('');
+      const result = await destination.pasteLink(createMockFormattedLink(''));
 
       expect(result).toBe(true);
       expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith('');
@@ -308,7 +323,7 @@ describe('CursorAIDestination', () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
       const longText = 'x'.repeat(10000);
 
-      const result = await destination.pasteLink(longText);
+      const result = await destination.pasteLink(createMockFormattedLink(longText));
 
       expect(result).toBe(true);
       expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith(longText);

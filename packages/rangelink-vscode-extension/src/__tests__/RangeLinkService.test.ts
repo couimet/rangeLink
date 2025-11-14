@@ -3,6 +3,7 @@ import type { DelimiterConfig } from 'rangelink-core-ts';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { RangeLinkService } from '../RangeLinkService';
+import { createMockFormattedLink } from './helpers/destinationTestHelpers';
 
 describe('RangeLinkService', () => {
   describe('copyAndNotify', () => {
@@ -57,9 +58,10 @@ describe('RangeLinkService', () => {
 
       it('should copy link to clipboard', async () => {
         const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
 
         // Access private method via any cast for testing
-        await (service as any).copyAndNotify(link, 'RangeLink');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
@@ -67,8 +69,9 @@ describe('RangeLinkService', () => {
 
       it('should show status message with "copied to clipboard"', async () => {
         const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
 
-        await (service as any).copyAndNotify(link, 'RangeLink');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
@@ -129,8 +132,9 @@ describe('RangeLinkService', () => {
 
       it('should copy link to clipboard', async () => {
         const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
 
-        await (service as any).copyAndNotify(link, 'RangeLink');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
@@ -138,17 +142,19 @@ describe('RangeLinkService', () => {
 
       it('should send link to terminal', async () => {
         const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
 
-        await (service as any).copyAndNotify(link, 'RangeLink');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
-        expect(mockDestinationManager.sendToDestination).toHaveBeenCalledWith(link);
+        expect(mockDestinationManager.sendToDestination).toHaveBeenCalledWith(formattedLink);
         expect(mockDestinationManager.sendToDestination).toHaveBeenCalledTimes(1);
       });
 
       it('should show status message with destination name', async () => {
         const link = 'src/auth.ts#L10';
+        const formattedLink = createMockFormattedLink(link);
 
-        await (service as any).copyAndNotify(link, 'RangeLink');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard & sent to bash',
@@ -219,22 +225,25 @@ describe('RangeLinkService', () => {
 
       it('should copy link to clipboard', async () => {
         const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
 
-        await (service as any).copyAndNotify(link, 'RangeLink');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
       });
 
       it('should attempt to send to destination', async () => {
         const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
 
-        await (service as any).copyAndNotify(link, 'RangeLink');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
-        expect(mockDestinationManager.sendToDestination).toHaveBeenCalledWith(link);
+        expect(mockDestinationManager.sendToDestination).toHaveBeenCalledWith(formattedLink);
       });
 
       it('should show generic warning message with displayName', async () => {
-        await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+        const formattedLink = createMockFormattedLink('src/file.ts#L1');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
           'RangeLink: Copied to clipboard. Could not send to Some Destination.',
@@ -243,7 +252,8 @@ describe('RangeLinkService', () => {
       });
 
       it('should show same warning structure for all link types', async () => {
-        await (service as any).copyAndNotify('src/file.ts#L1', 'Portable RangeLink');
+        const formattedLink = createMockFormattedLink('src/file.ts#L1');
+        await (service as any).copyAndNotify(formattedLink, 'Portable RangeLink');
 
         const warningCall = (mockIdeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
         expect(warningCall).toContain('RangeLink: Copied to clipboard.');
@@ -251,7 +261,8 @@ describe('RangeLinkService', () => {
       });
 
       it('should not call setStatusBarMessage when paste fails', async () => {
-        await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+        const formattedLink = createMockFormattedLink('src/file.ts#L1');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.setStatusBarMessage).not.toHaveBeenCalled();
       });
@@ -364,7 +375,8 @@ describe('RangeLinkService', () => {
       });
 
       it('should handle empty link string', async () => {
-        await (service as any).copyAndNotify('', 'RangeLink');
+        const formattedLink = createMockFormattedLink('');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith('');
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalled();
@@ -372,22 +384,25 @@ describe('RangeLinkService', () => {
 
       it('should handle very long link strings', async () => {
         const longLink = 'src/' + 'a'.repeat(500) + '.ts#L1000-L2000';
+        const formattedLink = createMockFormattedLink(longLink);
 
-        await (service as any).copyAndNotify(longLink, 'RangeLink');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(longLink);
       });
 
       it('should handle special characters in link', async () => {
         const specialLink = 'src/file#123.ts##L10C5-L20C10';
+        const formattedLink = createMockFormattedLink(specialLink);
 
-        await (service as any).copyAndNotify(specialLink, 'RangeLink');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(specialLink);
       });
 
       it('should handle special characters in link type name', async () => {
-        await (service as any).copyAndNotify('src/file.ts#L1', 'Custom <Type> Name');
+        const formattedLink = createMockFormattedLink('src/file.ts#L1');
+        await (service as any).copyAndNotify(formattedLink, 'Custom <Type> Name');
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ Custom <Type> Name copied to clipboard',
@@ -402,7 +417,8 @@ describe('RangeLinkService', () => {
       });
 
       it('should pass 2000ms timeout to setStatusBarMessage', async () => {
-        await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+        const formattedLink = createMockFormattedLink('src/file.ts#L1');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
       });
@@ -414,7 +430,8 @@ describe('RangeLinkService', () => {
           name: 'bash',
         });
 
-        await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+        const formattedLink = createMockFormattedLink('src/file.ts#L1');
+        await (service as any).copyAndNotify(formattedLink, 'RangeLink');
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
       });

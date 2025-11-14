@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -85,18 +86,23 @@ export class TextEditorDestination implements PasteDestination {
    * - After successful paste, focuses the bound editor
    * - Consistent with TerminalDestination and AI assistant destinations
    *
-   * @param link - The RangeLink to paste
+   * @param formattedLink - The formatted RangeLink with metadata
    * @returns true if paste succeeded, false if validation failed or cannot paste
    */
-  async pasteLink(link: string): Promise<boolean> {
+  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
+    const link = formattedLink.link;
+
     if (!isEligibleForPaste(link)) {
-      this.logger.info({ fn: 'TextEditorDestination.pasteLink', link }, 'Link not eligible for paste');
+      this.logger.info(
+        { fn: 'TextEditorDestination.pasteLink', formattedLink, linkLength: link.length },
+        'Link not eligible for paste',
+      );
       return false;
     }
 
     if (!this.boundDocumentUri) {
       this.logger.warn(
-        { fn: 'TextEditorDestination.pasteLink', linkLength: link.length },
+        { fn: 'TextEditorDestination.pasteLink', formattedLink, linkLength: link.length },
         'Cannot paste: No text editor bound',
       );
       return false;
@@ -207,6 +213,7 @@ export class TextEditorDestination implements PasteDestination {
           fn: 'TextEditorDestination.pasteLink',
           boundDisplayName,
           boundDocumentUri: this.boundDocumentUri.toString(),
+          formattedLink,
           originalLength: link.length,
           paddedLength: paddedLink.length,
         },
@@ -220,6 +227,7 @@ export class TextEditorDestination implements PasteDestination {
           fn: 'TextEditorDestination.pasteLink',
           boundDisplayName,
           boundDocumentUri: this.boundDocumentUri.toString(),
+          formattedLink,
           error,
         },
         'Failed to paste link to text editor',

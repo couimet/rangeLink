@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { TerminalDestination } from '../../destinations/TerminalDestination';
 import { applySmartPadding } from '../../utils/applySmartPadding';
 import { isEligibleForPaste } from '../../utils/isEligibleForPaste';
+import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
 
 jest.mock('../../utils/isEligibleForPaste');
 jest.mock('../../utils/applySmartPadding');
@@ -66,13 +67,13 @@ describe('TerminalDestination', () => {
 
     it('should return false when no terminal bound', async () => {
       destination.setTerminal(undefined);
-      const result = await destination.pasteLink('src/file.ts#L10');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(false);
     });
 
     it('should return true when paste succeeds', async () => {
-      const result = await destination.pasteLink('src/file.ts#L10');
+      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(true);
     });
@@ -80,14 +81,14 @@ describe('TerminalDestination', () => {
     it('should call terminal.sendText with padded text', async () => {
       (applySmartPadding as jest.Mock).mockReturnValue(' link ');
 
-      await destination.pasteLink('link');
+      await destination.pasteLink(createMockFormattedLink('link'));
 
       expect(applySmartPadding).toHaveBeenCalledWith('link');
       expect(mockTerminal.sendText).toHaveBeenCalledWith(' link ', false);
     });
 
     it('should call terminal.show to focus terminal', async () => {
-      await destination.pasteLink('link');
+      await destination.pasteLink(createMockFormattedLink('link'));
 
       expect(mockTerminal.show).toHaveBeenCalledWith(false);
     });
@@ -96,36 +97,42 @@ describe('TerminalDestination', () => {
       const sendTextSpy = mockTerminal.sendText as jest.Mock;
       const showSpy = mockTerminal.show as jest.Mock;
 
-      await destination.pasteLink('link');
+      await destination.pasteLink(createMockFormattedLink('link'));
 
       expect(sendTextSpy.mock.invocationCallOrder[0]).toBeLessThan(
         showSpy.mock.invocationCallOrder[0],
       );
     });
 
-    it('should log success with terminal name and lengths', async () => {
-      await destination.pasteLink('src/file.ts#L10');
+    it('should log success with terminal name and formattedLink', async () => {
+      const testLink = 'src/file.ts#L10';
+      const formattedLink = createMockFormattedLink(testLink);
+      await destination.pasteLink(formattedLink);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'TerminalDestination.pasteLink',
           terminalName: 'bash',
-          originalLength: 15,
-          paddedLength: 17,
-        }),
-        expect.stringContaining('Pasted link to terminal: bash'),
+          formattedLink,
+          originalLength: testLink.length,
+          paddedLength: testLink.length + 2,
+        },
+        'Pasted link to terminal: bash',
       );
     });
 
     it('should log warning when no terminal bound', async () => {
+      const testLink = 'src/file.ts#L10';
+      const formattedLink = createMockFormattedLink(testLink);
       destination.setTerminal(undefined);
-      await destination.pasteLink('src/file.ts#L10');
+      await destination.pasteLink(formattedLink);
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'TerminalDestination.pasteLink',
-          linkLength: 15,
-        }),
+          formattedLink,
+          linkLength: testLink.length,
+        },
         'Cannot paste: No terminal bound',
       );
     });
@@ -138,19 +145,22 @@ describe('TerminalDestination', () => {
 
     it('should return false and skip terminal operations when text is ineligible', async () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(false);
+      const testLink = '';
+      const formattedLink = createMockFormattedLink(testLink);
 
-      const result = await destination.pasteLink('');
+      const result = await destination.pasteLink(formattedLink);
 
-      expect(isEligibleForPaste).toHaveBeenCalledWith('');
+      expect(isEligibleForPaste).toHaveBeenCalledWith(testLink);
       expect(result).toBe(false);
       expect(applySmartPadding).not.toHaveBeenCalled();
       expect(mockTerminal.sendText).not.toHaveBeenCalled();
       expect(mockTerminal.show).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'TerminalDestination.pasteLink',
-          link: '',
-        }),
+          formattedLink,
+          linkLength: testLink.length,
+        },
         'Link not eligible for paste',
       );
     });
@@ -159,13 +169,18 @@ describe('TerminalDestination', () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(false);
       destination.setTerminal(undefined);
 
-      await destination.pasteLink('invalid-text');
+      const testLink = 'invalid-text';
+      const formattedLink = createMockFormattedLink(testLink);
 
-      expect(isEligibleForPaste).toHaveBeenCalledWith('invalid-text');
+      await destination.pasteLink(formattedLink);
+
+      expect(isEligibleForPaste).toHaveBeenCalledWith(testLink);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'TerminalDestination.pasteLink',
-        }),
+          formattedLink,
+          linkLength: testLink.length,
+        },
         'Link not eligible for paste',
       );
       expect(mockLogger.warn).not.toHaveBeenCalled();
@@ -175,7 +190,7 @@ describe('TerminalDestination', () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(true);
       (applySmartPadding as jest.Mock).mockReturnValue(' padded-text ');
 
-      await destination.pasteLink('original-text');
+      await destination.pasteLink(createMockFormattedLink('original-text'));
 
       expect(isEligibleForPaste).toHaveBeenCalledWith('original-text');
       expect(applySmartPadding).toHaveBeenCalledWith('original-text');
@@ -186,26 +201,29 @@ describe('TerminalDestination', () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(true);
       (applySmartPadding as jest.Mock).mockReturnValue('\tcustom-padded\n');
 
-      await destination.pasteLink('src/file.ts#L10');
+      await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(applySmartPadding).toHaveBeenCalledWith('src/file.ts#L10');
       expect(mockTerminal.sendText).toHaveBeenCalledWith('\tcustom-padded\n', false);
     });
 
-    it('should log success with original and padded lengths', async () => {
+    it('should log success with formattedLink', async () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(true);
+      const testLink = 'short';
       (applySmartPadding as jest.Mock).mockReturnValue(' short ');
+      const formattedLink = createMockFormattedLink(testLink);
 
-      await destination.pasteLink('short');
+      await destination.pasteLink(formattedLink);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'TerminalDestination.pasteLink',
           terminalName: 'bash',
-          originalLength: 5,
-          paddedLength: 7,
-        }),
-        expect.stringContaining('Pasted link to terminal: bash'),
+          formattedLink,
+          originalLength: testLink.length,
+          paddedLength: testLink.length + 2,
+        },
+        'Pasted link to terminal: bash',
       );
     });
   });
@@ -228,10 +246,10 @@ describe('TerminalDestination', () => {
       destination.setTerminal(mockTerminal);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'TerminalDestination.setTerminal',
           terminalName: 'bash',
-        }),
+        },
         'Terminal set: bash',
       );
     });
@@ -240,10 +258,10 @@ describe('TerminalDestination', () => {
       destination.setTerminal(undefined);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'TerminalDestination.setTerminal',
           terminalName: undefined,
-        }),
+        },
         'Terminal cleared',
       );
     });

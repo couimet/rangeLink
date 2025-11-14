@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -114,12 +115,12 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Send text to bound destination
+   * Send a formatted RangeLink to bound destination
    *
-   * @param text - The text to paste
+   * @param formattedLink - The formatted RangeLink with metadata
    * @returns true if sent successfully, false otherwise
    */
-  async sendToDestination(text: string): Promise<boolean> {
+  async sendToDestination(formattedLink: FormattedLink): Promise<boolean> {
     if (!this.boundDestination) {
       this.logger.debug(
         { fn: 'PasteDestinationManager.sendToDestination' },
@@ -150,12 +151,13 @@ export class PasteDestinationManager implements vscode.Disposable {
         fn: 'PasteDestinationManager.sendToDestination',
         destinationType,
         displayName,
+        formattedLink,
         ...destinationDetails,
       },
       `Sending text to ${displayName}`,
     );
 
-    const result = await this.boundDestination.pasteLink(text);
+    const result = await this.boundDestination.pasteLink(formattedLink);
 
     if (!result) {
       this.logger.error(
@@ -163,6 +165,7 @@ export class PasteDestinationManager implements vscode.Disposable {
           fn: 'PasteDestinationManager.sendToDestination',
           destinationType,
           displayName,
+          formattedLink,
           ...destinationDetails,
         },
         `Paste link failed to ${displayName}`,

@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { applySmartPadding } from '../utils/applySmartPadding';
@@ -39,18 +40,23 @@ export class TerminalDestination implements PasteDestination {
    * - Only adds trailing space if link doesn't end with whitespace
    * - Better UX: avoids double-spacing when user already padded link
    *
-   * @param link - The RangeLink to paste
+   * @param formattedLink - The formatted RangeLink with metadata
    * @returns true if paste succeeded, false if validation failed or no terminal bound
    */
-  async pasteLink(link: string): Promise<boolean> {
+  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
+    const link = formattedLink.link;
+
     if (!isEligibleForPaste(link)) {
-      this.logger.info({ fn: 'TerminalDestination.pasteLink', link }, 'Link not eligible for paste');
+      this.logger.info(
+        { fn: 'TerminalDestination.pasteLink', formattedLink, linkLength: link.length },
+        'Link not eligible for paste',
+      );
       return false;
     }
 
     if (!this.boundTerminal) {
       this.logger.warn(
-        { fn: 'TerminalDestination.pasteLink', linkLength: link.length },
+        { fn: 'TerminalDestination.pasteLink', formattedLink, linkLength: link.length },
         'Cannot paste: No terminal bound',
       );
       return false;
@@ -71,6 +77,7 @@ export class TerminalDestination implements PasteDestination {
       {
         fn: 'TerminalDestination.pasteLink',
         terminalName,
+        formattedLink,
         originalLength: link.length,
         paddedLength: paddedLink.length,
       },
