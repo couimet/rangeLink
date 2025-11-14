@@ -245,6 +245,52 @@ PASS  src/__tests__/SomeClass.test.ts
 4. **Keep it focused**: Each test should verify ONE delegation scenario
 5. **Preserve coverage**: Flag gaps, but don't block refactoring
 
+## Testing Facades and External Dependencies
+
+When refactoring tests for classes that use facade patterns:
+
+1. **Mock facades, not their underlying implementations**:
+
+   ```typescript
+   // ✅ Mock the facade
+   jest.mock('../adapters/VscodeAdapter');
+   const mockAdapter = createMockIdeAdapter();
+
+   // ❌ Don't mock vscode directly
+   jest.mock('vscode'); // Wrong - bypasses facade
+   ```
+
+2. **Allow direct imports of external constants/enums**:
+
+   ```typescript
+   // ✅ Import constants directly (facades don't wrap these)
+   import * as vscode from 'vscode';
+   expect(mockEditor.revealRange).toHaveBeenCalledWith(
+     range,
+     vscode.TextEditorRevealType.InCenterIfOutsideViewport
+   );
+   ```
+
+3. **Test enum values appropriately**:
+
+   - **Project enums**: Use string literals to test contract
+
+     ```typescript
+     expect(result.linkType).toBe('Regular'); // Not LinkType.Regular
+     ```
+
+   - **External library enums**: Use the actual constant
+
+     ```typescript
+     expect(callArg).toBe(vscode.DiagnosticSeverity.Error); // Use constant
+     ```
+
+4. **Identify facade boundaries**:
+
+   - Facades wrap **behaviors** (methods like `.showTextDocument()`)
+   - Facades don't wrap **types/constants** (enums, interfaces, type definitions)
+   - Mock behaviors, import types/constants directly
+
 ## Edge Cases to Handle
 
 - **No utility tests exist**: Report gap, but proceed with refactoring
