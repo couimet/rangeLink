@@ -25,25 +25,41 @@ export const createMockTerminal = (name = 'bash'): vscode.Terminal => {
 /**
  * Mock vscode.window object for testing
  *
- * Use this to mock window-related functions like activeTextEditor, showInformationMessage, etc.
+ * Provides complete mock of vscode.window with:
+ * - Status bar operations with Disposable return
+ * - Notification methods (info, warning, error)
+ * - Document/editor operations
+ * - Terminal and editor references
  *
+ * All notification methods return Promise<string | undefined> matching VSCode API.
+ * setStatusBarMessage returns mock Disposable with dispose() method.
  */
 export const createMockWindow = () => {
   return {
     activeTerminal: undefined as vscode.Terminal | undefined,
     activeTextEditor: undefined as vscode.TextEditor | undefined,
-    showInformationMessage: jest.fn(),
-    showWarningMessage: jest.fn(),
-    showErrorMessage: jest.fn(),
-    showTextDocument: jest.fn(),
+    setStatusBarMessage: jest.fn(() => ({
+      dispose: jest.fn(),
+    })),
+    showInformationMessage: jest.fn().mockResolvedValue(undefined),
+    showWarningMessage: jest.fn().mockResolvedValue(undefined),
+    showErrorMessage: jest.fn().mockResolvedValue(undefined),
+    showTextDocument: jest.fn().mockResolvedValue(undefined),
   };
 };
 
 /**
  * Mock vscode.env object for environment detection tests
  *
+ * Provides complete mock of vscode.env with:
+ * - appName and uriScheme for environment detection
+ * - clipboard.writeText() for VscodeAdapter clipboard operations
+ * - clipboard.readText() for test completeness
+ *
+ * All clipboard methods return proper Promise types matching VSCode API.
+ *
  * @param options - Environment properties to override
- * @returns Mock env object
+ * @returns Mock env object compatible with VscodeAdapter
  */
 export const createMockEnv = (options?: {
   appName?: string;
@@ -53,7 +69,7 @@ export const createMockEnv = (options?: {
     appName: options?.appName || 'Visual Studio Code',
     uriScheme: options?.uriScheme || 'vscode',
     clipboard: {
-      writeText: jest.fn(),
+      writeText: jest.fn().mockResolvedValue(undefined),
       readText: jest.fn().mockResolvedValue(''),
     },
   } as unknown as typeof vscode.env;
