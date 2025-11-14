@@ -125,4 +125,93 @@ export class VscodeAdapter {
   createRange(start: vscode.Position, end: vscode.Position): vscode.Range {
     return new this.ideInstance.Range(start, end);
   }
+
+  // ============================================================================
+  // Event Listeners
+  // ============================================================================
+
+  /**
+   * Register event listener for terminal closure.
+   *
+   * @param listener - Callback invoked when a terminal is closed
+   * @returns Disposable to unregister the listener
+   */
+  onDidCloseTerminal(listener: (terminal: vscode.Terminal) => void): vscode.Disposable {
+    return this.ideInstance.window.onDidCloseTerminal(listener);
+  }
+
+  /**
+   * Register event listener for text document closure.
+   *
+   * @param listener - Callback invoked when a text document is closed
+   * @returns Disposable to unregister the listener
+   */
+  onDidCloseTextDocument(listener: (document: vscode.TextDocument) => void): vscode.Disposable {
+    return this.ideInstance.workspace.onDidCloseTextDocument(listener);
+  }
+
+  // ============================================================================
+  // Workspace Getters
+  // ============================================================================
+
+  /**
+   * Get the currently active terminal.
+   *
+   * @returns Active terminal or undefined if none is active
+   */
+  get activeTerminal(): vscode.Terminal | undefined {
+    return this.ideInstance.window.activeTerminal;
+  }
+
+  /**
+   * Get the currently active text editor.
+   *
+   * @returns Active text editor or undefined if none is active
+   */
+  get activeTextEditor(): vscode.TextEditor | undefined {
+    return this.ideInstance.window.activeTextEditor;
+  }
+
+  /**
+   * Get all visible text editors.
+   *
+   * @returns Array of visible text editors
+   */
+  get visibleTextEditors(): readonly vscode.TextEditor[] {
+    return this.ideInstance.window.visibleTextEditors;
+  }
+
+  /**
+   * Get tab groups API for managing editor tab groups.
+   *
+   * @returns Tab groups API
+   */
+  get tabGroups(): vscode.TabGroups {
+    return this.ideInstance.window.tabGroups;
+  }
+
+  // ============================================================================
+  // Workspace Methods
+  // ============================================================================
+
+  /**
+   * Get the workspace folder containing the given URI.
+   *
+   * @param uri - URI to find the workspace folder for
+   * @returns Workspace folder or undefined if URI is not in any workspace
+   */
+  getWorkspaceFolder(uri: vscode.Uri): vscode.WorkspaceFolder | undefined {
+    return this.ideInstance.workspace.getWorkspaceFolder(uri);
+  }
+
+  /**
+   * Convert a path or URI to a workspace-relative path.
+   *
+   * @param pathOrUri - Absolute path or URI to convert
+   * @param includeWorkspaceFolder - Whether to include workspace folder name
+   * @returns Workspace-relative path
+   */
+  asRelativePath(pathOrUri: string | vscode.Uri, includeWorkspaceFolder?: boolean): string {
+    return this.ideInstance.workspace.asRelativePath(pathOrUri, includeWorkspaceFolder);
+  }
 }

@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { DestinationFactory } from './DestinationFactory';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 import { TerminalDestination } from './TerminalDestination';
@@ -27,6 +28,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly factory: DestinationFactory,
+    private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
     // Listen for terminal closure (terminal-only auto-unbind)
@@ -54,7 +56,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         `Already bound to ${this.boundDestination.displayName}`,
       );
 
-      vscode.window.showErrorMessage(
+      this.ideAdapter.showErrorMessage(
         `RangeLink: Already bound to ${this.boundDestination.displayName}. Unbind first.`,
       );
 
@@ -81,7 +83,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   unbind(): void {
     if (!this.boundDestination) {
       this.logger.info({ fn: 'PasteDestinationManager.unbind' }, 'No destination bound');
-      vscode.window.setStatusBarMessage('RangeLink: No destination bound', 2000);
+      this.ideAdapter.setStatusBarMessage('RangeLink: No destination bound', 2000);
       return;
     }
 
@@ -94,7 +96,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully unbound from ${displayName}`,
     );
 
-    vscode.window.setStatusBarMessage(`✓ RangeLink unbound from ${displayName}`, 2000);
+    this.ideAdapter.setStatusBarMessage(`✓ RangeLink unbound from ${displayName}`, 2000);
   }
 
   /**
@@ -185,7 +187,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * AI assistant destinations don't need this (persistent across extension lifecycle).
    */
   private setupTerminalCloseListener(): void {
-    const terminalCloseDisposable = vscode.window.onDidCloseTerminal((closedTerminal) => {
+    const terminalCloseDisposable = this.ideAdapter.onDidCloseTerminal((closedTerminal) => {
       if (this.boundTerminal === closedTerminal) {
         const terminalName = closedTerminal.name || 'Unnamed Terminal';
         this.logger.info(
@@ -193,7 +195,7 @@ export class PasteDestinationManager implements vscode.Disposable {
           `Bound terminal closed: ${terminalName} - auto-unbinding`,
         );
         this.unbind();
-        vscode.window.setStatusBarMessage('Destination binding removed (terminal closed)', 3000);
+        this.ideAdapter.setStatusBarMessage('Destination binding removed (terminal closed)', 3000);
       }
     });
 
@@ -207,11 +209,11 @@ export class PasteDestinationManager implements vscode.Disposable {
    * @returns true if binding succeeded, false if no active terminal
    */
   private async bindTerminal(): Promise<boolean> {
-    const activeTerminal = vscode.window.activeTerminal;
+    const activeTerminal = this.ideAdapter.activeTerminal;
 
     if (!activeTerminal) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTerminal' }, 'No active terminal');
-      vscode.window.showErrorMessage(
+      this.ideAdapter.showErrorMessage(
         'RangeLink: No active terminal. Open a terminal and try again.',
       );
       return false;
@@ -231,7 +233,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully bound to terminal: ${terminalName}`,
     );
 
-    vscode.window.setStatusBarMessage(`✓ RangeLink bound to ${terminalName}`, 3000);
+    this.ideAdapter.setStatusBarMessage(`✓ RangeLink bound to ${terminalName}`, 3000);
 
     return true;
   }
@@ -248,23 +250,23 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   private async bindTextEditor(): Promise<boolean> {
     // Validate: Require 2+ tab groups for split editor workflow
-    const tabGroupCount = vscode.window.tabGroups.all.length;
+    const tabGroupCount = this.ideAdapter.tabGroups.all.length;
     if (tabGroupCount < 2) {
       this.logger.warn(
         { fn: 'PasteDestinationManager.bindTextEditor', tabGroupCount },
         'Cannot bind: Requires 2+ tab groups',
       );
-      vscode.window.showErrorMessage(
+      this.ideAdapter.showErrorMessage(
         'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
       );
       return false;
     }
 
-    const activeEditor = vscode.window.activeTextEditor;
+    const activeEditor = this.ideAdapter.activeTextEditor;
 
     if (!activeEditor) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
-      vscode.window.showErrorMessage(
+      this.ideAdapter.showErrorMessage(
         'RangeLink: No active text editor. Open a file and try again.',
       );
       return false;
@@ -277,7 +279,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         { fn: 'PasteDestinationManager.bindTextEditor', fileName },
         'Cannot bind: Editor is not a text-like file',
       );
-      vscode.window.showErrorMessage(
+      this.ideAdapter.showErrorMessage(
         `RangeLink: Cannot bind to ${fileName} - not a text-like file (binary or special scheme)`,
       );
       return false;
@@ -302,7 +304,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully bound to text editor: ${editorDisplayName} (${tabGroupCount} tab groups)`,
     );
 
-    vscode.window.setStatusBarMessage(`✓ RangeLink bound to ${editorDisplayName}`, 3000);
+    this.ideAdapter.setStatusBarMessage(`✓ RangeLink bound to ${editorDisplayName}`, 3000);
 
     return true;
   }
@@ -323,7 +325,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         `Cannot bind: ${destination.displayName} not available`,
       );
 
-      vscode.window.showErrorMessage(
+      this.ideAdapter.showErrorMessage(
         `RangeLink: Cannot bind ${destination.displayName} - not running in ${destination.displayName.replace(' Assistant', '')} IDE`,
       );
 
@@ -338,7 +340,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully bound to ${destination.displayName}`,
     );
 
-    vscode.window.setStatusBarMessage(`✓ RangeLink bound to ${destination.displayName}`, 3000);
+    this.ideAdapter.setStatusBarMessage(`✓ RangeLink bound to ${destination.displayName}`, 3000);
 
     return true;
   }
@@ -352,7 +354,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * - Paste attempt will show "not topmost" warning if document exists but not visible
    */
   private setupTextDocumentCloseListener(): void {
-    const documentCloseDisposable = vscode.workspace.onDidCloseTextDocument((closedDocument) => {
+    const documentCloseDisposable = this.ideAdapter.onDidCloseTextDocument((closedDocument) => {
       // Only check if we have a text editor destination bound
       if (!this.boundDestination || this.boundDestination.id !== 'text-editor') {
         return;
@@ -378,7 +380,7 @@ export class PasteDestinationManager implements vscode.Disposable {
           `Bound document closed: ${editorDisplayName} - auto-unbinding`,
         );
         this.unbind();
-        vscode.window.showInformationMessage(`RangeLink: Bound editor closed. Unbound.`);
+        this.ideAdapter.showInformationMessage(`RangeLink: Bound editor closed. Unbound.`);
       }
     });
 

@@ -388,6 +388,14 @@ interface MockIdeAdapter {
   createPosition: jest.Mock;
   createSelection: jest.Mock;
   createRange: jest.Mock;
+  onDidCloseTerminal: jest.Mock;
+  onDidCloseTextDocument: jest.Mock;
+  activeTerminal: vscode.Terminal | undefined;
+  activeTextEditor: vscode.TextEditor | undefined;
+  visibleTextEditors: readonly vscode.TextEditor[];
+  tabGroups: vscode.TabGroups;
+  getWorkspaceFolder: jest.Mock;
+  asRelativePath: jest.Mock;
 }
 
 /**
@@ -396,12 +404,14 @@ interface MockIdeAdapter {
  * Provides complete mock of VscodeAdapter interface with sensible defaults:
  * - UI operations (notifications, status bar)
  * - Document operations (showTextDocument)
- * - Workspace operations (resolveWorkspacePath)
+ * - Workspace operations (resolveWorkspacePath, getWorkspaceFolder, asRelativePath)
  * - Primitive factories (Position, Selection, Range)
+ * - Event listeners (onDidCloseTerminal, onDidCloseTextDocument)
+ * - Workspace getters (activeTerminal, activeTextEditor, visibleTextEditors, tabGroups)
  *
  * Composes from existing mock components for consistency across tests.
  *
- * @param overrides - Optional overrides for specific methods
+ * @param overrides - Optional overrides for specific methods/properties
  * @returns Mock IDE adapter with all VscodeAdapter methods
  */
 export const createMockIdeAdapter = (overrides?: Partial<MockIdeAdapter>) => {
@@ -427,11 +437,32 @@ export const createMockIdeAdapter = (overrides?: Partial<MockIdeAdapter>) => {
 
     // Workspace operations
     resolveWorkspacePath: jest.fn().mockResolvedValue({ fsPath: '/workspace/file.ts' }),
+    getWorkspaceFolder: jest.fn().mockReturnValue(undefined),
+    asRelativePath: jest.fn((pathOrUri: string | vscode.Uri) => {
+      const path = typeof pathOrUri === 'string' ? pathOrUri : pathOrUri.fsPath;
+      return path.split('/').pop() || path;
+    }),
 
     // Primitive factories
     createPosition: mockPosition,
     createSelection: mockSelection,
     createRange: mockRange,
+
+    // Event listeners
+    onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
+    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
+
+    // Workspace getters
+    activeTerminal: undefined,
+    activeTextEditor: undefined,
+    visibleTextEditors: [],
+    tabGroups: {
+      all: [],
+      activeTabGroup: undefined,
+      onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
+      onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
+      close: jest.fn(),
+    } as unknown as vscode.TabGroups,
 
     // Apply overrides
     ...overrides,
