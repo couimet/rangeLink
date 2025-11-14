@@ -6,14 +6,18 @@ import { DestinationFactory } from '../../destinations/DestinationFactory';
 import { TerminalDestination } from '../../destinations/TerminalDestination';
 import { TextEditorDestination } from '../../destinations/TextEditorDestination';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
+import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 
 describe('DestinationFactory', () => {
   let factory: DestinationFactory;
+  let mockAdapter: VscodeAdapter;
   let mockLogger: Logger;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
-    factory = new DestinationFactory(mockLogger);
+    mockAdapter = createMockVscodeAdapter();
+    factory = new DestinationFactory(mockAdapter, mockLogger);
   });
 
   describe('create()', () => {

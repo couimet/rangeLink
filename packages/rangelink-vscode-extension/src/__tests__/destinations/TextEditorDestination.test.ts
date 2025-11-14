@@ -2,36 +2,23 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
-// Mock vscode.workspace for text editor tests
-jest.mock('vscode', () => {
-  // Define MockTabInputText inside the factory function
-  class MockTabInputText {
-    constructor(public uri: any) {}
-  }
-
-  return {
-    ...jest.requireActual('vscode'),
-    window: {
-      ...jest.requireActual('vscode').window,
-      tabGroups: {
-        all: [],
-      },
-      visibleTextEditors: [],
-      showTextDocument: jest.fn(),
-    },
-    workspace: {
-      getWorkspaceFolder: jest.fn(),
-      asRelativePath: jest.fn(),
-      onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
-    },
-    TabInputText: MockTabInputText,
-  };
-});
-
 import { TextEditorDestination } from '../../destinations/TextEditorDestination';
+import {
+  configureWorkspaceMocks,
+  createMockDocument,
+  createMockEditor,
+  createMockTab,
+  createMockTabGroup,
+  createMockUriInstance,
+  createMockVscodeAdapter,
+  simulateClosedEditor,
+  simulateFileOutsideWorkspace,
+  type VscodeAdapterWithTestHooks,
+} from '../helpers/mockVSCode';
 
 describe('TextEditorDestination', () => {
   let destination: TextEditorDestination;
+  let mockAdapter: VscodeAdapterWithTestHooks;
   let mockLogger: Logger;
   let mockEditor: vscode.TextEditor;
 
@@ -39,30 +26,27 @@ describe('TextEditorDestination', () => {
     // Create mock logger
     mockLogger = createMockLogger();
 
-    // Create mock text editor
-    mockEditor = {
-      document: {
-        uri: {
-          scheme: 'file',
-          fsPath: '/workspace/src/file.ts',
-          toString: () => 'file:///workspace/src/file.ts',
-        },
-        isClosed: false,
-        isUntitled: false,
-      },
+    // Create mock text editor using helper
+    const mockUri = createMockUriInstance('/workspace/src/file.ts');
+    const mockDocument = createMockDocument('const x = 42;', mockUri, {
+      isClosed: false,
+      isUntitled: false,
+    });
+    mockEditor = createMockEditor({
+      document: mockDocument,
       selection: {
         active: { line: 10, character: 5 },
-      },
-      edit: jest.fn().mockResolvedValue(true),
-    } as unknown as vscode.TextEditor;
-
-    // Mock workspace
-    (vscode.workspace.getWorkspaceFolder as jest.Mock).mockReturnValue({
-      uri: { fsPath: '/workspace' },
+      } as any,
     });
-    (vscode.workspace.asRelativePath as jest.Mock).mockReturnValue('src/file.ts');
 
-    destination = new TextEditorDestination(mockLogger);
+    // Create adapter and configure workspace mocks
+    mockAdapter = createMockVscodeAdapter();
+    configureWorkspaceMocks(mockAdapter.__getVscodeInstance(), {
+      workspacePath: '/workspace',
+      relativePath: 'src/file.ts',
+    });
+
+    destination = new TextEditorDestination(mockAdapter, mockLogger);
   });
 
   describe('Interface compliance', () => {
@@ -93,30 +77,27 @@ describe('TextEditorDestination', () => {
   });
 
   describe('paste()', () => {
+    let mockTabGroup: vscode.TabGroup;
+    let mockTab: vscode.Tab;
+
     beforeEach(() => {
       destination.setEditor(mockEditor);
 
-      // Mock tab groups to simulate editor being topmost in a tab group
-      (vscode.window as any).tabGroups = {
-        all: [
-          {
-            activeTab: {
-              input: new vscode.TabInputText(mockEditor.document.uri),
-            },
-            tabs: [
-              {
-                input: new vscode.TabInputText(mockEditor.document.uri),
-              },
-            ],
-          },
-        ],
-      };
+      // Create mock tab and tab group using helpers
+      mockTab = createMockTab(mockEditor.document.uri);
+      mockTabGroup = createMockTabGroup([mockTab]);
+
+      // Spy on adapter methods (respecting abstraction layer)
+      jest.spyOn(mockAdapter, 'findTabGroupForDocument').mockReturnValue(mockTabGroup);
+      jest.spyOn(mockAdapter, 'isTextEditorTab').mockReturnValue(true);
 
       // Mock visibleTextEditors to include the bound editor
-      (vscode.window as any).visibleTextEditors = [mockEditor];
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor];
 
       // Mock showTextDocument to resolve successfully
-      (vscode.window.showTextDocument as jest.Mock).mockResolvedValue(mockEditor);
+      (mockAdapter.__getVscodeInstance().window.showTextDocument as jest.Mock) = jest
+        .fn()
+        .mockResolvedValue(mockEditor);
     });
 
     it('should paste text at cursor position', async () => {
@@ -165,8 +146,7 @@ describe('TextEditorDestination', () => {
       destination.setEditor(closedEditor);
 
       // Simulate closed editor: no longer in tab groups or visibleTextEditors
-      (vscode.window as any).tabGroups = { all: [] };
-      (vscode.window as any).visibleTextEditors = [];
+      simulateClosedEditor(mockAdapter.__getVscodeInstance());
 
       const result = await destination.paste('src/file.ts#L1');
 
@@ -194,10 +174,15 @@ describe('TextEditorDestination', () => {
       const result = await destination.paste(text);
 
       expect(result).toBe(true);
-      expect(vscode.window.showTextDocument).toHaveBeenCalledWith(mockEditor.document, {
-        preserveFocus: false,
-        viewColumn: mockEditor.viewColumn,
-      });
+      // VscodeAdapter.showTextDocument() calls workspace.openTextDocument() first,
+      // then passes the document (not URI) to window.showTextDocument()
+      expect(mockAdapter.__getVscodeInstance().window.showTextDocument).toHaveBeenCalledWith(
+        { uri: mockEditor.document.uri },
+        {
+          preserveFocus: false,
+          viewColumn: mockEditor.viewColumn,
+        },
+      );
     });
 
     it('should not focus editor when edit fails', async () => {
@@ -206,7 +191,7 @@ describe('TextEditorDestination', () => {
       const result = await destination.paste('src/file.ts#L1');
 
       expect(result).toBe(false);
-      expect(vscode.window.showTextDocument).not.toHaveBeenCalled();
+      expect(mockAdapter.__getVscodeInstance().window.showTextDocument).not.toHaveBeenCalled();
     });
 
     it('should not focus editor when paste validation fails', async () => {
@@ -215,7 +200,7 @@ describe('TextEditorDestination', () => {
       const result = await destination.paste('src/file.ts#L1');
 
       expect(result).toBe(false);
-      expect(vscode.window.showTextDocument).not.toHaveBeenCalled();
+      expect(mockAdapter.__getVscodeInstance().window.showTextDocument).not.toHaveBeenCalled();
     });
   });
 
@@ -285,7 +270,8 @@ describe('TextEditorDestination', () => {
     });
 
     it('should return filename for file outside workspace', () => {
-      (vscode.workspace.getWorkspaceFolder as jest.Mock).mockReturnValue(undefined);
+      // Simulate file outside workspace
+      simulateFileOutsideWorkspace(mockAdapter.__getVscodeInstance());
 
       const outsideEditor = {
         ...mockEditor,

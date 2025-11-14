@@ -6,20 +6,19 @@ import { LinkType, SelectionType } from 'rangelink-core-ts';
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from '../../navigation/RangeLinkTerminalProvider';
 import type { RangeLinkTerminalLink } from '../../types';
-import { createMockIdeAdapter } from '../helpers/mockVSCode';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('RangeLinkTerminalProvider', () => {
   let provider: RangeLinkTerminalProvider;
   let mockLogger: Logger;
-  let mockIdeAdapter: any;
+  let mockAdapter: VscodeAdapterWithTestHooks;
   let delimiters: DelimiterConfig;
 
   beforeEach(() => {
     // Mock logger
     mockLogger = createMockLogger();
 
-    // Create IDE adapter mock with sensible defaults
-    mockIdeAdapter = createMockIdeAdapter();
+    mockAdapter = createMockVscodeAdapter();
 
     // Standard delimiters
     delimiters = {
@@ -30,8 +29,8 @@ describe('RangeLinkTerminalProvider', () => {
     };
 
     // Create handler and provider
-    const handler = new RangeLinkNavigationHandler(delimiters, mockIdeAdapter, mockLogger);
-    provider = new RangeLinkTerminalProvider(handler, mockIdeAdapter, mockLogger);
+    const handler = new RangeLinkNavigationHandler(delimiters, mockAdapter, mockLogger);
+    provider = new RangeLinkTerminalProvider(handler, mockAdapter, mockLogger);
   });
 
   describe('handleTerminalLink - Safety Net Validation', () => {
@@ -61,7 +60,7 @@ describe('RangeLinkTerminalProvider', () => {
         'Terminal link clicked but parse data missing (safety net triggered)',
       );
 
-      expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.showWarningMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot navigate - invalid link format: file.ts#L0',
       );
 

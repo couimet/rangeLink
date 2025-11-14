@@ -65,12 +65,22 @@ export class VscodeAdapter {
   /**
    * Open a document and show it in the editor
    *
+   * Supports full VSCode API options for fine-grained control:
+   * - preserveFocus: Whether to keep current focus or switch to opened editor
+   * - preview: Whether to open in preview mode
+   * - viewColumn: Which editor column to show the document in
+   * - selection: Range to select/highlight in the document
+   *
    * @param uri - URI of the document to open
+   * @param options - Optional view configuration (preserveFocus, viewColumn, etc.)
    * @returns Promise resolving to the text editor showing the document
    */
-  async showTextDocument(uri: vscode.Uri): Promise<vscode.TextEditor> {
+  async showTextDocument(
+    uri: vscode.Uri,
+    options?: vscode.TextDocumentShowOptions,
+  ): Promise<vscode.TextEditor> {
     const document = await this.ideInstance.workspace.openTextDocument(uri);
-    return this.ideInstance.window.showTextDocument(document);
+    return this.ideInstance.window.showTextDocument(document, options);
   }
 
   // ============================================================================
@@ -188,6 +198,61 @@ export class VscodeAdapter {
    */
   get tabGroups(): vscode.TabGroups {
     return this.ideInstance.window.tabGroups;
+  }
+
+  /**
+   * Find which tab group contains a document with the given URI.
+   *
+   * Searches all tab groups for text editor tabs (excludes terminals, webviews, etc.)
+   * that match the provided document URI.
+   *
+   * This method encapsulates VSCode-specific tab group logic and instanceof checks,
+   * keeping the abstraction clean for callers.
+   *
+   * @param documentUri - The document URI to search for
+   * @returns The tab group containing the document, or undefined if not found
+   */
+  findTabGroupForDocument(documentUri: vscode.Uri): vscode.TabGroup | undefined {
+    for (const tabGroup of this.ideInstance.window.tabGroups.all) {
+      for (const tab of tabGroup.tabs) {
+        const tabUri = this.getTabDocumentUri(tab);
+        if (tabUri && tabUri.toString() === documentUri.toString()) {
+          return tabGroup;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Check if a tab represents a text editor (not terminal, webview, etc.).
+   *
+   * Encapsulates the VSCode-specific instanceof check for TabInputText.
+   * Uses TypeScript type predicate to narrow tab.input type automatically.
+   *
+   * @param tab - The tab to check
+   * @returns True if the tab is a text editor (type guard narrows tab.input to TabInputText)
+   */
+  isTextEditorTab(tab: vscode.Tab): tab is vscode.Tab & { input: vscode.TabInputText } {
+    return tab.input instanceof this.ideInstance.TabInputText;
+  }
+
+  /**
+   * Get the document URI from a text editor tab.
+   *
+   * Returns the URI if the tab is a text editor, undefined otherwise.
+   * Combines the type check with URI extraction for convenience.
+   *
+   * Delegates to isTextEditorTab() for type checking (DRY principle).
+   *
+   * @param tab - The tab to extract URI from
+   * @returns Document URI if tab is a text editor, undefined otherwise
+   */
+  getTabDocumentUri(tab: vscode.Tab): vscode.Uri | undefined {
+    if (this.isTextEditorTab(tab)) {
+      return tab.input.uri;
+    }
+    return undefined;
   }
 
   // ============================================================================

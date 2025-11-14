@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 
 import { ClaudeCodeDestination } from './ClaudeCodeDestination';
 import { CursorAIDestination } from './CursorAIDestination';
@@ -20,7 +21,10 @@ import { TextEditorDestination } from './TextEditorDestination';
  * - No external dependencies
  */
 export class DestinationFactory {
-  constructor(private readonly logger: Logger) {}
+  constructor(
+    private readonly ideAdapter: VscodeAdapter,
+    private readonly logger: Logger,
+  ) {}
 
   /**
    * Create a destination instance by type
@@ -40,7 +44,7 @@ export class DestinationFactory {
         return new CursorAIDestination(this.logger);
 
       case 'text-editor':
-        return new TextEditorDestination(this.logger);
+        return new TextEditorDestination(this.ideAdapter, this.logger);
 
       case 'claude-code':
         return new ClaudeCodeDestination(this.logger);

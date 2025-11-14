@@ -7,6 +7,8 @@
 
 import * as vscode from 'vscode';
 
+import { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+
 /**
  * Create a mock Terminal with common methods stubbed
  *
@@ -38,6 +40,14 @@ export const createMockWindow = () => {
   return {
     activeTerminal: undefined as vscode.Terminal | undefined,
     activeTextEditor: undefined as vscode.TextEditor | undefined,
+    visibleTextEditors: [] as vscode.TextEditor[],
+    tabGroups: {
+      all: [],
+      activeTabGroup: undefined,
+      onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
+      onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
+      close: jest.fn(),
+    } as unknown as vscode.TabGroups,
     setStatusBarMessage: jest.fn(() => ({
       dispose: jest.fn(),
     })),
@@ -45,6 +55,7 @@ export const createMockWindow = () => {
     showWarningMessage: jest.fn().mockResolvedValue(undefined),
     showErrorMessage: jest.fn().mockResolvedValue(undefined),
     showTextDocument: jest.fn().mockResolvedValue(undefined),
+    onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
   };
 };
 
@@ -185,6 +196,8 @@ export const createMockEditor = (
     selection: null as any,
     selections: [] as any[],
     revealRange: jest.fn(),
+    edit: jest.fn().mockResolvedValue(true),
+    viewColumn: 1,
   };
 
   return {
@@ -228,6 +241,9 @@ export const createMockWorkspace = (
   return {
     workspaceFolders: folders,
     openTextDocument: jest.fn(),
+    getWorkspaceFolder: jest.fn(),
+    asRelativePath: jest.fn(),
+    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
     fs: {
       stat: jest.fn(),
     },
@@ -374,97 +390,238 @@ export const createMockRange = () =>
   jest.fn((start: vscode.Position, end: vscode.Position) => ({ start, end }));
 
 /**
- * Mock IDE adapter interface matching VscodeAdapter public API.
- * Used for type-safe overrides in createMockIdeAdapter.
+ * Create a mock vscode module for testing.
+ *
+ * Provides complete mock of VSCode API with sensible defaults:
+ * - window.activeTerminal, activeTextEditor
+ * - window.visibleTextEditors
+ * - window.setStatusBarMessage (returns Disposable)
+ * - window.show*Message methods (return Promise)
+ * - window.showTextDocument
+ * - window.tabGroups
+ * - workspace.openTextDocument
+ * - workspace.workspaceFolders
+ * - workspace.getWorkspaceFolder
+ * - workspace.fs.stat
+ * - workspace.asRelativePath
+ * - workspace.onDidCloseTextDocument
+ * - env.clipboard.writeText
+ * - Uri.file, Uri.parse
+ * - Position, Selection, Range constructors
+ * - TextEditorRevealType enum
+ *
+ * This mock object can be passed to `new VscodeAdapter(mockVscode)` to create
+ * a real VscodeAdapter instance that delegates to mocked VSCode API.
+ *
+ * Tests can mutate properties like `mockVscode.window.activeTerminal` to simulate
+ * IDE state changes.
+ *
+ * @param overrides - Optional overrides for specific VSCode API properties
+ * @returns Mock vscode module compatible with VscodeAdapter constructor
  */
-interface MockIdeAdapter {
-  writeTextToClipboard: jest.Mock;
-  setStatusBarMessage: jest.Mock;
-  showWarningMessage: jest.Mock;
-  showInformationMessage: jest.Mock;
-  showErrorMessage: jest.Mock;
-  showTextDocument: jest.Mock;
-  resolveWorkspacePath: jest.Mock;
-  createPosition: jest.Mock;
-  createSelection: jest.Mock;
-  createRange: jest.Mock;
-  onDidCloseTerminal: jest.Mock;
-  onDidCloseTextDocument: jest.Mock;
-  activeTerminal: vscode.Terminal | undefined;
-  activeTextEditor: vscode.TextEditor | undefined;
-  visibleTextEditors: readonly vscode.TextEditor[];
-  tabGroups: vscode.TabGroups;
-  getWorkspaceFolder: jest.Mock;
-  asRelativePath: jest.Mock;
+export const createMockVscode = (overrides?: Partial<typeof vscode>): any => {
+  const window = createMockWindow();
+  const workspace = createMockWorkspace();
+
+  return {
+    window,
+    workspace,
+    env: createMockEnv(),
+    Uri: createMockUri(),
+    Position: createMockPosition(),
+    Selection: createMockSelection(),
+    Range: createMockRange(),
+    TextEditorRevealType: {
+      Default: 0,
+      InCenter: 1,
+      InCenterIfOutsideViewport: 2,
+      AtTop: 3,
+    },
+    ...overrides,
+  };
+};
+
+/**
+ * Test-only extension of VscodeAdapter that exposes the underlying vscode instance.
+ *
+ * This allows tests to mutate the mock vscode instance for test scenarios without
+ * polluting the production VscodeAdapter class or breaking encapsulation.
+ */
+export interface VscodeAdapterWithTestHooks extends VscodeAdapter {
+  /**
+   * Test-only accessor to the underlying vscode instance.
+   * Allows tests to mutate mock state (e.g., window.activeTerminal) for test scenarios.
+   *
+   * Returns `any` to allow property mutation in tests (the actual return is the mock vscode instance).
+   */
+  __getVscodeInstance(): any;
 }
 
 /**
- * Create a mock IDE adapter for testing VscodeAdapter-dependent code.
+ * Create a mock VscodeAdapter instance for testing.
  *
- * Provides complete mock of VscodeAdapter interface with sensible defaults:
- * - UI operations (notifications, status bar)
- * - Document operations (showTextDocument)
- * - Workspace operations (resolveWorkspacePath, getWorkspaceFolder, asRelativePath)
- * - Primitive factories (Position, Selection, Range)
- * - Event listeners (onDidCloseTerminal, onDidCloseTextDocument)
- * - Workspace getters (activeTerminal, activeTextEditor, visibleTextEditors, tabGroups)
+ * This creates a **real VscodeAdapter instance** backed by a mocked VSCode API,
+ * not a mock object. This ensures tests verify actual adapter behavior and
+ * maintain type safety with the production VscodeAdapter class.
  *
- * Composes from existing mock components for consistency across tests.
+ * **Test-only feature:** The returned adapter includes `__getVscodeInstance()` for tests
+ * to access and mutate the underlying mock vscode instance:
  *
- * @param overrides - Optional overrides for specific methods/properties
- * @returns Mock IDE adapter with all VscodeAdapter methods
+ * ```typescript
+ * const adapter = createMockVscodeAdapter();
+ * const mockVscode = adapter.__getVscodeInstance();
+ *
+ * // Simulate terminal becoming active
+ * mockVscode.window.activeTerminal = mockTerminal;
+ *
+ * // Now adapter.activeTerminal returns mockTerminal
+ * expect(adapter.activeTerminal).toBe(mockTerminal);
+ * ```
+ *
+ * @param mockVscodeInstance - Optional mock vscode module (creates default if not provided)
+ * @returns Real VscodeAdapter instance with test hooks for accessing underlying mock
  */
-export const createMockIdeAdapter = (overrides?: Partial<MockIdeAdapter>) => {
-  const window = createMockWindow();
-  const mockPosition = createMockPosition();
-  const mockSelection = createMockSelection();
-  const mockRange = createMockRange();
+export const createMockVscodeAdapter = (
+  mockVscodeInstance?: typeof vscode,
+): VscodeAdapterWithTestHooks => {
+  const vscodeInstance = mockVscodeInstance || createMockVscode();
+  const adapter = new VscodeAdapter(vscodeInstance) as VscodeAdapterWithTestHooks;
 
+  // Add test-only hook to access the underlying vscode instance
+  adapter.__getVscodeInstance = () => vscodeInstance;
+
+  return adapter;
+};
+
+/**
+ * Create a mock Tab for tab group tests.
+ *
+ * Provides minimal Tab structure for testing tab group operations.
+ * The input property is intentionally simple (just uri) since tests
+ * spy on isTextEditorTab() and don't need full TabInputText structure.
+ *
+ * @param uri - Document URI for the tab
+ * @param overrides - Optional property overrides
+ * @returns Mock Tab instance
+ */
+export const createMockTab = (
+  uri: vscode.Uri,
+  overrides?: Partial<vscode.Tab>,
+): vscode.Tab => {
   return {
-    // Clipboard operations
-    writeTextToClipboard: jest.fn().mockResolvedValue(undefined),
-
-    // Status bar
-    setStatusBarMessage: window.setStatusBarMessage,
-
-    // Notifications
-    showWarningMessage: window.showWarningMessage,
-    showInformationMessage: window.showInformationMessage,
-    showErrorMessage: window.showErrorMessage,
-
-    // Document/editor operations
-    showTextDocument: window.showTextDocument,
-
-    // Workspace operations
-    resolveWorkspacePath: jest.fn().mockResolvedValue({ fsPath: '/workspace/file.ts' }),
-    getWorkspaceFolder: jest.fn().mockReturnValue(undefined),
-    asRelativePath: jest.fn((pathOrUri: string | vscode.Uri) => {
-      const path = typeof pathOrUri === 'string' ? pathOrUri : pathOrUri.fsPath;
-      return path.split('/').pop() || path;
-    }),
-
-    // Primitive factories
-    createPosition: mockPosition,
-    createSelection: mockSelection,
-    createRange: mockRange,
-
-    // Event listeners
-    onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
-    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
-
-    // Workspace getters
-    activeTerminal: undefined,
-    activeTextEditor: undefined,
-    visibleTextEditors: [],
-    tabGroups: {
-      all: [],
-      activeTabGroup: undefined,
-      onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
-      onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
-      close: jest.fn(),
-    } as unknown as vscode.TabGroups,
-
-    // Apply overrides
+    input: { uri },
     ...overrides,
-  };
+  } as unknown as vscode.Tab;
+};
+
+/**
+ * Create a mock TabGroup for tab group tests.
+ *
+ * Provides minimal TabGroup structure for testing tab operations.
+ * By default, creates a group with a single tab that is also the active tab.
+ *
+ * @param tabs - Array of tabs in the group (defaults to empty array)
+ * @param overrides - Optional property overrides (e.g., activeTab)
+ * @returns Mock TabGroup instance
+ */
+export const createMockTabGroup = (
+  tabs: vscode.Tab[] = [],
+  overrides?: Partial<vscode.TabGroup>,
+): vscode.TabGroup => {
+  return {
+    tabs,
+    activeTab: tabs[0], // First tab is active by default
+    ...overrides,
+  } as unknown as vscode.TabGroup;
+};
+
+/**
+ * Configure workspace mocks for typical file editor tests.
+ *
+ * Sets up common workspace API mocks including:
+ * - getWorkspaceFolder: Returns mock workspace folder for given document
+ * - asRelativePath: Returns relative path for display
+ * - openTextDocument: Returns document with URI
+ * - visibleTextEditors: Empty array by default
+ * - tabGroups: Empty tab groups structure
+ *
+ * This centralizes the repetitive workspace mock configuration found in many tests.
+ *
+ * @param mockVscode - The mocked vscode instance (from adapter.__getVscodeInstance())
+ * @param options - Configuration options
+ * @param options.workspacePath - Workspace root path (default: '/workspace')
+ * @param options.relativePath - Relative path for document (default: 'src/file.ts')
+ * @param options.visibleEditors - Array of visible editors (default: [])
+ */
+export const configureWorkspaceMocks = (
+  mockVscode: any,
+  options: {
+    workspacePath?: string;
+    relativePath?: string;
+    visibleEditors?: vscode.TextEditor[];
+  } = {},
+): void => {
+  const {
+    workspacePath = '/workspace',
+    relativePath = 'src/file.ts',
+    visibleEditors = [],
+  } = options;
+
+  // Mock workspace folder lookup
+  (mockVscode.workspace.getWorkspaceFolder as jest.Mock) = jest.fn().mockReturnValue({
+    uri: { fsPath: workspacePath },
+  });
+
+  // Mock relative path conversion
+  (mockVscode.workspace.asRelativePath as jest.Mock) = jest.fn().mockReturnValue(relativePath);
+
+  // Mock document opening
+  (mockVscode.workspace.openTextDocument as jest.Mock) = jest
+    .fn()
+    .mockImplementation((uri: vscode.Uri) => Promise.resolve({ uri }));
+
+  // Set visible editors
+  mockVscode.window.visibleTextEditors = visibleEditors;
+
+  // Initialize empty tab groups structure
+  mockVscode.window.tabGroups = {
+    all: [],
+    activeTabGroup: undefined,
+    onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
+    onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
+    close: jest.fn(),
+  } as unknown as vscode.TabGroups;
+};
+
+/**
+ * Simulate a closed editor by clearing all editors and tab groups.
+ *
+ * Useful for testing scenarios where an editor has been closed:
+ * - Empty visibleTextEditors array
+ * - Empty tab groups
+ *
+ * @param mockVscode - The mocked vscode instance (from adapter.__getVscodeInstance())
+ */
+export const simulateClosedEditor = (mockVscode: any): void => {
+  mockVscode.window.visibleTextEditors = [];
+  mockVscode.window.tabGroups = {
+    all: [],
+    activeTabGroup: undefined,
+    onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
+    onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
+    close: jest.fn(),
+  } as unknown as vscode.TabGroups;
+};
+
+/**
+ * Configure workspace to simulate a file outside any workspace folder.
+ *
+ * Sets getWorkspaceFolder to return undefined, indicating the file
+ * is not within any workspace. Useful for testing edge cases like
+ * standalone files or files from external locations.
+ *
+ * @param mockVscode - The mocked vscode instance (from adapter.__getVscodeInstance())
+ */
+export const simulateFileOutsideWorkspace = (mockVscode: any): void => {
+  (mockVscode.workspace.getWorkspaceFolder as jest.Mock) = jest.fn().mockReturnValue(undefined);
 };
