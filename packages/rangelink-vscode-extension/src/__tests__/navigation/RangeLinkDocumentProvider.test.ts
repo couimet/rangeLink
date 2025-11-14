@@ -13,15 +13,12 @@ import * as vscode from 'vscode';
 import { RangeLinkDocumentProvider } from '../../navigation/RangeLinkDocumentProvider';
 import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { createMockCancellationToken, createMockDocument } from '../helpers';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 // Test pattern that matches common RangeLink formats for provider integration tests
 // Provider doesn't validate pattern correctness (handler's responsibility)
 // Pattern matches: [path]#[range] or [path]##[range] where path is non-whitespace chars
 const TEST_RANGELINK_PATTERN = /\S+##?L\d+(C\d+)?(-L\d+(C\d+)?)?/g;
-
-// VSCode module is globally mocked via __mocks__/vscode.ts
-// This provides baseline mocks for Uri, Range, Position, etc.
-jest.mock('vscode');
 
 /**
  * Create a mock RangeLinkNavigationHandler for integration tests.
@@ -39,6 +36,7 @@ const createMockHandler = (): jest.Mocked<RangeLinkNavigationHandler> =>
 
 describe('RangeLinkDocumentProvider', () => {
   let provider: RangeLinkDocumentProvider;
+  let mockAdapter: VscodeAdapterWithTestHooks;
   let mockLogger: Logger;
   let mockHandler: jest.Mocked<RangeLinkNavigationHandler>;
 
@@ -46,17 +44,11 @@ describe('RangeLinkDocumentProvider', () => {
     // Create mock logger using barebone-logger-testing
     mockLogger = createMockLogger();
 
-    // Restore vscode.Uri.parse implementation after jest.config.js clearMocks
-    // clearMocks clears mock implementations, so we must restore it here
-    (vscode.Uri.parse as jest.Mock).mockImplementation((str: string) => ({
-      scheme: str.startsWith('file:') ? 'file' : 'command',
-      path: str,
-      toString: () => str,
-      fsPath: str.replace(/^file:\/\//, ''),
-    }));
+    // Create mock adapter
+    mockAdapter = createMockVscodeAdapter();
 
     mockHandler = createMockHandler();
-    provider = new RangeLinkDocumentProvider(mockHandler, mockLogger);
+    provider = new RangeLinkDocumentProvider(mockHandler, mockAdapter, mockLogger);
   });
 
   describe('provideDocumentLinks', () => {

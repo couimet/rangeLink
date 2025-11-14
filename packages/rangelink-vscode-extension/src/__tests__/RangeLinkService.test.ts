@@ -1,21 +1,8 @@
 import type { DelimiterConfig } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
 
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { RangeLinkService } from '../RangeLinkService';
-
-// Mock vscode module
-jest.mock('vscode', () => ({
-  window: {
-    activeTextEditor: undefined,
-    showErrorMessage: jest.fn(),
-  },
-  workspace: {
-    getWorkspaceFolder: jest.fn(),
-    asRelativePath: jest.fn(),
-  },
-}));
 
 describe('RangeLinkService', () => {
   describe('copyAndNotify', () => {

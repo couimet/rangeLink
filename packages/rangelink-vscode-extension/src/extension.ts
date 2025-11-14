@@ -35,8 +35,8 @@ export function activate(context: vscode.ExtensionContext): void {
   const delimiters = getDelimitersForExtension(vscodeConfig as any, ideAdapter, getLogger());
 
   // Create unified destination manager (Phase 3)
-  const factory = new DestinationFactory(getLogger());
-  const destinationManager = new PasteDestinationManager(context, factory, getLogger());
+  const factory = new DestinationFactory(ideAdapter, getLogger());
+  const destinationManager = new PasteDestinationManager(context, factory, ideAdapter, getLogger());
 
   const service = new RangeLinkService(delimiters, ideAdapter, destinationManager);
 
@@ -62,7 +62,11 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register document link provider for clickable links in editor files
   // Only register for specific schemes to prevent infinite recursion when scanning output channels
-  const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, getLogger());
+  const documentLinkProvider = new RangeLinkDocumentProvider(
+    navigationHandler,
+    ideAdapter,
+    getLogger(),
+  );
   context.subscriptions.push(
     registerWithLogging(
       vscode.languages.registerDocumentLinkProvider(

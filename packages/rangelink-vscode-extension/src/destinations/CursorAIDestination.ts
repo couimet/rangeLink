@@ -1,6 +1,6 @@
 import type { Logger } from 'barebone-logger';
-import * as vscode from 'vscode';
 
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**
@@ -36,7 +36,10 @@ export class CursorAIDestination implements PasteDestination {
     'workbench.action.toggleAuxiliaryBar', // Fallback: Toggle secondary sidebar
   ];
 
-  constructor(private readonly logger: Logger) {}
+  constructor(
+    private readonly ideAdapter: VscodeAdapter,
+    private readonly logger: Logger,
+  ) {}
 
   /**
    * Check if running in Cursor IDE
@@ -52,7 +55,7 @@ export class CursorAIDestination implements PasteDestination {
    */
   async isAvailable(): Promise<boolean> {
     // Method 1: Check app name (PRIMARY per Q3: Option A)
-    const appName = vscode.env.appName.toLowerCase();
+    const appName = this.ideAdapter.appName.toLowerCase();
     const appNameMatch = appName.includes('cursor');
     this.logger.debug(
       { fn: 'CursorAIDestination.isAvailable', method: 'appName', appName, detected: appNameMatch },
@@ -64,7 +67,9 @@ export class CursorAIDestination implements PasteDestination {
     }
 
     // Method 2: Check for Cursor-specific extensions
-    const cursorExtensions = vscode.extensions.all.filter((ext) => ext.id.startsWith('cursor.'));
+    const cursorExtensions = this.ideAdapter.extensions.filter((ext) =>
+      ext.id.startsWith('cursor.'),
+    );
     const hasExtensions = cursorExtensions.length > 0;
     this.logger.debug(
       {
@@ -83,7 +88,7 @@ export class CursorAIDestination implements PasteDestination {
     }
 
     // Method 3: Check URI scheme
-    const uriScheme = vscode.env.uriScheme;
+    const uriScheme = this.ideAdapter.uriScheme;
     const schemeMatch = uriScheme === 'cursor';
     this.logger.debug(
       {
@@ -131,7 +136,7 @@ export class CursorAIDestination implements PasteDestination {
 
     try {
       // Step 1: Copy to clipboard
-      await vscode.env.clipboard.writeText(text);
+      await this.ideAdapter.writeTextToClipboard(text);
       this.logger.debug(
         { fn: 'CursorAIDestination.paste', textLength: text.length },
         'Copied text to clipboard',
@@ -141,7 +146,7 @@ export class CursorAIDestination implements PasteDestination {
       let chatOpened = false;
       for (const command of CursorAIDestination.CHAT_COMMANDS) {
         try {
-          await vscode.commands.executeCommand(command);
+          await this.ideAdapter.executeCommand(command);
           this.logger.debug(
             { fn: 'CursorAIDestination.paste', command },
             'Successfully executed chat open command',
@@ -161,7 +166,7 @@ export class CursorAIDestination implements PasteDestination {
       }
 
       // Step 3: Show notification (regardless of whether chat opened)
-      void vscode.window.showInformationMessage(
+      void this.ideAdapter.showInformationMessage(
         'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
       );
 

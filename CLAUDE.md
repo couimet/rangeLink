@@ -23,7 +23,10 @@
 
 - **NO** `expect().not.toThrow()` for happy paths - just call the function directly
 - **USE** `.toStrictEqual()` not `.toEqual()`
-- **USE** string literals for enum values in assertions: `'Regular'` not `LinkType.Regular`
+- **USE** string literals for enum values in assertions:
+  - **Our own enums**: Use string literals to test contract - `'Regular'` not `LinkType.Regular`
+  - **External library enums/constants**: Use actual constant - `vscode.TextEditorRevealType.InCenterIfOutsideViewport` is fine
+  - Rationale: We control our own enum values (test contract), but not external libraries (use their constants)
 
 ---
 
@@ -250,6 +253,13 @@ RangeLink is a tool for generating and navigating code location links with suppo
   - Place in: `/utils/` (pure utilities), `/services/` (business logic), or root `/src/` (feature-specific)
   - Always use arrow function exports with JSDoc
   - Apply SOLID principles by default (Single Responsibility, minimal dependencies)
+- **Facade pattern for external dependencies**:
+  - Facades wrap **behaviors** (methods), not **types/constants**
+  - ✅ Wrap through adapter: `ideAdapter.showTextDocument()`, `ideAdapter.createPosition()`
+  - ✅ Import directly: `vscode.TextEditorRevealType.InCenterIfOutsideViewport` (constants/enums)
+  - Facades should be thin delegation layers (1-3 lines per method)
+  - Complex algorithms belong in utilities, not facades
+  - Example: VscodeAdapter wraps VSCode API, but vscode enums can be imported directly
 - Prefer functional error handling with `Result<T, E>` type
 - Use custom Jest matchers for Result testing (`toBeOkWith`, `toBeErrWith`)
 - Always use `.toStrictEqual()` for test assertions (not `.toEqual()`)
@@ -374,6 +384,7 @@ export const parseLink = (
    - Get refactoring recommendations
 
 **Example invocation:**
+
 ```
 Use @agent-test-scope-fixer to analyze [file] and determine:
 1. Are tests properly scoped (unit vs integration)?
@@ -387,20 +398,23 @@ Use @agent-test-scope-fixer to analyze [file] and determine:
 **Prefer mocking for presentation-layer tests:**
 
 When testing presentation-layer components (providers, controllers, UI logic):
+
 - **Mock all dependencies** to isolate the component under test
 - **Test only orchestration logic** (how component delegates to dependencies)
 - **Avoid testing implementation details** of delegated utilities
 - **Add integration tests separately** (2-3 tests) to verify mocks work correctly
 
 **Example: Document Provider (GOOD pattern)**
+
 ```typescript
 // Mock the handler completely
-const createMockHandler = (): jest.Mocked<RangeLinkNavigationHandler> => ({
-  getPattern: jest.fn(() => TEST_PATTERN),
-  parseLink: jest.fn(),
-  formatTooltip: jest.fn(),
-  navigateToLink: jest.fn(),
-}) as unknown as jest.Mocked<RangeLinkNavigationHandler>;
+const createMockHandler = (): jest.Mocked<RangeLinkNavigationHandler> =>
+  ({
+    getPattern: jest.fn(() => TEST_PATTERN),
+    parseLink: jest.fn(),
+    formatTooltip: jest.fn(),
+    navigateToLink: jest.fn(),
+  }) as unknown as jest.Mocked<RangeLinkNavigationHandler>;
 
 // Tests focus ONLY on provider orchestration
 it('should delegate parsing to handler', () => {
@@ -413,6 +427,7 @@ it('should delegate parsing to handler', () => {
 ```
 
 **Example: Terminal Provider (BAD pattern - avoid this)**
+
 ```typescript
 // ❌ DON'T: Use real handler in unit tests
 const handler = new RangeLinkNavigationHandler(delimiters, mockLogger);
@@ -428,12 +443,14 @@ it('should extend single-position selection', async () => {
 ```
 
 **Integration Tests (when to add):**
+
 - Add 2-3 integration tests in separate describe block or file
 - Use real implementations to verify mocks are accurate
 - Test critical paths end-to-end
 - Keep minimal - most tests should be unit tests with mocks
 
 **Rationale:**
+
 - **Faster tests:** Mocks avoid real parsing/API calls
 - **Focused tests:** Test one layer at a time
 - **Maintainable:** Tests don't break when dependencies change

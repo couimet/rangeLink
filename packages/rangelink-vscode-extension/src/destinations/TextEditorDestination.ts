@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { applySmartPadding } from '../utils/applySmartPadding';
 import { isEligibleForPaste } from '../utils/isEligibleForPaste';
 import type { DestinationType, PasteDestination } from './PasteDestination';
@@ -48,7 +49,10 @@ export class TextEditorDestination implements PasteDestination {
 
   private boundDocumentUri: vscode.Uri | undefined;
 
-  constructor(private readonly logger: Logger) {}
+  constructor(
+    private readonly ideAdapter: VscodeAdapter,
+    private readonly logger: Logger,
+  ) {}
 
   /**
    * Check if text editor destination is available (has bound document)
@@ -102,7 +106,7 @@ export class TextEditorDestination implements PasteDestination {
     const boundDisplayName = this.getEditorDisplayName();
 
     // LAZY VALIDATION: Find which tab group contains the bound document
-    const boundTabGroup = this.findTabGroupContainingDocument(this.boundDocumentUri);
+    const boundTabGroup = this.ideAdapter.findTabGroupForDocument(this.boundDocumentUri);
 
     if (!boundTabGroup) {
       // Document not found in any tab group - likely closed or tab group closed
@@ -128,8 +132,7 @@ export class TextEditorDestination implements PasteDestination {
       return false;
     }
 
-    // Check that active tab is a text editor (not terminal)
-    if (!(activeTab.input instanceof vscode.TabInputText)) {
+    if (!this.ideAdapter.isTextEditorTab(activeTab)) {
       this.logger.warn(
         {
           fn: 'TextEditorDestination.paste',
@@ -141,25 +144,23 @@ export class TextEditorDestination implements PasteDestination {
       return false;
     }
 
-    const activeTabUri = activeTab.input.uri;
-    if (activeTabUri.toString() !== this.boundDocumentUri.toString()) {
+    if (activeTab.input.uri.toString() !== this.boundDocumentUri.toString()) {
       // Bound document exists but is not topmost - show warning but keep binding
       this.logger.warn(
         {
           fn: 'TextEditorDestination.paste',
           boundDocumentUri: this.boundDocumentUri.toString(),
-          activeTabUri: activeTabUri.toString(),
+          activeTabUri: activeTab.input.uri.toString(),
           boundDisplayName,
         },
         'Bound document is not topmost in its tab group',
       );
-      // Return false with special marker - caller should show "not topmost" warning
       return false;
     }
 
-    // Find the TextEditor object for the bound document
-    const editor = vscode.window.visibleTextEditors.find(
-      (e) => e.document.uri.toString() === this.boundDocumentUri!.toString(),
+    // Find the TextEditor object for the active tab (we've already validated it matches bound document)
+    const editor = this.ideAdapter.visibleTextEditors.find(
+      (e) => e.document.uri.toString() === activeTab.input.uri.toString(),
     );
 
     if (!editor) {
@@ -196,7 +197,7 @@ export class TextEditorDestination implements PasteDestination {
       }
 
       // Focus the editor (similar to terminal.show(false) behavior)
-      await vscode.window.showTextDocument(editor.document, {
+      await this.ideAdapter.showTextDocument(editor.document.uri, {
         preserveFocus: false, // Steal focus to bring user to paste destination
         viewColumn: editor.viewColumn, // Keep in same tab group
       });
@@ -225,29 +226,6 @@ export class TextEditorDestination implements PasteDestination {
       );
       return false;
     }
-  }
-
-  /**
-   * Find which tab group contains the given document URI
-   *
-   * Dynamically searches all tab groups to find the one containing the document.
-   * This allows the bound document to be moved between tab groups.
-   *
-   * @param documentUri - The document URI to search for
-   * @returns The tab group containing the document, or undefined if not found
-   */
-  private findTabGroupContainingDocument(documentUri: vscode.Uri): vscode.TabGroup | undefined {
-    for (const tabGroup of vscode.window.tabGroups.all) {
-      for (const tab of tabGroup.tabs) {
-        // Only check text editor tabs (skip terminals, etc.)
-        if (tab.input instanceof vscode.TabInputText) {
-          if (tab.input.uri.toString() === documentUri.toString()) {
-            return tabGroup;
-          }
-        }
-      }
-    }
-    return undefined;
   }
 
   /**
@@ -305,9 +283,9 @@ export class TextEditorDestination implements PasteDestination {
     }
 
     // Get workspace-relative path for file:// scheme
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(this.boundDocumentUri);
+    const workspaceFolder = this.ideAdapter.getWorkspaceFolder(this.boundDocumentUri);
     if (workspaceFolder) {
-      const relativePath = vscode.workspace.asRelativePath(this.boundDocumentUri, false);
+      const relativePath = this.ideAdapter.asRelativePath(this.boundDocumentUri, false);
       return relativePath;
     }
 
