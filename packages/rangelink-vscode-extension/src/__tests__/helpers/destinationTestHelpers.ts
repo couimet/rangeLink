@@ -16,7 +16,7 @@ import type { DestinationType, PasteDestination } from '../../destinations/Paste
  * - id (DestinationType)
  * - displayName (string)
  * - isAvailable (async function)
- * - paste (async function)
+ * - pasteLink (async function)
  *
  * @param destination - The destination instance to test
  * @param expectedId - Expected id value
@@ -40,8 +40,8 @@ export const testDestinationInterfaceCompliance = (
       expect(typeof destination.isAvailable).toBe('function');
     });
 
-    it('should have paste method', () => {
-      expect(typeof destination.paste).toBe('function');
+    it('should have pasteLink method', () => {
+      expect(typeof destination.pasteLink).toBe('function');
     });
 
     it('should have async isAvailable method', async () => {
@@ -50,8 +50,8 @@ export const testDestinationInterfaceCompliance = (
       await result; // Wait for promise to resolve
     });
 
-    it('should have async paste method', async () => {
-      const result = destination.paste('test');
+    it('should have async pasteLink method', async () => {
+      const result = destination.pasteLink('test');
       expect(result).toBeInstanceOf(Promise);
       await result; // Wait for promise to resolve
     });
@@ -92,7 +92,7 @@ export const testDestinationLogging = (
 /**
  * Test paste return values
  *
- * Verifies that paste() returns correct boolean values:
+ * Verifies that pasteLink() returns correct boolean values:
  * - true on success
  * - false on failure (not available, error, etc.)
  *
@@ -105,16 +105,16 @@ export const testPasteReturnValues = (
   successScenario: () => Promise<void>,
   failureScenario: () => Promise<void>,
 ): void => {
-  describe('paste() return values', () => {
+  describe('pasteLink() return values', () => {
     it('should return true on successful paste', async () => {
       await successScenario();
-      const result = await destination.paste('test');
+      const result = await destination.pasteLink('test');
       expect(result).toBe(true);
     });
 
     it('should return false when destination not available', async () => {
       await failureScenario();
-      const result = await destination.paste('test');
+      const result = await destination.pasteLink('test');
       expect(result).toBe(false);
     });
   });

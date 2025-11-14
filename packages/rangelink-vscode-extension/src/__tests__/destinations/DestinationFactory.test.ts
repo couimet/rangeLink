@@ -45,7 +45,7 @@ describe('DestinationFactory', () => {
       const destination = factory.create('terminal');
 
       // Verify logger was injected by triggering a log call
-      await destination.paste('test');
+      await destination.pasteLink('test');
 
       expect(mockLogger.warn).toHaveBeenCalled(); // paste() logs warning when no terminal bound
     });
@@ -149,7 +149,7 @@ describe('DestinationFactory', () => {
       expect(terminal).toHaveProperty('id');
       expect(terminal).toHaveProperty('displayName');
       expect(terminal).toHaveProperty('isAvailable');
-      expect(terminal).toHaveProperty('paste');
+      expect(terminal).toHaveProperty('pasteLink');
     });
 
     it('should create destinations with correct types', async () => {
@@ -157,7 +157,7 @@ describe('DestinationFactory', () => {
 
       // Methods should have correct return types
       expect(typeof (await terminal.isAvailable())).toBe('boolean');
-      expect(typeof (await terminal.paste('test'))).toBe('boolean');
+      expect(typeof (await terminal.pasteLink('test'))).toBe('boolean');
       expect(typeof terminal.displayName).toBe('string');
       expect(typeof terminal.id).toBe('string');
     });

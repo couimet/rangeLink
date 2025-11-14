@@ -62,7 +62,7 @@ export class TextEditorDestination implements PasteDestination {
   }
 
   /**
-   * Paste text to bound text editor at cursor position with smart padding
+   * Paste a RangeLink to bound text editor at cursor position with smart padding
    *
    * **Tab Group Binding Strategy (MVP):**
    * - Requires 2+ tab groups (split editor)
@@ -77,26 +77,26 @@ export class TextEditorDestination implements PasteDestination {
    * - User can switch back to make document topmost again
    *
    * **Smart padding behavior:**
-   * - Only adds leading space if text doesn't start with whitespace
-   * - Only adds trailing space if text doesn't end with whitespace
+   * - Only adds leading space if link doesn't start with whitespace
+   * - Only adds trailing space if link doesn't end with whitespace
    * - Consistent with TerminalDestination behavior
    *
    * **Auto-focus behavior:**
    * - After successful paste, focuses the bound editor
    * - Consistent with TerminalDestination and AI assistant destinations
    *
-   * @param text - The text to paste
+   * @param link - The RangeLink to paste
    * @returns true if paste succeeded, false if validation failed or cannot paste
    */
-  async paste(text: string): Promise<boolean> {
-    if (!isEligibleForPaste(text)) {
-      this.logger.info({ fn: 'TextEditorDestination.paste', text }, 'Text not eligible for paste');
+  async pasteLink(link: string): Promise<boolean> {
+    if (!isEligibleForPaste(link)) {
+      this.logger.info({ fn: 'TextEditorDestination.pasteLink', link }, 'Link not eligible for paste');
       return false;
     }
 
     if (!this.boundDocumentUri) {
       this.logger.warn(
-        { fn: 'TextEditorDestination.paste', textLength: text.length },
+        { fn: 'TextEditorDestination.pasteLink', linkLength: link.length },
         'Cannot paste: No text editor bound',
       );
       return false;
@@ -112,7 +112,7 @@ export class TextEditorDestination implements PasteDestination {
       // Document not found in any tab group - likely closed or tab group closed
       this.logger.error(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDocumentUri: this.boundDocumentUri.toString(),
           boundDisplayName,
         },
@@ -126,7 +126,7 @@ export class TextEditorDestination implements PasteDestination {
     const activeTab = boundTabGroup.activeTab;
     if (!activeTab) {
       this.logger.warn(
-        { fn: 'TextEditorDestination.paste', boundDisplayName },
+        { fn: 'TextEditorDestination.pasteLink', boundDisplayName },
         'Tab group has no active tab',
       );
       return false;
@@ -135,7 +135,7 @@ export class TextEditorDestination implements PasteDestination {
     if (!this.ideAdapter.isTextEditorTab(activeTab)) {
       this.logger.warn(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDisplayName,
           tabInputType: typeof activeTab.input,
         },
@@ -148,7 +148,7 @@ export class TextEditorDestination implements PasteDestination {
       // Bound document exists but is not topmost - show warning but keep binding
       this.logger.warn(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDocumentUri: this.boundDocumentUri.toString(),
           activeTabUri: activeTab.input.uri.toString(),
           boundDisplayName,
@@ -166,7 +166,7 @@ export class TextEditorDestination implements PasteDestination {
     if (!editor) {
       this.logger.error(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDocumentUri: this.boundDocumentUri.toString(),
           boundDisplayName,
         },
@@ -177,19 +177,19 @@ export class TextEditorDestination implements PasteDestination {
 
     // All validations passed - perform the paste
     try {
-      const paddedText = applySmartPadding(text);
+      const paddedLink = applySmartPadding(link);
 
       const success = await editor.edit((editBuilder) => {
-        editBuilder.insert(editor.selection.active, paddedText);
+        editBuilder.insert(editor.selection.active, paddedLink);
       });
 
       if (!success) {
         this.logger.error(
           {
-            fn: 'TextEditorDestination.paste',
+            fn: 'TextEditorDestination.pasteLink',
             boundDisplayName,
             boundDocumentUri: this.boundDocumentUri.toString(),
-            textLength: text.length,
+            linkLength: link.length,
           },
           'Edit operation failed',
         );
@@ -204,25 +204,25 @@ export class TextEditorDestination implements PasteDestination {
 
       this.logger.info(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDisplayName,
           boundDocumentUri: this.boundDocumentUri.toString(),
-          originalLength: text.length,
-          paddedLength: paddedText.length,
+          originalLength: link.length,
+          paddedLength: paddedLink.length,
         },
-        `Pasted to text editor: ${boundDisplayName}`,
+        `Pasted link to text editor: ${boundDisplayName}`,
       );
 
       return true;
     } catch (error) {
       this.logger.error(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDisplayName,
           boundDocumentUri: this.boundDocumentUri.toString(),
           error,
         },
-        'Failed to paste to text editor',
+        'Failed to paste link to text editor',
       );
       return false;
     }

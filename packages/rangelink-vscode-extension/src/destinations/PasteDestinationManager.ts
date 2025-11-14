@@ -155,7 +155,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Sending text to ${displayName}`,
     );
 
-    const result = await this.boundDestination.paste(text);
+    const result = await this.boundDestination.pasteLink(text);
 
     if (!result) {
       this.logger.error(
@@ -165,7 +165,7 @@ export class PasteDestinationManager implements vscode.Disposable {
           displayName,
           ...destinationDetails,
         },
-        `Paste failed to ${displayName}`,
+        `Paste link failed to ${displayName}`,
       );
     }
 

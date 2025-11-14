@@ -48,12 +48,12 @@ export interface PasteDestination {
    * - GitHub Copilot: Extension must be installed and active
    * - Claude Code: Extension must be installed and active
    *
-   * @returns Promise resolving to true if paste() can succeed, false otherwise
+   * @returns Promise resolving to true if pasteLink() can succeed, false otherwise
    */
   isAvailable(): Promise<boolean>;
 
   /**
-   * Paste text to this destination with appropriate padding and focus
+   * Paste a RangeLink to this destination with appropriate padding and focus
    *
    * Implementation requirements:
    * - Add padding if needed (smart padding: skip if already padded)
@@ -61,8 +61,8 @@ export interface PasteDestination {
    * - Log success/failure for debugging
    * - Return false on failure (no throwing)
    *
-   * @param text - The text to paste (typically a RangeLink)
+   * @param link - The RangeLink to paste
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  paste(text: string): Promise<boolean>;
+  pasteLink(link: string): Promise<boolean>;
 }

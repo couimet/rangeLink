@@ -114,21 +114,21 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Paste text to Cursor AI chat
+   * Paste a RangeLink to Cursor AI chat
    *
    * **Implementation:** Since Cursor doesn't support programmatic text insertion,
    * this method uses a clipboard-based workaround:
-   * 1. Copy text to clipboard
+   * 1. Copy link to clipboard
    * 2. Open Cursor chat panel
    * 3. Show notification prompting user to paste
    *
-   * @param text - The text to paste
+   * @param link - The RangeLink to paste
    * @returns true if clipboard copy and chat open succeeded, false otherwise
    */
-  async paste(text: string): Promise<boolean> {
+  async pasteLink(link: string): Promise<boolean> {
     if (!(await this.isAvailable())) {
       this.logger.warn(
-        { fn: 'CursorAIDestination.paste' },
+        { fn: 'CursorAIDestination.pasteLink' },
         'Cannot paste: Not running in Cursor IDE',
       );
       return false;
@@ -136,10 +136,10 @@ export class CursorAIDestination implements PasteDestination {
 
     try {
       // Step 1: Copy to clipboard
-      await this.ideAdapter.writeTextToClipboard(text);
+      await this.ideAdapter.writeTextToClipboard(link);
       this.logger.debug(
-        { fn: 'CursorAIDestination.paste', textLength: text.length },
-        'Copied text to clipboard',
+        { fn: 'CursorAIDestination.pasteLink', linkLength: link.length },
+        'Copied link to clipboard',
       );
 
       // Step 2: Try opening chat panel with multiple fallback commands
@@ -148,21 +148,21 @@ export class CursorAIDestination implements PasteDestination {
         try {
           await this.ideAdapter.executeCommand(command);
           this.logger.debug(
-            { fn: 'CursorAIDestination.paste', command },
+            { fn: 'CursorAIDestination.pasteLink', command },
             'Successfully executed chat open command',
           );
           chatOpened = true;
           break;
         } catch (commandError) {
           this.logger.debug(
-            { fn: 'CursorAIDestination.paste', command, error: commandError },
+            { fn: 'CursorAIDestination.pasteLink', command, error: commandError },
             'Command failed, trying next fallback',
           );
         }
       }
 
       if (!chatOpened) {
-        this.logger.warn({ fn: 'CursorAIDestination.paste' }, 'All chat open commands failed');
+        this.logger.warn({ fn: 'CursorAIDestination.pasteLink' }, 'All chat open commands failed');
       }
 
       // Step 3: Show notification (regardless of whether chat opened)
@@ -171,14 +171,14 @@ export class CursorAIDestination implements PasteDestination {
       );
 
       this.logger.info(
-        { fn: 'CursorAIDestination.paste', textLength: text.length, chatOpened },
+        { fn: 'CursorAIDestination.pasteLink', linkLength: link.length, chatOpened },
         'Clipboard workaround completed',
       );
 
       return true;
     } catch (error) {
       this.logger.error(
-        { fn: 'CursorAIDestination.paste', error },
+        { fn: 'CursorAIDestination.pasteLink', error },
         'Failed to execute clipboard workaround',
       );
       return false;

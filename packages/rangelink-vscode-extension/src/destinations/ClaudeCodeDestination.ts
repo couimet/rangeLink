@@ -66,21 +66,21 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Paste text to Claude Code chat
+   * Paste a RangeLink to Claude Code chat
    *
    * **Implementation:** Since Claude Code doesn't support programmatic text insertion,
    * this method uses a clipboard-based workaround:
-   * 1. Copy text to clipboard
+   * 1. Copy link to clipboard
    * 2. Try opening Claude Code with multiple fallback commands
    * 3. Show notification prompting user to paste
    *
-   * @param text - The text to paste
+   * @param link - The RangeLink to paste
    * @returns true if clipboard copy and chat open succeeded, false otherwise
    */
-  async paste(text: string): Promise<boolean> {
+  async pasteLink(link: string): Promise<boolean> {
     if (!(await this.isAvailable())) {
       this.logger.warn(
-        { fn: 'ClaudeCodeDestination.paste' },
+        { fn: 'ClaudeCodeDestination.pasteLink' },
         'Cannot paste: Claude Code extension not available',
       );
       return false;
@@ -88,10 +88,10 @@ export class ClaudeCodeDestination implements PasteDestination {
 
     try {
       // Step 1: Copy to clipboard
-      await vscode.env.clipboard.writeText(text);
+      await vscode.env.clipboard.writeText(link);
       this.logger.debug(
-        { fn: 'ClaudeCodeDestination.paste', textLength: text.length },
-        'Copied text to clipboard',
+        { fn: 'ClaudeCodeDestination.pasteLink', linkLength: link.length },
+        'Copied link to clipboard',
       );
 
       // Step 2: Try opening Claude Code with multiple fallback commands
@@ -100,14 +100,14 @@ export class ClaudeCodeDestination implements PasteDestination {
         try {
           await vscode.commands.executeCommand(command);
           this.logger.debug(
-            { fn: 'ClaudeCodeDestination.paste', command },
+            { fn: 'ClaudeCodeDestination.pasteLink', command },
             'Successfully executed Claude Code open command',
           );
           chatOpened = true;
           break;
         } catch (commandError) {
           this.logger.debug(
-            { fn: 'ClaudeCodeDestination.paste', command, error: commandError },
+            { fn: 'ClaudeCodeDestination.pasteLink', command, error: commandError },
             'Command failed, trying next fallback',
           );
         }
@@ -115,7 +115,7 @@ export class ClaudeCodeDestination implements PasteDestination {
 
       if (!chatOpened) {
         this.logger.warn(
-          { fn: 'ClaudeCodeDestination.paste' },
+          { fn: 'ClaudeCodeDestination.pasteLink' },
           'All Claude Code open commands failed',
         );
       }
@@ -126,14 +126,14 @@ export class ClaudeCodeDestination implements PasteDestination {
       );
 
       this.logger.info(
-        { fn: 'ClaudeCodeDestination.paste', textLength: text.length, chatOpened },
+        { fn: 'ClaudeCodeDestination.pasteLink', linkLength: link.length, chatOpened },
         'Clipboard workaround completed',
       );
 
       return true;
     } catch (error) {
       this.logger.error(
-        { fn: 'ClaudeCodeDestination.paste', error },
+        { fn: 'ClaudeCodeDestination.pasteLink', error },
         'Failed to execute clipboard workaround',
       );
       return false;
