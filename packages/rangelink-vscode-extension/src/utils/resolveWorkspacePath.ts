@@ -21,7 +21,6 @@ export const resolveWorkspacePath = async (
   linkPath: string,
   ideInstance: typeof vscode,
 ): Promise<vscode.Uri | undefined> => {
-
   // Try as absolute path first
   if (path.isAbsolute(linkPath)) {
     const uri = ideInstance.Uri.file(linkPath);

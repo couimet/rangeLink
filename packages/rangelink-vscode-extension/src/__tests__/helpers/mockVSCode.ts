@@ -186,9 +186,7 @@ export const createMockDocument = (
  * @param overrides - Optional property overrides for specialized behavior
  * @returns Mock TextEditor with default + overridden properties
  */
-export const createMockEditor = (
-  overrides?: Partial<vscode.TextEditor>,
-): vscode.TextEditor => {
+export const createMockEditor = (overrides?: Partial<vscode.TextEditor>): vscode.TextEditor => {
   const defaultDocument = createMockDocument('const x = 42; // Sample line content');
 
   const baseEditor = {
@@ -230,9 +228,7 @@ export const createMockCancellationToken = (isCancelled = false): vscode.Cancell
  * @returns Mock workspace with file operations and document handling
  */
 export const createMockWorkspace = (
-  workspaceFolders:
-    | Array<string | vscode.WorkspaceFolder>
-    | undefined = ['/workspace'],
+  workspaceFolders: Array<string | vscode.WorkspaceFolder> | undefined = ['/workspace'],
 ) => {
   const folders = workspaceFolders?.map((folder) =>
     typeof folder === 'string' ? createMockWorkspaceFolder(folder) : folder,
@@ -291,10 +287,7 @@ export const createVSCodeAdapterMock = (): typeof vscode => {
  * @param overrides - Optional overrides for file/parse implementations
  * @returns Mock Uri with file and parse methods
  */
-export const createMockUri = (overrides?: {
-  file?: jest.Mock;
-  parse?: jest.Mock;
-}) => ({
+export const createMockUri = (overrides?: { file?: jest.Mock; parse?: jest.Mock }) => ({
   file:
     overrides?.file ||
     jest.fn((fsPath: string) => ({
@@ -506,10 +499,7 @@ export const createMockVscodeAdapter = (
  * @param overrides - Optional property overrides
  * @returns Mock Tab instance
  */
-export const createMockTab = (
-  uri: vscode.Uri,
-  overrides?: Partial<vscode.Tab>,
-): vscode.Tab => {
+export const createMockTab = (uri: vscode.Uri, overrides?: Partial<vscode.Tab>): vscode.Tab => {
   return {
     input: { uri },
     ...overrides,

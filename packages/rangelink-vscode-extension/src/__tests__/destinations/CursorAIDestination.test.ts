@@ -3,10 +3,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { CursorAIDestination } from '../../destinations/CursorAIDestination';
 import { testDestinationInterfaceCompliance } from '../helpers';
-import {
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
-} from '../helpers/mockVSCode';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('CursorAIDestination', () => {
   let destination: CursorAIDestination;

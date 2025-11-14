@@ -278,7 +278,9 @@ describe('PasteDestinationManager', () => {
       (mockVscode.env as any).appName = 'Cursor';
       (mockVscode.env.clipboard.writeText as jest.Mock) = jest.fn().mockResolvedValue(undefined);
       (mockVscode.commands.executeCommand as jest.Mock) = jest.fn().mockResolvedValue(undefined);
-      (mockVscode.window.showInformationMessage as jest.Mock) = jest.fn().mockResolvedValue(undefined);
+      (mockVscode.window.showInformationMessage as jest.Mock) = jest
+        .fn()
+        .mockResolvedValue(undefined);
 
       await manager.bind('cursor-ai');
 

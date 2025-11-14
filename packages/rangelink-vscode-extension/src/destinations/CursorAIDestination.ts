@@ -67,7 +67,9 @@ export class CursorAIDestination implements PasteDestination {
     }
 
     // Method 2: Check for Cursor-specific extensions
-    const cursorExtensions = this.ideAdapter.extensions.filter((ext) => ext.id.startsWith('cursor.'));
+    const cursorExtensions = this.ideAdapter.extensions.filter((ext) =>
+      ext.id.startsWith('cursor.'),
+    );
     const hasExtensions = cursorExtensions.length > 0;
     this.logger.debug(
       {

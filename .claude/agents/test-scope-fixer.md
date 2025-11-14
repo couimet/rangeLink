@@ -235,7 +235,7 @@ PASS  src/__tests__/SomeClass.test.ts
   ...
 ```
 
-```
+````
 
 ## Key Principles
 
@@ -258,7 +258,7 @@ When refactoring tests for classes that use facade patterns:
 
    // ❌ Don't mock vscode directly
    jest.mock('vscode'); // Wrong - bypasses facade
-   ```
+````
 
 2. **Allow direct imports of external constants/enums**:
 
@@ -267,12 +267,11 @@ When refactoring tests for classes that use facade patterns:
    import * as vscode from 'vscode';
    expect(mockEditor.revealRange).toHaveBeenCalledWith(
      range,
-     vscode.TextEditorRevealType.InCenterIfOutsideViewport
+     vscode.TextEditorRevealType.InCenterIfOutsideViewport,
    );
    ```
 
 3. **Test enum values appropriately**:
-
    - **Project enums**: Use string literals to test contract
 
      ```typescript
@@ -286,7 +285,6 @@ When refactoring tests for classes that use facade patterns:
      ```
 
 4. **Identify facade boundaries**:
-
    - Facades wrap **behaviors** (methods like `.showTextDocument()`)
    - Facades don't wrap **types/constants** (enums, interfaces, type definitions)
    - Mock behaviors, import types/constants directly
@@ -305,4 +303,3 @@ When refactoring tests for classes that use facade patterns:
 - Run tests after refactoring to ensure they pass
 - Report coverage gaps but don't block the refactoring
 - Each new test should assert on BOTH behavior AND mock calls
-```
