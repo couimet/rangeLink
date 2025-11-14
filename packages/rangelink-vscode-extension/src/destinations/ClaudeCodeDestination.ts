@@ -147,9 +147,4 @@ export class ClaudeCodeDestination implements PasteDestination {
       return false;
     }
   }
-        'Failed to execute clipboard workaround',
-      );
-      return false;
-    }
-  }
 }
