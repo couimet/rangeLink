@@ -12,6 +12,8 @@ import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
  * - Document/editor operations
  * - Workspace operations (path resolution)
  * - Primitive factories (Position, Selection, Range)
+ * - Environment information (appName, uriScheme, extensions)
+ * - Command execution
  *
  * Enables testing by abstracting VSCode API calls and avoiding direct
  * vscode module imports in business logic classes.
@@ -81,6 +83,60 @@ export class VscodeAdapter {
   ): Promise<vscode.TextEditor> {
     const document = await this.ideInstance.workspace.openTextDocument(uri);
     return this.ideInstance.window.showTextDocument(document, options);
+  }
+
+  // ============================================================================
+  // Environment Information
+  // ============================================================================
+
+  /**
+   * Get the application name.
+   *
+   * Used for IDE detection (e.g., "Visual Studio Code" vs "Cursor").
+   *
+   * @returns Application name from VSCode environment
+   */
+  get appName(): string {
+    return this.ideInstance.env.appName;
+  }
+
+  /**
+   * Get the URI scheme for the application.
+   *
+   * Used for IDE detection (e.g., "vscode" vs "cursor").
+   *
+   * @returns URI scheme from VSCode environment
+   */
+  get uriScheme(): string {
+    return this.ideInstance.env.uriScheme;
+  }
+
+  /**
+   * Get all installed extensions.
+   *
+   * Used for IDE detection via extension IDs.
+   *
+   * @returns Array of all extensions
+   */
+  get extensions(): readonly vscode.Extension<any>[] {
+    return this.ideInstance.extensions.all;
+  }
+
+  // ============================================================================
+  // Command Execution
+  // ============================================================================
+
+  /**
+   * Execute a VSCode command.
+   *
+   * Wraps vscode.commands.executeCommand for abstraction and testing.
+   *
+   * @param command - Command identifier to execute
+   * @param args - Optional command arguments
+   * @returns Promise resolving to command result
+   */
+  async executeCommand<T = unknown>(command: string, ...args: any[]): Promise<T | undefined> {
+    return this.ideInstance.commands.executeCommand<T>(command, ...args);
   }
 
   // ============================================================================
