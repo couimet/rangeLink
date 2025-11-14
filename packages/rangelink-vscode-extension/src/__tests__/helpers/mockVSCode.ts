@@ -427,6 +427,8 @@ export const createMockVscode = (overrides?: Partial<typeof vscode>): any => {
     window,
     workspace,
     env: createMockEnv(),
+    extensions: createMockExtensions(),
+    commands: createMockCommands(),
     Uri: createMockUri(),
     Position: createMockPosition(),
     Selection: createMockSelection(),
