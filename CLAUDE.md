@@ -23,7 +23,10 @@
 
 - **NO** `expect().not.toThrow()` for happy paths - just call the function directly
 - **USE** `.toStrictEqual()` not `.toEqual()`
-- **USE** string literals for enum values in assertions: `'Regular'` not `LinkType.Regular`
+- **USE** string literals for enum values in assertions:
+  - **Our own enums**: Use string literals to test contract - `'Regular'` not `LinkType.Regular`
+  - **External library enums/constants**: Use actual constant - `vscode.TextEditorRevealType.InCenterIfOutsideViewport` is fine
+  - Rationale: We control our own enum values (test contract), but not external libraries (use their constants)
 
 ---
 
@@ -250,6 +253,13 @@ RangeLink is a tool for generating and navigating code location links with suppo
   - Place in: `/utils/` (pure utilities), `/services/` (business logic), or root `/src/` (feature-specific)
   - Always use arrow function exports with JSDoc
   - Apply SOLID principles by default (Single Responsibility, minimal dependencies)
+- **Facade pattern for external dependencies**:
+  - Facades wrap **behaviors** (methods), not **types/constants**
+  - ✅ Wrap through adapter: `ideAdapter.showTextDocument()`, `ideAdapter.createPosition()`
+  - ✅ Import directly: `vscode.TextEditorRevealType.InCenterIfOutsideViewport` (constants/enums)
+  - Facades should be thin delegation layers (1-3 lines per method)
+  - Complex algorithms belong in utilities, not facades
+  - Example: VscodeAdapter wraps VSCode API, but vscode enums can be imported directly
 - Prefer functional error handling with `Result<T, E>` type
 - Use custom Jest matchers for Result testing (`toBeOkWith`, `toBeErrWith`)
 - Always use `.toStrictEqual()` for test assertions (not `.toEqual()`)
