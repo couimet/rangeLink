@@ -332,11 +332,13 @@ describe('CursorAIDestination', () => {
 
   describe('pasteContent() - Clipboard workaround for text', () => {
     beforeEach(() => {
-      (vscode.env as any).appName = 'Cursor';
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
     });
 
     it('should return false when not running in Cursor IDE', async () => {
-      (vscode.env as any).appName = 'Visual Studio Code';
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Visual Studio Code';
 
       const result = await destination.pasteContent('selected text');
 
@@ -345,35 +347,39 @@ describe('CursorAIDestination', () => {
 
     it('should copy content to clipboard', async () => {
       const testContent = 'selected text from editor';
+      const writeTextSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard');
 
       await destination.pasteContent(testContent);
 
-      expect(vscode.env.clipboard.writeText).toHaveBeenCalledWith(testContent);
+      expect(writeTextSpy).toHaveBeenCalledWith(testContent);
     });
 
     it('should try opening chat with aichat.newchataction command first', async () => {
+      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
+
       await destination.pasteContent('text');
 
-      expect(vscode.commands.executeCommand).toHaveBeenCalledWith('aichat.newchataction');
+      expect(executeCommandSpy).toHaveBeenCalledWith('aichat.newchataction');
     });
 
     it('should try fallback command if primary fails', async () => {
-      (vscode.commands.executeCommand as jest.Mock)
+      const executeCommandSpy = jest
+        .spyOn(mockAdapter, 'executeCommand')
         .mockRejectedValueOnce(new Error('aichat.newchataction not found'))
         .mockResolvedValueOnce(undefined);
 
       await destination.pasteContent('text');
 
-      expect(vscode.commands.executeCommand).toHaveBeenCalledWith('aichat.newchataction');
-      expect(vscode.commands.executeCommand).toHaveBeenCalledWith(
-        'workbench.action.toggleAuxiliaryBar',
-      );
+      expect(executeCommandSpy).toHaveBeenCalledWith('aichat.newchataction');
+      expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.toggleAuxiliaryBar');
     });
 
     it('should show notification prompting user to paste', async () => {
+      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+
       await destination.pasteContent('text');
 
-      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
+      expect(showInfoSpy).toHaveBeenCalledWith(
         'Text copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
       );
     });
@@ -400,7 +406,8 @@ describe('CursorAIDestination', () => {
     });
 
     it('should log warning when not available', async () => {
-      (vscode.env as any).appName = 'Visual Studio Code';
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Visual Studio Code';
       const testContent = 'text';
 
       await destination.pasteContent(testContent);
@@ -417,7 +424,7 @@ describe('CursorAIDestination', () => {
     it('should return false and log error when clipboard write fails', async () => {
       const testContent = 'text';
       const expectedError = new Error('Clipboard access denied');
-      (vscode.env.clipboard.writeText as jest.Mock).mockRejectedValueOnce(expectedError);
+      jest.spyOn(mockAdapter, 'writeTextToClipboard').mockRejectedValueOnce(expectedError);
 
       const result = await destination.pasteContent(testContent);
 
@@ -434,9 +441,9 @@ describe('CursorAIDestination', () => {
 
     it('should log warning when all chat commands fail', async () => {
       const testContent = 'text';
-      (vscode.commands.executeCommand as jest.Mock).mockRejectedValue(
-        new Error('Command not found'),
-      );
+      jest
+        .spyOn(mockAdapter, 'executeCommand')
+        .mockRejectedValue(new Error('Command not found'));
 
       await destination.pasteContent(testContent);
 
@@ -450,14 +457,15 @@ describe('CursorAIDestination', () => {
     });
 
     it('should still return true and show notification when chat commands fail', async () => {
-      (vscode.commands.executeCommand as jest.Mock).mockRejectedValue(
-        new Error('Command not found'),
-      );
+      jest
+        .spyOn(mockAdapter, 'executeCommand')
+        .mockRejectedValue(new Error('Command not found'));
+      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       const result = await destination.pasteContent('text');
 
       expect(result).toBe(true);
-      expect(vscode.window.showInformationMessage).toHaveBeenCalled();
+      expect(showInfoSpy).toHaveBeenCalled();
     });
   });
 });
