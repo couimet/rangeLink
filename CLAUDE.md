@@ -384,6 +384,7 @@ export const parseLink = (
    - Get refactoring recommendations
 
 **Example invocation:**
+
 ```
 Use @agent-test-scope-fixer to analyze [file] and determine:
 1. Are tests properly scoped (unit vs integration)?
@@ -397,20 +398,23 @@ Use @agent-test-scope-fixer to analyze [file] and determine:
 **Prefer mocking for presentation-layer tests:**
 
 When testing presentation-layer components (providers, controllers, UI logic):
+
 - **Mock all dependencies** to isolate the component under test
 - **Test only orchestration logic** (how component delegates to dependencies)
 - **Avoid testing implementation details** of delegated utilities
 - **Add integration tests separately** (2-3 tests) to verify mocks work correctly
 
 **Example: Document Provider (GOOD pattern)**
+
 ```typescript
 // Mock the handler completely
-const createMockHandler = (): jest.Mocked<RangeLinkNavigationHandler> => ({
-  getPattern: jest.fn(() => TEST_PATTERN),
-  parseLink: jest.fn(),
-  formatTooltip: jest.fn(),
-  navigateToLink: jest.fn(),
-}) as unknown as jest.Mocked<RangeLinkNavigationHandler>;
+const createMockHandler = (): jest.Mocked<RangeLinkNavigationHandler> =>
+  ({
+    getPattern: jest.fn(() => TEST_PATTERN),
+    parseLink: jest.fn(),
+    formatTooltip: jest.fn(),
+    navigateToLink: jest.fn(),
+  }) as unknown as jest.Mocked<RangeLinkNavigationHandler>;
 
 // Tests focus ONLY on provider orchestration
 it('should delegate parsing to handler', () => {
@@ -423,6 +427,7 @@ it('should delegate parsing to handler', () => {
 ```
 
 **Example: Terminal Provider (BAD pattern - avoid this)**
+
 ```typescript
 // ❌ DON'T: Use real handler in unit tests
 const handler = new RangeLinkNavigationHandler(delimiters, mockLogger);
@@ -438,12 +443,14 @@ it('should extend single-position selection', async () => {
 ```
 
 **Integration Tests (when to add):**
+
 - Add 2-3 integration tests in separate describe block or file
 - Use real implementations to verify mocks are accurate
 - Test critical paths end-to-end
 - Keep minimal - most tests should be unit tests with mocks
 
 **Rationale:**
+
 - **Faster tests:** Mocks avoid real parsing/API calls
 - **Focused tests:** Test one layer at a time
 - **Maintainable:** Tests don't break when dependencies change
