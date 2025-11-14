@@ -167,6 +167,29 @@ export const createMockWorkspace = () => ({
 });
 
 /**
+ * Create a complete vscode module mock for VscodeAdapter tests.
+ *
+ * Specialized factory that provides all VSCode API mocks required by VscodeAdapter:
+ * - env.clipboard for clipboard operations
+ * - window.setStatusBarMessage for status bar (synchronous, returns Disposable)
+ * - window.show*Message for notifications (async, return Promise)
+ * - window.showTextDocument for document display
+ * - workspace.openTextDocument for document loading
+ *
+ * Composes from existing factories (createMockEnv, createMockWindow, createMockWorkspace)
+ * to ensure consistency across all tests.
+ *
+ * @returns Complete typeof vscode mock suitable for VscodeAdapter constructor
+ */
+export const createVSCodeAdapterMock = (): typeof vscode => {
+  return {
+    env: createMockEnv(),
+    window: createMockWindow(),
+    workspace: createMockWorkspace(),
+  } as unknown as typeof vscode;
+};
+
+/**
  * Create a mock Uri namespace for navigation tests.
  *
  * @returns Mock Uri with file and parse methods
