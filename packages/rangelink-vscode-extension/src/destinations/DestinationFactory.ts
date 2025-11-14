@@ -47,7 +47,7 @@ export class DestinationFactory {
         return new TextEditorDestination(this.ideAdapter, this.logger);
 
       case 'claude-code':
-        return new ClaudeCodeDestination(this.logger);
+        return new ClaudeCodeDestination(this.ideAdapter, this.logger);
 
       // Future implementations:
       // case 'github-copilot':
