@@ -424,37 +424,25 @@ describe('TextEditorDestination', () => {
       destination.setEditor(mockEditor);
 
       // Mock tab groups - bound document only in second tab group
-      const otherUri = vscode.Uri.file('/workspace/other.ts');
-      (vscode.window as any).tabGroups = {
+      const otherUri = createMockUriInstance('/workspace/other.ts');
+      const mockVscode = mockAdapter.__getVscodeInstance();
+
+      mockVscode.window.tabGroups = {
         all: [
-          {
-            activeTab: {
-              input: new vscode.TabInputText(otherUri),
-            },
-            tabs: [
-              {
-                input: new vscode.TabInputText(otherUri),
-              },
-            ],
-          },
-          {
-            activeTab: {
-              input: new vscode.TabInputText(mockEditor.document.uri),
-            },
-            tabs: [
-              {
-                input: new vscode.TabInputText(mockEditor.document.uri),
-              },
-            ],
-          },
+          createMockTabGroup([createMockTab(otherUri)], {
+            activeTab: createMockTab(otherUri),
+          }),
+          createMockTabGroup([createMockTab(mockEditor.document.uri)], {
+            activeTab: createMockTab(mockEditor.document.uri),
+          }),
         ],
-      };
+      } as any;
 
       // Mock visibleTextEditors to include the bound editor
-      (vscode.window as any).visibleTextEditors = [mockEditor];
+      jest.spyOn(mockAdapter, 'visibleTextEditors', 'get').mockReturnValue([mockEditor]);
 
       // Mock showTextDocument to resolve successfully
-      (vscode.window.showTextDocument as jest.Mock).mockResolvedValue(mockEditor);
+      jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
 
       // Mock utility functions
       (isEligibleForPaste as jest.Mock).mockReturnValue(true);
@@ -493,7 +481,8 @@ describe('TextEditorDestination', () => {
 
     it('should return false when bound document not found in any tab group', async () => {
       // Empty tab groups - document not found
-      (vscode.window as any).tabGroups.all = [];
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      mockVscode.window.tabGroups = { all: [] } as any;
 
       const result = await destination.pasteContent('text');
 
@@ -509,7 +498,9 @@ describe('TextEditorDestination', () => {
     });
 
     it('should return false when tab group has no active tab', async () => {
-      (vscode.window as any).tabGroups.all[1].activeTab = undefined;
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      const tabGroups = mockVscode.window.tabGroups as any;
+      tabGroups.all[1].activeTab = undefined;
 
       const result = await destination.pasteContent('text');
 
@@ -525,15 +516,16 @@ describe('TextEditorDestination', () => {
 
     it('should return false when active tab is not a text editor', async () => {
       // Make active tab a non-text editor (e.g., terminal)
-      const mockTabGroups = (vscode.window as any).tabGroups;
-      mockTabGroups.all[1].activeTab = {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      const tabGroups = mockVscode.window.tabGroups as any;
+      tabGroups.all[1].activeTab = {
         input: {}, // Plain object, not a TabInputText instance
         label: 'Terminal',
         isActive: true,
         isDirty: false,
         isPinned: false,
         isPreview: false,
-        group: mockTabGroups.all[1],
+        group: tabGroups.all[1],
       };
 
       const result = await destination.pasteContent('text');
@@ -551,17 +543,17 @@ describe('TextEditorDestination', () => {
 
     it('should return false when bound document not topmost in group', async () => {
       // Make a different document topmost
-      const differentUri = vscode.Uri.file('/workspace/other.ts');
-      const mockTabGroups = (vscode.window as any).tabGroups;
-      mockTabGroups.all[1].activeTab = {
-        input: new vscode.TabInputText(differentUri),
+      const differentUri = createMockUriInstance('/workspace/other.ts');
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      const tabGroups = mockVscode.window.tabGroups as any;
+      tabGroups.all[1].activeTab = createMockTab(differentUri, {
         label: 'other.ts',
         isActive: true,
         isDirty: false,
         isPinned: false,
         isPreview: false,
-        group: mockTabGroups.all[1],
-      };
+        group: tabGroups.all[1],
+      });
 
       const result = await destination.pasteContent('text');
 
@@ -579,7 +571,7 @@ describe('TextEditorDestination', () => {
 
     it('should return false when editor object not found in visibleTextEditors', async () => {
       // Editor in tab group but not visible
-      (vscode.window as any).visibleTextEditors = [];
+      jest.spyOn(mockAdapter, 'visibleTextEditors', 'get').mockReturnValue([]);
 
       const result = await destination.pasteContent('text');
 
@@ -628,9 +620,11 @@ describe('TextEditorDestination', () => {
     });
 
     it('should focus editor after successful paste', async () => {
+      const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument');
+
       await destination.pasteContent('text');
 
-      expect(vscode.window.showTextDocument).toHaveBeenCalledWith(mockEditor.document, {
+      expect(showTextDocumentSpy).toHaveBeenCalledWith(mockEditor.document.uri, {
         preserveFocus: false,
         viewColumn: mockEditor.viewColumn,
       });
