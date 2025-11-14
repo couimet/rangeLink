@@ -43,13 +43,13 @@ describe('ClaudeCodeDestination', () => {
 
   describe('isAvailable() - Extension detection', () => {
     it('should return true when extension is installed and active', async () => {
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(mockExtension);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([mockExtension]);
 
       expect(await destination.isAvailable()).toBe(true);
     });
 
     it('should return false when extension is not installed', async () => {
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(undefined);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
 
       expect(await destination.isAvailable()).toBe(false);
     });
@@ -59,13 +59,13 @@ describe('ClaudeCodeDestination', () => {
         ...mockExtension,
         isActive: false,
       };
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(inactiveExtension);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([inactiveExtension]);
 
       expect(await destination.isAvailable()).toBe(false);
     });
 
     it('should log detection result when extension found', async () => {
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(mockExtension);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([mockExtension]);
 
       await destination.isAvailable();
 
@@ -82,7 +82,7 @@ describe('ClaudeCodeDestination', () => {
     });
 
     it('should log detection result when extension not found', async () => {
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(undefined);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
 
       await destination.isAvailable();
 
@@ -102,11 +102,11 @@ describe('ClaudeCodeDestination', () => {
   describe('pasteLink() - Clipboard workaround', () => {
     beforeEach(() => {
       // Mock extension as available (mockExtension.isActive is already true from setup)
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(mockExtension);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([mockExtension]);
     });
 
     it('should return false when extension not available', async () => {
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(undefined);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
 
       const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
@@ -176,7 +176,7 @@ describe('ClaudeCodeDestination', () => {
     });
 
     it('should log warning when extension not available', async () => {
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(undefined);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
       const testLink = 'link';
       const formattedLink = createMockFormattedLink(testLink);
 
@@ -244,11 +244,11 @@ describe('ClaudeCodeDestination', () => {
   describe('pasteContent() - Clipboard workaround for text', () => {
     beforeEach(() => {
       // Mock extension as available (mockExtension.isActive is already true from setup)
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(mockExtension);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([mockExtension]);
     });
 
     it('should return false when extension not available', async () => {
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(undefined);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
 
       const result = await destination.pasteContent('selected text');
 
@@ -316,7 +316,7 @@ describe('ClaudeCodeDestination', () => {
     });
 
     it('should log warning when extension not available', async () => {
-      jest.spyOn(vscode.extensions, 'getExtension').mockReturnValue(undefined);
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
       const testContent = 'text';
 
       await destination.pasteContent(testContent);

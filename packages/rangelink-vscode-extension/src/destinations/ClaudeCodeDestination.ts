@@ -1,6 +1,5 @@
 import type { Logger } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { DestinationType, PasteDestination } from './PasteDestination';
@@ -51,7 +50,9 @@ export class ClaudeCodeDestination implements PasteDestination {
    * @returns true if Claude Code extension detected, false otherwise
    */
   async isAvailable(): Promise<boolean> {
-    const extension = vscode.extensions.getExtension(ClaudeCodeDestination.EXTENSION_ID);
+    const extension = this.ideAdapter.extensions.find(
+      (ext) => ext.id === ClaudeCodeDestination.EXTENSION_ID,
+    );
     const isAvailable = extension !== undefined && extension.isActive;
 
     this.logger.debug(
@@ -95,7 +96,7 @@ export class ClaudeCodeDestination implements PasteDestination {
 
     try {
       // Step 1: Copy to clipboard
-      await vscode.env.clipboard.writeText(link);
+      await this.ideAdapter.writeTextToClipboard(link);
       this.logger.debug(
         { fn: 'ClaudeCodeDestination.pasteLink', formattedLink, linkLength: link.length },
         `Copied link to clipboard: ${link}`,
@@ -105,7 +106,7 @@ export class ClaudeCodeDestination implements PasteDestination {
       let chatOpened = false;
       for (const command of ClaudeCodeDestination.CLAUDE_CODE_COMMANDS) {
         try {
-          await vscode.commands.executeCommand(command);
+          await this.ideAdapter.executeCommand(command);
           this.logger.debug(
             { fn: 'ClaudeCodeDestination.pasteLink', command, formattedLink },
             'Successfully executed Claude Code open command',
@@ -128,7 +129,7 @@ export class ClaudeCodeDestination implements PasteDestination {
       }
 
       // Step 3: Show notification (regardless of whether chat opened)
-      void vscode.window.showInformationMessage(
+      void this.ideAdapter.showInformationMessage(
         'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
       );
 
