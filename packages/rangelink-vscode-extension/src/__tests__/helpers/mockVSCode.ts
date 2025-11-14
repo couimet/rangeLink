@@ -383,6 +383,18 @@ export const createMockRange = () =>
   jest.fn((start: vscode.Position, end: vscode.Position) => ({ start, end }));
 
 /**
+ * Create a mock DocumentLink constructor.
+ *
+ * @returns Mock DocumentLink constructor that creates {range, target, tooltip} objects
+ */
+export const createMockDocumentLink = () =>
+  jest.fn(function (this: any, range: vscode.Range, target?: vscode.Uri) {
+    this.range = range;
+    this.target = target;
+    this.tooltip = undefined;
+  });
+
+/**
  * Create a mock vscode module for testing.
  *
  * Provides complete mock of VSCode API with sensible defaults:
@@ -401,6 +413,7 @@ export const createMockRange = () =>
  * - env.clipboard.writeText
  * - Uri.file, Uri.parse
  * - Position, Selection, Range constructors
+ * - DocumentLink constructor
  * - TextEditorRevealType enum
  *
  * This mock object can be passed to `new VscodeAdapter(mockVscode)` to create
@@ -426,6 +439,7 @@ export const createMockVscode = (overrides?: Partial<typeof vscode>): any => {
     Position: createMockPosition(),
     Selection: createMockSelection(),
     Range: createMockRange(),
+    DocumentLink: createMockDocumentLink(),
     TextEditorRevealType: {
       Default: 0,
       InCenter: 1,

@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { RangeLinkClickArgs } from '../types';
 
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
@@ -42,10 +43,12 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
    * Create a new document link provider.
    *
    * @param handler - Navigation handler for link detection and navigation
+   * @param ideAdapter - VSCode adapter for IDE operations
    * @param logger - Logger instance for structured logging
    */
   constructor(
     private readonly handler: RangeLinkNavigationHandler,
+    private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
@@ -92,7 +95,7 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
       // Convert string indices to document positions
       const startPos = document.positionAt(startIndex);
       const endPos = document.positionAt(endIndex);
-      const range = new vscode.Range(startPos, endPos);
+      const range = this.ideAdapter.createRange(startPos, endPos);
 
       // Parse the link
       const parseResult = this.handler.parseLink(linkText);
@@ -113,13 +116,13 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
       const parsed = parseResult.value;
 
       // Create document link with custom command
-      const docLink = new vscode.DocumentLink(range);
+      const docLink = this.ideAdapter.createDocumentLink(range);
 
       // Reuse formatLinkTooltip utility (DRY - same as terminal provider)
       docLink.tooltip = this.handler.formatTooltip(parsed);
 
       // Create command URI that will trigger navigation
-      docLink.target = vscode.Uri.parse(
+      docLink.target = this.ideAdapter.parseUri(
         `command:rangelink.handleDocumentLinkClick?${encodeURIComponent(JSON.stringify({ linkText, parsed }))}`,
       );
 

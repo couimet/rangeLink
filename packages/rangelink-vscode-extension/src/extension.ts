@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register document link provider for clickable links in editor files
   // Only register for specific schemes to prevent infinite recursion when scanning output channels
-  const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, getLogger());
+  const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, ideAdapter, getLogger());
   context.subscriptions.push(
     registerWithLogging(
       vscode.languages.registerDocumentLinkProvider(
