@@ -11,7 +11,8 @@ import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
  * - User notifications (warning, error, info)
  * - Document/editor operations
  * - Workspace operations (path resolution)
- * - Primitive factories (Position, Selection, Range)
+ * - Primitive factories (Position, Selection, Range, DocumentLink)
+ * - URI parsing and manipulation
  * - Environment information (appName, uriScheme, extensions)
  * - Command execution
  *
@@ -190,6 +191,27 @@ export class VscodeAdapter {
    */
   createRange(start: vscode.Position, end: vscode.Position): vscode.Range {
     return new this.ideInstance.Range(start, end);
+  }
+
+  /**
+   * Parse a string into a URI.
+   *
+   * @param value - URI string to parse
+   * @returns Parsed URI instance
+   */
+  parseUri(value: string): vscode.Uri {
+    return this.ideInstance.Uri.parse(value);
+  }
+
+  /**
+   * Create a document link.
+   *
+   * @param range - The range where the link appears in the document
+   * @param target - Optional target URI for the link
+   * @returns New DocumentLink instance
+   */
+  createDocumentLink(range: vscode.Range, target?: vscode.Uri): vscode.DocumentLink {
+    return new this.ideInstance.DocumentLink(range, target);
   }
 
   // ============================================================================
