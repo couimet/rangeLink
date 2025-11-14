@@ -59,9 +59,9 @@ export class RangeLinkService {
     pathFormat: PathFormat,
     isPortable: boolean,
   ): Promise<string | null> {
-    const editor = vscode.window.activeTextEditor;
+    const editor = this.ideAdapter.activeTextEditor;
     if (!editor) {
-      vscode.window.showErrorMessage('No active editor');
+      this.ideAdapter.showErrorMessage('No active editor');
       return null;
     }
 
@@ -84,7 +84,7 @@ export class RangeLinkService {
         { fn: 'generateLinkFromSelection', error },
         'Failed to convert selections to InputSelection',
       );
-      vscode.window.showErrorMessage(`RangeLink: ${message}`);
+      this.ideAdapter.showErrorMessage(`RangeLink: ${message}`);
       return null;
     }
 
@@ -100,7 +100,7 @@ export class RangeLinkService {
         { fn: 'generateLinkFromSelection', errorCode: result.error },
         `Failed to generate ${linkType}`,
       );
-      vscode.window.showErrorMessage(`RangeLink: Failed to generate ${linkType}`);
+      this.ideAdapter.showErrorMessage(`RangeLink: Failed to generate ${linkType}`);
       return null;
     }
 
@@ -138,7 +138,7 @@ export class RangeLinkService {
       if (destination?.id === 'text-editor') {
         const textEditorDest = destination as any; // TextEditorDestination
         const boundDocumentUri = textEditorDest.getBoundDocumentUri();
-        const activeEditor = vscode.window.activeTextEditor;
+        const activeEditor = this.ideAdapter.activeTextEditor;
 
         if (activeEditor && boundDocumentUri) {
           const activeDocumentUri = activeEditor.document.uri.toString();
@@ -190,9 +190,9 @@ export class RangeLinkService {
    * Gets the reference path based on the path format preference
    */
   private getReferencePath(document: vscode.TextDocument, pathFormat: PathFormat): string {
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+    const workspaceFolder = this.ideAdapter.getWorkspaceFolder(document.uri);
     if (workspaceFolder && pathFormat === PathFormat.WorkspaceRelative) {
-      return vscode.workspace.asRelativePath(document.uri);
+      return this.ideAdapter.asRelativePath(document.uri);
     }
     return document.uri.fsPath;
   }
