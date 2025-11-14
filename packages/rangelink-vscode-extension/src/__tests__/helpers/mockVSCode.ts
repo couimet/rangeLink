@@ -241,49 +241,6 @@ export interface VSCodeMockOptions {
 }
 
 /**
- * Canonical vscode navigation mock structure for jest.mock() calls.
- *
- * Use this constant directly in jest.mock() factories with spread operator.
- */
-export const VSCODE_NAVIGATION_MOCK = {
-  window: {
-    activeTerminal: undefined,
-    activeTextEditor: undefined,
-    showInformationMessage: jest.fn(),
-    showWarningMessage: jest.fn(),
-    showErrorMessage: jest.fn(),
-    showTextDocument: jest.fn(),
-  },
-  workspace: {
-    workspaceFolders: [],
-    openTextDocument: jest.fn(),
-    fs: {
-      stat: jest.fn(),
-    },
-  },
-  Uri: {
-    file: jest.fn(),
-    parse: jest.fn(),
-  },
-  Position: jest.fn((line: number, character: number) => ({ line, character })),
-  Selection: jest.fn(
-    (anchor: { line: number; character: number }, active: { line: number; character: number }) => ({
-      anchor,
-      active,
-    }),
-  ),
-  Range: jest.fn(
-    (start: { line: number; character: number }, end: { line: number; character: number }) => ({
-      start,
-      end,
-    }),
-  ),
-  TextEditorRevealType: {
-    InCenterIfOutsideViewport: 2,
-  },
-} as const;
-
-/**
  * Create a complete vscode module mock for navigation tests.
  *
  * Composes from existing mock components to provide all necessary mocks

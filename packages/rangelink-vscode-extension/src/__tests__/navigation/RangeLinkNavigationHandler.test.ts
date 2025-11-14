@@ -7,7 +7,6 @@ import * as vscode from 'vscode';
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 
 // Mock vscode module - must be inline due to Jest hoisting
-// Canonical structure: mockVSCode.ts VSCODE_NAVIGATION_MOCK
 jest.mock('vscode', () => ({
   window: {
     activeTerminal: undefined,

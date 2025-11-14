@@ -9,7 +9,6 @@ import { RangeLinkTerminalProvider } from '../../navigation/RangeLinkTerminalPro
 import type { RangeLinkTerminalLink } from '../../types';
 
 // Mock vscode module - must be inline due to Jest hoisting
-// Canonical structure: mockVSCode.ts VSCODE_NAVIGATION_MOCK
 jest.mock('vscode', () => ({
   window: {
     activeTerminal: undefined,
