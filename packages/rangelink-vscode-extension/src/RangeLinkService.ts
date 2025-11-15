@@ -79,14 +79,10 @@ export class RangeLinkService {
     }
 
     // Extract selected text (concatenate with newlines for multi-selection)
+    // Note: guaranteed to have at least one non-empty selection after check above
     const selectedTexts = selections
       .filter((s) => !s.isEmpty)
       .map((s) => editor.document.getText(s));
-
-    if (selectedTexts.length === 0) {
-      this.ideAdapter.showErrorMessage('RangeLink: No text selected. Select text and try again.');
-      return;
-    }
 
     const content = selectedTexts.join('\n');
 
