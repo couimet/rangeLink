@@ -105,6 +105,13 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
   );
 
+  // Register paste selected text command (issue #89)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.pasteSelectedTextToDestination', () =>
+      service.pasteSelectedTextToDestination(),
+    ),
+  );
+
   // Register version info command
   context.subscriptions.push(
     vscode.commands.registerCommand('rangelink.showVersion', () => {

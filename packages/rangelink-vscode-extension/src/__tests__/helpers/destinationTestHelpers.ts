@@ -6,8 +6,56 @@
  */
 
 import type { Logger } from 'barebone-logger';
+import type {
+  ComputedSelection,
+  DelimiterConfig,
+  FormattedLink,
+  RangeFormat,
+  SelectionType,
+} from 'rangelink-core-ts';
+import { LinkType } from 'rangelink-core-ts';
 
 import type { DestinationType, PasteDestination } from '../../destinations/PasteDestination';
+
+/**
+ * Create a mock FormattedLink for testing
+ *
+ * Provides sensible defaults for all required properties. Individual properties
+ * can be overridden via the partial parameter.
+ *
+ * @param link - The RangeLink string (default: 'test-link')
+ * @param overrides - Optional partial FormattedLink to override defaults
+ * @returns Mock FormattedLink with all required properties
+ */
+export const createMockFormattedLink = (
+  link = 'test-link',
+  overrides: Partial<FormattedLink> = {},
+): FormattedLink => {
+  const defaultDelimiters: DelimiterConfig = {
+    line: 'L',
+    position: 'C',
+    range: '-',
+    hash: '#',
+  };
+
+  const defaultSelection: ComputedSelection = {
+    startLine: 1,
+    startPosition: 1,
+    endLine: 1,
+    endPosition: 10,
+    rangeFormat: 'LineOnly' as RangeFormat,
+  };
+
+  return {
+    link,
+    linkType: LinkType.Regular,
+    delimiters: defaultDelimiters,
+    computedSelection: defaultSelection,
+    rangeFormat: 'LineOnly' as RangeFormat,
+    selectionType: 'Normal' as SelectionType,
+    ...overrides,
+  };
+};
 
 /**
  * Test interface compliance for a destination
@@ -16,7 +64,7 @@ import type { DestinationType, PasteDestination } from '../../destinations/Paste
  * - id (DestinationType)
  * - displayName (string)
  * - isAvailable (async function)
- * - paste (async function)
+ * - pasteLink (async function)
  *
  * @param destination - The destination instance to test
  * @param expectedId - Expected id value
@@ -40,8 +88,8 @@ export const testDestinationInterfaceCompliance = (
       expect(typeof destination.isAvailable).toBe('function');
     });
 
-    it('should have paste method', () => {
-      expect(typeof destination.paste).toBe('function');
+    it('should have pasteLink method', () => {
+      expect(typeof destination.pasteLink).toBe('function');
     });
 
     it('should have async isAvailable method', async () => {
@@ -50,8 +98,8 @@ export const testDestinationInterfaceCompliance = (
       await result; // Wait for promise to resolve
     });
 
-    it('should have async paste method', async () => {
-      const result = destination.paste('test');
+    it('should have async pasteLink method', async () => {
+      const result = destination.pasteLink(createMockFormattedLink('test'));
       expect(result).toBeInstanceOf(Promise);
       await result; // Wait for promise to resolve
     });
@@ -92,7 +140,7 @@ export const testDestinationLogging = (
 /**
  * Test paste return values
  *
- * Verifies that paste() returns correct boolean values:
+ * Verifies that pasteLink() returns correct boolean values:
  * - true on success
  * - false on failure (not available, error, etc.)
  *
@@ -105,16 +153,16 @@ export const testPasteReturnValues = (
   successScenario: () => Promise<void>,
   failureScenario: () => Promise<void>,
 ): void => {
-  describe('paste() return values', () => {
+  describe('pasteLink() return values', () => {
     it('should return true on successful paste', async () => {
       await successScenario();
-      const result = await destination.paste('test');
+      const result = await destination.pasteLink(createMockFormattedLink('test'));
       expect(result).toBe(true);
     });
 
     it('should return false when destination not available', async () => {
       await failureScenario();
-      const result = await destination.paste('test');
+      const result = await destination.pasteLink(createMockFormattedLink('test'));
       expect(result).toBe(false);
     });
   });

@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **🚐 Paste Selected Text to Destination** - Send selected text directly to bound destinations, not just links
+  - New command: "Paste Selected Text to Bound Destination" (`Cmd+R Cmd+V` / `Ctrl+R Ctrl+V`)
+  - Works with all destination types: Terminal, Text Editor, Claude Code Extension, Cursor AI
+  - Supports single and multi-selection (concatenates with newlines)
+  - Clipboard fallback when no destination bound
+  - Perfect for quickly sharing code snippets with AI assistants
+  - Consistent with existing paste destination workflow (auto-focus, cursor positioning)
+  - **Why 🚐 (RV emoji)?** Keybinding preserves `R` prefix (like RangeLink's `R+L`), and `V` mirrors the standard paste gesture (`Cmd+V`). The RV/camper emoji is a playful reminder of this mnemonic.
+
 ### Changed
 
 ### Fixed

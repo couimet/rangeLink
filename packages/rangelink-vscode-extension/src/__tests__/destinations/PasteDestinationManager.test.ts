@@ -2,6 +2,24 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
+import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
+// Mock vscode.window and vscode.workspace for status bar messages and event listeners
+jest.mock('vscode', () => ({
+  ...jest.requireActual('vscode'),
+  window: {
+    ...jest.requireActual('vscode').window,
+    setStatusBarMessage: jest.fn(),
+    showErrorMessage: jest.fn(),
+    showInformationMessage: jest.fn(),
+    onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
+    onDidChangeVisibleTextEditors: jest.fn(() => ({ dispose: jest.fn() })),
+    activeTerminal: undefined,
+  },
+  workspace: {
+    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
+  },
+}));
+
 import { DestinationFactory } from '../../destinations/DestinationFactory';
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
@@ -267,7 +285,7 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
 
-      const result = await manager.sendToDestination('src/file.ts#L10');
+      const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(true);
       expect(mockTerminal.sendText).toHaveBeenCalled();
@@ -284,14 +302,14 @@ describe('PasteDestinationManager', () => {
 
       await manager.bind('cursor-ai');
 
-      const result = await manager.sendToDestination('src/file.ts#L10');
+      const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(true);
       expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith('src/file.ts#L10');
     });
 
     it('should return false when no destination bound', async () => {
-      const result = await manager.sendToDestination('src/file.ts#L10');
+      const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(false);
     });
@@ -309,7 +327,7 @@ describe('PasteDestinationManager', () => {
       // Unbind terminal to simulate closed terminal
       manager.unbind();
 
-      const result = await manager.sendToDestination('src/file.ts#L10');
+      const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(false);
     });

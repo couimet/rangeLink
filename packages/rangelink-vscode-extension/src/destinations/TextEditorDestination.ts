@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -62,7 +63,7 @@ export class TextEditorDestination implements PasteDestination {
   }
 
   /**
-   * Paste text to bound text editor at cursor position with smart padding
+   * Paste a RangeLink to bound text editor at cursor position with smart padding
    *
    * **Tab Group Binding Strategy (MVP):**
    * - Requires 2+ tab groups (split editor)
@@ -77,26 +78,31 @@ export class TextEditorDestination implements PasteDestination {
    * - User can switch back to make document topmost again
    *
    * **Smart padding behavior:**
-   * - Only adds leading space if text doesn't start with whitespace
-   * - Only adds trailing space if text doesn't end with whitespace
+   * - Only adds leading space if link doesn't start with whitespace
+   * - Only adds trailing space if link doesn't end with whitespace
    * - Consistent with TerminalDestination behavior
    *
    * **Auto-focus behavior:**
    * - After successful paste, focuses the bound editor
    * - Consistent with TerminalDestination and AI assistant destinations
    *
-   * @param text - The text to paste
+   * @param formattedLink - The formatted RangeLink with metadata
    * @returns true if paste succeeded, false if validation failed or cannot paste
    */
-  async paste(text: string): Promise<boolean> {
-    if (!isEligibleForPaste(text)) {
-      this.logger.info({ fn: 'TextEditorDestination.paste', text }, 'Text not eligible for paste');
+  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
+    const link = formattedLink.link;
+
+    if (!isEligibleForPaste(link)) {
+      this.logger.info(
+        { fn: 'TextEditorDestination.pasteLink', formattedLink, linkLength: link.length },
+        'Link not eligible for paste',
+      );
       return false;
     }
 
     if (!this.boundDocumentUri) {
       this.logger.warn(
-        { fn: 'TextEditorDestination.paste', textLength: text.length },
+        { fn: 'TextEditorDestination.pasteLink', formattedLink, linkLength: link.length },
         'Cannot paste: No text editor bound',
       );
       return false;
@@ -112,7 +118,7 @@ export class TextEditorDestination implements PasteDestination {
       // Document not found in any tab group - likely closed or tab group closed
       this.logger.error(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDocumentUri: this.boundDocumentUri.toString(),
           boundDisplayName,
         },
@@ -126,7 +132,7 @@ export class TextEditorDestination implements PasteDestination {
     const activeTab = boundTabGroup.activeTab;
     if (!activeTab) {
       this.logger.warn(
-        { fn: 'TextEditorDestination.paste', boundDisplayName },
+        { fn: 'TextEditorDestination.pasteLink', boundDisplayName },
         'Tab group has no active tab',
       );
       return false;
@@ -135,7 +141,7 @@ export class TextEditorDestination implements PasteDestination {
     if (!this.ideAdapter.isTextEditorTab(activeTab)) {
       this.logger.warn(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDisplayName,
           tabInputType: typeof activeTab.input,
         },
@@ -148,7 +154,7 @@ export class TextEditorDestination implements PasteDestination {
       // Bound document exists but is not topmost - show warning but keep binding
       this.logger.warn(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDocumentUri: this.boundDocumentUri.toString(),
           activeTabUri: activeTab.input.uri.toString(),
           boundDisplayName,
@@ -166,7 +172,7 @@ export class TextEditorDestination implements PasteDestination {
     if (!editor) {
       this.logger.error(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDocumentUri: this.boundDocumentUri.toString(),
           boundDisplayName,
         },
@@ -177,19 +183,19 @@ export class TextEditorDestination implements PasteDestination {
 
     // All validations passed - perform the paste
     try {
-      const paddedText = applySmartPadding(text);
+      const paddedLink = applySmartPadding(link);
 
       const success = await editor.edit((editBuilder) => {
-        editBuilder.insert(editor.selection.active, paddedText);
+        editBuilder.insert(editor.selection.active, paddedLink);
       });
 
       if (!success) {
         this.logger.error(
           {
-            fn: 'TextEditorDestination.paste',
+            fn: 'TextEditorDestination.pasteLink',
             boundDisplayName,
             boundDocumentUri: this.boundDocumentUri.toString(),
-            textLength: text.length,
+            linkLength: link.length,
           },
           'Edit operation failed',
         );
@@ -204,28 +210,211 @@ export class TextEditorDestination implements PasteDestination {
 
       this.logger.info(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDisplayName,
           boundDocumentUri: this.boundDocumentUri.toString(),
-          originalLength: text.length,
-          paddedLength: paddedText.length,
+          formattedLink,
+          originalLength: link.length,
+          paddedLength: paddedLink.length,
         },
-        `Pasted to text editor: ${boundDisplayName}`,
+        `Pasted link to text editor: ${boundDisplayName}`,
       );
 
       return true;
     } catch (error) {
       this.logger.error(
         {
-          fn: 'TextEditorDestination.paste',
+          fn: 'TextEditorDestination.pasteLink',
           boundDisplayName,
           boundDocumentUri: this.boundDocumentUri.toString(),
+          formattedLink,
           error,
         },
-        'Failed to paste to text editor',
+        'Failed to paste link to text editor',
       );
       return false;
     }
+  }
+
+  /**
+   * Paste text content to bound text editor at cursor position with smart padding
+   *
+   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
+   * Used for pasting selected text directly to editor (issue #89).
+   *
+   * Follows same validation and tab group binding strategy as pasteLink():
+   * - Requires 2+ tab groups (split editor)
+   * - Bound document must be topmost (active tab) in its tab group
+   * - Dynamically finds bound document across all tab groups
+   * - Skips auto-paste when creating from bound editor itself
+   *
+   * @param content - The text content to paste
+   * @returns true if paste succeeded, false if validation failed or cannot paste
+   */
+  async pasteContent(content: string): Promise<boolean> {
+    if (!isEligibleForPaste(content)) {
+      this.logger.info(
+        { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
+        'Content not eligible for paste',
+      );
+      return false;
+    }
+
+    if (!this.boundDocumentUri) {
+      this.logger.warn(
+        { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
+        'Cannot paste: No text editor bound',
+      );
+      return false;
+    }
+
+    // Get display name for logging and messages
+    const boundDisplayName = this.getEditorDisplayName();
+
+    // LAZY VALIDATION: Find which tab group contains the bound document
+    const boundTabGroup = this.ideAdapter.findTabGroupForDocument(this.boundDocumentUri);
+
+    if (!boundTabGroup) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document not found in any tab group - likely closed',
+      );
+      return false;
+    }
+
+    // Check if bound document is the active (topmost) tab in its group
+    const activeTab = boundTabGroup.activeTab;
+    if (!activeTab) {
+      this.logger.warn(
+        { fn: 'TextEditorDestination.pasteContent', boundDisplayName },
+        'Tab group has no active tab',
+      );
+      return false;
+    }
+
+    // Check that active tab is a text editor (not terminal)
+    if (!this.ideAdapter.isTextEditorTab(activeTab)) {
+      this.logger.warn(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDisplayName,
+          tabInputType: typeof activeTab.input,
+        },
+        'Active tab is not a text editor',
+      );
+      return false;
+    }
+
+    const activeTabUri = (activeTab.input as any).uri;
+    if (activeTabUri.toString() !== this.boundDocumentUri.toString()) {
+      this.logger.warn(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          activeTabUri: activeTabUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document is not topmost in its tab group',
+      );
+      return false;
+    }
+
+    // Find the TextEditor object for the bound document
+    const editor = this.ideAdapter.visibleTextEditors.find(
+      (e) => e.document.uri.toString() === this.boundDocumentUri!.toString(),
+    );
+
+    if (!editor) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document is topmost but TextEditor object not found in visibleTextEditors',
+      );
+      return false;
+    }
+
+    // All validations passed - perform the paste
+    try {
+      const paddedContent = applySmartPadding(content);
+
+      const success = await editor.edit((editBuilder) => {
+        editBuilder.insert(editor.selection.active, paddedContent);
+      });
+
+      if (!success) {
+        this.logger.error(
+          {
+            fn: 'TextEditorDestination.pasteContent',
+            boundDisplayName,
+            boundDocumentUri: this.boundDocumentUri.toString(),
+            contentLength: content.length,
+          },
+          'Edit operation failed',
+        );
+        return false;
+      }
+
+      // Focus the editor (similar to terminal.show(false) behavior)
+      await this.ideAdapter.showTextDocument(editor.document.uri, {
+        preserveFocus: false, // Steal focus to bring user to paste destination
+        viewColumn: editor.viewColumn, // Keep in same tab group
+      });
+
+      this.logger.info(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          originalLength: content.length,
+          paddedLength: paddedContent.length,
+        },
+        `Pasted content to text editor (${content.length} chars)`,
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          contentLength: content.length,
+          error,
+        },
+        'Failed to paste content to text editor',
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Find which tab group contains the given document URI
+   *
+   * Dynamically searches all tab groups to find the one containing the document.
+   * This allows the bound document to be moved between tab groups.
+   *
+   * @param documentUri - The document URI to search for
+   * @returns The tab group containing the document, or undefined if not found
+   */
+  private findTabGroupContainingDocument(documentUri: vscode.Uri): vscode.TabGroup | undefined {
+    for (const tabGroup of vscode.window.tabGroups.all) {
+      for (const tab of tabGroup.tabs) {
+        // Only check text editor tabs (skip terminals, etc.)
+        if (tab.input instanceof vscode.TabInputText) {
+          if (tab.input.uri.toString() === documentUri.toString()) {
+            return tabGroup;
+          }
+        }
+      }
+    }
+    return undefined;
   }
 
   /**

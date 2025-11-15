@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -114,12 +115,12 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Send text to bound destination
+   * Send a formatted RangeLink to bound destination
    *
-   * @param text - The text to paste
+   * @param formattedLink - The formatted RangeLink with metadata
    * @returns true if sent successfully, false otherwise
    */
-  async sendToDestination(text: string): Promise<boolean> {
+  async sendToDestination(formattedLink: FormattedLink): Promise<boolean> {
     if (!this.boundDestination) {
       this.logger.debug(
         { fn: 'PasteDestinationManager.sendToDestination' },
@@ -150,12 +151,13 @@ export class PasteDestinationManager implements vscode.Disposable {
         fn: 'PasteDestinationManager.sendToDestination',
         destinationType,
         displayName,
+        formattedLink,
         ...destinationDetails,
       },
       `Sending text to ${displayName}`,
     );
 
-    const result = await this.boundDestination.paste(text);
+    const result = await this.boundDestination.pasteLink(formattedLink);
 
     if (!result) {
       this.logger.error(
@@ -163,9 +165,74 @@ export class PasteDestinationManager implements vscode.Disposable {
           fn: 'PasteDestinationManager.sendToDestination',
           destinationType,
           displayName,
+          formattedLink,
           ...destinationDetails,
         },
-        `Paste failed to ${displayName}`,
+        `Paste link failed to ${displayName}`,
+      );
+    }
+
+    return result;
+  }
+
+  /**
+   * Send text content to bound destination (issue #89)
+   *
+   * Used for pasting selected text directly to bound destinations.
+   * Similar to sendToDestination() but accepts raw text content and calls pasteContent().
+   *
+   * @param content - The text content to paste
+   * @returns true if sent successfully, false otherwise
+   */
+  async sendTextToDestination(content: string): Promise<boolean> {
+    if (!this.boundDestination) {
+      this.logger.debug(
+        { fn: 'PasteDestinationManager.sendTextToDestination' },
+        'No destination bound',
+      );
+      return false;
+    }
+
+    const destinationType = this.boundDestination.id;
+    const displayName = this.boundDestination.displayName;
+
+    // Get destination-specific details for logging
+    let destinationDetails: Record<string, unknown> = {};
+    if (destinationType === 'text-editor') {
+      const textEditorDest = this.boundDestination as TextEditorDestination;
+      destinationDetails = {
+        editorDisplayName: textEditorDest.getEditorDisplayName(),
+        editorPath: textEditorDest.getEditorPath(),
+      };
+    } else if (destinationType === 'terminal' && this.boundTerminal) {
+      destinationDetails = {
+        terminalName: this.boundTerminal.name || 'Unnamed Terminal',
+      };
+    }
+
+    this.logger.debug(
+      {
+        fn: 'PasteDestinationManager.sendTextToDestination',
+        destinationType,
+        displayName,
+        contentLength: content.length,
+        ...destinationDetails,
+      },
+      `Sending content to ${displayName} (${content.length} chars)`,
+    );
+
+    const result = await this.boundDestination.pasteContent(content);
+
+    if (!result) {
+      this.logger.error(
+        {
+          fn: 'PasteDestinationManager.sendTextToDestination',
+          destinationType,
+          displayName,
+          contentLength: content.length,
+          ...destinationDetails,
+        },
+        `Paste content failed to ${displayName}`,
       );
     }
 

@@ -440,6 +440,7 @@ export const createMockVscode = (overrides?: Partial<typeof vscode>): any => {
     Selection: createMockSelection(),
     Range: createMockRange(),
     DocumentLink: createMockDocumentLink(),
+    TabInputText: MockTabInputText,
     TextEditorRevealType: {
       Default: 0,
       InCenter: 1,
@@ -503,11 +504,20 @@ export const createMockVscodeAdapter = (
 };
 
 /**
+ * Mock TabInputText class for instanceof checks in VscodeAdapter.
+ *
+ * Exported so createMockTab can create proper TabInputText instances.
+ */
+export class MockTabInputText {
+  constructor(public uri: vscode.Uri) {}
+}
+
+/**
  * Create a mock Tab for tab group tests.
  *
  * Provides minimal Tab structure for testing tab group operations.
- * The input property is intentionally simple (just uri) since tests
- * spy on isTextEditorTab() and don't need full TabInputText structure.
+ * Creates proper MockTabInputText instances so VscodeAdapter.isTextEditorTab()
+ * instanceof checks work correctly.
  *
  * @param uri - Document URI for the tab
  * @param overrides - Optional property overrides
@@ -515,7 +525,7 @@ export const createMockVscodeAdapter = (
  */
 export const createMockTab = (uri: vscode.Uri, overrides?: Partial<vscode.Tab>): vscode.Tab => {
   return {
-    input: { uri },
+    input: new MockTabInputText(uri),
     ...overrides,
   } as unknown as vscode.Tab;
 };
