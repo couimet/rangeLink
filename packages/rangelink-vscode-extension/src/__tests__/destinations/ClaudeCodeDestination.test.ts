@@ -213,9 +213,7 @@ describe('ClaudeCodeDestination', () => {
     it('should log warning when all chat commands fail', async () => {
       const testLink = 'link';
       const formattedLink = createMockFormattedLink(testLink);
-      jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValue(new Error('Command not found'));
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
 
       await destination.pasteLink(formattedLink);
 
@@ -229,9 +227,7 @@ describe('ClaudeCodeDestination', () => {
     });
 
     it('should still return true and show notification when chat commands fail', async () => {
-      jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValue(new Error('Command not found'));
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
       const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       const result = await destination.pasteLink(createMockFormattedLink('link'));
@@ -350,9 +346,7 @@ describe('ClaudeCodeDestination', () => {
 
     it('should log warning when all chat commands fail', async () => {
       const testContent = 'text';
-      jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValue(new Error('Command not found'));
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
 
       await destination.pasteContent(testContent);
 
@@ -366,9 +360,7 @@ describe('ClaudeCodeDestination', () => {
     });
 
     it('should still return true and show notification when chat commands fail', async () => {
-      jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValue(new Error('Command not found'));
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
       const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       const result = await destination.pasteContent('text');

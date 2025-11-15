@@ -441,9 +441,7 @@ describe('CursorAIDestination', () => {
 
     it('should log warning when all chat commands fail', async () => {
       const testContent = 'text';
-      jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValue(new Error('Command not found'));
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
 
       await destination.pasteContent(testContent);
 
@@ -457,9 +455,7 @@ describe('CursorAIDestination', () => {
     });
 
     it('should still return true and show notification when chat commands fail', async () => {
-      jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValue(new Error('Command not found'));
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
       const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       const result = await destination.pasteContent('text');

@@ -138,7 +138,11 @@ export class RangeLinkService {
     } else {
       // Paste failed - show destination-aware error message
       getLogger().warn(
-        { fn: 'pasteSelectedTextToDestination', contentLength: content.length, boundDestination: displayName },
+        {
+          fn: 'pasteSelectedTextToDestination',
+          contentLength: content.length,
+          boundDestination: displayName,
+        },
         'Failed to send text to bound destination',
       );
 

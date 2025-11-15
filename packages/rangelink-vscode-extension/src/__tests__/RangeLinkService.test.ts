@@ -603,7 +603,9 @@ describe('RangeLinkService', () => {
         beforeEach(() => {
           mockDestination = createMockDestination('terminal', 'Terminal');
           (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
+            mockDestination,
+          );
         });
 
         it('should copy text to clipboard first (always available fallback)', async () => {
@@ -615,7 +617,9 @@ describe('RangeLinkService', () => {
         it('should send selected text to bound destination', async () => {
           await service.pasteSelectedTextToDestination();
 
-          expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith('const foo = "bar";');
+          expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
+            'const foo = "bar";',
+          );
         });
 
         it('should show success message with destination name and character count', async () => {
@@ -857,7 +861,9 @@ describe('RangeLinkService', () => {
       it('should include text editor guidance in failure message for text editor destination', async () => {
         const mockDestination: any = createMockDestination('text-editor', 'Text Editor', false);
         // Mock getBoundDocumentUri for text editor
-        mockDestination.getBoundDocumentUri = jest.fn().mockReturnValue({ path: '/path/to/file.txt' });
+        mockDestination.getBoundDocumentUri = jest
+          .fn()
+          .mockReturnValue({ path: '/path/to/file.txt' });
         (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
         (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(false);
 
