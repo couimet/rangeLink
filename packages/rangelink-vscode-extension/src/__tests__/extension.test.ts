@@ -106,6 +106,7 @@ jest.mock('vscode', () => ({
     clipboard: { writeText: jest.fn() },
     appName: 'Visual Studio Code',
     uriScheme: 'vscode',
+    language: 'en',
   },
   extensions: {
     all: [],

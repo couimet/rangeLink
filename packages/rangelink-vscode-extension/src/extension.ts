@@ -10,6 +10,8 @@ import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvide
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
+import { MessageCode } from './types/MessageCode';
+import { formatMessage } from './utils/formatMessage';
 import { registerWithLogging } from './utils/registerWithLogging';
 import { VSCodeLogger } from './VSCodeLogger';
 
@@ -120,7 +122,7 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.window.showInformationMessage(message, 'Copy Commit Hash').then((selection) => {
           if (selection === 'Copy Commit Hash') {
             vscode.env.clipboard.writeText(versionInfo.commitFull);
-            vscode.window.showInformationMessage('Commit hash copied to clipboard');
+            vscode.window.showInformationMessage(formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED));
           }
         });
         getLogger().info(

@@ -1,6 +1,8 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
+import { MessageCode } from '../types/MessageCode';
+import { formatMessage } from '../utils/formatMessage';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**
@@ -122,7 +124,7 @@ export class ClaudeCodeDestination implements PasteDestination {
 
       // Step 3: Show notification (regardless of whether chat opened)
       void vscode.window.showInformationMessage(
-        'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
+        formatMessage(MessageCode.INFO_CLAUDE_CODE_LINK_COPIED),
       );
 
       this.logger.info(

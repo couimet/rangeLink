@@ -1,6 +1,8 @@
 import type { Logger } from 'barebone-logger';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { MessageCode } from '../types/MessageCode';
+import { formatMessage } from '../utils/formatMessage';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**
@@ -167,7 +169,7 @@ export class CursorAIDestination implements PasteDestination {
 
       // Step 3: Show notification (regardless of whether chat opened)
       void this.ideAdapter.showInformationMessage(
-        'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
+        formatMessage(MessageCode.INFO_CURSOR_AI_LINK_COPIED),
       );
 
       this.logger.info(
