@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { getDelimitersForExtension } from './config';
 import { DestinationFactory } from './destinations/DestinationFactory';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
+import { setLocale } from './i18n/LocaleManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
@@ -27,6 +28,10 @@ export function activate(context: vscode.ExtensionContext): void {
   // Initialize core library logger with VSCode adapter
   const vscodeLogger = new VSCodeLogger(outputChannel);
   setLogger(vscodeLogger);
+
+  // Initialize i18n locale from VSCode environment
+  // setLocale() handles language code extraction ('en-US' → 'en')
+  setLocale(vscode.env.language);
 
   // Load delimiter configuration
   const vscodeConfig = vscode.workspace.getConfiguration('rangelink');

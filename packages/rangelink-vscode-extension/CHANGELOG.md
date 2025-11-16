@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **i18n foundation** - Message code system for future localization support. English only currently.
+
 ### Changed
 
 ### Fixed
