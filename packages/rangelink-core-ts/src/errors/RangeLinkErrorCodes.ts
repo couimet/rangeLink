@@ -8,7 +8,8 @@ import { SharedErrorCodes } from './sharedErrorCodes';
  * - No WARN_ codes: Warning is a logging level, not an error type
  * - Values are descriptive strings (same as keys) for clear context in logs
  * - Following SharedErrorCodes pattern: VALIDATION = 'VALIDATION'
- * - Informational messages (MSG_xxxx) are in RangeLinkMessageCode for i18n
+ * - Core errors stay English (industry standard - like TypeScript/Git/JavaScript)
+ * - User-facing i18n messages are in extension layer (MessageCode enum)
  *
  * When someone sees an error in logs or catches an exception, they should
  * immediately understand what went wrong without looking up code mappings.

@@ -1,5 +1,5 @@
 import type { Logger } from 'barebone-logger';
-import { DEFAULT_DELIMITERS, type RangeLinkError, RangeLinkMessageCode } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, type RangeLinkError } from 'rangelink-core-ts';
 
 import { logSuccessfulConfig, logValidationErrors } from './logging';
 import { determineAllSources } from './sources';
@@ -49,7 +49,7 @@ export const loadDelimiterConfig = (
     userRange === undefined;
   if (hasNoConfig) {
     logger.debug(
-      { fn: 'loadDelimiterConfig', code: RangeLinkMessageCode.CONFIG_USING_DEFAULTS },
+      { fn: 'loadDelimiterConfig' },
       'No delimiter config provided, using defaults',
     );
     return createDefaultResult([]);
@@ -73,7 +73,7 @@ export const loadDelimiterConfig = (
   if (fieldErrors.length > 0) {
     logValidationErrors(logger, fieldErrors);
     logger.info(
-      { fn: 'loadDelimiterConfig', code: RangeLinkMessageCode.CONFIG_USING_DEFAULTS },
+      { fn: 'loadDelimiterConfig' },
       'Using default delimiters due to validation errors',
     );
 
@@ -94,7 +94,7 @@ export const loadDelimiterConfig = (
   if (relationshipErrors.length > 0) {
     logValidationErrors(logger, relationshipErrors);
     logger.info(
-      { fn: 'loadDelimiterConfig', code: RangeLinkMessageCode.CONFIG_USING_DEFAULTS },
+      { fn: 'loadDelimiterConfig' },
       'Using default delimiters due to validation errors',
     );
 

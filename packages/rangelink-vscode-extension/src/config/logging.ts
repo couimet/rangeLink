@@ -1,6 +1,5 @@
 import type { Logger } from 'barebone-logger';
 import type { DelimiterConfig, RangeLinkError } from 'rangelink-core-ts';
-import { RangeLinkMessageCode } from 'rangelink-core-ts';
 
 import type { DelimiterConfigSources } from './types';
 
@@ -36,7 +35,7 @@ export const logSuccessfulConfig = (
   sources: DelimiterConfigSources,
 ): void => {
   logger.info(
-    { fn: 'logSuccessfulConfig', code: RangeLinkMessageCode.CONFIG_LOADED },
+    { fn: 'logSuccessfulConfig' },
     'Delimiter configuration loaded:',
   );
 
