@@ -914,4 +914,161 @@ describe('RangeLinkService', () => {
       });
     });
   });
+
+  describe('validateActiveTextEditor', () => {
+    let service: RangeLinkService;
+    let mockIdeAdapter: VscodeAdapter;
+    let mockDestinationManager: PasteDestinationManager;
+    const delimiters: DelimiterConfig = {
+      line: 'L',
+      position: 'C',
+      hash: '#',
+      range: '-',
+    };
+
+    beforeEach(() => {
+      // Create mock IDE adapter with writable activeTextEditor
+      mockIdeAdapter = {
+        showErrorMessage: jest.fn().mockResolvedValue(undefined),
+      } as any;
+
+      // Define activeTextEditor as writable property
+      Object.defineProperty(mockIdeAdapter, 'activeTextEditor', {
+        writable: true,
+        value: undefined,
+      });
+
+      // Create mock destination manager
+      mockDestinationManager = {
+        isBound: jest.fn().mockReturnValue(false),
+      } as unknown as PasteDestinationManager;
+
+      // Create service
+      service = new RangeLinkService(delimiters, mockIdeAdapter, mockDestinationManager);
+    });
+
+    describe('when active text editor exists', () => {
+      it('should return the active editor', () => {
+        const mockEditor = {
+          document: { uri: { fsPath: '/path/to/file.ts' } },
+          selections: [],
+        };
+        (mockIdeAdapter as any).activeTextEditor = mockEditor;
+
+        const result = (service as any).validateActiveTextEditor();
+
+        expect(result).toBe(mockEditor);
+      });
+
+      it('should not show error message', () => {
+        const mockEditor = {
+          document: { uri: { fsPath: '/path/to/file.ts' } },
+          selections: [],
+        };
+        (mockIdeAdapter as any).activeTextEditor = mockEditor;
+
+        (service as any).validateActiveTextEditor();
+
+        expect(mockIdeAdapter.showErrorMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when no active text editor exists', () => {
+      beforeEach(() => {
+        (mockIdeAdapter as any).activeTextEditor = undefined;
+      });
+
+      it('should return undefined', () => {
+        const result = (service as any).validateActiveTextEditor();
+
+        expect(result).toBeUndefined();
+      });
+
+      it('should show error message with "RangeLink: No active editor"', () => {
+        (service as any).validateActiveTextEditor();
+
+        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
+        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('integration with generateLinkFromSelection', () => {
+      beforeEach(() => {
+        // Mock all dependencies for generateLinkFromSelection
+        (mockIdeAdapter as any).activeTextEditor = undefined;
+        mockIdeAdapter.showErrorMessage = jest.fn().mockResolvedValue(undefined);
+      });
+
+      it('should show consistent error message when no editor', async () => {
+        const result = await (service as any).generateLinkFromSelection('workspace-relative', false);
+
+        expect(result).toBeNull();
+        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
+        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
+      });
+
+      it('should return null early when no editor', async () => {
+        const result = await (service as any).generateLinkFromSelection('workspace-relative', false);
+
+        expect(result).toBeNull();
+        // Verify we bailed early (no other adapter methods called)
+        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('integration with pasteSelectedTextToDestination', () => {
+      beforeEach(() => {
+        // Mock all dependencies
+        (mockIdeAdapter as any).activeTextEditor = undefined;
+        mockIdeAdapter.showErrorMessage = jest.fn().mockResolvedValue(undefined);
+        mockIdeAdapter.writeTextToClipboard = jest.fn().mockResolvedValue(undefined);
+      });
+
+      it('should show consistent error message when no editor', async () => {
+        await service.pasteSelectedTextToDestination();
+
+        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
+        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
+      });
+
+      it('should return early when no editor', async () => {
+        await service.pasteSelectedTextToDestination();
+
+        // Verify we bailed early (no clipboard or destination operations)
+        expect(mockIdeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
+        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('error message consistency', () => {
+      it('should use identical error message across all methods', () => {
+        (mockIdeAdapter as any).activeTextEditor = undefined;
+
+        // Call validateActiveTextEditor directly
+        (service as any).validateActiveTextEditor();
+        const directCall = (mockIdeAdapter.showErrorMessage as jest.Mock).mock.calls[0][0];
+
+        // Reset mock
+        (mockIdeAdapter.showErrorMessage as jest.Mock).mockClear();
+
+        // Call via generateLinkFromSelection
+        (service as any).generateLinkFromSelection('workspace-relative', false);
+        const viaGenerateLink = (mockIdeAdapter.showErrorMessage as jest.Mock).mock.calls[0][0];
+
+        // Reset mock
+        (mockIdeAdapter.showErrorMessage as jest.Mock).mockClear();
+
+        // Call via pasteSelectedTextToDestination
+        service.pasteSelectedTextToDestination();
+        const viaPasteText = (mockIdeAdapter.showErrorMessage as jest.Mock).mock.calls[0][0];
+
+        // All three should be identical
+        expect(directCall).toBe('RangeLink: No active editor');
+        expect(viaGenerateLink).toBe('RangeLink: No active editor');
+        expect(viaPasteText).toBe('RangeLink: No active editor');
+        expect(directCall).toStrictEqual(viaGenerateLink);
+        expect(viaGenerateLink).toStrictEqual(viaPasteText);
+      });
+    });
+  });
 });

@@ -63,10 +63,8 @@ export class RangeLinkService {
    * - Skips empty selections
    */
   async pasteSelectedTextToDestination(): Promise<void> {
-    // Get active editor
-    const editor = this.ideAdapter.activeTextEditor;
+    const editor = this.validateActiveTextEditor();
     if (!editor) {
-      this.ideAdapter.showErrorMessage('RangeLink: No active editor');
       return;
     }
 
@@ -160,9 +158,8 @@ export class RangeLinkService {
     pathFormat: PathFormat,
     isPortable: boolean,
   ): Promise<FormattedLink | null> {
-    const editor = this.ideAdapter.activeTextEditor;
+    const editor = this.validateActiveTextEditor();
     if (!editor) {
-      this.ideAdapter.showErrorMessage('No active editor');
       return null;
     }
 
@@ -285,6 +282,22 @@ export class RangeLinkService {
 
     // No destination bound - just show clipboard message
     this.ideAdapter.setStatusBarMessage(statusMessage, 2000);
+  }
+
+  /**
+   * Validates that an active text editor exists and shows error message if not.
+   *
+   * This utility ensures consistent error messaging across all methods that require
+   * an active editor. Prevents drift in error messages.
+   *
+   * @returns The active text editor, or undefined if none exists
+   */
+  private validateActiveTextEditor(): vscode.TextEditor | undefined {
+    const editor = this.ideAdapter.activeTextEditor;
+    if (!editor) {
+      this.ideAdapter.showErrorMessage('RangeLink: No active editor');
+    }
+    return editor;
   }
 
   /**

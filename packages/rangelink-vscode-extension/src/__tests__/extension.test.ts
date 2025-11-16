@@ -595,7 +595,7 @@ describe('RangeLinkService', () => {
 
       await service.createLink(PathFormat.WorkspaceRelative);
 
-      expect(mockWindow.showErrorMessage).toHaveBeenCalledWith('No active editor');
+      expect(mockWindow.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
       expect(mockClipboard.writeText).not.toHaveBeenCalled();
     });
 
