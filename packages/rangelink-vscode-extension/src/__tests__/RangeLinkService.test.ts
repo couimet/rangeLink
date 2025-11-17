@@ -2,7 +2,10 @@ import type { DelimiterConfig } from 'rangelink-core-ts';
 
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { messagesEn } from '../i18n/messages.en';
 import { RangeLinkService } from '../RangeLinkService';
+import { MessageCode } from '../types/MessageCode';
+import * as formatMessageModule from '../utils/formatMessage';
 
 describe('RangeLinkService', () => {
   describe('copyAndNotify', () => {
@@ -417,6 +420,44 @@ describe('RangeLinkService', () => {
         await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
+      });
+    });
+
+    describe('i18n integration', () => {
+      let formatMessageSpy: jest.SpyInstance;
+
+      beforeEach(() => {
+        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
+        formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+      });
+
+      it('should call formatMessage with STATUS_BAR_LINK_COPIED_TO_CLIPBOARD and linkTypeName parameter', async () => {
+        await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+
+        expect(formatMessageSpy).toHaveBeenCalledWith(
+          MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD,
+          { linkTypeName: 'RangeLink' },
+        );
+      });
+
+      it('should produce correct status message with "RangeLink" parameter', async () => {
+        await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+
+        const expectedMessage = messagesEn[MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD].replace(
+          '{linkTypeName}',
+          'RangeLink',
+        );
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expectedMessage, 2000);
+      });
+
+      it('should produce correct status message with "Portable RangeLink" parameter', async () => {
+        await (service as any).copyAndNotify('src/file.ts#L1', 'Portable RangeLink');
+
+        const expectedMessage = messagesEn[MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD].replace(
+          '{linkTypeName}',
+          'Portable RangeLink',
+        );
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expectedMessage, 2000);
       });
     });
   });
