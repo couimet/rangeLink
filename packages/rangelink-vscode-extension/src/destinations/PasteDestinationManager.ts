@@ -53,17 +53,46 @@ export class PasteDestinationManager implements vscode.Disposable {
   async bind(type: DestinationType): Promise<boolean> {
     // Check if already bound
     if (this.boundDestination) {
-      const currentType = this.boundDestination.id;
-      this.logger.warn(
-        { fn: 'PasteDestinationManager.bind', currentType, requestedType: type },
-        `Already bound to ${this.boundDestination.displayName}`,
+      // Prevent binding same destination to itself
+      if (this.boundDestination.id === type) {
+        this.logger.debug(
+          { fn: 'PasteDestinationManager.bind', type },
+          `Already bound to ${this.boundDestination.displayName}, no action taken`,
+        );
+        this.ideAdapter.showInformationMessage(
+          `RangeLink: Already bound to ${this.boundDestination.displayName}`,
+        );
+        return false;
+      }
+
+      // Get new destination display name for confirmation
+      const newDestination = this.factory.create(type);
+      const newDisplayName = newDestination.displayName;
+
+      // Show confirmation dialog
+      const confirmed = await this.confirmReplaceBinding(
+        this.boundDestination,
+        type,
+        newDisplayName,
       );
 
-      this.ideAdapter.showErrorMessage(
-        `RangeLink: Already bound to ${this.boundDestination.displayName}. Unbind first.`,
-      );
+      if (!confirmed) {
+        this.logger.debug(
+          { fn: 'PasteDestinationManager.bind', currentType: this.boundDestination.id, newType: type },
+          'User cancelled binding replacement',
+        );
+        return false;
+      }
 
-      return false;
+      // User confirmed - track old destination for toast notification
+      this.replacedDestinationName = this.boundDestination.displayName;
+
+      // Unbind current destination
+      this.logger.info(
+        { fn: 'PasteDestinationManager.bind', oldType: this.boundDestination.id, newType: type },
+        `User confirmed replacement: unbinding ${this.replacedDestinationName}`,
+      );
+      this.unbind();
     }
 
     // Special handling for terminal (needs active terminal reference)
