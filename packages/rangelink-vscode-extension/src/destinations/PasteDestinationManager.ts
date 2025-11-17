@@ -2,6 +2,8 @@ import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { MessageCode } from '../types/MessageCode';
+import { formatMessage } from '../utils/formatMessage';
 import { DestinationFactory } from './DestinationFactory';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 import { TerminalDestination } from './TerminalDestination';
@@ -24,6 +26,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   private boundDestination: PasteDestination | undefined;
   private boundTerminal: vscode.Terminal | undefined; // Track for closure events
   private disposables: vscode.Disposable[] = [];
+  private replacedDestinationName: string | undefined; // Track for toast notifications
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -386,5 +389,58 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.context.subscriptions.push(documentCloseDisposable);
     this.disposables.push(documentCloseDisposable);
+  }
+
+  /**
+   * Show confirmation dialog for replacing existing binding
+   *
+   * Uses QuickPick with descriptive labels to confirm user intent.
+   * User can confirm replacement or cancel to keep current binding.
+   *
+   * @param currentDestination - Currently bound destination
+   * @param newType - Destination type user wants to bind
+   * @param newDisplayName - Display name of new destination
+   * @returns true if user confirms replacement, false if cancelled
+   */
+  private async confirmReplaceBinding(
+    currentDestination: PasteDestination,
+    newType: DestinationType,
+    newDisplayName: string,
+  ): Promise<boolean> {
+    const params = {
+      currentDestination: currentDestination.displayName,
+      newDestination: newDisplayName,
+    };
+
+    const YES_REPLACE_LABEL = formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_REPLACE);
+
+    const items: vscode.QuickPickItem[] = [
+      {
+        label: YES_REPLACE_LABEL,
+        description: formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_DESCRIPTION, params),
+      },
+      {
+        label: formatMessage(MessageCode.SMART_BIND_CONFIRM_NO_KEEP),
+        description: formatMessage(MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION, params),
+      },
+    ];
+
+    const choice = await this.ideAdapter.showQuickPick(items, {
+      placeHolder: formatMessage(MessageCode.SMART_BIND_CONFIRM_PLACEHOLDER, params),
+    });
+
+    const confirmed = choice?.label === YES_REPLACE_LABEL;
+
+    this.logger.debug(
+      {
+        fn: 'PasteDestinationManager.confirmReplaceBinding',
+        currentType: currentDestination.id,
+        newType,
+        confirmed,
+      },
+      confirmed ? 'User confirmed replacement' : 'User cancelled replacement',
+    );
+
+    return confirmed;
   }
 }
