@@ -180,26 +180,19 @@ export class PasteDestinationManager implements vscode.Disposable {
     const destinationType = this.boundDestination.id;
     const displayName = this.boundDestination.displayName;
 
-    this.logger.debug(
-      {
-        fn: 'PasteDestinationManager.jumpToBoundDestination',
-        destinationType,
-        displayName,
-      },
-      `Attempting to focus ${displayName}`,
-    );
+    const logCtx = {
+      fn: 'PasteDestinationManager.jumpToBoundDestination',
+      destinationType,
+      displayName,
+      ...this.boundDestination.getLoggingDetails(),
+    };
+
+    this.logger.debug(logCtx, `Attempting to focus ${displayName}`);
 
     const focused = await this.boundDestination.focus();
 
     if (!focused) {
-      this.logger.warn(
-        {
-          fn: 'PasteDestinationManager.jumpToBoundDestination',
-          destinationType,
-          displayName,
-        },
-        `Failed to focus ${displayName}`,
-      );
+      this.logger.warn(logCtx, `Failed to focus ${displayName}`);
       this.ideAdapter.showInformationMessage(
         formatMessage(MessageCode.INFO_JUMP_FOCUS_FAILED, { destinationName: displayName }),
       );
@@ -210,14 +203,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     const successMessage = this.boundDestination.getJumpSuccessMessage();
     this.ideAdapter.setStatusBarMessage(successMessage, 2000);
 
-    this.logger.info(
-      {
-        fn: 'PasteDestinationManager.jumpToBoundDestination',
-        destinationType,
-        displayName,
-      },
-      `Successfully focused ${displayName}`,
-    );
+    this.logger.info(logCtx, `Successfully focused ${displayName}`);
 
     return true;
   }
