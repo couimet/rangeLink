@@ -63,6 +63,20 @@ export class TextEditorDestination implements PasteDestination {
   }
 
   /**
+   * Check if RangeLink is eligible for paste to text editor
+   *
+   * Returns false if creating link FROM the bound editor itself (self-paste detection).
+   * This prevents auto-pasting when user creates a link in the same editor they want to paste to.
+   *
+   * @param _formattedLink - The formatted RangeLink (unused - self-paste check doesn't depend on link content)
+   * @returns Promise resolving to true if eligible, false if self-paste detected
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteLink(_formattedLink: FormattedLink): Promise<boolean> {
+    return this.checkSelfPasteEligibility('isEligibleForPasteLink', 'creating link FROM bound editor');
+  }
+
+  /**
    * Check if text content is eligible for paste to text editor
    *
    * Returns false if selecting text FROM the bound editor itself (self-paste detection).

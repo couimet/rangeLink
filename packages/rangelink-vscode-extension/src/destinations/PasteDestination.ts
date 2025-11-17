@@ -55,6 +55,23 @@ export interface PasteDestination {
   isAvailable(): Promise<boolean>;
 
   /**
+   * Check if a RangeLink is eligible to be pasted to this destination
+   *
+   * Determines if pasting should be skipped based on destination-specific rules.
+   * Examples:
+   * - TextEditorDestination: Skip if creating link FROM the bound editor itself
+   * - Other destinations: Always eligible (return true)
+   *
+   * This check is separate from isAvailable() which verifies infrastructure readiness.
+   * Eligibility is about business logic (should we paste?), availability is about
+   * technical capability (can we paste?).
+   *
+   * @param formattedLink - The formatted RangeLink to check
+   * @returns Promise resolving to true if paste should proceed, false to skip
+   */
+  isEligibleForPasteLink(formattedLink: FormattedLink): Promise<boolean>;
+
+  /**
    * Check if text content is eligible to be pasted to this destination
    *
    * Determines if pasting should be skipped based on destination-specific rules.

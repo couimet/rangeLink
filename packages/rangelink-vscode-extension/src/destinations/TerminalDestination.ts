@@ -29,6 +29,20 @@ export class TerminalDestination implements PasteDestination {
   }
 
   /**
+   * Check if RangeLink is eligible for paste to terminal
+   *
+   * Terminal always returns true - all links are eligible when terminal is available.
+   * Eligibility checks are primarily for TextEditorDestination to avoid self-paste.
+   *
+   * @param _formattedLink - The formatted RangeLink (unused)
+   * @returns Promise resolving to true (always eligible)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteLink(_formattedLink: FormattedLink): Promise<boolean> {
+    return true;
+  }
+
+  /**
    * Check if text content is eligible for paste to terminal
    *
    * Terminal always returns true - all content is eligible when terminal is available.
