@@ -12,6 +12,7 @@ import * as vscode from 'vscode';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
+import { ActiveSelections } from './types/ActiveSelections';
 import { toInputSelection } from './utils/toInputSelection';
 
 export enum PathFormat {
@@ -63,25 +64,18 @@ export class RangeLinkService {
    * - Skips empty selections
    */
   async pasteSelectedTextToDestination(): Promise<void> {
-    const editor = this.validateActiveTextEditor();
-    if (!editor) {
-      return;
-    }
+    const activeSelections = this.getActiveSelections();
+    const nonEmptySelections = activeSelections.getNonEmptySelections();
 
-    const selections = editor.selections;
-
-    // Check for empty selections
-    if (!selections || selections.length === 0 || selections.every((s) => s.isEmpty)) {
+    if (!nonEmptySelections) {
       this.ideAdapter.showErrorMessage('RangeLink: No text selected. Select text and try again.');
       return;
     }
 
-    // Extract selected text (concatenate with newlines for multi-selection)
-    // Note: guaranteed to have at least one non-empty selection after check above
-    const selectedTexts = selections
-      .filter((s) => !s.isEmpty)
-      .map((s) => editor.document.getText(s));
+    const editor = activeSelections.editor!; // Safe: getNonEmptySelections() guarantees editor exists
 
+    // Extract selected text (concatenate with newlines for multi-selection)
+    const selectedTexts = nonEmptySelections.map((s) => editor.document.getText(s));
     const content = selectedTexts.join('\n');
 
     getLogger().debug(
@@ -113,18 +107,17 @@ export class RangeLinkService {
     pathFormat: PathFormat,
     isPortable: boolean,
   ): Promise<FormattedLink | null> {
-    const editor = this.validateActiveTextEditor();
-    if (!editor) {
+    const activeSelections = this.getActiveSelections();
+    const nonEmptySelections = activeSelections.getNonEmptySelections();
+
+    if (!nonEmptySelections) {
+      this.ideAdapter.showErrorMessage('RangeLink: No text selected. Select text and try again.');
       return null;
     }
 
+    const editor = activeSelections.editor!; // Safe: getNonEmptySelections() guarantees editor exists
     const document = editor.document;
-    const selections = editor.selections;
-
-    if (!selections || selections.length === 0 || selections.every((s) => s.isEmpty)) {
-      // TODO: Replace with RangeLinkExtensionError using RangeLinkExtensionErrorCodes.EMPTY_SELECTION
-      throw new Error('RangeLink command invoked with empty selection');
-    }
+    const selections = activeSelections.selections;
 
     const referencePath = this.getReferencePath(document, pathFormat);
 
@@ -205,6 +198,20 @@ export class RangeLinkService {
       this.ideAdapter.showErrorMessage('RangeLink: No active editor');
     }
     return editor;
+  }
+
+  /**
+   * Gets active editor and selections as an immutable Value Object.
+   *
+   * Uses validateActiveTextEditor() internally, so will show "No active editor"
+   * error if editor doesn't exist. Caller must check getNonEmptySelections()
+   * result and show appropriate error for empty selections.
+   *
+   * @returns ActiveSelections VO with editor and selections (may be invalid)
+   */
+  private getActiveSelections(): ActiveSelections {
+    const editor = this.validateActiveTextEditor();
+    return ActiveSelections.create(editor);
   }
 
   /**
