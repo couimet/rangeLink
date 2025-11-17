@@ -241,7 +241,7 @@ export class TerminalDestination implements PasteDestination {
    * @returns Formatted i18n message for status bar display
    */
   getJumpSuccessMessage(): string {
-    const terminalName = this.getTerminalName();
+    const terminalName = this.getTerminalName() || 'Unnamed Terminal';
     return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL, { terminalName });
   }
 

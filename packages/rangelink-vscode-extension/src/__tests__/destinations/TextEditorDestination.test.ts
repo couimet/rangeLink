@@ -365,4 +365,150 @@ describe('TextEditorDestination', () => {
       });
     });
   });
+
+  describe('focus()', () => {
+    beforeEach(() => {
+      destination.setEditor(mockEditor);
+
+      // Mock tab groups - bound document in second tab group
+      const otherUri = createMockUriInstance('/workspace/other.ts');
+      const mockVscode = mockAdapter.__getVscodeInstance();
+
+      mockVscode.window.tabGroups = {
+        all: [
+          createMockTabGroup([createMockTab(otherUri)], {
+            activeTab: createMockTab(otherUri),
+          }),
+          createMockTabGroup([createMockTab(mockEditor.document.uri)], {
+            activeTab: createMockTab(mockEditor.document.uri),
+          }),
+        ],
+      } as any;
+
+      // Mock visibleTextEditors to include the bound editor
+      jest.spyOn(mockAdapter, 'visibleTextEditors', 'get').mockReturnValue([mockEditor]);
+
+      // Mock showTextDocument to resolve successfully
+      jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
+    });
+
+    it('should return false when no editor bound', async () => {
+      destination.setEditor(undefined);
+
+      const result = await destination.focus();
+
+      expect(result).toBe(false);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'TextEditorDestination.focus' },
+        'Cannot operate: No text editor bound',
+      );
+    });
+
+    it('should return false when bound document not found in any tab group', async () => {
+      // Empty tab groups - document not found
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      mockVscode.window.tabGroups = { all: [] } as any;
+
+      const result = await destination.focus();
+
+      expect(result).toBe(false);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          fn: 'TextEditorDestination.focus',
+          boundDocumentUri: mockEditor.document.uri.toString(),
+          boundDisplayName: 'src/file.ts',
+        },
+        'Bound document not found in any tab group - likely closed',
+      );
+    });
+
+    it('should return true when focus succeeds', async () => {
+      const result = await destination.focus();
+
+      expect(result).toBe(true);
+    });
+
+    it('should call showTextDocument to focus editor', async () => {
+      const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument');
+
+      await destination.focus();
+
+      expect(showTextDocumentSpy).toHaveBeenCalledWith(mockEditor.document.uri, {
+        preserveFocus: false,
+        viewColumn: mockEditor.viewColumn,
+      });
+    });
+
+    it('should log success with editor name', async () => {
+      await destination.focus();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'TextEditorDestination.focus',
+          boundDisplayName: 'src/file.ts',
+          boundDocumentUri: mockEditor.document.uri.toString(),
+        },
+        'Focused text editor: src/file.ts',
+      );
+    });
+
+    it('should return false and log error when showTextDocument throws', async () => {
+      const testError = new Error('Focus failed');
+      jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(testError);
+
+      const result = await destination.focus();
+
+      expect(result).toBe(false);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          fn: 'TextEditorDestination.focus',
+          boundDisplayName: 'src/file.ts',
+          boundDocumentUri: mockEditor.document.uri.toString(),
+          error: testError,
+        },
+        'Failed to focus text editor',
+      );
+    });
+
+    it('should not log success when validation fails', async () => {
+      destination.setEditor(undefined);
+
+      await destination.focus();
+
+      expect(mockLogger.info).not.toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalled();
+    });
+  });
+
+  describe('getJumpSuccessMessage()', () => {
+    beforeEach(() => {
+      destination.setEditor(mockEditor);
+    });
+
+    it('should return formatted message with editor display name', () => {
+      const message = destination.getJumpSuccessMessage();
+
+      expect(message).toBe('✓ Focused Editor: src/file.ts');
+    });
+
+    it('should return formatted message for untitled editor', () => {
+      // Create untitled document and editor
+      const untitledUri = createMockUriInstance('untitled:Untitled-1');
+      const untitledDocument = createMockDocument('', untitledUri, {
+        isClosed: false,
+        isUntitled: true,
+      });
+      const untitledEditor = createMockEditor({ document: untitledDocument });
+
+      // Configure workspace mocks to return undefined for untitled files
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.workspace.asRelativePath as jest.Mock).mockReturnValue('Untitled-1');
+
+      destination.setEditor(untitledEditor);
+
+      const message = destination.getJumpSuccessMessage();
+
+      expect(message).toBe('✓ Focused Editor: Untitled-1');
+    });
+  });
 });

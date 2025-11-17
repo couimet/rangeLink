@@ -418,4 +418,78 @@ describe('TerminalDestination', () => {
       expect(details).toStrictEqual({ terminalName: 'Unnamed Terminal' });
     });
   });
+
+  describe('focus()', () => {
+    it('should return false when no terminal bound', async () => {
+      const result = await destination.focus();
+
+      expect(result).toBe(false);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'TerminalDestination.focus' },
+        'Cannot focus: No terminal bound',
+      );
+    });
+
+    it('should return true when terminal is bound', async () => {
+      destination.setTerminal(mockTerminal);
+
+      const result = await destination.focus();
+
+      expect(result).toBe(true);
+    });
+
+    it('should call terminal.show to focus terminal', async () => {
+      destination.setTerminal(mockTerminal);
+
+      await destination.focus();
+
+      expect(mockTerminal.show).toHaveBeenCalledWith(false);
+    });
+
+    it('should log success with terminal name', async () => {
+      destination.setTerminal(mockTerminal);
+
+      await destination.focus();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'TerminalDestination.focus', terminalName: 'bash' },
+        'Focused terminal: bash',
+      );
+    });
+
+    it('should not log success when no terminal bound', async () => {
+      await destination.focus();
+
+      expect(mockLogger.info).not.toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalled();
+    });
+  });
+
+  describe('getJumpSuccessMessage()', () => {
+    it('should return formatted message with terminal name', () => {
+      destination.setTerminal(mockTerminal);
+
+      const message = destination.getJumpSuccessMessage();
+
+      expect(message).toBe('✓ Focused Terminal: bash');
+    });
+
+    it('should handle terminal with empty name using default', () => {
+      const unnamedTerminal = { ...mockTerminal, name: '' };
+      destination.setTerminal(unnamedTerminal as vscode.Terminal);
+
+      const message = destination.getJumpSuccessMessage();
+
+      expect(message).toBe('✓ Focused Terminal: Unnamed Terminal');
+    });
+
+    it('should handle terminal with undefined name using default', () => {
+      const unnamedTerminal = { ...mockTerminal, name: undefined };
+      destination.setTerminal(unnamedTerminal as unknown as vscode.Terminal);
+
+      const message = destination.getJumpSuccessMessage();
+
+      expect(message).toBe('✓ Focused Terminal: Unnamed Terminal');
+    });
+  });
 });

@@ -357,4 +357,83 @@ describe('ClaudeCodeDestination', () => {
       expect(details).toStrictEqual({});
     });
   });
+
+  describe('focus()', () => {
+    beforeEach(() => {
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([mockExtension]);
+    });
+
+    it('should return false when extension not available', async () => {
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
+
+      const result = await destination.focus();
+
+      expect(result).toBe(false);
+    });
+
+    it('should try opening chat with claude-vscode.focus command first', async () => {
+      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
+
+      await destination.focus();
+
+      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.focus');
+    });
+
+    it('should try fallback commands if primary fails', async () => {
+      const executeCommandSpy = jest
+        .spyOn(mockAdapter, 'executeCommand')
+        .mockRejectedValueOnce(new Error('claude-vscode.focus not found'))
+        .mockResolvedValueOnce(undefined);
+
+      await destination.focus();
+
+      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.focus');
+      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.sidebar.open');
+    });
+
+    it('should return true when chat open succeeds', async () => {
+      const result = await destination.focus();
+
+      expect(result).toBe(true);
+    });
+
+    it('should log chat open completion', async () => {
+      await destination.focus();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'ClaudeCodeDestination.focus',
+          chatOpened: true,
+        },
+        'Claude Code open completed',
+      );
+    });
+
+    it('should log warning when extension not available', async () => {
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
+
+      await destination.focus();
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'ClaudeCodeDestination.focus' },
+        'Cannot paste: Claude Code extension not available',
+      );
+    });
+
+    it('should still return true when all chat commands fail', async () => {
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
+
+      const result = await destination.focus();
+
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('getJumpSuccessMessage()', () => {
+    it('should return formatted message for status bar', () => {
+      const message = destination.getJumpSuccessMessage();
+
+      expect(message).toBe('✓ Focused Claude Code Chat');
+    });
+  });
 });
