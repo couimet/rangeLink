@@ -3,6 +3,10 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { CursorAIDestination } from '../../destinations/CursorAIDestination';
 import { createMockFormattedLink, testDestinationInterfaceCompliance } from '../helpers';
+import { messagesEn } from '../../i18n/messages.en';
+import { MessageCode } from '../../types/MessageCode';
+import * as formatMessageModule from '../../utils/formatMessage';
+import { testDestinationInterfaceCompliance } from '../helpers';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('CursorAIDestination', () => {
@@ -307,6 +311,32 @@ describe('CursorAIDestination', () => {
 
       expect(result).toBe(true);
       expect(mockVscode.env.clipboard.writeText).not.toHaveBeenCalled(); // RangeLinkService handles clipboard
+    });
+  });
+
+  describe('i18n integration', () => {
+    let formatMessageSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
+      (mockVscode.env as any).uriScheme = 'cursor';
+      formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+    });
+
+    it('should call formatMessage with INFO_CURSOR_AI_LINK_COPIED when showing info message', async () => {
+      await destination.paste('test link');
+
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.INFO_CURSOR_AI_LINK_COPIED);
+    });
+
+    it('should show information message with correct paste instructions', async () => {
+      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+
+      await destination.paste('test link');
+
+      const expectedMessage = messagesEn[MessageCode.INFO_CURSOR_AI_LINK_COPIED];
+      expect(showInfoSpy).toHaveBeenCalledWith(expectedMessage);
     });
   });
 });

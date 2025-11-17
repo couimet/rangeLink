@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { applySmartPadding } from '../utils/applySmartPadding';
 import { isEligibleForPaste } from '../utils/isEligibleForPaste';
+
 import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**

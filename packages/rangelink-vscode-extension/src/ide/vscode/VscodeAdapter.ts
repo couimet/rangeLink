@@ -66,6 +66,20 @@ export class VscodeAdapter {
   }
 
   /**
+   * Show quick pick dialog for user selection
+   *
+   * @param items - Array of items to choose from
+   * @param options - Optional configuration for the quick pick
+   * @returns Promise resolving to the selected item, or undefined if cancelled
+   */
+  async showQuickPick<T extends vscode.QuickPickItem>(
+    items: T[],
+    options?: vscode.QuickPickOptions,
+  ): Promise<T | undefined> {
+    return this.ideInstance.window.showQuickPick(items, options);
+  }
+
+  /**
    * Open a document and show it in the editor
    *
    * Supports full VSCode API options for fine-grained control:

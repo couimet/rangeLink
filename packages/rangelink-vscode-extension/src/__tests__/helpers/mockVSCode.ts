@@ -36,7 +36,7 @@ export const createMockTerminal = (name = 'bash'): vscode.Terminal => {
  * All notification methods return Promise<string | undefined> matching VSCode API.
  * setStatusBarMessage returns mock Disposable with dispose() method.
  */
-export const createMockWindow = () => {
+export const createMockWindow = (options?: Record<string, unknown>) => {
   return {
     activeTerminal: undefined as vscode.Terminal | undefined,
     activeTextEditor: undefined as vscode.TextEditor | undefined,
@@ -54,8 +54,10 @@ export const createMockWindow = () => {
     showInformationMessage: jest.fn().mockResolvedValue(undefined),
     showWarningMessage: jest.fn().mockResolvedValue(undefined),
     showErrorMessage: jest.fn().mockResolvedValue(undefined),
+    showQuickPick: jest.fn().mockResolvedValue(undefined),
     showTextDocument: jest.fn().mockResolvedValue(undefined),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
+    ...options,
   };
 };
 
@@ -223,14 +225,16 @@ export const createMockCancellationToken = (isCancelled = false): vscode.Cancell
  * Accepts either string paths (for convenience) or full WorkspaceFolder objects.
  * String paths are automatically converted to WorkspaceFolder objects.
  *
- * @param workspaceFolders - Optional workspace folders (defaults to single workspace at /workspace)
- *                          Can be string paths or WorkspaceFolder objects
+ * @param options - Optional workspace properties to override (workspaceFolders, event listeners, etc.)
  * @returns Mock workspace with file operations and document handling
  */
-export const createMockWorkspace = (
-  workspaceFolders: Array<string | vscode.WorkspaceFolder> | undefined = ['/workspace'],
-) => {
-  const folders = workspaceFolders?.map((folder) =>
+export const createMockWorkspace = (options?: Record<string, unknown>) => {
+  const defaultWorkspaceFolders = ['/workspace'];
+  const workspaceFoldersInput =
+    (options?.workspaceFolders as Array<string | vscode.WorkspaceFolder> | undefined) ??
+    defaultWorkspaceFolders;
+
+  const folders = workspaceFoldersInput?.map((folder) =>
     typeof folder === 'string' ? createMockWorkspaceFolder(folder) : folder,
   );
 
@@ -243,6 +247,7 @@ export const createMockWorkspace = (
     fs: {
       stat: jest.fn(),
     },
+    ...options,
   };
 };
 
@@ -395,6 +400,18 @@ export const createMockDocumentLink = () =>
   });
 
 /**
+ * Options for creating mock vscode instances.
+ */
+export interface MockVscodeOptions {
+  /** Environment overrides (appName, uriScheme, or any other env properties) */
+  envOptions?: Record<string, unknown>;
+  /** Window overrides (event listeners, activeTerminal, etc.) */
+  windowOptions?: Record<string, unknown>;
+  /** Workspace overrides (event listeners, workspaceFolders, etc.) */
+  workspaceOptions?: Record<string, unknown>;
+}
+
+/**
  * Create a mock vscode module for testing.
  *
  * Provides complete mock of VSCode API with sensible defaults:
@@ -422,17 +439,18 @@ export const createMockDocumentLink = () =>
  * Tests can mutate properties like `mockVscode.window.activeTerminal` to simulate
  * IDE state changes.
  *
- * @param overrides - Optional overrides for specific VSCode API properties
+ * @param options - Optional configuration for environment overrides (envOptions)
+ * @param overrides - Optional VSCode API property overrides (spread last for flexibility)
  * @returns Mock vscode module compatible with VscodeAdapter constructor
  */
-export const createMockVscode = (overrides?: Partial<typeof vscode>): any => {
-  const window = createMockWindow();
-  const workspace = createMockWorkspace();
-
+export const createMockVscode = (
+  options?: MockVscodeOptions,
+  overrides?: Partial<typeof vscode>,
+): any => {
   return {
-    window,
-    workspace,
-    env: createMockEnv(),
+    window: createMockWindow(options?.windowOptions),
+    workspace: createMockWorkspace(options?.workspaceOptions),
+    env: createMockEnv(options?.envOptions),
     extensions: createMockExtensions(),
     commands: createMockCommands(),
     Uri: createMockUri(),
@@ -488,13 +506,25 @@ export interface VscodeAdapterWithTestHooks extends VscodeAdapter {
  * expect(adapter.activeTerminal).toBe(mockTerminal);
  * ```
  *
+ * **Environment overrides:** Pass `options` to simulate different IDE environments:
+ *
+ * ```typescript
+ * // Simulate Cursor IDE
+ * const adapter = createMockVscodeAdapter(undefined, { envOptions: { appName: 'Cursor' } });
+ *
+ * // Use existing mock instance with custom env
+ * const adapter = createMockVscodeAdapter(existingMock, { envOptions: { uriScheme: 'cursor' } });
+ * ```
+ *
  * @param mockVscodeInstance - Optional mock vscode module (creates default if not provided)
+ * @param options - Optional configuration for environment and VSCode API overrides
  * @returns Real VscodeAdapter instance with test hooks for accessing underlying mock
  */
 export const createMockVscodeAdapter = (
   mockVscodeInstance?: typeof vscode,
+  options?: MockVscodeOptions,
 ): VscodeAdapterWithTestHooks => {
-  const vscodeInstance = mockVscodeInstance || createMockVscode();
+  const vscodeInstance = mockVscodeInstance || createMockVscode(options);
   const adapter = new VscodeAdapter(vscodeInstance) as VscodeAdapterWithTestHooks;
 
   // Add test-only hook to access the underlying vscode instance

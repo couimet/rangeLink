@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Smart bind with confirmation** - Quick switching between paste destinations
+  - Run any "Bind to..." command when already bound to automatically replace with confirmation
+  - QuickPick dialog shows current and new destination before replacing
+  - No need to manually unbind first - flow handles unbind → bind seamlessly
+  - Prevents accidental binding to same destination (shows info message instead)
+  - Toast notifications show replacement info: "Unbound X, now bound to Y"
+  - Integrated with all four bind commands (Claude Code, Cursor AI, Terminal, Text Editor)
+- **i18n foundation** - Message code system for future localization support. English only currently.
+
 ### Changed
 
 ### Fixed

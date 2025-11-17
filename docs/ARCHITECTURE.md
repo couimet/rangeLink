@@ -160,37 +160,6 @@ tests/
 
 **Key principle:** Logging level is independent of error type. You can catch an error and log it at any level (INFO, WARN, ERROR) based on context.
 
-**Example:**
-
-```typescript
-// Error handling - structured exception
-throw new RangeLinkError({
-  code: RangeLinkErrorCodes.SELECTION_EMPTY,
-  message: 'Selections array must not be empty',
-  functionName: 'validateInputSelection',
-  details: { selectionsLength: 0 },
-});
-
-// Informational logging - status update
-logger.info(
-  RangeLinkMessageCode.MSG_CONFIG_LOADED,
-  'Configuration loaded: line="L", column="C", hash="#", range="-"',
-);
-
-// Flexible logging - catch error, log at any level
-try {
-  validateSelection(input);
-} catch (error) {
-  if (error instanceof RangeLinkError) {
-    // Log validation error as INFO if we're using defaults
-    logger.info(
-      RangeLinkMessageCode.MSG_CONFIG_USING_DEFAULTS,
-      `Using defaults due to: ${error.message}`,
-    );
-  }
-}
-```
-
 **Benefits:**
 
 - 🎯 Clear separation: errors are errors, messages are messages

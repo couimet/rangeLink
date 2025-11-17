@@ -8,7 +8,6 @@ export { LinkType } from './LinkType';
 export { SelectionCoverage } from './SelectionCoverage';
 export { SelectionType } from './SelectionType';
 export { RangeNotation } from './RangeNotation';
-export { RangeLinkMessageCode } from './RangeLinkMessageCode';
 export { ComputedSelection } from './ComputedSelection';
 export { FormatOptions } from './FormatOptions';
 export { FormattedLink } from './FormattedLink';

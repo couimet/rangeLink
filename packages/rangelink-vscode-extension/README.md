@@ -126,7 +126,7 @@ If bound file is hidden behind other tabs, link copies to clipboard with a remin
 
 **Technical note:** Neither extension's API supports programmatic text insertion yet (as of Nov 2025), so RangeLink uses a clipboard-based workaround. It cuts your workflow from 5 manual steps to 1.
 
-**One destination at a time:** Bind to Claude Code, Cursor AI, terminal, OR text editor. Switch with "Unbind Destination."
+**One destination at a time:** Bind to Claude Code, Cursor AI, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command to replace your current binding with confirmation—no need to unbind first.
 
 ---
 

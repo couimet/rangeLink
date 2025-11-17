@@ -13,6 +13,8 @@ import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { ActiveSelections } from './types/ActiveSelections';
+import { MessageCode } from './types/MessageCode';
+import { formatMessage } from './utils/formatMessage';
 import { toInputSelection } from './utils/toInputSelection';
 
 export enum PathFormat {
@@ -212,10 +214,13 @@ export class RangeLinkService {
     // Copy to clipboard
     await this.ideAdapter.writeTextToClipboard(clipboardContent);
 
+      const basicStatusMessage = formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, {
+      linkTypeName: contentName,
+    });
     // Check if destination is bound
     if (!this.destinationManager.isBound()) {
       getLogger().info({ fn: fnName }, 'No destination bound - copied to clipboard only');
-      this.ideAdapter.setStatusBarMessage(`✓ ${contentName} copied to clipboard`, 2000);
+      this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
       return;
     }
 
@@ -230,7 +235,7 @@ export class RangeLinkService {
         { fn: fnName, boundDestination: displayName },
         'Content not eligible for paste - skipping auto-paste',
       );
-      this.ideAdapter.setStatusBarMessage(`✓ ${contentName} copied to clipboard`, 2000);
+      this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
       return;
     }
 
@@ -248,14 +253,14 @@ export class RangeLinkService {
 
       if (userInstruction) {
         // Clipboard-based destination: Show status bar + information popup
-        this.ideAdapter.setStatusBarMessage(`✓ ${contentName} copied to clipboard`, 2000);
+        this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
         void this.ideAdapter.showInformationMessage(
-          `${contentName} copied to clipboard. ${userInstruction}`,
+          `${basicStatusMessage}. ${userInstruction}`,
         );
       } else {
         // Automatic destination: Show status bar only
         this.ideAdapter.setStatusBarMessage(
-          `✓ ${contentName} copied to clipboard & sent to ${displayName}`,
+          `${basicStatusMessage} & sent to ${displayName}`,
           2000,
         );
       }
