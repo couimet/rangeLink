@@ -201,7 +201,7 @@ describe('formatMessage', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(RangeLinkExtensionError);
         expect((error as RangeLinkExtensionError).code).toBe(
-          RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+          RangeLinkExtensionErrorCodes.MISSING_MESSAGE_CODE,
         );
       }
     });

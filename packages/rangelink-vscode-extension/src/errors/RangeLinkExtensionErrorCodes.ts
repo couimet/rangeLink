@@ -22,6 +22,7 @@ export enum RangeLinkExtensionSpecificCodes {
   // Selection errors
   //
   EMPTY_SELECTION = 'EMPTY_SELECTION',
+  MISSING_MESSAGE_CODE = 'MISSING_MESSAGE_CODE',
   SELECTION_CONVERSION_FAILED = 'SELECTION_CONVERSION_FAILED',
 }
 

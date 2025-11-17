@@ -53,7 +53,7 @@ export const formatMessage = (
     const errorMessage = `Missing translation for message code: ${code}`;
     logger.error({ fn: 'formatMessage', code, locale: activeLocale }, errorMessage);
     throw new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+      code: RangeLinkExtensionErrorCodes.MISSING_MESSAGE_CODE,
       message: errorMessage,
       functionName: 'formatMessage',
       details: { messageCode: code, locale: activeLocale },
