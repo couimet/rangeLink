@@ -136,7 +136,10 @@ export class TextEditorDestination implements PasteDestination {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async isEligibleForPasteContent(_content: string): Promise<boolean> {
-    return this.checkSelfPasteEligibility('isEligibleForPasteContent', 'selecting text FROM bound editor');
+    return this.checkSelfPasteEligibility(
+      'isEligibleForPasteContent',
+      'selecting text FROM bound editor',
+    );
   }
 
   /**
