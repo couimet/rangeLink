@@ -402,14 +402,15 @@ describe('PasteDestinationManager', () => {
     let mockChatDest: jest.Mocked<PasteDestination>;
 
     // Helper to create mock destination
-    const createMockDest = (id: string, displayName: string): jest.Mocked<PasteDestination> => ({
-      id,
-      displayName,
-      isAvailable: jest.fn().mockResolvedValue(true),
-      pasteLink: jest.fn().mockResolvedValue(true),
-      getUserInstruction: jest.fn().mockReturnValue('Instructions'),
-      setTerminal: jest.fn(),
-    }) as unknown as jest.Mocked<PasteDestination>;
+    const createMockDest = (id: string, displayName: string): jest.Mocked<PasteDestination> =>
+      ({
+        id,
+        displayName,
+        isAvailable: jest.fn().mockResolvedValue(true),
+        pasteLink: jest.fn().mockResolvedValue(true),
+        getUserInstruction: jest.fn().mockReturnValue('Instructions'),
+        setTerminal: jest.fn(),
+      }) as unknown as jest.Mocked<PasteDestination>;
 
     beforeEach(() => {
       mockTerminalDest = createMockDest('terminal', 'Terminal');
