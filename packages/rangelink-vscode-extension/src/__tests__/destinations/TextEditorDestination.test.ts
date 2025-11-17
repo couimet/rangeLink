@@ -11,11 +11,13 @@ import { applySmartPadding } from '../../utils/applySmartPadding';
 import { isEligibleForPaste } from '../../utils/isEligibleForPaste';
 import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
 import {
+  configureEmptyTabGroups,
   configureWorkspaceMocks,
   createMockDocument,
   createMockEditor,
   createMockTab,
   createMockTabGroup,
+  createMockTabGroups,
   createMockUriInstance,
   createMockVscodeAdapter,
   simulateClosedEditor,
@@ -74,7 +76,7 @@ describe('TextEditorDestination', () => {
       const otherUri = createMockUriInstance('/workspace/other.ts');
       const mockVscode = mockAdapter.__getVscodeInstance();
 
-      mockVscode.window.tabGroups = {
+      mockVscode.window.tabGroups = createMockTabGroups({
         all: [
           createMockTabGroup([createMockTab(otherUri)], {
             activeTab: createMockTab(otherUri),
@@ -83,7 +85,7 @@ describe('TextEditorDestination', () => {
             activeTab: createMockTab(mockEditor.document.uri),
           }),
         ],
-      } as any;
+      });
 
       // Mock visibleTextEditors to include the bound editor
       jest.spyOn(mockAdapter, 'visibleTextEditors', 'get').mockReturnValue([mockEditor]);
@@ -129,7 +131,7 @@ describe('TextEditorDestination', () => {
     it('should return false when bound document not found in any tab group', async () => {
       // Empty tab groups - document not found
       const mockVscode = mockAdapter.__getVscodeInstance();
-      mockVscode.window.tabGroups = { all: [] } as any;
+      configureEmptyTabGroups(mockVscode.window, 0);
 
       const result = await destination.pasteContent('text');
 
@@ -374,7 +376,7 @@ describe('TextEditorDestination', () => {
       const otherUri = createMockUriInstance('/workspace/other.ts');
       const mockVscode = mockAdapter.__getVscodeInstance();
 
-      mockVscode.window.tabGroups = {
+      mockVscode.window.tabGroups = createMockTabGroups({
         all: [
           createMockTabGroup([createMockTab(otherUri)], {
             activeTab: createMockTab(otherUri),
@@ -383,7 +385,7 @@ describe('TextEditorDestination', () => {
             activeTab: createMockTab(mockEditor.document.uri),
           }),
         ],
-      } as any;
+      });
 
       // Mock visibleTextEditors to include the bound editor
       jest.spyOn(mockAdapter, 'visibleTextEditors', 'get').mockReturnValue([mockEditor]);
@@ -407,7 +409,7 @@ describe('TextEditorDestination', () => {
     it('should return false when bound document not found in any tab group', async () => {
       // Empty tab groups - document not found
       const mockVscode = mockAdapter.__getVscodeInstance();
-      mockVscode.window.tabGroups = { all: [] } as any;
+      configureEmptyTabGroups(mockVscode.window, 0);
 
       const result = await destination.focus();
 

@@ -30,6 +30,7 @@ import {
   createMockTextEditorDestination,
 } from '../helpers/destinationTestHelpers';
 import {
+  configureEmptyTabGroups,
   createMockDocument,
   createMockEditor,
   createMockUriInstance,
@@ -247,9 +248,7 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTextEditor = {
         document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
       } as vscode.TextEditor;
-      (mockAdapter.__getVscodeInstance().window.tabGroups as { all: vscode.TabGroup[] }).all = [
-        {},
-      ] as vscode.TabGroup[];
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 1);
 
       const result = await manager.bind('text-editor');
 
@@ -263,10 +262,7 @@ describe('PasteDestinationManager', () => {
     it('should fail to bind text editor when no active editor', async () => {
       // Setup: No active text editor
       mockAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
-      (mockAdapter.__getVscodeInstance().window.tabGroups as { all: vscode.TabGroup[] }).all = [
-        {},
-        {},
-      ] as vscode.TabGroup[];
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
       const result = await manager.bind('text-editor');
 
@@ -284,10 +280,7 @@ describe('PasteDestinationManager', () => {
           uri: { scheme: 'vscode-userdata', fsPath: '/test/binary.dat' },
         },
       } as vscode.TextEditor;
-      (mockAdapter.__getVscodeInstance().window.tabGroups as { all: vscode.TabGroup[] }).all = [
-        {},
-        {},
-      ] as vscode.TabGroup[];
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
       const result = await manager.bind('text-editor');
 
@@ -634,10 +627,7 @@ describe('PasteDestinationManager', () => {
       } as vscode.TextEditor;
 
       mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
-      (mockAdapter.__getVscodeInstance().window.tabGroups as { all: vscode.TabGroup[] }).all = [
-        {},
-        {},
-      ] as vscode.TabGroup[];
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
       await manager.bind('text-editor');
       expect(manager.isBound()).toBe(true);
@@ -669,10 +659,7 @@ describe('PasteDestinationManager', () => {
       } as vscode.TextEditor;
 
       mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
-      (mockAdapter.__getVscodeInstance().window.tabGroups as { all: vscode.TabGroup[] }).all = [
-        {},
-        {},
-      ] as vscode.TabGroup[];
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
       await manager.bind('text-editor');
       expect(manager.isBound()).toBe(true);
@@ -845,6 +832,9 @@ describe('PasteDestinationManager', () => {
         mockAdapter,
         mockLogger,
       );
+
+      // Setup default 2 tab groups (required for text editor binding in smart bind scenarios)
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
     });
 
     describe('Scenario 1: User confirms replacement', () => {
@@ -886,10 +876,6 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTextEditor = {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
         } as vscode.TextEditor;
-        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [
-          {},
-          {},
-        ] as vscode.TabGroup[];
 
         // Second bind: Bind to Text Editor (should show confirmation)
         const secondBindResult = await manager.bind('text-editor');
@@ -951,10 +937,6 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTextEditor = {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
         } as vscode.TextEditor;
-        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [
-          {},
-          {},
-        ] as vscode.TabGroup[];
 
         // Second bind: Try to bind to Text Editor (user cancels)
         const secondBindResult = await manager.bind('text-editor');
@@ -1062,10 +1044,6 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTextEditor = {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
         } as vscode.TextEditor;
-        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [
-          {},
-          {},
-        ] as vscode.TabGroup[];
 
         // Clear mocks
         (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
@@ -1118,6 +1096,9 @@ describe('PasteDestinationManager', () => {
         mockAdapter,
         mockLogger,
       );
+
+      // Setup default 2 tab groups (required for text editor binding)
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
     });
 
     it('should return false when no destination bound', async () => {
@@ -1155,8 +1136,6 @@ describe('PasteDestinationManager', () => {
       });
 
       mockVscode.window.activeTextEditor = mockEditor;
-      // Setup 2 tab groups (required for text editor binding)
-      (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [{}, {}] as vscode.TabGroup[];
 
       await manager.bind('text-editor');
 
@@ -1291,8 +1270,6 @@ describe('PasteDestinationManager', () => {
       });
 
       mockVscode.window.activeTextEditor = mockEditor;
-      // Setup 2 tab groups (required for text editor binding)
-      (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [{}, {}] as vscode.TabGroup[];
 
       await manager.bind('text-editor');
 
