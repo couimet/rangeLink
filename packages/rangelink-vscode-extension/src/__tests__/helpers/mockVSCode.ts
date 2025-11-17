@@ -54,6 +54,7 @@ export const createMockWindow = () => {
     showInformationMessage: jest.fn().mockResolvedValue(undefined),
     showWarningMessage: jest.fn().mockResolvedValue(undefined),
     showErrorMessage: jest.fn().mockResolvedValue(undefined),
+    showQuickPick: jest.fn().mockResolvedValue(undefined),
     showTextDocument: jest.fn().mockResolvedValue(undefined),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
   };

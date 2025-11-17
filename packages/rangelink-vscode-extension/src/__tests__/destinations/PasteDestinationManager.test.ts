@@ -472,4 +472,278 @@ describe('PasteDestinationManager', () => {
       expect(true).toBe(true); // If we reach here, no error was thrown
     });
   });
+
+  /**
+   * Smart Bind Feature Tests (Issue #108)
+   *
+   * Tests the confirmation flow when replacing existing destination bindings.
+   */
+  describe('Smart Bind Feature', () => {
+    // Mock factory for smart bind tests
+    let mockFactoryForSmartBind: jest.Mocked<DestinationFactory>;
+
+    // Helper to create mock destinations with all required methods
+    const createMockDestination = (
+      id: string,
+      displayName: string,
+      isAvailable = true,
+    ): jest.Mocked<PasteDestination> =>
+      ({
+        id,
+        displayName,
+        isAvailable: jest.fn().mockResolvedValue(isAvailable),
+        paste: jest.fn().mockResolvedValue(true),
+        // Terminal-specific methods
+        setTerminal: jest.fn(),
+        // TextEditor-specific methods
+        setEditor: jest.fn(),
+        getEditorDisplayName: jest.fn().mockReturnValue(displayName),
+        getEditorPath: jest.fn().mockReturnValue('/test/file.ts'),
+        getBoundDocumentUri: jest.fn(),
+      }) as unknown as jest.Mocked<PasteDestination>;
+
+    beforeEach(() => {
+      // Create mock factory for smart bind tests
+      mockFactoryForSmartBind = {
+        create: jest.fn(),
+      } as unknown as jest.Mocked<DestinationFactory>;
+
+      // Recreate manager with mock factory
+      manager = new PasteDestinationManager(
+        mockContext,
+        mockFactoryForSmartBind,
+        mockAdapter,
+        mockLogger,
+      );
+    });
+
+    describe('Scenario 1: User confirms replacement', () => {
+      it('should unbind old destination and bind new one when user confirms', async () => {
+        // Setup: Create mock destinations
+        const terminalDest = createMockDestination('terminal', 'Terminal');
+        const textEditorDest = createMockDestination('text-editor', 'Text Editor');
+
+        // Mock factory to return destinations
+        mockFactoryForSmartBind.create.mockImplementation((type) => {
+          if (type === 'terminal') return terminalDest;
+          if (type === 'text-editor') return textEditorDest;
+          throw new Error(`Unexpected type: ${type}`);
+        });
+
+        // Mock QuickPick to confirm replacement
+        const mockVscode = mockAdapter.__getVscodeInstance();
+        (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValue({
+          label: 'Yes, replace',
+          description: 'Switch from Terminal to Text Editor',
+        });
+
+        // Mock active terminal for first bind
+        mockVscode.window.activeTerminal = { name: 'TestTerminal' } as vscode.Terminal;
+
+        // First bind: Bind to Terminal (normal bind)
+        const firstBindResult = await manager.bind('terminal');
+        expect(firstBindResult).toBe(true);
+        expect(manager.isBound()).toBe(true);
+        expect(manager.getBoundDestination()?.id).toBe('terminal');
+
+        // Verify first bind toast (no replacement)
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ RangeLink bound to TestTerminal',
+          3000,
+        );
+
+        // Mock active text editor for second bind
+        mockVscode.window.activeTextEditor = {
+          document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
+        } as vscode.TextEditor;
+        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [{}, {}] as vscode.TabGroup[];
+
+        // Second bind: Bind to Text Editor (should show confirmation)
+        const secondBindResult = await manager.bind('text-editor');
+
+        // Assert: QuickPick was shown
+        expect(mockVscode.window.showQuickPick).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({ label: 'Yes, replace' }),
+            expect.objectContaining({ label: 'No, keep current binding' }),
+          ]),
+          expect.objectContaining({
+            placeHolder: expect.stringContaining('Already bound to Terminal'),
+          }),
+        );
+
+        // Assert: Bind succeeded
+        expect(secondBindResult).toBe(true);
+        expect(manager.isBound()).toBe(true);
+        expect(manager.getBoundDestination()?.id).toBe('text-editor');
+
+        // Assert: Toast shows replacement info
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+          'Unbound Terminal, now bound to Text Editor',
+          3000,
+        );
+      });
+    });
+
+    describe('Scenario 2: User cancels replacement', () => {
+      it('should keep current binding when user cancels confirmation', async () => {
+        // Setup: Create mock destinations
+        const terminalDest = createMockDestination('terminal', 'Terminal');
+        const textEditorDest = createMockDestination('text-editor', 'Text Editor');
+
+        mockFactoryForSmartBind.create.mockImplementation((type) => {
+          if (type === 'terminal') return terminalDest;
+          if (type === 'text-editor') return textEditorDest;
+          throw new Error(`Unexpected type: ${type}`);
+        });
+
+        // Mock QuickPick to cancel (user selects "No, keep current binding")
+        const mockVscode = mockAdapter.__getVscodeInstance();
+        (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValue({
+          label: 'No, keep current binding',
+          description: 'Stay bound to Terminal',
+        });
+
+        // Mock active terminal for first bind
+        mockVscode.window.activeTerminal = { name: 'TestTerminal' } as vscode.Terminal;
+
+        // First bind: Bind to Terminal
+        const firstBindResult = await manager.bind('terminal');
+        expect(firstBindResult).toBe(true);
+
+        // Reset status bar message mock to verify second bind doesn't show toast
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+
+        // Mock active text editor for second bind
+        mockVscode.window.activeTextEditor = {
+          document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
+        } as vscode.TextEditor;
+        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [{}, {}] as vscode.TabGroup[];
+
+        // Second bind: Try to bind to Text Editor (user cancels)
+        const secondBindResult = await manager.bind('text-editor');
+
+        // Assert: Bind failed (cancelled)
+        expect(secondBindResult).toBe(false);
+
+        // Assert: Still bound to Terminal
+        expect(manager.isBound()).toBe(true);
+        expect(manager.getBoundDestination()?.id).toBe('terminal');
+
+        // Assert: No toast shown (no replacement happened)
+        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Scenario 3: Prevent binding same destination twice', () => {
+      it('should show info message when binding same destination', async () => {
+        // Setup: Create mock terminal destination
+        const terminalDest = createMockDestination('terminal', 'Terminal');
+        mockFactoryForSmartBind.create.mockReturnValue(terminalDest);
+
+        // Mock active terminal
+        const mockVscode = mockAdapter.__getVscodeInstance();
+        mockVscode.window.activeTerminal = { name: 'TestTerminal' } as vscode.Terminal;
+
+        // First bind: Bind to Terminal
+        await manager.bind('terminal');
+        expect(manager.isBound()).toBe(true);
+
+        // Clear mocks to verify second bind behavior
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+        (mockVscode.window.showQuickPick as jest.Mock).mockClear();
+
+        // Second bind: Try to bind to Terminal again
+        const result = await manager.bind('terminal');
+
+        // Assert: Bind failed
+        expect(result).toBe(false);
+
+        // Assert: Info message shown (not error)
+        expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
+          'RangeLink: Already bound to Terminal',
+        );
+
+        // Assert: QuickPick NOT shown (no confirmation needed)
+        expect(mockVscode.window.showQuickPick).not.toHaveBeenCalled();
+
+        // Assert: Still bound to Terminal
+        expect(manager.getBoundDestination()?.id).toBe('terminal');
+      });
+    });
+
+    describe('Scenario 4: Normal bind without existing binding', () => {
+      it('should show standard toast without replacement prefix', async () => {
+        // Setup: Create mock terminal destination
+        const terminalDest = createMockDestination('terminal', 'Terminal');
+        mockFactoryForSmartBind.create.mockReturnValue(terminalDest);
+
+        // Mock active terminal
+        const mockVscode = mockAdapter.__getVscodeInstance();
+        mockVscode.window.activeTerminal = { name: 'TestTerminal' } as vscode.Terminal;
+
+        // Bind to Terminal (no existing binding)
+        const result = await manager.bind('terminal');
+
+        // Assert: Bind succeeded
+        expect(result).toBe(true);
+        expect(manager.isBound()).toBe(true);
+
+        // Assert: Standard toast shown (no "Unbound..." prefix)
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ RangeLink bound to TestTerminal',
+          3000,
+        );
+
+        // Assert: QuickPick NOT shown (no existing binding)
+        expect(mockVscode.window.showQuickPick).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Scenario 5: QuickPick cancellation (Esc key)', () => {
+      it('should keep current binding when user presses Esc', async () => {
+        // Setup: Create mock destinations
+        const terminalDest = createMockDestination('terminal', 'Terminal');
+        const textEditorDest = createMockDestination('text-editor', 'Text Editor');
+
+        mockFactoryForSmartBind.create.mockImplementation((type) => {
+          if (type === 'terminal') return terminalDest;
+          if (type === 'text-editor') return textEditorDest;
+          throw new Error(`Unexpected type: ${type}`);
+        });
+
+        // Mock QuickPick to return undefined (Esc key pressed)
+        const mockVscode = mockAdapter.__getVscodeInstance();
+        (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+        // Mock active terminal for first bind
+        mockVscode.window.activeTerminal = { name: 'TestTerminal' } as vscode.Terminal;
+
+        // First bind: Bind to Terminal
+        await manager.bind('terminal');
+
+        // Mock active text editor for second bind
+        mockVscode.window.activeTextEditor = {
+          document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
+        } as vscode.TextEditor;
+        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [{}, {}] as vscode.TabGroup[];
+
+        // Clear mocks
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+
+        // Second bind: Try to bind to Text Editor (user presses Esc)
+        const result = await manager.bind('text-editor');
+
+        // Assert: Bind failed (cancelled)
+        expect(result).toBe(false);
+
+        // Assert: Still bound to Terminal
+        expect(manager.isBound()).toBe(true);
+        expect(manager.getBoundDestination()?.id).toBe('terminal');
+
+        // Assert: No toast shown
+        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+      });
+    });
+  });
 });
