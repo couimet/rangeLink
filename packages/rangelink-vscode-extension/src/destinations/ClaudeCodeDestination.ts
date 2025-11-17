@@ -164,6 +164,6 @@ export class ClaudeCodeDestination implements PasteDestination {
    * @returns Instruction string for manual paste in Claude Code
    */
   getUserInstruction(): string | undefined {
-    return 'Paste (Cmd/Ctrl+V) in Claude Code chat to use.';
+    return formatMessage(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS);
   }
 }
