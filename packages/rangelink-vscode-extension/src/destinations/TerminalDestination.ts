@@ -84,7 +84,11 @@ export class TerminalDestination implements PasteDestination {
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
     return this.sendTextToTerminal({
       text: formattedLink.link,
-      logContext: { fn: 'TerminalDestination.pasteLink', formattedLink, linkLength: formattedLink.link.length },
+      logContext: {
+        fn: 'TerminalDestination.pasteLink',
+        formattedLink,
+        linkLength: formattedLink.link.length,
+      },
       ineligibleMessage: 'Link not eligible for paste',
       successLogMessage: (terminalName: string) => `Pasted link to terminal: ${terminalName}`,
     });

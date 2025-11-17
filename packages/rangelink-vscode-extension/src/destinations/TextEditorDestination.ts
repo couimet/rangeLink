@@ -183,9 +183,14 @@ export class TextEditorDestination implements PasteDestination {
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
     return this.insertTextAtCursor({
       text: formattedLink.link,
-      logContext: { fn: 'TextEditorDestination.pasteLink', formattedLink, linkLength: formattedLink.link.length },
+      logContext: {
+        fn: 'TextEditorDestination.pasteLink',
+        formattedLink,
+        linkLength: formattedLink.link.length,
+      },
       ineligibleMessage: 'Link not eligible for paste',
-      successLogMessage: (boundDisplayName: string) => `Pasted link to text editor: ${boundDisplayName}`,
+      successLogMessage: (boundDisplayName: string) =>
+        `Pasted link to text editor: ${boundDisplayName}`,
       errorMessage: 'Failed to paste link to text editor',
     });
   }
@@ -330,7 +335,10 @@ export class TextEditorDestination implements PasteDestination {
         paddedLength: paddedText.length,
       };
 
-      this.logger.info(successContext, successLogMessage(boundDisplayName ?? this.boundDocumentUri.toString()));
+      this.logger.info(
+        successContext,
+        successLogMessage(boundDisplayName ?? this.boundDocumentUri.toString()),
+      );
 
       return true;
     } catch (error) {
@@ -361,7 +369,8 @@ export class TextEditorDestination implements PasteDestination {
       text: content,
       logContext: { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
       ineligibleMessage: 'Content not eligible for paste',
-      successLogMessage: (boundDisplayName: string) => `Pasted content to text editor: ${boundDisplayName}`,
+      successLogMessage: (boundDisplayName: string) =>
+        `Pasted content to text editor: ${boundDisplayName}`,
       errorMessage: 'Exception during paste operation',
     });
   }
