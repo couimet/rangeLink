@@ -43,19 +43,6 @@ export class TerminalDestination implements PasteDestination {
   }
 
   /**
-   * Check if text content is eligible for paste to terminal
-   *
-   * Terminal always returns true - all content is eligible when terminal is available.
-   *
-   * @param _content - The text content (unused)
-   * @returns Promise resolving to true (always eligible)
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async isEligibleForPasteContent(_content: string): Promise<boolean> {
-    return true;
-  }
-
-  /**
    * Get user instruction for manual paste
    *
    * Terminal performs automatic paste, so no manual instruction is needed.
@@ -137,64 +124,6 @@ export class TerminalDestination implements PasteDestination {
       { fn: 'TerminalDestination.setTerminal', terminalName: terminal?.name },
       terminal ? `Terminal set: ${terminal.name}` : 'Terminal cleared',
     );
-  }
-
-  /**
-   * Paste text content to bound terminal with smart padding and focus
-   *
-   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
-   * Used for pasting selected text directly to terminal (issue #89).
-   *
-   * Validation:
-   * - Checks content eligibility (not null/undefined/empty/whitespace-only)
-   * - Logs INFO and returns false if content is not eligible
-   *
-   * Smart padding behavior:
-   * - Only adds leading space if content doesn't start with whitespace
-   * - Only adds trailing space if content doesn't end with whitespace
-   *
-   * @param content - The text content to paste
-   * @returns true if paste succeeded, false if validation failed or no terminal bound
-   */
-  async pasteContent(content: string): Promise<boolean> {
-    if (!isEligibleForPaste(content)) {
-      this.logger.info(
-        { fn: 'TerminalDestination.pasteContent', contentLength: content.length },
-        'Content not eligible for paste',
-      );
-      return false;
-    }
-
-    if (!this.boundTerminal) {
-      this.logger.warn(
-        { fn: 'TerminalDestination.pasteContent', contentLength: content.length },
-        'Cannot paste: No terminal bound',
-      );
-      return false;
-    }
-
-    const terminalName = this.getTerminalName();
-
-    // Apply smart padding for better UX
-    const paddedContent = applySmartPadding(content);
-
-    // Send content without auto-submit (addNewLine = false)
-    this.boundTerminal.sendText(paddedContent, false);
-
-    // Auto-focus terminal for seamless workflow
-    this.boundTerminal.show(false);
-
-    this.logger.info(
-      {
-        fn: 'TerminalDestination.pasteContent',
-        terminalName,
-        originalLength: content.length,
-        paddedLength: paddedContent.length,
-      },
-      `Pasted content to terminal: ${terminalName}`,
-    );
-
-    return true;
   }
 
   /**

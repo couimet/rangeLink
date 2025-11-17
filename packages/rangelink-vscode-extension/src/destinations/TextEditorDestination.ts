@@ -79,17 +79,6 @@ export class TextEditorDestination implements PasteDestination {
   /**
    * Check if text content is eligible for paste to text editor
    *
-   * Returns false if selecting text FROM the bound editor itself (self-paste detection).
-   * This prevents auto-pasting when user selects text in the same editor they want to paste to.
-   *
-   * @param _content - The text content (unused - self-paste check doesn't depend on content)
-   * @returns Promise resolving to true if eligible, false if self-paste detected
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async isEligibleForPasteContent(_content: string): Promise<boolean> {
-    return this.checkSelfPasteEligibility('isEligibleForPasteContent', 'selecting text FROM bound editor');
-  }
-
   /**
    * Check self-paste eligibility (shared logic for link and content)
    *
@@ -322,63 +311,6 @@ export class TextEditorDestination implements PasteDestination {
    *
    * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
    * Used for pasting selected text directly to editor (issue #89).
-   *
-   * Follows same validation and tab group binding strategy as pasteLink():
-   * - Requires 2+ tab groups (split editor)
-   * - Bound document must be topmost (active tab) in its tab group
-   * - Dynamically finds bound document across all tab groups
-   * - Skips auto-paste when creating from bound editor itself
-   *
-   * @param content - The text content to paste
-   * @returns true if paste succeeded, false if validation failed or cannot paste
-   */
-  async pasteContent(content: string): Promise<boolean> {
-    if (!isEligibleForPaste(content)) {
-      this.logger.info(
-        { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
-        'Content not eligible for paste',
-      );
-      return false;
-    }
-
-    if (!this.boundDocumentUri) {
-      this.logger.warn(
-        { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
-        'Cannot paste: No text editor bound',
-      );
-      return false;
-    }
-
-    // Get display name for logging and messages
-    const boundDisplayName = this.getEditorDisplayName();
-
-    // LAZY VALIDATION: Find which tab group contains the bound document
-    const boundTabGroup = this.ideAdapter.findTabGroupForDocument(this.boundDocumentUri);
-
-    if (!boundTabGroup) {
-      this.logger.error(
-        {
-          fn: 'TextEditorDestination.pasteContent',
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          boundDisplayName,
-        },
-        'Bound document not found in any tab group - likely closed',
-      );
-      return false;
-    }
-
-    // Check if bound document is the active (topmost) tab in its group
-    const activeTab = boundTabGroup.activeTab;
-    if (!activeTab) {
-      this.logger.warn(
-        { fn: 'TextEditorDestination.pasteContent', boundDisplayName },
-        'Tab group has no active tab',
-      );
-      return false;
-    }
-
-    // Check that active tab is a text editor (not terminal)
-    if (!this.ideAdapter.isTextEditorTab(activeTab)) {
       this.logger.warn(
         {
           fn: 'TextEditorDestination.pasteContent',

@@ -79,13 +79,6 @@
         "enablement": "editorHasSelection"
       },
       {
-        "command": "rangelink.pasteSelectedTextToDestination",
-        "title": "Paste Selected Text to Bound Destination",
-        "category": "RangeLink",
-        "icon": "$(symbol-snippet)",
-        "enablement": "editorHasSelection"
-      },
-      {
         "command": "rangelink.showVersion",
         "title": "Show Version Info",
         "category": "RangeLink",
@@ -175,12 +168,6 @@
         "key": "ctrl+r ctrl+shift+p",
         "mac": "cmd+r cmd+shift+p",
         "when": "editorHasSelection"
-      },
-      {
-        "command": "rangelink.pasteSelectedTextToDestination",
-        "key": "ctrl+r ctrl+v",
-        "mac": "cmd+r cmd+v",
-        "when": "editorHasSelection"
       }
     ],
     "menus": {
@@ -204,11 +191,6 @@
           "when": "editorHasSelection",
           "command": "rangelink.copyPortableLinkToSelectionWithAbsolutePath",
           "group": "8_rangelink@4"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.pasteSelectedTextToDestination",
-          "group": "8_rangelink@5"
         }
       ]
     }

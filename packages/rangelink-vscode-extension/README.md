@@ -63,21 +63,9 @@ src/utils/parser.ts#L42C10-L58C25
 
 ### 🎯 Paste Destinations
 
-**The killer feature for AI-assisted workflows:** Auto-send generated links OR selected text directly to your preferred destination.
+**The killer feature for AI-assisted workflows:** Auto-send generated links to your preferred destination.
 
-**RangeLink's unified pattern across all destinations:**
-
-- **Precise positioning** — Content pastes exactly at cursor position (not appended)
-- **Auto-focus** — Destination focuses immediately so you can keep typing
-- **Zero friction** — No manual copy/paste, no clicking, no context switching
-- **Universal** — Works across Terminal, Text Editor, Claude Code, Cursor AI
-
-**Two ways to share code:**
-
-- **`Cmd+R Cmd+L`** — Paste precise reference (mnemonic: **R**ange**L**ink)
-- **`Cmd+R Cmd+V`** 🚐 — Paste selected text directly (keeps `R` prefix, mirrors paste gesture)
-
-**Note:** These commands work with text selected in editors (code files, markdown, etc.). Terminal selections are not supported by VSCode's Extension API (Cursor's `Cmd+L` terminal support uses custom APIs not available to extensions).
+**RangeLink's unified pattern:** All paste destinations share the same seamless workflow—links paste exactly at your cursor position, the destination auto-focuses, and you immediately continue typing. No copy/paste friction, no manual clicking, no context switching. This is what makes RangeLink competitive with integrated AI assistants like Cursor's `Cmd+L`, but works across any destination and any AI.
 
 #### Terminal Paste Destination
 
@@ -196,7 +184,6 @@ All commands are available via keyboard shortcuts, Command Palette, and right-cl
 | Copy Range Link (Absolute)                | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link                               |
 | Copy Portable Link                        | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link                               |
 | Copy Portable Link (Absolute)             | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link                               |
-| Paste Selected Text to Bound Destination  | `Cmd+R Cmd+V` 🚐    | `Ctrl+R Ctrl+V` 🚐    | Send selected text directly to bound destination        |
 | Bind RangeLink to Claude Code Destination | —                   | —                     | Copy link + open Claude Code chat (clipboard workflow)  |
 | Bind RangeLink to Cursor AI Destination   | —                   | —                     | Copy link + open Cursor AI chat (clipboard workflow)    |
 | Bind RangeLink to Terminal Destination    | —                   | —                     | Auto-send links to integrated terminal for AI workflows |

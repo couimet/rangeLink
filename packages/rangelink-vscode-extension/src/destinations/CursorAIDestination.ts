@@ -130,16 +130,6 @@ export class CursorAIDestination implements PasteDestination {
 
   /**
    * Check if text content is eligible to be pasted to Cursor AI
-   *
-   * Cursor AI has no special eligibility rules - always eligible.
-   *
-   * @param _content - The text content (not used)
-   * @returns Always true (Cursor AI accepts all content)
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async isEligibleForPasteContent(_content: string): Promise<boolean> {
-    return true;
-  }
 
   /**
    * Paste a RangeLink to Cursor AI chat
@@ -214,25 +204,6 @@ export class CursorAIDestination implements PasteDestination {
    *
    * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
    * Used for pasting selected text directly to Cursor (issue #89).
-   *
-   * **Implementation:** Since Cursor doesn't support programmatic text insertion,
-   * this method opens Cursor chat interface. The caller (RangeLinkService) handles
-   * clipboard copy and user notification.
-   *
-   * @param content - The text content to paste
-   * @returns true if chat open succeeded, false otherwise
-   */
-  async pasteContent(content: string): Promise<boolean> {
-    return this.openChatInterface({
-      fn: 'CursorAIDestination.pasteContent',
-      contentLength: content.length,
-    });
-  }
-
-  /**
-   * Get user instruction for manual paste (clipboard-based destination)
-   *
-   * @returns Instruction string for manual paste in Cursor AI
    */
   getUserInstruction(): string | undefined {
     return 'Paste (Cmd/Ctrl+V) in Cursor chat to use.';
