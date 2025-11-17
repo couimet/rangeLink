@@ -58,6 +58,38 @@ export const createMockFormattedLink = (
 };
 
 /**
+ * Create a mock PasteDestination for testing
+ *
+ * Provides a minimal mock implementation with sensible defaults for all required
+ * PasteDestination interface methods. Individual properties/methods can be overridden
+ * via the overrides parameter.
+ *
+ * This uses `any` typing because tests often use minimal mocks that don't implement
+ * the full interface (e.g., missing pasteContent method for older tests).
+ *
+ * @example
+ * createMockDestination() // Uses all defaults
+ * createMockDestination({ displayName: 'Terminal' }) // Override displayName only
+ * createMockDestination({ id: 'text-editor' as any, displayName: 'Editor' })
+ *
+ * @param overrides - Optional partial object to override default properties/methods
+ * @returns Mock destination with jest.fn() implementations
+ */
+export const createMockDestination = (overrides?: Partial<any>): any => ({
+  id: 'test-destination',
+  displayName: 'Test Destination',
+  isAvailable: jest.fn().mockResolvedValue(true),
+  isEligibleForPasteLink: jest.fn().mockResolvedValue(true),
+  isEligibleForPasteContent: jest.fn().mockResolvedValue(true),
+  getUserInstruction: jest.fn().mockReturnValue(undefined),
+  pasteLink: jest.fn().mockResolvedValue(true),
+  pasteContent: jest.fn().mockResolvedValue(true),
+  // TextEditorDestination-specific method (only used when id === 'text-editor')
+  getBoundDocumentUri: jest.fn().mockReturnValue(undefined),
+  ...overrides,
+});
+
+/**
  * Test interface compliance for a destination
  *
  * Verifies that a destination has the required properties:
