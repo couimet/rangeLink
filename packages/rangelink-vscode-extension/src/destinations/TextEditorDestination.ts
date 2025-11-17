@@ -310,7 +310,6 @@ export class TextEditorDestination implements PasteDestination {
     }
   }
 
-
   /**
    * Find which tab group contains the given document URI
    *

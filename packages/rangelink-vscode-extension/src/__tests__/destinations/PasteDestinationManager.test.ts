@@ -462,7 +462,9 @@ describe('PasteDestinationManager', () => {
 
       await localManager.bind('cursor-ai');
 
-      const result = await localManager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
+      const result = await localManager.sendToDestination(
+        createMockFormattedLink('src/file.ts#L10'),
+      );
 
       expect(result).toBe(true);
       expectCursorAIPasteWorkflow(localAdapter.__getVscodeInstance(), 'src/file.ts#L10');

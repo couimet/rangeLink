@@ -214,7 +214,7 @@ export class RangeLinkService {
     // Copy to clipboard
     await this.ideAdapter.writeTextToClipboard(clipboardContent);
 
-      const basicStatusMessage = formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, {
+    const basicStatusMessage = formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, {
       linkTypeName: contentName,
     });
     // Check if destination is bound
@@ -254,15 +254,10 @@ export class RangeLinkService {
       if (userInstruction) {
         // Clipboard-based destination: Show status bar + information popup
         this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
-        void this.ideAdapter.showInformationMessage(
-          `${basicStatusMessage}. ${userInstruction}`,
-        );
+        void this.ideAdapter.showInformationMessage(`${basicStatusMessage}. ${userInstruction}`);
       } else {
         // Automatic destination: Show status bar only
-        this.ideAdapter.setStatusBarMessage(
-          `${basicStatusMessage} & sent to ${displayName}`,
-          2000,
-        );
+        this.ideAdapter.setStatusBarMessage(`${basicStatusMessage} & sent to ${displayName}`, 2000);
       }
     } else {
       // Paste failed - show destination-aware error message
