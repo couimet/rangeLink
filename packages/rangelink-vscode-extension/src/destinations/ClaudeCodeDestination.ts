@@ -1,5 +1,7 @@
 import type { Logger } from 'barebone-logger';
-import * as vscode from 'vscode';
+import type { FormattedLink } from 'rangelink-core-ts';
+
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
@@ -41,7 +43,10 @@ export class ClaudeCodeDestination implements PasteDestination {
 
   private static readonly EXTENSION_ID = 'anthropic.claude-code';
 
-  constructor(private readonly logger: Logger) {}
+  constructor(
+    private readonly ideAdapter: VscodeAdapter,
+    private readonly logger: Logger,
+  ) {}
 
   /**
    * Check if Claude Code extension is installed and active
@@ -49,7 +54,9 @@ export class ClaudeCodeDestination implements PasteDestination {
    * @returns true if Claude Code extension detected, false otherwise
    */
   async isAvailable(): Promise<boolean> {
-    const extension = vscode.extensions.getExtension(ClaudeCodeDestination.EXTENSION_ID);
+    const extension = this.ideAdapter.extensions.find(
+      (ext) => ext.id === ClaudeCodeDestination.EXTENSION_ID,
+    );
     const isAvailable = extension !== undefined && extension.isActive;
 
     this.logger.debug(
@@ -69,77 +76,94 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Paste text to Claude Code chat
+   * Check if a RangeLink is eligible to be pasted to Claude Code
+   *
+   * Claude Code has no special eligibility rules - always eligible.
+   *
+   * @param _formattedLink - The formatted RangeLink (not used)
+   * @returns Always true (Claude Code accepts all content)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteLink(_formattedLink: FormattedLink): Promise<boolean> {
+    return true;
+  }
+
+  /**
+   * Paste a RangeLink to Claude Code chat
    *
    * **Implementation:** Since Claude Code doesn't support programmatic text insertion,
-   * this method uses a clipboard-based workaround:
-   * 1. Copy text to clipboard
-   * 2. Try opening Claude Code with multiple fallback commands
-   * 3. Show notification prompting user to paste
+   * this method opens Claude Code chat interface. The caller (RangeLinkService) handles
+   * clipboard copy and user notification.
    *
-   * @param text - The text to paste
-   * @returns true if clipboard copy and chat open succeeded, false otherwise
+   * @param formattedLink - The formatted RangeLink with metadata
+   * @returns true if chat open succeeded, false otherwise
    */
-  async paste(text: string): Promise<boolean> {
+  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
+    return this.openChatInterface({
+      fn: 'ClaudeCodeDestination.pasteLink',
+      formattedLink,
+      linkLength: formattedLink.link.length,
+    });
+  }
+
+  /**
+   * Open Claude Code chat interface with fallback command attempts
+   *
+   * Tries multiple commands in order of preference until one succeeds.
+   *
+   * @param contextInfo - Logging context with fn name and content metadata
+   * @returns true if chat open succeeded or commands attempted, false if extension unavailable
+   */
+  private async openChatInterface(contextInfo: {
+    fn: string;
+    contentLength?: number;
+    formattedLink?: FormattedLink;
+    linkLength?: number;
+  }): Promise<boolean> {
     if (!(await this.isAvailable())) {
-      this.logger.warn(
-        { fn: 'ClaudeCodeDestination.paste' },
-        'Cannot paste: Claude Code extension not available',
-      );
+      this.logger.warn(contextInfo, 'Cannot paste: Claude Code extension not available');
       return false;
     }
 
     try {
-      // Step 1: Copy to clipboard
-      await vscode.env.clipboard.writeText(text);
-      this.logger.debug(
-        { fn: 'ClaudeCodeDestination.paste', textLength: text.length },
-        'Copied text to clipboard',
-      );
-
-      // Step 2: Try opening Claude Code with multiple fallback commands
+      // Try opening Claude Code with multiple fallback commands
       let chatOpened = false;
       for (const command of ClaudeCodeDestination.CLAUDE_CODE_COMMANDS) {
         try {
-          await vscode.commands.executeCommand(command);
+          await this.ideAdapter.executeCommand(command);
           this.logger.debug(
-            { fn: 'ClaudeCodeDestination.paste', command },
+            { ...contextInfo, command },
             'Successfully executed Claude Code open command',
           );
           chatOpened = true;
           break;
         } catch (commandError) {
           this.logger.debug(
-            { fn: 'ClaudeCodeDestination.paste', command, error: commandError },
+            { ...contextInfo, command, error: commandError },
             'Command failed, trying next fallback',
           );
         }
       }
 
       if (!chatOpened) {
-        this.logger.warn(
-          { fn: 'ClaudeCodeDestination.paste' },
-          'All Claude Code open commands failed',
-        );
+        this.logger.warn(contextInfo, 'All Claude Code open commands failed');
       }
 
-      // Step 3: Show notification (regardless of whether chat opened)
-      void vscode.window.showInformationMessage(
-        formatMessage(MessageCode.INFO_CLAUDE_CODE_LINK_COPIED),
-      );
-
-      this.logger.info(
-        { fn: 'ClaudeCodeDestination.paste', textLength: text.length, chatOpened },
-        'Clipboard workaround completed',
-      );
+      this.logger.info({ ...contextInfo, chatOpened }, 'Claude Code open completed');
 
       return true;
     } catch (error) {
-      this.logger.error(
-        { fn: 'ClaudeCodeDestination.paste', error },
-        'Failed to execute clipboard workaround',
-      );
+      this.logger.error({ ...contextInfo, error }, 'Failed to open Claude Code');
       return false;
     }
+  }
+
+  /**
+   * Get user instruction for manual paste (clipboard-based destination)
+   *
+   * @returns Instruction string for manual paste in Claude Code
+   */
+  getUserInstruction(): string | undefined {
+    return formatMessage(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS);
   }
 }

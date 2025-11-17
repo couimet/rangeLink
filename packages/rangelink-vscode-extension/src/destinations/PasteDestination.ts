@@ -1,3 +1,5 @@
+import type { FormattedLink } from 'rangelink-core-ts';
+
 /**
  * Supported paste destination types
  *
@@ -48,21 +50,54 @@ export interface PasteDestination {
    * - GitHub Copilot: Extension must be installed and active
    * - Claude Code: Extension must be installed and active
    *
-   * @returns Promise resolving to true if paste() can succeed, false otherwise
+   * @returns Promise resolving to true if pasteLink() can succeed, false otherwise
    */
   isAvailable(): Promise<boolean>;
 
   /**
-   * Paste text to this destination with appropriate padding and focus
+   * Check if a RangeLink is eligible to be pasted to this destination
+   *
+   * Determines if pasting should be skipped based on destination-specific rules.
+   * Examples:
+   * - TextEditorDestination: Skip if creating link FROM the bound editor itself
+   * - Other destinations: Always eligible (return true)
+   *
+   * This check is separate from isAvailable() which verifies infrastructure readiness.
+   * Eligibility is about business logic (should we paste?), availability is about
+   * technical capability (can we paste?).
+   *
+   * @param formattedLink - The formatted RangeLink to check
+   * @returns Promise resolving to true if paste should proceed, false to skip
+   */
+  isEligibleForPasteLink(formattedLink: FormattedLink): Promise<boolean>;
+
+  /**
+   * Paste a RangeLink to this destination with appropriate padding and focus
    *
    * Implementation requirements:
+   * - Check eligibility internally (defensive programming)
    * - Add padding if needed (smart padding: skip if already padded)
    * - Focus destination after paste (terminal.show(), chat.open(), etc.)
    * - Log success/failure for debugging
-   * - Return false on failure (no throwing)
+   * - Return false on failure or ineligibility (no throwing)
    *
-   * @param text - The text to paste (typically a RangeLink)
+   * @param formattedLink - The formatted RangeLink with metadata
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  paste(text: string): Promise<boolean>;
+  pasteLink(formattedLink: FormattedLink): Promise<boolean>;
+
+  /**
+   * Get user instruction for manual paste action (clipboard-based destinations only)
+   *
+   * Clipboard-based destinations (Claude Code, Cursor AI) cannot programmatically
+   * insert content into their chat interfaces. They copy to clipboard and require
+   * the user to manually paste. This method returns the instruction string to show
+   * the user in a popup toast.
+   *
+   * Automatic destinations (Terminal, Text Editor) return undefined since no manual
+   * action is required.
+   *
+   * @returns Instruction string for manual paste, or undefined for automatic paste
+   */
+  getUserInstruction(): string | undefined;
 }

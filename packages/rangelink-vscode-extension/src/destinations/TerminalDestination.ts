@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { applySmartPadding } from '../utils/applySmartPadding';
@@ -28,29 +29,59 @@ export class TerminalDestination implements PasteDestination {
   }
 
   /**
-   * Paste text to bound terminal with smart padding and focus
+   * Check if RangeLink is eligible for paste to terminal
+   *
+   * Terminal always returns true - all links are eligible when terminal is available.
+   * Eligibility checks are primarily for TextEditorDestination to avoid self-paste.
+   *
+   * @param _formattedLink - The formatted RangeLink (unused)
+   * @returns Promise resolving to true (always eligible)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteLink(_formattedLink: FormattedLink): Promise<boolean> {
+    return true;
+  }
+
+  /**
+   * Get user instruction for manual paste
+   *
+   * Terminal performs automatic paste, so no manual instruction is needed.
+   *
+   * @returns undefined (no manual instruction needed)
+   */
+  getUserInstruction(): string | undefined {
+    return undefined;
+  }
+
+  /**
+   * Paste a RangeLink to bound terminal with smart padding and focus
    *
    * Validation:
-   * - Checks text eligibility (not null/undefined/empty/whitespace-only)
-   * - Logs INFO and returns false if text is not eligible
+   * - Checks link eligibility (not null/undefined/empty/whitespace-only)
+   * - Logs INFO and returns false if link is not eligible
    *
    * Smart padding behavior:
-   * - Only adds leading space if text doesn't start with whitespace
-   * - Only adds trailing space if text doesn't end with whitespace
-   * - Better UX: avoids double-spacing when user already padded text
+   * - Only adds leading space if link doesn't start with whitespace
+   * - Only adds trailing space if link doesn't end with whitespace
+   * - Better UX: avoids double-spacing when user already padded link
    *
-   * @param text - The text to paste
+   * @param formattedLink - The formatted RangeLink with metadata
    * @returns true if paste succeeded, false if validation failed or no terminal bound
    */
-  async paste(text: string): Promise<boolean> {
-    if (!isEligibleForPaste(text)) {
-      this.logger.info({ fn: 'TerminalDestination.paste', text }, 'Text not eligible for paste');
+  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
+    const link = formattedLink.link;
+
+    if (!isEligibleForPaste(link)) {
+      this.logger.info(
+        { fn: 'TerminalDestination.pasteLink', formattedLink, linkLength: link.length },
+        'Link not eligible for paste',
+      );
       return false;
     }
 
     if (!this.boundTerminal) {
       this.logger.warn(
-        { fn: 'TerminalDestination.paste', textLength: text.length },
+        { fn: 'TerminalDestination.pasteLink', formattedLink, linkLength: link.length },
         'Cannot paste: No terminal bound',
       );
       return false;
@@ -59,22 +90,23 @@ export class TerminalDestination implements PasteDestination {
     const terminalName = this.getTerminalName();
 
     // Apply smart padding for better UX
-    const paddedText = applySmartPadding(text);
+    const paddedLink = applySmartPadding(link);
 
-    // Send text without auto-submit (addNewLine = false)
-    this.boundTerminal.sendText(paddedText, false);
+    // Send link without auto-submit (addNewLine = false)
+    this.boundTerminal.sendText(paddedLink, false);
 
     // Auto-focus terminal for seamless workflow
     this.boundTerminal.show(false);
 
     this.logger.info(
       {
-        fn: 'TerminalDestination.paste',
+        fn: 'TerminalDestination.pasteLink',
         terminalName,
-        originalLength: text.length,
-        paddedLength: paddedText.length,
+        formattedLink,
+        originalLength: link.length,
+        paddedLength: paddedLink.length,
       },
-      `Pasted to terminal: ${terminalName}`,
+      `Pasted link to terminal: ${terminalName}`,
     );
 
     return true;

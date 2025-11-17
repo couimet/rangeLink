@@ -2,6 +2,7 @@ import { getLogger } from 'barebone-logger';
 import {
   DelimiterConfig,
   formatLink,
+  type FormattedLink,
   FormatOptions,
   InputSelection,
   LinkType,
@@ -11,6 +12,7 @@ import * as vscode from 'vscode';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
+import { ActiveSelections } from './types/ActiveSelections';
 import { MessageCode } from './types/MessageCode';
 import { formatMessage } from './utils/formatMessage';
 import { toInputSelection } from './utils/toInputSelection';
@@ -35,9 +37,9 @@ export class RangeLinkService {
    * Creates a standard RangeLink from the current editor selection
    */
   async createLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const link = await this.generateLinkFromSelection(pathFormat, false);
-    if (link) {
-      await this.copyAndNotify(link, 'RangeLink');
+    const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
+    if (formattedLink) {
+      await this.copyToClipboardAndDestination(formattedLink, 'RangeLink');
     }
   }
 
@@ -45,9 +47,9 @@ export class RangeLinkService {
    * Creates a portable RangeLink with embedded delimiter metadata
    */
   async createPortableLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const link = await this.generateLinkFromSelection(pathFormat, true);
-    if (link) {
-      await this.copyAndNotify(link, 'Portable RangeLink');
+    const formattedLink = await this.generateLinkFromSelection(pathFormat, true);
+    if (formattedLink) {
+      await this.copyToClipboardAndDestination(formattedLink, 'Portable RangeLink');
     }
   }
 
@@ -55,25 +57,19 @@ export class RangeLinkService {
    * Generates a link from the current editor selection
    * @param pathFormat Whether to use relative or absolute paths
    * @param isPortable Whether to generate a portable link with embedded delimiters
-   * @returns The generated link, or null if generation failed
+   * @returns The generated FormattedLink with metadata, or null if generation failed
    */
   private async generateLinkFromSelection(
     pathFormat: PathFormat,
     isPortable: boolean,
-  ): Promise<string | null> {
-    const editor = this.ideAdapter.activeTextEditor;
-    if (!editor) {
-      this.ideAdapter.showErrorMessage('No active editor');
+  ): Promise<FormattedLink | null> {
+    const validated = this.validateSelectionsAndShowError();
+    if (!validated) {
       return null;
     }
 
+    const { editor, selections } = validated;
     const document = editor.document;
-    const selections = editor.selections;
-
-    if (!selections || selections.length === 0 || selections.every((s) => s.isEmpty)) {
-      // TODO: Replace with RangeLinkExtensionError using RangeLinkExtensionErrorCodes.EMPTY_SELECTION
-      throw new Error('RangeLink command invoked with empty selection');
-    }
 
     const referencePath = this.getReferencePath(document, pathFormat);
 
@@ -112,82 +108,70 @@ export class RangeLinkService {
       `Generated link: ${formattedLink.link}`,
     );
 
-    return formattedLink.link;
+    return formattedLink;
   }
 
   /**
-   * Copies the link to clipboard and shows status bar notification
+   * Copies the link to clipboard and sends to bound destination if available
    *
    * **Auto-paste behavior (text editor destination):**
    * - Skips auto-paste if creating link FROM the bound editor itself
    * - Shows "not topmost" warning if bound editor hidden behind other tabs
    * - Pastes successfully if bound editor is topmost in its tab group
    *
-   * @param link The link text to copy
+   * @param formattedLink The formatted RangeLink with metadata
    * @param linkTypeName User-friendly name for status messages (e.g., "RangeLink", "Portable RangeLink")
    */
-  private async copyAndNotify(link: string, linkTypeName: string): Promise<void> {
-    await this.ideAdapter.writeTextToClipboard(link);
-
-    const statusMessage = formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, {
+  private async copyToClipboardAndDestination(
+    formattedLink: FormattedLink,
+    linkTypeName: string,
+  ): Promise<void> {
+    await this.copyAndSendToDestination(
+      formattedLink.link,
+      formattedLink,
+      (link) => this.destinationManager.sendToDestination(link),
+      (destination, link) => destination.isEligibleForPasteLink(link),
       linkTypeName,
-    });
+      'copyToClipboardAndDestination',
+    );
+  }
 
-    // Send to bound destination if one is bound
-    if (this.destinationManager.isBound()) {
-      const destination = this.destinationManager.getBoundDestination();
-      const displayName = destination?.displayName || 'destination';
+  /**
+   * Validates that active editor exists with non-empty selections and shows appropriate error if not.
+   *
+   * Consolidates duplicate validation logic from generateLinkFromSelection and other methods.
+   * Shows context-appropriate error message based on failure reason:
+   * - No active editor: "RangeLink: No active editor"
+   * - Empty selections: "RangeLink: No text selected. Select text and try again."
+   *
+   * @returns Object with editor and selections if valid, undefined if validation failed
+   */
+  private validateSelectionsAndShowError():
+    | { editor: vscode.TextEditor; selections: readonly vscode.Selection[] }
+    | undefined {
+    const activeSelections = ActiveSelections.create(this.ideAdapter.activeTextEditor);
+    const nonEmptySelections = activeSelections.getNonEmptySelections();
 
-      // Skip auto-paste if creating link FROM the bound editor itself
-      if (destination?.id === 'text-editor') {
-        const textEditorDest = destination as any; // TextEditorDestination
-        const boundDocumentUri = textEditorDest.getBoundDocumentUri();
-        const activeEditor = this.ideAdapter.activeTextEditor;
-
-        if (activeEditor && boundDocumentUri) {
-          const activeDocumentUri = activeEditor.document.uri.toString();
-          const boundUriString = boundDocumentUri.toString();
-
-          if (activeDocumentUri === boundUriString) {
-            // Creating link FROM bound editor - skip auto-paste
-            getLogger().debug(
-              {
-                fn: 'copyAndNotify',
-                linkTypeName,
-                boundDocumentUri: boundUriString,
-              },
-              'Skipping auto-paste: creating link from bound editor itself',
-            );
-            this.ideAdapter.setStatusBarMessage(statusMessage, 2000);
-            return;
-          }
-        }
-      }
+    if (!nonEmptySelections) {
+      const errorMsg = activeSelections.editor
+        ? 'RangeLink: No text selected. Select text and try again.'
+        : 'RangeLink: No active editor';
 
       getLogger().debug(
-        { fn: 'copyAndNotify', linkTypeName, boundDestination: displayName },
-        `Attempting to send link to bound destination: ${displayName}`,
+        {
+          fn: 'validateSelectionsAndShowError',
+          hasEditor: !!activeSelections.editor,
+          errorMsg,
+        },
+        'Empty selection detected - should be prevented by command enablement',
       );
 
-      const sent = await this.destinationManager.sendToDestination(link);
-      if (sent) {
-        this.ideAdapter.setStatusBarMessage(`${statusMessage} & sent to ${displayName}`, 2000);
-      } else {
-        // Paste failed - show destination-aware error message
-        getLogger().warn(
-          { fn: 'copyAndNotify', linkTypeName, boundDestination: displayName },
-          'Failed to send link to bound destination',
-        );
-        const errorMessage = destination
-          ? this.buildPasteFailureMessage(destination)
-          : 'RangeLink: Copied to clipboard. Could not send to destination.';
-        this.ideAdapter.showWarningMessage(errorMessage);
-      }
-      return;
+      this.ideAdapter.showErrorMessage(errorMsg);
+      return undefined;
     }
 
-    // No destination bound - just show clipboard message
-    this.ideAdapter.setStatusBarMessage(statusMessage, 2000);
+    // Safe: getNonEmptySelections() returning non-null guarantees editor exists
+    return { editor: activeSelections.editor!, selections: nonEmptySelections };
   }
 
   /**
@@ -199,6 +183,91 @@ export class RangeLinkService {
       return this.ideAdapter.asRelativePath(document.uri);
     }
     return document.uri.fsPath;
+  }
+
+  /**
+   * Unified utility for copying content to clipboard and sending to bound destination
+   *
+   * Eliminates duplication between copyToClipboardAndDestination and other methods.
+   * Handles clipboard copy, destination binding check, skip-auto-paste logic, sending, and status messages.
+   *
+   * **Message handling:**
+   * - Automatic destinations (Terminal, Text Editor): Shows status bar "✓ ${contentName} copied to clipboard and sent to ${displayName}"
+   * - Clipboard destinations (Claude Code, Cursor AI): Shows status bar "✓ ${contentName} copied to clipboard" + information popup with getUserInstruction()
+   * - No destination bound: Shows "✓ ${contentName} copied to clipboard"
+   *
+   * @param clipboardContent - String content to copy to clipboard
+   * @param sendContent - Content to send to destination (may differ from clipboard)
+   * @param sendFn - Function to send content to destination manager
+   * @param isEligibleFn - Function to check if content is eligible for paste to destination
+   * @param contentName - User-friendly name for the content (e.g., "RangeLink", "Selected text")
+   * @param fnName - Function name for logging
+   */
+  private async copyAndSendToDestination<T>(
+    clipboardContent: string,
+    sendContent: T,
+    sendFn: (content: T) => Promise<boolean>,
+    isEligibleFn: (destination: PasteDestination, content: T) => Promise<boolean>,
+    contentName: string,
+    fnName: string,
+  ): Promise<void> {
+    // Copy to clipboard
+    await this.ideAdapter.writeTextToClipboard(clipboardContent);
+
+    const basicStatusMessage = formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, {
+      linkTypeName: contentName,
+    });
+    // Check if destination is bound
+    if (!this.destinationManager.isBound()) {
+      getLogger().info({ fn: fnName }, 'No destination bound - copied to clipboard only');
+      this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
+      return;
+    }
+
+    // Safe: isBound() guarantees getBoundDestination() returns non-undefined
+    const destination = this.destinationManager.getBoundDestination()!;
+    const displayName = destination.displayName || 'destination';
+
+    // Check eligibility before sending
+    const isEligible = await isEligibleFn(destination, sendContent);
+    if (!isEligible) {
+      getLogger().debug(
+        { fn: fnName, boundDestination: displayName },
+        'Content not eligible for paste - skipping auto-paste',
+      );
+      this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
+      return;
+    }
+
+    getLogger().debug(
+      { fn: fnName, boundDestination: displayName },
+      `Attempting to send content to bound destination: ${displayName}`,
+    );
+
+    // Send to bound destination
+    const sent = await sendFn(sendContent);
+
+    if (sent) {
+      // Check if destination requires manual paste
+      const userInstruction = destination.getUserInstruction();
+
+      if (userInstruction) {
+        // Clipboard-based destination: Show status bar + information popup
+        this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
+        void this.ideAdapter.showInformationMessage(`${basicStatusMessage}. ${userInstruction}`);
+      } else {
+        // Automatic destination: Show status bar only
+        this.ideAdapter.setStatusBarMessage(`${basicStatusMessage} & sent to ${displayName}`, 2000);
+      }
+    } else {
+      // Paste failed - show destination-aware error message
+      getLogger().warn(
+        { fn: fnName, boundDestination: displayName },
+        'Failed to send to destination',
+      );
+      const errorMessage = this.buildPasteFailureMessage(destination);
+      this.ideAdapter.showWarningMessage(errorMessage);
+    }
   }
 
   /**
