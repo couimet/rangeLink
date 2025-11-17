@@ -32,7 +32,6 @@ export function activate(context: vscode.ExtensionContext): void {
   setLogger(vscodeLogger);
 
   // Initialize i18n locale from VSCode environment
-  // setLocale() handles language code extraction ('en-US' → 'en')
   setLocale(vscode.env.language);
 
   // Load delimiter configuration
