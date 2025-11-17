@@ -558,4 +558,18 @@ export class TextEditorDestination implements PasteDestination {
 
     return !isBinary;
   }
+
+  /**
+   * Get destination-specific details for logging
+   *
+   * @returns Editor display name and path for logging context
+   */
+  getLoggingDetails(): Record<string, unknown> {
+    const editorDisplayName = this.getEditorDisplayName();
+    const editorPath = this.getEditorPath();
+    return {
+      editorDisplayName,
+      editorPath,
+    };
+  }
 }

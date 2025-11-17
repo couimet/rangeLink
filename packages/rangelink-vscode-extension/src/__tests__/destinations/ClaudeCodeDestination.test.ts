@@ -349,4 +349,12 @@ describe('ClaudeCodeDestination', () => {
       expect(showInfoSpy).not.toHaveBeenCalled(); // RangeLinkService handles notification
     });
   });
+
+  describe('getLoggingDetails()', () => {
+    it('should return empty object (no additional details for AI destinations)', () => {
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({});
+    });
+  });
 });

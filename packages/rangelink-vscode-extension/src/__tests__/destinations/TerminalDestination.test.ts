@@ -406,4 +406,38 @@ describe('TerminalDestination', () => {
       expect(destination.getTerminalName()).toBe('fish');
     });
   });
+
+  describe('getLoggingDetails()', () => {
+    it('should return terminal name when terminal is bound', () => {
+      destination.setTerminal(mockTerminal);
+
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({ terminalName: 'bash' });
+    });
+
+    it('should return empty object when no terminal bound', () => {
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({});
+    });
+
+    it('should return default name when terminal has undefined name', () => {
+      const unnamedTerminal = { ...mockTerminal, name: undefined };
+      destination.setTerminal(unnamedTerminal as unknown as vscode.Terminal);
+
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({ terminalName: 'Unnamed Terminal' });
+    });
+
+    it('should return default name when terminal has empty name', () => {
+      const emptyNameTerminal = { ...mockTerminal, name: '' };
+      destination.setTerminal(emptyNameTerminal as vscode.Terminal);
+
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({ terminalName: 'Unnamed Terminal' });
+    });
+  });
 });

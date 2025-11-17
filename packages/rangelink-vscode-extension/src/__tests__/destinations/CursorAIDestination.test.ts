@@ -460,4 +460,12 @@ describe('CursorAIDestination', () => {
       expect(instruction).toBe(messagesEn[MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS]);
     });
   });
+
+  describe('getLoggingDetails()', () => {
+    it('should return empty object (no additional details for AI destinations)', () => {
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({});
+    });
+  });
 });

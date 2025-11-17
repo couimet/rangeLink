@@ -145,4 +145,20 @@ export interface PasteDestination {
    * @returns Promise resolving to true if focus succeeded, false otherwise
    */
   focus(): Promise<boolean>;
+
+  /**
+   * Get destination-specific details for logging
+   *
+   * Returns structured data about this destination for debug/info logging.
+   * Eliminates type-checking in PasteDestinationManager by encapsulating
+   * destination-specific details within each implementation.
+   *
+   * Examples:
+   * - Terminal: { terminalName: "bash" }
+   * - Text Editor: { editorDisplayName: "src/file.ts", editorPath: "/absolute/path" }
+   * - AI Assistants: {} (no additional details needed)
+   *
+   * @returns Record with destination-specific logging details (empty object if none)
+   */
+  getLoggingDetails(): Record<string, unknown>;
 }

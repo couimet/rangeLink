@@ -253,4 +253,15 @@ export class CursorAIDestination implements PasteDestination {
       fn: 'CursorAIDestination.focus',
     });
   }
+
+  /**
+   * Get destination-specific details for logging
+   *
+   * Cursor AI destinations have no additional details to log beyond displayName.
+   *
+   * @returns Empty object (no additional details)
+   */
+  getLoggingDetails(): Record<string, unknown> {
+    return {};
+  }
 }

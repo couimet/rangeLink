@@ -259,20 +259,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     const destinationType = this.boundDestination.id;
     const displayName = this.boundDestination.displayName;
-
-    // Get destination-specific details for logging
-    let destinationDetails: Record<string, unknown> = {};
-    if (destinationType === 'text-editor') {
-      const textEditorDest = this.boundDestination as TextEditorDestination;
-      destinationDetails = {
-        editorDisplayName: textEditorDest.getEditorDisplayName(),
-        editorPath: textEditorDest.getEditorPath(),
-      };
-    } else if (destinationType === 'terminal' && this.boundTerminal) {
-      destinationDetails = {
-        terminalName: this.boundTerminal.name || 'Unnamed Terminal',
-      };
-    }
+    const destinationDetails = this.boundDestination.getLoggingDetails();
 
     this.logger.debug(
       {
@@ -323,20 +310,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     const destinationType = this.boundDestination.id;
     const displayName = this.boundDestination.displayName;
-
-    // Get destination-specific details for logging
-    let destinationDetails: Record<string, unknown> = {};
-    if (destinationType === 'text-editor') {
-      const textEditorDest = this.boundDestination as TextEditorDestination;
-      destinationDetails = {
-        editorDisplayName: textEditorDest.getEditorDisplayName(),
-        editorPath: textEditorDest.getEditorPath(),
-      };
-    } else if (destinationType === 'terminal' && this.boundTerminal) {
-      destinationDetails = {
-        terminalName: this.boundTerminal.name || 'Unnamed Terminal',
-      };
-    }
+    const destinationDetails = this.boundDestination.getLoggingDetails();
 
     this.logger.debug(
       {

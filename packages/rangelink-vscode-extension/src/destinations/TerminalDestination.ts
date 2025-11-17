@@ -232,4 +232,17 @@ export class TerminalDestination implements PasteDestination {
   getTerminalName(): string | undefined {
     return this.boundTerminal?.name;
   }
+
+  /**
+   * Get destination-specific details for logging
+   *
+   * @returns Terminal name for logging context
+   */
+  getLoggingDetails(): Record<string, unknown> {
+    if (!this.boundTerminal) {
+      return {};
+    }
+    const terminalName = this.getTerminalName() || 'Unnamed Terminal';
+    return { terminalName };
+  }
 }

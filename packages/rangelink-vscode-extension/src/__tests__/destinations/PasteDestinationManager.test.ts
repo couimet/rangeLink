@@ -402,7 +402,11 @@ describe('PasteDestinationManager', () => {
     let mockChatDest: jest.Mocked<PasteDestination>;
 
     // Helper to create mock destination
-    const createMockDest = (id: string, displayName: string): jest.Mocked<PasteDestination> =>
+    const createMockDest = (
+      id: string,
+      displayName: string,
+      loggingDetails: Record<string, unknown> = {},
+    ): jest.Mocked<PasteDestination> =>
       ({
         id,
         displayName,
@@ -410,11 +414,12 @@ describe('PasteDestinationManager', () => {
         pasteLink: jest.fn().mockResolvedValue(true),
         getUserInstruction: jest.fn().mockReturnValue('Instructions'),
         setTerminal: jest.fn(),
+        getLoggingDetails: jest.fn().mockReturnValue(loggingDetails),
       }) as unknown as jest.Mocked<PasteDestination>;
 
     beforeEach(() => {
-      mockTerminalDest = createMockDest('terminal', 'Terminal');
-      mockChatDest = createMockDest('cursor-ai', 'Cursor AI Assistant');
+      mockTerminalDest = createMockDest('terminal', 'Terminal', { terminalName: 'bash' });
+      mockChatDest = createMockDest('cursor-ai', 'Cursor AI Assistant', {});
 
       mockFactoryForSend = {
         create: jest.fn().mockImplementation((type) => {
@@ -815,6 +820,7 @@ describe('PasteDestinationManager', () => {
         getEditorDisplayName: jest.fn().mockReturnValue(displayName),
         getEditorPath: jest.fn().mockReturnValue('/test/file.ts'),
         getBoundDocumentUri: jest.fn(),
+        getLoggingDetails: jest.fn().mockReturnValue({}),
       }) as unknown as jest.Mocked<PasteDestination>;
 
     beforeEach(() => {

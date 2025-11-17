@@ -210,4 +210,15 @@ export class ClaudeCodeDestination implements PasteDestination {
       fn: 'ClaudeCodeDestination.focus',
     });
   }
+
+  /**
+   * Get destination-specific details for logging
+   *
+   * Claude Code destinations have no additional details to log beyond displayName.
+   *
+   * @returns Empty object (no additional details)
+   */
+  getLoggingDetails(): Record<string, unknown> {
+    return {};
+  }
 }

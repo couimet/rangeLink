@@ -339,4 +339,30 @@ describe('TextEditorDestination', () => {
       );
     });
   });
+
+  describe('getLoggingDetails()', () => {
+    beforeEach(() => {
+      destination.setEditor(mockEditor);
+    });
+
+    it('should return editor display name and path', () => {
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({
+        editorDisplayName: 'src/file.ts',
+        editorPath: mockEditor.document.uri.toString(),
+      });
+    });
+
+    it('should return undefined values when no editor bound', () => {
+      destination.setEditor(undefined);
+
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({
+        editorDisplayName: undefined,
+        editorPath: undefined,
+      });
+    });
+  });
 });
