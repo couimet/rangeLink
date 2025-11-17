@@ -122,7 +122,9 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.window.showInformationMessage(message, 'Copy Commit Hash').then((selection) => {
           if (selection === 'Copy Commit Hash') {
             vscode.env.clipboard.writeText(versionInfo.commitFull);
-            vscode.window.showInformationMessage(formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED));
+            vscode.window.showInformationMessage(
+              formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED),
+            );
           }
         });
         getLogger().info(

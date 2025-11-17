@@ -1,6 +1,11 @@
 import { getLogger } from 'barebone-logger';
 
-import { DEFAULT_LOCALE, supportedLocales, type LocaleCode, type MessageMap } from './supportedLocales';
+import {
+  DEFAULT_LOCALE,
+  supportedLocales,
+  type LocaleCode,
+  type MessageMap,
+} from './supportedLocales';
 
 const logger = getLogger();
 

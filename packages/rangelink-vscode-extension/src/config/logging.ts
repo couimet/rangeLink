@@ -34,10 +34,7 @@ export const logSuccessfulConfig = (
   delimiters: DelimiterConfig,
   sources: DelimiterConfigSources,
 ): void => {
-  logger.info(
-    { fn: 'logSuccessfulConfig' },
-    'Delimiter configuration loaded:',
-  );
+  logger.info({ fn: 'logSuccessfulConfig' }, 'Delimiter configuration loaded:');
 
   logger.info(
     { fn: 'logSuccessfulConfig', field: 'line', source: sources.line },
