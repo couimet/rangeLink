@@ -64,18 +64,15 @@ export class RangeLinkService {
    * - Skips empty selections
    */
   async pasteSelectedTextToDestination(): Promise<void> {
-    const activeSelections = this.getActiveSelections();
-    const nonEmptySelections = activeSelections.getNonEmptySelections();
-
-    if (!nonEmptySelections) {
-      this.ideAdapter.showErrorMessage('RangeLink: No text selected. Select text and try again.');
+    const validated = this.validateSelectionsAndShowError();
+    if (!validated) {
       return;
     }
 
-    const editor = activeSelections.editor!; // Safe: getNonEmptySelections() guarantees editor exists
+    const { editor, selections } = validated;
 
     // Extract selected text (concatenate with newlines for multi-selection)
-    const selectedTexts = nonEmptySelections.map((s) => editor.document.getText(s));
+    const selectedTexts = selections.map((s) => editor.document.getText(s));
     const content = selectedTexts.join('\n');
 
     getLogger().debug(
@@ -107,17 +104,13 @@ export class RangeLinkService {
     pathFormat: PathFormat,
     isPortable: boolean,
   ): Promise<FormattedLink | null> {
-    const activeSelections = this.getActiveSelections();
-    const nonEmptySelections = activeSelections.getNonEmptySelections();
-
-    if (!nonEmptySelections) {
-      this.ideAdapter.showErrorMessage('RangeLink: No text selected. Select text and try again.');
+    const validated = this.validateSelectionsAndShowError();
+    if (!validated) {
       return null;
     }
 
-    const editor = activeSelections.editor!; // Safe: getNonEmptySelections() guarantees editor exists
+    const { editor, selections } = validated;
     const document = editor.document;
-    const selections = activeSelections.selections;
 
     const referencePath = this.getReferencePath(document, pathFormat);
 
@@ -185,33 +178,31 @@ export class RangeLinkService {
   }
 
   /**
-   * Validates that an active text editor exists and shows error message if not.
+   * Validates that active editor exists with non-empty selections and shows appropriate error if not.
    *
-   * This utility ensures consistent error messaging across all methods that require
-   * an active editor. Prevents drift in error messages.
+   * Consolidates duplicate validation logic from pasteSelectedTextToDestination and generateLinkFromSelection.
+   * Shows context-appropriate error message based on failure reason:
+   * - No active editor: "RangeLink: No active editor"
+   * - Empty selections: "RangeLink: No text selected. Select text and try again."
    *
-   * @returns The active text editor, or undefined if none exists
+   * @returns Object with editor and selections if valid, undefined if validation failed
    */
-  private validateActiveTextEditor(): vscode.TextEditor | undefined {
-    const editor = this.ideAdapter.activeTextEditor;
-    if (!editor) {
-      this.ideAdapter.showErrorMessage('RangeLink: No active editor');
-    }
-    return editor;
-  }
+  private validateSelectionsAndShowError():
+    | { editor: vscode.TextEditor; selections: readonly vscode.Selection[] }
+    | undefined {
+    const activeSelections = ActiveSelections.create(this.ideAdapter.activeTextEditor);
+    const nonEmptySelections = activeSelections.getNonEmptySelections();
 
-  /**
-   * Gets active editor and selections as an immutable Value Object.
-   *
-   * Uses validateActiveTextEditor() internally, so will show "No active editor"
-   * error if editor doesn't exist. Caller must check getNonEmptySelections()
-   * result and show appropriate error for empty selections.
-   *
-   * @returns ActiveSelections VO with editor and selections (may be invalid)
-   */
-  private getActiveSelections(): ActiveSelections {
-    const editor = this.validateActiveTextEditor();
-    return ActiveSelections.create(editor);
+    if (!nonEmptySelections) {
+      const errorMsg = activeSelections.editor
+        ? 'RangeLink: No text selected. Select text and try again.'
+        : 'RangeLink: No active editor';
+      this.ideAdapter.showErrorMessage(errorMsg);
+      return undefined;
+    }
+
+    // Safe: getNonEmptySelections() returning non-null guarantees editor exists
+    return { editor: activeSelections.editor!, selections: nonEmptySelections };
   }
 
   /**

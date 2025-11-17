@@ -584,11 +584,11 @@ describe('RangeLinkService', () => {
           expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith('const foo = "bar";');
         });
 
-        it('should show clipboard fallback message with character count', async () => {
+        it('should show clipboard fallback message', async () => {
           await service.pasteSelectedTextToDestination();
 
           expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-            '✓ Selected text copied to clipboard (18 chars)',
+            '✓ Selected text copied to clipboard',
             2000,
           );
         });
@@ -628,13 +628,13 @@ describe('RangeLinkService', () => {
           );
         });
 
-        it('should show success message with destination name and character count', async () => {
+        it('should show success message with destination name', async () => {
           (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(true);
 
           await service.pasteSelectedTextToDestination();
 
           expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-            '✓ Selected text sent to Terminal (18 chars)',
+            '✓ Selected text copied to clipboard & sent to Terminal',
             2000,
           );
         });
@@ -689,12 +689,12 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should show correct character count for concatenated text', async () => {
+      it('should show status message for concatenated text', async () => {
         await service.pasteSelectedTextToDestination();
 
-        // "first line\nsecond line\nthird line" = 33 chars
+        // "first line\nsecond line\nthird line" = 33 chars total
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          expect.stringContaining('(33 chars)'),
+          '✓ Selected text copied to clipboard',
           2000,
         );
       });
@@ -744,7 +744,7 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(longText);
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          expect.stringContaining('(10000 chars)'),
+          '✓ Selected text copied to clipboard',
           2000,
         );
       });
@@ -909,16 +909,6 @@ describe('RangeLinkService', () => {
         expect(warningCall).toContain('editor');
       });
 
-      it('should handle failure when destination is undefined', async () => {
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(undefined);
-        (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(false);
-
-        await service.pasteSelectedTextToDestination();
-
-        expect(mockIdeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Copied to clipboard. Could not send to destination.',
-        );
-      });
     });
 
     describe('timeout parameter', () => {
@@ -954,7 +944,7 @@ describe('RangeLinkService', () => {
     });
   });
 
-  describe('validateActiveTextEditor', () => {
+  describe('validateSelectionsAndShowError', () => {
     let service: RangeLinkService;
     let mockIdeAdapter: VscodeAdapter;
     let mockDestinationManager: PasteDestinationManager;
@@ -986,51 +976,6 @@ describe('RangeLinkService', () => {
       service = new RangeLinkService(delimiters, mockIdeAdapter, mockDestinationManager);
     });
 
-    describe('when active text editor exists', () => {
-      it('should return the active editor', () => {
-        const mockEditor = {
-          document: { uri: { fsPath: '/path/to/file.ts' } },
-          selections: [],
-        };
-        (mockIdeAdapter as any).activeTextEditor = mockEditor;
-
-        const result = (service as any).validateActiveTextEditor();
-
-        expect(result).toBe(mockEditor);
-      });
-
-      it('should not show error message', () => {
-        const mockEditor = {
-          document: { uri: { fsPath: '/path/to/file.ts' } },
-          selections: [],
-        };
-        (mockIdeAdapter as any).activeTextEditor = mockEditor;
-
-        (service as any).validateActiveTextEditor();
-
-        expect(mockIdeAdapter.showErrorMessage).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('when no active text editor exists', () => {
-      beforeEach(() => {
-        (mockIdeAdapter as any).activeTextEditor = undefined;
-      });
-
-      it('should return undefined', () => {
-        const result = (service as any).validateActiveTextEditor();
-
-        expect(result).toBeUndefined();
-      });
-
-      it('should show error message with "RangeLink: No active editor"', () => {
-        (service as any).validateActiveTextEditor();
-
-        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
-        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
-      });
-    });
-
     describe('integration with generateLinkFromSelection', () => {
       beforeEach(() => {
         // Mock all dependencies for generateLinkFromSelection
@@ -1050,7 +995,6 @@ describe('RangeLinkService', () => {
         const result = await (service as any).generateLinkFromSelection('workspace-relative', false);
 
         expect(result).toBeNull();
-        // Verify we bailed early (no other adapter methods called)
         expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
       });
     });
@@ -1080,32 +1024,23 @@ describe('RangeLinkService', () => {
     });
 
     describe('error message consistency', () => {
-      it('should use identical error message across all methods', () => {
+      it('should use identical error message across all public methods', async () => {
         (mockIdeAdapter as any).activeTextEditor = undefined;
 
-        // Call validateActiveTextEditor directly
-        (service as any).validateActiveTextEditor();
-        const directCall = (mockIdeAdapter.showErrorMessage as jest.Mock).mock.calls[0][0];
-
-        // Reset mock
-        (mockIdeAdapter.showErrorMessage as jest.Mock).mockClear();
-
         // Call via generateLinkFromSelection
-        (service as any).generateLinkFromSelection('workspace-relative', false);
+        await (service as any).generateLinkFromSelection('workspace-relative', false);
         const viaGenerateLink = (mockIdeAdapter.showErrorMessage as jest.Mock).mock.calls[0][0];
 
         // Reset mock
         (mockIdeAdapter.showErrorMessage as jest.Mock).mockClear();
 
         // Call via pasteSelectedTextToDestination
-        service.pasteSelectedTextToDestination();
+        await service.pasteSelectedTextToDestination();
         const viaPasteText = (mockIdeAdapter.showErrorMessage as jest.Mock).mock.calls[0][0];
 
-        // All three should be identical
-        expect(directCall).toBe('RangeLink: No active editor');
+        // Both should be identical
         expect(viaGenerateLink).toBe('RangeLink: No active editor');
         expect(viaPasteText).toBe('RangeLink: No active editor');
-        expect(directCall).toStrictEqual(viaGenerateLink);
         expect(viaGenerateLink).toStrictEqual(viaPasteText);
       });
     });

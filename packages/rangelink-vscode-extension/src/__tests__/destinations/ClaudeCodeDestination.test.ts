@@ -113,13 +113,13 @@ describe('ClaudeCodeDestination', () => {
       expect(result).toBe(false);
     });
 
-    it('should copy link to clipboard', async () => {
+    it('should NOT copy link to clipboard (RangeLinkService handles this)', async () => {
       const testLink = 'src/file.ts#L10';
       const writeTextSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard');
 
       await destination.pasteLink(createMockFormattedLink(testLink));
 
-      expect(writeTextSpy).toHaveBeenCalledWith(testLink);
+      expect(writeTextSpy).not.toHaveBeenCalled();
     });
 
     it('should try opening chat with claude-vscode.focus command first', async () => {
@@ -142,23 +142,21 @@ describe('ClaudeCodeDestination', () => {
       expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.sidebar.open');
     });
 
-    it('should show notification prompting user to paste', async () => {
+    it('should NOT show notification (RangeLinkService handles this via getUserInstruction())', async () => {
       const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       await destination.pasteLink(createMockFormattedLink('link'));
 
-      expect(showInfoSpy).toHaveBeenCalledWith(
-        'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
-      );
+      expect(showInfoSpy).not.toHaveBeenCalled();
     });
 
-    it('should return true when clipboard copy succeeds', async () => {
+    it('should return true when chat open succeeds', async () => {
       const result = await destination.pasteLink(createMockFormattedLink('link'));
 
       expect(result).toBe(true);
     });
 
-    it('should log clipboard workaround completion', async () => {
+    it('should log chat open completion', async () => {
       const testLink = 'src/file.ts#L10';
       const formattedLink = createMockFormattedLink(testLink);
 
@@ -171,7 +169,7 @@ describe('ClaudeCodeDestination', () => {
           linkLength: testLink.length,
           chatOpened: true,
         },
-        'Clipboard workaround completed for link',
+        'Claude Code open completed',
       );
     });
 
@@ -186,27 +184,28 @@ describe('ClaudeCodeDestination', () => {
         {
           fn: 'ClaudeCodeDestination.pasteLink',
           formattedLink,
+          linkLength: testLink.length,
         },
         'Cannot paste: Claude Code extension not available',
       );
     });
 
-    it('should return false and log error when clipboard write fails', async () => {
+    it('should return false and log error when executeCommand throws unexpected error', async () => {
       const testLink = 'link';
       const formattedLink = createMockFormattedLink(testLink);
-      const expectedError = new Error('Clipboard access denied');
-      jest.spyOn(mockAdapter, 'writeTextToClipboard').mockRejectedValueOnce(expectedError);
+      const expectedError = new Error('Unexpected error');
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(expectedError);
 
       const result = await destination.pasteLink(formattedLink);
 
-      expect(result).toBe(false);
-      expect(mockLogger.error).toHaveBeenCalledWith(
+      expect(result).toBe(true); // Still returns true but logs warning
+      expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'ClaudeCodeDestination.pasteLink',
           formattedLink,
-          error: expectedError,
+          linkLength: testLink.length,
         },
-        'Failed to execute clipboard workaround',
+        'All Claude Code open commands failed',
       );
     });
 
@@ -221,19 +220,20 @@ describe('ClaudeCodeDestination', () => {
         {
           fn: 'ClaudeCodeDestination.pasteLink',
           formattedLink,
+          linkLength: testLink.length,
         },
         'All Claude Code open commands failed',
       );
     });
 
-    it('should still return true and show notification when chat commands fail', async () => {
+    it('should still return true when chat commands fail (RangeLinkService shows notification)', async () => {
       jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
       const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       const result = await destination.pasteLink(createMockFormattedLink('link'));
 
       expect(result).toBe(true);
-      expect(showInfoSpy).toHaveBeenCalled();
+      expect(showInfoSpy).not.toHaveBeenCalled(); // RangeLinkService handles notification
     });
   });
 
@@ -251,13 +251,13 @@ describe('ClaudeCodeDestination', () => {
       expect(result).toBe(false);
     });
 
-    it('should copy content to clipboard', async () => {
+    it('should NOT copy content to clipboard (RangeLinkService handles this)', async () => {
       const testContent = 'selected text from editor';
       const writeTextSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard');
 
       await destination.pasteContent(testContent);
 
-      expect(writeTextSpy).toHaveBeenCalledWith(testContent);
+      expect(writeTextSpy).not.toHaveBeenCalled();
     });
 
     it('should try opening chat with claude-vscode.focus command first', async () => {
@@ -280,23 +280,21 @@ describe('ClaudeCodeDestination', () => {
       expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.sidebar.open');
     });
 
-    it('should show notification prompting user to paste', async () => {
+    it('should NOT show notification (RangeLinkService handles this via getUserInstruction())', async () => {
       const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       await destination.pasteContent('text');
 
-      expect(showInfoSpy).toHaveBeenCalledWith(
-        'Text copied to clipboard. Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
-      );
+      expect(showInfoSpy).not.toHaveBeenCalled();
     });
 
-    it('should return true when clipboard copy succeeds', async () => {
+    it('should return true when chat open succeeds', async () => {
       const result = await destination.pasteContent('text');
 
       expect(result).toBe(true);
     });
 
-    it('should log clipboard workaround completion', async () => {
+    it('should log chat open completion', async () => {
       const testContent = 'selected text';
 
       await destination.pasteContent(testContent);
@@ -307,7 +305,7 @@ describe('ClaudeCodeDestination', () => {
           contentLength: testContent.length,
           chatOpened: true,
         },
-        `Clipboard workaround completed for content (${testContent.length} chars)`,
+        'Claude Code open completed',
       );
     });
 
@@ -326,24 +324,6 @@ describe('ClaudeCodeDestination', () => {
       );
     });
 
-    it('should return false and log error when clipboard write fails', async () => {
-      const testContent = 'text';
-      const expectedError = new Error('Clipboard access denied');
-      jest.spyOn(mockAdapter, 'writeTextToClipboard').mockRejectedValueOnce(expectedError);
-
-      const result = await destination.pasteContent(testContent);
-
-      expect(result).toBe(false);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        {
-          fn: 'ClaudeCodeDestination.pasteContent',
-          contentLength: testContent.length,
-          error: expectedError,
-        },
-        'Failed to execute clipboard workaround',
-      );
-    });
-
     it('should log warning when all chat commands fail', async () => {
       const testContent = 'text';
       jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
@@ -359,14 +339,14 @@ describe('ClaudeCodeDestination', () => {
       );
     });
 
-    it('should still return true and show notification when chat commands fail', async () => {
+    it('should still return true when chat commands fail (RangeLinkService shows notification)', async () => {
       jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
       const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       const result = await destination.pasteContent('text');
 
       expect(result).toBe(true);
-      expect(showInfoSpy).toHaveBeenCalled();
+      expect(showInfoSpy).not.toHaveBeenCalled(); // RangeLinkService handles notification
     });
   });
 });

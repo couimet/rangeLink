@@ -173,12 +173,12 @@ describe('CursorAIDestination', () => {
       expect(result).toBe(false);
     });
 
-    it('should copy text to clipboard', async () => {
+    it('should NOT copy link to clipboard (RangeLinkService handles this)', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
 
       await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
-      expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith('src/file.ts#L10');
+      expect(mockVscode.env.clipboard.writeText).not.toHaveBeenCalled();
     });
 
     it('should try opening chat with aichat.newchataction command first', async () => {
@@ -203,23 +203,21 @@ describe('CursorAIDestination', () => {
       );
     });
 
-    it('should show notification prompting user to paste', async () => {
+    it('should NOT show notification (RangeLinkService handles this via getUserInstruction())', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
 
       await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
-      expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
-        'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
-      );
+      expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
     });
 
-    it('should return true when clipboard copy succeeds', async () => {
+    it('should return true when chat open succeeds', async () => {
       const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(true);
     });
 
-    it('should log clipboard workaround completion', async () => {
+    it('should log chat open completion', async () => {
       const testLink = 'src/file.ts#L10';
       const formattedLink = createMockFormattedLink(testLink);
       await destination.pasteLink(formattedLink);
@@ -231,7 +229,7 @@ describe('CursorAIDestination', () => {
           linkLength: testLink.length,
           chatOpened: true,
         },
-        'Clipboard workaround completed for link',
+        'Cursor chat open completed',
       );
     });
 
@@ -247,28 +245,9 @@ describe('CursorAIDestination', () => {
         {
           fn: 'CursorAIDestination.pasteLink',
           formattedLink,
+          linkLength: testLink.length,
         },
         'Cannot paste: Not running in Cursor IDE',
-      );
-    });
-
-    it('should return false and log error when clipboard write fails', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      const testLink = 'link';
-      const formattedLink = createMockFormattedLink(testLink);
-      const expectedError = new Error('Clipboard access denied');
-      (mockVscode.env.clipboard.writeText as jest.Mock).mockRejectedValueOnce(expectedError);
-
-      const result = await destination.pasteLink(formattedLink);
-
-      expect(result).toBe(false);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        {
-          fn: 'CursorAIDestination.pasteLink',
-          formattedLink,
-          error: expectedError,
-        },
-        'Failed to execute clipboard workaround',
       );
     });
 
@@ -286,12 +265,13 @@ describe('CursorAIDestination', () => {
         {
           fn: 'CursorAIDestination.pasteLink',
           formattedLink,
+          linkLength: testLink.length,
         },
         'All chat open commands failed',
       );
     });
 
-    it('should still return true and show notification when chat commands fail', async () => {
+    it('should still return true when chat commands fail (RangeLinkService shows notification)', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
       (mockVscode.commands.executeCommand as jest.Mock).mockRejectedValue(
         new Error('Command not found'),
@@ -299,8 +279,8 @@ describe('CursorAIDestination', () => {
 
       const result = await destination.pasteLink(createMockFormattedLink('link'));
 
-      expect(result).toBe(true); // Clipboard copy succeeded
-      expect(mockVscode.window.showInformationMessage).toHaveBeenCalled();
+      expect(result).toBe(true);
+      expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled(); // RangeLinkService handles notification
     });
   });
 
@@ -316,7 +296,7 @@ describe('CursorAIDestination', () => {
       const result = await destination.pasteLink(createMockFormattedLink(''));
 
       expect(result).toBe(true);
-      expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith('');
+      expect(mockVscode.env.clipboard.writeText).not.toHaveBeenCalled(); // RangeLinkService handles clipboard
     });
 
     it('should handle very long text', async () => {
@@ -326,7 +306,7 @@ describe('CursorAIDestination', () => {
       const result = await destination.pasteLink(createMockFormattedLink(longText));
 
       expect(result).toBe(true);
-      expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith(longText);
+      expect(mockVscode.env.clipboard.writeText).not.toHaveBeenCalled(); // RangeLinkService handles clipboard
     });
   });
 
@@ -345,13 +325,13 @@ describe('CursorAIDestination', () => {
       expect(result).toBe(false);
     });
 
-    it('should copy content to clipboard', async () => {
+    it('should NOT copy content to clipboard (RangeLinkService handles this)', async () => {
       const testContent = 'selected text from editor';
       const writeTextSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard');
 
       await destination.pasteContent(testContent);
 
-      expect(writeTextSpy).toHaveBeenCalledWith(testContent);
+      expect(writeTextSpy).not.toHaveBeenCalled();
     });
 
     it('should try opening chat with aichat.newchataction command first', async () => {
@@ -374,23 +354,21 @@ describe('CursorAIDestination', () => {
       expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.toggleAuxiliaryBar');
     });
 
-    it('should show notification prompting user to paste', async () => {
+    it('should NOT show notification (RangeLinkService handles this via getUserInstruction())', async () => {
       const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       await destination.pasteContent('text');
 
-      expect(showInfoSpy).toHaveBeenCalledWith(
-        'Text copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
-      );
+      expect(showInfoSpy).not.toHaveBeenCalled();
     });
 
-    it('should return true when clipboard copy succeeds', async () => {
+    it('should return true when chat open succeeds', async () => {
       const result = await destination.pasteContent('text');
 
       expect(result).toBe(true);
     });
 
-    it('should log clipboard workaround completion', async () => {
+    it('should log chat open completion', async () => {
       const testContent = 'selected text';
 
       await destination.pasteContent(testContent);
@@ -401,7 +379,7 @@ describe('CursorAIDestination', () => {
           contentLength: testContent.length,
           chatOpened: true,
         },
-        `Clipboard workaround completed for content (${testContent.length} chars)`,
+        'Cursor chat open completed',
       );
     });
 
@@ -421,24 +399,6 @@ describe('CursorAIDestination', () => {
       );
     });
 
-    it('should return false and log error when clipboard write fails', async () => {
-      const testContent = 'text';
-      const expectedError = new Error('Clipboard access denied');
-      jest.spyOn(mockAdapter, 'writeTextToClipboard').mockRejectedValueOnce(expectedError);
-
-      const result = await destination.pasteContent(testContent);
-
-      expect(result).toBe(false);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        {
-          fn: 'CursorAIDestination.pasteContent',
-          contentLength: testContent.length,
-          error: expectedError,
-        },
-        'Failed to execute clipboard workaround',
-      );
-    });
-
     it('should log warning when all chat commands fail', async () => {
       const testContent = 'text';
       jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
@@ -454,14 +414,14 @@ describe('CursorAIDestination', () => {
       );
     });
 
-    it('should still return true and show notification when chat commands fail', async () => {
+    it('should still return true when chat commands fail (RangeLinkService shows notification)', async () => {
       jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
       const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       const result = await destination.pasteContent('text');
 
       expect(result).toBe(true);
-      expect(showInfoSpy).toHaveBeenCalled();
+      expect(showInfoSpy).not.toHaveBeenCalled(); // RangeLinkService handles notification
     });
   });
 });
