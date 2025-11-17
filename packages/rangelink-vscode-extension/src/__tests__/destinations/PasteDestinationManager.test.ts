@@ -481,6 +481,87 @@ describe('PasteDestinationManager', () => {
     });
   });
 
+  describe('Text editor closure auto-unbind', () => {
+    it('should auto-unbind when bound text editor document closes', async () => {
+      const mockDocument = {
+        uri: { scheme: 'file', fsPath: '/test/file.ts', toString: () => 'file:///test/file.ts' },
+      } as vscode.TextDocument;
+
+      const mockEditor = {
+        document: mockDocument,
+      } as vscode.TextEditor;
+
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      (mockAdapter.__getVscodeInstance().window.tabGroups as { all: vscode.TabGroup[] }).all = [
+        {},
+        {},
+      ] as vscode.TabGroup[];
+
+      await manager.bind('text-editor');
+      expect(manager.isBound()).toBe(true);
+
+      // Simulate document close
+      documentCloseListener(mockDocument);
+
+      expect(manager.isBound()).toBe(false);
+      expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
+        'RangeLink: Bound editor closed. Unbound.',
+      );
+    });
+
+    it('should not unbind when different document closes', async () => {
+      const boundDocument = {
+        uri: { scheme: 'file', fsPath: '/test/file.ts', toString: () => 'file:///test/file.ts' },
+      } as vscode.TextDocument;
+
+      const otherDocument = {
+        uri: {
+          scheme: 'file',
+          fsPath: '/test/other.ts',
+          toString: () => 'file:///test/other.ts',
+        },
+      } as vscode.TextDocument;
+
+      const mockEditor = {
+        document: boundDocument,
+      } as vscode.TextEditor;
+
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      (mockAdapter.__getVscodeInstance().window.tabGroups as { all: vscode.TabGroup[] }).all = [
+        {},
+        {},
+      ] as vscode.TabGroup[];
+
+      await manager.bind('text-editor');
+      expect(manager.isBound()).toBe(true);
+
+      // Simulate different document close
+      documentCloseListener(otherDocument);
+
+      expect(manager.isBound()).toBe(true);
+    });
+
+    it('should not auto-unbind for non-text-editor destinations', async () => {
+      const mockTerminal = {
+        name: 'bash',
+        sendText: jest.fn(),
+        show: jest.fn(),
+      } as unknown as vscode.Terminal;
+
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await manager.bind('terminal');
+
+      const mockDocument = {
+        uri: { scheme: 'file', fsPath: '/test/file.ts', toString: () => 'file:///test/file.ts' },
+      } as vscode.TextDocument;
+
+      // Simulate document close (should not affect terminal binding)
+      documentCloseListener(mockDocument);
+
+      expect(manager.isBound()).toBe(true);
+    });
+  });
+
   describe('getBoundDestination()', () => {
     it('should return bound destination', async () => {
       const mockTerminal = {
