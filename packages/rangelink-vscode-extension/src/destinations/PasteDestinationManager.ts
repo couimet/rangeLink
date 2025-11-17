@@ -265,7 +265,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully bound to terminal: ${terminalName}`,
     );
 
-    this.ideAdapter.setStatusBarMessage(`✓ RangeLink bound to ${terminalName}`, 3000);
+    this.showBindSuccessToast(terminalName);
 
     return true;
   }
@@ -336,7 +336,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully bound to text editor: ${editorDisplayName} (${tabGroupCount} tab groups)`,
     );
 
-    this.ideAdapter.setStatusBarMessage(`✓ RangeLink bound to ${editorDisplayName}`, 3000);
+    this.showBindSuccessToast(editorDisplayName);
 
     return true;
   }
@@ -372,7 +372,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully bound to ${destination.displayName}`,
     );
 
-    this.ideAdapter.setStatusBarMessage(`✓ RangeLink bound to ${destination.displayName}`, 3000);
+    this.showBindSuccessToast(destination.displayName);
 
     return true;
   }
@@ -418,6 +418,25 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.context.subscriptions.push(documentCloseDisposable);
     this.disposables.push(documentCloseDisposable);
+  }
+
+  /**
+   * Show toast notification for successful binding
+   *
+   * Displays detailed message if replacing an existing binding,
+   * or standard success message for normal binding.
+   *
+   * @param newDestinationName - Display name of newly bound destination
+   */
+  private showBindSuccessToast(newDestinationName: string): void {
+    const toastMessage = this.replacedDestinationName
+      ? `Unbound ${this.replacedDestinationName}, now bound to ${newDestinationName}`
+      : `✓ RangeLink bound to ${newDestinationName}`;
+
+    this.ideAdapter.setStatusBarMessage(toastMessage, 3000);
+
+    // Clear replacement tracking after use
+    this.replacedDestinationName = undefined;
   }
 
   /**
