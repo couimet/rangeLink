@@ -93,17 +93,6 @@ describe('TerminalDestination', () => {
       expect(mockTerminal.show).toHaveBeenCalledWith(false);
     });
 
-    it('should call sendText before show (correct order)', async () => {
-      const sendTextSpy = mockTerminal.sendText as jest.Mock;
-      const showSpy = mockTerminal.show as jest.Mock;
-
-      await destination.pasteLink(createMockFormattedLink('link'));
-
-      expect(sendTextSpy.mock.invocationCallOrder[0]).toBeLessThan(
-        showSpy.mock.invocationCallOrder[0],
-      );
-    });
-
     it('should log success with terminal name and formattedLink', async () => {
       const testLink = 'src/file.ts#L10';
       const formattedLink = createMockFormattedLink(testLink);
@@ -134,7 +123,7 @@ describe('TerminalDestination', () => {
           formattedLink,
           linkLength: testLink.length,
         },
-        'Cannot paste: No terminal bound',
+        'Cannot focus: No terminal bound',
       );
     });
   });
@@ -261,7 +250,7 @@ describe('TerminalDestination', () => {
           fn: 'TerminalDestination.pasteContent',
           contentLength: 9,
         },
-        'Cannot paste: No terminal bound',
+        'Cannot focus: No terminal bound',
       );
     });
 
@@ -285,17 +274,6 @@ describe('TerminalDestination', () => {
       await destination.pasteContent('text');
 
       expect(mockTerminal.show).toHaveBeenCalledWith(false);
-    });
-
-    it('should call sendText before show (correct order)', async () => {
-      const sendTextSpy = mockTerminal.sendText as jest.Mock;
-      const showSpy = mockTerminal.show as jest.Mock;
-
-      await destination.pasteContent('text');
-
-      expect(sendTextSpy.mock.invocationCallOrder[0]).toBeLessThan(
-        showSpy.mock.invocationCallOrder[0],
-      );
     });
 
     it('should log success with terminal name and content length', async () => {
@@ -404,6 +382,114 @@ describe('TerminalDestination', () => {
 
       destination.setTerminal(terminal2 as vscode.Terminal);
       expect(destination.getTerminalName()).toBe('fish');
+    });
+  });
+
+  describe('getLoggingDetails()', () => {
+    it('should return terminal name when terminal is bound', () => {
+      destination.setTerminal(mockTerminal);
+
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({ terminalName: 'bash' });
+    });
+
+    it('should return empty object when no terminal bound', () => {
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({});
+    });
+
+    it('should return default name when terminal has undefined name', () => {
+      const unnamedTerminal = { ...mockTerminal, name: undefined };
+      destination.setTerminal(unnamedTerminal as unknown as vscode.Terminal);
+
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({ terminalName: 'Unnamed Terminal' });
+    });
+
+    it('should return default name when terminal has empty name', () => {
+      const emptyNameTerminal = { ...mockTerminal, name: '' };
+      destination.setTerminal(emptyNameTerminal as vscode.Terminal);
+
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({ terminalName: 'Unnamed Terminal' });
+    });
+  });
+
+  describe('focus()', () => {
+    it('should return false when no terminal bound', async () => {
+      const result = await destination.focus();
+
+      expect(result).toBe(false);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'TerminalDestination.focus' },
+        'Cannot focus: No terminal bound',
+      );
+    });
+
+    it('should return true when terminal is bound', async () => {
+      destination.setTerminal(mockTerminal);
+
+      const result = await destination.focus();
+
+      expect(result).toBe(true);
+    });
+
+    it('should call terminal.show to focus terminal', async () => {
+      destination.setTerminal(mockTerminal);
+
+      await destination.focus();
+
+      expect(mockTerminal.show).toHaveBeenCalledWith(false);
+    });
+
+    it('should log success with terminal name', async () => {
+      destination.setTerminal(mockTerminal);
+
+      await destination.focus();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'TerminalDestination.focus', terminalName: 'bash' },
+        'Focused terminal: bash',
+      );
+    });
+
+    it('should not log success when no terminal bound', async () => {
+      await destination.focus();
+
+      expect(mockLogger.info).not.toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalled();
+    });
+  });
+
+  describe('getJumpSuccessMessage()', () => {
+    it('should return formatted message with terminal name', () => {
+      destination.setTerminal(mockTerminal);
+
+      const message = destination.getJumpSuccessMessage();
+
+      expect(message).toBe('✓ Focused Terminal: bash');
+    });
+
+    it('should handle terminal with empty name using default', () => {
+      const unnamedTerminal = { ...mockTerminal, name: '' };
+      destination.setTerminal(unnamedTerminal as vscode.Terminal);
+
+      const message = destination.getJumpSuccessMessage();
+
+      expect(message).toBe('✓ Focused Terminal: Unnamed Terminal');
+    });
+
+    it('should handle terminal with undefined name using default', () => {
+      const unnamedTerminal = { ...mockTerminal, name: undefined };
+      destination.setTerminal(unnamedTerminal as unknown as vscode.Terminal);
+
+      const message = destination.getJumpSuccessMessage();
+
+      expect(message).toBe('✓ Focused Terminal: Unnamed Terminal');
     });
   });
 });

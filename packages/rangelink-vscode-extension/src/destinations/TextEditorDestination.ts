@@ -3,7 +3,9 @@ import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { MessageCode } from '../types/MessageCode';
 import { applySmartPadding } from '../utils/applySmartPadding';
+import { formatMessage } from '../utils/formatMessage';
 import { isEligibleForPaste } from '../utils/isEligibleForPaste';
 
 import type { DestinationType, PasteDestination } from './PasteDestination';
@@ -154,6 +156,113 @@ export class TextEditorDestination implements PasteDestination {
   }
 
   /**
+   * Focus the bound text editor
+   *
+   * Brings the bound editor document into view without changing cursor position.
+   * Uses the same lazy validation strategy as pasteLink(): finds the document
+   * dynamically across all tab groups.
+   *
+   * Used by the "Jump to Bound Destination" command (issue #99).
+   *
+   * @returns true if editor focused successfully, false if document not found or other error
+   */
+  async focus(): Promise<boolean> {
+    const validation = this.validateAndFindEditor({
+      fn: 'TextEditorDestination.focus',
+    });
+
+    if (!validation) {
+      return false;
+    }
+
+    const { editor, boundDisplayName } = validation;
+
+    try {
+      // Focus the editor (preserveFocus: false steals focus)
+      await this.ideAdapter.showTextDocument(editor.document.uri, {
+        preserveFocus: false,
+        viewColumn: editor.viewColumn,
+      });
+
+      this.logger.info(
+        {
+          fn: 'TextEditorDestination.focus',
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri!.toString(),
+        },
+        `Focused text editor: ${boundDisplayName}`,
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.focus',
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri!.toString(),
+          error,
+        },
+        'Failed to focus text editor',
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Validate bound document and find its editor
+   *
+   * Checks if document is bound, finds its tab group, and locates the TextEditor object.
+   * Shared validation logic used by both focus() and insertTextAtCursor().
+   *
+   * @param logContext - Logging context for error messages
+   * @returns Editor and display name if found, undefined if validation fails
+   */
+  private validateAndFindEditor(
+    logContext: LoggingContext,
+  ): { editor: vscode.TextEditor; boundDisplayName: string } | undefined {
+    if (!this.boundDocumentUri) {
+      this.logger.warn(logContext, 'Cannot operate: No text editor bound');
+      return undefined;
+    }
+
+    const boundDisplayName = this.getEditorDisplayName()!;
+
+    // LAZY VALIDATION: Find which tab group contains the bound document
+    const boundTabGroup = this.ideAdapter.findTabGroupForDocument(this.boundDocumentUri);
+
+    if (!boundTabGroup) {
+      this.logger.error(
+        {
+          ...logContext,
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document not found in any tab group - likely closed',
+      );
+      return undefined;
+    }
+
+    // Find the TextEditor object for the bound document
+    const editor = this.ideAdapter.visibleTextEditors.find(
+      (e) => e.document.uri.toString() === this.boundDocumentUri!.toString(),
+    );
+
+    if (!editor) {
+      this.logger.error(
+        {
+          ...logContext,
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDisplayName,
+        },
+        'TextEditor object not found in visibleTextEditors',
+      );
+      return undefined;
+    }
+
+    return { editor, boundDisplayName };
+  }
+
+  /**
    * Paste a RangeLink to bound text editor at cursor position with smart padding
    *
    * **Tab Group Binding Strategy (MVP):**
@@ -218,33 +327,18 @@ export class TextEditorDestination implements PasteDestination {
       return false;
     }
 
-    if (!this.boundDocumentUri) {
-      this.logger.warn(logContext, 'Cannot paste: No text editor bound');
+    // Validate document and find editor (shared validation logic)
+    const validation = this.validateAndFindEditor(logContext);
+    if (!validation) {
       return false;
     }
 
-    // Get display name for logging and messages
-    const boundDisplayName = this.getEditorDisplayName();
+    const { editor, boundDisplayName } = validation;
 
-    // LAZY VALIDATION: Find which tab group contains the bound document
-    const boundTabGroup = this.ideAdapter.findTabGroupForDocument(this.boundDocumentUri);
+    // Additional validation for paste: Check if bound document is the active (topmost) tab
+    const boundTabGroup = this.ideAdapter.findTabGroupForDocument(this.boundDocumentUri!);
+    const activeTab = boundTabGroup?.activeTab;
 
-    if (!boundTabGroup) {
-      // Document not found in any tab group - likely closed or tab group closed
-      this.logger.error(
-        {
-          ...logContext,
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          boundDisplayName,
-        },
-        'Bound document not found in any tab group - likely closed',
-      );
-      // Return false to trigger unbind in PasteDestinationManager
-      return false;
-    }
-
-    // Check if bound document is the active (topmost) tab in its group
-    const activeTab = boundTabGroup.activeTab;
     if (!activeTab) {
       this.logger.warn({ ...logContext, boundDisplayName }, 'Tab group has no active tab');
       return false;
@@ -262,12 +356,12 @@ export class TextEditorDestination implements PasteDestination {
       return false;
     }
 
-    if (activeTab.input.uri.toString() !== this.boundDocumentUri.toString()) {
+    if (activeTab.input.uri.toString() !== this.boundDocumentUri!.toString()) {
       // Bound document exists but is not topmost - show warning but keep binding
       this.logger.warn(
         {
           ...logContext,
-          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDocumentUri: this.boundDocumentUri!.toString(),
           activeTabUri: activeTab.input.uri.toString(),
           boundDisplayName,
         },
@@ -276,24 +370,8 @@ export class TextEditorDestination implements PasteDestination {
       return false;
     }
 
-    // Find the TextEditor object for the active tab (we've already validated it matches bound document)
-    const editor = this.ideAdapter.visibleTextEditors.find(
-      (e) => e.document.uri.toString() === activeTab.input.uri.toString(),
-    );
-
-    if (!editor) {
-      this.logger.error(
-        {
-          ...logContext,
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          boundDisplayName,
-        },
-        'Bound document is topmost but TextEditor object not found in visibleTextEditors',
-      );
-      return false;
-    }
-
     // All validations passed - perform the paste
+    // Note: editor is guaranteed to be defined by validateAndFindEditor()
     try {
       const paddedText = applySmartPadding(text);
 
@@ -306,7 +384,7 @@ export class TextEditorDestination implements PasteDestination {
         const editFailedContext: LoggingContext = {
           ...logContext,
           boundDisplayName,
-          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDocumentUri: this.boundDocumentUri!.toString(),
         };
 
         // Add length field based on what's being pasted
@@ -330,15 +408,12 @@ export class TextEditorDestination implements PasteDestination {
       const successContext: LoggingContext = {
         ...logContext,
         boundDisplayName,
-        boundDocumentUri: this.boundDocumentUri.toString(),
+        boundDocumentUri: this.boundDocumentUri!.toString(),
         originalLength: text.length,
         paddedLength: paddedText.length,
       };
 
-      this.logger.info(
-        successContext,
-        successLogMessage(boundDisplayName ?? this.boundDocumentUri.toString()),
-      );
+      this.logger.info(successContext, successLogMessage(boundDisplayName));
 
       return true;
     } catch (error) {
@@ -346,7 +421,7 @@ export class TextEditorDestination implements PasteDestination {
       const exceptionContext: LoggingContext = {
         ...logContext,
         boundDisplayName,
-        boundDocumentUri: this.boundDocumentUri.toString(),
+        boundDocumentUri: this.boundDocumentUri!.toString(),
         error,
       };
 
@@ -484,5 +559,29 @@ export class TextEditorDestination implements PasteDestination {
     const isBinary = TextEditorDestination.BINARY_EXTENSIONS.some((ext) => path.endsWith(ext));
 
     return !isBinary;
+  }
+
+  /**
+   * Get success message for jump command
+   *
+   * @returns Formatted i18n message for status bar display
+   */
+  getJumpSuccessMessage(): string {
+    const editorDisplayName = this.getEditorDisplayName();
+    return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, { editorDisplayName });
+  }
+
+  /**
+   * Get destination-specific details for logging
+   *
+   * @returns Editor display name and path for logging context
+   */
+  getLoggingDetails(): Record<string, unknown> {
+    const editorDisplayName = this.getEditorDisplayName();
+    const editorPath = this.getEditorPath();
+    return {
+      editorDisplayName,
+      editorPath,
+    };
   }
 }

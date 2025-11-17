@@ -130,4 +130,49 @@ export interface PasteDestination {
    * @returns Instruction string for manual paste, or undefined for automatic paste
    */
   getUserInstruction(): string | undefined;
+
+  /**
+   * Focus this destination without performing a paste operation
+   *
+   * Provides a way to quickly navigate back to the bound destination.
+   * Each destination implements its own focus logic:
+   * - Terminal: Shows the terminal panel
+   * - Text Editor: Focuses the editor document
+   * - AI Assistants: Opens/focuses the chat interface
+   *
+   * Used by the "Jump to Bound Destination" command (issue #99).
+   *
+   * @returns Promise resolving to true if focus succeeded, false otherwise
+   */
+  focus(): Promise<boolean>;
+
+  /**
+   * Get success message for jump command
+   *
+   * Returns a formatted i18n message to display in the status bar when
+   * the user successfully jumps to this destination. Each destination
+   * provides its own context-appropriate message.
+   *
+   * Eliminates type-checking in PasteDestinationManager by encapsulating
+   * destination-specific message formatting within each implementation.
+   *
+   * @returns Formatted success message for status bar display
+   */
+  getJumpSuccessMessage(): string;
+
+  /**
+   * Get destination-specific details for logging
+   *
+   * Returns structured data about this destination for debug/info logging.
+   * Eliminates type-checking in PasteDestinationManager by encapsulating
+   * destination-specific details within each implementation.
+   *
+   * Examples:
+   * - Terminal: { terminalName: "bash" }
+   * - Text Editor: { editorDisplayName: "src/file.ts", editorPath: "/absolute/path" }
+   * - AI Assistants: {} (no additional details needed)
+   *
+   * @returns Record with destination-specific logging details (empty object if none)
+   */
+  getLoggingDetails(): Record<string, unknown>;
 }

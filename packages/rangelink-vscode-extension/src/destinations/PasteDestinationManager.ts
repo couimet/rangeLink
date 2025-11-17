@@ -152,6 +152,63 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
+   * Jump to (focus) the currently bound destination without performing a paste
+   *
+   * Brings the bound destination into focus/view for quick navigation.
+   * Used by the "Jump to Bound Destination" command (issue #99).
+   *
+   * **Behavior:**
+   * - No destination bound: Shows information message
+   * - Terminal: Focuses terminal panel
+   * - Text Editor: Focuses editor document (cursor stays at current position)
+   * - AI Assistants: Opens/focuses chat interface
+   *
+   * @returns true if jump succeeded, false if no destination bound or focus failed
+   */
+  async jumpToBoundDestination(): Promise<boolean> {
+    if (!this.boundDestination) {
+      this.logger.debug(
+        { fn: 'PasteDestinationManager.jumpToBoundDestination' },
+        'No destination bound',
+      );
+      this.ideAdapter.showInformationMessage(
+        formatMessage(MessageCode.INFO_JUMP_NO_DESTINATION_BOUND),
+      );
+      return false;
+    }
+
+    const destinationType = this.boundDestination.id;
+    const displayName = this.boundDestination.displayName;
+
+    const logCtx = {
+      fn: 'PasteDestinationManager.jumpToBoundDestination',
+      destinationType,
+      displayName,
+      ...this.boundDestination.getLoggingDetails(),
+    };
+
+    this.logger.debug(logCtx, `Attempting to focus ${displayName}`);
+
+    const focused = await this.boundDestination.focus();
+
+    if (!focused) {
+      this.logger.warn(logCtx, `Failed to focus ${displayName}`);
+      this.ideAdapter.showInformationMessage(
+        formatMessage(MessageCode.INFO_JUMP_FOCUS_FAILED, { destinationName: displayName }),
+      );
+      return false;
+    }
+
+    // Success - show status bar message from destination
+    const successMessage = this.boundDestination.getJumpSuccessMessage();
+    this.ideAdapter.setStatusBarMessage(successMessage, 2000);
+
+    this.logger.info(logCtx, `Successfully focused ${displayName}`);
+
+    return true;
+  }
+
+  /**
    * Send a formatted RangeLink to bound destination
    *
    * @param formattedLink - The formatted RangeLink with metadata
@@ -168,20 +225,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     const destinationType = this.boundDestination.id;
     const displayName = this.boundDestination.displayName;
-
-    // Get destination-specific details for logging
-    let destinationDetails: Record<string, unknown> = {};
-    if (destinationType === 'text-editor') {
-      const textEditorDest = this.boundDestination as TextEditorDestination;
-      destinationDetails = {
-        editorDisplayName: textEditorDest.getEditorDisplayName(),
-        editorPath: textEditorDest.getEditorPath(),
-      };
-    } else if (destinationType === 'terminal' && this.boundTerminal) {
-      destinationDetails = {
-        terminalName: this.boundTerminal.name || 'Unnamed Terminal',
-      };
-    }
+    const destinationDetails = this.boundDestination.getLoggingDetails();
 
     this.logger.debug(
       {
@@ -232,20 +276,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     const destinationType = this.boundDestination.id;
     const displayName = this.boundDestination.displayName;
-
-    // Get destination-specific details for logging
-    let destinationDetails: Record<string, unknown> = {};
-    if (destinationType === 'text-editor') {
-      const textEditorDest = this.boundDestination as TextEditorDestination;
-      destinationDetails = {
-        editorDisplayName: textEditorDest.getEditorDisplayName(),
-        editorPath: textEditorDest.getEditorPath(),
-      };
-    } else if (destinationType === 'terminal' && this.boundTerminal) {
-      destinationDetails = {
-        terminalName: this.boundTerminal.name || 'Unnamed Terminal',
-      };
-    }
+    const destinationDetails = this.boundDestination.getLoggingDetails();
 
     this.logger.debug(
       {

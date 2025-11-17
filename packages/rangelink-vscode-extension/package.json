@@ -120,6 +120,12 @@
         "title": "Unbind RangeLink Destination",
         "category": "RangeLink",
         "icon": "$(close)"
+      },
+      {
+        "command": "rangelink.jumpToBoundDestination",
+        "title": "Jump to Bound Destination",
+        "category": "RangeLink",
+        "icon": "$(target)"
       }
     ],
     "configuration": {
@@ -181,6 +187,11 @@
         "key": "ctrl+r ctrl+v",
         "mac": "cmd+r cmd+v",
         "when": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.jumpToBoundDestination",
+        "key": "ctrl+r ctrl+j",
+        "mac": "cmd+r cmd+j"
       }
     ],
     "menus": {

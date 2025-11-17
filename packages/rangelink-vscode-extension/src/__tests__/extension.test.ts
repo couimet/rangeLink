@@ -3150,7 +3150,7 @@ describe('Extension lifecycle', () => {
 
     // Both AI commands are always registered for discoverability
     // Runtime checks show helpful messages when IDE/extension not available
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(12);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(13);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
@@ -3160,6 +3160,7 @@ describe('Extension lifecycle', () => {
     );
     expect(registeredCommands).toContain('rangelink.bindToCursorAI');
     expect(registeredCommands).toContain('rangelink.bindToClaudeCode');
+    expect(registeredCommands).toContain('rangelink.jumpToBoundDestination');
   });
 
   it('should register both AI commands regardless of IDE (discoverability)', async () => {
@@ -3202,7 +3203,7 @@ describe('Extension lifecycle', () => {
 
     // Both AI commands always registered (even in Cursor IDE)
     // Runtime availability determines whether they work or show help message
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(12);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(13);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
 
     // Verify both AI assistant commands are registered
@@ -3211,6 +3212,7 @@ describe('Extension lifecycle', () => {
     );
     expect(registeredCommands).toContain('rangelink.bindToCursorAI');
     expect(registeredCommands).toContain('rangelink.bindToClaudeCode');
+    expect(registeredCommands).toContain('rangelink.jumpToBoundDestination');
   });
 
   it('should clean up on deactivate', () => {

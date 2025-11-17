@@ -237,4 +237,40 @@ export class CursorAIDestination implements PasteDestination {
   getUserInstruction(): string | undefined {
     return formatMessage(MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS);
   }
+
+  /**
+   * Focus Cursor AI chat interface
+   *
+   * Opens/focuses the Cursor AI chat panel to bring it into view.
+   * Reuses the same command sequence as pasteLink().
+   *
+   * Used by the "Jump to Bound Destination" command (issue #99).
+   *
+   * @returns true if chat focus succeeded, false otherwise
+   */
+  async focus(): Promise<boolean> {
+    return this.openChatInterface({
+      fn: 'CursorAIDestination.focus',
+    });
+  }
+
+  /**
+   * Get success message for jump command
+   *
+   * @returns Formatted i18n message for status bar display
+   */
+  getJumpSuccessMessage(): string {
+    return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI);
+  }
+
+  /**
+   * Get destination-specific details for logging
+   *
+   * Cursor AI destinations have no additional details to log beyond displayName.
+   *
+   * @returns Empty object (no additional details)
+   */
+  getLoggingDetails(): Record<string, unknown> {
+    return {};
+  }
 }

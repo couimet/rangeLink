@@ -630,13 +630,48 @@ export const configureWorkspaceMocks = (
   mockVscode.window.visibleTextEditors = visibleEditors;
 
   // Initialize empty tab groups structure
-  mockVscode.window.tabGroups = {
+  mockVscode.window.tabGroups = createMockTabGroups();
+};
+
+/**
+ * Create a mock TabGroups structure with optional overrides
+ *
+ * Provides composable tab groups structure for testing. Can be used directly
+ * or through convenience helpers like configureEmptyTabGroups().
+ *
+ * @param overrides - Optional overrides for TabGroups structure
+ * @returns Mock TabGroups object
+ */
+export const createMockTabGroups = (
+  overrides: Partial<vscode.TabGroups> = {},
+): vscode.TabGroups => {
+  return {
     all: [],
     activeTabGroup: undefined,
     onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
     onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
     close: jest.fn(),
+    ...overrides,
   } as unknown as vscode.TabGroups;
+};
+
+/**
+ * Configure empty tab groups for testing
+ *
+ * Common pattern for testing text editor binding which requires 2+ tab groups (split editor).
+ * Creates N empty tab groups with no tabs and no active tab.
+ *
+ * Replaces manual pattern:
+ * `(mockWindow.tabGroups as { all: vscode.TabGroup[] }).all = [{}, {}] as vscode.TabGroup[];`
+ *
+ * @param mockWindow - The mocked window object (from mockVscode.window or mockAdapter.__getVscodeInstance().window)
+ * @param count - Number of empty tab groups to create (default: 2)
+ */
+export const configureEmptyTabGroups = (mockWindow: any, count = 2): void => {
+  const emptyGroups = Array.from({ length: count }, () =>
+    createMockTabGroup([], { activeTab: undefined }),
+  );
+  mockWindow.tabGroups = createMockTabGroups({ all: emptyGroups });
 };
 
 /**

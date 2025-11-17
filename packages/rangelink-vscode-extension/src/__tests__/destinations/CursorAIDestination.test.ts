@@ -460,4 +460,102 @@ describe('CursorAIDestination', () => {
       expect(instruction).toBe(messagesEn[MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS]);
     });
   });
+
+  describe('getLoggingDetails()', () => {
+    it('should return empty object (no additional details for AI destinations)', () => {
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({});
+    });
+  });
+
+  describe('focus()', () => {
+    beforeEach(() => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
+    });
+
+    it('should return false when not running in Cursor IDE', async () => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Visual Studio Code';
+
+      const result = await destination.focus();
+
+      expect(result).toBe(false);
+    });
+
+    it('should try opening chat with aichat.newchataction command first', async () => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+
+      await destination.focus();
+
+      expect(mockVscode.commands.executeCommand).toHaveBeenCalledWith('aichat.newchataction');
+    });
+
+    it('should try fallback command if primary fails', async () => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.commands.executeCommand as jest.Mock)
+        .mockRejectedValueOnce(new Error('aichat.newchataction not found'))
+        .mockResolvedValueOnce(undefined);
+
+      await destination.focus();
+
+      expect(mockVscode.commands.executeCommand).toHaveBeenCalledWith('aichat.newchataction');
+      expect(mockVscode.commands.executeCommand).toHaveBeenCalledWith(
+        'workbench.action.toggleAuxiliaryBar',
+      );
+    });
+
+    it('should return true when chat open succeeds', async () => {
+      const result = await destination.focus();
+
+      expect(result).toBe(true);
+    });
+
+    it('should log chat open completion', async () => {
+      await destination.focus();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'CursorAIDestination.focus',
+          chatOpened: true,
+        },
+        'Cursor chat open completed',
+      );
+    });
+
+    it('should log warning when not available', async () => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Visual Studio Code';
+
+      await destination.focus();
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'CursorAIDestination.focus' },
+        'Cannot paste: Not running in Cursor IDE',
+      );
+    });
+
+    it('should still return true when all chat commands fail', async () => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.commands.executeCommand as jest.Mock).mockRejectedValue(
+        new Error('Command not found'),
+      );
+
+      const result = await destination.focus();
+
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('getJumpSuccessMessage()', () => {
+    it('should call formatMessage with STATUS_BAR_JUMP_SUCCESS_CURSOR_AI', () => {
+      const formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+
+      const message = destination.getJumpSuccessMessage();
+
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI);
+      expect(message).toBe(messagesEn[MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]);
+    });
+  });
 });
