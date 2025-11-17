@@ -2,11 +2,10 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { CursorAIDestination } from '../../destinations/CursorAIDestination';
-import { createMockFormattedLink, testDestinationInterfaceCompliance } from '../helpers';
 import { messagesEn } from '../../i18n/messages.en';
 import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
-import { testDestinationInterfaceCompliance } from '../helpers';
+import { createMockFormattedLink, testDestinationInterfaceCompliance } from '../helpers';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('CursorAIDestination', () => {
@@ -207,6 +206,21 @@ describe('CursorAIDestination', () => {
       );
     });
 
+    it('should try commands in exact order (primary then fallback)', async () => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      const executeCommandMock = mockVscode.commands.executeCommand as jest.Mock;
+      executeCommandMock
+        .mockRejectedValueOnce(new Error('aichat.newchataction not found'))
+        .mockResolvedValueOnce(undefined); // workbench.action.toggleAuxiliaryBar succeeds
+
+      await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
+
+      // Verify exact command sequence
+      expect(executeCommandMock).toHaveBeenCalledTimes(2);
+      expect(executeCommandMock.mock.calls[0][0]).toBe('aichat.newchataction');
+      expect(executeCommandMock.mock.calls[1][0]).toBe('workbench.action.toggleAuxiliaryBar');
+    });
+
     it('should NOT show notification (RangeLinkService handles this via getUserInstruction())', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
 
@@ -324,19 +338,11 @@ describe('CursorAIDestination', () => {
       formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
     });
 
-    it('should call formatMessage with INFO_CURSOR_AI_LINK_COPIED when showing info message', async () => {
-      await destination.paste('test link');
+    it('should call formatMessage with INFO_CURSOR_AI_USER_INSTRUCTIONS when getting user instruction', () => {
+      const instruction = destination.getUserInstruction();
 
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.INFO_CURSOR_AI_LINK_COPIED);
-    });
-
-    it('should show information message with correct paste instructions', async () => {
-      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
-
-      await destination.paste('test link');
-
-      const expectedMessage = messagesEn[MessageCode.INFO_CURSOR_AI_LINK_COPIED];
-      expect(showInfoSpy).toHaveBeenCalledWith(expectedMessage);
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS);
+      expect(instruction).toBe(messagesEn[MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS]);
     });
   });
 });

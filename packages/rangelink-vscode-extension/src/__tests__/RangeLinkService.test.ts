@@ -465,7 +465,17 @@ describe('RangeLinkService', () => {
       });
 
       it('should call formatMessage with STATUS_BAR_LINK_COPIED_TO_CLIPBOARD and linkTypeName parameter', async () => {
-        await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+        const mockSendFn = jest.fn().mockResolvedValue(true);
+        const mockIsEligibleFn = jest.fn().mockResolvedValue(true);
+
+        await (service as any).copyAndSendToDestination(
+          'src/file.ts#L1',
+          'src/file.ts#L1',
+          mockSendFn,
+          mockIsEligibleFn,
+          'RangeLink',
+          'test',
+        );
 
         expect(formatMessageSpy).toHaveBeenCalledWith(
           MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD,
@@ -474,7 +484,17 @@ describe('RangeLinkService', () => {
       });
 
       it('should produce correct status message with "RangeLink" parameter', async () => {
-        await (service as any).copyAndNotify('src/file.ts#L1', 'RangeLink');
+        const mockSendFn = jest.fn().mockResolvedValue(true);
+        const mockIsEligibleFn = jest.fn().mockResolvedValue(true);
+
+        await (service as any).copyAndSendToDestination(
+          'src/file.ts#L1',
+          'src/file.ts#L1',
+          mockSendFn,
+          mockIsEligibleFn,
+          'RangeLink',
+          'test',
+        );
 
         const expectedMessage = messagesEn[MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD].replace(
           '{linkTypeName}',
@@ -484,7 +504,17 @@ describe('RangeLinkService', () => {
       });
 
       it('should produce correct status message with "Portable RangeLink" parameter', async () => {
-        await (service as any).copyAndNotify('src/file.ts#L1', 'Portable RangeLink');
+        const mockSendFn = jest.fn().mockResolvedValue(true);
+        const mockIsEligibleFn = jest.fn().mockResolvedValue(true);
+
+        await (service as any).copyAndSendToDestination(
+          'src/file.ts#L1',
+          'src/file.ts#L1',
+          mockSendFn,
+          mockIsEligibleFn,
+          'Portable RangeLink',
+          'test',
+        );
 
         const expectedMessage = messagesEn[MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD].replace(
           '{linkTypeName}',

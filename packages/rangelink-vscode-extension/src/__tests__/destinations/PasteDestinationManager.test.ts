@@ -56,28 +56,6 @@ const expectQuickPickConfirmation = (
   expect(options.placeHolder).toContain(expectedStrings.newDestination);
 };
 
-/**
- * Validates that Cursor AI destination's paste workflow executed correctly.
- * Checks all three steps: clipboard copy, command execution, and notification.
- */
-const expectCursorAIPasteWorkflow = (mockVscode: typeof vscode, expectedLink: string): void => {
-  // Step 1: Clipboard copy with exact link
-  expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith(expectedLink);
-
-  // Step 2: Command execution (tries chat commands in order)
-  const executeCommandMock = mockVscode.commands.executeCommand as jest.Mock;
-  expect(executeCommandMock).toHaveBeenCalled();
-  // Verify it's one of the expected chat commands
-  const commands = executeCommandMock.mock.calls.map((call) => call[0]);
-  const validCommands = ['aichat.newchataction', 'workbench.action.toggleAuxiliaryBar'];
-  expect(commands.some((cmd) => validCommands.includes(cmd))).toBe(true);
-
-  // Step 3: Notification with expected message
-  expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
-    'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
-  );
-};
-
 describe('PasteDestinationManager', () => {
   let manager: PasteDestinationManager;
   let mockContext: vscode.ExtensionContext;
@@ -90,9 +68,6 @@ describe('PasteDestinationManager', () => {
   /**
    * Helper to create a manager with optional environment overrides.
    * Useful for tests that need to simulate Cursor IDE.
-   *
-   * When appName is 'Cursor', automatically sets up mocks for Cursor AI destination's
-   * paste workflow (clipboard, executeCommand, showInformationMessage).
    */
   const createManager = (envOptions?: MockVscodeOptions['envOptions']) => {
     const adapter = createMockVscodeAdapter(undefined, {
@@ -102,10 +77,6 @@ describe('PasteDestinationManager', () => {
           terminalCloseListener = listener;
           return { dispose: jest.fn() };
         }),
-        // Mock Cursor AI destination's paste workflow when running in Cursor IDE
-        ...(envOptions?.appName === 'Cursor' && {
-          showInformationMessage: jest.fn().mockResolvedValue(undefined),
-        }),
       },
       workspaceOptions: {
         onDidCloseTextDocument: jest.fn((listener) => {
@@ -113,20 +84,6 @@ describe('PasteDestinationManager', () => {
           return { dispose: jest.fn() };
         }),
       },
-      // Mock Cursor AI destination's paste workflow when running in Cursor IDE
-      ...(envOptions?.appName === 'Cursor' && {
-        env: {
-          appName: 'Cursor',
-          uriScheme: 'cursor',
-          clipboard: {
-            writeText: jest.fn().mockResolvedValue(undefined),
-            readText: jest.fn().mockResolvedValue(''),
-          },
-        },
-        commands: {
-          executeCommand: jest.fn().mockResolvedValue(undefined),
-        },
-      }),
     });
 
     const factory = new DestinationFactory(adapter, mockLogger);
@@ -439,6 +396,42 @@ describe('PasteDestinationManager', () => {
   });
 
   describe('sendToDestination()', () => {
+    // Mock factory and destinations for unit tests
+    let mockFactoryForSend: jest.Mocked<DestinationFactory>;
+    let mockTerminalDest: jest.Mocked<PasteDestination>;
+    let mockChatDest: jest.Mocked<PasteDestination>;
+
+    // Helper to create mock destination
+    const createMockDest = (id: string, displayName: string): jest.Mocked<PasteDestination> => ({
+      id,
+      displayName,
+      isAvailable: jest.fn().mockResolvedValue(true),
+      pasteLink: jest.fn().mockResolvedValue(true),
+      getUserInstruction: jest.fn().mockReturnValue('Instructions'),
+      setTerminal: jest.fn(),
+    }) as unknown as jest.Mocked<PasteDestination>;
+
+    beforeEach(() => {
+      mockTerminalDest = createMockDest('terminal', 'Terminal');
+      mockChatDest = createMockDest('cursor-ai', 'Cursor AI Assistant');
+
+      mockFactoryForSend = {
+        create: jest.fn().mockImplementation((type) => {
+          if (type === 'terminal') return mockTerminalDest;
+          if (type === 'cursor-ai') return mockChatDest;
+          throw new Error(`Unexpected type: ${type}`);
+        }),
+      } as unknown as jest.Mocked<DestinationFactory>;
+
+      // Recreate manager with mock factory
+      manager = new PasteDestinationManager(
+        mockContext,
+        mockFactoryForSend,
+        mockAdapter,
+        mockLogger,
+      );
+    });
+
     it('should send to bound terminal successfully', async () => {
       const mockTerminal = {
         name: 'bash',
@@ -449,33 +442,36 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
 
-      const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
+      const formattedLink = createMockFormattedLink('src/file.ts#L10');
+      const result = await manager.sendToDestination(formattedLink);
 
       expect(result).toBe(true);
-      expect(mockTerminal.sendText).toHaveBeenCalled();
+      expect(mockTerminalDest.pasteLink).toHaveBeenCalledTimes(1);
+      expect(mockTerminalDest.pasteLink).toHaveBeenCalledWith(formattedLink);
     });
 
     it('should send to bound chat destination successfully', async () => {
-      const { manager: localManager, adapter: localAdapter } = createManager({
-        appName: 'Cursor',
-      });
+      // Mock Cursor environment
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
 
-      await localManager.bind('cursor-ai');
+      await manager.bind('cursor-ai');
 
-      const result = await localManager.sendToDestination(
-        createMockFormattedLink('src/file.ts#L10'),
-      );
+      const formattedLink = createMockFormattedLink('src/file.ts#L10');
+      const result = await manager.sendToDestination(formattedLink);
 
+      // Test only manager orchestration - delegate calls pasteLink on destination
       expect(result).toBe(true);
-      expectCursorAIPasteWorkflow(localAdapter.__getVscodeInstance(), 'src/file.ts#L10');
-
-      localManager.dispose();
+      expect(mockChatDest.pasteLink).toHaveBeenCalledTimes(1);
+      expect(mockChatDest.pasteLink).toHaveBeenCalledWith(formattedLink);
     });
 
     it('should return false when no destination bound', async () => {
       const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(false);
+      expect(mockTerminalDest.pasteLink).not.toHaveBeenCalled();
+      expect(mockChatDest.pasteLink).not.toHaveBeenCalled();
     });
 
     it('should return false when paste fails', async () => {
@@ -488,12 +484,65 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
 
-      // Unbind terminal to simulate closed terminal
-      manager.unbind();
+      // Mock paste failure
+      mockTerminalDest.pasteLink.mockResolvedValueOnce(false);
 
       const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(false);
+      expect(mockTerminalDest.pasteLink).toHaveBeenCalledTimes(1);
+    });
+
+    it('should log destination details when sending to terminal', async () => {
+      const mockTerminal = {
+        name: 'bash',
+        sendText: jest.fn(),
+        show: jest.fn(),
+      } as unknown as vscode.Terminal;
+
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await manager.bind('terminal');
+
+      const formattedLink = createMockFormattedLink('src/file.ts#L10');
+      await manager.sendToDestination(formattedLink);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fn: 'PasteDestinationManager.sendToDestination',
+          destinationType: 'terminal',
+          displayName: 'Terminal',
+          formattedLink,
+          terminalName: 'bash',
+        }),
+        expect.stringContaining('Sending text to Terminal'),
+      );
+    });
+
+    it('should log error when paste fails', async () => {
+      const mockTerminal = {
+        name: 'bash',
+        sendText: jest.fn(),
+        show: jest.fn(),
+      } as unknown as vscode.Terminal;
+
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await manager.bind('terminal');
+
+      // Mock paste failure
+      mockTerminalDest.pasteLink.mockResolvedValueOnce(false);
+
+      const formattedLink = createMockFormattedLink('src/file.ts#L10');
+      await manager.sendToDestination(formattedLink);
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fn: 'PasteDestinationManager.sendToDestination',
+          destinationType: 'terminal',
+          displayName: 'Terminal',
+          formattedLink,
+        }),
+        expect.stringContaining('Paste link failed to Terminal'),
+      );
     });
   });
 
