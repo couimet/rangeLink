@@ -29,6 +29,30 @@ export class TerminalDestination implements PasteDestination {
   }
 
   /**
+   * Check if text content is eligible for paste to terminal
+   *
+   * Terminal always returns true - all content is eligible when terminal is available.
+   *
+   * @param _content - The text content (unused)
+   * @returns Promise resolving to true (always eligible)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteContent(_content: string): Promise<boolean> {
+    return true;
+  }
+
+  /**
+   * Get user instruction for manual paste
+   *
+   * Terminal performs automatic paste, so no manual instruction is needed.
+   *
+   * @returns undefined (no manual instruction needed)
+   */
+  getUserInstruction(): string | undefined {
+    return undefined;
+  }
+
+  /**
    * Paste a RangeLink to bound terminal with smart padding and focus
    *
    * Validation:

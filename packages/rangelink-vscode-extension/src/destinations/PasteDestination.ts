@@ -55,13 +55,27 @@ export interface PasteDestination {
   isAvailable(): Promise<boolean>;
 
   /**
+   * Check if text content is eligible to be pasted to this destination
+   *
+   * Determines if pasting should be skipped based on destination-specific rules.
+   * Examples:
+   * - TextEditorDestination: Skip if pasting text FROM the bound editor itself
+   * - Other destinations: Always eligible (return true)
+   *
+   * @param content - The text content to check
+   * @returns Promise resolving to true if paste should proceed, false to skip
+   */
+  isEligibleForPasteContent(content: string): Promise<boolean>;
+
+  /**
    * Paste a RangeLink to this destination with appropriate padding and focus
    *
    * Implementation requirements:
+   * - Check eligibility internally (defensive programming)
    * - Add padding if needed (smart padding: skip if already padded)
    * - Focus destination after paste (terminal.show(), chat.open(), etc.)
    * - Log success/failure for debugging
-   * - Return false on failure (no throwing)
+   * - Return false on failure or ineligibility (no throwing)
    *
    * @param formattedLink - The formatted RangeLink with metadata
    * @returns Promise resolving to true if paste succeeded, false otherwise
@@ -75,13 +89,29 @@ export interface PasteDestination {
    * Unlike pasteLink(), this accepts raw text content without link formatting.
    *
    * Implementation requirements:
+   * - Check eligibility internally (defensive programming)
    * - Add padding if needed (smart padding: skip if already padded)
    * - Focus destination after paste (terminal.show(), chat.open(), etc.)
    * - Log success/failure for debugging
-   * - Return false on failure (no throwing)
+   * - Return false on failure or ineligibility (no throwing)
    *
    * @param content - The text content to paste
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
   pasteContent(content: string): Promise<boolean>;
+
+  /**
+   * Get user instruction for manual paste action (clipboard-based destinations only)
+   *
+   * Clipboard-based destinations (Claude Code, Cursor AI) cannot programmatically
+   * insert content into their chat interfaces. They copy to clipboard and require
+   * the user to manually paste. This method returns the instruction string to show
+   * the user in a popup toast.
+   *
+   * Automatic destinations (Terminal, Text Editor) return undefined since no manual
+   * action is required.
+   *
+   * @returns Instruction string for manual paste, or undefined for automatic paste
+   */
+  getUserInstruction(): string | undefined;
 }

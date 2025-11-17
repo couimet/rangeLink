@@ -63,6 +63,73 @@ export class TextEditorDestination implements PasteDestination {
   }
 
   /**
+   * Check if text content is eligible for paste to text editor
+   *
+   * Returns false if selecting text FROM the bound editor itself (self-paste detection).
+   * This prevents auto-pasting when user selects text in the same editor they want to paste to.
+   *
+   * @param _content - The text content (unused - self-paste check doesn't depend on content)
+   * @returns Promise resolving to true if eligible, false if self-paste detected
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteContent(_content: string): Promise<boolean> {
+    return this.checkSelfPasteEligibility('isEligibleForPasteContent', 'selecting text FROM bound editor');
+  }
+
+  /**
+   * Check self-paste eligibility (shared logic for link and content)
+   *
+   * Prevents auto-pasting when source editor matches bound editor.
+   * Extracted to eliminate duplication between isEligibleForPasteLink and isEligibleForPasteContent.
+   *
+   * @param fnName - Function name for logging context
+   * @param actionDescription - Description of action (e.g., "creating link FROM bound editor")
+   * @returns true if eligible, false if self-paste detected or destination unavailable
+   */
+  private checkSelfPasteEligibility(fnName: string, actionDescription: string): boolean {
+    // Get active editor (source of link/text creation)
+    const activeEditor = this.ideAdapter.activeTextEditor;
+
+    // If no active editor, can't be self-paste
+    if (!activeEditor) {
+      return true;
+    }
+
+    // If no bound document, not eligible (destination not available)
+    if (!this.boundDocumentUri) {
+      return false;
+    }
+
+    // Self-paste detection: Compare active editor's document URI with bound document URI
+    const isSelfPaste = activeEditor.document.uri.toString() === this.boundDocumentUri.toString();
+
+    if (isSelfPaste) {
+      this.logger.debug(
+        {
+          fn: `TextEditorDestination.${fnName}`,
+          activeDocumentUri: activeEditor.document.uri.toString(),
+          boundDocumentUri: this.boundDocumentUri.toString(),
+        },
+        `Self-paste detected - skipping auto-paste (${actionDescription})`,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Get user instruction for manual paste
+   *
+   * Text editor performs automatic paste, so no manual instruction is needed.
+   *
+   * @returns undefined (no manual instruction needed)
+   */
+  getUserInstruction(): string | undefined {
+    return undefined;
+  }
+
+  /**
    * Paste a RangeLink to bound text editor at cursor position with smart padding
    *
    * **Tab Group Binding Strategy (MVP):**

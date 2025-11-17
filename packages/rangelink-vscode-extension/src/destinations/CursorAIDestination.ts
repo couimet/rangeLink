@@ -2,6 +2,7 @@ import type { Logger } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+
 import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**
@@ -128,6 +129,19 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
+   * Check if text content is eligible to be pasted to Cursor AI
+   *
+   * Cursor AI has no special eligibility rules - always eligible.
+   *
+   * @param _content - The text content (not used)
+   * @returns Always true (Cursor AI accepts all content)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteContent(_content: string): Promise<boolean> {
+    return true;
+  }
+
+  /**
    * Paste a RangeLink to Cursor AI chat
    *
    * **Implementation:** Since Cursor doesn't support programmatic text insertion,
@@ -215,5 +229,12 @@ export class CursorAIDestination implements PasteDestination {
     });
   }
 
+  /**
+   * Get user instruction for manual paste (clipboard-based destination)
+   *
+   * @returns Instruction string for manual paste in Cursor AI
+   */
+  getUserInstruction(): string | undefined {
+    return 'Paste (Cmd/Ctrl+V) in Cursor chat to use.';
   }
 }
