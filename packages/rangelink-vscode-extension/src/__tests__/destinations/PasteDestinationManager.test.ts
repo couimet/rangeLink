@@ -5,8 +5,63 @@ import * as vscode from 'vscode';
 import { DestinationFactory } from '../../destinations/DestinationFactory';
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
-import { TerminalDestination } from '../../destinations/TerminalDestination';
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
+import {
+  createMockVscodeAdapter,
+  type MockVscodeOptions,
+  type VscodeAdapterWithTestHooks,
+} from '../helpers/mockVSCode';
+
+/**
+ * Helper to assert QuickPick was called with confirmation dialog for smart bind.
+ * Validates that items contain expected labels and that placeholder is present.
+ */
+const expectQuickPickConfirmation = (
+  showQuickPickMock: jest.Mock,
+  expectedStrings: { currentDestination: string; newDestination: string },
+): void => {
+  expect(showQuickPickMock).toHaveBeenCalledTimes(1);
+
+  const [items, options] = showQuickPickMock.mock.calls[0] as [
+    vscode.QuickPickItem[],
+    vscode.QuickPickOptions,
+  ];
+
+  // Verify items structure
+  expect(items).toHaveLength(2);
+  expect(items[0].label).toContain('replace');
+  expect(items[0].description).toContain(expectedStrings.currentDestination);
+  expect(items[0].description).toContain(expectedStrings.newDestination);
+  expect(items[1].label).toContain('keep');
+
+  // Verify placeholder
+  expect(options.placeHolder).toContain(expectedStrings.currentDestination);
+  expect(options.placeHolder).toContain(expectedStrings.newDestination);
+};
+
+/**
+ * Validates that Cursor AI destination's paste workflow executed correctly.
+ * Checks all three steps: clipboard copy, command execution, and notification.
+ */
+const expectCursorAIPasteWorkflow = (
+  mockVscode: typeof vscode,
+  expectedLink: string,
+): void => {
+  // Step 1: Clipboard copy with exact link
+  expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith(expectedLink);
+
+  // Step 2: Command execution (tries chat commands in order)
+  const executeCommandMock = mockVscode.commands.executeCommand as jest.Mock;
+  expect(executeCommandMock).toHaveBeenCalled();
+  // Verify it's one of the expected chat commands
+  const commands = executeCommandMock.mock.calls.map((call) => call[0]);
+  const validCommands = ['aichat.newchataction', 'workbench.action.toggleAuxiliaryBar'];
+  expect(commands.some((cmd) => validCommands.includes(cmd))).toBe(true);
+
+  // Step 3: Notification with expected message
+  expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
+    'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
+  );
+};
 
 describe('PasteDestinationManager', () => {
   let manager: PasteDestinationManager;
@@ -16,6 +71,54 @@ describe('PasteDestinationManager', () => {
   let mockLogger: Logger;
   let terminalCloseListener: (terminal: vscode.Terminal) => void;
   let documentCloseListener: (document: vscode.TextDocument) => void;
+
+  /**
+   * Helper to create a manager with optional environment overrides.
+   * Useful for tests that need to simulate Cursor IDE.
+   *
+   * When appName is 'Cursor', automatically sets up mocks for Cursor AI destination's
+   * paste workflow (clipboard, executeCommand, showInformationMessage).
+   */
+  const createManager = (envOptions?: MockVscodeOptions['envOptions']) => {
+    const adapter = createMockVscodeAdapter(undefined, {
+      envOptions,
+      windowOptions: {
+        onDidCloseTerminal: jest.fn((listener) => {
+          terminalCloseListener = listener;
+          return { dispose: jest.fn() };
+        }),
+        // Mock Cursor AI destination's paste workflow when running in Cursor IDE
+        ...(envOptions?.appName === 'Cursor' && {
+          showInformationMessage: jest.fn().mockResolvedValue(undefined),
+        }),
+      },
+      workspaceOptions: {
+        onDidCloseTextDocument: jest.fn((listener) => {
+          documentCloseListener = listener;
+          return { dispose: jest.fn() };
+        }),
+      },
+      // Mock Cursor AI destination's paste workflow when running in Cursor IDE
+      ...(envOptions?.appName === 'Cursor' && {
+        env: {
+          appName: 'Cursor',
+          uriScheme: 'cursor',
+          clipboard: {
+            writeText: jest.fn().mockResolvedValue(undefined),
+            readText: jest.fn().mockResolvedValue(''),
+          },
+        },
+        commands: {
+          executeCommand: jest.fn().mockResolvedValue(undefined),
+        },
+      }),
+    });
+
+    const factory = new DestinationFactory(adapter, mockLogger);
+    const mgr = new PasteDestinationManager(mockContext, factory, adapter, mockLogger);
+
+    return { manager: mgr, adapter, factory };
+  };
 
   beforeEach(() => {
     // Create mock logger
@@ -30,27 +133,11 @@ describe('PasteDestinationManager', () => {
     terminalCloseListener = jest.fn();
     documentCloseListener = jest.fn();
 
-    // Create adapter with test hooks
-    mockAdapter = createMockVscodeAdapter();
-
-    // Configure event listeners via test hook
-    const mockVscode = mockAdapter.__getVscodeInstance();
-    (mockVscode.window.onDidCloseTerminal as jest.Mock) = jest.fn((listener) => {
-      terminalCloseListener = listener;
-      return { dispose: jest.fn() };
-    });
-    (mockVscode.workspace.onDidCloseTextDocument as jest.Mock) = jest.fn((listener) => {
-      documentCloseListener = listener;
-      return { dispose: jest.fn() };
-    });
-
-    // Create factory
-    mockFactory = new DestinationFactory(mockAdapter, mockLogger);
-
-    // Create manager
-    manager = new PasteDestinationManager(mockContext, mockFactory, mockAdapter, mockLogger);
-
-    jest.clearAllMocks();
+    // Create default manager with VSCode environment
+    const result = createManager();
+    manager = result.manager;
+    mockAdapter = result.adapter;
+    mockFactory = result.factory;
   });
 
   afterEach(() => {
@@ -93,16 +180,16 @@ describe('PasteDestinationManager', () => {
       );
     });
 
-    it('should fail when already bound to terminal', async () => {
+    it('should show info message when binding same terminal twice', async () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
 
-      // Try binding again
+      // Try binding again to same destination
       const result = await manager.bind('terminal');
 
       expect(result).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        'RangeLink: Already bound to Terminal. Unbind first.',
+      expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
+        expect.stringContaining('Already bound to Terminal'),
       );
     });
 
@@ -127,18 +214,20 @@ describe('PasteDestinationManager', () => {
 
   describe('bind() - chat destinations', () => {
     it('should bind to cursor-ai when available', async () => {
-      // Mock Cursor IDE detection (appName check)
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        appName: 'Cursor',
+      });
 
-      const result = await manager.bind('cursor-ai');
+      const result = await localManager.bind('cursor-ai');
 
       expect(result).toBe(true);
-      expect(manager.isBound()).toBe(true);
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(localManager.isBound()).toBe(true);
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Cursor AI Assistant',
         3000,
       );
+
+      localManager.dispose();
     });
 
     it('should fail when cursor-ai not available', async () => {
@@ -152,47 +241,61 @@ describe('PasteDestinationManager', () => {
       );
     });
 
-    it('should fail when already bound to chat destination', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
-      await manager.bind('cursor-ai');
+    it('should show info message when binding same chat destination twice', async () => {
+      // Create manager with Cursor IDE environment
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        appName: 'Cursor',
+      });
+      await localManager.bind('cursor-ai');
 
-      // Try binding again
-      const result = await manager.bind('cursor-ai');
+      // Try binding again to same destination
+      const result = await localManager.bind('cursor-ai');
 
       expect(result).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        'RangeLink: Already bound to Cursor AI Assistant. Unbind first.',
+      expect(localAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
+        expect.stringContaining('Already bound to Cursor AI Assistant'),
       );
+
+      localManager.dispose();
     });
   });
 
   describe('bind() - cross-destination conflicts', () => {
-    it('should prevent binding chat when terminal already bound', async () => {
+    it('should show confirmation when binding chat while terminal already bound', async () => {
+      const { manager: localManager, adapter: localAdapter } = createManager({ appName: 'Cursor' });
+
       const mockTerminal = {
         name: 'bash',
         sendText: jest.fn(),
         show: jest.fn(),
       } as unknown as vscode.Terminal;
 
-      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await localManager.bind('terminal');
+
+      // Mock user cancels confirmation
+      const showQuickPickMock = localAdapter.__getVscodeInstance().window.showQuickPick;
+      showQuickPickMock.mockResolvedValueOnce(undefined);
 
       // Try binding to Cursor AI
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
-      const result = await manager.bind('cursor-ai');
+      const result = await localManager.bind('cursor-ai');
 
       expect(result).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        'RangeLink: Already bound to Terminal. Unbind first.',
-      );
+      expectQuickPickConfirmation(showQuickPickMock, {
+        currentDestination: 'Terminal',
+        newDestination: 'Cursor AI Assistant',
+      });
+
+      localManager.dispose();
     });
 
-    it('should prevent binding terminal when chat already bound', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
-      await manager.bind('cursor-ai');
+    it('should show confirmation when binding terminal while chat already bound', async () => {
+      const { manager: localManager, adapter: localAdapter } = createManager({ appName: 'Cursor' });
+      await localManager.bind('cursor-ai');
+
+      // Mock user cancels confirmation
+      const showQuickPickMock = localAdapter.__getVscodeInstance().window.showQuickPick;
+      showQuickPickMock.mockResolvedValueOnce(undefined);
 
       // Try binding to terminal
       const mockTerminal = {
@@ -201,13 +304,16 @@ describe('PasteDestinationManager', () => {
         show: jest.fn(),
       } as unknown as vscode.Terminal;
 
-      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      const result = await manager.bind('terminal');
+      localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      const result = await localManager.bind('terminal');
 
       expect(result).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        'RangeLink: Already bound to Cursor AI Assistant. Unbind first.',
-      );
+      expectQuickPickConfirmation(showQuickPickMock, {
+        currentDestination: 'Cursor AI Assistant',
+        newDestination: 'Terminal',
+      });
+
+      localManager.dispose();
     });
   });
 
@@ -232,17 +338,20 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should unbind chat destination successfully', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
-      await manager.bind('cursor-ai');
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        appName: 'Cursor',
+      });
+      await localManager.bind('cursor-ai');
 
-      manager.unbind();
+      localManager.unbind();
 
-      expect(manager.isBound()).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(localManager.isBound()).toBe(false);
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink unbound from Cursor AI Assistant',
         2000,
       );
+
+      localManager.dispose();
     });
 
     it('should handle unbind when nothing bound', () => {
@@ -274,20 +383,18 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should send to bound chat destination successfully', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
-      (mockVscode.env.clipboard.writeText as jest.Mock) = jest.fn().mockResolvedValue(undefined);
-      (mockVscode.commands.executeCommand as jest.Mock) = jest.fn().mockResolvedValue(undefined);
-      (mockVscode.window.showInformationMessage as jest.Mock) = jest
-        .fn()
-        .mockResolvedValue(undefined);
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        appName: 'Cursor',
+      });
 
-      await manager.bind('cursor-ai');
+      await localManager.bind('cursor-ai');
 
-      const result = await manager.sendToDestination('src/file.ts#L10');
+      const result = await localManager.sendToDestination('src/file.ts#L10');
 
       expect(result).toBe(true);
-      expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith('src/file.ts#L10');
+      expectCursorAIPasteWorkflow(localAdapter.__getVscodeInstance(), 'src/file.ts#L10');
+
+      localManager.dispose();
     });
 
     it('should return false when no destination bound', async () => {
@@ -359,9 +466,8 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not auto-unbind for chat destinations', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
-      await manager.bind('cursor-ai');
+      const { manager: localManager } = createManager({ appName: 'Cursor' });
+      await localManager.bind('cursor-ai');
 
       const mockTerminal = {
         name: 'bash',
@@ -372,7 +478,9 @@ describe('PasteDestinationManager', () => {
       // Simulate terminal close (should not affect chat binding)
       terminalCloseListener(mockTerminal);
 
-      expect(manager.isBound()).toBe(true);
+      expect(localManager.isBound()).toBe(true);
+
+      localManager.dispose();
     });
   });
 
@@ -416,11 +524,12 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should return true when chat destination bound', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
-      await manager.bind('cursor-ai');
+      const { manager: localManager } = createManager({ appName: 'Cursor' });
+      await localManager.bind('cursor-ai');
 
-      expect(manager.isBound()).toBe(true);
+      expect(localManager.isBound()).toBe(true);
+
+      localManager.dispose();
     });
 
     it('should return false when nothing bound', () => {
@@ -556,7 +665,10 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTextEditor = {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
         } as vscode.TextEditor;
-        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [{}, {}] as vscode.TabGroup[];
+        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [
+          {},
+          {},
+        ] as vscode.TabGroup[];
 
         // Second bind: Bind to Text Editor (should show confirmation)
         const secondBindResult = await manager.bind('text-editor');
@@ -618,7 +730,10 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTextEditor = {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
         } as vscode.TextEditor;
-        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [{}, {}] as vscode.TabGroup[];
+        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [
+          {},
+          {},
+        ] as vscode.TabGroup[];
 
         // Second bind: Try to bind to Text Editor (user cancels)
         const secondBindResult = await manager.bind('text-editor');
@@ -726,7 +841,10 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTextEditor = {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
         } as vscode.TextEditor;
-        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [{}, {}] as vscode.TabGroup[];
+        (mockVscode.window.tabGroups as { all: vscode.TabGroup[] }).all = [
+          {},
+          {},
+        ] as vscode.TabGroup[];
 
         // Clear mocks
         (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
