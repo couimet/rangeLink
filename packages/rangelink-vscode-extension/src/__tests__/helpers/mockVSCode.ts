@@ -230,7 +230,9 @@ export const createMockCancellationToken = (isCancelled = false): vscode.Cancell
  */
 export const createMockWorkspace = (options?: Record<string, unknown>) => {
   const defaultWorkspaceFolders = ['/workspace'];
-  const workspaceFoldersInput = (options?.workspaceFolders as Array<string | vscode.WorkspaceFolder> | undefined) ?? defaultWorkspaceFolders;
+  const workspaceFoldersInput =
+    (options?.workspaceFolders as Array<string | vscode.WorkspaceFolder> | undefined) ??
+    defaultWorkspaceFolders;
 
   const folders = workspaceFoldersInput?.map((folder) =>
     typeof folder === 'string' ? createMockWorkspaceFolder(folder) : folder,

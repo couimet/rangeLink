@@ -78,7 +78,11 @@ export class PasteDestinationManager implements vscode.Disposable {
 
       if (!confirmed) {
         this.logger.debug(
-          { fn: 'PasteDestinationManager.bind', currentType: this.boundDestination.id, newType: type },
+          {
+            fn: 'PasteDestinationManager.bind',
+            currentType: this.boundDestination.id,
+            newType: type,
+          },
           'User cancelled binding replacement',
         );
         return false;

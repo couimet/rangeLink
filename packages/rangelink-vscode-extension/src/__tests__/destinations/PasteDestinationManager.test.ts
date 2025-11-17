@@ -42,10 +42,7 @@ const expectQuickPickConfirmation = (
  * Validates that Cursor AI destination's paste workflow executed correctly.
  * Checks all three steps: clipboard copy, command execution, and notification.
  */
-const expectCursorAIPasteWorkflow = (
-  mockVscode: typeof vscode,
-  expectedLink: string,
-): void => {
+const expectCursorAIPasteWorkflow = (mockVscode: typeof vscode, expectedLink: string): void => {
   // Step 1: Clipboard copy with exact link
   expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith(expectedLink);
 
