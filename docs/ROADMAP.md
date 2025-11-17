@@ -330,12 +330,12 @@ Integrate terminal link provider with Phase 4A.2 config change detection. Rebuil
 
 ## Phase 10: Internationalization (i18n) - (See [#37](https://github.com/couimet/rangeLink/issues/37))
 
-- [ ] **Translation Infrastructure** - VSCode i18n API, resource files, error code mapping, multiple languages
-- [ ] **Error Message Localization** - All validation errors, status bar, commands, settings
+- [x] **[#104](https://github.com/couimet/rangeLink/issues/104)** - Extension-layer i18n foundation (formatMessage, MessageCode, LocaleManager)
+- [ ] **Additional Locales** - French, Spanish translations
+- [ ] **Remaining Messages** - PasteDestinationManager strings, additional UI messages
 - [ ] **Community Contributions** - Translation process, templates, credit translators
-- [ ] **Testing** - Verify layout, test long translations, ensure code consistency
 
-See [LOGGING.md](./LOGGING.md#internationalization-readiness).
+**Status:** Foundation complete (extension-layer only, English). See [I18N.md](./I18N.md) for architecture.
 
 ---
 
