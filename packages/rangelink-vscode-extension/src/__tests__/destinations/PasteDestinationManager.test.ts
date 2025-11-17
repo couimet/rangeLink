@@ -257,6 +257,64 @@ describe('PasteDestinationManager', () => {
     });
   });
 
+  describe('bind() - text-editor', () => {
+    it('should fail to bind text editor with less than 2 tab groups', async () => {
+      // Setup: Single tab group (no split editor)
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = {
+        document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
+      } as vscode.TextEditor;
+      (mockAdapter.__getVscodeInstance().window.tabGroups as { all: vscode.TabGroup[] }).all = [
+        {},
+      ] as vscode.TabGroup[];
+
+      const result = await manager.bind('text-editor');
+
+      expect(result).toBe(false);
+      expect(manager.isBound()).toBe(false);
+      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
+      );
+    });
+
+    it('should fail to bind text editor when no active editor', async () => {
+      // Setup: No active text editor
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+      (mockAdapter.__getVscodeInstance().window.tabGroups as { all: vscode.TabGroup[] }).all = [
+        {},
+        {},
+      ] as vscode.TabGroup[];
+
+      const result = await manager.bind('text-editor');
+
+      expect(result).toBe(false);
+      expect(manager.isBound()).toBe(false);
+      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: No active text editor. Open a file and try again.',
+      );
+    });
+
+    it('should fail to bind text editor to binary file', async () => {
+      // Setup: Binary file (non-text scheme)
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = {
+        document: {
+          uri: { scheme: 'vscode-userdata', fsPath: '/test/binary.dat' },
+        },
+      } as vscode.TextEditor;
+      (mockAdapter.__getVscodeInstance().window.tabGroups as { all: vscode.TabGroup[] }).all = [
+        {},
+        {},
+      ] as vscode.TabGroup[];
+
+      const result = await manager.bind('text-editor');
+
+      expect(result).toBe(false);
+      expect(manager.isBound()).toBe(false);
+      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+        expect.stringContaining('not a text-like file'),
+      );
+    });
+  });
+
   describe('bind() - cross-destination conflicts', () => {
     it('should show confirmation when binding chat while terminal already bound', async () => {
       const { manager: localManager, adapter: localAdapter } = createManager({ appName: 'Cursor' });
