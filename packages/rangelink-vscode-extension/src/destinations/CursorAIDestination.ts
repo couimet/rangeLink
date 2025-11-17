@@ -208,6 +208,6 @@ export class CursorAIDestination implements PasteDestination {
    * Used for pasting selected text directly to Cursor (issue #89).
    */
   getUserInstruction(): string | undefined {
-    return 'Paste (Cmd/Ctrl+V) in Cursor chat to use.';
+    return formatMessage(MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS);
   }
 }
