@@ -126,6 +126,20 @@ export class TextEditorDestination implements PasteDestination {
   }
 
   /**
+   * Check if text content is eligible to be pasted to text editor
+   *
+   * Similar to isEligibleForPasteLink(), checks if source editor matches bound editor
+   * to prevent self-paste loops.
+   *
+   * @param _content - The text content (unused - self-paste check doesn't depend on content)
+   * @returns Promise resolving to true if eligible, false if self-paste detected
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteContent(_content: string): Promise<boolean> {
+    return this.checkSelfPasteEligibility('isEligibleForPasteContent', 'selecting text FROM bound editor');
+  }
+
+  /**
    * Get user instruction for manual paste
    *
    * Text editor performs automatic paste, so no manual instruction is needed.
@@ -331,6 +345,156 @@ export class TextEditorDestination implements PasteDestination {
       }
     }
     return undefined;
+  }
+
+  /**
+   * Paste text content to bound text editor at cursor position with smart padding
+   *
+   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
+   * Uses the same tab group binding strategy and validation as pasteLink().
+   *
+   * @param content - The text content to paste
+   * @returns true if paste succeeded, false otherwise
+   */
+  async pasteContent(content: string): Promise<boolean> {
+    if (!isEligibleForPaste(content)) {
+      this.logger.info(
+        { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
+        'Content not eligible for paste',
+      );
+      return false;
+    }
+
+    if (!this.boundDocumentUri) {
+      this.logger.warn(
+        { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
+        'Cannot paste: No text editor bound',
+      );
+      return false;
+    }
+
+    const boundDisplayName = this.getEditorDisplayName();
+
+    // LAZY VALIDATION: Find which tab group contains the bound document
+    const boundTabGroup = this.ideAdapter.findTabGroupForDocument(this.boundDocumentUri);
+
+    if (!boundTabGroup) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document not found in any tab group - likely closed',
+      );
+      return false;
+    }
+
+    // Check if bound document is the active (topmost) tab in its group
+    const activeTab = boundTabGroup.activeTab;
+    if (!activeTab) {
+      this.logger.warn(
+        { fn: 'TextEditorDestination.pasteContent', boundDisplayName },
+        'Tab group has no active tab',
+      );
+      return false;
+    }
+
+    // Check that active tab is a text editor (not terminal)
+    if (!this.ideAdapter.isTextEditorTab(activeTab)) {
+      this.logger.warn(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDisplayName,
+          tabInputType: typeof activeTab.input,
+        },
+        'Active tab is not a text editor',
+      );
+      return false;
+    }
+
+    const activeTabUri = (activeTab.input as any).uri;
+    if (activeTabUri.toString() !== this.boundDocumentUri.toString()) {
+      this.logger.warn(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          activeTabUri: activeTabUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document is not topmost in its tab group',
+      );
+      return false;
+    }
+
+    // Find the TextEditor object for the bound document
+    const editor = this.ideAdapter.visibleTextEditors.find(
+      (e) => e.document.uri.toString() === this.boundDocumentUri!.toString(),
+    );
+
+    if (!editor) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDisplayName,
+        },
+        'Bound document is topmost but TextEditor object not found in visibleTextEditors',
+      );
+      return false;
+    }
+
+    // All validations passed - perform the paste
+    try {
+      const paddedContent = applySmartPadding(content);
+
+      const success = await editor.edit((editBuilder) => {
+        editBuilder.insert(editor.selection.active, paddedContent);
+      });
+
+      if (!success) {
+        this.logger.error(
+          {
+            fn: 'TextEditorDestination.pasteContent',
+            boundDisplayName,
+            boundDocumentUri: this.boundDocumentUri.toString(),
+            contentLength: content.length,
+          },
+          'Edit operation failed',
+        );
+        return false;
+      }
+
+      // Focus the editor (similar to terminal.show(false) behavior)
+      await this.ideAdapter.showTextDocument(editor.document.uri, {
+        preserveFocus: false,
+        viewColumn: editor.viewColumn,
+      });
+
+      this.logger.info(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          originalLength: content.length,
+          paddedLength: paddedContent.length,
+        },
+        `Pasted content to text editor: ${boundDisplayName}`,
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        {
+          fn: 'TextEditorDestination.pasteContent',
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri.toString(),
+          error,
+        },
+        'Exception during paste operation',
+      );
+      return false;
+    }
   }
 
   /**

@@ -3150,7 +3150,7 @@ describe('Extension lifecycle', () => {
 
     // Both AI commands are always registered for discoverability
     // Runtime checks show helpful messages when IDE/extension not available
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(11);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(12);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
@@ -3202,7 +3202,7 @@ describe('Extension lifecycle', () => {
 
     // Both AI commands always registered (even in Cursor IDE)
     // Runtime availability determines whether they work or show help message
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(11);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(12);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
 
     // Verify both AI assistant commands are registered

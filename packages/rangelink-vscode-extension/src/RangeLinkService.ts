@@ -54,6 +54,49 @@ export class RangeLinkService {
   }
 
   /**
+   * Paste selected text to bound destination (issue #89)
+   *
+   * Extracts the currently selected text from the active editor and sends it
+   * directly to the bound destination (terminal, text editor, or AI assistant).
+   *
+   * **Behavior:**
+   * - Supports single and multi-selection (concatenates with newlines)
+   * - Copies to clipboard as fallback if no destination bound
+   * - Shows appropriate success/failure messages
+   * - Skips empty selections
+   */
+  async pasteSelectedTextToDestination(): Promise<void> {
+    const validated = this.validateSelectionsAndShowError();
+    if (!validated) {
+      return;
+    }
+
+    const { editor, selections } = validated;
+
+    // Extract selected text (concatenate with newlines for multi-selection)
+    const selectedTexts = selections.map((s) => editor.document.getText(s));
+    const content = selectedTexts.join('\n');
+
+    getLogger().debug(
+      {
+        fn: 'pasteSelectedTextToDestination',
+        selectionCount: selectedTexts.length,
+        contentLength: content.length,
+      },
+      `Extracted ${content.length} chars from ${selectedTexts.length} selection(s)`,
+    );
+
+    await this.copyAndSendToDestination(
+      content,
+      content,
+      (text) => this.destinationManager.sendTextToDestination(text),
+      (destination, text) => destination.isEligibleForPasteContent(text),
+      'Selected text',
+      'pasteSelectedTextToDestination',
+    );
+  }
+
+  /**
    * Generates a link from the current editor selection
    * @param pathFormat Whether to use relative or absolute paths
    * @param isPortable Whether to generate a portable link with embedded delimiters

@@ -184,6 +184,7 @@ All commands are available via keyboard shortcuts, Command Palette, and right-cl
 | Copy Range Link (Absolute)                | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link                               |
 | Copy Portable Link                        | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link                               |
 | Copy Portable Link (Absolute)             | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link                               |
+| Paste Selected Text to Bound Destination  | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination        |
 | Bind RangeLink to Claude Code Destination | —                   | —                     | Copy link + open Claude Code chat (clipboard workflow)  |
 | Bind RangeLink to Cursor AI Destination   | —                   | —                     | Copy link + open Cursor AI chat (clipboard workflow)    |
 | Bind RangeLink to Terminal Destination    | —                   | —                     | Auto-send links to integrated terminal for AI workflows |
