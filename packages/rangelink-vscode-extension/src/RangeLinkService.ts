@@ -36,7 +36,7 @@ export class RangeLinkService {
   async createLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
     const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
     if (formattedLink) {
-      await this.copyAndNotify(formattedLink, 'RangeLink');
+      await this.copyToClipboardAndDestination(formattedLink, 'RangeLink');
     }
   }
 
@@ -46,7 +46,7 @@ export class RangeLinkService {
   async createPortableLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
     const formattedLink = await this.generateLinkFromSelection(pathFormat, true);
     if (formattedLink) {
-      await this.copyAndNotify(formattedLink, 'Portable RangeLink');
+      await this.copyToClipboardAndDestination(formattedLink, 'Portable RangeLink');
     }
   }
 
@@ -93,59 +93,14 @@ export class RangeLinkService {
       `Extracted ${content.length} chars from ${selectedTexts.length} selection(s)`,
     );
 
-    // Copy to clipboard first (always available as fallback)
-    await this.ideAdapter.writeTextToClipboard(content);
-
-    // Check if destination is bound
-    if (!this.destinationManager.isBound()) {
-      getLogger().info(
-        { fn: 'pasteSelectedTextToDestination', contentLength: content.length },
-        'No destination bound - copied to clipboard only',
-      );
-      this.ideAdapter.setStatusBarMessage(
-        `✓ Selected text copied to clipboard (${content.length} chars)`,
-        2000,
-      );
-      return;
-    }
-
-    const destination = this.destinationManager.getBoundDestination();
-    const displayName = destination?.displayName || 'destination';
-
-    getLogger().debug(
-      {
-        fn: 'pasteSelectedTextToDestination',
-        contentLength: content.length,
-        boundDestination: displayName,
-      },
-      `Attempting to send selected text to bound destination: ${displayName}`,
+    await this.copyAndSendToDestination(
+      content,
+      content,
+      (text) => this.destinationManager.sendTextToDestination(text),
+      (destination, text) => destination.isEligibleForPasteContent(text),
+      'Selected text',
+      'pasteSelectedTextToDestination',
     );
-
-    // Send to bound destination
-    const sent = await this.destinationManager.sendTextToDestination(content);
-
-    if (sent) {
-      this.ideAdapter.setStatusBarMessage(
-        `✓ Selected text sent to ${displayName} (${content.length} chars)`,
-        2000,
-      );
-    } else {
-      // Paste failed - show destination-aware error message
-      getLogger().warn(
-        {
-          fn: 'pasteSelectedTextToDestination',
-          contentLength: content.length,
-          boundDestination: displayName,
-        },
-        'Failed to send text to bound destination',
-      );
-
-      const errorMessage = destination
-        ? this.buildPasteFailureMessage(destination)
-        : 'RangeLink: Copied to clipboard. Could not send to destination.';
-
-      this.ideAdapter.showWarningMessage(errorMessage);
-    }
   }
 
   /**
@@ -212,7 +167,7 @@ export class RangeLinkService {
   }
 
   /**
-   * Copies the link to clipboard and shows status bar notification
+   * Copies the link to clipboard and sends to bound destination if available
    *
    * **Auto-paste behavior (text editor destination):**
    * - Skips auto-paste if creating link FROM the bound editor itself
@@ -222,66 +177,18 @@ export class RangeLinkService {
    * @param formattedLink The formatted RangeLink with metadata
    * @param linkTypeName User-friendly name for status messages (e.g., "RangeLink", "Portable RangeLink")
    */
-  private async copyAndNotify(formattedLink: FormattedLink, linkTypeName: string): Promise<void> {
-    await this.ideAdapter.writeTextToClipboard(formattedLink.link);
-
-    const statusMessage = `✓ ${linkTypeName} copied to clipboard`;
-
-    // Send to bound destination if one is bound
-    if (this.destinationManager.isBound()) {
-      const destination = this.destinationManager.getBoundDestination();
-      const displayName = destination?.displayName || 'destination';
-
-      // Skip auto-paste if creating link FROM the bound editor itself
-      if (destination?.id === 'text-editor') {
-        const textEditorDest = destination as any; // TextEditorDestination
-        const boundDocumentUri = textEditorDest.getBoundDocumentUri();
-        const activeEditor = this.ideAdapter.activeTextEditor;
-
-        if (activeEditor && boundDocumentUri) {
-          const activeDocumentUri = activeEditor.document.uri.toString();
-          const boundUriString = boundDocumentUri.toString();
-
-          if (activeDocumentUri === boundUriString) {
-            // Creating link FROM bound editor - skip auto-paste
-            getLogger().debug(
-              {
-                fn: 'copyAndNotify',
-                linkTypeName,
-                boundDocumentUri: boundUriString,
-              },
-              'Skipping auto-paste: creating link from bound editor itself',
-            );
-            this.ideAdapter.setStatusBarMessage(statusMessage, 2000);
-            return;
-          }
-        }
-      }
-
-      getLogger().debug(
-        { fn: 'copyAndNotify', linkTypeName, formattedLink, boundDestination: displayName },
-        `Attempting to send link to bound destination: ${displayName}`,
-      );
-
-      const sent = await this.destinationManager.sendToDestination(formattedLink);
-      if (sent) {
-        this.ideAdapter.setStatusBarMessage(`${statusMessage} & sent to ${displayName}`, 2000);
-      } else {
-        // Paste failed - show destination-aware error message
-        getLogger().warn(
-          { fn: 'copyAndNotify', linkTypeName, boundDestination: displayName },
-          'Failed to send link to bound destination',
-        );
-        const errorMessage = destination
-          ? this.buildPasteFailureMessage(destination)
-          : 'RangeLink: Copied to clipboard. Could not send to destination.';
-        this.ideAdapter.showWarningMessage(errorMessage);
-      }
-      return;
-    }
-
-    // No destination bound - just show clipboard message
-    this.ideAdapter.setStatusBarMessage(statusMessage, 2000);
+  private async copyToClipboardAndDestination(
+    formattedLink: FormattedLink,
+    linkTypeName: string,
+  ): Promise<void> {
+    await this.copyAndSendToDestination(
+      formattedLink.link,
+      formattedLink,
+      (link) => this.destinationManager.sendToDestination(link),
+      (destination, link) => destination.isEligibleForPasteLink(link),
+      linkTypeName,
+      'copyToClipboardAndDestination',
+    );
   }
 
   /**
@@ -309,6 +216,93 @@ export class RangeLinkService {
       return this.ideAdapter.asRelativePath(document.uri);
     }
     return document.uri.fsPath;
+  }
+
+  /**
+   * Unified utility for copying content to clipboard and sending to bound destination
+   *
+   * Eliminates duplication between pasteSelectedTextToDestination and copyToClipboardAndDestination.
+   * Handles clipboard copy, destination binding check, skip-auto-paste logic, sending, and status messages.
+   *
+   * **Message handling:**
+   * - Automatic destinations (Terminal, Text Editor): Shows status bar "✓ ${contentName} copied to clipboard and sent to ${displayName}"
+   * - Clipboard destinations (Claude Code, Cursor AI): Shows status bar "✓ ${contentName} copied to clipboard" + information popup with getUserInstruction()
+   * - No destination bound: Shows "✓ ${contentName} copied to clipboard"
+   *
+   * @param clipboardContent - String content to copy to clipboard
+   * @param sendContent - Content to send to destination (may differ from clipboard)
+   * @param sendFn - Function to send content to destination manager
+   * @param isEligibleFn - Function to check if content is eligible for paste to destination
+   * @param contentName - User-friendly name for the content (e.g., "RangeLink", "Selected text")
+   * @param fnName - Function name for logging
+   */
+  private async copyAndSendToDestination<T>(
+    clipboardContent: string,
+    sendContent: T,
+    sendFn: (content: T) => Promise<boolean>,
+    isEligibleFn: (destination: PasteDestination, content: T) => Promise<boolean>,
+    contentName: string,
+    fnName: string,
+  ): Promise<void> {
+    // Copy to clipboard
+    await this.ideAdapter.writeTextToClipboard(clipboardContent);
+
+    // Check if destination is bound
+    if (!this.destinationManager.isBound()) {
+      getLogger().info({ fn: fnName }, 'No destination bound - copied to clipboard only');
+      this.ideAdapter.setStatusBarMessage(`✓ ${contentName} copied to clipboard`, 2000);
+      return;
+    }
+
+    // Safe: isBound() guarantees getBoundDestination() returns non-undefined
+    const destination = this.destinationManager.getBoundDestination()!;
+    const displayName = destination.displayName || 'destination';
+
+    // Check eligibility before sending
+    const isEligible = await isEligibleFn(destination, sendContent);
+    if (!isEligible) {
+      getLogger().debug(
+        { fn: fnName, boundDestination: displayName },
+        'Content not eligible for paste - skipping auto-paste',
+      );
+      this.ideAdapter.setStatusBarMessage(`✓ ${contentName} copied to clipboard`, 2000);
+      return;
+    }
+
+    getLogger().debug(
+      { fn: fnName, boundDestination: displayName },
+      `Attempting to send content to bound destination: ${displayName}`,
+    );
+
+    // Send to bound destination
+    const sent = await sendFn(sendContent);
+
+    if (sent) {
+      // Check if destination requires manual paste
+      const userInstruction = destination.getUserInstruction();
+
+      if (userInstruction) {
+        // Clipboard-based destination: Show status bar + information popup
+        this.ideAdapter.setStatusBarMessage(`✓ ${contentName} copied to clipboard`, 2000);
+        void this.ideAdapter.showInformationMessage(
+          `${contentName} copied to clipboard. ${userInstruction}`,
+        );
+      } else {
+        // Automatic destination: Show status bar only
+        this.ideAdapter.setStatusBarMessage(
+          `✓ ${contentName} copied to clipboard & sent to ${displayName}`,
+          2000,
+        );
+      }
+    } else {
+      // Paste failed - show destination-aware error message
+      getLogger().warn(
+        { fn: fnName, boundDestination: displayName },
+        'Failed to send to destination',
+      );
+      const errorMessage = this.buildPasteFailureMessage(destination);
+      this.ideAdapter.showWarningMessage(errorMessage);
+    }
   }
 
   /**
