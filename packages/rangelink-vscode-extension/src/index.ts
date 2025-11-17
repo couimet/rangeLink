@@ -7,12 +7,3 @@
 
 // Re-export main service class
 export { RangeLinkService, PathFormat } from './RangeLinkService';
-
-// Note: The following are internal/testing exports and should not be
-// part of the public API in a production library:
-// - getErrorCodeForTesting
-// - RangeLinkMessageCode
-// - LogLevel
-//
-// When moving to a monorepo structure (rangelink-core-ts), these should
-// be removed or placed in a separate testing utilities module.

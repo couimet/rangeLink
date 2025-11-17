@@ -13,16 +13,16 @@ import { SharedErrorCodes } from 'rangelink-core-ts';
  */
 export enum RangeLinkExtensionSpecificCodes {
   //
-  // Destination errors
+  // Keep alphabetical order
   //
   DESTINATION_NOT_AVAILABLE = 'DESTINATION_NOT_AVAILABLE',
   DESTINATION_NOT_IMPLEMENTED = 'DESTINATION_NOT_IMPLEMENTED',
-
-  //
-  // Selection errors
-  //
   EMPTY_SELECTION = 'EMPTY_SELECTION',
+  MISSING_MESSAGE_CODE = 'MISSING_MESSAGE_CODE',
   SELECTION_CONVERSION_FAILED = 'SELECTION_CONVERSION_FAILED',
+  //
+  // Keep alphabetical order
+  //
 }
 
 /**

@@ -11,6 +11,8 @@ import * as vscode from 'vscode';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
+import { MessageCode } from './types/MessageCode';
+import { formatMessage } from './utils/formatMessage';
 import { toInputSelection } from './utils/toInputSelection';
 
 export enum PathFormat {
@@ -127,7 +129,9 @@ export class RangeLinkService {
   private async copyAndNotify(link: string, linkTypeName: string): Promise<void> {
     await this.ideAdapter.writeTextToClipboard(link);
 
-    const statusMessage = `✓ ${linkTypeName} copied to clipboard`;
+    const statusMessage = formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, {
+      linkTypeName,
+    });
 
     // Send to bound destination if one is bound
     if (this.destinationManager.isBound()) {

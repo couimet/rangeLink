@@ -761,10 +761,6 @@ describe('parseLink', () => {
       loggerDebugSpy = jest.spyOn(logger, 'debug');
     });
 
-    afterEach(() => {
-      loggerDebugSpy.mockRestore();
-    });
-
     it('should log when using default delimiters (no param provided)', () => {
       parseLink('file.ts#L10');
 

@@ -4,11 +4,14 @@ import * as vscode from 'vscode';
 import { getDelimitersForExtension } from './config';
 import { DestinationFactory } from './destinations/DestinationFactory';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
+import { setLocale } from './i18n/LocaleManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
+import { MessageCode } from './types/MessageCode';
+import { formatMessage } from './utils/formatMessage';
 import { registerWithLogging } from './utils/registerWithLogging';
 import { VSCodeLogger } from './VSCodeLogger';
 
@@ -27,6 +30,9 @@ export function activate(context: vscode.ExtensionContext): void {
   // Initialize core library logger with VSCode adapter
   const vscodeLogger = new VSCodeLogger(outputChannel);
   setLogger(vscodeLogger);
+
+  // Initialize i18n locale from VSCode environment
+  setLocale(vscode.env.language);
 
   // Load delimiter configuration
   const vscodeConfig = vscode.workspace.getConfiguration('rangelink');
@@ -115,7 +121,9 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.window.showInformationMessage(message, 'Copy Commit Hash').then((selection) => {
           if (selection === 'Copy Commit Hash') {
             vscode.env.clipboard.writeText(versionInfo.commitFull);
-            vscode.window.showInformationMessage('Commit hash copied to clipboard');
+            vscode.window.showInformationMessage(
+              formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED),
+            );
           }
         });
         getLogger().info(
