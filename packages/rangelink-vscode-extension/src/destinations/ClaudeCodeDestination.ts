@@ -72,6 +72,19 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
+   * Check if a RangeLink is eligible to be pasted to Claude Code
+   *
+   * Claude Code has no special eligibility rules - always eligible.
+   *
+   * @param _formattedLink - The formatted RangeLink (not used)
+   * @returns Always true (Claude Code accepts all content)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteLink(_formattedLink: FormattedLink): Promise<boolean> {
+    return true;
+  }
+
+  /**
    * Paste a RangeLink to Claude Code chat
    *
    * **Implementation:** Since Claude Code doesn't support programmatic text insertion,
