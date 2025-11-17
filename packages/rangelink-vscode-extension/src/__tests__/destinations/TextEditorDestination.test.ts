@@ -122,7 +122,7 @@ describe('TextEditorDestination', () => {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: 9,
         },
-        'Cannot paste: No text editor bound',
+        'Cannot operate: No text editor bound',
       );
     });
 
@@ -234,7 +234,7 @@ describe('TextEditorDestination', () => {
           boundDocumentUri: mockEditor.document.uri.toString(),
           boundDisplayName: 'src/file.ts',
         },
-        'Bound document is topmost but TextEditor object not found in visibleTextEditors',
+        'TextEditor object not found in visibleTextEditors',
       );
     });
 

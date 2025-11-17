@@ -93,17 +93,6 @@ describe('TerminalDestination', () => {
       expect(mockTerminal.show).toHaveBeenCalledWith(false);
     });
 
-    it('should call sendText before show (correct order)', async () => {
-      const sendTextSpy = mockTerminal.sendText as jest.Mock;
-      const showSpy = mockTerminal.show as jest.Mock;
-
-      await destination.pasteLink(createMockFormattedLink('link'));
-
-      expect(sendTextSpy.mock.invocationCallOrder[0]).toBeLessThan(
-        showSpy.mock.invocationCallOrder[0],
-      );
-    });
-
     it('should log success with terminal name and formattedLink', async () => {
       const testLink = 'src/file.ts#L10';
       const formattedLink = createMockFormattedLink(testLink);
@@ -134,7 +123,7 @@ describe('TerminalDestination', () => {
           formattedLink,
           linkLength: testLink.length,
         },
-        'Cannot paste: No terminal bound',
+        'Cannot focus: No terminal bound',
       );
     });
   });
@@ -261,7 +250,7 @@ describe('TerminalDestination', () => {
           fn: 'TerminalDestination.pasteContent',
           contentLength: 9,
         },
-        'Cannot paste: No terminal bound',
+        'Cannot focus: No terminal bound',
       );
     });
 
@@ -285,17 +274,6 @@ describe('TerminalDestination', () => {
       await destination.pasteContent('text');
 
       expect(mockTerminal.show).toHaveBeenCalledWith(false);
-    });
-
-    it('should call sendText before show (correct order)', async () => {
-      const sendTextSpy = mockTerminal.sendText as jest.Mock;
-      const showSpy = mockTerminal.show as jest.Mock;
-
-      await destination.pasteContent('text');
-
-      expect(sendTextSpy.mock.invocationCallOrder[0]).toBeLessThan(
-        showSpy.mock.invocationCallOrder[0],
-      );
     });
 
     it('should log success with terminal name and content length', async () => {

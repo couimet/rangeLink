@@ -95,7 +95,7 @@ export class TerminalDestination implements PasteDestination {
    * Focus bound terminal and return its name
    *
    * Validates terminal is bound, shows it, and returns its name.
-   * Shared helper used by both focus() command and paste operations.
+   * Used by both focus() command and paste operations to ensure terminal is visible.
    *
    * @param logContext - Logging context for error messages
    * @returns Terminal name if successful, undefined if no terminal bound
@@ -186,7 +186,7 @@ export class TerminalDestination implements PasteDestination {
       return false;
     }
 
-    // Validate terminal and focus (replaces separate validation + show() calls)
+    // Validate terminal is bound and focus it
     const terminalName = this.focusAndGetTerminalName(logContext);
     if (!terminalName) {
       return false;
