@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -183,11 +183,9 @@ export class TextEditorDestination implements PasteDestination {
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
     return this.insertTextAtCursor({
       text: formattedLink.link,
-      fnName: 'TextEditorDestination.pasteLink',
-      logContext: { formattedLink, linkLength: formattedLink.link.length },
+      logContext: { fn: 'TextEditorDestination.pasteLink', formattedLink, linkLength: formattedLink.link.length },
       ineligibleMessage: 'Link not eligible for paste',
-      successMessage: (boundDisplayName: string) =>
-        `Pasted link to text editor: ${boundDisplayName}`,
+      successLogMessage: (boundDisplayName: string) => `Pasted link to text editor: ${boundDisplayName}`,
       errorMessage: 'Failed to paste link to text editor',
     });
   }
@@ -203,22 +201,20 @@ export class TextEditorDestination implements PasteDestination {
    */
   private async insertTextAtCursor(options: {
     text: string;
-    fnName: string;
-    logContext: Record<string, unknown>;
+    logContext: LoggingContext;
     ineligibleMessage: string;
     successLogMessage: (boundDisplayName: string) => string;
     errorMessage: string;
   }): Promise<boolean> {
-    const { text, fnName, logContext, ineligibleMessage, successLogMessage, errorMessage } =
-      options;
+    const { text, logContext, ineligibleMessage, successLogMessage, errorMessage } = options;
 
     if (!isEligibleForPaste(text)) {
-      this.logger.info({ fn: fnName, ...logContext }, ineligibleMessage);
+      this.logger.info(logContext, ineligibleMessage);
       return false;
     }
 
     if (!this.boundDocumentUri) {
-      this.logger.warn({ fn: fnName, ...logContext }, 'Cannot paste: No text editor bound');
+      this.logger.warn(logContext, 'Cannot paste: No text editor bound');
       return false;
     }
 
@@ -232,7 +228,7 @@ export class TextEditorDestination implements PasteDestination {
       // Document not found in any tab group - likely closed or tab group closed
       this.logger.error(
         {
-          fn: fnName,
+          ...logContext,
           boundDocumentUri: this.boundDocumentUri.toString(),
           boundDisplayName,
         },
@@ -245,14 +241,14 @@ export class TextEditorDestination implements PasteDestination {
     // Check if bound document is the active (topmost) tab in its group
     const activeTab = boundTabGroup.activeTab;
     if (!activeTab) {
-      this.logger.warn({ fn: fnName, boundDisplayName }, 'Tab group has no active tab');
+      this.logger.warn({ ...logContext, boundDisplayName }, 'Tab group has no active tab');
       return false;
     }
 
     if (!this.ideAdapter.isTextEditorTab(activeTab)) {
       this.logger.warn(
         {
-          fn: fnName,
+          ...logContext,
           boundDisplayName,
           tabInputType: typeof activeTab.input,
         },
@@ -265,7 +261,7 @@ export class TextEditorDestination implements PasteDestination {
       // Bound document exists but is not topmost - show warning but keep binding
       this.logger.warn(
         {
-          fn: fnName,
+          ...logContext,
           boundDocumentUri: this.boundDocumentUri.toString(),
           activeTabUri: activeTab.input.uri.toString(),
           boundDisplayName,
@@ -283,7 +279,7 @@ export class TextEditorDestination implements PasteDestination {
     if (!editor) {
       this.logger.error(
         {
-          fn: fnName,
+          ...logContext,
           boundDocumentUri: this.boundDocumentUri.toString(),
           boundDisplayName,
         },
@@ -301,16 +297,21 @@ export class TextEditorDestination implements PasteDestination {
       });
 
       if (!success) {
-        this.logger.error(
-          {
-            fn: fnName,
-            boundDisplayName,
-            boundDocumentUri: this.boundDocumentUri.toString(),
-            originalLength: text.length,
-            ...logContext,
-          },
-          'Edit operation failed',
-        );
+        // Build error log context - spread logContext to preserve all fields, add edit-specific info
+        const editFailedContext: LoggingContext = {
+          ...logContext,
+          boundDisplayName,
+          boundDocumentUri: this.boundDocumentUri.toString(),
+        };
+
+        // Add length field based on what's being pasted
+        if ('formattedLink' in logContext) {
+          editFailedContext.linkLength = text.length;
+        } else {
+          editFailedContext.contentLength = text.length;
+        }
+
+        this.logger.error(editFailedContext, 'Edit operation failed');
         return false;
       }
 
@@ -320,30 +321,28 @@ export class TextEditorDestination implements PasteDestination {
         viewColumn: editor.viewColumn, // Keep in same tab group
       });
 
-      this.logger.info(
-        {
-          fn: fnName,
-          boundDisplayName,
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          originalLength: text.length,
-          paddedLength: paddedText.length,
-          ...logContext,
-        },
-        successLogMessage(boundDisplayName ?? this.boundDocumentUri.toString()),
-      );
+      // Build success log context - spread logContext to preserve all fields
+      const successContext: LoggingContext = {
+        ...logContext,
+        boundDisplayName,
+        boundDocumentUri: this.boundDocumentUri.toString(),
+        originalLength: text.length,
+        paddedLength: paddedText.length,
+      };
+
+      this.logger.info(successContext, successLogMessage(boundDisplayName ?? this.boundDocumentUri.toString()));
 
       return true;
     } catch (error) {
-      this.logger.error(
-        {
-          fn: fnName,
-          boundDisplayName,
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          error,
-          ...logContext,
-        },
-        errorMessage,
-      );
+      // Build exception log context - spread logContext to preserve all fields
+      const exceptionContext: LoggingContext = {
+        ...logContext,
+        boundDisplayName,
+        boundDocumentUri: this.boundDocumentUri.toString(),
+        error,
+      };
+
+      this.logger.error(exceptionContext, errorMessage);
       return false;
     }
   }
@@ -360,11 +359,9 @@ export class TextEditorDestination implements PasteDestination {
   async pasteContent(content: string): Promise<boolean> {
     return this.insertTextAtCursor({
       text: content,
-      fnName: 'TextEditorDestination.pasteContent',
-      logContext: { contentLength: content.length },
+      logContext: { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
       ineligibleMessage: 'Content not eligible for paste',
-      successLogMessage: (boundDisplayName: string) =>
-        `Pasted content to text editor: ${boundDisplayName}`,
+      successLogMessage: (boundDisplayName: string) => `Pasted content to text editor: ${boundDisplayName}`,
       errorMessage: 'Exception during paste operation',
     });
   }

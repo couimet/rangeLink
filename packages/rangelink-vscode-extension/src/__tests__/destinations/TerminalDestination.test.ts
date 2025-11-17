@@ -114,6 +114,7 @@ describe('TerminalDestination', () => {
           fn: 'TerminalDestination.pasteLink',
           terminalName: 'bash',
           formattedLink,
+          linkLength: testLink.length,
           originalLength: testLink.length,
           paddedLength: testLink.length + 2,
         },
@@ -220,6 +221,7 @@ describe('TerminalDestination', () => {
           fn: 'TerminalDestination.pasteLink',
           terminalName: 'bash',
           formattedLink,
+          linkLength: testLink.length,
           originalLength: testLink.length,
           paddedLength: testLink.length + 2,
         },
@@ -305,6 +307,7 @@ describe('TerminalDestination', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'TerminalDestination.pasteContent',
+          contentLength: testContent.length,
           terminalName: 'bash',
           originalLength: testContent.length,
           paddedLength: testContent.length + 2,

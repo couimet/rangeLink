@@ -137,6 +137,7 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.pasteContent',
+          contentLength: 4,
           boundDocumentUri: mockEditor.document.uri.toString(),
           boundDisplayName: 'src/file.ts',
         },
@@ -155,6 +156,7 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.pasteContent',
+          contentLength: 4,
           boundDisplayName: 'src/file.ts',
         },
         'Tab group has no active tab',
@@ -181,6 +183,7 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.pasteContent',
+          contentLength: 4,
           boundDisplayName: 'src/file.ts',
           tabInputType: 'object',
         },
@@ -208,6 +211,7 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.pasteContent',
+          contentLength: 4,
           boundDocumentUri: mockEditor.document.uri.toString(),
           activeTabUri: differentUri.toString(),
           boundDisplayName: 'src/file.ts',
@@ -226,6 +230,7 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.pasteContent',
+          contentLength: 4,
           boundDocumentUri: mockEditor.document.uri.toString(),
           boundDisplayName: 'src/file.ts',
         },
@@ -286,6 +291,7 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.pasteContent',
+          contentLength: testContent.length,
           boundDisplayName: 'src/file.ts',
           boundDocumentUri: mockEditor.document.uri.toString(),
           originalLength: testContent.length,
@@ -324,6 +330,7 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.pasteContent',
+          contentLength: 4,
           boundDisplayName: 'src/file.ts',
           boundDocumentUri: mockEditor.document.uri.toString(),
           error: testError,

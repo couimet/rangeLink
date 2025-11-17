@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -114,12 +114,7 @@ export class ClaudeCodeDestination implements PasteDestination {
    * @param contextInfo - Logging context with fn name and content metadata
    * @returns true if chat open succeeded or commands attempted, false if extension unavailable
    */
-  private async openChatInterface(contextInfo: {
-    fn: string;
-    contentLength?: number;
-    formattedLink?: FormattedLink;
-    linkLength?: number;
-  }): Promise<boolean> {
+  private async openChatInterface(contextInfo: LoggingContext): Promise<boolean> {
     if (!(await this.isAvailable())) {
       this.logger.warn(contextInfo, 'Cannot paste: Claude Code extension not available');
       return false;

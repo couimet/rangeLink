@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -84,8 +84,7 @@ export class TerminalDestination implements PasteDestination {
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
     return this.sendTextToTerminal({
       text: formattedLink.link,
-      fnName: 'TerminalDestination.pasteLink',
-      logContext: { formattedLink },
+      logContext: { fn: 'TerminalDestination.pasteLink', formattedLink, linkLength: formattedLink.link.length },
       ineligibleMessage: 'Link not eligible for paste',
       successLogMessage: (terminalName: string) => `Pasted link to terminal: ${terminalName}`,
     });
@@ -107,8 +106,7 @@ export class TerminalDestination implements PasteDestination {
   async pasteContent(content: string): Promise<boolean> {
     return this.sendTextToTerminal({
       text: content,
-      fnName: 'TerminalDestination.pasteContent',
-      logContext: {},
+      logContext: { fn: 'TerminalDestination.pasteContent', contentLength: content.length },
       ineligibleMessage: 'Content not eligible for paste',
       successLogMessage: (terminalName: string) => `Pasted content to terminal: ${terminalName}`,
     });
@@ -125,20 +123,19 @@ export class TerminalDestination implements PasteDestination {
    */
   private async sendTextToTerminal(options: {
     text: string;
-    fnName: string;
-    logContext: Record<string, unknown>;
+    logContext: LoggingContext;
     ineligibleMessage: string;
     successLogMessage: (terminalName: string) => string;
   }): Promise<boolean> {
-    const { text, fnName, logContext, ineligibleMessage, successLogMessage } = options;
+    const { text, logContext, ineligibleMessage, successLogMessage } = options;
 
     if (!isEligibleForPaste(text)) {
-      this.logger.info({ fn: fnName, ...logContext }, ineligibleMessage);
+      this.logger.info(logContext, ineligibleMessage);
       return false;
     }
 
     if (!this.boundTerminal) {
-      this.logger.warn({ fn: fnName, ...logContext }, 'Cannot paste: No terminal bound');
+      this.logger.warn(logContext, 'Cannot paste: No terminal bound');
       return false;
     }
 
@@ -151,16 +148,15 @@ export class TerminalDestination implements PasteDestination {
     // Auto-focus terminal for seamless workflow
     this.boundTerminal.show(false);
 
-    this.logger.info(
-      {
-        fn: fnName,
-        terminalName,
-        originalLength: text.length,
-        paddedLength: paddedText.length,
-        ...logContext,
-      },
-      successLogMessage(terminalName!),
-    );
+    // Build success log context - spread logContext to preserve all fields
+    const successContext: LoggingContext = {
+      ...logContext,
+      terminalName,
+      originalLength: text.length,
+      paddedLength: paddedText.length,
+    };
+
+    this.logger.info(successContext, successLogMessage(terminalName!));
 
     return true;
   }
