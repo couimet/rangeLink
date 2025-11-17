@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -114,12 +114,7 @@ export class ClaudeCodeDestination implements PasteDestination {
    * @param contextInfo - Logging context with fn name and content metadata
    * @returns true if chat open succeeded or commands attempted, false if extension unavailable
    */
-  private async openChatInterface(contextInfo: {
-    fn: string;
-    contentLength?: number;
-    formattedLink?: FormattedLink;
-    linkLength?: number;
-  }): Promise<boolean> {
+  private async openChatInterface(contextInfo: LoggingContext): Promise<boolean> {
     if (!(await this.isAvailable())) {
       this.logger.warn(contextInfo, 'Cannot paste: Claude Code extension not available');
       return false;
@@ -156,6 +151,39 @@ export class ClaudeCodeDestination implements PasteDestination {
       this.logger.error({ ...contextInfo, error }, 'Failed to open Claude Code');
       return false;
     }
+  }
+
+  /**
+   * Check if text content is eligible to be pasted to Claude Code
+   *
+   * Claude Code has no special eligibility rules - always eligible.
+   *
+   * @param _content - The text content (not used)
+   * @returns Always true (Claude Code accepts all content)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteContent(_content: string): Promise<boolean> {
+    return true;
+  }
+
+  /**
+   * Paste text content to Claude Code chat
+   *
+   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
+   * Used for pasting selected text directly to Claude Code (issue #89).
+   *
+   * **Implementation:** Since Claude Code doesn't support programmatic text insertion,
+   * this method opens Claude Code chat interface. The caller (RangeLinkService) handles
+   * clipboard copy and user notification.
+   *
+   * @param content - The text content to paste
+   * @returns true if chat open succeeded, false otherwise
+   */
+  async pasteContent(content: string): Promise<boolean> {
+    return this.openChatInterface({
+      fn: 'ClaudeCodeDestination.pasteContent',
+      contentLength: content.length,
+    });
   }
 
   /**

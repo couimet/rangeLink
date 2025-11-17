@@ -302,6 +302,121 @@ describe('CursorAIDestination', () => {
     });
   });
 
+  describe('pasteContent() - Clipboard workaround for text', () => {
+    beforeEach(() => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
+    });
+
+    it('should return false when not running in Cursor IDE', async () => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Visual Studio Code';
+
+      const result = await destination.pasteContent('selected text');
+
+      expect(result).toBe(false);
+    });
+
+    it('should NOT copy content to clipboard (RangeLinkService handles this)', async () => {
+      const testContent = 'selected text from editor';
+      const writeTextSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard');
+
+      await destination.pasteContent(testContent);
+
+      expect(writeTextSpy).not.toHaveBeenCalled();
+    });
+
+    it('should try opening chat with aichat.newchataction command first', async () => {
+      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
+
+      await destination.pasteContent('text');
+
+      expect(executeCommandSpy).toHaveBeenCalledWith('aichat.newchataction');
+    });
+
+    it('should try fallback command if primary fails', async () => {
+      const executeCommandSpy = jest
+        .spyOn(mockAdapter, 'executeCommand')
+        .mockRejectedValueOnce(new Error('aichat.newchataction not found'))
+        .mockResolvedValueOnce(undefined);
+
+      await destination.pasteContent('text');
+
+      expect(executeCommandSpy).toHaveBeenCalledWith('aichat.newchataction');
+      expect(executeCommandSpy).toHaveBeenCalledWith('workbench.action.toggleAuxiliaryBar');
+    });
+
+    it('should NOT show notification (RangeLinkService handles this via getUserInstruction())', async () => {
+      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+
+      await destination.pasteContent('text');
+
+      expect(showInfoSpy).not.toHaveBeenCalled();
+    });
+
+    it('should return true when chat open succeeds', async () => {
+      const result = await destination.pasteContent('text');
+
+      expect(result).toBe(true);
+    });
+
+    it('should log chat open completion', async () => {
+      const testContent = 'selected text';
+
+      await destination.pasteContent(testContent);
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'CursorAIDestination.pasteContent',
+          contentLength: testContent.length,
+          chatOpened: true,
+        },
+        'Cursor chat open completed',
+      );
+    });
+
+    it('should log warning when not available', async () => {
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Visual Studio Code';
+      const testContent = 'text';
+
+      await destination.pasteContent(testContent);
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'CursorAIDestination.pasteContent',
+          contentLength: testContent.length,
+        },
+        'Cannot paste: Not running in Cursor IDE',
+      );
+    });
+
+    it('should log warning when all chat commands fail', async () => {
+      const testContent = 'text';
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
+
+      await destination.pasteContent(testContent);
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'CursorAIDestination.pasteContent',
+          contentLength: testContent.length,
+        },
+        'All chat open commands failed',
+      );
+    });
+
+    it('should still return true when chat commands fail (RangeLinkService shows notification)', async () => {
+      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
+      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+
+      const result = await destination.pasteContent('text');
+
+      expect(result).toBe(true);
+      expect(showInfoSpy).not.toHaveBeenCalled(); // RangeLinkService handles notification
+    });
+  });
+
   describe('Edge cases', () => {
     beforeEach(() => {
       const mockVscode = mockAdapter.__getVscodeInstance();

@@ -213,6 +213,70 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
+   * Send text content to bound destination
+   *
+   * Similar to sendToDestination() but for raw text content instead of FormattedLink.
+   * Used for pasting selected text directly to bound destinations (issue #89).
+   *
+   * @param content - The text content to send
+   * @returns true if sent successfully, false otherwise
+   */
+  async sendTextToDestination(content: string): Promise<boolean> {
+    if (!this.boundDestination) {
+      this.logger.debug(
+        { fn: 'PasteDestinationManager.sendTextToDestination' },
+        'No destination bound',
+      );
+      return false;
+    }
+
+    const destinationType = this.boundDestination.id;
+    const displayName = this.boundDestination.displayName;
+
+    // Get destination-specific details for logging
+    let destinationDetails: Record<string, unknown> = {};
+    if (destinationType === 'text-editor') {
+      const textEditorDest = this.boundDestination as TextEditorDestination;
+      destinationDetails = {
+        editorDisplayName: textEditorDest.getEditorDisplayName(),
+        editorPath: textEditorDest.getEditorPath(),
+      };
+    } else if (destinationType === 'terminal' && this.boundTerminal) {
+      destinationDetails = {
+        terminalName: this.boundTerminal.name || 'Unnamed Terminal',
+      };
+    }
+
+    this.logger.debug(
+      {
+        fn: 'PasteDestinationManager.sendTextToDestination',
+        destinationType,
+        displayName,
+        contentLength: content.length,
+        ...destinationDetails,
+      },
+      `Sending content to ${displayName} (${content.length} chars)`,
+    );
+
+    const result = await this.boundDestination.pasteContent(content);
+
+    if (!result) {
+      this.logger.error(
+        {
+          fn: 'PasteDestinationManager.sendTextToDestination',
+          destinationType,
+          displayName,
+          contentLength: content.length,
+          ...destinationDetails,
+        },
+        `Paste content failed to ${displayName}`,
+      );
+    }
+
+    return result;
+  }
+
+  /**
    * Dispose of resources (cleanup event listeners)
    */
   dispose(): void {

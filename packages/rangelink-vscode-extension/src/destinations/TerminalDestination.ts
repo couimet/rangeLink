@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -43,6 +43,19 @@ export class TerminalDestination implements PasteDestination {
   }
 
   /**
+   * Check if text content is eligible to be pasted to terminal
+   *
+   * Terminal has no special eligibility rules - always eligible.
+   *
+   * @param _content - The text content (not used)
+   * @returns Always true (Terminal accepts all content)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteContent(_content: string): Promise<boolean> {
+    return true;
+  }
+
+  /**
    * Get user instruction for manual paste
    *
    * Terminal performs automatic paste, so no manual instruction is needed.
@@ -69,45 +82,85 @@ export class TerminalDestination implements PasteDestination {
    * @returns true if paste succeeded, false if validation failed or no terminal bound
    */
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
-    const link = formattedLink.link;
+    return this.sendTextToTerminal({
+      text: formattedLink.link,
+      logContext: {
+        fn: 'TerminalDestination.pasteLink',
+        formattedLink,
+        linkLength: formattedLink.link.length,
+      },
+      ineligibleMessage: 'Link not eligible for paste',
+      successLogMessage: (terminalName: string) => `Pasted link to terminal: ${terminalName}`,
+    });
+  }
 
-    if (!isEligibleForPaste(link)) {
-      this.logger.info(
-        { fn: 'TerminalDestination.pasteLink', formattedLink, linkLength: link.length },
-        'Link not eligible for paste',
-      );
+  /**
+   * Paste text content to bound terminal with smart padding and focus
+   *
+   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
+   * Used for pasting selected text directly to terminal (issue #89).
+   *
+   * Validation:
+   * - Checks content eligibility (not null/undefined/empty/whitespace-only)
+   * - Logs INFO and returns false if content is not eligible
+   *
+   * @param content - The text content to paste
+   * @returns true if paste succeeded, false otherwise
+   */
+  async pasteContent(content: string): Promise<boolean> {
+    return this.sendTextToTerminal({
+      text: content,
+      logContext: { fn: 'TerminalDestination.pasteContent', contentLength: content.length },
+      ineligibleMessage: 'Content not eligible for paste',
+      successLogMessage: (terminalName: string) => `Pasted content to terminal: ${terminalName}`,
+    });
+  }
+
+  /**
+   * Send text to bound terminal with smart padding and focus
+   *
+   * Shared helper for pasteLink() and pasteContent() to eliminate duplication.
+   * Handles validation, padding, sending, focus, and logging.
+   *
+   * @param options - Configuration for text sending
+   * @returns true if paste succeeded, false if validation failed or no terminal bound
+   */
+  private async sendTextToTerminal(options: {
+    text: string;
+    logContext: LoggingContext;
+    ineligibleMessage: string;
+    successLogMessage: (terminalName: string) => string;
+  }): Promise<boolean> {
+    const { text, logContext, ineligibleMessage, successLogMessage } = options;
+
+    if (!isEligibleForPaste(text)) {
+      this.logger.info(logContext, ineligibleMessage);
       return false;
     }
 
     if (!this.boundTerminal) {
-      this.logger.warn(
-        { fn: 'TerminalDestination.pasteLink', formattedLink, linkLength: link.length },
-        'Cannot paste: No terminal bound',
-      );
+      this.logger.warn(logContext, 'Cannot paste: No terminal bound');
       return false;
     }
 
     const terminalName = this.getTerminalName();
+    const paddedText = applySmartPadding(text);
 
-    // Apply smart padding for better UX
-    const paddedLink = applySmartPadding(link);
-
-    // Send link without auto-submit (addNewLine = false)
-    this.boundTerminal.sendText(paddedLink, false);
+    // Send text without auto-submit (addNewLine = false)
+    this.boundTerminal.sendText(paddedText, false);
 
     // Auto-focus terminal for seamless workflow
     this.boundTerminal.show(false);
 
-    this.logger.info(
-      {
-        fn: 'TerminalDestination.pasteLink',
-        terminalName,
-        formattedLink,
-        originalLength: link.length,
-        paddedLength: paddedLink.length,
-      },
-      `Pasted link to terminal: ${terminalName}`,
-    );
+    // Build success log context - spread logContext to preserve all fields
+    const successContext: LoggingContext = {
+      ...logContext,
+      terminalName,
+      originalLength: text.length,
+      paddedLength: paddedText.length,
+    };
+
+    this.logger.info(successContext, successLogMessage(terminalName!));
 
     return true;
   }
