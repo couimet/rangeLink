@@ -3,7 +3,9 @@ import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { MessageCode } from '../types/MessageCode';
 import { applySmartPadding } from '../utils/applySmartPadding';
+import { formatMessage } from '../utils/formatMessage';
 import { isEligibleForPaste } from '../utils/isEligibleForPaste';
 
 import type { DestinationType, PasteDestination } from './PasteDestination';
@@ -557,6 +559,16 @@ export class TextEditorDestination implements PasteDestination {
     const isBinary = TextEditorDestination.BINARY_EXTENSIONS.some((ext) => path.endsWith(ext));
 
     return !isBinary;
+  }
+
+  /**
+   * Get success message for jump command
+   *
+   * @returns Formatted i18n message for status bar display
+   */
+  getJumpSuccessMessage(): string {
+    const editorDisplayName = this.getEditorDisplayName();
+    return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, { editorDisplayName });
   }
 
   /**

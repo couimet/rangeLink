@@ -2,7 +2,9 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { MessageCode } from '../types/MessageCode';
 import { applySmartPadding } from '../utils/applySmartPadding';
+import { formatMessage } from '../utils/formatMessage';
 import { isEligibleForPaste } from '../utils/isEligibleForPaste';
 
 import type { DestinationType, PasteDestination } from './PasteDestination';
@@ -231,6 +233,16 @@ export class TerminalDestination implements PasteDestination {
    */
   getTerminalName(): string | undefined {
     return this.boundTerminal?.name;
+  }
+
+  /**
+   * Get success message for jump command
+   *
+   * @returns Formatted i18n message for status bar display
+   */
+  getJumpSuccessMessage(): string {
+    const terminalName = this.getTerminalName();
+    return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL, { terminalName });
   }
 
   /**

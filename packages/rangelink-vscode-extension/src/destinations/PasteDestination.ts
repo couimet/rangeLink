@@ -147,6 +147,20 @@ export interface PasteDestination {
   focus(): Promise<boolean>;
 
   /**
+   * Get success message for jump command
+   *
+   * Returns a formatted i18n message to display in the status bar when
+   * the user successfully jumps to this destination. Each destination
+   * provides its own context-appropriate message.
+   *
+   * Eliminates type-checking in PasteDestinationManager by encapsulating
+   * destination-specific message formatting within each implementation.
+   *
+   * @returns Formatted success message for status bar display
+   */
+  getJumpSuccessMessage(): string;
+
+  /**
    * Get destination-specific details for logging
    *
    * Returns structured data about this destination for debug/info logging.

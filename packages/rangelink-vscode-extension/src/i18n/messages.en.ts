@@ -26,7 +26,8 @@ export const messagesEn: Record<MessageCode, string> = {
     'Switch from {currentDestination} to {newDestination}',
   [MessageCode.SMART_BIND_CONFIRM_YES_REPLACE]: 'Yes, replace',
 
-  [MessageCode.STATUS_BAR_JUMP_SUCCESS_AI_ASSISTANT]: '✓ Focused {destinationName}',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE]: '✓ Focused Claude Code Chat',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]: '✓ Focused Cursor AI Assistant',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: '✓ Focused Editor: {editorDisplayName}',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: {terminalName}',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',

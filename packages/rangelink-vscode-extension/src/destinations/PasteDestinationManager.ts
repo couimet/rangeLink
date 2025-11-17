@@ -206,28 +206,8 @@ export class PasteDestinationManager implements vscode.Disposable {
       return false;
     }
 
-    // Success - show appropriate status bar message based on destination type
-    let successMessage: string;
-
-    if (destinationType === 'terminal') {
-      const terminalDest = this.boundDestination as TerminalDestination;
-      const terminalName = terminalDest.getTerminalName();
-      successMessage = formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL, {
-        terminalName,
-      });
-    } else if (destinationType === 'text-editor') {
-      const textEditorDest = this.boundDestination as TextEditorDestination;
-      const editorDisplayName = textEditorDest.getEditorDisplayName();
-      successMessage = formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, {
-        editorDisplayName,
-      });
-    } else {
-      // AI assistant destinations (cursor-ai, claude-code, etc.)
-      successMessage = formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_AI_ASSISTANT, {
-        destinationName: displayName,
-      });
-    }
-
+    // Success - show status bar message from destination
+    const successMessage = this.boundDestination.getJumpSuccessMessage();
     this.ideAdapter.setStatusBarMessage(successMessage, 2000);
 
     this.logger.info(

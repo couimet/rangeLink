@@ -212,6 +212,15 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
+   * Get success message for jump command
+   *
+   * @returns Formatted i18n message for status bar display
+   */
+  getJumpSuccessMessage(): string {
+    return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE);
+  }
+
+  /**
    * Get destination-specific details for logging
    *
    * Claude Code destinations have no additional details to log beyond displayName.
