@@ -2150,7 +2150,6 @@ describe('Configuration loading and validation', () => {
         );
 
         // Test range-column conflict
-        jest.clearAllMocks();
         const mockConfig2 = {
           get: jest.fn((key: string, defaultValue: string) => {
             const custom: Record<string, string> = {
@@ -3194,7 +3193,6 @@ describe('Extension lifecycle', () => {
     (vscode.extensions as any).all = [];
 
     // Clear previous calls and set up mocks BEFORE activate
-    jest.clearAllMocks();
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
     (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
