@@ -73,7 +73,10 @@ export class TextEditorDestination implements PasteDestination {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async isEligibleForPasteLink(_formattedLink: FormattedLink): Promise<boolean> {
-    return this.checkSelfPasteEligibility('isEligibleForPasteLink', 'creating link FROM bound editor');
+    return this.checkSelfPasteEligibility(
+      'isEligibleForPasteLink',
+      'creating link FROM bound editor',
+    );
   }
 
   /**
@@ -306,106 +309,6 @@ export class TextEditorDestination implements PasteDestination {
     }
   }
 
-  /**
-   * Paste text content to bound text editor at cursor position with smart padding
-   *
-   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
-   * Used for pasting selected text directly to editor (issue #89).
-      this.logger.warn(
-        {
-          fn: 'TextEditorDestination.pasteContent',
-          boundDisplayName,
-          tabInputType: typeof activeTab.input,
-        },
-        'Active tab is not a text editor',
-      );
-      return false;
-    }
-
-    const activeTabUri = (activeTab.input as any).uri;
-    if (activeTabUri.toString() !== this.boundDocumentUri.toString()) {
-      this.logger.warn(
-        {
-          fn: 'TextEditorDestination.pasteContent',
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          activeTabUri: activeTabUri.toString(),
-          boundDisplayName,
-        },
-        'Bound document is not topmost in its tab group',
-      );
-      return false;
-    }
-
-    // Find the TextEditor object for the bound document
-    const editor = this.ideAdapter.visibleTextEditors.find(
-      (e) => e.document.uri.toString() === this.boundDocumentUri!.toString(),
-    );
-
-    if (!editor) {
-      this.logger.error(
-        {
-          fn: 'TextEditorDestination.pasteContent',
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          boundDisplayName,
-        },
-        'Bound document is topmost but TextEditor object not found in visibleTextEditors',
-      );
-      return false;
-    }
-
-    // All validations passed - perform the paste
-    try {
-      const paddedContent = applySmartPadding(content);
-
-      const success = await editor.edit((editBuilder) => {
-        editBuilder.insert(editor.selection.active, paddedContent);
-      });
-
-      if (!success) {
-        this.logger.error(
-          {
-            fn: 'TextEditorDestination.pasteContent',
-            boundDisplayName,
-            boundDocumentUri: this.boundDocumentUri.toString(),
-            contentLength: content.length,
-          },
-          'Edit operation failed',
-        );
-        return false;
-      }
-
-      // Focus the editor (similar to terminal.show(false) behavior)
-      await this.ideAdapter.showTextDocument(editor.document.uri, {
-        preserveFocus: false, // Steal focus to bring user to paste destination
-        viewColumn: editor.viewColumn, // Keep in same tab group
-      });
-
-      this.logger.info(
-        {
-          fn: 'TextEditorDestination.pasteContent',
-          boundDisplayName,
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          originalLength: content.length,
-          paddedLength: paddedContent.length,
-        },
-        `Pasted content to text editor (${content.length} chars)`,
-      );
-
-      return true;
-    } catch (error) {
-      this.logger.error(
-        {
-          fn: 'TextEditorDestination.pasteContent',
-          boundDisplayName,
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          contentLength: content.length,
-          error,
-        },
-        'Failed to paste content to text editor',
-      );
-      return false;
-    }
-  }
 
   /**
    * Find which tab group contains the given document URI

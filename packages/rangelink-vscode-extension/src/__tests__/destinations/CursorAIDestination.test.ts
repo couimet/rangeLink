@@ -309,6 +309,4 @@ describe('CursorAIDestination', () => {
       expect(mockVscode.env.clipboard.writeText).not.toHaveBeenCalled(); // RangeLinkService handles clipboard
     });
   });
-
-  
 });

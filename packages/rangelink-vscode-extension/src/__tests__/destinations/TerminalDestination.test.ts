@@ -306,6 +306,4 @@ describe('TerminalDestination', () => {
       expect(destination.getTerminalName()).toBe('fish');
     });
   });
-
-  
 });

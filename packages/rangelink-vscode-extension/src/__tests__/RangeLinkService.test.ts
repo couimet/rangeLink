@@ -454,7 +454,6 @@ describe('RangeLinkService', () => {
     });
   });
 
-
   describe('validateSelectionsAndShowError', () => {
     let service: RangeLinkService;
     let mockIdeAdapter: VscodeAdapter;
@@ -495,7 +494,10 @@ describe('RangeLinkService', () => {
       });
 
       it('should show consistent error message when no editor', async () => {
-        const result = await (service as any).generateLinkFromSelection('workspace-relative', false);
+        const result = await (service as any).generateLinkFromSelection(
+          'workspace-relative',
+          false,
+        );
 
         expect(result).toBeNull();
         expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
@@ -503,14 +505,15 @@ describe('RangeLinkService', () => {
       });
 
       it('should return null early when no editor', async () => {
-        const result = await (service as any).generateLinkFromSelection('workspace-relative', false);
+        const result = await (service as any).generateLinkFromSelection(
+          'workspace-relative',
+          false,
+        );
 
         expect(result).toBeNull();
         expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
       });
     });
-
-
 
     describe('DEBUG logging for empty selection edge case', () => {
       let mockLogger: jest.Mocked<Logger>;
@@ -568,7 +571,6 @@ describe('RangeLinkService', () => {
           'Empty selection detected - should be prevented by command enablement',
         );
       });
-
 
       it('should include correct context in DEBUG log (hasEditor flag)', async () => {
         // Scenario 1: No editor

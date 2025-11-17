@@ -236,6 +236,4 @@ describe('ClaudeCodeDestination', () => {
       expect(showInfoSpy).not.toHaveBeenCalled(); // RangeLinkService handles notification
     });
   });
-
-  
 });
