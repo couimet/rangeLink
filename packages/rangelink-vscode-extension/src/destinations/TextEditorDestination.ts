@@ -217,9 +217,9 @@ export class TextEditorDestination implements PasteDestination {
    * @param logContext - Logging context for error messages
    * @returns Editor and display name if found, undefined if validation fails
    */
-  private validateAndFindEditor(logContext: LoggingContext):
-    | { editor: vscode.TextEditor; boundDisplayName: string }
-    | undefined {
+  private validateAndFindEditor(
+    logContext: LoggingContext,
+  ): { editor: vscode.TextEditor; boundDisplayName: string } | undefined {
     if (!this.boundDocumentUri) {
       this.logger.warn(logContext, 'Cannot operate: No text editor bound');
       return undefined;
