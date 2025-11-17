@@ -198,6 +198,13 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
+  // Register jump to bound destination command
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.jumpToBoundDestination', async () => {
+      await destinationManager.jumpToBoundDestination();
+    }),
+  );
+
   // Register document link navigation command
   context.subscriptions.push(
     vscode.commands.registerCommand('rangelink.handleDocumentLinkClick', (args) => {
