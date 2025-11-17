@@ -202,79 +202,18 @@ export class CursorAIDestination implements PasteDestination {
    * Used for pasting selected text directly to Cursor (issue #89).
    *
    * **Implementation:** Since Cursor doesn't support programmatic text insertion,
-   * this method uses a clipboard-based workaround:
-   * 1. Copy content to clipboard
-   * 2. Open Cursor chat panel
-   * 3. Show notification prompting user to paste
+   * this method opens Cursor chat interface. The caller (RangeLinkService) handles
+   * clipboard copy and user notification.
    *
    * @param content - The text content to paste
-   * @returns true if clipboard copy and chat open succeeded, false otherwise
+   * @returns true if chat open succeeded, false otherwise
    */
   async pasteContent(content: string): Promise<boolean> {
-    if (!(await this.isAvailable())) {
-      this.logger.warn(
-        { fn: 'CursorAIDestination.pasteContent', contentLength: content.length },
-        'Cannot paste: Not running in Cursor IDE',
-      );
-      return false;
-    }
+    return this.openChatInterface({
+      fn: 'CursorAIDestination.pasteContent',
+      contentLength: content.length,
+    });
+  }
 
-    try {
-      // Step 1: Copy to clipboard
-      await this.ideAdapter.writeTextToClipboard(content);
-      this.logger.debug(
-        { fn: 'CursorAIDestination.pasteContent', contentLength: content.length },
-        `Copied content to clipboard (${content.length} chars)`,
-      );
-
-      // Step 2: Try opening chat panel with multiple fallback commands
-      let chatOpened = false;
-      for (const command of CursorAIDestination.CHAT_COMMANDS) {
-        try {
-          await this.ideAdapter.executeCommand(command);
-          this.logger.debug(
-            { fn: 'CursorAIDestination.pasteContent', command, contentLength: content.length },
-            'Successfully executed chat open command',
-          );
-          chatOpened = true;
-          break;
-        } catch (commandError) {
-          this.logger.debug(
-            {
-              fn: 'CursorAIDestination.pasteContent',
-              command,
-              contentLength: content.length,
-              error: commandError,
-            },
-            'Command failed, trying next fallback',
-          );
-        }
-      }
-
-      if (!chatOpened) {
-        this.logger.warn(
-          { fn: 'CursorAIDestination.pasteContent', contentLength: content.length },
-          'All chat open commands failed',
-        );
-      }
-
-      // Step 3: Show notification (regardless of whether chat opened)
-      void this.ideAdapter.showInformationMessage(
-        'Text copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
-      );
-
-      this.logger.info(
-        { fn: 'CursorAIDestination.pasteContent', contentLength: content.length, chatOpened },
-        `Clipboard workaround completed for content (${content.length} chars)`,
-      );
-
-      return true;
-    } catch (error) {
-      this.logger.error(
-        { fn: 'CursorAIDestination.pasteContent', contentLength: content.length, error },
-        'Failed to execute clipboard workaround',
-      );
-      return false;
-    }
   }
 }
