@@ -43,6 +43,19 @@ export class TerminalDestination implements PasteDestination {
   }
 
   /**
+   * Check if text content is eligible to be pasted to terminal
+   *
+   * Terminal has no special eligibility rules - always eligible.
+   *
+   * @param _content - The text content (not used)
+   * @returns Always true (Terminal accepts all content)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isEligibleForPasteContent(_content: string): Promise<boolean> {
+    return true;
+  }
+
+  /**
    * Get user instruction for manual paste
    *
    * Terminal performs automatic paste, so no manual instruction is needed.
@@ -107,6 +120,60 @@ export class TerminalDestination implements PasteDestination {
         paddedLength: paddedLink.length,
       },
       `Pasted link to terminal: ${terminalName}`,
+    );
+
+    return true;
+  }
+
+  /**
+   * Paste text content to bound terminal with smart padding and focus
+   *
+   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
+   * Used for pasting selected text directly to terminal (issue #89).
+   *
+   * Validation:
+   * - Checks content eligibility (not null/undefined/empty/whitespace-only)
+   * - Logs INFO and returns false if content is not eligible
+   *
+   * @param content - The text content to paste
+   * @returns true if paste succeeded, false otherwise
+   */
+  async pasteContent(content: string): Promise<boolean> {
+    if (!isEligibleForPaste(content)) {
+      this.logger.info(
+        { fn: 'TerminalDestination.pasteContent', contentLength: content.length },
+        'Content not eligible for paste',
+      );
+      return false;
+    }
+
+    if (!this.boundTerminal) {
+      this.logger.warn(
+        { fn: 'TerminalDestination.pasteContent', contentLength: content.length },
+        'Cannot paste: No terminal bound',
+      );
+      return false;
+    }
+
+    const terminalName = this.getTerminalName();
+
+    // Apply smart padding for better UX
+    const paddedContent = applySmartPadding(content);
+
+    // Send content without auto-submit (addNewLine = false)
+    this.boundTerminal.sendText(paddedContent, false);
+
+    // Auto-focus terminal for seamless workflow
+    this.boundTerminal.show(false);
+
+    this.logger.info(
+      {
+        fn: 'TerminalDestination.pasteContent',
+        terminalName,
+        originalLength: content.length,
+        paddedLength: paddedContent.length,
+      },
+      `Pasted content to terminal: ${terminalName}`,
     );
 
     return true;
