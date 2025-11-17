@@ -1,8 +1,8 @@
 import type { DelimiterConfig } from 'rangelink-core-ts';
 
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
-import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { messagesEn } from '../i18n/messages.en';
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';

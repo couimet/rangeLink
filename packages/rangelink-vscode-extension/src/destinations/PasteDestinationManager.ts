@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
+
 import { DestinationFactory } from './DestinationFactory';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 import { TerminalDestination } from './TerminalDestination';
