@@ -202,10 +202,9 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Paste text content to Cursor AI chat
+   * Get user instruction for manual paste (clipboard-based destination)
    *
-   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
-   * Used for pasting selected text directly to Cursor (issue #89).
+   * @returns Instruction string for manual paste in Cursor AI chat
    */
   getUserInstruction(): string | undefined {
     return formatMessage(MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS);
