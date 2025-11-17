@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
+
 import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**

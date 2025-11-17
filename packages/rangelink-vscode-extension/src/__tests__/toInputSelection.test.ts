@@ -54,10 +54,6 @@ const createMockEditor = (
 };
 
 describe('toInputSelection', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('Selection coverage detection', () => {
     describe('FullLine coverage', () => {
       it('should detect FullLine when selection starts at column 0 and ends at line end', () => {

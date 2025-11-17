@@ -16,6 +16,14 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
   [MessageCode.INFO_COMMIT_HASH_COPIED]: 'Commit hash copied to clipboard',
 
+  [MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION]: 'Stay bound to {currentDestination}',
+  [MessageCode.SMART_BIND_CONFIRM_NO_KEEP]: 'No, keep current binding',
+  [MessageCode.SMART_BIND_CONFIRM_PLACEHOLDER]:
+    'Already bound to {currentDestination}. Replace with {newDestination}?',
+  [MessageCode.SMART_BIND_CONFIRM_YES_DESCRIPTION]:
+    'Switch from {currentDestination} to {newDestination}',
+  [MessageCode.SMART_BIND_CONFIRM_YES_REPLACE]: 'Yes, replace',
+
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
 
   // Keep the keys in alphabetical order.

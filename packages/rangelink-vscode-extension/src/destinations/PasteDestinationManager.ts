@@ -2,6 +2,9 @@ import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { MessageCode } from '../types/MessageCode';
+import { formatMessage } from '../utils/formatMessage';
+
 import { DestinationFactory } from './DestinationFactory';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 import { TerminalDestination } from './TerminalDestination';
@@ -24,6 +27,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   private boundDestination: PasteDestination | undefined;
   private boundTerminal: vscode.Terminal | undefined; // Track for closure events
   private disposables: vscode.Disposable[] = [];
+  private replacedDestinationName: string | undefined; // Track for toast notifications
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -50,17 +54,50 @@ export class PasteDestinationManager implements vscode.Disposable {
   async bind(type: DestinationType): Promise<boolean> {
     // Check if already bound
     if (this.boundDestination) {
-      const currentType = this.boundDestination.id;
-      this.logger.warn(
-        { fn: 'PasteDestinationManager.bind', currentType, requestedType: type },
-        `Already bound to ${this.boundDestination.displayName}`,
+      // Prevent binding same destination to itself
+      if (this.boundDestination.id === type) {
+        this.logger.debug(
+          { fn: 'PasteDestinationManager.bind', type },
+          `Already bound to ${this.boundDestination.displayName}, no action taken`,
+        );
+        this.ideAdapter.showInformationMessage(
+          `RangeLink: Already bound to ${this.boundDestination.displayName}`,
+        );
+        return false;
+      }
+
+      // Get new destination display name for confirmation
+      const newDestination = this.factory.create(type);
+      const newDisplayName = newDestination.displayName;
+
+      // Show confirmation dialog
+      const confirmed = await this.confirmReplaceBinding(
+        this.boundDestination,
+        type,
+        newDisplayName,
       );
 
-      this.ideAdapter.showErrorMessage(
-        `RangeLink: Already bound to ${this.boundDestination.displayName}. Unbind first.`,
-      );
+      if (!confirmed) {
+        this.logger.debug(
+          {
+            fn: 'PasteDestinationManager.bind',
+            currentType: this.boundDestination.id,
+            newType: type,
+          },
+          'User cancelled binding replacement',
+        );
+        return false;
+      }
 
-      return false;
+      // User confirmed - track old destination for toast notification
+      this.replacedDestinationName = this.boundDestination.displayName;
+
+      // Unbind current destination
+      this.logger.info(
+        { fn: 'PasteDestinationManager.bind', oldType: this.boundDestination.id, newType: type },
+        `User confirmed replacement: unbinding ${this.replacedDestinationName}`,
+      );
+      this.unbind();
     }
 
     // Special handling for terminal (needs active terminal reference)
@@ -233,7 +270,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully bound to terminal: ${terminalName}`,
     );
 
-    this.ideAdapter.setStatusBarMessage(`✓ RangeLink bound to ${terminalName}`, 3000);
+    this.showBindSuccessToast(terminalName);
 
     return true;
   }
@@ -304,7 +341,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully bound to text editor: ${editorDisplayName} (${tabGroupCount} tab groups)`,
     );
 
-    this.ideAdapter.setStatusBarMessage(`✓ RangeLink bound to ${editorDisplayName}`, 3000);
+    this.showBindSuccessToast(editorDisplayName);
 
     return true;
   }
@@ -340,7 +377,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully bound to ${destination.displayName}`,
     );
 
-    this.ideAdapter.setStatusBarMessage(`✓ RangeLink bound to ${destination.displayName}`, 3000);
+    this.showBindSuccessToast(destination.displayName);
 
     return true;
   }
@@ -386,5 +423,77 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.context.subscriptions.push(documentCloseDisposable);
     this.disposables.push(documentCloseDisposable);
+  }
+
+  /**
+   * Show toast notification for successful binding
+   *
+   * Displays detailed message if replacing an existing binding,
+   * or standard success message for normal binding.
+   *
+   * @param newDestinationName - Display name of newly bound destination
+   */
+  private showBindSuccessToast(newDestinationName: string): void {
+    const toastMessage = this.replacedDestinationName
+      ? `Unbound ${this.replacedDestinationName}, now bound to ${newDestinationName}`
+      : `✓ RangeLink bound to ${newDestinationName}`;
+
+    this.ideAdapter.setStatusBarMessage(toastMessage, 3000);
+
+    // Clear replacement tracking after use
+    this.replacedDestinationName = undefined;
+  }
+
+  /**
+   * Show confirmation dialog for replacing existing binding
+   *
+   * Uses QuickPick with descriptive labels to confirm user intent.
+   * User can confirm replacement or cancel to keep current binding.
+   *
+   * @param currentDestination - Currently bound destination
+   * @param newType - Destination type user wants to bind
+   * @param newDisplayName - Display name of new destination
+   * @returns true if user confirms replacement, false if cancelled
+   */
+  private async confirmReplaceBinding(
+    currentDestination: PasteDestination,
+    newType: DestinationType,
+    newDisplayName: string,
+  ): Promise<boolean> {
+    const params = {
+      currentDestination: currentDestination.displayName,
+      newDestination: newDisplayName,
+    };
+
+    const YES_REPLACE_LABEL = formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_REPLACE);
+
+    const items: vscode.QuickPickItem[] = [
+      {
+        label: YES_REPLACE_LABEL,
+        description: formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_DESCRIPTION, params),
+      },
+      {
+        label: formatMessage(MessageCode.SMART_BIND_CONFIRM_NO_KEEP),
+        description: formatMessage(MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION, params),
+      },
+    ];
+
+    const choice = await this.ideAdapter.showQuickPick(items, {
+      placeHolder: formatMessage(MessageCode.SMART_BIND_CONFIRM_PLACEHOLDER, params),
+    });
+
+    const confirmed = choice?.label === YES_REPLACE_LABEL;
+
+    this.logger.debug(
+      {
+        fn: 'PasteDestinationManager.confirmReplaceBinding',
+        currentType: currentDestination.id,
+        newType,
+        confirmed,
+      },
+      confirmed ? 'User confirmed replacement' : 'User cancelled replacement',
+    );
+
+    return confirmed;
   }
 }
