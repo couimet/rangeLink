@@ -194,4 +194,20 @@ export class ClaudeCodeDestination implements PasteDestination {
   getUserInstruction(): string | undefined {
     return formatMessage(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS);
   }
+
+  /**
+   * Focus Claude Code chat interface
+   *
+   * Opens/focuses the Claude Code chat panel to bring it into view.
+   * Reuses the same command sequence as pasteLink().
+   *
+   * Used by the "Jump to Bound Destination" command (issue #99).
+   *
+   * @returns true if chat focus succeeded, false otherwise
+   */
+  async focus(): Promise<boolean> {
+    return this.openChatInterface({
+      fn: 'ClaudeCodeDestination.focus',
+    });
+  }
 }

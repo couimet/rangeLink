@@ -130,4 +130,19 @@ export interface PasteDestination {
    * @returns Instruction string for manual paste, or undefined for automatic paste
    */
   getUserInstruction(): string | undefined;
+
+  /**
+   * Focus this destination without performing a paste operation
+   *
+   * Provides a way to quickly navigate back to the bound destination.
+   * Each destination implements its own focus logic:
+   * - Terminal: Shows the terminal panel
+   * - Text Editor: Focuses the editor document
+   * - AI Assistants: Opens/focuses the chat interface
+   *
+   * Used by the "Jump to Bound Destination" command (issue #99).
+   *
+   * @returns Promise resolving to true if focus succeeded, false otherwise
+   */
+  focus(): Promise<boolean>;
 }

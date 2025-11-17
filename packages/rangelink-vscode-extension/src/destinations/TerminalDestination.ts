@@ -67,6 +67,54 @@ export class TerminalDestination implements PasteDestination {
   }
 
   /**
+   * Focus the bound terminal
+   *
+   * Shows the terminal panel to bring it into view.
+   * Used by the "Jump to Bound Destination" command (issue #99).
+   *
+   * @returns true if terminal focused successfully, false if no terminal bound
+   */
+  async focus(): Promise<boolean> {
+    const terminalName = this.focusAndGetTerminalName({
+      fn: 'TerminalDestination.focus',
+    });
+
+    if (!terminalName) {
+      return false;
+    }
+
+    this.logger.info(
+      { fn: 'TerminalDestination.focus', terminalName },
+      `Focused terminal: ${terminalName}`,
+    );
+
+    return true;
+  }
+
+  /**
+   * Focus bound terminal and return its name
+   *
+   * Validates terminal is bound, shows it, and returns its name.
+   * Shared helper used by both focus() command and paste operations.
+   *
+   * @param logContext - Logging context for error messages
+   * @returns Terminal name if successful, undefined if no terminal bound
+   */
+  private focusAndGetTerminalName(logContext: LoggingContext): string | undefined {
+    if (!this.boundTerminal) {
+      this.logger.warn(logContext, 'Cannot focus: No terminal bound');
+      return undefined;
+    }
+
+    const terminalName = this.getTerminalName();
+
+    // Show terminal (false = don't preserve focus, steal focus to terminal)
+    this.boundTerminal.show(false);
+
+    return terminalName;
+  }
+
+  /**
    * Paste a RangeLink to bound terminal with smart padding and focus
    *
    * Validation:
@@ -138,19 +186,16 @@ export class TerminalDestination implements PasteDestination {
       return false;
     }
 
-    if (!this.boundTerminal) {
-      this.logger.warn(logContext, 'Cannot paste: No terminal bound');
+    // Validate terminal and focus (replaces separate validation + show() calls)
+    const terminalName = this.focusAndGetTerminalName(logContext);
+    if (!terminalName) {
       return false;
     }
 
-    const terminalName = this.getTerminalName();
     const paddedText = applySmartPadding(text);
 
     // Send text without auto-submit (addNewLine = false)
-    this.boundTerminal.sendText(paddedText, false);
-
-    // Auto-focus terminal for seamless workflow
-    this.boundTerminal.show(false);
+    this.boundTerminal!.sendText(paddedText, false);
 
     // Build success log context - spread logContext to preserve all fields
     const successContext: LoggingContext = {
@@ -160,7 +205,7 @@ export class TerminalDestination implements PasteDestination {
       paddedLength: paddedText.length,
     };
 
-    this.logger.info(successContext, successLogMessage(terminalName!));
+    this.logger.info(successContext, successLogMessage(terminalName));
 
     return true;
   }
