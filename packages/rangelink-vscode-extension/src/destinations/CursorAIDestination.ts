@@ -118,75 +118,66 @@ export class CursorAIDestination implements PasteDestination {
    * Paste a RangeLink to Cursor AI chat
    *
    * **Implementation:** Since Cursor doesn't support programmatic text insertion,
-   * this method uses a clipboard-based workaround:
-   * 1. Copy link to clipboard
-   * 2. Open Cursor chat panel
-   * 3. Show notification prompting user to paste
+   * this method opens Cursor chat interface. The caller (RangeLinkService) handles
+   * clipboard copy and user notification.
    *
    * @param formattedLink - The formatted RangeLink with metadata
-   * @returns true if clipboard copy and chat open succeeded, false otherwise
+   * @returns true if chat open succeeded, false otherwise
    */
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
-    const link = formattedLink.link;
+    return this.openChatInterface({
+      fn: 'CursorAIDestination.pasteLink',
+      formattedLink,
+      linkLength: formattedLink.link.length,
+    });
+  }
 
+  /**
+   * Open Cursor chat interface with fallback command attempts
+   *
+   * Tries multiple commands in order of preference until one succeeds.
+   * Shared logic extracted from pasteLink() and pasteContent() to eliminate duplication.
+   *
+   * @param contextInfo - Logging context with fn name and content metadata
+   * @returns true if chat open succeeded or commands attempted, false if not in Cursor IDE
+   */
+  private async openChatInterface(contextInfo: {
+    fn: string;
+    contentLength?: number;
+    formattedLink?: FormattedLink;
+    linkLength?: number;
+  }): Promise<boolean> {
     if (!(await this.isAvailable())) {
-      this.logger.warn(
-        { fn: 'CursorAIDestination.pasteLink', formattedLink },
-        'Cannot paste: Not running in Cursor IDE',
-      );
+      this.logger.warn(contextInfo, 'Cannot paste: Not running in Cursor IDE');
       return false;
     }
 
     try {
-      // Step 1: Copy to clipboard
-      await this.ideAdapter.writeTextToClipboard(link);
-      this.logger.debug(
-        { fn: 'CursorAIDestination.pasteLink', formattedLink, linkLength: link.length },
-        `Copied link to clipboard: ${link}`,
-      );
-
-      // Step 2: Try opening chat panel with multiple fallback commands
+      // Try opening chat panel with multiple fallback commands
       let chatOpened = false;
       for (const command of CursorAIDestination.CHAT_COMMANDS) {
         try {
           await this.ideAdapter.executeCommand(command);
-          this.logger.debug(
-            { fn: 'CursorAIDestination.pasteLink', command, formattedLink },
-            'Successfully executed chat open command',
-          );
+          this.logger.debug({ ...contextInfo, command }, 'Successfully executed chat open command');
           chatOpened = true;
           break;
         } catch (commandError) {
           this.logger.debug(
-            { fn: 'CursorAIDestination.pasteLink', command, formattedLink, error: commandError },
+            { ...contextInfo, command, error: commandError },
             'Command failed, trying next fallback',
           );
         }
       }
 
       if (!chatOpened) {
-        this.logger.warn(
-          { fn: 'CursorAIDestination.pasteLink', formattedLink },
-          'All chat open commands failed',
-        );
+        this.logger.warn(contextInfo, 'All chat open commands failed');
       }
 
-      // Step 3: Show notification (regardless of whether chat opened)
-      void this.ideAdapter.showInformationMessage(
-        'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Cursor chat to use.',
-      );
-
-      this.logger.info(
-        { fn: 'CursorAIDestination.pasteLink', formattedLink, linkLength: link.length, chatOpened },
-        'Clipboard workaround completed for link',
-      );
+      this.logger.info({ ...contextInfo, chatOpened }, 'Cursor chat open completed');
 
       return true;
     } catch (error) {
-      this.logger.error(
-        { fn: 'CursorAIDestination.pasteLink', formattedLink, error },
-        'Failed to execute clipboard workaround',
-      );
+      this.logger.error({ ...contextInfo, error }, 'Failed to open Cursor chat');
       return false;
     }
   }

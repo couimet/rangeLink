@@ -75,80 +75,69 @@ export class ClaudeCodeDestination implements PasteDestination {
    * Paste a RangeLink to Claude Code chat
    *
    * **Implementation:** Since Claude Code doesn't support programmatic text insertion,
-   * this method uses a clipboard-based workaround:
-   * 1. Copy link to clipboard
-   * 2. Try opening Claude Code with multiple fallback commands
-   * 3. Show notification prompting user to paste
+   * this method opens Claude Code chat interface. The caller (RangeLinkService) handles
+   * clipboard copy and user notification.
    *
    * @param formattedLink - The formatted RangeLink with metadata
-   * @returns true if clipboard copy and chat open succeeded, false otherwise
+   * @returns true if chat open succeeded, false otherwise
    */
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
-    const link = formattedLink.link;
+    return this.openChatInterface({
+      fn: 'ClaudeCodeDestination.pasteLink',
+      formattedLink,
+      linkLength: formattedLink.link.length,
+    });
+  }
 
+  /**
+   * Open Claude Code chat interface with fallback command attempts
+   *
+   * Tries multiple commands in order of preference until one succeeds.
+   * Shared logic extracted from pasteLink() and pasteContent() to eliminate duplication.
+   *
+   * @param contextInfo - Logging context with fn name and content metadata
+   * @returns true if chat open succeeded or commands attempted, false if extension unavailable
+   */
+  private async openChatInterface(contextInfo: {
+    fn: string;
+    contentLength?: number;
+    formattedLink?: FormattedLink;
+    linkLength?: number;
+  }): Promise<boolean> {
     if (!(await this.isAvailable())) {
-      this.logger.warn(
-        { fn: 'ClaudeCodeDestination.pasteLink', formattedLink },
-        'Cannot paste: Claude Code extension not available',
-      );
+      this.logger.warn(contextInfo, 'Cannot paste: Claude Code extension not available');
       return false;
     }
 
     try {
-      // Step 1: Copy to clipboard
-      await this.ideAdapter.writeTextToClipboard(link);
-      this.logger.debug(
-        { fn: 'ClaudeCodeDestination.pasteLink', formattedLink, linkLength: link.length },
-        `Copied link to clipboard: ${link}`,
-      );
-
-      // Step 2: Try opening Claude Code with multiple fallback commands
+      // Try opening Claude Code with multiple fallback commands
       let chatOpened = false;
       for (const command of ClaudeCodeDestination.CLAUDE_CODE_COMMANDS) {
         try {
           await this.ideAdapter.executeCommand(command);
           this.logger.debug(
-            { fn: 'ClaudeCodeDestination.pasteLink', command, formattedLink },
+            { ...contextInfo, command },
             'Successfully executed Claude Code open command',
           );
           chatOpened = true;
           break;
         } catch (commandError) {
           this.logger.debug(
-            { fn: 'ClaudeCodeDestination.pasteLink', command, formattedLink, error: commandError },
+            { ...contextInfo, command, error: commandError },
             'Command failed, trying next fallback',
           );
         }
       }
 
       if (!chatOpened) {
-        this.logger.warn(
-          { fn: 'ClaudeCodeDestination.pasteLink', formattedLink },
-          'All Claude Code open commands failed',
-        );
+        this.logger.warn(contextInfo, 'All Claude Code open commands failed');
       }
 
-      // Step 3: Show notification (regardless of whether chat opened)
-      void this.ideAdapter.showInformationMessage(
-        'RangeLink copied to clipboard. Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
-      );
-
-      this.logger.info(
-        {
-          fn: 'ClaudeCodeDestination.pasteLink',
-          formattedLink,
-          linkLength: link.length,
-          chatOpened,
-        },
-        'Clipboard workaround completed for link',
-      );
+      this.logger.info({ ...contextInfo, chatOpened }, 'Claude Code open completed');
 
       return true;
     } catch (error) {
-      this.logger.error(
-        { fn: 'ClaudeCodeDestination.pasteLink', formattedLink, error },
-        'Failed to execute clipboard workaround',
-      );
+      this.logger.error({ ...contextInfo, error }, 'Failed to open Claude Code');
       return false;
     }
   }
