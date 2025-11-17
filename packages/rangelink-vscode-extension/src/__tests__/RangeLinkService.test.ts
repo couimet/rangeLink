@@ -1,3 +1,5 @@
+import type { Logger } from 'barebone-logger';
+import * as loggerModule from 'barebone-logger';
 import type { DelimiterConfig } from 'rangelink-core-ts';
 
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
@@ -1042,6 +1044,146 @@ describe('RangeLinkService', () => {
         expect(viaGenerateLink).toBe('RangeLink: No active editor');
         expect(viaPasteText).toBe('RangeLink: No active editor');
         expect(viaGenerateLink).toStrictEqual(viaPasteText);
+      });
+    });
+
+    describe('DEBUG logging for empty selection edge case', () => {
+      let mockLogger: jest.Mocked<Logger>;
+
+      beforeEach(() => {
+        // Get the actual logger instance used by RangeLinkService
+        mockLogger = {
+          debug: jest.fn(),
+          info: jest.fn(),
+          warn: jest.fn(),
+          error: jest.fn(),
+        } as unknown as jest.Mocked<Logger>;
+        // Override getLogger to return our mock
+        jest.spyOn(loggerModule, 'getLogger').mockReturnValue(mockLogger);
+      });
+
+      afterEach(() => {
+        jest.restoreAllMocks();
+      });
+
+      it('should log DEBUG message when no editor exists', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (mockIdeAdapter as any).activeTextEditor = undefined;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (service as any).generateLinkFromSelection('workspace-relative', false);
+
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'validateSelectionsAndShowError',
+            hasEditor: false,
+            errorMsg: 'RangeLink: No active editor',
+          },
+          'Empty selection detected - should be prevented by command enablement',
+        );
+      });
+
+      it('should log DEBUG message when editor exists but selections are empty', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (mockIdeAdapter as any).activeTextEditor = {
+          document: { uri: { path: '/test/file.ts' } },
+          selection: { isEmpty: true },
+          selections: [{ isEmpty: true }],
+        };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (service as any).generateLinkFromSelection('workspace-relative', false);
+
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'validateSelectionsAndShowError',
+            hasEditor: true,
+            errorMsg: 'RangeLink: No text selected. Select text and try again.',
+          },
+          'Empty selection detected - should be prevented by command enablement',
+        );
+      });
+
+      it('should log DEBUG via pasteSelectedTextToDestination', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (mockIdeAdapter as any).activeTextEditor = undefined;
+
+        await service.pasteSelectedTextToDestination();
+
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'validateSelectionsAndShowError',
+            hasEditor: false,
+            errorMsg: 'RangeLink: No active editor',
+          },
+          'Empty selection detected - should be prevented by command enablement',
+        );
+      });
+
+      it('should include correct context in DEBUG log (hasEditor flag)', async () => {
+        // Scenario 1: No editor
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (mockIdeAdapter as any).activeTextEditor = undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (service as any).generateLinkFromSelection('workspace-relative', false);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const call1 = mockLogger.debug.mock.calls[0][0] as any;
+        expect(call1.hasEditor).toBe(false);
+
+        // Reset mock
+        mockLogger.debug.mockClear();
+
+        // Scenario 2: Editor exists but empty selection
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (mockIdeAdapter as any).activeTextEditor = {
+          document: { uri: { path: '/test/file.ts' } },
+          selection: { isEmpty: true },
+          selections: [{ isEmpty: true }],
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (service as any).generateLinkFromSelection('workspace-relative', false);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const call2 = mockLogger.debug.mock.calls[0][0] as any;
+        expect(call2.hasEditor).toBe(true);
+      });
+
+      it('should not log DEBUG when validation succeeds', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (mockIdeAdapter as any).activeTextEditor = {
+          document: {
+            uri: { path: '/test/file.ts', fsPath: '/test/file.ts' },
+            getText: jest.fn(() => 'line content'),
+          },
+          selection: {
+            start: { line: 0, character: 0 },
+            end: { line: 0, character: 5 },
+            isEmpty: false,
+          },
+          selections: [
+            {
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: 5 },
+              isEmpty: false,
+            },
+          ],
+        };
+
+        mockIdeAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({
+          uri: { path: '/test' },
+        });
+        mockIdeAdapter.asRelativePath = jest.fn().mockReturnValue('file.ts');
+        mockIdeAdapter.writeTextToClipboard = jest.fn().mockResolvedValue(undefined);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (service as any).generateLinkFromSelection('workspace-relative', false);
+
+        // Should not log DEBUG when validation succeeds
+        expect(mockLogger.debug).not.toHaveBeenCalledWith(
+          expect.objectContaining({
+            fn: 'validateSelectionsAndShowError',
+          }),
+          'Empty selection detected - should be prevented by command enablement',
+        );
       });
     });
   });

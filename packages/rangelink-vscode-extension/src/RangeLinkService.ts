@@ -197,6 +197,16 @@ export class RangeLinkService {
       const errorMsg = activeSelections.editor
         ? 'RangeLink: No text selected. Select text and try again.'
         : 'RangeLink: No active editor';
+
+      getLogger().debug(
+        {
+          fn: 'validateSelectionsAndShowError',
+          hasEditor: !!activeSelections.editor,
+          errorMsg,
+        },
+        'Empty selection detected - should be prevented by command enablement',
+      );
+
       this.ideAdapter.showErrorMessage(errorMsg);
       return undefined;
     }

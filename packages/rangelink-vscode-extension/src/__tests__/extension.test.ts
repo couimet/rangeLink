@@ -215,10 +215,10 @@ describe('RangeLinkService', () => {
       });
       mockWorkspace.asRelativePath.mockReturnValue('src/file.ts');
 
-      await expect(service.createLink(PathFormat.WorkspaceRelative)).rejects.toThrow(
-        'RangeLink command invoked with empty selection',
-      );
+      // createLink() returns early when selection is empty (doesn't throw)
+      await service.createLink(PathFormat.WorkspaceRelative);
 
+      // Verify it bailed early - no clipboard write
       expect(mockClipboard.writeText).not.toHaveBeenCalled();
     });
   });

@@ -305,7 +305,9 @@ describe('PasteDestinationManager', () => {
       const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
 
       expect(result).toBe(true);
-      expect(mockVscode.env.clipboard.writeText).toHaveBeenCalledWith('src/file.ts#L10');
+      expect(mockVscode.env.clipboard.writeText).not.toHaveBeenCalled();
+      // Verify chat was opened with primary Cursor command
+      expect(mockVscode.commands.executeCommand).toHaveBeenCalledWith('aichat.newchataction');
     });
 
     it('should return false when no destination bound', async () => {
