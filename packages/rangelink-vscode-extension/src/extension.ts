@@ -88,25 +88,25 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register commands
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.copyLinkToSelectionWithRelativePath', () =>
+    vscode.commands.registerCommand('rangelink.copyLinkWithRelativePath', () =>
       service.createLink(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.copyLinkToSelectionWithAbsolutePath', () =>
+    vscode.commands.registerCommand('rangelink.copyLinkWithAbsolutePath', () =>
       service.createLink(PathFormat.Absolute),
     ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.copyPortableLinkToSelectionWithRelativePath', () =>
+    vscode.commands.registerCommand('rangelink.copyPortableLinkWithRelativePath', () =>
       service.createPortableLink(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.copyPortableLinkToSelectionWithAbsolutePath', () =>
+    vscode.commands.registerCommand('rangelink.copyPortableLinkWithAbsolutePath', () =>
       service.createPortableLink(PathFormat.Absolute),
     ),
   );
