@@ -51,28 +51,28 @@
   "contributes": {
     "commands": [
       {
-        "command": "rangelink.copyLinkToSelectionWithRelativePath",
+        "command": "rangelink.copyLinkWithRelativePath",
         "title": "Copy Range Link",
         "category": "RangeLink",
         "icon": "$(link)",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
+        "command": "rangelink.copyLinkWithAbsolutePath",
         "title": "Copy Range Link (Absolute)",
         "category": "RangeLink",
         "icon": "$(link-external)",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "rangelink.copyPortableLinkToSelectionWithRelativePath",
+        "command": "rangelink.copyPortableLinkWithRelativePath",
         "title": "Copy Portable RangeLink",
         "category": "RangeLink",
         "icon": "$(link-external)",
         "enablement": "editorHasSelection"
       },
       {
-        "command": "rangelink.copyPortableLinkToSelectionWithAbsolutePath",
+        "command": "rangelink.copyPortableLinkWithAbsolutePath",
         "title": "Copy Portable RangeLink (Absolute)",
         "category": "RangeLink",
         "icon": "$(link-external)",
@@ -159,25 +159,25 @@
     },
     "keybindings": [
       {
-        "command": "rangelink.copyLinkToSelectionWithRelativePath",
+        "command": "rangelink.copyLinkWithRelativePath",
         "key": "ctrl+r ctrl+l",
         "mac": "cmd+r cmd+l",
         "when": "editorHasSelection"
       },
       {
-        "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
+        "command": "rangelink.copyLinkWithAbsolutePath",
         "key": "ctrl+r ctrl+shift+l",
         "mac": "cmd+r cmd+shift+l",
         "when": "editorHasSelection"
       },
       {
-        "command": "rangelink.copyPortableLinkToSelectionWithRelativePath",
+        "command": "rangelink.copyPortableLinkWithRelativePath",
         "key": "ctrl+r ctrl+p",
         "mac": "cmd+r cmd+p",
         "when": "editorHasSelection"
       },
       {
-        "command": "rangelink.copyPortableLinkToSelectionWithAbsolutePath",
+        "command": "rangelink.copyPortableLinkWithAbsolutePath",
         "key": "ctrl+r ctrl+shift+p",
         "mac": "cmd+r cmd+shift+p",
         "when": "editorHasSelection"
@@ -198,22 +198,22 @@
       "editor/context": [
         {
           "when": "editorHasSelection",
-          "command": "rangelink.copyLinkToSelectionWithRelativePath",
+          "command": "rangelink.copyLinkWithRelativePath",
           "group": "8_rangelink@1"
         },
         {
           "when": "editorHasSelection",
-          "command": "rangelink.copyLinkToSelectionWithAbsolutePath",
+          "command": "rangelink.copyLinkWithAbsolutePath",
           "group": "8_rangelink@2"
         },
         {
           "when": "editorHasSelection",
-          "command": "rangelink.copyPortableLinkToSelectionWithRelativePath",
+          "command": "rangelink.copyPortableLinkWithRelativePath",
           "group": "8_rangelink@3"
         },
         {
           "when": "editorHasSelection",
-          "command": "rangelink.copyPortableLinkToSelectionWithAbsolutePath",
+          "command": "rangelink.copyPortableLinkWithAbsolutePath",
           "group": "8_rangelink@4"
         },
         {
