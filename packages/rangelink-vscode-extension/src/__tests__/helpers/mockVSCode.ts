@@ -22,41 +22,10 @@ import { createMockRange } from './createMockRange';
 import { createMockSelection } from './createMockSelection';
 import { createMockUri } from './createMockUri';
 import { createMockWindow } from './createMockWindow';
-import { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
+import { createMockWorkspace } from './createMockWorkspace';
 
 
 
-/**
- * Create a mock workspace object for navigation tests.
- *
- * Accepts either string paths (for convenience) or full WorkspaceFolder objects.
- * String paths are automatically converted to WorkspaceFolder objects.
- *
- * @param options - Optional workspace properties to override (workspaceFolders, event listeners, etc.)
- * @returns Mock workspace with file operations and document handling
- */
-export const createMockWorkspace = (options?: Record<string, unknown>) => {
-  const defaultWorkspaceFolders = ['/workspace'];
-  const workspaceFoldersInput =
-    (options?.workspaceFolders as Array<string | vscode.WorkspaceFolder> | undefined) ??
-    defaultWorkspaceFolders;
-
-  const folders = workspaceFoldersInput?.map((folder) =>
-    typeof folder === 'string' ? createMockWorkspaceFolder(folder) : folder,
-  );
-
-  return {
-    workspaceFolders: folders,
-    openTextDocument: jest.fn(),
-    getWorkspaceFolder: jest.fn(),
-    asRelativePath: jest.fn(),
-    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
-    fs: {
-      stat: jest.fn(),
-    },
-    ...options,
-  };
-};
 
 /**
  * Create a complete vscode module mock for VscodeAdapter tests.

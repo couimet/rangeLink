@@ -19,6 +19,7 @@ export { createMockTerminal } from './createMockTerminal';
 export { createMockUri } from './createMockUri';
 export { createMockUriInstance } from './createMockUriInstance';
 export { createMockWindow } from './createMockWindow';
+export { createMockWorkspace } from './createMockWorkspace';
 export { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
 
 // Export complex utilities and types from mockVSCode
