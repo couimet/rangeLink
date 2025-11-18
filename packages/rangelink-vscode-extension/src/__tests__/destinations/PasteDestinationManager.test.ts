@@ -643,11 +643,13 @@ describe('PasteDestinationManager', () => {
 
       expect(manager.isBound()).toBe(false);
       // Behavior change (Issue #125): Changed from popup to status bar only
-      // Verify the document close message was shown (don't assert on timeout - it's an implementation detail)
+      // Verify setStatusBarMessage was called (not showInformationMessage)
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Bound editor closed'),
-        expect.anything(),
+        'RangeLink: Bound editor closed. Unbound.',
       );
+      expect(
+        mockAdapter.__getVscodeInstance().window.showInformationMessage,
+      ).not.toHaveBeenCalled();
     });
 
     it('should not unbind when different document closes', async () => {
