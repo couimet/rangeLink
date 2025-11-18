@@ -26,6 +26,13 @@ export const messagesEn: Record<MessageCode, string> = {
     'Switch from {currentDestination} to {newDestination}',
   [MessageCode.SMART_BIND_CONFIRM_YES_REPLACE]: 'Yes, replace',
 
+  [MessageCode.STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED]:
+    'Destination binding removed (terminal closed)',
+  [MessageCode.STATUS_BAR_DESTINATION_BOUND]: '✓ RangeLink bound to {destinationName}',
+  [MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND]: 'RangeLink: No destination bound',
+  [MessageCode.STATUS_BAR_DESTINATION_REBOUND]:
+    'Unbound {previousDestination}, now bound to {newDestination}',
+  [MessageCode.STATUS_BAR_DESTINATION_UNBOUND]: '✓ RangeLink unbound from {destinationName}',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE]: '✓ Focused Claude Code Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]: '✓ Focused Cursor AI Assistant',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: '✓ Focused Editor: {editorDisplayName}',
