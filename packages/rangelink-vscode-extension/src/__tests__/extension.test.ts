@@ -8,29 +8,29 @@ import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
 import { VSCodeLogger } from '../VSCodeLogger';
+import {
+  createMockClipboard,
+  createMockCommands,
+  createMockOutputChannel,
+  createMockStatusBarItem,
+  createMockWindow,
+  createMockWorkspace,
+} from './helpers';
 import { createMockDestinationManager } from './helpers/createMockDestinationManager';
 
-// Mock vscode module
-const mockStatusBarItem = {
-  text: '',
-  show: jest.fn(),
-  hide: jest.fn(),
-  dispose: jest.fn(),
-};
+// Create reusable mocks using our utilities
+const mockStatusBarItem = createMockStatusBarItem();
+const mockClipboard = createMockClipboard();
+const mockOutputChannel = createMockOutputChannel();
+const mockWorkspace = createMockWorkspace() as any;
+let mockCommands = createMockCommands();
 
-const mockClipboard = {
-  writeText: jest.fn(),
-};
-
-const mockOutputChannel = {
-  appendLine: jest.fn(),
-  dispose: jest.fn(),
-};
-
-// Internal storage for activeTextEditor
+// Internal storage for activeTextEditor with special getter/setter for state synchronization
 let _activeTextEditor: any = null;
 
+// Create window mock with special activeTextEditor getter/setter for test state management
 const mockWindow = {
+  ...createMockWindow(),
   get activeTextEditor() {
     return _activeTextEditor;
   },
@@ -39,27 +39,11 @@ const mockWindow = {
     // Sync with vscode mock
     (vscode.window as any).activeTextEditor = value;
   },
-  createStatusBarItem: jest.fn(),
-  createOutputChannel: jest.fn(),
-  showErrorMessage: jest.fn(),
-  showInformationMessage: jest.fn(),
-  setStatusBarMessage: jest.fn(),
-};
+} as any;
 
-// Setup return values for mock functions after they're created
+// Setup return values for factory methods
 mockWindow.createStatusBarItem.mockReturnValue(mockStatusBarItem);
 mockWindow.createOutputChannel.mockReturnValue(mockOutputChannel);
-
-const mockWorkspace = {
-  getWorkspaceFolder: jest.fn(),
-  asRelativePath: jest.fn(),
-  getConfiguration: jest.fn(),
-  onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
-};
-
-const mockCommands = {
-  registerCommand: jest.fn(),
-};
 
 jest.mock('vscode', () => ({
   window: {

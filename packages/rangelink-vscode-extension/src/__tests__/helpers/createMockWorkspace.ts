@@ -41,6 +41,7 @@ export const createMockWorkspace = (
     openTextDocument: jest.fn(),
     getWorkspaceFolder: jest.fn(),
     asRelativePath: jest.fn(),
+    getConfiguration: jest.fn(),
     onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
     fs: {
       stat: jest.fn(),

@@ -42,6 +42,8 @@ export const createMockWindow = (
       onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
       close: jest.fn(),
     } as unknown as vscode.TabGroups,
+    createStatusBarItem: jest.fn(),
+    createOutputChannel: jest.fn(),
     setStatusBarMessage: jest.fn(() => ({
       dispose: jest.fn(),
     })),
