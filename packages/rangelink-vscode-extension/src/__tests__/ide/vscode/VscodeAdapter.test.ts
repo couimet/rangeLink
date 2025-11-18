@@ -1,9 +1,6 @@
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import * as resolveWorkspacePathModule from '../../../utils/resolveWorkspacePath';
-import {
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
-} from '../../helpers/mockVSCode';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../helpers/mockVSCode';
 
 // ============================================================================
 // Tests

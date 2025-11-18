@@ -18,10 +18,7 @@ import { createMockTabGroup } from '../helpers/createMockTabGroup';
 import { createMockTabGroups } from '../helpers/createMockTabGroups';
 import { createMockUriInstance } from '../helpers/createMockUriInstance';
 import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
-import {
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
-} from '../helpers/mockVSCode';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 import { simulateClosedEditor } from '../helpers/simulateClosedEditor';
 import { simulateFileOutsideWorkspace } from '../helpers/simulateFileOutsideWorkspace';
 

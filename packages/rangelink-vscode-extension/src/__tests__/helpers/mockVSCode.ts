@@ -25,9 +25,6 @@ import { createMockWindow } from './createMockWindow';
 import { createMockWorkspace } from './createMockWorkspace';
 import { MockTabInputText } from './tabTestHelpers';
 
-
-
-
 /**
  * Options for creating mock vscode instances.
  */
@@ -71,10 +68,7 @@ export interface MockVscodeOptions {
  * @param overrides - Optional VSCode API property overrides (spread last for flexibility)
  * @returns Mock vscode module compatible with VscodeAdapter constructor
  */
-const createMockVscode = (
-  options?: MockVscodeOptions,
-  overrides?: Partial<typeof vscode>,
-): any => {
+const createMockVscode = (options?: MockVscodeOptions, overrides?: Partial<typeof vscode>): any => {
   return {
     window: createMockWindow(options?.windowOptions),
     workspace: createMockWorkspace(options?.workspaceOptions),
