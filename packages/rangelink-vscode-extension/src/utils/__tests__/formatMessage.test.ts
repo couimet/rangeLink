@@ -407,7 +407,9 @@ describe('formatMessage', () => {
         error: 'File is not readable',
       });
 
-      expect(result).toStrictEqual('RangeLink: Failed to navigate to src/broken.ts: File is not readable');
+      expect(result).toStrictEqual(
+        'RangeLink: Failed to navigate to src/broken.ts: File is not readable',
+      );
     });
   });
 });
