@@ -24,6 +24,10 @@ import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
 import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
+import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
+import { createMockDocument } from '../helpers/createMockDocument';
+import { createMockEditor } from '../helpers/createMockEditor';
+import { createMockUriInstance } from '../helpers/createMockUriInstance';
 import {
   createMockClaudeCodeDestination,
   createMockCursorAIDestination,
@@ -32,10 +36,6 @@ import {
   createMockTextEditorDestination,
 } from '../helpers/destinationTestHelpers';
 import {
-  configureEmptyTabGroups,
-  createMockDocument,
-  createMockEditor,
-  createMockUriInstance,
   createMockVscodeAdapter,
   type MockVscodeOptions,
   type VscodeAdapterWithTestHooks,
@@ -83,7 +83,7 @@ describe('PasteDestinationManager', () => {
    * Useful for tests that need to simulate Cursor IDE.
    */
   const createManager = (envOptions?: MockVscodeOptions['envOptions']) => {
-    const adapter = createMockVscodeAdapter(undefined, {
+    const adapter = createMockVscodeAdapter({
       envOptions,
       windowOptions: {
         onDidCloseTerminal: jest.fn((listener) => {

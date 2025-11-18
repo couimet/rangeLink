@@ -4,12 +4,9 @@ import { LinkType, SelectionType, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
-import {
-  createMockVscodeAdapter,
-  createMockDocument,
-  createMockEditor,
-  type VscodeAdapterWithTestHooks,
-} from '../helpers/mockVSCode';
+import { createMockDocument } from '../helpers/createMockDocument';
+import { createMockEditor } from '../helpers/createMockEditor';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('RangeLinkNavigationHandler - Single Position Selection Extension', () => {
   let handler: RangeLinkNavigationHandler;

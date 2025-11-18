@@ -1,18 +1,18 @@
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import * as resolveWorkspacePathModule from '../../../utils/resolveWorkspacePath';
-import { createVSCodeAdapterMock } from '../../helpers/mockVSCode';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../helpers/mockVSCode';
 
 // ============================================================================
 // Tests
 // ============================================================================
 
 describe('VscodeAdapter', () => {
-  let adapter: VscodeAdapter;
-  let mockVSCode: ReturnType<typeof createVSCodeAdapterMock>;
+  let adapter: VscodeAdapterWithTestHooks;
+  let mockVSCode: any;
 
   beforeEach(() => {
-    mockVSCode = createVSCodeAdapterMock();
-    adapter = new VscodeAdapter(mockVSCode);
+    adapter = createMockVscodeAdapter();
+    mockVSCode = adapter.__getVscodeInstance();
   });
 
   describe('writeTextToClipboard', () => {

@@ -1,14 +1,21 @@
 import type { Logger } from 'barebone-logger';
 import * as loggerModule from 'barebone-logger';
+import { createMockLogger } from 'barebone-logger-testing';
 import type { DelimiterConfig } from 'rangelink-core-ts';
 
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { messagesEn } from '../i18n/messages.en';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { RangeLinkService } from '../RangeLinkService';
-import { createMockDestination, createMockFormattedLink } from './helpers/destinationTestHelpers';
+import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
+import { createMockAsRelativePath } from './helpers/createMockAsRelativePath';
+import { createMockDestinationManager } from './helpers/createMockDestinationManager';
+import { createMockDocument } from './helpers/createMockDocument';
+import { createMockEditor } from './helpers/createMockEditor';
+import { createMockGetWorkspaceFolder } from './helpers/createMockGetWorkspaceFolder';
+import { createMockDestination, createMockFormattedLink } from './helpers/destinationTestHelpers';
+import { createMockVscodeAdapter } from './helpers/mockVSCode';
 
 describe('RangeLinkService', () => {
   describe('copyToClipboardAndDestination', () => {
@@ -1229,10 +1236,8 @@ describe('RangeLinkService', () => {
           ],
         };
 
-        mockIdeAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({
-          uri: { path: '/test' },
-        });
-        mockIdeAdapter.asRelativePath = jest.fn().mockReturnValue('file.ts');
+        mockIdeAdapter.getWorkspaceFolder = createMockGetWorkspaceFolder('/test');
+        mockIdeAdapter.asRelativePath = createMockAsRelativePath('file.ts');
         mockIdeAdapter.writeTextToClipboard = jest.fn().mockResolvedValue(undefined);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
