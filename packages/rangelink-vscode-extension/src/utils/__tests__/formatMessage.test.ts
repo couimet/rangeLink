@@ -376,4 +376,38 @@ describe('formatMessage', () => {
       expect(result).toStrictEqual('Unbound Terminal, now bound to Cursor AI Assistant');
     });
   });
+
+  describe('RangeLinkNavigationHandler Messages (Issue #121)', () => {
+    beforeEach(() => {
+      // Restore real message map for these tests (earlier tests override it with testMessagesEn)
+      supportedLocales.en = messagesEn;
+      setLocale('en');
+    });
+
+    it('should format WARN_NAVIGATION_FILE_NOT_FOUND with path param', () => {
+      const result = formatMessage(MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND, {
+        path: 'src/missing.ts',
+      });
+
+      expect(result).toStrictEqual('RangeLink: Cannot find file: src/missing.ts');
+    });
+
+    it('should format INFO_NAVIGATION_SUCCESS with path and position params', () => {
+      const result = formatMessage(MessageCode.INFO_NAVIGATION_SUCCESS, {
+        path: 'src/utils/helper.ts',
+        position: 'L42C10',
+      });
+
+      expect(result).toStrictEqual('RangeLink: Navigated to src/utils/helper.ts @ L42C10');
+    });
+
+    it('should format ERROR_NAVIGATION_FAILED with path and error params', () => {
+      const result = formatMessage(MessageCode.ERROR_NAVIGATION_FAILED, {
+        path: 'src/broken.ts',
+        error: 'File is not readable',
+      });
+
+      expect(result).toStrictEqual('RangeLink: Failed to navigate to src/broken.ts: File is not readable');
+    });
+  });
 });
