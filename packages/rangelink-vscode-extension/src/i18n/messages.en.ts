@@ -10,6 +10,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONFIG_LOADED]: 'Configuration loaded',
   [MessageCode.CONFIG_USING_DEFAULTS]: 'Using default configuration',
 
+  [MessageCode.ERROR_NAVIGATION_FAILED]: 'RangeLink: Failed to navigate to {path}: {error}',
+
   [MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS]:
     'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
   [MessageCode.INFO_COMMIT_HASH_COPIED]: 'Commit hash copied to clipboard',
@@ -17,6 +19,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_JUMP_FOCUS_FAILED]: 'RangeLink: Failed to focus {destinationName}',
   [MessageCode.INFO_JUMP_NO_DESTINATION_BOUND]:
     'RangeLink: No destination bound. Bind a destination first.',
+  [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
 
   [MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION]: 'Stay bound to {currentDestination}',
   [MessageCode.SMART_BIND_CONFIRM_NO_KEEP]: 'No, keep current binding',
@@ -38,6 +41,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: '✓ Focused Editor: {editorDisplayName}',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: {terminalName}',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
+
+  [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
 
   // Keep the keys in alphabetical order.
 };
