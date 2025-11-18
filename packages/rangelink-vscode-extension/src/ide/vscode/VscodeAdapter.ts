@@ -3,6 +3,11 @@ import * as vscode from 'vscode';
 import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
 
 /**
+ * Default timeout for status bar messages in milliseconds.
+ */
+const DEFAULT_STATUS_BAR_TIMEOUT_MS = 2000;
+
+/**
  * VSCode adapter for IDE-specific operations.
  *
  * Complete facade around VSCode API providing single entry point for:
@@ -37,11 +42,11 @@ export class VscodeAdapter {
   /**
    * Show temporary status bar message using VSCode API
    */
-  setStatusBarMessage(message: string, timeout?: number): vscode.Disposable {
-    if (timeout !== undefined) {
-      return this.ideInstance.window.setStatusBarMessage(message, timeout);
-    }
-    return this.ideInstance.window.setStatusBarMessage(message);
+  setStatusBarMessage(
+    message: string,
+    timeout: number = DEFAULT_STATUS_BAR_TIMEOUT_MS,
+  ): vscode.Disposable {
+    return this.ideInstance.window.setStatusBarMessage(message, timeout);
   }
 
   /**

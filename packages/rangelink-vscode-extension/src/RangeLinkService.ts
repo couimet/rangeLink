@@ -263,7 +263,7 @@ export class RangeLinkService {
     // Check if destination is bound
     if (!this.destinationManager.isBound()) {
       getLogger().info({ fn: fnName }, 'No destination bound - copied to clipboard only');
-      this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
+      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
       return;
     }
 
@@ -278,7 +278,7 @@ export class RangeLinkService {
         { fn: fnName, boundDestination: displayName },
         'Content not eligible for paste - skipping auto-paste',
       );
-      this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
+      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
       return;
     }
 
@@ -296,11 +296,11 @@ export class RangeLinkService {
 
       if (userInstruction) {
         // Clipboard-based destination: Show status bar + information popup
-        this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
+        this.ideAdapter.setStatusBarMessage(basicStatusMessage);
         void this.ideAdapter.showInformationMessage(`${basicStatusMessage}. ${userInstruction}`);
       } else {
         // Automatic destination: Show status bar only
-        this.ideAdapter.setStatusBarMessage(`${basicStatusMessage} & sent to ${displayName}`, 2000);
+        this.ideAdapter.setStatusBarMessage(`${basicStatusMessage} & sent to ${displayName}`);
       }
     } else {
       // Paste failed - show destination-aware error message
