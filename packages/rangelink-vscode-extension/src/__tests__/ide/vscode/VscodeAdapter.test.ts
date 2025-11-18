@@ -49,24 +49,24 @@ describe('VscodeAdapter', () => {
   });
 
   describe('setStatusBarMessage', () => {
-    it('should set status bar message without timeout', () => {
+    it('should set status bar message with default timeout when not specified', () => {
       const message = 'test message';
 
       const result = adapter.setStatusBarMessage(message);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(message);
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(message, 2000);
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
       expect(result).toBeDefined();
       expect(result.dispose).toBeDefined();
     });
 
-    it('should set status bar message with timeout', () => {
+    it('should forward custom timeout to underlying VSCode API', () => {
       const message = 'test message';
-      const timeout = 5000;
+      const customTimeout = 31416;
 
-      const result = adapter.setStatusBarMessage(message, timeout);
+      const result = adapter.setStatusBarMessage(message, customTimeout);
 
-      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(message, timeout);
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(message, customTimeout);
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
       expect(result).toBeDefined();
     });
