@@ -121,7 +121,10 @@ export class PasteDestinationManager implements vscode.Disposable {
   unbind(): void {
     if (!this.boundDestination) {
       this.logger.info({ fn: 'PasteDestinationManager.unbind' }, 'No destination bound');
-      this.ideAdapter.setStatusBarMessage('RangeLink: No destination bound', 2000);
+      this.ideAdapter.setStatusBarMessage(
+        formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND),
+        2000,
+      );
       return;
     }
 
@@ -134,7 +137,10 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully unbound from ${displayName}`,
     );
 
-    this.ideAdapter.setStatusBarMessage(`✓ RangeLink unbound from ${displayName}`, 2000);
+    this.ideAdapter.setStatusBarMessage(
+      formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND, { destinationName: displayName }),
+      2000,
+    );
   }
 
   /**
@@ -330,7 +336,10 @@ export class PasteDestinationManager implements vscode.Disposable {
           `Bound terminal closed: ${terminalName} - auto-unbinding`,
         );
         this.unbind();
-        this.ideAdapter.setStatusBarMessage('Destination binding removed (terminal closed)', 3000);
+        this.ideAdapter.setStatusBarMessage(
+          formatMessage(MessageCode.STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED),
+          3000,
+        );
       }
     });
 
@@ -533,8 +542,13 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   private showBindSuccessToast(newDestinationName: string): void {
     const toastMessage = this.replacedDestinationName
-      ? `Unbound ${this.replacedDestinationName}, now bound to ${newDestinationName}`
-      : `✓ RangeLink bound to ${newDestinationName}`;
+      ? formatMessage(MessageCode.STATUS_BAR_DESTINATION_REBOUND, {
+          previousDestination: this.replacedDestinationName,
+          newDestination: newDestinationName,
+        })
+      : formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND, {
+          destinationName: newDestinationName,
+        });
 
     this.ideAdapter.setStatusBarMessage(toastMessage, 3000);
 
