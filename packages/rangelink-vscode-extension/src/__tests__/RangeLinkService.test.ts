@@ -1253,5 +1253,4 @@ describe('RangeLinkService', () => {
       });
     });
   });
-
 });
