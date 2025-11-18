@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Less intrusive auto-unbind notifications** - When a bound text editor document closes, the auto-unbind notification now appears in the status bar (2 seconds) instead of as a popup dialog. This makes the background cleanup less disruptive to your workflow.
+
 ### Fixed
 
 - **Single-position navigation** - Fixed regression introduced in v0.3.0 where navigating to single-position links (e.g., `file.ts#L32C1`) showed invisible cursors instead of visible 1-character selections.
