@@ -22,6 +22,8 @@ jest.mock('vscode', () => ({
 import { DestinationFactory } from '../../destinations/DestinationFactory';
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
+import { MessageCode } from '../../types/MessageCode';
+import * as formatMessageModule from '../../utils/formatMessage';
 import {
   createMockClaudeCodeDestination,
   createMockCursorAIDestination,
@@ -74,6 +76,7 @@ describe('PasteDestinationManager', () => {
   let mockLogger: Logger;
   let terminalCloseListener: (terminal: vscode.Terminal) => void;
   let documentCloseListener: (document: vscode.TextDocument) => void;
+  let formatMessageSpy: jest.SpyInstance;
 
   /**
    * Helper to create a manager with optional environment overrides.
@@ -103,6 +106,9 @@ describe('PasteDestinationManager', () => {
   };
 
   beforeEach(() => {
+    // Spy on formatMessage to verify MessageCode usage
+    formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+
     // Create mock logger
     mockLogger = createMockLogger();
 
@@ -157,6 +163,7 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_NO_ACTIVE_TERMINAL);
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: No active terminal. Open a terminal and try again.',
       );
@@ -166,12 +173,16 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
 
+      formatMessageSpy.mockClear();
       // Try binding again to same destination
       const result = await manager.bind('terminal');
 
       expect(result).toBe(false);
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
+        destinationName: 'Terminal',
+      });
       expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Already bound to Terminal'),
+        'RangeLink: Already bound to Terminal',
       );
     });
 
@@ -218,8 +229,26 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
+
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE);
+
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Cannot bind Cursor AI Assistant'),
+        'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
+      );
+    });
+
+    it('should fail when claude-code not available', async () => {
+      const mockDestination = createMockClaudeCodeDestination();
+      mockDestination.isAvailable = jest.fn().mockResolvedValue(false);
+      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+
+      const result = await manager.bind('claude-code');
+
+      expect(result).toBe(false);
+      expect(manager.isBound()).toBe(false);
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE);
+      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: Cannot bind Claude Code - extension not installed or not active',
       );
     });
 
@@ -254,6 +283,7 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT);
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
       );
@@ -268,6 +298,7 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR);
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: No active text editor. Open a file and try again.',
       );
@@ -275,9 +306,10 @@ describe('PasteDestinationManager', () => {
 
     it('should fail to bind text editor to binary file', async () => {
       // Setup: Binary file (non-text scheme)
+      const testFileName = 'binary.dat';
       mockAdapter.__getVscodeInstance().window.activeTextEditor = {
         document: {
-          uri: { scheme: 'vscode-userdata', fsPath: '/test/binary.dat' },
+          uri: { scheme: 'vscode-userdata', fsPath: `/test/${testFileName}` },
         },
       } as vscode.TextEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
@@ -286,8 +318,11 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_NOT_TEXT_LIKE, {
+        fileName: testFileName,
+      });
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        expect.stringContaining('not a text-like file'),
+        `RangeLink: Cannot bind to ${testFileName} - not a text-like file (binary or special scheme)`,
       );
     });
   });
@@ -632,12 +667,30 @@ describe('PasteDestinationManager', () => {
       await manager.bind('text-editor');
       expect(manager.isBound()).toBe(true);
 
+      // Clear mocks to isolate document close behavior
+      formatMessageSpy.mockClear();
+      (mockAdapter.__getVscodeInstance().window.setStatusBarMessage as jest.Mock).mockClear();
+      (mockAdapter.__getVscodeInstance().window.showInformationMessage as jest.Mock).mockClear();
+
       // Simulate document close
       documentCloseListener(mockDocument);
 
       expect(manager.isBound()).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND);
+      expect(
+        mockAdapter.__getVscodeInstance().window.showInformationMessage,
+      ).not.toHaveBeenCalled();
+      // Two calls: 1) unbind() message, 2) document close message
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink unbound from Text Editor',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
         'RangeLink: Bound editor closed. Unbound.',
+        2000,
       );
     });
 

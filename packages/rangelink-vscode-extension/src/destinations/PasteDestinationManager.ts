@@ -62,7 +62,9 @@ export class PasteDestinationManager implements vscode.Disposable {
           `Already bound to ${this.boundDestination.displayName}, no action taken`,
         );
         this.ideAdapter.showInformationMessage(
-          `RangeLink: Already bound to ${this.boundDestination.displayName}`,
+          formatMessage(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
+            destinationName: this.boundDestination.displayName,
+          }),
         );
         return false;
       }
@@ -355,9 +357,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     if (!activeTerminal) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTerminal' }, 'No active terminal');
-      this.ideAdapter.showErrorMessage(
-        'RangeLink: No active terminal. Open a terminal and try again.',
-      );
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
       return false;
     }
 
@@ -398,9 +398,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         { fn: 'PasteDestinationManager.bindTextEditor', tabGroupCount },
         'Cannot bind: Requires 2+ tab groups',
       );
-      this.ideAdapter.showErrorMessage(
-        'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
-      );
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT));
       return false;
     }
 
@@ -408,9 +406,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     if (!activeEditor) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
-      this.ideAdapter.showErrorMessage(
-        'RangeLink: No active text editor. Open a file and try again.',
-      );
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
       return false;
     }
 
@@ -422,7 +418,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         'Cannot bind: Editor is not a text-like file',
       );
       this.ideAdapter.showErrorMessage(
-        `RangeLink: Cannot bind to ${fileName} - not a text-like file (binary or special scheme)`,
+        formatMessage(MessageCode.ERROR_TEXT_EDITOR_NOT_TEXT_LIKE, { fileName }),
       );
       return false;
     }
@@ -467,9 +463,12 @@ export class PasteDestinationManager implements vscode.Disposable {
         `Cannot bind: ${destination.displayName} not available`,
       );
 
-      this.ideAdapter.showErrorMessage(
-        `RangeLink: Cannot bind ${destination.displayName} - not running in ${destination.displayName.replace(' Assistant', '')} IDE`,
-      );
+      const messageCode =
+        type === 'cursor-ai'
+          ? MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE
+          : MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE;
+
+      this.ideAdapter.showErrorMessage(formatMessage(messageCode));
 
       return false;
     }
@@ -522,7 +521,9 @@ export class PasteDestinationManager implements vscode.Disposable {
           `Bound document closed: ${editorDisplayName} - auto-unbinding`,
         );
         this.unbind();
-        this.ideAdapter.showInformationMessage(`RangeLink: Bound editor closed. Unbound.`);
+        this.ideAdapter.setStatusBarMessage(
+          formatMessage(MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND),
+        );
       }
     });
 
