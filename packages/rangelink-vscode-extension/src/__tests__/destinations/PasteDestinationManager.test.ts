@@ -1408,9 +1408,7 @@ describe('PasteDestinationManager', () => {
 
         await manager.bind('text-editor');
 
-        expect(formatMessageSpy).toHaveBeenCalledWith(
-          MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT,
-        );
+        expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT);
       });
 
       it('should use ERROR_NO_ACTIVE_TEXT_EDITOR when no active editor', async () => {
@@ -1445,9 +1443,7 @@ describe('PasteDestinationManager', () => {
 
         await manager.bind('cursor-ai');
 
-        expect(formatMessageSpy).toHaveBeenCalledWith(
-          MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE,
-        );
+        expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE);
       });
 
       it('should use ERROR_CLAUDE_CODE_NOT_AVAILABLE when Claude Code not available', async () => {
@@ -1457,9 +1453,7 @@ describe('PasteDestinationManager', () => {
 
         await manager.bind('claude-code');
 
-        expect(formatMessageSpy).toHaveBeenCalledWith(
-          MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE,
-        );
+        expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE);
       });
     });
 
@@ -1505,9 +1499,7 @@ describe('PasteDestinationManager', () => {
         documentCloseListener(mockDocument);
 
         // Should call formatMessage for status bar
-        expect(formatMessageSpy).toHaveBeenCalledWith(
-          MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND,
-        );
+        expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND);
 
         // Should NOT call showInformationMessage (popup removed - behavior change)
         expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();

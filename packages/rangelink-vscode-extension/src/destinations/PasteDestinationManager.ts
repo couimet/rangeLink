@@ -398,9 +398,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         { fn: 'PasteDestinationManager.bindTextEditor', tabGroupCount },
         'Cannot bind: Requires 2+ tab groups',
       );
-      this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT),
-      );
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT));
       return false;
     }
 
@@ -408,9 +406,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     if (!activeEditor) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
-      this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR),
-      );
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
       return false;
     }
 
