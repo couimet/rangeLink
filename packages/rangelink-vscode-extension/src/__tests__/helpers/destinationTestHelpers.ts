@@ -3,184 +3,27 @@
  *
  * Provides reusable test patterns to ensure all destinations follow the same
  * contract and behavior. Reduces duplication across destination test files.
+ *
+ * NOTE: Individual mock factories have been extracted to separate files for better
+ * discoverability. This file now serves as a barrel export for backward compatibility.
  */
 
 import type { Logger } from 'barebone-logger';
-import type {
-  ComputedSelection,
-  DelimiterConfig,
-  FormattedLink,
-  RangeFormat,
-  SelectionType,
-} from 'rangelink-core-ts';
-import { LinkType } from 'rangelink-core-ts';
 
 import type { DestinationType, PasteDestination } from '../../destinations/PasteDestination';
 
-/**
- * Create a mock FormattedLink for testing
- *
- * Provides sensible defaults for all required properties. Individual properties
- * can be overridden via the partial parameter.
- *
- * @param link - The RangeLink string (default: 'test-link')
- * @param overrides - Optional partial FormattedLink to override defaults
- * @returns Mock FormattedLink with all required properties
- */
-export const createMockFormattedLink = (
-  link = 'test-link',
-  overrides: Partial<FormattedLink> = {},
-): FormattedLink => {
-  const defaultDelimiters: DelimiterConfig = {
-    line: 'L',
-    position: 'C',
-    range: '-',
-    hash: '#',
-  };
+import { createMockFormattedLink } from './createMockFormattedLink';
 
-  const defaultSelection: ComputedSelection = {
-    startLine: 1,
-    startPosition: 1,
-    endLine: 1,
-    endPosition: 10,
-    rangeFormat: 'LineOnly' as RangeFormat,
-  };
+// Re-export individual mock factories
+export { createMockFormattedLink } from './createMockFormattedLink';
+export { createMockPasteDestination } from './createMockPasteDestination';
+export { createMockTerminalDestination } from './createMockTerminalDestination';
+export { createMockTextEditorDestination } from './createMockTextEditorDestination';
+export { createMockCursorAIDestination } from './createMockCursorAIDestination';
+export { createMockClaudeCodeDestination } from './createMockClaudeCodeDestination';
 
-  return {
-    link,
-    linkType: LinkType.Regular,
-    delimiters: defaultDelimiters,
-    computedSelection: defaultSelection,
-    rangeFormat: 'LineOnly' as RangeFormat,
-    selectionType: 'Normal' as SelectionType,
-    ...overrides,
-  };
-};
-
-/**
- * Create a mock PasteDestination for testing
- *
- * Provides a minimal mock implementation with sensible defaults for all required
- * PasteDestination interface methods. Individual properties/methods can be overridden
- * via the overrides parameter.
- *
- * This base factory only includes methods from the PasteDestination interface.
- * For destination-specific methods, use the specialized factories:
- * - createMockTerminalDestination() - adds setTerminal(), getTerminalName()
- * - createMockTextEditorDestination() - adds setEditor(), getBoundDocumentUri(), etc.
- * - createMockCursorAIDestination() - convenience wrapper with CursorAI defaults
- * - createMockClaudeCodeDestination() - convenience wrapper with ClaudeCode defaults
- *
- * This uses `any` typing because tests often use minimal mocks that don't implement
- * the full interface (e.g., missing pasteContent method for older tests).
- *
- * @example
- * createMockDestination() // Uses all defaults
- * createMockDestination({ displayName: 'Terminal' }) // Override displayName only
- * createMockDestination({ id: 'text-editor' as any, displayName: 'Editor' })
- *
- * @param overrides - Optional partial object to override default properties/methods
- * @returns Mock destination with jest.fn() implementations
- */
-export const createMockDestination = (overrides?: Partial<any>): any => ({
-  id: 'test-destination',
-  displayName: 'Test Destination',
-  isAvailable: jest.fn().mockResolvedValue(true),
-  isEligibleForPasteLink: jest.fn().mockResolvedValue(true),
-  isEligibleForPasteContent: jest.fn().mockResolvedValue(true),
-  getUserInstruction: jest.fn().mockReturnValue(undefined),
-  pasteLink: jest.fn().mockResolvedValue(true),
-  pasteContent: jest.fn().mockResolvedValue(true),
-  // Jump to Bound Destination methods (issue #99)
-  focus: jest.fn().mockResolvedValue(true),
-  getLoggingDetails: jest.fn().mockReturnValue({}),
-  getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused'),
-  ...overrides,
-});
-
-/**
- * Create a mock TerminalDestination for testing
- *
- * Extends base PasteDestination mock with TerminalDestination-specific methods:
- * - setTerminal(terminal: vscode.Terminal | undefined): void
- * - getTerminalName(): string | undefined
- *
- * @param overrides - Optional partial object to override default properties/methods
- * @returns Mock terminal destination with jest.fn() implementations
- */
-export const createMockTerminalDestination = (overrides?: Partial<any>): any =>
-  createMockDestination({
-    id: 'terminal',
-    displayName: 'Terminal',
-    getLoggingDetails: jest.fn().mockReturnValue({ terminalName: 'bash' }),
-    getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused Terminal: bash'),
-    // TerminalDestination-specific methods
-    setTerminal: jest.fn(),
-    getTerminalName: jest.fn().mockReturnValue('bash'),
-    ...overrides,
-  });
-
-/**
- * Create a mock TextEditorDestination for testing
- *
- * Extends base PasteDestination mock with TextEditorDestination-specific methods:
- * - setEditor(editor: vscode.TextEditor | undefined): void
- * - getBoundDocumentUri(): vscode.Uri | undefined
- * - getEditorDisplayName(): string | undefined
- * - getEditorPath(): string | undefined
- *
- * @param overrides - Optional partial object to override default properties/methods
- * @returns Mock text editor destination with jest.fn() implementations
- */
-export const createMockTextEditorDestination = (overrides?: Partial<any>): any =>
-  createMockDestination({
-    id: 'text-editor',
-    displayName: 'Text Editor',
-    getLoggingDetails: jest
-      .fn()
-      .mockReturnValue({ editorDisplayName: 'src/file.ts', editorPath: '/workspace/src/file.ts' }),
-    getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused Editor: src/file.ts'),
-    // TextEditorDestination-specific methods
-    setEditor: jest.fn(),
-    getBoundDocumentUri: jest.fn().mockReturnValue(undefined),
-    getEditorDisplayName: jest.fn().mockReturnValue('src/file.ts'),
-    getEditorPath: jest.fn().mockReturnValue('/workspace/src/file.ts'),
-    ...overrides,
-  });
-
-/**
- * Create a mock CursorAIDestination for testing
- *
- * Convenience factory for CursorAI destination with appropriate defaults.
- * Uses base PasteDestination mock (no extra methods beyond interface).
- *
- * @param overrides - Optional partial object to override default properties/methods
- * @returns Mock Cursor AI destination with jest.fn() implementations
- */
-export const createMockCursorAIDestination = (overrides?: Partial<any>): any =>
-  createMockDestination({
-    id: 'cursor-ai',
-    displayName: 'Cursor AI Assistant',
-    getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused Cursor AI Assistant'),
-    ...overrides,
-  });
-
-/**
- * Create a mock ClaudeCodeDestination for testing
- *
- * Convenience factory for ClaudeCode destination with appropriate defaults.
- * Uses base PasteDestination mock (no extra methods beyond interface).
- *
- * @param overrides - Optional partial object to override default properties/methods
- * @returns Mock Claude Code destination with jest.fn() implementations
- */
-export const createMockClaudeCodeDestination = (overrides?: Partial<any>): any =>
-  createMockDestination({
-    id: 'claude-code',
-    displayName: 'Claude Code Chat',
-    getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused Claude Code Chat'),
-    ...overrides,
-  });
+// Backward compatibility alias (deprecated - use createMockPasteDestination instead)
+export { createMockPasteDestination as createMockDestination } from './createMockPasteDestination';
 
 /**
  * Test interface compliance for a destination

@@ -8,7 +8,7 @@ import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
 import { VSCodeLogger } from '../VSCodeLogger';
-import { createMockDestinationManager } from './helpers/mockDestinationManager';
+import { createMockDestinationManager } from './helpers/createMockDestinationManager';
 
 // Mock vscode module
 const mockStatusBarItem = {
@@ -26,15 +26,6 @@ const mockOutputChannel = {
   appendLine: jest.fn(),
   dispose: jest.fn(),
 };
-
-// Helper to create mock IDE adapter
-function createMockIdeAdapter() {
-  return {
-    writeTextToClipboard: jest.fn().mockResolvedValue(undefined),
-    setStatusBarMessage: jest.fn().mockReturnValue({ dispose: jest.fn() }),
-    showWarningMessage: jest.fn().mockResolvedValue(undefined),
-  };
-}
 
 // Internal storage for activeTextEditor
 let _activeTextEditor: any = null;

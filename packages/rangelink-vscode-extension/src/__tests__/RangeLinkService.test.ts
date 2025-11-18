@@ -1,15 +1,19 @@
 import type { Logger } from 'barebone-logger';
 import * as loggerModule from 'barebone-logger';
+import { createMockLogger } from 'barebone-logger-testing';
 import type { DelimiterConfig } from 'rangelink-core-ts';
 
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { messagesEn } from '../i18n/messages.en';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { RangeLinkService } from '../RangeLinkService';
-import { createMockDestination, createMockFormattedLink } from './helpers/destinationTestHelpers';
+import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
-import { createMockDestinationManager } from './helpers/mockDestinationManager';
+import { createMockDestinationManager } from './helpers/createMockDestinationManager';
+import { createMockDocument } from './helpers/createMockDocument';
+import { createMockEditor } from './helpers/createMockEditor';
+import { createMockIdeAdapter } from './helpers/createMockIdeAdapter';
+import { createMockDestination, createMockFormattedLink } from './helpers/destinationTestHelpers';
 
 describe('RangeLinkService', () => {
   describe('copyToClipboardAndDestination', () => {
@@ -1246,6 +1250,215 @@ describe('RangeLinkService', () => {
           }),
           'Empty selection detected - should be prevented by command enablement',
         );
+      });
+    });
+  });
+
+  describe('createLinkOnly (clipboard-only commands - Issue #117)', () => {
+    let service: RangeLinkService;
+    let mockIdeAdapter: VscodeAdapter;
+    let mockDestinationManager: PasteDestinationManager;
+    let mockLogger: Logger;
+    const delimiters: DelimiterConfig = {
+      line: 'L',
+      position: 'C',
+      hash: '#',
+      range: '-',
+    };
+
+    beforeEach(() => {
+      // Mock logger
+      mockLogger = createMockLogger();
+      jest.spyOn(loggerModule, 'getLogger').mockReturnValue(mockLogger);
+
+      // Mock formatMessage
+      jest.spyOn(formatMessageModule, 'formatMessage').mockImplementation((code, params) => {
+        if (code === MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD) {
+          return `✓ ${params?.linkTypeName} copied to clipboard`;
+        }
+        return messagesEn[code] || code;
+      });
+
+      // Create mock editor with multi-line selection
+      const lines = ['line1', 'line2', 'line3'];
+      const mockDocument = createMockDocument(lines.join('\n'), {
+        scheme: 'file',
+        path: '/workspace/src/file.ts',
+        fsPath: '/workspace/src/file.ts',
+        toString: () => 'file:///workspace/src/file.ts',
+      } as any);
+
+      const mockEditor = createMockEditor({
+        document: mockDocument,
+        selections: [
+          {
+            start: { line: 0, character: 0 },
+            end: { line: 2, character: 5 },
+            isEmpty: false,
+            isSingleLine: false,
+          },
+        ] as any,
+      });
+
+      // Create mock IDE adapter with active editor
+      mockIdeAdapter = createMockIdeAdapter({
+        activeTextEditor: mockEditor,
+        workspaceFolder: { uri: { fsPath: '/workspace' } },
+        relativePath: 'src/file.ts',
+      });
+
+      // Create mock destination manager (bound to a destination)
+      const mockDestination = createMockDestination({
+        id: 'terminal',
+        displayName: 'Terminal',
+      });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: mockDestination,
+        sendToDestinationResult: true,
+      });
+
+      // Create service
+      service = new RangeLinkService(delimiters, mockIdeAdapter, mockDestinationManager);
+    });
+
+    describe('when destination IS bound', () => {
+      it('should skip destination and copy to clipboard only (workspace-relative)', async () => {
+        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+        // Verify clipboard was written
+        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L1-L3');
+
+        // Verify destination was NOT called (key behavior of clipboard-only)
+        expect(mockDestinationManager.sendToDestination).not.toHaveBeenCalled();
+
+        // Verify status message indicates clipboard-only
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ RangeLink copied to clipboard',
+          2000,
+        );
+
+        // Verify log indicates skipping destination
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          { fn: 'createLinkOnly' },
+          'Skipping destination (clipboard-only command)',
+        );
+      });
+
+      it('should skip destination and copy to clipboard only (absolute)', async () => {
+        await service.createLinkOnly(PathFormat.Absolute);
+
+        // Verify clipboard was written with absolute path
+        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(
+          '/workspace/src/file.ts#L1-L3',
+        );
+
+        // Verify destination was NOT called
+        expect(mockDestinationManager.sendToDestination).not.toHaveBeenCalled();
+
+        // Verify status message
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ RangeLink copied to clipboard',
+          2000,
+        );
+
+        // Verify log indicates skipping destination
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          { fn: 'createLinkOnly' },
+          'Skipping destination (clipboard-only command)',
+        );
+      });
+
+      it('should not show warning message about destination', async () => {
+        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+        // Should not show any warnings (destination intentionally skipped)
+        expect(mockIdeAdapter.showWarningMessage).not.toHaveBeenCalled();
+        expect(mockIdeAdapter.showInformationMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when destination is NOT bound', () => {
+      beforeEach(() => {
+        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
+      });
+
+      it('should copy to clipboard (workspace-relative)', async () => {
+        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+        // Verify clipboard was written
+        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L1-L3');
+
+        // Verify status message
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ RangeLink copied to clipboard',
+          2000,
+        );
+
+        // Verify log indicates clipboard-only behavior (always logs this regardless of bound state)
+        const infoLogCalls = (mockLogger.info as jest.Mock).mock.calls;
+        const clipboardOnlyCall = infoLogCalls.find(
+          (call) => call[1] === 'Skipping destination (clipboard-only command)',
+        );
+        expect(clipboardOnlyCall).toBeDefined();
+        expect(clipboardOnlyCall[0]).toMatchObject({ fn: 'createLinkOnly' });
+      });
+
+      it('should copy to clipboard (absolute)', async () => {
+        await service.createLinkOnly(PathFormat.Absolute);
+
+        // Verify clipboard was written with absolute path
+        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(
+          '/workspace/src/file.ts#L1-L3',
+        );
+
+        // Verify status message
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ RangeLink copied to clipboard',
+          2000,
+        );
+      });
+    });
+
+    describe('error handling', () => {
+      it('should handle no active editor gracefully', async () => {
+        (mockIdeAdapter as any).activeTextEditor = undefined;
+
+        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+        // Should show error message
+        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
+
+        // Should NOT copy to clipboard
+        expect(mockIdeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
+
+        // Should NOT call destination
+        expect(mockDestinationManager.sendToDestination).not.toHaveBeenCalled();
+      });
+
+      it('should handle empty selection gracefully', async () => {
+        (mockIdeAdapter as any).activeTextEditor!.selections = [
+          {
+            start: { line: 0, character: 0 },
+            end: { line: 0, character: 0 },
+            isEmpty: true,
+            isSingleLine: true,
+          },
+        ];
+
+        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+        // Should show error message
+        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledWith(
+          'RangeLink: No text selected. Select text and try again.',
+        );
+
+        // Should NOT copy to clipboard
+        expect(mockIdeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
       });
     });
   });

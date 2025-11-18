@@ -3,26 +3,21 @@
  *
  * Provides pre-configured mocks for common VSCode API objects used across
  * destination tests. Reduces boilerplate and ensures consistent test setups.
+ *
+ * NOTE: Some commonly used utilities have been extracted to separate files for better
+ * discoverability. This file serves as a barrel export while keeping complex utilities
+ * that depend on multiple other functions.
  */
 
 import * as vscode from 'vscode';
 
 import { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
-/**
- * Create a mock Terminal with common methods stubbed
- *
- * @param name - Terminal name (default: 'bash')
- * @returns Mock Terminal object with Jest functions
- */
-export const createMockTerminal = (name = 'bash'): vscode.Terminal => {
-  return {
-    name,
-    sendText: jest.fn(),
-    show: jest.fn(),
-    dispose: jest.fn(),
-  } as unknown as vscode.Terminal;
-};
+import { createMockDocumentLink } from './createMockDocumentLink';
+import { createMockPosition } from './createMockPosition';
+import { createMockRange } from './createMockRange';
+import { createMockSelection } from './createMockSelection';
+import { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
 
 /**
  * Mock vscode.window object for testing
@@ -120,104 +115,6 @@ export const createMockCommands = (): typeof vscode.commands => {
   } as unknown as typeof vscode.commands;
 };
 
-/**
- * Create a mock TextDocument with sensible defaults and optional overrides.
- *
- * **Default behavior (for link detection tests):**
- * - `getText()` returns full text content
- * - `positionAt()` converts string indices to Position objects
- *
- * **For navigation tests, provide overrides:**
- * - `lineAt: jest.fn(() => ({ text: 'line content' }))`
- * - `lineCount: 100`
- *
- * @param text - Document content (used for getText and positionAt)
- * @param uri - Optional document URI (defaults to file:///test.md)
- * @param overrides - Optional property overrides for specialized behavior
- * @returns Mock TextDocument with default + overridden properties
- */
-export const createMockDocument = (
-  text: string,
-  uri?: vscode.Uri,
-  overrides?: Partial<vscode.TextDocument>,
-): vscode.TextDocument => {
-  // Create a default mock URI if not provided
-  const defaultUri = uri || {
-    scheme: 'file',
-    path: '/test.md',
-    toString: () => 'file:///test.md',
-    fsPath: '/test.md',
-  };
-
-  const baseDocument = {
-    getText: () => text,
-    positionAt: (index: number) => {
-      // Calculate line and character from string index
-      const lines = text.substring(0, index).split('\n');
-      const line = lines.length - 1;
-      const character = lines[lines.length - 1].length;
-      return new vscode.Position(line, character);
-    },
-    uri: defaultUri,
-    lineCount: text.split('\n').length,
-    lineAt: jest.fn((line: number) => ({
-      text: text.split('\n')[line] || '',
-      lineNumber: line,
-    })),
-  };
-
-  return {
-    ...baseDocument,
-    ...overrides,
-  } as unknown as vscode.TextDocument;
-};
-
-/**
- * Create a mock TextEditor with sensible defaults and optional overrides.
- *
- * **Default behavior:**
- * - `document` with default line content
- * - `selection` set to null
- * - `selections` set to empty array
- * - `revealRange` mock function
- *
- * **For specialized tests, provide overrides:**
- * - Custom document: `document: createMockDocument(...)`
- * - Pre-set selection: `selection: { anchor: ..., active: ... }`
- *
- * @param overrides - Optional property overrides for specialized behavior
- * @returns Mock TextEditor with default + overridden properties
- */
-export const createMockEditor = (overrides?: Partial<vscode.TextEditor>): vscode.TextEditor => {
-  const defaultDocument = createMockDocument('const x = 42; // Sample line content');
-
-  const baseEditor = {
-    document: defaultDocument,
-    selection: null as any,
-    selections: [] as any[],
-    revealRange: jest.fn(),
-    edit: jest.fn().mockResolvedValue(true),
-    viewColumn: 1,
-  };
-
-  return {
-    ...baseEditor,
-    ...overrides,
-  } as unknown as vscode.TextEditor;
-};
-
-/**
- * Create a mock CancellationToken for provider tests.
- *
- * @param isCancelled - Whether the token should report as cancelled (default: false)
- * @returns Mock CancellationToken
- */
-export const createMockCancellationToken = (isCancelled = false): vscode.CancellationToken => {
-  return {
-    isCancellationRequested: isCancelled,
-    onCancellationRequested: jest.fn(),
-  } as unknown as vscode.CancellationToken;
-};
 
 /**
  * Create a mock workspace object for navigation tests.
@@ -311,93 +208,7 @@ export const createMockUri = (overrides?: { file?: jest.Mock; parse?: jest.Mock 
     })),
 });
 
-/**
- * Create a mock URI instance with sensible defaults.
- *
- * Provides a mock vscode.Uri object with file:// scheme by default.
- * Use this for creating workspace folder URIs, file URIs in tests, etc.
- *
- * @param fsPath - File system path for the URI
- * @param overrides - Optional property overrides (scheme, path, etc.)
- * @returns Mock URI instance
- */
-export const createMockUriInstance = (
-  fsPath: string,
-  overrides?: Partial<vscode.Uri>,
-): vscode.Uri => {
-  return {
-    fsPath,
-    scheme: 'file',
-    path: fsPath,
-    toString: () => `file://${fsPath}`,
-    ...overrides,
-  } as vscode.Uri;
-};
 
-/**
- * Create a mock workspace folder with sensible defaults.
- *
- * Provides a mock vscode.WorkspaceFolder object for testing
- * workspace-relative path resolution.
- *
- * @param fsPath - File system path for the workspace root
- * @param overrides - Optional property overrides (name, index, etc.)
- * @returns Mock workspace folder
- */
-export const createMockWorkspaceFolder = (
-  fsPath: string,
-  overrides?: Partial<vscode.WorkspaceFolder>,
-): vscode.WorkspaceFolder => {
-  const uri = createMockUriInstance(fsPath);
-  return {
-    uri,
-    name: fsPath.split('/').pop() || 'workspace',
-    index: 0,
-    ...overrides,
-  } as vscode.WorkspaceFolder;
-};
-
-/**
- * Create a mock Position constructor for navigation tests.
- *
- * Creates Position objects with line and character properties.
- *
- * @returns Mock Position constructor that creates {line, character} objects
- */
-export const createMockPosition = () =>
-  jest.fn((line: number, character: number) => ({ line, character }));
-
-/**
- * Create a mock Selection constructor for navigation tests.
- *
- * Creates Selection objects with anchor and active properties.
- *
- * @returns Mock Selection constructor that creates {anchor, active} objects
- */
-export const createMockSelection = () =>
-  jest.fn((anchor: vscode.Position, active: vscode.Position) => ({ anchor, active }));
-
-/**
- * Create a mock Range constructor for navigation tests.
- *
- * Creates Range objects with start and end properties.
- *
- * @returns Mock Range constructor that creates {start, end} objects
- */
-export const createMockRange = () =>
-  jest.fn((start: vscode.Position, end: vscode.Position) => ({ start, end }));
-
-/**
- * Create a mock DocumentLink constructor.
- *
- * @returns Mock DocumentLink constructor that creates {range, target, tooltip} objects
- */
-export const createMockDocumentLink = () =>
-  jest.fn(function (this: any, range: vscode.Range, target?: vscode.Uri) {
-    this.range = range;
-    this.target = target;
-    this.tooltip = undefined;
-  });
 
 /**
  * Options for creating mock vscode instances.

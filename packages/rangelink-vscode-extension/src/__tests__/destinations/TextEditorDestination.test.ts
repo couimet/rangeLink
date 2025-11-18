@@ -9,16 +9,16 @@ jest.mock('../../utils/applySmartPadding');
 import { TextEditorDestination } from '../../destinations/TextEditorDestination';
 import { applySmartPadding } from '../../utils/applySmartPadding';
 import { isEligibleForPaste } from '../../utils/isEligibleForPaste';
+import { createMockDocument } from '../helpers/createMockDocument';
+import { createMockEditor } from '../helpers/createMockEditor';
+import { createMockUriInstance } from '../helpers/createMockUriInstance';
 import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
 import {
   configureEmptyTabGroups,
   configureWorkspaceMocks,
-  createMockDocument,
-  createMockEditor,
   createMockTab,
   createMockTabGroup,
   createMockTabGroups,
-  createMockUriInstance,
   createMockVscodeAdapter,
   simulateClosedEditor,
   simulateFileOutsideWorkspace,

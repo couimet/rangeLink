@@ -1,7 +1,8 @@
 import * as path from 'node:path';
 
 import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
-import { createMockUriInstance, createMockWorkspaceFolder } from '../helpers/mockVSCode';
+import { createMockUriInstance } from '../helpers/createMockUriInstance';
+import { createMockWorkspaceFolder } from '../helpers/createMockWorkspaceFolder';
 
 describe('resolveWorkspacePath', () => {
   let mockVscode: any;
