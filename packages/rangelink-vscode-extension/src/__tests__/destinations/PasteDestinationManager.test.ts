@@ -22,6 +22,8 @@ jest.mock('vscode', () => ({
 import { DestinationFactory } from '../../destinations/DestinationFactory';
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
+import { MessageCode } from '../../types/MessageCode';
+import * as formatMessageModule from '../../utils/formatMessage';
 import {
   createMockClaudeCodeDestination,
   createMockCursorAIDestination,
@@ -74,6 +76,7 @@ describe('PasteDestinationManager', () => {
   let mockLogger: Logger;
   let terminalCloseListener: (terminal: vscode.Terminal) => void;
   let documentCloseListener: (document: vscode.TextDocument) => void;
+  let formatMessageSpy: jest.SpyInstance;
 
   /**
    * Helper to create a manager with optional environment overrides.
@@ -103,6 +106,9 @@ describe('PasteDestinationManager', () => {
   };
 
   beforeEach(() => {
+    // Spy on formatMessage to verify MessageCode usage
+    formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+
     // Create mock logger
     mockLogger = createMockLogger();
 
@@ -636,8 +642,11 @@ describe('PasteDestinationManager', () => {
       documentCloseListener(mockDocument);
 
       expect(manager.isBound()).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
-        'RangeLink: Bound editor closed. Unbound.',
+      // Behavior change (Issue #125): Changed from popup to status bar only
+      // Verify the document close message was shown (don't assert on timeout - it's an implementation detail)
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        expect.stringContaining('Bound editor closed'),
+        expect.anything(),
       );
     });
 
@@ -1374,6 +1383,138 @@ describe('PasteDestinationManager', () => {
       await manager.jumpToBoundDestination();
 
       expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('MessageCode usage (Issue #125)', () => {
+    describe('bind() validation errors', () => {
+      it('should use ERROR_NO_ACTIVE_TERMINAL when no terminal active', async () => {
+        const adapter = createMockVscodeAdapter(undefined, {
+          windowOptions: { activeTerminal: undefined },
+        });
+        const factory = new DestinationFactory(adapter, mockLogger);
+        const mgr = new PasteDestinationManager(mockContext, factory, adapter, mockLogger);
+
+        await mgr.bind('terminal');
+
+        expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_NO_ACTIVE_TERMINAL);
+      });
+
+      it('should use ERROR_TEXT_EDITOR_REQUIRES_SPLIT when less than 2 tab groups', async () => {
+        mockAdapter.__getVscodeInstance().window.activeTextEditor = {
+          document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
+        } as vscode.TextEditor;
+        configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 1);
+
+        await manager.bind('text-editor');
+
+        expect(formatMessageSpy).toHaveBeenCalledWith(
+          MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT,
+        );
+      });
+
+      it('should use ERROR_NO_ACTIVE_TEXT_EDITOR when no active editor', async () => {
+        mockAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+        configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+        await manager.bind('text-editor');
+
+        expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR);
+      });
+
+      it('should use ERROR_TEXT_EDITOR_NOT_TEXT_LIKE for binary files', async () => {
+        mockAdapter.__getVscodeInstance().window.activeTextEditor = {
+          document: {
+            uri: { scheme: 'output', fsPath: '/test/output.log' },
+          },
+        } as vscode.TextEditor;
+        configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+        await manager.bind('text-editor');
+
+        expect(formatMessageSpy).toHaveBeenCalledWith(
+          MessageCode.ERROR_TEXT_EDITOR_NOT_TEXT_LIKE,
+          expect.objectContaining({ fileName: expect.any(String) }),
+        );
+      });
+
+      it('should use ERROR_CURSOR_AI_NOT_AVAILABLE when Cursor AI not available', async () => {
+        const mockDestination = createMockCursorAIDestination();
+        mockDestination.isAvailable = jest.fn().mockResolvedValue(false);
+        jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+
+        await manager.bind('cursor-ai');
+
+        expect(formatMessageSpy).toHaveBeenCalledWith(
+          MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE,
+        );
+      });
+
+      it('should use ERROR_CLAUDE_CODE_NOT_AVAILABLE when Claude Code not available', async () => {
+        const mockDestination = createMockClaudeCodeDestination();
+        mockDestination.isAvailable = jest.fn().mockResolvedValue(false);
+        jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+
+        await manager.bind('claude-code');
+
+        expect(formatMessageSpy).toHaveBeenCalledWith(
+          MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE,
+        );
+      });
+    });
+
+    describe('bind() duplicate binding prevention', () => {
+      it('should use ALREADY_BOUND_TO_DESTINATION when binding same destination', async () => {
+        const mockTerminal = {
+          name: 'bash',
+          sendText: jest.fn(),
+          show: jest.fn(),
+        } as unknown as vscode.Terminal;
+
+        const mockVscode = mockAdapter.__getVscodeInstance();
+        mockVscode.window.activeTerminal = mockTerminal;
+
+        // First bind
+        await manager.bind('terminal');
+        formatMessageSpy.mockClear();
+
+        // Try to bind same destination again
+        await manager.bind('terminal');
+
+        expect(formatMessageSpy).toHaveBeenCalledWith(
+          MessageCode.ALREADY_BOUND_TO_DESTINATION,
+          expect.objectContaining({ destinationName: expect.any(String) }),
+        );
+      });
+    });
+
+    describe('document close auto-unbind', () => {
+      it('should use BOUND_EDITOR_CLOSED_AUTO_UNBOUND on status bar (no popup)', async () => {
+        const mockEditor = createMockEditor();
+        const mockDocument = mockEditor.document;
+        mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+        configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+        await manager.bind('text-editor');
+        formatMessageSpy.mockClear();
+
+        const mockVscode = mockAdapter.__getVscodeInstance();
+        (mockVscode.window.showInformationMessage as jest.Mock).mockClear(); // Clear from bind()
+
+        // Simulate document close
+        documentCloseListener(mockDocument);
+
+        // Should call formatMessage for status bar
+        expect(formatMessageSpy).toHaveBeenCalledWith(
+          MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND,
+        );
+
+        // Should NOT call showInformationMessage (popup removed - behavior change)
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+
+        // Should call setStatusBarMessage
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalled();
+      });
     });
   });
 });
