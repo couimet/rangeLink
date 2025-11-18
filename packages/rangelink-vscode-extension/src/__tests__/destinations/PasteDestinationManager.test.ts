@@ -83,7 +83,7 @@ describe('PasteDestinationManager', () => {
    * Useful for tests that need to simulate Cursor IDE.
    */
   const createManager = (envOptions?: MockVscodeOptions['envOptions']) => {
-    const adapter = createMockVscodeAdapter(undefined, {
+    const adapter = createMockVscodeAdapter({
       envOptions,
       windowOptions: {
         onDidCloseTerminal: jest.fn((listener) => {

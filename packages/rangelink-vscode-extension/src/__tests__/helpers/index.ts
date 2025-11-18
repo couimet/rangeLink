@@ -5,6 +5,7 @@
  */
 
 // Export individual mock factories
+export { createMockAsRelativePath } from './createMockAsRelativePath';
 export { createMockCancellationToken } from './createMockCancellationToken';
 export { createMockCommands } from './createMockCommands';
 export { createMockDocument } from './createMockDocument';
@@ -12,6 +13,7 @@ export { createMockDocumentLink } from './createMockDocumentLink';
 export { createMockEditor } from './createMockEditor';
 export { createMockEnv } from './createMockEnv';
 export { createMockExtensions } from './createMockExtensions';
+export { createMockGetWorkspaceFolder } from './createMockGetWorkspaceFolder';
 export { createMockPosition } from './createMockPosition';
 export { createMockRange } from './createMockRange';
 export { createMockSelection } from './createMockSelection';

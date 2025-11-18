@@ -9,11 +9,13 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
+import { createMockAsRelativePath } from './helpers/createMockAsRelativePath';
 import { createMockDestinationManager } from './helpers/createMockDestinationManager';
 import { createMockDocument } from './helpers/createMockDocument';
 import { createMockEditor } from './helpers/createMockEditor';
-import { createMockIdeAdapter } from './helpers/createMockIdeAdapter';
+import { createMockGetWorkspaceFolder } from './helpers/createMockGetWorkspaceFolder';
 import { createMockDestination, createMockFormattedLink } from './helpers/destinationTestHelpers';
+import { createMockVscodeAdapter } from './helpers/mockVSCode';
 
 describe('RangeLinkService', () => {
   describe('copyToClipboardAndDestination', () => {
@@ -1234,10 +1236,8 @@ describe('RangeLinkService', () => {
           ],
         };
 
-        mockIdeAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({
-          uri: { path: '/test' },
-        });
-        mockIdeAdapter.asRelativePath = jest.fn().mockReturnValue('file.ts');
+        mockIdeAdapter.getWorkspaceFolder = createMockGetWorkspaceFolder('/test');
+        mockIdeAdapter.asRelativePath = createMockAsRelativePath('file.ts');
         mockIdeAdapter.writeTextToClipboard = jest.fn().mockResolvedValue(undefined);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1256,7 +1256,7 @@ describe('RangeLinkService', () => {
 
   describe('createLinkOnly (clipboard-only commands - Issue #117)', () => {
     let service: RangeLinkService;
-    let mockIdeAdapter: VscodeAdapter;
+    let mockVscodeAdapter: VscodeAdapter;
     let mockDestinationManager: PasteDestinationManager;
     let mockLogger: Logger;
     const delimiters: DelimiterConfig = {
@@ -1301,11 +1301,24 @@ describe('RangeLinkService', () => {
       });
 
       // Create mock IDE adapter with active editor
-      mockIdeAdapter = createMockIdeAdapter({
-        activeTextEditor: mockEditor,
-        workspaceFolder: { uri: { fsPath: '/workspace' } },
-        relativePath: 'src/file.ts',
+      mockVscodeAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: mockEditor,
+        },
+        workspaceOptions: {
+          getWorkspaceFolder: createMockGetWorkspaceFolder('/workspace'),
+          asRelativePath: createMockAsRelativePath('src/file.ts'),
+        },
       });
+
+      // Spy on adapter methods for test assertions
+      jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard');
+      jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage');
+      jest.spyOn(mockVscodeAdapter, 'showWarningMessage');
+      jest.spyOn(mockVscodeAdapter, 'showErrorMessage');
+      jest.spyOn(mockVscodeAdapter, 'showInformationMessage');
+      jest.spyOn(mockVscodeAdapter, 'getWorkspaceFolder');
+      jest.spyOn(mockVscodeAdapter, 'asRelativePath');
 
       // Create mock destination manager (bound to a destination)
       const mockDestination = createMockDestination({
@@ -1319,7 +1332,7 @@ describe('RangeLinkService', () => {
       });
 
       // Create service
-      service = new RangeLinkService(delimiters, mockIdeAdapter, mockDestinationManager);
+      service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
     });
 
     describe('when destination IS bound', () => {
@@ -1327,14 +1340,14 @@ describe('RangeLinkService', () => {
         await service.createLinkOnly(PathFormat.WorkspaceRelative);
 
         // Verify clipboard was written
-        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
-        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L1-L3');
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L1-L3');
 
         // Verify destination was NOT called (key behavior of clipboard-only)
         expect(mockDestinationManager.sendToDestination).not.toHaveBeenCalled();
 
         // Verify status message indicates clipboard-only
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
           2000,
         );
@@ -1350,8 +1363,8 @@ describe('RangeLinkService', () => {
         await service.createLinkOnly(PathFormat.Absolute);
 
         // Verify clipboard was written with absolute path
-        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
-        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(
           '/workspace/src/file.ts#L1-L3',
         );
 
@@ -1359,7 +1372,7 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendToDestination).not.toHaveBeenCalled();
 
         // Verify status message
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
           2000,
         );
@@ -1375,8 +1388,8 @@ describe('RangeLinkService', () => {
         await service.createLinkOnly(PathFormat.WorkspaceRelative);
 
         // Should not show any warnings (destination intentionally skipped)
-        expect(mockIdeAdapter.showWarningMessage).not.toHaveBeenCalled();
-        expect(mockIdeAdapter.showInformationMessage).not.toHaveBeenCalled();
+        expect(mockVscodeAdapter.showWarningMessage).not.toHaveBeenCalled();
+        expect(mockVscodeAdapter.showInformationMessage).not.toHaveBeenCalled();
       });
     });
 
@@ -1389,11 +1402,11 @@ describe('RangeLinkService', () => {
         await service.createLinkOnly(PathFormat.WorkspaceRelative);
 
         // Verify clipboard was written
-        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
-        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L1-L3');
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L1-L3');
 
         // Verify status message
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
           2000,
         );
@@ -1411,13 +1424,13 @@ describe('RangeLinkService', () => {
         await service.createLinkOnly(PathFormat.Absolute);
 
         // Verify clipboard was written with absolute path
-        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
-        expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(
           '/workspace/src/file.ts#L1-L3',
         );
 
         // Verify status message
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
           2000,
         );
@@ -1426,22 +1439,26 @@ describe('RangeLinkService', () => {
 
     describe('error handling', () => {
       it('should handle no active editor gracefully', async () => {
-        (mockIdeAdapter as any).activeTextEditor = undefined;
+        const mockVscode = (mockVscodeAdapter as any).__getVscodeInstance();
+        mockVscode.window.activeTextEditor = undefined;
 
         await service.createLinkOnly(PathFormat.WorkspaceRelative);
 
         // Should show error message
-        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
+        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
+          'RangeLink: No active editor',
+        );
 
         // Should NOT copy to clipboard
-        expect(mockIdeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
+        expect(mockVscodeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
 
         // Should NOT call destination
         expect(mockDestinationManager.sendToDestination).not.toHaveBeenCalled();
       });
 
       it('should handle empty selection gracefully', async () => {
-        (mockIdeAdapter as any).activeTextEditor!.selections = [
+        const mockVscode = (mockVscodeAdapter as any).__getVscodeInstance();
+        mockVscode.window.activeTextEditor!.selections = [
           {
             start: { line: 0, character: 0 },
             end: { line: 0, character: 0 },
@@ -1453,12 +1470,12 @@ describe('RangeLinkService', () => {
         await service.createLinkOnly(PathFormat.WorkspaceRelative);
 
         // Should show error message
-        expect(mockIdeAdapter.showErrorMessage).toHaveBeenCalledWith(
+        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
           'RangeLink: No text selected. Select text and try again.',
         );
 
         // Should NOT copy to clipboard
-        expect(mockIdeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
+        expect(mockVscodeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
       });
     });
   });

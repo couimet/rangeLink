@@ -29,54 +29,22 @@ import { MockTabInputText } from './tabTestHelpers';
 
 
 /**
- * Create a complete vscode module mock for VscodeAdapter tests.
- *
- * Specialized factory that provides all VSCode API mocks required by VscodeAdapter:
- * - env.clipboard for clipboard operations
- * - window.setStatusBarMessage for status bar (synchronous, returns Disposable)
- * - window.show*Message for notifications (async, return Promise)
- * - window.showTextDocument for document display
- * - workspace.openTextDocument for document loading
- * - workspace.fs.stat for file system operations
- * - workspace.workspaceFolders for workspace path resolution
- * - Uri.file for URI creation
- * - Position, Selection, Range constructors
- * - TextEditorRevealType enum
- *
- * Composes from existing factories (createMockEnv, createMockWindow, createMockWorkspace)
- * to ensure consistency across all tests.
- *
- * @returns Complete typeof vscode mock suitable for VscodeAdapter constructor
- */
-export const createVSCodeAdapterMock = (): typeof vscode => {
-  return {
-    env: createMockEnv(),
-    window: createMockWindow(),
-    workspace: createMockWorkspace(),
-    Uri: createMockUri(),
-    Position: jest.fn((line: number, character: number) => ({ line, character })),
-    Selection: jest.fn((anchor: any, active: any) => ({ anchor, active })),
-    Range: jest.fn((start: any, end: any) => ({ start, end })),
-  } as unknown as typeof vscode;
-};
-
-
-
-
-/**
  * Options for creating mock vscode instances.
  */
 export interface MockVscodeOptions {
-  /** Environment overrides (appName, uriScheme, or any other env properties) */
-  envOptions?: Record<string, unknown>;
-  /** Window overrides (event listeners, activeTerminal, etc.) */
-  windowOptions?: Record<string, unknown>;
-  /** Workspace overrides (event listeners, workspaceFolders, etc.) */
-  workspaceOptions?: Record<string, unknown>;
+  /** Environment overrides - accepts either a config object or a partial vscode.Env */
+  envOptions?: Record<string, unknown> | Partial<typeof vscode.env>;
+  /** Window overrides - accepts either a config object or a partial vscode.Window */
+  windowOptions?: Record<string, unknown> | Partial<typeof vscode.window>;
+  /** Workspace overrides - accepts either a config object or a partial vscode.Workspace */
+  workspaceOptions?: Record<string, unknown> | Partial<typeof vscode.workspace>;
 }
 
 /**
  * Create a mock vscode module for testing.
+ *
+ * **Internal function** - Use `createMockVscodeAdapter()` instead for all tests.
+ * This function is an implementation detail and should not be exported.
  *
  * Provides complete mock of VSCode API with sensible defaults:
  * - window.activeTerminal, activeTextEditor
@@ -95,19 +63,15 @@ export interface MockVscodeOptions {
  * - Uri.file, Uri.parse
  * - Position, Selection, Range constructors
  * - DocumentLink constructor
- * - TextEditorRevealType enum
  *
- * This mock object can be passed to `new VscodeAdapter(mockVscode)` to create
- * a real VscodeAdapter instance that delegates to mocked VSCode API.
- *
- * Tests can mutate properties like `mockVscode.window.activeTerminal` to simulate
- * IDE state changes.
+ * This mock object is passed to `new VscodeAdapter(mockVscode)` internally
+ * by `createMockVscodeAdapter()` to create real VscodeAdapter instances.
  *
  * @param options - Optional configuration for environment overrides (envOptions)
  * @param overrides - Optional VSCode API property overrides (spread last for flexibility)
  * @returns Mock vscode module compatible with VscodeAdapter constructor
  */
-export const createMockVscode = (
+const createMockVscode = (
   options?: MockVscodeOptions,
   overrides?: Partial<typeof vscode>,
 ): any => {
@@ -123,12 +87,6 @@ export const createMockVscode = (
     Range: createMockRange(),
     DocumentLink: createMockDocumentLink(),
     TabInputText: MockTabInputText,
-    TextEditorRevealType: {
-      Default: 0,
-      InCenter: 1,
-      InCenterIfOutsideViewport: 2,
-      AtTop: 3,
-    },
     ...overrides,
   };
 };
@@ -142,7 +100,14 @@ export const createMockVscode = (
 export interface VscodeAdapterWithTestHooks extends VscodeAdapter {
   /**
    * Test-only accessor to the underlying vscode instance.
-   * Allows tests to mutate mock state (e.g., window.activeTerminal) for test scenarios.
+   *
+   * **Use only for mutating vscode state** (e.g., `mockVscode.window.activeTextEditor = undefined`).
+   * VscodeAdapter properties are readonly, so use this to simulate IDE state changes.
+   *
+   * **Don't use for spying** - spy on adapter methods directly:
+   * ```typescript
+   * jest.spyOn(adapter, 'writeTextToClipboard'); // ✅ Correct
+   * ```
    *
    * Returns `any` to allow property mutation in tests (the actual return is the mock vscode instance).
    */
@@ -156,39 +121,50 @@ export interface VscodeAdapterWithTestHooks extends VscodeAdapter {
  * not a mock object. This ensures tests verify actual adapter behavior and
  * maintain type safety with the production VscodeAdapter class.
  *
- * **Test-only feature:** The returned adapter includes `__getVscodeInstance()` for tests
- * to access and mutate the underlying mock vscode instance:
+ * **Test-only feature:** The returned adapter includes `__getVscodeInstance()` for
+ * mutating underlying vscode state (readonly properties):
  *
  * ```typescript
  * const adapter = createMockVscodeAdapter();
- * const mockVscode = adapter.__getVscodeInstance();
  *
- * // Simulate terminal becoming active
- * mockVscode.window.activeTerminal = mockTerminal;
+ * // ✅ Spy on adapter methods directly (no __getVscodeInstance needed)
+ * jest.spyOn(adapter, 'writeTextToClipboard');
+ * jest.spyOn(adapter, 'showErrorMessage');
+ *
+ * // ✅ Mutate vscode state via __getVscodeInstance() (properties are readonly)
+ * const mockVscode = adapter.__getVscodeInstance();
+ * mockVscode.window.activeTextEditor = undefined; // Simulate no editor
+ * mockVscode.window.activeTerminal = mockTerminal; // Simulate active terminal
  *
  * // Now adapter.activeTerminal returns mockTerminal
  * expect(adapter.activeTerminal).toBe(mockTerminal);
  * ```
  *
- * **Environment overrides:** Pass `options` to simulate different IDE environments:
+ * **Common options:** Configure adapter state for specific test scenarios:
  *
  * ```typescript
- * // Simulate Cursor IDE
- * const adapter = createMockVscodeAdapter(undefined, { envOptions: { appName: 'Cursor' } });
+ * // Configure active editor and workspace paths
+ * const adapter = createMockVscodeAdapter({
+ *   windowOptions: { activeTextEditor: mockEditor },
+ *   workspaceOptions: {
+ *     getWorkspaceFolder: createMockGetWorkspaceFolder('/workspace'),
+ *     asRelativePath: createMockAsRelativePath('src/file.ts'),
+ *   },
+ * });
  *
- * // Use existing mock instance with custom env
- * const adapter = createMockVscodeAdapter(existingMock, { envOptions: { uriScheme: 'cursor' } });
+ * // Simulate Cursor IDE
+ * const adapter = createMockVscodeAdapter({
+ *   envOptions: { appName: 'Cursor', uriScheme: 'cursor' },
+ * });
  * ```
  *
- * @param mockVscodeInstance - Optional mock vscode module (creates default if not provided)
  * @param options - Optional configuration for environment and VSCode API overrides
  * @returns Real VscodeAdapter instance with test hooks for accessing underlying mock
  */
 export const createMockVscodeAdapter = (
-  mockVscodeInstance?: typeof vscode,
   options?: MockVscodeOptions,
 ): VscodeAdapterWithTestHooks => {
-  const vscodeInstance = mockVscodeInstance || createMockVscode(options);
+  const vscodeInstance = createMockVscode(options);
   const adapter = new VscodeAdapter(vscodeInstance) as VscodeAdapterWithTestHooks;
 
   // Add test-only hook to access the underlying vscode instance
