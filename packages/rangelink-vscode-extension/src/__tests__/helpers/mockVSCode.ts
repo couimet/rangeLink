@@ -13,107 +13,17 @@ import * as vscode from 'vscode';
 
 import { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
+import { createMockCommands } from './createMockCommands';
 import { createMockDocumentLink } from './createMockDocumentLink';
+import { createMockEnv } from './createMockEnv';
+import { createMockExtensions } from './createMockExtensions';
 import { createMockPosition } from './createMockPosition';
 import { createMockRange } from './createMockRange';
 import { createMockSelection } from './createMockSelection';
+import { createMockUri } from './createMockUri';
+import { createMockWindow } from './createMockWindow';
 import { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
 
-/**
- * Mock vscode.window object for testing
- *
- * Provides complete mock of vscode.window with:
- * - Status bar operations with Disposable return
- * - Notification methods (info, warning, error)
- * - Document/editor operations
- * - Terminal and editor references
- *
- * All notification methods return Promise<string | undefined> matching VSCode API.
- * setStatusBarMessage returns mock Disposable with dispose() method.
- */
-export const createMockWindow = (options?: Record<string, unknown>) => {
-  return {
-    activeTerminal: undefined as vscode.Terminal | undefined,
-    activeTextEditor: undefined as vscode.TextEditor | undefined,
-    visibleTextEditors: [] as vscode.TextEditor[],
-    tabGroups: {
-      all: [],
-      activeTabGroup: undefined,
-      onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
-      onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
-      close: jest.fn(),
-    } as unknown as vscode.TabGroups,
-    setStatusBarMessage: jest.fn(() => ({
-      dispose: jest.fn(),
-    })),
-    showInformationMessage: jest.fn().mockResolvedValue(undefined),
-    showWarningMessage: jest.fn().mockResolvedValue(undefined),
-    showErrorMessage: jest.fn().mockResolvedValue(undefined),
-    showQuickPick: jest.fn().mockResolvedValue(undefined),
-    showTextDocument: jest.fn().mockResolvedValue(undefined),
-    onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
-    ...options,
-  };
-};
-
-/**
- * Mock vscode.env object for environment detection tests
- *
- * Provides complete mock of vscode.env with:
- * - appName and uriScheme for environment detection
- * - clipboard.writeText() for VscodeAdapter clipboard operations
- * - clipboard.readText() for test completeness
- *
- * All clipboard methods return proper Promise types matching VSCode API.
- *
- * @param options - Environment properties to override
- * @returns Mock env object compatible with VscodeAdapter
- */
-export const createMockEnv = (options?: {
-  appName?: string;
-  uriScheme?: string;
-}): typeof vscode.env => {
-  return {
-    appName: options?.appName || 'Visual Studio Code',
-    uriScheme: options?.uriScheme || 'vscode',
-    clipboard: {
-      writeText: jest.fn().mockResolvedValue(undefined),
-      readText: jest.fn().mockResolvedValue(''),
-    },
-  } as unknown as typeof vscode.env;
-};
-
-/**
- * Mock vscode.extensions object for extension detection tests
- *
- * @param extensionIds - Array of extension IDs to mock as installed
- * @returns Mock extensions object
- */
-export const createMockExtensions = (extensionIds: string[] = []): typeof vscode.extensions => {
-  const mockExtensions = extensionIds.map((id) => ({
-    id,
-    isActive: true,
-    exports: {},
-  }));
-
-  return {
-    all: mockExtensions,
-    getExtension: jest.fn((id: string) => {
-      return mockExtensions.find((ext) => ext.id === id);
-    }),
-  } as unknown as typeof vscode.extensions;
-};
-
-/**
- * Mock vscode.commands object for command execution tests
- *
- * @returns Mock commands object with executeCommand spy
- */
-export const createMockCommands = (): typeof vscode.commands => {
-  return {
-    executeCommand: jest.fn().mockResolvedValue(undefined),
-  } as unknown as typeof vscode.commands;
-};
 
 
 /**
@@ -180,33 +90,6 @@ export const createVSCodeAdapterMock = (): typeof vscode => {
   } as unknown as typeof vscode;
 };
 
-/**
- * Create a mock Uri namespace for navigation tests.
- *
- * Provides mock implementations for Uri.file() and Uri.parse() methods.
- * For creating actual URI instances, use createMockUriInstance().
- *
- * @param overrides - Optional overrides for file/parse implementations
- * @returns Mock Uri with file and parse methods
- */
-export const createMockUri = (overrides?: { file?: jest.Mock; parse?: jest.Mock }) => ({
-  file:
-    overrides?.file ||
-    jest.fn((fsPath: string) => ({
-      fsPath,
-      scheme: 'file',
-      path: fsPath,
-      toString: () => `file://${fsPath}`,
-    })),
-  parse:
-    overrides?.parse ||
-    jest.fn((str: string) => ({
-      scheme: str.startsWith('file:') ? 'file' : 'command',
-      path: str,
-      toString: () => str,
-      fsPath: str.replace(/^file:\/\//, ''),
-    })),
-});
 
 
 
