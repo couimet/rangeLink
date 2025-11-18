@@ -20,9 +20,12 @@ import { createMockExtensions } from './createMockExtensions';
 import { createMockPosition } from './createMockPosition';
 import { createMockRange } from './createMockRange';
 import { createMockSelection } from './createMockSelection';
+import { createMockTabGroup } from './createMockTabGroup';
+import { createMockTabGroups } from './createMockTabGroups';
 import { createMockUri } from './createMockUri';
 import { createMockWindow } from './createMockWindow';
 import { createMockWorkspace } from './createMockWorkspace';
+import { MockTabInputText } from './tabTestHelpers';
 
 
 
@@ -196,53 +199,6 @@ export const createMockVscodeAdapter = (
   return adapter;
 };
 
-/**
- * Mock TabInputText class for instanceof checks in VscodeAdapter.
- *
- * Exported so createMockTab can create proper TabInputText instances.
- */
-export class MockTabInputText {
-  constructor(public uri: vscode.Uri) {}
-}
-
-/**
- * Create a mock Tab for tab group tests.
- *
- * Provides minimal Tab structure for testing tab group operations.
- * Creates proper MockTabInputText instances so VscodeAdapter.isTextEditorTab()
- * instanceof checks work correctly.
- *
- * @param uri - Document URI for the tab
- * @param overrides - Optional property overrides
- * @returns Mock Tab instance
- */
-export const createMockTab = (uri: vscode.Uri, overrides?: Partial<vscode.Tab>): vscode.Tab => {
-  return {
-    input: new MockTabInputText(uri),
-    ...overrides,
-  } as unknown as vscode.Tab;
-};
-
-/**
- * Create a mock TabGroup for tab group tests.
- *
- * Provides minimal TabGroup structure for testing tab operations.
- * By default, creates a group with a single tab that is also the active tab.
- *
- * @param tabs - Array of tabs in the group (defaults to empty array)
- * @param overrides - Optional property overrides (e.g., activeTab)
- * @returns Mock TabGroup instance
- */
-export const createMockTabGroup = (
-  tabs: vscode.Tab[] = [],
-  overrides?: Partial<vscode.TabGroup>,
-): vscode.TabGroup => {
-  return {
-    tabs,
-    activeTab: tabs[0], // First tab is active by default
-    ...overrides,
-  } as unknown as vscode.TabGroup;
-};
 
 /**
  * Configure workspace mocks for typical file editor tests.
@@ -296,27 +252,6 @@ export const configureWorkspaceMocks = (
   mockVscode.window.tabGroups = createMockTabGroups();
 };
 
-/**
- * Create a mock TabGroups structure with optional overrides
- *
- * Provides composable tab groups structure for testing. Can be used directly
- * or through convenience helpers like configureEmptyTabGroups().
- *
- * @param overrides - Optional overrides for TabGroups structure
- * @returns Mock TabGroups object
- */
-export const createMockTabGroups = (
-  overrides: Partial<vscode.TabGroups> = {},
-): vscode.TabGroups => {
-  return {
-    all: [],
-    activeTabGroup: undefined,
-    onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
-    onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
-    close: jest.fn(),
-    ...overrides,
-  } as unknown as vscode.TabGroups;
-};
 
 /**
  * Configure empty tab groups for testing

@@ -11,14 +11,14 @@ import { applySmartPadding } from '../../utils/applySmartPadding';
 import { isEligibleForPaste } from '../../utils/isEligibleForPaste';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
+import { createMockTab } from '../helpers/createMockTab';
+import { createMockTabGroup } from '../helpers/createMockTabGroup';
+import { createMockTabGroups } from '../helpers/createMockTabGroups';
 import { createMockUriInstance } from '../helpers/createMockUriInstance';
 import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
 import {
   configureEmptyTabGroups,
   configureWorkspaceMocks,
-  createMockTab,
-  createMockTabGroup,
-  createMockTabGroups,
   createMockVscodeAdapter,
   simulateClosedEditor,
   simulateFileOutsideWorkspace,

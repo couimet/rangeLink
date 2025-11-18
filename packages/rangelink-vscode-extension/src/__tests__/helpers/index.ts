@@ -15,12 +15,18 @@ export { createMockExtensions } from './createMockExtensions';
 export { createMockPosition } from './createMockPosition';
 export { createMockRange } from './createMockRange';
 export { createMockSelection } from './createMockSelection';
+export { createMockTab } from './createMockTab';
+export { createMockTabGroup } from './createMockTabGroup';
+export { createMockTabGroups } from './createMockTabGroups';
 export { createMockTerminal } from './createMockTerminal';
 export { createMockUri } from './createMockUri';
 export { createMockUriInstance } from './createMockUriInstance';
 export { createMockWindow } from './createMockWindow';
 export { createMockWorkspace } from './createMockWorkspace';
 export { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
+
+// Export MockTabInputText class
+export { MockTabInputText } from './tabTestHelpers';
 
 // Export complex utilities and types from mockVSCode
 export * from './mockVSCode';
