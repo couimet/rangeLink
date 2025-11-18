@@ -28,6 +28,12 @@ export { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
 // Export MockTabInputText class
 export { MockTabInputText } from './tabTestHelpers';
 
+// Export helper functions
+export { configureWorkspaceMocks } from './configureWorkspaceMocks';
+export { configureEmptyTabGroups } from './configureEmptyTabGroups';
+export { simulateClosedEditor } from './simulateClosedEditor';
+export { simulateFileOutsideWorkspace } from './simulateFileOutsideWorkspace';
+
 // Export complex utilities and types from mockVSCode
 export * from './mockVSCode';
 

@@ -20,8 +20,6 @@ import { createMockExtensions } from './createMockExtensions';
 import { createMockPosition } from './createMockPosition';
 import { createMockRange } from './createMockRange';
 import { createMockSelection } from './createMockSelection';
-import { createMockTabGroup } from './createMockTabGroup';
-import { createMockTabGroups } from './createMockTabGroups';
 import { createMockUri } from './createMockUri';
 import { createMockWindow } from './createMockWindow';
 import { createMockWorkspace } from './createMockWorkspace';
@@ -197,110 +195,4 @@ export const createMockVscodeAdapter = (
   adapter.__getVscodeInstance = () => vscodeInstance;
 
   return adapter;
-};
-
-
-/**
- * Configure workspace mocks for typical file editor tests.
- *
- * Sets up common workspace API mocks including:
- * - getWorkspaceFolder: Returns mock workspace folder for given document
- * - asRelativePath: Returns relative path for display
- * - openTextDocument: Returns document with URI
- * - visibleTextEditors: Empty array by default
- * - tabGroups: Empty tab groups structure
- *
- * This centralizes the repetitive workspace mock configuration found in many tests.
- *
- * @param mockVscode - The mocked vscode instance (from adapter.__getVscodeInstance())
- * @param options - Configuration options
- * @param options.workspacePath - Workspace root path (default: '/workspace')
- * @param options.relativePath - Relative path for document (default: 'src/file.ts')
- * @param options.visibleEditors - Array of visible editors (default: [])
- */
-export const configureWorkspaceMocks = (
-  mockVscode: any,
-  options: {
-    workspacePath?: string;
-    relativePath?: string;
-    visibleEditors?: vscode.TextEditor[];
-  } = {},
-): void => {
-  const {
-    workspacePath = '/workspace',
-    relativePath = 'src/file.ts',
-    visibleEditors = [],
-  } = options;
-
-  // Mock workspace folder lookup
-  (mockVscode.workspace.getWorkspaceFolder as jest.Mock) = jest.fn().mockReturnValue({
-    uri: { fsPath: workspacePath },
-  });
-
-  // Mock relative path conversion
-  (mockVscode.workspace.asRelativePath as jest.Mock) = jest.fn().mockReturnValue(relativePath);
-
-  // Mock document opening
-  (mockVscode.workspace.openTextDocument as jest.Mock) = jest
-    .fn()
-    .mockImplementation((uri: vscode.Uri) => Promise.resolve({ uri }));
-
-  // Set visible editors
-  mockVscode.window.visibleTextEditors = visibleEditors;
-
-  // Initialize empty tab groups structure
-  mockVscode.window.tabGroups = createMockTabGroups();
-};
-
-
-/**
- * Configure empty tab groups for testing
- *
- * Common pattern for testing text editor binding which requires 2+ tab groups (split editor).
- * Creates N empty tab groups with no tabs and no active tab.
- *
- * Replaces manual pattern:
- * `(mockWindow.tabGroups as { all: vscode.TabGroup[] }).all = [{}, {}] as vscode.TabGroup[];`
- *
- * @param mockWindow - The mocked window object (from mockVscode.window or mockAdapter.__getVscodeInstance().window)
- * @param count - Number of empty tab groups to create (default: 2)
- */
-export const configureEmptyTabGroups = (mockWindow: any, count = 2): void => {
-  const emptyGroups = Array.from({ length: count }, () =>
-    createMockTabGroup([], { activeTab: undefined }),
-  );
-  mockWindow.tabGroups = createMockTabGroups({ all: emptyGroups });
-};
-
-/**
- * Simulate a closed editor by clearing all editors and tab groups.
- *
- * Useful for testing scenarios where an editor has been closed:
- * - Empty visibleTextEditors array
- * - Empty tab groups
- *
- * @param mockVscode - The mocked vscode instance (from adapter.__getVscodeInstance())
- */
-export const simulateClosedEditor = (mockVscode: any): void => {
-  mockVscode.window.visibleTextEditors = [];
-  mockVscode.window.tabGroups = {
-    all: [],
-    activeTabGroup: undefined,
-    onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
-    onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
-    close: jest.fn(),
-  } as unknown as vscode.TabGroups;
-};
-
-/**
- * Configure workspace to simulate a file outside any workspace folder.
- *
- * Sets getWorkspaceFolder to return undefined, indicating the file
- * is not within any workspace. Useful for testing edge cases like
- * standalone files or files from external locations.
- *
- * @param mockVscode - The mocked vscode instance (from adapter.__getVscodeInstance())
- */
-export const simulateFileOutsideWorkspace = (mockVscode: any): void => {
-  (mockVscode.workspace.getWorkspaceFolder as jest.Mock) = jest.fn().mockReturnValue(undefined);
 };

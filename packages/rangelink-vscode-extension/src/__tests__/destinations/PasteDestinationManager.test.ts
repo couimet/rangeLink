@@ -24,6 +24,7 @@ import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
 import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
+import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockUriInstance } from '../helpers/createMockUriInstance';
@@ -35,7 +36,6 @@ import {
   createMockTextEditorDestination,
 } from '../helpers/destinationTestHelpers';
 import {
-  configureEmptyTabGroups,
   createMockVscodeAdapter,
   type MockVscodeOptions,
   type VscodeAdapterWithTestHooks,
