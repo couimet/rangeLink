@@ -3112,7 +3112,7 @@ describe('Extension lifecycle', () => {
     (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
   });
 
-  it('should register commands on activate (non-Cursor IDE)', async () => {
+  it('should register all commands on activate', async () => {
     const mockContext = {
       subscriptions: [] as any[],
     };
@@ -3140,79 +3140,41 @@ describe('Extension lifecycle', () => {
     // Set up mocks BEFORE activate
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
-    // Ensure non-Cursor environment (default)
-    (vscode.env as any).appName = 'Visual Studio Code';
-    (vscode.env as any).uriScheme = 'vscode';
-    (vscode.extensions as any).all = [];
-
     // Extension imported at top
     require('../extension').activate(mockContext as any);
 
-    // Both AI commands are always registered for discoverability
-    // Runtime checks show helpful messages when IDE/extension not available
+    // Verify all 13 commands are registered
+    // Note: Command registration is IDE-agnostic; runtime availability differs by environment
     expect(mockCommands.registerCommand).toHaveBeenCalledTimes(13);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
-    // Verify both AI assistant commands are registered for discoverability
+    // Verify all command IDs are registered correctly
     const registeredCommands = (mockCommands.registerCommand as jest.Mock).mock.calls.map(
       (call) => call[0],
     );
-    expect(registeredCommands).toContain('rangelink.bindToCursorAI');
-    expect(registeredCommands).toContain('rangelink.bindToClaudeCode');
-    expect(registeredCommands).toContain('rangelink.jumpToBoundDestination');
-  });
 
-  it('should register both AI commands regardless of IDE (discoverability)', async () => {
-    const mockContext = {
-      subscriptions: [] as any[],
-    };
+    const expectedCommands = [
+      // Copy link commands (issue #116 - simplified names)
+      'rangelink.copyLinkWithRelativePath',
+      'rangelink.copyLinkWithAbsolutePath',
+      'rangelink.copyPortableLinkWithRelativePath',
+      'rangelink.copyPortableLinkWithAbsolutePath',
+      // Paste and destination commands
+      'rangelink.pasteSelectedTextToDestination',
+      'rangelink.jumpToBoundDestination',
+      // Destination binding commands
+      'rangelink.bindToTerminal',
+      'rangelink.bindToTextEditor',
+      'rangelink.bindToCursorAI',
+      'rangelink.bindToClaudeCode',
+      'rangelink.unbindDestination',
+      // Version and utility commands
+      'rangelink.showVersion',
+      'rangelink.handleDocumentLinkClick',
+    ];
 
-    // Mock configuration
-    const mockConfig = {
-      get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
-      inspect: jest.fn((key: string) => {
-        const defaults: Record<string, string> = {
-          delimiterLine: 'L',
-          delimiterPosition: 'C',
-          delimiterHash: '#',
-          delimiterRange: '-',
-        };
-        return {
-          key,
-          defaultValue: defaults[key] || 'L',
-          globalValue: undefined,
-          workspaceValue: undefined,
-          workspaceFolderValue: undefined,
-        };
-      }),
-    };
-
-    // Mock Cursor IDE environment (via appName)
-    (vscode.env as any).appName = 'Cursor';
-    (vscode.env as any).uriScheme = 'cursor';
-    (vscode.extensions as any).all = [];
-
-    // Clear previous calls and set up mocks BEFORE activate
-    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
-    (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
-    (vscode.commands.registerCommand as jest.Mock).mockImplementation(mockCommands.registerCommand);
-
-    // Extension imported at top
-    require('../extension').activate(mockContext as any);
-
-    // Both AI commands always registered (even in Cursor IDE)
-    // Runtime availability determines whether they work or show help message
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(13);
-    expect(mockContext.subscriptions.length).toBeGreaterThan(0);
-
-    // Verify both AI assistant commands are registered
-    const registeredCommands = (mockCommands.registerCommand as jest.Mock).mock.calls.map(
-      (call) => call[0],
-    );
-    expect(registeredCommands).toContain('rangelink.bindToCursorAI');
-    expect(registeredCommands).toContain('rangelink.bindToClaudeCode');
-    expect(registeredCommands).toContain('rangelink.jumpToBoundDestination');
+    expect(registeredCommands.sort()).toStrictEqual(expectedCommands.sort());
   });
 
   it('should clean up on deactivate', () => {
