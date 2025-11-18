@@ -7,10 +7,25 @@ import { MessageCode } from '../types/MessageCode';
 export const messagesEn: Record<MessageCode, string> = {
   // Keep the keys in alphabetical order.
 
+  [MessageCode.ALREADY_BOUND_TO_DESTINATION]: 'RangeLink: Already bound to {destinationName}',
+  [MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND]: 'RangeLink: Bound editor closed. Unbound.',
+
   [MessageCode.CONFIG_LOADED]: 'Configuration loaded',
   [MessageCode.CONFIG_USING_DEFAULTS]: 'Using default configuration',
 
+  [MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE]:
+    'RangeLink: Cannot bind Claude Code - extension not installed or not active',
+  [MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE]:
+    'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
   [MessageCode.ERROR_NAVIGATION_FAILED]: 'RangeLink: Failed to navigate to {path}: {error}',
+  [MessageCode.ERROR_NO_ACTIVE_TERMINAL]:
+    'RangeLink: No active terminal. Open a terminal and try again.',
+  [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]:
+    'RangeLink: No active text editor. Open a file and try again.',
+  [MessageCode.ERROR_TEXT_EDITOR_NOT_TEXT_LIKE]:
+    'RangeLink: Cannot bind to {fileName} - not a text-like file (binary or special scheme)',
+  [MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT]:
+    'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
 
   [MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS]:
     'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
