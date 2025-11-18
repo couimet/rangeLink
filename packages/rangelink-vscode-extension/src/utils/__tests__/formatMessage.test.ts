@@ -2,6 +2,7 @@ import { getLogger } from 'barebone-logger';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { getCurrentLocale, setLocale } from '../../i18n/LocaleManager';
+import { messagesEn } from '../../i18n/messages.en';
 import { supportedLocales } from '../../i18n/supportedLocales';
 import { MessageCode } from '../../types/MessageCode';
 import { formatMessage } from '../formatMessage';
@@ -326,6 +327,53 @@ describe('formatMessage', () => {
       });
 
       expect(result).toBe('Hello 3.14');
+    });
+  });
+
+  describe('PasteDestinationManager Messages (Issue #112)', () => {
+    beforeEach(() => {
+      // Restore real message map for these tests (earlier tests override it with testMessagesEn)
+      supportedLocales.en = messagesEn;
+      setLocale('en');
+    });
+
+    it('should format STATUS_BAR_DESTINATION_NOT_BOUND (static)', () => {
+      const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND);
+
+      expect(result).toStrictEqual('RangeLink: No destination bound');
+    });
+
+    it('should format STATUS_BAR_DESTINATION_UNBOUND with destinationName param', () => {
+      const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND, {
+        destinationName: 'Terminal',
+      });
+
+      expect(result).toStrictEqual('✓ RangeLink unbound from Terminal');
+    });
+
+    it('should format STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED (static)', () => {
+      const result = formatMessage(
+        MessageCode.STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED,
+      );
+
+      expect(result).toStrictEqual('Destination binding removed (terminal closed)');
+    });
+
+    it('should format STATUS_BAR_DESTINATION_BOUND with destinationName param', () => {
+      const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND, {
+        destinationName: 'Cursor AI Assistant',
+      });
+
+      expect(result).toStrictEqual('✓ RangeLink bound to Cursor AI Assistant');
+    });
+
+    it('should format STATUS_BAR_DESTINATION_REBOUND with two params', () => {
+      const result = formatMessage(MessageCode.STATUS_BAR_DESTINATION_REBOUND, {
+        previousDestination: 'Terminal',
+        newDestination: 'Cursor AI Assistant',
+      });
+
+      expect(result).toStrictEqual('Unbound Terminal, now bound to Cursor AI Assistant');
     });
   });
 });
