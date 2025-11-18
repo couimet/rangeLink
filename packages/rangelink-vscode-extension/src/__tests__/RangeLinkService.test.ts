@@ -68,7 +68,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
-          2000,
         );
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledTimes(1);
       });
@@ -80,7 +79,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
-          2000,
         );
       });
 
@@ -91,7 +89,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ Portable RangeLink copied to clipboard',
-          2000,
         );
       });
 
@@ -149,7 +146,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard & sent to bash',
-          2000,
         );
       });
 
@@ -163,7 +159,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard & sent to Terminal',
-          2000,
         );
       });
 
@@ -179,7 +174,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard & sent to destination',
-          2000,
         );
       });
 
@@ -426,7 +420,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ Custom <Type> Name copied to clipboard',
-          2000,
         );
       });
     });
@@ -440,7 +433,7 @@ describe('RangeLinkService', () => {
         const formattedLink = createMockFormattedLink('src/file.ts#L1');
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String));
       });
 
       it('should pass 2000ms timeout when destination is bound and succeeds', async () => {
@@ -452,7 +445,7 @@ describe('RangeLinkService', () => {
         const formattedLink = createMockFormattedLink('src/file.ts#L1');
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String));
       });
     });
 
@@ -500,7 +493,7 @@ describe('RangeLinkService', () => {
           '{linkTypeName}',
           'RangeLink',
         );
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expectedMessage, 2000);
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expectedMessage);
       });
 
       it('should produce correct status message with "Portable RangeLink" parameter', async () => {
@@ -520,7 +513,7 @@ describe('RangeLinkService', () => {
           '{linkTypeName}',
           'Portable RangeLink',
         );
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expectedMessage, 2000);
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expectedMessage);
       });
     });
   });
@@ -662,7 +655,6 @@ describe('RangeLinkService', () => {
 
           expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
             '✓ Selected text copied to clipboard',
-            2000,
           );
         });
 
@@ -708,7 +700,6 @@ describe('RangeLinkService', () => {
 
           expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
             '✓ Selected text copied to clipboard & sent to Terminal',
-            2000,
           );
         });
 
@@ -768,7 +759,6 @@ describe('RangeLinkService', () => {
         // "first line\nsecond line\nthird line" = 33 chars total
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ Selected text copied to clipboard',
-          2000,
         );
       });
     });
@@ -818,7 +808,6 @@ describe('RangeLinkService', () => {
         expect(mockIdeAdapter.writeTextToClipboard).toHaveBeenCalledWith(longText);
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ Selected text copied to clipboard',
-          2000,
         );
       });
 
@@ -871,7 +860,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           expect.stringContaining('Terminal'),
-          2000,
         );
       });
 
@@ -887,7 +875,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           expect.stringContaining('Text Editor'),
-          2000,
         );
       });
 
@@ -903,7 +890,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           expect.stringContaining('Claude Code Chat'),
-          2000,
         );
       });
 
@@ -919,7 +905,6 @@ describe('RangeLinkService', () => {
 
         expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           expect.stringContaining('Cursor AI Assistant'),
-          2000,
         );
       });
     });
@@ -997,7 +982,7 @@ describe('RangeLinkService', () => {
 
         await service.pasteSelectedTextToDestination();
 
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String));
       });
 
       it('should pass 2000ms timeout to setStatusBarMessage (destination success)', async () => {
@@ -1011,7 +996,7 @@ describe('RangeLinkService', () => {
 
         await service.pasteSelectedTextToDestination();
 
-        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String), 2000);
+        expect(mockIdeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String));
       });
     });
   });
