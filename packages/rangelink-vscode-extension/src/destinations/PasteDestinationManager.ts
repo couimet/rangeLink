@@ -123,7 +123,6 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.logger.info({ fn: 'PasteDestinationManager.unbind' }, 'No destination bound');
       this.ideAdapter.setStatusBarMessage(
         formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND),
-        2000,
       );
       return;
     }
@@ -139,7 +138,6 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.ideAdapter.setStatusBarMessage(
       formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND, { destinationName: displayName }),
-      2000,
     );
   }
 
@@ -207,7 +205,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     // Success - show status bar message from destination
     const successMessage = this.boundDestination.getJumpSuccessMessage();
-    this.ideAdapter.setStatusBarMessage(successMessage, 2000);
+    this.ideAdapter.setStatusBarMessage(successMessage);
 
     this.logger.info(logCtx, `Successfully focused ${displayName}`);
 
