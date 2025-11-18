@@ -4,9 +4,11 @@ import { buildLinkPattern, parseLink, RangeLinkError, SelectionType } from 'rang
 import * as vscode from 'vscode';
 
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { MessageCode } from '../types/MessageCode';
 import { convertRangeLinkPosition } from '../utils/convertRangeLinkPosition';
 import { formatLinkPosition } from '../utils/formatLinkPosition';
 import { formatLinkTooltip } from '../utils/formatLinkTooltip';
+import { formatMessage } from '../utils/formatMessage';
 
 /**
  * Core navigation handler for RangeLink format detection and navigation.
@@ -111,7 +113,9 @@ export class RangeLinkNavigationHandler {
 
     if (!fileUri) {
       this.logger.warn({ ...logCtx, path }, 'Failed to resolve workspace path');
-      await this.ideAdapter.showWarningMessage(`RangeLink: Cannot find file: ${path}`);
+      await this.ideAdapter.showWarningMessage(
+        formatMessage(MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND, { path }),
+      );
       return;
     }
 
@@ -192,11 +196,14 @@ export class RangeLinkNavigationHandler {
 
       // Show success toast with formatted position
       const position = formatLinkPosition(start, end);
-      await this.ideAdapter.showInformationMessage(`RangeLink: Navigated to ${path} @ ${position}`);
+      await this.ideAdapter.showInformationMessage(
+        formatMessage(MessageCode.INFO_NAVIGATION_SUCCESS, { path, position }),
+      );
     } catch (error) {
       this.logger.error({ ...logCtx, error }, 'Navigation failed');
+      const errorMessage = error instanceof Error ? error.message : String(error);
       await this.ideAdapter.showErrorMessage(
-        `RangeLink: Failed to navigate to ${path}: ${error instanceof Error ? error.message : String(error)}`,
+        formatMessage(MessageCode.ERROR_NAVIGATION_FAILED, { path, error: errorMessage }),
       );
       throw error; // Re-throw for caller to handle if needed
     }
