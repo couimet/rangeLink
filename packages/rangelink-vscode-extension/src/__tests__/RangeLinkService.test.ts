@@ -9,6 +9,7 @@ import { RangeLinkService } from '../RangeLinkService';
 import { createMockDestination, createMockFormattedLink } from './helpers/destinationTestHelpers';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
+import { createMockDestinationManager } from './helpers/mockDestinationManager';
 
 describe('RangeLinkService', () => {
   describe('copyToClipboardAndDestination', () => {

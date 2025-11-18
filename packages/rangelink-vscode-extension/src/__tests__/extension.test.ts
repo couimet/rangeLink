@@ -8,6 +8,7 @@ import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
 import { VSCodeLogger } from '../VSCodeLogger';
+import { createMockDestinationManager } from './helpers/mockDestinationManager';
 
 // Mock vscode module
 const mockStatusBarItem = {
@@ -25,18 +26,6 @@ const mockOutputChannel = {
   appendLine: jest.fn(),
   dispose: jest.fn(),
 };
-
-// Helper to create mock destination manager (not bound by default)
-function createMockDestinationManager() {
-  return {
-    isBound: () => false,
-    sendToDestination: async () => false,
-    getBoundDestination: () => undefined,
-    bind: async () => false,
-    unbind: () => {},
-    dispose: () => {},
-  };
-}
 
 // Helper to create mock IDE adapter
 function createMockIdeAdapter() {
