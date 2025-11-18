@@ -23,6 +23,22 @@ export enum PathFormat {
 }
 
 /**
+ * Controls whether content should be sent to bound destination
+ */
+export enum DestinationBehavior {
+  /**
+   * Normal behavior: Send to bound destination if one exists and is eligible
+   */
+  BoundDestination = 'bound-destination',
+
+  /**
+   * Force clipboard-only: Skip destination even if one is bound
+   * Used by explicit clipboard-only commands (Issue #117)
+   */
+  ClipboardOnly = 'clipboard-only',
+}
+
+/**
  * RangeLinkService: VSCode-specific orchestration layer
  * Core logic is handled by rangelink-core-ts functions
  */
@@ -40,6 +56,29 @@ export class RangeLinkService {
     const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
     if (formattedLink) {
       await this.copyToClipboardAndDestination(formattedLink, 'RangeLink');
+    }
+  }
+
+  /**
+   * Creates a standard RangeLink and copies to clipboard only (Issue #117)
+   *
+   * Unlike createLink(), this command ALWAYS skips pasting to bound destinations,
+   * even if one is bound. User explicitly requested clipboard-only behavior.
+   *
+   * @param pathFormat Whether to use relative or absolute paths
+   */
+  async createLinkOnly(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
+    const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
+    if (formattedLink) {
+      await this.copyAndSendToDestination(
+        formattedLink.link,
+        formattedLink,
+        () => Promise.resolve(false), // No-op (never called due to ClipboardOnly)
+        () => Promise.resolve(false), // No-op (never called)
+        'RangeLink',
+        'createLinkOnly',
+        DestinationBehavior.ClipboardOnly,
+      );
     }
   }
 
@@ -176,6 +215,7 @@ export class RangeLinkService {
       (destination, link) => destination.isEligibleForPasteLink(link),
       linkTypeName,
       'copyToClipboardAndDestination',
+      DestinationBehavior.BoundDestination,
     );
   }
 
@@ -245,6 +285,7 @@ export class RangeLinkService {
    * @param isEligibleFn - Function to check if content is eligible for paste to destination
    * @param contentName - User-friendly name for the content (e.g., "RangeLink", "Selected text")
    * @param fnName - Function name for logging
+   * @param destinationBehavior - Controls whether to send to bound destination or clipboard-only
    */
   private async copyAndSendToDestination<T>(
     clipboardContent: string,
@@ -253,6 +294,7 @@ export class RangeLinkService {
     isEligibleFn: (destination: PasteDestination, content: T) => Promise<boolean>,
     contentName: string,
     fnName: string,
+    destinationBehavior: DestinationBehavior = DestinationBehavior.BoundDestination,
   ): Promise<void> {
     // Copy to clipboard
     await this.ideAdapter.writeTextToClipboard(clipboardContent);
@@ -260,10 +302,19 @@ export class RangeLinkService {
     const basicStatusMessage = formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, {
       linkTypeName: contentName,
     });
-    // Check if destination is bound
-    if (!this.destinationManager.isBound()) {
-      getLogger().info({ fn: fnName }, 'No destination bound - copied to clipboard only');
-      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
+
+    // Early return if skipping destination (either forced or not bound)
+    const shouldSkipDestination =
+      destinationBehavior === DestinationBehavior.ClipboardOnly ||
+      !this.destinationManager.isBound();
+
+    if (shouldSkipDestination) {
+      const reason =
+        destinationBehavior === DestinationBehavior.ClipboardOnly
+          ? 'Skipping destination (clipboard-only command)'
+          : 'No destination bound - copied to clipboard only';
+      getLogger().info({ fn: fnName }, reason);
+      this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
       return;
     }
 
