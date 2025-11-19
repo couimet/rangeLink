@@ -64,7 +64,7 @@ export class TextEditorDestination implements PasteDestination {
    * Evaluated on each access rather than cached to ensure freshness.
    */
   get resourceName(): string {
-    const uri = this.editor.document.uri;
+    const uri = this.vscodeAdapter.getDocumentUri(this.editor);
 
     // Handle untitled files
     if (uri.scheme === 'untitled') {
@@ -100,7 +100,7 @@ export class TextEditorDestination implements PasteDestination {
    * Evaluated on each access rather than cached.
    */
   get editorPath(): string {
-    return this.editor.document.uri.toString();
+    return this.vscodeAdapter.getDocumentUri(this.editor).toString();
   }
 
   /**
@@ -153,15 +153,16 @@ export class TextEditorDestination implements PasteDestination {
     }
 
     // Self-paste detection: Compare active editor's document URI with bound document URI
-    const isSelfPaste =
-      activeEditor.document.uri.toString() === this.editor.document.uri.toString();
+    const activeUri = this.vscodeAdapter.getDocumentUri(activeEditor);
+    const boundUri = this.vscodeAdapter.getDocumentUri(this.editor);
+    const isSelfPaste = activeUri.toString() === boundUri.toString();
 
     if (isSelfPaste) {
       this.logger.debug(
         {
           fn: `TextEditorDestination.${fnName}`,
-          activeDocumentUri: activeEditor.document.uri.toString(),
-          boundDocumentUri: this.editor.document.uri.toString(),
+          activeDocumentUri: activeUri.toString(),
+          boundDocumentUri: boundUri.toString(),
         },
         `Self-paste detected - skipping auto-paste (${actionDescription})`,
       );
@@ -209,10 +210,11 @@ export class TextEditorDestination implements PasteDestination {
    */
   async focus(): Promise<boolean> {
     const editorName = this.resourceName;
+    const boundUri = this.vscodeAdapter.getDocumentUri(this.editor);
 
     try {
       // Focus the editor (preserveFocus: false steals focus)
-      await this.vscodeAdapter.showTextDocument(this.editor.document.uri, {
+      await this.vscodeAdapter.showTextDocument(boundUri, {
         preserveFocus: false,
         viewColumn: this.editor.viewColumn,
       });
@@ -254,15 +256,17 @@ export class TextEditorDestination implements PasteDestination {
     logContext: LoggingContext,
   ): { editor: vscode.TextEditor; editorName: string } | undefined {
     const editorName = this.resourceName;
+    const boundUri = this.vscodeAdapter.getDocumentUri(this.editor);
+    const boundUriString = boundUri.toString();
 
     // Find which tab group contains the bound document
-    const boundTabGroup = this.vscodeAdapter.findTabGroupForDocument(this.editor.document.uri);
+    const boundTabGroup = this.vscodeAdapter.findTabGroupForDocument(boundUri);
 
     if (!boundTabGroup) {
       this.logger.error(
         {
           ...logContext,
-          boundDocumentUri: this.editor.document.uri.toString(),
+          boundDocumentUri: boundUriString,
           editorName,
         },
         'Bound document not found in any tab group - likely closed',
@@ -290,12 +294,12 @@ export class TextEditorDestination implements PasteDestination {
       return undefined;
     }
 
-    if (activeTab.input.uri.toString() !== this.editor.document.uri.toString()) {
+    if (activeTab.input.uri.toString() !== boundUriString) {
       // Bound document exists but is not topmost - show warning but keep binding
       this.logger.warn(
         {
           ...logContext,
-          boundDocumentUri: this.editor.document.uri.toString(),
+          boundDocumentUri: boundUriString,
           activeTabUri: activeTab.input.uri.toString(),
           editorName,
         },
@@ -405,7 +409,7 @@ export class TextEditorDestination implements PasteDestination {
       }
 
       // Focus the editor (similar to terminal.show(false) behavior)
-      await this.vscodeAdapter.showTextDocument(editor.document.uri, {
+      await this.vscodeAdapter.showTextDocument(this.vscodeAdapter.getDocumentUri(editor), {
         preserveFocus: false, // Steal focus to bring user to paste destination
         viewColumn: editor.viewColumn, // Keep in same tab group
       });
@@ -463,7 +467,7 @@ export class TextEditorDestination implements PasteDestination {
    * @returns The bound document URI
    */
   getBoundDocumentUri(): vscode.Uri {
-    return this.editor.document.uri;
+    return this.vscodeAdapter.getDocumentUri(this.editor);
   }
 
   /**
@@ -473,11 +477,13 @@ export class TextEditorDestination implements PasteDestination {
    * - Only allows file:// and untitled:// schemes
    * - Blocks known binary extensions
    *
+   * @param vscodeAdapter - VscodeAdapter instance for accessing document URI
    * @param editor - The editor to check
    * @returns true if editor is text-like, false if binary or invalid scheme
    */
-  static isTextLikeFile(editor: vscode.TextEditor): boolean {
-    const scheme = editor.document.uri.scheme;
+  static isTextLikeFile(vscodeAdapter: VscodeAdapter, editor: vscode.TextEditor): boolean {
+    const editorUri = vscodeAdapter.getDocumentUri(editor);
+    const scheme = editorUri.scheme;
 
     // Only allow file:// and untitled:// schemes
     const isTextScheme = scheme === 'file' || scheme === 'untitled';
@@ -491,7 +497,7 @@ export class TextEditorDestination implements PasteDestination {
     }
 
     // Check for binary extensions
-    const path = editor.document.uri.fsPath.toLowerCase();
+    const path = editorUri.fsPath.toLowerCase();
     const isBinary = TextEditorDestination.BINARY_EXTENSIONS.some((ext) => path.endsWith(ext));
 
     return !isBinary;
@@ -550,6 +556,9 @@ export class TextEditorDestination implements PasteDestination {
     }
 
     // Compare document URIs (unique per file)
-    return this.editor.document.uri.toString() === otherEditor.document.uri.toString();
+    return (
+      this.vscodeAdapter.getDocumentUri(this.editor).toString() ===
+      this.vscodeAdapter.getDocumentUri(otherEditor).toString()
+    );
   }
 }

@@ -401,7 +401,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     // Check if editor is text-like (not binary)
-    if (!TextEditorDestination.isTextLikeFile(activeEditor)) {
+    if (!TextEditorDestination.isTextLikeFile(this.vscodeAdapter, activeEditor)) {
       const fileName = activeEditor.document.uri.fsPath.split('/').pop() || 'Unknown';
       this.logger.warn(
         { fn: 'PasteDestinationManager.bindTextEditor', fileName },
