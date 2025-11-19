@@ -17,6 +17,7 @@ import { createMockCommands } from './createMockCommands';
 import { createMockDocumentLink } from './createMockDocumentLink';
 import { createMockEnv } from './createMockEnv';
 import { createMockExtensions } from './createMockExtensions';
+import { createMockLanguages } from './createMockLanguages';
 import { createMockUri } from './createMockUri';
 import { createMockWindow } from './createMockWindow';
 import { createMockWorkspace } from './createMockWorkspace';
@@ -72,6 +73,7 @@ const createMockVscode = (options?: MockVscodeOptions, overrides?: Partial<typeo
     env: createMockEnv(options?.envOptions),
     extensions: createMockExtensions(),
     commands: createMockCommands(),
+    languages: createMockLanguages(),
     Uri: createMockUri(),
     // Constructor mocks - return jest.fn() that creates instances
     Position: jest.fn((line: number, character: number) => ({ line, character })),
