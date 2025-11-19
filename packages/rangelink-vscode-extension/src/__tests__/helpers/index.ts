@@ -24,6 +24,7 @@ export { createMockTab } from './createMockTab';
 export { createMockTabGroup } from './createMockTabGroup';
 export { createMockTabGroups } from './createMockTabGroups';
 export { createMockTerminal } from './createMockTerminal';
+export { createMockText } from './createMockText';
 export { createMockUri } from './createMockUri';
 export { createMockWindow } from './createMockWindow';
 export { createMockWorkspace } from './createMockWorkspace';
