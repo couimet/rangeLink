@@ -5,7 +5,7 @@ import { CursorAIDestination } from '../../destinations/CursorAIDestination';
 import { messagesEn } from '../../i18n/messages.en';
 import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
-import { createMockFormattedLink, testDestinationInterfaceCompliance } from '../helpers';
+import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('CursorAIDestination', () => {
@@ -27,12 +27,15 @@ describe('CursorAIDestination', () => {
     configureMockAsNonCursor();
   });
 
-  // Test interface compliance using helper
-  testDestinationInterfaceCompliance(
-    new CursorAIDestination(createMockVscodeAdapter(), createMockLogger()),
-    'cursor-ai',
-    'Cursor AI Assistant',
-  );
+  describe('Interface compliance', () => {
+    it('should have correct id', () => {
+      expect(destination.id).toBe('cursor-ai');
+    });
+
+    it('should have correct displayName', () => {
+      expect(destination.displayName).toBe('Cursor AI Assistant');
+    });
+  });
 
   describe('isAvailable() - Detection via appName (PRIMARY)', () => {
     it('should return true when appName contains "cursor"', async () => {

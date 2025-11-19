@@ -13,11 +13,12 @@ import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
 import { configureWorkspaceMocks } from '../helpers/configureWorkspaceMocks';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
+import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockTab } from '../helpers/createMockTab';
 import { createMockTabGroup } from '../helpers/createMockTabGroup';
 import { createMockTabGroups } from '../helpers/createMockTabGroups';
-import { createMockUriInstance } from '../helpers/createMockUriInstance';
-import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
+import { createMockText } from '../helpers/createMockText';
+import { createMockUri } from '../helpers/createMockUri';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 import { simulateClosedEditor } from '../helpers/simulateClosedEditor';
 import { simulateFileOutsideWorkspace } from '../helpers/simulateFileOutsideWorkspace';
@@ -33,8 +34,10 @@ describe('TextEditorDestination', () => {
     mockLogger = createMockLogger();
 
     // Create mock text editor using helper
-    const mockUri = createMockUriInstance('/workspace/src/file.ts');
-    const mockDocument = createMockDocument('const x = 42;', mockUri, {
+    const mockUri = createMockUri('/workspace/src/file.ts');
+    const mockDocument = createMockDocument({
+      getText: createMockText('const x = 42;'),
+      uri: mockUri,
       isClosed: false,
       isUntitled: false,
     });
@@ -56,12 +59,12 @@ describe('TextEditorDestination', () => {
   });
 
   describe('Interface compliance', () => {
-    it('should implement PasteDestination interface', () => {
+    it('should have correct id', () => {
       expect(destination.id).toBe('text-editor');
+    });
+
+    it('should have correct displayName', () => {
       expect(destination.displayName).toBe('Text Editor');
-      expect(typeof destination.pasteLink).toBe('function');
-      expect(typeof destination.isEligibleForPasteLink).toBe('function');
-      expect(typeof destination.getUserInstruction).toBe('function');
     });
   });
 
@@ -70,7 +73,7 @@ describe('TextEditorDestination', () => {
       destination.setEditor(mockEditor);
 
       // Mock tab groups - bound document only in second tab group
-      const otherUri = createMockUriInstance('/workspace/other.ts');
+      const otherUri = createMockUri('/workspace/other.ts');
       const mockVscode = mockAdapter.__getVscodeInstance();
 
       mockVscode.window.tabGroups = createMockTabGroups({
@@ -192,7 +195,7 @@ describe('TextEditorDestination', () => {
 
     it('should return false when bound document not topmost in group', async () => {
       // Make a different document topmost
-      const differentUri = createMockUriInstance('/workspace/other.ts');
+      const differentUri = createMockUri('/workspace/other.ts');
       const mockVscode = mockAdapter.__getVscodeInstance();
       const tabGroups = mockVscode.window.tabGroups as any;
       tabGroups.all[1].activeTab = createMockTab(differentUri, {
@@ -370,7 +373,7 @@ describe('TextEditorDestination', () => {
       destination.setEditor(mockEditor);
 
       // Mock tab groups - bound document in second tab group
-      const otherUri = createMockUriInstance('/workspace/other.ts');
+      const otherUri = createMockUri('/workspace/other.ts');
       const mockVscode = mockAdapter.__getVscodeInstance();
 
       mockVscode.window.tabGroups = createMockTabGroups({
@@ -492,8 +495,10 @@ describe('TextEditorDestination', () => {
 
     it('should return formatted message for untitled editor', () => {
       // Create untitled document and editor
-      const untitledUri = createMockUriInstance('untitled:Untitled-1');
-      const untitledDocument = createMockDocument('', untitledUri, {
+      const untitledUri = createMockUri('untitled:Untitled-1');
+      const untitledDocument = createMockDocument({
+        getText: createMockText(''),
+        uri: untitledUri,
         isClosed: false,
         isUntitled: true,
       });

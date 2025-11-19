@@ -1,15 +1,21 @@
 /**
- * Create a mock Selection constructor for testing
+ * Create a mock Selection for testing
  */
 
 import * as vscode from 'vscode';
 
 /**
- * Create a mock Selection constructor for navigation tests.
+ * Create a mock Selection with minimal helper pattern.
  *
- * Creates Selection objects with anchor and active properties.
+ * **Minimal Helper Philosophy:**
+ * - No smart defaults or hidden behaviors
+ * - Caller provides exactly what they need
  *
- * @returns Mock Selection constructor that creates {anchor, active} objects
+ * @param overrides - Selection properties (anchor, active, start, end, etc.)
+ * @returns Mock Selection with provided properties
  */
-export const createMockSelection = () =>
-  jest.fn((anchor: vscode.Position, active: vscode.Position) => ({ anchor, active }));
+export const createMockSelection = (overrides: Partial<vscode.Selection>): vscode.Selection => {
+  return {
+    ...overrides,
+  } as vscode.Selection;
+};

@@ -12,7 +12,13 @@ import * as vscode from 'vscode';
 
 import { RangeLinkDocumentProvider } from '../../navigation/RangeLinkDocumentProvider';
 import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
-import { createMockCancellationToken, createMockDocument } from '../helpers';
+import {
+  createMockCancellationToken,
+  createMockDocument,
+  createMockPositionAt,
+  createMockText,
+  createMockUri,
+} from '../helpers';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 // Test pattern that matches common RangeLink formats for provider integration tests
@@ -64,7 +70,11 @@ describe('RangeLinkDocumentProvider', () => {
       mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
       mockHandler.formatTooltip.mockReturnValue('Navigate to src/auth.ts at line 11');
 
-      const document = createMockDocument('Check src/auth.ts#L10');
+      const document = createMockDocument({
+        getText: createMockText('Check src/auth.ts#L10'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
@@ -85,7 +95,11 @@ describe('RangeLinkDocumentProvider', () => {
       mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
       mockHandler.formatTooltip.mockReturnValue('Navigate to src/auth.ts: line 11 to line 21');
 
-      const document = createMockDocument('See src/auth.ts#L10-L20 for details');
+      const document = createMockDocument({
+        getText: createMockText('See src/auth.ts#L10-L20 for details'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
@@ -104,7 +118,11 @@ describe('RangeLinkDocumentProvider', () => {
       mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
       mockHandler.formatTooltip.mockReturnValue('Navigate to src/file.ts: line 6, col 11');
 
-      const document = createMockDocument('src/file.ts#L5C10-L10C20');
+      const document = createMockDocument({
+        getText: createMockText('src/file.ts#L5C10-L10C20'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
@@ -123,7 +141,11 @@ describe('RangeLinkDocumentProvider', () => {
       mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
       mockHandler.formatTooltip.mockReturnValue('Navigate to src/file.ts (rectangular selection)');
 
-      const document = createMockDocument('src/file.ts##L5C10-L10C20');
+      const document = createMockDocument({
+        getText: createMockText('src/file.ts##L5C10-L10C20'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
@@ -153,7 +175,11 @@ describe('RangeLinkDocumentProvider', () => {
         .mockReturnValueOnce('Navigate to src/a.ts')
         .mockReturnValueOnce('Navigate to src/b.ts');
 
-      const document = createMockDocument('First: src/a.ts#L1 and second: src/b.ts#L2-L3');
+      const document = createMockDocument({
+        getText: createMockText('First: src/a.ts#L1 and second: src/b.ts#L2-L3'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
@@ -169,7 +195,11 @@ describe('RangeLinkDocumentProvider', () => {
       mockHandler.parseLink.mockReturnValue(Result.err(mockError));
 
       // Use a link that matches the pattern but fails parsing
-      const document = createMockDocument('Invalid: src/file.ts#L999999');
+      const document = createMockDocument({
+        getText: createMockText('Invalid: src/file.ts#L999999'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
@@ -181,7 +211,11 @@ describe('RangeLinkDocumentProvider', () => {
     });
 
     it('should handle empty document', () => {
-      const document = createMockDocument('');
+      const document = createMockDocument({
+        getText: createMockText(''),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
@@ -189,7 +223,11 @@ describe('RangeLinkDocumentProvider', () => {
     });
 
     it('should handle cancellation', () => {
-      const document = createMockDocument('src/a.ts#L1 src/b.ts#L2 src/c.ts#L3');
+      const document = createMockDocument({
+        getText: createMockText('src/a.ts#L1 src/b.ts#L2 src/c.ts#L3'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
       const token = createMockCancellationToken(true);
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
@@ -207,7 +245,11 @@ describe('RangeLinkDocumentProvider', () => {
       mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
       mockHandler.formatTooltip.mockReturnValue('Navigate to src/file.ts');
 
-      const document = createMockDocument('src/file.ts#L10');
+      const document = createMockDocument({
+        getText: createMockText('src/file.ts#L10'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 

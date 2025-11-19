@@ -17,6 +17,7 @@ export { createMockExtensions } from './createMockExtensions';
 export { createMockGetWorkspaceFolder } from './createMockGetWorkspaceFolder';
 export { createMockOutputChannel } from './createMockOutputChannel';
 export { createMockPosition } from './createMockPosition';
+export { createMockPositionAt } from './createMockPositionAt';
 export { createMockRange } from './createMockRange';
 export { createMockSelection } from './createMockSelection';
 export { createMockStatusBarItem } from './createMockStatusBarItem';
@@ -24,8 +25,8 @@ export { createMockTab } from './createMockTab';
 export { createMockTabGroup } from './createMockTabGroup';
 export { createMockTabGroups } from './createMockTabGroups';
 export { createMockTerminal } from './createMockTerminal';
+export { createMockText } from './createMockText';
 export { createMockUri } from './createMockUri';
-export { createMockUriInstance } from './createMockUriInstance';
 export { createMockWindow } from './createMockWindow';
 export { createMockWorkspace } from './createMockWorkspace';
 export { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
@@ -41,6 +42,3 @@ export { simulateFileOutsideWorkspace } from './simulateFileOutsideWorkspace';
 
 // Export complex utilities and types from mockVSCode
 export * from './mockVSCode';
-
-// Export destination test helpers
-export * from './destinationTestHelpers';

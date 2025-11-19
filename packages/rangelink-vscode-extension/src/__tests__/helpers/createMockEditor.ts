@@ -5,6 +5,8 @@
 import * as vscode from 'vscode';
 
 import { createMockDocument } from './createMockDocument';
+import { createMockText } from './createMockText';
+import { createMockUri } from './createMockUri';
 
 /**
  * Create a mock TextEditor with sensible defaults and optional overrides.
@@ -23,7 +25,10 @@ import { createMockDocument } from './createMockDocument';
  * @returns Mock TextEditor with default + overridden properties
  */
 export const createMockEditor = (overrides?: Partial<vscode.TextEditor>): vscode.TextEditor => {
-  const defaultDocument = createMockDocument('const x = 42; // Sample line content');
+  const defaultDocument = createMockDocument({
+    getText: createMockText('const x = 42; // Sample line content'),
+    uri: createMockUri('/test/file.ts'),
+  });
 
   const baseEditor = {
     document: defaultDocument,

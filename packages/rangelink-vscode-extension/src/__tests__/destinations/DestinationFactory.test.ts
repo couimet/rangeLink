@@ -4,10 +4,10 @@ import { createMockLogger } from 'barebone-logger-testing';
 import { CursorAIDestination } from '../../destinations/CursorAIDestination';
 import { DestinationFactory } from '../../destinations/DestinationFactory';
 import { TerminalDestination } from '../../destinations/TerminalDestination';
-import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
 import { TextEditorDestination } from '../../destinations/TextEditorDestination';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 
 describe('DestinationFactory', () => {

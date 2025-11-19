@@ -17,9 +17,6 @@ import { createMockCommands } from './createMockCommands';
 import { createMockDocumentLink } from './createMockDocumentLink';
 import { createMockEnv } from './createMockEnv';
 import { createMockExtensions } from './createMockExtensions';
-import { createMockPosition } from './createMockPosition';
-import { createMockRange } from './createMockRange';
-import { createMockSelection } from './createMockSelection';
 import { createMockUri } from './createMockUri';
 import { createMockWindow } from './createMockWindow';
 import { createMockWorkspace } from './createMockWorkspace';
@@ -76,9 +73,10 @@ const createMockVscode = (options?: MockVscodeOptions, overrides?: Partial<typeo
     extensions: createMockExtensions(),
     commands: createMockCommands(),
     Uri: createMockUri(),
-    Position: createMockPosition(),
-    Selection: createMockSelection(),
-    Range: createMockRange(),
+    // Constructor mocks - return jest.fn() that creates instances
+    Position: jest.fn((line: number, character: number) => ({ line, character })),
+    Selection: jest.fn((anchor: vscode.Position, active: vscode.Position) => ({ anchor, active })),
+    Range: jest.fn((start: vscode.Position, end: vscode.Position) => ({ start, end })),
     DocumentLink: createMockDocumentLink(),
     TabInputText: MockTabInputText,
     ...overrides,

@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 
 import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
-import { createMockUriInstance } from '../helpers/createMockUriInstance';
+import { createMockUri } from '../helpers/createMockUri';
 import { createMockWorkspaceFolder } from '../helpers/createMockWorkspaceFolder';
 
 describe('resolveWorkspacePath', () => {
@@ -12,7 +12,7 @@ describe('resolveWorkspacePath', () => {
   beforeEach(() => {
     // Create fresh mocks for each test
     mockStat = jest.fn();
-    mockUriFile = jest.fn((fsPath: string) => createMockUriInstance(fsPath));
+    mockUriFile = jest.fn((fsPath: string) => createMockUri(fsPath));
 
     mockVscode = {
       Uri: {

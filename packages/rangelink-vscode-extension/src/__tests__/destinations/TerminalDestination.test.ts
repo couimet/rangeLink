@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { TerminalDestination } from '../../destinations/TerminalDestination';
 import { applySmartPadding } from '../../utils/applySmartPadding';
 import { isEligibleForPaste } from '../../utils/isEligibleForPaste';
-import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
+import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 
 jest.mock('../../utils/isEligibleForPaste');
 jest.mock('../../utils/applySmartPadding');

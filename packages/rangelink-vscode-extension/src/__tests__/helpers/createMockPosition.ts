@@ -1,13 +1,21 @@
 /**
- * Create a mock Position constructor for testing
+ * Create a mock Position for testing
  */
 
+import * as vscode from 'vscode';
+
 /**
- * Create a mock Position constructor for navigation tests.
+ * Create a mock Position with minimal helper pattern.
  *
- * Creates Position objects with line and character properties.
+ * **Minimal Helper Philosophy:**
+ * - No smart defaults or hidden behaviors
+ * - Caller provides exactly what they need
  *
- * @returns Mock Position constructor that creates {line, character} objects
+ * @param overrides - Position properties (line, character, etc.)
+ * @returns Mock Position with provided properties
  */
-export const createMockPosition = () =>
-  jest.fn((line: number, character: number) => ({ line, character }));
+export const createMockPosition = (overrides: Partial<vscode.Position>): vscode.Position => {
+  return {
+    ...overrides,
+  } as vscode.Position;
+};

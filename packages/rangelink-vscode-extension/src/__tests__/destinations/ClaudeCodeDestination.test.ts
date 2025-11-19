@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 
 import { ClaudeCodeDestination } from '../../destinations/ClaudeCodeDestination';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
-import { createMockFormattedLink, testDestinationInterfaceCompliance } from '../helpers';
+import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 
 describe('ClaudeCodeDestination', () => {
@@ -34,12 +34,15 @@ describe('ClaudeCodeDestination', () => {
     jest.clearAllMocks();
   });
 
-  // Test interface compliance using helper
-  testDestinationInterfaceCompliance(
-    new ClaudeCodeDestination(createMockVscodeAdapter(), createMockLogger()),
-    'claude-code',
-    'Claude Code Chat',
-  );
+  describe('Interface compliance', () => {
+    it('should have correct id', () => {
+      expect(destination.id).toBe('claude-code');
+    });
+
+    it('should have correct displayName', () => {
+      expect(destination.displayName).toBe('Claude Code Chat');
+    });
+  });
 
   describe('isAvailable() - Extension detection', () => {
     it('should return true when extension is installed and active', async () => {
