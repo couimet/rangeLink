@@ -598,6 +598,7 @@ describe('PasteDestinationManager', () => {
           destinationType: 'terminal',
           displayName: 'Terminal',
           formattedLink,
+          terminalName: 'bash',
         },
         'Paste link failed to Terminal',
       );
@@ -879,7 +880,9 @@ describe('PasteDestinationManager', () => {
         isAvailable: jest.fn().mockResolvedValue(isAvailable),
       });
       // Override equals to compare by instance reference
-      dest.equals = jest.fn().mockImplementation(async (other: any) => dest === other);
+      dest.equals = jest
+        .fn()
+        .mockImplementation(async (other: PasteDestination | undefined) => dest === other);
       return dest as jest.Mocked<PasteDestination>;
     };
 
@@ -949,7 +952,16 @@ describe('PasteDestinationManager', () => {
 
         // Assert: QuickPick was shown
         expect(mockVscode.window.showQuickPick).toHaveBeenCalledWith(
-          [{ label: 'Yes, replace' }, { label: 'No, keep current binding' }],
+          [
+            {
+              label: 'Yes, replace',
+              description: 'Switch from Terminal ("TestTerminal") to Text Editor ("file.ts")',
+            },
+            {
+              label: 'No, keep current binding',
+              description: 'Stay bound to Terminal ("TestTerminal")',
+            },
+          ],
           {
             placeHolder:
               'Already bound to Terminal ("TestTerminal"). Replace with Text Editor ("file.ts")?',
@@ -1023,18 +1035,15 @@ describe('PasteDestinationManager', () => {
 
     describe('Scenario 3: Prevent binding same destination twice', () => {
       it('should show info message when binding same destination', async () => {
-        // Setup: Create mock terminal destination
-        const terminalDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
-
         // Mock equals() to return true when comparing instances of same terminal
-        let createdDestinations: any[] = [];
-        mockFactoryForSmartBind.create.mockImplementation((options) => {
+        mockFactoryForSmartBind.create.mockImplementation(() => {
           const newDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
           // Make all terminal destinations equal to each other
-          (newDest.equals as jest.Mock).mockImplementation(async (other: any) => {
-            return other?.id === 'terminal';
-          });
-          createdDestinations.push(newDest);
+          (newDest.equals as jest.Mock).mockImplementation(
+            async (other: PasteDestination | undefined) => {
+              return other?.id === 'terminal';
+            },
+          );
           return newDest;
         });
 
@@ -1422,6 +1431,7 @@ describe('PasteDestinationManager', () => {
           fn: 'PasteDestinationManager.jumpToBoundDestination',
           destinationType: 'terminal',
           displayName: 'Terminal',
+          terminalName: 'bash',
         },
         'Failed to focus Terminal',
       );
