@@ -168,7 +168,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // This prevents "command not found" errors while maintaining discoverability
   context.subscriptions.push(
     vscode.commands.registerCommand('rangelink.bindToCursorAI', async () => {
-      const cursorDestination = factory.create('cursor-ai');
+      const cursorDestination = factory.create({ type: 'cursor-ai' });
       if (!(await cursorDestination.isAvailable())) {
         void vscode.window.showInformationMessage(
           "This command is designed for Cursor IDE, which has built-in AI chat.\n\nRangeLink can paste code ranges directly into Cursor's AI chat for faster context sharing. To use this feature, open your project in Cursor IDE instead of VS Code.",
@@ -181,7 +181,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('rangelink.bindToClaudeCode', async () => {
-      const claudeCodeDestination = factory.create('claude-code');
+      const claudeCodeDestination = factory.create({ type: 'claude-code' });
       if (!(await claudeCodeDestination.isAvailable())) {
         void vscode.window.showInformationMessage(
           'RangeLink can seamlessly integrate with Claude Code for faster context sharing of precise code ranges.\n\nInstall and activate the Claude Code extension to use it as a paste destination.',
