@@ -8,7 +8,6 @@ import { formatMessage } from '../utils/formatMessage';
 
 import { DestinationFactory } from './DestinationFactory';
 import type { DestinationType, PasteDestination } from './PasteDestination';
-import { TerminalDestination } from './TerminalDestination';
 import { TextEditorDestination } from './TextEditorDestination';
 
 /**
@@ -33,7 +32,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly factory: DestinationFactory,
-    private readonly ideAdapter: VscodeAdapter,
+    private readonly vscodeAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
     // Listen for terminal closure (terminal-only auto-unbind)
@@ -49,60 +48,16 @@ export class PasteDestinationManager implements vscode.Disposable {
    * For text-editor: requires active text editor via vscode.window.activeTextEditor
    * For AI assistants: checks destination.isAvailable() (e.g., Cursor IDE detection, Claude Code extension)
    *
+   * **Centralized binding logic:**
+   * 1. Create/validate new destination (resource-specific validation)
+   * 2. Check if already bound to same destination using equals()
+   * 3. If different destination bound, show confirmation
+   * 4. Bind the new destination
+   *
    * @param type - The destination type to bind (e.g., 'terminal', 'text-editor', 'cursor-ai', 'claude-code')
    * @returns true if binding succeeded, false otherwise
    */
   async bind(type: DestinationType): Promise<boolean> {
-    // Check if already bound
-    if (this.boundDestination) {
-      // Prevent binding same destination to itself
-      if (this.boundDestination.id === type) {
-        this.logger.debug(
-          { fn: 'PasteDestinationManager.bind', type },
-          `Already bound to ${this.boundDestination.displayName}, no action taken`,
-        );
-        this.ideAdapter.showInformationMessage(
-          formatMessage(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
-            destinationName: this.boundDestination.displayName,
-          }),
-        );
-        return false;
-      }
-
-      // Get new destination display name for confirmation
-      const newDestination = this.factory.create(type);
-      const newDisplayName = newDestination.displayName;
-
-      // Show confirmation dialog
-      const confirmed = await this.confirmReplaceBinding(
-        this.boundDestination,
-        type,
-        newDisplayName,
-      );
-
-      if (!confirmed) {
-        this.logger.debug(
-          {
-            fn: 'PasteDestinationManager.bind',
-            currentType: this.boundDestination.id,
-            newType: type,
-          },
-          'User cancelled binding replacement',
-        );
-        return false;
-      }
-
-      // User confirmed - track old destination for toast notification
-      this.replacedDestinationName = this.boundDestination.displayName;
-
-      // Unbind current destination
-      this.logger.info(
-        { fn: 'PasteDestinationManager.bind', oldType: this.boundDestination.id, newType: type },
-        `User confirmed replacement: unbinding ${this.replacedDestinationName}`,
-      );
-      this.unbind();
-    }
-
     // Special handling for terminal (needs active terminal reference)
     if (type === 'terminal') {
       return this.bindTerminal();
@@ -123,7 +78,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   unbind(): void {
     if (!this.boundDestination) {
       this.logger.info({ fn: 'PasteDestinationManager.unbind' }, 'No destination bound');
-      this.ideAdapter.setStatusBarMessage(
+      this.vscodeAdapter.setStatusBarMessage(
         formatMessage(MessageCode.STATUS_BAR_DESTINATION_NOT_BOUND),
       );
       return;
@@ -138,7 +93,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully unbound from ${displayName}`,
     );
 
-    this.ideAdapter.setStatusBarMessage(
+    this.vscodeAdapter.setStatusBarMessage(
       formatMessage(MessageCode.STATUS_BAR_DESTINATION_UNBOUND, { destinationName: displayName }),
     );
   }
@@ -177,7 +132,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         { fn: 'PasteDestinationManager.jumpToBoundDestination' },
         'No destination bound',
       );
-      this.ideAdapter.showInformationMessage(
+      this.vscodeAdapter.showInformationMessage(
         formatMessage(MessageCode.INFO_JUMP_NO_DESTINATION_BOUND),
       );
       return false;
@@ -199,7 +154,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     if (!focused) {
       this.logger.warn(logCtx, `Failed to focus ${displayName}`);
-      this.ideAdapter.showInformationMessage(
+      this.vscodeAdapter.showInformationMessage(
         formatMessage(MessageCode.INFO_JUMP_FOCUS_FAILED, { destinationName: displayName }),
       );
       return false;
@@ -207,7 +162,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     // Success - show status bar message from destination
     const successMessage = this.boundDestination.getJumpSuccessMessage();
-    this.ideAdapter.setStatusBarMessage(successMessage);
+    this.vscodeAdapter.setStatusBarMessage(successMessage);
 
     this.logger.info(logCtx, `Successfully focused ${displayName}`);
 
@@ -328,7 +283,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * AI assistant destinations don't need this (persistent across extension lifecycle).
    */
   private setupTerminalCloseListener(): void {
-    const terminalCloseDisposable = this.ideAdapter.onDidCloseTerminal((closedTerminal) => {
+    const terminalCloseDisposable = this.vscodeAdapter.onDidCloseTerminal((closedTerminal) => {
       if (this.boundTerminal === closedTerminal) {
         const terminalName = closedTerminal.name || 'Unnamed Terminal';
         this.logger.info(
@@ -336,7 +291,7 @@ export class PasteDestinationManager implements vscode.Disposable {
           `Bound terminal closed: ${terminalName} - auto-unbinding`,
         );
         this.unbind();
-        this.ideAdapter.setStatusBarMessage(
+        this.vscodeAdapter.setStatusBarMessage(
           formatMessage(MessageCode.STATUS_BAR_DESTINATION_BINDING_REMOVED_TERMINAL_CLOSED),
           3000,
         );
@@ -353,29 +308,62 @@ export class PasteDestinationManager implements vscode.Disposable {
    * @returns true if binding succeeded, false if no active terminal
    */
   private async bindTerminal(): Promise<boolean> {
-    const activeTerminal = this.ideAdapter.activeTerminal;
+    const activeTerminal = this.vscodeAdapter.activeTerminal;
 
     if (!activeTerminal) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTerminal' }, 'No active terminal');
-      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
+      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
       return false;
     }
 
-    const terminalName = activeTerminal.name || 'Unnamed Terminal';
+    // Create new destination with resource
+    const newDestination = this.factory.create({ type: 'terminal', terminal: activeTerminal });
 
-    // Create terminal destination and set terminal reference
-    const destination = this.factory.create('terminal') as TerminalDestination;
-    destination.setTerminal(activeTerminal);
+    // Check if already bound to same destination using equals()
+    if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
+      this.logger.debug(
+        { fn: 'PasteDestinationManager.bindTerminal', displayName: newDestination.displayName },
+        `Already bound to ${newDestination.displayName}, no action taken`,
+      );
+      this.vscodeAdapter.showInformationMessage(
+        formatMessage(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
+          destinationName: newDestination.displayName,
+        }),
+      );
+      return false;
+    }
 
-    this.boundDestination = destination;
+    // If already bound to different destination, show confirmation dialog
+    if (this.boundDestination) {
+      const confirmed = await this.confirmReplaceBinding(
+        this.boundDestination,
+        'terminal',
+        newDestination.displayName,
+      );
+
+      if (!confirmed) {
+        this.logger.debug(
+          { fn: 'PasteDestinationManager.bindTerminal' },
+          'User cancelled binding replacement',
+        );
+        return false;
+      }
+
+      // User confirmed - track old destination and unbind
+      this.replacedDestinationName = this.boundDestination.displayName;
+      this.unbind();
+    }
+
+    // Bind new destination
+    this.boundDestination = newDestination;
     this.boundTerminal = activeTerminal; // Track for closure events
 
     this.logger.info(
-      { fn: 'PasteDestinationManager.bindTerminal', terminalName },
-      `Successfully bound to terminal: ${terminalName}`,
+      { fn: 'PasteDestinationManager.bindTerminal', displayName: newDestination.displayName },
+      `Successfully bound to "${newDestination.displayName}"`,
     );
 
-    this.showBindSuccessToast(terminalName);
+    this.showBindSuccessToast(newDestination.displayName);
 
     return true;
   }
@@ -392,21 +380,23 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   private async bindTextEditor(): Promise<boolean> {
     // Validate: Require 2+ tab groups for split editor workflow
-    const tabGroupCount = this.ideAdapter.tabGroups.all.length;
+    const tabGroupCount = this.vscodeAdapter.tabGroups.all.length;
     if (tabGroupCount < 2) {
       this.logger.warn(
         { fn: 'PasteDestinationManager.bindTextEditor', tabGroupCount },
         'Cannot bind: Requires 2+ tab groups',
       );
-      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT));
+      this.vscodeAdapter.showErrorMessage(
+        formatMessage(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT),
+      );
       return false;
     }
 
-    const activeEditor = this.ideAdapter.activeTextEditor;
+    const activeEditor = this.vscodeAdapter.activeTextEditor;
 
     if (!activeEditor) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
-      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
+      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
       return false;
     }
 
@@ -417,32 +407,67 @@ export class PasteDestinationManager implements vscode.Disposable {
         { fn: 'PasteDestinationManager.bindTextEditor', fileName },
         'Cannot bind: Editor is not a text-like file',
       );
-      this.ideAdapter.showErrorMessage(
+      this.vscodeAdapter.showErrorMessage(
         formatMessage(MessageCode.ERROR_TEXT_EDITOR_NOT_TEXT_LIKE, { fileName }),
       );
       return false;
     }
 
-    // Create text editor destination and store document URI
-    const destination = this.factory.create('text-editor') as TextEditorDestination;
-    destination.setEditor(activeEditor);
+    // Create new destination with resource
+    const newDestination = this.factory.create({
+      type: 'text-editor',
+      editor: activeEditor,
+    }) as TextEditorDestination;
 
-    this.boundDestination = destination;
+    // Check if already bound to same destination using equals()
+    if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
+      this.logger.debug(
+        { fn: 'PasteDestinationManager.bindTextEditor', displayName: newDestination.displayName },
+        `Already bound to ${newDestination.displayName}, no action taken`,
+      );
+      this.vscodeAdapter.showInformationMessage(
+        formatMessage(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
+          destinationName: newDestination.displayName,
+        }),
+      );
+      return false;
+    }
 
-    const editorDisplayName = destination.getEditorDisplayName() || 'Unknown';
-    const editorPath = destination.getEditorPath();
+    // If already bound to different destination, show confirmation dialog
+    if (this.boundDestination) {
+      const confirmed = await this.confirmReplaceBinding(
+        this.boundDestination,
+        'text-editor',
+        newDestination.displayName,
+      );
+
+      if (!confirmed) {
+        this.logger.debug(
+          { fn: 'PasteDestinationManager.bindTextEditor' },
+          'User cancelled binding replacement',
+        );
+        return false;
+      }
+
+      // User confirmed - track old destination and unbind
+      this.replacedDestinationName = this.boundDestination.displayName;
+      this.unbind();
+    }
+
+    // Bind new destination
+    this.boundDestination = newDestination;
 
     this.logger.info(
       {
         fn: 'PasteDestinationManager.bindTextEditor',
-        editorDisplayName,
-        editorPath,
+        displayName: newDestination.displayName,
+        editorPath: newDestination.editorPath,
         tabGroupCount,
       },
-      `Successfully bound to text editor: ${editorDisplayName} (${tabGroupCount} tab groups)`,
+      `Successfully bound to "${newDestination.displayName}" (${tabGroupCount} tab groups)`,
     );
 
-    this.showBindSuccessToast(editorDisplayName);
+    this.showBindSuccessToast(newDestination.displayName);
 
     return true;
   }
@@ -454,13 +479,16 @@ export class PasteDestinationManager implements vscode.Disposable {
    * @returns true if binding succeeded, false if destination not available
    */
   private async bindGenericDestination(type: DestinationType): Promise<boolean> {
-    const destination = this.factory.create(type);
+    // Generic destinations don't require resources at construction
+    const newDestination = this.factory.create({
+      type: type as 'cursor-ai' | 'claude-code' | 'github-copilot',
+    });
 
     // Check if destination is available (e.g., Cursor IDE detection, Claude Code extension)
-    if (!(await destination.isAvailable())) {
+    if (!(await newDestination.isAvailable())) {
       this.logger.warn(
         { fn: 'PasteDestinationManager.bindGenericDestination', type },
-        `Cannot bind: ${destination.displayName} not available`,
+        `Cannot bind: ${newDestination.displayName} not available`,
       );
 
       const messageCode =
@@ -468,20 +496,61 @@ export class PasteDestinationManager implements vscode.Disposable {
           ? MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE
           : MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE;
 
-      this.ideAdapter.showErrorMessage(formatMessage(messageCode));
+      this.vscodeAdapter.showErrorMessage(formatMessage(messageCode));
 
       return false;
     }
 
-    // Bind
-    this.boundDestination = destination;
+    // Check if already bound to same destination using equals()
+    if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
+      this.logger.debug(
+        {
+          fn: 'PasteDestinationManager.bindGenericDestination',
+          displayName: newDestination.displayName,
+        },
+        `Already bound to ${newDestination.displayName}, no action taken`,
+      );
+      this.vscodeAdapter.showInformationMessage(
+        formatMessage(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
+          destinationName: newDestination.displayName,
+        }),
+      );
+      return false;
+    }
+
+    // If already bound to different destination, show confirmation dialog
+    if (this.boundDestination) {
+      const confirmed = await this.confirmReplaceBinding(
+        this.boundDestination,
+        type,
+        newDestination.displayName,
+      );
+
+      if (!confirmed) {
+        this.logger.debug(
+          { fn: 'PasteDestinationManager.bindGenericDestination' },
+          'User cancelled binding replacement',
+        );
+        return false;
+      }
+
+      // User confirmed - track old destination and unbind
+      this.replacedDestinationName = this.boundDestination.displayName;
+      this.unbind();
+    }
+
+    // Bind new destination
+    this.boundDestination = newDestination;
 
     this.logger.info(
-      { fn: 'PasteDestinationManager.bindGenericDestination', type },
-      `Successfully bound to ${destination.displayName}`,
+      {
+        fn: 'PasteDestinationManager.bindGenericDestination',
+        displayName: newDestination.displayName,
+      },
+      `Successfully bound to ${newDestination.displayName}`,
     );
 
-    this.showBindSuccessToast(destination.displayName);
+    this.showBindSuccessToast(newDestination.displayName);
 
     return true;
   }
@@ -495,7 +564,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * - Paste attempt will show "not topmost" warning if document exists but not visible
    */
   private setupTextDocumentCloseListener(): void {
-    const documentCloseDisposable = this.ideAdapter.onDidCloseTextDocument((closedDocument) => {
+    const documentCloseDisposable = this.vscodeAdapter.onDidCloseTextDocument((closedDocument) => {
       // Only check if we have a text editor destination bound
       if (!this.boundDestination || this.boundDestination.id !== 'text-editor') {
         return;
@@ -511,7 +580,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       // Check if the closed document matches the bound document
       if (closedDocument.uri.toString() === boundDocumentUri.toString()) {
         // Document actually closed - auto-unbind
-        const editorDisplayName = textEditorDest.getEditorDisplayName() || 'Unknown';
+        const editorDisplayName = textEditorDest.displayName || 'Unknown';
         this.logger.info(
           {
             fn: 'PasteDestinationManager.onDidCloseTextDocument',
@@ -521,7 +590,7 @@ export class PasteDestinationManager implements vscode.Disposable {
           `Bound document closed: ${editorDisplayName} - auto-unbinding`,
         );
         this.unbind();
-        this.ideAdapter.setStatusBarMessage(
+        this.vscodeAdapter.setStatusBarMessage(
           formatMessage(MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND),
         );
       }
@@ -549,7 +618,7 @@ export class PasteDestinationManager implements vscode.Disposable {
           destinationName: newDestinationName,
         });
 
-    this.ideAdapter.setStatusBarMessage(toastMessage, 3000);
+    this.vscodeAdapter.setStatusBarMessage(toastMessage, 3000);
 
     // Clear replacement tracking after use
     this.replacedDestinationName = undefined;
@@ -589,7 +658,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       },
     ];
 
-    const choice = await this.ideAdapter.showQuickPick(items, {
+    const choice = await this.vscodeAdapter.showQuickPick(items, {
       placeHolder: formatMessage(MessageCode.SMART_BIND_CONFIRM_PLACEHOLDER, params),
     });
 

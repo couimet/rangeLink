@@ -1370,10 +1370,21 @@ describe('RangeLinkService', () => {
         await (service as any).generateLinkFromSelection('workspace-relative', false);
 
         // Should not log DEBUG when validation succeeds
+        // Verify neither possible context was logged (hasEditor: true or false)
         expect(mockLogger.debug).not.toHaveBeenCalledWith(
-          expect.objectContaining({
+          {
             fn: 'validateSelectionsAndShowError',
-          }),
+            hasEditor: true,
+            errorMsg: expect.any(String),
+          },
+          'Empty selection detected - should be prevented by command enablement',
+        );
+        expect(mockLogger.debug).not.toHaveBeenCalledWith(
+          {
+            fn: 'validateSelectionsAndShowError',
+            hasEditor: false,
+            errorMsg: expect.any(String),
+          },
           'Empty selection detected - should be prevented by command enablement',
         );
       });

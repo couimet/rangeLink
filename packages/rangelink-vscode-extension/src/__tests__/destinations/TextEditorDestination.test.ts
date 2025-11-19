@@ -55,7 +55,7 @@ describe('TextEditorDestination', () => {
       relativePath: 'src/file.ts',
     });
 
-    destination = new TextEditorDestination(mockAdapter, mockLogger);
+    destination = new TextEditorDestination(mockEditor, mockAdapter, mockLogger);
   });
 
   describe('Interface compliance', () => {
@@ -64,14 +64,12 @@ describe('TextEditorDestination', () => {
     });
 
     it('should have correct displayName', () => {
-      expect(destination.displayName).toBe('Text Editor');
+      expect(destination.displayName).toBe('Text Editor ("src/file.ts")');
     });
   });
 
   describe('pasteContent()', () => {
     beforeEach(() => {
-      destination.setEditor(mockEditor);
-
       // Mock tab groups - bound document only in second tab group
       const otherUri = createMockUri('/workspace/other.ts');
       const mockVscode = mockAdapter.__getVscodeInstance();
@@ -113,21 +111,6 @@ describe('TextEditorDestination', () => {
       );
     });
 
-    it('should return false when no editor bound', async () => {
-      destination.setEditor(undefined);
-
-      const result = await destination.pasteContent('some text');
-
-      expect(result).toBe(false);
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          fn: 'TextEditorDestination.pasteContent',
-          contentLength: 9,
-        },
-        'Cannot operate: No text editor bound',
-      );
-    });
-
     it('should return false when bound document not found in any tab group', async () => {
       // Empty tab groups - document not found
       const mockVscode = mockAdapter.__getVscodeInstance();
@@ -141,7 +124,7 @@ describe('TextEditorDestination', () => {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: 4,
           boundDocumentUri: mockEditor.document.uri.toString(),
-          boundDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
         },
         'Bound document not found in any tab group - likely closed',
       );
@@ -159,7 +142,7 @@ describe('TextEditorDestination', () => {
         {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: 4,
-          boundDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
         },
         'Tab group has no active tab',
       );
@@ -186,7 +169,7 @@ describe('TextEditorDestination', () => {
         {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: 4,
-          boundDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
           tabInputType: 'object',
         },
         'Active tab is not a text editor',
@@ -216,27 +199,9 @@ describe('TextEditorDestination', () => {
           contentLength: 4,
           boundDocumentUri: mockEditor.document.uri.toString(),
           activeTabUri: differentUri.toString(),
-          boundDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
         },
         'Bound document is not topmost in its tab group',
-      );
-    });
-
-    it('should return false when editor object not found in visibleTextEditors', async () => {
-      // Editor in tab group but not visible
-      jest.spyOn(mockAdapter, 'visibleTextEditors', 'get').mockReturnValue([]);
-
-      const result = await destination.pasteContent('text');
-
-      expect(result).toBe(false);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        {
-          fn: 'TextEditorDestination.pasteContent',
-          contentLength: 4,
-          boundDocumentUri: mockEditor.document.uri.toString(),
-          boundDisplayName: 'src/file.ts',
-        },
-        'TextEditor object not found in visibleTextEditors',
       );
     });
 
@@ -294,12 +259,12 @@ describe('TextEditorDestination', () => {
         {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: testContent.length,
-          boundDisplayName: 'src/file.ts',
-          boundDocumentUri: mockEditor.document.uri.toString(),
+          editorName: 'src/file.ts',
+          editorPath: mockEditor.document.uri.toString(),
           originalLength: testContent.length,
           paddedLength: testContent.length + 2,
         },
-        'Pasted content to text editor: src/file.ts',
+        'Pasted content to text editor',
       );
     });
 
@@ -313,8 +278,8 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.pasteContent',
-          boundDisplayName: 'src/file.ts',
-          boundDocumentUri: mockEditor.document.uri.toString(),
+          editorName: 'src/file.ts',
+          editorPath: mockEditor.document.uri.toString(),
           contentLength: testContent.length,
         },
         'Edit operation failed',
@@ -333,8 +298,8 @@ describe('TextEditorDestination', () => {
         {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: 4,
-          boundDisplayName: 'src/file.ts',
-          boundDocumentUri: mockEditor.document.uri.toString(),
+          editorName: 'src/file.ts',
+          editorPath: mockEditor.document.uri.toString(),
           error: testError,
         },
         'Exception during paste operation',
@@ -342,36 +307,25 @@ describe('TextEditorDestination', () => {
     });
   });
 
+  describe('resourceName getter', () => {
+    it('should return raw editor name from bound editor', () => {
+      expect(destination.resourceName).toBe('src/file.ts');
+    });
+  });
+
   describe('getLoggingDetails()', () => {
-    beforeEach(() => {
-      destination.setEditor(mockEditor);
-    });
-
-    it('should return editor display name and path', () => {
+    it('should return editor resource name and path', () => {
       const details = destination.getLoggingDetails();
 
       expect(details).toStrictEqual({
-        editorDisplayName: 'src/file.ts',
+        editorName: 'src/file.ts',
         editorPath: mockEditor.document.uri.toString(),
-      });
-    });
-
-    it('should return undefined values when no editor bound', () => {
-      destination.setEditor(undefined);
-
-      const details = destination.getLoggingDetails();
-
-      expect(details).toStrictEqual({
-        editorDisplayName: undefined,
-        editorPath: undefined,
       });
     });
   });
 
   describe('focus()', () => {
     beforeEach(() => {
-      destination.setEditor(mockEditor);
-
       // Mock tab groups - bound document in second tab group
       const otherUri = createMockUri('/workspace/other.ts');
       const mockVscode = mockAdapter.__getVscodeInstance();
@@ -392,36 +346,6 @@ describe('TextEditorDestination', () => {
 
       // Mock showTextDocument to resolve successfully
       jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
-    });
-
-    it('should return false when no editor bound', async () => {
-      destination.setEditor(undefined);
-
-      const result = await destination.focus();
-
-      expect(result).toBe(false);
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        { fn: 'TextEditorDestination.focus' },
-        'Cannot operate: No text editor bound',
-      );
-    });
-
-    it('should return false when bound document not found in any tab group', async () => {
-      // Empty tab groups - document not found
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      configureEmptyTabGroups(mockVscode.window, 0);
-
-      const result = await destination.focus();
-
-      expect(result).toBe(false);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        {
-          fn: 'TextEditorDestination.focus',
-          boundDocumentUri: mockEditor.document.uri.toString(),
-          boundDisplayName: 'src/file.ts',
-        },
-        'Bound document not found in any tab group - likely closed',
-      );
     });
 
     it('should return true when focus succeeds', async () => {
@@ -447,10 +371,10 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.focus',
-          boundDisplayName: 'src/file.ts',
-          boundDocumentUri: mockEditor.document.uri.toString(),
+          editorName: 'src/file.ts',
+          editorPath: mockEditor.document.uri.toString(),
         },
-        'Focused text editor: src/file.ts',
+        'Focused text editor',
       );
     });
 
@@ -464,33 +388,94 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.focus',
-          boundDisplayName: 'src/file.ts',
-          boundDocumentUri: mockEditor.document.uri.toString(),
+          editorName: 'src/file.ts',
+          editorPath: mockEditor.document.uri.toString(),
           error: testError,
         },
         'Failed to focus text editor',
       );
     });
+  });
 
-    it('should not log success when validation fails', async () => {
-      destination.setEditor(undefined);
+  describe('equals()', () => {
+    it('should return true when comparing same editor (same URI)', async () => {
+      const sameUri = mockEditor.document.uri;
+      const sameDocument = createMockDocument({
+        getText: createMockText('const x = 42;'),
+        uri: sameUri,
+        isClosed: false,
+        isUntitled: false,
+      });
+      const sameEditor = createMockEditor({ document: sameDocument });
+      const otherDestination = new TextEditorDestination(sameEditor, mockAdapter, mockLogger);
 
-      await destination.focus();
+      const result = await destination.equals(otherDestination);
 
-      expect(mockLogger.info).not.toHaveBeenCalled();
-      expect(mockLogger.warn).toHaveBeenCalled();
+      expect(result).toBe(true);
+    });
+
+    it('should return false when comparing different editors (different URI)', async () => {
+      const differentUri = createMockUri('/workspace/other.ts');
+      const differentDocument = createMockDocument({
+        getText: createMockText('const y = 10;'),
+        uri: differentUri,
+      });
+      const differentEditor = createMockEditor({ document: differentDocument });
+      const otherDestination = new TextEditorDestination(differentEditor, mockAdapter, mockLogger);
+
+      const result = await destination.equals(otherDestination);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when comparing with undefined', async () => {
+      const result = await destination.equals(undefined);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when comparing with different destination type', async () => {
+      const cursorAIDest = {
+        id: 'cursor-ai',
+        displayName: 'Cursor AI Assistant',
+      } as any;
+
+      const result = await destination.equals(cursorAIDest);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when other editor is missing document/uri', async () => {
+      const brokenEditor = {
+        document: null,
+      } as any;
+      const otherDestination = new TextEditorDestination(brokenEditor, mockAdapter, mockLogger);
+
+      const result = await destination.equals(otherDestination);
+
+      expect(result).toBe(false);
+    });
+
+    it('should log warning when other editor is missing document/uri', async () => {
+      const brokenEditor = {
+        document: null,
+      } as any;
+      const otherDestination = new TextEditorDestination(brokenEditor, mockAdapter, mockLogger);
+
+      await destination.equals(otherDestination);
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'TextEditorDestination.equals' },
+        'Other editor destination missing editor/document/uri',
+      );
     });
   });
 
   describe('getJumpSuccessMessage()', () => {
-    beforeEach(() => {
-      destination.setEditor(mockEditor);
-    });
-
     it('should return formatted message with editor display name', () => {
       const message = destination.getJumpSuccessMessage();
 
-      expect(message).toBe('✓ Focused Editor: src/file.ts');
+      expect(message).toBe('✓ Focused Editor: "src/file.ts"');
     });
 
     it('should return formatted message for untitled editor', () => {
@@ -508,11 +493,16 @@ describe('TextEditorDestination', () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
       (mockVscode.workspace.asRelativePath as jest.Mock).mockReturnValue('Untitled-1');
 
-      destination.setEditor(untitledEditor);
+      // Create new destination with untitled editor
+      const untitledDestination = new TextEditorDestination(
+        untitledEditor,
+        mockAdapter,
+        mockLogger,
+      );
 
-      const message = destination.getJumpSuccessMessage();
+      const message = untitledDestination.getJumpSuccessMessage();
 
-      expect(message).toBe('✓ Focused Editor: Untitled-1');
+      expect(message).toBe('✓ Focused Editor: "Untitled-1"');
     });
   });
 });

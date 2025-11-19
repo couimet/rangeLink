@@ -7,54 +7,64 @@ import { TerminalDestination } from '../../destinations/TerminalDestination';
 import { TextEditorDestination } from '../../destinations/TextEditorDestination';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
+import { createMockTerminal } from '../helpers/createMockTerminal';
 import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 
 describe('DestinationFactory', () => {
   let factory: DestinationFactory;
   let mockAdapter: VscodeAdapter;
   let mockLogger: Logger;
+  let mockTerminal: any;
+  let mockEditor: any;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockAdapter = createMockVscodeAdapter();
     factory = new DestinationFactory(mockAdapter, mockLogger);
+
+    // Create mock terminal using helper
+    mockTerminal = createMockTerminal({ name: 'bash' });
+
+    // Create mock editor using helper
+    mockEditor = createMockEditor();
   });
 
   describe('create()', () => {
     it('should create TerminalDestination for terminal type', () => {
-      const destination = factory.create('terminal');
+      const destination = factory.create({ type: 'terminal', terminal: mockTerminal });
 
       expect(destination).toBeInstanceOf(TerminalDestination);
       expect(destination.id).toBe('terminal');
-      expect(destination.displayName).toBe('Terminal');
+      expect(destination.displayName).toContain('Terminal');
     });
 
     it('should log debug message when creating destination', () => {
-      factory.create('terminal');
+      factory.create({ type: 'terminal', terminal: mockTerminal });
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'DestinationFactory.create',
           type: 'terminal',
-        }),
+        },
         'Creating destination: terminal',
       );
     });
 
     it('should inject logger into TerminalDestination', async () => {
-      const destination = factory.create('terminal');
+      const destination = factory.create({ type: 'terminal', terminal: mockTerminal });
 
       // Verify logger was injected by triggering a log call
       await destination.pasteLink(createMockFormattedLink('test'));
 
-      expect(mockLogger.warn).toHaveBeenCalled(); // paste() logs warning when no terminal bound
+      expect(mockLogger.info).toHaveBeenCalled();
     });
 
     it('should throw RangeLinkExtensionError for github-copilot type (not yet implemented)', () => {
       let caughtError: unknown;
       try {
-        factory.create('github-copilot');
+        factory.create({ type: 'github-copilot' });
       } catch (error) {
         caughtError = error;
       }
@@ -68,7 +78,7 @@ describe('DestinationFactory', () => {
     });
 
     it('should create CursorAIDestination for cursor-ai type', () => {
-      const destination = factory.create('cursor-ai');
+      const destination = factory.create({ type: 'cursor-ai' });
 
       expect(destination).toBeInstanceOf(CursorAIDestination);
       expect(destination.id).toBe('cursor-ai');
@@ -76,16 +86,16 @@ describe('DestinationFactory', () => {
     });
 
     it('should create TextEditorDestination for text-editor type', () => {
-      const destination = factory.create('text-editor');
+      const destination = factory.create({ type: 'text-editor', editor: mockEditor });
 
       expect(destination).toBeInstanceOf(TextEditorDestination);
       expect(destination.id).toBe('text-editor');
-      expect(destination.displayName).toBe('Text Editor');
+      expect(destination.displayName).toContain('file.ts');
     });
 
     it('should create new instance on each call', () => {
-      const dest1 = factory.create('terminal');
-      const dest2 = factory.create('terminal');
+      const dest1 = factory.create({ type: 'terminal', terminal: mockTerminal });
+      const dest2 = factory.create({ type: 'terminal', terminal: mockTerminal });
 
       expect(dest1).not.toBe(dest2); // Different instances
       expect(dest1.id).toBe(dest2.id); // Same type
@@ -144,7 +154,7 @@ describe('DestinationFactory', () => {
 
   describe('Factory pattern validation', () => {
     it('should maintain consistent interface across destination types', () => {
-      const terminal = factory.create('terminal');
+      const terminal = factory.create({ type: 'terminal', terminal: mockTerminal });
 
       // All destinations must implement PasteDestination interface
       expect(terminal).toHaveProperty('id');
@@ -154,7 +164,7 @@ describe('DestinationFactory', () => {
     });
 
     it('should create destinations with correct types', async () => {
-      const terminal = factory.create('terminal');
+      const terminal = factory.create({ type: 'terminal', terminal: mockTerminal });
 
       // Methods should have correct return types
       expect(typeof (await terminal.isAvailable())).toBe('boolean');

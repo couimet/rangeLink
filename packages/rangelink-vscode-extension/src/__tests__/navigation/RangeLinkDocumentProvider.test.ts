@@ -205,7 +205,11 @@ describe('RangeLinkDocumentProvider', () => {
 
       expect(links).toHaveLength(0);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({ linkText: 'src/file.ts#L999999' }),
+        {
+          fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
+          linkText: 'src/file.ts#L999999',
+          error: mockError,
+        },
         'Skipping invalid link',
       );
     });
@@ -292,7 +296,11 @@ describe('RangeLinkDocumentProvider', () => {
 
       expect(mockHandler.navigateToLink).toHaveBeenCalledWith(mockParsed, linkText);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({ error: mockError }),
+        {
+          fn: 'RangeLinkDocumentProvider.handleLinkClick',
+          linkText: 'src/file.ts#L10',
+          error: mockError,
+        },
         'Document link handling completed with error (already handled by navigation handler)',
       );
     });

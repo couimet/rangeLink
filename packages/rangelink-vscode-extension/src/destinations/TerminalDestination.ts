@@ -2,7 +2,10 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { BehaviourAfterPaste } from '../types/BehaviourAfterPaste';
 import { MessageCode } from '../types/MessageCode';
+import { TerminalFocusType } from '../types/TerminalFocusType';
 import { applySmartPadding } from '../utils/applySmartPadding';
 import { formatMessage } from '../utils/formatMessage';
 import { isEligibleForPaste } from '../utils/isEligibleForPaste';
@@ -12,22 +15,49 @@ import type { DestinationType, PasteDestination } from './PasteDestination';
 /**
  * Terminal destination implementation for pasting RangeLinks
  *
- * Extracts terminal paste logic from TerminalBindingManager into reusable destination.
+ * Bound to a specific terminal at construction (immutable).
+ * Manager uses create-and-discard pattern: creates new instance on bind, discards on unbind.
+ *
  * Implements smart padding: only adds spaces if text doesn't already have them.
  */
 export class TerminalDestination implements PasteDestination {
   readonly id: DestinationType = 'terminal';
-  readonly displayName = 'Terminal';
 
-  private boundTerminal: vscode.Terminal | undefined;
-
-  constructor(private readonly logger: Logger) {}
+  constructor(
+    private readonly terminal: vscode.Terminal,
+    private readonly vscodeAdapter: VscodeAdapter,
+    private readonly logger: Logger,
+  ) {}
 
   /**
-   * Check if terminal destination is available (has bound terminal)
+   * Get raw resource identifier for this destination
+   *
+   * Returns raw terminal name from adapter (e.g., "bash", "zsh").
+   * Evaluated on each access rather than cached to ensure freshness.
+   */
+  get resourceName(): string {
+    return this.vscodeAdapter.getTerminalName(this.terminal);
+  }
+
+  /**
+   * Get display name for UI (evaluated in real-time)
+   *
+   * Returns formatted terminal name for display (e.g., `Terminal ("bash")`).
+   * Uses resourceName getter internally to avoid duplication.
+   * Double quotes around name improve parsing and visualization.
+   */
+  get displayName(): string {
+    return `Terminal ("${this.resourceName}")`;
+  }
+
+  /**
+   * Check if terminal destination is available
+   *
+   * Always returns true since construction implies availability.
+   * Manager only creates terminal destinations when terminal exists.
    */
   async isAvailable(): Promise<boolean> {
-    return this.boundTerminal !== undefined;
+    return true;
   }
 
   /**
@@ -74,46 +104,15 @@ export class TerminalDestination implements PasteDestination {
    * Shows the terminal panel to bring it into view.
    * Used by the "Jump to Bound Destination" command (issue #99).
    *
-   * @returns true if terminal focused successfully, false if no terminal bound
+   * @returns true (always succeeds since terminal is guaranteed at construction)
    */
   async focus(): Promise<boolean> {
-    const terminalName = this.focusAndGetTerminalName({
-      fn: 'TerminalDestination.focus',
-    });
+    const terminalName = this.resourceName;
+    this.vscodeAdapter.showTerminal(this.terminal, TerminalFocusType.StealFocus);
 
-    if (!terminalName) {
-      return false;
-    }
-
-    this.logger.info(
-      { fn: 'TerminalDestination.focus', terminalName },
-      `Focused terminal: ${terminalName}`,
-    );
+    this.logger.info({ fn: 'TerminalDestination.focus', terminalName }, 'Focused terminal');
 
     return true;
-  }
-
-  /**
-   * Focus bound terminal and return its name
-   *
-   * Validates terminal is bound, shows it, and returns its name.
-   * Used by both focus() command and paste operations to ensure terminal is visible.
-   *
-   * @param logContext - Logging context for error messages
-   * @returns Terminal name if successful, undefined if no terminal bound
-   */
-  private focusAndGetTerminalName(logContext: LoggingContext): string | undefined {
-    if (!this.boundTerminal) {
-      this.logger.warn(logContext, 'Cannot focus: No terminal bound');
-      return undefined;
-    }
-
-    const terminalName = this.getTerminalName();
-
-    // Show terminal (false = don't preserve focus, steal focus to terminal)
-    this.boundTerminal.show(false);
-
-    return terminalName;
   }
 
   /**
@@ -140,7 +139,7 @@ export class TerminalDestination implements PasteDestination {
         linkLength: formattedLink.link.length,
       },
       ineligibleMessage: 'Link not eligible for paste',
-      successLogMessage: (terminalName: string) => `Pasted link to terminal: ${terminalName}`,
+      successLogMessage: 'Pasted link to terminal',
     });
   }
 
@@ -162,7 +161,7 @@ export class TerminalDestination implements PasteDestination {
       text: content,
       logContext: { fn: 'TerminalDestination.pasteContent', contentLength: content.length },
       ineligibleMessage: 'Content not eligible for paste',
-      successLogMessage: (terminalName: string) => `Pasted content to terminal: ${terminalName}`,
+      successLogMessage: 'Pasted content to terminal',
     });
   }
 
@@ -173,13 +172,13 @@ export class TerminalDestination implements PasteDestination {
    * Handles validation, padding, sending, focus, and logging.
    *
    * @param options - Configuration for text sending
-   * @returns true if paste succeeded, false if validation failed or no terminal bound
+   * @returns true if paste succeeded, false if validation failed
    */
   private async sendTextToTerminal(options: {
     text: string;
     logContext: LoggingContext;
     ineligibleMessage: string;
-    successLogMessage: (terminalName: string) => string;
+    successLogMessage: string;
   }): Promise<boolean> {
     const { text, logContext, ineligibleMessage, successLogMessage } = options;
 
@@ -188,16 +187,15 @@ export class TerminalDestination implements PasteDestination {
       return false;
     }
 
-    // Validate terminal is bound and focus it
-    const terminalName = this.focusAndGetTerminalName(logContext);
-    if (!terminalName) {
-      return false;
-    }
+    // Focus terminal and get name
+    const terminalName = this.resourceName;
+    this.vscodeAdapter.showTerminal(this.terminal, TerminalFocusType.StealFocus);
 
     const paddedText = applySmartPadding(text);
 
-    // Send text without auto-submit (addNewLine = false)
-    this.boundTerminal!.sendText(paddedText, false);
+    this.vscodeAdapter.sendTextToTerminal(this.terminal, paddedText, {
+      behaviour: BehaviourAfterPaste.NOTHING,
+    });
 
     // Build success log context - spread logContext to preserve all fields
     const successContext: LoggingContext = {
@@ -207,32 +205,9 @@ export class TerminalDestination implements PasteDestination {
       paddedLength: paddedText.length,
     };
 
-    this.logger.info(successContext, successLogMessage(terminalName));
+    this.logger.info(successContext, successLogMessage);
 
     return true;
-  }
-
-  /**
-   * Update bound terminal reference
-   *
-   * Called by PasteDestinationManager when user binds/unbinds terminal.
-   * This is external state management - the manager owns the binding logic.
-   */
-  setTerminal(terminal: vscode.Terminal | undefined): void {
-    this.boundTerminal = terminal;
-    this.logger.debug(
-      { fn: 'TerminalDestination.setTerminal', terminalName: terminal?.name },
-      terminal ? `Terminal set: ${terminal.name}` : 'Terminal cleared',
-    );
-  }
-
-  /**
-   * Get bound terminal name for status display
-   *
-   * @returns Terminal name or undefined if no terminal bound
-   */
-  getTerminalName(): string | undefined {
-    return this.boundTerminal?.name;
   }
 
   /**
@@ -241,8 +216,9 @@ export class TerminalDestination implements PasteDestination {
    * @returns Formatted i18n message for status bar display
    */
   getJumpSuccessMessage(): string {
-    const terminalName = this.getTerminalName() || 'Unnamed Terminal';
-    return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL, { terminalName });
+    return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL, {
+      resourceName: this.resourceName,
+    });
   }
 
   /**
@@ -251,10 +227,53 @@ export class TerminalDestination implements PasteDestination {
    * @returns Terminal name for logging context
    */
   getLoggingDetails(): Record<string, unknown> {
-    if (!this.boundTerminal) {
-      return {};
+    return { terminalName: this.resourceName };
+  }
+
+  /**
+   * Check if this terminal equals another destination
+   *
+   * @param other - The destination to compare against (may be undefined)
+   * @returns Promise<true> if same terminal, Promise<false> otherwise
+   */
+  async equals(other: PasteDestination | undefined): Promise<boolean> {
+    // Safeguard 1: Check other is defined
+    if (!other) {
+      return false;
     }
-    const terminalName = this.getTerminalName() || 'Unnamed Terminal';
-    return { terminalName };
+
+    // Safeguard 2: Check type matches
+    if (other.id !== 'terminal') {
+      return false;
+    }
+
+    // Safeguard 3: Check other has terminal resource (type assertion - Option B)
+    const otherAsTerminal = other as TerminalDestination;
+    const otherTerminal = otherAsTerminal.terminal;
+    if (!otherTerminal) {
+      // Should never happen if construction is correct, but be defensive
+      this.logger.warn(
+        { fn: 'TerminalDestination.equals' },
+        'Other terminal destination missing terminal resource',
+      );
+      return false;
+    }
+
+    // Get process IDs for comparison
+    const [thisPid, otherPid] = await Promise.all([
+      this.terminal.processId,
+      otherTerminal.processId,
+    ]);
+
+    // Safeguard 4: Both processIds must be defined for valid comparison
+    if (thisPid === undefined || otherPid === undefined) {
+      this.logger.debug(
+        { fn: 'TerminalDestination.equals', thisPid, otherPid },
+        'Cannot compare terminals: processId undefined (terminal may not be started yet)',
+      );
+      return false;
+    }
+
+    return thisPid === otherPid;
   }
 }

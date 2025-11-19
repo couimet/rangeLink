@@ -33,10 +33,7 @@ export const testDestinationLogging = (
   describe('Logging', () => {
     loggerCalls.forEach(({ method, expectedContext, expectedMessage }, index) => {
       it(`should log via ${method} (call ${index + 1})`, () => {
-        expect(mockLogger[method]).toHaveBeenCalledWith(
-          expect.objectContaining(expectedContext),
-          expectedMessage,
-        );
+        expect(mockLogger[method]).toHaveBeenCalledWith(expectedContext, expectedMessage);
       });
     });
   });

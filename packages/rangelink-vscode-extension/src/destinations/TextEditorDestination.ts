@@ -13,8 +13,8 @@ import type { DestinationType, PasteDestination } from './PasteDestination';
 /**
  * Text Editor destination implementation for pasting RangeLinks
  *
- * Pastes RangeLinks at cursor position in the active text editor.
- * Tracks specific editor (similar to TerminalDestination) and auto-unbinds on editor close.
+ * Bound to a specific text editor at construction (immutable).
+ * Manager uses create-and-discard pattern: creates new instance on bind, discards on unbind.
  *
  * **File type restrictions:**
  * - Only allows text-like files (file:// and untitled:// schemes)
@@ -26,7 +26,6 @@ import type { DestinationType, PasteDestination } from './PasteDestination';
  */
 export class TextEditorDestination implements PasteDestination {
   readonly id: DestinationType = 'text-editor';
-  readonly displayName = 'Text Editor';
 
   // Known binary file extensions to block
   private static readonly BINARY_EXTENSIONS = [
@@ -51,18 +50,67 @@ export class TextEditorDestination implements PasteDestination {
     '.sqlite',
   ];
 
-  private boundDocumentUri: vscode.Uri | undefined;
-
   constructor(
-    private readonly ideAdapter: VscodeAdapter,
+    private readonly editor: vscode.TextEditor,
+    private readonly vscodeAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {}
 
   /**
-   * Check if text editor destination is available (has bound document)
+   * Get raw resource identifier for this destination
+   *
+   * Returns workspace-relative path for file:// scheme, or "Untitled-N" for untitled files.
+   * Examples: "src/file.ts", "Untitled-1"
+   * Evaluated on each access rather than cached to ensure freshness.
+   */
+  get resourceName(): string {
+    const uri = this.editor.document.uri;
+
+    // Handle untitled files
+    if (uri.scheme === 'untitled') {
+      return `Untitled-${uri.path.replace(/^\//, '')}`;
+    }
+
+    // Get workspace-relative path for file:// scheme
+    const workspaceFolder = this.vscodeAdapter.getWorkspaceFolder(uri);
+    if (workspaceFolder) {
+      const relativePath = this.vscodeAdapter.asRelativePath(uri, false);
+      return relativePath;
+    }
+
+    // Fallback to filename if not in workspace
+    return uri.fsPath.split('/').pop() || 'Unknown';
+  }
+
+  /**
+   * Get display name for UI (evaluated in real-time)
+   *
+   * Returns formatted editor name for display (e.g., `Text Editor ("src/file.ts")`).
+   * Evaluated on each access rather than cached to ensure freshness.
+   * Matches TerminalDestination format for consistency.
+   */
+  get displayName(): string {
+    return `Text Editor ("${this.resourceName}")`;
+  }
+
+  /**
+   * Get absolute path for logging (evaluated in real-time)
+   *
+   * Returns full absolute path for debugging and log analysis.
+   * Evaluated on each access rather than cached.
+   */
+  get editorPath(): string {
+    return this.editor.document.uri.toString();
+  }
+
+  /**
+   * Check if text editor destination is available
+   *
+   * Always returns true since construction implies availability.
+   * Manager only creates text editor destinations when editor exists.
    */
   async isAvailable(): Promise<boolean> {
-    return this.boundDocumentUri !== undefined;
+    return true;
   }
 
   /**
@@ -93,31 +141,27 @@ export class TextEditorDestination implements PasteDestination {
    *
    * @param fnName - Function name for logging context
    * @param actionDescription - Description of action (e.g., "creating link FROM bound editor")
-   * @returns true if eligible, false if self-paste detected or destination unavailable
+   * @returns true if eligible, false if self-paste detected
    */
   private checkSelfPasteEligibility(fnName: string, actionDescription: string): boolean {
     // Get active editor (source of link/text creation)
-    const activeEditor = this.ideAdapter.activeTextEditor;
+    const activeEditor = this.vscodeAdapter.activeTextEditor;
 
     // If no active editor, can't be self-paste
     if (!activeEditor) {
       return true;
     }
 
-    // If no bound document, not eligible (destination not available)
-    if (!this.boundDocumentUri) {
-      return false;
-    }
-
     // Self-paste detection: Compare active editor's document URI with bound document URI
-    const isSelfPaste = activeEditor.document.uri.toString() === this.boundDocumentUri.toString();
+    const isSelfPaste =
+      activeEditor.document.uri.toString() === this.editor.document.uri.toString();
 
     if (isSelfPaste) {
       this.logger.debug(
         {
           fn: `TextEditorDestination.${fnName}`,
           activeDocumentUri: activeEditor.document.uri.toString(),
-          boundDocumentUri: this.boundDocumentUri.toString(),
+          boundDocumentUri: this.editor.document.uri.toString(),
         },
         `Self-paste detected - skipping auto-paste (${actionDescription})`,
       );
@@ -159,38 +203,27 @@ export class TextEditorDestination implements PasteDestination {
    * Focus the bound text editor
    *
    * Brings the bound editor document into view without changing cursor position.
-   * Uses the same lazy validation strategy as pasteLink(): finds the document
-   * dynamically across all tab groups.
-   *
    * Used by the "Jump to Bound Destination" command (issue #99).
    *
-   * @returns true if editor focused successfully, false if document not found or other error
+   * @returns true (always succeeds since editor is guaranteed at construction)
    */
   async focus(): Promise<boolean> {
-    const validation = this.validateAndFindEditor({
-      fn: 'TextEditorDestination.focus',
-    });
-
-    if (!validation) {
-      return false;
-    }
-
-    const { editor, boundDisplayName } = validation;
+    const editorName = this.resourceName;
 
     try {
       // Focus the editor (preserveFocus: false steals focus)
-      await this.ideAdapter.showTextDocument(editor.document.uri, {
+      await this.vscodeAdapter.showTextDocument(this.editor.document.uri, {
         preserveFocus: false,
-        viewColumn: editor.viewColumn,
+        viewColumn: this.editor.viewColumn,
       });
 
       this.logger.info(
         {
           fn: 'TextEditorDestination.focus',
-          boundDisplayName,
-          boundDocumentUri: this.boundDocumentUri!.toString(),
+          editorName,
+          editorPath: this.editorPath,
         },
-        `Focused text editor: ${boundDisplayName}`,
+        'Focused text editor',
       );
 
       return true;
@@ -198,8 +231,8 @@ export class TextEditorDestination implements PasteDestination {
       this.logger.error(
         {
           fn: 'TextEditorDestination.focus',
-          boundDisplayName,
-          boundDocumentUri: this.boundDocumentUri!.toString(),
+          editorName,
+          editorPath: this.editorPath,
           error,
         },
         'Failed to focus text editor',
@@ -209,57 +242,69 @@ export class TextEditorDestination implements PasteDestination {
   }
 
   /**
-   * Validate bound document and find its editor
+   * Validate that editor is ready for paste operation
    *
-   * Checks if document is bound, finds its tab group, and locates the TextEditor object.
-   * Shared validation logic used by both focus() and insertTextAtCursor().
+   * Checks if bound document is the active (topmost) tab in its tab group.
+   * Returns editor and display name if validation passes.
    *
    * @param logContext - Logging context for error messages
-   * @returns Editor and display name if found, undefined if validation fails
+   * @returns Editor and display name if validation passes, undefined otherwise
    */
-  private validateAndFindEditor(
+  private validateEditorForPaste(
     logContext: LoggingContext,
-  ): { editor: vscode.TextEditor; boundDisplayName: string } | undefined {
-    if (!this.boundDocumentUri) {
-      this.logger.warn(logContext, 'Cannot operate: No text editor bound');
-      return undefined;
-    }
+  ): { editor: vscode.TextEditor; editorName: string } | undefined {
+    const editorName = this.resourceName;
 
-    const boundDisplayName = this.getEditorDisplayName()!;
-
-    // LAZY VALIDATION: Find which tab group contains the bound document
-    const boundTabGroup = this.ideAdapter.findTabGroupForDocument(this.boundDocumentUri);
+    // Find which tab group contains the bound document
+    const boundTabGroup = this.vscodeAdapter.findTabGroupForDocument(this.editor.document.uri);
 
     if (!boundTabGroup) {
       this.logger.error(
         {
           ...logContext,
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          boundDisplayName,
+          boundDocumentUri: this.editor.document.uri.toString(),
+          editorName,
         },
         'Bound document not found in any tab group - likely closed',
       );
       return undefined;
     }
 
-    // Find the TextEditor object for the bound document
-    const editor = this.ideAdapter.visibleTextEditors.find(
-      (e) => e.document.uri.toString() === this.boundDocumentUri!.toString(),
-    );
+    // Check if bound document is the active (topmost) tab
+    const activeTab = boundTabGroup.activeTab;
 
-    if (!editor) {
-      this.logger.error(
+    if (!activeTab) {
+      this.logger.warn({ ...logContext, editorName }, 'Tab group has no active tab');
+      return undefined;
+    }
+
+    if (!this.vscodeAdapter.isTextEditorTab(activeTab)) {
+      this.logger.warn(
         {
           ...logContext,
-          boundDocumentUri: this.boundDocumentUri.toString(),
-          boundDisplayName,
+          editorName,
+          tabInputType: typeof activeTab.input,
         },
-        'TextEditor object not found in visibleTextEditors',
+        'Active tab is not a text editor',
       );
       return undefined;
     }
 
-    return { editor, boundDisplayName };
+    if (activeTab.input.uri.toString() !== this.editor.document.uri.toString()) {
+      // Bound document exists but is not topmost - show warning but keep binding
+      this.logger.warn(
+        {
+          ...logContext,
+          boundDocumentUri: this.editor.document.uri.toString(),
+          activeTabUri: activeTab.input.uri.toString(),
+          editorName,
+        },
+        'Bound document is not topmost in its tab group',
+      );
+      return undefined;
+    }
+
+    return { editor: this.editor, editorName };
   }
 
   /**
@@ -298,8 +343,7 @@ export class TextEditorDestination implements PasteDestination {
         linkLength: formattedLink.link.length,
       },
       ineligibleMessage: 'Link not eligible for paste',
-      successLogMessage: (boundDisplayName: string) =>
-        `Pasted link to text editor: ${boundDisplayName}`,
+      successLogMessage: 'Pasted link to text editor',
       errorMessage: 'Failed to paste link to text editor',
     });
   }
@@ -317,7 +361,7 @@ export class TextEditorDestination implements PasteDestination {
     text: string;
     logContext: LoggingContext;
     ineligibleMessage: string;
-    successLogMessage: (boundDisplayName: string) => string;
+    successLogMessage: string;
     errorMessage: string;
   }): Promise<boolean> {
     const { text, logContext, ineligibleMessage, successLogMessage, errorMessage } = options;
@@ -327,64 +371,26 @@ export class TextEditorDestination implements PasteDestination {
       return false;
     }
 
-    // Validate document and find editor (shared validation logic)
-    const validation = this.validateAndFindEditor(logContext);
+    // Validate editor is ready for paste (checks if topmost tab)
+    const validation = this.validateEditorForPaste(logContext);
     if (!validation) {
       return false;
     }
 
-    const { editor, boundDisplayName } = validation;
-
-    // Additional validation for paste: Check if bound document is the active (topmost) tab
-    const boundTabGroup = this.ideAdapter.findTabGroupForDocument(this.boundDocumentUri!);
-    const activeTab = boundTabGroup?.activeTab;
-
-    if (!activeTab) {
-      this.logger.warn({ ...logContext, boundDisplayName }, 'Tab group has no active tab');
-      return false;
-    }
-
-    if (!this.ideAdapter.isTextEditorTab(activeTab)) {
-      this.logger.warn(
-        {
-          ...logContext,
-          boundDisplayName,
-          tabInputType: typeof activeTab.input,
-        },
-        'Active tab is not a text editor',
-      );
-      return false;
-    }
-
-    if (activeTab.input.uri.toString() !== this.boundDocumentUri!.toString()) {
-      // Bound document exists but is not topmost - show warning but keep binding
-      this.logger.warn(
-        {
-          ...logContext,
-          boundDocumentUri: this.boundDocumentUri!.toString(),
-          activeTabUri: activeTab.input.uri.toString(),
-          boundDisplayName,
-        },
-        'Bound document is not topmost in its tab group',
-      );
-      return false;
-    }
+    const { editor, editorName } = validation;
 
     // All validations passed - perform the paste
-    // Note: editor is guaranteed to be defined by validateAndFindEditor()
     try {
       const paddedText = applySmartPadding(text);
 
-      const success = await editor.edit((editBuilder) => {
-        editBuilder.insert(editor.selection.active, paddedText);
-      });
+      const success = await this.vscodeAdapter.insertTextAtCursor(editor, paddedText);
 
       if (!success) {
         // Build error log context - spread logContext to preserve all fields, add edit-specific info
         const editFailedContext: LoggingContext = {
           ...logContext,
-          boundDisplayName,
-          boundDocumentUri: this.boundDocumentUri!.toString(),
+          editorName,
+          editorPath: this.editorPath,
         };
 
         // Add length field based on what's being pasted
@@ -399,7 +405,7 @@ export class TextEditorDestination implements PasteDestination {
       }
 
       // Focus the editor (similar to terminal.show(false) behavior)
-      await this.ideAdapter.showTextDocument(editor.document.uri, {
+      await this.vscodeAdapter.showTextDocument(editor.document.uri, {
         preserveFocus: false, // Steal focus to bring user to paste destination
         viewColumn: editor.viewColumn, // Keep in same tab group
       });
@@ -407,21 +413,21 @@ export class TextEditorDestination implements PasteDestination {
       // Build success log context - spread logContext to preserve all fields
       const successContext: LoggingContext = {
         ...logContext,
-        boundDisplayName,
-        boundDocumentUri: this.boundDocumentUri!.toString(),
+        editorName,
+        editorPath: this.editorPath,
         originalLength: text.length,
         paddedLength: paddedText.length,
       };
 
-      this.logger.info(successContext, successLogMessage(boundDisplayName));
+      this.logger.info(successContext, successLogMessage);
 
       return true;
     } catch (error) {
       // Build exception log context - spread logContext to preserve all fields
       const exceptionContext: LoggingContext = {
         ...logContext,
-        boundDisplayName,
-        boundDocumentUri: this.boundDocumentUri!.toString(),
+        editorName,
+        editorPath: this.editorPath,
         error,
       };
 
@@ -444,90 +450,20 @@ export class TextEditorDestination implements PasteDestination {
       text: content,
       logContext: { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
       ineligibleMessage: 'Content not eligible for paste',
-      successLogMessage: (boundDisplayName: string) =>
-        `Pasted content to text editor: ${boundDisplayName}`,
+      successLogMessage: 'Pasted content to text editor',
       errorMessage: 'Exception during paste operation',
     });
   }
 
   /**
-   * Update bound document URI
-   *
-   * Called by PasteDestinationManager when user binds/unbinds text editor.
-   * This is external state management - the manager owns the binding logic.
-   *
-   * Stores only the document URI (not the editor reference) to enable:
-   * - Dynamic tab group lookup (user can move document between groups)
-   * - Lazy validation (only check topmost status on paste)
-   *
-   * @param editor - The editor to bind, or undefined to unbind
-   */
-  setEditor(editor: vscode.TextEditor | undefined): void {
-    this.boundDocumentUri = editor ? editor.document.uri : undefined;
-
-    if (editor) {
-      const displayName = this.getEditorDisplayName();
-      const path = this.getEditorPath();
-      this.logger.debug(
-        { fn: 'TextEditorDestination.setEditor', editorDisplayName: displayName, editorPath: path },
-        `Text editor bound: ${displayName}`,
-      );
-    } else {
-      this.logger.debug({ fn: 'TextEditorDestination.setEditor' }, 'Text editor unbound');
-    }
-  }
-
-  /**
    * Get bound document URI
    *
-   * @returns The bound document URI or undefined if none bound
+   * Used by PasteDestinationManager for document close detection.
+   *
+   * @returns The bound document URI
    */
-  getBoundDocumentUri(): vscode.Uri | undefined {
-    return this.boundDocumentUri;
-  }
-
-  /**
-   * Get user-friendly display name for bound document (workspace-relative)
-   *
-   * Returns workspace-relative path for file:// scheme, or "Untitled-N" for untitled files.
-   * Used in user-facing status messages and notifications.
-   *
-   * @returns Workspace-relative path or "Untitled-N", or undefined if no document bound
-   */
-  getEditorDisplayName(): string | undefined {
-    if (!this.boundDocumentUri) {
-      return undefined;
-    }
-
-    // Handle untitled files
-    if (this.boundDocumentUri.scheme === 'untitled') {
-      return `Untitled-${this.boundDocumentUri.path.replace(/^\//, '')}`;
-    }
-
-    // Get workspace-relative path for file:// scheme
-    const workspaceFolder = this.ideAdapter.getWorkspaceFolder(this.boundDocumentUri);
-    if (workspaceFolder) {
-      const relativePath = this.ideAdapter.asRelativePath(this.boundDocumentUri, false);
-      return relativePath;
-    }
-
-    // Fallback to filename if not in workspace
-    return this.boundDocumentUri.fsPath.split('/').pop() || 'Unknown';
-  }
-
-  /**
-   * Get absolute path for bound document (for logging)
-   *
-   * Returns full absolute path for debugging and log analysis.
-   *
-   * @returns Absolute path, or undefined if no document bound
-   */
-  getEditorPath(): string | undefined {
-    if (!this.boundDocumentUri) {
-      return undefined;
-    }
-
-    return this.boundDocumentUri.toString();
+  getBoundDocumentUri(): vscode.Uri {
+    return this.editor.document.uri;
   }
 
   /**
@@ -567,21 +503,53 @@ export class TextEditorDestination implements PasteDestination {
    * @returns Formatted i18n message for status bar display
    */
   getJumpSuccessMessage(): string {
-    const editorDisplayName = this.getEditorDisplayName();
-    return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, { editorDisplayName });
+    return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, {
+      resourceName: this.resourceName,
+    });
   }
 
   /**
    * Get destination-specific details for logging
    *
-   * @returns Editor display name and path for logging context
+   * @returns Editor resource name and path for logging context
    */
   getLoggingDetails(): Record<string, unknown> {
-    const editorDisplayName = this.getEditorDisplayName();
-    const editorPath = this.getEditorPath();
     return {
-      editorDisplayName,
-      editorPath,
+      editorName: this.resourceName,
+      editorPath: this.editorPath,
     };
+  }
+
+  /**
+   * Check if this text editor equals another destination
+   *
+   * @param other - The destination to compare against (may be undefined)
+   * @returns Promise<true> if same editor document, Promise<false> otherwise
+   */
+  async equals(other: PasteDestination | undefined): Promise<boolean> {
+    // Safeguard 1: Check other is defined
+    if (!other) {
+      return false;
+    }
+
+    // Safeguard 2: Check type matches
+    if (other.id !== 'text-editor') {
+      return false;
+    }
+
+    // Safeguard 3: Check other has editor resource (type assertion - Option B)
+    const otherAsEditor = other as TextEditorDestination;
+    const otherEditor = otherAsEditor.editor;
+    if (!otherEditor?.document?.uri) {
+      // Should never happen if construction is correct, but be defensive
+      this.logger.warn(
+        { fn: 'TextEditorDestination.equals' },
+        'Other editor destination missing editor/document/uri',
+      );
+      return false;
+    }
+
+    // Compare document URIs (unique per file)
+    return this.editor.document.uri.toString() === otherEditor.document.uri.toString();
   }
 }

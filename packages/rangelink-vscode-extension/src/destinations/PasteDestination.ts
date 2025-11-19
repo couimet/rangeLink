@@ -169,10 +169,18 @@ export interface PasteDestination {
    *
    * Examples:
    * - Terminal: { terminalName: "bash" }
-   * - Text Editor: { editorDisplayName: "src/file.ts", editorPath: "/absolute/path" }
+   * - Text Editor: { editorName: "src/file.ts", editorPath: "/absolute/path" }
    * - AI Assistants: {} (no additional details needed)
    *
    * @returns Record with destination-specific logging details (empty object if none)
    */
   getLoggingDetails(): Record<string, unknown>;
+
+  /**
+   * Check if this destination equals another destination
+   *
+   * @param other - The destination to compare against (may be undefined)
+   * @returns Promise<true> if same destination, Promise<false> otherwise
+   */
+  equals(other: PasteDestination | undefined): Promise<boolean>;
 }

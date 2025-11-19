@@ -82,8 +82,8 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
 
     // Should call adapter's createSelection with extended positions (31,0) to (31,1) in 0-indexed coords
     expect(createSelectionSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ line: 31, character: 0 }),
-      expect.objectContaining({ line: 31, character: 1 }),
+      { line: 31, character: 0 },
+      { line: 31, character: 1 },
     );
   });
 
@@ -120,8 +120,8 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
 
     // Should NOT extend - selection remains at same position (clamped to lineLength)
     expect(createSelectionSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ line: 9, character: 5 }),
-      expect.objectContaining({ line: 9, character: 5 }), // Same position
+      { line: 9, character: 5 },
+      { line: 9, character: 5 }, // Same position
     );
   });
 
@@ -208,8 +208,8 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
 
     // Should create selection from line 10 to line 20 (not extended)
     expect(createSelectionSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ line: 9 }), // 0-indexed
-      expect.objectContaining({ line: 19 }), // 0-indexed
+      { line: 9, character: 0 }, // 0-indexed
+      { line: 19, character: 0 }, // 0-indexed
     );
   });
 });
