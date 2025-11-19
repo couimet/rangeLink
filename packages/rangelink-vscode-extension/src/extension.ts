@@ -25,18 +25,20 @@ let outputChannel: vscode.OutputChannel;
  * Extension activation entry point
  */
 export function activate(context: vscode.ExtensionContext): void {
-  outputChannel = vscode.window.createOutputChannel('RangeLink');
+  // Create adapter FIRST (only direct vscode reference in entire file)
+  const ideAdapter = new VscodeAdapter(vscode);
+
+  outputChannel = ideAdapter.createOutputChannel('RangeLink');
 
   // Initialize core library logger with VSCode adapter
   const vscodeLogger = new VSCodeLogger(outputChannel);
   setLogger(vscodeLogger);
 
   // Initialize i18n locale from VSCode environment
-  setLocale(vscode.env.language);
+  setLocale(ideAdapter.language);
 
   // Load delimiter configuration
-  const vscodeConfig = vscode.workspace.getConfiguration('rangelink');
-  const ideAdapter = new VscodeAdapter(vscode);
+  const vscodeConfig = ideAdapter.getConfiguration('rangelink');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const delimiters = getDelimitersForExtension(vscodeConfig as any, ideAdapter, getLogger());
 
@@ -61,7 +63,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   context.subscriptions.push(
     registerWithLogging(
-      vscode.window.registerTerminalLinkProvider(terminalLinkProvider),
+      ideAdapter.registerTerminalLinkProvider(terminalLinkProvider),
       'Terminal link provider registered',
     ),
   );
@@ -75,7 +77,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   context.subscriptions.push(
     registerWithLogging(
-      vscode.languages.registerDocumentLinkProvider(
+      ideAdapter.registerDocumentLinkProvider(
         [
           { scheme: 'file' }, // Regular files (markdown, code, etc.)
           { scheme: 'untitled' }, // Unsaved/new files (scratchpad workflow)
@@ -88,51 +90,50 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register commands
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.copyLinkWithRelativePath', () =>
+    ideAdapter.registerCommand('rangelink.copyLinkWithRelativePath', () =>
       service.createLink(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.copyLinkWithAbsolutePath', () =>
+    ideAdapter.registerCommand('rangelink.copyLinkWithAbsolutePath', () =>
       service.createLink(PathFormat.Absolute),
     ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.copyPortableLinkWithRelativePath', () =>
+    ideAdapter.registerCommand('rangelink.copyPortableLinkWithRelativePath', () =>
       service.createPortableLink(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.copyPortableLinkWithAbsolutePath', () =>
+    ideAdapter.registerCommand('rangelink.copyPortableLinkWithAbsolutePath', () =>
       service.createPortableLink(PathFormat.Absolute),
     ),
   );
 
   // Register paste selected text command (issue #89)
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.pasteSelectedTextToDestination', () =>
+    ideAdapter.registerCommand('rangelink.pasteSelectedTextToDestination', () =>
       service.pasteSelectedTextToDestination(),
     ),
   );
 
   // Register version info command
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.showVersion', () => {
+    ideAdapter.registerCommand('rangelink.showVersion', async () => {
       try {
         const versionInfo = require('./version.json');
         const isDirtyIndicator = versionInfo.isDirty ? ' (with uncommitted changes)' : '';
         const message = `RangeLink v${versionInfo.version}\nCommit: ${versionInfo.commit}${isDirtyIndicator}\nBranch: ${versionInfo.branch}\nBuild: ${versionInfo.buildDate}`;
-        vscode.window.showInformationMessage(message, 'Copy Commit Hash').then((selection) => {
-          if (selection === 'Copy Commit Hash') {
-            vscode.env.clipboard.writeText(versionInfo.commitFull);
-            vscode.window.showInformationMessage(
-              formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED),
-            );
-          }
-        });
+        const selection = await ideAdapter.showInformationMessage(message, 'Copy Commit Hash');
+        if (selection === 'Copy Commit Hash') {
+          await ideAdapter.writeTextToClipboard(versionInfo.commitFull);
+          await ideAdapter.showInformationMessage(
+            formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED),
+          );
+        }
         getLogger().info(
           {
             fn: 'showVersion',
@@ -144,20 +145,20 @@ export function activate(context: vscode.ExtensionContext): void {
         );
       } catch (error) {
         getLogger().error({ fn: 'showVersion', error }, 'Failed to load version info');
-        vscode.window.showErrorMessage('Version information not available');
+        await ideAdapter.showErrorMessage('Version information not available');
       }
     }),
   );
 
   // Register destination binding commands
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.bindToTerminal', async () => {
+    ideAdapter.registerCommand('rangelink.bindToTerminal', async () => {
       await destinationManager.bind('terminal');
     }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.bindToTextEditor', async () => {
+    ideAdapter.registerCommand('rangelink.bindToTextEditor', async () => {
       await destinationManager.bind('text-editor');
     }),
   );
@@ -167,10 +168,10 @@ export function activate(context: vscode.ExtensionContext): void {
   // Runtime availability checks show helpful messages when IDE/extension not available
   // This prevents "command not found" errors while maintaining discoverability
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.bindToCursorAI', async () => {
+    ideAdapter.registerCommand('rangelink.bindToCursorAI', async () => {
       const cursorDestination = factory.create({ type: 'cursor-ai' });
       if (!(await cursorDestination.isAvailable())) {
-        void vscode.window.showInformationMessage(
+        void ideAdapter.showInformationMessage(
           "This command is designed for Cursor IDE, which has built-in AI chat.\n\nRangeLink can paste code ranges directly into Cursor's AI chat for faster context sharing. To use this feature, open your project in Cursor IDE instead of VS Code.",
         );
         return;
@@ -180,10 +181,10 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.bindToClaudeCode', async () => {
+    ideAdapter.registerCommand('rangelink.bindToClaudeCode', async () => {
       const claudeCodeDestination = factory.create({ type: 'claude-code' });
       if (!(await claudeCodeDestination.isAvailable())) {
-        void vscode.window.showInformationMessage(
+        void ideAdapter.showInformationMessage(
           'RangeLink can seamlessly integrate with Claude Code for faster context sharing of precise code ranges.\n\nInstall and activate the Claude Code extension to use it as a paste destination.',
         );
         return;
@@ -193,21 +194,21 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.unbindDestination', () => {
+    ideAdapter.registerCommand('rangelink.unbindDestination', () => {
       destinationManager.unbind();
     }),
   );
 
   // Register jump to bound destination command
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.jumpToBoundDestination', async () => {
+    ideAdapter.registerCommand('rangelink.jumpToBoundDestination', async () => {
       await destinationManager.jumpToBoundDestination();
     }),
   );
 
   // Register document link navigation command
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.handleDocumentLinkClick', (args) => {
+    ideAdapter.registerCommand('rangelink.handleDocumentLinkClick', (args) => {
       return documentLinkProvider.handleLinkClick(args);
     }),
   );
