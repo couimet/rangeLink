@@ -31,6 +31,7 @@ import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockTerminalDestination } from '../helpers/createMockTerminalDestination';
+import { createMockText } from '../helpers/createMockText';
 import { createMockTextEditorDestination } from '../helpers/createMockTextEditorDestination';
 import { createMockUri } from '../helpers/createMockUri';
 import {
@@ -1179,8 +1180,11 @@ describe('PasteDestinationManager', () => {
 
     it('should focus bound text editor successfully', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
-      const mockUri = createMockUriInstance('/workspace/src/file.ts');
-      const mockDocument = createMockDocument('const x = 42;', mockUri);
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const mockDocument = createMockDocument({
+        getText: createMockText('const x = 42;'),
+        uri: mockUri,
+      });
       const mockEditor = createMockEditor({
         document: mockDocument,
         selection: { active: { line: 0, character: 0 } } as any,
@@ -1313,8 +1317,11 @@ describe('PasteDestinationManager', () => {
 
     it('should log success with destination details for text editor', async () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
-      const mockUri = createMockUriInstance('/workspace/src/file.ts');
-      const mockDocument = createMockDocument('const x = 42;', mockUri);
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const mockDocument = createMockDocument({
+        getText: createMockText('const x = 42;'),
+        uri: mockUri,
+      });
       const mockEditor = createMockEditor({
         document: mockDocument,
         selection: { active: { line: 0, character: 0 } } as any,

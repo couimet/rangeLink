@@ -6,6 +6,8 @@ import type { ParsedLink } from 'rangelink-core-ts';
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
+import { createMockText } from '../helpers/createMockText';
+import { createMockUri } from '../helpers/createMockUri';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('RangeLinkNavigationHandler - Single Position Selection Extension', () => {
@@ -20,7 +22,9 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     mockLogger = createMockLogger();
 
     // Create mock document with navigation-specific overrides
-    mockDocument = createMockDocument('const x = 42; // Sample line content', undefined, {
+    mockDocument = createMockDocument({
+      getText: createMockText('const x = 42; // Sample line content'),
+      uri: createMockUri('/test/file.ts'),
       lineCount: 100,
       lineAt: jest.fn(() => ({ text: 'const x = 42; // Sample line content' })) as any,
     });

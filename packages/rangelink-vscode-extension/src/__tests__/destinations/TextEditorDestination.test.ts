@@ -17,7 +17,8 @@ import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockTab } from '../helpers/createMockTab';
 import { createMockTabGroup } from '../helpers/createMockTabGroup';
 import { createMockTabGroups } from '../helpers/createMockTabGroups';
-import { createMockUriInstance } from '../helpers/createMockUriInstance';
+import { createMockText } from '../helpers/createMockText';
+import { createMockUri } from '../helpers/createMockUri';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 import { simulateClosedEditor } from '../helpers/simulateClosedEditor';
 import { simulateFileOutsideWorkspace } from '../helpers/simulateFileOutsideWorkspace';
@@ -33,8 +34,10 @@ describe('TextEditorDestination', () => {
     mockLogger = createMockLogger();
 
     // Create mock text editor using helper
-    const mockUri = createMockUriInstance('/workspace/src/file.ts');
-    const mockDocument = createMockDocument('const x = 42;', mockUri, {
+    const mockUri = createMockUri('/workspace/src/file.ts');
+    const mockDocument = createMockDocument({
+      getText: createMockText('const x = 42;'),
+      uri: mockUri,
       isClosed: false,
       isUntitled: false,
     });
@@ -492,8 +495,10 @@ describe('TextEditorDestination', () => {
 
     it('should return formatted message for untitled editor', () => {
       // Create untitled document and editor
-      const untitledUri = createMockUriInstance('untitled:Untitled-1');
-      const untitledDocument = createMockDocument('', untitledUri, {
+      const untitledUri = createMockUri('untitled:Untitled-1');
+      const untitledDocument = createMockDocument({
+        getText: createMockText(''),
+        uri: untitledUri,
         isClosed: false,
         isUntitled: true,
       });
