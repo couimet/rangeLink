@@ -1,5 +1,5 @@
 import type { ParsedLink } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 /**
  * Custom terminal link with typed data property and parsed link information.

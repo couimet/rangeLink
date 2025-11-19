@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 /**
  * Detect if the VSCode selections represent a rectangular (block) selection.
