@@ -17,6 +17,7 @@ export { createMockExtensions } from './createMockExtensions';
 export { createMockGetWorkspaceFolder } from './createMockGetWorkspaceFolder';
 export { createMockOutputChannel } from './createMockOutputChannel';
 export { createMockPosition } from './createMockPosition';
+export { createMockPositionAt } from './createMockPositionAt';
 export { createMockRange } from './createMockRange';
 export { createMockSelection } from './createMockSelection';
 export { createMockStatusBarItem } from './createMockStatusBarItem';

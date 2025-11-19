@@ -15,7 +15,7 @@ import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavig
 import {
   createMockCancellationToken,
   createMockDocument,
-  createMockPosition,
+  createMockPositionAt,
   createMockText,
   createMockUri,
 } from '../helpers';
@@ -73,7 +73,7 @@ describe('RangeLinkDocumentProvider', () => {
       const document = createMockDocument({
         getText: createMockText('Check src/auth.ts#L10'),
         uri: createMockUri('/test/file.ts'),
-        positionAt: jest.fn((index: number) => createMockPosition(0, index)),
+        positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
@@ -98,7 +98,7 @@ describe('RangeLinkDocumentProvider', () => {
       const document = createMockDocument({
         getText: createMockText('See src/auth.ts#L10-L20 for details'),
         uri: createMockUri('/test/file.ts'),
-        positionAt: jest.fn((index: number) => createMockPosition(0, index)),
+        positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
@@ -121,7 +121,7 @@ describe('RangeLinkDocumentProvider', () => {
       const document = createMockDocument({
         getText: createMockText('src/file.ts#L5C10-L10C20'),
         uri: createMockUri('/test/file.ts'),
-        positionAt: jest.fn((index: number) => createMockPosition(0, index)),
+        positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
@@ -144,7 +144,7 @@ describe('RangeLinkDocumentProvider', () => {
       const document = createMockDocument({
         getText: createMockText('src/file.ts##L5C10-L10C20'),
         uri: createMockUri('/test/file.ts'),
-        positionAt: jest.fn((index: number) => createMockPosition(0, index)),
+        positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
@@ -178,7 +178,7 @@ describe('RangeLinkDocumentProvider', () => {
       const document = createMockDocument({
         getText: createMockText('First: src/a.ts#L1 and second: src/b.ts#L2-L3'),
         uri: createMockUri('/test/file.ts'),
-        positionAt: jest.fn((index: number) => createMockPosition(0, index)),
+        positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
@@ -198,7 +198,7 @@ describe('RangeLinkDocumentProvider', () => {
       const document = createMockDocument({
         getText: createMockText('Invalid: src/file.ts#L999999'),
         uri: createMockUri('/test/file.ts'),
-        positionAt: jest.fn((index: number) => createMockPosition(0, index)),
+        positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
@@ -214,7 +214,7 @@ describe('RangeLinkDocumentProvider', () => {
       const document = createMockDocument({
         getText: createMockText(''),
         uri: createMockUri('/test/file.ts'),
-        positionAt: jest.fn((index: number) => createMockPosition(0, index)),
+        positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
@@ -226,7 +226,7 @@ describe('RangeLinkDocumentProvider', () => {
       const document = createMockDocument({
         getText: createMockText('src/a.ts#L1 src/b.ts#L2 src/c.ts#L3'),
         uri: createMockUri('/test/file.ts'),
-        positionAt: jest.fn((index: number) => createMockPosition(0, index)),
+        positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken(true);
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
@@ -248,7 +248,7 @@ describe('RangeLinkDocumentProvider', () => {
       const document = createMockDocument({
         getText: createMockText('src/file.ts#L10'),
         uri: createMockUri('/test/file.ts'),
-        positionAt: jest.fn((index: number) => createMockPosition(0, index)),
+        positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
