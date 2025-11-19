@@ -513,7 +513,11 @@ describe('TextEditorDestination', () => {
       (mockVscode.workspace.asRelativePath as jest.Mock).mockReturnValue('Untitled-1');
 
       // Create new destination with untitled editor
-      const untitledDestination = new TextEditorDestination(untitledEditor, mockAdapter, mockLogger);
+      const untitledDestination = new TextEditorDestination(
+        untitledEditor,
+        mockAdapter,
+        mockLogger,
+      );
 
       const message = untitledDestination.getJumpSuccessMessage();
 

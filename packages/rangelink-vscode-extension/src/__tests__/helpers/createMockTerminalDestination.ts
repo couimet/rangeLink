@@ -30,7 +30,9 @@ export const createMockTerminalDestination = (overrides?: Partial<any>): any => 
     displayName: 'Terminal',
     resourceName: defaultResourceName,
     getLoggingDetails: jest.fn().mockReturnValue({ terminalName: defaultResourceName }),
-    getJumpSuccessMessage: jest.fn().mockReturnValue(`✓ Focused Terminal: "${defaultResourceName}"`),
+    getJumpSuccessMessage: jest
+      .fn()
+      .mockReturnValue(`✓ Focused Terminal: "${defaultResourceName}"`),
     // TerminalDestination-specific methods
     setTerminal: jest.fn(),
     ...overrides,

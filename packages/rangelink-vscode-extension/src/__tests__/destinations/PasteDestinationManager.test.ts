@@ -905,7 +905,10 @@ describe('PasteDestinationManager', () => {
       it('should unbind old destination and bind new one when user confirms', async () => {
         // Setup: Create mock destinations
         const terminalDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
-        const textEditorDest = createMockDestinationForTest('text-editor', 'Text Editor ("file.ts")');
+        const textEditorDest = createMockDestinationForTest(
+          'text-editor',
+          'Text Editor ("file.ts")',
+        );
 
         // Mock factory to return destinations
         mockFactoryForSmartBind.create.mockImplementation((options) => {
@@ -972,7 +975,10 @@ describe('PasteDestinationManager', () => {
       it('should keep current binding when user cancels confirmation', async () => {
         // Setup: Create mock destinations
         const terminalDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
-        const textEditorDest = createMockDestinationForTest('text-editor', 'Text Editor ("file.ts")');
+        const textEditorDest = createMockDestinationForTest(
+          'text-editor',
+          'Text Editor ("file.ts")',
+        );
 
         mockFactoryForSmartBind.create.mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
@@ -1097,7 +1103,10 @@ describe('PasteDestinationManager', () => {
       it('should keep current binding when user presses Esc', async () => {
         // Setup: Create mock destinations
         const terminalDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
-        const textEditorDest = createMockDestinationForTest('text-editor', 'Text Editor ("file.ts")');
+        const textEditorDest = createMockDestinationForTest(
+          'text-editor',
+          'Text Editor ("file.ts")',
+        );
 
         mockFactoryForSmartBind.create.mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
