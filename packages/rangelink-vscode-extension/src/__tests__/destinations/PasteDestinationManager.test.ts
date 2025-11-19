@@ -139,6 +139,7 @@ describe('PasteDestinationManager', () => {
         name: 'bash',
         sendText: jest.fn(),
         show: jest.fn(),
+        processId: Promise.resolve(12345),
       } as unknown as vscode.Terminal;
     });
 
@@ -150,7 +151,7 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(true);
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
-        '✓ RangeLink bound to bash',
+        '✓ RangeLink bound to Terminal (bash)',
         3000,
       );
     });
@@ -170,19 +171,33 @@ describe('PasteDestinationManager', () => {
 
     it('should show info message when binding same terminal twice', async () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+
+      // Create manager with a fresh factory that we can control
+      const controlledFactory = new DestinationFactory(mockAdapter, mockLogger);
+      const controlledManager = new PasteDestinationManager(
+        mockContext,
+        controlledFactory,
+        mockAdapter,
+        mockLogger,
+      );
+
+      // First bind
+      await controlledManager.bind('terminal');
 
       formatMessageSpy.mockClear();
+
       // Try binding again to same destination
-      const result = await manager.bind('terminal');
+      const result = await controlledManager.bind('terminal');
 
       expect(result).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
-        destinationName: 'Terminal',
+        destinationName: 'Terminal (bash)',
       });
       expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
-        'RangeLink: Already bound to Terminal',
+        'RangeLink: Already bound to Terminal (bash)',
       );
+
+      controlledManager.dispose();
     });
 
     it('should handle unnamed terminal', async () => {
@@ -190,6 +205,7 @@ describe('PasteDestinationManager', () => {
         name: undefined,
         sendText: jest.fn(),
         show: jest.fn(),
+        processId: Promise.resolve(54321),
       } as unknown as vscode.Terminal;
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = unnamedTerminal;
@@ -348,7 +364,7 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expectQuickPickConfirmation(showQuickPickMock, {
-        currentDestination: 'Terminal',
+        currentDestination: 'Terminal (bash)',
         newDestination: 'Cursor AI Assistant',
       });
 
@@ -376,7 +392,7 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(false);
       expectQuickPickConfirmation(showQuickPickMock, {
         currentDestination: 'Cursor AI Assistant',
-        newDestination: 'Terminal',
+        newDestination: 'Terminal (bash)',
       });
 
       localManager.dispose();
@@ -398,7 +414,7 @@ describe('PasteDestinationManager', () => {
 
       expect(manager.isBound()).toBe(false);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
-        '✓ RangeLink unbound from Terminal',
+        '✓ RangeLink unbound from Terminal (bash)',
         2000,
       );
     });
@@ -458,10 +474,10 @@ describe('PasteDestinationManager', () => {
       mockChatDest = createMockDest('cursor-ai', 'Cursor AI Assistant', {});
 
       mockFactoryForSend = {
-        create: jest.fn().mockImplementation((type) => {
-          if (type === 'terminal') return mockTerminalDest;
-          if (type === 'cursor-ai') return mockChatDest;
-          throw new Error(`Unexpected type: ${type}`);
+        create: jest.fn().mockImplementation((options) => {
+          if (options.type === 'terminal') return mockTerminalDest;
+          if (options.type === 'cursor-ai') return mockChatDest;
+          throw new Error(`Unexpected type: ${options.type}`);
         }),
       } as unknown as jest.Mocked<DestinationFactory>;
 
@@ -758,7 +774,7 @@ describe('PasteDestinationManager', () => {
 
       expect(destination).toBeDefined();
       expect(destination?.id).toBe('terminal');
-      expect(destination?.displayName).toBe('Terminal');
+      expect(destination?.displayName).toBe('Terminal (bash)');
     });
 
     it('should return undefined when nothing bound', () => {
@@ -892,14 +908,14 @@ describe('PasteDestinationManager', () => {
     describe('Scenario 1: User confirms replacement', () => {
       it('should unbind old destination and bind new one when user confirms', async () => {
         // Setup: Create mock destinations
-        const terminalDest = createMockDestination('terminal', 'Terminal');
+        const terminalDest = createMockDestination('terminal', 'Terminal (TestTerminal)');
         const textEditorDest = createMockDestination('text-editor', 'Text Editor');
 
         // Mock factory to return destinations
-        mockFactoryForSmartBind.create.mockImplementation((type) => {
-          if (type === 'terminal') return terminalDest;
-          if (type === 'text-editor') return textEditorDest;
-          throw new Error(`Unexpected type: ${type}`);
+        mockFactoryForSmartBind.create.mockImplementation((options) => {
+          if (options.type === 'terminal') return terminalDest;
+          if (options.type === 'text-editor') return textEditorDest;
+          throw new Error(`Unexpected type: ${options.type}`);
         });
 
         // Mock QuickPick to confirm replacement
@@ -920,7 +936,7 @@ describe('PasteDestinationManager', () => {
 
         // Verify first bind toast (no replacement)
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink bound to TestTerminal',
+          '✓ RangeLink bound to Terminal (TestTerminal)',
           3000,
         );
 
@@ -939,7 +955,7 @@ describe('PasteDestinationManager', () => {
             expect.objectContaining({ label: 'No, keep current binding' }),
           ]),
           expect.objectContaining({
-            placeHolder: expect.stringContaining('Already bound to Terminal'),
+            placeHolder: expect.stringContaining('Already bound to Terminal (TestTerminal)'),
           }),
         );
 
@@ -959,13 +975,13 @@ describe('PasteDestinationManager', () => {
     describe('Scenario 2: User cancels replacement', () => {
       it('should keep current binding when user cancels confirmation', async () => {
         // Setup: Create mock destinations
-        const terminalDest = createMockDestination('terminal', 'Terminal');
+        const terminalDest = createMockDestination('terminal', 'Terminal (TestTerminal)');
         const textEditorDest = createMockDestination('text-editor', 'Text Editor');
 
-        mockFactoryForSmartBind.create.mockImplementation((type) => {
-          if (type === 'terminal') return terminalDest;
-          if (type === 'text-editor') return textEditorDest;
-          throw new Error(`Unexpected type: ${type}`);
+        mockFactoryForSmartBind.create.mockImplementation((options) => {
+          if (options.type === 'terminal') return terminalDest;
+          if (options.type === 'text-editor') return textEditorDest;
+          throw new Error(`Unexpected type: ${options.type}`);
         });
 
         // Mock QuickPick to cancel (user selects "No, keep current binding")
@@ -1008,8 +1024,19 @@ describe('PasteDestinationManager', () => {
     describe('Scenario 3: Prevent binding same destination twice', () => {
       it('should show info message when binding same destination', async () => {
         // Setup: Create mock terminal destination
-        const terminalDest = createMockDestination('terminal', 'Terminal');
-        mockFactoryForSmartBind.create.mockReturnValue(terminalDest);
+        const terminalDest = createMockDestination('terminal', 'Terminal (TestTerminal)');
+
+        // Mock equals() to return true when comparing instances of same terminal
+        let createdDestinations: any[] = [];
+        mockFactoryForSmartBind.create.mockImplementation((options) => {
+          const newDest = createMockDestination('terminal', 'Terminal (TestTerminal)');
+          // Make all terminal destinations equal to each other
+          (newDest.equals as jest.Mock).mockImplementation(async (other: any) => {
+            return other?.id === 'terminal';
+          });
+          createdDestinations.push(newDest);
+          return newDest;
+        });
 
         // Mock active terminal
         const mockVscode = mockAdapter.__getVscodeInstance();
@@ -1029,9 +1056,9 @@ describe('PasteDestinationManager', () => {
         // Assert: Bind failed
         expect(result).toBe(false);
 
-        // Assert: Info message shown (not error)
+        // Assert: Info message shown (not error) with actual terminal name
         expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
-          'RangeLink: Already bound to Terminal',
+          'RangeLink: Already bound to Terminal (TestTerminal)',
         );
 
         // Assert: QuickPick NOT shown (no confirmation needed)
@@ -1045,7 +1072,7 @@ describe('PasteDestinationManager', () => {
     describe('Scenario 4: Normal bind without existing binding', () => {
       it('should show standard toast without replacement prefix', async () => {
         // Setup: Create mock terminal destination
-        const terminalDest = createMockDestination('terminal', 'Terminal');
+        const terminalDest = createMockDestination('terminal', 'Terminal (TestTerminal)');
         mockFactoryForSmartBind.create.mockReturnValue(terminalDest);
 
         // Mock active terminal
@@ -1061,7 +1088,7 @@ describe('PasteDestinationManager', () => {
 
         // Assert: Standard toast shown (no "Unbound..." prefix)
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink bound to TestTerminal',
+          '✓ RangeLink bound to Terminal (TestTerminal)',
           3000,
         );
 
@@ -1073,13 +1100,13 @@ describe('PasteDestinationManager', () => {
     describe('Scenario 5: QuickPick cancellation (Esc key)', () => {
       it('should keep current binding when user presses Esc', async () => {
         // Setup: Create mock destinations
-        const terminalDest = createMockDestination('terminal', 'Terminal');
+        const terminalDest = createMockDestination('terminal', 'Terminal (TestTerminal)');
         const textEditorDest = createMockDestination('text-editor', 'Text Editor');
 
-        mockFactoryForSmartBind.create.mockImplementation((type) => {
-          if (type === 'terminal') return terminalDest;
-          if (type === 'text-editor') return textEditorDest;
-          throw new Error(`Unexpected type: ${type}`);
+        mockFactoryForSmartBind.create.mockImplementation((options) => {
+          if (options.type === 'terminal') return terminalDest;
+          if (options.type === 'text-editor') return textEditorDest;
+          throw new Error(`Unexpected type: ${options.type}`);
         });
 
         // Mock QuickPick to return undefined (Esc key pressed)

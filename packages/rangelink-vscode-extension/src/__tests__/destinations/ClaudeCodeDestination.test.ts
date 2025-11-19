@@ -432,6 +432,33 @@ describe('ClaudeCodeDestination', () => {
     });
   });
 
+  describe('equals()', () => {
+    it('should return true when comparing same type (claude-code)', async () => {
+      const otherDestination = new ClaudeCodeDestination(mockAdapter, mockLogger);
+
+      const result = await destination.equals(otherDestination);
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false when comparing with undefined', async () => {
+      const result = await destination.equals(undefined);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when comparing with different destination type', async () => {
+      const cursorAIDest = {
+        id: 'cursor-ai',
+        displayName: 'Cursor AI Assistant',
+      } as any;
+
+      const result = await destination.equals(cursorAIDest);
+
+      expect(result).toBe(false);
+    });
+  });
+
   describe('getJumpSuccessMessage()', () => {
     it('should return formatted message for status bar', () => {
       const message = destination.getJumpSuccessMessage();

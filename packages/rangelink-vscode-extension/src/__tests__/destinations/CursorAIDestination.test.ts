@@ -551,6 +551,33 @@ describe('CursorAIDestination', () => {
     });
   });
 
+  describe('equals()', () => {
+    it('should return true when comparing same type (cursor-ai)', async () => {
+      const otherDestination = new CursorAIDestination(mockAdapter, mockLogger);
+
+      const result = await destination.equals(otherDestination);
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false when comparing with undefined', async () => {
+      const result = await destination.equals(undefined);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when comparing with different destination type', async () => {
+      const claudeCodeDest = {
+        id: 'claude-code',
+        displayName: 'Claude Code Chat',
+      } as any;
+
+      const result = await destination.equals(claudeCodeDest);
+
+      expect(result).toBe(false);
+    });
+  });
+
   describe('getJumpSuccessMessage()', () => {
     it('should call formatMessage with STATUS_BAR_JUMP_SUCCESS_CURSOR_AI', () => {
       const formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
