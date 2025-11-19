@@ -41,6 +41,3 @@ export { simulateFileOutsideWorkspace } from './simulateFileOutsideWorkspace';
 
 // Export complex utilities and types from mockVSCode
 export * from './mockVSCode';
-
-// Export destination test helpers
-export * from './destinationTestHelpers';

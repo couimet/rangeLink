@@ -2,6 +2,8 @@
  * Create a mock TextEditorDestination for testing
  */
 
+import type { TextEditorDestination } from '../../destinations/TextEditorDestination';
+
 import { createMockPasteDestination } from './createMockPasteDestination';
 
 /**
@@ -13,10 +15,15 @@ import { createMockPasteDestination } from './createMockPasteDestination';
  * - getEditorDisplayName(): string | undefined
  * - getEditorPath(): string | undefined
  *
+ * Note: Override parameter uses `any` for test flexibility (allows overriding readonly properties),
+ * but return type is properly typed for type safety in test code.
+ *
  * @param overrides - Optional partial object to override default properties/methods
  * @returns Mock text editor destination with jest.fn() implementations
  */
-export const createMockTextEditorDestination = (overrides?: Partial<any>): any =>
+export const createMockTextEditorDestination = (
+  overrides?: Partial<any>,
+): jest.Mocked<TextEditorDestination> =>
   createMockPasteDestination({
     id: 'text-editor',
     displayName: 'Text Editor',
@@ -30,4 +37,4 @@ export const createMockTextEditorDestination = (overrides?: Partial<any>): any =
     getEditorDisplayName: jest.fn().mockReturnValue('src/file.ts'),
     getEditorPath: jest.fn().mockReturnValue('/workspace/src/file.ts'),
     ...overrides,
-  });
+  }) as jest.Mocked<TextEditorDestination>;

@@ -10,15 +10,21 @@ import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
 import { createMockAsRelativePath } from './helpers/createMockAsRelativePath';
+import { createMockClaudeCodeDestination } from './helpers/createMockClaudeCodeDestination';
+import { createMockCursorAIDestination } from './helpers/createMockCursorAIDestination';
 import { createMockDestinationManager } from './helpers/createMockDestinationManager';
 import { createMockDocument } from './helpers/createMockDocument';
 import { createMockEditor } from './helpers/createMockEditor';
+import { createMockFormattedLink } from './helpers/createMockFormattedLink';
 import { createMockGetWorkspaceFolder } from './helpers/createMockGetWorkspaceFolder';
-import { createMockDestination, createMockFormattedLink } from './helpers/destinationTestHelpers';
+import { createMockPasteDestination } from './helpers/createMockPasteDestination';
+import { createMockTerminalDestination } from './helpers/createMockTerminalDestination';
+import { createMockTextEditorDestination } from './helpers/createMockTextEditorDestination';
 import { createMockVscodeAdapter } from './helpers/mockVSCode';
 
 let service: RangeLinkService;
 let mockVscodeAdapter: VscodeAdapter;
+let mockDestinationManager: PasteDestinationManager;
 const delimiters: DelimiterConfig = {
   line: 'L',
   position: 'C',
@@ -28,8 +34,6 @@ const delimiters: DelimiterConfig = {
 
 describe('RangeLinkService', () => {
   describe('copyToClipboardAndDestination', () => {
-    let mockDestinationManager: PasteDestinationManager;
-
     beforeEach(() => {
       // Create mock IDE adapter
       mockVscodeAdapter = {
@@ -42,21 +46,16 @@ describe('RangeLinkService', () => {
       } as any;
 
       // Create mock destination manager
-      mockDestinationManager = {
-        isBound: jest.fn().mockReturnValue(false),
-        sendToDestination: jest.fn().mockResolvedValue(true),
-        getBoundDestination: jest.fn(),
-      } as unknown as PasteDestinationManager;
+      mockDestinationManager = createMockDestinationManager({
+        isBound: false,
+        sendToDestinationResult: true,
+      });
 
       // Create service
       service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
     });
 
     describe('when no destination is bound', () => {
-      beforeEach(() => {
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
-      });
-
       it('should copy link to clipboard', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
@@ -119,11 +118,13 @@ describe('RangeLinkService', () => {
 
     describe('when destination is bound and paste succeeds', () => {
       beforeEach(() => {
-        const mockDestination = createMockDestination({ displayName: 'bash' });
-
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
-        (mockDestinationManager.sendToDestination as jest.Mock).mockResolvedValue(true);
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
+        const mockDestination = createMockTerminalDestination({ displayName: 'bash' });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
 
       it('should copy link to clipboard', async () => {
@@ -158,10 +159,13 @@ describe('RangeLinkService', () => {
       });
 
       it('should use destination displayName from getBoundDestination()', async () => {
-        const customDestination = createMockDestination({ displayName: 'Terminal' });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
-          customDestination,
-        );
+        const customDestination = createMockTerminalDestination({ displayName: 'Terminal' });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendToDestinationResult: true,
+          boundDestination: customDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
 
@@ -171,12 +175,15 @@ describe('RangeLinkService', () => {
       });
 
       it('should use "destination" as fallback when destination has no displayName', async () => {
-        const unknownDestination = createMockDestination();
+        const unknownDestination = createMockPasteDestination();
         // Remove displayName to test fallback
         delete (unknownDestination as any).displayName;
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
-          unknownDestination,
-        );
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendToDestinationResult: true,
+          boundDestination: unknownDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
 
@@ -212,13 +219,16 @@ describe('RangeLinkService', () => {
     describe('when destination is bound but paste fails', () => {
       beforeEach(() => {
         // Use generic destination for backward compatibility tests
-        const genericDest = createMockDestination({
+        const genericDest = createMockPasteDestination({
           id: 'generic' as any,
           displayName: 'Some Destination',
         });
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(genericDest);
-        (mockDestinationManager.sendToDestination as jest.Mock).mockResolvedValue(false);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendToDestinationResult: false,
+          boundDestination: genericDest,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
 
       it('should copy link to clipboard', async () => {
@@ -268,17 +278,24 @@ describe('RangeLinkService', () => {
 
     describe('paste failure with different destination types', () => {
       beforeEach(() => {
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
-        (mockDestinationManager.sendToDestination as jest.Mock).mockResolvedValue(false);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendToDestinationResult: false,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
 
       describe('text-editor destination', () => {
         it('should show text-editor-specific warning about hidden tabs', async () => {
-          const textEditorDest = createMockDestination({
-            id: 'text-editor' as any,
+          const textEditorDest = createMockTextEditorDestination({
             displayName: 'Text Editor',
           });
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(textEditorDest);
+          mockDestinationManager = createMockDestinationManager({
+            isBound: true,
+            sendToDestinationResult: false,
+            boundDestination: textEditorDest,
+          });
+          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
           await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
 
@@ -290,11 +307,15 @@ describe('RangeLinkService', () => {
 
       describe('terminal destination', () => {
         it('should NOT show text-editor-specific warning', async () => {
-          const terminalDest = createMockDestination({
-            id: 'terminal' as any,
+          const terminalDest = createMockTerminalDestination({
             displayName: 'Terminal',
           });
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(terminalDest);
+          mockDestinationManager = createMockDestinationManager({
+            isBound: true,
+            sendToDestinationResult: false,
+            boundDestination: terminalDest,
+          });
+          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
           await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
 
@@ -304,11 +325,15 @@ describe('RangeLinkService', () => {
         });
 
         it('should show terminal-specific guidance', async () => {
-          const terminalDest = createMockDestination({
-            id: 'terminal' as any,
+          const terminalDest = createMockTerminalDestination({
             displayName: 'Terminal',
           });
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(terminalDest);
+          mockDestinationManager = createMockDestinationManager({
+            isBound: true,
+            sendToDestinationResult: false,
+            boundDestination: terminalDest,
+          });
+          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
           await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
 
@@ -319,11 +344,15 @@ describe('RangeLinkService', () => {
 
       describe('claude-code destination', () => {
         it('should NOT show text-editor-specific warning', async () => {
-          const claudeCodeDest = createMockDestination({
-            id: 'claude-code' as any,
+          const claudeCodeDest = createMockClaudeCodeDestination({
             displayName: 'Claude Code Chat',
           });
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(claudeCodeDest);
+          mockDestinationManager = createMockDestinationManager({
+            isBound: true,
+            sendToDestinationResult: false,
+            boundDestination: claudeCodeDest,
+          });
+          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
           await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
 
@@ -333,11 +362,15 @@ describe('RangeLinkService', () => {
         });
 
         it('should show claude-code-specific guidance', async () => {
-          const claudeCodeDest = createMockDestination({
-            id: 'claude-code' as any,
+          const claudeCodeDest = createMockClaudeCodeDestination({
             displayName: 'Claude Code Chat',
           });
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(claudeCodeDest);
+          mockDestinationManager = createMockDestinationManager({
+            isBound: true,
+            sendToDestinationResult: false,
+            boundDestination: claudeCodeDest,
+          });
+          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
           await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
 
@@ -348,11 +381,15 @@ describe('RangeLinkService', () => {
 
       describe('cursor-ai destination', () => {
         it('should NOT show text-editor-specific warning', async () => {
-          const cursorAIDest = createMockDestination({
-            id: 'cursor-ai' as any,
+          const cursorAIDest = createMockCursorAIDestination({
             displayName: 'Cursor AI Assistant',
           });
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(cursorAIDest);
+          mockDestinationManager = createMockDestinationManager({
+            isBound: true,
+            sendToDestinationResult: false,
+            boundDestination: cursorAIDest,
+          });
+          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
           await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
 
@@ -362,11 +399,15 @@ describe('RangeLinkService', () => {
         });
 
         it('should show cursor-ai-specific guidance', async () => {
-          const cursorAIDest = createMockDestination({
-            id: 'cursor-ai' as any,
+          const cursorAIDest = createMockCursorAIDestination({
             displayName: 'Cursor AI Assistant',
           });
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(cursorAIDest);
+          mockDestinationManager = createMockDestinationManager({
+            isBound: true,
+            sendToDestinationResult: false,
+            boundDestination: cursorAIDest,
+          });
+          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
           await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
 
@@ -377,11 +418,16 @@ describe('RangeLinkService', () => {
 
       describe('unknown destination type', () => {
         it('should show generic fallback message with displayName', async () => {
-          const unknownDest = createMockDestination({
+          const unknownDest = createMockPasteDestination({
             id: 'some-future-dest' as any,
             displayName: 'Future Destination',
           });
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(unknownDest);
+          mockDestinationManager = createMockDestinationManager({
+            isBound: true,
+            sendToDestinationResult: false,
+            boundDestination: unknownDest,
+          });
+          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
           await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
 
@@ -392,10 +438,6 @@ describe('RangeLinkService', () => {
     });
 
     describe('edge cases', () => {
-      beforeEach(() => {
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
-      });
-
       it('should handle empty link string', async () => {
         const formattedLink = createMockFormattedLink('');
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
@@ -433,10 +475,6 @@ describe('RangeLinkService', () => {
     });
 
     describe('timeout parameter', () => {
-      beforeEach(() => {
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
-      });
-
       it('should pass 2000ms timeout to setStatusBarMessage', async () => {
         const formattedLink = createMockFormattedLink('src/file.ts#L1');
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
@@ -445,10 +483,13 @@ describe('RangeLinkService', () => {
       });
 
       it('should pass 2000ms timeout when destination is bound and succeeds', async () => {
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
-        (mockDestinationManager.sendToDestination as jest.Mock).mockReturnValue(true);
-        const mockDestination = createMockDestination({ displayName: 'bash' });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
+        const mockDestination = createMockTerminalDestination();
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         const formattedLink = createMockFormattedLink('src/file.ts#L1');
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
@@ -461,7 +502,6 @@ describe('RangeLinkService', () => {
       let formatMessageSpy: jest.SpyInstance;
 
       beforeEach(() => {
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
         formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
       });
 
@@ -527,7 +567,6 @@ describe('RangeLinkService', () => {
   });
 
   describe('pasteSelectedTextToDestination', () => {
-    let mockDestinationManager: PasteDestinationManager;
     let mockEditor: any;
 
     beforeEach(() => {
@@ -556,11 +595,10 @@ describe('RangeLinkService', () => {
       } as any;
 
       // Create mock destination manager
-      mockDestinationManager = {
-        isBound: jest.fn().mockReturnValue(false),
-        sendTextToDestination: jest.fn().mockResolvedValue(true),
-        getBoundDestination: jest.fn(),
-      } as unknown as PasteDestinationManager;
+      mockDestinationManager = createMockDestinationManager({
+        isBound: false,
+        sendTextToDestinationResult: true,
+      });
 
       // Create service
       service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -640,10 +678,6 @@ describe('RangeLinkService', () => {
       });
 
       describe('when no destination bound', () => {
-        beforeEach(() => {
-          (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
-        });
-
         it('should copy selected text to clipboard', async () => {
           await service.pasteSelectedTextToDestination();
 
@@ -669,14 +703,15 @@ describe('RangeLinkService', () => {
         let mockDestination: any;
 
         beforeEach(() => {
-          mockDestination = createMockDestination({
-            id: 'terminal' as any,
+          mockDestination = createMockTerminalDestination({
             displayName: 'Terminal',
           });
-          (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
-            mockDestination,
-          );
+          mockDestinationManager = createMockDestinationManager({
+            isBound: true,
+            sendTextToDestinationResult: true,
+            boundDestination: mockDestination,
+          });
+          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
         });
 
         it('should copy text to clipboard first (always available fallback)', async () => {
@@ -694,8 +729,6 @@ describe('RangeLinkService', () => {
         });
 
         it('should show success message with destination name', async () => {
-          (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(true);
-
           await service.pasteSelectedTextToDestination();
 
           expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
@@ -704,7 +737,12 @@ describe('RangeLinkService', () => {
         });
 
         it('should show warning when paste fails', async () => {
-          (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(false);
+          mockDestinationManager = createMockDestinationManager({
+            isBound: true,
+            sendTextToDestinationResult: false,
+            boundDestination: mockDestination,
+          });
+          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
           await service.pasteSelectedTextToDestination();
 
@@ -739,12 +777,15 @@ describe('RangeLinkService', () => {
       });
 
       it('should send concatenated text to destination', async () => {
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
-        const mockDestination = createMockDestination({
-          id: 'terminal' as any,
+        const mockDestination = createMockTerminalDestination({
           displayName: 'Terminal',
         });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -781,12 +822,15 @@ describe('RangeLinkService', () => {
       });
 
       it('should send only non-empty selections to destination', async () => {
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
-        const mockDestination = createMockDestination({
-          id: 'terminal' as any,
+        const mockDestination = createMockTerminalDestination({
           displayName: 'Terminal',
         });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -845,16 +889,18 @@ describe('RangeLinkService', () => {
           _mockText: 'test content',
         };
         mockEditor.selections = [selection];
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
       });
 
       it('should show destination displayName in success message (Terminal)', async () => {
-        const mockDestination = createMockDestination({
-          id: 'terminal' as any,
+        const mockDestination = createMockTerminalDestination({
           displayName: 'Terminal',
         });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
-        (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(true);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -864,12 +910,15 @@ describe('RangeLinkService', () => {
       });
 
       it('should show destination displayName in success message (Text Editor)', async () => {
-        const mockDestination = createMockDestination({
-          id: 'text-editor' as any,
+        const mockDestination = createMockTextEditorDestination({
           displayName: 'Text Editor',
         });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
-        (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(true);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -879,12 +928,15 @@ describe('RangeLinkService', () => {
       });
 
       it('should show destination displayName in success message (Claude Code)', async () => {
-        const mockDestination = createMockDestination({
-          id: 'claude-code' as any,
+        const mockDestination = createMockClaudeCodeDestination({
           displayName: 'Claude Code Chat',
         });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
-        (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(true);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -894,12 +946,15 @@ describe('RangeLinkService', () => {
       });
 
       it('should show destination displayName in success message (Cursor AI)', async () => {
-        const mockDestination = createMockDestination({
-          id: 'cursor-ai' as any,
+        const mockDestination = createMockCursorAIDestination({
           displayName: 'Cursor AI Assistant',
         });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
-        (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(true);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -916,17 +971,19 @@ describe('RangeLinkService', () => {
           _mockText: 'test content',
         };
         mockEditor.selections = [selection];
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
       });
 
       it('should show warning when paste fails', async () => {
-        const mockDestination = createMockDestination({
-          id: 'terminal' as any,
+        const mockDestination = createMockTerminalDestination({
           displayName: 'Terminal',
           pasteContent: jest.fn().mockResolvedValue(false),
         });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
-        (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(false);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: false,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -934,13 +991,16 @@ describe('RangeLinkService', () => {
       });
 
       it('should include terminal guidance in failure message for terminal destination', async () => {
-        const mockDestination = createMockDestination({
-          id: 'terminal' as any,
+        const mockDestination = createMockTerminalDestination({
           displayName: 'Terminal',
           pasteContent: jest.fn().mockResolvedValue(false),
         });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
-        (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(false);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: false,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -949,8 +1009,7 @@ describe('RangeLinkService', () => {
       });
 
       it('should include text editor guidance in failure message for text editor destination', async () => {
-        const mockDestination: any = createMockDestination({
-          id: 'text-editor' as any,
+        const mockDestination: any = createMockTextEditorDestination({
           displayName: 'Text Editor',
           pasteContent: jest.fn().mockResolvedValue(false),
         });
@@ -958,8 +1017,12 @@ describe('RangeLinkService', () => {
         mockDestination.getBoundDocumentUri = jest
           .fn()
           .mockReturnValue({ path: '/path/to/file.txt' });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
-        (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(false);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: false,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -978,21 +1041,21 @@ describe('RangeLinkService', () => {
       });
 
       it('should pass 2000ms timeout to setStatusBarMessage (no destination)', async () => {
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(false);
-
         await service.pasteSelectedTextToDestination();
 
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String));
       });
 
       it('should pass 2000ms timeout to setStatusBarMessage (destination success)', async () => {
-        (mockDestinationManager.isBound as jest.Mock).mockReturnValue(true);
-        const mockDestination = createMockDestination({
-          id: 'terminal' as any,
+        const mockDestination = createMockTerminalDestination({
           displayName: 'Terminal',
         });
-        (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
-        (mockDestinationManager.sendTextToDestination as jest.Mock).mockResolvedValue(true);
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -1002,8 +1065,6 @@ describe('RangeLinkService', () => {
   });
 
   describe('validateSelectionsAndShowError', () => {
-    let mockDestinationManager: PasteDestinationManager;
-
     beforeEach(() => {
       // Create mock IDE adapter with writable activeTextEditor
       mockVscodeAdapter = {
@@ -1017,9 +1078,9 @@ describe('RangeLinkService', () => {
       });
 
       // Create mock destination manager
-      mockDestinationManager = {
-        isBound: jest.fn().mockReturnValue(false),
-      } as unknown as PasteDestinationManager;
+      mockDestinationManager = createMockDestinationManager({
+        isBound: false,
+      });
 
       // Create service
       service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);

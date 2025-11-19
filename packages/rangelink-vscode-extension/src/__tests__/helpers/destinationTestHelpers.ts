@@ -3,76 +3,13 @@
  *
  * Provides reusable test patterns to ensure all destinations follow the same
  * contract and behavior. Reduces duplication across destination test files.
- *
- * NOTE: Individual mock factories have been extracted to separate files for better
- * discoverability. This file now serves as a barrel export for backward compatibility.
  */
 
 import type { Logger } from 'barebone-logger';
 
-import type { DestinationType, PasteDestination } from '../../destinations/PasteDestination';
+import type { PasteDestination } from '../../destinations/PasteDestination';
 
 import { createMockFormattedLink } from './createMockFormattedLink';
-
-// Re-export individual mock factories
-export { createMockFormattedLink } from './createMockFormattedLink';
-export { createMockPasteDestination } from './createMockPasteDestination';
-export { createMockTerminalDestination } from './createMockTerminalDestination';
-export { createMockTextEditorDestination } from './createMockTextEditorDestination';
-export { createMockCursorAIDestination } from './createMockCursorAIDestination';
-export { createMockClaudeCodeDestination } from './createMockClaudeCodeDestination';
-
-// Backward compatibility alias (deprecated - use createMockPasteDestination instead)
-export { createMockPasteDestination as createMockDestination } from './createMockPasteDestination';
-
-/**
- * Test interface compliance for a destination
- *
- * Verifies that a destination has the required properties:
- * - id (DestinationType)
- * - displayName (string)
- * - isAvailable (async function)
- * - pasteLink (async function)
- *
- * @param destination - The destination instance to test
- * @param expectedId - Expected id value
- * @param expectedDisplayName - Expected displayName value
- */
-export const testDestinationInterfaceCompliance = (
-  destination: PasteDestination,
-  expectedId: DestinationType,
-  expectedDisplayName: string,
-): void => {
-  describe('Interface compliance', () => {
-    it('should have correct id', () => {
-      expect(destination.id).toBe(expectedId);
-    });
-
-    it('should have correct displayName', () => {
-      expect(destination.displayName).toBe(expectedDisplayName);
-    });
-
-    it('should have isAvailable method', () => {
-      expect(typeof destination.isAvailable).toBe('function');
-    });
-
-    it('should have pasteLink method', () => {
-      expect(typeof destination.pasteLink).toBe('function');
-    });
-
-    it('should have async isAvailable method', async () => {
-      const result = destination.isAvailable();
-      expect(result).toBeInstanceOf(Promise);
-      await result; // Wait for promise to resolve
-    });
-
-    it('should have async pasteLink method', async () => {
-      const result = destination.pasteLink(createMockFormattedLink('test'));
-      expect(result).toBeInstanceOf(Promise);
-      await result; // Wait for promise to resolve
-    });
-  });
-};
 
 /**
  * Test logging behavior for a destination

@@ -25,16 +25,14 @@ import { PasteDestinationManager } from '../../destinations/PasteDestinationMana
 import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
 import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
+import { createMockClaudeCodeDestination } from '../helpers/createMockClaudeCodeDestination';
+import { createMockCursorAIDestination } from '../helpers/createMockCursorAIDestination';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
+import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
+import { createMockTerminalDestination } from '../helpers/createMockTerminalDestination';
+import { createMockTextEditorDestination } from '../helpers/createMockTextEditorDestination';
 import { createMockUriInstance } from '../helpers/createMockUriInstance';
-import {
-  createMockClaudeCodeDestination,
-  createMockCursorAIDestination,
-  createMockFormattedLink,
-  createMockTerminalDestination,
-  createMockTextEditorDestination,
-} from '../helpers/destinationTestHelpers';
 import {
   createMockVscodeAdapter,
   type MockVscodeOptions,

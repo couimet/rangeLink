@@ -13,11 +13,11 @@ import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
 import { configureWorkspaceMocks } from '../helpers/configureWorkspaceMocks';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
+import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockTab } from '../helpers/createMockTab';
 import { createMockTabGroup } from '../helpers/createMockTabGroup';
 import { createMockTabGroups } from '../helpers/createMockTabGroups';
 import { createMockUriInstance } from '../helpers/createMockUriInstance';
-import { createMockFormattedLink } from '../helpers/destinationTestHelpers';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 import { simulateClosedEditor } from '../helpers/simulateClosedEditor';
 import { simulateFileOutsideWorkspace } from '../helpers/simulateFileOutsideWorkspace';
@@ -56,12 +56,12 @@ describe('TextEditorDestination', () => {
   });
 
   describe('Interface compliance', () => {
-    it('should implement PasteDestination interface', () => {
+    it('should have correct id', () => {
       expect(destination.id).toBe('text-editor');
+    });
+
+    it('should have correct displayName', () => {
       expect(destination.displayName).toBe('Text Editor');
-      expect(typeof destination.pasteLink).toBe('function');
-      expect(typeof destination.isEligibleForPasteLink).toBe('function');
-      expect(typeof destination.getUserInstruction).toBe('function');
     });
   });
 

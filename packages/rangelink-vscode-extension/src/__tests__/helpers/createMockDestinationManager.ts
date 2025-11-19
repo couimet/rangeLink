@@ -17,6 +17,8 @@ export interface MockDestinationManagerOptions {
   boundDestination?: PasteDestination;
   /** Mock return value for sendToDestination (default: false) */
   sendToDestinationResult?: boolean;
+  /** Mock return value for sendTextToDestination (default: false) */
+  sendTextToDestinationResult?: boolean;
 }
 
 /**
@@ -32,11 +34,13 @@ export const createMockDestinationManager = (
     isBound = false,
     boundDestination = undefined,
     sendToDestinationResult = false,
+    sendTextToDestinationResult = false,
   } = options;
 
   return {
     isBound: jest.fn().mockReturnValue(isBound),
     sendToDestination: jest.fn().mockResolvedValue(sendToDestinationResult),
+    sendTextToDestination: jest.fn().mockResolvedValue(sendTextToDestinationResult),
     getBoundDestination: jest.fn().mockReturnValue(boundDestination),
     bind: jest.fn().mockResolvedValue(false),
     unbind: jest.fn(),
