@@ -18,17 +18,17 @@ import { createMockDestination, createMockFormattedLink } from './helpers/destin
 import { createMockVscodeAdapter } from './helpers/mockVSCode';
 
 let service: RangeLinkService;
+const delimiters: DelimiterConfig = {
+  line: 'L',
+  position: 'C',
+  hash: '#',
+  range: '-',
+};
 
 describe('RangeLinkService', () => {
   describe('copyToClipboardAndDestination', () => {
     let mockIdeAdapter: VscodeAdapter;
     let mockDestinationManager: PasteDestinationManager;
-    const delimiters: DelimiterConfig = {
-      line: 'L',
-      position: 'C',
-      hash: '#',
-      range: '-',
-    };
 
     beforeEach(() => {
       // Create mock IDE adapter
@@ -530,12 +530,6 @@ describe('RangeLinkService', () => {
     let mockIdeAdapter: VscodeAdapter;
     let mockDestinationManager: PasteDestinationManager;
     let mockEditor: any;
-    const delimiters: DelimiterConfig = {
-      line: 'L',
-      position: 'C',
-      hash: '#',
-      range: '-',
-    };
 
     beforeEach(() => {
       // Create mock editor with selections
@@ -1011,12 +1005,6 @@ describe('RangeLinkService', () => {
   describe('validateSelectionsAndShowError', () => {
     let mockIdeAdapter: VscodeAdapter;
     let mockDestinationManager: PasteDestinationManager;
-    const delimiters: DelimiterConfig = {
-      line: 'L',
-      position: 'C',
-      hash: '#',
-      range: '-',
-    };
 
     beforeEach(() => {
       // Create mock IDE adapter with writable activeTextEditor
