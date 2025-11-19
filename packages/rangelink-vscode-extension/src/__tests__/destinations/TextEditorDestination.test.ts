@@ -111,9 +111,6 @@ describe('TextEditorDestination', () => {
       );
     });
 
-    // Note: Test removed - TextEditorDestination now requires editor at construction
-    // The "no editor bound" scenario is no longer possible with the new immutable design
-
     it('should return false when bound document not found in any tab group', async () => {
       // Empty tab groups - document not found
       const mockVscode = mockAdapter.__getVscodeInstance();
@@ -207,10 +204,6 @@ describe('TextEditorDestination', () => {
         'Bound document is not topmost in its tab group',
       );
     });
-
-    // Note: Test removed - visibleTextEditors check no longer needed
-    // TextEditorDestination now has editor bound at construction (immutable design)
-    // The editor object is guaranteed to be valid since it's required at construction time
 
     it('should return true and insert content when all validations pass', async () => {
       const testContent = 'selected text';
@@ -329,9 +322,6 @@ describe('TextEditorDestination', () => {
         editorPath: mockEditor.document.uri.toString(),
       });
     });
-
-    // Note: Test removed - TextEditorDestination now requires editor at construction
-    // The "no editor bound" scenario is no longer possible with the new immutable design
   });
 
   describe('focus()', () => {
@@ -357,13 +347,6 @@ describe('TextEditorDestination', () => {
       // Mock showTextDocument to resolve successfully
       jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
     });
-
-    // Note: Test removed - TextEditorDestination now requires editor at construction
-    // The "no editor bound" scenario is no longer possible with the new immutable design
-
-    // Note: Test removed - focus() no longer validates tab groups
-    // Focus always succeeds if editor is bound (editor is required at construction)
-    // Tab group validation only happens during paste operations
 
     it('should return true when focus succeeds', async () => {
       const result = await destination.focus();
@@ -412,10 +395,6 @@ describe('TextEditorDestination', () => {
         'Failed to focus text editor',
       );
     });
-
-    // Note: Test removed - validation failure scenarios are already tested above
-    // TextEditorDestination now requires editor at construction, so validation can only fail
-    // if the document is not found in tab groups (tested above)
   });
 
   describe('equals()', () => {
