@@ -169,7 +169,7 @@ export interface PasteDestination {
    *
    * Examples:
    * - Terminal: { terminalName: "bash" }
-   * - Text Editor: { editorDisplayName: "src/file.ts", editorPath: "/absolute/path" }
+   * - Text Editor: { editorName: "src/file.ts", editorPath: "/absolute/path" }
    * - AI Assistants: {} (no additional details needed)
    *
    * @returns Record with destination-specific logging details (empty object if none)

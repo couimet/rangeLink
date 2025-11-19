@@ -59,12 +59,12 @@ describe('TextEditorDestination', () => {
   });
 
   describe('Interface compliance', () => {
-    it('should implement PasteDestination interface', () => {
+    it('should have correct id', () => {
       expect(destination.id).toBe('text-editor');
-      expect(destination.displayName).toBe('src/file.ts');
-      expect(typeof destination.pasteLink).toBe('function');
-      expect(typeof destination.isEligibleForPasteLink).toBe('function');
-      expect(typeof destination.getUserInstruction).toBe('function');
+    });
+
+    it('should have correct displayName', () => {
+      expect(destination.displayName).toBe('Text Editor ("src/file.ts")');
     });
   });
 
@@ -314,12 +314,18 @@ describe('TextEditorDestination', () => {
     });
   });
 
+  describe('resourceName getter', () => {
+    it('should return raw editor name from bound editor', () => {
+      expect(destination.resourceName).toBe('src/file.ts');
+    });
+  });
+
   describe('getLoggingDetails()', () => {
-    it('should return editor display name and path', () => {
+    it('should return editor resource name and path', () => {
       const details = destination.getLoggingDetails();
 
       expect(details).toStrictEqual({
-        editorDisplayName: 'src/file.ts',
+        editorName: 'src/file.ts',
         editorPath: mockEditor.document.uri.toString(),
       });
     });
@@ -488,7 +494,7 @@ describe('TextEditorDestination', () => {
     it('should return formatted message with editor display name', () => {
       const message = destination.getJumpSuccessMessage();
 
-      expect(message).toBe('✓ Focused Editor: src/file.ts');
+      expect(message).toBe('✓ Focused Editor: "src/file.ts"');
     });
 
     it('should return formatted message for untitled editor', () => {
@@ -511,7 +517,7 @@ describe('TextEditorDestination', () => {
 
       const message = untitledDestination.getJumpSuccessMessage();
 
-      expect(message).toBe('✓ Focused Editor: Untitled-1');
+      expect(message).toBe('✓ Focused Editor: "Untitled-1"');
     });
   });
 });

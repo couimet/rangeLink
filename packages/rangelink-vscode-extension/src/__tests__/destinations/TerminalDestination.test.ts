@@ -54,7 +54,7 @@ describe('TerminalDestination', () => {
     });
 
     it('should have correct displayName', () => {
-      expect(destination.displayName).toBe('Terminal (bash)');
+      expect(destination.displayName).toBe('Terminal ("bash")');
     });
   });
 
@@ -264,9 +264,9 @@ describe('TerminalDestination', () => {
     });
   });
 
-  describe('terminalName getter', () => {
-    it('should return terminal name from bound terminal', () => {
-      expect(destination.terminalName).toBe('bash');
+  describe('resourceName getter', () => {
+    it('should return raw terminal name from bound terminal', () => {
+      expect(destination.resourceName).toBe('bash');
     });
   });
 
@@ -398,7 +398,7 @@ describe('TerminalDestination', () => {
     it('should return formatted message with terminal name', () => {
       const message = destination.getJumpSuccessMessage();
 
-      expect(message).toBe('✓ Focused Terminal: bash');
+      expect(message).toBe('✓ Focused Terminal: "bash"');
     });
   });
 });

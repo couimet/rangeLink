@@ -57,6 +57,32 @@ export class TextEditorDestination implements PasteDestination {
   ) {}
 
   /**
+   * Get raw resource identifier for this destination
+   *
+   * Returns workspace-relative path for file:// scheme, or "Untitled-N" for untitled files.
+   * Examples: "src/file.ts", "Untitled-1"
+   * Evaluated on each access rather than cached to ensure freshness.
+   */
+  get resourceName(): string {
+    const uri = this.editor.document.uri;
+
+    // Handle untitled files
+    if (uri.scheme === 'untitled') {
+      return `Untitled-${uri.path.replace(/^\//, '')}`;
+    }
+
+    // Get workspace-relative path for file:// scheme
+    const workspaceFolder = this.vscodeAdapter.getWorkspaceFolder(uri);
+    if (workspaceFolder) {
+      const relativePath = this.vscodeAdapter.asRelativePath(uri, false);
+      return relativePath;
+    }
+
+    // Fallback to filename if not in workspace
+    return uri.fsPath.split('/').pop() || 'Unknown';
+  }
+
+  /**
    * Get display name for UI (evaluated in real-time)
    *
    * Returns formatted editor name for display (e.g., `Text Editor ("src/file.ts")`).
@@ -64,7 +90,7 @@ export class TextEditorDestination implements PasteDestination {
    * Matches TerminalDestination format for consistency.
    */
   get displayName(): string {
-    return `Text Editor ("${this.computeEditorDisplayName()}")`;
+    return `Text Editor ("${this.resourceName}")`;
   }
 
   /**
@@ -182,7 +208,7 @@ export class TextEditorDestination implements PasteDestination {
    * @returns true (always succeeds since editor is guaranteed at construction)
    */
   async focus(): Promise<boolean> {
-    const editorDisplayName = this.displayName;
+    const editorName = this.resourceName;
 
     try {
       // Focus the editor (preserveFocus: false steals focus)
@@ -194,10 +220,10 @@ export class TextEditorDestination implements PasteDestination {
       this.logger.info(
         {
           fn: 'TextEditorDestination.focus',
-          editorDisplayName,
+          editorName,
           editorPath: this.editorPath,
         },
-        `Focused text editor: ${editorDisplayName}`,
+        `Focused text editor: ${editorName}`,
       );
 
       return true;
@@ -205,7 +231,7 @@ export class TextEditorDestination implements PasteDestination {
       this.logger.error(
         {
           fn: 'TextEditorDestination.focus',
-          editorDisplayName,
+          editorName,
           editorPath: this.editorPath,
           error,
         },
@@ -226,8 +252,8 @@ export class TextEditorDestination implements PasteDestination {
    */
   private validateEditorForPaste(
     logContext: LoggingContext,
-  ): { editor: vscode.TextEditor; editorDisplayName: string } | undefined {
-    const editorDisplayName = this.displayName;
+  ): { editor: vscode.TextEditor; editorName: string } | undefined {
+    const editorName = this.resourceName;
 
     // Find which tab group contains the bound document
     const boundTabGroup = this.vscodeAdapter.findTabGroupForDocument(this.editor.document.uri);
@@ -237,7 +263,7 @@ export class TextEditorDestination implements PasteDestination {
         {
           ...logContext,
           boundDocumentUri: this.editor.document.uri.toString(),
-          editorDisplayName,
+          editorName,
         },
         'Bound document not found in any tab group - likely closed',
       );
@@ -248,7 +274,7 @@ export class TextEditorDestination implements PasteDestination {
     const activeTab = boundTabGroup.activeTab;
 
     if (!activeTab) {
-      this.logger.warn({ ...logContext, editorDisplayName }, 'Tab group has no active tab');
+      this.logger.warn({ ...logContext, editorName }, 'Tab group has no active tab');
       return undefined;
     }
 
@@ -256,7 +282,7 @@ export class TextEditorDestination implements PasteDestination {
       this.logger.warn(
         {
           ...logContext,
-          editorDisplayName,
+          editorName,
           tabInputType: typeof activeTab.input,
         },
         'Active tab is not a text editor',
@@ -271,14 +297,14 @@ export class TextEditorDestination implements PasteDestination {
           ...logContext,
           boundDocumentUri: this.editor.document.uri.toString(),
           activeTabUri: activeTab.input.uri.toString(),
-          editorDisplayName,
+          editorName,
         },
         'Bound document is not topmost in its tab group',
       );
       return undefined;
     }
 
-    return { editor: this.editor, editorDisplayName };
+    return { editor: this.editor, editorName };
   }
 
   /**
@@ -317,8 +343,8 @@ export class TextEditorDestination implements PasteDestination {
         linkLength: formattedLink.link.length,
       },
       ineligibleMessage: 'Link not eligible for paste',
-      successLogMessage: (boundDisplayName: string) =>
-        `Pasted link to text editor: ${boundDisplayName}`,
+      successLogMessage: (editorName: string) =>
+        `Pasted link to text editor: ${editorName}`,
       errorMessage: 'Failed to paste link to text editor',
     });
   }
@@ -336,7 +362,7 @@ export class TextEditorDestination implements PasteDestination {
     text: string;
     logContext: LoggingContext;
     ineligibleMessage: string;
-    successLogMessage: (editorDisplayName: string) => string;
+    successLogMessage: (editorName: string) => string;
     errorMessage: string;
   }): Promise<boolean> {
     const { text, logContext, ineligibleMessage, successLogMessage, errorMessage } = options;
@@ -352,7 +378,7 @@ export class TextEditorDestination implements PasteDestination {
       return false;
     }
 
-    const { editor, editorDisplayName } = validation;
+    const { editor, editorName } = validation;
 
     // All validations passed - perform the paste
     try {
@@ -364,7 +390,7 @@ export class TextEditorDestination implements PasteDestination {
         // Build error log context - spread logContext to preserve all fields, add edit-specific info
         const editFailedContext: LoggingContext = {
           ...logContext,
-          editorDisplayName,
+          editorName,
           editorPath: this.editorPath,
         };
 
@@ -388,20 +414,20 @@ export class TextEditorDestination implements PasteDestination {
       // Build success log context - spread logContext to preserve all fields
       const successContext: LoggingContext = {
         ...logContext,
-        editorDisplayName,
+        editorName,
         editorPath: this.editorPath,
         originalLength: text.length,
         paddedLength: paddedText.length,
       };
 
-      this.logger.info(successContext, successLogMessage(editorDisplayName));
+      this.logger.info(successContext, successLogMessage(editorName));
 
       return true;
     } catch (error) {
       // Build exception log context - spread logContext to preserve all fields
       const exceptionContext: LoggingContext = {
         ...logContext,
-        editorDisplayName,
+        editorName,
         editorPath: this.editorPath,
         error,
       };
@@ -425,8 +451,8 @@ export class TextEditorDestination implements PasteDestination {
       text: content,
       logContext: { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
       ineligibleMessage: 'Content not eligible for paste',
-      successLogMessage: (editorDisplayName: string) =>
-        `Pasted content to text editor: ${editorDisplayName}`,
+      successLogMessage: (editorName: string) =>
+        `Pasted content to text editor: ${editorName}`,
       errorMessage: 'Exception during paste operation',
     });
   }
@@ -440,33 +466,6 @@ export class TextEditorDestination implements PasteDestination {
    */
   getBoundDocumentUri(): vscode.Uri {
     return this.editor.document.uri;
-  }
-
-  /**
-   * Compute user-friendly display name for bound document (workspace-relative)
-   *
-   * Returns workspace-relative path for file:// scheme, or "Untitled-N" for untitled files.
-   * Called at construction to cache display name.
-   *
-   * @returns Workspace-relative path or "Untitled-N"
-   */
-  private computeEditorDisplayName(): string {
-    const uri = this.editor.document.uri;
-
-    // Handle untitled files
-    if (uri.scheme === 'untitled') {
-      return `Untitled-${uri.path.replace(/^\//, '')}`;
-    }
-
-    // Get workspace-relative path for file:// scheme
-    const workspaceFolder = this.vscodeAdapter.getWorkspaceFolder(uri);
-    if (workspaceFolder) {
-      const relativePath = this.vscodeAdapter.asRelativePath(uri, false);
-      return relativePath;
-    }
-
-    // Fallback to filename if not in workspace
-    return uri.fsPath.split('/').pop() || 'Unknown';
   }
 
   /**
@@ -507,18 +506,18 @@ export class TextEditorDestination implements PasteDestination {
    */
   getJumpSuccessMessage(): string {
     return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, {
-      editorDisplayName: this.displayName,
+      resourceName: this.resourceName,
     });
   }
 
   /**
    * Get destination-specific details for logging
    *
-   * @returns Editor display name and path for logging context
+   * @returns Editor resource name and path for logging context
    */
   getLoggingDetails(): Record<string, unknown> {
     return {
-      editorDisplayName: this.displayName,
+      editorName: this.resourceName,
       editorPath: this.editorPath,
     };
   }

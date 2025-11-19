@@ -30,12 +30,12 @@ export class TerminalDestination implements PasteDestination {
   ) {}
 
   /**
-   * Get terminal name for logging and internal use (evaluated in real-time)
+   * Get raw resource identifier for this destination
    *
    * Returns raw terminal name from adapter (e.g., "bash", "zsh").
    * Evaluated on each access rather than cached to ensure freshness.
    */
-  get terminalName(): string {
+  get resourceName(): string {
     return this.vscodeAdapter.getTerminalName(this.terminal);
   }
 
@@ -43,11 +43,11 @@ export class TerminalDestination implements PasteDestination {
    * Get display name for UI (evaluated in real-time)
    *
    * Returns formatted terminal name for display (e.g., `Terminal ("bash")`).
-   * Uses terminalName getter internally to avoid duplication.
+   * Uses resourceName getter internally to avoid duplication.
    * Double quotes around name improve parsing and visualization.
    */
   get displayName(): string {
-    return `Terminal ("${this.terminalName}")`;
+    return `Terminal ("${this.resourceName}")`;
   }
 
   /**
@@ -107,7 +107,7 @@ export class TerminalDestination implements PasteDestination {
    * @returns true (always succeeds since terminal is guaranteed at construction)
    */
   async focus(): Promise<boolean> {
-    const terminalName = this.terminalName;
+    const terminalName = this.resourceName;
     this.vscodeAdapter.showTerminal(this.terminal, TerminalFocusType.StealFocus);
 
     this.logger.info(
@@ -191,7 +191,7 @@ export class TerminalDestination implements PasteDestination {
     }
 
     // Focus terminal and get name
-    const terminalName = this.terminalName;
+    const terminalName = this.resourceName;
     this.vscodeAdapter.showTerminal(this.terminal, TerminalFocusType.StealFocus);
 
     const paddedText = applySmartPadding(text);
@@ -220,7 +220,7 @@ export class TerminalDestination implements PasteDestination {
    */
   getJumpSuccessMessage(): string {
     return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL, {
-      terminalName: this.terminalName,
+      resourceName: this.resourceName,
     });
   }
 
@@ -230,7 +230,7 @@ export class TerminalDestination implements PasteDestination {
    * @returns Terminal name for logging context
    */
   getLoggingDetails(): Record<string, unknown> {
-    return { terminalName: this.terminalName };
+    return { terminalName: this.resourceName };
   }
 
   /**

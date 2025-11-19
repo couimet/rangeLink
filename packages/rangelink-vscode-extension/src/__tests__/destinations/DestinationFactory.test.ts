@@ -7,18 +7,28 @@ import { TerminalDestination } from '../../destinations/TerminalDestination';
 import { TextEditorDestination } from '../../destinations/TextEditorDestination';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
+import { createMockTerminal } from '../helpers/createMockTerminal';
 import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 
 describe('DestinationFactory', () => {
   let factory: DestinationFactory;
   let mockAdapter: VscodeAdapter;
   let mockLogger: Logger;
+  let mockTerminal: any;
+  let mockEditor: any;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockAdapter = createMockVscodeAdapter();
     factory = new DestinationFactory(mockAdapter, mockLogger);
+
+    // Create mock terminal using helper
+    mockTerminal = createMockTerminal({ name: 'bash' });
+
+    // Create mock editor using helper
+    mockEditor = createMockEditor();
   });
 
   describe('create()', () => {
@@ -80,7 +90,7 @@ describe('DestinationFactory', () => {
 
       expect(destination).toBeInstanceOf(TextEditorDestination);
       expect(destination.id).toBe('text-editor');
-      expect(destination.displayName).toContain('file.ts');
+      expect(destination.displayName).toContain('test.md');
     });
 
     it('should create new instance on each call', () => {
