@@ -106,10 +106,10 @@ export const toBeRangeLinkExtensionError = (
 };
 
 /**
- * Custom Jest matcher for testing functions that throw RangeLinkExtensionError.
+ * Custom Jest matcher for testing synchronous functions that throw RangeLinkExtensionError.
  * Follows Jest's standard `.toThrow()` pattern.
  *
- * @param received - Function to execute that should throw
+ * @param received - Synchronous function to execute that should throw
  * @param expectedCode - Expected error code as string literal (e.g., 'TERMINAL_NOT_DEFINED')
  * @param expected - Expected error properties (message, functionName, details, cause)
  */
@@ -133,6 +133,41 @@ export const toThrowRangeLinkExtensionError = (
       pass: false,
       message: () =>
         `Expected function to throw RangeLinkExtensionError with code "${expectedCode}", but nothing was thrown`,
+    };
+  }
+
+  // Use the existing validation logic from toBeRangeLinkExtensionError
+  return toBeRangeLinkExtensionError(caughtError, expectedCode, expected);
+};
+
+/**
+ * Custom Jest matcher for testing asynchronous functions that throw RangeLinkExtensionError.
+ * Async version of toThrowRangeLinkExtensionError.
+ *
+ * @param received - Async function to execute that should throw
+ * @param expectedCode - Expected error code as string literal (e.g., 'TERMINAL_NOT_DEFINED')
+ * @param expected - Expected error properties (message, functionName, details, cause)
+ */
+export const toThrowRangeLinkExtensionErrorAsync = async (
+  received: () => Promise<void>,
+  expectedCode: string,
+  expected: ExpectedRangeLinkExtensionError,
+): Promise<jest.CustomMatcherResult> => {
+  let caughtError: unknown;
+
+  // Execute the async function and catch any error
+  try {
+    await received();
+  } catch (error) {
+    caughtError = error;
+  }
+
+  // If nothing was thrown
+  if (caughtError === undefined) {
+    return {
+      pass: false,
+      message: () =>
+        `Expected async function to throw RangeLinkExtensionError with code "${expectedCode}", but nothing was thrown`,
     };
   }
 
