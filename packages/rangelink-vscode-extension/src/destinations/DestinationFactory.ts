@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import * as vscode from 'vscode';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -8,6 +9,30 @@ import { CursorAIDestination } from './CursorAIDestination';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 import { TerminalDestination } from './TerminalDestination';
 import { TextEditorDestination } from './TextEditorDestination';
+
+/**
+ * Type-safe options for creating destinations
+ *
+ * Terminal and text-editor destinations require resources at construction.
+ * AI assistant destinations only need availability checks (no resource required).
+ */
+export type CreateOptions =
+  | { type: 'terminal'; terminal: vscode.Terminal }
+  | { type: 'text-editor'; editor: vscode.TextEditor }
+  | { type: 'cursor-ai' | 'claude-code' | 'github-copilot' };
+
+/**
+ * Display names for destination types
+ *
+ * Used for UI components (command palette, status bar, QuickPick menus, error messages).
+ */
+const DISPLAY_NAMES: Record<DestinationType, string> = {
+  terminal: 'Terminal',
+  'text-editor': 'Text Editor',
+  'cursor-ai': 'Cursor AI Assistant',
+  'github-copilot': 'GitHub Copilot Chat',
+  'claude-code': 'Claude Code Chat',
+};
 
 /**
  * Factory for creating paste destination instances
@@ -27,34 +52,38 @@ export class DestinationFactory {
   ) {}
 
   /**
-   * Create a destination instance by type
+   * Create a destination instance with type-safe resource requirements
    *
-   * @param type - The destination type to create
-   * @returns New destination instance with logger injected
+   * Terminal and text-editor destinations require resources at construction.
+   * AI assistant destinations only need runtime availability checks.
+   *
+   * @param options - Discriminated union specifying destination type and required resources
+   * @returns New destination instance with dependencies injected
    * @throws RangeLinkExtensionError with DESTINATION_NOT_IMPLEMENTED if type not yet supported
    */
-  create(type: DestinationType): PasteDestination {
+  create(options: CreateOptions): PasteDestination {
+    const type = options.type;
     this.logger.debug({ fn: 'DestinationFactory.create', type }, `Creating destination: ${type}`);
 
-    switch (type) {
+    switch (options.type) {
       case 'terminal':
-        return new TerminalDestination(this.logger);
+        return new TerminalDestination(options.terminal, this.ideAdapter, this.logger);
 
       case 'cursor-ai':
         return new CursorAIDestination(this.ideAdapter, this.logger);
 
       case 'text-editor':
-        return new TextEditorDestination(this.ideAdapter, this.logger);
+        return new TextEditorDestination(options.editor, this.ideAdapter, this.logger);
 
       case 'claude-code':
         return new ClaudeCodeDestination(this.ideAdapter, this.logger);
 
       // Future implementations:
       // case 'github-copilot':
-      //   return new GitHubCopilotDestination(this.logger);
+      //   return new GitHubCopilotDestination(this.ideAdapter, this.logger);
 
       default:
-        // Phase 2+: Will implement text-editor, cursor-ai, github-copilot, and claude-code
+        // Phase 2+: Will implement github-copilot
         throw new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_IMPLEMENTED,
           message: `Destination type not yet implemented: ${type}`,
@@ -94,12 +123,6 @@ export class DestinationFactory {
    * @returns Record mapping destination types to display names
    */
   getDisplayNames(): Record<DestinationType, string> {
-    return {
-      terminal: 'Terminal',
-      'text-editor': 'Text Editor',
-      'cursor-ai': 'Cursor AI Assistant',
-      'github-copilot': 'GitHub Copilot Chat',
-      'claude-code': 'Claude Code Chat',
-    };
+    return DISPLAY_NAMES;
   }
 }
