@@ -40,5 +40,6 @@ export const createMockPasteDestination = (overrides?: Partial<any>): any => ({
   focus: jest.fn().mockResolvedValue(true),
   getLoggingDetails: jest.fn().mockReturnValue({}),
   getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused'),
+  equals: jest.fn().mockResolvedValue(false),
   ...overrides,
 });

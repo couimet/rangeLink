@@ -257,4 +257,51 @@ export class TerminalDestination implements PasteDestination {
     const terminalName = this.getTerminalName() || 'Unnamed Terminal';
     return { terminalName };
   }
+
+  /**
+   * Check if this terminal equals another destination
+   *
+   * @param other - The destination to compare against (may be undefined)
+   * @returns Promise<true> if same terminal, Promise<false> otherwise
+   */
+  async equals(other: PasteDestination | undefined): Promise<boolean> {
+    // Safeguard 1: Check other is defined
+    if (!other) {
+      return false;
+    }
+
+    // Safeguard 2: Check type matches
+    if (other.id !== 'terminal') {
+      return false;
+    }
+
+    // Safeguard 3: Check other has terminal resource (type assertion - Option B)
+    const otherAsTerminal = other as TerminalDestination;
+    const otherTerminal = otherAsTerminal.terminal;
+    if (!otherTerminal) {
+      // Should never happen if construction is correct, but be defensive
+      this.logger.warn(
+        { fn: 'TerminalDestination.equals' },
+        'Other terminal destination missing terminal resource',
+      );
+      return false;
+    }
+
+    // Get process IDs for comparison
+    const [thisPid, otherPid] = await Promise.all([
+      this.terminal.processId,
+      otherTerminal.processId,
+    ]);
+
+    // Safeguard 4: Both processIds must be defined for valid comparison
+    if (thisPid === undefined || otherPid === undefined) {
+      this.logger.debug(
+        { fn: 'TerminalDestination.equals', thisPid, otherPid },
+        'Cannot compare terminals: processId undefined (terminal may not be started yet)',
+      );
+      return false;
+    }
+
+    return thisPid === otherPid;
+  }
 }

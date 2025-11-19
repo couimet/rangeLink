@@ -273,4 +273,20 @@ export class CursorAIDestination implements PasteDestination {
   getLoggingDetails(): Record<string, unknown> {
     return {};
   }
+
+  /**
+   * Check if this Cursor AI destination equals another destination
+   *
+   * @param other - The destination to compare against (may be undefined)
+   * @returns Promise<true> if both are cursor-ai, Promise<false> otherwise
+   */
+  async equals(other: PasteDestination | undefined): Promise<boolean> {
+    // Safeguard: Check other is defined
+    if (!other) {
+      return false;
+    }
+
+    // AI assistants are singletons - just compare type
+    return this.id === other.id;
+  }
 }

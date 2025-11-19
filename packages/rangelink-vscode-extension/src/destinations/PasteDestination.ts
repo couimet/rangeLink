@@ -175,4 +175,12 @@ export interface PasteDestination {
    * @returns Record with destination-specific logging details (empty object if none)
    */
   getLoggingDetails(): Record<string, unknown>;
+
+  /**
+   * Check if this destination equals another destination
+   *
+   * @param other - The destination to compare against (may be undefined)
+   * @returns Promise<true> if same destination, Promise<false> otherwise
+   */
+  equals(other: PasteDestination | undefined): Promise<boolean>;
 }

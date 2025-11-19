@@ -584,4 +584,37 @@ export class TextEditorDestination implements PasteDestination {
       editorPath,
     };
   }
+
+  /**
+   * Check if this text editor equals another destination
+   *
+   * @param other - The destination to compare against (may be undefined)
+   * @returns Promise<true> if same editor document, Promise<false> otherwise
+   */
+  async equals(other: PasteDestination | undefined): Promise<boolean> {
+    // Safeguard 1: Check other is defined
+    if (!other) {
+      return false;
+    }
+
+    // Safeguard 2: Check type matches
+    if (other.id !== 'text-editor') {
+      return false;
+    }
+
+    // Safeguard 3: Check other has editor resource (type assertion - Option B)
+    const otherAsEditor = other as TextEditorDestination;
+    const otherEditor = otherAsEditor.editor;
+    if (!otherEditor?.document?.uri) {
+      // Should never happen if construction is correct, but be defensive
+      this.logger.warn(
+        { fn: 'TextEditorDestination.equals' },
+        'Other editor destination missing editor/document/uri',
+      );
+      return false;
+    }
+
+    // Compare document URIs (unique per file)
+    return this.editor.document.uri.toString() === otherEditor.document.uri.toString();
+  }
 }

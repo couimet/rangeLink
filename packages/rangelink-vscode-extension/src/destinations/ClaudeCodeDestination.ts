@@ -230,4 +230,20 @@ export class ClaudeCodeDestination implements PasteDestination {
   getLoggingDetails(): Record<string, unknown> {
     return {};
   }
+
+  /**
+   * Check if this Claude Code destination equals another destination
+   *
+   * @param other - The destination to compare against (may be undefined)
+   * @returns Promise<true> if both are claude-code, Promise<false> otherwise
+   */
+  async equals(other: PasteDestination | undefined): Promise<boolean> {
+    // Safeguard: Check other is defined
+    if (!other) {
+      return false;
+    }
+
+    // AI assistants are singletons - just compare type
+    return this.id === other.id;
+  }
 }
