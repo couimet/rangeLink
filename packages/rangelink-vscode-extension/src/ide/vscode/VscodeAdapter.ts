@@ -201,6 +201,37 @@ export class VscodeAdapter {
   }
 
   // ============================================================================
+  // Text Editor Operations
+  // ============================================================================
+
+  /**
+   * Insert text at cursor position in editor.
+   *
+   * Wrapper for editor.edit() API to isolate destination classes from direct vscode calls.
+   *
+   * @param editor - Editor to insert text into
+   * @param text - Text to insert
+   * @returns Promise resolving to true if edit succeeded, false otherwise
+   */
+  async insertTextAtCursor(editor: vscode.TextEditor, text: string): Promise<boolean> {
+    return editor.edit((editBuilder) => {
+      editBuilder.insert(editor.selection.active, text);
+    });
+  }
+
+  /**
+   * Get document URI from editor.
+   *
+   * Wrapper for editor.document.uri property access to isolate destination classes.
+   *
+   * @param editor - Editor to get document URI from
+   * @returns Document URI
+   */
+  getDocumentUri(editor: vscode.TextEditor): vscode.Uri {
+    return editor.document.uri;
+  }
+
+  // ============================================================================
   // Environment Information
   // ============================================================================
 

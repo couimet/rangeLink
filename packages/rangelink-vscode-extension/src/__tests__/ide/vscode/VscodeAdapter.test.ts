@@ -422,4 +422,87 @@ describe('VscodeAdapter', () => {
     });
   });
 
+  describe('insertTextAtCursor', () => {
+    it('should call editor.edit and insert text at cursor position', async () => {
+      const mockEditor = {
+        selection: {
+          active: { line: 5, character: 10 },
+        },
+        edit: jest.fn().mockResolvedValue(true),
+      } as any;
+      const text = 'inserted text';
+
+      const result = await adapter.insertTextAtCursor(mockEditor, text);
+
+      expect(mockEditor.edit).toHaveBeenCalledTimes(1);
+      expect(result).toBe(true);
+
+      // Verify the editBuilder callback was used correctly
+      const editCallback = (mockEditor.edit as jest.Mock).mock.calls[0][0];
+      const mockEditBuilder = {
+        insert: jest.fn(),
+      };
+      editCallback(mockEditBuilder);
+      expect(mockEditBuilder.insert).toHaveBeenCalledWith(mockEditor.selection.active, text);
+    });
+
+    it('should return false when edit fails', async () => {
+      const mockEditor = {
+        selection: {
+          active: { line: 0, character: 0 },
+        },
+        edit: jest.fn().mockResolvedValue(false),
+      } as any;
+
+      const result = await adapter.insertTextAtCursor(mockEditor, 'text');
+
+      expect(result).toBe(false);
+    });
+
+    it('should handle empty text insertion', async () => {
+      const mockEditor = {
+        selection: {
+          active: { line: 0, character: 0 },
+        },
+        edit: jest.fn().mockResolvedValue(true),
+      } as any;
+
+      const result = await adapter.insertTextAtCursor(mockEditor, '');
+
+      expect(result).toBe(true);
+      const editCallback = (mockEditor.edit as jest.Mock).mock.calls[0][0];
+      const mockEditBuilder = { insert: jest.fn() };
+      editCallback(mockEditBuilder);
+      expect(mockEditBuilder.insert).toHaveBeenCalledWith(mockEditor.selection.active, '');
+    });
+  });
+
+  describe('getDocumentUri', () => {
+    it('should return document URI from editor', () => {
+      const mockUri = { fsPath: '/path/to/file.ts', toString: () => 'file:///path/to/file.ts' };
+      const mockEditor = {
+        document: {
+          uri: mockUri,
+        },
+      } as any;
+
+      const result = adapter.getDocumentUri(mockEditor);
+
+      expect(result).toBe(mockUri);
+    });
+
+    it('should handle untitled document', () => {
+      const mockUri = { scheme: 'untitled', toString: () => 'untitled:Untitled-1' };
+      const mockEditor = {
+        document: {
+          uri: mockUri,
+        },
+      } as any;
+
+      const result = adapter.getDocumentUri(mockEditor);
+
+      expect(result).toBe(mockUri);
+      expect(result.scheme).toBe('untitled');
+    });
+  });
 });
