@@ -1,5 +1,5 @@
 import type { LinkPosition } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 /**
  * Converted position result with 0-indexed line and character.

@@ -53,6 +53,7 @@ export const createMockWindow = (
     showQuickPick: jest.fn().mockResolvedValue(undefined),
     showTextDocument: jest.fn().mockResolvedValue(undefined),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
+    registerTerminalLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),
     ...options,
   };
 };

@@ -1,5 +1,5 @@
 import { getLogger } from 'barebone-logger';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 /**
  * Wraps VSCode registration calls with logging.

@@ -506,4 +506,347 @@ describe('VscodeAdapter', () => {
       expect(result.scheme).toBe('untitled');
     });
   });
+
+  describe('Extension Lifecycle Operations (commit 0140)', () => {
+    describe('createOutputChannel', () => {
+      it('should create output channel using VSCode API', () => {
+        const channelName = 'RangeLink';
+        const mockChannel = { appendLine: jest.fn(), dispose: jest.fn() };
+        mockVSCode.window.createOutputChannel.mockReturnValue(mockChannel);
+
+        const result = adapter.createOutputChannel(channelName);
+
+        expect(mockVSCode.window.createOutputChannel).toHaveBeenCalledWith(channelName);
+        expect(mockVSCode.window.createOutputChannel).toHaveBeenCalledTimes(1);
+        expect(result).toBe(mockChannel);
+      });
+
+      it('should handle different channel names', () => {
+        const mockChannel1 = { appendLine: jest.fn() };
+        const mockChannel2 = { appendLine: jest.fn() };
+        mockVSCode.window.createOutputChannel
+          .mockReturnValueOnce(mockChannel1)
+          .mockReturnValueOnce(mockChannel2);
+
+        const result1 = adapter.createOutputChannel('Channel1');
+        const result2 = adapter.createOutputChannel('Channel2');
+
+        expect(mockVSCode.window.createOutputChannel).toHaveBeenCalledWith('Channel1');
+        expect(mockVSCode.window.createOutputChannel).toHaveBeenCalledWith('Channel2');
+        expect(result1).toBe(mockChannel1);
+        expect(result2).toBe(mockChannel2);
+      });
+
+      it('should handle channel names with special characters', () => {
+        const specialName = 'Range-Link: Debug (v1.0)';
+        const mockChannel = { appendLine: jest.fn() };
+        mockVSCode.window.createOutputChannel.mockReturnValue(mockChannel);
+
+        adapter.createOutputChannel(specialName);
+
+        expect(mockVSCode.window.createOutputChannel).toHaveBeenCalledWith(specialName);
+      });
+    });
+
+    describe('language getter', () => {
+      it('should return language from VSCode env', () => {
+        mockVSCode.env.language = 'en';
+
+        const result = adapter.language;
+
+        expect(result).toBe('en');
+      });
+
+      it('should handle different locales', () => {
+        mockVSCode.env.language = 'fr';
+        expect(adapter.language).toBe('fr');
+
+        mockVSCode.env.language = 'de';
+        expect(adapter.language).toBe('de');
+
+        mockVSCode.env.language = 'ja';
+        expect(adapter.language).toBe('ja');
+      });
+
+      it('should handle regional locales', () => {
+        mockVSCode.env.language = 'en-US';
+        expect(adapter.language).toBe('en-US');
+
+        mockVSCode.env.language = 'pt-BR';
+        expect(adapter.language).toBe('pt-BR');
+      });
+
+      it('should be accessible multiple times', () => {
+        mockVSCode.env.language = 'en';
+
+        const result1 = adapter.language;
+        const result2 = adapter.language;
+
+        expect(result1).toBe('en');
+        expect(result2).toBe('en');
+      });
+    });
+
+    describe('getConfiguration', () => {
+      it('should get configuration section using VSCode API', () => {
+        const section = 'rangelink';
+        const mockConfig = { get: jest.fn(), has: jest.fn() };
+        mockVSCode.workspace.getConfiguration.mockReturnValue(mockConfig);
+
+        const result = adapter.getConfiguration(section);
+
+        expect(mockVSCode.workspace.getConfiguration).toHaveBeenCalledWith(section);
+        expect(mockVSCode.workspace.getConfiguration).toHaveBeenCalledTimes(1);
+        expect(result).toBe(mockConfig);
+      });
+
+      it('should handle different configuration sections', () => {
+        const mockConfig1 = { get: jest.fn() };
+        const mockConfig2 = { get: jest.fn() };
+        mockVSCode.workspace.getConfiguration
+          .mockReturnValueOnce(mockConfig1)
+          .mockReturnValueOnce(mockConfig2);
+
+        const result1 = adapter.getConfiguration('editor');
+        const result2 = adapter.getConfiguration('workbench');
+
+        expect(mockVSCode.workspace.getConfiguration).toHaveBeenCalledWith('editor');
+        expect(mockVSCode.workspace.getConfiguration).toHaveBeenCalledWith('workbench');
+        expect(result1).toBe(mockConfig1);
+        expect(result2).toBe(mockConfig2);
+      });
+
+      it('should handle empty section name', () => {
+        const mockConfig = { get: jest.fn() };
+        mockVSCode.workspace.getConfiguration.mockReturnValue(mockConfig);
+
+        adapter.getConfiguration('');
+
+        expect(mockVSCode.workspace.getConfiguration).toHaveBeenCalledWith('');
+      });
+    });
+  });
+
+  describe('Registration Operations (commit 0140)', () => {
+    describe('registerTerminalLinkProvider', () => {
+      it('should register terminal link provider using VSCode API', () => {
+        const mockProvider = { provideTerminalLinks: jest.fn() };
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.window.registerTerminalLinkProvider.mockReturnValue(mockDisposable);
+
+        const result = adapter.registerTerminalLinkProvider(mockProvider as any);
+
+        expect(mockVSCode.window.registerTerminalLinkProvider).toHaveBeenCalledWith(mockProvider);
+        expect(mockVSCode.window.registerTerminalLinkProvider).toHaveBeenCalledTimes(1);
+        expect(result).toBe(mockDisposable);
+      });
+
+      it('should return disposable that can be disposed', () => {
+        const mockProvider = { provideTerminalLinks: jest.fn() };
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.window.registerTerminalLinkProvider.mockReturnValue(mockDisposable);
+
+        const result = adapter.registerTerminalLinkProvider(mockProvider as any);
+
+        expect(result.dispose).toBeDefined();
+        result.dispose();
+        expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
+      });
+
+      it('should handle multiple provider registrations', () => {
+        const mockProvider1 = { provideTerminalLinks: jest.fn() };
+        const mockProvider2 = { provideTerminalLinks: jest.fn() };
+        const mockDisposable1 = { dispose: jest.fn() };
+        const mockDisposable2 = { dispose: jest.fn() };
+        mockVSCode.window.registerTerminalLinkProvider
+          .mockReturnValueOnce(mockDisposable1)
+          .mockReturnValueOnce(mockDisposable2);
+
+        const result1 = adapter.registerTerminalLinkProvider(mockProvider1 as any);
+        const result2 = adapter.registerTerminalLinkProvider(mockProvider2 as any);
+
+        expect(result1).toBe(mockDisposable1);
+        expect(result2).toBe(mockDisposable2);
+        expect(mockVSCode.window.registerTerminalLinkProvider).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('registerDocumentLinkProvider', () => {
+      it('should register document link provider using VSCode API', () => {
+        const mockSelector = { scheme: 'file' };
+        const mockProvider = { provideDocumentLinks: jest.fn() };
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.languages.registerDocumentLinkProvider.mockReturnValue(mockDisposable);
+
+        const result = adapter.registerDocumentLinkProvider(
+          mockSelector as any,
+          mockProvider as any,
+        );
+
+        expect(mockVSCode.languages.registerDocumentLinkProvider).toHaveBeenCalledWith(
+          mockSelector,
+          mockProvider,
+        );
+        expect(mockVSCode.languages.registerDocumentLinkProvider).toHaveBeenCalledTimes(1);
+        expect(result).toBe(mockDisposable);
+      });
+
+      it('should handle array of document selectors', () => {
+        const mockSelectors = [{ scheme: 'file' }, { scheme: 'untitled' }];
+        const mockProvider = { provideDocumentLinks: jest.fn() };
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.languages.registerDocumentLinkProvider.mockReturnValue(mockDisposable);
+
+        const result = adapter.registerDocumentLinkProvider(
+          mockSelectors as any,
+          mockProvider as any,
+        );
+
+        expect(mockVSCode.languages.registerDocumentLinkProvider).toHaveBeenCalledWith(
+          mockSelectors,
+          mockProvider,
+        );
+        expect(result).toBe(mockDisposable);
+      });
+
+      it('should return disposable that can be disposed', () => {
+        const mockSelector = { scheme: 'file' };
+        const mockProvider = { provideDocumentLinks: jest.fn() };
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.languages.registerDocumentLinkProvider.mockReturnValue(mockDisposable);
+
+        const result = adapter.registerDocumentLinkProvider(
+          mockSelector as any,
+          mockProvider as any,
+        );
+
+        result.dispose();
+        expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('registerCommand', () => {
+      it('should register command using VSCode API', () => {
+        const commandName = 'rangelink.copyLink';
+        const callback = jest.fn();
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.commands.registerCommand.mockReturnValue(mockDisposable);
+
+        const result = adapter.registerCommand(commandName, callback);
+
+        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith(commandName, callback);
+        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledTimes(1);
+        expect(result).toBe(mockDisposable);
+      });
+
+      it('should handle multiple command registrations', () => {
+        const callback1 = jest.fn();
+        const callback2 = jest.fn();
+        const mockDisposable1 = { dispose: jest.fn() };
+        const mockDisposable2 = { dispose: jest.fn() };
+        mockVSCode.commands.registerCommand
+          .mockReturnValueOnce(mockDisposable1)
+          .mockReturnValueOnce(mockDisposable2);
+
+        const result1 = adapter.registerCommand('rangelink.command1', callback1);
+        const result2 = adapter.registerCommand('rangelink.command2', callback2);
+
+        expect(result1).toBe(mockDisposable1);
+        expect(result2).toBe(mockDisposable2);
+        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith(
+          'rangelink.command1',
+          callback1,
+        );
+        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith(
+          'rangelink.command2',
+          callback2,
+        );
+      });
+
+      it('should return disposable that can be disposed', () => {
+        const callback = jest.fn();
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.commands.registerCommand.mockReturnValue(mockDisposable);
+
+        const result = adapter.registerCommand('test.command', callback);
+
+        result.dispose();
+        expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
+      });
+
+      it('should register callback that can be invoked', () => {
+        const callback = jest.fn().mockReturnValue('result');
+        mockVSCode.commands.registerCommand.mockImplementation(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (_: any, cb: any) => {
+            cb(); // Simulate VSCode calling the command
+            return { dispose: jest.fn() };
+          },
+        );
+
+        adapter.registerCommand('test.command', callback);
+
+        expect(callback).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  describe('showInformationMessage with action buttons (commit 0140)', () => {
+    it('should show information message without buttons', async () => {
+      const message = 'Test message';
+
+      await adapter.showInformationMessage(message);
+
+      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(message);
+      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledTimes(1);
+    });
+
+    it('should show information message with single button', async () => {
+      const message = 'Test message';
+      const button = 'OK';
+
+      await adapter.showInformationMessage(message, button);
+
+      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(message, button);
+    });
+
+    it('should show information message with multiple buttons', async () => {
+      const message = 'Commit hash: abc123';
+      const button1 = 'Copy Commit Hash';
+      const button2 = 'Close';
+
+      await adapter.showInformationMessage(message, button1, button2);
+
+      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(
+        message,
+        button1,
+        button2,
+      );
+    });
+
+    it('should return button text when button is clicked', async () => {
+      const buttonText = 'Copy Commit Hash';
+      (mockVSCode.window.showInformationMessage as jest.Mock).mockResolvedValue(buttonText);
+
+      const result = await adapter.showInformationMessage('Message', buttonText);
+
+      expect(result).toBe(buttonText);
+    });
+
+    it('should return undefined when no button is clicked', async () => {
+      (mockVSCode.window.showInformationMessage as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await adapter.showInformationMessage('Message', 'Button');
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle empty buttons array', async () => {
+      const message = 'Test message';
+
+      await adapter.showInformationMessage(message);
+
+      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(message);
+    });
+  });
 });

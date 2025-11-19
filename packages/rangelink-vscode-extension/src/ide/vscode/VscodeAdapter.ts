@@ -70,9 +70,13 @@ export class VscodeAdapter {
 
   /**
    * Show information notification using VSCode API
+   *
+   * @param message - Message to display
+   * @param items - Optional action button labels
+   * @returns Promise resolving to selected button label, or undefined if dismissed
    */
-  async showInformationMessage(message: string): Promise<string | undefined> {
-    return this.ideInstance.window.showInformationMessage(message);
+  async showInformationMessage(message: string, ...items: string[]): Promise<string | undefined> {
+    return this.ideInstance.window.showInformationMessage(message, ...items);
   }
 
   /**
@@ -299,6 +303,80 @@ export class VscodeAdapter {
    */
   async resolveWorkspacePath(linkPath: string): Promise<vscode.Uri | undefined> {
     return resolveWorkspacePath(linkPath, this.ideInstance);
+  }
+
+  // ============================================================================
+  // Extension Lifecycle Operations
+  // ============================================================================
+
+  /**
+   * Create output channel for extension logging.
+   *
+   * @param name - Name of the output channel
+   * @returns Output channel instance for writing log messages
+   */
+  createOutputChannel(name: string): vscode.OutputChannel {
+    return this.ideInstance.window.createOutputChannel(name);
+  }
+
+  /**
+   * Get IDE language/locale setting.
+   *
+   * @returns Language code (e.g., 'en', 'fr', 'ja')
+   */
+  get language(): string {
+    return this.ideInstance.env.language;
+  }
+
+  /**
+   * Get workspace configuration for extension settings.
+   *
+   * @param section - Configuration section name
+   * @returns Configuration object for reading settings
+   */
+  getConfiguration(section: string): vscode.WorkspaceConfiguration {
+    return this.ideInstance.workspace.getConfiguration(section);
+  }
+
+  // ============================================================================
+  // Registration Operations
+  // ============================================================================
+
+  /**
+   * Register terminal link provider for clickable links in terminal.
+   *
+   * @param provider - Terminal link provider instance
+   * @returns Disposable to unregister the provider
+   */
+  registerTerminalLinkProvider<T extends vscode.TerminalLink>(
+    provider: vscode.TerminalLinkProvider<T>,
+  ): vscode.Disposable {
+    return this.ideInstance.window.registerTerminalLinkProvider(provider);
+  }
+
+  /**
+   * Register document link provider for clickable links in text editors.
+   *
+   * @param selector - Document selector (schemes, languages, patterns)
+   * @param provider - Document link provider instance
+   * @returns Disposable to unregister the provider
+   */
+  registerDocumentLinkProvider(
+    selector: vscode.DocumentSelector,
+    provider: vscode.DocumentLinkProvider,
+  ): vscode.Disposable {
+    return this.ideInstance.languages.registerDocumentLinkProvider(selector, provider);
+  }
+
+  /**
+   * Register command with VSCode command palette.
+   *
+   * @param command - Command identifier (e.g., 'rangelink.copyLink')
+   * @param callback - Command handler function
+   * @returns Disposable to unregister the command
+   */
+  registerCommand(command: string, callback: (...args: any[]) => any): vscode.Disposable {
+    return this.ideInstance.commands.registerCommand(command, callback);
   }
 
   // ============================================================================
