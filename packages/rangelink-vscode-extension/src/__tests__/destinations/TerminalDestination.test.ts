@@ -4,12 +4,13 @@ import * as vscode from 'vscode';
 
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { TerminalDestination } from '../../destinations/TerminalDestination';
-import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { BehaviourAfterPaste } from '../../types/BehaviourAfterPaste';
 import { TerminalFocusType } from '../../types/TerminalFocusType';
 import { applySmartPadding } from '../../utils/applySmartPadding';
 import { isEligibleForPaste } from '../../utils/isEligibleForPaste';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
+import { createMockTerminal } from '../helpers/createMockTerminal';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 jest.mock('../../utils/isEligibleForPaste');
 jest.mock('../../utils/applySmartPadding');
@@ -17,31 +18,25 @@ jest.mock('../../utils/applySmartPadding');
 describe('TerminalDestination', () => {
   let destination: TerminalDestination;
   let mockLogger: Logger;
-  let mockVscodeAdapter: jest.Mocked<VscodeAdapter>;
+  let mockAdapter: VscodeAdapterWithTestHooks;
   let mockTerminal: vscode.Terminal;
 
   beforeEach(() => {
     // Create mock logger
     mockLogger = createMockLogger();
 
-    // Create mock terminal
-    mockTerminal = {
-      name: 'bash',
-      sendText: jest.fn(),
-      show: jest.fn(),
-      processId: Promise.resolve(12345),
-    } as unknown as vscode.Terminal;
+    // Create mock terminal using helper
+    mockTerminal = createMockTerminal({ name: 'bash', processId: Promise.resolve(12345) });
 
-    // Create mock VscodeAdapter
-    mockVscodeAdapter = {
-      showTerminal: jest.fn(),
-      sendTextToTerminal: jest.fn(),
-      getTerminalName: jest.fn().mockImplementation((terminal: vscode.Terminal) => terminal.name),
-      insertTextAtCursor: jest.fn(),
-      getDocumentUri: jest.fn(),
-    } as unknown as jest.Mocked<VscodeAdapter>;
+    // Create mock VscodeAdapter using helper
+    mockAdapter = createMockVscodeAdapter();
 
-    destination = new TerminalDestination(mockTerminal, mockVscodeAdapter, mockLogger);
+    // Spy on adapter methods used by TerminalDestination
+    jest.spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard').mockResolvedValue();
+    jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue();
+    jest.spyOn(mockAdapter, 'getTerminalName').mockImplementation((terminal) => terminal.name);
+
+    destination = new TerminalDestination(mockTerminal, mockAdapter, mockLogger);
 
     // Set up default mock implementations
     (isEligibleForPaste as jest.Mock).mockReturnValue(true);
@@ -77,7 +72,7 @@ describe('TerminalDestination', () => {
       await destination.pasteLink(createMockFormattedLink('link'));
 
       expect(applySmartPadding).toHaveBeenCalledWith('link');
-      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
+      expect(mockAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
         mockTerminal,
         ' link ',
         {
@@ -89,7 +84,7 @@ describe('TerminalDestination', () => {
     it('should call ideAdapter.showTerminal to focus terminal', async () => {
       await destination.pasteLink(createMockFormattedLink('link'));
 
-      expect(mockVscodeAdapter.showTerminal).toHaveBeenCalledWith(
+      expect(mockAdapter.showTerminal).toHaveBeenCalledWith(
         mockTerminal,
         TerminalFocusType.StealFocus,
       );
@@ -125,8 +120,8 @@ describe('TerminalDestination', () => {
       expect(isEligibleForPaste).toHaveBeenCalledWith(testLink);
       expect(result).toBe(false);
       expect(applySmartPadding).not.toHaveBeenCalled();
-      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).not.toHaveBeenCalled();
-      expect(mockVscodeAdapter.showTerminal).not.toHaveBeenCalled();
+      expect(mockAdapter.pasteTextToTerminalViaClipboard).not.toHaveBeenCalled();
+      expect(mockAdapter.showTerminal).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'TerminalDestination.pasteLink',
@@ -145,7 +140,7 @@ describe('TerminalDestination', () => {
 
       expect(isEligibleForPaste).toHaveBeenCalledWith('original-text');
       expect(applySmartPadding).toHaveBeenCalledWith('original-text');
-      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
+      expect(mockAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
         mockTerminal,
         ' padded-text ',
         { behaviour: BehaviourAfterPaste.NOTHING },
@@ -159,7 +154,7 @@ describe('TerminalDestination', () => {
       await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(applySmartPadding).toHaveBeenCalledWith('src/file.ts#L10');
-      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
+      expect(mockAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
         mockTerminal,
         '\tcustom-padded\n',
         { behaviour: BehaviourAfterPaste.NOTHING },
@@ -217,7 +212,7 @@ describe('TerminalDestination', () => {
       await destination.pasteContent(testContent);
 
       expect(applySmartPadding).toHaveBeenCalledWith(testContent);
-      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
+      expect(mockAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
         mockTerminal,
         ' selected text ',
         { behaviour: BehaviourAfterPaste.NOTHING },
@@ -227,7 +222,7 @@ describe('TerminalDestination', () => {
     it('should call ideAdapter.showTerminal to focus terminal', async () => {
       await destination.pasteContent('text');
 
-      expect(mockVscodeAdapter.showTerminal).toHaveBeenCalledWith(
+      expect(mockAdapter.showTerminal).toHaveBeenCalledWith(
         mockTerminal,
         TerminalFocusType.StealFocus,
       );
@@ -259,7 +254,7 @@ describe('TerminalDestination', () => {
 
       expect(isEligibleForPaste).toHaveBeenCalledWith('original-content');
       expect(applySmartPadding).toHaveBeenCalledWith('original-content');
-      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
+      expect(mockAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
         mockTerminal,
         ' padded-content ',
         { behaviour: BehaviourAfterPaste.NOTHING },
@@ -291,7 +286,7 @@ describe('TerminalDestination', () => {
     it('should call ideAdapter.showTerminal to focus terminal', async () => {
       await destination.focus();
 
-      expect(mockVscodeAdapter.showTerminal).toHaveBeenCalledWith(
+      expect(mockAdapter.showTerminal).toHaveBeenCalledWith(
         mockTerminal,
         TerminalFocusType.StealFocus,
       );
@@ -315,7 +310,7 @@ describe('TerminalDestination', () => {
       } as vscode.Terminal;
       const otherDestination = new TerminalDestination(
         otherTerminal,
-        mockVscodeAdapter,
+        mockAdapter,
         mockLogger,
       );
 
@@ -331,7 +326,7 @@ describe('TerminalDestination', () => {
       } as vscode.Terminal;
       const otherDestination = new TerminalDestination(
         otherTerminal,
-        mockVscodeAdapter,
+        mockAdapter,
         mockLogger,
       );
 
@@ -364,7 +359,7 @@ describe('TerminalDestination', () => {
       } as vscode.Terminal;
       const otherDestination = new TerminalDestination(
         terminalWithoutPid,
-        mockVscodeAdapter,
+        mockAdapter,
         mockLogger,
       );
 
@@ -380,7 +375,7 @@ describe('TerminalDestination', () => {
       } as vscode.Terminal;
       const otherDestination = new TerminalDestination(
         terminalWithoutPid,
-        mockVscodeAdapter,
+        mockAdapter,
         mockLogger,
       );
 
