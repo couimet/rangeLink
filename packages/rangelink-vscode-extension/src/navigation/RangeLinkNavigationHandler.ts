@@ -1,7 +1,8 @@
 import type { Logger } from 'barebone-logger';
 import type { DelimiterConfig, ParsedLink, Result } from 'rangelink-core-ts';
 import { buildLinkPattern, parseLink, RangeLinkError, SelectionType } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
+import { TextEditorRevealType } from 'vscode';
 
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types/MessageCode';
@@ -189,7 +190,7 @@ export class RangeLinkNavigationHandler {
       // Reveal the selection
       editor.revealRange(
         this.ideAdapter.createRange(vsStart, vsEnd),
-        vscode.TextEditorRevealType.InCenterIfOutsideViewport,
+        TextEditorRevealType.InCenterIfOutsideViewport,
       );
 
       this.logger.info({ ...logCtx }, 'Navigation completed successfully');
