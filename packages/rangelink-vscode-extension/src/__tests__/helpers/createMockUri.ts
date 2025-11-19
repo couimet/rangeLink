@@ -13,15 +13,13 @@ import * as vscode from 'vscode';
  */
 
 // Instance mode: string fsPath returns Uri instance
-export function createMockUri(
-  fsPath: string,
-  instanceOverrides?: Partial<vscode.Uri>,
-): vscode.Uri;
+export function createMockUri(fsPath: string, instanceOverrides?: Partial<vscode.Uri>): vscode.Uri;
 
 // Namespace mode: namespace overrides or no args returns Uri namespace
-export function createMockUri(
-  namespaceOverrides?: { file?: jest.Mock; parse?: jest.Mock },
-): { file: jest.Mock; parse: jest.Mock };
+export function createMockUri(namespaceOverrides?: { file?: jest.Mock; parse?: jest.Mock }): {
+  file: jest.Mock;
+  parse: jest.Mock;
+};
 
 // Implementation
 export function createMockUri(

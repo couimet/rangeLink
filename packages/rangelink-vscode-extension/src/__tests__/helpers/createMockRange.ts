@@ -14,9 +14,7 @@ import * as vscode from 'vscode';
  * @param overrides - Range properties (start, end, etc.)
  * @returns Mock Range with provided properties
  */
-export const createMockRange = (
-  overrides: Partial<vscode.Range>,
-): vscode.Range => {
+export const createMockRange = (overrides: Partial<vscode.Range>): vscode.Range => {
   return {
     ...overrides,
   } as vscode.Range;

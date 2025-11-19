@@ -67,7 +67,6 @@ describe('RangeLinkService', () => {
 
   describe('copyToClipboardAndDestination', () => {
     beforeEach(() => {
-
       // Spy on adapter methods used in these tests
       jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
       jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
@@ -624,7 +623,9 @@ describe('RangeLinkService', () => {
       it('should show error message', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
+        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
+          'RangeLink: No active editor',
+        );
       });
 
       it('should not copy to clipboard', async () => {
@@ -672,7 +673,10 @@ describe('RangeLinkService', () => {
         const mockDocument = createMockDocument({
           getText: createMockText(''),
         });
-        const mockEditor = createMockEditor({ document: mockDocument, selections: [selection1, selection2] });
+        const mockEditor = createMockEditor({
+          document: mockDocument,
+          selections: [selection1, selection2],
+        });
         mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
       });
 
@@ -1166,7 +1170,9 @@ describe('RangeLinkService', () => {
         );
 
         expect(result).toBeNull();
-        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
+        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
+          'RangeLink: No active editor',
+        );
         expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
       });
 
@@ -1192,7 +1198,9 @@ describe('RangeLinkService', () => {
       it('should show consistent error message when no editor', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
+        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
+          'RangeLink: No active editor',
+        );
         expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
       });
 
@@ -1350,8 +1358,12 @@ describe('RangeLinkService', () => {
           ],
         });
 
-        jest.spyOn(mockVscodeAdapter, 'getWorkspaceFolder').mockImplementation(createMockGetWorkspaceFolder('/test'));
-        jest.spyOn(mockVscodeAdapter, 'asRelativePath').mockImplementation(createMockAsRelativePath('file.ts'));
+        jest
+          .spyOn(mockVscodeAdapter, 'getWorkspaceFolder')
+          .mockImplementation(createMockGetWorkspaceFolder('/test'));
+        jest
+          .spyOn(mockVscodeAdapter, 'asRelativePath')
+          .mockImplementation(createMockAsRelativePath('file.ts'));
         jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

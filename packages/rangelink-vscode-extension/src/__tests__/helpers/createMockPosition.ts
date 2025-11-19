@@ -14,9 +14,7 @@ import * as vscode from 'vscode';
  * @param overrides - Position properties (line, character, etc.)
  * @returns Mock Position with provided properties
  */
-export const createMockPosition = (
-  overrides: Partial<vscode.Position>,
-): vscode.Position => {
+export const createMockPosition = (overrides: Partial<vscode.Position>): vscode.Position => {
   return {
     ...overrides,
   } as vscode.Position;

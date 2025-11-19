@@ -14,9 +14,7 @@ import * as vscode from 'vscode';
  * @param overrides - Selection properties (anchor, active, start, end, etc.)
  * @returns Mock Selection with provided properties
  */
-export const createMockSelection = (
-  overrides: Partial<vscode.Selection>,
-): vscode.Selection => {
+export const createMockSelection = (overrides: Partial<vscode.Selection>): vscode.Selection => {
   return {
     ...overrides,
   } as vscode.Selection;
