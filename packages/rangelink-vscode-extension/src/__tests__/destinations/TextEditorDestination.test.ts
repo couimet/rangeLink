@@ -400,7 +400,9 @@ describe('TextEditorDestination', () => {
   describe('equals()', () => {
     it('should return true when comparing same editor (same URI)', async () => {
       const sameUri = mockEditor.document.uri;
-      const sameDocument = createMockDocument('const x = 42;', sameUri, {
+      const sameDocument = createMockDocument({
+        getText: createMockText('const x = 42;'),
+        uri: sameUri,
         isClosed: false,
         isUntitled: false,
       });

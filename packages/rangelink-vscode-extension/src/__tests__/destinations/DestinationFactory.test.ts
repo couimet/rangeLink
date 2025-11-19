@@ -90,7 +90,7 @@ describe('DestinationFactory', () => {
 
       expect(destination).toBeInstanceOf(TextEditorDestination);
       expect(destination.id).toBe('text-editor');
-      expect(destination.displayName).toContain('test.md');
+      expect(destination.displayName).toContain('file.ts');
     });
 
     it('should create new instance on each call', () => {
