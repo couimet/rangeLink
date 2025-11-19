@@ -1,5 +1,10 @@
 import * as vscode from 'vscode';
 
+import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
+import { BehaviourAfterPaste } from '../../types/BehaviourAfterPaste';
+import type { SendTextToTerminalOptions } from '../../types/SendTextToTerminalOptions';
+import { TerminalFocusType } from '../../types/TerminalFocusType';
 import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
 
 /**
@@ -103,6 +108,127 @@ export class VscodeAdapter {
   ): Promise<vscode.TextEditor> {
     const document = await this.ideInstance.workspace.openTextDocument(uri);
     return this.ideInstance.window.showTextDocument(document, options);
+  }
+
+  // ============================================================================
+  // Terminal Operations
+  // ============================================================================
+
+  /**
+   * Enforce that terminal reference exists (not undefined).
+   *
+   * Shared validation for all terminal operations.
+   * Name chosen to allow future validation additions beyond existence check.
+   *
+   * @param terminal - Terminal to validate
+   * @param callerName - Name of calling method for error context
+   * @throws RangeLinkError with TERMINAL_NOT_DEFINED if terminal is undefined
+   */
+  private enforceTerminalExists(terminal: vscode.Terminal | undefined, callerName: string): void {
+    if (!terminal) {
+      throw new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.TERMINAL_NOT_DEFINED,
+        message: 'Terminal reference is not defined',
+        functionName: callerName,
+      });
+    }
+  }
+
+  /**
+   * Show terminal in UI with specified focus behavior.
+   *
+   * Wrapper for terminal.show() to isolate destination classes from direct vscode calls.
+   *
+   * Architecture note: Uses enum parameter instead of boolean for extensibility.
+   * Additional focus types can be added later without breaking existing code.
+   *
+   * @param terminal - Terminal to show
+   * @param focusType - Focus behavior (currently only StealFocus supported)
+   * @throws RangeLinkError with TERMINAL_NOT_DEFINED if terminal is undefined/null
+   * @throws RangeLinkError with UNKNOWN_FOCUS_TYPE if focusType is unrecognized
+   */
+  showTerminal(terminal: vscode.Terminal, focusType: TerminalFocusType): void {
+    this.enforceTerminalExists(terminal, 'VscodeAdapter.showTerminal');
+
+    switch (focusType) {
+      case TerminalFocusType.StealFocus:
+        terminal.show(false); // false = don't preserve focus, steal it to terminal
+        break;
+      default:
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.UNKNOWN_FOCUS_TYPE,
+          message: `Unknown focus type: ${focusType}`,
+          functionName: 'VscodeAdapter.showTerminal',
+          details: { focusType: focusType as never },
+        });
+    }
+  }
+
+  /**
+   * Send text to terminal with optional execution behavior.
+   *
+   * Wrapper for terminal.sendText() to isolate destination classes from direct vscode calls.
+   *
+   * @param terminal - Terminal to send text to
+   * @param text - Text content to send
+   * @param options - Optional configuration for terminal paste behavior (defaults to NOTHING)
+   * @throws RangeLinkError with TERMINAL_NOT_DEFINED if terminal is undefined/null
+   */
+  sendTextToTerminal(
+    terminal: vscode.Terminal,
+    text: string,
+    options?: SendTextToTerminalOptions,
+  ): void {
+    this.enforceTerminalExists(terminal, 'VscodeAdapter.sendTextToTerminal');
+
+    const behaviour = options?.behaviour ?? BehaviourAfterPaste.NOTHING;
+    const shouldExecute = behaviour === BehaviourAfterPaste.EXECUTE;
+    terminal.sendText(text, shouldExecute);
+  }
+
+  /**
+   * Get terminal name for display/logging.
+   *
+   * Wrapper for terminal.name property access to isolate destination classes.
+   *
+   * @param terminal - Terminal to get name from
+   * @returns Terminal name
+   * @throws RangeLinkError with TERMINAL_NOT_DEFINED if terminal is undefined/null
+   */
+  getTerminalName(terminal: vscode.Terminal): string {
+    this.enforceTerminalExists(terminal, 'VscodeAdapter.getTerminalName');
+    return terminal.name;
+  }
+
+  // ============================================================================
+  // Text Editor Operations
+  // ============================================================================
+
+  /**
+   * Insert text at cursor position in editor.
+   *
+   * Wrapper for editor.edit() API to isolate destination classes from direct vscode calls.
+   *
+   * @param editor - Editor to insert text into
+   * @param text - Text to insert
+   * @returns Promise resolving to true if edit succeeded, false otherwise
+   */
+  async insertTextAtCursor(editor: vscode.TextEditor, text: string): Promise<boolean> {
+    return editor.edit((editBuilder) => {
+      editBuilder.insert(editor.selection.active, text);
+    });
+  }
+
+  /**
+   * Get document URI from editor.
+   *
+   * Wrapper for editor.document.uri property access to isolate destination classes.
+   *
+   * @param editor - Editor to get document URI from
+   * @returns Document URI
+   */
+  getDocumentUri(editor: vscode.TextEditor): vscode.Uri {
+    return editor.document.uri;
   }
 
   // ============================================================================
