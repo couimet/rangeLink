@@ -308,11 +308,7 @@ describe('TerminalDestination', () => {
         ...mockTerminal,
         processId: Promise.resolve(12345), // Same processId
       } as vscode.Terminal;
-      const otherDestination = new TerminalDestination(
-        otherTerminal,
-        mockAdapter,
-        mockLogger,
-      );
+      const otherDestination = new TerminalDestination(otherTerminal, mockAdapter, mockLogger);
 
       const result = await destination.equals(otherDestination);
 
@@ -324,11 +320,7 @@ describe('TerminalDestination', () => {
         ...mockTerminal,
         processId: Promise.resolve(99999), // Different processId
       } as vscode.Terminal;
-      const otherDestination = new TerminalDestination(
-        otherTerminal,
-        mockAdapter,
-        mockLogger,
-      );
+      const otherDestination = new TerminalDestination(otherTerminal, mockAdapter, mockLogger);
 
       const result = await destination.equals(otherDestination);
 
@@ -357,11 +349,7 @@ describe('TerminalDestination', () => {
         ...mockTerminal,
         processId: Promise.resolve(undefined),
       } as vscode.Terminal;
-      const otherDestination = new TerminalDestination(
-        terminalWithoutPid,
-        mockAdapter,
-        mockLogger,
-      );
+      const otherDestination = new TerminalDestination(terminalWithoutPid, mockAdapter, mockLogger);
 
       const result = await destination.equals(otherDestination);
 
@@ -373,11 +361,7 @@ describe('TerminalDestination', () => {
         ...mockTerminal,
         processId: Promise.resolve(undefined),
       } as vscode.Terminal;
-      const otherDestination = new TerminalDestination(
-        terminalWithoutPid,
-        mockAdapter,
-        mockLogger,
-      );
+      const otherDestination = new TerminalDestination(terminalWithoutPid, mockAdapter, mockLogger);
 
       await destination.equals(otherDestination);
 
