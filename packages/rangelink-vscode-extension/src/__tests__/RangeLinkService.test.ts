@@ -1,6 +1,5 @@
 import type { Logger } from 'barebone-logger';
 import * as loggerModule from 'barebone-logger';
-import { createMockLogger } from 'barebone-logger-testing';
 import type { DelimiterConfig } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -9,6 +8,7 @@ import { messagesEn } from '../i18n/messages.en';
 import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
+
 import { createMockAsRelativePath } from './helpers/createMockAsRelativePath';
 import { createMockClaudeCodeDestination } from './helpers/createMockClaudeCodeDestination';
 import { createMockCursorAIDestination } from './helpers/createMockCursorAIDestination';
@@ -18,13 +18,13 @@ import { createMockEditor } from './helpers/createMockEditor';
 import { createMockFormattedLink } from './helpers/createMockFormattedLink';
 import { createMockGetWorkspaceFolder } from './helpers/createMockGetWorkspaceFolder';
 import { createMockPasteDestination } from './helpers/createMockPasteDestination';
-import { createMockTerminalDestination } from './helpers/createMockTerminalDestination';
-import { createMockTextEditorDestination } from './helpers/createMockTextEditorDestination';
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from './helpers/mockVSCode';
-import { createMockSelection } from './helpers/createMockSelection';
 import { createMockPosition } from './helpers/createMockPosition';
+import { createMockSelection } from './helpers/createMockSelection';
+import { createMockTerminalDestination } from './helpers/createMockTerminalDestination';
 import { createMockText } from './helpers/createMockText';
+import { createMockTextEditorDestination } from './helpers/createMockTextEditorDestination';
 import { createMockUri } from './helpers/createMockUri';
+import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from './helpers/mockVSCode';
 
 let service: RangeLinkService;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
@@ -1387,6 +1387,173 @@ describe('RangeLinkService', () => {
           },
           'Empty selection detected - should be prevented by command enablement',
         );
+      });
+    });
+  });
+
+  describe('createLinkOnly (clipboard-only commands - Issue #117)', () => {
+    beforeEach(() => {
+      // Spy on adapter methods
+      jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
+      jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
+
+      // Get mock vscode instance and configure workspace
+      const mockVscode = mockVscodeAdapter.__getVscodeInstance();
+      const workspaceUri = createMockUri('/workspace');
+      mockVscode.workspace.workspaceFolders = [
+        {
+          uri: workspaceUri,
+          name: 'workspace',
+          index: 0,
+        },
+      ];
+
+      // Configure workspace methods on vscode instance
+      mockVscode.workspace.getWorkspaceFolder = createMockGetWorkspaceFolder('/workspace');
+      mockVscode.workspace.asRelativePath = createMockAsRelativePath('src/file.ts');
+
+      // Create mock editor with selection (lines 10-20, 1-indexed in display)
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const mockDocument = createMockDocument({
+        getText: createMockText('line content'),
+        uri: mockUri,
+        lineCount: 100,
+        lineAt: jest.fn((line: number) => ({
+          text: 'line content',
+          range: {
+            start: { line, character: 0 },
+            end: { line, character: 12 }, // 'line content'.length
+          },
+          rangeIncludingLineBreak: {
+            start: { line, character: 0 },
+            end: { line, character: 13 },
+          },
+          lineNumber: line,
+          firstNonWhitespaceCharacterIndex: 0,
+          isEmptyOrWhitespace: false,
+        })) as any,
+      });
+      // Full-line selection: start at column 0, end at end of line 19
+      // Line 19 has 'line content' (12 chars), so end is at character 12
+      // This generates clean line-only format: #L10-L20 (no columns)
+      const selection = mockSelection(9, 0, 19, 12); // 0-indexed: lines 9-19 = display L10-L20
+      const mockEditor = createMockEditor({
+        document: mockDocument,
+        selections: [selection],
+      });
+
+      // Set active editor
+      mockVscode.window.activeTextEditor = mockEditor;
+    });
+
+    describe('with workspace-relative path', () => {
+      it('should copy link to clipboard', async () => {
+        // Unbound destination
+        mockDestinationManager = createMockDestinationManager({ isBound: false });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+
+        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L10-L20');
+      });
+
+      it('should show clipboard-only status message', async () => {
+        mockDestinationManager = createMockDestinationManager({ isBound: false });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+
+        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ RangeLink copied to clipboard',
+        );
+      });
+
+      it('should NOT send to destination even when bound', async () => {
+        // Bound destination (terminal)
+        const mockDestination = createMockTerminalDestination({ displayName: 'bash' });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          boundDestination: mockDestination,
+          sendToDestinationResult: true,
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+
+        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+        // Key assertion: destination should NOT be called for clipboard-only
+        expect(mockDestinationManager.sendToDestination).not.toHaveBeenCalled();
+        // But clipboard should still be called
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L10-L20');
+      });
+    });
+
+    describe('with absolute path', () => {
+      it('should copy absolute path link to clipboard', async () => {
+        mockDestinationManager = createMockDestinationManager({ isBound: false });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+
+        await service.createLinkOnly(PathFormat.Absolute);
+
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(
+          '/workspace/src/file.ts#L10-L20',
+        );
+      });
+
+      it('should show same status message for absolute paths', async () => {
+        mockDestinationManager = createMockDestinationManager({ isBound: false });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+
+        await service.createLinkOnly(PathFormat.Absolute);
+
+        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ RangeLink copied to clipboard',
+        );
+      });
+    });
+
+    describe('edge cases', () => {
+      it('should show error when no editor is active', async () => {
+        // No active editor
+        const mockVscode = mockVscodeAdapter.__getVscodeInstance();
+        mockVscode.window.activeTextEditor = undefined;
+
+        mockDestinationManager = createMockDestinationManager({ isBound: false });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+
+        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
+          'RangeLink: No active editor',
+        );
+        expect(mockVscodeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
+      });
+
+      it('should show error when selection is empty', async () => {
+        // Empty selection (same start and end)
+        const mockUri = createMockUri('/workspace/src/file.ts');
+        const mockDocument = createMockDocument({
+          getText: createMockText('line content'),
+          uri: mockUri,
+        });
+        const emptySelection = mockSelection(5, 10, 5, 10); // Same position
+        const mockEditor = createMockEditor({
+          document: mockDocument,
+          selections: [emptySelection],
+        });
+
+        const mockVscode = mockVscodeAdapter.__getVscodeInstance();
+        mockVscode.window.activeTextEditor = mockEditor;
+
+        mockDestinationManager = createMockDestinationManager({ isBound: false });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+
+        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
+          'RangeLink: No text selected. Select text and try again.',
+        );
+        expect(mockVscodeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
       });
     });
   });
