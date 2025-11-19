@@ -1,5 +1,8 @@
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
+import { BehaviourAfterPaste } from '../../../types/BehaviourAfterPaste';
+import { TerminalFocusType } from '../../../types/TerminalFocusType';
 import * as resolveWorkspacePathModule from '../../../utils/resolveWorkspacePath';
+import { createMockTerminal } from '../../helpers/createMockTerminal';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../helpers/mockVSCode';
 
 // ============================================================================
@@ -268,4 +271,155 @@ describe('VscodeAdapter', () => {
       expect(range).toStrictEqual({ start, end });
     });
   });
+
+  describe('showTerminal', () => {
+    it('should call terminal.show(false) with StealFocus', () => {
+      const mockTerminal = createMockTerminal();
+
+      adapter.showTerminal(mockTerminal, TerminalFocusType.StealFocus);
+
+      expect(mockTerminal.show).toHaveBeenCalledWith(false);
+      expect(mockTerminal.show).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw TERMINAL_NOT_DEFINED when terminal is undefined', () => {
+      const undefinedTerminal = undefined as any;
+
+      expect(() =>
+        adapter.showTerminal(undefinedTerminal, TerminalFocusType.StealFocus),
+      ).toThrowRangeLinkExtensionError('TERMINAL_NOT_DEFINED', {
+        message: 'Terminal reference is not defined',
+        functionName: 'VscodeAdapter.showTerminal',
+      });
+    });
+
+    it('should throw TERMINAL_NOT_DEFINED when terminal is null', () => {
+      const nullTerminal = null as any;
+
+      expect(() =>
+        adapter.showTerminal(nullTerminal, TerminalFocusType.StealFocus),
+      ).toThrowRangeLinkExtensionError('TERMINAL_NOT_DEFINED', {
+        message: 'Terminal reference is not defined',
+        functionName: 'VscodeAdapter.showTerminal',
+      });
+    });
+
+    it('should throw UNKNOWN_FOCUS_TYPE for invalid focus type', () => {
+      const mockTerminal = createMockTerminal();
+      const invalidFocusType = 'invalid-focus-type' as any;
+
+      expect(() =>
+        adapter.showTerminal(mockTerminal, invalidFocusType),
+      ).toThrowRangeLinkExtensionError('UNKNOWN_FOCUS_TYPE', {
+        message: 'Unknown focus type: invalid-focus-type',
+        functionName: 'VscodeAdapter.showTerminal',
+      });
+    });
+  });
+
+  describe('sendTextToTerminal', () => {
+    it('should use NOTHING behaviour by default (no options provided)', () => {
+      const mockTerminal = createMockTerminal();
+      const text = 'test text';
+
+      adapter.sendTextToTerminal(mockTerminal, text);
+
+      expect(mockTerminal.sendText).toHaveBeenCalledWith(text, false);
+      expect(mockTerminal.sendText).toHaveBeenCalledTimes(1);
+    });
+
+    it('should use NOTHING behaviour when explicitly specified', () => {
+      const mockTerminal = createMockTerminal();
+
+      adapter.sendTextToTerminal(mockTerminal, 'command', {
+        behaviour: BehaviourAfterPaste.NOTHING,
+      });
+
+      expect(mockTerminal.sendText).toHaveBeenCalledWith('command', false);
+    });
+
+    it('should use EXECUTE behaviour when specified', () => {
+      const mockTerminal = createMockTerminal();
+
+      adapter.sendTextToTerminal(mockTerminal, 'command', {
+        behaviour: BehaviourAfterPaste.EXECUTE,
+      });
+
+      expect(mockTerminal.sendText).toHaveBeenCalledWith('command', true);
+    });
+
+    it('should handle empty text with default behaviour', () => {
+      const mockTerminal = createMockTerminal();
+
+      adapter.sendTextToTerminal(mockTerminal, '');
+
+      expect(mockTerminal.sendText).toHaveBeenCalledWith('', false);
+    });
+
+    it('should throw TERMINAL_NOT_DEFINED when terminal is undefined', () => {
+      const undefinedTerminal = undefined as any;
+
+      expect(() =>
+        adapter.sendTextToTerminal(undefinedTerminal, 'text'),
+      ).toThrowRangeLinkExtensionError('TERMINAL_NOT_DEFINED', {
+        message: 'Terminal reference is not defined',
+        functionName: 'VscodeAdapter.sendTextToTerminal',
+      });
+    });
+
+    it('should throw TERMINAL_NOT_DEFINED when terminal is null', () => {
+      const nullTerminal = null as any;
+
+      expect(() =>
+        adapter.sendTextToTerminal(nullTerminal, 'text'),
+      ).toThrowRangeLinkExtensionError('TERMINAL_NOT_DEFINED', {
+        message: 'Terminal reference is not defined',
+        functionName: 'VscodeAdapter.sendTextToTerminal',
+      });
+    });
+  });
+
+  describe('getTerminalName', () => {
+    it('should return terminal name', () => {
+      const terminalName = 'bash';
+      const mockTerminal = createMockTerminal({ name: terminalName });
+
+      const result = adapter.getTerminalName(mockTerminal);
+
+      expect(result).toBe(terminalName);
+    });
+
+    it('should return different terminal names', () => {
+      const mockTerminal1 = createMockTerminal({ name: 'zsh' });
+      const mockTerminal2 = createMockTerminal({ name: 'powershell' });
+
+      expect(adapter.getTerminalName(mockTerminal1)).toBe('zsh');
+      expect(adapter.getTerminalName(mockTerminal2)).toBe('powershell');
+    });
+
+    it('should throw TERMINAL_NOT_DEFINED when terminal is undefined', () => {
+      const undefinedTerminal = undefined as any;
+
+      expect(() => adapter.getTerminalName(undefinedTerminal)).toThrowRangeLinkExtensionError(
+        'TERMINAL_NOT_DEFINED',
+        {
+          message: 'Terminal reference is not defined',
+          functionName: 'VscodeAdapter.getTerminalName',
+        },
+      );
+    });
+
+    it('should throw TERMINAL_NOT_DEFINED when terminal is null', () => {
+      const nullTerminal = null as any;
+
+      expect(() => adapter.getTerminalName(nullTerminal)).toThrowRangeLinkExtensionError(
+        'TERMINAL_NOT_DEFINED',
+        {
+          message: 'Terminal reference is not defined',
+          functionName: 'VscodeAdapter.getTerminalName',
+        },
+      );
+    });
+  });
+
 });
