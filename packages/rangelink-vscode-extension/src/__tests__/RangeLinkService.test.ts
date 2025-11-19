@@ -17,9 +17,10 @@ import { createMockGetWorkspaceFolder } from './helpers/createMockGetWorkspaceFo
 import { createMockDestination, createMockFormattedLink } from './helpers/destinationTestHelpers';
 import { createMockVscodeAdapter } from './helpers/mockVSCode';
 
+let service: RangeLinkService;
+
 describe('RangeLinkService', () => {
   describe('copyToClipboardAndDestination', () => {
-    let service: RangeLinkService;
     let mockIdeAdapter: VscodeAdapter;
     let mockDestinationManager: PasteDestinationManager;
     const delimiters: DelimiterConfig = {
@@ -526,7 +527,6 @@ describe('RangeLinkService', () => {
   });
 
   describe('pasteSelectedTextToDestination', () => {
-    let service: RangeLinkService;
     let mockIdeAdapter: VscodeAdapter;
     let mockDestinationManager: PasteDestinationManager;
     let mockEditor: any;
@@ -1009,7 +1009,6 @@ describe('RangeLinkService', () => {
   });
 
   describe('validateSelectionsAndShowError', () => {
-    let service: RangeLinkService;
     let mockIdeAdapter: VscodeAdapter;
     let mockDestinationManager: PasteDestinationManager;
     const delimiters: DelimiterConfig = {
