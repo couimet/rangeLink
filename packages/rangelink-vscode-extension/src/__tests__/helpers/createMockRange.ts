@@ -1,15 +1,23 @@
 /**
- * Create a mock Range constructor for testing
+ * Create a mock Range for testing
  */
 
 import * as vscode from 'vscode';
 
 /**
- * Create a mock Range constructor for navigation tests.
+ * Create a mock Range with minimal helper pattern.
  *
- * Creates Range objects with start and end properties.
+ * **Minimal Helper Philosophy:**
+ * - No smart defaults or hidden behaviors
+ * - Caller provides exactly what they need
  *
- * @returns Mock Range constructor that creates {start, end} objects
+ * @param overrides - Range properties (start, end, etc.)
+ * @returns Mock Range with provided properties
  */
-export const createMockRange = () =>
-  jest.fn((start: vscode.Position, end: vscode.Position) => ({ start, end }));
+export const createMockRange = (
+  overrides: Partial<vscode.Range>,
+): vscode.Range => {
+  return {
+    ...overrides,
+  } as vscode.Range;
+};
