@@ -314,7 +314,7 @@ export class RangeLinkService {
           ? 'Skipping destination (clipboard-only command)'
           : 'No destination bound - copied to clipboard only';
       getLogger().info({ fn: fnName }, reason);
-      this.ideAdapter.setStatusBarMessage(basicStatusMessage, 2000);
+      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
       return;
     }
 
