@@ -370,12 +370,13 @@ describe('VscodeAdapter', () => {
     it('should throw TERMINAL_NOT_DEFINED when terminal is null', () => {
       const nullTerminal = null as any;
 
-      expect(() =>
-        adapter.sendTextToTerminal(nullTerminal, 'text'),
-      ).toThrowRangeLinkExtensionError('TERMINAL_NOT_DEFINED', {
-        message: 'Terminal reference is not defined',
-        functionName: 'VscodeAdapter.sendTextToTerminal',
-      });
+      expect(() => adapter.sendTextToTerminal(nullTerminal, 'text')).toThrowRangeLinkExtensionError(
+        'TERMINAL_NOT_DEFINED',
+        {
+          message: 'Terminal reference is not defined',
+          functionName: 'VscodeAdapter.sendTextToTerminal',
+        },
+      );
     });
   });
 

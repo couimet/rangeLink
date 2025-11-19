@@ -7,14 +7,8 @@ import {
 declare global {
   namespace jest {
     interface Matchers<R> {
-      toBeRangeLinkExtensionError(
-        code: string,
-        expected: ExpectedRangeLinkExtensionError,
-      ): R;
-      toThrowRangeLinkExtensionError(
-        code: string,
-        expected: ExpectedRangeLinkExtensionError,
-      ): R;
+      toBeRangeLinkExtensionError(code: string, expected: ExpectedRangeLinkExtensionError): R;
+      toThrowRangeLinkExtensionError(code: string, expected: ExpectedRangeLinkExtensionError): R;
     }
   }
 }
