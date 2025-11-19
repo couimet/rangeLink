@@ -70,7 +70,7 @@ describe('TextEditorDestination', () => {
       destination.setEditor(mockEditor);
 
       // Mock tab groups - bound document only in second tab group
-      const otherUri = createMockUriInstance('/workspace/other.ts');
+      const otherUri = createMockUri('/workspace/other.ts');
       const mockVscode = mockAdapter.__getVscodeInstance();
 
       mockVscode.window.tabGroups = createMockTabGroups({
@@ -192,7 +192,7 @@ describe('TextEditorDestination', () => {
 
     it('should return false when bound document not topmost in group', async () => {
       // Make a different document topmost
-      const differentUri = createMockUriInstance('/workspace/other.ts');
+      const differentUri = createMockUri('/workspace/other.ts');
       const mockVscode = mockAdapter.__getVscodeInstance();
       const tabGroups = mockVscode.window.tabGroups as any;
       tabGroups.all[1].activeTab = createMockTab(differentUri, {
@@ -370,7 +370,7 @@ describe('TextEditorDestination', () => {
       destination.setEditor(mockEditor);
 
       // Mock tab groups - bound document in second tab group
-      const otherUri = createMockUriInstance('/workspace/other.ts');
+      const otherUri = createMockUri('/workspace/other.ts');
       const mockVscode = mockAdapter.__getVscodeInstance();
 
       mockVscode.window.tabGroups = createMockTabGroups({

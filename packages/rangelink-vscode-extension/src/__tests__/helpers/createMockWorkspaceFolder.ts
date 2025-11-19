@@ -4,7 +4,7 @@
 
 import * as vscode from 'vscode';
 
-import { createMockUriInstance } from './createMockUriInstance';
+import { createMockUri } from './createMockUri';
 
 /**
  * Create a mock workspace folder with sensible defaults.
@@ -20,7 +20,7 @@ export const createMockWorkspaceFolder = (
   fsPath: string,
   overrides?: Partial<vscode.WorkspaceFolder>,
 ): vscode.WorkspaceFolder => {
-  const uri = createMockUriInstance(fsPath);
+  const uri = createMockUri(fsPath);
   return {
     uri,
     name: fsPath.split('/').pop() || 'workspace',

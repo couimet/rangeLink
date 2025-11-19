@@ -32,7 +32,7 @@ import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockTerminalDestination } from '../helpers/createMockTerminalDestination';
 import { createMockTextEditorDestination } from '../helpers/createMockTextEditorDestination';
-import { createMockUriInstance } from '../helpers/createMockUriInstance';
+import { createMockUri } from '../helpers/createMockUri';
 import {
   createMockVscodeAdapter,
   type MockVscodeOptions,
