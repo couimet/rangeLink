@@ -30,6 +30,7 @@ import { createMockCursorAIDestination } from '../helpers/createMockCursorAIDest
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
+import { createMockTerminal } from '../helpers/createMockTerminal';
 import { createMockTerminalDestination } from '../helpers/createMockTerminalDestination';
 import { createMockText } from '../helpers/createMockText';
 import { createMockTextEditorDestination } from '../helpers/createMockTextEditorDestination';
@@ -151,7 +152,7 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(true);
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
-        '✓ RangeLink bound to Terminal (bash)',
+        '✓ RangeLink bound to Terminal ("bash")',
         3000,
       );
     });
@@ -191,30 +192,28 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
-        destinationName: 'Terminal (bash)',
+        destinationName: 'Terminal ("bash")',
       });
       expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
-        'RangeLink: Already bound to Terminal (bash)',
+        'RangeLink: Already bound to Terminal ("bash")',
       );
 
       controlledManager.dispose();
     });
 
-    it('should handle unnamed terminal', async () => {
-      const unnamedTerminal = {
-        name: undefined,
-        sendText: jest.fn(),
-        show: jest.fn(),
+    it('should handle terminal with custom name', async () => {
+      const customTerminal = createMockTerminal({
+        name: 'zsh',
         processId: Promise.resolve(54321),
-      } as unknown as vscode.Terminal;
+      });
 
-      mockAdapter.__getVscodeInstance().window.activeTerminal = unnamedTerminal;
+      mockAdapter.__getVscodeInstance().window.activeTerminal = customTerminal;
 
       const result = await manager.bind('terminal');
 
       expect(result).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
-        '✓ RangeLink bound to Unnamed Terminal',
+        '✓ RangeLink bound to Terminal ("zsh")',
         3000,
       );
     });
@@ -364,7 +363,7 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expectQuickPickConfirmation(showQuickPickMock, {
-        currentDestination: 'Terminal (bash)',
+        currentDestination: 'Terminal ("bash")',
         newDestination: 'Cursor AI Assistant',
       });
 
@@ -392,7 +391,7 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(false);
       expectQuickPickConfirmation(showQuickPickMock, {
         currentDestination: 'Cursor AI Assistant',
-        newDestination: 'Terminal (bash)',
+        newDestination: 'Terminal ("bash")',
       });
 
       localManager.dispose();
@@ -414,7 +413,7 @@ describe('PasteDestinationManager', () => {
 
       expect(manager.isBound()).toBe(false);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
-        '✓ RangeLink unbound from Terminal (bash)',
+        '✓ RangeLink unbound from Terminal ("bash")',
         2000,
       );
     });
@@ -699,7 +698,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
         1,
-        '✓ RangeLink unbound from Text Editor',
+        '✓ RangeLink unbound from Text Editor ("file.ts")',
         2000,
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
@@ -774,7 +773,7 @@ describe('PasteDestinationManager', () => {
 
       expect(destination).toBeDefined();
       expect(destination?.id).toBe('terminal');
-      expect(destination?.displayName).toBe('Terminal (bash)');
+      expect(destination?.displayName).toBe('Terminal ("bash")');
     });
 
     it('should return undefined when nothing bound', () => {
@@ -936,7 +935,7 @@ describe('PasteDestinationManager', () => {
 
         // Verify first bind toast (no replacement)
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink bound to Terminal (TestTerminal)',
+          '✓ RangeLink bound to Terminal ("TestTerminal")',
           3000,
         );
 
@@ -1088,7 +1087,7 @@ describe('PasteDestinationManager', () => {
 
         // Assert: Standard toast shown (no "Unbound..." prefix)
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink bound to Terminal (TestTerminal)',
+          '✓ RangeLink bound to Terminal ("TestTerminal")',
           3000,
         );
 

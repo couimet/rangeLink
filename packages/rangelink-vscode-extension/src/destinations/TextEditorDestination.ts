@@ -59,11 +59,12 @@ export class TextEditorDestination implements PasteDestination {
   /**
    * Get display name for UI (evaluated in real-time)
    *
-   * Returns workspace-relative path or filename for display (e.g., "src/file.ts").
+   * Returns formatted editor name for display (e.g., `Text Editor ("src/file.ts")`).
    * Evaluated on each access rather than cached to ensure freshness.
+   * Matches TerminalDestination format for consistency.
    */
   get displayName(): string {
-    return this.computeEditorDisplayName();
+    return `Text Editor ("${this.computeEditorDisplayName()}")`;
   }
 
   /**

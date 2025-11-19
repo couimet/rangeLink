@@ -42,11 +42,12 @@ export class TerminalDestination implements PasteDestination {
   /**
    * Get display name for UI (evaluated in real-time)
    *
-   * Returns formatted terminal name for display (e.g., "Terminal (bash)").
+   * Returns formatted terminal name for display (e.g., `Terminal ("bash")`).
    * Uses terminalName getter internally to avoid duplication.
+   * Double quotes around name improve parsing and visualization.
    */
   get displayName(): string {
-    return `Terminal (${this.terminalName})`;
+    return `Terminal ("${this.terminalName}")`;
   }
 
   /**
