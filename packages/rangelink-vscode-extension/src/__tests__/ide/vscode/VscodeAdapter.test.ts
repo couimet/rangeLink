@@ -678,7 +678,10 @@ describe('VscodeAdapter', () => {
         const mockDisposable = { dispose: jest.fn() };
         mockVSCode.languages.registerDocumentLinkProvider.mockReturnValue(mockDisposable);
 
-        const result = adapter.registerDocumentLinkProvider(mockSelector as any, mockProvider as any);
+        const result = adapter.registerDocumentLinkProvider(
+          mockSelector as any,
+          mockProvider as any,
+        );
 
         expect(mockVSCode.languages.registerDocumentLinkProvider).toHaveBeenCalledWith(
           mockSelector,
@@ -694,7 +697,10 @@ describe('VscodeAdapter', () => {
         const mockDisposable = { dispose: jest.fn() };
         mockVSCode.languages.registerDocumentLinkProvider.mockReturnValue(mockDisposable);
 
-        const result = adapter.registerDocumentLinkProvider(mockSelectors as any, mockProvider as any);
+        const result = adapter.registerDocumentLinkProvider(
+          mockSelectors as any,
+          mockProvider as any,
+        );
 
         expect(mockVSCode.languages.registerDocumentLinkProvider).toHaveBeenCalledWith(
           mockSelectors,
@@ -709,7 +715,10 @@ describe('VscodeAdapter', () => {
         const mockDisposable = { dispose: jest.fn() };
         mockVSCode.languages.registerDocumentLinkProvider.mockReturnValue(mockDisposable);
 
-        const result = adapter.registerDocumentLinkProvider(mockSelector as any, mockProvider as any);
+        const result = adapter.registerDocumentLinkProvider(
+          mockSelector as any,
+          mockProvider as any,
+        );
 
         result.dispose();
         expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
@@ -744,8 +753,14 @@ describe('VscodeAdapter', () => {
 
         expect(result1).toBe(mockDisposable1);
         expect(result2).toBe(mockDisposable2);
-        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith('rangelink.command1', callback1);
-        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith('rangelink.command2', callback2);
+        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith(
+          'rangelink.command1',
+          callback1,
+        );
+        expect(mockVSCode.commands.registerCommand).toHaveBeenCalledWith(
+          'rangelink.command2',
+          callback2,
+        );
       });
 
       it('should return disposable that can be disposed', () => {
@@ -802,7 +817,11 @@ describe('VscodeAdapter', () => {
 
       await adapter.showInformationMessage(message, button1, button2);
 
-      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(message, button1, button2);
+      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(
+        message,
+        button1,
+        button2,
+      );
     });
 
     it('should return button text when button is clicked', async () => {
