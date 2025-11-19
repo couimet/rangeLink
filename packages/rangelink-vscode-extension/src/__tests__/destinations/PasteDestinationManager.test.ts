@@ -954,7 +954,7 @@ describe('PasteDestinationManager', () => {
             expect.objectContaining({ label: 'No, keep current binding' }),
           ]),
           expect.objectContaining({
-            placeHolder: expect.stringContaining('Already bound to Terminal (TestTerminal)'),
+            placeHolder: expect.stringContaining('Already bound to Terminal ("TestTerminal")'),
           }),
         );
 
@@ -965,7 +965,7 @@ describe('PasteDestinationManager', () => {
 
         // Assert: Toast shows replacement info
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
-          'Unbound Terminal, now bound to Text Editor',
+          'Unbound Terminal ("TestTerminal"), now bound to Text Editor ("file.ts")',
           3000,
         );
       });
@@ -1057,7 +1057,7 @@ describe('PasteDestinationManager', () => {
 
         // Assert: Info message shown (not error) with actual terminal name
         expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
-          'RangeLink: Already bound to Terminal (TestTerminal)',
+          'RangeLink: Already bound to Terminal ("TestTerminal")',
         );
 
         // Assert: QuickPick NOT shown (no confirmation needed)
