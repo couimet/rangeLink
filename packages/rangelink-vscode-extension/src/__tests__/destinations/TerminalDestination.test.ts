@@ -143,10 +143,11 @@ describe('TerminalDestination', () => {
 
       expect(isEligibleForPaste).toHaveBeenCalledWith('original-text');
       expect(applySmartPadding).toHaveBeenCalledWith('original-text');
-      const callArgs = (mockVscodeAdapter.sendTextToTerminal as jest.Mock).mock.calls[0];
-      expect(callArgs[0]).toBe(mockTerminal);
-      expect(callArgs[1]).toBe(' padded-text ');
-      expect(callArgs[2]).toStrictEqual({ behaviour: BehaviourAfterPaste.NOTHING });
+      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(
+        mockTerminal,
+        ' padded-text ',
+        { behaviour: BehaviourAfterPaste.NOTHING },
+      );
     });
 
     it('should use applySmartPadding result for ideAdapter.sendTextToTerminal with NOTHING behaviour', async () => {
@@ -156,10 +157,11 @@ describe('TerminalDestination', () => {
       await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(applySmartPadding).toHaveBeenCalledWith('src/file.ts#L10');
-      const callArgs = (mockVscodeAdapter.sendTextToTerminal as jest.Mock).mock.calls[0];
-      expect(callArgs[0]).toBe(mockTerminal);
-      expect(callArgs[1]).toBe('\tcustom-padded\n');
-      expect(callArgs[2]).toStrictEqual({ behaviour: BehaviourAfterPaste.NOTHING });
+      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(
+        mockTerminal,
+        '\tcustom-padded\n',
+        { behaviour: BehaviourAfterPaste.NOTHING },
+      );
     });
 
     it('should log success with formattedLink', async () => {
@@ -213,10 +215,11 @@ describe('TerminalDestination', () => {
       await destination.pasteContent(testContent);
 
       expect(applySmartPadding).toHaveBeenCalledWith(testContent);
-      const callArgs = (mockVscodeAdapter.sendTextToTerminal as jest.Mock).mock.calls[0];
-      expect(callArgs[0]).toBe(mockTerminal);
-      expect(callArgs[1]).toBe(' selected text ');
-      expect(callArgs[2]).toStrictEqual({ behaviour: BehaviourAfterPaste.NOTHING });
+      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(
+        mockTerminal,
+        ' selected text ',
+        { behaviour: BehaviourAfterPaste.NOTHING },
+      );
     });
 
     it('should call ideAdapter.showTerminal to focus terminal', async () => {
@@ -254,10 +257,11 @@ describe('TerminalDestination', () => {
 
       expect(isEligibleForPaste).toHaveBeenCalledWith('original-content');
       expect(applySmartPadding).toHaveBeenCalledWith('original-content');
-      const callArgs = (mockVscodeAdapter.sendTextToTerminal as jest.Mock).mock.calls[0];
-      expect(callArgs[0]).toBe(mockTerminal);
-      expect(callArgs[1]).toBe(' padded-content ');
-      expect(callArgs[2]).toStrictEqual({ behaviour: BehaviourAfterPaste.NOTHING });
+      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(
+        mockTerminal,
+        ' padded-content ',
+        { behaviour: BehaviourAfterPaste.NOTHING },
+      );
     });
   });
 
