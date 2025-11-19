@@ -111,6 +111,19 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
   );
 
+  // Register clipboard-only commands (issue #117)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.copyLinkOnlyWithRelativePath', () =>
+      service.createLinkOnly(PathFormat.WorkspaceRelative),
+    ),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('rangelink.copyLinkOnlyWithAbsolutePath', () =>
+      service.createLinkOnly(PathFormat.Absolute),
+    ),
+  );
+
   // Register paste selected text command (issue #89)
   context.subscriptions.push(
     vscode.commands.registerCommand('rangelink.pasteSelectedTextToDestination', () =>

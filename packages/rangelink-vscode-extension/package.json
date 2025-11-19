@@ -79,6 +79,20 @@
         "enablement": "editorHasSelection"
       },
       {
+        "command": "rangelink.copyLinkOnlyWithRelativePath",
+        "title": "Copy Range Link (Clipboard Only)",
+        "category": "RangeLink",
+        "icon": "$(clippy)",
+        "enablement": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.copyLinkOnlyWithAbsolutePath",
+        "title": "Copy Range Link (Clipboard Only, Absolute)",
+        "category": "RangeLink",
+        "icon": "$(clippy)",
+        "enablement": "editorHasSelection"
+      },
+      {
         "command": "rangelink.pasteSelectedTextToDestination",
         "title": "Paste Selected Text to Bound Destination",
         "category": "RangeLink",
@@ -180,6 +194,18 @@
         "command": "rangelink.copyPortableLinkWithAbsolutePath",
         "key": "ctrl+r ctrl+shift+p",
         "mac": "cmd+r cmd+shift+p",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.copyLinkOnlyWithRelativePath",
+        "key": "ctrl+r ctrl+c",
+        "mac": "cmd+r cmd+c",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.copyLinkOnlyWithAbsolutePath",
+        "key": "ctrl+r ctrl+shift+c",
+        "mac": "cmd+r cmd+shift+c",
         "when": "editorHasSelection"
       },
       {

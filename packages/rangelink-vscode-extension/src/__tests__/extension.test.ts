@@ -3107,9 +3107,9 @@ describe('Extension lifecycle', () => {
     // Extension imported at top
     require('../extension').activate(mockContext as any);
 
-    // Verify all 13 commands are registered
+    // Verify all 15 commands are registered
     // Note: Command registration is IDE-agnostic; runtime availability differs by environment
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(13);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(15);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
@@ -3124,6 +3124,9 @@ describe('Extension lifecycle', () => {
       'rangelink.copyLinkWithAbsolutePath',
       'rangelink.copyPortableLinkWithRelativePath',
       'rangelink.copyPortableLinkWithAbsolutePath',
+      // Clipboard-only commands (issue #117)
+      'rangelink.copyLinkOnlyWithRelativePath',
+      'rangelink.copyLinkOnlyWithAbsolutePath',
       // Paste and destination commands
       'rangelink.pasteSelectedTextToDestination',
       'rangelink.jumpToBoundDestination',
