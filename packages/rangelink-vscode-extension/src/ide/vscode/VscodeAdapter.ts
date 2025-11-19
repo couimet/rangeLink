@@ -169,25 +169,42 @@ export class VscodeAdapter {
   }
 
   /**
-   * Send text to terminal with optional execution behavior.
+   * Paste text into terminal using clipboard + paste command.
    *
-   * Wrapper for terminal.sendText() to isolate destination classes from direct vscode calls.
+   * Writes text to clipboard, then executes VSCode's paste command to insert into
+   * the terminal. This approach works around terminal line wrapping limitations with
+   * link detection: when using terminal.sendText(), long lines wrap visually and
+   * VSCode's link provider only scans the wrapped portion. Clipboard paste allows
+   * the link provider to scan the full logical line, enabling detection of long
+   * links (130+ chars).
    *
-   * @param terminal - Terminal to send text to
-   * @param text - Text content to send
-   * @param options - Optional configuration for terminal paste behavior (defaults to NOTHING)
+   * @param terminal - Terminal to paste text into
+   * @param text - Text content to paste (will be written to clipboard)
+   * @param options - Optional paste behavior configuration
    * @throws RangeLinkError with TERMINAL_NOT_DEFINED if terminal is undefined/null
    */
-  sendTextToTerminal(
+  async pasteTextToTerminalViaClipboard(
     terminal: vscode.Terminal,
     text: string,
     options?: SendTextToTerminalOptions,
-  ): void {
-    this.enforceTerminalExists(terminal, 'VscodeAdapter.sendTextToTerminal');
+  ): Promise<void> {
+    this.enforceTerminalExists(terminal, 'VscodeAdapter.pasteTextToTerminalViaClipboard');
 
+    // Write text to clipboard
+    await this.writeTextToClipboard(text);
+
+    // Show terminal to ensure it's active for paste command
+    terminal.show();
+
+    // Execute paste command (simulates Cmd+V / Ctrl+V)
+    await this.executeCommand('workbench.action.terminal.paste');
+
+    // Handle execution behavior if requested
     const behaviour = options?.behaviour ?? BehaviourAfterPaste.NOTHING;
-    const shouldExecute = behaviour === BehaviourAfterPaste.EXECUTE;
-    terminal.sendText(text, shouldExecute);
+    if (behaviour === BehaviourAfterPaste.EXECUTE) {
+      // Send Enter key separately after paste completes
+      terminal.sendText('', true);
+    }
   }
 
   /**

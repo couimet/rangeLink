@@ -193,7 +193,11 @@ export class TerminalDestination implements PasteDestination {
 
     const paddedText = applySmartPadding(text);
 
-    this.vscodeAdapter.sendTextToTerminal(this.terminal, paddedText, {
+    // ISSUE #100: Use clipboard-based paste for proper link detection on wrapped lines
+    // terminal.sendText() causes terminal to wrap long lines, and VSCode's link provider
+    // only scans the wrapped portion. Clipboard paste allows link provider to scan the
+    // full logical line, enabling detection of long links (130+ chars).
+    await this.vscodeAdapter.pasteTextToTerminalViaClipboard(this.terminal, paddedText, {
       behaviour: BehaviourAfterPaste.NOTHING,
     });
 

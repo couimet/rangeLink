@@ -71,15 +71,19 @@ describe('TerminalDestination', () => {
       expect(result).toBe(true);
     });
 
-    it('should call ideAdapter.sendTextToTerminal with padded text and NOTHING behaviour', async () => {
+    it('should call ideAdapter.pasteTextToTerminalViaClipboard with padded text and NOTHING behaviour', async () => {
       (applySmartPadding as jest.Mock).mockReturnValue(' link ');
 
       await destination.pasteLink(createMockFormattedLink('link'));
 
       expect(applySmartPadding).toHaveBeenCalledWith('link');
-      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(mockTerminal, ' link ', {
-        behaviour: BehaviourAfterPaste.NOTHING,
-      });
+      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
+        mockTerminal,
+        ' link ',
+        {
+          behaviour: BehaviourAfterPaste.NOTHING,
+        },
+      );
     });
 
     it('should call ideAdapter.showTerminal to focus terminal', async () => {
@@ -121,7 +125,7 @@ describe('TerminalDestination', () => {
       expect(isEligibleForPaste).toHaveBeenCalledWith(testLink);
       expect(result).toBe(false);
       expect(applySmartPadding).not.toHaveBeenCalled();
-      expect(mockVscodeAdapter.sendTextToTerminal).not.toHaveBeenCalled();
+      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).not.toHaveBeenCalled();
       expect(mockVscodeAdapter.showTerminal).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
@@ -141,21 +145,21 @@ describe('TerminalDestination', () => {
 
       expect(isEligibleForPaste).toHaveBeenCalledWith('original-text');
       expect(applySmartPadding).toHaveBeenCalledWith('original-text');
-      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(
+      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
         mockTerminal,
         ' padded-text ',
         { behaviour: BehaviourAfterPaste.NOTHING },
       );
     });
 
-    it('should use applySmartPadding result for ideAdapter.sendTextToTerminal with NOTHING behaviour', async () => {
+    it('should use applySmartPadding result for ideAdapter.pasteTextToTerminalViaClipboard with NOTHING behaviour', async () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(true);
       (applySmartPadding as jest.Mock).mockReturnValue('\tcustom-padded\n');
 
       await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
       expect(applySmartPadding).toHaveBeenCalledWith('src/file.ts#L10');
-      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(
+      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
         mockTerminal,
         '\tcustom-padded\n',
         { behaviour: BehaviourAfterPaste.NOTHING },
@@ -206,14 +210,14 @@ describe('TerminalDestination', () => {
       expect(result).toBe(true);
     });
 
-    it('should call ideAdapter.sendTextToTerminal with padded content and NOTHING behaviour', async () => {
+    it('should call ideAdapter.pasteTextToTerminalViaClipboard with padded content and NOTHING behaviour', async () => {
       const testContent = 'selected text';
       (applySmartPadding as jest.Mock).mockReturnValue(' selected text ');
 
       await destination.pasteContent(testContent);
 
       expect(applySmartPadding).toHaveBeenCalledWith(testContent);
-      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(
+      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
         mockTerminal,
         ' selected text ',
         { behaviour: BehaviourAfterPaste.NOTHING },
@@ -255,7 +259,7 @@ describe('TerminalDestination', () => {
 
       expect(isEligibleForPaste).toHaveBeenCalledWith('original-content');
       expect(applySmartPadding).toHaveBeenCalledWith('original-content');
-      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(
+      expect(mockVscodeAdapter.pasteTextToTerminalViaClipboard).toHaveBeenCalledWith(
         mockTerminal,
         ' padded-content ',
         { behaviour: BehaviourAfterPaste.NOTHING },
