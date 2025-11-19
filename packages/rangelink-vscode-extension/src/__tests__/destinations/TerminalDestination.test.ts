@@ -77,11 +77,9 @@ describe('TerminalDestination', () => {
       await destination.pasteLink(createMockFormattedLink('link'));
 
       expect(applySmartPadding).toHaveBeenCalledWith('link');
-      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(
-        mockTerminal,
-        ' link ',
-        { behaviour: BehaviourAfterPaste.NOTHING },
-      );
+      expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(mockTerminal, ' link ', {
+        behaviour: BehaviourAfterPaste.NOTHING,
+      });
     });
 
     it('should call ideAdapter.showTerminal to focus terminal', async () => {

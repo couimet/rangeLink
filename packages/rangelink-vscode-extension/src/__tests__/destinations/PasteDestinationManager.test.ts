@@ -949,12 +949,10 @@ describe('PasteDestinationManager', () => {
 
         // Assert: QuickPick was shown
         expect(mockVscode.window.showQuickPick).toHaveBeenCalledWith(
-          [
-            { label: 'Yes, replace' },
-            { label: 'No, keep current binding' },
-          ],
+          [{ label: 'Yes, replace' }, { label: 'No, keep current binding' }],
           {
-            placeHolder: 'Already bound to Terminal ("TestTerminal"). Replace with Text Editor ("file.ts")?',
+            placeHolder:
+              'Already bound to Terminal ("TestTerminal"). Replace with Text Editor ("file.ts")?',
           },
         );
 
