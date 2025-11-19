@@ -223,7 +223,7 @@ export class TextEditorDestination implements PasteDestination {
           editorName,
           editorPath: this.editorPath,
         },
-        `Focused text editor: ${editorName}`,
+        'Focused text editor',
       );
 
       return true;
@@ -343,8 +343,7 @@ export class TextEditorDestination implements PasteDestination {
         linkLength: formattedLink.link.length,
       },
       ineligibleMessage: 'Link not eligible for paste',
-      successLogMessage: (editorName: string) =>
-        `Pasted link to text editor: ${editorName}`,
+      successLogMessage: 'Pasted link to text editor',
       errorMessage: 'Failed to paste link to text editor',
     });
   }
@@ -362,7 +361,7 @@ export class TextEditorDestination implements PasteDestination {
     text: string;
     logContext: LoggingContext;
     ineligibleMessage: string;
-    successLogMessage: (editorName: string) => string;
+    successLogMessage: string;
     errorMessage: string;
   }): Promise<boolean> {
     const { text, logContext, ineligibleMessage, successLogMessage, errorMessage } = options;
@@ -420,7 +419,7 @@ export class TextEditorDestination implements PasteDestination {
         paddedLength: paddedText.length,
       };
 
-      this.logger.info(successContext, successLogMessage(editorName));
+      this.logger.info(successContext, successLogMessage);
 
       return true;
     } catch (error) {
@@ -451,8 +450,7 @@ export class TextEditorDestination implements PasteDestination {
       text: content,
       logContext: { fn: 'TextEditorDestination.pasteContent', contentLength: content.length },
       ineligibleMessage: 'Content not eligible for paste',
-      successLogMessage: (editorName: string) =>
-        `Pasted content to text editor: ${editorName}`,
+      successLogMessage: 'Pasted content to text editor',
       errorMessage: 'Exception during paste operation',
     });
   }

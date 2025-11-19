@@ -127,7 +127,7 @@ describe('TextEditorDestination', () => {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: 4,
           boundDocumentUri: mockEditor.document.uri.toString(),
-          editorDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
         },
         'Bound document not found in any tab group - likely closed',
       );
@@ -145,7 +145,7 @@ describe('TextEditorDestination', () => {
         {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: 4,
-          editorDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
         },
         'Tab group has no active tab',
       );
@@ -172,7 +172,7 @@ describe('TextEditorDestination', () => {
         {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: 4,
-          editorDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
           tabInputType: 'object',
         },
         'Active tab is not a text editor',
@@ -202,7 +202,7 @@ describe('TextEditorDestination', () => {
           contentLength: 4,
           boundDocumentUri: mockEditor.document.uri.toString(),
           activeTabUri: differentUri.toString(),
-          editorDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
         },
         'Bound document is not topmost in its tab group',
       );
@@ -266,12 +266,12 @@ describe('TextEditorDestination', () => {
         {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: testContent.length,
-          editorDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
           editorPath: mockEditor.document.uri.toString(),
           originalLength: testContent.length,
           paddedLength: testContent.length + 2,
         },
-        'Pasted content to text editor: src/file.ts',
+        'Pasted content to text editor',
       );
     });
 
@@ -285,7 +285,7 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.pasteContent',
-          editorDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
           editorPath: mockEditor.document.uri.toString(),
           contentLength: testContent.length,
         },
@@ -305,7 +305,7 @@ describe('TextEditorDestination', () => {
         {
           fn: 'TextEditorDestination.pasteContent',
           contentLength: 4,
-          editorDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
           editorPath: mockEditor.document.uri.toString(),
           error: testError,
         },
@@ -388,10 +388,10 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.focus',
-          editorDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
           editorPath: mockEditor.document.uri.toString(),
         },
-        'Focused text editor: src/file.ts',
+        'Focused text editor',
       );
     });
 
@@ -405,7 +405,7 @@ describe('TextEditorDestination', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'TextEditorDestination.focus',
-          editorDisplayName: 'src/file.ts',
+          editorName: 'src/file.ts',
           editorPath: mockEditor.document.uri.toString(),
           error: testError,
         },

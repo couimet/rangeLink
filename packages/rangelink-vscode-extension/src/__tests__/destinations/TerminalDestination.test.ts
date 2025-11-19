@@ -110,7 +110,7 @@ describe('TerminalDestination', () => {
           originalLength: testLink.length,
           paddedLength: testLink.length + 2,
         },
-        'Pasted link to terminal: bash',
+        'Pasted link to terminal',
       );
     });
   });
@@ -182,7 +182,7 @@ describe('TerminalDestination', () => {
           originalLength: testLink.length,
           paddedLength: testLink.length + 2,
         },
-        'Pasted link to terminal: bash',
+        'Pasted link to terminal',
       );
     });
   });
@@ -245,7 +245,7 @@ describe('TerminalDestination', () => {
           originalLength: testContent.length,
           paddedLength: testContent.length + 2,
         },
-        'Pasted content to terminal: bash',
+        'Pasted content to terminal',
       );
     });
 
@@ -299,7 +299,7 @@ describe('TerminalDestination', () => {
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         { fn: 'TerminalDestination.focus', terminalName: 'bash' },
-        'Focused terminal: bash',
+        'Focused terminal',
       );
     });
   });

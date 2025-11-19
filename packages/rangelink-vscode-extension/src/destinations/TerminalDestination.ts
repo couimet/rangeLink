@@ -110,10 +110,7 @@ export class TerminalDestination implements PasteDestination {
     const terminalName = this.resourceName;
     this.vscodeAdapter.showTerminal(this.terminal, TerminalFocusType.StealFocus);
 
-    this.logger.info(
-      { fn: 'TerminalDestination.focus', terminalName },
-      `Focused terminal: ${terminalName}`,
-    );
+    this.logger.info({ fn: 'TerminalDestination.focus', terminalName }, 'Focused terminal');
 
     return true;
   }
@@ -142,7 +139,7 @@ export class TerminalDestination implements PasteDestination {
         linkLength: formattedLink.link.length,
       },
       ineligibleMessage: 'Link not eligible for paste',
-      successLogMessage: (terminalName: string) => `Pasted link to terminal: ${terminalName}`,
+      successLogMessage: 'Pasted link to terminal',
     });
   }
 
@@ -164,7 +161,7 @@ export class TerminalDestination implements PasteDestination {
       text: content,
       logContext: { fn: 'TerminalDestination.pasteContent', contentLength: content.length },
       ineligibleMessage: 'Content not eligible for paste',
-      successLogMessage: (terminalName: string) => `Pasted content to terminal: ${terminalName}`,
+      successLogMessage: 'Pasted content to terminal',
     });
   }
 
@@ -181,7 +178,7 @@ export class TerminalDestination implements PasteDestination {
     text: string;
     logContext: LoggingContext;
     ineligibleMessage: string;
-    successLogMessage: (terminalName: string) => string;
+    successLogMessage: string;
   }): Promise<boolean> {
     const { text, logContext, ineligibleMessage, successLogMessage } = options;
 
@@ -208,7 +205,7 @@ export class TerminalDestination implements PasteDestination {
       paddedLength: paddedText.length,
     };
 
-    this.logger.info(successContext, successLogMessage(terminalName));
+    this.logger.info(successContext, successLogMessage);
 
     return true;
   }
