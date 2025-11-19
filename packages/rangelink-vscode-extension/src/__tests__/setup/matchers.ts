@@ -1,6 +1,7 @@
 import {
   toBeRangeLinkExtensionError,
   toThrowRangeLinkExtensionError,
+  toThrowRangeLinkExtensionErrorAsync,
   type ExpectedRangeLinkExtensionError,
 } from '../matchers/toBeRangeLinkExtensionError';
 
@@ -9,6 +10,10 @@ declare global {
     interface Matchers<R> {
       toBeRangeLinkExtensionError(code: string, expected: ExpectedRangeLinkExtensionError): R;
       toThrowRangeLinkExtensionError(code: string, expected: ExpectedRangeLinkExtensionError): R;
+      toThrowRangeLinkExtensionErrorAsync(
+        code: string,
+        expected: ExpectedRangeLinkExtensionError,
+      ): Promise<R>;
     }
   }
 }
@@ -16,6 +21,7 @@ declare global {
 expect.extend({
   toBeRangeLinkExtensionError,
   toThrowRangeLinkExtensionError,
+  toThrowRangeLinkExtensionErrorAsync,
 });
 
 export {};
