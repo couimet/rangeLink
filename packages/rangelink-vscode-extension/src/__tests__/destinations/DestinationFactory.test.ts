@@ -44,10 +44,10 @@ describe('DestinationFactory', () => {
       factory.create({ type: 'terminal', terminal: mockTerminal });
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'DestinationFactory.create',
           type: 'terminal',
-        }),
+        },
         'Creating destination: terminal',
       );
     });

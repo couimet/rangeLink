@@ -565,14 +565,14 @@ describe('PasteDestinationManager', () => {
       await manager.sendToDestination(formattedLink);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'PasteDestinationManager.sendToDestination',
           destinationType: 'terminal',
           displayName: 'Terminal',
           formattedLink,
           terminalName: 'bash',
-        }),
-        expect.stringContaining('Sending text to Terminal'),
+        },
+        'Sending text to Terminal',
       );
     });
 
@@ -593,13 +593,13 @@ describe('PasteDestinationManager', () => {
       await manager.sendToDestination(formattedLink);
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'PasteDestinationManager.sendToDestination',
           destinationType: 'terminal',
           displayName: 'Terminal',
           formattedLink,
-        }),
-        expect.stringContaining('Paste link failed to Terminal'),
+        },
+        'Paste link failed to Terminal',
       );
     });
   });
@@ -949,13 +949,13 @@ describe('PasteDestinationManager', () => {
 
         // Assert: QuickPick was shown
         expect(mockVscode.window.showQuickPick).toHaveBeenCalledWith(
-          expect.arrayContaining([
-            expect.objectContaining({ label: 'Yes, replace' }),
-            expect.objectContaining({ label: 'No, keep current binding' }),
-          ]),
-          expect.objectContaining({
-            placeHolder: expect.stringContaining('Already bound to Terminal ("TestTerminal")'),
-          }),
+          [
+            { label: 'Yes, replace' },
+            { label: 'No, keep current binding' },
+          ],
+          {
+            placeHolder: 'Already bound to Terminal ("TestTerminal"). Replace with Text Editor ("file.ts")?',
+          },
         );
 
         // Assert: Bind succeeded
@@ -1337,12 +1337,12 @@ describe('PasteDestinationManager', () => {
       await manager.jumpToBoundDestination();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'PasteDestinationManager.jumpToBoundDestination',
           destinationType: 'terminal',
           displayName: 'Terminal',
           terminalName: 'bash',
-        }),
+        },
         'Successfully focused Terminal',
       );
     });
@@ -1369,13 +1369,13 @@ describe('PasteDestinationManager', () => {
       await manager.jumpToBoundDestination();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'PasteDestinationManager.jumpToBoundDestination',
           destinationType: 'text-editor',
           displayName: 'Text Editor',
           editorName: 'src/file.ts',
           editorPath: '/workspace/src/file.ts',
-        }),
+        },
         'Successfully focused Text Editor',
       );
     });
@@ -1392,11 +1392,11 @@ describe('PasteDestinationManager', () => {
       await manager.jumpToBoundDestination();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'PasteDestinationManager.jumpToBoundDestination',
           destinationType: 'cursor-ai',
           displayName: 'Cursor AI Assistant',
-        }),
+        },
         'Successfully focused Cursor AI Assistant',
       );
     });
@@ -1420,11 +1420,11 @@ describe('PasteDestinationManager', () => {
       await manager.jumpToBoundDestination();
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'PasteDestinationManager.jumpToBoundDestination',
           destinationType: 'terminal',
           displayName: 'Terminal',
-        }),
+        },
         'Failed to focus Terminal',
       );
     });

@@ -80,11 +80,8 @@ describe('TerminalDestination', () => {
       expect(mockVscodeAdapter.sendTextToTerminal).toHaveBeenCalledWith(
         mockTerminal,
         ' link ',
-        expect.objectContaining({ behaviour: BehaviourAfterPaste.NOTHING }),
+        { behaviour: BehaviourAfterPaste.NOTHING },
       );
-      // Verify exact options structure with toStrictEqual
-      const callArgs = (mockVscodeAdapter.sendTextToTerminal as jest.Mock).mock.calls[0];
-      expect(callArgs[2]).toStrictEqual({ behaviour: BehaviourAfterPaste.NOTHING });
     });
 
     it('should call ideAdapter.showTerminal to focus terminal', async () => {
