@@ -349,3 +349,62 @@ describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)'
       expect(showInfoSpy).toHaveBeenCalledWith('RangeLink: Navigated to Untitled-1 @ 10');
     });
   });
+
+  describe('when path does NOT look like untitled file AND file does not exist', () => {
+    it('should show generic "file not found" warning for "src/missing.ts"', async () => {
+      const parsed: ParsedLink = {
+        path: 'src/missing.ts',
+        start: { line: 10 },
+        end: { line: 10 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      await handler.navigateToLink(parsed, 'src/missing.ts#L10');
+
+      // Should show generic error (not untitled-specific)
+      expect(showWarningSpy).toHaveBeenCalledTimes(1);
+      expect(showWarningSpy).toHaveBeenCalledWith('RangeLink: Cannot find file: src/missing.ts');
+    });
+
+    it('should show generic error for absolute path "/tmp/missing.ts"', async () => {
+      const parsed: ParsedLink = {
+        path: '/tmp/missing.ts',
+        start: { line: 1 },
+        end: { line: 1 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      await handler.navigateToLink(parsed, '/tmp/missing.ts#L1');
+
+      expect(showWarningSpy).toHaveBeenCalledWith('RangeLink: Cannot find file: /tmp/missing.ts');
+    });
+
+    it('should show generic error for "MyUntitledFile.ts" (not untitled pattern)', async () => {
+      const parsed: ParsedLink = {
+        path: 'MyUntitledFile.ts',
+        start: { line: 1 },
+        end: { line: 1 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      await handler.navigateToLink(parsed, 'MyUntitledFile.ts#L1');
+
+      // "MyUntitledFile" doesn't match /^Untitled-?\d*$/i pattern
+      expect(showWarningSpy).toHaveBeenCalledWith(
+        'RangeLink: Cannot find file: MyUntitledFile.ts',
+      );
+    });
+  });
+});
