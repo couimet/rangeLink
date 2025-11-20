@@ -60,7 +60,7 @@ describe('RangeLinkTerminalProvider', () => {
         'Terminal link clicked but parse data missing (safety net triggered)',
       );
 
-      expect(mockAdapter.__getVscodeInstance().window.showWarningMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot navigate - invalid link format: file.ts#L0',
       );
 
