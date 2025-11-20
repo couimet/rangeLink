@@ -114,9 +114,21 @@ export class RangeLinkNavigationHandler {
 
     if (!fileUri) {
       this.logger.warn({ ...logCtx, path }, 'Failed to resolve workspace path');
-      await this.ideAdapter.showWarningMessage(
-        formatMessage(MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND, { path }),
-      );
+
+      // Issue #16: Provide better error message for untitled files
+      // If path looks like an untitled file (Untitled-1, Untitled-2, etc.) AND doesn't resolve,
+      // it's likely from an unsaved file rather than a missing real file
+      const looksLikeUntitled = /^Untitled-?\d*$/i.test(path);
+      if (looksLikeUntitled) {
+        this.logger.info({ ...logCtx, path }, 'Path looks like untitled file and does not resolve');
+        await this.ideAdapter.showWarningMessage(
+          formatMessage(MessageCode.WARN_NAVIGATION_UNTITLED_FILE, { path }),
+        );
+      } else {
+        await this.ideAdapter.showWarningMessage(
+          formatMessage(MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND, { path }),
+        );
+      }
       return;
     }
 
