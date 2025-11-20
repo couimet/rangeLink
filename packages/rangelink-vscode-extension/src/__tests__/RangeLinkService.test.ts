@@ -720,7 +720,9 @@ describe('RangeLinkService', () => {
         });
         mockVscodeAdapter = adapter;
         jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
+        jest
+          .spyOn(mockVscodeAdapter, 'setStatusBarMessage')
+          .mockReturnValue({ dispose: jest.fn() });
         jest.spyOn(mockVscodeAdapter, 'showWarningMessage').mockResolvedValue(undefined);
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
@@ -824,7 +826,9 @@ describe('RangeLinkService', () => {
 
         mockVscodeAdapter = adapter;
         jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
+        jest
+          .spyOn(mockVscodeAdapter, 'setStatusBarMessage')
+          .mockReturnValue({ dispose: jest.fn() });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
 
@@ -920,7 +924,9 @@ describe('RangeLinkService', () => {
         });
         mockVscodeAdapter = adapter;
         jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
+        jest
+          .spyOn(mockVscodeAdapter, 'setStatusBarMessage')
+          .mockReturnValue({ dispose: jest.fn() });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
@@ -969,7 +975,9 @@ describe('RangeLinkService', () => {
           selections: [[0, 0, 0, 12]],
         });
         mockVscodeAdapter = adapter;
-        jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
+        jest
+          .spyOn(mockVscodeAdapter, 'setStatusBarMessage')
+          .mockReturnValue({ dispose: jest.fn() });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
 
@@ -1122,7 +1130,9 @@ describe('RangeLinkService', () => {
           selections: [[0, 0, 0, 4]],
         });
         mockVscodeAdapter = adapter;
-        jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
+        jest
+          .spyOn(mockVscodeAdapter, 'setStatusBarMessage')
+          .mockReturnValue({ dispose: jest.fn() });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
 

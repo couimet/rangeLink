@@ -15,9 +15,7 @@ import { createMockEditor } from './createMockEditor';
  * @param editor - The mock editor to use in this test
  * @returns Window options ready for createMockVscodeAdapter
  */
-export const createWindowOptionsForEditor = (
-  editor: ReturnType<typeof createMockEditor>,
-) => {
+export const createWindowOptionsForEditor = (editor: ReturnType<typeof createMockEditor>) => {
   return {
     activeTextEditor: editor,
     showTextDocument: jest.fn().mockResolvedValue(editor),

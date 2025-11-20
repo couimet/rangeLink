@@ -86,27 +86,29 @@ describe('CursorAIDestination', () => {
   describe('isAvailable() - Detection via extensions (SECONDARY)', () => {
     it('should return true when cursor extensions are present', async () => {
       // appName check will fail (default is 'Visual Studio Code')
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([
-        { id: 'cursor.cursor-ai', isActive: true } as any,
-        { id: 'cursor.some-other', isActive: true } as any,
-      ]);
+      jest
+        .spyOn(mockAdapter, 'extensions', 'get')
+        .mockReturnValue([
+          { id: 'cursor.cursor-ai', isActive: true } as any,
+          { id: 'cursor.some-other', isActive: true } as any,
+        ]);
 
       expect(await destination.isAvailable()).toBe(true);
     });
 
     it('should return false when no cursor extensions are present', async () => {
       // All checks fail
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([
-        { id: 'other.extension', isActive: true } as any,
-      ]);
+      jest
+        .spyOn(mockAdapter, 'extensions', 'get')
+        .mockReturnValue([{ id: 'other.extension', isActive: true } as any]);
 
       expect(await destination.isAvailable()).toBe(false);
     });
 
     it('should log detection via extensions', async () => {
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([
-        { id: 'cursor.cursor-ai', isActive: true } as any,
-      ]);
+      jest
+        .spyOn(mockAdapter, 'extensions', 'get')
+        .mockReturnValue([{ id: 'cursor.cursor-ai', isActive: true } as any]);
 
       await destination.isAvailable();
 
