@@ -6,8 +6,10 @@ import type { ParsedLink } from 'rangelink-core-ts';
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
+import { createMockLineAt } from '../helpers/createMockLineAt';
 import { createMockText } from '../helpers/createMockText';
 import { createMockUri } from '../helpers/createMockUri';
+import { createWindowOptionsForEditor } from '../helpers/createWindowOptionsForEditor';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('RangeLinkNavigationHandler - Single Position Selection Extension', () => {
@@ -26,7 +28,7 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
       getText: createMockText('const x = 42; // Sample line content'),
       uri: createMockUri('/test/file.ts'),
       lineCount: 100,
-      lineAt: jest.fn(() => ({ text: 'const x = 42; // Sample line content' })) as any,
+      lineAt: createMockLineAt('const x = 42; // Sample line content'),
     });
 
     // Create mock editor with our custom document
@@ -34,15 +36,14 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
       document: mockDocument,
     });
 
-    // Create adapter with test hooks
-    mockAdapter = createMockVscodeAdapter();
-
-    // Configure window methods via test hook
-    const mockVscode = mockAdapter.__getVscodeInstance();
-    (mockVscode.window.showTextDocument as jest.Mock) = jest.fn().mockResolvedValue(mockEditor);
-    (mockVscode.workspace.openTextDocument as jest.Mock) = jest
-      .fn()
-      .mockImplementation((uri: any) => Promise.resolve({ uri }));
+    // Create adapter with window/workspace configuration
+    // mockEditor/mockDocument are created above, so we can reference them in options
+    mockAdapter = createMockVscodeAdapter({
+      windowOptions: createWindowOptionsForEditor(mockEditor),
+      workspaceOptions: {
+        openTextDocument: jest.fn().mockImplementation((uri) => Promise.resolve({ uri })),
+      },
+    });
 
     // Spy on VscodeAdapter's createSelection method to verify it's called correctly
     // This respects the abstraction layer - we test the adapter's public API, not its internals
@@ -89,9 +90,7 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
 
   it('should NOT extend when at end of line', async () => {
     // Arrange: Mock line with specific length
-    mockDocument.lineAt = jest.fn(() => ({
-      text: 'short', // 5 characters (0-4)
-    }));
+    mockDocument.lineAt = createMockLineAt('short'); // 5 characters (0-4)
 
     const parsed: ParsedLink = {
       path: 'file.ts',
@@ -127,9 +126,7 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
 
   it('should NOT extend on empty line', async () => {
     // Arrange: Mock empty line
-    mockDocument.lineAt = jest.fn(() => ({
-      text: '', // Empty line
-    }));
+    mockDocument.lineAt = createMockLineAt(''); // Empty line
 
     const parsed: ParsedLink = {
       path: 'file.ts',

@@ -12,21 +12,18 @@ import { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
  * Accepts either string paths (for convenience) or full WorkspaceFolder objects.
  * String paths are automatically converted to WorkspaceFolder objects.
  *
- * **Flexible options:** Accepts either property overrides (Record) or a pre-built workspace object (Partial<vscode.Workspace>).
- * If a pre-built object with `openTextDocument` is provided, it's used directly (avoiding unnecessary mock creation).
+ * **Always creates default mocks and spreads options as overrides** - no clever detection.
+ * This predictable pattern allows partial overrides while preserving defaults:
+ * ```typescript
+ * createMockWorkspace({ openTextDocument: myMock })  // Gets defaults for fs, workspaceFolders, etc.
+ * ```
  *
- * @param options - Optional workspace properties to override or pre-built workspace object
+ * @param options - Optional workspace properties to override defaults
  * @returns Mock workspace with file operations and document handling
  */
 export const createMockWorkspace = (
   options?: Record<string, unknown> | Partial<typeof vscode.workspace>,
 ) => {
-  // Simple check: if it has openTextDocument, treat it as a pre-built workspace object
-  if (options && 'openTextDocument' in options) {
-    return options;
-  }
-
-  // Otherwise, create default mock and spread options as overrides
   const defaultWorkspaceFolders = ['/workspace'];
   const workspaceFoldersInput =
     (options?.workspaceFolders as Array<string | vscode.WorkspaceFolder> | undefined) ??

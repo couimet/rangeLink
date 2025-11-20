@@ -9,15 +9,6 @@
  *
  * @param relativePath - Relative path string to return (e.g., 'src/file.ts')
  * @returns Jest mock function that returns the relative path
- *
- * @example
- * ```typescript
- * const adapter = createMockVscodeAdapter({
- *   workspaceOptions: {
- *     asRelativePath: createMockAsRelativePath('src/file.ts'),
- *   },
- * });
- * ```
  */
 export const createMockAsRelativePath = (relativePath: string) => {
   return jest.fn().mockReturnValue(relativePath);

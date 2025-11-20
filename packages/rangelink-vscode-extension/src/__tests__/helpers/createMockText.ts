@@ -12,11 +12,6 @@ import * as vscode from 'vscode';
  *
  * @param text - The text content to return
  * @returns Mock function that returns the text (ignores selection/range parameter)
- *
- * @example
- * const mockDocument = createMockDocument({
- *   getText: createMockText('test content'),
- * });
  */
 export const createMockText = (text: string): jest.Mock => {
   return jest.fn((selection?: vscode.Selection | vscode.Range) => {
