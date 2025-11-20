@@ -210,3 +210,108 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     );
   });
 });
+
+describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)', () => {
+  let handler: RangeLinkNavigationHandler;
+  let mockLogger: Logger;
+  let mockAdapter: VscodeAdapterWithTestHooks;
+
+  beforeEach(() => {
+    mockLogger = createMockLogger();
+    mockAdapter = createMockVscodeAdapter();
+
+    handler = new RangeLinkNavigationHandler(DEFAULT_DELIMITERS, mockAdapter, mockLogger);
+  });
+
+  describe('when path looks like untitled file AND file does not exist', () => {
+    it('should show untitled-specific warning for "Untitled-1"', async () => {
+      // Arrange: Path looks like untitled file and resolveWorkspacePath returns undefined
+      const parsed: ParsedLink = {
+        path: 'Untitled-1',
+        start: { line: 10, char: 5 },
+        end: { line: 10, char: 10 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+      const linkText = 'Untitled-1#L10C5-L10C10';
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      // Act
+      await handler.navigateToLink(parsed, linkText);
+
+      // Assert: Should show untitled-specific warning (exact message)
+      expect(showWarningSpy).toHaveBeenCalledTimes(1);
+      expect(showWarningSpy).toHaveBeenCalledWith(
+        'RangeLink: Cannot navigate to unsaved file (Untitled-1). Save the file first, then try again.',
+      );
+
+      // Should log with info level (not warning - expected behavior)
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          linkText: 'Untitled-1#L10C5-L10C10',
+          path: 'Untitled-1',
+        },
+        'Path looks like untitled file and does not resolve',
+      );
+    });
+
+    it('should show untitled-specific warning for "Untitled-2"', async () => {
+      const parsed: ParsedLink = {
+        path: 'Untitled-2',
+        start: { line: 5 },
+        end: { line: 5 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      await handler.navigateToLink(parsed, 'Untitled-2#L5');
+
+      expect(showWarningSpy).toHaveBeenCalledWith(
+        'RangeLink: Cannot navigate to unsaved file (Untitled-2). Save the file first, then try again.',
+      );
+    });
+
+    it('should show untitled-specific warning for "untitled-1" (case-insensitive)', async () => {
+      const parsed: ParsedLink = {
+        path: 'untitled-1',
+        start: { line: 1 },
+        end: { line: 1 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      await handler.navigateToLink(parsed, 'untitled-1#L1');
+
+      expect(showWarningSpy).toHaveBeenCalledWith(
+        'RangeLink: Cannot navigate to unsaved file (untitled-1). Save the file first, then try again.',
+      );
+    });
+
+    it('should show untitled-specific warning for "Untitled" (no number)', async () => {
+      const parsed: ParsedLink = {
+        path: 'Untitled',
+        start: { line: 1 },
+        end: { line: 1 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      await handler.navigateToLink(parsed, 'Untitled#L1');
+
+      expect(showWarningSpy).toHaveBeenCalledWith(
+        'RangeLink: Cannot navigate to unsaved file (Untitled). Save the file first, then try again.',
+      );
+    });
+  });
