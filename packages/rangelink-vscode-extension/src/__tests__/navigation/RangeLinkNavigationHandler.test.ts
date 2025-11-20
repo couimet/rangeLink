@@ -16,8 +16,8 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
   let handler: RangeLinkNavigationHandler;
   let mockLogger: Logger;
   let mockAdapter: VscodeAdapterWithTestHooks;
-  let mockDocument: any;
-  let mockEditor: any;
+  let mockDocument: ReturnType<typeof createMockDocument>;
+  let mockEditor: ReturnType<typeof createMockEditor>;
   let createSelectionSpy: jest.SpyInstance;
 
   beforeEach(() => {
@@ -41,7 +41,7 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     mockAdapter = createMockVscodeAdapter({
       windowOptions: createWindowOptionsForEditor(mockEditor),
       workspaceOptions: {
-        openTextDocument: jest.fn().mockImplementation((uri) => Promise.resolve({ uri })),
+        openTextDocument: jest.fn().mockImplementation((uri: unknown) => Promise.resolve({ uri })),
       },
     });
 
