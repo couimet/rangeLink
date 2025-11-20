@@ -402,9 +402,7 @@ describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)'
       await handler.navigateToLink(parsed, 'MyUntitledFile.ts#L1');
 
       // "MyUntitledFile" doesn't match /^Untitled-?\d*$/i pattern
-      expect(showWarningSpy).toHaveBeenCalledWith(
-        'RangeLink: Cannot find file: MyUntitledFile.ts',
-      );
+      expect(showWarningSpy).toHaveBeenCalledWith('RangeLink: Cannot find file: MyUntitledFile.ts');
     });
   });
 });
