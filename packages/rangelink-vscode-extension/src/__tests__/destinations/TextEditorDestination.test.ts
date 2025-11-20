@@ -539,4 +539,57 @@ describe('TextEditorDestination', () => {
       expect(message).toBe('✓ Focused Editor: "Untitled-1"');
     });
   });
+
+  describe('isTextLikeFile (static method)', () => {
+    it('should return true for file:// scheme', () => {
+      const fileUri = createMockUri('/workspace/src/file.ts');
+      const fileEditor = createMockEditor({
+        document: createMockDocument({ uri: fileUri }),
+      });
+
+      const result = TextEditorDestination.isTextLikeFile(mockAdapter, fileEditor);
+
+      expect(result).toBe(true);
+    });
+
+    it('should call getDocumentUri with the provided editor parameter', () => {
+      const testEditor = createMockEditor({
+        document: createMockDocument({ uri: createMockUri('/test.ts') }),
+      });
+      const spy = jest.spyOn(mockAdapter, 'getDocumentUri');
+
+      TextEditorDestination.isTextLikeFile(mockAdapter, testEditor);
+
+      expect(spy).toHaveBeenCalledWith(testEditor);
+    });
+
+    it('should return true for untitled scheme', () => {
+      const untitledUri = createMockUri('untitled:Untitled-1', {
+        scheme: 'untitled',
+        toString: () => 'untitled:Untitled-1',
+      });
+      const untitledEditor = createMockEditor({
+        document: createMockDocument({ uri: untitledUri }),
+      });
+
+      const result = TextEditorDestination.isTextLikeFile(mockAdapter, untitledEditor);
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false for output scheme', () => {
+      const outputUri = createMockUri('output:extension-output', {
+        scheme: 'output',
+        fsPath: '',
+        toString: () => 'output:extension-output',
+      });
+      const outputEditor = createMockEditor({
+        document: createMockDocument({ uri: outputUri }),
+      });
+
+      const result = TextEditorDestination.isTextLikeFile(mockAdapter, outputEditor);
+
+      expect(result).toBe(false);
+    });
+  });
 });
