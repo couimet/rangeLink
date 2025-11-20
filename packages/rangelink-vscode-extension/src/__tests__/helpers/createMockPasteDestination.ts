@@ -19,11 +19,6 @@
  * This uses `any` typing because tests often use minimal mocks that don't implement
  * the full interface (e.g., missing pasteContent method for older tests).
  *
- * @example
- * createMockPasteDestination() // Uses all defaults
- * createMockPasteDestination({ displayName: 'Terminal' }) // Override displayName only
- * createMockPasteDestination({ id: 'text-editor' as any, displayName: 'Editor' })
- *
  * @param overrides - Optional partial object to override default properties/methods
  * @returns Mock destination with jest.fn() implementations
  */
