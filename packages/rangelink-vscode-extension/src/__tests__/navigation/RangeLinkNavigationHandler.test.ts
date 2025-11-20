@@ -6,6 +6,7 @@ import type { ParsedLink } from 'rangelink-core-ts';
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
+import { createMockLineAt } from '../helpers/createMockLineAt';
 import { createMockText } from '../helpers/createMockText';
 import { createMockUri } from '../helpers/createMockUri';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
@@ -26,7 +27,7 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
       getText: createMockText('const x = 42; // Sample line content'),
       uri: createMockUri('/test/file.ts'),
       lineCount: 100,
-      lineAt: jest.fn(() => ({ text: 'const x = 42; // Sample line content' })) as any,
+      lineAt: createMockLineAt('const x = 42; // Sample line content'),
     });
 
     // Create mock editor with our custom document
@@ -89,9 +90,7 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
 
   it('should NOT extend when at end of line', async () => {
     // Arrange: Mock line with specific length
-    mockDocument.lineAt = jest.fn(() => ({
-      text: 'short', // 5 characters (0-4)
-    }));
+    mockDocument.lineAt = createMockLineAt('short'); // 5 characters (0-4)
 
     const parsed: ParsedLink = {
       path: 'file.ts',
@@ -127,9 +126,7 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
 
   it('should NOT extend on empty line', async () => {
     // Arrange: Mock empty line
-    mockDocument.lineAt = jest.fn(() => ({
-      text: '', // Empty line
-    }));
+    mockDocument.lineAt = createMockLineAt(''); // Empty line
 
     const parsed: ParsedLink = {
       path: 'file.ts',
