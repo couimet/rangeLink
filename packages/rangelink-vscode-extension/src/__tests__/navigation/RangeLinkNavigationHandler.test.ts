@@ -315,3 +315,37 @@ describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)'
       );
     });
   });
+
+  describe('when path looks like untitled file BUT file exists', () => {
+    it('should navigate successfully to real file named "Untitled-1"', async () => {
+      // Arrange: Path looks like untitled but resolveWorkspacePath finds it
+      const parsed: ParsedLink = {
+        path: 'Untitled-1',
+        start: { line: 10 },
+        end: { line: 10 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+      const linkText = 'Untitled-1#L10';
+
+      const mockUri = createMockUri('/workspace/Untitled-1');
+      const mockDocument = createMockDocument({
+        uri: mockUri,
+        getText: createMockText('real file content'),
+        lineAt: createMockLineAt('real file content'),
+      });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
+      jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+
+      // Act
+      await handler.navigateToLink(parsed, linkText);
+
+      // Assert: Should NOT show warning, should show success
+      expect(showWarningSpy).not.toHaveBeenCalled();
+      expect(showInfoSpy).toHaveBeenCalledWith('RangeLink: Navigated to Untitled-1 @ 10');
+    });
+  });
