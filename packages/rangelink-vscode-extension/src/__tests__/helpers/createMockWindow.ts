@@ -16,21 +16,18 @@ import * as vscode from 'vscode';
  * All notification methods return Promise<string | undefined> matching VSCode API.
  * setStatusBarMessage returns mock Disposable with dispose() method.
  *
- * **Flexible options:** Accepts either property overrides (Record) or a pre-built window object (Partial<vscode.Window>).
- * If a pre-built object with `setStatusBarMessage` is provided, it's used directly (avoiding unnecessary mock creation).
+ * **Always creates default mocks and spreads options as overrides** - no clever detection.
+ * This predictable pattern allows partial overrides while preserving defaults:
+ * ```typescript
+ * createMockWindow({ showTextDocument: myMock })  // Gets defaults for other methods
+ * ```
  *
- * @param options - Optional property overrides or pre-built window object
+ * @param options - Optional property overrides
  * @returns Mock window object
  */
 export const createMockWindow = (
   options?: Record<string, unknown> | Partial<typeof vscode.window>,
 ) => {
-  // Simple check: if it has setStatusBarMessage, treat it as a pre-built window object
-  if (options && 'setStatusBarMessage' in options) {
-    return options;
-  }
-
-  // Otherwise, create default mock and spread options as overrides
   return {
     activeTerminal: undefined as vscode.Terminal | undefined,
     activeTextEditor: undefined as vscode.TextEditor | undefined,

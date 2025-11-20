@@ -617,7 +617,12 @@ describe('RangeLinkService', () => {
 
     describe('when no active editor', () => {
       beforeEach(() => {
-        mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+        mockVscodeAdapter = createMockVscodeAdapter({
+          windowOptions: { activeTextEditor: undefined },
+        });
+        jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
+        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
 
       it('should show error message', async () => {
@@ -1141,7 +1146,9 @@ describe('RangeLinkService', () => {
   describe('validateSelectionsAndShowError', () => {
     beforeEach(() => {
       // Configure adapter state for this describe block
-      mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+      mockVscodeAdapter = createMockVscodeAdapter({
+        windowOptions: { activeTextEditor: undefined },
+      });
 
       // Spy on adapter methods used in these tests
       jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
@@ -1159,8 +1166,11 @@ describe('RangeLinkService', () => {
     describe('integration with generateLinkFromSelection', () => {
       beforeEach(() => {
         // Mock all dependencies for generateLinkFromSelection
-        mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+        mockVscodeAdapter = createMockVscodeAdapter({
+          windowOptions: { activeTextEditor: undefined },
+        });
         jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
 
       it('should show consistent error message when no editor', async () => {
@@ -1190,9 +1200,12 @@ describe('RangeLinkService', () => {
     describe('integration with pasteSelectedTextToDestination', () => {
       beforeEach(() => {
         // Mock all dependencies
-        mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+        mockVscodeAdapter = createMockVscodeAdapter({
+          windowOptions: { activeTextEditor: undefined },
+        });
         jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
         jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
 
       it('should show consistent error message when no editor', async () => {
@@ -1215,7 +1228,11 @@ describe('RangeLinkService', () => {
 
     describe('error message consistency', () => {
       it('should use identical error message across all public methods', async () => {
-        mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+        mockVscodeAdapter = createMockVscodeAdapter({
+          windowOptions: { activeTextEditor: undefined },
+        });
+        jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         // Call via generateLinkFromSelection
         await (service as any).generateLinkFromSelection('workspace-relative', false);
@@ -1255,7 +1272,10 @@ describe('RangeLinkService', () => {
       });
 
       it('should log DEBUG message when no editor exists', async () => {
-        mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+        mockVscodeAdapter = createMockVscodeAdapter({
+          windowOptions: { activeTextEditor: undefined },
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (service as any).generateLinkFromSelection('workspace-relative', false);
@@ -1294,7 +1314,10 @@ describe('RangeLinkService', () => {
       });
 
       it('should log DEBUG via pasteSelectedTextToDestination', async () => {
-        mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+        mockVscodeAdapter = createMockVscodeAdapter({
+          windowOptions: { activeTextEditor: undefined },
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.pasteSelectedTextToDestination();
 
@@ -1310,7 +1333,10 @@ describe('RangeLinkService', () => {
 
       it('should include correct context in DEBUG log (hasEditor flag)', async () => {
         // Scenario 1: No editor
-        mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+        mockVscodeAdapter = createMockVscodeAdapter({
+          windowOptions: { activeTextEditor: undefined },
+        });
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (service as any).generateLinkFromSelection('workspace-relative', false);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1321,7 +1347,7 @@ describe('RangeLinkService', () => {
         mockLogger.debug.mockClear();
 
         // Scenario 2: Editor exists but empty selection
-        mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = createMockEditor({
+        const mockEditor = createMockEditor({
           document: createMockDocument({
             getText: createMockText(''),
             uri: createMockUri('/test/file.ts'),
@@ -1342,7 +1368,7 @@ describe('RangeLinkService', () => {
           uri: createMockUri('/test/file.ts'),
         });
 
-        mockVscodeAdapter.__getVscodeInstance().window.activeTextEditor = createMockEditor({
+        const mockEditor = createMockEditor({
           document: mockDocument,
           selection: {
             start: { line: 0, character: 0 },
@@ -1443,8 +1469,29 @@ describe('RangeLinkService', () => {
         selections: [selection],
       });
 
-      // Set active editor
-      mockVscode.window.activeTextEditor = mockEditor;
+      // Configure workspace and active editor
+      const workspaceUri = createMockUri('/workspace');
+      mockVscodeAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: mockEditor,
+        },
+        workspaceOptions: {
+          workspaceFolders: [
+            {
+              uri: workspaceUri,
+              name: 'workspace',
+              index: 0,
+            },
+          ],
+          getWorkspaceFolder: createMockGetWorkspaceFolder('/workspace'),
+          asRelativePath: createMockAsRelativePath('src/file.ts'),
+        },
+      });
+
+      // Spy on adapter methods
+      jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
+      jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
     });
 
     describe('with workspace-relative path', () => {
@@ -1515,8 +1562,11 @@ describe('RangeLinkService', () => {
     describe('edge cases', () => {
       it('should show error when no editor is active', async () => {
         // No active editor
-        const mockVscode = mockVscodeAdapter.__getVscodeInstance();
-        mockVscode.window.activeTextEditor = undefined;
+        mockVscodeAdapter = createMockVscodeAdapter({
+          windowOptions: { activeTextEditor: undefined },
+        });
+        jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
+        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
 
         mockDestinationManager = createMockDestinationManager({ isBound: false });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);

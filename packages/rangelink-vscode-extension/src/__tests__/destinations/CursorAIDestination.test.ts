@@ -13,18 +13,16 @@ describe('CursorAIDestination', () => {
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockLogger: Logger;
 
-  const configureMockAsNonCursor = () => {
-    const mockVscode = mockAdapter.__getVscodeInstance();
-    (mockVscode.env as any).appName = 'Visual Studio Code';
-    (mockVscode.env as any).uriScheme = 'vscode';
-    (mockVscode.extensions as any).all = [];
-  };
-
   beforeEach(() => {
     mockLogger = createMockLogger();
-    mockAdapter = createMockVscodeAdapter();
+    // Default: non-Cursor environment
+    mockAdapter = createMockVscodeAdapter({
+      envOptions: {
+        appName: 'Visual Studio Code',
+        uriScheme: 'vscode',
+      },
+    });
     destination = new CursorAIDestination(mockAdapter, mockLogger);
-    configureMockAsNonCursor();
   });
 
   describe('Interface compliance', () => {
@@ -39,29 +37,37 @@ describe('CursorAIDestination', () => {
 
   describe('isAvailable() - Detection via appName (PRIMARY)', () => {
     it('should return true when appName contains "cursor"', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
+      destination = new CursorAIDestination(
+        createMockVscodeAdapter({ envOptions: { appName: 'Cursor' } }),
+        mockLogger,
+      );
 
       expect(await destination.isAvailable()).toBe(true);
     });
 
     it('should return true when appName contains "cursor" (lowercase)', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'cursor';
+      destination = new CursorAIDestination(
+        createMockVscodeAdapter({ envOptions: { appName: 'cursor' } }),
+        mockLogger,
+      );
 
       expect(await destination.isAvailable()).toBe(true);
     });
 
     it('should return true when appName contains "cursor" (mixed case)', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor Editor';
+      destination = new CursorAIDestination(
+        createMockVscodeAdapter({ envOptions: { appName: 'Cursor Editor' } }),
+        mockLogger,
+      );
 
       expect(await destination.isAvailable()).toBe(true);
     });
 
     it('should log detection via appName', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
+      destination = new CursorAIDestination(
+        createMockVscodeAdapter({ envOptions: { appName: 'Cursor' } }),
+        mockLogger,
+      );
 
       await destination.isAvailable();
 
@@ -80,26 +86,27 @@ describe('CursorAIDestination', () => {
   describe('isAvailable() - Detection via extensions (SECONDARY)', () => {
     it('should return true when cursor extensions are present', async () => {
       // appName check will fail (default is 'Visual Studio Code')
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.extensions as any).all = [
-        { id: 'cursor.cursor-ai', isActive: true },
-        { id: 'cursor.some-other', isActive: true },
-      ];
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([
+        { id: 'cursor.cursor-ai', isActive: true } as any,
+        { id: 'cursor.some-other', isActive: true } as any,
+      ]);
 
       expect(await destination.isAvailable()).toBe(true);
     });
 
     it('should return false when no cursor extensions are present', async () => {
       // All checks fail
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.extensions as any).all = [{ id: 'other.extension', isActive: true }];
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([
+        { id: 'other.extension', isActive: true } as any,
+      ]);
 
       expect(await destination.isAvailable()).toBe(false);
     });
 
     it('should log detection via extensions', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.extensions as any).all = [{ id: 'cursor.cursor-ai', isActive: true }];
+      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([
+        { id: 'cursor.cursor-ai', isActive: true } as any,
+      ]);
 
       await destination.isAvailable();
 
@@ -118,8 +125,15 @@ describe('CursorAIDestination', () => {
   describe('isAvailable() - Detection via uriScheme (TERTIARY)', () => {
     it('should return true when uriScheme is "cursor"', async () => {
       // appName and extensions checks will fail
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).uriScheme = 'cursor';
+      destination = new CursorAIDestination(
+        createMockVscodeAdapter({
+          envOptions: {
+            appName: 'Visual Studio Code',
+            uriScheme: 'cursor',
+          },
+        }),
+        mockLogger,
+      );
 
       expect(await destination.isAvailable()).toBe(true);
     });
@@ -130,8 +144,12 @@ describe('CursorAIDestination', () => {
     });
 
     it('should log detection via uriScheme', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).uriScheme = 'cursor';
+      destination = new CursorAIDestination(
+        createMockVscodeAdapter({
+          envOptions: { appName: 'Visual Studio Code', uriScheme: 'cursor' },
+        }),
+        mockLogger,
+      );
 
       await destination.isAvailable();
 
@@ -164,15 +182,20 @@ describe('CursorAIDestination', () => {
 
   describe('paste() - Clipboard workaround', () => {
     beforeEach(() => {
-      // Mock Cursor environment (use appName for simplicity)
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
+      // Cursor environment for paste tests
+      mockAdapter = createMockVscodeAdapter({
+        envOptions: { appName: 'Cursor' },
+      });
+      jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      destination = new CursorAIDestination(mockAdapter, mockLogger);
     });
 
     it('should return false when not running in Cursor IDE', async () => {
       // Override to non-Cursor environment
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Visual Studio Code';
+      destination = new CursorAIDestination(
+        createMockVscodeAdapter({ envOptions: { appName: 'Visual Studio Code' } }),
+        mockLogger,
+      );
 
       const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
@@ -180,11 +203,9 @@ describe('CursorAIDestination', () => {
     });
 
     it('should NOT copy link to clipboard (RangeLinkService handles this)', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-
       await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
 
-      expect(mockVscode.env.clipboard.writeText).not.toHaveBeenCalled();
+      expect(mockAdapter.writeTextToClipboard).not.toHaveBeenCalled();
     });
 
     it('should try opening chat with aichat.newchataction command first', async () => {

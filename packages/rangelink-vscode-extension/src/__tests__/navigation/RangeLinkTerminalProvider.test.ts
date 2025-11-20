@@ -19,6 +19,7 @@ describe('RangeLinkTerminalProvider', () => {
     mockLogger = createMockLogger();
 
     mockAdapter = createMockVscodeAdapter();
+    jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue(undefined);
 
     // Standard delimiters
     delimiters = {
