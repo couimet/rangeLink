@@ -9,6 +9,7 @@ import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockLineAt } from '../helpers/createMockLineAt';
 import { createMockText } from '../helpers/createMockText';
 import { createMockUri } from '../helpers/createMockUri';
+import { createWindowOptionsForEditor } from '../helpers/createWindowOptionsForEditor';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('RangeLinkNavigationHandler - Single Position Selection Extension', () => {
@@ -35,15 +36,14 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
       document: mockDocument,
     });
 
-    // Create adapter with test hooks
-    mockAdapter = createMockVscodeAdapter();
-
-    // Configure window methods via test hook
-    const mockVscode = mockAdapter.__getVscodeInstance();
-    (mockVscode.window.showTextDocument as jest.Mock) = jest.fn().mockResolvedValue(mockEditor);
-    (mockVscode.workspace.openTextDocument as jest.Mock) = jest
-      .fn()
-      .mockImplementation((uri: any) => Promise.resolve({ uri }));
+    // Create adapter with window/workspace configuration
+    // mockEditor/mockDocument are created above, so we can reference them in options
+    mockAdapter = createMockVscodeAdapter({
+      windowOptions: createWindowOptionsForEditor(mockEditor),
+      workspaceOptions: {
+        openTextDocument: jest.fn().mockImplementation((uri) => Promise.resolve({ uri })),
+      },
+    });
 
     // Spy on VscodeAdapter's createSelection method to verify it's called correctly
     // This respects the abstraction layer - we test the adapter's public API, not its internals
