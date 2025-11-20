@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { ClaudeCodeDestination } from '../../destinations/ClaudeCodeDestination';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
+import { createMockUri } from '../helpers/createMockUri';
 import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 
 describe('ClaudeCodeDestination', () => {
@@ -16,13 +17,12 @@ describe('ClaudeCodeDestination', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockAdapter = createMockVscodeAdapter();
-    const mockVscode = (mockAdapter as any).__getVscodeInstance();
     destination = new ClaudeCodeDestination(mockAdapter, mockLogger);
 
     // Create mock extension
     mockExtension = {
       id: 'anthropic.claude-code',
-      extensionUri: mockVscode.Uri.file('/path/to/extension'),
+      extensionUri: createMockUri('/path/to/extension'),
       extensionPath: '/path/to/extension',
       isActive: true,
       packageJSON: {},
