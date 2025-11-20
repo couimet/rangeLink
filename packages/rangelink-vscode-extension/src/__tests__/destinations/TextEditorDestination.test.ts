@@ -238,7 +238,7 @@ describe('TextEditorDestination', () => {
       );
     });
 
-    it('should focus editor after successful paste', async () => {
+    it('should focus editor with correct URI and options after successful paste', async () => {
       const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument');
 
       await destination.pasteContent('text');
@@ -247,6 +247,7 @@ describe('TextEditorDestination', () => {
         preserveFocus: false,
         viewColumn: mockEditor.viewColumn,
       });
+      expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
     });
 
     it('should log success with editor name and content length', async () => {
@@ -311,6 +312,15 @@ describe('TextEditorDestination', () => {
     it('should return raw editor name from bound editor', () => {
       expect(destination.resourceName).toBe('src/file.ts');
     });
+
+    it('should call getDocumentUri with the bound editor', () => {
+      const spy = jest.spyOn(mockAdapter, 'getDocumentUri');
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const name = destination.resourceName;
+
+      expect(spy).toHaveBeenCalledWith(mockEditor);
+    });
   });
 
   describe('getLoggingDetails()', () => {
@@ -354,7 +364,7 @@ describe('TextEditorDestination', () => {
       expect(result).toBe(true);
     });
 
-    it('should call showTextDocument to focus editor', async () => {
+    it('should call showTextDocument with correct URI and options', async () => {
       const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument');
 
       await destination.focus();
@@ -363,6 +373,15 @@ describe('TextEditorDestination', () => {
         preserveFocus: false,
         viewColumn: mockEditor.viewColumn,
       });
+      expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call getDocumentUri with the bound editor', async () => {
+      const spy = jest.spyOn(mockAdapter, 'getDocumentUri');
+
+      await destination.focus();
+
+      expect(spy).toHaveBeenCalledWith(mockEditor);
     });
 
     it('should log success with editor name', async () => {
@@ -412,6 +431,21 @@ describe('TextEditorDestination', () => {
       const result = await destination.equals(otherDestination);
 
       expect(result).toBe(true);
+    });
+
+    it('should call getDocumentUri with both the bound editor and comparison editor', async () => {
+      const otherUri = createMockUri('/workspace/other.ts');
+      const otherDocument = createMockDocument({ uri: otherUri });
+      const otherEditor = createMockEditor({ document: otherDocument });
+      const otherDestination = new TextEditorDestination(otherEditor, mockAdapter, mockLogger);
+
+      const spy = jest.spyOn(mockAdapter, 'getDocumentUri');
+
+      await destination.equals(otherDestination);
+
+      // Should pass both editors: the bound editor and the other editor
+      expect(spy).toHaveBeenCalledWith(mockEditor);
+      expect(spy).toHaveBeenCalledWith(otherEditor);
     });
 
     it('should return false when comparing different editors (different URI)', async () => {
