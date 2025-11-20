@@ -5,6 +5,7 @@ import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErr
 import { BehaviourAfterPaste } from '../../types/BehaviourAfterPaste';
 import type { SendTextToTerminalOptions } from '../../types/SendTextToTerminalOptions';
 import { TerminalFocusType } from '../../types/TerminalFocusType';
+import { getUntitledDisplayName } from '../../utils/getUntitledDisplayName';
 import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
 
 /**
@@ -320,6 +321,32 @@ export class VscodeAdapter {
    */
   async resolveWorkspacePath(linkPath: string): Promise<vscode.Uri | undefined> {
     return resolveWorkspacePath(linkPath, this.ideInstance);
+  }
+
+  /**
+   * Find open untitled file by display name
+   *
+   * Searches through all open text documents with untitled scheme to find
+   * a match for the given display name (e.g., "Untitled-1", "Untitled-2").
+   *
+   * Useful for navigating to RangeLinks created from unsaved files that are
+   * still open in the editor but not yet saved to disk.
+   *
+   * @param displayName - Display name to search for (e.g., "Untitled-1")
+   * @returns URI of matching untitled document, or undefined if not found
+   */
+  findOpenUntitledFile(displayName: string): vscode.Uri | undefined {
+    const openDocuments = this.ideInstance.workspace.textDocuments;
+    const untitledDocs = openDocuments.filter((doc) => doc.uri.scheme === 'untitled');
+
+    for (const doc of untitledDocs) {
+      const docDisplayName = getUntitledDisplayName(doc.uri);
+      if (docDisplayName === displayName) {
+        return doc.uri;
+      }
+    }
+
+    return undefined;
   }
 
   // ============================================================================
