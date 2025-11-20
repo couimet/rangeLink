@@ -2,7 +2,10 @@ import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { BehaviourAfterPaste } from '../../../types/BehaviourAfterPaste';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
 import * as resolveWorkspacePathModule from '../../../utils/resolveWorkspacePath';
+import { createMockDocument } from '../../helpers/createMockDocument';
+import { createMockEditor } from '../../helpers/createMockEditor';
 import { createMockTerminal } from '../../helpers/createMockTerminal';
+import { createMockUri } from '../../helpers/createMockUri';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../helpers/mockVSCode';
 
 // ============================================================================
@@ -479,31 +482,53 @@ describe('VscodeAdapter', () => {
   });
 
   describe('getDocumentUri', () => {
-    it('should return document URI from editor', () => {
-      const mockUri = { fsPath: '/path/to/file.ts', toString: () => 'file:///path/to/file.ts' };
-      const mockEditor = {
-        document: {
-          uri: mockUri,
-        },
-      } as any;
+    it('should return exact same URI reference from editor.document.uri', () => {
+      const mockUri = createMockUri('/path/to/file.ts');
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: mockUri }),
+      });
 
       const result = adapter.getDocumentUri(mockEditor);
 
+      // Verify it returns the exact same object reference (not a copy)
       expect(result).toBe(mockUri);
     });
 
-    it('should handle untitled document', () => {
-      const mockUri = { scheme: 'untitled', toString: () => 'untitled:Untitled-1' };
-      const mockEditor = {
-        document: {
-          uri: mockUri,
-        },
-      } as any;
+    it('should return same URI when different editors share the same document URI', () => {
+      const sharedUri = createMockUri('/path/to/shared.ts');
+      const editor1 = createMockEditor({
+        document: createMockDocument({ uri: sharedUri }),
+      });
+      const editor2 = createMockEditor({
+        document: createMockDocument({ uri: sharedUri }),
+      });
 
-      const result = adapter.getDocumentUri(mockEditor);
+      const uri1 = adapter.getDocumentUri(editor1);
+      const uri2 = adapter.getDocumentUri(editor2);
 
-      expect(result).toBe(mockUri);
-      expect(result.scheme).toBe('untitled');
+      // Both editors share the same URI reference
+      expect(uri1).toBe(sharedUri);
+      expect(uri2).toBe(sharedUri);
+      expect(uri1).toBe(uri2);
+    });
+
+    it('should return different URIs when editors have different document URIs', () => {
+      const uri1 = createMockUri('/path/to/file1.ts');
+      const uri2 = createMockUri('/path/to/file2.ts');
+      const editor1 = createMockEditor({
+        document: createMockDocument({ uri: uri1 }),
+      });
+      const editor2 = createMockEditor({
+        document: createMockDocument({ uri: uri2 }),
+      });
+
+      const result1 = adapter.getDocumentUri(editor1);
+      const result2 = adapter.getDocumentUri(editor2);
+
+      // Each editor has its own URI reference
+      expect(result1).toBe(uri1);
+      expect(result2).toBe(uri2);
+      expect(result1).not.toBe(result2);
     });
   });
 
