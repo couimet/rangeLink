@@ -56,6 +56,7 @@ export enum MessageCode {
 
   // Warning messages (user-facing UI)
   WARN_NAVIGATION_FILE_NOT_FOUND = 'WARN_NAVIGATION_FILE_NOT_FOUND',
+  WARN_NAVIGATION_UNTITLED_FILE = 'WARN_NAVIGATION_UNTITLED_FILE',
 
   // Keep the keys in alphabetical order.
 }

@@ -6,6 +6,7 @@ import { createMockDocument } from '../../helpers/createMockDocument';
 import { createMockEditor } from '../../helpers/createMockEditor';
 import { createMockTerminal } from '../../helpers/createMockTerminal';
 import { createMockUri } from '../../helpers/createMockUri';
+import { createMockUntitledUri } from '../../helpers/createMockUntitledUri';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../helpers/mockVSCode';
 
 // ============================================================================
@@ -919,6 +920,89 @@ describe('VscodeAdapter', () => {
       await adapter.showInformationMessage(message);
 
       expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(message);
+    });
+  });
+
+  describe('findOpenUntitledFile', () => {
+    it('should find untitled file with matching display name (test format)', () => {
+      const mockDoc1 = createMockDocument({ uri: createMockUntitledUri('untitled:/1') });
+      const mockDoc2 = createMockDocument({ uri: createMockUri('/workspace/file.ts') });
+      const mockDoc3 = createMockDocument({ uri: createMockUntitledUri('untitled:/2') });
+      mockVSCode.workspace.textDocuments = [mockDoc1, mockDoc2, mockDoc3];
+
+      const result = adapter.findOpenUntitledFile('Untitled-1');
+
+      expect(result?.toString()).toBe('untitled:/1');
+    });
+
+    it('should find untitled file with matching display name (actual format)', () => {
+      const mockDoc1 = createMockDocument({ uri: createMockUntitledUri('untitled:Untitled-1') });
+      const mockDoc2 = createMockDocument({ uri: createMockUri('/workspace/file.ts') });
+      mockVSCode.workspace.textDocuments = [mockDoc1, mockDoc2];
+
+      const result = adapter.findOpenUntitledFile('Untitled-1');
+
+      expect(result?.toString()).toBe('untitled:Untitled-1');
+    });
+
+    it('should return undefined when no untitled files are open', () => {
+      const mockDoc1 = createMockDocument({ uri: createMockUri('file:///workspace/file1.ts') });
+      const mockDoc2 = createMockDocument({ uri: createMockUri('file:///workspace/file2.ts') });
+      mockVSCode.workspace.textDocuments = [mockDoc1, mockDoc2];
+
+      const result = adapter.findOpenUntitledFile('Untitled-1');
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined when display name does not match', () => {
+      const mockDoc1 = createMockDocument({ uri: createMockUntitledUri('untitled:/1') });
+      const mockDoc2 = createMockDocument({ uri: createMockUntitledUri('untitled:/2') });
+      mockVSCode.workspace.textDocuments = [mockDoc1, mockDoc2];
+
+      const result = adapter.findOpenUntitledFile('Untitled-3');
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return first match when multiple files have same display name', () => {
+      // Edge case: multiple untitled files with same display name (unlikely but possible)
+      const mockDoc1 = createMockDocument({ uri: createMockUntitledUri('untitled:/1') });
+      const mockDoc2 = createMockDocument({ uri: createMockUntitledUri('untitled:Untitled-1') });
+      mockVSCode.workspace.textDocuments = [mockDoc1, mockDoc2];
+
+      const result = adapter.findOpenUntitledFile('Untitled-1');
+
+      // Should return first match
+      expect(result?.toString()).toBe('untitled:/1');
+    });
+
+    it('should filter out non-untitled documents', () => {
+      const mockDoc1 = createMockDocument({ uri: createMockUri('/workspace/file.ts') });
+      const mockDoc2 = createMockDocument({ uri: createMockUri('/example') });
+      const mockDoc3 = createMockDocument({ uri: createMockUntitledUri('untitled:/1') });
+      mockVSCode.workspace.textDocuments = [mockDoc1, mockDoc2, mockDoc3];
+
+      const result = adapter.findOpenUntitledFile('Untitled-1');
+
+      expect(result?.toString()).toBe('untitled:/1');
+    });
+
+    it('should handle empty document list', () => {
+      mockVSCode.workspace.textDocuments = [];
+
+      const result = adapter.findOpenUntitledFile('Untitled-1');
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle lowercase path: untitled:untitled-1', () => {
+      const mockDoc = createMockDocument({ uri: createMockUntitledUri('untitled:untitled-1') });
+      mockVSCode.workspace.textDocuments = [mockDoc];
+
+      const result = adapter.findOpenUntitledFile('Untitled-untitled-1');
+
+      expect(result?.toString()).toBe('untitled:untitled-1');
     });
   });
 });

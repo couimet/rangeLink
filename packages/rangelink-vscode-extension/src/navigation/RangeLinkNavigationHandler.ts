@@ -110,14 +110,41 @@ export class RangeLinkNavigationHandler {
     const { path, start, end, selectionType } = parsed;
 
     // Resolve path to file URI (async)
-    const fileUri = await this.ideAdapter.resolveWorkspacePath(path);
+    let fileUri = await this.ideAdapter.resolveWorkspacePath(path);
 
     if (!fileUri) {
       this.logger.warn({ ...logCtx, path }, 'Failed to resolve workspace path');
-      await this.ideAdapter.showWarningMessage(
-        formatMessage(MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND, { path }),
-      );
-      return;
+
+      // Issue #16: Provide better error message for untitled files
+      // If path looks like an untitled file (Untitled-1, Untitled-2, etc.) AND doesn't resolve,
+      // try to find it among open untitled documents before showing error
+      const looksLikeUntitled = /^Untitled-?\d*$/i.test(path);
+      if (looksLikeUntitled) {
+        const untitledUri = this.ideAdapter.findOpenUntitledFile(path);
+
+        if (untitledUri) {
+          this.logger.info(
+            { ...logCtx, path, uri: untitledUri.toString() },
+            'Found open untitled file, navigating',
+          );
+          fileUri = untitledUri;
+        } else {
+          // Ultimate last resort: not saved AND not currently open
+          this.logger.info(
+            { ...logCtx, path },
+            'Path looks like untitled file but not found in open documents',
+          );
+          await this.ideAdapter.showWarningMessage(
+            formatMessage(MessageCode.WARN_NAVIGATION_UNTITLED_FILE, { path }),
+          );
+          return;
+        }
+      } else {
+        await this.ideAdapter.showWarningMessage(
+          formatMessage(MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND, { path }),
+        );
+        return;
+      }
     }
 
     try {
