@@ -621,6 +621,106 @@ describe('TextEditorDestination', () => {
         'Other editor destination missing editor/document/uri',
       );
     });
+
+    describe('untitled files (issue #137)', () => {
+      it('should return true when comparing same untitled editor object (same URI)', async () => {
+        const untitledUri = createMockUntitledUri('untitled:Untitled-1');
+        const untitledDocument = createMockDocument({
+          getText: createMockText(''),
+          uri: untitledUri,
+          isUntitled: true,
+        });
+        const untitledEditor = createMockEditor({ document: untitledDocument });
+        const destination1 = new TextEditorDestination(untitledEditor, mockAdapter, mockLogger);
+        const destination2 = new TextEditorDestination(untitledEditor, mockAdapter, mockLogger);
+
+        const result = await destination1.equals(destination2);
+
+        expect(result).toBe(true);
+      });
+
+      it('should return true when comparing same untitled editor object with different URIs (dynamic rename)', async () => {
+        // Simulate dynamic rename: IDE changes URI based on content
+        const initialUri = createMockUntitledUri('untitled:Untitled-1');
+        const renamedUri = createMockUntitledUri('untitled:index.ts');
+        const untitledDocument = createMockDocument({
+          getText: createMockText(''),
+          uri: initialUri,
+          isUntitled: true,
+        });
+        const untitledEditor = createMockEditor({ document: untitledDocument });
+        const destination1 = new TextEditorDestination(untitledEditor, mockAdapter, mockLogger);
+        const destination2 = new TextEditorDestination(untitledEditor, mockAdapter, mockLogger);
+
+        // Mock getDocumentUri to simulate IDE dynamically renaming the file
+        // First call (destination1) returns initial URI, second call (destination2) returns renamed URI
+        const getDocumentUriSpy = jest.spyOn(mockAdapter, 'getDocumentUri');
+        getDocumentUriSpy.mockReturnValueOnce(initialUri).mockReturnValueOnce(renamedUri);
+
+        const result = await destination1.equals(destination2);
+
+        // Should return true because editor object is the same, even though URI changed
+        expect(result).toBe(true);
+        expect(getDocumentUriSpy).toHaveBeenCalledTimes(2);
+      });
+
+      it('should return false when comparing different untitled editor objects', async () => {
+        const uri1 = createMockUntitledUri('untitled:Untitled-1');
+        const document1 = createMockDocument({
+          getText: createMockText(''),
+          uri: uri1,
+          isUntitled: true,
+        });
+        const editor1 = createMockEditor({ document: document1 });
+        const destination1 = new TextEditorDestination(editor1, mockAdapter, mockLogger);
+
+        const uri2 = createMockUntitledUri('untitled:Untitled-2');
+        const document2 = createMockDocument({
+          getText: createMockText(''),
+          uri: uri2,
+          isUntitled: true,
+        });
+        const editor2 = createMockEditor({ document: document2 });
+        const destination2 = new TextEditorDestination(editor2, mockAdapter, mockLogger);
+
+        const result = await destination1.equals(destination2);
+
+        expect(result).toBe(false);
+      });
+
+      it('should return false when comparing untitled file with regular file (different schemes)', async () => {
+        const untitledUri = createMockUntitledUri('untitled:Untitled-1');
+        const untitledDocument = createMockDocument({
+          getText: createMockText(''),
+          uri: untitledUri,
+          isUntitled: true,
+        });
+        const untitledEditor = createMockEditor({ document: untitledDocument });
+        const untitledDestination = new TextEditorDestination(
+          untitledEditor,
+          mockAdapter,
+          mockLogger,
+        );
+
+        const regularUri = createMockUri('/workspace/file.ts');
+        const regularDocument = createMockDocument({
+          getText: createMockText(''),
+          uri: regularUri,
+          isUntitled: false,
+        });
+        const regularEditor = createMockEditor({ document: regularDocument });
+        const regularDestination = new TextEditorDestination(
+          regularEditor,
+          mockAdapter,
+          mockLogger,
+        );
+
+        const result = await untitledDestination.equals(regularDestination);
+
+        // Different schemes → fallback to URI comparison → false
+        expect(result).toBe(false);
+      });
+    });
   });
 
   describe('getJumpSuccessMessage()', () => {
