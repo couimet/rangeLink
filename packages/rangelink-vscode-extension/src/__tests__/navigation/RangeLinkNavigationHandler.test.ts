@@ -668,3 +668,92 @@ describe('RangeLinkNavigationHandler - Wrapper Methods and Error Handling', () =
     });
   });
 });
+
+describe('RangeLinkNavigationHandler - Rectangular Selection Mode', () => {
+  beforeEach(() => {
+    mockLogger = createMockLogger();
+
+    mockDocument = createMockDocument({
+      getText: createMockText('line content'),
+      uri: createMockUri('/test/file.ts'),
+      lineCount: 100,
+      lineAt: createMockLineAt('line content'),
+    });
+
+    mockEditor = createMockEditor({
+      document: mockDocument,
+    });
+
+    mockAdapter = createMockVscodeAdapter({
+      windowOptions: createWindowOptionsForEditor(mockEditor),
+      workspaceOptions: {
+        openTextDocument: jest.fn().mockResolvedValue({ uri: mockDocument.uri }),
+      },
+    });
+
+    handler = new RangeLinkNavigationHandler(DEFAULT_DELIMITERS, mockAdapter, mockLogger);
+  });
+
+  it('should create multi-cursor selections for rectangular mode', async () => {
+    const parsed: ParsedLink = {
+      path: 'file.ts',
+      start: { line: 10, char: 5 },
+      end: { line: 12, char: 10 }, // 3 lines: 10, 11, 12
+      linkType: LinkType.Regular,
+      selectionType: SelectionType.Rectangular,
+    };
+    const linkText = 'file.ts##L10C5-L12C10';
+
+    await handler.navigateToLink(parsed, linkText);
+
+    // Should log rectangular selection
+    const infoCalls = (mockLogger.info as jest.Mock).mock.calls;
+    const rectangularLog = infoCalls.find((call) => call[1]?.includes('Set rectangular selection'));
+
+    expect(rectangularLog).toBeDefined();
+    expect(rectangularLog[0]).toMatchObject({
+      fn: 'RangeLinkNavigationHandler.navigateToLink',
+      linkText: 'file.ts##L10C5-L12C10',
+      lineCount: 3, // Lines 10, 11, 12
+    });
+
+    // Should set editor.selections (not editor.selection)
+    expect(mockEditor.selections).toBeDefined();
+    expect(mockEditor.selections).toHaveLength(3);
+  });
+
+  it('should create selections for each line in rectangular range', async () => {
+    const parsed: ParsedLink = {
+      path: 'file.ts',
+      start: { line: 5, char: 1 },
+      end: { line: 7, char: 8 }, // 3 lines
+      linkType: LinkType.Regular,
+      selectionType: SelectionType.Rectangular,
+    };
+
+    const createSelectionSpy = jest.spyOn(mockAdapter, 'createSelection');
+
+    await handler.navigateToLink(parsed, 'file.ts##L5C1-L7C8');
+
+    // Should create 3 selections (one per line)
+    expect(createSelectionSpy).toHaveBeenCalledTimes(3);
+
+    // Line 5 (0-indexed: line 4)
+    expect(createSelectionSpy).toHaveBeenCalledWith(
+      { line: 4, character: 0 }, // Line 5, char 1 → 0-indexed
+      { line: 4, character: 7 }, // Line 5, char 8 → 0-indexed
+    );
+
+    // Line 6 (0-indexed: line 5)
+    expect(createSelectionSpy).toHaveBeenCalledWith(
+      { line: 5, character: 0 },
+      { line: 5, character: 7 },
+    );
+
+    // Line 7 (0-indexed: line 6)
+    expect(createSelectionSpy).toHaveBeenCalledWith(
+      { line: 6, character: 0 },
+      { line: 6, character: 7 },
+    );
+  });
+});
