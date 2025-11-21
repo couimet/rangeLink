@@ -35,6 +35,7 @@ export const createMockWorkspace = (
 
   return {
     workspaceFolders: folders,
+    textDocuments: [],
     openTextDocument: jest.fn(),
     getWorkspaceFolder: jest.fn(),
     asRelativePath: jest.fn(),

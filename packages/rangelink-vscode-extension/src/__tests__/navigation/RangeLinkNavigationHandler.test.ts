@@ -9,6 +9,7 @@ import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockLineAt } from '../helpers/createMockLineAt';
 import { createMockText } from '../helpers/createMockText';
 import { createMockUri } from '../helpers/createMockUri';
+import { createMockUntitledUri } from '../helpers/createMockUntitledUri';
 import { createWindowOptionsForEditor } from '../helpers/createWindowOptionsForEditor';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
@@ -254,7 +255,7 @@ describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)'
           linkText: 'Untitled-1#L10C5-L10C10',
           path: 'Untitled-1',
         },
-        'Path looks like untitled file and does not resolve',
+        'Path looks like untitled file but not found in open documents',
       );
     });
 
@@ -403,6 +404,113 @@ describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)'
 
       // "MyUntitledFile" doesn't match /^Untitled-?\d*$/i pattern
       expect(showWarningSpy).toHaveBeenCalledWith('RangeLink: Cannot find file: MyUntitledFile.ts');
+    });
+  });
+
+  describe('when path looks like untitled AND file not saved BUT file is open', () => {
+
+    it('should find and navigate to open untitled file "Untitled-1"', async () => {
+      const parsed: ParsedLink = {
+        path: 'Untitled-1',
+        start: { line: 10 },
+        end: { line: 10 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+      const linkText = 'Untitled-1#L10';
+
+      const untitledUri = createMockUntitledUri('untitled:/1');
+      const mockDocument = createMockDocument({
+        uri: untitledUri,
+        getText: createMockText('open untitled file content'),
+        lineAt: createMockLineAt('open untitled file content'),
+      });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      // File not saved (resolveWorkspacePath fails)
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
+      // But file is open (findOpenUntitledFile succeeds)
+      jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(untitledUri);
+      jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+
+      // Act
+      await handler.navigateToLink(parsed, linkText);
+
+      // Assert: Should find and navigate (no warning)
+      expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-1');
+      expect(showWarningSpy).not.toHaveBeenCalled();
+      expect(showInfoSpy).toHaveBeenCalledWith('RangeLink: Navigated to Untitled-1 @ 10');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          linkText: 'Untitled-1#L10',
+          path: 'Untitled-1',
+          uri: 'untitled:/1',
+        },
+        'Found open untitled file, navigating',
+      );
+    });
+
+    it('should find and navigate to open untitled file "Untitled-2"', async () => {
+      const parsed: ParsedLink = {
+        path: 'Untitled-2',
+        start: { line: 5 },
+        end: { line: 5 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      const untitledUri = createMockUntitledUri('untitled:/2');
+      const mockDocument = createMockDocument({
+        uri: untitledUri,
+        getText: createMockText('content'),
+        lineAt: createMockLineAt('content'),
+      });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
+      jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(untitledUri);
+      jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      await handler.navigateToLink(parsed, 'Untitled-2#L5');
+
+      expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-2');
+      expect(showWarningSpy).not.toHaveBeenCalled();
+    });
+
+    it('should show error when untitled file not found in open documents', async () => {
+      const parsed: ParsedLink = {
+        path: 'Untitled-3',
+        start: { line: 1 },
+        end: { line: 1 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      // File not saved AND not open
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
+      jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(undefined);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      await handler.navigateToLink(parsed, 'Untitled-3#L1');
+
+      // Should try to find it first
+      expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-3');
+      // Then show error (ultimate last resort)
+      expect(showWarningSpy).toHaveBeenCalledWith(
+        'RangeLink: Cannot navigate to unsaved file (Untitled-3). Save the file first, then try again.',
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          linkText: 'Untitled-3#L1',
+          path: 'Untitled-3',
+        },
+        'Path looks like untitled file but not found in open documents',
+      );
     });
   });
 });
