@@ -118,6 +118,10 @@ function setActiveEditor(editor: any) {
   (vscode.window as any).activeTextEditor = editor;
 }
 
+// TODO: MOVE - All 25 tests in this describe block test RangeLinkService.createLink() behavior
+// These should be in RangeLinkService.test.ts, not extension.test.ts
+// Issue: https://github.com/couimet/rangeLink/issues/148
+// Coverage gap: RangeLinkService.test.ts has ZERO tests for createLink()
 describe('RangeLinkService', () => {
   let service: RangeLinkService;
 
@@ -158,7 +162,9 @@ describe('RangeLinkService', () => {
     );
   });
 
+  // TODO: MOVE - Test RangeLinkService.createLink() behavior (1 test)
   describe('createLink - Empty selection handling', () => {
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should throw error when selection is empty (should be prevented by command enablement)', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -191,7 +197,9 @@ describe('RangeLinkService', () => {
     });
   });
 
+  // TODO: MOVE - Test RangeLinkService.createLink() behavior (6 tests)
   describe('createLink - Single line selections', () => {
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should create link for full line selection', async () => {
       setActiveEditor({
         selection: {
@@ -225,6 +233,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L11C1-L11C6');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should copy column range for partial line selection', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -258,6 +267,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L21C6-L21C16');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should use line-only format when selection spans full line and extends to end', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -291,6 +301,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L16');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should NOT use line-only format when startColumn is not 1', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -323,6 +334,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L5C3-L5C16');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should NOT use line-only format when end character does not reach end of line', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -355,6 +367,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L5C1-L5C11');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should handle selections with different character ranges (not rectangular mode)', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -395,7 +408,9 @@ describe('RangeLinkService', () => {
     });
   });
 
+  // TODO: MOVE - Test RangeLinkService.createLink() behavior (2 tests)
   describe('createLink - Multi-line selections', () => {
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should copy range when selection spans multiple full lines', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -429,6 +444,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L11-L26');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should copy column range when selection has specific columns', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -463,7 +479,9 @@ describe('RangeLinkService', () => {
     });
   });
 
+  // TODO: MOVE - Test RangeLinkService.createLink() behavior (3 tests)
   describe('createLink - Path handling', () => {
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should use relative path by default', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -497,6 +515,7 @@ describe('RangeLinkService', () => {
       expect(mockWorkspace.asRelativePath).toHaveBeenCalled();
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts (WEAK ASSERTION - only checks substring)
     it.skip('should use absolute path when requested', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -527,6 +546,7 @@ describe('RangeLinkService', () => {
       expect(callArg).toContain('workspace');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it.skip('should normalize Windows path separators', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -557,7 +577,9 @@ describe('RangeLinkService', () => {
     });
   });
 
+  // TODO: MOVE - Test RangeLinkService.createLink() behavior (2 tests)
   describe('createLink - Error handling', () => {
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should show error when no active editor', async () => {
       mockWindow.activeTextEditor = null;
 
@@ -567,6 +589,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).not.toHaveBeenCalled();
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should handle missing workspace folder', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -598,7 +621,9 @@ describe('RangeLinkService', () => {
     });
   });
 
+  // TODO: MOVE - Test RangeLinkService.createLink() behavior (14 tests)
   describe('createLink - Column mode selections (Phase 1A)', () => {
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should detect and format column selection with default delimiters', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -643,6 +668,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts##L11C6-L13C11');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should format column selection with custom single-character delimiters', async () => {
       const customService = new RangeLinkService(
         {
@@ -698,6 +724,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts@@X6Y4..X8Y9');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should format column selection with custom multi-character delimiters', async () => {
       const customService = new RangeLinkService(
         {
@@ -755,6 +782,7 @@ describe('RangeLinkService', () => {
       );
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should not treat duplicate selections on same line as column selection', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -794,6 +822,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L6C1-L6C6');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should not treat non-consecutive lines as column selection', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -833,6 +862,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L11C6-L11C11');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should not treat selections with different character ranges as column selection', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -872,6 +902,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L11C4-L11C9');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should not treat single selection as column selection', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -906,6 +937,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L11C6-L13C11');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should handle column selection with absolute paths', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -948,6 +980,7 @@ describe('RangeLinkService', () => {
       expect(callArg).toBe('/absolute/path/to/file.ts##L2C1-L4C6');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should handle very large line numbers in column selection', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -991,6 +1024,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts##L10000C1-L10002C11');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should handle very large column numbers in column selection', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -1034,6 +1068,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts##L6C1000-L8C1010');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should handle column selection starting at line 0 (first line)', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -1077,6 +1112,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts##L1C3-L3C8');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should handle column selection starting at column 0 (beginning of line)', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -1120,6 +1156,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts##L11C1-L13C6');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should handle column selection with only 2 selections (minimum)', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -1159,6 +1196,7 @@ describe('RangeLinkService', () => {
       expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts##L6C4-L7C9');
     });
 
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should handle column selection with many selections (10+)', async () => {
       const manySelections = [];
       for (let i = 0; i < 10; i++) {
@@ -1193,7 +1231,9 @@ describe('RangeLinkService', () => {
     });
   });
 
+  // TODO: MOVE - Test RangeLinkService.createLink() behavior (1 test)
   describe('createLink - Status bar feedback', () => {
+    // TODO: MOVE to RangeLinkService.test.ts
     it('should show status bar message after copying', async () => {
       mockWindow.activeTextEditor = {
         selection: {
@@ -2942,6 +2982,9 @@ describe('Configuration loading and validation', () => {
   });
 });
 
+// TODO: MOVE - Test RangeLinkService.createPortableLink() behavior (2 tests)
+// These should be in RangeLinkService.test.ts, not extension.test.ts
+// Issue: https://github.com/couimet/rangeLink/issues/148
 describe('Portable links (Phase 1C)', () => {
   beforeEach(() => {
     // Wire up mocks
@@ -2958,6 +3001,7 @@ describe('Portable links (Phase 1C)', () => {
     (vscode.env.clipboard.writeText as jest.Mock).mockImplementation(mockClipboard.writeText);
   });
 
+  // TODO: MOVE to RangeLinkService.test.ts
   it.skip('should generate rectangular-mode portable link using custom delimiters (LINE/COL/#/TO)', async () => {
     // Arrange editor with column selection across consecutive lines (same char range)
     // For rectangular mode: all selections must have same start/end chars AND be consecutive lines
@@ -3006,6 +3050,7 @@ describe('Portable links (Phase 1C)', () => {
     );
   });
 
+  // TODO: MOVE to RangeLinkService.test.ts
   it('should not treat LINE/COL/#/TO as substring conflicts (no fallback to defaults)', async () => {
     const mockConfig = {
       get: jest.fn((key: string, defaultValue: string) => {
