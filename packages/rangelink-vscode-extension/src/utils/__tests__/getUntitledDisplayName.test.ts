@@ -43,13 +43,13 @@ describe('getUntitledDisplayName', () => {
       expect(result).toBe('Untitled-42');
     });
 
-    it('should handle lowercase prefix: untitled:untitled-3 → "Untitled-untitled-3"', () => {
+    it('should handle lowercase prefix: untitled:untitled-3 → "untitled-3" (case-insensitive)', () => {
       const uri = createMockUntitledUri('untitled:untitled-3');
 
       const result = getUntitledDisplayName(uri);
 
-      // Lowercase "untitled" doesn't match "Untitled", so prefix is added
-      expect(result).toBe('Untitled-untitled-3');
+      // Case-insensitive match: lowercase "untitled" matches "Untitled", no prefix added
+      expect(result).toBe('untitled-3');
     });
   });
 

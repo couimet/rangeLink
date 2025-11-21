@@ -18,6 +18,7 @@ import { createMockTab } from '../helpers/createMockTab';
 import { createMockTabGroup } from '../helpers/createMockTabGroup';
 import { createMockTabGroups } from '../helpers/createMockTabGroups';
 import { createMockText } from '../helpers/createMockText';
+import { createMockUntitledUri } from '../helpers/createMockUntitledUri';
 import { createMockUri } from '../helpers/createMockUri';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 import { simulateClosedEditor } from '../helpers/simulateClosedEditor';
@@ -320,6 +321,123 @@ describe('TextEditorDestination', () => {
       const name = destination.resourceName;
 
       expect(spy).toHaveBeenCalledWith(mockEditor);
+    });
+
+    describe('untitled files', () => {
+      it('should handle test format: uri.path = "/1" → produces "Untitled-1"', () => {
+        const untitledUri = createMockUntitledUri('untitled:/1');
+        const untitledDocument = createMockDocument({
+          getText: createMockText(''),
+          uri: untitledUri,
+          isUntitled: true,
+        });
+        const untitledEditor = createMockEditor({ document: untitledDocument });
+        const untitledDestination = new TextEditorDestination(
+          untitledEditor,
+          mockAdapter,
+          mockLogger,
+        );
+
+        const resourceName = untitledDestination.resourceName;
+
+        expect(resourceName).toBe('Untitled-1');
+      });
+
+      it('should handle test format: uri.path = "/2" → produces "Untitled-2"', () => {
+        const untitledUri = createMockUntitledUri('untitled:/2');
+        const untitledDocument = createMockDocument({
+          getText: createMockText(''),
+          uri: untitledUri,
+          isUntitled: true,
+        });
+        const untitledEditor = createMockEditor({ document: untitledDocument });
+        const untitledDestination = new TextEditorDestination(
+          untitledEditor,
+          mockAdapter,
+          mockLogger,
+        );
+
+        const resourceName = untitledDestination.resourceName;
+
+        expect(resourceName).toBe('Untitled-2');
+      });
+
+      it('should handle actual format: uri.path = "Untitled-1" → produces "Untitled-1" (no duplication)', () => {
+        const untitledUri = createMockUntitledUri('untitled:Untitled-1');
+        const untitledDocument = createMockDocument({
+          getText: createMockText(''),
+          uri: untitledUri,
+          isUntitled: true,
+        });
+        const untitledEditor = createMockEditor({ document: untitledDocument });
+        const untitledDestination = new TextEditorDestination(
+          untitledEditor,
+          mockAdapter,
+          mockLogger,
+        );
+
+        const resourceName = untitledDestination.resourceName;
+
+        expect(resourceName).toBe('Untitled-1');
+      });
+
+      it('should handle actual format: uri.path = "Untitled-2" → produces "Untitled-2" (no duplication)', () => {
+        const untitledUri = createMockUntitledUri('untitled:Untitled-2');
+        const untitledDocument = createMockDocument({
+          getText: createMockText(''),
+          uri: untitledUri,
+          isUntitled: true,
+        });
+        const untitledEditor = createMockEditor({ document: untitledDocument });
+        const untitledDestination = new TextEditorDestination(
+          untitledEditor,
+          mockAdapter,
+          mockLogger,
+        );
+
+        const resourceName = untitledDestination.resourceName;
+
+        expect(resourceName).toBe('Untitled-2');
+      });
+
+      it('should handle path without leading slash: uri.path = "42" → produces "Untitled-42"', () => {
+        const untitledUri = createMockUntitledUri('untitled:42');
+        const untitledDocument = createMockDocument({
+          getText: createMockText(''),
+          uri: untitledUri,
+          isUntitled: true,
+        });
+        const untitledEditor = createMockEditor({ document: untitledDocument });
+        const untitledDestination = new TextEditorDestination(
+          untitledEditor,
+          mockAdapter,
+          mockLogger,
+        );
+
+        const resourceName = untitledDestination.resourceName;
+
+        expect(resourceName).toBe('Untitled-42');
+      });
+
+      it('should handle lowercase prefix: uri.path = "untitled-3" → produces "untitled-3" (case-insensitive)', () => {
+        const untitledUri = createMockUntitledUri('untitled:untitled-3');
+        const untitledDocument = createMockDocument({
+          getText: createMockText(''),
+          uri: untitledUri,
+          isUntitled: true,
+        });
+        const untitledEditor = createMockEditor({ document: untitledDocument });
+        const untitledDestination = new TextEditorDestination(
+          untitledEditor,
+          mockAdapter,
+          mockLogger,
+        );
+
+        const resourceName = untitledDestination.resourceName;
+
+        // Case-insensitive match: lowercase "untitled" matches "Untitled", no prefix added
+        expect(resourceName).toBe('untitled-3');
+      });
     });
   });
 

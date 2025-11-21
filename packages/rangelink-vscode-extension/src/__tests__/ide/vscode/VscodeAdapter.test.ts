@@ -996,11 +996,12 @@ describe('VscodeAdapter', () => {
       expect(result).toBeUndefined();
     });
 
-    it('should handle lowercase path: untitled:untitled-1', () => {
+    it('should handle lowercase path: untitled:untitled-1 (case-insensitive)', () => {
       const mockDoc = createMockDocument({ uri: createMockUntitledUri('untitled:untitled-1') });
       mockVSCode.workspace.textDocuments = [mockDoc];
 
-      const result = adapter.findOpenUntitledFile('Untitled-untitled-1');
+      // With case-insensitive matching, "untitled-1" is the display name (no "Untitled-" prefix added)
+      const result = adapter.findOpenUntitledFile('untitled-1');
 
       expect(result?.toString()).toBe('untitled:untitled-1');
     });
