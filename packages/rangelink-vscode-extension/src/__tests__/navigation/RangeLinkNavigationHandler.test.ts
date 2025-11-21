@@ -4,23 +4,24 @@ import { LinkType, SelectionType, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
+import * as formatLinkTooltipModule from '../../utils/formatLinkTooltip';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockLineAt } from '../helpers/createMockLineAt';
 import { createMockText } from '../helpers/createMockText';
-import { createMockUri } from '../helpers/createMockUri';
 import { createMockUntitledUri } from '../helpers/createMockUntitledUri';
+import { createMockUri } from '../helpers/createMockUri';
 import { createWindowOptionsForEditor } from '../helpers/createWindowOptionsForEditor';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
-describe('RangeLinkNavigationHandler - Single Position Selection Extension', () => {
-  let handler: RangeLinkNavigationHandler;
-  let mockLogger: Logger;
-  let mockAdapter: VscodeAdapterWithTestHooks;
-  let mockDocument: ReturnType<typeof createMockDocument>;
-  let mockEditor: ReturnType<typeof createMockEditor>;
-  let createSelectionSpy: jest.SpyInstance;
+let handler: RangeLinkNavigationHandler;
+let mockLogger: Logger;
+let mockAdapter: VscodeAdapterWithTestHooks;
+let mockDocument: ReturnType<typeof createMockDocument>;
+let mockEditor: ReturnType<typeof createMockEditor>;
+let createSelectionSpy: jest.SpyInstance;
 
+describe('RangeLinkNavigationHandler - Single Position Selection Extension', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
 
@@ -213,10 +214,6 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
 });
 
 describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)', () => {
-  let handler: RangeLinkNavigationHandler;
-  let mockLogger: Logger;
-  let mockAdapter: VscodeAdapterWithTestHooks;
-
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockAdapter = createMockVscodeAdapter();
@@ -511,5 +508,252 @@ describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)'
         'Path looks like untitled file but not found in open documents',
       );
     });
+  });
+});
+
+describe('RangeLinkNavigationHandler - Wrapper Methods and Error Handling', () => {
+  beforeEach(() => {
+    mockLogger = createMockLogger();
+    mockAdapter = createMockVscodeAdapter();
+    handler = new RangeLinkNavigationHandler(DEFAULT_DELIMITERS, mockAdapter, mockLogger);
+  });
+
+  describe('getPattern', () => {
+    it('should return compiled RegExp pattern', () => {
+      const pattern = handler.getPattern();
+
+      expect(pattern).toBeInstanceOf(RegExp);
+      expect(pattern.global).toBe(true); // Should be global for matchAll
+    });
+
+    it('should return pattern that matches RangeLink formats', () => {
+      const pattern = handler.getPattern();
+
+      expect('file.ts#L10').toMatch(pattern);
+      expect('file.ts#L10-L20').toMatch(pattern);
+      expect('file.ts#L10C5-L20C10').toMatch(pattern);
+      expect('file.ts##L10C5-L20C10').toMatch(pattern);
+    });
+  });
+
+  describe('parseLink', () => {
+    it('should parse valid link and return success result', () => {
+      const result = handler.parseLink('file.ts#L10');
+
+      expect(result).toBeOkWith((value: ParsedLink) => {
+        expect(value.path).toBe('file.ts');
+        expect(value.start.line).toBe(10);
+        expect(value.end.line).toBe(10);
+      });
+    });
+
+    it('should return error for invalid link', () => {
+      const result = handler.parseLink('invalid');
+
+      expect(result).toBeRangeLinkErrorErr('PARSE_NO_HASH_SEPARATOR', {
+        message: 'Link must contain # separator',
+        functionName: 'parseLink',
+      });
+    });
+  });
+
+  describe('formatTooltip', () => {
+    it('should delegate to formatLinkTooltip utility and return result exactly', () => {
+      const parsed: ParsedLink = {
+        path: 'file.ts',
+        start: { line: 10 },
+        end: { line: 10 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+      const expectedTooltip = 'Open file.ts:10 • RangeLink';
+
+      // Mock the utility function
+      const formatLinkTooltipSpy = jest
+        .spyOn(formatLinkTooltipModule, 'formatLinkTooltip')
+        .mockReturnValue(expectedTooltip);
+
+      const result = handler.formatTooltip(parsed);
+
+      // Verify delegation with exact parameter
+      expect(formatLinkTooltipSpy).toHaveBeenCalledTimes(1);
+      expect(formatLinkTooltipSpy).toHaveBeenCalledWith(parsed);
+
+      // Verify return value is passed through exactly
+      expect(result).toBe(expectedTooltip);
+    });
+
+    it('should pass through undefined return value from formatLinkTooltip', () => {
+      const invalidParsed = {
+        path: '',
+        start: { line: 10 },
+        end: { line: 10 },
+      } as ParsedLink;
+
+      // Mock utility to return undefined (invalid data case)
+      const formatLinkTooltipSpy = jest
+        .spyOn(formatLinkTooltipModule, 'formatLinkTooltip')
+        .mockReturnValue(undefined);
+
+      const result = handler.formatTooltip(invalidParsed);
+
+      // Verify delegation
+      expect(formatLinkTooltipSpy).toHaveBeenCalledWith(invalidParsed);
+
+      // Verify undefined is passed through exactly
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should re-throw showTextDocument errors and show error message', async () => {
+      const parsed: ParsedLink = {
+        path: 'file.ts',
+        start: { line: 10 },
+        end: { line: 10 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+      const linkText = 'file.ts#L10';
+
+      const mockUri = createMockUri('/test/file.ts');
+      const showTextDocumentError = new Error('Failed to open document');
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
+      jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(showTextDocumentError);
+      const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
+
+      // Should re-throw the exact same error object (reference equality)
+      await expect(handler.navigateToLink(parsed, linkText)).rejects.toBe(showTextDocumentError);
+
+      // Should log error
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          linkText: 'file.ts#L10',
+          error: showTextDocumentError,
+        },
+        'Navigation failed',
+      );
+
+      // Should show error message to user
+      expect(showErrorSpy).toHaveBeenCalledWith(
+        'RangeLink: Failed to navigate to file.ts: Failed to open document',
+      );
+    });
+
+    it('should re-throw non-Error exceptions and show error message', async () => {
+      const parsed: ParsedLink = {
+        path: 'file.ts',
+        start: { line: 10 },
+        end: { line: 10 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      const mockUri = createMockUri('/test/file.ts');
+      const nonErrorException = 'string error';
+
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
+      jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(nonErrorException);
+      const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
+
+      // Should re-throw the exact same exception value (reference equality)
+      await expect(handler.navigateToLink(parsed, 'file.ts#L10')).rejects.toBe(nonErrorException);
+
+      // Should handle non-Error exception and show error message
+      expect(showErrorSpy).toHaveBeenCalledWith(
+        'RangeLink: Failed to navigate to file.ts: string error',
+      );
+    });
+  });
+});
+
+describe('RangeLinkNavigationHandler - Rectangular Selection Mode', () => {
+  beforeEach(() => {
+    mockLogger = createMockLogger();
+
+    mockDocument = createMockDocument({
+      getText: createMockText('line content'),
+      uri: createMockUri('/test/file.ts'),
+      lineCount: 100,
+      lineAt: createMockLineAt('line content'),
+    });
+
+    mockEditor = createMockEditor({
+      document: mockDocument,
+    });
+
+    mockAdapter = createMockVscodeAdapter({
+      windowOptions: createWindowOptionsForEditor(mockEditor),
+      workspaceOptions: {
+        openTextDocument: jest.fn().mockResolvedValue({ uri: mockDocument.uri }),
+      },
+    });
+
+    handler = new RangeLinkNavigationHandler(DEFAULT_DELIMITERS, mockAdapter, mockLogger);
+  });
+
+  it('should create multi-cursor selections for rectangular mode', async () => {
+    const parsed: ParsedLink = {
+      path: 'file.ts',
+      start: { line: 10, char: 5 },
+      end: { line: 12, char: 10 }, // 3 lines: 10, 11, 12
+      linkType: LinkType.Regular,
+      selectionType: SelectionType.Rectangular,
+    };
+    const linkText = 'file.ts##L10C5-L12C10';
+
+    await handler.navigateToLink(parsed, linkText);
+
+    // Should log rectangular selection
+    const infoCalls = (mockLogger.info as jest.Mock).mock.calls;
+    const rectangularLog = infoCalls.find((call) => call[1]?.includes('Set rectangular selection'));
+
+    expect(rectangularLog).toBeDefined();
+    expect(rectangularLog[0]).toMatchObject({
+      fn: 'RangeLinkNavigationHandler.navigateToLink',
+      linkText: 'file.ts##L10C5-L12C10',
+      lineCount: 3, // Lines 10, 11, 12
+    });
+
+    // Should set editor.selections (not editor.selection)
+    expect(mockEditor.selections).toBeDefined();
+    expect(mockEditor.selections).toHaveLength(3);
+  });
+
+  it('should create selections for each line in rectangular range', async () => {
+    const parsed: ParsedLink = {
+      path: 'file.ts',
+      start: { line: 5, char: 1 },
+      end: { line: 7, char: 8 }, // 3 lines
+      linkType: LinkType.Regular,
+      selectionType: SelectionType.Rectangular,
+    };
+
+    const createSelectionSpy = jest.spyOn(mockAdapter, 'createSelection');
+
+    await handler.navigateToLink(parsed, 'file.ts##L5C1-L7C8');
+
+    // Should create 3 selections (one per line)
+    expect(createSelectionSpy).toHaveBeenCalledTimes(3);
+
+    // Line 5 (0-indexed: line 4)
+    expect(createSelectionSpy).toHaveBeenCalledWith(
+      { line: 4, character: 0 }, // Line 5, char 1 → 0-indexed
+      { line: 4, character: 7 }, // Line 5, char 8 → 0-indexed
+    );
+
+    // Line 6 (0-indexed: line 5)
+    expect(createSelectionSpy).toHaveBeenCalledWith(
+      { line: 5, character: 0 },
+      { line: 5, character: 7 },
+    );
+
+    // Line 7 (0-indexed: line 6)
+    expect(createSelectionSpy).toHaveBeenCalledWith(
+      { line: 6, character: 0 },
+      { line: 6, character: 7 },
+    );
   });
 });
