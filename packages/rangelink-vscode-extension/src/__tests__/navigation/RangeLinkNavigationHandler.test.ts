@@ -408,7 +408,6 @@ describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)'
   });
 
   describe('when path looks like untitled AND file not saved BUT file is open', () => {
-
     it('should find and navigate to open untitled file "Untitled-1"', async () => {
       const parsed: ParsedLink = {
         path: 'Untitled-1',

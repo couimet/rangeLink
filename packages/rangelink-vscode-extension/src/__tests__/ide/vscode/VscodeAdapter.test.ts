@@ -924,7 +924,6 @@ describe('VscodeAdapter', () => {
   });
 
   describe('findOpenUntitledFile', () => {
-
     it('should find untitled file with matching display name (test format)', () => {
       const mockDoc1 = createMockDocument({ uri: createMockUntitledUri('untitled:/1') });
       const mockDoc2 = createMockDocument({ uri: createMockUri('/workspace/file.ts') });

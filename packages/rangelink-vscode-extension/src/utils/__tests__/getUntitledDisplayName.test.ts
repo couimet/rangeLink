@@ -57,9 +57,7 @@ describe('getUntitledDisplayName', () => {
     it('should throw error for non-untitled scheme', () => {
       const uri = createMockUntitledUri('file:/workspace/file.ts');
 
-      expect(() => getUntitledDisplayName(uri)).toThrow(
-        'Expected untitled scheme, got: file',
-      );
+      expect(() => getUntitledDisplayName(uri)).toThrow('Expected untitled scheme, got: file');
     });
 
     it('should throw error for http scheme', () => {
