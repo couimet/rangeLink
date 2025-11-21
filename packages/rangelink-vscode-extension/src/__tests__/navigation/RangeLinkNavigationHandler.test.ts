@@ -13,14 +13,14 @@ import { createMockUntitledUri } from '../helpers/createMockUntitledUri';
 import { createWindowOptionsForEditor } from '../helpers/createWindowOptionsForEditor';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
-describe('RangeLinkNavigationHandler - Single Position Selection Extension', () => {
-  let handler: RangeLinkNavigationHandler;
-  let mockLogger: Logger;
-  let mockAdapter: VscodeAdapterWithTestHooks;
-  let mockDocument: ReturnType<typeof createMockDocument>;
-  let mockEditor: ReturnType<typeof createMockEditor>;
-  let createSelectionSpy: jest.SpyInstance;
+let handler: RangeLinkNavigationHandler;
+let mockLogger: Logger;
+let mockAdapter: VscodeAdapterWithTestHooks;
+let mockDocument: ReturnType<typeof createMockDocument>;
+let mockEditor: ReturnType<typeof createMockEditor>;
+let createSelectionSpy: jest.SpyInstance;
 
+describe('RangeLinkNavigationHandler - Single Position Selection Extension', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
 
@@ -213,10 +213,6 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
 });
 
 describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)', () => {
-  let handler: RangeLinkNavigationHandler;
-  let mockLogger: Logger;
-  let mockAdapter: VscodeAdapterWithTestHooks;
-
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockAdapter = createMockVscodeAdapter();
