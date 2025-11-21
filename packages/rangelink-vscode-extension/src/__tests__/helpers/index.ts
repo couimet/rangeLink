@@ -15,6 +15,7 @@ export { createMockEditor } from './createMockEditor';
 export { createMockEnv } from './createMockEnv';
 export { createMockExtensions } from './createMockExtensions';
 export { createMockGetWorkspaceFolder } from './createMockGetWorkspaceFolder';
+export { createMockNavigationHandler } from './createMockNavigationHandler';
 export { createMockOutputChannel } from './createMockOutputChannel';
 export { createMockPosition } from './createMockPosition';
 export { createMockPositionAt } from './createMockPositionAt';

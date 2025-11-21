@@ -15,30 +15,12 @@ import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavig
 import {
   createMockCancellationToken,
   createMockDocument,
+  createMockNavigationHandler,
   createMockPositionAt,
   createMockText,
   createMockUri,
 } from '../helpers';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
-
-// Test pattern that matches common RangeLink formats for provider integration tests
-// Provider doesn't validate pattern correctness (handler's responsibility)
-// Pattern matches: [path]#[range] or [path]##[range] where path is non-whitespace chars
-const TEST_RANGELINK_PATTERN = /\S+##?L\d+(C\d+)?(-L\d+(C\d+)?)?/g;
-
-/**
- * Create a mock RangeLinkNavigationHandler for integration tests.
- *
- * Mocks all handler methods to focus tests on provider orchestration logic.
- * Tests verify delegation patterns, not handler implementation details.
- */
-const createMockHandler = (): jest.Mocked<RangeLinkNavigationHandler> =>
-  ({
-    getPattern: jest.fn(() => TEST_RANGELINK_PATTERN),
-    parseLink: jest.fn(),
-    formatTooltip: jest.fn(),
-    navigateToLink: jest.fn(),
-  }) as unknown as jest.Mocked<RangeLinkNavigationHandler>;
 
 describe('RangeLinkDocumentProvider', () => {
   let provider: RangeLinkDocumentProvider;
@@ -53,7 +35,7 @@ describe('RangeLinkDocumentProvider', () => {
     // Create mock adapter
     mockAdapter = createMockVscodeAdapter();
 
-    mockHandler = createMockHandler();
+    mockHandler = createMockNavigationHandler();
     provider = new RangeLinkDocumentProvider(mockHandler, mockAdapter, mockLogger);
   });
 

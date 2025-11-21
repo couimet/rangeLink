@@ -1,11 +1,11 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
-import type { DelimiterConfig } from 'rangelink-core-ts';
 import { LinkType, SelectionType } from 'rangelink-core-ts';
 
 import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from '../../navigation/RangeLinkTerminalProvider';
 import type { RangeLinkTerminalLink } from '../../types';
+import { createMockNavigationHandler } from '../helpers';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('RangeLinkTerminalProvider', () => {
@@ -22,12 +22,7 @@ describe('RangeLinkTerminalProvider', () => {
     jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue(undefined);
 
     // Create mock handler - test provider orchestration, not handler implementation
-    mockHandler = {
-      navigateToLink: jest.fn().mockResolvedValue(undefined),
-      getPattern: jest.fn(),
-      parseLink: jest.fn(),
-      formatTooltip: jest.fn(),
-    } as unknown as jest.Mocked<RangeLinkNavigationHandler>;
+    mockHandler = createMockNavigationHandler();
 
     provider = new RangeLinkTerminalProvider(mockHandler, mockAdapter, mockLogger);
   });
