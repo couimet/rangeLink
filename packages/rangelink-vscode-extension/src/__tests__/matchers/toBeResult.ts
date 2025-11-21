@@ -17,14 +17,12 @@ export const toBeOk = (received: Result<unknown, unknown>) => {
 /**
  * Custom Jest matcher for Result.ok() with value assertion
  */
-export const toBeOkWith = <T>(
-  received: Result<T, unknown>,
-  assertValue: (value: T) => void,
-) => {
+export const toBeOkWith = <T>(received: Result<T, unknown>, assertValue: (value: T) => void) => {
   if (!received.success) {
     return {
       pass: false,
-      message: () => `Expected result to be successful, but it failed with error: ${received.error}`,
+      message: () =>
+        `Expected result to be successful, but it failed with error: ${received.error}`,
     };
   }
 
