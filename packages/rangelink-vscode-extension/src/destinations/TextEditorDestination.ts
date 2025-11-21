@@ -68,7 +68,14 @@ export class TextEditorDestination implements PasteDestination {
 
     // Handle untitled files
     if (uri.scheme === 'untitled') {
-      return `Untitled-${uri.path.replace(/^\//, '')}`;
+      // Remove leading slash from path
+      const pathPart = uri.path.replace(/^\//, '');
+
+      // VSCode/Cursor URI formats vary:
+      // - Tests: uri.path = '/1' → should produce 'Untitled-1'
+      // - Actual: uri.path = 'Untitled-1' → should produce 'Untitled-1' (not 'Untitled-Untitled-1')
+      // Case-insensitive check for cross-platform compatibility (Windows is case-insensitive)
+      return /^Untitled/i.test(pathPart) ? pathPart : `Untitled-${pathPart}`;
     }
 
     // Get workspace-relative path for file:// scheme

@@ -22,5 +22,6 @@ export const getUntitledDisplayName = (uri: vscode.Uri): string => {
   // VSCode/Cursor URI formats vary:
   // - Tests: uri.path = '/1' → should produce 'Untitled-1'
   // - Actual: uri.path = 'Untitled-1' → should produce 'Untitled-1' (not 'Untitled-Untitled-1')
-  return pathPart.startsWith('Untitled') ? pathPart : `Untitled-${pathPart}`;
+  // Case-insensitive check for cross-platform compatibility (Windows is case-insensitive)
+  return /^Untitled/i.test(pathPart) ? pathPart : `Untitled-${pathPart}`;
 };
