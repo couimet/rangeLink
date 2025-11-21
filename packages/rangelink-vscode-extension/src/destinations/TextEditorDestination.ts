@@ -562,10 +562,18 @@ export class TextEditorDestination implements PasteDestination {
       return false;
     }
 
-    // Compare document URIs (unique per file)
-    return (
-      this.vscodeAdapter.getDocumentUri(this.editor).toString() ===
-      this.vscodeAdapter.getDocumentUri(otherEditor).toString()
-    );
+    // Get URIs for comparison
+    const thisUri = this.vscodeAdapter.getDocumentUri(this.editor);
+    const otherUri = this.vscodeAdapter.getDocumentUri(otherEditor);
+
+    // For untitled files, use editor object identity (survives URI changes during dynamic renames)
+    // Issue #137: VSCode/Cursor dynamically rename untitled files based on content, causing URI changes
+    // Example: "untitled:Untitled-1" → "untitled:index.ts" when typing TypeScript code
+    if (thisUri.scheme === 'untitled' && otherUri.scheme === 'untitled') {
+      return this.editor === otherEditor;
+    }
+
+    // For regular files, use URI comparison (unique per file)
+    return thisUri.toString() === otherUri.toString();
   }
 }
