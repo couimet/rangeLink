@@ -3,7 +3,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 import type { DelimiterConfig } from 'rangelink-core-ts';
 import { LinkType, SelectionType } from 'rangelink-core-ts';
 
-import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
+import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from '../../navigation/RangeLinkTerminalProvider';
 import type { RangeLinkTerminalLink } from '../../types';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
@@ -12,7 +12,7 @@ describe('RangeLinkTerminalProvider', () => {
   let provider: RangeLinkTerminalProvider;
   let mockLogger: Logger;
   let mockAdapter: VscodeAdapterWithTestHooks;
-  let delimiters: DelimiterConfig;
+  let mockHandler: jest.Mocked<RangeLinkNavigationHandler>;
 
   beforeEach(() => {
     // Mock logger
@@ -21,17 +21,15 @@ describe('RangeLinkTerminalProvider', () => {
     mockAdapter = createMockVscodeAdapter();
     jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue(undefined);
 
-    // Standard delimiters
-    delimiters = {
-      line: 'L',
-      position: 'C',
-      hash: '#',
-      range: '-',
-    };
+    // Create mock handler - test provider orchestration, not handler implementation
+    mockHandler = {
+      navigateToLink: jest.fn().mockResolvedValue(undefined),
+      getPattern: jest.fn(),
+      parseLink: jest.fn(),
+      formatTooltip: jest.fn(),
+    } as unknown as jest.Mocked<RangeLinkNavigationHandler>;
 
-    // Create handler and provider
-    const handler = new RangeLinkNavigationHandler(delimiters, mockAdapter, mockLogger);
-    provider = new RangeLinkTerminalProvider(handler, mockAdapter, mockLogger);
+    provider = new RangeLinkTerminalProvider(mockHandler, mockAdapter, mockLogger);
   });
 
   describe('handleTerminalLink - Safety Net Validation', () => {
@@ -69,39 +67,34 @@ describe('RangeLinkTerminalProvider', () => {
       expect(mockLogger.info).not.toHaveBeenCalled();
     });
 
-    // TODO: re-asses this test's scope/coupling
-    it.skip('should proceed past safety net when parsed data is present', async () => {
+    it('should delegate to handler when parsed data is present', async () => {
       // Arrange: Create valid link with parsed data
+      const parsedData = {
+        path: 'file.ts',
+        start: { line: 10 },
+        end: { line: 10 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
       const link: RangeLinkTerminalLink = {
         startIndex: 0,
         length: 15,
         tooltip: 'Open file.ts:10',
         data: 'file.ts#L10',
-        parsed: {
-          path: 'file.ts',
-          start: { line: 10 },
-          end: { line: 10 },
-          linkType: LinkType.Regular,
-          selectionType: SelectionType.Normal,
-        },
+        parsed: parsedData,
       };
 
       // Act
       await provider.handleTerminalLink(link);
 
-      // Assert: Should pass the safety net check and attempt navigation
-      // Logger should now include linkText in logCtx
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        {
-          fn: 'RangeLinkNavigationHandler.navigateToLink',
-          linkText: 'file.ts#L10',
-          parsed: link.parsed,
-        },
-        'Navigating to RangeLink',
-      );
+      // Assert: Provider should delegate to handler with correct parameters
+      expect(mockHandler.navigateToLink).toHaveBeenCalledWith(parsedData, 'file.ts#L10');
+      expect(mockHandler.navigateToLink).toHaveBeenCalledTimes(1);
 
       // Should NOT trigger the safety net warning
       expect(mockLogger.warn).not.toHaveBeenCalled();
+      expect(mockAdapter.showWarningMessage).not.toHaveBeenCalled();
     });
   });
 });
