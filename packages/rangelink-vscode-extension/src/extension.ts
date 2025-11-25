@@ -2,6 +2,7 @@ import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { getDelimitersForExtension } from './config';
+import { ChatPasteHelperFactory } from './destinations/ChatPasteHelperFactory';
 import { DestinationFactory } from './destinations/DestinationFactory';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { setLocale } from './i18n/LocaleManager';
@@ -42,8 +43,11 @@ export function activate(context: vscode.ExtensionContext): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const delimiters = getDelimitersForExtension(vscodeConfig as any, ideAdapter, getLogger());
 
+  // Create chat paste helper factory for AI destinations
+  const chatPasteHelperFactory = new ChatPasteHelperFactory(ideAdapter, getLogger());
+
   // Create unified destination manager (Phase 3)
-  const factory = new DestinationFactory(ideAdapter, getLogger());
+  const factory = new DestinationFactory(ideAdapter, getLogger(), chatPasteHelperFactory);
   const destinationManager = new PasteDestinationManager(context, factory, ideAdapter, getLogger());
 
   const service = new RangeLinkService(delimiters, ideAdapter, destinationManager);

@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 
+import type { ChatPasteHelperFactory } from './ChatPasteHelperFactory';
 import { ClaudeCodeDestination } from './ClaudeCodeDestination';
 import { CursorAIDestination } from './CursorAIDestination';
 import type { DestinationType, PasteDestination } from './PasteDestination';
@@ -48,6 +49,7 @@ const DISPLAY_NAMES: Record<DestinationType, string> = {
 export class DestinationFactory {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
+    private readonly chatPasteHelperFactory: ChatPasteHelperFactory,
     private readonly logger: Logger,
   ) {}
 
@@ -70,13 +72,13 @@ export class DestinationFactory {
         return new TerminalDestination(options.terminal, this.ideAdapter, this.logger);
 
       case 'cursor-ai':
-        return new CursorAIDestination(this.ideAdapter, this.logger);
+        return new CursorAIDestination(this.ideAdapter, this.chatPasteHelperFactory, this.logger);
 
       case 'text-editor':
         return new TextEditorDestination(options.editor, this.ideAdapter, this.logger);
 
       case 'claude-code':
-        return new ClaudeCodeDestination(this.ideAdapter, this.logger);
+        return new ClaudeCodeDestination(this.ideAdapter, this.chatPasteHelperFactory, this.logger);
 
       // Future implementations:
       // case 'github-copilot':
