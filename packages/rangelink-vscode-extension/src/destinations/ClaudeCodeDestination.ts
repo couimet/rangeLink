@@ -2,33 +2,16 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
 
+import type { ChatPasteHelperFactory } from './ChatPasteHelperFactory';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**
- * Claude Code Extension paste destination
+ * Claude Code Extension paste destination.
  *
- * Pastes RangeLinks to Claude Code's chat interface.
- *
- * **LIMITATION:** Claude Code does not support programmatically sending text to chat.
- * Similar to Cursor AI, no working command exists to send text parameters to Claude Code chat.
- *
- * **Workaround:** Copy to clipboard + open chat panel + user pastes manually.
- *
- * **Detection strategy:**
- * - Check for extension: `anthropic.claude-code`
- *
- * **Commands to try (with fallback):**
- * - `claude-vscode.focus` - Direct input focus (Cmd+Escape)
- * - `claude-vscode.sidebar.open` - Open sidebar panel
- * - `claude-vscode.editor.open` - Open in new tab
- *
- * **References:**
- * - Research: docs/RESEARCH-CLAUDE-CODE-INTEGRATION-UPDATE.md
- * - Questions: .claude-questions/0027-claude-code-destination-implementation.txt
+ * Automatically pastes RangeLinks to Claude Code's chat interface.
  */
 export class ClaudeCodeDestination implements PasteDestination {
   readonly id: DestinationType = 'claude-code';
@@ -45,11 +28,12 @@ export class ClaudeCodeDestination implements PasteDestination {
 
   constructor(
     private readonly ideAdapter: VscodeAdapter,
+    private readonly chatPasteHelperFactory: ChatPasteHelperFactory,
     private readonly logger: Logger,
   ) {}
 
   /**
-   * Check if Claude Code extension is installed and active
+   * Check if Claude Code extension is installed and active.
    *
    * @returns true if Claude Code extension detected, false otherwise
    */
@@ -76,9 +60,7 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Check if a RangeLink is eligible to be pasted to Claude Code
-   *
-   * Claude Code has no special eligibility rules - always eligible.
+   * Check if a RangeLink is eligible to be pasted to Claude Code.
    *
    * @param _formattedLink - The formatted RangeLink (not used)
    * @returns Always true (Claude Code accepts all content)
@@ -89,17 +71,13 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Paste a RangeLink to Claude Code chat
-   *
-   * **Implementation:** Since Claude Code doesn't support programmatic text insertion,
-   * this method opens Claude Code chat interface. The caller (RangeLinkService) handles
-   * clipboard copy and user notification.
+   * Paste a RangeLink to Claude Code chat.
    *
    * @param formattedLink - The formatted RangeLink with metadata
-   * @returns true if chat open succeeded, false otherwise
+   * @returns true if paste succeeded, false otherwise
    */
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
-    return this.openChatInterface({
+    return this.openChatInterfaceAndPaste(formattedLink.link, {
       fn: 'ClaudeCodeDestination.pasteLink',
       formattedLink,
       linkLength: formattedLink.link.length,
@@ -154,9 +132,7 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Check if text content is eligible to be pasted to Claude Code
-   *
-   * Claude Code has no special eligibility rules - always eligible.
+   * Check if text content is eligible to be pasted to Claude Code.
    *
    * @param _content - The text content (not used)
    * @returns Always true (Claude Code accepts all content)
@@ -167,27 +143,20 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Paste text content to Claude Code chat
-   *
-   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
-   * Used for pasting selected text directly to Claude Code (issue #89).
-   *
-   * **Implementation:** Since Claude Code doesn't support programmatic text insertion,
-   * this method opens Claude Code chat interface. The caller (RangeLinkService) handles
-   * clipboard copy and user notification.
+   * Paste text content to Claude Code chat.
    *
    * @param content - The text content to paste
-   * @returns true if chat open succeeded, false otherwise
+   * @returns true if paste succeeded, false otherwise
    */
   async pasteContent(content: string): Promise<boolean> {
-    return this.openChatInterface({
+    return this.openChatInterfaceAndPaste(content, {
       fn: 'ClaudeCodeDestination.pasteContent',
       contentLength: content.length,
     });
   }
 
   /**
-   * Get user instruction for manual paste (clipboard-based destination)
+   * Get user instruction for manual paste.
    *
    * @returns Instruction string for manual paste in Claude Code
    */
@@ -212,7 +181,7 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Get success message for jump command
+   * Get success message for jump command.
    *
    * @returns Formatted i18n message for status bar display
    */
@@ -221,9 +190,7 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Get destination-specific details for logging
-   *
-   * Claude Code destinations have no additional details to log beyond displayName.
+   * Get destination-specific details for logging.
    *
    * @returns Empty object (no additional details)
    */
@@ -232,18 +199,15 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Check if this Claude Code destination equals another destination
+   * Check if this Claude Code destination equals another destination.
    *
    * @param other - The destination to compare against (may be undefined)
    * @returns Promise<true> if both are claude-code, Promise<false> otherwise
    */
   async equals(other: PasteDestination | undefined): Promise<boolean> {
-    // Safeguard: Check other is defined
     if (!other) {
       return false;
     }
-
-    // AI assistants are singletons - just compare type
     return this.id === other.id;
   }
 }
