@@ -290,6 +290,18 @@ export class VscodeAdapter {
     return this.ideInstance.extensions.all;
   }
 
+  /**
+   * Get a specific extension by ID.
+   *
+   * More reliable than searching through extensions.all, especially in VSCode forks.
+   *
+   * @param extensionId - Extension identifier (e.g., 'anthropic.claude-code')
+   * @returns Extension instance or undefined if not found
+   */
+  getExtension(extensionId: string): vscode.Extension<unknown> | undefined {
+    return this.ideInstance.extensions.getExtension(extensionId);
+  }
+
   // ============================================================================
   // Command Execution
   // ============================================================================
