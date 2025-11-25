@@ -5,30 +5,13 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
 
+import type { ChatPasteHelperFactory } from './ChatPasteHelperFactory';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**
- * Cursor AI Assistant paste destination
+ * Cursor AI Assistant paste destination.
  *
- * Pastes RangeLinks to Cursor's integrated AI chat interface.
- *
- * **LIMITATION:** Cursor does not support programmatically sending text to chat.
- * As of Jan 2025, no working command exists to send text parameters to Cursor chat:
- * - `workbench.action.chat.open` (VSCode) - NOT available in Cursor
- * - `aichat.newchataction` - Opens chat but cannot accept text parameters
- * - `cursor.startComposerPrompt` - Doesn't accept prompt arguments
- *
- * **Workaround:** Copy to clipboard + open chat panel + user pastes manually.
- *
- * **Detection strategy (Q3: appName primary):**
- * - Primary: Check vscode.env.appName for 'cursor'
- * - Secondary: Check for cursor-specific extensions
- * - Tertiary: Check vscode.env.uriScheme === 'cursor'
- *
- * **References:**
- * - Research: docs/RESEARCH-VSCODE-CURSOR-CHAT-COMMANDS.md
- * - Forum: https://forum.cursor.com/t/a-command-for-passing-a-prompt-to-the-chat/138049
- * - Questions: .claude-questions/0019-cursor-ai-destination-implementation.txt
+ * Automatically pastes RangeLinks to Cursor's integrated AI chat interface.
  */
 export class CursorAIDestination implements PasteDestination {
   readonly id: DestinationType = 'cursor-ai';
@@ -42,23 +25,22 @@ export class CursorAIDestination implements PasteDestination {
 
   constructor(
     private readonly ideAdapter: VscodeAdapter,
+    private readonly chatPasteHelperFactory: ChatPasteHelperFactory,
     private readonly logger: Logger,
   ) {}
 
   /**
-   * Check if running in Cursor IDE
+   * Check if running in Cursor IDE.
    *
-   * Uses multiple detection methods (Q8 from 0018: use all 3, OR logic):
-   * 1. appName check (primary per Q3)
+   * Uses multiple detection methods:
+   * 1. appName check (primary)
    * 2. Cursor-specific extensions check
    * 3. URI scheme check
-   *
-   * Logs each detection method result (Q10: Option A).
    *
    * @returns true if Cursor IDE detected, false otherwise
    */
   async isAvailable(): Promise<boolean> {
-    // Method 1: Check app name (PRIMARY per Q3: Option A)
+    // Method 1: Check app name (PRIMARY)
     const appName = this.ideAdapter.appName.toLowerCase();
     const appNameMatch = appName.includes('cursor');
     this.logger.debug(
@@ -118,9 +100,7 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Check if a RangeLink is eligible to be pasted to Cursor AI
-   *
-   * Cursor AI has no special eligibility rules - always eligible.
+   * Check if a RangeLink is eligible to be pasted to Cursor AI.
    *
    * @param _formattedLink - The formatted RangeLink (not used)
    * @returns Always true (Cursor AI accepts all content)
@@ -131,20 +111,35 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Check if text content is eligible to be pasted to Cursor AI
+   * Try focus commands until one succeeds.
+   *
+   * @param contextInfo - Logging context with fn name and content metadata
+   * @returns true if any command succeeded, false if all failed
+   */
+  private async tryFocusCommands(contextInfo: LoggingContext): Promise<boolean> {
+    for (const command of CursorAIDestination.CHAT_COMMANDS) {
+      try {
+        await this.ideAdapter.executeCommand(command);
+        this.logger.debug({ ...contextInfo, command }, 'Successfully executed command');
+        return true;
+      } catch (error) {
+        this.logger.debug(
+          { ...contextInfo, command, error },
+          'Command failed, trying next fallback',
+        );
+      }
+    }
+    return false;
+  }
 
   /**
-   * Paste a RangeLink to Cursor AI chat
-   *
-   * **Implementation:** Since Cursor doesn't support programmatic text insertion,
-   * this method opens Cursor chat interface. The caller (RangeLinkService) handles
-   * clipboard copy and user notification.
+   * Paste a RangeLink to Cursor AI chat.
    *
    * @param formattedLink - The formatted RangeLink with metadata
-   * @returns true if chat open succeeded, false otherwise
+   * @returns true if paste succeeded, false otherwise
    */
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
-    return this.openChatInterface({
+    return this.openChatInterfaceAndPaste(formattedLink.link, {
       fn: 'CursorAIDestination.pasteLink',
       formattedLink,
       linkLength: formattedLink.link.length,
@@ -152,44 +147,40 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Open Cursor chat interface with fallback command attempts
+   * Open Cursor chat interface and attempt automatic paste.
    *
-   * Tries multiple commands in order of preference until one succeeds.
-   * Shared logic extracted from pasteLink() and pasteContent() to eliminate duplication.
-   *
+   * @param text - Text to paste
    * @param contextInfo - Logging context with fn name and content metadata
    * @returns true if chat open succeeded or commands attempted, false if not in Cursor IDE
    */
-  private async openChatInterface(contextInfo: LoggingContext): Promise<boolean> {
+  private async openChatInterfaceAndPaste(
+    text: string,
+    contextInfo: LoggingContext,
+  ): Promise<boolean> {
     if (!(await this.isAvailable())) {
       this.logger.warn(contextInfo, 'Cannot paste: Not running in Cursor IDE');
       return false;
     }
 
     try {
-      // Try opening chat panel with multiple fallback commands
-      let chatOpened = false;
-      for (const command of CursorAIDestination.CHAT_COMMANDS) {
-        try {
-          await this.ideAdapter.executeCommand(command);
-          this.logger.debug({ ...contextInfo, command }, 'Successfully executed chat open command');
-          chatOpened = true;
-          break;
-        } catch (commandError) {
-          this.logger.debug(
-            { ...contextInfo, command, error: commandError },
-            'Command failed, trying next fallback',
-          );
-        }
-      }
+      // Step 1: Try opening/focusing Cursor chat with multiple fallback commands
+      const chatOpened = await this.tryFocusCommands(contextInfo);
 
       if (!chatOpened) {
         this.logger.warn(contextInfo, 'All chat open commands failed');
+        return true; // Still return true - caller will show manual paste instruction
       }
 
-      this.logger.info({ ...contextInfo, chatOpened }, 'Cursor chat open completed');
+      // Step 2: Attempt automatic paste using ChatPasteHelper
+      const chatPasteHelper = this.chatPasteHelperFactory.create();
+      const pasteSucceeded = await chatPasteHelper.attemptPaste(text, contextInfo);
 
-      return true;
+      this.logger.info(
+        { ...contextInfo, chatOpened, pasteSucceeded },
+        'Cursor chat open completed',
+      );
+
+      return true; // Return true regardless of paste success - caller handles manual instruction
     } catch (error) {
       this.logger.error({ ...contextInfo, error }, 'Failed to open Cursor chat');
       return false;
@@ -197,9 +188,7 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Check if text content is eligible to be pasted to Cursor AI
-   *
-   * Cursor AI has no special eligibility rules - always eligible.
+   * Check if text content is eligible to be pasted to Cursor AI.
    *
    * @param _content - The text content (not used)
    * @returns Always true (Cursor AI accepts all content)
@@ -210,27 +199,20 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Paste text content to Cursor AI chat
-   *
-   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
-   * Used for pasting selected text directly to Cursor AI (issue #89).
-   *
-   * **Implementation:** Since Cursor doesn't support programmatic text insertion,
-   * this method opens Cursor chat interface. The caller (RangeLinkService) handles
-   * clipboard copy and user notification.
+   * Paste text content to Cursor AI chat.
    *
    * @param content - The text content to paste
-   * @returns true if chat open succeeded, false otherwise
+   * @returns true if paste succeeded, false otherwise
    */
   async pasteContent(content: string): Promise<boolean> {
-    return this.openChatInterface({
+    return this.openChatInterfaceAndPaste(content, {
       fn: 'CursorAIDestination.pasteContent',
       contentLength: content.length,
     });
   }
 
   /**
-   * Get user instruction for manual paste (clipboard-based destination)
+   * Get user instruction for manual paste.
    *
    * @returns Instruction string for manual paste in Cursor AI chat
    */
@@ -239,23 +221,27 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Focus Cursor AI chat interface
-   *
-   * Opens/focuses the Cursor AI chat panel to bring it into view.
-   * Reuses the same command sequence as pasteLink().
-   *
-   * Used by the "Jump to Bound Destination" command (issue #99).
+   * Focus Cursor AI chat interface.
    *
    * @returns true if chat focus succeeded, false otherwise
    */
   async focus(): Promise<boolean> {
-    return this.openChatInterface({
-      fn: 'CursorAIDestination.focus',
-    });
+    if (!(await this.isAvailable())) {
+      this.logger.warn({ fn: 'CursorAIDestination.focus' }, 'Cursor not available');
+      return false;
+    }
+
+    const focused = await this.tryFocusCommands({ fn: 'CursorAIDestination.focus' });
+
+    if (!focused) {
+      this.logger.warn({ fn: 'CursorAIDestination.focus' }, 'All focus commands failed');
+    }
+
+    return focused;
   }
 
   /**
-   * Get success message for jump command
+   * Get success message for jump command.
    *
    * @returns Formatted i18n message for status bar display
    */
@@ -264,9 +250,7 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Get destination-specific details for logging
-   *
-   * Cursor AI destinations have no additional details to log beyond displayName.
+   * Get destination-specific details for logging.
    *
    * @returns Empty object (no additional details)
    */
@@ -275,18 +259,15 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Check if this Cursor AI destination equals another destination
+   * Check if this Cursor AI destination equals another destination.
    *
    * @param other - The destination to compare against (may be undefined)
    * @returns Promise<true> if both are cursor-ai, Promise<false> otherwise
    */
   async equals(other: PasteDestination | undefined): Promise<boolean> {
-    // Safeguard: Check other is defined
     if (!other) {
       return false;
     }
-
-    // AI assistants are singletons - just compare type
     return this.id === other.id;
   }
 }
