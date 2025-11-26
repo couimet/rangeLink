@@ -1006,4 +1006,56 @@ describe('VscodeAdapter', () => {
       expect(result?.toString()).toBe('untitled:untitled-1');
     });
   });
+
+  describe('getExtension', () => {
+    it('should return extension when it exists', () => {
+      const customAdapter = createMockVscodeAdapter({
+        extensionsOptions: [
+          {
+            id: 'test.extension',
+            extensionUri: createMockUri('/path/to/extension'),
+            extensionPath: '/path/to/extension',
+          },
+        ],
+      });
+
+      const result = customAdapter.getExtension('test.extension');
+
+      expect(result).toBeDefined();
+      expect(result?.id).toBe('test.extension');
+      expect(result?.extensionPath).toBe('/path/to/extension');
+      expect(result?.isActive).toBe(true); // Default from createMockExtension
+    });
+
+    it('should return undefined when extension does not exist', () => {
+      const customAdapter = createMockVscodeAdapter(); // No extensions
+
+      const result = customAdapter.getExtension('nonexistent.extension');
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return correct extension by exact extensionId', () => {
+      const customAdapter = createMockVscodeAdapter({
+        extensionsOptions: ['anthropic.claude-code', 'github.copilot'],
+      });
+
+      const result = customAdapter.getExtension('anthropic.claude-code');
+
+      expect(result).toBeDefined();
+      expect(result?.id).toBe('anthropic.claude-code');
+    });
+
+    it('should handle special characters in extensionId', () => {
+      const extensionId = 'publisher.extension-with-dash_and_underscore';
+      const customAdapter = createMockVscodeAdapter({
+        extensionsOptions: [extensionId],
+      });
+
+      const result = customAdapter.getExtension(extensionId);
+
+      expect(result).toBeDefined();
+      expect(result?.id).toBe(extensionId);
+    });
+  });
 });
