@@ -11,6 +11,7 @@ import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvide
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
+import type { RangeLinkClickArgs } from './types';
 import { MessageCode } from './types/MessageCode';
 import { formatMessage } from './utils/formatMessage';
 import { registerWithLogging } from './utils/registerWithLogging';
@@ -226,7 +227,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register document link navigation command
   context.subscriptions.push(
     ideAdapter.registerCommand('rangelink.handleDocumentLinkClick', (args) => {
-      return documentLinkProvider.handleLinkClick(args);
+      return documentLinkProvider.handleLinkClick(args as RangeLinkClickArgs);
     }),
   );
 

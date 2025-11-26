@@ -286,7 +286,7 @@ export class VscodeAdapter {
    *
    * @returns Array of all extensions
    */
-  get extensions(): readonly vscode.Extension<any>[] {
+  get extensions(): readonly vscode.Extension<unknown>[] {
     return this.ideInstance.extensions.all;
   }
 
@@ -315,7 +315,7 @@ export class VscodeAdapter {
    * @param args - Optional command arguments
    * @returns Promise resolving to command result
    */
-  async executeCommand<T = unknown>(command: string, ...args: any[]): Promise<T | undefined> {
+  async executeCommand<T = unknown>(command: string, ...args: unknown[]): Promise<T | undefined> {
     return this.ideInstance.commands.executeCommand<T>(command, ...args);
   }
 
@@ -431,7 +431,7 @@ export class VscodeAdapter {
    * @param callback - Command handler function
    * @returns Disposable to unregister the command
    */
-  registerCommand(command: string, callback: (...args: any[]) => any): vscode.Disposable {
+  registerCommand(command: string, callback: (...args: unknown[]) => unknown): vscode.Disposable {
     return this.ideInstance.commands.registerCommand(command, callback);
   }
 
