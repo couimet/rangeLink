@@ -3,6 +3,7 @@ import type { FormattedLink } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types/MessageCode';
+import { applySmartPadding } from '../utils/applySmartPadding';
 import { formatMessage } from '../utils/formatMessage';
 
 import type { ChatPasteHelperFactory } from './ChatPasteHelperFactory';
@@ -32,69 +33,44 @@ export class CursorAIDestination implements PasteDestination {
   /**
    * Check if running in Cursor IDE.
    *
-   * Uses multiple detection methods:
-   * 1. appName check (primary)
-   * 2. Cursor-specific extensions check
-   * 3. URI scheme check
+   * Uses multiple detection methods via detectCursorIDE().
    *
    * @returns true if Cursor IDE detected, false otherwise
    */
   async isAvailable(): Promise<boolean> {
+    return this.detectCursorIDE();
+  }
+
+  /**
+   * Detect Cursor IDE using multiple detection methods.
+   *
+   * Methods (in order):
+   * 1. appName check (primary)
+   * 2. Cursor-specific extensions check
+   * 3. URI scheme check
+   *
+   * @returns true if Cursor IDE detected by any method, false otherwise
+   */
+  private detectCursorIDE(): boolean {
     // Method 1: Check app name (PRIMARY)
     const appName = this.ideAdapter.appName.toLowerCase();
-    const appNameMatch = appName.includes('cursor');
-    this.logger.debug(
-      { fn: 'CursorAIDestination.isAvailable', method: 'appName', appName, detected: appNameMatch },
-      appNameMatch ? 'Cursor detected via appName' : 'Cursor not detected via appName',
-    );
-
-    if (appNameMatch) {
+    if (appName.includes('cursor')) {
       return true;
     }
 
     // Method 2: Check for Cursor-specific extensions
-    const cursorExtensions = this.ideAdapter.extensions.filter((ext) =>
+    const hasCursorExtensions = this.ideAdapter.extensions.some((ext) =>
       ext.id.startsWith('cursor.'),
     );
-    const hasExtensions = cursorExtensions.length > 0;
-    this.logger.debug(
-      {
-        fn: 'CursorAIDestination.isAvailable',
-        method: 'extensions',
-        extensionCount: cursorExtensions.length,
-        detected: hasExtensions,
-      },
-      hasExtensions
-        ? `Cursor detected via extensions (found ${cursorExtensions.length})`
-        : 'Cursor not detected via extensions',
-    );
-
-    if (hasExtensions) {
+    if (hasCursorExtensions) {
       return true;
     }
 
     // Method 3: Check URI scheme
     const uriScheme = this.ideAdapter.uriScheme;
-    const schemeMatch = uriScheme === 'cursor';
-    this.logger.debug(
-      {
-        fn: 'CursorAIDestination.isAvailable',
-        method: 'uriScheme',
-        uriScheme,
-        detected: schemeMatch,
-      },
-      schemeMatch ? 'Cursor detected via uriScheme' : 'Cursor not detected via uriScheme',
-    );
-
-    if (schemeMatch) {
+    if (uriScheme === 'cursor') {
       return true;
     }
-
-    // None of the methods detected Cursor
-    this.logger.debug(
-      { fn: 'CursorAIDestination.isAvailable', detected: false },
-      'Cursor IDE not detected by any method',
-    );
 
     return false;
   }
@@ -111,80 +87,23 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Try focus commands until one succeeds.
-   *
-   * @param contextInfo - Logging context with fn name and content metadata
-   * @returns true if any command succeeded, false if all failed
-   */
-  private async tryFocusCommands(contextInfo: LoggingContext): Promise<boolean> {
-    for (const command of CursorAIDestination.CHAT_COMMANDS) {
-      try {
-        await this.ideAdapter.executeCommand(command);
-        this.logger.debug({ ...contextInfo, command }, 'Successfully executed command');
-        return true;
-      } catch (error) {
-        this.logger.debug(
-          { ...contextInfo, command, error },
-          'Command failed, trying next fallback',
-        );
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Paste a RangeLink to Cursor AI chat.
+   * Paste a RangeLink to Cursor AI chat with automatic insertion.
    *
    * @param formattedLink - The formatted RangeLink with metadata
    * @returns true if paste succeeded, false otherwise
    */
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
-    return this.openChatInterfaceAndPaste(formattedLink.link, {
-      fn: 'CursorAIDestination.pasteLink',
-      formattedLink,
-      linkLength: formattedLink.link.length,
+    return this.sendTextToChat({
+      text: formattedLink.link,
+      logContext: {
+        fn: 'CursorAIDestination.pasteLink',
+        formattedLink,
+        linkLength: formattedLink.link.length,
+      },
+      unavailableMessage: 'Cannot paste: Not running in Cursor IDE',
+      successLogMessage: 'Pasted link to Cursor AI',
+      errorLogMessage: 'Failed to paste link to Cursor AI',
     });
-  }
-
-  /**
-   * Open Cursor chat interface and attempt automatic paste.
-   *
-   * @param text - Text to paste
-   * @param contextInfo - Logging context with fn name and content metadata
-   * @returns true if chat open succeeded or commands attempted, false if not in Cursor IDE
-   */
-  private async openChatInterfaceAndPaste(
-    text: string,
-    contextInfo: LoggingContext,
-  ): Promise<boolean> {
-    if (!(await this.isAvailable())) {
-      this.logger.warn(contextInfo, 'Cannot paste: Not running in Cursor IDE');
-      return false;
-    }
-
-    try {
-      // Step 1: Try opening/focusing Cursor chat with multiple fallback commands
-      const chatOpened = await this.tryFocusCommands(contextInfo);
-
-      if (!chatOpened) {
-        this.logger.warn(contextInfo, 'All chat open commands failed');
-        return true; // Still return true - caller will show manual paste instruction
-      }
-
-      // Step 2: Attempt automatic paste using ChatPasteHelper
-      const chatPasteHelper = this.chatPasteHelperFactory.create();
-      const pasteSucceeded = await chatPasteHelper.attemptPaste(text, contextInfo);
-
-      this.logger.info(
-        { ...contextInfo, chatOpened, pasteSucceeded },
-        'Cursor chat open completed',
-      );
-
-      return true; // Return true regardless of paste success - caller handles manual instruction
-    } catch (error) {
-      this.logger.error({ ...contextInfo, error }, 'Failed to open Cursor chat');
-      return false;
-    }
   }
 
   /**
@@ -199,16 +118,116 @@ export class CursorAIDestination implements PasteDestination {
   }
 
   /**
-   * Paste text content to Cursor AI chat.
+   * Paste text content to Cursor AI chat with automatic insertion.
    *
    * @param content - The text content to paste
    * @returns true if paste succeeded, false otherwise
    */
   async pasteContent(content: string): Promise<boolean> {
-    return this.openChatInterfaceAndPaste(content, {
-      fn: 'CursorAIDestination.pasteContent',
-      contentLength: content.length,
+    return this.sendTextToChat({
+      text: content,
+      logContext: {
+        fn: 'CursorAIDestination.pasteContent',
+        contentLength: content.length,
+      },
+      unavailableMessage: 'Cannot paste: Not running in Cursor IDE',
+      successLogMessage: 'Pasted content to Cursor AI',
+      errorLogMessage: 'Failed to paste content to Cursor AI',
     });
+  }
+
+  /**
+   * Send text to Cursor AI chat with automatic insertion.
+   *
+   * Shared helper for pasteLink() and pasteContent() to eliminate duplication.
+   * Applies smart padding before sending to ensure proper spacing in chat input.
+   *
+   * @param options - Configuration for text sending
+   * @returns true if paste succeeded, false if unavailable or error occurred
+   */
+  private async sendTextToChat(options: {
+    text: string;
+    logContext: LoggingContext;
+    unavailableMessage: string;
+    successLogMessage: string;
+    errorLogMessage: string;
+  }): Promise<boolean> {
+    // Apply smart padding for proper spacing in chat input
+    const paddedText = applySmartPadding(options.text);
+
+    return this.executeWithAvailabilityCheck({
+      logContext: options.logContext,
+      unavailableMessage: options.unavailableMessage,
+      successLogMessage: options.successLogMessage,
+      errorLogMessage: options.errorLogMessage,
+      execute: async () => this.openChat(paddedText),
+    });
+  }
+
+  /**
+   * Open Cursor AI chat interface and optionally paste text.
+   *
+   * Attempts to focus Cursor AI using multiple fallback commands,
+   * then attempts automatic paste if text is provided.
+   *
+   * @param text - Optional text to paste after opening chat
+   */
+  private async openChat(text?: string): Promise<void> {
+    await this.tryFocusCommands();
+
+    if (text) {
+      const chatPasteHelper = this.chatPasteHelperFactory.create();
+      await chatPasteHelper.attemptPaste(text, { fn: 'CursorAIDestination.openChat' });
+    }
+  }
+
+  /**
+   * Try focus commands until one succeeds.
+   *
+   * @returns true if any command succeeded, false if all failed
+   */
+  private async tryFocusCommands(): Promise<boolean> {
+    for (const command of CursorAIDestination.CHAT_COMMANDS) {
+      try {
+        await this.ideAdapter.executeCommand(command);
+        return true;
+      } catch {
+        // Try next fallback
+        continue;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Generic helper that eliminates duplication across pasteLink(), pasteContent(), and focus().
+   * Handles the common pattern: check availability → execute command → log result.
+   *
+   * @param options - Configuration for command execution
+   * @returns true if command succeeded, false if unavailable or error occurred
+   */
+  private async executeWithAvailabilityCheck(options: {
+    logContext: LoggingContext;
+    unavailableMessage: string;
+    successLogMessage: string;
+    errorLogMessage: string;
+    execute: () => Promise<void>;
+  }): Promise<boolean> {
+    const { logContext, unavailableMessage, successLogMessage, errorLogMessage, execute } = options;
+
+    if (!(await this.isAvailable())) {
+      this.logger.warn(logContext, unavailableMessage);
+      return false;
+    }
+
+    try {
+      await execute();
+      this.logger.info(logContext, successLogMessage);
+      return true;
+    } catch (error) {
+      this.logger.error({ ...logContext, error }, errorLogMessage);
+      return false;
+    }
   }
 
   /**
@@ -226,18 +245,13 @@ export class CursorAIDestination implements PasteDestination {
    * @returns true if chat focus succeeded, false otherwise
    */
   async focus(): Promise<boolean> {
-    if (!(await this.isAvailable())) {
-      this.logger.warn({ fn: 'CursorAIDestination.focus' }, 'Cursor not available');
-      return false;
-    }
-
-    const focused = await this.tryFocusCommands({ fn: 'CursorAIDestination.focus' });
-
-    if (!focused) {
-      this.logger.warn({ fn: 'CursorAIDestination.focus' }, 'All focus commands failed');
-    }
-
-    return focused;
+    return this.executeWithAvailabilityCheck({
+      logContext: { fn: 'CursorAIDestination.focus' },
+      unavailableMessage: 'Cannot focus: Not running in Cursor IDE',
+      successLogMessage: 'Focused Cursor AI',
+      errorLogMessage: 'Failed to focus Cursor AI',
+      execute: async () => this.openChat(),
+    });
   }
 
   /**
