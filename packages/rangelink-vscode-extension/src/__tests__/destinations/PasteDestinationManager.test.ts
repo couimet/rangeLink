@@ -19,13 +19,13 @@ jest.mock('vscode', () => ({
   },
 }));
 
-import { DestinationFactory } from '../../destinations/DestinationFactory';
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
 import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
 import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
 import { createMockClaudeCodeDestination } from '../helpers/createMockClaudeCodeDestination';
+import { createMockDestinationFactory } from '../helpers/createMockDestinationFactory';
 import { createMockCursorAIDestination } from '../helpers/createMockCursorAIDestination';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
@@ -72,7 +72,7 @@ const expectQuickPickConfirmation = (
 describe('PasteDestinationManager', () => {
   let manager: PasteDestinationManager;
   let mockContext: vscode.ExtensionContext;
-  let mockFactory: DestinationFactory;
+  let mockFactory: ReturnType<typeof createMockDestinationFactory>;
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockLogger: Logger;
   let terminalCloseListener: (terminal: vscode.Terminal) => void;
@@ -100,7 +100,74 @@ describe('PasteDestinationManager', () => {
       },
     });
 
-    const factory = new DestinationFactory(adapter, mockLogger);
+    // Cache for destinations so same instance is returned for same terminal/editor
+    const destinationCache = new Map<string, any>();
+
+    // Create factory that generates mock destinations on demand with correct context
+    const factory = createMockDestinationFactory({
+      createImpl: (options) => {
+        if (options.type === 'terminal' && options.terminal) {
+          const terminalName = options.terminal.name;
+          const cacheKey = `terminal:${terminalName}`;
+          if (!destinationCache.has(cacheKey)) {
+            const dest = createMockTerminalDestination({
+              displayName: `Terminal ("${terminalName}")`,
+              resourceName: terminalName,
+              getLoggingDetails: jest.fn().mockReturnValue({ terminalName }),
+              getJumpSuccessMessage: jest.fn().mockReturnValue(`✓ Focused Terminal: "${terminalName}"`),
+            });
+            // Override equals to return true when comparing to same terminal name
+            (dest.equals as jest.Mock).mockImplementation(async (other) => {
+              return other?.id === 'terminal' && other?.resourceName === terminalName;
+            });
+            destinationCache.set(cacheKey, dest);
+          }
+          return destinationCache.get(cacheKey);
+        }
+        if (options.type === 'text-editor' && options.editor) {
+          const doc = options.editor.document;
+          const fileName = doc.uri.fsPath.split('/').pop() || 'Unknown';
+          const cacheKey = `text-editor:${doc.uri.fsPath}`;
+          if (!destinationCache.has(cacheKey)) {
+            destinationCache.set(
+              cacheKey,
+              createMockTextEditorDestination({
+                displayName: `Text Editor ("${fileName}")`,
+                resourceName: fileName,
+                getLoggingDetails: jest.fn().mockReturnValue({
+                  editorName: fileName.split('/').pop(),
+                  editorPath: doc.uri.fsPath,
+                }),
+                getBoundDocumentUri: jest.fn().mockReturnValue(doc.uri),
+              }),
+            );
+          }
+          return destinationCache.get(cacheKey);
+        }
+        if (options.type === 'cursor-ai') {
+          if (!destinationCache.has('cursor-ai')) {
+            const dest = createMockCursorAIDestination();
+            // Override isAvailable to check actual environment
+            (dest.isAvailable as jest.Mock).mockImplementation(async () => {
+              return adapter.__getVscodeInstance().env.appName === 'Cursor';
+            });
+            // Override equals to return true when comparing to same type
+            (dest.equals as jest.Mock).mockImplementation(
+              async (other) => other?.id === 'cursor-ai',
+            );
+            destinationCache.set('cursor-ai', dest);
+          }
+          return destinationCache.get('cursor-ai');
+        }
+        if (options.type === 'claude-code') {
+          if (!destinationCache.has('claude-code')) {
+            destinationCache.set('claude-code', createMockClaudeCodeDestination());
+          }
+          return destinationCache.get('claude-code');
+        }
+        return undefined;
+      },
+    });
     const mgr = new PasteDestinationManager(mockContext, factory, adapter, mockLogger);
 
     return { manager: mgr, adapter, factory };
@@ -174,8 +241,23 @@ describe('PasteDestinationManager', () => {
     it('should show info message when binding same terminal twice', async () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-      // Create manager with a fresh factory that we can control
-      const controlledFactory = new DestinationFactory(mockAdapter, mockLogger);
+      // Create terminal destination that recognizes itself as equal
+      const terminalDest = createMockTerminalDestination({
+        displayName: 'Terminal ("bash")',
+        resourceName: 'bash',
+      });
+      // Override equals to return true when comparing to same instance
+      (terminalDest.equals as jest.Mock).mockImplementation(async (other) => other === terminalDest);
+
+      // Create manager with a fresh factory that returns the same terminal instance
+      const controlledFactory = createMockDestinationFactory({
+        destinations: {
+          terminal: terminalDest,
+          'text-editor': createMockTextEditorDestination(),
+          'cursor-ai': createMockCursorAIDestination(),
+          'claude-code': createMockClaudeCodeDestination(),
+        },
+      });
       const controlledManager = new PasteDestinationManager(
         mockContext,
         controlledFactory,
@@ -449,7 +531,7 @@ describe('PasteDestinationManager', () => {
 
   describe('sendToDestination()', () => {
     // Mock factory and destinations for unit tests
-    let mockFactoryForSend: jest.Mocked<DestinationFactory>;
+    let mockFactoryForSend: ReturnType<typeof createMockDestinationFactory>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockChatDest: jest.Mocked<PasteDestination>;
 
@@ -473,13 +555,13 @@ describe('PasteDestinationManager', () => {
       mockTerminalDest = createMockDest('terminal', 'Terminal', { terminalName: 'bash' });
       mockChatDest = createMockDest('cursor-ai', 'Cursor AI Assistant', {});
 
-      mockFactoryForSend = {
-        create: jest.fn().mockImplementation((options) => {
+      mockFactoryForSend = createMockDestinationFactory({
+        createImpl: (options) => {
           if (options.type === 'terminal') return mockTerminalDest;
           if (options.type === 'cursor-ai') return mockChatDest;
           throw new Error(`Unexpected type: ${options.type}`);
-        }),
-      } as unknown as jest.Mocked<DestinationFactory>;
+        },
+      });
 
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
@@ -865,7 +947,7 @@ describe('PasteDestinationManager', () => {
    */
   describe('Smart Bind Feature', () => {
     // Mock factory for smart bind tests
-    let mockFactoryForSmartBind: jest.Mocked<DestinationFactory>;
+    let mockFactoryForSmartBind: ReturnType<typeof createMockDestinationFactory>;
 
     // Helper to create mock destinations using the existing infrastructure
     const createMockDestinationForTest = (
@@ -888,9 +970,7 @@ describe('PasteDestinationManager', () => {
 
     beforeEach(() => {
       // Create mock factory for smart bind tests
-      mockFactoryForSmartBind = {
-        create: jest.fn(),
-      } as unknown as jest.Mocked<DestinationFactory>;
+      mockFactoryForSmartBind = createMockDestinationFactory();
 
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
@@ -914,7 +994,7 @@ describe('PasteDestinationManager', () => {
         );
 
         // Mock factory to return destinations
-        mockFactoryForSmartBind.create.mockImplementation((options) => {
+        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -990,7 +1070,7 @@ describe('PasteDestinationManager', () => {
           'Text Editor ("file.ts")',
         );
 
-        mockFactoryForSmartBind.create.mockImplementation((options) => {
+        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -1036,7 +1116,7 @@ describe('PasteDestinationManager', () => {
     describe('Scenario 3: Prevent binding same destination twice', () => {
       it('should show info message when binding same destination', async () => {
         // Mock equals() to return true when comparing instances of same terminal
-        mockFactoryForSmartBind.create.mockImplementation(() => {
+        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation(() => {
           const newDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
           // Make all terminal destinations equal to each other
           (newDest.equals as jest.Mock).mockImplementation(
@@ -1082,7 +1162,7 @@ describe('PasteDestinationManager', () => {
       it('should show standard toast without replacement prefix', async () => {
         // Setup: Create mock terminal destination
         const terminalDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
-        mockFactoryForSmartBind.create.mockReturnValue(terminalDest);
+        (mockFactoryForSmartBind.create as jest.Mock).mockReturnValue(terminalDest);
 
         // Mock active terminal
         const mockVscode = mockAdapter.__getVscodeInstance();
@@ -1115,7 +1195,7 @@ describe('PasteDestinationManager', () => {
           'Text Editor ("file.ts")',
         );
 
-        mockFactoryForSmartBind.create.mockImplementation((options) => {
+        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -1157,7 +1237,7 @@ describe('PasteDestinationManager', () => {
 
   describe('jumpToBoundDestination()', () => {
     // Mock factory and destinations for unit tests
-    let mockFactoryForJump: jest.Mocked<DestinationFactory>;
+    let mockFactoryForJump: ReturnType<typeof createMockDestinationFactory>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockEditorDest: jest.Mocked<PasteDestination>;
     let mockCursorAIDest: jest.Mocked<PasteDestination>;
@@ -1170,15 +1250,15 @@ describe('PasteDestinationManager', () => {
       mockCursorAIDest = createMockCursorAIDestination();
       mockClaudeCodeDest = createMockClaudeCodeDestination();
 
-      mockFactoryForJump = {
-        create: jest.fn().mockImplementation((options) => {
+      mockFactoryForJump = createMockDestinationFactory({
+        createImpl: (options) => {
           if (options.type === 'terminal') return mockTerminalDest;
           if (options.type === 'text-editor') return mockEditorDest;
           if (options.type === 'cursor-ai') return mockCursorAIDest;
           if (options.type === 'claude-code') return mockClaudeCodeDest;
           throw new Error(`Unexpected type: ${options.type}`);
-        }),
-      } as unknown as jest.Mocked<DestinationFactory>;
+        },
+      });
 
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
