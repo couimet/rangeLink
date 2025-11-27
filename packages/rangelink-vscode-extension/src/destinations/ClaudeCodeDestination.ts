@@ -3,6 +3,7 @@ import type { Logger } from 'barebone-logger';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
+import { applySmartPadding } from '../utils/applySmartPadding';
 import { formatMessage } from '../utils/formatMessage';
 
 import { ChatAssistantDestination } from './ChatAssistantDestination';
@@ -56,6 +57,100 @@ export class ClaudeCodeDestination extends ChatAssistantDestination {
   }
 
   /**
+   * Send text to Claude Code chat with automatic insertion.
+   *
+   * Shared helper for pasteLink() and pasteContent() to eliminate duplication.
+   * Applies smart padding before sending to ensure proper spacing in chat input.
+   *
+   * @param options - Configuration for text sending
+   * @returns true if paste succeeded, false if unavailable or error occurred
+   */
+  private async sendTextToChat(options: {
+    text: string;
+    logContext: LoggingContext;
+    unavailableMessage: string;
+    successLogMessage: string;
+    errorLogMessage: string;
+  }): Promise<boolean> {
+    // Apply smart padding for proper spacing in chat input
+    const paddedText = applySmartPadding(options.text);
+
+    return this.executeWithAvailabilityCheck({
+      logContext: options.logContext,
+      unavailableMessage: options.unavailableMessage,
+      successLogMessage: options.successLogMessage,
+      errorLogMessage: options.errorLogMessage,
+      execute: async () => this.openChat(paddedText),
+    });
+  }
+
+  /**
+   * Open Claude Code chat interface and optionally paste text.
+   *
+   * Attempts to focus Claude Code using multiple fallback commands,
+   * then attempts automatic paste if text is provided.
+   *
+   * @param text - Optional text to paste after opening chat
+   */
+  private async openChat(text?: string): Promise<void> {
+    await this.tryFocusCommands();
+
+    if (text) {
+      const chatPasteHelper = this.chatPasteHelperFactory.create();
+      await chatPasteHelper.attemptPaste(text, { fn: 'ClaudeCodeDestination.openChat' });
+    }
+  }
+
+  /**
+   * Try focus commands until one succeeds.
+   *
+   * @returns true if any command succeeded, false if all failed
+   */
+  private async tryFocusCommands(): Promise<boolean> {
+    for (const command of ClaudeCodeDestination.CLAUDE_CODE_COMMANDS) {
+      try {
+        await this.ideAdapter.executeCommand(command);
+        return true;
+      } catch {
+        // Try next fallback
+        continue;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Generic helper that eliminates duplication across pasteLink(), pasteContent(), and focus().
+   * Handles the common pattern: check availability → execute command → log result.
+   *
+   * @param options - Configuration for command execution
+   * @returns true if command succeeded, false if unavailable or error occurred
+   */
+  private async executeWithAvailabilityCheck(options: {
+    logContext: LoggingContext;
+    unavailableMessage: string;
+    successLogMessage: string;
+    errorLogMessage: string;
+    execute: () => Promise<void>;
+  }): Promise<boolean> {
+    const { logContext, unavailableMessage, successLogMessage, errorLogMessage, execute } = options;
+
+    if (!(await this.isAvailable())) {
+      this.logger.warn(logContext, unavailableMessage);
+      return false;
+    }
+
+    try {
+      await execute();
+      this.logger.info(logContext, successLogMessage);
+      return true;
+    } catch (error) {
+      this.logger.error({ ...logContext, error }, errorLogMessage);
+      return false;
+    }
+  }
+
+  /**
    * Get user instruction for manual paste.
    *
    * Returns manual paste instruction only when automatic paste fails.
@@ -72,6 +167,24 @@ export class ClaudeCodeDestination extends ChatAssistantDestination {
   }
 
   /**
+<<<<<<< HEAD
+=======
+   * Focus Claude Code chat interface
+   *
+   * @returns true if chat focus succeeded, false otherwise
+   */
+  async focus(): Promise<boolean> {
+    return this.executeWithAvailabilityCheck({
+      logContext: { fn: 'ClaudeCodeDestination.focus' },
+      unavailableMessage: 'Cannot focus: Claude Code extension not available',
+      successLogMessage: 'Focused Claude Code',
+      errorLogMessage: 'Failed to focus Claude Code',
+      execute: async () => this.openChat(),
+    });
+  }
+
+  /**
+>>>>>>> ac2d3f90 (Had clanker refactor using the pattern being worked on for the Copilot Chat support in a different git worktree)
    * Get success message for jump command.
    *
    * @returns Formatted i18n message for status bar display

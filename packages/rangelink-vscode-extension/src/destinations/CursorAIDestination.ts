@@ -3,6 +3,7 @@ import type { Logger } from 'barebone-logger';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
+import { applySmartPadding } from '../utils/applySmartPadding';
 import { formatMessage } from '../utils/formatMessage';
 
 import { ChatAssistantDestination } from './ChatAssistantDestination';
@@ -85,6 +86,100 @@ export class CursorAIDestination extends ChatAssistantDestination {
    */
   protected getFocusCommands(): string[] {
     return CursorAIDestination.CHAT_COMMANDS;
+  }
+
+  /**
+   * Send text to Cursor AI chat with automatic insertion.
+   *
+   * Shared helper for pasteLink() and pasteContent() to eliminate duplication.
+   * Applies smart padding before sending to ensure proper spacing in chat input.
+   *
+   * @param options - Configuration for text sending
+   * @returns true if paste succeeded, false if unavailable or error occurred
+   */
+  private async sendTextToChat(options: {
+    text: string;
+    logContext: LoggingContext;
+    unavailableMessage: string;
+    successLogMessage: string;
+    errorLogMessage: string;
+  }): Promise<boolean> {
+    // Apply smart padding for proper spacing in chat input
+    const paddedText = applySmartPadding(options.text);
+
+    return this.executeWithAvailabilityCheck({
+      logContext: options.logContext,
+      unavailableMessage: options.unavailableMessage,
+      successLogMessage: options.successLogMessage,
+      errorLogMessage: options.errorLogMessage,
+      execute: async () => this.openChat(paddedText),
+    });
+  }
+
+  /**
+   * Open Cursor AI chat interface and optionally paste text.
+   *
+   * Attempts to focus Cursor AI using multiple fallback commands,
+   * then attempts automatic paste if text is provided.
+   *
+   * @param text - Optional text to paste after opening chat
+   */
+  private async openChat(text?: string): Promise<void> {
+    await this.tryFocusCommands();
+
+    if (text) {
+      const chatPasteHelper = this.chatPasteHelperFactory.create();
+      await chatPasteHelper.attemptPaste(text, { fn: 'CursorAIDestination.openChat' });
+    }
+  }
+
+  /**
+   * Try focus commands until one succeeds.
+   *
+   * @returns true if any command succeeded, false if all failed
+   */
+  private async tryFocusCommands(): Promise<boolean> {
+    for (const command of CursorAIDestination.CHAT_COMMANDS) {
+      try {
+        await this.ideAdapter.executeCommand(command);
+        return true;
+      } catch {
+        // Try next fallback
+        continue;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Generic helper that eliminates duplication across pasteLink(), pasteContent(), and focus().
+   * Handles the common pattern: check availability → execute command → log result.
+   *
+   * @param options - Configuration for command execution
+   * @returns true if command succeeded, false if unavailable or error occurred
+   */
+  private async executeWithAvailabilityCheck(options: {
+    logContext: LoggingContext;
+    unavailableMessage: string;
+    successLogMessage: string;
+    errorLogMessage: string;
+    execute: () => Promise<void>;
+  }): Promise<boolean> {
+    const { logContext, unavailableMessage, successLogMessage, errorLogMessage, execute } = options;
+
+    if (!(await this.isAvailable())) {
+      this.logger.warn(logContext, unavailableMessage);
+      return false;
+    }
+
+    try {
+      await execute();
+      this.logger.info(logContext, successLogMessage);
+      return true;
+    } catch (error) {
+      this.logger.error({ ...logContext, error }, errorLogMessage);
+      return false;
+    }
   }
 
   /**
