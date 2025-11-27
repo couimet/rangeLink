@@ -7,8 +7,17 @@
 // Export individual mock factories
 export { createMockAsRelativePath } from './createMockAsRelativePath';
 export { createMockCancellationToken } from './createMockCancellationToken';
+export {
+  createMockChatPasteHelper,
+  createMockChatPasteHelperFactory,
+  type MockChatPasteHelper,
+} from './createMockChatPasteHelperFactory';
 export { createMockClipboard } from './createMockClipboard';
 export { createMockCommands } from './createMockCommands';
+export {
+  createMockDestinationFactory,
+  type MockDestinationFactoryOptions,
+} from './createMockDestinationFactory';
 export { createMockDocument } from './createMockDocument';
 export { createMockDocumentLink } from './createMockDocumentLink';
 export { createMockEditor } from './createMockEditor';
