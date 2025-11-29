@@ -253,45 +253,63 @@ describe('ClaudeCodeDestination', () => {
     });
   });
 
-    it('should NOT copy content to clipboard (RangeLinkService handles this)', async () => {
-      const testContent = 'selected text from editor';
-      const writeTextSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard');
-
-      await destination.pasteContent(testContent);
-
-      expect(writeTextSpy).not.toHaveBeenCalled();
-    });
-
-    it('should try opening chat with claude-vscode.focus command first', async () => {
+  describe('tryFocusCommands()', () => {
+    it('should try claude-vscode.focus command first and return true on success', async () => {
       const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
 
-      await destination.pasteContent('text');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).tryFocusCommands();
 
+      expect(result).toBe(true);
+      expect(executeCommandSpy).toHaveBeenCalledTimes(1);
       expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.focus');
     });
 
     it('should try fallback commands if primary fails', async () => {
       const executeCommandSpy = jest
         .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValueOnce(new Error('claude-vscode.focus not found'))
-        .mockResolvedValueOnce(undefined);
+        .mockRejectedValueOnce(new Error('claude-vscode.focus failed'))
+        .mockResolvedValueOnce(undefined); // claude-vscode.sidebar.open succeeds
 
-      await destination.pasteContent('text');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).tryFocusCommands();
 
+      expect(result).toBe(true);
+      expect(executeCommandSpy).toHaveBeenCalledTimes(2);
       expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.focus');
       expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.sidebar.open');
     });
 
-    it('should NOT show notification (RangeLinkService handles this via getUserInstruction())', async () => {
-      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+    it('should try all fallbacks until one succeeds (third command)', async () => {
+      const executeCommandSpy = jest
+        .spyOn(mockAdapter, 'executeCommand')
+        .mockRejectedValueOnce(new Error('claude-vscode.focus failed'))
+        .mockRejectedValueOnce(new Error('claude-vscode.sidebar.open failed'))
+        .mockResolvedValueOnce(undefined); // claude-vscode.editor.open succeeds
 
-      await destination.pasteContent('text');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).tryFocusCommands();
 
-      expect(showInfoSpy).not.toHaveBeenCalled();
+      expect(result).toBe(true);
+      expect(executeCommandSpy).toHaveBeenCalledTimes(3);
+      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.focus');
+      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.sidebar.open');
+      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.editor.open');
     });
 
-    it('should return true when chat open succeeds', async () => {
-      const result = await destination.pasteContent('text');
+    it('should return false when all commands fail', async () => {
+      const executeCommandSpy = jest
+        .spyOn(mockAdapter, 'executeCommand')
+        .mockRejectedValue(new Error('All commands failed'));
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).tryFocusCommands();
+
+      expect(result).toBe(false);
+      expect(executeCommandSpy).toHaveBeenCalledTimes(3); // All 3 commands tried
+    });
+  });
+
 
       expect(result).toBe(true);
     });
