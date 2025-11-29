@@ -1,37 +1,35 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
-import * as vscode from 'vscode';
 
 import { ClaudeCodeDestination } from '../../destinations/ClaudeCodeDestination';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import * as applySmartPaddingModule from '../../utils/applySmartPadding';
+import {
+  createMockChatPasteHelperFactory,
+  type MockChatPasteHelper,
+} from '../helpers/createMockChatPasteHelperFactory';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
-import { createMockUri } from '../helpers/createMockUri';
 import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 
 describe('ClaudeCodeDestination', () => {
   let destination: ClaudeCodeDestination;
   let mockLogger: Logger;
   let mockAdapter: VscodeAdapter;
-  let mockExtension: vscode.Extension<unknown>;
+  let mockChatPasteHelperFactory: ReturnType<typeof createMockChatPasteHelperFactory>;
+  let mockChatPasteHelper: MockChatPasteHelper;
+  let applySmartPaddingSpy: jest.SpyInstance;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
+    mockChatPasteHelperFactory = createMockChatPasteHelperFactory();
+    mockChatPasteHelper = mockChatPasteHelperFactory.create() as unknown as MockChatPasteHelper;
+
+    // Spy on applySmartPadding
+    applySmartPaddingSpy = jest.spyOn(applySmartPaddingModule, 'applySmartPadding');
+
+    // Default test instances (tests can override if they need special behavior)
     mockAdapter = createMockVscodeAdapter();
-    destination = new ClaudeCodeDestination(mockAdapter, mockLogger);
-
-    // Create mock extension
-    mockExtension = {
-      id: 'anthropic.claude-code',
-      extensionUri: createMockUri('/path/to/extension'),
-      extensionPath: '/path/to/extension',
-      isActive: true,
-      packageJSON: {},
-      exports: undefined,
-      activate: jest.fn(),
-      extensionKind: 1, // ExtensionKind.Workspace
-    } as vscode.Extension<unknown>;
-
-    jest.clearAllMocks();
+    destination = new ClaudeCodeDestination(mockAdapter, mockChatPasteHelperFactory, mockLogger);
   });
 
   describe('Interface compliance', () => {
@@ -46,23 +44,37 @@ describe('ClaudeCodeDestination', () => {
 
   describe('isAvailable() - Extension detection', () => {
     it('should return true when extension is installed and active', async () => {
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([mockExtension]);
+      mockAdapter = createMockVscodeAdapter({
+        extensionsOptions: ['anthropic.claude-code'],
+      });
+      const destination = new ClaudeCodeDestination(
+        mockAdapter,
+        mockChatPasteHelperFactory,
+        mockLogger,
+      );
 
       expect(await destination.isAvailable()).toBe(true);
     });
 
     it('should return false when extension is not installed', async () => {
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
+      const destination = new ClaudeCodeDestination(
+        mockAdapter,
+        mockChatPasteHelperFactory,
+        mockLogger,
+      );
 
       expect(await destination.isAvailable()).toBe(false);
     });
 
     it('should return false when extension is installed but not active', async () => {
-      const inactiveExtension = {
-        ...mockExtension,
-        isActive: false,
-      };
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([inactiveExtension]);
+      mockAdapter = createMockVscodeAdapter({
+        extensionsOptions: [{ id: 'anthropic.claude-code', isActive: false }],
+      });
+      const destination = new ClaudeCodeDestination(
+        mockAdapter,
+        mockChatPasteHelperFactory,
+        mockLogger,
+      );
 
       expect(await destination.isAvailable()).toBe(false);
     });
