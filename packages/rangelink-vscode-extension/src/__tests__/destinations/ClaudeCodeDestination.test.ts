@@ -24,6 +24,9 @@ describe('ClaudeCodeDestination', () => {
     // Default test instances (tests can override if they need special behavior)
     mockAdapter = createMockVscodeAdapter();
     destination = new ClaudeCodeDestination(mockAdapter, mockChatPasteHelperFactory, mockLogger);
+
+    // Clear factory.create() call count so tests can track calls made during test execution
+    mockChatPasteHelperFactory.create.mockClear();
   });
 
   describe('Interface compliance', () => {
