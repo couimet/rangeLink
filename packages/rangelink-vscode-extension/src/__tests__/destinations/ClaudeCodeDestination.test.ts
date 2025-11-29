@@ -345,59 +345,75 @@ describe('ClaudeCodeDestination', () => {
     });
   });
 
-    it('should log chat open completion', async () => {
-      const testContent = 'selected text';
+  describe('executeWithAvailabilityCheck()', () => {
+    it('should return false when extension not available', async () => {
+      const executeSpy = jest.fn();
 
-      await destination.pasteContent(testContent);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).executeWithAvailabilityCheck({
+        logContext: { fn: 'test' },
+        unavailableMessage: 'Not available',
+        successLogMessage: 'Success',
+        errorLogMessage: 'Error',
+        execute: executeSpy,
+      });
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        {
-          fn: 'ClaudeCodeDestination.pasteContent',
-          contentLength: testContent.length,
-          chatOpened: true,
-        },
-        'Claude Code open completed',
-      );
+      expect(result).toBe(false);
+      expect(executeSpy).not.toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'test' }, 'Not available');
     });
 
-    it('should log warning when extension not available', async () => {
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
-      const testContent = 'text';
-
-      await destination.pasteContent(testContent);
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          fn: 'ClaudeCodeDestination.pasteContent',
-          contentLength: testContent.length,
-        },
-        'Cannot paste: Claude Code extension not available',
+    it('should execute function and return true when available', async () => {
+      mockAdapter = createMockVscodeAdapter({
+        extensionsOptions: ['anthropic.claude-code'],
+      });
+      const destinationWithExtension = new ClaudeCodeDestination(
+        mockAdapter,
+        mockChatPasteHelperFactory,
+        mockLogger,
       );
-    });
+      const executeSpy = jest.fn().mockResolvedValue(undefined);
 
-    it('should log warning when all chat commands fail', async () => {
-      const testContent = 'text';
-      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
-
-      await destination.pasteContent(testContent);
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          fn: 'ClaudeCodeDestination.pasteContent',
-          contentLength: testContent.length,
-        },
-        'All Claude Code open commands failed',
-      );
-    });
-
-    it('should still return true when chat commands fail (RangeLinkService shows notification)', async () => {
-      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
-      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
-
-      const result = await destination.pasteContent('text');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destinationWithExtension as any).executeWithAvailabilityCheck({
+        logContext: { fn: 'test' },
+        unavailableMessage: 'Not available',
+        successLogMessage: 'Success',
+        errorLogMessage: 'Error',
+        execute: executeSpy,
+      });
 
       expect(result).toBe(true);
-      expect(showInfoSpy).not.toHaveBeenCalled(); // RangeLinkService handles notification
+      expect(executeSpy).toHaveBeenCalledTimes(1);
+      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'test' }, 'Success');
+    });
+
+    it('should return false and log error when execute function throws', async () => {
+      mockAdapter = createMockVscodeAdapter({
+        extensionsOptions: ['anthropic.claude-code'],
+      });
+      const destinationWithExtension = new ClaudeCodeDestination(
+        mockAdapter,
+        mockChatPasteHelperFactory,
+        mockLogger,
+      );
+      const expectedError = new Error('Execution failed');
+      const executeSpy = jest.fn().mockRejectedValue(expectedError);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destinationWithExtension as any).executeWithAvailabilityCheck({
+        logContext: { fn: 'test' },
+        unavailableMessage: 'Not available',
+        successLogMessage: 'Success',
+        errorLogMessage: 'Error',
+        execute: executeSpy,
+      });
+
+      expect(result).toBe(false);
+      expect(executeSpy).toHaveBeenCalledTimes(1);
+      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'test', error: expectedError }, 'Error');
+    });
+  });
     });
   });
 
