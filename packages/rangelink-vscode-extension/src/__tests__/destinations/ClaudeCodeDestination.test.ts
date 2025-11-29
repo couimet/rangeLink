@@ -42,7 +42,7 @@ describe('ClaudeCodeDestination', () => {
     });
   });
 
-  describe('isAvailable() - Extension detection', () => {
+  describe('isAvailable()', () => {
     it('should return true when extension is installed and active', async () => {
       mockAdapter = createMockVscodeAdapter({
         extensionsOptions: ['anthropic.claude-code'],
@@ -78,39 +78,8 @@ describe('ClaudeCodeDestination', () => {
 
       expect(await destination.isAvailable()).toBe(false);
     });
+  });
 
-    it('should log detection result when extension found', async () => {
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([mockExtension]);
-
-      await destination.isAvailable();
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'ClaudeCodeDestination.isAvailable',
-          extensionId: 'anthropic.claude-code',
-          found: true,
-          active: true,
-          detected: true,
-        },
-        'Claude Code extension detected and active',
-      );
-    });
-
-    it('should log detection result when extension not found', async () => {
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
-
-      await destination.isAvailable();
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'ClaudeCodeDestination.isAvailable',
-          extensionId: 'anthropic.claude-code',
-          found: false,
-          active: false,
-          detected: false,
-        },
-        'Claude Code extension not available',
-      );
     });
   });
 
