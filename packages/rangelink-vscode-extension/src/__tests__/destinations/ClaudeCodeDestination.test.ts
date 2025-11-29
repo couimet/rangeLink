@@ -114,74 +114,57 @@ describe('ClaudeCodeDestination', () => {
     });
   });
 
-    it('should log warning when extension not available', async () => {
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
-      const testLink = 'link';
+  describe('pasteLink()', () => {
+    it('should delegate to sendTextToChat with correct parameters and return its result', async () => {
+      const sendTextToChatSpy = jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(destination as any, 'sendTextToChat')
+        .mockResolvedValue(true);
+      const testLink = 'src/file.ts#L10';
       const formattedLink = createMockFormattedLink(testLink);
-
-      await destination.pasteLink(formattedLink);
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          fn: 'ClaudeCodeDestination.pasteLink',
-          formattedLink,
-          linkLength: testLink.length,
-        },
-        'Cannot paste: Claude Code extension not available',
-      );
-    });
-
-    it('should return false and log error when executeCommand throws unexpected error', async () => {
-      const testLink = 'link';
-      const formattedLink = createMockFormattedLink(testLink);
-      const expectedError = new Error('Unexpected error');
-      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(expectedError);
 
       const result = await destination.pasteLink(formattedLink);
 
-      expect(result).toBe(true); // Still returns true but logs warning
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
+      expect(sendTextToChatSpy).toHaveBeenCalledTimes(1);
+      expect(sendTextToChatSpy).toHaveBeenCalledWith({
+        text: testLink,
+        logContext: {
           fn: 'ClaudeCodeDestination.pasteLink',
           formattedLink,
           linkLength: testLink.length,
         },
-        'All Claude Code open commands failed',
-      );
-    });
-
-    it('should log warning when all chat commands fail', async () => {
-      const testLink = 'link';
-      const formattedLink = createMockFormattedLink(testLink);
-      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
-
-      await destination.pasteLink(formattedLink);
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          fn: 'ClaudeCodeDestination.pasteLink',
-          formattedLink,
-          linkLength: testLink.length,
-        },
-        'All Claude Code open commands failed',
-      );
-    });
-
-    it('should still return true when chat commands fail (RangeLinkService shows notification)', async () => {
-      jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Command not found'));
-      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
-
-      const result = await destination.pasteLink(createMockFormattedLink('link'));
-
+        unavailableMessage: 'Cannot paste: Claude Code extension not available',
+        successLogMessage: 'Pasted link to Claude Code',
+        errorLogMessage: 'Failed to paste link to Claude Code',
+      });
       expect(result).toBe(true);
-      expect(showInfoSpy).not.toHaveBeenCalled(); // RangeLinkService handles notification
     });
   });
 
-  describe('pasteContent() - Clipboard workaround for text', () => {
-    beforeEach(() => {
-      // Mock extension as available (mockExtension.isActive is already true from setup)
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([mockExtension]);
+  describe('pasteContent()', () => {
+    it('should delegate to sendTextToChat with correct parameters and return its result', async () => {
+      const sendTextToChatSpy = jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(destination as any, 'sendTextToChat')
+        .mockResolvedValue(false);
+      const testContent = 'selected text';
+
+      const result = await destination.pasteContent(testContent);
+
+      expect(sendTextToChatSpy).toHaveBeenCalledTimes(1);
+      expect(sendTextToChatSpy).toHaveBeenCalledWith({
+        text: testContent,
+        logContext: {
+          fn: 'ClaudeCodeDestination.pasteContent',
+          contentLength: testContent.length,
+        },
+        unavailableMessage: 'Cannot paste: Claude Code extension not available',
+        successLogMessage: 'Pasted content to Claude Code',
+        errorLogMessage: 'Failed to paste content to Claude Code',
+      });
+      expect(result).toBe(false);
+    });
+  });
     });
 
     it('should return false when extension not available', async () => {
