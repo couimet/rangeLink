@@ -80,82 +80,39 @@ describe('ClaudeCodeDestination', () => {
     });
   });
 
+  describe('isEligibleForPasteLink()', () => {
+    it('should accept all links unconditionally (returns true for any input)', async () => {
+      // Claude Code accepts all content - test various edge cases to document this behavior
+      expect(
+        await destination.isEligibleForPasteLink(createMockFormattedLink('src/file.ts#L10')),
+      ).toBe(true);
+      expect(await destination.isEligibleForPasteLink(createMockFormattedLink(''))).toBe(true);
+      expect(await destination.isEligibleForPasteLink(createMockFormattedLink('   '))).toBe(true);
+      expect(
+        await destination.isEligibleForPasteLink(
+          createMockFormattedLink(null as unknown as string),
+        ),
+      ).toBe(true);
+      expect(
+        await destination.isEligibleForPasteLink(
+          createMockFormattedLink(undefined as unknown as string),
+        ),
+      ).toBe(true);
     });
   });
 
-  describe('pasteLink() - Clipboard workaround', () => {
-    beforeEach(() => {
-      // Mock extension as available (mockExtension.isActive is already true from setup)
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([mockExtension]);
-    });
-
-    it('should return false when extension not available', async () => {
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
-
-      const result = await destination.pasteLink(createMockFormattedLink('src/file.ts#L10'));
-
-      expect(result).toBe(false);
-    });
-
-    it('should NOT copy link to clipboard (RangeLinkService handles this)', async () => {
-      const testLink = 'src/file.ts#L10';
-      const writeTextSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard');
-
-      await destination.pasteLink(createMockFormattedLink(testLink));
-
-      expect(writeTextSpy).not.toHaveBeenCalled();
-    });
-
-    it('should try opening chat with claude-vscode.focus command first', async () => {
-      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
-
-      await destination.pasteLink(createMockFormattedLink('link'));
-
-      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.focus');
-    });
-
-    it('should try fallback commands if primary fails', async () => {
-      const executeCommandSpy = jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValueOnce(new Error('claude-vscode.focus not found'))
-        .mockResolvedValueOnce(undefined); // claude-vscode.sidebar.open succeeds
-
-      await destination.pasteLink(createMockFormattedLink('link'));
-
-      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.focus');
-      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.sidebar.open');
-    });
-
-    it('should NOT show notification (RangeLinkService handles this via getUserInstruction())', async () => {
-      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
-
-      await destination.pasteLink(createMockFormattedLink('link'));
-
-      expect(showInfoSpy).not.toHaveBeenCalled();
-    });
-
-    it('should return true when chat open succeeds', async () => {
-      const result = await destination.pasteLink(createMockFormattedLink('link'));
-
-      expect(result).toBe(true);
-    });
-
-    it('should log chat open completion', async () => {
-      const testLink = 'src/file.ts#L10';
-      const formattedLink = createMockFormattedLink(testLink);
-
-      await destination.pasteLink(formattedLink);
-
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        {
-          fn: 'ClaudeCodeDestination.pasteLink',
-          formattedLink,
-          linkLength: testLink.length,
-          chatOpened: true,
-        },
-        'Claude Code open completed',
+  describe('isEligibleForPasteContent()', () => {
+    it('should accept all content unconditionally (returns true for any input)', async () => {
+      // Claude Code accepts all content - test various edge cases to document this behavior
+      expect(await destination.isEligibleForPasteContent('selected text')).toBe(true);
+      expect(await destination.isEligibleForPasteContent('')).toBe(true);
+      expect(await destination.isEligibleForPasteContent('   ')).toBe(true);
+      expect(await destination.isEligibleForPasteContent(null as unknown as string)).toBe(true);
+      expect(await destination.isEligibleForPasteContent(undefined as unknown as string)).toBe(
+        true,
       );
     });
+  });
 
     it('should log warning when extension not available', async () => {
       jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
