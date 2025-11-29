@@ -310,9 +310,40 @@ describe('ClaudeCodeDestination', () => {
     });
   });
 
+  describe('focus()', () => {
+    it('should delegate to executeWithAvailabilityCheck with openChat', async () => {
+      const executeWithAvailabilityCheckSpy = jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(destination as any, 'executeWithAvailabilityCheck')
+        .mockResolvedValue(true);
+      const openChatSpy = jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(destination as any, 'openChat')
+        .mockResolvedValue(undefined);
 
+      const result = await destination.focus();
+
+      expect(executeWithAvailabilityCheckSpy).toHaveBeenCalledTimes(1);
+      expect(executeWithAvailabilityCheckSpy).toHaveBeenCalledWith({
+        logContext: { fn: 'ClaudeCodeDestination.focus' },
+        unavailableMessage: 'Cannot focus: Claude Code extension not available',
+        successLogMessage: 'Focused Claude Code',
+        errorLogMessage: 'Failed to focus Claude Code',
+        execute: expect.any(Function),
+      });
+
+      // Verify the execute function calls openChat without text
+      const executeFunc = (
+        executeWithAvailabilityCheckSpy.mock.calls[0][0] as {
+          execute: () => Promise<void>;
+        }
+      ).execute;
+      await executeFunc();
+
+      expect(openChatSpy).toHaveBeenCalledWith();
       expect(result).toBe(true);
     });
+  });
 
     it('should log chat open completion', async () => {
       const testContent = 'selected text';
