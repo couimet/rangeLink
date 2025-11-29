@@ -22,6 +22,7 @@ describe('ClaudeCodeDestination', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockChatPasteHelperFactory = createMockChatPasteHelperFactory();
+    // Get reference to the mock helper (factory always returns same instance)
     mockChatPasteHelper = mockChatPasteHelperFactory.create() as unknown as MockChatPasteHelper;
 
     // Spy on applySmartPadding
@@ -30,6 +31,9 @@ describe('ClaudeCodeDestination', () => {
     // Default test instances (tests can override if they need special behavior)
     mockAdapter = createMockVscodeAdapter();
     destination = new ClaudeCodeDestination(mockAdapter, mockChatPasteHelperFactory, mockLogger);
+
+    // Clear factory.create() call count so tests can track calls made during test execution
+    mockChatPasteHelperFactory.create.mockClear();
   });
 
   describe('Interface compliance', () => {
@@ -165,15 +169,89 @@ describe('ClaudeCodeDestination', () => {
       expect(result).toBe(false);
     });
   });
+
+  describe('sendTextToChat()', () => {
+    it('should apply smart padding and delegate to executeWithAvailabilityCheck with openChat', async () => {
+      const executeWithAvailabilityCheckSpy = jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(destination as any, 'executeWithAvailabilityCheck')
+        .mockResolvedValue(true);
+      const openChatSpy = jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(destination as any, 'openChat')
+        .mockResolvedValue(undefined);
+      const testText = 'some text';
+      const paddedText = ` ${testText} `; // Mock padding behavior
+      applySmartPaddingSpy.mockReturnValue(paddedText);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).sendTextToChat({
+        text: testText,
+        logContext: { fn: 'test' },
+        unavailableMessage: 'unavailable',
+        successLogMessage: 'success',
+        errorLogMessage: 'error',
+      });
+
+      // Verify applySmartPadding was called with original text
+      expect(applySmartPaddingSpy).toHaveBeenCalledTimes(1);
+      expect(applySmartPaddingSpy).toHaveBeenCalledWith(testText);
+
+      // Verify executeWithAvailabilityCheck was called
+      expect(executeWithAvailabilityCheckSpy).toHaveBeenCalledTimes(1);
+      expect(executeWithAvailabilityCheckSpy).toHaveBeenCalledWith({
+        logContext: { fn: 'test' },
+        unavailableMessage: 'unavailable',
+        successLogMessage: 'success',
+        errorLogMessage: 'error',
+        execute: expect.any(Function),
+      });
+
+      // Verify the execute function calls openChat with padded text
+      const executeFunc = (
+        executeWithAvailabilityCheckSpy.mock.calls[0][0] as {
+          execute: () => Promise<void>;
+        }
+      ).execute;
+      await executeFunc();
+
+      expect(openChatSpy).toHaveBeenCalledWith(paddedText);
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('openChat()', () => {
+    it('should call tryFocusCommands and attemptPaste when text provided', async () => {
+      const tryFocusCommandsSpy = jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(destination as any, 'tryFocusCommands')
+        .mockResolvedValue(true);
+      const testText = 'test text';
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (destination as any).openChat(testText);
+
+      expect(tryFocusCommandsSpy).toHaveBeenCalledTimes(1);
+      expect(mockChatPasteHelperFactory.create).toHaveBeenCalledTimes(1);
+      expect(mockChatPasteHelper.attemptPaste).toHaveBeenCalledWith(testText, {
+        fn: 'ClaudeCodeDestination.openChat',
+      });
     });
 
-    it('should return false when extension not available', async () => {
-      jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([]);
+    it('should only call tryFocusCommands when no text provided', async () => {
+      const tryFocusCommandsSpy = jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(destination as any, 'tryFocusCommands')
+        .mockResolvedValue(true);
 
-      const result = await destination.pasteContent('selected text');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (destination as any).openChat();
 
-      expect(result).toBe(false);
+      expect(tryFocusCommandsSpy).toHaveBeenCalledTimes(1);
+      expect(mockChatPasteHelperFactory.create).not.toHaveBeenCalled();
+      expect(mockChatPasteHelper.attemptPaste).not.toHaveBeenCalled();
     });
+  });
 
     it('should NOT copy content to clipboard (RangeLinkService handles this)', async () => {
       const testContent = 'selected text from editor';
