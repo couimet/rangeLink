@@ -4,7 +4,7 @@ import type { FormattedLink } from 'rangelink-core-ts';
 
 import { ChatAssistantDestination } from '../../destinations/ChatAssistantDestination';
 import type { ChatPasteHelperFactory } from '../../destinations/ChatPasteHelperFactory';
-import type { DestinationType } from '../../destinations/PasteDestination';
+import { PasteDestination, type DestinationType } from '../../destinations/PasteDestination';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../../types/AutoPasteResult';
 import { createMockChatPasteHelperFactory } from '../helpers/createMockChatPasteHelperFactory';
@@ -205,6 +205,45 @@ describe('ChatAssistantDestination', () => {
 
       expect(result).toBe(false);
       expect(executeSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('getLoggingDetails()', () => {
+    it('should return empty object (no additional details for AI destinations)', () => {
+      const details = destination.getLoggingDetails();
+
+      expect(details).toStrictEqual({});
+    });
+  });
+
+  describe('equals()', () => {
+    it('should return true when comparing same type (claude-code)', async () => {
+      const otherDestination = new TestChatAssistantDestination(
+        mockAdapter,
+        mockChatPasteHelperFactory,
+        mockLogger,
+      );
+
+      const result = await destination.equals(otherDestination);
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false when comparing with undefined', async () => {
+      const result = await destination.equals(undefined);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when comparing with different destination type', async () => {
+      const cursorAIDest = {
+        id: 'cursor-ai',
+        displayName: 'Cursor AI Assistant',
+      } as unknown as PasteDestination;
+
+      const result = await destination.equals(cursorAIDest);
+
+      expect(result).toBe(false);
     });
   });
 
