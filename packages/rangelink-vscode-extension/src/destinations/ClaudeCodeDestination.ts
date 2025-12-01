@@ -1,22 +1,21 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
-import type { FormattedLink } from 'rangelink-core-ts';
+import type { Logger } from 'barebone-logger';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
-import { PasteContentType } from '../types/PasteContentType';
-import { applySmartPadding } from '../utils/applySmartPadding';
 import { formatMessage } from '../utils/formatMessage';
 
+import { ChatAssistantDestination } from './ChatAssistantDestination';
 import type { ChatPasteHelperFactory } from './ChatPasteHelperFactory';
-import type { DestinationType, PasteDestination } from './PasteDestination';
+import type { DestinationType } from './PasteDestination';
 
 /**
  * Claude Code Extension paste destination.
  *
  * Automatically pastes RangeLinks to Claude Code's chat interface.
+ * Extends ChatAssistantDestination to inherit shared chat assistant logic.
  */
-export class ClaudeCodeDestination implements PasteDestination {
+export class ClaudeCodeDestination extends ChatAssistantDestination {
   readonly id: DestinationType = 'claude-code';
   readonly displayName = 'Claude Code Chat';
 
@@ -30,10 +29,12 @@ export class ClaudeCodeDestination implements PasteDestination {
   private static readonly EXTENSION_ID = 'anthropic.claude-code';
 
   constructor(
-    private readonly ideAdapter: VscodeAdapter,
-    private readonly chatPasteHelperFactory: ChatPasteHelperFactory,
-    private readonly logger: Logger,
-  ) {}
+    ideAdapter: VscodeAdapter,
+    chatPasteHelperFactory: ChatPasteHelperFactory,
+    logger: Logger,
+  ) {
+    super(ideAdapter, chatPasteHelperFactory, logger);
+  }
 
   /**
    * Check if Claude Code extension is installed and active.
@@ -46,167 +47,12 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Check if a RangeLink is eligible to be pasted to Claude Code.
+   * Get ordered list of commands to try for focusing Claude Code chat.
    *
-   * @param _formattedLink - The formatted RangeLink (not used)
-   * @returns Always true (Claude Code accepts all content)
+   * @returns Array of command IDs to try in order
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async isEligibleForPasteLink(_formattedLink: FormattedLink): Promise<boolean> {
-    return true;
-  }
-
-  /**
-   * Check if text content is eligible to be pasted to Claude Code.
-   *
-   * @param _content - The text content (not used)
-   * @returns Always true (Claude Code accepts all content)
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async isEligibleForPasteContent(_content: string): Promise<boolean> {
-    return true;
-  }
-
-  /**
-   * Paste a RangeLink to Claude Code chat with automatic insertion.
-   *
-   * @param formattedLink - The formatted RangeLink with metadata
-   * @returns true if paste succeeded, false otherwise
-   */
-  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
-    return this.sendTextToChat({
-      contentType: PasteContentType.Link,
-      text: formattedLink.link,
-      logContext: {
-        fn: 'ClaudeCodeDestination.pasteLink',
-        formattedLink,
-        linkLength: formattedLink.link.length,
-      },
-      unavailableMessage: 'Cannot paste: Claude Code extension not available',
-      successLogMessage: 'Pasted link to Claude Code',
-      errorLogMessage: 'Failed to paste link to Claude Code',
-    });
-  }
-
-  /**
-   * Paste text content to Claude Code chat with automatic insertion.
-   *
-   * @param content - The text content to paste
-   * @returns true if paste succeeded, false otherwise
-   */
-  async pasteContent(content: string): Promise<boolean> {
-    return this.sendTextToChat({
-      contentType: PasteContentType.Text,
-      text: content,
-      logContext: {
-        fn: 'ClaudeCodeDestination.pasteContent',
-        contentLength: content.length,
-      },
-      unavailableMessage: 'Cannot paste: Claude Code extension not available',
-      successLogMessage: 'Pasted content to Claude Code',
-      errorLogMessage: 'Failed to paste content to Claude Code',
-    });
-  }
-
-  /**
-   * Send text to Claude Code chat with automatic insertion.
-   *
-   * Shared helper for pasteLink() and pasteContent() to eliminate duplication.
-   * Applies smart padding before sending to ensure proper spacing in chat input.
-   *
-   * @param options - Configuration for text sending
-   * @returns true if paste succeeded, false if unavailable or error occurred
-   */
-  private async sendTextToChat(options: {
-    contentType: PasteContentType;
-    text: string;
-    logContext: LoggingContext;
-    unavailableMessage: string;
-    successLogMessage: string;
-    errorLogMessage: string;
-  }): Promise<boolean> {
-    // Apply smart padding for proper spacing in chat input
-    const paddedText = applySmartPadding(options.text);
-
-    // Enhance log context with content type for better debugging
-    const enhancedLogContext: LoggingContext = {
-      ...options.logContext,
-      contentType: options.contentType,
-    };
-
-    return this.executeWithAvailabilityCheck({
-      logContext: enhancedLogContext,
-      unavailableMessage: options.unavailableMessage,
-      successLogMessage: options.successLogMessage,
-      errorLogMessage: options.errorLogMessage,
-      execute: async () => this.openChat(paddedText),
-    });
-  }
-
-  /**
-   * Open Claude Code chat interface and optionally paste text.
-   *
-   * Attempts to focus Claude Code using multiple fallback commands,
-   * then attempts automatic paste if text is provided.
-   *
-   * @param text - Optional text to paste after opening chat
-   */
-  private async openChat(text?: string): Promise<void> {
-    await this.tryFocusCommands();
-
-    if (text) {
-      const chatPasteHelper = this.chatPasteHelperFactory.create();
-      await chatPasteHelper.attemptPaste(text, { fn: 'ClaudeCodeDestination.openChat' });
-    }
-  }
-
-  /**
-   * Try focus commands until one succeeds.
-   *
-   * @returns true if any command succeeded, false if all failed
-   */
-  private async tryFocusCommands(): Promise<boolean> {
-    for (const command of ClaudeCodeDestination.CLAUDE_CODE_COMMANDS) {
-      try {
-        await this.ideAdapter.executeCommand(command);
-        return true;
-      } catch {
-        // Try next fallback
-        continue;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Generic helper that eliminates duplication across pasteLink(), pasteContent(), and focus().
-   * Handles the common pattern: check availability → execute command → log result.
-   *
-   * @param options - Configuration for command execution
-   * @returns true if command succeeded, false if unavailable or error occurred
-   */
-  private async executeWithAvailabilityCheck(options: {
-    logContext: LoggingContext;
-    unavailableMessage: string;
-    successLogMessage: string;
-    errorLogMessage: string;
-    execute: () => Promise<void>;
-  }): Promise<boolean> {
-    const { logContext, unavailableMessage, successLogMessage, errorLogMessage, execute } = options;
-
-    if (!(await this.isAvailable())) {
-      this.logger.warn(logContext, unavailableMessage);
-      return false;
-    }
-
-    try {
-      await execute();
-      this.logger.info(logContext, successLogMessage);
-      return true;
-    } catch (error) {
-      this.logger.error({ ...logContext, error }, errorLogMessage);
-      return false;
-    }
+  protected getFocusCommands(): string[] {
+    return ClaudeCodeDestination.CLAUDE_CODE_COMMANDS;
   }
 
   /**
@@ -221,48 +67,11 @@ export class ClaudeCodeDestination implements PasteDestination {
   }
 
   /**
-   * Focus Claude Code chat interface
-   *
-   * @returns true if chat focus succeeded, false otherwise
-   */
-  async focus(): Promise<boolean> {
-    return this.executeWithAvailabilityCheck({
-      logContext: { fn: 'ClaudeCodeDestination.focus' },
-      unavailableMessage: 'Cannot focus: Claude Code extension not available',
-      successLogMessage: 'Focused Claude Code',
-      errorLogMessage: 'Failed to focus Claude Code',
-      execute: async () => this.openChat(),
-    });
-  }
-
-  /**
    * Get success message for jump command.
    *
    * @returns Formatted i18n message for status bar display
    */
   getJumpSuccessMessage(): string {
     return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE);
-  }
-
-  /**
-   * Get destination-specific details for logging.
-   *
-   * @returns Empty object (no additional details)
-   */
-  getLoggingDetails(): Record<string, unknown> {
-    return {};
-  }
-
-  /**
-   * Check if this Claude Code destination equals another destination.
-   *
-   * @param other - The destination to compare against (may be undefined)
-   * @returns Promise<true> if both are claude-code, Promise<false> otherwise
-   */
-  async equals(other: PasteDestination | undefined): Promise<boolean> {
-    if (!other) {
-      return false;
-    }
-    return this.id === other.id;
   }
 }
