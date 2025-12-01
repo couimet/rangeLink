@@ -2,42 +2,28 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { ClaudeCodeDestination } from '../../destinations/ClaudeCodeDestination';
-import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
-import * as applySmartPaddingModule from '../../utils/applySmartPadding';
-import {
-  createMockChatPasteHelperFactory,
-  type MockChatPasteHelper,
-} from '../helpers/createMockChatPasteHelperFactory';
-import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
-import { createMockVscodeAdapter } from '../helpers/mockVSCode';
-import { messagesEn } from '../../i18n/messages.en';
-import { MessageCode } from '../../types/MessageCode';
 import { PasteDestination } from '../../destinations/PasteDestination';
+import { messagesEn } from '../../i18n/messages.en';
+import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import { AutoPasteResult } from '../../types/AutoPasteResult';
+import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
+import { createMockChatPasteHelperFactory } from '../helpers/createMockChatPasteHelperFactory';
+import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 
 describe('ClaudeCodeDestination', () => {
   let destination: ClaudeCodeDestination;
   let mockLogger: Logger;
   let mockAdapter: VscodeAdapter;
   let mockChatPasteHelperFactory: ReturnType<typeof createMockChatPasteHelperFactory>;
-  let mockChatPasteHelper: MockChatPasteHelper;
-  let applySmartPaddingSpy: jest.SpyInstance;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockChatPasteHelperFactory = createMockChatPasteHelperFactory();
-    // Get reference to the mock helper (factory always returns same instance)
-    mockChatPasteHelper = mockChatPasteHelperFactory.create() as unknown as MockChatPasteHelper;
-
-    // Spy on applySmartPadding
-    applySmartPaddingSpy = jest.spyOn(applySmartPaddingModule, 'applySmartPadding');
 
     // Default test instances (tests can override if they need special behavior)
     mockAdapter = createMockVscodeAdapter();
     destination = new ClaudeCodeDestination(mockAdapter, mockChatPasteHelperFactory, mockLogger);
-
-    // Clear factory.create() call count so tests can track calls made during test execution
-    mockChatPasteHelperFactory.create.mockClear();
   });
 
   describe('Interface compliance', () => {
@@ -88,342 +74,30 @@ describe('ClaudeCodeDestination', () => {
     });
   });
 
-  describe('isEligibleForPasteLink()', () => {
-    it('should accept all links unconditionally (returns true for any input)', async () => {
-      // Claude Code accepts all content - test various edge cases to document this behavior
-      expect(
-        await destination.isEligibleForPasteLink(createMockFormattedLink('src/file.ts#L10')),
-      ).toBe(true);
-      expect(await destination.isEligibleForPasteLink(createMockFormattedLink(''))).toBe(true);
-      expect(await destination.isEligibleForPasteLink(createMockFormattedLink('   '))).toBe(true);
-      expect(
-        await destination.isEligibleForPasteLink(
-          createMockFormattedLink(null as unknown as string),
-        ),
-      ).toBe(true);
-      expect(
-        await destination.isEligibleForPasteLink(
-          createMockFormattedLink(undefined as unknown as string),
-        ),
-      ).toBe(true);
-    });
-  });
-
-  describe('isEligibleForPasteContent()', () => {
-    it('should accept all content unconditionally (returns true for any input)', async () => {
-      // Claude Code accepts all content - test various edge cases to document this behavior
-      expect(await destination.isEligibleForPasteContent('selected text')).toBe(true);
-      expect(await destination.isEligibleForPasteContent('')).toBe(true);
-      expect(await destination.isEligibleForPasteContent('   ')).toBe(true);
-      expect(await destination.isEligibleForPasteContent(null as unknown as string)).toBe(true);
-      expect(await destination.isEligibleForPasteContent(undefined as unknown as string)).toBe(
-        true,
-      );
-    });
-  });
-
-  describe('pasteLink()', () => {
-    it('should delegate to sendTextToChat with correct parameters and return its result', async () => {
-      const sendTextToChatSpy = jest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(destination as any, 'sendTextToChat')
-        .mockResolvedValue(true);
-      const testLink = 'src/file.ts#L10';
-      const formattedLink = createMockFormattedLink(testLink);
-
-      const result = await destination.pasteLink(formattedLink);
-
-      expect(sendTextToChatSpy).toHaveBeenCalledTimes(1);
-      expect(sendTextToChatSpy).toHaveBeenCalledWith({
-        text: testLink,
-        logContext: {
-          fn: 'ClaudeCodeDestination.pasteLink',
-          formattedLink,
-          linkLength: testLink.length,
-        },
-        unavailableMessage: 'Cannot paste: Claude Code extension not available',
-        successLogMessage: 'Pasted link to Claude Code',
-        errorLogMessage: 'Failed to paste link to Claude Code',
-      });
-      expect(result).toBe(true);
-    });
-  });
-
-  describe('pasteContent()', () => {
-    it('should delegate to sendTextToChat with correct parameters and return its result', async () => {
-      const sendTextToChatSpy = jest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(destination as any, 'sendTextToChat')
-        .mockResolvedValue(false);
-      const testContent = 'selected text';
-
-      const result = await destination.pasteContent(testContent);
-
-      expect(sendTextToChatSpy).toHaveBeenCalledTimes(1);
-      expect(sendTextToChatSpy).toHaveBeenCalledWith({
-        text: testContent,
-        logContext: {
-          fn: 'ClaudeCodeDestination.pasteContent',
-          contentLength: testContent.length,
-        },
-        unavailableMessage: 'Cannot paste: Claude Code extension not available',
-        successLogMessage: 'Pasted content to Claude Code',
-        errorLogMessage: 'Failed to paste content to Claude Code',
-      });
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('sendTextToChat()', () => {
-    it('should apply smart padding and delegate to executeWithAvailabilityCheck with openChat', async () => {
-      const executeWithAvailabilityCheckSpy = jest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(destination as any, 'executeWithAvailabilityCheck')
-        .mockResolvedValue(true);
-      const openChatSpy = jest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(destination as any, 'openChat')
-        .mockResolvedValue(undefined);
-      const testText = 'some text';
-      const paddedText = ` ${testText} `; // Mock padding behavior
-      applySmartPaddingSpy.mockReturnValue(paddedText);
-
+  describe('getFocusCommands()', () => {
+    it('should return Claude Code command array in correct order', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (destination as any).sendTextToChat({
-        text: testText,
-        logContext: { fn: 'test' },
-        unavailableMessage: 'unavailable',
-        successLogMessage: 'success',
-        errorLogMessage: 'error',
-      });
+      const commands = (destination as any).getFocusCommands();
 
-      // Verify applySmartPadding was called with original text
-      expect(applySmartPaddingSpy).toHaveBeenCalledTimes(1);
-      expect(applySmartPaddingSpy).toHaveBeenCalledWith(testText);
-
-      // Verify executeWithAvailabilityCheck was called
-      expect(executeWithAvailabilityCheckSpy).toHaveBeenCalledTimes(1);
-      expect(executeWithAvailabilityCheckSpy).toHaveBeenCalledWith({
-        logContext: { fn: 'test' },
-        unavailableMessage: 'unavailable',
-        successLogMessage: 'success',
-        errorLogMessage: 'error',
-        execute: expect.any(Function),
-      });
-
-      // Verify the execute function calls openChat with padded text
-      const executeFunc = (
-        executeWithAvailabilityCheckSpy.mock.calls[0][0] as {
-          execute: () => Promise<void>;
-        }
-      ).execute;
-      await executeFunc();
-
-      expect(openChatSpy).toHaveBeenCalledWith(paddedText);
-      expect(result).toBe(true);
-    });
-  });
-
-  describe('openChat()', () => {
-    it('should call tryFocusCommands and attemptPaste when text provided', async () => {
-      const tryFocusCommandsSpy = jest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(destination as any, 'tryFocusCommands')
-        .mockResolvedValue(true);
-      const testText = 'test text';
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (destination as any).openChat(testText);
-
-      expect(tryFocusCommandsSpy).toHaveBeenCalledTimes(1);
-      expect(mockChatPasteHelperFactory.create).toHaveBeenCalledTimes(1);
-      expect(mockChatPasteHelper.attemptPaste).toHaveBeenCalledWith(testText, {
-        fn: 'ClaudeCodeDestination.openChat',
-      });
-    });
-
-    it('should only call tryFocusCommands when no text provided', async () => {
-      const tryFocusCommandsSpy = jest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(destination as any, 'tryFocusCommands')
-        .mockResolvedValue(true);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (destination as any).openChat();
-
-      expect(tryFocusCommandsSpy).toHaveBeenCalledTimes(1);
-      expect(mockChatPasteHelperFactory.create).not.toHaveBeenCalled();
-      expect(mockChatPasteHelper.attemptPaste).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('tryFocusCommands()', () => {
-    it('should try claude-vscode.focus command first and return true on success', async () => {
-      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (destination as any).tryFocusCommands();
-
-      expect(result).toBe(true);
-      expect(executeCommandSpy).toHaveBeenCalledTimes(1);
-      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.focus');
-    });
-
-    it('should try fallback commands if primary fails', async () => {
-      const executeCommandSpy = jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValueOnce(new Error('claude-vscode.focus failed'))
-        .mockResolvedValueOnce(undefined); // claude-vscode.sidebar.open succeeds
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (destination as any).tryFocusCommands();
-
-      expect(result).toBe(true);
-      expect(executeCommandSpy).toHaveBeenCalledTimes(2);
-      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.focus');
-      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.sidebar.open');
-    });
-
-    it('should try all fallbacks until one succeeds (third command)', async () => {
-      const executeCommandSpy = jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValueOnce(new Error('claude-vscode.focus failed'))
-        .mockRejectedValueOnce(new Error('claude-vscode.sidebar.open failed'))
-        .mockResolvedValueOnce(undefined); // claude-vscode.editor.open succeeds
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (destination as any).tryFocusCommands();
-
-      expect(result).toBe(true);
-      expect(executeCommandSpy).toHaveBeenCalledTimes(3);
-      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.focus');
-      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.sidebar.open');
-      expect(executeCommandSpy).toHaveBeenCalledWith('claude-vscode.editor.open');
-    });
-
-    it('should return false when all commands fail', async () => {
-      const executeCommandSpy = jest
-        .spyOn(mockAdapter, 'executeCommand')
-        .mockRejectedValue(new Error('All commands failed'));
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (destination as any).tryFocusCommands();
-
-      expect(result).toBe(false);
-      expect(executeCommandSpy).toHaveBeenCalledTimes(3); // All 3 commands tried
-    });
-  });
-
-  describe('focus()', () => {
-    it('should delegate to executeWithAvailabilityCheck with openChat', async () => {
-      const executeWithAvailabilityCheckSpy = jest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(destination as any, 'executeWithAvailabilityCheck')
-        .mockResolvedValue(true);
-      const openChatSpy = jest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(destination as any, 'openChat')
-        .mockResolvedValue(undefined);
-
-      const result = await destination.focus();
-
-      expect(executeWithAvailabilityCheckSpy).toHaveBeenCalledTimes(1);
-      expect(executeWithAvailabilityCheckSpy).toHaveBeenCalledWith({
-        logContext: { fn: 'ClaudeCodeDestination.focus' },
-        unavailableMessage: 'Cannot focus: Claude Code extension not available',
-        successLogMessage: 'Focused Claude Code',
-        errorLogMessage: 'Failed to focus Claude Code',
-        execute: expect.any(Function),
-      });
-
-      // Verify the execute function calls openChat without text
-      const executeFunc = (
-        executeWithAvailabilityCheckSpy.mock.calls[0][0] as {
-          execute: () => Promise<void>;
-        }
-      ).execute;
-      await executeFunc();
-
-      expect(openChatSpy).toHaveBeenCalledWith();
-      expect(result).toBe(true);
-    });
-  });
-
-  describe('executeWithAvailabilityCheck()', () => {
-    it('should return false when extension not available', async () => {
-      const executeSpy = jest.fn();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (destination as any).executeWithAvailabilityCheck({
-        logContext: { fn: 'test' },
-        unavailableMessage: 'Not available',
-        successLogMessage: 'Success',
-        errorLogMessage: 'Error',
-        execute: executeSpy,
-      });
-
-      expect(result).toBe(false);
-      expect(executeSpy).not.toHaveBeenCalled();
-      expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'test' }, 'Not available');
-    });
-
-    it('should execute function and return true when available', async () => {
-      mockAdapter = createMockVscodeAdapter({
-        extensionsOptions: ['anthropic.claude-code'],
-      });
-      const destinationWithExtension = new ClaudeCodeDestination(
-        mockAdapter,
-        mockChatPasteHelperFactory,
-        mockLogger,
-      );
-      const executeSpy = jest.fn().mockResolvedValue(undefined);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (destinationWithExtension as any).executeWithAvailabilityCheck({
-        logContext: { fn: 'test' },
-        unavailableMessage: 'Not available',
-        successLogMessage: 'Success',
-        errorLogMessage: 'Error',
-        execute: executeSpy,
-      });
-
-      expect(result).toBe(true);
-      expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(mockLogger.info).toHaveBeenCalledWith({ fn: 'test' }, 'Success');
-    });
-
-    it('should return false and log error when execute function throws', async () => {
-      mockAdapter = createMockVscodeAdapter({
-        extensionsOptions: ['anthropic.claude-code'],
-      });
-      const destinationWithExtension = new ClaudeCodeDestination(
-        mockAdapter,
-        mockChatPasteHelperFactory,
-        mockLogger,
-      );
-      const expectedError = new Error('Execution failed');
-      const executeSpy = jest.fn().mockRejectedValue(expectedError);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (destinationWithExtension as any).executeWithAvailabilityCheck({
-        logContext: { fn: 'test' },
-        unavailableMessage: 'Not available',
-        successLogMessage: 'Success',
-        errorLogMessage: 'Error',
-        execute: executeSpy,
-      });
-
-      expect(result).toBe(false);
-      expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'test', error: expectedError }, 'Error');
+      expect(commands).toStrictEqual([
+        'claude-vscode.focus',
+        'claude-vscode.sidebar.open',
+        'claude-vscode.editor.open',
+      ]);
     });
   });
 
   describe('getUserInstruction()', () => {
-    it('should return formatted user instruction message with correct MessageCode', () => {
+    it('should return undefined when automatic paste succeeds', () => {
+      const instruction = destination.getUserInstruction(AutoPasteResult.Success);
+
+      expect(instruction).toBeUndefined();
+    });
+
+    it('should return formatted user instruction message when automatic paste fails', () => {
       const formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
 
-      const instruction = destination.getUserInstruction();
+      const instruction = destination.getUserInstruction(AutoPasteResult.Failure);
 
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS);
       expect(instruction).toBe(messagesEn[MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS]);
@@ -431,46 +105,136 @@ describe('ClaudeCodeDestination', () => {
     });
   });
 
-  describe('getLoggingDetails()', () => {
-    it('should return empty object (no additional details for AI destinations)', () => {
-      const details = destination.getLoggingDetails();
-
-      expect(details).toStrictEqual({});
-    });
-  });
-
-  describe('equals()', () => {
-    it('should return true when comparing same type (claude-code)', async () => {
-      const otherDestination = new ClaudeCodeDestination(mockAdapter, mockLogger);
-
-      const result = await destination.equals(otherDestination);
-
-      expect(result).toBe(true);
-    });
-
-    it('should return false when comparing with undefined', async () => {
-      const result = await destination.equals(undefined);
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false when comparing with different destination type', async () => {
-      const cursorAIDest = {
-        id: 'cursor-ai',
-        displayName: 'Cursor AI Assistant',
-      } as any;
-
-      const result = await destination.equals(cursorAIDest);
-
-      expect(result).toBe(false);
-    });
-  });
-
   describe('getJumpSuccessMessage()', () => {
-    it('should return formatted message for status bar', () => {
+    it('should return formatted message for status bar with correct MessageCode', () => {
+      const formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+
       const message = destination.getJumpSuccessMessage();
 
+      expect(formatMessageSpy).toHaveBeenCalledWith(
+        MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE,
+      );
+      expect(message).toBe(messagesEn[MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE]);
       expect(message).toBe('✓ Focused Claude Code Chat');
+    });
+  });
+
+  describe('Integration tests', () => {
+    describe('pasteLink()', () => {
+      it('should delegate to base class and use displayName in log messages', async () => {
+        mockAdapter = createMockVscodeAdapter({
+          extensionsOptions: ['anthropic.claude-code'],
+        });
+        const destination = new ClaudeCodeDestination(
+          mockAdapter,
+          mockChatPasteHelperFactory,
+          mockLogger,
+        );
+
+        const testLink = 'src/file.ts#L10';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const formattedLink = { link: testLink } as any;
+        const result = await destination.pasteLink(formattedLink);
+
+        expect(result).toBe(true);
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          {
+            contentType: 'Link',
+            fn: 'ClaudeCodeDestination.pasteLink',
+            formattedLink,
+            linkLength: testLink.length,
+          },
+          'Pasted link to Claude Code Chat',
+        );
+      });
+    });
+
+    describe('pasteContent()', () => {
+      it('should delegate to base class and use displayName in log messages', async () => {
+        mockAdapter = createMockVscodeAdapter({
+          extensionsOptions: ['anthropic.claude-code'],
+        });
+        const destination = new ClaudeCodeDestination(
+          mockAdapter,
+          mockChatPasteHelperFactory,
+          mockLogger,
+        );
+        const testContent = 'selected text';
+
+        const result = await destination.pasteContent(testContent);
+
+        expect(result).toBe(true);
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          {
+            contentType: 'Text',
+            fn: 'ClaudeCodeDestination.pasteContent',
+            contentLength: testContent.length,
+          },
+          'Pasted content to Claude Code Chat',
+        );
+      });
+    });
+
+    describe('focus() - inherited behavior integration test', () => {
+      it('should use displayName in log messages', async () => {
+        mockAdapter = createMockVscodeAdapter({
+          extensionsOptions: ['anthropic.claude-code'],
+        });
+        const destination = new ClaudeCodeDestination(
+          mockAdapter,
+          mockChatPasteHelperFactory,
+          mockLogger,
+        );
+
+        const result = await destination.focus();
+
+        expect(result).toBe(true);
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          {
+            fn: 'ClaudeCodeDestination.focus',
+          },
+          'Focused Claude Code Chat',
+        );
+      });
+    });
+
+    describe('getLoggingDetails()', () => {
+      it('should return empty object (no additional details for AI destinations)', () => {
+        const details = destination.getLoggingDetails();
+
+        expect(details).toStrictEqual({});
+      });
+    });
+
+    describe('equals()', () => {
+      it('should return true when comparing same type (claude-code)', async () => {
+        const otherDestination = new ClaudeCodeDestination(
+          mockAdapter,
+          mockChatPasteHelperFactory,
+          mockLogger,
+        );
+
+        const result = await destination.equals(otherDestination);
+
+        expect(result).toBe(true);
+      });
+
+      it('should return false when comparing with undefined', async () => {
+        const result = await destination.equals(undefined);
+
+        expect(result).toBe(false);
+      });
+
+      it('should return false when comparing with different destination type', async () => {
+        const cursorAIDest = {
+          id: 'cursor-ai',
+          displayName: 'Cursor AI Assistant',
+        } as unknown as PasteDestination;
+
+        const result = await destination.equals(cursorAIDest);
+
+        expect(result).toBe(false);
+      });
     });
   });
 });
