@@ -140,6 +140,43 @@ describe('ChatAssistantDestination', () => {
     });
   });
 
+  describe('pasteContent()', () => {
+    it('should delegate to sendTextToChat and return true when sendTextToChat succeeds', async () => {
+      const testContent = 'selected text content';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sendTextToChatSpy = jest.spyOn(destination as any, 'sendTextToChat');
+      sendTextToChatSpy.mockResolvedValue(true);
+
+      const result = await destination.pasteContent(testContent);
+
+      expect(result).toBe(true);
+      expect(sendTextToChatSpy).toHaveBeenCalledTimes(1);
+      expect(sendTextToChatSpy).toHaveBeenCalledWith({
+        contentType: 'Text',
+        text: testContent,
+        logContext: {
+          fn: 'TestChatAssistantDestination.pasteContent',
+          contentLength: testContent.length,
+        },
+        unavailableMessage: 'Cannot paste: Test Chat Assistant not available',
+        successLogMessage: 'Pasted content to Test Chat Assistant',
+        errorLogMessage: 'Failed to paste content to Test Chat Assistant',
+      });
+    });
+
+    it('should return false when sendTextToChat fails', async () => {
+      const testContent = 'selected text content';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sendTextToChatSpy = jest.spyOn(destination as any, 'sendTextToChat');
+      sendTextToChatSpy.mockResolvedValue(false);
+
+      const result = await destination.pasteContent(testContent);
+
+      expect(result).toBe(false);
+      expect(sendTextToChatSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('Integration tests', () => {
     describe('pasteLink()', () => {
       it('should delegate to base class and use displayName in log messages', async () => {
@@ -157,6 +194,24 @@ describe('ChatAssistantDestination', () => {
             linkLength: testLink.length,
           },
           'Pasted link to Test Chat Assistant',
+        );
+      });
+    });
+
+    describe('pasteContent()', () => {
+      it('should delegate to base class and use displayName in log messages', async () => {
+        const testContent = 'selected text';
+
+        const result = await destination.pasteContent(testContent);
+
+        expect(result).toBe(true);
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          {
+            contentType: 'Text',
+            fn: 'TestChatAssistantDestination.pasteContent',
+            contentLength: testContent.length,
+          },
+          'Pasted content to Test Chat Assistant',
         );
       });
     });
