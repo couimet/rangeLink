@@ -99,4 +99,66 @@ describe('ChatAssistantDestination', () => {
       expect(result).toBe(true);
     });
   });
+
+  describe('pasteLink()', () => {
+    it('should delegate to sendTextToChat and return true when sendTextToChat succeeds', async () => {
+      const testLink = 'src/file.ts#L10-L20';
+      const formattedLink = { link: testLink } as FormattedLink;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sendTextToChatSpy = jest.spyOn(destination as any, 'sendTextToChat');
+      sendTextToChatSpy.mockResolvedValue(true);
+
+      const result = await destination.pasteLink(formattedLink);
+
+      expect(result).toBe(true);
+      expect(sendTextToChatSpy).toHaveBeenCalledTimes(1);
+      expect(sendTextToChatSpy).toHaveBeenCalledWith({
+        contentType: 'Link',
+        text: testLink,
+        logContext: {
+          fn: 'TestChatAssistantDestination.pasteLink',
+          formattedLink,
+          linkLength: testLink.length,
+        },
+        unavailableMessage: 'Cannot paste: Test Chat Assistant not available',
+        successLogMessage: 'Pasted link to Test Chat Assistant',
+        errorLogMessage: 'Failed to paste link to Test Chat Assistant',
+      });
+    });
+
+    it('should return false when sendTextToChat fails', async () => {
+      const testLink = 'src/file.ts#L10-L20';
+      const formattedLink = { link: testLink } as FormattedLink;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sendTextToChatSpy = jest.spyOn(destination as any, 'sendTextToChat');
+      sendTextToChatSpy.mockResolvedValue(false);
+
+      const result = await destination.pasteLink(formattedLink);
+
+      expect(result).toBe(false);
+      expect(sendTextToChatSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Integration tests', () => {
+    describe('pasteLink()', () => {
+      it('should delegate to base class and use displayName in log messages', async () => {
+        const testLink = 'src/file.ts#L10';
+        const formattedLink = { link: testLink } as FormattedLink;
+
+        const result = await destination.pasteLink(formattedLink);
+
+        expect(result).toBe(true);
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          {
+            contentType: 'Link',
+            fn: 'TestChatAssistantDestination.pasteLink',
+            formattedLink,
+            linkLength: testLink.length,
+          },
+          'Pasted link to Test Chat Assistant',
+        );
+      });
+    });
+  });
 });
