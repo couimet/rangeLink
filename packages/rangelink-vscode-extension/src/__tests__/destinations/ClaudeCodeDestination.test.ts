@@ -13,7 +13,13 @@ import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 import { messagesEn } from '../../i18n/messages.en';
 import { MessageCode } from '../../types/MessageCode';
 import { PasteDestination } from '../../destinations/PasteDestination';
+import { messagesEn } from '../../i18n/messages.en';
+import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import { AutoPasteResult } from '../../types/AutoPasteResult';
+import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
+import { createMockChatPasteHelperFactory } from '../helpers/createMockChatPasteHelperFactory';
+import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 
 describe('ClaudeCodeDestination', () => {
   let destination: ClaudeCodeDestination;
@@ -28,9 +34,6 @@ describe('ClaudeCodeDestination', () => {
     // Default test instances (tests can override if they need special behavior)
     mockAdapter = createMockVscodeAdapter();
     destination = new ClaudeCodeDestination(mockAdapter, mockChatPasteHelperFactory, mockLogger);
-
-    // Clear factory.create() call count so tests can track calls made during test execution
-    mockChatPasteHelperFactory.create.mockClear();
   });
 
   describe('Interface compliance', () => {
