@@ -10,6 +10,10 @@ import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
 import { createMockChatPasteHelperFactory } from '../helpers/createMockChatPasteHelperFactory';
 import { createMockVscodeAdapter } from '../helpers/mockVSCode';
+import { messagesEn } from '../../i18n/messages.en';
+import { MessageCode } from '../../types/MessageCode';
+import { PasteDestination } from '../../destinations/PasteDestination';
+import * as formatMessageModule from '../../utils/formatMessage';
 
 describe('ClaudeCodeDestination', () => {
   let destination: ClaudeCodeDestination;

@@ -3,6 +3,7 @@ import type { Logger } from 'barebone-logger';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
+import { PasteContentType } from '../types/PasteContentType';
 import { applySmartPadding } from '../utils/applySmartPadding';
 import { formatMessage } from '../utils/formatMessage';
 
@@ -66,6 +67,7 @@ export class ClaudeCodeDestination extends ChatAssistantDestination {
    * @returns true if paste succeeded, false if unavailable or error occurred
    */
   private async sendTextToChat(options: {
+    contentType: PasteContentType;
     text: string;
     logContext: LoggingContext;
     unavailableMessage: string;
@@ -75,8 +77,14 @@ export class ClaudeCodeDestination extends ChatAssistantDestination {
     // Apply smart padding for proper spacing in chat input
     const paddedText = applySmartPadding(options.text);
 
+    // Enhance log context with content type for better debugging
+    const enhancedLogContext: LoggingContext = {
+      ...options.logContext,
+      contentType: options.contentType,
+    };
+
     return this.executeWithAvailabilityCheck({
-      logContext: options.logContext,
+      logContext: enhancedLogContext,
       unavailableMessage: options.unavailableMessage,
       successLogMessage: options.successLogMessage,
       errorLogMessage: options.errorLogMessage,
@@ -167,24 +175,6 @@ export class ClaudeCodeDestination extends ChatAssistantDestination {
   }
 
   /**
-<<<<<<< HEAD
-=======
-   * Focus Claude Code chat interface
-   *
-   * @returns true if chat focus succeeded, false otherwise
-   */
-  async focus(): Promise<boolean> {
-    return this.executeWithAvailabilityCheck({
-      logContext: { fn: 'ClaudeCodeDestination.focus' },
-      unavailableMessage: 'Cannot focus: Claude Code extension not available',
-      successLogMessage: 'Focused Claude Code',
-      errorLogMessage: 'Failed to focus Claude Code',
-      execute: async () => this.openChat(),
-    });
-  }
-
-  /**
->>>>>>> ac2d3f90 (Had clanker refactor using the pattern being worked on for the Copilot Chat support in a different git worktree)
    * Get success message for jump command.
    *
    * @returns Formatted i18n message for status bar display
