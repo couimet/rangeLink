@@ -1,5 +1,6 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
+import type { FormattedLink } from 'rangelink-core-ts';
 
 import { ChatAssistantDestination } from '../../destinations/ChatAssistantDestination';
 import type { ChatPasteHelperFactory } from '../../destinations/ChatPasteHelperFactory';
@@ -8,7 +9,6 @@ import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../../types/AutoPasteResult';
 import { createMockChatPasteHelperFactory } from '../helpers/createMockChatPasteHelperFactory';
 import { createMockVscodeAdapter } from '../helpers/mockVSCode';
-import { FormattedLink } from 'rangelink-core-ts';
 
 /**
  * Concrete test implementation of ChatAssistantDestination.
@@ -26,6 +26,7 @@ class TestChatAssistantDestination extends ChatAssistantDestination {
     return ['test.command'];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getUserInstruction(_autoPasteResult: AutoPasteResult): string | undefined {
     return undefined;
   }
@@ -72,6 +73,28 @@ describe('ChatAssistantDestination', () => {
       const result = await destination.isEligibleForPasteLink(
         undefined as unknown as FormattedLink,
       );
+
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('isEligibleForPasteContent()', () => {
+    it('should always return true', async () => {
+      const content = 'selected text content';
+
+      const result = await destination.isEligibleForPasteContent(content);
+
+      expect(result).toBe(true);
+    });
+
+    it('should return true for for null value', async () => {
+      const result = await destination.isEligibleForPasteContent(null as unknown as string);
+
+      expect(result).toBe(true);
+    });
+
+    it('should return true for for undefined value', async () => {
+      const result = await destination.isEligibleForPasteContent(undefined as unknown as string);
 
       expect(result).toBe(true);
     });
