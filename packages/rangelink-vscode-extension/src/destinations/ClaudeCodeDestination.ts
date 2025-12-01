@@ -3,8 +3,6 @@ import type { Logger } from 'barebone-logger';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
-import { PasteContentType } from '../types/PasteContentType';
-import { applySmartPadding } from '../utils/applySmartPadding';
 import { formatMessage } from '../utils/formatMessage';
 
 import { ChatAssistantDestination } from './ChatAssistantDestination';
