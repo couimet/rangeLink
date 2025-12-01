@@ -175,7 +175,7 @@ describe('ClaudeCodeDestination', () => {
       });
     });
 
-    describe('focus() - inherited behavior integration test', () => {
+    describe('focus()', () => {
       it('should use displayName in log messages', async () => {
         mockAdapter = createMockVscodeAdapter({
           extensionsOptions: ['anthropic.claude-code'],
