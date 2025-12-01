@@ -310,6 +310,71 @@ describe('ChatAssistantDestination', () => {
     });
   });
 
+  describe('openChat()', () => {
+    it('should call tryFocusCommands and create helper to paste text when text is provided', async () => {
+      const testText = 'test content';
+      const mockHelper = {
+        attemptPaste: jest.fn().mockResolvedValue(undefined),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tryFocusSpy = jest.spyOn(destination as any, 'tryFocusCommands');
+      tryFocusSpy.mockResolvedValue(undefined);
+      const createSpy = jest.spyOn(mockChatPasteHelperFactory, 'create');
+      createSpy.mockReturnValue(mockHelper);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (destination as any).openChat(testText);
+
+      expect(tryFocusSpy).toHaveBeenCalledTimes(1);
+      expect(createSpy).toHaveBeenCalledTimes(1);
+      expect(mockHelper.attemptPaste).toHaveBeenCalledTimes(1);
+      expect(mockHelper.attemptPaste).toHaveBeenCalledWith(testText, {
+        fn: 'TestChatAssistantDestination.openChat',
+      });
+    });
+
+    it('should not call ChatPasteHelperFactory.create when text is not provided', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tryFocusSpy = jest.spyOn(destination as any, 'tryFocusCommands');
+      tryFocusSpy.mockResolvedValue(undefined);
+      const createSpy = jest.spyOn(mockChatPasteHelperFactory, 'create');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (destination as any).openChat();
+
+      expect(tryFocusSpy).toHaveBeenCalledTimes(1);
+      expect(createSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not call ChatPasteHelperFactory.create when when text is undefined', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tryFocusSpy = jest.spyOn(destination as any, 'tryFocusCommands');
+      tryFocusSpy.mockResolvedValue(undefined);
+      const createSpy = jest.spyOn(mockChatPasteHelperFactory, 'create');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (destination as any).openChat(undefined);
+
+      expect(tryFocusSpy).toHaveBeenCalledTimes(1);
+      expect(createSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not call ChatPasteHelperFactory.create when when text is an empty string', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tryFocusSpy = jest.spyOn(destination as any, 'tryFocusCommands');
+      tryFocusSpy.mockResolvedValue(undefined);
+      const createSpy = jest.spyOn(mockChatPasteHelperFactory, 'create');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (destination as any).openChat('');
+
+      expect(tryFocusSpy).toHaveBeenCalledTimes(1);
+      expect(createSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Integration tests', () => {
     describe('pasteLink()', () => {
       it('should delegate to base class and use displayName in log messages', async () => {
