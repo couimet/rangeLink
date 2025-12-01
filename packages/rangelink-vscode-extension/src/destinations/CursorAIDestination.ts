@@ -2,6 +2,7 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
 import { applySmartPadding } from '../utils/applySmartPadding';
 import { formatMessage } from '../utils/formatMessage';
@@ -233,9 +234,11 @@ export class CursorAIDestination implements PasteDestination {
   /**
    * Get user instruction for manual paste.
    *
+   * @param _autoPasteResult - Result of automatic paste attempt (unused for now)
    * @returns Instruction string for manual paste in Cursor AI chat
    */
-  getUserInstruction(): string | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getUserInstruction(_autoPasteResult: AutoPasteResult): string | undefined {
     return formatMessage(MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS);
   }
 

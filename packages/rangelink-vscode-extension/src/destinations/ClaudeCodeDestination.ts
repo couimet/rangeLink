@@ -2,7 +2,9 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
+import { PasteContentType } from '../types/PasteContentType';
 import { applySmartPadding } from '../utils/applySmartPadding';
 import { formatMessage } from '../utils/formatMessage';
 
@@ -73,6 +75,7 @@ export class ClaudeCodeDestination implements PasteDestination {
    */
   async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
     return this.sendTextToChat({
+      contentType: PasteContentType.Link,
       text: formattedLink.link,
       logContext: {
         fn: 'ClaudeCodeDestination.pasteLink',
@@ -93,6 +96,7 @@ export class ClaudeCodeDestination implements PasteDestination {
    */
   async pasteContent(content: string): Promise<boolean> {
     return this.sendTextToChat({
+      contentType: PasteContentType.Text,
       text: content,
       logContext: {
         fn: 'ClaudeCodeDestination.pasteContent',
@@ -114,6 +118,7 @@ export class ClaudeCodeDestination implements PasteDestination {
    * @returns true if paste succeeded, false if unavailable or error occurred
    */
   private async sendTextToChat(options: {
+    contentType: PasteContentType;
     text: string;
     logContext: LoggingContext;
     unavailableMessage: string;
@@ -123,8 +128,14 @@ export class ClaudeCodeDestination implements PasteDestination {
     // Apply smart padding for proper spacing in chat input
     const paddedText = applySmartPadding(options.text);
 
+    // Enhance log context with content type for better debugging
+    const enhancedLogContext: LoggingContext = {
+      ...options.logContext,
+      contentType: options.contentType,
+    };
+
     return this.executeWithAvailabilityCheck({
-      logContext: options.logContext,
+      logContext: enhancedLogContext,
       unavailableMessage: options.unavailableMessage,
       successLogMessage: options.successLogMessage,
       errorLogMessage: options.errorLogMessage,
@@ -201,9 +212,11 @@ export class ClaudeCodeDestination implements PasteDestination {
   /**
    * Get user instruction for manual paste.
    *
+   * @param _autoPasteResult - Result of automatic paste attempt (unused for now)
    * @returns Instruction string for manual paste in Claude Code
    */
-  getUserInstruction(): string | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getUserInstruction(_autoPasteResult: AutoPasteResult): string | undefined {
     return formatMessage(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS);
   }
 

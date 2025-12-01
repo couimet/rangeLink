@@ -10,6 +10,10 @@ import {
 } from '../helpers/createMockChatPasteHelperFactory';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockVscodeAdapter } from '../helpers/mockVSCode';
+import { messagesEn } from '../../i18n/messages.en';
+import { MessageCode } from '../../types/MessageCode';
+import { PasteDestination } from '../../destinations/PasteDestination';
+import * as formatMessageModule from '../../utils/formatMessage';
 
 describe('ClaudeCodeDestination', () => {
   let destination: ClaudeCodeDestination;
@@ -414,6 +418,16 @@ describe('ClaudeCodeDestination', () => {
       expect(mockLogger.error).toHaveBeenCalledWith({ fn: 'test', error: expectedError }, 'Error');
     });
   });
+
+  describe('getUserInstruction()', () => {
+    it('should return formatted user instruction message with correct MessageCode', () => {
+      const formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+
+      const instruction = destination.getUserInstruction();
+
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS);
+      expect(instruction).toBe(messagesEn[MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS]);
+      expect(instruction).toBe('Paste (Cmd/Ctrl+V) in Claude Code chat to use.');
     });
   });
 

@@ -3,6 +3,7 @@ import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
 import { applySmartPadding } from '../utils/applySmartPadding';
 import { formatMessage } from '../utils/formatMessage';
@@ -201,9 +202,11 @@ export class TextEditorDestination implements PasteDestination {
    *
    * Text editor performs automatic paste, so no manual instruction is needed.
    *
+   * @param _autoPasteResult - Result of automatic paste attempt (unused)
    * @returns undefined (no manual instruction needed)
    */
-  getUserInstruction(): string | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getUserInstruction(_autoPasteResult: AutoPasteResult): string | undefined {
     return undefined;
   }
 

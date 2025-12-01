@@ -13,6 +13,7 @@ import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { ActiveSelections } from './types/ActiveSelections';
+import { AutoPasteResult } from './types/AutoPasteResult';
 import { MessageCode } from './types/MessageCode';
 import { formatMessage } from './utils/formatMessage';
 import { toInputSelection } from './utils/toInputSelection';
@@ -343,7 +344,7 @@ export class RangeLinkService {
 
     if (sent) {
       // Check if destination requires manual paste
-      const userInstruction = destination.getUserInstruction();
+      const userInstruction = destination.getUserInstruction(AutoPasteResult.Success);
 
       if (userInstruction) {
         // Clipboard-based destination: Show status bar + information popup
