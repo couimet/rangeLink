@@ -177,6 +177,37 @@ describe('ChatAssistantDestination', () => {
     });
   });
 
+  describe('focus()', () => {
+    it('should delegate to executeWithAvailabilityCheck and return true when successful', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const executeSpy = jest.spyOn(destination as any, 'executeWithAvailabilityCheck');
+      executeSpy.mockResolvedValue(true);
+
+      const result = await destination.focus();
+
+      expect(result).toBe(true);
+      expect(executeSpy).toHaveBeenCalledTimes(1);
+      expect(executeSpy).toHaveBeenCalledWith({
+        logContext: { fn: 'TestChatAssistantDestination.focus' },
+        unavailableMessage: 'Cannot focus: Test Chat Assistant not available',
+        successLogMessage: 'Focused Test Chat Assistant',
+        errorLogMessage: 'Failed to focus Test Chat Assistant',
+        execute: expect.any(Function),
+      });
+    });
+
+    it('should return false when executeWithAvailabilityCheck fails', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const executeSpy = jest.spyOn(destination as any, 'executeWithAvailabilityCheck');
+      executeSpy.mockResolvedValue(false);
+
+      const result = await destination.focus();
+
+      expect(result).toBe(false);
+      expect(executeSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('Integration tests', () => {
     describe('pasteLink()', () => {
       it('should delegate to base class and use displayName in log messages', async () => {
@@ -212,6 +243,20 @@ describe('ChatAssistantDestination', () => {
             contentLength: testContent.length,
           },
           'Pasted content to Test Chat Assistant',
+        );
+      });
+    });
+
+    describe('focus()', () => {
+      it('should use displayName in log messages', async () => {
+        const result = await destination.focus();
+
+        expect(result).toBe(true);
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          {
+            fn: 'TestChatAssistantDestination.focus',
+          },
+          'Focused Test Chat Assistant',
         );
       });
     });
