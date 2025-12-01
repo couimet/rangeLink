@@ -7,6 +7,7 @@ import type { ChatPasteHelperFactory } from '../../destinations/ChatPasteHelperF
 import { PasteDestination, type DestinationType } from '../../destinations/PasteDestination';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../../types/AutoPasteResult';
+import * as applySmartPaddingModule from '../../utils/applySmartPadding';
 import { createMockChatPasteHelperFactory } from '../helpers/createMockChatPasteHelperFactory';
 import { createMockVscodeAdapter } from '../helpers/mockVSCode';
 
@@ -244,6 +245,68 @@ describe('ChatAssistantDestination', () => {
       const result = await destination.equals(cursorAIDest);
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('sendTextToChat()', () => {
+    it('should apply smart padding and delegate to executeWithAvailabilityCheck with enhanced log context', async () => {
+      const testText = 'test content';
+      const paddedText = '\ntest content\n';
+      const testOptions = {
+        contentType: 'Link' as const,
+        text: testText,
+        logContext: { fn: 'TestChatAssistantDestination.pasteLink' },
+        unavailableMessage: 'Cannot paste',
+        successLogMessage: 'Pasted successfully',
+        errorLogMessage: 'Failed to paste',
+      };
+
+      const applySmartPaddingSpy = jest.spyOn(applySmartPaddingModule, 'applySmartPadding');
+      applySmartPaddingSpy.mockReturnValue(paddedText);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const executeSpy = jest.spyOn(destination as any, 'executeWithAvailabilityCheck');
+      executeSpy.mockResolvedValue(true);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).sendTextToChat(testOptions);
+
+      expect(result).toBe(true);
+      expect(applySmartPaddingSpy).toHaveBeenCalledTimes(1);
+      expect(applySmartPaddingSpy).toHaveBeenCalledWith(testText);
+      expect(executeSpy).toHaveBeenCalledTimes(1);
+      expect(executeSpy).toHaveBeenCalledWith({
+        logContext: {
+          fn: 'TestChatAssistantDestination.pasteLink',
+          contentType: 'Link',
+        },
+        unavailableMessage: 'Cannot paste',
+        successLogMessage: 'Pasted successfully',
+        errorLogMessage: 'Failed to paste',
+        execute: expect.any(Function),
+      });
+    });
+
+    it('should return false when executeWithAvailabilityCheck fails', async () => {
+      const testOptions = {
+        contentType: 'Text' as const,
+        text: 'test content',
+        logContext: { fn: 'TestChatAssistantDestination.pasteContent' },
+        unavailableMessage: 'Cannot paste',
+        successLogMessage: 'Pasted successfully',
+        errorLogMessage: 'Failed to paste',
+      };
+
+      const applySmartPaddingSpy = jest.spyOn(applySmartPaddingModule, 'applySmartPadding');
+      applySmartPaddingSpy.mockReturnValue('\ntest content\n');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const executeSpy = jest.spyOn(destination as any, 'executeWithAvailabilityCheck');
+      executeSpy.mockResolvedValue(false);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).sendTextToChat(testOptions);
+
+      expect(result).toBe(false);
+      expect(executeSpy).toHaveBeenCalledTimes(1);
     });
   });
 
