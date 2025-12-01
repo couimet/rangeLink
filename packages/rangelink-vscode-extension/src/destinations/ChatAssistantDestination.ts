@@ -57,8 +57,13 @@ export abstract class ChatAssistantDestination implements PasteDestination {
   /**
    * Get user instruction for manual paste.
    *
+   * Chat assistants attempt automatic paste via ChatPasteHelper. This method provides
+   * outcome-aware feedback:
+   * - Success: Returns undefined (no manual action needed)
+   * - Failure: Returns manual paste instruction specific to this chat assistant
+   *
    * @param autoPasteResult - Result of automatic paste attempt
-   * @returns Instruction string for manual paste in this chat assistant
+   * @returns Manual paste instruction if automatic paste failed, undefined if succeeded
    */
   abstract getUserInstruction(autoPasteResult: AutoPasteResult): string | undefined;
 

@@ -90,11 +90,16 @@ export class CursorAIDestination extends ChatAssistantDestination {
   /**
    * Get user instruction for manual paste.
    *
-   * @param _autoPasteResult - Result of automatic paste attempt (unused for now)
-   * @returns Instruction string for manual paste in Cursor AI chat
+   * Returns manual paste instruction only when automatic paste fails.
+   * When automatic paste succeeds, returns undefined (no manual action needed).
+   *
+   * @param autoPasteResult - Result of automatic paste attempt
+   * @returns Manual paste instruction if automatic paste failed, undefined if succeeded
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getUserInstruction(_autoPasteResult: AutoPasteResult): string | undefined {
+  getUserInstruction(autoPasteResult: AutoPasteResult): string | undefined {
+    if (autoPasteResult === AutoPasteResult.Success) {
+      return undefined; // Automatic paste succeeded, no manual action needed
+    }
     return formatMessage(MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS);
   }
 

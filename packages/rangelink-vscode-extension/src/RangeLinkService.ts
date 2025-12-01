@@ -343,34 +343,45 @@ export class RangeLinkService {
     const sent = await sendFn(sendContent);
 
     if (sent) {
-      // Check if destination requires manual paste
+      // Paste succeeded - check if manual action needed (should be undefined for all destinations now)
       const userInstruction = destination.getUserInstruction(AutoPasteResult.Success);
 
       if (userInstruction) {
-        // Clipboard-based destination: Show status bar + information popup
+        // Hybrid destination with manual fallback: Show status bar + information popup
         this.ideAdapter.setStatusBarMessage(basicStatusMessage);
         void this.ideAdapter.showInformationMessage(`${basicStatusMessage}. ${userInstruction}`);
       } else {
-        // Automatic destination: Show status bar only
+        // Automatic paste succeeded: Show status bar only
         this.ideAdapter.setStatusBarMessage(`${basicStatusMessage} & sent to ${displayName}`);
       }
     } else {
-      // Paste failed - show destination-aware error message
+      // Paste failed - check if destination provides manual fallback instruction
       getLogger().warn(
         { fn: fnName, boundDestination: displayName },
         'Failed to send to destination',
       );
-      const errorMessage = this.buildPasteFailureMessage(destination);
-      this.ideAdapter.showWarningMessage(errorMessage);
+
+      const userInstruction = destination.getUserInstruction(AutoPasteResult.Failure);
+
+      if (userInstruction) {
+        // Destination provides manual fallback (e.g., chat assistants with clipboard)
+        this.ideAdapter.showWarningMessage(`${basicStatusMessage}. ${userInstruction}`);
+      } else {
+        // No manual fallback available - use destination-specific error message
+        const errorMessage = this.buildPasteFailureMessage(destination);
+        this.ideAdapter.showWarningMessage(errorMessage);
+      }
     }
   }
 
   /**
    * Build destination-aware error message for paste failures
    *
-   * Provides specific guidance based on the destination type that failed.
-   * Text editor failures mention "hidden behind tabs", terminal failures mention
-   * closure/input issues, AI assistant failures suggest keyboard shortcuts, etc.
+   * Provides specific guidance for destinations that don't provide their own
+   * manual fallback instructions via getUserInstruction().
+   *
+   * Note: Chat assistants (Claude Code, Cursor AI) provide their own instructions
+   * via getUserInstruction(AutoPasteResult.Failure), so they don't use this fallback.
    *
    * @param destination - The destination that failed to receive the paste
    * @returns User-friendly error message with destination-specific guidance
@@ -384,12 +395,6 @@ export class RangeLinkService {
 
       case 'terminal':
         return `${baseMessage} Could not send to terminal. Terminal may be closed or not accepting input.`;
-
-      case 'claude-code':
-        return `${baseMessage} Could not open Claude Code chat. Try opening it manually (Cmd+Escape).`;
-
-      case 'cursor-ai':
-        return `${baseMessage} Could not open Cursor AI chat. Try opening it manually (Cmd+L).`;
 
       default:
         return `${baseMessage} Could not send to ${destination.displayName}.`;
