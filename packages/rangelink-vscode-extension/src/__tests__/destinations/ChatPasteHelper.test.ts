@@ -111,5 +111,112 @@ describe('ChatPasteHelper', () => {
         'Automatic paste succeeded',
       );
     });
+
+    it('should retry with third command when first two commands fail', async () => {
+      mockAdapter.writeTextToClipboard = jest.fn().mockResolvedValue(undefined);
+
+      const firstCommandError = new Error('First command failed');
+      const secondCommandError = new Error('Second command failed');
+      mockAdapter.executeCommand = jest
+        .fn()
+        .mockRejectedValueOnce(firstCommandError)
+        .mockRejectedValueOnce(secondCommandError)
+        .mockResolvedValueOnce(undefined);
+
+      const pastePromise = helper.attemptPaste(TEST_TEXT, TEST_CONTEXT);
+      await jest.runAllTimersAsync();
+      const result = await pastePromise;
+
+      expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(3);
+      expect(mockAdapter.executeCommand).toHaveBeenNthCalledWith(
+        1,
+        'editor.action.clipboardPasteAction',
+      );
+      expect(mockAdapter.executeCommand).toHaveBeenNthCalledWith(2, 'execPaste');
+      expect(mockAdapter.executeCommand).toHaveBeenNthCalledWith(3, 'paste');
+
+      expect(result).toBe(true);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          ...TEST_CONTEXT,
+          command: 'editor.action.clipboardPasteAction',
+          error: firstCommandError,
+        },
+        'Paste command failed, trying next',
+      );
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          ...TEST_CONTEXT,
+          command: 'execPaste',
+          error: secondCommandError,
+        },
+        'Paste command failed, trying next',
+      );
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          ...TEST_CONTEXT,
+          command: 'paste',
+        },
+        'Automatic paste succeeded',
+      );
+    });
+
+    it('should return false when all commands fail', async () => {
+      mockAdapter.writeTextToClipboard = jest.fn().mockResolvedValue(undefined);
+
+      const error1 = new Error('Command 1 failed');
+      const error2 = new Error('Command 2 failed');
+      const error3 = new Error('Command 3 failed');
+      mockAdapter.executeCommand = jest
+        .fn()
+        .mockRejectedValueOnce(error1)
+        .mockRejectedValueOnce(error2)
+        .mockRejectedValueOnce(error3);
+
+      const pastePromise = helper.attemptPaste(TEST_TEXT, TEST_CONTEXT);
+      await jest.runAllTimersAsync();
+      const result = await pastePromise;
+
+      expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(3);
+      expect(result).toBe(false);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          ...TEST_CONTEXT,
+          command: 'editor.action.clipboardPasteAction',
+          error: error1,
+        },
+        'Paste command failed, trying next',
+      );
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          ...TEST_CONTEXT,
+          command: 'execPaste',
+          error: error2,
+        },
+        'Paste command failed, trying next',
+      );
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          ...TEST_CONTEXT,
+          command: 'paste',
+          error: error3,
+        },
+        'Paste command failed, trying next',
+      );
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          ...TEST_CONTEXT,
+          allCommandsFailed: true,
+        },
+        'All automatic paste commands failed - user will see manual paste instruction',
+      );
+    });
   });
 });
