@@ -71,5 +71,45 @@ describe('ChatPasteHelper', () => {
         'Automatic paste succeeded',
       );
     });
+
+    it('should retry with second command when first command fails', async () => {
+      mockAdapter.writeTextToClipboard = jest.fn().mockResolvedValue(undefined);
+
+      const firstCommandError = new Error('First command failed');
+      mockAdapter.executeCommand = jest
+        .fn()
+        .mockRejectedValueOnce(firstCommandError)
+        .mockResolvedValueOnce(undefined);
+
+      const pastePromise = helper.attemptPaste(TEST_TEXT, TEST_CONTEXT);
+      await jest.runAllTimersAsync();
+      const result = await pastePromise;
+
+      expect(mockAdapter.executeCommand).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.executeCommand).toHaveBeenNthCalledWith(
+        1,
+        'editor.action.clipboardPasteAction',
+      );
+      expect(mockAdapter.executeCommand).toHaveBeenNthCalledWith(2, 'execPaste');
+
+      expect(result).toBe(true);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          ...TEST_CONTEXT,
+          command: 'editor.action.clipboardPasteAction',
+          error: firstCommandError,
+        },
+        'Paste command failed, trying next',
+      );
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          ...TEST_CONTEXT,
+          command: 'execPaste',
+        },
+        'Automatic paste succeeded',
+      );
+    });
   });
 });
