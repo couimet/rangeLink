@@ -13,7 +13,6 @@ import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { ActiveSelections } from './types/ActiveSelections';
-import { AutoPasteResult } from './types/AutoPasteResult';
 import { MessageCode } from './types/MessageCode';
 import { formatMessage } from './utils/formatMessage';
 import { toInputSelection } from './utils/toInputSelection';
@@ -129,7 +128,7 @@ export class RangeLinkService {
     await this.copyAndSendToDestination(
       content,
       content,
-      (text) => this.destinationManager.sendTextToDestination(text),
+      (text, basicStatusMessage) => this.destinationManager.sendTextToDestination(text, basicStatusMessage),
       (destination, text) => destination.isEligibleForPasteContent(text),
       'Selected text',
       'pasteSelectedTextToDestination',
@@ -212,7 +211,7 @@ export class RangeLinkService {
     await this.copyAndSendToDestination(
       formattedLink.link,
       formattedLink,
-      (link) => this.destinationManager.sendToDestination(link),
+      (link, basicStatusMessage) => this.destinationManager.sendToDestination(link, basicStatusMessage),
       (destination, link) => destination.isEligibleForPasteLink(link),
       linkTypeName,
       'copyToClipboardAndDestination',
@@ -291,7 +290,7 @@ export class RangeLinkService {
   private async copyAndSendToDestination<T>(
     clipboardContent: string,
     sendContent: T,
-    sendFn: (content: T) => Promise<boolean>,
+    sendFn: (content: T, basicStatusMessage: string) => Promise<boolean>,
     isEligibleFn: (destination: PasteDestination, content: T) => Promise<boolean>,
     contentName: string,
     fnName: string,
@@ -339,65 +338,7 @@ export class RangeLinkService {
       `Attempting to send content to bound destination: ${displayName}`,
     );
 
-    // Send to bound destination
-    const sent = await sendFn(sendContent);
-
-    if (sent) {
-      // Paste succeeded - check if manual action needed (should be undefined for all destinations now)
-      const userInstruction = destination.getUserInstruction(AutoPasteResult.Success);
-
-      if (userInstruction) {
-        // Hybrid destination with manual fallback: Show status bar + information popup
-        this.ideAdapter.setStatusBarMessage(basicStatusMessage);
-        void this.ideAdapter.showInformationMessage(`${basicStatusMessage}. ${userInstruction}`);
-      } else {
-        // Automatic paste succeeded: Show status bar only
-        this.ideAdapter.setStatusBarMessage(`${basicStatusMessage} & sent to ${displayName}`);
-      }
-    } else {
-      // Paste failed - check if destination provides manual fallback instruction
-      getLogger().warn(
-        { fn: fnName, boundDestination: displayName },
-        'Failed to send to destination',
-      );
-
-      const userInstruction = destination.getUserInstruction(AutoPasteResult.Failure);
-
-      if (userInstruction) {
-        // Destination provides manual fallback (e.g., chat assistants with clipboard)
-        this.ideAdapter.showWarningMessage(`${basicStatusMessage}. ${userInstruction}`);
-      } else {
-        // No manual fallback available - use destination-specific error message
-        const errorMessage = this.buildPasteFailureMessage(destination);
-        this.ideAdapter.showWarningMessage(errorMessage);
-      }
-    }
-  }
-
-  /**
-   * Build destination-aware error message for paste failures
-   *
-   * Provides specific guidance for destinations that don't provide their own
-   * manual fallback instructions via getUserInstruction().
-   *
-   * Note: Chat assistants (Claude Code, Cursor AI) provide their own instructions
-   * via getUserInstruction(AutoPasteResult.Failure), so they don't use this fallback.
-   *
-   * @param destination - The destination that failed to receive the paste
-   * @returns User-friendly error message with destination-specific guidance
-   */
-  private buildPasteFailureMessage(destination: PasteDestination): string {
-    const baseMessage = 'RangeLink: Copied to clipboard.';
-
-    switch (destination.id) {
-      case 'text-editor':
-        return `${baseMessage} Bound editor is hidden behind other tabs - make it active to resume auto-paste.`;
-
-      case 'terminal':
-        return `${baseMessage} Could not send to terminal. Terminal may be closed or not accepting input.`;
-
-      default:
-        return `${baseMessage} Could not send to ${destination.displayName}.`;
-    }
+    // Send to bound destination (manager handles all feedback)
+    await sendFn(sendContent, basicStatusMessage);
   }
 }
