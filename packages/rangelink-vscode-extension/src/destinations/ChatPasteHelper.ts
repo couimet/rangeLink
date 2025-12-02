@@ -42,10 +42,7 @@ export class ChatPasteHelper {
     for (const command of CHAT_PASTE_COMMANDS) {
       try {
         await this.ideAdapter.executeCommand(command);
-        this.logger.info(
-          { ...contextInfo, command, autoPaste: true },
-          `Automatic paste succeeded using ${command}`,
-        );
+        this.logger.info({ ...contextInfo, command }, 'Automatic paste succeeded');
         return true;
       } catch (pasteError) {
         this.logger.debug(
