@@ -1,8 +1,11 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
 
@@ -170,102 +173,49 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Send a formatted RangeLink to bound destination
+   * Send a formatted RangeLink to bound destination with user feedback
    *
    * @param formattedLink - The formatted RangeLink with metadata
+   * @param basicStatusMessage - Base message for status bar (e.g., "RangeLink copied to clipboard")
    * @returns true if sent successfully, false otherwise
    */
-  async sendToDestination(formattedLink: FormattedLink): Promise<boolean> {
-    if (!this.boundDestination) {
-      this.logger.debug(
-        { fn: 'PasteDestinationManager.sendToDestination' },
-        'No destination bound',
-      );
-      return false;
-    }
-
-    const destinationType = this.boundDestination.id;
-    const displayName = this.boundDestination.displayName;
-    const destinationDetails = this.boundDestination.getLoggingDetails();
-
-    this.logger.debug(
-      {
-        fn: 'PasteDestinationManager.sendToDestination',
-        destinationType,
-        displayName,
+  async sendLinkToDestination(
+    formattedLink: FormattedLink,
+    basicStatusMessage: string,
+  ): Promise<boolean> {
+    return this.sendWithFeedback({
+      basicStatusMessage,
+      logContext: {
+        fn: 'PasteDestinationManager.sendLinkToDestination',
         formattedLink,
-        ...destinationDetails,
       },
-      `Sending text to ${displayName}`,
-    );
-
-    const result = await this.boundDestination.pasteLink(formattedLink);
-
-    if (!result) {
-      this.logger.error(
-        {
-          fn: 'PasteDestinationManager.sendToDestination',
-          destinationType,
-          displayName,
-          formattedLink,
-          ...destinationDetails,
-        },
-        `Paste link failed to ${displayName}`,
-      );
-    }
-
-    return result;
+      debugMessage: (displayName) => `Sending link to ${displayName}`,
+      errorMessage: (displayName) => `Paste link failed to ${displayName}`,
+      execute: (destination) => destination.pasteLink(formattedLink),
+    });
   }
 
   /**
-   * Send text content to bound destination
+   * Send text content to bound destination with user feedback
    *
    * Similar to sendToDestination() but for raw text content instead of FormattedLink.
    * Used for pasting selected text directly to bound destinations (issue #89).
    *
    * @param content - The text content to send
+   * @param basicStatusMessage - Base message for status bar (e.g., "Text copied to clipboard")
    * @returns true if sent successfully, false otherwise
    */
-  async sendTextToDestination(content: string): Promise<boolean> {
-    if (!this.boundDestination) {
-      this.logger.debug(
-        { fn: 'PasteDestinationManager.sendTextToDestination' },
-        'No destination bound',
-      );
-      return false;
-    }
-
-    const destinationType = this.boundDestination.id;
-    const displayName = this.boundDestination.displayName;
-    const destinationDetails = this.boundDestination.getLoggingDetails();
-
-    this.logger.debug(
-      {
+  async sendTextToDestination(content: string, basicStatusMessage: string): Promise<boolean> {
+    return this.sendWithFeedback({
+      basicStatusMessage,
+      logContext: {
         fn: 'PasteDestinationManager.sendTextToDestination',
-        destinationType,
-        displayName,
         contentLength: content.length,
-        ...destinationDetails,
       },
-      `Sending content to ${displayName} (${content.length} chars)`,
-    );
-
-    const result = await this.boundDestination.pasteContent(content);
-
-    if (!result) {
-      this.logger.error(
-        {
-          fn: 'PasteDestinationManager.sendTextToDestination',
-          destinationType,
-          displayName,
-          contentLength: content.length,
-          ...destinationDetails,
-        },
-        `Paste content failed to ${displayName}`,
-      );
-    }
-
-    return result;
+      debugMessage: (displayName) => `Sending content to ${displayName} (${content.length} chars)`,
+      errorMessage: (displayName) => `Paste content failed to ${displayName}`,
+      execute: (destination) => destination.pasteContent(content),
+    });
   }
 
   /**
@@ -622,6 +572,124 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     // Clear replacement tracking after use
     this.replacedDestinationName = undefined;
+  }
+
+  /**
+   * Send content to bound destination and handle all feedback (status bar, toasts, errors).
+   *
+   * Shared helper for sendToDestination() and sendTextToDestination() to eliminate duplication.
+   * Follows ChatAssistantDestination.sendTextToChat() pattern.
+   *
+   * **Feedback handling:**
+   * - Success (automatic destinations): Status bar "✓ ${basicStatusMessage} and sent to ${displayName}"
+   * - Success (clipboard destinations): Status bar + toast with getUserInstruction(AutoPasteResult.Success)
+   * - Failure (clipboard destinations): Status bar + warning with getUserInstruction(AutoPasteResult.Failure)
+   * - Failure (automatic destinations): Warning with buildPasteFailureMessage()
+   *
+   * @param options - Configuration for sending and feedback
+   * @returns true if paste succeeded, false otherwise
+   */
+  private async sendWithFeedback(options: {
+    basicStatusMessage: string;
+    logContext: LoggingContext;
+    debugMessage: (displayName: string) => string;
+    errorMessage: (displayName: string) => string;
+    execute: (destination: PasteDestination) => Promise<boolean>;
+  }): Promise<boolean> {
+    if (!this.boundDestination) {
+      this.logger.debug(options.logContext, 'No destination bound');
+      return false;
+    }
+
+    const destination = this.boundDestination;
+    const displayName = destination.displayName || 'destination';
+
+    // Build enhanced log context with destination details
+    const enhancedLogContext: LoggingContext = {
+      ...options.logContext,
+      destinationType: destination.id,
+      displayName,
+      ...destination.getLoggingDetails(),
+    };
+
+    this.logger.debug(enhancedLogContext, options.debugMessage(displayName));
+
+    const pasteSucceeded = await options.execute(destination);
+
+    if (pasteSucceeded) {
+      const successInstruction = destination.getUserInstruction?.(AutoPasteResult.Success);
+
+      if (successInstruction) {
+        this.vscodeAdapter.setStatusBarMessage(options.basicStatusMessage);
+        void this.vscodeAdapter.showInformationMessage(successInstruction);
+      } else {
+        const enhancedMessage = `${options.basicStatusMessage} and sent to ${displayName}`;
+        this.vscodeAdapter.setStatusBarMessage(enhancedMessage);
+      }
+
+      return true;
+    }
+
+    const failureInstruction = destination.getUserInstruction?.(AutoPasteResult.Failure);
+
+    if (failureInstruction) {
+      this.vscodeAdapter.setStatusBarMessage(options.basicStatusMessage);
+      void this.vscodeAdapter.showWarningMessage(failureInstruction);
+    } else {
+      const errorMsg = this.buildPasteFailureMessage(destination, options.basicStatusMessage);
+      this.vscodeAdapter.showWarningMessage(errorMsg);
+    }
+
+    this.logger.error(enhancedLogContext, options.errorMessage(displayName));
+
+    return false;
+  }
+
+  /**
+   * Build destination-aware error message for paste failures
+   *
+   * Provides specific guidance for destinations that don't provide their own
+   * manual fallback instructions via getUserInstruction().
+   *
+   * Note: Chat assistants (Claude Code, Cursor AI, GitHub Copilot) provide their own instructions
+   * via getUserInstruction(AutoPasteResult.Failure), so they should never reach this method.
+   *
+   * @param destination - The destination that failed to receive the paste
+   * @param basicStatusMessage - Base message to prepend to error
+   * @returns User-friendly error message with destination-specific guidance
+   * @throws RangeLinkExtensionError if called with unknown destination type
+   */
+  private buildPasteFailureMessage(
+    destination: PasteDestination,
+    basicStatusMessage: string,
+  ): string {
+    switch (destination.id) {
+      case 'text-editor':
+        return `${basicStatusMessage} Bound editor is hidden behind other tabs - make it active to resume auto-paste.`;
+
+      case 'terminal':
+        return `${basicStatusMessage} Could not send to terminal. Terminal may be closed or not accepting input.`;
+
+      case 'claude-code':
+      case 'cursor-ai':
+        // Chat assistants should provide getUserInstruction(AutoPasteResult.Failure)
+        // and never reach this fallback method
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+          message: `Chat assistant destination '${destination.id}' should provide getUserInstruction() and never reach buildPasteFailureMessage()`,
+          functionName: 'PasteDestinationManager.buildPasteFailureMessage',
+          details: { destinationId: destination.id, displayName: destination.displayName },
+        });
+
+      default:
+        // Unknown destination type - indicates missing switch case for new destination
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_IMPLEMENTED,
+          message: `Unknown destination type '${destination.id}' - missing case in buildPasteFailureMessage()`,
+          functionName: 'PasteDestinationManager.buildPasteFailureMessage',
+          details: { destinationId: destination.id, displayName: destination.displayName },
+        });
+    }
   }
 
   /**
