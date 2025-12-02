@@ -149,7 +149,7 @@ describe('CursorAIDestination', () => {
 
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS);
       expect(instruction).toBe(messagesEn[MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS]);
-      expect(instruction).toBe('Paste (Cmd/Ctrl+V) in Cursor AI chat to use.');
+      expect(instruction).toBe('Paste (Cmd/Ctrl+V) in Cursor chat to use.');
     });
   });
 
