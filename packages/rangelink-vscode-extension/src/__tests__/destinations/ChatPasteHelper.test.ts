@@ -67,9 +67,8 @@ describe('ChatPasteHelper', () => {
         {
           ...TEST_CONTEXT,
           command: 'editor.action.clipboardPasteAction',
-          autoPaste: true,
         },
-        'Automatic paste succeeded using editor.action.clipboardPasteAction',
+        'Automatic paste succeeded',
       );
     });
   });
