@@ -281,11 +281,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
           sendLinkToDestinationResult: false,
-<<<<<<< HEAD
           boundDestination: terminalDest,
-=======
-          boundDestination: genericDest,
->>>>>>> 8c00a818 (Rename `sendToDestination` to `sendLinkToDestination`)
         });
         service = new RangeLinkService(
           delimiters,
@@ -319,23 +315,11 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-<<<<<<< HEAD
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
-=======
-        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(formattedLink);
-      });
-
-      it('should show generic warning message with displayName', async () => {
-        const formattedLink = createMockFormattedLink('src/file.ts#L1');
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockVscodeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Copied to clipboard. Could not send to Some Destination.',
->>>>>>> 8c00a818 (Rename `sendToDestination` to `sendLinkToDestination`)
         );
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).not.toHaveBeenCalled();
@@ -368,11 +352,7 @@ describe('RangeLinkService', () => {
         });
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
-<<<<<<< HEAD
           boundDestination: mockDestination,
-=======
-          sendLinkToDestinationResult: false,
->>>>>>> 8c00a818 (Rename `sendToDestination` to `sendLinkToDestination`)
         });
         service = new RangeLinkService(
           delimiters,
@@ -382,23 +362,9 @@ describe('RangeLinkService', () => {
         );
       });
 
-<<<<<<< HEAD
       it('should copy link to clipboard', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
-=======
-      describe('text-editor destination', () => {
-        it('should show text-editor-specific warning about hidden tabs', async () => {
-          const textEditorDest = createMockTextEditorDestination({
-            displayName: 'Text Editor',
-          });
-          mockDestinationManager = createMockDestinationManager({
-            isBound: true,
-            sendLinkToDestinationResult: false,
-            boundDestination: textEditorDest,
-          });
-          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
->>>>>>> 8c00a818 (Rename `sendToDestination` to `sendLinkToDestination`)
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
@@ -419,27 +385,12 @@ describe('RangeLinkService', () => {
         expect(mockDestination.isEligibleForPasteLink).toHaveBeenCalledTimes(1);
       });
 
-<<<<<<< HEAD
       it('should NOT send to destination when link not eligible', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
-=======
-      describe('terminal destination', () => {
-        it('should NOT show text-editor-specific warning', async () => {
-          const terminalDest = createMockTerminalDestination({
-            displayName: 'Terminal',
-          });
-          mockDestinationManager = createMockDestinationManager({
-            isBound: true,
-            sendLinkToDestinationResult: false,
-            boundDestination: terminalDest,
-          });
-          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
->>>>>>> 8c00a818 (Rename `sendToDestination` to `sendLinkToDestination`)
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-<<<<<<< HEAD
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
@@ -459,46 +410,9 @@ describe('RangeLinkService', () => {
       it('should show clipboard-only status message', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
-=======
-          const warningCall = (mockVscodeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
-          expect(warningCall).not.toContain('editor');
-          expect(warningCall).not.toContain('tabs');
-        });
-
-        it('should show terminal-specific guidance', async () => {
-          const terminalDest = createMockTerminalDestination({
-            displayName: 'Terminal',
-          });
-          mockDestinationManager = createMockDestinationManager({
-            isBound: true,
-            sendLinkToDestinationResult: false,
-            boundDestination: terminalDest,
-          });
-          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-          await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
-
-          const warningCall = (mockVscodeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
-          expect(warningCall).toContain('Terminal');
-        });
-      });
-
-      describe('claude-code destination', () => {
-        it('should NOT show text-editor-specific warning', async () => {
-          const claudeCodeDest = createMockClaudeCodeDestination({
-            displayName: 'Claude Code Chat',
-          });
-          mockDestinationManager = createMockDestinationManager({
-            isBound: true,
-            sendLinkToDestinationResult: false,
-            boundDestination: claudeCodeDest,
-          });
-          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
->>>>>>> 8c00a818 (Rename `sendToDestination` to `sendLinkToDestination`)
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-<<<<<<< HEAD
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
@@ -518,46 +432,9 @@ describe('RangeLinkService', () => {
       it('should log debug message about skipping auto-paste', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
-=======
-          const warningCall = (mockVscodeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
-          expect(warningCall).not.toContain('editor');
-          expect(warningCall).not.toContain('tabs');
-        });
-
-        it('should show claude-code-specific guidance', async () => {
-          const claudeCodeDest = createMockClaudeCodeDestination({
-            displayName: 'Claude Code Chat',
-          });
-          mockDestinationManager = createMockDestinationManager({
-            isBound: true,
-            sendLinkToDestinationResult: false,
-            boundDestination: claudeCodeDest,
-          });
-          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-          await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
-
-          const warningCall = (mockVscodeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
-          expect(warningCall).toContain('Claude Code');
-        });
-      });
-
-      describe('cursor-ai destination', () => {
-        it('should NOT show text-editor-specific warning', async () => {
-          const cursorAIDest = createMockCursorAIDestination({
-            displayName: 'Cursor AI Assistant',
-          });
-          mockDestinationManager = createMockDestinationManager({
-            isBound: true,
-            sendLinkToDestinationResult: false,
-            boundDestination: cursorAIDest,
-          });
-          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
->>>>>>> 8c00a818 (Rename `sendToDestination` to `sendLinkToDestination`)
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-<<<<<<< HEAD
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
@@ -578,43 +455,6 @@ describe('RangeLinkService', () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
         const mockDestination = mockDestinationManager.getBoundDestination()!;
-=======
-          const warningCall = (mockVscodeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
-          expect(warningCall).not.toContain('editor');
-          expect(warningCall).not.toContain('tabs');
-        });
-
-        it('should show cursor-ai-specific guidance', async () => {
-          const cursorAIDest = createMockCursorAIDestination({
-            displayName: 'Cursor AI Assistant',
-          });
-          mockDestinationManager = createMockDestinationManager({
-            isBound: true,
-            sendLinkToDestinationResult: false,
-            boundDestination: cursorAIDest,
-          });
-          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-          await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
-
-          const warningCall = (mockVscodeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
-          expect(warningCall).toContain('Cursor');
-        });
-      });
-
-      describe('unknown destination type', () => {
-        it('should show generic fallback message with displayName', async () => {
-          const unknownDest = createMockPasteDestination({
-            id: 'some-future-dest' as any,
-            displayName: 'Future Destination',
-          });
-          mockDestinationManager = createMockDestinationManager({
-            isBound: true,
-            sendLinkToDestinationResult: false,
-            boundDestination: unknownDest,
-          });
-          service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
->>>>>>> 8c00a818 (Rename `sendToDestination` to `sendLinkToDestination`)
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
@@ -672,33 +512,6 @@ describe('RangeLinkService', () => {
       });
     });
 
-<<<<<<< HEAD
-=======
-    describe('timeout parameter', () => {
-      it('should pass 2000ms timeout to setStatusBarMessage', async () => {
-        const formattedLink = createMockFormattedLink('src/file.ts#L1');
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String));
-      });
-
-      it('should pass 2000ms timeout when destination is bound and succeeds', async () => {
-        const mockDestination = createMockTerminalDestination();
-        mockDestinationManager = createMockDestinationManager({
-          isBound: true,
-          sendLinkToDestinationResult: true,
-          boundDestination: mockDestination,
-        });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-        const formattedLink = createMockFormattedLink('src/file.ts#L1');
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(expect.any(String));
-      });
-    });
-
->>>>>>> 8c00a818 (Rename `sendToDestination` to `sendLinkToDestination`)
     describe('i18n integration', () => {
       let formatMessageSpy: jest.SpyInstance;
 
@@ -1828,7 +1641,6 @@ describe('RangeLinkService', () => {
         false,
       );
 
-<<<<<<< HEAD
       expect(result).toStrictEqual({
         link: expect.stringMatching(/file\.ts#L\d+/),
         linkType: 'regular',
@@ -1836,40 +1648,6 @@ describe('RangeLinkService', () => {
         rangeFormat: 'WithPositions',
         delimiters: expect.any(Object),
         computedSelection: expect.any(Object),
-=======
-        await service.createLinkOnly(PathFormat.WorkspaceRelative);
-
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L10-L20');
-      });
-
-      it('should show clipboard-only status message', async () => {
-        mockDestinationManager = createMockDestinationManager({ isBound: false });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-        await service.createLinkOnly(PathFormat.WorkspaceRelative);
-
-        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-        );
-      });
-
-      it('should NOT send to destination even when bound', async () => {
-        // Bound destination (terminal)
-        const mockDestination = createMockTerminalDestination({ displayName: 'bash' });
-        mockDestinationManager = createMockDestinationManager({
-          isBound: true,
-          boundDestination: mockDestination,
-          sendLinkToDestinationResult: true,
-        });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-        await service.createLinkOnly(PathFormat.WorkspaceRelative);
-
-        // Key assertion: destination should NOT be called for clipboard-only
-        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
-        // But clipboard should still be called
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L10-L20');
->>>>>>> 8c00a818 (Rename `sendToDestination` to `sendLinkToDestination`)
       });
     });
 
