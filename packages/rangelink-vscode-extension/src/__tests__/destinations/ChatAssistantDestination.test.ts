@@ -375,6 +375,95 @@ describe('ChatAssistantDestination', () => {
     });
   });
 
+  describe('tryFocusCommands()', () => {
+    it('should return true when first command succeeds', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const getFocusCommandsSpy = jest.spyOn(destination as any, 'getFocusCommands');
+      getFocusCommandsSpy.mockReturnValue(['command1', 'command2']);
+      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
+      executeCommandSpy.mockResolvedValue(undefined);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).tryFocusCommands({ fn: 'TestDestination.test' });
+
+      expect(result).toBe(true);
+      expect(getFocusCommandsSpy).toHaveBeenCalledTimes(1);
+      expect(executeCommandSpy).toHaveBeenCalledTimes(1);
+      expect(executeCommandSpy).toHaveBeenCalledWith('command1');
+      expect(mockLogger.info).not.toHaveBeenCalled();
+    });
+
+    it('should try second command when first fails and return true on success', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const getFocusCommandsSpy = jest.spyOn(destination as any, 'getFocusCommands');
+      getFocusCommandsSpy.mockReturnValue(['command1', 'command2', 'command3']);
+      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
+      const command1Error = new Error('Command 1 failed');
+      executeCommandSpy.mockRejectedValueOnce(command1Error).mockResolvedValueOnce(undefined);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).tryFocusCommands({ fn: 'TestDestination.test' });
+
+      expect(result).toBe(true);
+      expect(getFocusCommandsSpy).toHaveBeenCalledTimes(1);
+      expect(executeCommandSpy).toHaveBeenCalledTimes(2);
+      expect(executeCommandSpy).toHaveBeenNthCalledWith(1, 'command1');
+      expect(executeCommandSpy).toHaveBeenNthCalledWith(2, 'command2');
+      expect(mockLogger.info).toHaveBeenCalledTimes(1);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'TestDestination.test', command: 'command1', error: command1Error },
+        'Failed to get focus, trying next fallback',
+      );
+    });
+
+    it('should return false when all commands fail', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const getFocusCommandsSpy = jest.spyOn(destination as any, 'getFocusCommands');
+      getFocusCommandsSpy.mockReturnValue(['command1', 'command2']);
+      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
+      const command1Error = new Error('Command 1 failed');
+      const command2Error = new Error('Command 2 failed');
+      executeCommandSpy
+        .mockRejectedValueOnce(command1Error)
+        .mockRejectedValueOnce(command2Error);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).tryFocusCommands({ fn: 'TestDestination.test' });
+
+      expect(result).toBe(false);
+      expect(getFocusCommandsSpy).toHaveBeenCalledTimes(1);
+      expect(executeCommandSpy).toHaveBeenCalledTimes(2);
+      expect(executeCommandSpy).toHaveBeenNthCalledWith(1, 'command1');
+      expect(executeCommandSpy).toHaveBeenNthCalledWith(2, 'command2');
+      expect(mockLogger.info).toHaveBeenCalledTimes(2);
+      expect(mockLogger.info).toHaveBeenNthCalledWith(
+        1,
+        { fn: 'TestDestination.test', command: 'command1', error: command1Error },
+        'Failed to get focus, trying next fallback',
+      );
+      expect(mockLogger.info).toHaveBeenNthCalledWith(
+        2,
+        { fn: 'TestDestination.test', command: 'command2', error: command2Error },
+        'Failed to get focus, trying next fallback',
+      );
+    });
+
+    it('should return false when command list is empty', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const getFocusCommandsSpy = jest.spyOn(destination as any, 'getFocusCommands');
+      getFocusCommandsSpy.mockReturnValue([]);
+      const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).tryFocusCommands({ fn: 'TestDestination.test' });
+
+      expect(result).toBe(false);
+      expect(getFocusCommandsSpy).toHaveBeenCalledTimes(1);
+      expect(executeCommandSpy).not.toHaveBeenCalled();
+      expect(mockLogger.info).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Integration tests', () => {
     describe('pasteLink()', () => {
       it('should delegate to base class and use displayName in log messages', async () => {
