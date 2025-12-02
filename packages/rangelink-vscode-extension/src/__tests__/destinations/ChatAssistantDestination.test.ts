@@ -423,9 +423,7 @@ describe('ChatAssistantDestination', () => {
       const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
       const command1Error = new Error('Command 1 failed');
       const command2Error = new Error('Command 2 failed');
-      executeCommandSpy
-        .mockRejectedValueOnce(command1Error)
-        .mockRejectedValueOnce(command2Error);
+      executeCommandSpy.mockRejectedValueOnce(command1Error).mockRejectedValueOnce(command2Error);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (destination as any).tryFocusCommands({ fn: 'TestDestination.test' });

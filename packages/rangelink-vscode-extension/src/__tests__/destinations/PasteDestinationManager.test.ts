@@ -114,7 +114,9 @@ describe('PasteDestinationManager', () => {
               displayName: `Terminal ("${terminalName}")`,
               resourceName: terminalName,
               getLoggingDetails: jest.fn().mockReturnValue({ terminalName }),
-              getJumpSuccessMessage: jest.fn().mockReturnValue(`✓ Focused Terminal: "${terminalName}"`),
+              getJumpSuccessMessage: jest
+                .fn()
+                .mockReturnValue(`✓ Focused Terminal: "${terminalName}"`),
             });
             // Override equals to return true when comparing to same terminal name
             (dest.equals as jest.Mock).mockImplementation(async (other) => {
@@ -247,7 +249,9 @@ describe('PasteDestinationManager', () => {
         resourceName: 'bash',
       });
       // Override equals to return true when comparing to same instance
-      (terminalDest.equals as jest.Mock).mockImplementation(async (other) => other === terminalDest);
+      (terminalDest.equals as jest.Mock).mockImplementation(
+        async (other) => other === terminalDest,
+      );
 
       // Create manager with a fresh factory that returns the same terminal instance
       const controlledFactory = createMockDestinationFactory({

@@ -11,8 +11,8 @@ import { createMockExtension, type MockExtensionOptions } from './createMockExte
  * Supports both string shorthand (active extension) and detailed config.
  */
 export type MockExtensionConfig =
-  | string  // Shorthand: extension ID (defaults to isActive: true)
-  | MockExtensionOptions;  // Detailed config via createMockExtension options
+  | string // Shorthand: extension ID (defaults to isActive: true)
+  | MockExtensionOptions; // Detailed config via createMockExtension options
 
 /**
  * Normalize extension config to full object format.
