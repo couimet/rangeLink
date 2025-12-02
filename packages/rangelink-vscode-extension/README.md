@@ -120,9 +120,11 @@ If bound file is hidden behind other tabs, link copies to clipboard with a remin
 
 **How it works:**
 
-1. Command Palette → "Bind RangeLink to Claude Code Destination" (or Cursor AI)
-2. Select code → Hit `Cmd+R Cmd+L` → Link copied + chat opens
-3. Paste (`Cmd+V`) to send
+1. Bind your AI assistant: Command Palette → "Bind RangeLink to..."
+2. Select code → `Cmd+R Cmd+L` → Link auto-pastes into chat
+3. Review and send
+
+RangeLink handles the paste automatically and keeps a clipboard copy as backup for maximum reliability.
 
 **Technical note:** Neither extension's API supports programmatic text insertion yet (as of Nov 2025), so RangeLink uses a clipboard-based workaround. It cuts your workflow from 5 manual steps to 1.
 
