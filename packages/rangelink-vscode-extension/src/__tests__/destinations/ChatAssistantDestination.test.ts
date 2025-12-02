@@ -462,6 +462,87 @@ describe('ChatAssistantDestination', () => {
     });
   });
 
+  describe('executeWithAvailabilityCheck()', () => {
+    it('should return false and log warning when destination is not available', async () => {
+      const isAvailableSpy = jest.spyOn(destination, 'isAvailable');
+      isAvailableSpy.mockResolvedValue(false);
+      const executeMock = jest.fn();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).executeWithAvailabilityCheck({
+        logContext: { fn: 'TestDestination.test' },
+        unavailableMessage: 'Destination not available',
+        successLogMessage: 'Operation succeeded',
+        errorLogMessage: 'Operation failed',
+        execute: executeMock,
+      });
+
+      expect(result).toBe(false);
+      expect(isAvailableSpy).toHaveBeenCalledTimes(1);
+      expect(executeMock).not.toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalledTimes(1);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'TestDestination.test' },
+        'Destination not available',
+      );
+      expect(mockLogger.info).not.toHaveBeenCalled();
+      expect(mockLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('should return true and log success when execute succeeds', async () => {
+      const isAvailableSpy = jest.spyOn(destination, 'isAvailable');
+      isAvailableSpy.mockResolvedValue(true);
+      const executeMock = jest.fn().mockResolvedValue(undefined);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).executeWithAvailabilityCheck({
+        logContext: { fn: 'TestDestination.test', customProp: 'customValue' },
+        unavailableMessage: 'Destination not available',
+        successLogMessage: 'Operation succeeded',
+        errorLogMessage: 'Operation failed',
+        execute: executeMock,
+      });
+
+      expect(result).toBe(true);
+      expect(isAvailableSpy).toHaveBeenCalledTimes(1);
+      expect(executeMock).toHaveBeenCalledTimes(1);
+      expect(mockLogger.info).toHaveBeenCalledTimes(1);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'TestDestination.test', customProp: 'customValue' },
+        'Operation succeeded',
+      );
+      expect(mockLogger.warn).not.toHaveBeenCalled();
+      expect(mockLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('should return false and log error when execute throws an error', async () => {
+      const isAvailableSpy = jest.spyOn(destination, 'isAvailable');
+      isAvailableSpy.mockResolvedValue(true);
+      const executeError = new Error('Execution failed');
+      const executeMock = jest.fn().mockRejectedValue(executeError);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (destination as any).executeWithAvailabilityCheck({
+        logContext: { fn: 'TestDestination.test', additionalContext: 'value' },
+        unavailableMessage: 'Destination not available',
+        successLogMessage: 'Operation succeeded',
+        errorLogMessage: 'Operation failed',
+        execute: executeMock,
+      });
+
+      expect(result).toBe(false);
+      expect(isAvailableSpy).toHaveBeenCalledTimes(1);
+      expect(executeMock).toHaveBeenCalledTimes(1);
+      expect(mockLogger.error).toHaveBeenCalledTimes(1);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { fn: 'TestDestination.test', additionalContext: 'value', error: executeError },
+        'Operation failed',
+      );
+      expect(mockLogger.warn).not.toHaveBeenCalled();
+      expect(mockLogger.info).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Integration tests', () => {
     describe('pasteLink()', () => {
       it('should delegate to base class and use displayName in log messages', async () => {
