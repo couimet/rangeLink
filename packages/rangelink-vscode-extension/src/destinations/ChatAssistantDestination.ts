@@ -224,7 +224,7 @@ export abstract class ChatAssistantDestination implements PasteDestination {
    * @param text - Optional text to paste after opening chat
    */
   private async openChat(text?: string): Promise<void> {
-    await this.tryFocusCommands();
+    await this.tryFocusCommands({ fn: `${this.constructor.name}.openChat` });
 
     if (text) {
       const chatPasteHelper = this.chatPasteHelperFactory.create();
@@ -235,16 +235,20 @@ export abstract class ChatAssistantDestination implements PasteDestination {
   /**
    * Try focus commands until one succeeds.
    *
+   * @param logContext - Logging context (at minimum must contain fn)
    * @returns true if any command succeeded, false if all failed
    */
-  private async tryFocusCommands(): Promise<boolean> {
+  private async tryFocusCommands(logContext: LoggingContext): Promise<boolean> {
     const commands = this.getFocusCommands();
     for (const command of commands) {
       try {
         await this.ideAdapter.executeCommand(command);
         return true;
-      } catch {
-        // Try next fallback
+      } catch (error) {
+        this.logger.info(
+          { ...logContext, command, error },
+          'Failed to get focus, trying next fallback',
+        );
         continue;
       }
     }
