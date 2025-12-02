@@ -169,96 +169,44 @@ describe('RangeLinkService', () => {
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
       });
 
-      it('should send link to terminal', async () => {
+      it('should send link to terminal with basicStatusMessage', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(formattedLink);
+        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
+          formattedLink,
+          '✓ RangeLink copied to clipboard',
+        );
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
       });
 
-      it('should show status message with destination name', async () => {
+      it('should call methods in correct order: clipboard then manager', async () => {
         const link = 'src/auth.ts#L10';
         const formattedLink = createMockFormattedLink(link);
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard & sent to bash',
-        );
-      });
-
-      it('should use destination displayName from getBoundDestination()', async () => {
-        const customDestination = createMockTerminalDestination({ displayName: 'Terminal' });
-        mockDestinationManager = createMockDestinationManager({
-          isBound: true,
-          sendLinkToDestinationResult: true,
-          boundDestination: customDestination,
-        });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-        await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
-
-        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard & sent to Terminal',
-        );
-      });
-
-      it('should use "destination" as fallback when destination has no displayName', async () => {
-        const unknownDestination = createMockPasteDestination();
-        // Remove displayName to test fallback
-        delete (unknownDestination as any).displayName;
-        mockDestinationManager = createMockDestinationManager({
-          isBound: true,
-          sendLinkToDestinationResult: true,
-          boundDestination: unknownDestination,
-        });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-        await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
-
-        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard & sent to destination',
-        );
-      });
-
-      it('should not call showWarningMessage on success', async () => {
-        await (service as any).copyToClipboardAndDestination('src/file.ts#L1', 'RangeLink');
-
-        expect(mockVscodeAdapter.showWarningMessage).not.toHaveBeenCalled();
-      });
-
-      it('should call methods in correct order: clipboard then terminal then status', async () => {
-        const link = 'src/auth.ts#L10';
-
-        await (service as any).copyToClipboardAndDestination(link, 'RangeLink');
-
-        // Verify call order
+        // Verify call order (service handles clipboard, manager handles destination + feedback)
         const clipboardCall = (mockVscodeAdapter.writeTextToClipboard as jest.Mock).mock
           .invocationCallOrder[0];
-        const terminalCall = (mockDestinationManager.sendLinkToDestination as jest.Mock).mock
-          .invocationCallOrder[0];
-        const statusCall = (mockVscodeAdapter.setStatusBarMessage as jest.Mock).mock
+        const managerCall = (mockDestinationManager.sendLinkToDestination as jest.Mock).mock
           .invocationCallOrder[0];
 
-        expect(clipboardCall).toBeLessThan(terminalCall);
-        expect(terminalCall).toBeLessThan(statusCall);
+        expect(clipboardCall).toBeLessThan(managerCall);
       });
     });
 
     describe('when destination is bound but paste fails', () => {
       beforeEach(() => {
-        // Use generic destination for backward compatibility tests
-        const genericDest = createMockPasteDestination({
-          id: 'generic' as any,
-          displayName: 'Some Destination',
+        const terminalDest = createMockTerminalDestination({
+          displayName: 'Terminal',
         });
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
           sendLinkToDestinationResult: false,
-          boundDestination: genericDest,
+          boundDestination: terminalDest,
         });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
@@ -272,39 +220,26 @@ describe('RangeLinkService', () => {
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
       });
 
-      it('should attempt to send to destination', async () => {
+      it('should attempt to send to destination with basicStatusMessage', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(formattedLink);
-      });
-
-      it('should show generic warning message with displayName', async () => {
-        const formattedLink = createMockFormattedLink('src/file.ts#L1');
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockVscodeAdapter.showWarningMessage).toHaveBeenCalledWith(
-          'RangeLink: Copied to clipboard. Could not send to Some Destination.',
+        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
+          formattedLink,
+          '✓ RangeLink copied to clipboard',
         );
-        expect(mockVscodeAdapter.showWarningMessage).toHaveBeenCalledTimes(1);
       });
 
-      it('should show same warning structure for all link types', async () => {
+      it('should pass correct basicStatusMessage for Portable RangeLink', async () => {
         const formattedLink = createMockFormattedLink('src/file.ts#L1');
         await (service as any).copyToClipboardAndDestination(formattedLink, 'Portable RangeLink');
 
-        const warningCall = (mockVscodeAdapter.showWarningMessage as jest.Mock).mock.calls[0][0];
-        expect(warningCall).toContain('RangeLink: Copied to clipboard.');
-        expect(warningCall).toContain('Some Destination');
-      });
-
-      it('should not call setStatusBarMessage when paste fails', async () => {
-        const formattedLink = createMockFormattedLink('src/file.ts#L1');
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockVscodeAdapter.setStatusBarMessage).not.toHaveBeenCalled();
+        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
+          formattedLink,
+          '✓ Portable RangeLink copied to clipboard',
+        );
       });
     });
 
@@ -770,11 +705,12 @@ describe('RangeLinkService', () => {
           expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('const foo = "bar";');
         });
 
-        it('should send selected text to bound destination', async () => {
+        it('should send selected text to bound destination with basicStatusMessage', async () => {
           await service.pasteSelectedTextToDestination();
 
           expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
             'const foo = "bar";',
+            '✓ Selected text copied to clipboard',
           );
         });
 
@@ -911,7 +847,7 @@ describe('RangeLinkService', () => {
 
         await service.pasteSelectedTextToDestination();
 
-        expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith('valid text');
+        expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith('valid text', "✓ Selected text copied to clipboard");
       });
     });
 
