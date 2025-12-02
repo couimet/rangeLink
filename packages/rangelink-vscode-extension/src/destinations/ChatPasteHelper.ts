@@ -54,7 +54,7 @@ export class ChatPasteHelper {
 
     // All commands failed
     this.logger.info(
-      { ...contextInfo, autoPaste: false },
+      { ...contextInfo, allCommandsFailed: true },
       'All automatic paste commands failed - user will see manual paste instruction',
     );
     return false;
