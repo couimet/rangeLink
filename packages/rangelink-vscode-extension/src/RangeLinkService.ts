@@ -211,7 +211,7 @@ export class RangeLinkService {
     await this.copyAndSendToDestination(
       formattedLink.link,
       formattedLink,
-      (link, basicStatusMessage) => this.destinationManager.sendToDestination(link, basicStatusMessage),
+      (link, basicStatusMessage) => this.destinationManager.sendLinkToDestination(link, basicStatusMessage),
       (destination, link) => destination.isEligibleForPasteLink(link),
       linkTypeName,
       'copyToClipboardAndDestination',

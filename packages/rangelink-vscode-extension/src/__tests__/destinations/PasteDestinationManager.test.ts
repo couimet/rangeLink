@@ -533,7 +533,9 @@ describe('PasteDestinationManager', () => {
     });
   });
 
-  describe('sendToDestination()', () => {
+  describe('sendLinkToDestination()', () => {
+    const TEST_STATUS_MESSAGE = 'RangeLink copied to clipboard';
+
     // Mock factory and destinations for unit tests
     let mockFactoryForSend: ReturnType<typeof createMockDestinationFactory>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
@@ -587,7 +589,7 @@ describe('PasteDestinationManager', () => {
       await manager.bind('terminal');
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
-      const result = await manager.sendToDestination(formattedLink);
+      const result = await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
 
       expect(result).toBe(true);
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledTimes(1);
@@ -602,7 +604,7 @@ describe('PasteDestinationManager', () => {
       await manager.bind('cursor-ai');
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
-      const result = await manager.sendToDestination(formattedLink);
+      const result = await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
 
       // Test only manager orchestration - delegate calls pasteLink on destination
       expect(result).toBe(true);
@@ -611,7 +613,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should return false when no destination bound', async () => {
-      const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
+      const result = await manager.sendLinkToDestination(createMockFormattedLink('src/file.ts#L10'), TEST_STATUS_MESSAGE);
 
       expect(result).toBe(false);
       expect(mockTerminalDest.pasteLink).not.toHaveBeenCalled();
@@ -631,7 +633,7 @@ describe('PasteDestinationManager', () => {
       // Mock paste failure
       mockTerminalDest.pasteLink.mockResolvedValueOnce(false);
 
-      const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
+      const result = await manager.sendLinkToDestination(createMockFormattedLink('src/file.ts#L10'), TEST_STATUS_MESSAGE);
 
       expect(result).toBe(false);
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledTimes(1);
@@ -648,17 +650,17 @@ describe('PasteDestinationManager', () => {
       await manager.bind('terminal');
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
-      await manager.sendToDestination(formattedLink);
+      await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'PasteDestinationManager.sendToDestination',
+          fn: 'PasteDestinationManager.sendLinkToDestination',
           destinationType: 'terminal',
           displayName: 'Terminal',
           formattedLink,
           terminalName: 'bash',
         },
-        'Sending text to Terminal',
+        'Sending link to Terminal',
       );
     });
 
@@ -676,11 +678,11 @@ describe('PasteDestinationManager', () => {
       mockTerminalDest.pasteLink.mockResolvedValueOnce(false);
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
-      await manager.sendToDestination(formattedLink);
+      await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
-          fn: 'PasteDestinationManager.sendToDestination',
+          fn: 'PasteDestinationManager.sendLinkToDestination',
           destinationType: 'terminal',
           displayName: 'Terminal',
           formattedLink,

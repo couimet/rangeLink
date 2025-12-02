@@ -80,7 +80,7 @@ describe('RangeLinkService', () => {
       // Create mock destination manager
       mockDestinationManager = createMockDestinationManager({
         isBound: false,
-        sendToDestinationResult: true,
+        sendLinkToDestinationResult: true,
       });
 
       // Create service
@@ -144,7 +144,7 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(link, 'RangeLink');
 
-        expect(mockDestinationManager.sendToDestination).not.toHaveBeenCalled();
+        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
       });
     });
 
@@ -153,7 +153,7 @@ describe('RangeLinkService', () => {
         const mockDestination = createMockTerminalDestination({ displayName: 'bash' });
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
-          sendToDestinationResult: true,
+          sendLinkToDestinationResult: true,
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -175,8 +175,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockDestinationManager.sendToDestination).toHaveBeenCalledWith(formattedLink);
-        expect(mockDestinationManager.sendToDestination).toHaveBeenCalledTimes(1);
+        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(formattedLink);
+        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
       });
 
       it('should show status message with destination name', async () => {
@@ -194,7 +194,7 @@ describe('RangeLinkService', () => {
         const customDestination = createMockTerminalDestination({ displayName: 'Terminal' });
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
-          sendToDestinationResult: true,
+          sendLinkToDestinationResult: true,
           boundDestination: customDestination,
         });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -212,7 +212,7 @@ describe('RangeLinkService', () => {
         delete (unknownDestination as any).displayName;
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
-          sendToDestinationResult: true,
+          sendLinkToDestinationResult: true,
           boundDestination: unknownDestination,
         });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -238,7 +238,7 @@ describe('RangeLinkService', () => {
         // Verify call order
         const clipboardCall = (mockVscodeAdapter.writeTextToClipboard as jest.Mock).mock
           .invocationCallOrder[0];
-        const terminalCall = (mockDestinationManager.sendToDestination as jest.Mock).mock
+        const terminalCall = (mockDestinationManager.sendLinkToDestination as jest.Mock).mock
           .invocationCallOrder[0];
         const statusCall = (mockVscodeAdapter.setStatusBarMessage as jest.Mock).mock
           .invocationCallOrder[0];
@@ -257,7 +257,7 @@ describe('RangeLinkService', () => {
         });
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
-          sendToDestinationResult: false,
+          sendLinkToDestinationResult: false,
           boundDestination: genericDest,
         });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -278,7 +278,7 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockDestinationManager.sendToDestination).toHaveBeenCalledWith(formattedLink);
+        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(formattedLink);
       });
 
       it('should show generic warning message with displayName', async () => {
@@ -312,7 +312,7 @@ describe('RangeLinkService', () => {
       beforeEach(() => {
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
-          sendToDestinationResult: false,
+          sendLinkToDestinationResult: false,
         });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
       });
@@ -324,7 +324,7 @@ describe('RangeLinkService', () => {
           });
           mockDestinationManager = createMockDestinationManager({
             isBound: true,
-            sendToDestinationResult: false,
+            sendLinkToDestinationResult: false,
             boundDestination: textEditorDest,
           });
           service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -344,7 +344,7 @@ describe('RangeLinkService', () => {
           });
           mockDestinationManager = createMockDestinationManager({
             isBound: true,
-            sendToDestinationResult: false,
+            sendLinkToDestinationResult: false,
             boundDestination: terminalDest,
           });
           service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -362,7 +362,7 @@ describe('RangeLinkService', () => {
           });
           mockDestinationManager = createMockDestinationManager({
             isBound: true,
-            sendToDestinationResult: false,
+            sendLinkToDestinationResult: false,
             boundDestination: terminalDest,
           });
           service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -381,7 +381,7 @@ describe('RangeLinkService', () => {
           });
           mockDestinationManager = createMockDestinationManager({
             isBound: true,
-            sendToDestinationResult: false,
+            sendLinkToDestinationResult: false,
             boundDestination: claudeCodeDest,
           });
           service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -399,7 +399,7 @@ describe('RangeLinkService', () => {
           });
           mockDestinationManager = createMockDestinationManager({
             isBound: true,
-            sendToDestinationResult: false,
+            sendLinkToDestinationResult: false,
             boundDestination: claudeCodeDest,
           });
           service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -418,7 +418,7 @@ describe('RangeLinkService', () => {
           });
           mockDestinationManager = createMockDestinationManager({
             isBound: true,
-            sendToDestinationResult: false,
+            sendLinkToDestinationResult: false,
             boundDestination: cursorAIDest,
           });
           service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -436,7 +436,7 @@ describe('RangeLinkService', () => {
           });
           mockDestinationManager = createMockDestinationManager({
             isBound: true,
-            sendToDestinationResult: false,
+            sendLinkToDestinationResult: false,
             boundDestination: cursorAIDest,
           });
           service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -456,7 +456,7 @@ describe('RangeLinkService', () => {
           });
           mockDestinationManager = createMockDestinationManager({
             isBound: true,
-            sendToDestinationResult: false,
+            sendLinkToDestinationResult: false,
             boundDestination: unknownDest,
           });
           service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -518,7 +518,7 @@ describe('RangeLinkService', () => {
         const mockDestination = createMockTerminalDestination();
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
-          sendToDestinationResult: true,
+          sendLinkToDestinationResult: true,
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
@@ -1531,14 +1531,14 @@ describe('RangeLinkService', () => {
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
           boundDestination: mockDestination,
-          sendToDestinationResult: true,
+          sendLinkToDestinationResult: true,
         });
         service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
         await service.createLinkOnly(PathFormat.WorkspaceRelative);
 
         // Key assertion: destination should NOT be called for clipboard-only
-        expect(mockDestinationManager.sendToDestination).not.toHaveBeenCalled();
+        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
         // But clipboard should still be called
         expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L10-L20');
       });
