@@ -365,7 +365,7 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(localAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Already bound to Cursor AI Assistant'),
+        'RangeLink: Already bound to Cursor AI Assistant',
       );
 
       localManager.dispose();
