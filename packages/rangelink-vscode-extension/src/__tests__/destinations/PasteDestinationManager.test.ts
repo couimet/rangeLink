@@ -2,23 +2,6 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
-// Mock vscode.window and vscode.workspace for status bar messages and event listeners
-jest.mock('vscode', () => ({
-  ...jest.requireActual('vscode'),
-  window: {
-    ...jest.requireActual('vscode').window,
-    setStatusBarMessage: jest.fn(),
-    showErrorMessage: jest.fn(),
-    showInformationMessage: jest.fn(),
-    onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
-    onDidChangeVisibleTextEditors: jest.fn(() => ({ dispose: jest.fn() })),
-    activeTerminal: undefined,
-  },
-  workspace: {
-    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
-  },
-}));
-
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
 import { AutoPasteResult } from '../../types/AutoPasteResult';
@@ -85,21 +68,7 @@ describe('PasteDestinationManager', () => {
    * Useful for tests that need to simulate Cursor IDE.
    */
   const createManager = (envOptions?: MockVscodeOptions['envOptions']) => {
-    const adapter = createMockVscodeAdapter({
-      envOptions,
-      windowOptions: {
-        onDidCloseTerminal: jest.fn((listener) => {
-          terminalCloseListener = listener;
-          return { dispose: jest.fn() };
-        }),
-      },
-      workspaceOptions: {
-        onDidCloseTextDocument: jest.fn((listener) => {
-          documentCloseListener = listener;
-          return { dispose: jest.fn() };
-        }),
-      },
-    });
+    const adapter = createMockVscodeAdapter({ envOptions });
 
     // Cache for destinations so same instance is returned for same terminal/editor
     const destinationCache = new Map<string, any>();
