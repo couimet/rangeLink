@@ -666,6 +666,35 @@ describe('PasteDestinationManager', () => {
       );
     });
 
+    it('should show text-editor specific warning when editor paste fails', async () => {
+      // Create a mock text editor destination that mimics a bound text editor
+      const mockTextEditorDest = createMockTextEditorDestination({
+        id: 'text-editor',
+        displayName: 'Text Editor',
+        getUserInstruction: jest.fn().mockReturnValue(undefined),
+        pasteLink: jest.fn().mockResolvedValue(false), // Simulate paste failure
+      });
+
+      // Manually set the bound destination to bypass bind() complexity
+      (manager as any).boundDestination = mockTextEditorDest;
+
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      const result = await manager.sendLinkToDestination(
+        createMockFormattedLink('src/file.ts#L10'),
+        TEST_STATUS_MESSAGE,
+      );
+
+      expect(result).toBe(false);
+      expect(mockTextEditorDest.pasteLink).toHaveBeenCalledTimes(1);
+
+      // Verify text-editor specific failure message
+      expect(showWarningSpy).toHaveBeenCalledTimes(1);
+      expect(showWarningSpy).toHaveBeenCalledWith(
+        'RangeLink copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
+      );
+    });
+
     it('should log error when paste fails', async () => {
       const mockTerminal = {
         name: 'bash',
