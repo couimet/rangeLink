@@ -1520,6 +1520,105 @@ describe('RangeLinkService', () => {
     });
   });
 
+  describe('generateLinkFromSelection() - error handling', () => {
+    let mockToInputSelection: jest.SpyInstance;
+
+    beforeEach(() => {
+      mockVscodeAdapter = createMockVscodeAdapter();
+      mockDestinationManager = createMockDestinationManager({ isBound: false });
+      service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+
+      // Mock toInputSelection to throw errors (auto-restored by jest.config.js)
+      mockToInputSelection = jest.spyOn(toInputSelectionModule, 'toInputSelection');
+
+      // Spy on error methods
+      jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
+
+      // Mock activeTextEditor with valid selection
+      const mockEditor = createMockEditor({
+        document: createMockDocument({
+          uri: createMockUri('/test/file.ts'),
+          getText: createMockText('content'),
+        }),
+        selections: [
+          createMockSelection({
+            anchor: createMockPosition({ line: 10, character: 0 }),
+            active: createMockPosition({ line: 20, character: 0 }),
+            start: createMockPosition({ line: 10, character: 0 }),
+            end: createMockPosition({ line: 20, character: 0 }),
+            isEmpty: false,
+            isReversed: false,
+            isSingleLine: false,
+          }),
+        ],
+      });
+      const mockVscode = mockVscodeAdapter.__getVscodeInstance();
+      mockVscode.window.activeTextEditor = mockEditor;
+
+      // Mock workspace folder
+      jest
+        .spyOn(mockVscodeAdapter, 'getWorkspaceFolder')
+        .mockReturnValue({ uri: createMockUri('/test'), index: 0, name: 'test' } as any);
+      jest.spyOn(mockVscodeAdapter, 'asRelativePath').mockReturnValue('file.ts');
+    });
+
+    it('should handle toInputSelection throwing Error with message', async () => {
+      const testError = new Error('Invalid rectangular selection');
+      mockToInputSelection.mockImplementation(() => {
+        throw testError;
+      });
+
+      const result = await (service as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        false,
+      );
+
+      expect(result).toBeNull();
+      expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: Invalid rectangular selection',
+      );
+    });
+
+    it('should handle toInputSelection throwing non-Error exception', async () => {
+      mockToInputSelection.mockImplementation(() => {
+        throw 'string error'; // Non-Error exception
+      });
+
+      const result = await (service as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        false,
+      );
+
+      expect(result).toBeNull();
+      expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: Failed to process selection',
+      );
+    });
+
+    it('should log error with correct function name and context', async () => {
+      const testError = new Error('Test error');
+      mockToInputSelection.mockImplementation(() => {
+        throw testError;
+      });
+
+      const mockErrorFn = jest.fn();
+      const mockLogger: Logger = {
+        error: mockErrorFn,
+        debug: jest.fn(),
+        info: jest.fn(),
+        warn: jest.fn(),
+      };
+      jest.spyOn(loggerModule, 'getLogger').mockReturnValue(mockLogger);
+
+      await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+
+      expect(mockErrorFn).toHaveBeenCalledWith(
+        { fn: 'generateLinkFromSelection', error: testError },
+        'Failed to convert selections to InputSelection',
+      );
+    });
+  });
+
   describe('createLinkOnly (clipboard-only commands - Issue #117)', () => {
     let mockGenerateLink: jest.SpyInstance;
     let mockCopyAndSend: jest.SpyInstance;
