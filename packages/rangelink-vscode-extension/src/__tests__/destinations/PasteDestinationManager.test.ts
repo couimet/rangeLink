@@ -21,6 +21,7 @@ jest.mock('vscode', () => ({
 
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
+import { AutoPasteResult } from '../../types/AutoPasteResult';
 import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
 import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
@@ -820,11 +821,11 @@ describe('PasteDestinationManager', () => {
         {
           fn: 'PasteDestinationManager.sendLinkToDestination',
           destinationType: 'terminal',
-          displayName: 'Terminal',
+          displayName: 'Terminal ("bash")',
           formattedLink,
           terminalName: 'bash',
         },
-        'Paste link failed to Terminal',
+        'Paste link failed to Terminal ("bash")',
       );
     });
   });
