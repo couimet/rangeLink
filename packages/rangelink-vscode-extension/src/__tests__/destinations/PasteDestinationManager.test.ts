@@ -142,6 +142,16 @@ describe('PasteDestinationManager', () => {
     });
     const mgr = new PasteDestinationManager(mockContext, factory, adapter, mockLogger);
 
+    // Extract event listeners from mock calls (made by PasteDestinationManager constructor)
+    // These are needed for tests that simulate terminal/document closure events
+    const vscode = adapter.__getVscodeInstance();
+    const onDidCloseTerminalMock = vscode.window.onDidCloseTerminal as jest.Mock;
+    const onDidCloseTextDocumentMock = vscode.workspace.onDidCloseTextDocument as jest.Mock;
+
+    // Store listeners in test-scoped variables for event simulation
+    terminalCloseListener = onDidCloseTerminalMock.mock.calls[0]?.[0];
+    documentCloseListener = onDidCloseTextDocumentMock.mock.calls[0]?.[0];
+
     return { manager: mgr, adapter, factory };
   };
 
