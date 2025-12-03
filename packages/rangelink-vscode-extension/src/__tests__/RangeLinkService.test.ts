@@ -1453,6 +1453,73 @@ describe('RangeLinkService', () => {
     });
   });
 
+  describe('createPortableLink()', () => {
+    let mockGenerateLink: jest.SpyInstance;
+    let mockCopyToClipboard: jest.SpyInstance;
+
+    beforeEach(() => {
+      mockVscodeAdapter = createMockVscodeAdapter();
+      mockDestinationManager = createMockDestinationManager({ isBound: false });
+      service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+
+      // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
+      mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+      mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+    });
+
+    it('should call generateLinkFromSelection with WorkspaceRelative and portable=true', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10-L20{L:LINE,C:COL}');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
+
+      await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, true);
+      expect(mockGenerateLink).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call generateLinkFromSelection with Absolute and portable=true', async () => {
+      const mockFormattedLink = createMockFormattedLink('/workspace/src/file.ts#L10-L20{L:LINE,C:COL}');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
+
+      await service.createPortableLink(PathFormat.Absolute);
+
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.Absolute, true);
+      expect(mockGenerateLink).toHaveBeenCalledTimes(1);
+    });
+
+    it('should use default PathFormat.WorkspaceRelative when not specified', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10{L:LINE,C:COL}');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
+
+      await service.createPortableLink(); // No argument
+
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, true);
+    });
+
+    it('should call copyToClipboardAndDestination with Portable RangeLink label', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10-L20{L:LINE,C:COL}');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
+
+      await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+      expect(mockCopyToClipboard).toHaveBeenCalledWith(mockFormattedLink, 'Portable RangeLink');
+      expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call copyToClipboardAndDestination when generateLinkFromSelection returns null', async () => {
+      mockGenerateLink.mockResolvedValue(null);
+      mockCopyToClipboard.mockResolvedValue(undefined);
+
+      await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+      expect(mockCopyToClipboard).not.toHaveBeenCalled();
+    });
+  });
+
   describe('createLinkOnly (clipboard-only commands - Issue #117)', () => {
     let mockGenerateLink: jest.SpyInstance;
     let mockCopyAndSend: jest.SpyInstance;
