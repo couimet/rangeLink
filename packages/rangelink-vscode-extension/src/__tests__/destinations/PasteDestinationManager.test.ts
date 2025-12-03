@@ -598,20 +598,34 @@ describe('PasteDestinationManager', () => {
       );
     });
 
-    it('should send to bound chat destination successfully', async () => {
+    it('should send to bound chat destination successfully with user instructions', async () => {
       // Mock Cursor environment
       const mockVscode = mockAdapter.__getVscodeInstance();
       (mockVscode.env as any).appName = 'Cursor';
 
+      // Chat destinations provide their own success instructions
+      const successInstruction = 'Paste the link in Cursor AI chat';
+      mockChatDest.getUserInstruction = jest
+        .fn()
+        .mockImplementation((result) =>
+          result === AutoPasteResult.Success ? successInstruction : undefined,
+        );
+
       await manager.bind('cursor-ai');
+
+      const setStatusBarSpy = jest.spyOn(mockAdapter, 'setStatusBarMessage');
+      const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
       const result = await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
 
-      // Test only manager orchestration - delegate calls pasteLink on destination
       expect(result).toBe(true);
       expect(mockChatDest.pasteLink).toHaveBeenCalledTimes(1);
       expect(mockChatDest.pasteLink).toHaveBeenCalledWith(formattedLink);
+
+      // Verify adapter calls for chat success with instructions
+      expect(setStatusBarSpy).toHaveBeenCalledWith(TEST_STATUS_MESSAGE);
+      expect(showInfoSpy).toHaveBeenCalledWith(successInstruction);
     });
 
     it('should return false when no destination bound', async () => {
