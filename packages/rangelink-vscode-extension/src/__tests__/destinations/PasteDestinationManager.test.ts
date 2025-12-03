@@ -755,7 +755,7 @@ describe('PasteDestinationManager', () => {
       // Verify text-editor specific failure message
       expect(showWarningSpy).toHaveBeenCalledTimes(1);
       expect(showWarningSpy).toHaveBeenCalledWith(
-        'RangeLink copied to clipboard. Bound editor is hidden behind other tabs - make it active to resume auto-paste.',
+        'RangeLink copied to clipboard. Could not send to editor. Bound editor is hidden behind other tabs.',
       );
     });
 
