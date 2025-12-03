@@ -541,25 +541,17 @@ describe('PasteDestinationManager', () => {
     let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockChatDest: jest.Mocked<PasteDestination>;
 
-    // Helper to create mock destination
-    const createMockDest = (
-      id: string,
-      displayName: string,
-      loggingDetails: Record<string, unknown> = {},
-    ): jest.Mocked<PasteDestination> =>
-      ({
-        id,
-        displayName,
-        isAvailable: jest.fn().mockResolvedValue(true),
-        pasteLink: jest.fn().mockResolvedValue(true),
-        getUserInstruction: jest.fn().mockReturnValue('Instructions'),
-        setTerminal: jest.fn(),
-        getLoggingDetails: jest.fn().mockReturnValue(loggingDetails),
-      }) as unknown as jest.Mocked<PasteDestination>;
-
     beforeEach(() => {
-      mockTerminalDest = createMockDest('terminal', 'Terminal', { terminalName: 'bash' });
-      mockChatDest = createMockDest('cursor-ai', 'Cursor AI Assistant', {});
+      mockTerminalDest = createMockTerminalDestination({
+        displayName: 'Terminal ("bash")',
+        resourceName: 'bash',
+        getUserInstruction: jest.fn().mockReturnValue('Instructions'),
+        getLoggingDetails: jest.fn().mockReturnValue({ terminalName: 'bash' }),
+      });
+
+      mockChatDest = createMockCursorAIDestination({
+        getUserInstruction: jest.fn().mockReturnValue('Instructions'),
+      });
 
       mockFactoryForSend = createMockDestinationFactory({
         createImpl: (options) => {
