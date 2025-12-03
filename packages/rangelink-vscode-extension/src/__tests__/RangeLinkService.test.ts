@@ -1524,7 +1524,15 @@ describe('RangeLinkService', () => {
     let mockToInputSelection: jest.SpyInstance;
 
     beforeEach(() => {
-      mockVscodeAdapter = createMockVscodeAdapter();
+      // Minimal editor setup: just needs non-empty selection
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: createMockUri('/test/file.ts') }),
+        selections: [createMockSelection({ isEmpty: false })],
+      });
+
+      mockVscodeAdapter = createMockVscodeAdapter({
+        windowOptions: { activeTextEditor: mockEditor },
+      });
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
@@ -1533,33 +1541,6 @@ describe('RangeLinkService', () => {
 
       // Spy on error methods
       jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-
-      // Mock activeTextEditor with valid selection
-      const mockEditor = createMockEditor({
-        document: createMockDocument({
-          uri: createMockUri('/test/file.ts'),
-          getText: createMockText('content'),
-        }),
-        selections: [
-          createMockSelection({
-            anchor: createMockPosition({ line: 10, character: 0 }),
-            active: createMockPosition({ line: 20, character: 0 }),
-            start: createMockPosition({ line: 10, character: 0 }),
-            end: createMockPosition({ line: 20, character: 0 }),
-            isEmpty: false,
-            isReversed: false,
-            isSingleLine: false,
-          }),
-        ],
-      });
-      const mockVscode = mockVscodeAdapter.__getVscodeInstance();
-      mockVscode.window.activeTextEditor = mockEditor;
-
-      // Mock workspace folder
-      jest
-        .spyOn(mockVscodeAdapter, 'getWorkspaceFolder')
-        .mockReturnValue({ uri: createMockUri('/test'), index: 0, name: 'test' } as any);
-      jest.spyOn(mockVscodeAdapter, 'asRelativePath').mockReturnValue('file.ts');
     });
 
     it('should handle toInputSelection throwing Error with message', async () => {
