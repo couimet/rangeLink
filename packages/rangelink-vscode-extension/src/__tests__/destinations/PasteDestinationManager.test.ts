@@ -636,7 +636,7 @@ describe('PasteDestinationManager', () => {
       expect(mockChatDest.pasteLink).not.toHaveBeenCalled();
     });
 
-    it('should return false when paste fails', async () => {
+    it('should show warning message when terminal paste fails', async () => {
       const mockTerminal = {
         name: 'bash',
         sendText: jest.fn(),
@@ -644,15 +644,30 @@ describe('PasteDestinationManager', () => {
       } as unknown as vscode.Terminal;
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+      // Terminal destinations don't provide failure instructions
+      mockTerminalDest.getUserInstruction = jest.fn().mockReturnValue(undefined);
+
       await manager.bind('terminal');
 
       // Mock paste failure
       mockTerminalDest.pasteLink.mockResolvedValueOnce(false);
 
-      const result = await manager.sendLinkToDestination(createMockFormattedLink('src/file.ts#L10'), TEST_STATUS_MESSAGE);
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      const result = await manager.sendLinkToDestination(
+        createMockFormattedLink('src/file.ts#L10'),
+        TEST_STATUS_MESSAGE,
+      );
 
       expect(result).toBe(false);
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledTimes(1);
+
+      // Verify adapter calls for terminal failure without instructions
+      expect(showWarningSpy).toHaveBeenCalledTimes(1);
+      expect(showWarningSpy).toHaveBeenCalledWith(
+        'RangeLink copied to clipboard. Could not send to terminal. Terminal may be closed or not accepting input.',
+      );
     });
 
     it('should show warning with user instructions when chat paste fails', async () => {
