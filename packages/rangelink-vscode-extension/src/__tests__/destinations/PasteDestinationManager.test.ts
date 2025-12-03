@@ -695,6 +695,40 @@ describe('PasteDestinationManager', () => {
       cursorManager.dispose();
     });
 
+    it('should show warning with user instructions when chat paste fails', async () => {
+      // Mock Cursor environment
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.env as any).appName = 'Cursor';
+
+      // Chat destinations provide their own failure instructions
+      const failureInstruction = 'Manual paste: Open Cursor AI and paste the link';
+      mockChatDest.getUserInstruction = jest
+        .fn()
+        .mockImplementation((result) =>
+          result === AutoPasteResult.Failure ? failureInstruction : undefined,
+        );
+
+      await manager.bind('cursor-ai');
+
+      // Mock paste failure
+      mockChatDest.pasteLink.mockResolvedValueOnce(false);
+
+      const setStatusBarSpy = jest.spyOn(mockAdapter, 'setStatusBarMessage');
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      const result = await manager.sendLinkToDestination(
+        createMockFormattedLink('src/file.ts#L10'),
+        TEST_STATUS_MESSAGE,
+      );
+
+      expect(result).toBe(false);
+      expect(mockChatDest.pasteLink).toHaveBeenCalledTimes(1);
+
+      // Verify adapter calls for chat failure with instructions
+      expect(setStatusBarSpy).toHaveBeenCalledWith(TEST_STATUS_MESSAGE);
+      expect(showWarningSpy).toHaveBeenCalledWith(failureInstruction);
+    });
+
     it('should log destination details when sending to terminal', async () => {
       const mockTerminal = {
         name: 'bash',
