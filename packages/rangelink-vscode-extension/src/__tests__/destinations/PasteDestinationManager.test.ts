@@ -580,7 +580,9 @@ describe('PasteDestinationManager', () => {
 
     it('should send to bound chat destination successfully with user instructions', async () => {
       // Create manager with Cursor environment
-      const { manager: cursorManager, adapter: cursorAdapter } = createManager({ appName: 'Cursor' });
+      const { manager: cursorManager, adapter: cursorAdapter } = createManager({
+        appName: 'Cursor',
+      });
 
       await cursorManager.bind('cursor-ai');
 
@@ -611,7 +613,10 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should return false when no destination bound', async () => {
-      const result = await manager.sendLinkToDestination(createMockFormattedLink('src/file.ts#L10'), TEST_STATUS_MESSAGE);
+      const result = await manager.sendLinkToDestination(
+        createMockFormattedLink('src/file.ts#L10'),
+        TEST_STATUS_MESSAGE,
+      );
 
       expect(result).toBe(false);
       expect(mockTerminalDest.pasteLink).not.toHaveBeenCalled();
@@ -654,7 +659,9 @@ describe('PasteDestinationManager', () => {
 
     it('should show warning with user instructions when chat paste fails', async () => {
       // Create manager with Cursor environment
-      const { manager: cursorManager, adapter: cursorAdapter } = createManager({ appName: 'Cursor' });
+      const { manager: cursorManager, adapter: cursorAdapter } = createManager({
+        appName: 'Cursor',
+      });
 
       await cursorManager.bind('cursor-ai');
 
@@ -754,7 +761,10 @@ describe('PasteDestinationManager', () => {
 
       // This should throw UNEXPECTED_CODE_PATH error because chat assistants should never reach buildPasteFailureMessage
       await expect(async () =>
-        manager.sendLinkToDestination(createMockFormattedLink('src/file.ts#L10'), TEST_STATUS_MESSAGE),
+        manager.sendLinkToDestination(
+          createMockFormattedLink('src/file.ts#L10'),
+          TEST_STATUS_MESSAGE,
+        ),
       ).toThrowRangeLinkExtensionErrorAsync('UNEXPECTED_CODE_PATH', {
         message:
           "Chat assistant destination 'cursor-ai' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
@@ -776,7 +786,10 @@ describe('PasteDestinationManager', () => {
 
       // This should throw DESTINATION_NOT_IMPLEMENTED error for unknown destination types
       await expect(async () =>
-        manager.sendLinkToDestination(createMockFormattedLink('src/file.ts#L10'), TEST_STATUS_MESSAGE),
+        manager.sendLinkToDestination(
+          createMockFormattedLink('src/file.ts#L10'),
+          TEST_STATUS_MESSAGE,
+        ),
       ).toThrowRangeLinkExtensionErrorAsync('DESTINATION_NOT_IMPLEMENTED', {
         message:
           "Unknown destination type 'unknown-destination-type' - missing case in buildPasteFailureMessage()",

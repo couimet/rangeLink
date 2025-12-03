@@ -847,7 +847,10 @@ describe('RangeLinkService', () => {
 
         await service.pasteSelectedTextToDestination();
 
-        expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith('valid text', "✓ Selected text copied to clipboard");
+        expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
+          'valid text',
+          '✓ Selected text copied to clipboard',
+        );
       });
     });
 

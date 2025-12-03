@@ -128,7 +128,8 @@ export class RangeLinkService {
     await this.copyAndSendToDestination(
       content,
       content,
-      (text, basicStatusMessage) => this.destinationManager.sendTextToDestination(text, basicStatusMessage),
+      (text, basicStatusMessage) =>
+        this.destinationManager.sendTextToDestination(text, basicStatusMessage),
       (destination, text) => destination.isEligibleForPasteContent(text),
       'Selected text',
       'pasteSelectedTextToDestination',
@@ -211,7 +212,8 @@ export class RangeLinkService {
     await this.copyAndSendToDestination(
       formattedLink.link,
       formattedLink,
-      (link, basicStatusMessage) => this.destinationManager.sendLinkToDestination(link, basicStatusMessage),
+      (link, basicStatusMessage) =>
+        this.destinationManager.sendLinkToDestination(link, basicStatusMessage),
       (destination, link) => destination.isEligibleForPasteLink(link),
       linkTypeName,
       'copyToClipboardAndDestination',
