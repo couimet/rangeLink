@@ -791,6 +791,7 @@ describe('RangeLinkService', () => {
 
         expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
           'first line\nsecond line\nthird line',
+          '✓ Selected text copied to clipboard',
         );
       });
 
