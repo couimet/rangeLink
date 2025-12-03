@@ -665,10 +665,10 @@ export class PasteDestinationManager implements vscode.Disposable {
   ): string {
     switch (destination.id) {
       case 'text-editor':
-        return `${basicStatusMessage} Bound editor is hidden behind other tabs - make it active to resume auto-paste.`;
+        return `${basicStatusMessage}. Bound editor is hidden behind other tabs - make it active to resume auto-paste.`;
 
       case 'terminal':
-        return `${basicStatusMessage} Could not send to terminal. Terminal may be closed or not accepting input.`;
+        return `${basicStatusMessage}. Could not send to terminal. Terminal may be closed or not accepting input.`;
 
       case 'claude-code':
       case 'cursor-ai':
