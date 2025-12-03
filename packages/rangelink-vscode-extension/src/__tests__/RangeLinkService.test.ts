@@ -1386,177 +1386,134 @@ describe('RangeLinkService', () => {
     });
   });
 
-  describe('createLinkOnly (clipboard-only commands - Issue #117)', () => {
+  describe('createLink()', () => {
+    let mockGenerateLink: jest.SpyInstance;
+    let mockCopyToClipboard: jest.SpyInstance;
+
     beforeEach(() => {
-      // Create mock editor with selection (lines 10-20, 1-indexed in display)
-      const mockUri = createMockUri('/workspace/src/file.ts');
-      const mockDocument = createMockDocument({
-        getText: createMockText('line content'),
-        uri: mockUri,
-        lineCount: 100,
-        lineAt: jest.fn((line: number) => ({
-          text: 'line content',
-          range: {
-            start: { line, character: 0 },
-            end: { line, character: 12 }, // 'line content'.length
-          },
-          rangeIncludingLineBreak: {
-            start: { line, character: 0 },
-            end: { line, character: 13 },
-          },
-          lineNumber: line,
-          firstNonWhitespaceCharacterIndex: 0,
-          isEmptyOrWhitespace: false,
-        })) as any,
-      });
-      // Full-line selection: start at column 0, end at end of line 19
-      // Line 19 has 'line content' (12 chars), so end is at character 12
-      // This generates clean line-only format: #L10-L20 (no columns)
-      const selection = mockSelection(9, 0, 19, 12); // 0-indexed: lines 9-19 = display L10-L20
-      const mockEditor = createMockEditor({
-        document: mockDocument,
-        selections: [selection],
-      });
+      mockVscodeAdapter = createMockVscodeAdapter();
+      mockDestinationManager = createMockDestinationManager({ isBound: false });
+      service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
 
-      // Configure workspace and active editor
-      const workspaceUri = createMockUri('/workspace');
-      mockVscodeAdapter = createMockVscodeAdapter({
-        windowOptions: {
-          activeTextEditor: mockEditor,
-        },
-        workspaceOptions: {
-          workspaceFolders: [
-            {
-              uri: workspaceUri,
-              name: 'workspace',
-              index: 0,
-            },
-          ],
-          getWorkspaceFolder: createMockGetWorkspaceFolder('/workspace'),
-          asRelativePath: createMockAsRelativePath('src/file.ts'),
-        },
-      });
-
-      // Spy on adapter methods
-      jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-      jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
-      jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
+      // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
+      mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+      mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
     });
 
-    describe('with workspace-relative path', () => {
-      it('should copy link to clipboard', async () => {
-        // Unbound destination
-        mockDestinationManager = createMockDestinationManager({ isBound: false });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+    it('should call generateLinkFromSelection with WorkspaceRelative and portable=false', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10-L20');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
 
-        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+      await service.createLink(PathFormat.WorkspaceRelative);
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L10-L20');
-      });
-
-      it('should show clipboard-only status message', async () => {
-        mockDestinationManager = createMockDestinationManager({ isBound: false });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-        await service.createLinkOnly(PathFormat.WorkspaceRelative);
-
-        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-        );
-      });
-
-      it('should NOT send to destination even when bound', async () => {
-        // Bound destination (terminal)
-        const mockDestination = createMockTerminalDestination({ displayName: 'bash' });
-        mockDestinationManager = createMockDestinationManager({
-          isBound: true,
-          boundDestination: mockDestination,
-          sendLinkToDestinationResult: true,
-        });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-        await service.createLinkOnly(PathFormat.WorkspaceRelative);
-
-        // Key assertion: destination should NOT be called for clipboard-only
-        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
-        // But clipboard should still be called
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L10-L20');
-      });
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+      expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
-    describe('with absolute path', () => {
-      it('should copy absolute path link to clipboard', async () => {
-        mockDestinationManager = createMockDestinationManager({ isBound: false });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+    it('should call generateLinkFromSelection with Absolute and portable=false', async () => {
+      const mockFormattedLink = createMockFormattedLink('/workspace/src/file.ts#L10-L20');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
 
-        await service.createLinkOnly(PathFormat.Absolute);
+      await service.createLink(PathFormat.Absolute);
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(
-          '/workspace/src/file.ts#L10-L20',
-        );
-      });
-
-      it('should show same status message for absolute paths', async () => {
-        mockDestinationManager = createMockDestinationManager({ isBound: false });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
-
-        await service.createLinkOnly(PathFormat.Absolute);
-
-        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-        );
-      });
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.Absolute, false);
+      expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
-    describe('edge cases', () => {
-      it('should show error when no editor is active', async () => {
-        // No active editor
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: undefined },
-        });
-        jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+    it('should use default PathFormat.WorkspaceRelative when not specified', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
 
-        mockDestinationManager = createMockDestinationManager({ isBound: false });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+      await service.createLink(); // No argument
 
-        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+    });
 
-        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: No active editor',
-        );
-        expect(mockVscodeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
-      });
+    it('should call copyToClipboardAndDestination when link generated', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10-L20');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
 
-      it('should show error when selection is empty', async () => {
-        // Empty selection (same start and end)
-        const mockUri = createMockUri('/workspace/src/file.ts');
-        const mockDocument = createMockDocument({
-          getText: createMockText('line content'),
-          uri: mockUri,
-        });
-        const emptySelection = mockSelection(5, 10, 5, 10); // Same position
-        const mockEditor = createMockEditor({
-          document: mockDocument,
-          selections: [emptySelection],
-        });
+      await service.createLink(PathFormat.WorkspaceRelative);
 
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: createWindowOptionsForEditor(mockEditor),
-        });
-        jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      expect(mockCopyToClipboard).toHaveBeenCalledWith(mockFormattedLink, 'RangeLink');
+      expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+    });
 
-        mockDestinationManager = createMockDestinationManager({ isBound: false });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+    it('should not call copyToClipboardAndDestination when generateLinkFromSelection returns null', async () => {
+      mockGenerateLink.mockResolvedValue(null);
+      mockCopyToClipboard.mockResolvedValue(undefined);
 
-        await service.createLinkOnly(PathFormat.WorkspaceRelative);
+      await service.createLink(PathFormat.WorkspaceRelative);
 
-        expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: No text selected. Select text and try again.',
-        );
-        expect(mockVscodeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
-      });
+      expect(mockCopyToClipboard).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('createLinkOnly (clipboard-only commands - Issue #117)', () => {
+    let mockGenerateLink: jest.SpyInstance;
+    let mockCopyAndSend: jest.SpyInstance;
+
+    beforeEach(() => {
+      mockVscodeAdapter = createMockVscodeAdapter();
+      mockDestinationManager = createMockDestinationManager({ isBound: false });
+      service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager);
+
+      // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
+      mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+      mockCopyAndSend = jest.spyOn(service as any, 'copyAndSendToDestination');
+    });
+
+    it('should call generateLinkFromSelection with correct parameters', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10-L20');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyAndSend.mockResolvedValue(undefined);
+
+      await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+      expect(mockGenerateLink).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call copyAndSendToDestination with ClipboardOnly behavior', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10-L20');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyAndSend.mockResolvedValue(undefined);
+
+      await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+      expect(mockCopyAndSend).toHaveBeenCalledWith(
+        mockFormattedLink.link, // content
+        mockFormattedLink, // formattedLink
+        expect.any(Function), // isEligibleFn (no-op callback)
+        expect.any(Function), // sendFn (no-op callback)
+        'RangeLink', // linkTypeName
+        'createLinkOnly', // functionName
+        'clipboard-only', // DestinationBehavior.ClipboardOnly
+      );
+      expect(mockCopyAndSend).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call copyAndSendToDestination when generateLinkFromSelection returns null', async () => {
+      mockGenerateLink.mockResolvedValue(null);
+      mockCopyAndSend.mockResolvedValue(undefined);
+
+      await service.createLinkOnly(PathFormat.WorkspaceRelative);
+
+      expect(mockCopyAndSend).not.toHaveBeenCalled();
+    });
+
+    it('should use default PathFormat.WorkspaceRelative when not specified', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyAndSend.mockResolvedValue(undefined);
+
+      await service.createLinkOnly(); // No argument
+
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
     });
   });
 });
