@@ -570,7 +570,7 @@ describe('PasteDestinationManager', () => {
       );
     });
 
-    it('should send to bound terminal successfully', async () => {
+    it('should send to bound terminal successfully and show enhanced status bar message', async () => {
       const mockTerminal = {
         name: 'bash',
         sendText: jest.fn(),
@@ -578,7 +578,13 @@ describe('PasteDestinationManager', () => {
       } as unknown as vscode.Terminal;
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+      // Override getUserInstruction to return undefined (non-chat destinations don't provide instructions)
+      mockTerminalDest.getUserInstruction = jest.fn().mockReturnValue(undefined);
+
       await manager.bind('terminal');
+
+      const setStatusBarSpy = jest.spyOn(mockAdapter, 'setStatusBarMessage');
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
       const result = await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
@@ -586,6 +592,10 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(true);
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledTimes(1);
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledWith(formattedLink);
+
+      expect(setStatusBarSpy).toHaveBeenCalledWith(
+        '✓ RangeLink copied to clipboard & sent to Terminal ("bash")',
+      );
     });
 
     it('should send to bound chat destination successfully', async () => {
