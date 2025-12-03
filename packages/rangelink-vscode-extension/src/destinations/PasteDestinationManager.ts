@@ -623,7 +623,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         this.vscodeAdapter.setStatusBarMessage(options.basicStatusMessage);
         void this.vscodeAdapter.showInformationMessage(successInstruction);
       } else {
-        const enhancedMessage = `${options.basicStatusMessage} and sent to ${displayName}`;
+        const enhancedMessage = `✓ ${options.basicStatusMessage} & sent to ${displayName}`;
         this.vscodeAdapter.setStatusBarMessage(enhancedMessage);
       }
 
