@@ -706,11 +706,11 @@ describe('PasteDestinationManager', () => {
         {
           fn: 'PasteDestinationManager.sendLinkToDestination',
           destinationType: 'terminal',
-          displayName: 'Terminal',
+          displayName: 'Terminal ("bash")',
           formattedLink,
           terminalName: 'bash',
         },
-        'Sending link to Terminal',
+        'Sending link to Terminal ("bash")',
       );
     });
 
