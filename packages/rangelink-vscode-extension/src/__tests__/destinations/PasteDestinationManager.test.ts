@@ -758,6 +758,48 @@ describe('PasteDestinationManager', () => {
       );
     });
 
+    it('should throw UNEXPECTED_CODE_PATH when chat assistant reaches buildPasteFailureMessage', async () => {
+      // Create a mock cursor-ai destination that incorrectly returns undefined for getUserInstruction
+      const mockBrokenChatDest = createMockCursorAIDestination({
+        getUserInstruction: jest.fn().mockReturnValue(undefined), // Chat assistants should always provide instructions
+        pasteLink: jest.fn().mockResolvedValue(false), // Simulate paste failure
+      });
+
+      // Manually set the bound destination
+      (manager as any).boundDestination = mockBrokenChatDest;
+
+      // This should throw UNEXPECTED_CODE_PATH error because chat assistants should never reach buildPasteFailureMessage
+      await expect(async () =>
+        manager.sendLinkToDestination(createMockFormattedLink('src/file.ts#L10'), TEST_STATUS_MESSAGE),
+      ).toThrowRangeLinkExtensionErrorAsync('UNEXPECTED_CODE_PATH', {
+        message:
+          "Chat assistant destination 'cursor-ai' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
+        functionName: 'PasteDestinationManager.buildPasteFailureMessage',
+      });
+    });
+
+    it('should throw DESTINATION_NOT_IMPLEMENTED for unknown destination type', async () => {
+      // Create a mock destination with an unknown ID
+      const mockUnknownDest = createMockTerminalDestination({
+        id: 'unknown-destination-type' as any,
+        displayName: 'Unknown Destination',
+        getUserInstruction: jest.fn().mockReturnValue(undefined),
+        pasteLink: jest.fn().mockResolvedValue(false), // Simulate paste failure
+      });
+
+      // Manually set the bound destination
+      (manager as any).boundDestination = mockUnknownDest;
+
+      // This should throw DESTINATION_NOT_IMPLEMENTED error for unknown destination types
+      await expect(async () =>
+        manager.sendLinkToDestination(createMockFormattedLink('src/file.ts#L10'), TEST_STATUS_MESSAGE),
+      ).toThrowRangeLinkExtensionErrorAsync('DESTINATION_NOT_IMPLEMENTED', {
+        message:
+          "Unknown destination type 'unknown-destination-type' - missing case in buildPasteFailureMessage()",
+        functionName: 'PasteDestinationManager.buildPasteFailureMessage',
+      });
+    });
+
     it('should log error when paste fails', async () => {
       const mockTerminal = {
         name: 'bash',
