@@ -700,33 +700,36 @@ describe('PasteDestinationManager', () => {
       const mockVscode = mockAdapter.__getVscodeInstance();
       (mockVscode.env as any).appName = 'Cursor';
 
-      // Chat destinations provide their own failure instructions
+      await cursorManager.bind('cursor-ai');
+
+      // Get the actual bound destination and configure it
+      const boundDest = cursorManager.getBoundDestination()!;
       const failureInstruction = 'Manual paste: Open Cursor AI and paste the link';
-      mockChatDest.getUserInstruction = jest
+      boundDest.getUserInstruction = jest
         .fn()
         .mockImplementation((result) =>
           result === AutoPasteResult.Failure ? failureInstruction : undefined,
         );
 
-      await manager.bind('cursor-ai');
-
       // Mock paste failure
-      mockChatDest.pasteLink.mockResolvedValueOnce(false);
+      (boundDest.pasteLink as jest.Mock).mockResolvedValueOnce(false);
 
-      const setStatusBarSpy = jest.spyOn(mockAdapter, 'setStatusBarMessage');
-      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+      const setStatusBarSpy = jest.spyOn(cursorAdapter, 'setStatusBarMessage');
+      const showWarningSpy = jest.spyOn(cursorAdapter, 'showWarningMessage');
 
-      const result = await manager.sendLinkToDestination(
+      const result = await cursorManager.sendLinkToDestination(
         createMockFormattedLink('src/file.ts#L10'),
         TEST_STATUS_MESSAGE,
       );
 
       expect(result).toBe(false);
-      expect(mockChatDest.pasteLink).toHaveBeenCalledTimes(1);
+      expect(boundDest.pasteLink).toHaveBeenCalledTimes(1);
 
       // Verify adapter calls for chat failure with instructions
       expect(setStatusBarSpy).toHaveBeenCalledWith(TEST_STATUS_MESSAGE);
       expect(showWarningSpy).toHaveBeenCalledWith(failureInstruction);
+
+      cursorManager.dispose();
     });
 
     it('should log destination details when sending to terminal', async () => {
