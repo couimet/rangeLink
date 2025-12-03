@@ -121,40 +121,6 @@ export interface VscodeAdapterWithTestHooks extends VscodeAdapter {
  * **Test-only feature:** The returned adapter includes `__getVscodeInstance()` for
  * mutating underlying vscode state (readonly properties):
  *
- * ```typescript
- * const adapter = createMockVscodeAdapter();
- *
- * // ✅ Spy on adapter methods directly (no __getVscodeInstance needed)
- * jest.spyOn(adapter, 'writeTextToClipboard');
- * jest.spyOn(adapter, 'showErrorMessage');
- *
- * // ✅ Mutate vscode state via __getVscodeInstance() (properties are readonly)
- * const mockVscode = adapter.__getVscodeInstance();
- * mockVscode.window.activeTextEditor = undefined; // Simulate no editor
- * mockVscode.window.activeTerminal = mockTerminal; // Simulate active terminal
- *
- * // Now adapter.activeTerminal returns mockTerminal
- * expect(adapter.activeTerminal).toBe(mockTerminal);
- * ```
- *
- * **Common options:** Configure adapter state for specific test scenarios:
- *
- * ```typescript
- * // Configure active editor and workspace paths
- * const adapter = createMockVscodeAdapter({
- *   windowOptions: { activeTextEditor: mockEditor },
- *   workspaceOptions: {
- *     getWorkspaceFolder: createMockGetWorkspaceFolder('/workspace'),
- *     asRelativePath: createMockAsRelativePath('src/file.ts'),
- *   },
- * });
- *
- * // Simulate Cursor IDE
- * const adapter = createMockVscodeAdapter({
- *   envOptions: { appName: 'Cursor', uriScheme: 'cursor' },
- * });
- * ```
- *
  * @param options - Optional configuration for environment and VSCode API overrides
  * @returns Real VscodeAdapter instance with test hooks for accessing underlying mock
  */
