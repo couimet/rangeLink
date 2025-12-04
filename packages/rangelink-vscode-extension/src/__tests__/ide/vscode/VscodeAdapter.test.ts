@@ -1254,4 +1254,134 @@ describe('VscodeAdapter', () => {
       expect(result.document.uri).toBe(mockUri);
     });
   });
+
+  describe('executeCommand', () => {
+    it('should execute command without arguments', async () => {
+      const commandId = 'workbench.action.files.save';
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledTimes(1);
+      expect(result).toBeUndefined();
+    });
+
+    it('should execute command with single argument', async () => {
+      const commandId = 'vscode.open';
+      const arg = createMockUri('/workspace/file.ts');
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId, arg);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId, arg);
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledTimes(1);
+      expect(result).toBeUndefined();
+    });
+
+    it('should execute command with multiple arguments', async () => {
+      const commandId = 'editor.action.insertSnippet';
+      const arg1 = { snippet: 'console.log($1)' };
+      const arg2 = { languageId: 'typescript' };
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId, arg1, arg2);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId, arg1, arg2);
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledTimes(1);
+      expect(result).toBeUndefined();
+    });
+
+    it('should forward return value from VSCode command', async () => {
+      const commandId = 'vscode.executeCommand';
+      const expectedReturn = { success: true, data: 'test data' };
+      mockVSCode.commands.executeCommand.mockResolvedValue(expectedReturn);
+
+      const result = await adapter.executeCommand(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toStrictEqual(expectedReturn);
+    });
+
+    it('should execute workbench action command', async () => {
+      const commandId = 'workbench.action.terminal.paste';
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBeUndefined();
+    });
+
+    it('should execute rangelink command', async () => {
+      const commandId = 'rangelink.copyLink';
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBeUndefined();
+    });
+
+    it('should execute command with typed result', async () => {
+      const commandId = 'vscode.executeDocumentSymbolProvider';
+      interface SymbolInfo {
+        name: string;
+        kind: number;
+      }
+      const typedResult: SymbolInfo[] = [
+        { name: 'myFunction', kind: 12 },
+        { name: 'myVariable', kind: 13 },
+      ];
+      mockVSCode.commands.executeCommand.mockResolvedValue(typedResult);
+
+      const result = await adapter.executeCommand<SymbolInfo[]>(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toStrictEqual(typedResult);
+    });
+
+    it('should execute command that returns undefined', async () => {
+      const commandId = 'editor.action.formatDocument';
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBeUndefined();
+    });
+
+    it('should execute command that returns string', async () => {
+      const commandId = 'vscode.executeCommand';
+      const stringResult = 'command executed successfully';
+      mockVSCode.commands.executeCommand.mockResolvedValue(stringResult);
+
+      const result = await adapter.executeCommand<string>(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBe(stringResult);
+    });
+
+    it('should execute command that returns number', async () => {
+      const commandId = 'custom.getCount';
+      const numberResult = 42;
+      mockVSCode.commands.executeCommand.mockResolvedValue(numberResult);
+
+      const result = await adapter.executeCommand<number>(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBe(numberResult);
+    });
+
+    it('should execute command that returns boolean', async () => {
+      const commandId = 'custom.checkStatus';
+      const boolResult = true;
+      mockVSCode.commands.executeCommand.mockResolvedValue(boolResult);
+
+      const result = await adapter.executeCommand<boolean>(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBe(boolResult);
+    });
+  });
 });
