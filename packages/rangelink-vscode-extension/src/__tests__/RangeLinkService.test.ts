@@ -475,6 +475,79 @@ describe('RangeLinkService', () => {
       });
     });
 
+    describe('when destination is bound but content not eligible', () => {
+      beforeEach(() => {
+        const mockDestination = createMockTerminalDestination({
+          displayName: 'Terminal',
+          isEligibleForPasteLink: jest.fn().mockResolvedValue(false),
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          boundDestination: mockDestination,
+        });
+        service = new RangeLinkService(
+          delimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockLogger,
+        );
+      });
+
+      it('should copy link to clipboard', async () => {
+        const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
+
+        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
+
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
+        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+      });
+
+      it('should NOT send to destination when link not eligible', async () => {
+        const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
+
+        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
+
+        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
+      });
+
+      it('should show clipboard-only status message', async () => {
+        const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
+
+        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
+
+        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ RangeLink copied to clipboard',
+        );
+        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      });
+
+      it('should log debug message about skipping auto-paste', async () => {
+        const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
+
+        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
+
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'copyToClipboardAndDestination', boundDestination: 'Terminal' },
+          'Content not eligible for paste - skipping auto-paste',
+        );
+      });
+
+      it('should verify isEligibleForPasteLink was called with correct link', async () => {
+        const link = 'src/auth.ts#L10-L20';
+        const formattedLink = createMockFormattedLink(link);
+        const mockDestination = mockDestinationManager.getBoundDestination()!;
+
+        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
+
+        expect(mockDestination.isEligibleForPasteLink).toHaveBeenCalledWith(formattedLink);
+        expect(mockDestination.isEligibleForPasteLink).toHaveBeenCalledTimes(1);
+      });
+    });
+
     describe('edge cases', () => {
       it('should handle empty link string', async () => {
         const formattedLink = createMockFormattedLink('');
