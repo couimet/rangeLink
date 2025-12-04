@@ -1591,11 +1591,9 @@ describe('VscodeAdapter', () => {
 
       const result = adapter.createDocumentLink(mockRange, mockTargetUri);
 
-      expect(result).toStrictEqual({
-        range: mockRange,
-        target: mockTargetUri,
-        tooltip: undefined,
-      });
+      expect(result.range).toBe(mockRange);
+      expect(result.target).toBe(mockTargetUri);
+      expect(result.tooltip).toBeUndefined();
     });
   });
 });
