@@ -1,4 +1,4 @@
-import { getLogger } from 'barebone-logger';
+import type { Logger } from 'barebone-logger';
 import {
   DelimiterConfig,
   formatLink,
@@ -47,6 +47,7 @@ export class RangeLinkService {
     private readonly delimiters: DelimiterConfig,
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
+    private readonly logger: Logger,
   ) {}
 
   /**
@@ -116,7 +117,7 @@ export class RangeLinkService {
     const selectedTexts = selections.map((s) => editor.document.getText(s));
     const content = selectedTexts.join('\n');
 
-    getLogger().debug(
+    this.logger.debug(
       {
         fn: 'pasteSelectedTextToDestination',
         selectionCount: selectedTexts.length,
@@ -161,7 +162,7 @@ export class RangeLinkService {
       inputSelection = toInputSelection(editor, selections);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to process selection';
-      getLogger().error(
+      this.logger.error(
         { fn: 'generateLinkFromSelection', error },
         'Failed to convert selections to InputSelection',
       );
@@ -177,7 +178,7 @@ export class RangeLinkService {
 
     if (!result.success) {
       const linkType = isPortable ? 'portable link' : 'link';
-      getLogger().error(
+      this.logger.error(
         { fn: 'generateLinkFromSelection', errorCode: result.error },
         `Failed to generate ${linkType}`,
       );
@@ -186,7 +187,7 @@ export class RangeLinkService {
     }
 
     const formattedLink = result.value;
-    getLogger().info(
+    this.logger.info(
       { fn: 'generateLinkFromSelection', formattedLink },
       `Generated link: ${formattedLink.link}`,
     );
@@ -242,7 +243,7 @@ export class RangeLinkService {
         ? 'RangeLink: No text selected. Select text and try again.'
         : 'RangeLink: No active editor';
 
-      getLogger().debug(
+      this.logger.debug(
         {
           fn: 'validateSelectionsAndShowError',
           hasEditor: !!activeSelections.editor,
@@ -315,7 +316,7 @@ export class RangeLinkService {
         destinationBehavior === DestinationBehavior.ClipboardOnly
           ? 'Skipping destination (clipboard-only command)'
           : 'No destination bound - copied to clipboard only';
-      getLogger().info({ fn: fnName }, reason);
+      this.logger.info({ fn: fnName }, reason);
       this.ideAdapter.setStatusBarMessage(basicStatusMessage);
       return;
     }
@@ -327,7 +328,7 @@ export class RangeLinkService {
     // Check eligibility before sending
     const isEligible = await isEligibleFn(destination, sendContent);
     if (!isEligible) {
-      getLogger().debug(
+      this.logger.debug(
         { fn: fnName, boundDestination: displayName },
         'Content not eligible for paste - skipping auto-paste',
       );
@@ -335,7 +336,7 @@ export class RangeLinkService {
       return;
     }
 
-    getLogger().debug(
+    this.logger.debug(
       { fn: fnName, boundDestination: displayName },
       `Attempting to send content to bound destination: ${displayName}`,
     );

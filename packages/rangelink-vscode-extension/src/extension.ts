@@ -51,7 +51,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const factory = new DestinationFactory(ideAdapter, chatPasteHelperFactory, getLogger());
   const destinationManager = new PasteDestinationManager(context, factory, ideAdapter, getLogger());
 
-  const service = new RangeLinkService(delimiters, ideAdapter, destinationManager);
+  const service = new RangeLinkService(delimiters, ideAdapter, destinationManager, getLogger());
 
   // Register destinationManager for automatic disposal on deactivation
   context.subscriptions.push(destinationManager);
