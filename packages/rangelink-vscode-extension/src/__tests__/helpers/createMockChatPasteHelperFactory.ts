@@ -34,27 +34,6 @@ export const createMockChatPasteHelper = (pasteSucceeds = true): MockChatPasteHe
  *
  * @param pasteSucceeds - Whether the helper's attemptPaste should succeed (default: true)
  * @returns Mock ChatPasteHelperFactory with jest.Mocked type
- *
- * @example
- * ```typescript
- * const mockFactory = createMockChatPasteHelperFactory();
- * const destination = new ClaudeCodeDestination(adapter, mockFactory, logger);
- *
- * // Verify factory was called
- * await destination.pasteLink(link);
- * expect(mockFactory.create).toHaveBeenCalledTimes(1);
- *
- * // Get the helper instance to verify paste was called
- * const helper = mockFactory.create();
- * expect(helper.attemptPaste).toHaveBeenCalledWith(text, logContext);
- * ```
- *
- * @example
- * ```typescript
- * // Simulate paste failure
- * const mockFactory = createMockChatPasteHelperFactory(false);
- * const destination = new ClaudeCodeDestination(adapter, mockFactory, logger);
- * ```
  */
 export const createMockChatPasteHelperFactory = (
   pasteSucceeds = true,

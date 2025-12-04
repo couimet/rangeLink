@@ -48,43 +48,6 @@ export interface MockDestinationFactoryOptions {
  *
  * @param options - Configuration for mock factory behavior
  * @returns Mock DestinationFactory with jest.Mocked type
- *
- * @example
- * ```typescript
- * // Use default mock destinations
- * const mockFactory = createMockDestinationFactory();
- * const manager = new PasteDestinationManager(context, mockFactory, adapter, logger);
- *
- * // Verify manager delegated to factory
- * await manager.bind('terminal');
- * expect(mockFactory.create).toHaveBeenCalledWith({ type: 'terminal', terminal: mockTerminal });
- * ```
- *
- * @example
- * ```typescript
- * // Provide custom mock destinations
- * const mockTerminalDest = createMockTerminalDestination({ displayName: 'Custom Terminal' });
- * const mockFactory = createMockDestinationFactory({
- *   destinations: {
- *     terminal: mockTerminalDest,
- *   },
- * });
- *
- * // Verify destination behavior
- * await manager.bind('terminal');
- * expect(mockTerminalDest.pasteLink).toHaveBeenCalled();
- * ```
- *
- * @example
- * ```typescript
- * // Custom create() implementation
- * const mockFactory = createMockDestinationFactory({
- *   createImpl: (options) => {
- *     if (options.type === 'terminal') return mockTerminalDest;
- *     throw new Error('Unsupported type');
- *   },
- * });
- * ```
  */
 export const createMockDestinationFactory = (
   options?: MockDestinationFactoryOptions,
