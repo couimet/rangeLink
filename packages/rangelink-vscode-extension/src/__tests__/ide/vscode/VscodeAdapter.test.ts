@@ -1660,4 +1660,105 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('asRelativePath', () => {
+    it('should convert absolute path to relative without workspace folder name', () => {
+      const absolutePath = '/workspace/src/file.ts';
+      const relativePath = 'src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(absolutePath);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, undefined);
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledTimes(1);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should convert absolute path to relative with workspace folder name', () => {
+      const absolutePath = '/workspace/src/file.ts';
+      const relativePath = 'workspace/src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(absolutePath, true);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, true);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should convert absolute path to relative with includeWorkspaceFolder false', () => {
+      const absolutePath = '/workspace/src/file.ts';
+      const relativePath = 'src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(absolutePath, false);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, false);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should convert URI to relative path', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const relativePath = 'src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(mockUri);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(mockUri, undefined);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should convert URI to relative path with workspace folder name', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const relativePath = 'workspace/src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(mockUri, true);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(mockUri, true);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should handle file outside workspace (returns absolute)', () => {
+      const absolutePath = '/outside/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(absolutePath);
+
+      const result = adapter.asRelativePath(absolutePath);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, undefined);
+      expect(result).toBe(absolutePath);
+    });
+
+    it('should test with monorepo (multiple workspace folders)', () => {
+      const absolutePath = '/workspace/packages/core/src/file.ts';
+      const relativePath = 'core/src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(absolutePath, true);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, true);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should delegate to vscode.workspace.asRelativePath with all parameters', () => {
+      const pathOrUri = '/workspace/test.ts';
+      const includeWorkspaceFolder = true;
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue('workspace/test.ts');
+
+      adapter.asRelativePath(pathOrUri, includeWorkspaceFolder);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(
+        pathOrUri,
+        includeWorkspaceFolder,
+      );
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledTimes(1);
+    });
+  });
 });
