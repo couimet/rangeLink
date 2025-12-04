@@ -1,6 +1,14 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import type { DelimiterConfig } from 'rangelink-core-ts';
+import {
+  RangeLinkError,
+  RangeLinkErrorCodes,
+  Result,
+  SelectionCoverage,
+  SelectionType,
+} from 'rangelink-core-ts';
+import * as rangeLinkCore from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
@@ -8,22 +16,20 @@ import { messagesEn } from '../i18n/messages.en';
 import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
+import * as toInputSelectionModule from '../utils/toInputSelection';
 
 import { createMockAsRelativePath } from './helpers/createMockAsRelativePath';
-import { createMockClaudeCodeDestination } from './helpers/createMockClaudeCodeDestination';
-import { createMockCursorAIDestination } from './helpers/createMockCursorAIDestination';
 import { createMockDestinationManager } from './helpers/createMockDestinationManager';
 import { createMockDocument } from './helpers/createMockDocument';
 import { createMockEditor } from './helpers/createMockEditor';
 import { createMockEditorWithSelection } from './helpers/createMockEditorWithSelection';
 import { createMockFormattedLink } from './helpers/createMockFormattedLink';
 import { createMockGetWorkspaceFolder } from './helpers/createMockGetWorkspaceFolder';
-import { createMockPasteDestination } from './helpers/createMockPasteDestination';
+import { createMockInputSelection } from './helpers/createMockInputSelection';
 import { createMockPosition } from './helpers/createMockPosition';
 import { createMockSelection } from './helpers/createMockSelection';
 import { createMockTerminalDestination } from './helpers/createMockTerminalDestination';
 import { createMockText } from './helpers/createMockText';
-import { createMockTextEditorDestination } from './helpers/createMockTextEditorDestination';
 import { createMockUri } from './helpers/createMockUri';
 import { createWindowOptionsForEditor } from './helpers/createWindowOptionsForEditor';
 import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from './helpers/mockVSCode';
