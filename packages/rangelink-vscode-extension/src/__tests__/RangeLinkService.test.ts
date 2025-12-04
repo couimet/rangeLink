@@ -1216,7 +1216,9 @@ describe('RangeLinkService', () => {
     });
 
     it('should call generateLinkFromSelection with Absolute and portable=true', async () => {
-      const mockFormattedLink = createMockFormattedLink('/workspace/src/file.ts#L10-L20{L:LINE,C:COL}');
+      const mockFormattedLink = createMockFormattedLink(
+        '/workspace/src/file.ts#L10-L20{L:LINE,C:COL}',
+      );
       mockGenerateLink.mockResolvedValue(mockFormattedLink);
       mockCopyToClipboard.mockResolvedValue(undefined);
 
