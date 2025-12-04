@@ -2053,4 +2053,162 @@ describe('VscodeAdapter', () => {
       });
     });
   });
+
+  describe('Environment Getters', () => {
+    describe('appName', () => {
+      it('should return "Visual Studio Code"', () => {
+        mockVSCode.env.appName = 'Visual Studio Code';
+
+        const result = adapter.appName;
+
+        expect(result).toBe('Visual Studio Code');
+      });
+
+      it('should return "Cursor" (for Cursor IDE)', () => {
+        mockVSCode.env.appName = 'Cursor';
+
+        const result = adapter.appName;
+
+        expect(result).toBe('Cursor');
+      });
+    });
+
+    describe('uriScheme', () => {
+      it('should return "vscode"', () => {
+        mockVSCode.env.uriScheme = 'vscode';
+
+        const result = adapter.uriScheme;
+
+        expect(result).toBe('vscode');
+      });
+
+      it('should return "cursor"', () => {
+        mockVSCode.env.uriScheme = 'cursor';
+
+        const result = adapter.uriScheme;
+
+        expect(result).toBe('cursor');
+      });
+    });
+
+    describe('extensions', () => {
+      it('should return array of all extensions', () => {
+        const mockExtensions = [
+          { id: 'ms-vscode.test-extension-1', extensionUri: createMockUri('/ext1') },
+          { id: 'ms-vscode.test-extension-2', extensionUri: createMockUri('/ext2') },
+        ] as any[];
+        mockVSCode.extensions.all = mockExtensions;
+
+        const result = adapter.extensions;
+
+        expect(result).toBe(mockExtensions);
+        expect(result).toHaveLength(2);
+      });
+
+      it('should return empty array when no extensions', () => {
+        mockVSCode.extensions.all = [];
+
+        const result = adapter.extensions;
+
+        expect(result).toStrictEqual([]);
+        expect(result).toHaveLength(0);
+      });
+    });
+  });
+
+  describe('Event Listeners', () => {
+    describe('onDidCloseTerminal', () => {
+      it('should register listener and verify Disposable returned', () => {
+        const mockDisposable = { dispose: jest.fn() };
+        const listener = jest.fn();
+        mockVSCode.window.onDidCloseTerminal.mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidCloseTerminal(listener);
+
+        expect(mockVSCode.window.onDidCloseTerminal).toHaveBeenCalledWith(listener);
+        expect(mockVSCode.window.onDidCloseTerminal).toHaveBeenCalledTimes(1);
+        expect(result).toBe(mockDisposable);
+        expect(result.dispose).toBeDefined();
+      });
+
+      it('should verify listener is called when terminal closes', () => {
+        const listener = jest.fn();
+        const mockTerminal = createMockTerminal({ name: 'bash' });
+        let registeredListener: ((terminal: any) => void) | undefined;
+
+        mockVSCode.window.onDidCloseTerminal.mockImplementation(
+          (cb: (terminal: any) => void) => {
+            registeredListener = cb;
+            return { dispose: jest.fn() };
+          },
+        );
+
+        adapter.onDidCloseTerminal(listener);
+
+        // Simulate terminal closure
+        registeredListener!(mockTerminal);
+
+        expect(listener).toHaveBeenCalledWith(mockTerminal);
+        expect(listener).toHaveBeenCalledTimes(1);
+      });
+
+      it('should verify dispose unregisters listener', () => {
+        const listener = jest.fn();
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.window.onDidCloseTerminal.mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidCloseTerminal(listener);
+        result.dispose();
+
+        expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('onDidCloseTextDocument', () => {
+      it('should register listener and verify Disposable returned', () => {
+        const mockDisposable = { dispose: jest.fn() };
+        const listener = jest.fn();
+        mockVSCode.workspace.onDidCloseTextDocument.mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidCloseTextDocument(listener);
+
+        expect(mockVSCode.workspace.onDidCloseTextDocument).toHaveBeenCalledWith(listener);
+        expect(mockVSCode.workspace.onDidCloseTextDocument).toHaveBeenCalledTimes(1);
+        expect(result).toBe(mockDisposable);
+        expect(result.dispose).toBeDefined();
+      });
+
+      it('should verify listener is called when document closes', () => {
+        const listener = jest.fn();
+        const mockDocument = createMockDocument({ uri: createMockUri('/workspace/file.ts') });
+        let registeredListener: ((document: any) => void) | undefined;
+
+        mockVSCode.workspace.onDidCloseTextDocument.mockImplementation(
+          (cb: (document: any) => void) => {
+            registeredListener = cb;
+            return { dispose: jest.fn() };
+          },
+        );
+
+        adapter.onDidCloseTextDocument(listener);
+
+        // Simulate document closure
+        registeredListener!(mockDocument);
+
+        expect(listener).toHaveBeenCalledWith(mockDocument);
+        expect(listener).toHaveBeenCalledTimes(1);
+      });
+
+      it('should verify dispose unregisters listener', () => {
+        const listener = jest.fn();
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.workspace.onDidCloseTextDocument.mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidCloseTextDocument(listener);
+        result.dispose();
+
+        expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
 });
