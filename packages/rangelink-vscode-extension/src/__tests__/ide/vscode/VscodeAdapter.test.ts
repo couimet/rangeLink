@@ -1058,4 +1058,200 @@ describe('VscodeAdapter', () => {
       expect(result?.id).toBe(extensionId);
     });
   });
+
+  describe('showTextDocument', () => {
+    it('should open document and show in editor with basic URI', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const result = await adapter.showTextDocument(mockUri);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledTimes(1);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, undefined);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledTimes(1);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document with preserveFocus option set to true', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const options = { preserveFocus: true };
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document with preserveFocus option set to false', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const options = { preserveFocus: false };
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document with selection option to highlight range', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const mockRange = {
+        start: { line: 10, character: 5 },
+        end: { line: 15, character: 10 },
+      };
+      const options = { selection: mockRange as any };
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document in specific editor column', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const options = { viewColumn: 2 }; // Open in second editor column
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document in preview mode', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const options = { preview: true };
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document with multiple options combined', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const mockRange = {
+        start: { line: 5, character: 0 },
+        end: { line: 5, character: 10 },
+      };
+      const options = {
+        preserveFocus: false,
+        preview: false,
+        viewColumn: 1,
+        selection: mockRange as any,
+      };
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open untitled document', async () => {
+      const mockUri = createMockUntitledUri('untitled:Untitled-1');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const result = await adapter.showTextDocument(mockUri);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, undefined);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open already-open document', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      // Simulate document already being open (VSCode returns same document instance)
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const result = await adapter.showTextDocument(mockUri);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, undefined);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should verify two-step process: openTextDocument then showTextDocument', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      const openDocSpy = jest
+        .spyOn(mockVSCode.workspace, 'openTextDocument')
+        .mockResolvedValue(mockDocument);
+      const showDocSpy = jest
+        .spyOn(mockVSCode.window, 'showTextDocument')
+        .mockResolvedValue(mockEditor);
+
+      await adapter.showTextDocument(mockUri);
+
+      // Verify order: openTextDocument called before showTextDocument
+      expect(openDocSpy).toHaveBeenCalledTimes(1);
+      expect(showDocSpy).toHaveBeenCalledTimes(1);
+
+      // Verify the document from openTextDocument is passed to showTextDocument
+      expect(showDocSpy).toHaveBeenCalledWith(mockDocument, undefined);
+    });
+
+    it('should return TextEditor instance with correct document reference', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const result = await adapter.showTextDocument(mockUri);
+
+      expect(result).toBe(mockEditor);
+      expect(result.document).toBe(mockDocument);
+      expect(result.document.uri).toBe(mockUri);
+    });
+  });
 });
