@@ -4,6 +4,9 @@ import { TerminalFocusType } from '../../../types/TerminalFocusType';
 import * as resolveWorkspacePathModule from '../../../utils/resolveWorkspacePath';
 import { createMockDocument } from '../../helpers/createMockDocument';
 import { createMockEditor } from '../../helpers/createMockEditor';
+import { createMockTab } from '../../helpers/createMockTab';
+import { createMockTabGroup } from '../../helpers/createMockTabGroup';
+import { createMockTabGroups } from '../../helpers/createMockTabGroups';
 import { createMockTerminal } from '../../helpers/createMockTerminal';
 import { createMockUri } from '../../helpers/createMockUri';
 import { createMockUntitledUri } from '../../helpers/createMockUntitledUri';
@@ -1846,6 +1849,207 @@ describe('VscodeAdapter', () => {
 
         expect(result).toStrictEqual(mockEditors);
         expect(result).toHaveLength(3);
+      });
+    });
+  });
+
+  describe('Tab Group Operations', () => {
+    describe('tabGroups getter', () => {
+      it('should return TabGroups API from vscode.window', () => {
+        const mockTabGroups = createMockTabGroups();
+        mockVSCode.window.tabGroups = mockTabGroups;
+
+        const result = adapter.tabGroups;
+
+        expect(result).toBe(mockTabGroups);
+      });
+    });
+
+    describe('findTabGroupForDocument', () => {
+      it('should find tab group containing target document', () => {
+        const targetUri = createMockUri('/workspace/target.ts');
+        const tab1 = createMockTab(createMockUri('/workspace/file1.ts'));
+        const tab2 = createMockTab(targetUri);
+        const tab3 = createMockTab(createMockUri('/workspace/file3.ts'));
+
+        const tabGroup1 = createMockTabGroup([tab1, tab2]);
+        const tabGroup2 = createMockTabGroup([tab3]);
+
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [tabGroup1, tabGroup2] });
+
+        const result = adapter.findTabGroupForDocument(targetUri);
+
+        expect(result).toBe(tabGroup1);
+      });
+
+      it('should return undefined when document not in any tab group', () => {
+        const targetUri = createMockUri('/workspace/missing.ts');
+        const tab1 = createMockTab(createMockUri('/workspace/file1.ts'));
+        const tab2 = createMockTab(createMockUri('/workspace/file2.ts'));
+
+        const tabGroup = createMockTabGroup([tab1, tab2]);
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [tabGroup] });
+
+        const result = adapter.findTabGroupForDocument(targetUri);
+
+        expect(result).toBeUndefined();
+      });
+
+      it('should handle multiple tab groups (split editors)', () => {
+        const targetUri = createMockUri('/workspace/target.ts');
+        const tab1 = createMockTab(createMockUri('/workspace/file1.ts'));
+        const tab2 = createMockTab(createMockUri('/workspace/file2.ts'));
+        const tab3 = createMockTab(targetUri);
+
+        const leftGroup = createMockTabGroup([tab1]);
+        const centerGroup = createMockTabGroup([tab2]);
+        const rightGroup = createMockTabGroup([tab3]);
+
+        mockVSCode.window.tabGroups = createMockTabGroups({
+          all: [leftGroup, centerGroup, rightGroup],
+        });
+
+        const result = adapter.findTabGroupForDocument(targetUri);
+
+        expect(result).toBe(rightGroup);
+      });
+
+      it('should skip non-text tabs (terminals, webviews)', () => {
+        const targetUri = createMockUri('/workspace/target.ts');
+        const textTab = createMockTab(targetUri);
+        const terminalTab = { input: { type: 'terminal' } } as any; // Non-text tab
+        const webviewTab = { input: { type: 'webview' } } as any; // Non-text tab
+
+        const tabGroup = createMockTabGroup([terminalTab, textTab, webviewTab]);
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [tabGroup] });
+
+        const result = adapter.findTabGroupForDocument(targetUri);
+
+        expect(result).toBe(tabGroup);
+      });
+
+      it('should handle same document in multiple tab groups (return first match)', () => {
+        const targetUri = createMockUri('/workspace/target.ts');
+        const tab1 = createMockTab(targetUri);
+        const tab2 = createMockTab(targetUri); // Same document in different group
+
+        const group1 = createMockTabGroup([tab1]);
+        const group2 = createMockTabGroup([tab2]);
+
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [group1, group2] });
+
+        const result = adapter.findTabGroupForDocument(targetUri);
+
+        expect(result).toBe(group1); // First match
+      });
+
+      it('should test URI comparison (toString equality)', () => {
+        const uri1 = createMockUri('/workspace/file.ts');
+        const uri2 = createMockUri('/workspace/file.ts'); // Same path, different object
+
+        const tab = createMockTab(uri1);
+        const tabGroup = createMockTabGroup([tab]);
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [tabGroup] });
+
+        const result = adapter.findTabGroupForDocument(uri2);
+
+        expect(result).toBe(tabGroup);
+        expect(uri1).not.toBe(uri2); // Different objects
+        expect(uri1.toString()).toBe(uri2.toString()); // Same string representation
+      });
+    });
+
+    describe('isTextEditorTab', () => {
+      it('should return true for text editor tab (TabInputText)', () => {
+        const tab = createMockTab(createMockUri('/workspace/file.ts'));
+
+        const result = adapter.isTextEditorTab(tab);
+
+        expect(result).toBe(true);
+      });
+
+      it('should return false for terminal tab', () => {
+        const terminalTab = {
+          input: { type: 'terminal' },
+        } as any;
+
+        const result = adapter.isTextEditorTab(terminalTab);
+
+        expect(result).toBe(false);
+      });
+
+      it('should return false for webview tab', () => {
+        const webviewTab = {
+          input: { type: 'webview', viewType: 'markdown.preview' },
+        } as any;
+
+        const result = adapter.isTextEditorTab(webviewTab);
+
+        expect(result).toBe(false);
+      });
+
+      it('should return false for custom tab types', () => {
+        const customTab = {
+          input: { type: 'custom', customId: 'some-extension' },
+        } as any;
+
+        const result = adapter.isTextEditorTab(customTab);
+
+        expect(result).toBe(false);
+      });
+
+      it('should verify type guard narrows type correctly', () => {
+        const tab = createMockTab(createMockUri('/workspace/file.ts'));
+
+        if (adapter.isTextEditorTab(tab)) {
+          // Type narrowing should allow accessing tab.input.uri without error
+          const uri = tab.input.uri;
+          expect(uri).toBeDefined();
+          expect(uri.fsPath).toBe('/workspace/file.ts');
+        }
+      });
+    });
+
+    describe('getTabDocumentUri', () => {
+      it('should extract URI from text editor tab', () => {
+        const mockUri = createMockUri('/workspace/file.ts');
+        const tab = createMockTab(mockUri);
+
+        const result = adapter.getTabDocumentUri(tab);
+
+        expect(result).toBe(mockUri);
+      });
+
+      it('should return undefined for terminal tab', () => {
+        const terminalTab = {
+          input: { type: 'terminal' },
+        } as any;
+
+        const result = adapter.getTabDocumentUri(terminalTab);
+
+        expect(result).toBeUndefined();
+      });
+
+      it('should return undefined for webview tab', () => {
+        const webviewTab = {
+          input: { type: 'webview' },
+        } as any;
+
+        const result = adapter.getTabDocumentUri(webviewTab);
+
+        expect(result).toBeUndefined();
+      });
+
+      it('should verify delegates to isTextEditorTab for type checking', () => {
+        const mockUri = createMockUri('/workspace/file.ts');
+        const textTab = createMockTab(mockUri);
+        const terminalTab = { input: { type: 'terminal' } } as any;
+
+        const textResult = adapter.getTabDocumentUri(textTab);
+        const terminalResult = adapter.getTabDocumentUri(terminalTab);
+
+        expect(textResult).toBe(mockUri);
+        expect(terminalResult).toBeUndefined();
       });
     });
   });
