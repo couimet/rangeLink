@@ -1761,4 +1761,92 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('Workspace Getters', () => {
+    describe('activeTerminal', () => {
+      it('should return terminal when one is active', () => {
+        const mockTerminal = createMockTerminal({ name: 'bash' });
+        mockVSCode.window.activeTerminal = mockTerminal;
+
+        const result = adapter.activeTerminal;
+
+        expect(result).toBe(mockTerminal);
+      });
+
+      it('should return undefined when no terminal active', () => {
+        mockVSCode.window.activeTerminal = undefined;
+
+        const result = adapter.activeTerminal;
+
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe('activeTextEditor', () => {
+      it('should return editor when one is active', () => {
+        const mockEditor = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/file.ts') }),
+        });
+        mockVSCode.window.activeTextEditor = mockEditor;
+
+        const result = adapter.activeTextEditor;
+
+        expect(result).toBe(mockEditor);
+      });
+
+      it('should return undefined when no editor active', () => {
+        mockVSCode.window.activeTextEditor = undefined;
+
+        const result = adapter.activeTextEditor;
+
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe('visibleTextEditors', () => {
+      it('should return array of visible editors', () => {
+        const mockEditor1 = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/file1.ts') }),
+        });
+        const mockEditor2 = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/file2.ts') }),
+        });
+        mockVSCode.window.visibleTextEditors = [mockEditor1, mockEditor2];
+
+        const result = adapter.visibleTextEditors;
+
+        expect(result).toStrictEqual([mockEditor1, mockEditor2]);
+        expect(result).toHaveLength(2);
+      });
+
+      it('should return empty array when none visible', () => {
+        mockVSCode.window.visibleTextEditors = [];
+
+        const result = adapter.visibleTextEditors;
+
+        expect(result).toStrictEqual([]);
+        expect(result).toHaveLength(0);
+      });
+
+      it('should return multiple editors (split view)', () => {
+        const mockEditors = [
+          createMockEditor({
+            document: createMockDocument({ uri: createMockUri('/workspace/left.ts') }),
+          }),
+          createMockEditor({
+            document: createMockDocument({ uri: createMockUri('/workspace/center.ts') }),
+          }),
+          createMockEditor({
+            document: createMockDocument({ uri: createMockUri('/workspace/right.ts') }),
+          }),
+        ];
+        mockVSCode.window.visibleTextEditors = mockEditors;
+
+        const result = adapter.visibleTextEditors;
+
+        expect(result).toStrictEqual(mockEditors);
+        expect(result).toHaveLength(3);
+      });
+    });
+  });
 });
