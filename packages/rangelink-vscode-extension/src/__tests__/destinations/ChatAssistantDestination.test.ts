@@ -121,7 +121,7 @@ describe('ChatAssistantDestination', () => {
           formattedLink,
           linkLength: testLink.length,
         },
-        unavailableMessage: 'Cannot paste: Test Chat Assistant not available',
+        unavailableMessage: 'Cannot paste link: Test Chat Assistant not available',
         successLogMessage: 'Pasted link to Test Chat Assistant',
         errorLogMessage: 'Failed to paste link to Test Chat Assistant',
       });
@@ -159,7 +159,7 @@ describe('ChatAssistantDestination', () => {
           fn: 'TestChatAssistantDestination.pasteContent',
           contentLength: testContent.length,
         },
-        unavailableMessage: 'Cannot paste: Test Chat Assistant not available',
+        unavailableMessage: 'Cannot paste content: Test Chat Assistant not available',
         successLogMessage: 'Pasted content to Test Chat Assistant',
         errorLogMessage: 'Failed to paste content to Test Chat Assistant',
       });

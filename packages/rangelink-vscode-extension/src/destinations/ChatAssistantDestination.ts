@@ -115,7 +115,7 @@ export abstract class ChatAssistantDestination implements PasteDestination {
         formattedLink,
         linkLength: formattedLink.link.length,
       },
-      unavailableMessage: `Cannot paste: ${this.displayName} not available`,
+      unavailableMessage: `Cannot paste link: ${this.displayName} not available`,
       successLogMessage: `Pasted link to ${this.displayName}`,
       errorLogMessage: `Failed to paste link to ${this.displayName}`,
     });
@@ -135,7 +135,7 @@ export abstract class ChatAssistantDestination implements PasteDestination {
         fn: `${this.constructor.name}.pasteContent`,
         contentLength: content.length,
       },
-      unavailableMessage: `Cannot paste: ${this.displayName} not available`,
+      unavailableMessage: `Cannot paste content: ${this.displayName} not available`,
       successLogMessage: `Pasted content to ${this.displayName}`,
       errorLogMessage: `Failed to paste content to ${this.displayName}`,
     });
