@@ -1384,4 +1384,218 @@ describe('VscodeAdapter', () => {
       expect(result).toBe(boolResult);
     });
   });
+
+  describe('parseUri', () => {
+    it('should parse file:// URI using VSCode API', () => {
+      const uriString = 'file:///workspace/file.ts';
+      const mockParsedUri = {
+        scheme: 'file',
+        path: '/workspace/file.ts',
+        fsPath: '/workspace/file.ts',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledTimes(1);
+      expect(result).toBe(mockParsedUri);
+    });
+
+    it('should parse untitled: URI', () => {
+      const uriString = 'untitled:Untitled-1';
+      const mockParsedUri = {
+        scheme: 'untitled',
+        path: 'Untitled-1',
+        fsPath: 'Untitled-1',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result).toStrictEqual(mockParsedUri);
+    });
+
+    it('should parse custom scheme URI (vscode:)', () => {
+      const uriString = 'vscode://settings/editor';
+      const mockParsedUri = {
+        scheme: 'vscode',
+        path: '/settings/editor',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result).toStrictEqual(mockParsedUri);
+    });
+
+    it('should parse custom scheme URI (command:)', () => {
+      const uriString = 'command:workbench.action.openSettings';
+      const mockParsedUri = {
+        scheme: 'command',
+        path: 'workbench.action.openSettings',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result).toStrictEqual(mockParsedUri);
+    });
+
+    it('should parse URI with query parameters', () => {
+      const uriString = 'file:///workspace/file.ts?line=10&column=5';
+      const mockParsedUri = {
+        scheme: 'file',
+        path: '/workspace/file.ts',
+        query: 'line=10&column=5',
+        fsPath: '/workspace/file.ts',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result.query).toBe('line=10&column=5');
+    });
+
+    it('should parse URI with fragments', () => {
+      const uriString = 'file:///workspace/file.ts#L10-L20';
+      const mockParsedUri = {
+        scheme: 'file',
+        path: '/workspace/file.ts',
+        fragment: 'L10-L20',
+        fsPath: '/workspace/file.ts',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result.fragment).toBe('L10-L20');
+    });
+
+    it('should parse URI with both query and fragment', () => {
+      const uriString = 'file:///workspace/file.ts?foo=bar#section';
+      const mockParsedUri = {
+        scheme: 'file',
+        path: '/workspace/file.ts',
+        query: 'foo=bar',
+        fragment: 'section',
+        fsPath: '/workspace/file.ts',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result.query).toBe('foo=bar');
+      expect(result.fragment).toBe('section');
+    });
+  });
+
+  describe('createDocumentLink', () => {
+    it('should create document link with range only (no target)', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(10, 0),
+        adapter.createPosition(10, 20),
+      );
+
+      const result = adapter.createDocumentLink(mockRange);
+
+      expect(mockVSCode.DocumentLink).toHaveBeenCalledWith(mockRange, undefined);
+      expect(mockVSCode.DocumentLink).toHaveBeenCalledTimes(1);
+      expect(result.range).toBe(mockRange);
+      expect(result.target).toBeUndefined();
+    });
+
+    it('should create document link with range and target URI', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(5, 10),
+        adapter.createPosition(5, 30),
+      );
+      const mockTargetUri = createMockUri('file:///workspace/target.ts');
+
+      const result = adapter.createDocumentLink(mockRange, mockTargetUri);
+
+      expect(mockVSCode.DocumentLink).toHaveBeenCalledWith(mockRange, mockTargetUri);
+      expect(result.range).toBe(mockRange);
+      expect(result.target).toBe(mockTargetUri);
+    });
+
+    it('should create document link with single-line range', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(15, 5),
+        adapter.createPosition(15, 25),
+      );
+
+      const result = adapter.createDocumentLink(mockRange);
+
+      expect(result.range).toStrictEqual({
+        start: { line: 15, character: 5 },
+        end: { line: 15, character: 25 },
+      });
+    });
+
+    it('should create document link with multi-line range', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(10, 0),
+        adapter.createPosition(20, 10),
+      );
+      const mockTargetUri = createMockUri('file:///workspace/file.ts');
+
+      const result = adapter.createDocumentLink(mockRange, mockTargetUri);
+
+      expect(result.range).toStrictEqual({
+        start: { line: 10, character: 0 },
+        end: { line: 20, character: 10 },
+      });
+      expect(result.target).toBe(mockTargetUri);
+    });
+
+    it('should create document link with different target URI schemes', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(0, 0),
+        adapter.createPosition(0, 10),
+      );
+      const mockTargetUri = createMockUri('command:workbench.action.openSettings');
+
+      const result = adapter.createDocumentLink(mockRange, mockTargetUri);
+
+      expect(mockVSCode.DocumentLink).toHaveBeenCalledWith(mockRange, mockTargetUri);
+      expect(result.target).toBe(mockTargetUri);
+    });
+
+    it('should verify DocumentLink properties are properly initialized', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(1, 2),
+        adapter.createPosition(3, 4),
+      );
+      const mockTargetUri = createMockUri('file:///test.ts');
+
+      const result = adapter.createDocumentLink(mockRange, mockTargetUri);
+
+      expect(result).toStrictEqual({
+        range: mockRange,
+        target: mockTargetUri,
+        tooltip: undefined,
+      });
+    });
+  });
 });
