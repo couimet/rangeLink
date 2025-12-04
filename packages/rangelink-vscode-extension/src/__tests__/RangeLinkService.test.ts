@@ -1165,20 +1165,20 @@ describe('RangeLinkService', () => {
           false,
         );
 
-        expect(result).toBeNull();
+        expect(result).toBeUndefined();
         expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
           'RangeLink: No active editor',
         );
         expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
       });
 
-      it('should return null early when no editor', async () => {
+      it('should return undefined early when no editor', async () => {
         const result = await (service as any).generateLinkFromSelection(
           'workspace-relative',
           false,
         );
 
-        expect(result).toBeNull();
+        expect(result).toBeUndefined();
         expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
       });
     });
@@ -1630,7 +1630,7 @@ describe('RangeLinkService', () => {
         false,
       );
 
-      expect(result).toBeNull();
+      expect(result).toBeUndefined();
       expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Invalid rectangular selection',
       );
@@ -1646,7 +1646,7 @@ describe('RangeLinkService', () => {
         false,
       );
 
-      expect(result).toBeNull();
+      expect(result).toBeUndefined();
       expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Failed to process selection',
       );
@@ -1730,7 +1730,7 @@ describe('RangeLinkService', () => {
         false,
       );
 
-      expect(result).toBeNull();
+      expect(result).toBeUndefined();
       expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Failed to generate link',
       );
@@ -1754,7 +1754,7 @@ describe('RangeLinkService', () => {
         true, // isPortable = true
       );
 
-      expect(result).toBeNull();
+      expect(result).toBeUndefined();
       expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Failed to generate portable link',
       );
@@ -1844,8 +1844,8 @@ describe('RangeLinkService', () => {
       expect(mockCopyAndSend).toHaveBeenCalledTimes(1);
     });
 
-    it('should not call copyAndSendToDestination when generateLinkFromSelection returns null', async () => {
-      mockGenerateLink.mockResolvedValue(null);
+    it('should not call copyAndSendToDestination when generateLinkFromSelection returns undefined', async () => {
+      mockGenerateLink.mockResolvedValue(undefined);
       mockCopyAndSend.mockResolvedValue(undefined);
 
       await service.createLinkOnly(PathFormat.WorkspaceRelative);

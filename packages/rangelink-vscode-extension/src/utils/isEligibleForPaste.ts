@@ -9,17 +9,12 @@
  * Used by all paste destinations (Terminal, Claude Code, Cursor AI) to
  * ensure consistent validation before attempting paste operations.
  *
- * @param text - The text to validate (may be null/undefined)
+ * @param text - The text to validate (may be undefined)
  * @returns true if text has meaningful content, false otherwise
  */
-export const isEligibleForPaste = (text: string | null | undefined): boolean => {
-  // Reject null/undefined
-  if (text === null || text === undefined) {
-    return false;
-  }
-
-  // Reject empty strings
-  if (text === '') {
+export const isEligibleForPaste = (text: string | undefined): boolean => {
+  // Reject undefined or empty
+  if (!text) {
     return false;
   }
 

@@ -141,15 +141,15 @@ export class RangeLinkService {
    * Generates a link from the current editor selection
    * @param pathFormat Whether to use relative or absolute paths
    * @param isPortable Whether to generate a portable link with embedded delimiters
-   * @returns The generated FormattedLink with metadata, or null if generation failed
+   * @returns The generated FormattedLink with metadata, or undefined if generation failed
    */
   private async generateLinkFromSelection(
     pathFormat: PathFormat,
     isPortable: boolean,
-  ): Promise<FormattedLink | null> {
+  ): Promise<FormattedLink | undefined> {
     const validated = this.validateSelectionsAndShowError();
     if (!validated) {
-      return null;
+      return undefined;
     }
 
     const { editor, selections } = validated;
@@ -167,7 +167,7 @@ export class RangeLinkService {
         'Failed to convert selections to InputSelection',
       );
       this.ideAdapter.showErrorMessage(`RangeLink: ${message}`);
-      return null;
+      return undefined;
     }
 
     const options: FormatOptions = {
@@ -183,7 +183,7 @@ export class RangeLinkService {
         `Failed to generate ${linkType}`,
       );
       this.ideAdapter.showErrorMessage(`RangeLink: Failed to generate ${linkType}`);
-      return null;
+      return undefined;
     }
 
     const formattedLink = result.value;
