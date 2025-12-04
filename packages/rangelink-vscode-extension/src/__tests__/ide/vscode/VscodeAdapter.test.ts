@@ -1596,4 +1596,68 @@ describe('VscodeAdapter', () => {
       expect(result.tooltip).toBeUndefined();
     });
   });
+
+  describe('getWorkspaceFolder', () => {
+    it('should get workspace folder for file inside workspace', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const mockWorkspaceFolder = {
+        uri: createMockUri('/workspace'),
+        name: 'workspace',
+        index: 0,
+      };
+
+      mockVSCode.workspace.getWorkspaceFolder.mockReturnValue(mockWorkspaceFolder);
+
+      const result = adapter.getWorkspaceFolder(mockUri);
+
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledTimes(1);
+      expect(result).toBe(mockWorkspaceFolder);
+    });
+
+    it('should return undefined for file outside workspace', () => {
+      const mockUri = createMockUri('/outside/file.ts');
+
+      mockVSCode.workspace.getWorkspaceFolder.mockReturnValue(undefined);
+
+      const result = adapter.getWorkspaceFolder(mockUri);
+
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledWith(mockUri);
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle URI with multiple workspace folders (monorepo)', () => {
+      const mockUri = createMockUri('/workspace/packages/core/src/file.ts');
+      const mockWorkspaceFolder = {
+        uri: createMockUri('/workspace/packages/core'),
+        name: 'core',
+        index: 1,
+      };
+
+      mockVSCode.workspace.getWorkspaceFolder.mockReturnValue(mockWorkspaceFolder);
+
+      const result = adapter.getWorkspaceFolder(mockUri);
+
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledWith(mockUri);
+      expect(result).toStrictEqual(mockWorkspaceFolder);
+      expect(result?.name).toBe('core');
+      expect(result?.index).toBe(1);
+    });
+
+    it('should delegate to vscode.workspace.getWorkspaceFolder', () => {
+      const mockUri = createMockUri('/workspace/test.ts');
+      const mockFolder = {
+        uri: createMockUri('/workspace'),
+        name: 'workspace',
+        index: 0,
+      };
+
+      mockVSCode.workspace.getWorkspaceFolder.mockReturnValue(mockFolder);
+
+      adapter.getWorkspaceFolder(mockUri);
+
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledTimes(1);
+    });
+  });
 });
