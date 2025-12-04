@@ -1591,6 +1591,104 @@ describe('RangeLinkService', () => {
     });
   });
 
+  describe('generateLinkFromSelection() - happy path integration', () => {
+    let mockToInputSelection: jest.SpyInstance;
+
+    beforeEach(() => {
+      // Use same setup as formatLink error tests, but let formatLink succeed
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: createMockUri('/test/file.ts') }),
+        selections: [createMockSelection({ isEmpty: false })],
+      });
+
+      mockVscodeAdapter = createMockVscodeAdapter({
+        windowOptions: { activeTextEditor: mockEditor },
+        workspaceOptions: {
+          getWorkspaceFolder: jest
+            .fn()
+            .mockReturnValue({ uri: createMockUri('/test'), index: 0, name: 'test' }),
+          asRelativePath: jest.fn().mockReturnValue('file.ts'),
+        },
+      });
+
+      mockDestinationManager = createMockDestinationManager({ isBound: false });
+      service = new RangeLinkService(
+        delimiters,
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockLogger,
+      );
+
+      // Mock toInputSelection to return valid input (like formatLink error tests do)
+      mockToInputSelection = jest.spyOn(toInputSelectionModule, 'toInputSelection');
+      mockToInputSelection.mockReturnValue(
+        createMockInputSelection({
+          selections: [
+            {
+              start: { line: 10, char: 0 },
+              end: { line: 20, char: 0 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Normal,
+        }),
+      );
+    });
+
+    it('should successfully generate regular link and return FormattedLink', async () => {
+      const result = await (service as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        false,
+      );
+
+      expect(result).toStrictEqual({
+        link: expect.stringMatching(/file\.ts#L\d+/),
+        linkType: 'regular',
+        selectionType: 'Normal',
+        rangeFormat: 'WithPositions',
+        delimiters: expect.any(Object),
+        computedSelection: expect.any(Object),
+      });
+    });
+
+    it('should successfully generate portable link and return FormattedLink', async () => {
+      const result = await (service as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        true, // isPortable
+      );
+
+      expect(result).toStrictEqual({
+        link: expect.stringMatching(/file\.ts#L\d+.*~.*~.*~.*~/),
+        linkType: 'portable',
+        selectionType: 'Normal',
+        rangeFormat: 'WithPositions',
+        delimiters: expect.any(Object),
+        computedSelection: expect.any(Object),
+      });
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'generateLinkFromSelection', formattedLink: result },
+        `Generated link: ${result.link}`,
+      );
+    });
+
+    it('should return FormattedLink with all required fields', async () => {
+      const result = await (service as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        false,
+      );
+
+      expect(result).toStrictEqual({
+        link: expect.stringMatching(/file\.ts#L\d+/),
+        linkType: 'regular',
+        selectionType: 'Normal',
+        rangeFormat: 'WithPositions',
+        delimiters: expect.any(Object),
+        computedSelection: expect.any(Object),
+      });
+    });
+  });
+
   describe('generateLinkFromSelection() - error handling', () => {
     let mockToInputSelection: jest.SpyInstance;
 
