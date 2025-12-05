@@ -2136,12 +2136,10 @@ describe('VscodeAdapter', () => {
         const mockTerminal = createMockTerminal({ name: 'bash' });
         let registeredListener: ((terminal: any) => void) | undefined;
 
-        mockVSCode.window.onDidCloseTerminal.mockImplementation(
-          (cb: (terminal: any) => void) => {
-            registeredListener = cb;
-            return { dispose: jest.fn() };
-          },
-        );
+        mockVSCode.window.onDidCloseTerminal.mockImplementation((cb: (terminal: any) => void) => {
+          registeredListener = cb;
+          return { dispose: jest.fn() };
+        });
 
         adapter.onDidCloseTerminal(listener);
 
