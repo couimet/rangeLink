@@ -314,8 +314,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should fail when claude-code not available', async () => {
-      const mockDestination = createMockClaudeCodeDestination();
-      mockDestination.isAvailable = jest.fn().mockResolvedValue(false);
+      const mockDestination = createMockClaudeCodeDestination({ isAvailable: false });
       jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
 
       const result = await manager.bind('claude-code');
