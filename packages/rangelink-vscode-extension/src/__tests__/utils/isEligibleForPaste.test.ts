@@ -3,7 +3,7 @@ import { isEligibleForPaste } from '../../utils/isEligibleForPaste';
 describe('isEligibleForPaste', () => {
   describe('Null and undefined handling', () => {
     it('should return false for null', () => {
-      expect(isEligibleForPaste(null)).toBe(false);
+      expect(isEligibleForPaste(null as unknown as string)).toBe(false);
     });
 
     it('should return false for undefined', () => {
