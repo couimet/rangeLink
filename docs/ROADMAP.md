@@ -24,12 +24,6 @@ _Future development plans and in-progress work._
 
 **Looking for completed features?** See [JOURNEY.md](./JOURNEY.md) for full details on:
 
-- ✅ **Universal Paste Destinations** - Terminal, text editor, and Cursor AI integration
-- ✅ **Terminal Link Navigation** - Click RangeLinks in terminal output
-- ✅ **Editor Link Navigation** - Click RangeLinks in scratchpad files
-- ✅ **Terminal Auto-Focus** - Seamless workflow after link generation
-- ✅ **Result Type Value Object** - Runtime type safety with validated getters
-
 ---
 
 ## Active Development — Navigation Enhancements

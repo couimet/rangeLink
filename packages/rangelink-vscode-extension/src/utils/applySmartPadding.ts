@@ -4,10 +4,6 @@
  * Adds leading and trailing spaces to text only when needed, preventing
  * double-spacing issues when user has already padded text manually.
  *
- * Used by paste destinations (Terminal, Claude Code, Cursor AI) to ensure
- * pasted text is properly separated from surrounding content without being
- * overly verbose.
- *
  * Padding strategy:
  * - Trim whitespace-only strings completely (no meaningful content)
  * - Add leading space only if text doesn't start with whitespace

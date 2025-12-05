@@ -7,7 +7,8 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { ChatPasteHelperFactory } from './ChatPasteHelperFactory';
 import { ClaudeCodeDestination } from './ClaudeCodeDestination';
 import { CursorAIDestination } from './CursorAIDestination';
-import type { DestinationType, PasteDestination } from './PasteDestination';
+import { GitHubCopilotChatDestination } from './GitHubCopilotChatDestination';
+import { DESTINATION_TYPES, type DestinationType, type PasteDestination } from './PasteDestination';
 import { TerminalDestination } from './TerminalDestination';
 import { TextEditorDestination } from './TextEditorDestination';
 
@@ -20,7 +21,7 @@ import { TextEditorDestination } from './TextEditorDestination';
 export type CreateOptions =
   | { type: 'terminal'; terminal: vscode.Terminal }
   | { type: 'text-editor'; editor: vscode.TextEditor }
-  | { type: 'cursor-ai' | 'claude-code' | 'github-copilot' };
+  | { type: 'cursor-ai' | 'claude-code' | 'github-copilot-chat' };
 
 /**
  * Display names for destination types
@@ -31,7 +32,7 @@ const DISPLAY_NAMES: Record<DestinationType, string> = {
   terminal: 'Terminal',
   'text-editor': 'Text Editor',
   'cursor-ai': 'Cursor AI Assistant',
-  'github-copilot': 'GitHub Copilot Chat',
+  'github-copilot-chat': 'GitHub Copilot Chat',
   'claude-code': 'Claude Code Chat',
 };
 
@@ -80,9 +81,8 @@ export class DestinationFactory {
       case 'claude-code':
         return new ClaudeCodeDestination(this.ideAdapter, this.chatPasteHelperFactory, this.logger);
 
-      // Future implementations:
-      // case 'github-copilot':
-      //   return new GitHubCopilotDestination(this.ideAdapter, this.logger);
+      case 'github-copilot-chat':
+        return new GitHubCopilotChatDestination(this.ideAdapter, this.logger);
 
       default:
         // Phase 2+: Will implement github-copilot
@@ -99,18 +99,12 @@ export class DestinationFactory {
    * Get all supported destination types
    *
    * Used by UI components (QuickPick menus) to list available destinations.
+   * Returns a copy of DESTINATION_TYPES to prevent external mutation.
    *
    * @returns Array of supported destination type identifiers
    */
   getSupportedTypes(): DestinationType[] {
-    return [
-      'terminal',
-      'cursor-ai',
-      'text-editor',
-      'claude-code',
-      // Future: Phase 2+ additions
-      // 'github-copilot',
-    ];
+    return [...DESTINATION_TYPES];
   }
 
   /**

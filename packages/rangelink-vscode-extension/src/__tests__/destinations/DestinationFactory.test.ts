@@ -3,6 +3,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { CursorAIDestination } from '../../destinations/CursorAIDestination';
 import { DestinationFactory } from '../../destinations/DestinationFactory';
+import { GitHubCopilotChatDestination } from '../../destinations/GitHubCopilotChatDestination';
 import { TerminalDestination } from '../../destinations/TerminalDestination';
 import { TextEditorDestination } from '../../destinations/TextEditorDestination';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
@@ -64,20 +65,17 @@ describe('DestinationFactory', () => {
       expect(mockLogger.info).toHaveBeenCalled();
     });
 
-    it('should throw RangeLinkExtensionError for github-copilot type (not yet implemented)', () => {
-      let caughtError: unknown;
-      try {
-        factory.create({ type: 'github-copilot' });
-      } catch (error) {
-        caughtError = error;
-      }
+    it('should create GitHubCopilotChatDestination for github-copilot-chat type', () => {
+      const destination = factory.create({ type: 'github-copilot-chat' });
 
-      expect(caughtError).toBeInstanceOf(RangeLinkExtensionError);
-      const error = caughtError as RangeLinkExtensionError;
-      expect(error.code).toBe(RangeLinkExtensionErrorCodes.DESTINATION_NOT_IMPLEMENTED);
-      expect(error.message).toBe('Destination type not yet implemented: github-copilot');
-      expect(error.functionName).toBe('DestinationFactory.create');
-      expect(error.details).toStrictEqual({ destinationType: 'github-copilot' });
+      expect(destination).toBeInstanceOf(GitHubCopilotChatDestination);
+      expect(destination.id).toBe('github-copilot-chat');
+      expect(destination.displayName).toBe('GitHub Copilot Chat');
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'DestinationFactory.create', type: 'github-copilot-chat' },
+        'Creating destination: github-copilot-chat',
+      );
     });
 
     it('should create CursorAIDestination for cursor-ai type', () => {
@@ -106,17 +104,23 @@ describe('DestinationFactory', () => {
   });
 
   describe('getSupportedTypes()', () => {
-    it('should return array with terminal, cursor-ai, text-editor, and claude-code types', () => {
+    it('should return array with all supported destination types', () => {
       const types = factory.getSupportedTypes();
 
-      expect(types).toEqual(['terminal', 'cursor-ai', 'text-editor', 'claude-code']);
+      expect(types).toEqual([
+        'claude-code',
+        'cursor-ai',
+        'github-copilot-chat',
+        'terminal',
+        'text-editor',
+      ]);
     });
 
     it('should return array (not frozen or readonly)', () => {
       const types = factory.getSupportedTypes();
 
       expect(Array.isArray(types)).toBe(true);
-      expect(types.length).toBe(4);
+      expect(types.length).toBe(5);
     });
   });
 
@@ -128,7 +132,7 @@ describe('DestinationFactory', () => {
         terminal: 'Terminal',
         'text-editor': 'Text Editor',
         'cursor-ai': 'Cursor AI Assistant',
-        'github-copilot': 'GitHub Copilot Chat',
+        'github-copilot-chat': 'GitHub Copilot Chat',
         'claude-code': 'Claude Code Chat',
       });
     });
@@ -140,17 +144,18 @@ describe('DestinationFactory', () => {
       expect(displayNames.terminal).toMatch(/^[A-Z]/);
       expect(displayNames['text-editor']).toMatch(/^[A-Z]/);
       expect(displayNames['cursor-ai']).toMatch(/^[A-Z]/);
-      expect(displayNames['github-copilot']).toMatch(/^[A-Z]/);
+      expect(displayNames['github-copilot-chat']).toMatch(/^[A-Z]/);
       expect(displayNames['claude-code']).toMatch(/^[A-Z]/);
     });
 
-    it('should include future destination types in display names', () => {
+    it('should include all destination types in display names', () => {
       const displayNames = factory.getDisplayNames();
 
-      // Even though these aren't implemented yet, display names should be available for UI
+      // All destination types should have display names available for UI
+      expect(displayNames['terminal']).toBeDefined();
       expect(displayNames['text-editor']).toBeDefined();
       expect(displayNames['cursor-ai']).toBeDefined();
-      expect(displayNames['github-copilot']).toBeDefined();
+      expect(displayNames['github-copilot-chat']).toBeDefined();
       expect(displayNames['claude-code']).toBeDefined();
     });
   });

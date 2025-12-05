@@ -319,6 +319,18 @@ export class VscodeAdapter {
     return this.ideInstance.commands.executeCommand<T>(command, ...args);
   }
 
+  /**
+   * Get all available commands in VSCode.
+   *
+   * Used for feature detection (e.g., checking if chat commands exist).
+   *
+   * @param filterInternal - If true, filters out internal commands (default: false)
+   * @returns Promise resolving to array of command identifiers
+   */
+  async getCommands(filterInternal = false): Promise<string[]> {
+    return this.ideInstance.commands.getCommands(filterInternal);
+  }
+
   // ============================================================================
   // Workspace Operations
   // ============================================================================

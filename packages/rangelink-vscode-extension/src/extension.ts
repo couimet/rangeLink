@@ -212,6 +212,19 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
+    ideAdapter.registerCommand('rangelink.bindToGitHubCopilotChat', async () => {
+      const gitHubCopilotChatDestination = factory.create({ type: 'github-copilot-chat' });
+      if (!(await gitHubCopilotChatDestination.isAvailable())) {
+        void ideAdapter.showInformationMessage(
+          'RangeLink can seamlessly integrate with GitHub Copilot Chat for faster context sharing of precise code ranges.\n\nInstall and activate the GitHub Copilot Chat extension to use it as a paste destination.',
+        );
+        return;
+      }
+      await destinationManager.bind('github-copilot-chat');
+    }),
+  );
+
+  context.subscriptions.push(
     ideAdapter.registerCommand('rangelink.unbindDestination', () => {
       destinationManager.unbind();
     }),

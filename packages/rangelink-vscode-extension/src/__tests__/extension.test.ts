@@ -3162,9 +3162,9 @@ describe('Extension lifecycle', () => {
     // Extension imported at top
     require('../extension').activate(mockContext as any);
 
-    // Verify all 15 commands are registered
+    // Verify all 16 commands are registered
     // Note: Command registration is IDE-agnostic; runtime availability differs by environment
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(15);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(16);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
@@ -3190,6 +3190,7 @@ describe('Extension lifecycle', () => {
       'rangelink.bindToTextEditor',
       'rangelink.bindToCursorAI',
       'rangelink.bindToClaudeCode',
+      'rangelink.bindToGitHubCopilotChat',
       'rangelink.unbindDestination',
       // Version and utility commands
       'rangelink.showVersion',

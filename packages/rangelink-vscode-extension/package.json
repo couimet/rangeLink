@@ -130,6 +130,12 @@
         "icon": "$(link)"
       },
       {
+        "command": "rangelink.bindToGitHubCopilotChat",
+        "title": "Bind RangeLink to GitHub Copilot Chat Destination",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.unbindDestination",
         "title": "Unbind RangeLink Destination",
         "category": "RangeLink",

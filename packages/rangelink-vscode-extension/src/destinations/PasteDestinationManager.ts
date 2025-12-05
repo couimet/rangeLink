@@ -27,6 +27,18 @@ import { TextEditorDestination } from './TextEditorDestination';
  * - No state persistence across reloads (same as legacy behavior)
  */
 export class PasteDestinationManager implements vscode.Disposable {
+  /**
+   * Static lookup table mapping AI assistant destination types to unavailable error message codes
+   */
+  private static readonly AI_ASSISTANT_ERROR_CODES: Record<
+    'cursor-ai' | 'claude-code' | 'github-copilot-chat',
+    MessageCode
+  > = {
+    'claude-code': MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE,
+    'cursor-ai': MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE,
+    'github-copilot-chat': MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE,
+  };
+
   private boundDestination: PasteDestination | undefined;
   private boundTerminal: vscode.Terminal | undefined; // Track for closure events
   private disposables: vscode.Disposable[] = [];
@@ -425,26 +437,34 @@ export class PasteDestinationManager implements vscode.Disposable {
   /**
    * Bind to generic destination (AI assistant destinations, etc.)
    *
-   * @param type - The destination type (e.g., 'cursor-ai', 'claude-code', 'github-copilot')
+   * @param type - The destination type (AI assistants only)
    * @returns true if binding succeeded, false if destination not available
    */
-  private async bindGenericDestination(type: DestinationType): Promise<boolean> {
+  private async bindGenericDestination(
+    type: 'cursor-ai' | 'claude-code' | 'github-copilot-chat',
+  ): Promise<boolean> {
     // Generic destinations don't require resources at construction
-    const newDestination = this.factory.create({
-      type: type as 'cursor-ai' | 'claude-code' | 'github-copilot',
-    });
+    const newDestination = this.factory.create({ type });
 
-    // Check if destination is available (e.g., Cursor IDE detection, Claude Code extension)
+    // Check if destination is available
     if (!(await newDestination.isAvailable())) {
       this.logger.warn(
         { fn: 'PasteDestinationManager.bindGenericDestination', type },
         `Cannot bind: ${newDestination.displayName} not available`,
       );
 
+      // Lookup error message code from static table with runtime safety fallback
       const messageCode =
-        type === 'cursor-ai'
-          ? MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE
-          : MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE;
+        PasteDestinationManager.AI_ASSISTANT_ERROR_CODES[type] ??
+        (() => {
+          // Exhaustiveness check - should never happen due to compile-time Record type checking
+          throw new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+            message: `Unhandled AI assistant destination type: ${type}`,
+            functionName: 'PasteDestinationManager.bindGenericDestination',
+            details: { type },
+          });
+        })();
 
       this.vscodeAdapter.showErrorMessage(formatMessage(messageCode));
 
