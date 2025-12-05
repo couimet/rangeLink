@@ -311,7 +311,7 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
 
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE);
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_CURSOR_AI_NOT_AVAILABLE');
 
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
@@ -327,7 +327,7 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE);
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_CLAUDE_CODE_NOT_AVAILABLE');
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind Claude Code - extension not installed or not active',
       );
