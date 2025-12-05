@@ -186,12 +186,7 @@ describe('PasteDestinationManager', () => {
     let mockTerminal: vscode.Terminal;
 
     beforeEach(() => {
-      mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-        processId: Promise.resolve(12345),
-      } as unknown as vscode.Terminal;
+      mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
     });
 
     it('should bind to active terminal successfully', async () => {
@@ -466,11 +461,7 @@ describe('PasteDestinationManager', () => {
     it('should show confirmation when binding chat while terminal already bound', async () => {
       const { manager: localManager, adapter: localAdapter } = createManager({ appName: 'Cursor' });
 
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await localManager.bind('terminal');
@@ -500,11 +491,7 @@ describe('PasteDestinationManager', () => {
       showQuickPickMock.mockResolvedValueOnce(undefined);
 
       // Try binding to terminal
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       const result = await localManager.bind('terminal');
@@ -613,11 +600,7 @@ describe('PasteDestinationManager', () => {
 
   describe('unbind()', () => {
     it('should unbind terminal successfully', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -713,11 +696,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should send to bound terminal successfully and show enhanced status bar message', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
@@ -800,11 +779,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show warning message when terminal paste fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
@@ -872,11 +847,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should log destination details when sending to terminal', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -974,11 +945,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should log error when paste fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1004,11 +971,7 @@ describe('PasteDestinationManager', () => {
 
   describe('Terminal closure auto-unbind', () => {
     it('should auto-unbind when bound terminal closes', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1024,17 +987,9 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not unbind when different terminal closes', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
-      const otherTerminal = {
-        name: 'zsh',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const otherTerminal = createMockTerminal({ name: 'zsh' });
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1049,11 +1004,7 @@ describe('PasteDestinationManager', () => {
       const { manager: localManager } = createManager({ appName: 'Cursor' });
       await localManager.bind('cursor-ai');
 
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       // Simulate terminal close (should not affect chat binding)
       terminalCloseListener(mockTerminal);
@@ -1137,11 +1088,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not auto-unbind for non-text-editor destinations', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1159,11 +1106,7 @@ describe('PasteDestinationManager', () => {
 
   describe('getBoundDestination()', () => {
     it('should return bound destination', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1184,11 +1127,7 @@ describe('PasteDestinationManager', () => {
 
   describe('isBound()', () => {
     it('should return true when terminal bound', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1210,11 +1149,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should return false after unbind', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1597,11 +1532,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should focus bound terminal successfully', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1667,11 +1598,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should return false when focus fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1686,11 +1613,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show failure message when focus fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       const mockVscode = mockAdapter.__getVscodeInstance();
       mockVscode.window.activeTerminal = mockTerminal;
@@ -1707,11 +1630,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show success message in status bar when focus succeeds', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       const mockVscode = mockAdapter.__getVscodeInstance();
       mockVscode.window.activeTerminal = mockTerminal;
@@ -1729,11 +1648,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should log success with destination details for terminal', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1832,11 +1747,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should log warning when focus fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1876,11 +1787,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not show success message when focus fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       const mockVscode = mockAdapter.__getVscodeInstance();
       mockVscode.window.activeTerminal = mockTerminal;
@@ -1927,9 +1834,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should successfully send text to bound destination', async () => {
-        const mockTerminal = {
-          name: 'bash',
-        } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -1962,9 +1867,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should handle destination.pasteContent returning false', async () => {
-        const mockTerminal = {
-          name: 'bash',
-        } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -1996,9 +1899,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should verify status bar message shown on success', async () => {
-        const mockTerminal = {
-          name: 'bash',
-        } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -2017,9 +1918,7 @@ describe('PasteDestinationManager', () => {
 
       it('should test with large content (>1000 chars)', async () => {
         const largeContent = 'x'.repeat(1500);
-        const mockTerminal = {
-          name: 'bash',
-        } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -2076,8 +1975,8 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should set replacedDestinationName when user confirms replacement', async () => {
-        const mockTerminal1 = { name: 'bash' } as unknown as vscode.Terminal;
-        const mockTerminal2 = { name: 'zsh' } as unknown as vscode.Terminal;
+        const mockTerminal1 = createMockTerminal({ name: 'bash' });
+        const mockTerminal2 = createMockTerminal({ name: 'zsh' });
 
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
         await manager.bind('terminal');
@@ -2101,8 +2000,8 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should unbind old destination when user confirms replacement', async () => {
-        const mockTerminal1 = { name: 'bash' } as unknown as vscode.Terminal;
-        const mockTerminal2 = { name: 'zsh' } as unknown as vscode.Terminal;
+        const mockTerminal1 = createMockTerminal({ name: 'bash' });
+        const mockTerminal2 = createMockTerminal({ name: 'zsh' });
 
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
         await manager.bind('terminal');
@@ -2128,8 +2027,8 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should verify no changes when user cancels replacement', async () => {
-        const mockTerminal1 = { name: 'bash' } as unknown as vscode.Terminal;
-        const mockTerminal2 = { name: 'zsh' } as unknown as vscode.Terminal;
+        const mockTerminal1 = createMockTerminal({ name: 'bash' });
+        const mockTerminal2 = createMockTerminal({ name: 'zsh' });
 
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
         await manager.bind('terminal');
@@ -2180,7 +2079,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should show already bound message when binding to same terminal twice', async () => {
-        const mockTerminal = { name: 'bash' } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -2207,7 +2106,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should verify no rebind occurs when already bound to same destination', async () => {
-        const mockTerminal = { name: 'bash' } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -2232,7 +2131,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should verify info message shown to user for duplicate binding', async () => {
-        const mockTerminal = { name: 'bash' } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
