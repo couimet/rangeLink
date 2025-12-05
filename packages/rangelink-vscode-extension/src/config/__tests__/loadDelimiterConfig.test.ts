@@ -1,3 +1,4 @@
+import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
@@ -8,6 +9,8 @@ import { DelimiterConfigKey } from '../types';
 // ============================================================================
 // Test Utilities
 // ============================================================================
+
+let logger: Logger;
 
 const createMockConfig = (overrides: Partial<Record<string, string>> = {}): ConfigGetter => {
   // Note: When testing with overrides, we simulate user settings (globalValue)
@@ -40,6 +43,10 @@ const createMockConfig = (overrides: Partial<Record<string, string>> = {}): Conf
 // ============================================================================
 
 describe('loadDelimiterConfig', () => {
+  beforeEach(() => {
+    logger = createMockLogger();
+  });
+
   describe('successful configuration loading', () => {
     it('should load valid default delimiters', () => {
       const config = createMockConfig({
@@ -48,7 +55,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -71,7 +77,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '$',
         [DelimiterConfigKey.Range]: 'TO',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -92,7 +97,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: 'THRU',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -110,7 +114,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -127,7 +130,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -150,7 +152,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -172,7 +173,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: invalidValue,
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -192,7 +192,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -210,7 +209,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '$',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -225,7 +223,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '##',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -243,7 +240,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -259,7 +255,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -276,7 +271,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -292,7 +286,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -309,7 +302,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -326,7 +318,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '  ',
         [DelimiterConfigKey.Range]: '~',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -343,7 +334,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: 'X', // Would cause uniqueness error
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -360,7 +350,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -390,7 +379,6 @@ describe('loadDelimiterConfig', () => {
           workspaceFolderValue: undefined,
         }),
       };
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -430,7 +418,6 @@ describe('loadDelimiterConfig', () => {
           };
         },
       };
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -468,7 +455,6 @@ describe('loadDelimiterConfig', () => {
           };
         },
       };
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -506,7 +492,6 @@ describe('loadDelimiterConfig', () => {
           };
         },
       };
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -544,7 +529,6 @@ describe('loadDelimiterConfig', () => {
           };
         },
       };
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -561,7 +545,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -576,7 +559,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -585,7 +567,6 @@ describe('loadDelimiterConfig', () => {
 
     it('should include delimiters, sources, and errors in result', () => {
       const config = createMockConfig();
-      const logger = createMockLogger();
 
       const result = loadDelimiterConfig(config, logger);
 
@@ -606,7 +587,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       loadDelimiterConfig(config, logger);
 
@@ -616,7 +596,6 @@ describe('loadDelimiterConfig', () => {
 
     it('should log errors when config is invalid', () => {
       const config = createMockConfig({ [DelimiterConfigKey.Line]: '' });
-      const logger = createMockLogger();
 
       loadDelimiterConfig(config, logger);
 
@@ -631,7 +610,6 @@ describe('loadDelimiterConfig', () => {
         [DelimiterConfigKey.Hash]: '#',
         [DelimiterConfigKey.Range]: '-',
       });
-      const logger = createMockLogger();
 
       loadDelimiterConfig(config, logger);
 

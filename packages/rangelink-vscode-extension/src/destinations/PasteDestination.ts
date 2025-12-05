@@ -1,5 +1,7 @@
 import type { FormattedLink } from 'rangelink-core-ts';
 
+import type { AutoPasteResult } from '../types/AutoPasteResult';
+
 /**
  * Supported paste destination types
  *
@@ -127,9 +129,10 @@ export interface PasteDestination {
    * Automatic destinations (Terminal, Text Editor) return undefined since no manual
    * action is required.
    *
+   * @param autoPasteResult - Result of the automatic paste attempt
    * @returns Instruction string for manual paste, or undefined for automatic paste
    */
-  getUserInstruction(): string | undefined;
+  getUserInstruction(autoPasteResult: AutoPasteResult): string | undefined;
 
   /**
    * Focus this destination without performing a paste operation

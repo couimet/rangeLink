@@ -2,30 +2,14 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
-// Mock vscode.window and vscode.workspace for status bar messages and event listeners
-jest.mock('vscode', () => ({
-  ...jest.requireActual('vscode'),
-  window: {
-    ...jest.requireActual('vscode').window,
-    setStatusBarMessage: jest.fn(),
-    showErrorMessage: jest.fn(),
-    showInformationMessage: jest.fn(),
-    onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
-    onDidChangeVisibleTextEditors: jest.fn(() => ({ dispose: jest.fn() })),
-    activeTerminal: undefined,
-  },
-  workspace: {
-    onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
-  },
-}));
-
-import { DestinationFactory } from '../../destinations/DestinationFactory';
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
+import { AutoPasteResult } from '../../types/AutoPasteResult';
 import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
 import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
 import { createMockClaudeCodeDestination } from '../helpers/createMockClaudeCodeDestination';
+import { createMockDestinationFactory } from '../helpers/createMockDestinationFactory';
 import { createMockCursorAIDestination } from '../helpers/createMockCursorAIDestination';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
@@ -72,7 +56,7 @@ const expectQuickPickConfirmation = (
 describe('PasteDestinationManager', () => {
   let manager: PasteDestinationManager;
   let mockContext: vscode.ExtensionContext;
-  let mockFactory: DestinationFactory;
+  let mockFactory: ReturnType<typeof createMockDestinationFactory>;
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockLogger: Logger;
   let terminalCloseListener: (terminal: vscode.Terminal) => void;
@@ -84,24 +68,89 @@ describe('PasteDestinationManager', () => {
    * Useful for tests that need to simulate Cursor IDE.
    */
   const createManager = (envOptions?: MockVscodeOptions['envOptions']) => {
-    const adapter = createMockVscodeAdapter({
-      envOptions,
-      windowOptions: {
-        onDidCloseTerminal: jest.fn((listener) => {
-          terminalCloseListener = listener;
-          return { dispose: jest.fn() };
-        }),
-      },
-      workspaceOptions: {
-        onDidCloseTextDocument: jest.fn((listener) => {
-          documentCloseListener = listener;
-          return { dispose: jest.fn() };
-        }),
+    const adapter = createMockVscodeAdapter({ envOptions });
+
+    // Cache for destinations so same instance is returned for same terminal/editor
+    const destinationCache = new Map<string, any>();
+
+    // Create factory that generates mock destinations on demand with correct context
+    const factory = createMockDestinationFactory({
+      createImpl: (options) => {
+        if (options.type === 'terminal' && options.terminal) {
+          const terminalName = options.terminal.name;
+          const cacheKey = `terminal:${terminalName}`;
+          if (!destinationCache.has(cacheKey)) {
+            const dest = createMockTerminalDestination({
+              displayName: `Terminal ("${terminalName}")`,
+              resourceName: terminalName,
+              getLoggingDetails: jest.fn().mockReturnValue({ terminalName }),
+              getJumpSuccessMessage: jest
+                .fn()
+                .mockReturnValue(`✓ Focused Terminal: "${terminalName}"`),
+            });
+            // Override equals to return true when comparing to same terminal name
+            (dest.equals as jest.Mock).mockImplementation(async (other) => {
+              return other?.id === 'terminal' && other?.resourceName === terminalName;
+            });
+            destinationCache.set(cacheKey, dest);
+          }
+          return destinationCache.get(cacheKey);
+        }
+        if (options.type === 'text-editor' && options.editor) {
+          const doc = options.editor.document;
+          const fileName = doc.uri.fsPath.split('/').pop() || 'Unknown';
+          const cacheKey = `text-editor:${doc.uri.fsPath}`;
+          if (!destinationCache.has(cacheKey)) {
+            destinationCache.set(
+              cacheKey,
+              createMockTextEditorDestination({
+                displayName: `Text Editor ("${fileName}")`,
+                resourceName: fileName,
+                getLoggingDetails: jest.fn().mockReturnValue({
+                  editorName: fileName.split('/').pop(),
+                  editorPath: doc.uri.fsPath,
+                }),
+                getBoundDocumentUri: jest.fn().mockReturnValue(doc.uri),
+              }),
+            );
+          }
+          return destinationCache.get(cacheKey);
+        }
+        if (options.type === 'cursor-ai') {
+          if (!destinationCache.has('cursor-ai')) {
+            const dest = createMockCursorAIDestination();
+            // Override isAvailable to check actual environment
+            (dest.isAvailable as jest.Mock).mockImplementation(async () => {
+              return adapter.__getVscodeInstance().env.appName === 'Cursor';
+            });
+            // Override equals to return true when comparing to same type
+            (dest.equals as jest.Mock).mockImplementation(
+              async (other) => other?.id === 'cursor-ai',
+            );
+            destinationCache.set('cursor-ai', dest);
+          }
+          return destinationCache.get('cursor-ai');
+        }
+        if (options.type === 'claude-code') {
+          if (!destinationCache.has('claude-code')) {
+            destinationCache.set('claude-code', createMockClaudeCodeDestination());
+          }
+          return destinationCache.get('claude-code');
+        }
+        return undefined;
       },
     });
-
-    const factory = new DestinationFactory(adapter, mockLogger);
     const mgr = new PasteDestinationManager(mockContext, factory, adapter, mockLogger);
+
+    // Extract event listeners from mock calls (made by PasteDestinationManager constructor)
+    // These are needed for tests that simulate terminal/document closure events
+    const vscode = adapter.__getVscodeInstance();
+    const onDidCloseTerminalMock = vscode.window.onDidCloseTerminal as jest.Mock;
+    const onDidCloseTextDocumentMock = vscode.workspace.onDidCloseTextDocument as jest.Mock;
+
+    // Store listeners in test-scoped variables for event simulation
+    terminalCloseListener = onDidCloseTerminalMock.mock.calls[0]?.[0];
+    documentCloseListener = onDidCloseTextDocumentMock.mock.calls[0]?.[0];
 
     return { manager: mgr, adapter, factory };
   };
@@ -174,8 +223,25 @@ describe('PasteDestinationManager', () => {
     it('should show info message when binding same terminal twice', async () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-      // Create manager with a fresh factory that we can control
-      const controlledFactory = new DestinationFactory(mockAdapter, mockLogger);
+      // Create terminal destination that recognizes itself as equal
+      const terminalDest = createMockTerminalDestination({
+        displayName: 'Terminal ("bash")',
+        resourceName: 'bash',
+      });
+      // Override equals to return true when comparing to same instance
+      (terminalDest.equals as jest.Mock).mockImplementation(
+        async (other) => other === terminalDest,
+      );
+
+      // Create manager with a fresh factory that returns the same terminal instance
+      const controlledFactory = createMockDestinationFactory({
+        destinations: {
+          terminal: terminalDest,
+          'text-editor': createMockTextEditorDestination(),
+          'cursor-ai': createMockCursorAIDestination(),
+          'claude-code': createMockClaudeCodeDestination(),
+        },
+      });
       const controlledManager = new PasteDestinationManager(
         mockContext,
         controlledFactory,
@@ -279,7 +345,7 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(localAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Already bound to Cursor AI Assistant'),
+        'RangeLink: Already bound to Cursor AI Assistant',
       );
 
       localManager.dispose();
@@ -447,39 +513,33 @@ describe('PasteDestinationManager', () => {
     });
   });
 
-  describe('sendToDestination()', () => {
+  describe('sendLinkToDestination()', () => {
+    const TEST_STATUS_MESSAGE = 'RangeLink copied to clipboard';
+
     // Mock factory and destinations for unit tests
-    let mockFactoryForSend: jest.Mocked<DestinationFactory>;
+    let mockFactoryForSend: ReturnType<typeof createMockDestinationFactory>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockChatDest: jest.Mocked<PasteDestination>;
 
-    // Helper to create mock destination
-    const createMockDest = (
-      id: string,
-      displayName: string,
-      loggingDetails: Record<string, unknown> = {},
-    ): jest.Mocked<PasteDestination> =>
-      ({
-        id,
-        displayName,
-        isAvailable: jest.fn().mockResolvedValue(true),
-        pasteLink: jest.fn().mockResolvedValue(true),
-        getUserInstruction: jest.fn().mockReturnValue('Instructions'),
-        setTerminal: jest.fn(),
-        getLoggingDetails: jest.fn().mockReturnValue(loggingDetails),
-      }) as unknown as jest.Mocked<PasteDestination>;
-
     beforeEach(() => {
-      mockTerminalDest = createMockDest('terminal', 'Terminal', { terminalName: 'bash' });
-      mockChatDest = createMockDest('cursor-ai', 'Cursor AI Assistant', {});
+      mockTerminalDest = createMockTerminalDestination({
+        displayName: 'Terminal ("bash")',
+        resourceName: 'bash',
+        getUserInstruction: jest.fn().mockReturnValue('Instructions'),
+        getLoggingDetails: jest.fn().mockReturnValue({ terminalName: 'bash' }),
+      });
 
-      mockFactoryForSend = {
-        create: jest.fn().mockImplementation((options) => {
+      mockChatDest = createMockCursorAIDestination({
+        getUserInstruction: jest.fn().mockReturnValue('Instructions'),
+      });
+
+      mockFactoryForSend = createMockDestinationFactory({
+        createImpl: (options) => {
           if (options.type === 'terminal') return mockTerminalDest;
           if (options.type === 'cursor-ai') return mockChatDest;
           throw new Error(`Unexpected type: ${options.type}`);
-        }),
-      } as unknown as jest.Mocked<DestinationFactory>;
+        },
+      });
 
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
@@ -490,7 +550,7 @@ describe('PasteDestinationManager', () => {
       );
     });
 
-    it('should send to bound terminal successfully', async () => {
+    it('should send to bound terminal successfully and show enhanced status bar message', async () => {
       const mockTerminal = {
         name: 'bash',
         sendText: jest.fn(),
@@ -498,41 +558,72 @@ describe('PasteDestinationManager', () => {
       } as unknown as vscode.Terminal;
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+      // Override getUserInstruction to return undefined (non-chat destinations don't provide instructions)
+      mockTerminalDest.getUserInstruction = jest.fn().mockReturnValue(undefined);
+
       await manager.bind('terminal');
 
+      const setStatusBarSpy = jest.spyOn(mockAdapter, 'setStatusBarMessage');
+
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
-      const result = await manager.sendToDestination(formattedLink);
+      const result = await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
 
       expect(result).toBe(true);
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledTimes(1);
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledWith(formattedLink);
+
+      expect(setStatusBarSpy).toHaveBeenCalledWith(
+        '✓ RangeLink copied to clipboard & sent to Terminal ("bash")',
+      );
     });
 
-    it('should send to bound chat destination successfully', async () => {
-      // Mock Cursor environment
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
+    it('should send to bound chat destination successfully with user instructions', async () => {
+      // Create manager with Cursor environment
+      const { manager: cursorManager, adapter: cursorAdapter } = createManager({
+        appName: 'Cursor',
+      });
 
-      await manager.bind('cursor-ai');
+      await cursorManager.bind('cursor-ai');
+
+      // Get the actual bound destination and configure it
+      const boundDest = cursorManager.getBoundDestination()!;
+      const successInstruction = 'Paste the link in Cursor AI chat';
+      boundDest.getUserInstruction = jest
+        .fn()
+        .mockImplementation((result) =>
+          result === AutoPasteResult.Success ? successInstruction : undefined,
+        );
+
+      const setStatusBarSpy = jest.spyOn(cursorAdapter, 'setStatusBarMessage');
+      const showInfoSpy = jest.spyOn(cursorAdapter, 'showInformationMessage');
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
-      const result = await manager.sendToDestination(formattedLink);
+      const result = await cursorManager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
 
-      // Test only manager orchestration - delegate calls pasteLink on destination
       expect(result).toBe(true);
-      expect(mockChatDest.pasteLink).toHaveBeenCalledTimes(1);
-      expect(mockChatDest.pasteLink).toHaveBeenCalledWith(formattedLink);
+      expect(boundDest.pasteLink).toHaveBeenCalledTimes(1);
+      expect(boundDest.pasteLink).toHaveBeenCalledWith(formattedLink);
+
+      // Verify adapter calls for chat success with instructions
+      expect(setStatusBarSpy).toHaveBeenCalledWith(TEST_STATUS_MESSAGE);
+      expect(showInfoSpy).toHaveBeenCalledWith(successInstruction);
+
+      cursorManager.dispose();
     });
 
     it('should return false when no destination bound', async () => {
-      const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
+      const result = await manager.sendLinkToDestination(
+        createMockFormattedLink('src/file.ts#L10'),
+        TEST_STATUS_MESSAGE,
+      );
 
       expect(result).toBe(false);
       expect(mockTerminalDest.pasteLink).not.toHaveBeenCalled();
       expect(mockChatDest.pasteLink).not.toHaveBeenCalled();
     });
 
-    it('should return false when paste fails', async () => {
+    it('should show warning message when terminal paste fails', async () => {
       const mockTerminal = {
         name: 'bash',
         sendText: jest.fn(),
@@ -540,15 +631,68 @@ describe('PasteDestinationManager', () => {
       } as unknown as vscode.Terminal;
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+      // Terminal destinations don't provide failure instructions
+      mockTerminalDest.getUserInstruction = jest.fn().mockReturnValue(undefined);
+
       await manager.bind('terminal');
 
       // Mock paste failure
       mockTerminalDest.pasteLink.mockResolvedValueOnce(false);
 
-      const result = await manager.sendToDestination(createMockFormattedLink('src/file.ts#L10'));
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      const result = await manager.sendLinkToDestination(
+        createMockFormattedLink('src/file.ts#L10'),
+        TEST_STATUS_MESSAGE,
+      );
 
       expect(result).toBe(false);
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledTimes(1);
+
+      // Verify adapter calls for terminal failure without instructions
+      expect(showWarningSpy).toHaveBeenCalledTimes(1);
+      expect(showWarningSpy).toHaveBeenCalledWith(
+        'RangeLink copied to clipboard. Could not send to terminal. Terminal may be closed or not accepting input.',
+      );
+    });
+
+    it('should show warning with user instructions when chat paste fails', async () => {
+      // Create manager with Cursor environment
+      const { manager: cursorManager, adapter: cursorAdapter } = createManager({
+        appName: 'Cursor',
+      });
+
+      await cursorManager.bind('cursor-ai');
+
+      // Get the actual bound destination and configure it
+      const boundDest = cursorManager.getBoundDestination()!;
+      const failureInstruction = 'Manual paste: Open Cursor AI and paste the link';
+      boundDest.getUserInstruction = jest
+        .fn()
+        .mockImplementation((result) =>
+          result === AutoPasteResult.Failure ? failureInstruction : undefined,
+        );
+
+      // Mock paste failure
+      (boundDest.pasteLink as jest.Mock).mockResolvedValueOnce(false);
+
+      const setStatusBarSpy = jest.spyOn(cursorAdapter, 'setStatusBarMessage');
+      const showWarningSpy = jest.spyOn(cursorAdapter, 'showWarningMessage');
+
+      const result = await cursorManager.sendLinkToDestination(
+        createMockFormattedLink('src/file.ts#L10'),
+        TEST_STATUS_MESSAGE,
+      );
+
+      expect(result).toBe(false);
+      expect(boundDest.pasteLink).toHaveBeenCalledTimes(1);
+
+      // Verify adapter calls for chat failure with instructions
+      expect(setStatusBarSpy).toHaveBeenCalledWith(TEST_STATUS_MESSAGE);
+      expect(showWarningSpy).toHaveBeenCalledWith(failureInstruction);
+
+      cursorManager.dispose();
     });
 
     it('should log destination details when sending to terminal', async () => {
@@ -562,18 +706,95 @@ describe('PasteDestinationManager', () => {
       await manager.bind('terminal');
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
-      await manager.sendToDestination(formattedLink);
+      await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'PasteDestinationManager.sendToDestination',
+          fn: 'PasteDestinationManager.sendLinkToDestination',
           destinationType: 'terminal',
-          displayName: 'Terminal',
+          displayName: 'Terminal ("bash")',
           formattedLink,
           terminalName: 'bash',
         },
-        'Sending text to Terminal',
+        'Sending link to Terminal ("bash")',
       );
+    });
+
+    it('should show text-editor specific warning when editor paste fails', async () => {
+      // Create a mock text editor destination that mimics a bound text editor
+      const mockTextEditorDest = createMockTextEditorDestination({
+        id: 'text-editor',
+        displayName: 'Text Editor',
+        getUserInstruction: jest.fn().mockReturnValue(undefined),
+        pasteLink: jest.fn().mockResolvedValue(false), // Simulate paste failure
+      });
+
+      // Manually set the bound destination to bypass bind() complexity
+      (manager as any).boundDestination = mockTextEditorDest;
+
+      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+
+      const result = await manager.sendLinkToDestination(
+        createMockFormattedLink('src/file.ts#L10'),
+        TEST_STATUS_MESSAGE,
+      );
+
+      expect(result).toBe(false);
+      expect(mockTextEditorDest.pasteLink).toHaveBeenCalledTimes(1);
+
+      // Verify text-editor specific failure message
+      expect(showWarningSpy).toHaveBeenCalledTimes(1);
+      expect(showWarningSpy).toHaveBeenCalledWith(
+        'RangeLink copied to clipboard. Could not send to editor. Bound editor is hidden behind other tabs.',
+      );
+    });
+
+    it('should throw UNEXPECTED_CODE_PATH when chat assistant reaches buildPasteFailureMessage', async () => {
+      // Create a mock cursor-ai destination that incorrectly returns undefined for getUserInstruction
+      const mockBrokenChatDest = createMockCursorAIDestination({
+        getUserInstruction: jest.fn().mockReturnValue(undefined), // Chat assistants should always provide instructions
+        pasteLink: jest.fn().mockResolvedValue(false), // Simulate paste failure
+      });
+
+      // Manually set the bound destination
+      (manager as any).boundDestination = mockBrokenChatDest;
+
+      // This should throw UNEXPECTED_CODE_PATH error because chat assistants should never reach buildPasteFailureMessage
+      await expect(async () =>
+        manager.sendLinkToDestination(
+          createMockFormattedLink('src/file.ts#L10'),
+          TEST_STATUS_MESSAGE,
+        ),
+      ).toThrowRangeLinkExtensionErrorAsync('UNEXPECTED_CODE_PATH', {
+        message:
+          "Chat assistant destination 'cursor-ai' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
+        functionName: 'PasteDestinationManager.buildPasteFailureMessage',
+      });
+    });
+
+    it('should throw DESTINATION_NOT_IMPLEMENTED for unknown destination type', async () => {
+      // Create a mock destination with an unknown ID
+      const mockUnknownDest = createMockTerminalDestination({
+        id: 'unknown-destination-type' as any,
+        displayName: 'Unknown Destination',
+        getUserInstruction: jest.fn().mockReturnValue(undefined),
+        pasteLink: jest.fn().mockResolvedValue(false), // Simulate paste failure
+      });
+
+      // Manually set the bound destination
+      (manager as any).boundDestination = mockUnknownDest;
+
+      // This should throw DESTINATION_NOT_IMPLEMENTED error for unknown destination types
+      await expect(async () =>
+        manager.sendLinkToDestination(
+          createMockFormattedLink('src/file.ts#L10'),
+          TEST_STATUS_MESSAGE,
+        ),
+      ).toThrowRangeLinkExtensionErrorAsync('DESTINATION_NOT_IMPLEMENTED', {
+        message:
+          "Unknown destination type 'unknown-destination-type' - missing case in buildPasteFailureMessage()",
+        functionName: 'PasteDestinationManager.buildPasteFailureMessage',
+      });
     });
 
     it('should log error when paste fails', async () => {
@@ -590,17 +811,17 @@ describe('PasteDestinationManager', () => {
       mockTerminalDest.pasteLink.mockResolvedValueOnce(false);
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
-      await manager.sendToDestination(formattedLink);
+      await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
-          fn: 'PasteDestinationManager.sendToDestination',
+          fn: 'PasteDestinationManager.sendLinkToDestination',
           destinationType: 'terminal',
-          displayName: 'Terminal',
+          displayName: 'Terminal ("bash")',
           formattedLink,
           terminalName: 'bash',
         },
-        'Paste link failed to Terminal',
+        'Paste link failed to Terminal ("bash")',
       );
     });
   });
@@ -865,7 +1086,7 @@ describe('PasteDestinationManager', () => {
    */
   describe('Smart Bind Feature', () => {
     // Mock factory for smart bind tests
-    let mockFactoryForSmartBind: jest.Mocked<DestinationFactory>;
+    let mockFactoryForSmartBind: ReturnType<typeof createMockDestinationFactory>;
 
     // Helper to create mock destinations using the existing infrastructure
     const createMockDestinationForTest = (
@@ -888,9 +1109,7 @@ describe('PasteDestinationManager', () => {
 
     beforeEach(() => {
       // Create mock factory for smart bind tests
-      mockFactoryForSmartBind = {
-        create: jest.fn(),
-      } as unknown as jest.Mocked<DestinationFactory>;
+      mockFactoryForSmartBind = createMockDestinationFactory();
 
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
@@ -914,7 +1133,7 @@ describe('PasteDestinationManager', () => {
         );
 
         // Mock factory to return destinations
-        mockFactoryForSmartBind.create.mockImplementation((options) => {
+        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -990,7 +1209,7 @@ describe('PasteDestinationManager', () => {
           'Text Editor ("file.ts")',
         );
 
-        mockFactoryForSmartBind.create.mockImplementation((options) => {
+        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -1036,7 +1255,7 @@ describe('PasteDestinationManager', () => {
     describe('Scenario 3: Prevent binding same destination twice', () => {
       it('should show info message when binding same destination', async () => {
         // Mock equals() to return true when comparing instances of same terminal
-        mockFactoryForSmartBind.create.mockImplementation(() => {
+        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation(() => {
           const newDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
           // Make all terminal destinations equal to each other
           (newDest.equals as jest.Mock).mockImplementation(
@@ -1082,7 +1301,7 @@ describe('PasteDestinationManager', () => {
       it('should show standard toast without replacement prefix', async () => {
         // Setup: Create mock terminal destination
         const terminalDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
-        mockFactoryForSmartBind.create.mockReturnValue(terminalDest);
+        (mockFactoryForSmartBind.create as jest.Mock).mockReturnValue(terminalDest);
 
         // Mock active terminal
         const mockVscode = mockAdapter.__getVscodeInstance();
@@ -1115,7 +1334,7 @@ describe('PasteDestinationManager', () => {
           'Text Editor ("file.ts")',
         );
 
-        mockFactoryForSmartBind.create.mockImplementation((options) => {
+        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -1157,7 +1376,7 @@ describe('PasteDestinationManager', () => {
 
   describe('jumpToBoundDestination()', () => {
     // Mock factory and destinations for unit tests
-    let mockFactoryForJump: jest.Mocked<DestinationFactory>;
+    let mockFactoryForJump: ReturnType<typeof createMockDestinationFactory>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockEditorDest: jest.Mocked<PasteDestination>;
     let mockCursorAIDest: jest.Mocked<PasteDestination>;
@@ -1170,15 +1389,15 @@ describe('PasteDestinationManager', () => {
       mockCursorAIDest = createMockCursorAIDestination();
       mockClaudeCodeDest = createMockClaudeCodeDestination();
 
-      mockFactoryForJump = {
-        create: jest.fn().mockImplementation((options) => {
+      mockFactoryForJump = createMockDestinationFactory({
+        createImpl: (options) => {
           if (options.type === 'terminal') return mockTerminalDest;
           if (options.type === 'text-editor') return mockEditorDest;
           if (options.type === 'cursor-ai') return mockCursorAIDest;
           if (options.type === 'claude-code') return mockClaudeCodeDest;
           throw new Error(`Unexpected type: ${options.type}`);
-        }),
-      } as unknown as jest.Mocked<DestinationFactory>;
+        },
+      });
 
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
@@ -1240,15 +1459,20 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should focus bound Cursor AI successfully', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
+      // Create manager with Cursor environment
+      const { manager: cursorManager } = createManager({ appName: 'Cursor' });
 
-      await manager.bind('cursor-ai');
+      await cursorManager.bind('cursor-ai');
 
-      const result = await manager.jumpToBoundDestination();
+      // Get the actual bound destination
+      const boundDest = cursorManager.getBoundDestination()!;
+
+      const result = await cursorManager.jumpToBoundDestination();
 
       expect(result).toBe(true);
-      expect(mockCursorAIDest.focus).toHaveBeenCalledTimes(1);
+      expect(boundDest.focus).toHaveBeenCalledTimes(1);
+
+      cursorManager.dispose();
     });
 
     it('should focus bound Claude Code successfully', async () => {
@@ -1388,15 +1612,15 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should log success with empty details for AI assistants', async () => {
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.env as any).appName = 'Cursor';
+      // Create manager with Cursor environment
+      const { manager: cursorManager } = createManager({ appName: 'Cursor' });
 
-      await manager.bind('cursor-ai');
+      await cursorManager.bind('cursor-ai');
 
       // Clear logger calls from bind()
       jest.clearAllMocks();
 
-      await manager.jumpToBoundDestination();
+      await cursorManager.jumpToBoundDestination();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
@@ -1406,6 +1630,8 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully focused Cursor AI Assistant',
       );
+
+      cursorManager.dispose();
     });
 
     it('should log warning when focus fails', async () => {
@@ -1472,6 +1698,534 @@ describe('PasteDestinationManager', () => {
       await manager.jumpToBoundDestination();
 
       expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Edge Cases Coverage', () => {
+    describe('sendTextToDestination() - Error Path', () => {
+      const TEST_CONTENT = 'Test content to paste';
+      const TEST_STATUS = 'Content sent successfully';
+
+      let mockTerminalDest: jest.Mocked<PasteDestination>;
+      let mockFactoryForSend: ReturnType<typeof createMockDestinationFactory>;
+      let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
+
+      beforeEach(() => {
+        mockTerminalDest = createMockTerminalDestination({
+          displayName: 'Terminal ("bash")',
+        });
+
+        mockFactoryForSend = createMockDestinationFactory({
+          createImpl: () => mockTerminalDest,
+        });
+
+        manager = new PasteDestinationManager(
+          mockContext,
+          mockFactoryForSend,
+          mockAdapter,
+          mockLogger,
+        );
+
+        mockVscode = mockAdapter.__getVscodeInstance();
+      });
+
+      it('should successfully send text to bound destination', async () => {
+        const mockTerminal = {
+          name: 'bash',
+        } as unknown as vscode.Terminal;
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+        await manager.bind('terminal');
+        mockTerminalDest.pasteContent.mockResolvedValueOnce(true);
+
+        const result = await manager.sendTextToDestination(TEST_CONTENT, TEST_STATUS);
+
+        expect(result).toBe(true);
+        expect(mockTerminalDest.pasteContent).toHaveBeenCalledWith(TEST_CONTENT);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ Content sent successfully & sent to Terminal ("bash")',
+          2000,
+        );
+
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+      });
+
+      it('should handle destination.pasteContent returning false', async () => {
+        const mockTerminal = {
+          name: 'bash',
+        } as unknown as vscode.Terminal;
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+        await manager.bind('terminal');
+
+        // Clear bind() messages to isolate sendTextToDestination behavior
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+
+        mockTerminalDest.pasteContent.mockResolvedValueOnce(false);
+
+        const result = await manager.sendTextToDestination(TEST_CONTENT, TEST_STATUS);
+
+        expect(result).toBe(false);
+        expect(mockTerminalDest.pasteContent).toHaveBeenCalledWith(TEST_CONTENT);
+
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          {
+            fn: 'PasteDestinationManager.sendTextToDestination',
+            contentLength: TEST_CONTENT.length,
+            displayName: 'Terminal ("bash")',
+            destinationType: 'terminal',
+            terminalName: 'bash',
+          },
+          'Paste content failed to Terminal ("bash")',
+        );
+
+        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+      });
+
+      it('should verify status bar message shown on success', async () => {
+        const mockTerminal = {
+          name: 'bash',
+        } as unknown as vscode.Terminal;
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+        await manager.bind('terminal');
+        mockTerminalDest.pasteContent.mockResolvedValueOnce(true);
+
+        await manager.sendTextToDestination(TEST_CONTENT, TEST_STATUS);
+
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ Content sent successfully & sent to Terminal ("bash")',
+          2000,
+        );
+
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+      });
+
+      it('should test with large content (>1000 chars)', async () => {
+        const largeContent = 'x'.repeat(1500);
+        const mockTerminal = {
+          name: 'bash',
+        } as unknown as vscode.Terminal;
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+        await manager.bind('terminal');
+        mockTerminalDest.pasteContent.mockResolvedValueOnce(true);
+
+        const result = await manager.sendTextToDestination(largeContent, TEST_STATUS);
+
+        expect(result).toBe(true);
+        expect(mockTerminalDest.pasteContent).toHaveBeenCalledWith(largeContent);
+
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+          '✓ Content sent successfully & sent to Terminal ("bash")',
+          2000,
+        );
+
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Replace Binding Confirmation', () => {
+      let mockTerminalDest1: jest.Mocked<PasteDestination>;
+      let mockTerminalDest2: jest.Mocked<PasteDestination>;
+      let mockFactoryForReplace: ReturnType<typeof createMockDestinationFactory>;
+      let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
+
+      beforeEach(() => {
+        mockTerminalDest1 = createMockTerminalDestination({
+          displayName: 'Terminal ("bash")',
+          resourceName: 'bash',
+        });
+
+        mockTerminalDest2 = createMockTerminalDestination({
+          displayName: 'Terminal ("zsh")',
+          resourceName: 'zsh',
+        });
+
+        mockFactoryForReplace = createMockDestinationFactory({
+          createImpl: (options) => {
+            if (options.terminal?.name === 'bash') return mockTerminalDest1;
+            if (options.terminal?.name === 'zsh') return mockTerminalDest2;
+            throw new Error(`Unexpected terminal: ${options.terminal?.name}`);
+          },
+        });
+
+        manager = new PasteDestinationManager(
+          mockContext,
+          mockFactoryForReplace,
+          mockAdapter,
+          mockLogger,
+        );
+
+        mockVscode = mockAdapter.__getVscodeInstance();
+      });
+
+      it('should set replacedDestinationName when user confirms replacement', async () => {
+        const mockTerminal1 = { name: 'bash' } as unknown as vscode.Terminal;
+        const mockTerminal2 = { name: 'zsh' } as unknown as vscode.Terminal;
+
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
+        await manager.bind('terminal');
+
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal2;
+        (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValueOnce({
+          label: 'Yes, replace',
+        });
+
+        await manager.bind('terminal');
+
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+          'Unbound Terminal ("bash"), now bound to Terminal ("zsh")',
+          3000,
+        );
+
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+
+        expect(mockVscode.window.showQuickPick).toHaveBeenCalledTimes(1);
+      });
+
+      it('should unbind old destination when user confirms replacement', async () => {
+        const mockTerminal1 = { name: 'bash' } as unknown as vscode.Terminal;
+        const mockTerminal2 = { name: 'zsh' } as unknown as vscode.Terminal;
+
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
+        await manager.bind('terminal');
+
+        expect(manager.getBoundDestination()).toBe(mockTerminalDest1);
+
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal2;
+        (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValueOnce({
+          label: 'Yes, replace',
+        });
+
+        await manager.bind('terminal');
+
+        expect(manager.getBoundDestination()).toBe(mockTerminalDest2);
+
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+          'Unbound Terminal ("bash"), now bound to Terminal ("zsh")',
+          3000,
+        );
+
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+      });
+
+      it('should verify no changes when user cancels replacement', async () => {
+        const mockTerminal1 = { name: 'bash' } as unknown as vscode.Terminal;
+        const mockTerminal2 = { name: 'zsh' } as unknown as vscode.Terminal;
+
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
+        await manager.bind('terminal');
+
+        const originalDest = manager.getBoundDestination();
+
+        // Clear previous bind() calls to isolate cancel behavior
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+        (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
+        (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
+
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal2;
+        (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValueOnce(undefined);
+
+        const result = await manager.bind('terminal');
+
+        expect(result).toBe(false);
+        expect(manager.getBoundDestination()).toBe(originalDest);
+
+        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Already Bound Check', () => {
+      let mockTerminalDest: jest.Mocked<PasteDestination>;
+      let mockFactoryForDuplicate: ReturnType<typeof createMockDestinationFactory>;
+      let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
+
+      beforeEach(() => {
+        mockTerminalDest = createMockTerminalDestination({
+          displayName: 'Terminal ("bash")',
+        });
+
+        mockFactoryForDuplicate = createMockDestinationFactory({
+          createImpl: () => mockTerminalDest,
+        });
+
+        manager = new PasteDestinationManager(
+          mockContext,
+          mockFactoryForDuplicate,
+          mockAdapter,
+          mockLogger,
+        );
+
+        mockVscode = mockAdapter.__getVscodeInstance();
+      });
+
+      it('should show already bound message when binding to same terminal twice', async () => {
+        const mockTerminal = { name: 'bash' } as unknown as vscode.Terminal;
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+        await manager.bind('terminal');
+
+        // Clear mocks from first bind to isolate second bind behavior
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+        (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
+        (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
+
+        // Mock equals() to return true (same destination)
+        mockTerminalDest.equals.mockResolvedValueOnce(true);
+
+        const result = await manager.bind('terminal');
+
+        expect(result).toBe(false);
+
+        expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
+          'RangeLink: Already bound to Terminal ("bash")',
+        );
+        expect(mockVscode.window.showInformationMessage).toHaveBeenCalledTimes(1);
+
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+      });
+
+      it('should verify no rebind occurs when already bound to same destination', async () => {
+        const mockTerminal = { name: 'bash' } as unknown as vscode.Terminal;
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+        await manager.bind('terminal');
+        const firstDest = manager.getBoundDestination();
+
+        // Clear mocks from first bind
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+        (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
+        (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
+
+        mockTerminalDest.equals.mockResolvedValueOnce(true);
+        await manager.bind('terminal');
+
+        expect(manager.getBoundDestination()).toBe(firstDest);
+
+        expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
+          'RangeLink: Already bound to Terminal ("bash")',
+        );
+
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+      });
+
+      it('should verify info message shown to user for duplicate binding', async () => {
+        const mockTerminal = { name: 'bash' } as unknown as vscode.Terminal;
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+        await manager.bind('terminal');
+
+        // Clear mocks from first bind
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+        (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
+        (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
+
+        mockTerminalDest.equals.mockResolvedValueOnce(true);
+        await manager.bind('terminal');
+
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'PasteDestinationManager.bindTerminal',
+            displayName: 'Terminal ("bash")',
+          },
+          'Already bound to Terminal ("bash"), no action taken',
+        );
+
+        expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
+          'RangeLink: Already bound to Terminal ("bash")',
+        );
+        expect(mockVscode.window.showInformationMessage).toHaveBeenCalledTimes(1);
+
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Document Close Auto-Unbind', () => {
+      let mockTextEditorDest: ReturnType<typeof createMockTextEditorDestination>;
+      let mockFactoryForDocument: ReturnType<typeof createMockDestinationFactory>;
+      let localDocumentCloseListener: (doc: vscode.TextDocument) => void;
+
+      beforeEach(() => {
+        mockFactoryForDocument = createMockDestinationFactory({
+          createImpl: (options) => {
+            if (options.type === 'text-editor' && options.editor) {
+              const doc = options.editor.document;
+              const fileName = doc.uri.fsPath.split('/').pop() || 'Unknown';
+              mockTextEditorDest = createMockTextEditorDestination({
+                displayName: `Text Editor (${fileName})`,
+                resourceName: fileName,
+                // Key: Return the actual editor's document URI, not a pre-mocked static one
+                getBoundDocumentUri: jest.fn().mockReturnValue(doc.uri),
+              });
+              return mockTextEditorDest;
+            }
+            return undefined;
+          },
+        });
+
+        manager = new PasteDestinationManager(
+          mockContext,
+          mockFactoryForDocument,
+          mockAdapter,
+          mockLogger,
+        );
+
+        // Capture the document close listener from THIS manager instance
+        const vscode = mockAdapter.__getVscodeInstance();
+        const onDidCloseTextDocumentMock = vscode.workspace.onDidCloseTextDocument as jest.Mock;
+        localDocumentCloseListener =
+          onDidCloseTextDocumentMock.mock.calls[
+            onDidCloseTextDocumentMock.mock.calls.length - 1
+          ]?.[0];
+
+        // Configure tab groups (required for text editor binding)
+        configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+      });
+
+      it('should auto-unbind when bound document closes', async () => {
+        const mockUri = {
+          toString: () => 'file:///workspace/file.ts',
+          fsPath: '/workspace/file.ts',
+          scheme: 'file',
+        } as vscode.Uri;
+        const mockDocument = {
+          uri: mockUri,
+          languageId: 'typescript',
+        } as vscode.TextDocument;
+        const mockEditor = { document: mockDocument } as vscode.TextEditor;
+
+        mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+
+        await manager.bind('text-editor');
+
+        // Clear bind() messages to isolate close behavior
+        const mockVscode = mockAdapter.__getVscodeInstance();
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+
+        // Simulate document closure (URI matches bound document)
+        localDocumentCloseListener(mockDocument);
+
+        // Verify auto-unbind occurred
+        expect(manager.getBoundDestination()).toBeUndefined();
+
+        // Verify unbind messages shown (unbind() + document close message)
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
+          '✓ RangeLink unbound from Text Editor (file.ts)',
+          2000,
+        );
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          2,
+          'RangeLink: Bound editor closed. Unbound.',
+          2000,
+        );
+
+        // Verify no error/info messages
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+      });
+
+      it('should not unbind when different document closes', async () => {
+        // Use same URI for binding as test 1 (the default from beforeEach)
+        const mockUri = {
+          toString: () => 'file:///workspace/file.ts',
+          fsPath: '/workspace/file.ts',
+          scheme: 'file',
+        } as vscode.Uri;
+        const mockDocument = {
+          uri: mockUri,
+          languageId: 'typescript',
+        } as vscode.TextDocument;
+        const mockEditor = { document: mockDocument } as vscode.TextEditor;
+
+        mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+
+        const bindResult = await manager.bind('text-editor');
+
+        // Verify binding succeeded
+        expect(bindResult).toBe(true);
+        expect(manager.getBoundDestination()).toBe(mockTextEditorDest);
+
+        // Clear bind() messages to isolate close behavior
+        const mockVscode = mockAdapter.__getVscodeInstance();
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+        (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
+        (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
+
+        // Create a DIFFERENT document to close (different URI)
+        const closedUri = {
+          toString: () => 'file:///workspace/different-file.ts',
+          fsPath: '/workspace/different-file.ts',
+          scheme: 'file',
+        } as vscode.Uri;
+        const closedDocument = {
+          uri: closedUri,
+          languageId: 'typescript',
+        } as vscode.TextDocument;
+
+        // Simulate different document closure (URI does NOT match bound document)
+        localDocumentCloseListener(closedDocument);
+
+        // Should still be bound since we closed a different document
+        expect(manager.getBoundDestination()).toBe(mockTextEditorDest);
+
+        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+      });
+
+      it('should handle early return when boundDocumentUri is undefined', async () => {
+        const mockUri = {
+          toString: () => 'file:///workspace/file.ts',
+          fsPath: '/workspace/file.ts',
+          scheme: 'file',
+        } as vscode.Uri;
+        const mockDocument = {
+          uri: mockUri,
+          languageId: 'typescript',
+        } as vscode.TextDocument;
+        const mockEditor = { document: mockDocument } as vscode.TextEditor;
+
+        mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+
+        const bindResult = await manager.bind('text-editor');
+
+        expect(bindResult).toBe(true);
+        expect(manager.getBoundDestination()).toBe(mockTextEditorDest);
+
+        // Clear bind() messages to isolate close behavior
+        const mockVscode = mockAdapter.__getVscodeInstance();
+        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+        (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
+        (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
+
+        // AFTER binding, change mock to return undefined (simulates edge case)
+        (mockTextEditorDest.getBoundDocumentUri as jest.Mock).mockReturnValue(undefined);
+
+        // Simulate document closure
+        localDocumentCloseListener(mockDocument);
+
+        // Should not crash or unbind (early return when URI is undefined)
+        expect(manager.getBoundDestination()).toBe(mockTextEditorDest);
+
+        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+      });
     });
   });
 });

@@ -1,3 +1,4 @@
+import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
@@ -9,6 +10,8 @@ import { DelimiterConfigKey } from '../types';
 // ============================================================================
 // Test Utilities
 // ============================================================================
+
+let logger: Logger;
 
 const createMockConfig = (overrides: Partial<Record<string, string>> = {}): ConfigGetter => {
   return {
@@ -47,6 +50,10 @@ const createMockIdeAdapter = (): any => {
 // ============================================================================
 
 describe('getDelimitersForExtension', () => {
+  beforeEach(() => {
+    logger = createMockLogger();
+  });
+
   describe('valid configuration', () => {
     it('should load valid default delimiters without showing error', () => {
       const config = createMockConfig({
@@ -56,7 +63,6 @@ describe('getDelimitersForExtension', () => {
         [DelimiterConfigKey.Range]: '-',
       });
       const ideAdapter = createMockIdeAdapter();
-      const logger = createMockLogger();
 
       const result = getDelimitersForExtension(config, ideAdapter, logger);
 
@@ -78,7 +84,6 @@ describe('getDelimitersForExtension', () => {
         [DelimiterConfigKey.Range]: 'TO',
       });
       const ideAdapter = createMockIdeAdapter();
-      const logger = createMockLogger();
 
       const result = getDelimitersForExtension(config, ideAdapter, logger);
 
@@ -95,7 +100,6 @@ describe('getDelimitersForExtension', () => {
     it('should use defaults when no config is provided', () => {
       const config = createMockConfig({});
       const ideAdapter = createMockIdeAdapter();
-      const logger = createMockLogger();
 
       const result = getDelimitersForExtension(config, ideAdapter, logger);
 
@@ -113,7 +117,6 @@ describe('getDelimitersForExtension', () => {
         [DelimiterConfigKey.Range]: '-',
       });
       const ideAdapter = createMockIdeAdapter();
-      const logger = createMockLogger();
 
       const result = getDelimitersForExtension(config, ideAdapter, logger);
 
@@ -135,7 +138,6 @@ describe('getDelimitersForExtension', () => {
         [DelimiterConfigKey.Range]: '-',
       });
       const ideAdapter = createMockIdeAdapter();
-      const logger = createMockLogger();
 
       const result = getDelimitersForExtension(config, ideAdapter, logger);
 
@@ -151,7 +153,6 @@ describe('getDelimitersForExtension', () => {
         [DelimiterConfigKey.Range]: '-',
       });
       const ideAdapter = createMockIdeAdapter();
-      const logger = createMockLogger();
 
       const result = getDelimitersForExtension(config, ideAdapter, logger);
 
@@ -167,7 +168,6 @@ describe('getDelimitersForExtension', () => {
         [DelimiterConfigKey.Range]: '-',
       });
       const ideAdapter = createMockIdeAdapter();
-      const logger = createMockLogger();
 
       const result = getDelimitersForExtension(config, ideAdapter, logger);
 
@@ -183,7 +183,6 @@ describe('getDelimitersForExtension', () => {
         [DelimiterConfigKey.Range]: '-',
       });
       const ideAdapter = createMockIdeAdapter();
-      const logger = createMockLogger();
 
       getDelimitersForExtension(config, ideAdapter, logger);
 
@@ -200,7 +199,6 @@ describe('getDelimitersForExtension', () => {
         // Hash and Range will use defaults
       });
       const ideAdapter = createMockIdeAdapter();
-      const logger = createMockLogger();
 
       const result = getDelimitersForExtension(config, ideAdapter, logger);
 
@@ -217,7 +215,6 @@ describe('getDelimitersForExtension', () => {
         [DelimiterConfigKey.Range]: '-',
       });
       const ideAdapter = createMockIdeAdapter();
-      const logger = createMockLogger();
 
       const result = getDelimitersForExtension(config, ideAdapter, logger);
 

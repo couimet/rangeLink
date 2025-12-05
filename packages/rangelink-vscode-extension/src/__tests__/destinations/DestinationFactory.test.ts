@@ -7,6 +7,7 @@ import { TerminalDestination } from '../../destinations/TerminalDestination';
 import { TextEditorDestination } from '../../destinations/TextEditorDestination';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import { createMockChatPasteHelperFactory } from '../helpers/createMockChatPasteHelperFactory';
 import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockTerminal } from '../helpers/createMockTerminal';
@@ -16,13 +17,15 @@ describe('DestinationFactory', () => {
   let factory: DestinationFactory;
   let mockAdapter: VscodeAdapter;
   let mockLogger: Logger;
+  let mockChatPasteHelperFactory: ReturnType<typeof createMockChatPasteHelperFactory>;
   let mockTerminal: any;
   let mockEditor: any;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockAdapter = createMockVscodeAdapter();
-    factory = new DestinationFactory(mockAdapter, mockLogger);
+    mockChatPasteHelperFactory = createMockChatPasteHelperFactory();
+    factory = new DestinationFactory(mockAdapter, mockChatPasteHelperFactory, mockLogger);
 
     // Create mock terminal using helper
     mockTerminal = createMockTerminal({ name: 'bash' });

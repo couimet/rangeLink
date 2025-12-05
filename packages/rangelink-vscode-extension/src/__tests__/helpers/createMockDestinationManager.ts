@@ -15,8 +15,8 @@ export interface MockDestinationManagerOptions {
   isBound?: boolean;
   /** Mock destination to return when bound (required if isBound is true) */
   boundDestination?: PasteDestination;
-  /** Mock return value for sendToDestination (default: false) */
-  sendToDestinationResult?: boolean;
+  /** Mock return value for sendLinkToDestination (default: false) */
+  sendLinkToDestinationResult?: boolean;
   /** Mock return value for sendTextToDestination (default: false) */
   sendTextToDestinationResult?: boolean;
 }
@@ -33,13 +33,13 @@ export const createMockDestinationManager = (
   const {
     isBound = false,
     boundDestination = undefined,
-    sendToDestinationResult = false,
+    sendLinkToDestinationResult = false,
     sendTextToDestinationResult = false,
   } = options;
 
   return {
     isBound: jest.fn().mockReturnValue(isBound),
-    sendToDestination: jest.fn().mockResolvedValue(sendToDestinationResult),
+    sendLinkToDestination: jest.fn().mockResolvedValue(sendLinkToDestinationResult),
     sendTextToDestination: jest.fn().mockResolvedValue(sendTextToDestinationResult),
     getBoundDestination: jest.fn().mockReturnValue(boundDestination),
     bind: jest.fn().mockResolvedValue(false),

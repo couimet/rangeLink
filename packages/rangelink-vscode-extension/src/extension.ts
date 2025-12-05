@@ -2,6 +2,7 @@ import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { getDelimitersForExtension } from './config';
+import { ChatPasteHelperFactory } from './destinations/ChatPasteHelperFactory';
 import { DestinationFactory } from './destinations/DestinationFactory';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { setLocale } from './i18n/LocaleManager';
@@ -10,6 +11,7 @@ import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvide
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
+import type { RangeLinkClickArgs } from './types';
 import { MessageCode } from './types/MessageCode';
 import { formatMessage } from './utils/formatMessage';
 import { registerWithLogging } from './utils/registerWithLogging';
@@ -42,11 +44,14 @@ export function activate(context: vscode.ExtensionContext): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const delimiters = getDelimitersForExtension(vscodeConfig as any, ideAdapter, getLogger());
 
+  // Create chat paste helper factory for AI destinations
+  const chatPasteHelperFactory = new ChatPasteHelperFactory(ideAdapter, getLogger());
+
   // Create unified destination manager (Phase 3)
-  const factory = new DestinationFactory(ideAdapter, getLogger());
+  const factory = new DestinationFactory(ideAdapter, chatPasteHelperFactory, getLogger());
   const destinationManager = new PasteDestinationManager(context, factory, ideAdapter, getLogger());
 
-  const service = new RangeLinkService(delimiters, ideAdapter, destinationManager);
+  const service = new RangeLinkService(delimiters, ideAdapter, destinationManager, getLogger());
 
   // Register destinationManager for automatic disposal on deactivation
   context.subscriptions.push(destinationManager);
@@ -222,7 +227,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register document link navigation command
   context.subscriptions.push(
     ideAdapter.registerCommand('rangelink.handleDocumentLinkClick', (args) => {
-      return documentLinkProvider.handleLinkClick(args);
+      return documentLinkProvider.handleLinkClick(args as RangeLinkClickArgs);
     }),
   );
 

@@ -1,36 +1,21 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
-import type { FormattedLink } from 'rangelink-core-ts';
+import type { Logger } from 'barebone-logger';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-
+import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
 
-import type { DestinationType, PasteDestination } from './PasteDestination';
+import { ChatAssistantDestination } from './ChatAssistantDestination';
+import type { ChatPasteHelperFactory } from './ChatPasteHelperFactory';
+import type { DestinationType } from './PasteDestination';
 
 /**
- * Claude Code Extension paste destination
+ * Claude Code Extension paste destination.
  *
- * Pastes RangeLinks to Claude Code's chat interface.
- *
- * **LIMITATION:** Claude Code does not support programmatically sending text to chat.
- * Similar to Cursor AI, no working command exists to send text parameters to Claude Code chat.
- *
- * **Workaround:** Copy to clipboard + open chat panel + user pastes manually.
- *
- * **Detection strategy:**
- * - Check for extension: `anthropic.claude-code`
- *
- * **Commands to try (with fallback):**
- * - `claude-vscode.focus` - Direct input focus (Cmd+Escape)
- * - `claude-vscode.sidebar.open` - Open sidebar panel
- * - `claude-vscode.editor.open` - Open in new tab
- *
- * **References:**
- * - Research: docs/RESEARCH-CLAUDE-CODE-INTEGRATION-UPDATE.md
- * - Questions: .claude-questions/0027-claude-code-destination-implementation.txt
+ * Automatically pastes RangeLinks to Claude Code's chat interface.
+ * Extends ChatAssistantDestination to inherit shared chat assistant logic.
  */
-export class ClaudeCodeDestination implements PasteDestination {
+export class ClaudeCodeDestination extends ChatAssistantDestination {
   readonly id: DestinationType = 'claude-code';
   readonly displayName = 'Claude Code Chat';
 
@@ -44,206 +29,54 @@ export class ClaudeCodeDestination implements PasteDestination {
   private static readonly EXTENSION_ID = 'anthropic.claude-code';
 
   constructor(
-    private readonly ideAdapter: VscodeAdapter,
-    private readonly logger: Logger,
-  ) {}
+    ideAdapter: VscodeAdapter,
+    chatPasteHelperFactory: ChatPasteHelperFactory,
+    logger: Logger,
+  ) {
+    super(ideAdapter, chatPasteHelperFactory, logger);
+  }
 
   /**
-   * Check if Claude Code extension is installed and active
+   * Check if Claude Code extension is installed and active.
    *
    * @returns true if Claude Code extension detected, false otherwise
    */
   async isAvailable(): Promise<boolean> {
-    const extension = this.ideAdapter.extensions.find(
-      (ext) => ext.id === ClaudeCodeDestination.EXTENSION_ID,
-    );
-    const isAvailable = extension !== undefined && extension.isActive;
-
-    this.logger.debug(
-      {
-        fn: 'ClaudeCodeDestination.isAvailable',
-        extensionId: ClaudeCodeDestination.EXTENSION_ID,
-        found: extension !== undefined,
-        active: extension?.isActive ?? false,
-        detected: isAvailable,
-      },
-      isAvailable
-        ? 'Claude Code extension detected and active'
-        : 'Claude Code extension not available',
-    );
-
-    return isAvailable;
+    const extension = this.ideAdapter.getExtension(ClaudeCodeDestination.EXTENSION_ID);
+    return extension !== undefined && extension.isActive;
   }
 
   /**
-   * Check if a RangeLink is eligible to be pasted to Claude Code
+   * Get ordered list of commands to try for focusing Claude Code chat.
    *
-   * Claude Code has no special eligibility rules - always eligible.
-   *
-   * @param _formattedLink - The formatted RangeLink (not used)
-   * @returns Always true (Claude Code accepts all content)
+   * @returns Array of command IDs to try in order
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async isEligibleForPasteLink(_formattedLink: FormattedLink): Promise<boolean> {
-    return true;
+  protected getFocusCommands(): string[] {
+    return ClaudeCodeDestination.CLAUDE_CODE_COMMANDS;
   }
 
   /**
-   * Paste a RangeLink to Claude Code chat
+   * Get user instruction for manual paste.
    *
-   * **Implementation:** Since Claude Code doesn't support programmatic text insertion,
-   * this method opens Claude Code chat interface. The caller (RangeLinkService) handles
-   * clipboard copy and user notification.
+   * Returns manual paste instruction only when automatic paste fails.
+   * When automatic paste succeeds, returns undefined (no manual action needed).
    *
-   * @param formattedLink - The formatted RangeLink with metadata
-   * @returns true if chat open succeeded, false otherwise
+   * @param autoPasteResult - Result of automatic paste attempt
+   * @returns Manual paste instruction if automatic paste failed, undefined if succeeded
    */
-  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
-    return this.openChatInterface({
-      fn: 'ClaudeCodeDestination.pasteLink',
-      formattedLink,
-      linkLength: formattedLink.link.length,
-    });
-  }
-
-  /**
-   * Open Claude Code chat interface with fallback command attempts
-   *
-   * Tries multiple commands in order of preference until one succeeds.
-   *
-   * @param contextInfo - Logging context with fn name and content metadata
-   * @returns true if chat open succeeded or commands attempted, false if extension unavailable
-   */
-  private async openChatInterface(contextInfo: LoggingContext): Promise<boolean> {
-    if (!(await this.isAvailable())) {
-      this.logger.warn(contextInfo, 'Cannot paste: Claude Code extension not available');
-      return false;
+  getUserInstruction(autoPasteResult: AutoPasteResult): string | undefined {
+    if (autoPasteResult === AutoPasteResult.Success) {
+      return undefined; // Automatic paste succeeded, no manual action needed
     }
-
-    try {
-      // Try opening Claude Code with multiple fallback commands
-      let chatOpened = false;
-      for (const command of ClaudeCodeDestination.CLAUDE_CODE_COMMANDS) {
-        try {
-          await this.ideAdapter.executeCommand(command);
-          this.logger.debug(
-            { ...contextInfo, command },
-            'Successfully executed Claude Code open command',
-          );
-          chatOpened = true;
-          break;
-        } catch (commandError) {
-          this.logger.debug(
-            { ...contextInfo, command, error: commandError },
-            'Command failed, trying next fallback',
-          );
-        }
-      }
-
-      if (!chatOpened) {
-        this.logger.warn(contextInfo, 'All Claude Code open commands failed');
-      }
-
-      this.logger.info({ ...contextInfo, chatOpened }, 'Claude Code open completed');
-
-      return true;
-    } catch (error) {
-      this.logger.error({ ...contextInfo, error }, 'Failed to open Claude Code');
-      return false;
-    }
-  }
-
-  /**
-   * Check if text content is eligible to be pasted to Claude Code
-   *
-   * Claude Code has no special eligibility rules - always eligible.
-   *
-   * @param _content - The text content (not used)
-   * @returns Always true (Claude Code accepts all content)
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async isEligibleForPasteContent(_content: string): Promise<boolean> {
-    return true;
-  }
-
-  /**
-   * Paste text content to Claude Code chat
-   *
-   * Similar to pasteLink() but accepts raw text content instead of FormattedLink.
-   * Used for pasting selected text directly to Claude Code (issue #89).
-   *
-   * **Implementation:** Since Claude Code doesn't support programmatic text insertion,
-   * this method opens Claude Code chat interface. The caller (RangeLinkService) handles
-   * clipboard copy and user notification.
-   *
-   * @param content - The text content to paste
-   * @returns true if chat open succeeded, false otherwise
-   */
-  async pasteContent(content: string): Promise<boolean> {
-    return this.openChatInterface({
-      fn: 'ClaudeCodeDestination.pasteContent',
-      contentLength: content.length,
-    });
-  }
-
-  /**
-   * Get user instruction for manual paste (clipboard-based destination)
-   *
-   * @returns Instruction string for manual paste in Claude Code
-   */
-  getUserInstruction(): string | undefined {
     return formatMessage(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS);
   }
 
   /**
-   * Focus Claude Code chat interface
-   *
-   * Opens/focuses the Claude Code chat panel to bring it into view.
-   * Reuses the same command sequence as pasteLink().
-   *
-   * Used by the "Jump to Bound Destination" command (issue #99).
-   *
-   * @returns true if chat focus succeeded, false otherwise
-   */
-  async focus(): Promise<boolean> {
-    return this.openChatInterface({
-      fn: 'ClaudeCodeDestination.focus',
-    });
-  }
-
-  /**
-   * Get success message for jump command
+   * Get success message for jump command.
    *
    * @returns Formatted i18n message for status bar display
    */
   getJumpSuccessMessage(): string {
     return formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE);
-  }
-
-  /**
-   * Get destination-specific details for logging
-   *
-   * Claude Code destinations have no additional details to log beyond displayName.
-   *
-   * @returns Empty object (no additional details)
-   */
-  getLoggingDetails(): Record<string, unknown> {
-    return {};
-  }
-
-  /**
-   * Check if this Claude Code destination equals another destination
-   *
-   * @param other - The destination to compare against (may be undefined)
-   * @returns Promise<true> if both are claude-code, Promise<false> otherwise
-   */
-  async equals(other: PasteDestination | undefined): Promise<boolean> {
-    // Safeguard: Check other is defined
-    if (!other) {
-      return false;
-    }
-
-    // AI assistants are singletons - just compare type
-    return this.id === other.id;
   }
 }

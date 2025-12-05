@@ -1,4 +1,4 @@
-import { getLogger } from 'barebone-logger';
+import type { Logger } from 'barebone-logger';
 import {
   DelimiterConfig,
   formatLink,
@@ -47,6 +47,7 @@ export class RangeLinkService {
     private readonly delimiters: DelimiterConfig,
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
+    private readonly logger: Logger,
   ) {}
 
   /**
@@ -116,7 +117,7 @@ export class RangeLinkService {
     const selectedTexts = selections.map((s) => editor.document.getText(s));
     const content = selectedTexts.join('\n');
 
-    getLogger().debug(
+    this.logger.debug(
       {
         fn: 'pasteSelectedTextToDestination',
         selectionCount: selectedTexts.length,
@@ -128,7 +129,8 @@ export class RangeLinkService {
     await this.copyAndSendToDestination(
       content,
       content,
-      (text) => this.destinationManager.sendTextToDestination(text),
+      (text, basicStatusMessage) =>
+        this.destinationManager.sendTextToDestination(text, basicStatusMessage),
       (destination, text) => destination.isEligibleForPasteContent(text),
       'Selected text',
       'pasteSelectedTextToDestination',
@@ -139,15 +141,15 @@ export class RangeLinkService {
    * Generates a link from the current editor selection
    * @param pathFormat Whether to use relative or absolute paths
    * @param isPortable Whether to generate a portable link with embedded delimiters
-   * @returns The generated FormattedLink with metadata, or null if generation failed
+   * @returns The generated FormattedLink with metadata, or undefined if generation failed
    */
   private async generateLinkFromSelection(
     pathFormat: PathFormat,
     isPortable: boolean,
-  ): Promise<FormattedLink | null> {
+  ): Promise<FormattedLink | undefined> {
     const validated = this.validateSelectionsAndShowError();
     if (!validated) {
-      return null;
+      return undefined;
     }
 
     const { editor, selections } = validated;
@@ -160,12 +162,12 @@ export class RangeLinkService {
       inputSelection = toInputSelection(editor, selections);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to process selection';
-      getLogger().error(
+      this.logger.error(
         { fn: 'generateLinkFromSelection', error },
         'Failed to convert selections to InputSelection',
       );
       this.ideAdapter.showErrorMessage(`RangeLink: ${message}`);
-      return null;
+      return undefined;
     }
 
     const options: FormatOptions = {
@@ -176,16 +178,16 @@ export class RangeLinkService {
 
     if (!result.success) {
       const linkType = isPortable ? 'portable link' : 'link';
-      getLogger().error(
+      this.logger.error(
         { fn: 'generateLinkFromSelection', errorCode: result.error },
         `Failed to generate ${linkType}`,
       );
       this.ideAdapter.showErrorMessage(`RangeLink: Failed to generate ${linkType}`);
-      return null;
+      return undefined;
     }
 
     const formattedLink = result.value;
-    getLogger().info(
+    this.logger.info(
       { fn: 'generateLinkFromSelection', formattedLink },
       `Generated link: ${formattedLink.link}`,
     );
@@ -211,7 +213,8 @@ export class RangeLinkService {
     await this.copyAndSendToDestination(
       formattedLink.link,
       formattedLink,
-      (link) => this.destinationManager.sendToDestination(link),
+      (link, basicStatusMessage) =>
+        this.destinationManager.sendLinkToDestination(link, basicStatusMessage),
       (destination, link) => destination.isEligibleForPasteLink(link),
       linkTypeName,
       'copyToClipboardAndDestination',
@@ -240,7 +243,7 @@ export class RangeLinkService {
         ? 'RangeLink: No text selected. Select text and try again.'
         : 'RangeLink: No active editor';
 
-      getLogger().debug(
+      this.logger.debug(
         {
           fn: 'validateSelectionsAndShowError',
           hasEditor: !!activeSelections.editor,
@@ -290,7 +293,7 @@ export class RangeLinkService {
   private async copyAndSendToDestination<T>(
     clipboardContent: string,
     sendContent: T,
-    sendFn: (content: T) => Promise<boolean>,
+    sendFn: (content: T, basicStatusMessage: string) => Promise<boolean>,
     isEligibleFn: (destination: PasteDestination, content: T) => Promise<boolean>,
     contentName: string,
     fnName: string,
@@ -313,7 +316,7 @@ export class RangeLinkService {
         destinationBehavior === DestinationBehavior.ClipboardOnly
           ? 'Skipping destination (clipboard-only command)'
           : 'No destination bound - copied to clipboard only';
-      getLogger().info({ fn: fnName }, reason);
+      this.logger.info({ fn: fnName }, reason);
       this.ideAdapter.setStatusBarMessage(basicStatusMessage);
       return;
     }
@@ -325,7 +328,7 @@ export class RangeLinkService {
     // Check eligibility before sending
     const isEligible = await isEligibleFn(destination, sendContent);
     if (!isEligible) {
-      getLogger().debug(
+      this.logger.debug(
         { fn: fnName, boundDestination: displayName },
         'Content not eligible for paste - skipping auto-paste',
       );
@@ -333,65 +336,12 @@ export class RangeLinkService {
       return;
     }
 
-    getLogger().debug(
+    this.logger.debug(
       { fn: fnName, boundDestination: displayName },
       `Attempting to send content to bound destination: ${displayName}`,
     );
 
-    // Send to bound destination
-    const sent = await sendFn(sendContent);
-
-    if (sent) {
-      // Check if destination requires manual paste
-      const userInstruction = destination.getUserInstruction();
-
-      if (userInstruction) {
-        // Clipboard-based destination: Show status bar + information popup
-        this.ideAdapter.setStatusBarMessage(basicStatusMessage);
-        void this.ideAdapter.showInformationMessage(`${basicStatusMessage}. ${userInstruction}`);
-      } else {
-        // Automatic destination: Show status bar only
-        this.ideAdapter.setStatusBarMessage(`${basicStatusMessage} & sent to ${displayName}`);
-      }
-    } else {
-      // Paste failed - show destination-aware error message
-      getLogger().warn(
-        { fn: fnName, boundDestination: displayName },
-        'Failed to send to destination',
-      );
-      const errorMessage = this.buildPasteFailureMessage(destination);
-      this.ideAdapter.showWarningMessage(errorMessage);
-    }
-  }
-
-  /**
-   * Build destination-aware error message for paste failures
-   *
-   * Provides specific guidance based on the destination type that failed.
-   * Text editor failures mention "hidden behind tabs", terminal failures mention
-   * closure/input issues, AI assistant failures suggest keyboard shortcuts, etc.
-   *
-   * @param destination - The destination that failed to receive the paste
-   * @returns User-friendly error message with destination-specific guidance
-   */
-  private buildPasteFailureMessage(destination: PasteDestination): string {
-    const baseMessage = 'RangeLink: Copied to clipboard.';
-
-    switch (destination.id) {
-      case 'text-editor':
-        return `${baseMessage} Bound editor is hidden behind other tabs - make it active to resume auto-paste.`;
-
-      case 'terminal':
-        return `${baseMessage} Could not send to terminal. Terminal may be closed or not accepting input.`;
-
-      case 'claude-code':
-        return `${baseMessage} Could not open Claude Code chat. Try opening it manually (Cmd+Escape).`;
-
-      case 'cursor-ai':
-        return `${baseMessage} Could not open Cursor AI chat. Try opening it manually (Cmd+L).`;
-
-      default:
-        return `${baseMessage} Could not send to ${destination.displayName}.`;
-    }
+    // Send to bound destination (manager handles all feedback)
+    await sendFn(sendContent, basicStatusMessage);
   }
 }

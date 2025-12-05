@@ -4,6 +4,9 @@ import { TerminalFocusType } from '../../../types/TerminalFocusType';
 import * as resolveWorkspacePathModule from '../../../utils/resolveWorkspacePath';
 import { createMockDocument } from '../../helpers/createMockDocument';
 import { createMockEditor } from '../../helpers/createMockEditor';
+import { createMockTab } from '../../helpers/createMockTab';
+import { createMockTabGroup } from '../../helpers/createMockTabGroup';
+import { createMockTabGroups } from '../../helpers/createMockTabGroups';
 import { createMockTerminal } from '../../helpers/createMockTerminal';
 import { createMockUri } from '../../helpers/createMockUri';
 import { createMockUntitledUri } from '../../helpers/createMockUntitledUri';
@@ -1004,6 +1007,1206 @@ describe('VscodeAdapter', () => {
       const result = adapter.findOpenUntitledFile('untitled-1');
 
       expect(result?.toString()).toBe('untitled:untitled-1');
+    });
+  });
+
+  describe('getExtension', () => {
+    it('should return extension when it exists', () => {
+      const customAdapter = createMockVscodeAdapter({
+        extensionsOptions: [
+          {
+            id: 'test.extension',
+            extensionUri: createMockUri('/path/to/extension'),
+            extensionPath: '/path/to/extension',
+          },
+        ],
+      });
+
+      const result = customAdapter.getExtension('test.extension');
+
+      expect(result).toBeDefined();
+      expect(result?.id).toBe('test.extension');
+      expect(result?.extensionPath).toBe('/path/to/extension');
+      expect(result?.isActive).toBe(true); // Default from createMockExtension
+    });
+
+    it('should return undefined when extension does not exist', () => {
+      const customAdapter = createMockVscodeAdapter(); // No extensions
+
+      const result = customAdapter.getExtension('nonexistent.extension');
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return correct extension by exact extensionId', () => {
+      const customAdapter = createMockVscodeAdapter({
+        extensionsOptions: ['anthropic.claude-code', 'github.copilot'],
+      });
+
+      const result = customAdapter.getExtension('anthropic.claude-code');
+
+      expect(result).toBeDefined();
+      expect(result?.id).toBe('anthropic.claude-code');
+    });
+
+    it('should handle special characters in extensionId', () => {
+      const extensionId = 'publisher.extension-with-dash_and_underscore';
+      const customAdapter = createMockVscodeAdapter({
+        extensionsOptions: [extensionId],
+      });
+
+      const result = customAdapter.getExtension(extensionId);
+
+      expect(result).toBeDefined();
+      expect(result?.id).toBe(extensionId);
+    });
+  });
+
+  describe('showTextDocument', () => {
+    it('should open document and show in editor with basic URI', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const result = await adapter.showTextDocument(mockUri);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledTimes(1);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, undefined);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledTimes(1);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document with preserveFocus option set to true', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const options = { preserveFocus: true };
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document with preserveFocus option set to false', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const options = { preserveFocus: false };
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document with selection option to highlight range', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const mockRange = {
+        start: { line: 10, character: 5 },
+        end: { line: 15, character: 10 },
+      };
+      const options = { selection: mockRange as any };
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document in specific editor column', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const options = { viewColumn: 2 }; // Open in second editor column
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document in preview mode', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const options = { preview: true };
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open document with multiple options combined', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const mockRange = {
+        start: { line: 5, character: 0 },
+        end: { line: 5, character: 10 },
+      };
+      const options = {
+        preserveFocus: false,
+        preview: false,
+        viewColumn: 1,
+        selection: mockRange as any,
+      };
+      const result = await adapter.showTextDocument(mockUri, options);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, options);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open untitled document', async () => {
+      const mockUri = createMockUntitledUri('untitled:Untitled-1');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const result = await adapter.showTextDocument(mockUri);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, undefined);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should open already-open document', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      // Simulate document already being open (VSCode returns same document instance)
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const result = await adapter.showTextDocument(mockUri);
+
+      expect(mockVSCode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.window.showTextDocument).toHaveBeenCalledWith(mockDocument, undefined);
+      expect(result).toBe(mockEditor);
+    });
+
+    it('should verify two-step process: openTextDocument then showTextDocument', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      const openDocSpy = jest
+        .spyOn(mockVSCode.workspace, 'openTextDocument')
+        .mockResolvedValue(mockDocument);
+      const showDocSpy = jest
+        .spyOn(mockVSCode.window, 'showTextDocument')
+        .mockResolvedValue(mockEditor);
+
+      await adapter.showTextDocument(mockUri);
+
+      // Verify order: openTextDocument called before showTextDocument
+      expect(openDocSpy).toHaveBeenCalledTimes(1);
+      expect(showDocSpy).toHaveBeenCalledTimes(1);
+
+      // Verify the document from openTextDocument is passed to showTextDocument
+      expect(showDocSpy).toHaveBeenCalledWith(mockDocument, undefined);
+    });
+
+    it('should return TextEditor instance with correct document reference', async () => {
+      const mockUri = createMockUri('/workspace/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument });
+
+      mockVSCode.workspace.openTextDocument.mockResolvedValue(mockDocument);
+      mockVSCode.window.showTextDocument.mockResolvedValue(mockEditor);
+
+      const result = await adapter.showTextDocument(mockUri);
+
+      expect(result).toBe(mockEditor);
+      expect(result.document).toBe(mockDocument);
+      expect(result.document.uri).toBe(mockUri);
+    });
+  });
+
+  describe('executeCommand', () => {
+    it('should execute command without arguments', async () => {
+      const commandId = 'workbench.action.files.save';
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledTimes(1);
+      expect(result).toBeUndefined();
+    });
+
+    it('should execute command with single argument', async () => {
+      const commandId = 'vscode.open';
+      const arg = createMockUri('/workspace/file.ts');
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId, arg);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId, arg);
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledTimes(1);
+      expect(result).toBeUndefined();
+    });
+
+    it('should execute command with multiple arguments', async () => {
+      const commandId = 'editor.action.insertSnippet';
+      const arg1 = { snippet: 'console.log($1)' };
+      const arg2 = { languageId: 'typescript' };
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId, arg1, arg2);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId, arg1, arg2);
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledTimes(1);
+      expect(result).toBeUndefined();
+    });
+
+    it('should forward return value from VSCode command', async () => {
+      const commandId = 'vscode.executeCommand';
+      const expectedReturn = { success: true, data: 'test data' };
+      mockVSCode.commands.executeCommand.mockResolvedValue(expectedReturn);
+
+      const result = await adapter.executeCommand(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toStrictEqual(expectedReturn);
+    });
+
+    it('should execute workbench action command', async () => {
+      const commandId = 'workbench.action.terminal.paste';
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBeUndefined();
+    });
+
+    it('should execute rangelink command', async () => {
+      const commandId = 'rangelink.copyLink';
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBeUndefined();
+    });
+
+    it('should execute command with typed result', async () => {
+      const commandId = 'vscode.executeDocumentSymbolProvider';
+      interface SymbolInfo {
+        name: string;
+        kind: number;
+      }
+      const typedResult: SymbolInfo[] = [
+        { name: 'myFunction', kind: 12 },
+        { name: 'myVariable', kind: 13 },
+      ];
+      mockVSCode.commands.executeCommand.mockResolvedValue(typedResult);
+
+      const result = await adapter.executeCommand<SymbolInfo[]>(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toStrictEqual(typedResult);
+    });
+
+    it('should execute command that returns undefined', async () => {
+      const commandId = 'editor.action.formatDocument';
+      mockVSCode.commands.executeCommand.mockResolvedValue(undefined);
+
+      const result = await adapter.executeCommand(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBeUndefined();
+    });
+
+    it('should execute command that returns string', async () => {
+      const commandId = 'vscode.executeCommand';
+      const stringResult = 'command executed successfully';
+      mockVSCode.commands.executeCommand.mockResolvedValue(stringResult);
+
+      const result = await adapter.executeCommand<string>(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBe(stringResult);
+    });
+
+    it('should execute command that returns number', async () => {
+      const commandId = 'custom.getCount';
+      const numberResult = 42;
+      mockVSCode.commands.executeCommand.mockResolvedValue(numberResult);
+
+      const result = await adapter.executeCommand<number>(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBe(numberResult);
+    });
+
+    it('should execute command that returns boolean', async () => {
+      const commandId = 'custom.checkStatus';
+      const boolResult = true;
+      mockVSCode.commands.executeCommand.mockResolvedValue(boolResult);
+
+      const result = await adapter.executeCommand<boolean>(commandId);
+
+      expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
+      expect(result).toBe(boolResult);
+    });
+  });
+
+  describe('parseUri', () => {
+    it('should parse file:// URI using VSCode API', () => {
+      const uriString = 'file:///workspace/file.ts';
+      const mockParsedUri = {
+        scheme: 'file',
+        path: '/workspace/file.ts',
+        fsPath: '/workspace/file.ts',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledTimes(1);
+      expect(result).toBe(mockParsedUri);
+    });
+
+    it('should parse untitled: URI', () => {
+      const uriString = 'untitled:Untitled-1';
+      const mockParsedUri = {
+        scheme: 'untitled',
+        path: 'Untitled-1',
+        fsPath: 'Untitled-1',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result).toStrictEqual(mockParsedUri);
+    });
+
+    it('should parse custom scheme URI (vscode:)', () => {
+      const uriString = 'vscode://settings/editor';
+      const mockParsedUri = {
+        scheme: 'vscode',
+        path: '/settings/editor',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result).toStrictEqual(mockParsedUri);
+    });
+
+    it('should parse custom scheme URI (command:)', () => {
+      const uriString = 'command:workbench.action.openSettings';
+      const mockParsedUri = {
+        scheme: 'command',
+        path: 'workbench.action.openSettings',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result).toStrictEqual(mockParsedUri);
+    });
+
+    it('should parse URI with query parameters', () => {
+      const uriString = 'file:///workspace/file.ts?line=10&column=5';
+      const mockParsedUri = {
+        scheme: 'file',
+        path: '/workspace/file.ts',
+        query: 'line=10&column=5',
+        fsPath: '/workspace/file.ts',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result.query).toBe('line=10&column=5');
+    });
+
+    it('should parse URI with fragments', () => {
+      const uriString = 'file:///workspace/file.ts#L10-L20';
+      const mockParsedUri = {
+        scheme: 'file',
+        path: '/workspace/file.ts',
+        fragment: 'L10-L20',
+        fsPath: '/workspace/file.ts',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result.fragment).toBe('L10-L20');
+    });
+
+    it('should parse URI with both query and fragment', () => {
+      const uriString = 'file:///workspace/file.ts?foo=bar#section';
+      const mockParsedUri = {
+        scheme: 'file',
+        path: '/workspace/file.ts',
+        query: 'foo=bar',
+        fragment: 'section',
+        fsPath: '/workspace/file.ts',
+        toString: () => uriString,
+      };
+
+      mockVSCode.Uri.parse.mockReturnValue(mockParsedUri);
+
+      const result = adapter.parseUri(uriString);
+
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith(uriString);
+      expect(result.query).toBe('foo=bar');
+      expect(result.fragment).toBe('section');
+    });
+  });
+
+  describe('createDocumentLink', () => {
+    it('should create document link with range only (no target)', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(10, 0),
+        adapter.createPosition(10, 20),
+      );
+
+      const result = adapter.createDocumentLink(mockRange);
+
+      expect(mockVSCode.DocumentLink).toHaveBeenCalledWith(mockRange, undefined);
+      expect(mockVSCode.DocumentLink).toHaveBeenCalledTimes(1);
+      expect(result.range).toBe(mockRange);
+      expect(result.target).toBeUndefined();
+    });
+
+    it('should create document link with range and target URI', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(5, 10),
+        adapter.createPosition(5, 30),
+      );
+      const mockTargetUri = createMockUri('file:///workspace/target.ts');
+
+      const result = adapter.createDocumentLink(mockRange, mockTargetUri);
+
+      expect(mockVSCode.DocumentLink).toHaveBeenCalledWith(mockRange, mockTargetUri);
+      expect(result.range).toBe(mockRange);
+      expect(result.target).toBe(mockTargetUri);
+    });
+
+    it('should create document link with single-line range', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(15, 5),
+        adapter.createPosition(15, 25),
+      );
+
+      const result = adapter.createDocumentLink(mockRange);
+
+      expect(result.range).toStrictEqual({
+        start: { line: 15, character: 5 },
+        end: { line: 15, character: 25 },
+      });
+    });
+
+    it('should create document link with multi-line range', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(10, 0),
+        adapter.createPosition(20, 10),
+      );
+      const mockTargetUri = createMockUri('file:///workspace/file.ts');
+
+      const result = adapter.createDocumentLink(mockRange, mockTargetUri);
+
+      expect(result.range).toStrictEqual({
+        start: { line: 10, character: 0 },
+        end: { line: 20, character: 10 },
+      });
+      expect(result.target).toBe(mockTargetUri);
+    });
+
+    it('should create document link with different target URI schemes', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(0, 0),
+        adapter.createPosition(0, 10),
+      );
+      const mockTargetUri = createMockUri('command:workbench.action.openSettings');
+
+      const result = adapter.createDocumentLink(mockRange, mockTargetUri);
+
+      expect(mockVSCode.DocumentLink).toHaveBeenCalledWith(mockRange, mockTargetUri);
+      expect(result.target).toBe(mockTargetUri);
+    });
+
+    it('should verify DocumentLink properties are properly initialized', () => {
+      const mockRange = adapter.createRange(
+        adapter.createPosition(1, 2),
+        adapter.createPosition(3, 4),
+      );
+      const mockTargetUri = createMockUri('file:///test.ts');
+
+      const result = adapter.createDocumentLink(mockRange, mockTargetUri);
+
+      expect(result.range).toBe(mockRange);
+      expect(result.target).toBe(mockTargetUri);
+      expect(result.tooltip).toBeUndefined();
+    });
+  });
+
+  describe('getWorkspaceFolder', () => {
+    it('should get workspace folder for file inside workspace', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const mockWorkspaceFolder = {
+        uri: createMockUri('/workspace'),
+        name: 'workspace',
+        index: 0,
+      };
+
+      mockVSCode.workspace.getWorkspaceFolder.mockReturnValue(mockWorkspaceFolder);
+
+      const result = adapter.getWorkspaceFolder(mockUri);
+
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledTimes(1);
+      expect(result).toBe(mockWorkspaceFolder);
+    });
+
+    it('should return undefined for file outside workspace', () => {
+      const mockUri = createMockUri('/outside/file.ts');
+
+      mockVSCode.workspace.getWorkspaceFolder.mockReturnValue(undefined);
+
+      const result = adapter.getWorkspaceFolder(mockUri);
+
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledWith(mockUri);
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle URI with multiple workspace folders (monorepo)', () => {
+      const mockUri = createMockUri('/workspace/packages/core/src/file.ts');
+      const mockWorkspaceFolder = {
+        uri: createMockUri('/workspace/packages/core'),
+        name: 'core',
+        index: 1,
+      };
+
+      mockVSCode.workspace.getWorkspaceFolder.mockReturnValue(mockWorkspaceFolder);
+
+      const result = adapter.getWorkspaceFolder(mockUri);
+
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledWith(mockUri);
+      expect(result).toStrictEqual(mockWorkspaceFolder);
+      expect(result?.name).toBe('core');
+      expect(result?.index).toBe(1);
+    });
+
+    it('should delegate to vscode.workspace.getWorkspaceFolder', () => {
+      const mockUri = createMockUri('/workspace/test.ts');
+      const mockFolder = {
+        uri: createMockUri('/workspace'),
+        name: 'workspace',
+        index: 0,
+      };
+
+      mockVSCode.workspace.getWorkspaceFolder.mockReturnValue(mockFolder);
+
+      adapter.getWorkspaceFolder(mockUri);
+
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledWith(mockUri);
+      expect(mockVSCode.workspace.getWorkspaceFolder).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('asRelativePath', () => {
+    it('should convert absolute path to relative without workspace folder name', () => {
+      const absolutePath = '/workspace/src/file.ts';
+      const relativePath = 'src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(absolutePath);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, undefined);
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledTimes(1);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should convert absolute path to relative with workspace folder name', () => {
+      const absolutePath = '/workspace/src/file.ts';
+      const relativePath = 'workspace/src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(absolutePath, true);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, true);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should convert absolute path to relative with includeWorkspaceFolder false', () => {
+      const absolutePath = '/workspace/src/file.ts';
+      const relativePath = 'src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(absolutePath, false);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, false);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should convert URI to relative path', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const relativePath = 'src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(mockUri);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(mockUri, undefined);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should convert URI to relative path with workspace folder name', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const relativePath = 'workspace/src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(mockUri, true);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(mockUri, true);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should handle file outside workspace (returns absolute)', () => {
+      const absolutePath = '/outside/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(absolutePath);
+
+      const result = adapter.asRelativePath(absolutePath);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, undefined);
+      expect(result).toBe(absolutePath);
+    });
+
+    it('should test with monorepo (multiple workspace folders)', () => {
+      const absolutePath = '/workspace/packages/core/src/file.ts';
+      const relativePath = 'core/src/file.ts';
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
+
+      const result = adapter.asRelativePath(absolutePath, true);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, true);
+      expect(result).toBe(relativePath);
+    });
+
+    it('should delegate to vscode.workspace.asRelativePath with all parameters', () => {
+      const pathOrUri = '/workspace/test.ts';
+      const includeWorkspaceFolder = true;
+
+      mockVSCode.workspace.asRelativePath.mockReturnValue('workspace/test.ts');
+
+      adapter.asRelativePath(pathOrUri, includeWorkspaceFolder);
+
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(
+        pathOrUri,
+        includeWorkspaceFolder,
+      );
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Workspace Getters', () => {
+    describe('activeTerminal', () => {
+      it('should return terminal when one is active', () => {
+        const mockTerminal = createMockTerminal({ name: 'bash' });
+        mockVSCode.window.activeTerminal = mockTerminal;
+
+        const result = adapter.activeTerminal;
+
+        expect(result).toBe(mockTerminal);
+      });
+
+      it('should return undefined when no terminal active', () => {
+        mockVSCode.window.activeTerminal = undefined;
+
+        const result = adapter.activeTerminal;
+
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe('activeTextEditor', () => {
+      it('should return editor when one is active', () => {
+        const mockEditor = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/file.ts') }),
+        });
+        mockVSCode.window.activeTextEditor = mockEditor;
+
+        const result = adapter.activeTextEditor;
+
+        expect(result).toBe(mockEditor);
+      });
+
+      it('should return undefined when no editor active', () => {
+        mockVSCode.window.activeTextEditor = undefined;
+
+        const result = adapter.activeTextEditor;
+
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe('visibleTextEditors', () => {
+      it('should return array of visible editors', () => {
+        const mockEditor1 = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/file1.ts') }),
+        });
+        const mockEditor2 = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/file2.ts') }),
+        });
+        mockVSCode.window.visibleTextEditors = [mockEditor1, mockEditor2];
+
+        const result = adapter.visibleTextEditors;
+
+        expect(result).toStrictEqual([mockEditor1, mockEditor2]);
+        expect(result).toHaveLength(2);
+      });
+
+      it('should return empty array when none visible', () => {
+        mockVSCode.window.visibleTextEditors = [];
+
+        const result = adapter.visibleTextEditors;
+
+        expect(result).toStrictEqual([]);
+        expect(result).toHaveLength(0);
+      });
+
+      it('should return multiple editors (split view)', () => {
+        const mockEditors = [
+          createMockEditor({
+            document: createMockDocument({ uri: createMockUri('/workspace/left.ts') }),
+          }),
+          createMockEditor({
+            document: createMockDocument({ uri: createMockUri('/workspace/center.ts') }),
+          }),
+          createMockEditor({
+            document: createMockDocument({ uri: createMockUri('/workspace/right.ts') }),
+          }),
+        ];
+        mockVSCode.window.visibleTextEditors = mockEditors;
+
+        const result = adapter.visibleTextEditors;
+
+        expect(result).toStrictEqual(mockEditors);
+        expect(result).toHaveLength(3);
+      });
+    });
+  });
+
+  describe('Tab Group Operations', () => {
+    describe('tabGroups getter', () => {
+      it('should return TabGroups API from vscode.window', () => {
+        const mockTabGroups = createMockTabGroups();
+        mockVSCode.window.tabGroups = mockTabGroups;
+
+        const result = adapter.tabGroups;
+
+        expect(result).toBe(mockTabGroups);
+      });
+    });
+
+    describe('findTabGroupForDocument', () => {
+      it('should find tab group containing target document', () => {
+        const targetUri = createMockUri('/workspace/target.ts');
+        const tab1 = createMockTab(createMockUri('/workspace/file1.ts'));
+        const tab2 = createMockTab(targetUri);
+        const tab3 = createMockTab(createMockUri('/workspace/file3.ts'));
+
+        const tabGroup1 = createMockTabGroup([tab1, tab2]);
+        const tabGroup2 = createMockTabGroup([tab3]);
+
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [tabGroup1, tabGroup2] });
+
+        const result = adapter.findTabGroupForDocument(targetUri);
+
+        expect(result).toBe(tabGroup1);
+      });
+
+      it('should return undefined when document not in any tab group', () => {
+        const targetUri = createMockUri('/workspace/missing.ts');
+        const tab1 = createMockTab(createMockUri('/workspace/file1.ts'));
+        const tab2 = createMockTab(createMockUri('/workspace/file2.ts'));
+
+        const tabGroup = createMockTabGroup([tab1, tab2]);
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [tabGroup] });
+
+        const result = adapter.findTabGroupForDocument(targetUri);
+
+        expect(result).toBeUndefined();
+      });
+
+      it('should handle multiple tab groups (split editors)', () => {
+        const targetUri = createMockUri('/workspace/target.ts');
+        const tab1 = createMockTab(createMockUri('/workspace/file1.ts'));
+        const tab2 = createMockTab(createMockUri('/workspace/file2.ts'));
+        const tab3 = createMockTab(targetUri);
+
+        const leftGroup = createMockTabGroup([tab1]);
+        const centerGroup = createMockTabGroup([tab2]);
+        const rightGroup = createMockTabGroup([tab3]);
+
+        mockVSCode.window.tabGroups = createMockTabGroups({
+          all: [leftGroup, centerGroup, rightGroup],
+        });
+
+        const result = adapter.findTabGroupForDocument(targetUri);
+
+        expect(result).toBe(rightGroup);
+      });
+
+      it('should skip non-text tabs (terminals, webviews)', () => {
+        const targetUri = createMockUri('/workspace/target.ts');
+        const textTab = createMockTab(targetUri);
+        const terminalTab = { input: { type: 'terminal' } } as any; // Non-text tab
+        const webviewTab = { input: { type: 'webview' } } as any; // Non-text tab
+
+        const tabGroup = createMockTabGroup([terminalTab, textTab, webviewTab]);
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [tabGroup] });
+
+        const result = adapter.findTabGroupForDocument(targetUri);
+
+        expect(result).toBe(tabGroup);
+      });
+
+      it('should handle same document in multiple tab groups (return first match)', () => {
+        const targetUri = createMockUri('/workspace/target.ts');
+        const tab1 = createMockTab(targetUri);
+        const tab2 = createMockTab(targetUri); // Same document in different group
+
+        const group1 = createMockTabGroup([tab1]);
+        const group2 = createMockTabGroup([tab2]);
+
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [group1, group2] });
+
+        const result = adapter.findTabGroupForDocument(targetUri);
+
+        expect(result).toBe(group1); // First match
+      });
+
+      it('should test URI comparison (toString equality)', () => {
+        const uri1 = createMockUri('/workspace/file.ts');
+        const uri2 = createMockUri('/workspace/file.ts'); // Same path, different object
+
+        const tab = createMockTab(uri1);
+        const tabGroup = createMockTabGroup([tab]);
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [tabGroup] });
+
+        const result = adapter.findTabGroupForDocument(uri2);
+
+        expect(result).toBe(tabGroup);
+        expect(uri1).not.toBe(uri2); // Different objects
+        expect(uri1.toString()).toBe(uri2.toString()); // Same string representation
+      });
+    });
+
+    describe('isTextEditorTab', () => {
+      it('should return true for text editor tab (TabInputText)', () => {
+        const tab = createMockTab(createMockUri('/workspace/file.ts'));
+
+        const result = adapter.isTextEditorTab(tab);
+
+        expect(result).toBe(true);
+      });
+
+      it('should return false for terminal tab', () => {
+        const terminalTab = {
+          input: { type: 'terminal' },
+        } as any;
+
+        const result = adapter.isTextEditorTab(terminalTab);
+
+        expect(result).toBe(false);
+      });
+
+      it('should return false for webview tab', () => {
+        const webviewTab = {
+          input: { type: 'webview', viewType: 'markdown.preview' },
+        } as any;
+
+        const result = adapter.isTextEditorTab(webviewTab);
+
+        expect(result).toBe(false);
+      });
+
+      it('should return false for custom tab types', () => {
+        const customTab = {
+          input: { type: 'custom', customId: 'some-extension' },
+        } as any;
+
+        const result = adapter.isTextEditorTab(customTab);
+
+        expect(result).toBe(false);
+      });
+
+      it('should verify type guard narrows type correctly', () => {
+        const tab = createMockTab(createMockUri('/workspace/file.ts'));
+
+        if (adapter.isTextEditorTab(tab)) {
+          // Type narrowing should allow accessing tab.input.uri without error
+          const uri = tab.input.uri;
+          expect(uri).toBeDefined();
+          expect(uri.fsPath).toBe('/workspace/file.ts');
+        }
+      });
+    });
+
+    describe('getTabDocumentUri', () => {
+      it('should extract URI from text editor tab', () => {
+        const mockUri = createMockUri('/workspace/file.ts');
+        const tab = createMockTab(mockUri);
+
+        const result = adapter.getTabDocumentUri(tab);
+
+        expect(result).toBe(mockUri);
+      });
+
+      it('should return undefined for terminal tab', () => {
+        const terminalTab = {
+          input: { type: 'terminal' },
+        } as any;
+
+        const result = adapter.getTabDocumentUri(terminalTab);
+
+        expect(result).toBeUndefined();
+      });
+
+      it('should return undefined for webview tab', () => {
+        const webviewTab = {
+          input: { type: 'webview' },
+        } as any;
+
+        const result = adapter.getTabDocumentUri(webviewTab);
+
+        expect(result).toBeUndefined();
+      });
+
+      it('should verify delegates to isTextEditorTab for type checking', () => {
+        const mockUri = createMockUri('/workspace/file.ts');
+        const textTab = createMockTab(mockUri);
+        const terminalTab = { input: { type: 'terminal' } } as any;
+
+        const textResult = adapter.getTabDocumentUri(textTab);
+        const terminalResult = adapter.getTabDocumentUri(terminalTab);
+
+        expect(textResult).toBe(mockUri);
+        expect(terminalResult).toBeUndefined();
+      });
+    });
+  });
+
+  describe('Environment Getters', () => {
+    describe('appName', () => {
+      it('should return "Visual Studio Code"', () => {
+        mockVSCode.env.appName = 'Visual Studio Code';
+
+        const result = adapter.appName;
+
+        expect(result).toBe('Visual Studio Code');
+      });
+
+      it('should return "Cursor" (for Cursor IDE)', () => {
+        mockVSCode.env.appName = 'Cursor';
+
+        const result = adapter.appName;
+
+        expect(result).toBe('Cursor');
+      });
+    });
+
+    describe('uriScheme', () => {
+      it('should return "vscode"', () => {
+        mockVSCode.env.uriScheme = 'vscode';
+
+        const result = adapter.uriScheme;
+
+        expect(result).toBe('vscode');
+      });
+
+      it('should return "cursor"', () => {
+        mockVSCode.env.uriScheme = 'cursor';
+
+        const result = adapter.uriScheme;
+
+        expect(result).toBe('cursor');
+      });
+    });
+
+    describe('extensions', () => {
+      it('should return array of all extensions', () => {
+        const mockExtensions = [
+          { id: 'ms-vscode.test-extension-1', extensionUri: createMockUri('/ext1') },
+          { id: 'ms-vscode.test-extension-2', extensionUri: createMockUri('/ext2') },
+        ] as any[];
+        mockVSCode.extensions.all = mockExtensions;
+
+        const result = adapter.extensions;
+
+        expect(result).toBe(mockExtensions);
+        expect(result).toHaveLength(2);
+      });
+
+      it('should return empty array when no extensions', () => {
+        mockVSCode.extensions.all = [];
+
+        const result = adapter.extensions;
+
+        expect(result).toStrictEqual([]);
+        expect(result).toHaveLength(0);
+      });
+    });
+  });
+
+  describe('Event Listeners', () => {
+    describe('onDidCloseTerminal', () => {
+      it('should register listener and verify Disposable returned', () => {
+        const mockDisposable = { dispose: jest.fn() };
+        const listener = jest.fn();
+        mockVSCode.window.onDidCloseTerminal.mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidCloseTerminal(listener);
+
+        expect(mockVSCode.window.onDidCloseTerminal).toHaveBeenCalledWith(listener);
+        expect(mockVSCode.window.onDidCloseTerminal).toHaveBeenCalledTimes(1);
+        expect(result).toBe(mockDisposable);
+        expect(result.dispose).toBeDefined();
+      });
+
+      it('should verify listener is called when terminal closes', () => {
+        const listener = jest.fn();
+        const mockTerminal = createMockTerminal({ name: 'bash' });
+        let registeredListener: ((terminal: any) => void) | undefined;
+
+        mockVSCode.window.onDidCloseTerminal.mockImplementation((cb: (terminal: any) => void) => {
+          registeredListener = cb;
+          return { dispose: jest.fn() };
+        });
+
+        adapter.onDidCloseTerminal(listener);
+
+        // Simulate terminal closure
+        registeredListener!(mockTerminal);
+
+        expect(listener).toHaveBeenCalledWith(mockTerminal);
+        expect(listener).toHaveBeenCalledTimes(1);
+      });
+
+      it('should verify dispose unregisters listener', () => {
+        const listener = jest.fn();
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.window.onDidCloseTerminal.mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidCloseTerminal(listener);
+        result.dispose();
+
+        expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('onDidCloseTextDocument', () => {
+      it('should register listener and verify Disposable returned', () => {
+        const mockDisposable = { dispose: jest.fn() };
+        const listener = jest.fn();
+        mockVSCode.workspace.onDidCloseTextDocument.mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidCloseTextDocument(listener);
+
+        expect(mockVSCode.workspace.onDidCloseTextDocument).toHaveBeenCalledWith(listener);
+        expect(mockVSCode.workspace.onDidCloseTextDocument).toHaveBeenCalledTimes(1);
+        expect(result).toBe(mockDisposable);
+        expect(result.dispose).toBeDefined();
+      });
+
+      it('should verify listener is called when document closes', () => {
+        const listener = jest.fn();
+        const mockDocument = createMockDocument({ uri: createMockUri('/workspace/file.ts') });
+        let registeredListener: ((document: any) => void) | undefined;
+
+        mockVSCode.workspace.onDidCloseTextDocument.mockImplementation(
+          (cb: (document: any) => void) => {
+            registeredListener = cb;
+            return { dispose: jest.fn() };
+          },
+        );
+
+        adapter.onDidCloseTextDocument(listener);
+
+        // Simulate document closure
+        registeredListener!(mockDocument);
+
+        expect(listener).toHaveBeenCalledWith(mockDocument);
+        expect(listener).toHaveBeenCalledTimes(1);
+      });
+
+      it('should verify dispose unregisters listener', () => {
+        const listener = jest.fn();
+        const mockDisposable = { dispose: jest.fn() };
+        mockVSCode.workspace.onDidCloseTextDocument.mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidCloseTextDocument(listener);
+        result.dispose();
+
+        expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
+      });
     });
   });
 });

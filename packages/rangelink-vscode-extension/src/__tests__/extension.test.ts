@@ -1,4 +1,6 @@
+import type { Logger } from 'barebone-logger';
 import { pingLog, setLogger } from 'barebone-logger';
+import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
 import * as extension from '../extension';
@@ -17,6 +19,9 @@ import {
   createMockWorkspace,
 } from './helpers';
 import { createMockDestinationManager } from './helpers/createMockDestinationManager';
+
+// Mock logger for testing
+let mockLogger: Logger;
 
 // Create reusable mocks using our utilities
 const mockStatusBarItem = createMockStatusBarItem();
@@ -126,6 +131,7 @@ describe('RangeLinkService', () => {
   let service: RangeLinkService;
 
   beforeEach(() => {
+    mockLogger = createMockLogger();
     mockClipboard.writeText.mockResolvedValue(undefined);
 
     // Wire up the external mock objects to the vscode mock
@@ -159,6 +165,7 @@ describe('RangeLinkService', () => {
       },
       ideAdapter,
       createMockDestinationManager() as any,
+      mockLogger,
     );
   });
 
@@ -679,6 +686,7 @@ describe('RangeLinkService', () => {
         },
         new VscodeAdapter(vscode),
         createMockDestinationManager() as any,
+        mockLogger,
       );
 
       mockWindow.activeTextEditor = {
@@ -735,6 +743,7 @@ describe('RangeLinkService', () => {
         },
         new VscodeAdapter(vscode),
         createMockDestinationManager() as any,
+        mockLogger,
       );
 
       mockWindow.activeTextEditor = {
@@ -3039,6 +3048,7 @@ describe('Portable links (Phase 1C)', () => {
       },
       new VscodeAdapter(vscode),
       createMockDestinationManager() as any,
+      mockLogger,
     );
 
     // Act
