@@ -1596,6 +1596,18 @@ describe('PasteDestinationManager', () => {
       expect(mockClaudeCodeDest.focus).toHaveBeenCalledTimes(1);
     });
 
+    it('should focus bound GitHub Copilot Chat successfully', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockFactoryForJump, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('github-copilot-chat');
+
+      const result = await manager.jumpToBoundDestination();
+
+      expect(result).toBe(true);
+      expect(mockDestination.focus).toHaveBeenCalledTimes(1);
+    });
+
     it('should return false when focus fails', async () => {
       const mockTerminal = createMockTerminal();
 
