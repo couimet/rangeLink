@@ -333,6 +333,36 @@ describe('PasteDestinationManager', () => {
       );
     });
 
+    it('should bind to github-copilot-chat when available', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+
+      const result = await manager.bind('github-copilot-chat');
+
+      expect(result).toBe(true);
+      expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink bound to GitHub Copilot Chat',
+        3000,
+      );
+    });
+
+    it('should fail when github-copilot-chat not available', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: false });
+      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+
+      const result = await manager.bind('github-copilot-chat');
+
+      expect(result).toBe(false);
+      expect(manager.isBound()).toBe(false);
+      expect(formatMessageSpy).toHaveBeenCalledWith(
+        'ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE',
+      );
+      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
+      );
+    });
+
     it('should show info message when binding same chat destination twice', async () => {
       // Create manager with Cursor IDE environment
       const { manager: localManager, adapter: localAdapter } = createManager({
@@ -349,6 +379,30 @@ describe('PasteDestinationManager', () => {
       );
 
       localManager.dispose();
+    });
+
+    it('should show info message when already bound to github-copilot-chat', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({
+        isAvailable: true,
+        equals: jest.fn().mockImplementation(async (other) => other?.id === 'github-copilot-chat'),
+      });
+      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+
+      // Bind first time
+      await manager.bind('github-copilot-chat');
+
+      // Clear adapter calls to isolate second bind attempt (but keep factory mock intact)
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+      (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
+
+      // Try binding again to same destination
+      const result = await manager.bind('github-copilot-chat');
+
+      expect(result).toBe(false);
+      expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
+        'RangeLink: Already bound to GitHub Copilot Chat',
+      );
     });
   });
 
@@ -463,6 +517,98 @@ describe('PasteDestinationManager', () => {
 
       localManager.dispose();
     });
+
+    it('should show confirmation when binding github-copilot-chat while terminal already bound', async () => {
+      const mockTerminal = createMockTerminal();
+
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await manager.bind('terminal');
+
+      // Mock GitHub Copilot Chat as available
+      const mockCopilotDest = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockFactory, 'create').mockReturnValue(mockCopilotDest);
+
+      // Mock user cancels confirmation
+      const showQuickPickMock = mockAdapter.__getVscodeInstance().window.showQuickPick;
+      showQuickPickMock.mockResolvedValueOnce(undefined);
+
+      // Try binding to GitHub Copilot Chat
+      const result = await manager.bind('github-copilot-chat');
+
+      expect(result).toBe(false);
+      expectQuickPickConfirmation(showQuickPickMock, {
+        currentDestination: 'Terminal ("bash")',
+        newDestination: 'GitHub Copilot Chat',
+      });
+    });
+
+    it('should show confirmation when binding terminal while github-copilot-chat already bound', async () => {
+      // Mock GitHub Copilot Chat as available
+      const mockCopilotDest = createMockGitHubCopilotChatDestination({
+        isAvailable: true,
+        equals: jest.fn().mockImplementation(async (other) => other?.id === 'github-copilot-chat'),
+      });
+
+      // Mock terminal destination
+      const mockTerminalDest = createMockTerminalDestination({
+        displayName: 'Terminal ("bash")',
+        resourceName: 'bash',
+      });
+
+      // Configure factory to return appropriate destination based on type
+      jest.spyOn(mockFactory, 'create').mockImplementation((options) => {
+        if (options.type === 'github-copilot-chat') return mockCopilotDest;
+        if (options.type === 'terminal') return mockTerminalDest;
+        return undefined as any;
+      });
+
+      await manager.bind('github-copilot-chat');
+
+      // Mock user cancels confirmation
+      const showQuickPickMock = mockAdapter.__getVscodeInstance().window.showQuickPick;
+      showQuickPickMock.mockResolvedValueOnce(undefined);
+
+      // Try binding to terminal
+      const mockTerminal = createMockTerminal();
+
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      const result = await manager.bind('terminal');
+
+      expect(result).toBe(false);
+      expectQuickPickConfirmation(showQuickPickMock, {
+        currentDestination: 'GitHub Copilot Chat',
+        newDestination: 'Terminal ("bash")',
+      });
+    });
+
+    it('should show confirmation when replacing cursor-ai with github-copilot-chat', async () => {
+      const { manager: localManager, adapter: localAdapter } = createManager({ appName: 'Cursor' });
+      await localManager.bind('cursor-ai');
+
+      // Mock GitHub Copilot Chat as available
+      const mockCopilotDest = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      const mockFactoryForCopilot = createMockDestinationFactory({
+        destinations: { 'github-copilot-chat': mockCopilotDest as any },
+      });
+      // Override the factory's create method to return our mock
+      (localManager as unknown as { factory: typeof mockFactoryForCopilot }).factory =
+        mockFactoryForCopilot;
+
+      // Mock user cancels confirmation
+      const showQuickPickMock = localAdapter.__getVscodeInstance().window.showQuickPick;
+      showQuickPickMock.mockResolvedValueOnce(undefined);
+
+      // Try binding to GitHub Copilot Chat
+      const result = await localManager.bind('github-copilot-chat');
+
+      expect(result).toBe(false);
+      expectQuickPickConfirmation(showQuickPickMock, {
+        currentDestination: 'Cursor AI Assistant',
+        newDestination: 'GitHub Copilot Chat',
+      });
+
+      localManager.dispose();
+    });
   });
 
   describe('unbind()', () => {
@@ -500,6 +646,22 @@ describe('PasteDestinationManager', () => {
       );
 
       localManager.dispose();
+    });
+
+    it('should unbind github-copilot-chat successfully', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('github-copilot-chat');
+
+      manager.unbind();
+
+      expect(manager.isBound()).toBe(false);
+      expect(manager.getBoundDestination()).toBeUndefined();
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink unbound from GitHub Copilot Chat',
+        2000,
+      );
     });
 
     it('should handle unbind when nothing bound', () => {
@@ -610,6 +772,20 @@ describe('PasteDestinationManager', () => {
       expect(showInfoSpy).toHaveBeenCalledWith(successInstruction);
 
       cursorManager.dispose();
+    });
+
+    it('should send to bound GitHub Copilot Chat successfully', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockFactoryForSend, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('github-copilot-chat');
+
+      const formattedLink = createMockFormattedLink('src/file.ts#L10');
+      const result = await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
+
+      expect(result).toBe(true);
+      expect(mockDestination.pasteLink).toHaveBeenCalledTimes(1);
+      expect(mockDestination.pasteLink).toHaveBeenCalledWith(formattedLink);
     });
 
     it('should return false when no destination bound', async () => {
@@ -1634,6 +1810,27 @@ describe('PasteDestinationManager', () => {
       cursorManager.dispose();
     });
 
+    it('should log success with empty details for GitHub Copilot Chat', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockFactoryForJump, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('github-copilot-chat');
+
+      // Clear logger calls from bind()
+      jest.clearAllMocks();
+
+      await manager.jumpToBoundDestination();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.jumpToBoundDestination',
+          destinationType: 'github-copilot-chat',
+          displayName: 'GitHub Copilot Chat',
+        },
+        'Successfully focused GitHub Copilot Chat',
+      );
+    });
+
     it('should log warning when focus fails', async () => {
       const mockTerminal = {
         name: 'bash',
@@ -1749,6 +1946,19 @@ describe('PasteDestinationManager', () => {
 
         expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
         expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
+      });
+
+      it('should successfully send text to bound GitHub Copilot Chat', async () => {
+        const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+        jest.spyOn(mockFactoryForSend, 'create').mockReturnValue(mockDestination);
+
+        await manager.bind('github-copilot-chat');
+        mockDestination.pasteContent.mockResolvedValueOnce(true);
+
+        const result = await manager.sendTextToDestination(TEST_CONTENT, TEST_STATUS);
+
+        expect(result).toBe(true);
+        expect(mockDestination.pasteContent).toHaveBeenCalledWith(TEST_CONTENT);
       });
 
       it('should handle destination.pasteContent returning false', async () => {

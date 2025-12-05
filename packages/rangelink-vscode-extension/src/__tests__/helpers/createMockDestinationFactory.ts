@@ -10,6 +10,7 @@ import type { PasteDestination } from '../../destinations/PasteDestination';
 
 import { createMockClaudeCodeDestination } from './createMockClaudeCodeDestination';
 import { createMockCursorAIDestination } from './createMockCursorAIDestination';
+import { createMockGitHubCopilotChatDestination } from './createMockGitHubCopilotChatDestination';
 import { createMockTerminalDestination } from './createMockTerminalDestination';
 import { createMockTextEditorDestination } from './createMockTextEditorDestination';
 
@@ -26,6 +27,7 @@ export interface MockDestinationFactoryOptions {
     'text-editor'?: jest.Mocked<PasteDestination>;
     'cursor-ai'?: jest.Mocked<PasteDestination>;
     'claude-code'?: jest.Mocked<PasteDestination>;
+    'github-copilot-chat'?: jest.Mocked<PasteDestination>;
   };
 
   /**
@@ -57,6 +59,7 @@ export const createMockDestinationFactory = (
     'text-editor': createMockTextEditorDestination(),
     'cursor-ai': createMockCursorAIDestination(),
     'claude-code': createMockClaudeCodeDestination(),
+    'github-copilot-chat': createMockGitHubCopilotChatDestination(),
   };
 
   const defaultCreateImpl = (createOptions: {
