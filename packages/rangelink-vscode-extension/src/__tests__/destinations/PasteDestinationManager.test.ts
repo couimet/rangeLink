@@ -350,9 +350,7 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(
-        'ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE',
-      );
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE');
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
       );

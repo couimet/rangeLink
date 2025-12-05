@@ -46,9 +46,7 @@ const processConvenienceOptions = (options?: MockDestinationOptions): Partial<an
   // Smart isAvailable handling: boolean → wrapped mock, jest.Mock → as-is
   if (isAvailable !== undefined) {
     processed.isAvailable =
-      typeof isAvailable === 'boolean'
-        ? jest.fn().mockResolvedValue(isAvailable)
-        : isAvailable;
+      typeof isAvailable === 'boolean' ? jest.fn().mockResolvedValue(isAvailable) : isAvailable;
   }
 
   return processed;
