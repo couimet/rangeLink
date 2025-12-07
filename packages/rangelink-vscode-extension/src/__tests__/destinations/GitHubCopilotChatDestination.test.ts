@@ -258,7 +258,7 @@ describe('GitHubCopilotChatDestination', () => {
           formattedLink,
           linkLength: testLink.length,
         },
-        'Cannot paste: GitHub Copilot Chat extension not available',
+        'Cannot paste link: GitHub Copilot Chat extension not available',
       );
     });
 
@@ -381,7 +381,7 @@ describe('GitHubCopilotChatDestination', () => {
           fn: 'GitHubCopilotChatDestination.pasteContent',
           contentLength: testContent.length,
         },
-        'Cannot paste: GitHub Copilot Chat extension not available',
+        'Cannot paste content: GitHub Copilot Chat extension not available',
       );
     });
 

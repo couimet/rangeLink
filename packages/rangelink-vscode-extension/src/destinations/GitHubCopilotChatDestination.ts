@@ -127,7 +127,7 @@ export class GitHubCopilotChatDestination implements PasteDestination {
         formattedLink,
         linkLength: formattedLink.link.length,
       },
-      unavailableMessage: 'Cannot paste: GitHub Copilot Chat extension not available',
+      unavailableMessage: 'Cannot paste link: GitHub Copilot Chat extension not available',
       successLogMessage: 'Pasted link to GitHub Copilot Chat',
       errorLogMessage: 'Failed to paste link to GitHub Copilot Chat',
     });
@@ -148,7 +148,7 @@ export class GitHubCopilotChatDestination implements PasteDestination {
         fn: 'GitHubCopilotChatDestination.pasteContent',
         contentLength: content.length,
       },
-      unavailableMessage: 'Cannot paste: GitHub Copilot Chat extension not available',
+      unavailableMessage: 'Cannot paste content: GitHub Copilot Chat extension not available',
       successLogMessage: 'Pasted content to GitHub Copilot Chat',
       errorLogMessage: 'Failed to paste content to GitHub Copilot Chat',
     });
