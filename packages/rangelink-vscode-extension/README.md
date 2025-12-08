@@ -187,8 +187,8 @@ All commands are available via keyboard shortcuts, Command Palette, and right-cl
 | Copy Range Link (Clipboard Only, Absolute)        | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C` | Copy absolute path link to clipboard only               |
 | Paste Selected Text to Bound Destination          | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination        |
 | Jump to Bound Destination                         | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound paste destination            |
-| Bind RangeLink to Claude Code Destination         | —                   | —                     | Copy link + open Claude Code chat (clipboard workflow)  |
-| Bind RangeLink to Cursor AI Destination           | —                   | —                     | Copy link + open Cursor AI chat (clipboard workflow)    |
+| Bind RangeLink to Claude Code Destination         | —                   | —                     | Auto-send links to Claude Code chat                     |
+| Bind RangeLink to Cursor AI Destination           | —                   | —                     | Auto-send links to Cursor AI chat                       |
 | Bind RangeLink to GitHub Copilot Chat Destination | —                   | —                     | Auto-send links to Copilot Chat                         |
 | Bind RangeLink to Terminal Destination            | —                   | —                     | Auto-send links to integrated terminal for AI workflows |
 | Bind RangeLink to Text Editor Destination         | —                   | —                     | Auto-send links at cursor in active bound text editor   |
