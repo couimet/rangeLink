@@ -6,10 +6,6 @@ describe('AlwaysEligibleChecker', () => {
   const mockLogger = createMockLogger();
   const testContext = { fn: 'test' };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('isEligible()', () => {
     it('should always return true', async () => {
       const checker = new AlwaysEligibleChecker(mockLogger);

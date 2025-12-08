@@ -9,13 +9,11 @@ describe('ClipboardTextInserter', () => {
   const mockAdapter = createMockVscodeAdapter();
   const testContext = { fn: 'test' };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('insert()', () => {
     it('should copy text to clipboard before paste', async () => {
-      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
       const inserter = new ClipboardTextInserter(
@@ -35,7 +33,9 @@ describe('ClipboardTextInserter', () => {
     });
 
     it('should call beforePaste hook if provided', async () => {
-      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
       const beforePaste = jest.fn().mockResolvedValue(undefined);
 
@@ -57,7 +57,9 @@ describe('ClipboardTextInserter', () => {
     it('should wait for focus delay', async () => {
       jest.useFakeTimers();
 
-      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
       const inserter = new ClipboardTextInserter(
@@ -82,7 +84,9 @@ describe('ClipboardTextInserter', () => {
     });
 
     it('should try each command until success', async () => {
-      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       const commandSpy = jest
         .spyOn(mockAdapter, 'executeCommand')
         .mockRejectedValueOnce(new Error('Command 1 failed'))
@@ -107,7 +111,9 @@ describe('ClipboardTextInserter', () => {
     });
 
     it('should log on success', async () => {
-      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
       const inserter = new ClipboardTextInserter(
@@ -132,7 +138,9 @@ describe('ClipboardTextInserter', () => {
     });
 
     it('should log on failure (all commands failed)', async () => {
-      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       const commandSpy = jest
         .spyOn(mockAdapter, 'executeCommand')
         .mockRejectedValue(new Error('All commands failed'));
@@ -160,7 +168,9 @@ describe('ClipboardTextInserter', () => {
     });
 
     it('should return true when first command succeeds', async () => {
-      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
       const inserter = new ClipboardTextInserter(
@@ -179,7 +189,9 @@ describe('ClipboardTextInserter', () => {
     });
 
     it('should return false when all commands fail', async () => {
-      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       const commandSpy = jest
         .spyOn(mockAdapter, 'executeCommand')
         .mockRejectedValue(new Error('Command failed'));
@@ -200,7 +212,9 @@ describe('ClipboardTextInserter', () => {
     });
 
     it('should log debug message with text length when copying to clipboard', async () => {
-      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
       const inserter = new ClipboardTextInserter(
@@ -227,7 +241,9 @@ describe('ClipboardTextInserter', () => {
     it('should log debug message for each failed command', async () => {
       const error1 = new Error('Command 1 failed');
       const error2 = new Error('Command 2 failed');
-      const clipboardSpy = jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
       const commandSpy = jest
         .spyOn(mockAdapter, 'executeCommand')
         .mockRejectedValueOnce(error1)

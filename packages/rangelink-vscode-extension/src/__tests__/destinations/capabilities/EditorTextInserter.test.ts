@@ -1,22 +1,19 @@
 import { createMockLogger } from 'barebone-logger-testing';
-import type * as vscode from 'vscode';
 
-import { createMockVscodeAdapter } from '../../helpers/mockVSCode';
 import { EditorTextInserter } from '../../../destinations/capabilities/EditorTextInserter';
+import { createMockDocument } from '../../helpers/createMockDocument';
+import { createMockEditor } from '../../helpers/createMockEditor';
+import { createMockUntitledUri } from '../../helpers/createMockUntitledUri';
+import { createMockUri } from '../../helpers/createMockUri';
+import { createMockVscodeAdapter } from '../../helpers/mockVSCode';
 
 describe('EditorTextInserter', () => {
   const mockLogger = createMockLogger();
   const mockAdapter = createMockVscodeAdapter();
   const testContext = { fn: 'test' };
 
-  const mockEditor = {
-    document: {
-      uri: { toString: (): string => 'file:///test.ts' },
-    },
-  } as unknown as vscode.TextEditor;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
+  const mockEditor = createMockEditor({
+    document: createMockDocument({ uri: createMockUri('/test.ts') }),
   });
 
   describe('insert()', () => {
@@ -30,7 +27,6 @@ describe('EditorTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(mockEditor, 'test text');
 
-      spy.mockRestore();
     });
 
     it('should log on success', async () => {
@@ -40,6 +36,8 @@ describe('EditorTextInserter', () => {
 
       await inserter.insert('test text', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(mockEditor, 'test text');
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({
           fn: 'test',
@@ -48,7 +46,6 @@ describe('EditorTextInserter', () => {
         'Cursor insert succeeded',
       );
 
-      spy.mockRestore();
     });
 
     it('should log on failure', async () => {
@@ -58,6 +55,8 @@ describe('EditorTextInserter', () => {
 
       await inserter.insert('test text', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(mockEditor, 'test text');
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({
           fn: 'test',
@@ -66,7 +65,6 @@ describe('EditorTextInserter', () => {
         'Cursor insert failed',
       );
 
-      spy.mockRestore();
     });
 
     it('should return true when insertion succeeds', async () => {
@@ -76,9 +74,10 @@ describe('EditorTextInserter', () => {
 
       const result = await inserter.insert('test text', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(mockEditor, 'test text');
       expect(result).toStrictEqual(true);
 
-      spy.mockRestore();
     });
 
     it('should return false when insertion fails', async () => {
@@ -88,17 +87,18 @@ describe('EditorTextInserter', () => {
 
       const result = await inserter.insert('test text', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(mockEditor, 'test text');
       expect(result).toStrictEqual(false);
 
-      spy.mockRestore();
     });
 
     it('should handle untitled documents', async () => {
-      const untitledEditor = {
-        document: {
-          uri: { toString: (): string => 'untitled:Untitled-1' },
-        },
-      } as unknown as vscode.TextEditor;
+      const untitledEditor = createMockEditor({
+        document: createMockDocument({
+          uri: createMockUntitledUri('untitled:Untitled-1'),
+        }),
+      });
 
       const spy = jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValueOnce(true);
 
@@ -106,6 +106,8 @@ describe('EditorTextInserter', () => {
 
       await inserter.insert('test text', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(untitledEditor, 'test text');
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({
           fn: 'test',
@@ -114,7 +116,6 @@ describe('EditorTextInserter', () => {
         'Cursor insert succeeded',
       );
 
-      spy.mockRestore();
     });
 
     it('should handle empty text insertion', async () => {
@@ -124,10 +125,10 @@ describe('EditorTextInserter', () => {
 
       const result = await inserter.insert('', testContext);
 
-      expect(result).toStrictEqual(true);
+      expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(mockEditor, '');
+      expect(result).toStrictEqual(true);
 
-      spy.mockRestore();
     });
   });
 });

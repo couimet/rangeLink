@@ -8,10 +8,6 @@ describe('NativeCommandTextInserter', () => {
   const mockAdapter = createMockVscodeAdapter();
   const testContext = { fn: 'test' };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('insert()', () => {
     it('should build arguments correctly', async () => {
       const spy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValueOnce(undefined);
@@ -25,10 +21,14 @@ describe('NativeCommandTextInserter', () => {
 
       await inserter.insert('test query', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('workbench.action.chat.open', {
+        query: 'test query',
+        isPartialQuery: true,
+      });
       expect(buildArgs).toHaveBeenCalledTimes(1);
       expect(buildArgs).toHaveBeenCalledWith('test query');
 
-      spy.mockRestore();
     });
 
     it('should execute command with arguments', async () => {
@@ -52,7 +52,6 @@ describe('NativeCommandTextInserter', () => {
         isPartialQuery: true,
       });
 
-      spy.mockRestore();
     });
 
     it('should log on success', async () => {
@@ -67,6 +66,8 @@ describe('NativeCommandTextInserter', () => {
 
       await inserter.insert('test query', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('workbench.action.chat.open', { query: 'test query' });
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({
           fn: 'test',
@@ -75,7 +76,6 @@ describe('NativeCommandTextInserter', () => {
         'Native command insert succeeded',
       );
 
-      spy.mockRestore();
     });
 
     it('should log on failure', async () => {
@@ -92,6 +92,8 @@ describe('NativeCommandTextInserter', () => {
 
       await inserter.insert('test query', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('workbench.action.chat.open', { query: 'test query' });
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.objectContaining({
           fn: 'test',
@@ -101,7 +103,6 @@ describe('NativeCommandTextInserter', () => {
         'Native command insert failed',
       );
 
-      spy.mockRestore();
     });
 
     it('should return true on successful execution', async () => {
@@ -116,13 +117,16 @@ describe('NativeCommandTextInserter', () => {
 
       const result = await inserter.insert('test query', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('workbench.action.chat.open', { query: 'test query' });
       expect(result).toStrictEqual(true);
 
-      spy.mockRestore();
     });
 
     it('should return false on failed execution', async () => {
-      const spy = jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValueOnce(new Error('Command failed'));
+      const spy = jest
+        .spyOn(mockAdapter, 'executeCommand')
+        .mockRejectedValueOnce(new Error('Command failed'));
 
       const buildArgs = (text: string): Record<string, unknown> => ({ query: text });
       const inserter = new NativeCommandTextInserter(
@@ -134,9 +138,10 @@ describe('NativeCommandTextInserter', () => {
 
       const result = await inserter.insert('test query', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('workbench.action.chat.open', { query: 'test query' });
       expect(result).toStrictEqual(false);
 
-      spy.mockRestore();
     });
 
     it('should handle complex argument structures', async () => {
@@ -158,6 +163,7 @@ describe('NativeCommandTextInserter', () => {
 
       await inserter.insert('test', testContext);
 
+      expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('custom.command', {
         query: 'test',
         isPartialQuery: true,
@@ -167,7 +173,6 @@ describe('NativeCommandTextInserter', () => {
         },
       });
 
-      spy.mockRestore();
     });
   });
 });

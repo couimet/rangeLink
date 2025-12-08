@@ -10,10 +10,6 @@ describe('SelfPasteChecker', () => {
   const mockLogger = createMockLogger();
   const testContext = { fn: 'test' };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('isEligible()', () => {
     it('should delegate to isEligibleForPaste utility', async () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(true);
