@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **RangeLink Clipboard-Only Mode (R-C)** - Generate RangeLinks directly to clipboard, bypassing paste destinations
   - New commands: "Copy Range Link (Clipboard Only)" (`Cmd+R Cmd+C` / `Ctrl+R Ctrl+C`)
   - Generates formatted RangeLinks (e.g., `src/auth.ts#L42C10-L58C25`) with relative or absolute paths
-  - Useful for sharing links across projects or IDE instances without requiring to unbind a destination first.
+  - Useful for sharing absolute-path links across projects or IDE instances without requiring to unbind a destination first.
   - Gives explicit control over when links paste to bound destinations vs clipboard only
 - **i18n foundation** - Message code system for future localization support. English only currently.
 
