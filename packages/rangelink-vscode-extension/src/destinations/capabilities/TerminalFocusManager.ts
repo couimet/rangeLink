@@ -2,6 +2,7 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import { TerminalFocusType } from '../../types/TerminalFocusType';
 import type { FocusManager } from './FocusManager';
 
 /**
@@ -19,7 +20,7 @@ export class TerminalFocusManager implements FocusManager {
 
   async focus(context: LoggingContext): Promise<void> {
     try {
-      await this.ideAdapter.showTerminal(this.terminal);
+      this.ideAdapter.showTerminal(this.terminal, TerminalFocusType.StealFocus);
       this.logger.debug({ ...context }, 'Terminal focused via show()');
     } catch (error) {
       this.logger.warn({ ...context, error }, 'Failed to focus terminal');

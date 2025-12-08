@@ -19,7 +19,9 @@ export class EditorFocusManager implements FocusManager {
 
   async focus(context: LoggingContext): Promise<void> {
     try {
-      await this.ideAdapter.showTextDocument(this.editor.document, this.editor.viewColumn);
+      await this.ideAdapter.showTextDocument(this.editor.document.uri, {
+        viewColumn: this.editor.viewColumn,
+      });
       this.logger.debug(
         { ...context, editorUri: this.editor.document.uri.toString() },
         'Editor focused via showTextDocument()',
