@@ -125,8 +125,6 @@ If bound file is hidden behind other tabs, link copies to clipboard with a remin
 2. Select code → `Cmd+R Cmd+L` → Link auto-pastes into chat
 3. Review and send
 
-RangeLink handles the paste automatically and keeps a clipboard copy as backup for maximum reliability.
-
 **One destination at a time:** Bind to Claude Code, Cursor AI, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command to replace your current binding with confirmation—no need to unbind first.
 
 ---
@@ -188,6 +186,7 @@ All commands are available via keyboard shortcuts, Command Palette, and right-cl
 | Copy Range Link (Clipboard Only)                  | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`       | Copy link to clipboard only (skip bound destination)    |
 | Copy Range Link (Clipboard Only, Absolute)        | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C` | Copy absolute path link to clipboard only               |
 | Paste Selected Text to Bound Destination          | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination        |
+| Jump to Bound Destination                         | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound paste destination            |
 | Bind RangeLink to Claude Code Destination         | —                   | —                     | Copy link + open Claude Code chat (clipboard workflow)  |
 | Bind RangeLink to Cursor AI Destination           | —                   | —                     | Copy link + open Cursor AI chat (clipboard workflow)    |
 | Bind RangeLink to GitHub Copilot Chat Destination | —                   | —                     | Auto-send links to Copilot Chat                         |
