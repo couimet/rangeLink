@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents accidental binding to same destination (shows info message instead)
   - Toast notifications show replacement info: "Unbound X, now bound to Y"
   - Integrated with all bind commands (Claude Code, Cursor AI, GitHub Copilot Chat, Terminal, Text Editor)
-- **🚐 Paste Selected Text to Destination** - Send selected text directly to bound destinations, not just links
+- **Paste Selected Text to Destination (R-V) 🚐** - Send selected text directly to bound destinations, not just links
   - New command: "Paste Selected Text to Bound Destination" (`Cmd+R Cmd+V` / `Ctrl+R Ctrl+V`)
   - Works with all destination types: Claude Code Extension, Cursor AI, GitHub Copilot Chat, Terminal, Text Editor
   - Supports single and multi-selection (concatenates with newlines)
