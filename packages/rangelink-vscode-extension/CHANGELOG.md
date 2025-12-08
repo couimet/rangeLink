@@ -44,6 +44,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Less intrusive auto-unbind notifications** - When a bound text editor document closes, the auto-unbind notification now appears in the status bar (2 seconds) instead of as a popup dialog. This makes the background cleanup less disruptive to your workflow.
+- **Improved Claude Code and Cursor AI destinations** - Now fully automatic, no manual paste needed
+  - Previously required manual Cmd+V paste after link was copied (v0.3.0 limitation)
+  - Now uses clipboard + delay technique to programmatically paste into chat
+  - User experience now identical to Terminal, Text Editor, and Copilot Chat destinations
+  - No more workflow interruption—select code, link appears, keep typing
 
 ### Fixed
 
