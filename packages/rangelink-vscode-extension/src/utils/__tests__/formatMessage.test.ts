@@ -163,6 +163,7 @@ describe('formatMessage', () => {
           fn: 'formatMessage',
           key: 'name',
           valueType: 'object',
+          error: expect.any(TypeError),
         },
         'Failed to stringify parameter value, using String() fallback',
       );
