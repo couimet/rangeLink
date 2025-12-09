@@ -1,16 +1,84 @@
+import type * as vscode from 'vscode';
+
 import type { DestinationRegistry } from '../../destinations/DestinationRegistry';
+import type { DestinationType, PasteDestination } from '../../destinations/PasteDestination';
+
+import { createMockClaudeCodeDestination } from './createMockClaudeCodeDestination';
+import { createMockCursorAIDestination } from './createMockCursorAIDestination';
+import { createMockGitHubCopilotChatDestination } from './createMockGitHubCopilotChatDestination';
+import { createMockTerminalDestination } from './createMockTerminalDestination';
+import { createMockTextEditorDestination } from './createMockTextEditorDestination';
+
+/**
+ * Options for configuring mock destination registry behavior.
+ */
+export interface MockDestinationRegistryOptions {
+  /**
+   * Pre-configured destinations to return from create().
+   * Registry will return the appropriate destination based on type.
+   */
+  destinations?: {
+    terminal?: jest.Mocked<PasteDestination>;
+    'text-editor'?: jest.Mocked<PasteDestination>;
+    'cursor-ai'?: jest.Mocked<PasteDestination>;
+    'claude-code'?: jest.Mocked<PasteDestination>;
+    'github-copilot-chat'?: jest.Mocked<PasteDestination>;
+  };
+
+  /**
+   * Custom implementation for create() method.
+   * If provided, overrides default destination lookup behavior.
+   */
+  createImpl?: (options: {
+    type: string;
+    terminal?: vscode.Terminal;
+    editor?: vscode.TextEditor;
+  }) => PasteDestination | undefined;
+}
+
+const DEFAULT_DISPLAY_NAMES: Record<DestinationType, string> = {
+  terminal: 'Terminal',
+  'text-editor': 'Text Editor',
+  'cursor-ai': 'Cursor AI Assistant',
+  'github-copilot-chat': 'GitHub Copilot Chat',
+  'claude-code': 'Claude Code Chat',
+};
 
 /**
  * Create a mock DestinationRegistry for testing.
  *
- * All methods are jest.fn() mocks that can be configured
- * with mockReturnValue, mockResolvedValue, etc.
+ * The registry's create() method returns pre-configured mock destinations
+ * based on the requested type. This eliminates test coupling to registry's
+ * internal dependencies.
  *
- * @returns Mock DestinationRegistry with jest.fn() implementations
+ * @param options - Configuration for mock registry behavior
+ * @returns Mock DestinationRegistry with jest.Mocked type
  */
-export const createMockDestinationRegistry = (): jest.Mocked<DestinationRegistry> =>
-  ({
+export const createMockDestinationRegistry = (
+  options?: MockDestinationRegistryOptions,
+): jest.Mocked<DestinationRegistry> => {
+  const destinations = options?.destinations ?? {
+    terminal: createMockTerminalDestination(),
+    'text-editor': createMockTextEditorDestination(),
+    'cursor-ai': createMockCursorAIDestination(),
+    'claude-code': createMockClaudeCodeDestination(),
+    'github-copilot-chat': createMockGitHubCopilotChatDestination(),
+  };
+
+  const defaultCreateImpl = (createOptions: {
+    type: string;
+    terminal?: vscode.Terminal;
+    editor?: vscode.TextEditor;
+  }): PasteDestination | undefined => {
+    return destinations[createOptions.type as keyof typeof destinations];
+  };
+
+  const createImpl = options?.createImpl ?? defaultCreateImpl;
+
+  return {
     register: jest.fn(),
-    create: jest.fn(),
+    create: jest.fn().mockImplementation(createImpl),
     getSupportedTypes: jest.fn().mockReturnValue([]),
-  }) as unknown as jest.Mocked<DestinationRegistry>;
+    getDisplayNames: jest.fn().mockReturnValue(DEFAULT_DISPLAY_NAMES),
+  } as unknown as jest.Mocked<DestinationRegistry>;
+};

@@ -75,7 +75,7 @@ export type DestinationBuilder = (options: CreateOptions, context: DestinationBu
  *
  * Centralizes destination construction logic and provides factory
  * injection for composition-based destinations. Enables:
- * - Decoupled destination construction from DestinationFactory
+ * - Decoupled destination construction from PasteDestinationManager
  * - Easy testing with mock factories
  * - Pluggable destination implementations
  *

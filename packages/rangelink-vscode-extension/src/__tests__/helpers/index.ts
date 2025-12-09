@@ -15,10 +15,9 @@ export {
 export { createMockClipboard } from './createMockClipboard';
 export { createMockCommands } from './createMockCommands';
 export {
-  createMockDestinationFactory,
-  type MockDestinationFactoryOptions,
-} from './createMockDestinationFactory';
-export { createMockDestinationRegistry } from './createMockDestinationRegistry';
+  createMockDestinationRegistry,
+  type MockDestinationRegistryOptions,
+} from './createMockDestinationRegistry';
 export { createMockDocument } from './createMockDocument';
 export { createMockDocumentLink } from './createMockDocumentLink';
 export { createMockEditor } from './createMockEditor';
