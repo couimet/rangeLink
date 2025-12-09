@@ -10,7 +10,7 @@ import * as formatMessageModule from '../../utils/formatMessage';
 import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
 import { createMockClaudeCodeDestination } from '../helpers/createMockClaudeCodeDestination';
 import { createMockCursorAIDestination } from '../helpers/createMockCursorAIDestination';
-import { createMockDestinationFactory } from '../helpers/createMockDestinationFactory';
+import { createMockDestinationRegistry } from '../helpers/createMockDestinationRegistry';
 import { createMockGitHubCopilotChatDestination } from '../helpers/createMockGitHubCopilotChatDestination';
 import { createMockDocument } from '../helpers/createMockDocument';
 import { createMockEditor } from '../helpers/createMockEditor';
@@ -57,7 +57,7 @@ const expectQuickPickConfirmation = (
 describe('PasteDestinationManager', () => {
   let manager: PasteDestinationManager;
   let mockContext: vscode.ExtensionContext;
-  let mockFactory: ReturnType<typeof createMockDestinationFactory>;
+  let mockRegistry: ReturnType<typeof createMockDestinationRegistry>;
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockLogger: Logger;
   let terminalCloseListener: (terminal: vscode.Terminal) => void;
@@ -74,8 +74,8 @@ describe('PasteDestinationManager', () => {
     // Cache for destinations so same instance is returned for same terminal/editor
     const destinationCache = new Map<string, any>();
 
-    // Create factory that generates mock destinations on demand with correct context
-    const factory = createMockDestinationFactory({
+    // Create registry that generates mock destinations on demand with correct context
+    const registry = createMockDestinationRegistry({
       createImpl: (options) => {
         if (options.type === 'terminal' && options.terminal) {
           const terminalName = options.terminal.name;
@@ -141,7 +141,7 @@ describe('PasteDestinationManager', () => {
         return undefined;
       },
     });
-    const mgr = new PasteDestinationManager(mockContext, factory, adapter, mockLogger);
+    const mgr = new PasteDestinationManager(mockContext, registry, adapter, mockLogger);
 
     // Extract event listeners from mock calls (made by PasteDestinationManager constructor)
     // These are needed for tests that simulate terminal/document closure events
@@ -153,7 +153,7 @@ describe('PasteDestinationManager', () => {
     terminalCloseListener = onDidCloseTerminalMock.mock.calls[0]?.[0];
     documentCloseListener = onDidCloseTextDocumentMock.mock.calls[0]?.[0];
 
-    return { manager: mgr, adapter, factory };
+    return { manager: mgr, adapter, registry };
   };
 
   beforeEach(() => {
@@ -176,7 +176,7 @@ describe('PasteDestinationManager', () => {
     const result = createManager();
     manager = result.manager;
     mockAdapter = result.adapter;
-    mockFactory = result.factory;
+    mockRegistry = result.registry;
   });
 
   afterEach(() => {
@@ -230,7 +230,7 @@ describe('PasteDestinationManager', () => {
       );
 
       // Create manager with a fresh factory that returns the same terminal instance
-      const controlledFactory = createMockDestinationFactory({
+      const controlledFactory = createMockDestinationRegistry({
         destinations: {
           terminal: terminalDest,
           'text-editor': createMockTextEditorDestination(),
@@ -316,7 +316,7 @@ describe('PasteDestinationManager', () => {
 
     it('should fail when claude-code not available', async () => {
       const mockDestination = createMockClaudeCodeDestination({ isAvailable: false });
-      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
       const result = await manager.bind('claude-code');
 
@@ -330,7 +330,7 @@ describe('PasteDestinationManager', () => {
 
     it('should bind to github-copilot-chat when available', async () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
-      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
       const result = await manager.bind('github-copilot-chat');
 
@@ -344,7 +344,7 @@ describe('PasteDestinationManager', () => {
 
     it('should fail when github-copilot-chat not available', async () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: false });
-      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
       const result = await manager.bind('github-copilot-chat');
 
@@ -379,7 +379,7 @@ describe('PasteDestinationManager', () => {
         isAvailable: true,
         equals: jest.fn().mockImplementation(async (other) => other?.id === 'github-copilot-chat'),
       });
-      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
       // Bind first time
       await manager.bind('github-copilot-chat');
@@ -511,7 +511,7 @@ describe('PasteDestinationManager', () => {
 
       // Mock GitHub Copilot Chat as available
       const mockCopilotDest = createMockGitHubCopilotChatDestination({ isAvailable: true });
-      jest.spyOn(mockFactory, 'create').mockReturnValue(mockCopilotDest);
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockCopilotDest);
 
       // Mock user cancels confirmation
       const showQuickPickMock = mockAdapter.__getVscodeInstance().window.showQuickPick;
@@ -541,7 +541,7 @@ describe('PasteDestinationManager', () => {
       });
 
       // Configure factory to return appropriate destination based on type
-      jest.spyOn(mockFactory, 'create').mockImplementation((options) => {
+      jest.spyOn(mockRegistry, 'create').mockImplementation((options) => {
         if (options.type === 'github-copilot-chat') return mockCopilotDest;
         if (options.type === 'terminal') return mockTerminalDest;
         return undefined as any;
@@ -572,12 +572,12 @@ describe('PasteDestinationManager', () => {
 
       // Mock GitHub Copilot Chat as available
       const mockCopilotDest = createMockGitHubCopilotChatDestination({ isAvailable: true });
-      const mockFactoryForCopilot = createMockDestinationFactory({
+      const mockRegistryForCopilot = createMockDestinationRegistry({
         destinations: { 'github-copilot-chat': mockCopilotDest as any },
       });
-      // Override the factory's create method to return our mock
-      (localManager as unknown as { factory: typeof mockFactoryForCopilot }).factory =
-        mockFactoryForCopilot;
+      // Override the registry's create method to return our mock
+      (localManager as unknown as { registry: typeof mockRegistryForCopilot }).registry =
+        mockRegistryForCopilot;
 
       // Mock user cancels confirmation
       const showQuickPickMock = localAdapter.__getVscodeInstance().window.showQuickPick;
@@ -631,7 +631,7 @@ describe('PasteDestinationManager', () => {
 
     it('should unbind github-copilot-chat successfully', async () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
-      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
       await manager.bind('github-copilot-chat');
 
@@ -660,7 +660,7 @@ describe('PasteDestinationManager', () => {
     const TEST_STATUS_MESSAGE = 'RangeLink copied to clipboard';
 
     // Mock factory and destinations for unit tests
-    let mockFactoryForSend: ReturnType<typeof createMockDestinationFactory>;
+    let mockRegistryForSend: ReturnType<typeof createMockDestinationRegistry>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockChatDest: jest.Mocked<PasteDestination>;
 
@@ -676,7 +676,7 @@ describe('PasteDestinationManager', () => {
         getUserInstruction: jest.fn().mockReturnValue('Instructions'),
       });
 
-      mockFactoryForSend = createMockDestinationFactory({
+      mockRegistryForSend = createMockDestinationRegistry({
         createImpl: (options) => {
           if (options.type === 'terminal') return mockTerminalDest;
           if (options.type === 'cursor-ai') return mockChatDest;
@@ -687,7 +687,7 @@ describe('PasteDestinationManager', () => {
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
         mockContext,
-        mockFactoryForSend,
+        mockRegistryForSend,
         mockAdapter,
         mockLogger,
       );
@@ -753,7 +753,7 @@ describe('PasteDestinationManager', () => {
 
     it('should send to bound GitHub Copilot Chat successfully', async () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
-      jest.spyOn(mockFactoryForSend, 'create').mockReturnValue(mockDestination);
+      jest.spyOn(mockRegistryForSend, 'create').mockReturnValue(mockDestination);
 
       await manager.bind('github-copilot-chat');
 
@@ -1171,7 +1171,7 @@ describe('PasteDestinationManager', () => {
 
       const newManager = new PasteDestinationManager(
         mockContext,
-        mockFactory,
+        mockRegistry,
         testAdapter,
         mockLogger,
       );
@@ -1195,7 +1195,7 @@ describe('PasteDestinationManager', () => {
    */
   describe('Smart Bind Feature', () => {
     // Mock factory for smart bind tests
-    let mockFactoryForSmartBind: ReturnType<typeof createMockDestinationFactory>;
+    let mockRegistryForSmartBind: ReturnType<typeof createMockDestinationRegistry>;
 
     // Helper to create mock destinations using the existing infrastructure
     const createMockDestinationForTest = (
@@ -1218,12 +1218,12 @@ describe('PasteDestinationManager', () => {
 
     beforeEach(() => {
       // Create mock factory for smart bind tests
-      mockFactoryForSmartBind = createMockDestinationFactory();
+      mockRegistryForSmartBind = createMockDestinationRegistry();
 
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
         mockContext,
-        mockFactoryForSmartBind,
+        mockRegistryForSmartBind,
         mockAdapter,
         mockLogger,
       );
@@ -1242,7 +1242,7 @@ describe('PasteDestinationManager', () => {
         );
 
         // Mock factory to return destinations
-        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
+        (mockRegistryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -1318,7 +1318,7 @@ describe('PasteDestinationManager', () => {
           'Text Editor ("file.ts")',
         );
 
-        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
+        (mockRegistryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -1364,7 +1364,7 @@ describe('PasteDestinationManager', () => {
     describe('Scenario 3: Prevent binding same destination twice', () => {
       it('should show info message when binding same destination', async () => {
         // Mock equals() to return true when comparing instances of same terminal
-        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation(() => {
+        (mockRegistryForSmartBind.create as jest.Mock).mockImplementation(() => {
           const newDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
           // Make all terminal destinations equal to each other
           (newDest.equals as jest.Mock).mockImplementation(
@@ -1410,7 +1410,7 @@ describe('PasteDestinationManager', () => {
       it('should show standard toast without replacement prefix', async () => {
         // Setup: Create mock terminal destination
         const terminalDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
-        (mockFactoryForSmartBind.create as jest.Mock).mockReturnValue(terminalDest);
+        (mockRegistryForSmartBind.create as jest.Mock).mockReturnValue(terminalDest);
 
         // Mock active terminal
         const mockVscode = mockAdapter.__getVscodeInstance();
@@ -1443,7 +1443,7 @@ describe('PasteDestinationManager', () => {
           'Text Editor ("file.ts")',
         );
 
-        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
+        (mockRegistryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -1485,7 +1485,7 @@ describe('PasteDestinationManager', () => {
 
   describe('jumpToBoundDestination()', () => {
     // Mock factory and destinations for unit tests
-    let mockFactoryForJump: ReturnType<typeof createMockDestinationFactory>;
+    let mockRegistryForJump: ReturnType<typeof createMockDestinationRegistry>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockEditorDest: jest.Mocked<PasteDestination>;
     let mockCursorAIDest: jest.Mocked<PasteDestination>;
@@ -1498,7 +1498,7 @@ describe('PasteDestinationManager', () => {
       mockCursorAIDest = createMockCursorAIDestination();
       mockClaudeCodeDest = createMockClaudeCodeDestination();
 
-      mockFactoryForJump = createMockDestinationFactory({
+      mockRegistryForJump = createMockDestinationRegistry({
         createImpl: (options) => {
           if (options.type === 'terminal') return mockTerminalDest;
           if (options.type === 'text-editor') return mockEditorDest;
@@ -1511,7 +1511,7 @@ describe('PasteDestinationManager', () => {
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
         mockContext,
-        mockFactoryForJump,
+        mockRegistryForJump,
         mockAdapter,
         mockLogger,
       );
@@ -1597,7 +1597,7 @@ describe('PasteDestinationManager', () => {
 
     it('should focus bound GitHub Copilot Chat successfully', async () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
-      jest.spyOn(mockFactoryForJump, 'create').mockReturnValue(mockDestination);
+      jest.spyOn(mockRegistryForJump, 'create').mockReturnValue(mockDestination);
 
       await manager.bind('github-copilot-chat');
 
@@ -1737,7 +1737,7 @@ describe('PasteDestinationManager', () => {
 
     it('should log success with empty details for GitHub Copilot Chat', async () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
-      jest.spyOn(mockFactoryForJump, 'create').mockReturnValue(mockDestination);
+      jest.spyOn(mockRegistryForJump, 'create').mockReturnValue(mockDestination);
 
       await manager.bind('github-copilot-chat');
 
@@ -1821,7 +1821,7 @@ describe('PasteDestinationManager', () => {
       const TEST_STATUS = 'Content sent successfully';
 
       let mockTerminalDest: jest.Mocked<PasteDestination>;
-      let mockFactoryForSend: ReturnType<typeof createMockDestinationFactory>;
+      let mockRegistryForSend: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
       beforeEach(() => {
@@ -1829,13 +1829,13 @@ describe('PasteDestinationManager', () => {
           displayName: 'Terminal ("bash")',
         });
 
-        mockFactoryForSend = createMockDestinationFactory({
+        mockRegistryForSend = createMockDestinationRegistry({
           createImpl: () => mockTerminalDest,
         });
 
         manager = new PasteDestinationManager(
           mockContext,
-          mockFactoryForSend,
+          mockRegistryForSend,
           mockAdapter,
           mockLogger,
         );
@@ -1865,7 +1865,7 @@ describe('PasteDestinationManager', () => {
 
       it('should successfully send text to bound GitHub Copilot Chat', async () => {
         const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
-        jest.spyOn(mockFactoryForSend, 'create').mockReturnValue(mockDestination);
+        jest.spyOn(mockRegistryForSend, 'create').mockReturnValue(mockDestination);
 
         await manager.bind('github-copilot-chat');
         mockDestination.pasteContent.mockResolvedValueOnce(true);
@@ -1952,7 +1952,7 @@ describe('PasteDestinationManager', () => {
     describe('Replace Binding Confirmation', () => {
       let mockTerminalDest1: jest.Mocked<PasteDestination>;
       let mockTerminalDest2: jest.Mocked<PasteDestination>;
-      let mockFactoryForReplace: ReturnType<typeof createMockDestinationFactory>;
+      let mockRegistryForReplace: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
       beforeEach(() => {
@@ -1966,7 +1966,7 @@ describe('PasteDestinationManager', () => {
           resourceName: 'zsh',
         });
 
-        mockFactoryForReplace = createMockDestinationFactory({
+        mockRegistryForReplace = createMockDestinationRegistry({
           createImpl: (options) => {
             if (options.terminal?.name === 'bash') return mockTerminalDest1;
             if (options.terminal?.name === 'zsh') return mockTerminalDest2;
@@ -1976,7 +1976,7 @@ describe('PasteDestinationManager', () => {
 
         manager = new PasteDestinationManager(
           mockContext,
-          mockFactoryForReplace,
+          mockRegistryForReplace,
           mockAdapter,
           mockLogger,
         );
@@ -2066,7 +2066,7 @@ describe('PasteDestinationManager', () => {
 
     describe('Already Bound Check', () => {
       let mockTerminalDest: jest.Mocked<PasteDestination>;
-      let mockFactoryForDuplicate: ReturnType<typeof createMockDestinationFactory>;
+      let mockRegistryForDuplicate: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
       beforeEach(() => {
@@ -2074,13 +2074,13 @@ describe('PasteDestinationManager', () => {
           displayName: 'Terminal ("bash")',
         });
 
-        mockFactoryForDuplicate = createMockDestinationFactory({
+        mockRegistryForDuplicate = createMockDestinationRegistry({
           createImpl: () => mockTerminalDest,
         });
 
         manager = new PasteDestinationManager(
           mockContext,
-          mockFactoryForDuplicate,
+          mockRegistryForDuplicate,
           mockAdapter,
           mockLogger,
         );
@@ -2174,11 +2174,11 @@ describe('PasteDestinationManager', () => {
 
     describe('Document Close Auto-Unbind', () => {
       let mockTextEditorDest: ReturnType<typeof createMockTextEditorDestination>;
-      let mockFactoryForDocument: ReturnType<typeof createMockDestinationFactory>;
+      let mockRegistryForDocument: ReturnType<typeof createMockDestinationRegistry>;
       let localDocumentCloseListener: (doc: vscode.TextDocument) => void;
 
       beforeEach(() => {
-        mockFactoryForDocument = createMockDestinationFactory({
+        mockRegistryForDocument = createMockDestinationRegistry({
           createImpl: (options) => {
             if (options.type === 'text-editor' && options.editor) {
               const doc = options.editor.document;
@@ -2197,7 +2197,7 @@ describe('PasteDestinationManager', () => {
 
         manager = new PasteDestinationManager(
           mockContext,
-          mockFactoryForDocument,
+          mockRegistryForDocument,
           mockAdapter,
           mockLogger,
         );
