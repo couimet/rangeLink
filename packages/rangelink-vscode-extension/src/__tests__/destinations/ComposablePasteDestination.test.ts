@@ -258,10 +258,13 @@ describe('ComposablePasteDestination', () => {
 
       await destination.pasteLink(formattedLink);
 
-      expect(textInserter.insert).toHaveBeenCalledWith(
-        ' my-link ',
-        expect.objectContaining({ fn: 'ComposablePasteDestination.pasteLink' }),
-      );
+      expect(textInserter.insert).toHaveBeenCalledWith(' my-link ', {
+        fn: 'ComposablePasteDestination.pasteLink',
+        link: 'my-link',
+        linkLength: 7,
+        paddedLength: 9,
+        mock: true,
+      });
     });
   });
 
@@ -306,10 +309,12 @@ describe('ComposablePasteDestination', () => {
 
       await destination.pasteContent('my content');
 
-      expect(textInserter.insert).toHaveBeenCalledWith(
-        ' my content ',
-        expect.objectContaining({ fn: 'ComposablePasteDestination.pasteContent' }),
-      );
+      expect(textInserter.insert).toHaveBeenCalledWith(' my content ', {
+        fn: 'ComposablePasteDestination.pasteContent',
+        contentLength: 10,
+        paddedLength: 12,
+        mock: true,
+      });
     });
   });
 

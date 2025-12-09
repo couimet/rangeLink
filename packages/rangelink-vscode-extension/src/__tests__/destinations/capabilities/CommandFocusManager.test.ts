@@ -55,10 +55,7 @@ describe('CommandFocusManager', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('test.command');
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          command: 'test.command',
-        }),
+        { fn: 'test', command: 'test.command' },
         'Focus command succeeded',
       );
 
@@ -86,20 +83,12 @@ describe('CommandFocusManager', () => {
       expect(spy).toHaveBeenNthCalledWith(2, 'command2');
       expect(spy).toHaveBeenNthCalledWith(3, 'command3');
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          command: 'command1',
-          error: error1,
-        }),
+        { fn: 'test', command: 'command1', error: error1 },
         'Focus command failed, trying next',
       );
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          command: 'command2',
-          error: error2,
-        }),
+        { fn: 'test', command: 'command2', error: error2 },
         'Focus command failed, trying next',
       );
 
@@ -118,13 +107,9 @@ describe('CommandFocusManager', () => {
       expect(spy).toHaveBeenNthCalledWith(1, 'command1');
       expect(spy).toHaveBeenNthCalledWith(2, 'command2');
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          allCommandsFailed: true,
-        }),
+        { fn: 'test', allCommandsFailed: true },
         'All focus commands failed',
       );
-
     });
 
     it('should not throw when all commands fail', async () => {
@@ -160,13 +145,9 @@ describe('CommandFocusManager', () => {
 
       expect(spy).not.toHaveBeenCalled();
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          allCommandsFailed: true,
-        }),
+        { fn: 'test', allCommandsFailed: true },
         'All focus commands failed',
       );
-
     });
   });
 });

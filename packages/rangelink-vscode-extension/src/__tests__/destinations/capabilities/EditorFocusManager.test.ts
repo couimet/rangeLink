@@ -44,13 +44,9 @@ describe('EditorFocusManager', () => {
         viewColumn: mockEditor.viewColumn,
       });
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          editorUri: 'file:///test.ts',
-        }),
+        { fn: 'test', editorUri: 'file:///test.ts' },
         'Editor focused via showTextDocument()',
       );
-
     });
 
     it('should handle focus failure gracefully', async () => {

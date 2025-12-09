@@ -126,10 +126,7 @@ describe('ClipboardTextInserter', () => {
       await inserter.insert('test text', testContext);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          command: 'editor.action.clipboardPasteAction',
-        }),
+        { fn: 'test', command: 'editor.action.clipboardPasteAction' },
         'Clipboard paste succeeded',
       );
 
@@ -156,10 +153,7 @@ describe('ClipboardTextInserter', () => {
 
       expect(result).toStrictEqual(false);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          allCommandsFailed: true,
-        }),
+        { fn: 'test', allCommandsFailed: true },
         'All clipboard paste commands failed',
       );
 
@@ -227,10 +221,7 @@ describe('ClipboardTextInserter', () => {
       await inserter.insert('test text', testContext);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          textLength: 9,
-        }),
+        { fn: 'test', textLength: 9 },
         'Copied text to clipboard',
       );
 
@@ -259,20 +250,12 @@ describe('ClipboardTextInserter', () => {
       await inserter.insert('test text', testContext);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          command: 'command1',
-          error: error1,
-        }),
+        { fn: 'test', command: 'command1', error: error1 },
         'Paste command failed, trying next',
       );
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          command: 'command2',
-          error: error2,
-        }),
+        { fn: 'test', command: 'command2', error: error2 },
         'Paste command failed, trying next',
       );
 
