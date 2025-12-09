@@ -159,11 +159,11 @@ describe('formatMessage', () => {
 
       // Should log warning
       expect(loggerWarnSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'formatMessage',
           key: 'name',
           valueType: 'object',
-        }),
+        },
         'Failed to stringify parameter value, using String() fallback',
       );
     });
@@ -231,11 +231,11 @@ describe('formatMessage', () => {
       }
 
       expect(loggerErrorSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'formatMessage',
           code: 'INVALID_CODE',
           locale: 'en',
-        }),
+        },
         'Missing translation for message code: INVALID_CODE',
       );
     });
@@ -284,13 +284,13 @@ describe('formatMessage', () => {
 
       // Should log warning
       expect(loggerWarnSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'setLocale',
           requestedLocale: 'fr-FR',
           baseLocale: 'fr',
           fallbackLocale: 'en',
-        }),
-        expect.stringContaining("Unsupported locale 'fr'"),
+        },
+        "Unsupported locale 'fr', falling back to 'en'",
       );
     });
   });
