@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import type * as vscode from 'vscode';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -6,8 +7,31 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
 import type { FocusManagerFactory } from './capabilities/FocusManagerFactory';
 import type { TextInserterFactory } from './capabilities/TextInserterFactory';
-import type { CreateOptions } from './DestinationFactory';
 import type { DestinationType, PasteDestination } from './PasteDestination';
+
+/**
+ * Display names for destination types
+ *
+ * Used for UI components (command palette, status bar, QuickPick menus, error messages).
+ */
+const DISPLAY_NAMES: Record<DestinationType, string> = {
+  terminal: 'Terminal',
+  'text-editor': 'Text Editor',
+  'cursor-ai': 'Cursor AI Assistant',
+  'github-copilot-chat': 'GitHub Copilot Chat',
+  'claude-code': 'Claude Code Chat',
+};
+
+/**
+ * Type-safe options for creating destinations
+ *
+ * Terminal and text-editor destinations require resources at construction.
+ * AI assistant destinations only need availability checks (no resource required).
+ */
+export type CreateOptions =
+  | { type: 'terminal'; terminal: vscode.Terminal }
+  | { type: 'text-editor'; editor: vscode.TextEditor }
+  | { type: 'cursor-ai' | 'claude-code' | 'github-copilot-chat' };
 
 /**
  * Factory bundle passed to destination builders.
@@ -137,5 +161,20 @@ export class DestinationRegistry {
    */
   getSupportedTypes(): DestinationType[] {
     return Array.from(this.builders.keys());
+  }
+
+  /**
+   * Get display names for all destination types.
+   *
+   * Maps destination identifiers to user-friendly names shown in:
+   * - Command palette
+   * - Status bar messages
+   * - QuickPick menus
+   * - Error messages
+   *
+   * @returns Record mapping destination types to display names
+   */
+  getDisplayNames(): Record<DestinationType, string> {
+    return DISPLAY_NAMES;
   }
 }

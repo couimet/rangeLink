@@ -9,7 +9,7 @@ import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
 
-import { DestinationFactory } from './DestinationFactory';
+import type { DestinationRegistry } from './DestinationRegistry';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 import { TextEditorDestination } from './TextEditorDestination';
 
@@ -46,7 +46,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly factory: DestinationFactory,
+    private readonly registry: DestinationRegistry,
     private readonly vscodeAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
@@ -279,7 +279,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     // Create new destination with resource
-    const newDestination = this.factory.create({ type: 'terminal', terminal: activeTerminal });
+    const newDestination = this.registry.create({ type: 'terminal', terminal: activeTerminal });
 
     // Check if already bound to same destination using equals()
     if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
@@ -376,7 +376,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     // Create new destination with resource
-    const newDestination = this.factory.create({
+    const newDestination = this.registry.create({
       type: 'text-editor',
       editor: activeEditor,
     }) as TextEditorDestination;
@@ -444,7 +444,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     type: 'cursor-ai' | 'claude-code' | 'github-copilot-chat',
   ): Promise<boolean> {
     // Generic destinations don't require resources at construction
-    const newDestination = this.factory.create({ type });
+    const newDestination = this.registry.create({ type });
 
     // Check if destination is available
     if (!(await newDestination.isAvailable())) {

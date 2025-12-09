@@ -1,8 +1,8 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import type { CreateOptions } from '../../destinations/DestinationFactory';
 import {
   DestinationRegistry,
+  type CreateOptions,
   type DestinationBuilder,
   type DestinationBuilderContext,
 } from '../../destinations/DestinationRegistry';

@@ -2,8 +2,10 @@ import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { getDelimitersForExtension } from './config';
-import { ChatPasteHelperFactory } from './destinations/ChatPasteHelperFactory';
-import { DestinationFactory } from './destinations/DestinationFactory';
+import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
+import { FocusManagerFactory } from './destinations/capabilities/FocusManagerFactory';
+import { TextInserterFactory } from './destinations/capabilities/TextInserterFactory';
+import { DestinationRegistry } from './destinations/DestinationRegistry';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { setLocale } from './i18n/LocaleManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
@@ -44,12 +46,22 @@ export function activate(context: vscode.ExtensionContext): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const delimiters = getDelimitersForExtension(vscodeConfig as any, ideAdapter, getLogger());
 
-  // Create chat paste helper factory for AI destinations
-  const chatPasteHelperFactory = new ChatPasteHelperFactory(ideAdapter, getLogger());
+  // Create capability factories for composition-based destinations
+  const textInserterFactory = new TextInserterFactory(ideAdapter, getLogger());
+  const eligibilityCheckerFactory = new EligibilityCheckerFactory(getLogger());
+  const focusManagerFactory = new FocusManagerFactory(ideAdapter, getLogger());
 
-  // Create unified destination manager (Phase 3)
-  const factory = new DestinationFactory(ideAdapter, chatPasteHelperFactory, getLogger());
-  const destinationManager = new PasteDestinationManager(context, factory, ideAdapter, getLogger());
+  // Create destination registry with capability factories
+  const registry = new DestinationRegistry(
+    textInserterFactory,
+    eligibilityCheckerFactory,
+    focusManagerFactory,
+    ideAdapter,
+    getLogger(),
+  );
+
+  // Create unified destination manager
+  const destinationManager = new PasteDestinationManager(context, registry, ideAdapter, getLogger());
 
   const service = new RangeLinkService(delimiters, ideAdapter, destinationManager, getLogger());
 
