@@ -28,7 +28,6 @@ describe('NativeCommandTextInserter', () => {
       });
       expect(buildArgs).toHaveBeenCalledTimes(1);
       expect(buildArgs).toHaveBeenCalledWith('test query');
-
     });
 
     it('should execute command with arguments', async () => {
@@ -51,7 +50,6 @@ describe('NativeCommandTextInserter', () => {
         query: 'test query',
         isPartialQuery: true,
       });
-
     });
 
     it('should log on success', async () => {
@@ -72,7 +70,6 @@ describe('NativeCommandTextInserter', () => {
         { fn: 'test', command: 'workbench.action.chat.open' },
         'Native command insert succeeded',
       );
-
     });
 
     it('should log on failure', async () => {
@@ -95,7 +92,6 @@ describe('NativeCommandTextInserter', () => {
         { fn: 'test', command: 'workbench.action.chat.open', error },
         'Native command insert failed',
       );
-
     });
 
     it('should return true on successful execution', async () => {
@@ -113,7 +109,6 @@ describe('NativeCommandTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('workbench.action.chat.open', { query: 'test query' });
       expect(result).toStrictEqual(true);
-
     });
 
     it('should return false on failed execution', async () => {
@@ -134,7 +129,6 @@ describe('NativeCommandTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('workbench.action.chat.open', { query: 'test query' });
       expect(result).toStrictEqual(false);
-
     });
 
     it('should handle complex argument structures', async () => {
@@ -165,7 +159,6 @@ describe('NativeCommandTextInserter', () => {
           position: 'end',
         },
       });
-
     });
   });
 });
