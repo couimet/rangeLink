@@ -61,7 +61,12 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   // Create unified destination manager
-  const destinationManager = new PasteDestinationManager(context, registry, ideAdapter, getLogger());
+  const destinationManager = new PasteDestinationManager(
+    context,
+    registry,
+    ideAdapter,
+    getLogger(),
+  );
 
   const service = new RangeLinkService(delimiters, ideAdapter, destinationManager, getLogger());
 

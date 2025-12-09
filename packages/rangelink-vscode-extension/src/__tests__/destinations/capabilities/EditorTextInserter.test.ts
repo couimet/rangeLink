@@ -26,7 +26,6 @@ describe('EditorTextInserter', () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(mockEditor, 'test text');
-
     });
 
     it('should log on success', async () => {
@@ -45,7 +44,6 @@ describe('EditorTextInserter', () => {
         }),
         'Cursor insert succeeded',
       );
-
     });
 
     it('should log on failure', async () => {
@@ -64,7 +62,6 @@ describe('EditorTextInserter', () => {
         }),
         'Cursor insert failed',
       );
-
     });
 
     it('should return true when insertion succeeds', async () => {
@@ -77,7 +74,6 @@ describe('EditorTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(mockEditor, 'test text');
       expect(result).toStrictEqual(true);
-
     });
 
     it('should return false when insertion fails', async () => {
@@ -90,7 +86,6 @@ describe('EditorTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(mockEditor, 'test text');
       expect(result).toStrictEqual(false);
-
     });
 
     it('should handle untitled documents', async () => {
@@ -115,7 +110,6 @@ describe('EditorTextInserter', () => {
         }),
         'Cursor insert succeeded',
       );
-
     });
 
     it('should handle empty text insertion', async () => {
@@ -128,7 +122,6 @@ describe('EditorTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(mockEditor, '');
       expect(result).toStrictEqual(true);
-
     });
   });
 });

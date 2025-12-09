@@ -29,7 +29,6 @@ describe('EditorFocusManager', () => {
       expect(spy).toHaveBeenCalledWith(mockEditor.document.uri, {
         viewColumn: mockEditor.viewColumn,
       });
-
     });
 
     it('should log debug message on success', async () => {
@@ -84,7 +83,6 @@ describe('EditorFocusManager', () => {
       expect(spy).toHaveBeenCalledWith(mockEditor.document.uri, {
         viewColumn: mockEditor.viewColumn,
       });
-
     });
 
     it('should handle untitled documents', async () => {
@@ -112,7 +110,6 @@ describe('EditorFocusManager', () => {
         }),
         'Editor focused via showTextDocument()',
       );
-
     });
   });
 });

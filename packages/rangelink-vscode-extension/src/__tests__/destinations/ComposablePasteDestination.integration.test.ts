@@ -52,12 +52,8 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
 
       // Mock the adapter methods
-      const showTerminalSpy = jest
-        .spyOn(mockAdapter, 'showTerminal')
-        .mockReturnValue(undefined);
-      const insertSpy = jest
-        .spyOn(mockAdapter, 'insertTextAtCursor')
-        .mockResolvedValue(true);
+      const showTerminalSpy = jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(undefined);
+      const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
 
       // Create a mock text inserter that uses the adapter
       const textInserter = new EditorTextInserter(

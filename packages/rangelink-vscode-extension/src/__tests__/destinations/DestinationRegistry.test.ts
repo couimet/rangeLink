@@ -152,14 +152,13 @@ describe('DestinationRegistry', () => {
     it('should throw DESTINATION_NOT_IMPLEMENTED for unregistered type', () => {
       const registry = createRegistry();
 
-      expect(() => registry.create({ type: 'terminal', terminal: {} as never })).toThrowRangeLinkExtensionError(
-        'DESTINATION_NOT_IMPLEMENTED',
-        {
-          message: 'No builder registered for destination type: terminal',
-          functionName: 'DestinationRegistry.create',
-          details: { destinationType: 'terminal' },
-        },
-      );
+      expect(() =>
+        registry.create({ type: 'terminal', terminal: {} as never }),
+      ).toThrowRangeLinkExtensionError('DESTINATION_NOT_IMPLEMENTED', {
+        message: 'No builder registered for destination type: terminal',
+        functionName: 'DestinationRegistry.create',
+        details: { destinationType: 'terminal' },
+      });
     });
 
     it('should include destination type in error message', () => {

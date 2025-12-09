@@ -26,7 +26,6 @@ describe('CommandFocusManager', () => {
       expect(spy).toHaveBeenCalledTimes(2);
       expect(spy).toHaveBeenNthCalledWith(1, 'command1');
       expect(spy).toHaveBeenNthCalledWith(2, 'command2');
-
     });
 
     it('should stop after first success', async () => {
@@ -42,7 +41,6 @@ describe('CommandFocusManager', () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('command1');
-
     });
 
     it('should log debug on success', async () => {
@@ -58,7 +56,6 @@ describe('CommandFocusManager', () => {
         { fn: 'test', command: 'test.command' },
         'Focus command succeeded',
       );
-
     });
 
     it('should log debug for each failed command', async () => {
@@ -91,7 +88,6 @@ describe('CommandFocusManager', () => {
         { fn: 'test', command: 'command2', error: error2 },
         'Focus command failed, trying next',
       );
-
     });
 
     it('should log warn when all commands fail', async () => {
@@ -121,7 +117,6 @@ describe('CommandFocusManager', () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('command1');
-
     });
 
     it('should handle single command', async () => {
@@ -133,7 +128,6 @@ describe('CommandFocusManager', () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('single.command');
-
     });
 
     it('should handle empty command array', async () => {

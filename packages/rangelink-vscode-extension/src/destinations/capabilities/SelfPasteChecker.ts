@@ -16,7 +16,10 @@ export class SelfPasteChecker implements EligibilityChecker {
     const eligible = isEligibleForPaste(text);
 
     if (!eligible) {
-      this.logger.info({ ...context, contentLength: text.length }, 'Content not eligible for paste');
+      this.logger.info(
+        { ...context, contentLength: text.length },
+        'Content not eligible for paste',
+      );
     }
 
     return eligible;

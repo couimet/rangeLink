@@ -68,7 +68,10 @@ export interface DestinationBuilderContext {
  * @param context - Factory bundle and infrastructure dependencies
  * @returns Configured PasteDestination instance
  */
-export type DestinationBuilder = (options: CreateOptions, context: DestinationBuilderContext) => PasteDestination;
+export type DestinationBuilder = (
+  options: CreateOptions,
+  context: DestinationBuilderContext,
+) => PasteDestination;
 
 /**
  * Registry for destination builders supporting IoC pattern.
@@ -147,7 +150,10 @@ export class DestinationRegistry {
       });
     }
 
-    this.context.logger.debug({ fn: 'DestinationRegistry.create', type }, `Creating destination: ${type}`);
+    this.context.logger.debug(
+      { fn: 'DestinationRegistry.create', type },
+      `Creating destination: ${type}`,
+    );
     return builder(options, this.context);
   }
 
