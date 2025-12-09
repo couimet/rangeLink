@@ -60,14 +60,7 @@ describe('EditorFocusManager', () => {
       expect(spy).toHaveBeenCalledWith(mockEditor.document.uri, {
         viewColumn: mockEditor.viewColumn,
       });
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          error,
-        }),
-        'Failed to focus editor',
-      );
-
+      expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'test', error }, 'Failed to focus editor');
     });
 
     it('should not throw when focus fails', async () => {
@@ -104,10 +97,7 @@ describe('EditorFocusManager', () => {
         viewColumn: untitledEditor.viewColumn,
       });
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          editorUri: 'untitled:Untitled-1',
-        }),
+        { fn: 'test', editorUri: 'untitled:Untitled-1' },
         'Editor focused via showTextDocument()',
       );
     });

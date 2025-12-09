@@ -38,10 +38,7 @@ describe('EditorTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(mockEditor, 'test text');
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          editorUri: 'file:///test.ts',
-        }),
+        { fn: 'test', editorUri: 'file:///test.ts' },
         'Cursor insert succeeded',
       );
     });
@@ -56,10 +53,7 @@ describe('EditorTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(mockEditor, 'test text');
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          editorUri: 'file:///test.ts',
-        }),
+        { fn: 'test', editorUri: 'file:///test.ts' },
         'Cursor insert failed',
       );
     });
@@ -104,10 +98,7 @@ describe('EditorTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(untitledEditor, 'test text');
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          editorUri: 'untitled:Untitled-1',
-        }),
+        { fn: 'test', editorUri: 'untitled:Untitled-1' },
         'Cursor insert succeeded',
       );
     });

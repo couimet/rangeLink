@@ -69,10 +69,7 @@ describe('NativeCommandTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('workbench.action.chat.open', { query: 'test query' });
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          command: 'workbench.action.chat.open',
-        }),
+        { fn: 'test', command: 'workbench.action.chat.open' },
         'Native command insert succeeded',
       );
 
@@ -95,11 +92,7 @@ describe('NativeCommandTextInserter', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('workbench.action.chat.open', { query: 'test query' });
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          command: 'workbench.action.chat.open',
-          error,
-        }),
+        { fn: 'test', command: 'workbench.action.chat.open', error },
         'Native command insert failed',
       );
 
