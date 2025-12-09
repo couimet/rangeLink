@@ -260,9 +260,8 @@ describe('ComposablePasteDestination', () => {
 
       expect(textInserter.insert).toHaveBeenCalledWith(' my-link ', {
         fn: 'ComposablePasteDestination.pasteLink',
-        link: 'my-link',
+        formattedLink,
         linkLength: 7,
-        paddedLength: 9,
         mock: true,
       });
     });
@@ -312,7 +311,6 @@ describe('ComposablePasteDestination', () => {
       expect(textInserter.insert).toHaveBeenCalledWith(' my content ', {
         fn: 'ComposablePasteDestination.pasteContent',
         contentLength: 10,
-        paddedLength: 12,
         mock: true,
       });
     });
