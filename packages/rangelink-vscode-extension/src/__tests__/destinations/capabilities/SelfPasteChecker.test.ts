@@ -60,10 +60,7 @@ describe('SelfPasteChecker', () => {
       await checker.isEligible('', testContext);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          contentLength: 0,
-        }),
+        { fn: 'test', contentLength: 0 },
         'Content not eligible for paste',
       );
     });
@@ -76,10 +73,7 @@ describe('SelfPasteChecker', () => {
       await checker.isEligible('   ', testContext);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          contentLength: 3,
-        }),
+        { fn: 'test', contentLength: 3 },
         'Content not eligible for paste',
       );
     });

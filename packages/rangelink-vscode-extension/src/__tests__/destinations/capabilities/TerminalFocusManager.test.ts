@@ -37,12 +37,7 @@ describe('TerminalFocusManager', () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(mockTerminal, TerminalFocusType.StealFocus);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-        }),
-        'Terminal focused via show()',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test' }, 'Terminal focused via show()');
 
     });
 
@@ -58,13 +53,7 @@ describe('TerminalFocusManager', () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(mockTerminal, TerminalFocusType.StealFocus);
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-          error,
-        }),
-        'Failed to focus terminal',
-      );
+      expect(mockLogger.warn).toHaveBeenCalledWith({ fn: 'test', error }, 'Failed to focus terminal');
 
     });
 

@@ -36,12 +36,7 @@ describe('AlwaysEligibleChecker', () => {
 
       await checker.isEligible('test text', testContext);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fn: 'test',
-        }),
-        'Eligibility check: always eligible',
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith({ fn: 'test' }, 'Eligibility check: always eligible');
     });
   });
 });
