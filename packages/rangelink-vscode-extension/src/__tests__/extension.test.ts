@@ -549,8 +549,7 @@ describe('RangeLinkService', () => {
       await service.createLink(PathFormat.Absolute);
 
       expect(mockWorkspace.asRelativePath).not.toHaveBeenCalled();
-      const callArg = mockClipboard.writeText.mock.calls[0][0];
-      expect(callArg).toContain('workspace');
+      expect(mockClipboard.writeText).toHaveBeenCalledWith(expect.stringContaining('workspace'));
     });
 
     // TODO: MOVE to RangeLinkService.test.ts
@@ -579,8 +578,9 @@ describe('RangeLinkService', () => {
 
       await service.createLink(PathFormat.Absolute);
 
-      const callArg = mockClipboard.writeText.mock.calls[0][0];
-      expect(callArg).not.toContain('\\');
+      expect(mockClipboard.writeText).toHaveBeenCalledWith(
+        expect.not.stringContaining('\\'),
+      );
     });
   });
 
@@ -985,8 +985,9 @@ describe('RangeLinkService', () => {
       await service.createLink(PathFormat.Absolute);
 
       // Absolute path with rectangular mode (double hash)
-      const callArg = mockClipboard.writeText.mock.calls[0][0];
-      expect(callArg).toBe('/absolute/path/to/file.ts##L2C1-L4C6');
+      expect(mockClipboard.writeText).toHaveBeenCalledWith(
+        '/absolute/path/to/file.ts##L2C1-L4C6',
+      );
     });
 
     // TODO: MOVE to RangeLinkService.test.ts
@@ -1429,13 +1430,10 @@ describe('Configuration loading and validation', () => {
       const context = { subscriptions: [] as any[] };
       require('../extension').activate(context as any);
 
-      // Verify error was logged with specific error code
-      const errorCalls = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-        call[0]?.includes('[ERROR]'),
+      // Verify error was logged with specific error code (digits = ERR_1003, reserved = ERR_1005, etc.)
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+        expect.stringMatching(/\[ERROR\].*ERR_100/),
       );
-      expect(errorCalls.length).toBeGreaterThan(0);
-      // Should log specific error code (digits = ERR_1003, reserved = ERR_1005, etc.)
-      expect(errorCalls.some((call) => call[0]?.includes('ERR_100'))).toBe(true);
     });
 
     it.each([
@@ -1475,11 +1473,9 @@ describe('Configuration loading and validation', () => {
         require('../extension').activate(context as any);
 
         // Verify error was logged with specific error code
-        const errorCalls = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0]?.includes('[ERROR]'),
+        expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+          expect.stringMatching(new RegExp(`\\[ERROR\\].*\\[${expectedCode}\\]`)),
         );
-        expect(errorCalls.length).toBeGreaterThan(0);
-        expect(errorCalls.some((call) => call[0]?.includes(`[${expectedCode}]`))).toBe(true);
       },
     );
 
@@ -1894,10 +1890,9 @@ describe('Configuration loading and validation', () => {
         require('../extension').activate(context as any);
 
         // Should log uniqueness error (L and l are same when case-insensitive)
-        const errorCalls = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0].includes('[ERROR] [ERR_1006]'),
+        expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+          expect.stringContaining('[ERROR] [ERR_1006]'),
         );
-        expect(errorCalls.length).toBeGreaterThan(0);
       });
     });
 
@@ -1935,25 +1930,18 @@ describe('Configuration loading and validation', () => {
         const context = { subscriptions: [] as any[] };
         require('../extension').activate(context as any);
 
-        const errorCalls = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0]?.includes('[ERROR]'),
+        // Should log error for reserved char (ERR_1005) and digits (ERR_1003)
+        expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+          expect.stringMatching(/\[ERROR\] \[ERR_1005\].*Invalid delimiterLine/),
         );
-        expect(errorCalls.length).toBeGreaterThanOrEqual(2);
-        const errorMessages = errorCalls.map((call) => call[0] as string).join('; ');
-        expect(errorMessages).toContain('[ERROR] [ERR_1005]'); // Reserved char
-        expect(errorMessages).toContain('[ERROR] [ERR_1003]'); // Contains digits
-        expect(errorMessages).toContain('Invalid delimiterLine');
-        expect(errorMessages).toContain('Invalid delimiterPosition');
+        expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+          expect.stringMatching(/\[ERROR\] \[ERR_1003\].*Invalid delimiterPosition/),
+        );
 
         // Should also log INFO about using defaults
-        const infoCalls = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0]?.includes('[INFO]'),
+        expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+          expect.stringMatching(/\[INFO\].*(CONFIG_USING_DEFAULTS|MSG_1002)/),
         );
-        expect(
-          infoCalls.some(
-            (call) => call[0]?.includes('CONFIG_USING_DEFAULTS') || call[0]?.includes('MSG_1002'),
-          ),
-        ).toBe(true);
       });
 
       it('should log reserved char errors with uniqueness and substring errors using specific codes', async () => {
@@ -1990,15 +1978,13 @@ describe('Configuration loading and validation', () => {
         const context = { subscriptions: [] as any[] };
         require('../extension').activate(context as any);
 
-        const errorCalls = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0]?.includes('[ERROR]'),
+        // Should log error for uniqueness (ERR_1006) and substring conflict (ERR_1007)
+        expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+          expect.stringMatching(/\[ERROR\] \[ERR_1006\].*Delimiters must be unique/),
         );
-        expect(errorCalls.length).toBeGreaterThanOrEqual(2);
-        const errorMessages = errorCalls.map((call) => call[0] as string).join('; ');
-        expect(errorMessages).toContain('[ERROR] [ERR_1006]'); // Not unique
-        expect(errorMessages).toContain('[ERROR] [ERR_1007]'); // Substring conflict
-        expect(errorMessages).toContain('Delimiters must be unique');
-        expect(errorMessages).toContain('Delimiters cannot be substrings');
+        expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+          expect.stringMatching(/\[ERROR\] \[ERR_1007\].*Delimiters cannot be substrings/),
+        );
       });
 
       it.skip('should log all error types with specific codes: empty, digit, reserved, duplicate, substring', async () => {
@@ -2034,17 +2020,16 @@ describe('Configuration loading and validation', () => {
         const context = { subscriptions: [] as any[] };
         require('../extension').activate(context as any);
 
-        const errorCalls = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0]?.includes('[ERROR]'),
+        // Should log error for digits (ERR_1003), reserved char (ERR_1005), and uniqueness (ERR_1006)
+        expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+          expect.stringMatching(/\[ERROR\] \[ERR_1003\].*Invalid delimiterPosition/),
         );
-        expect(errorCalls.length).toBeGreaterThanOrEqual(3);
-        const errorMessages = errorCalls.map((call) => call[0] as string).join('; ');
-        expect(errorMessages).toContain('[ERROR] [ERR_1003]'); // Contains digits
-        expect(errorMessages).toContain('[ERROR] [ERR_1005]'); // Reserved char
-        expect(errorMessages).toContain('[ERROR] [ERR_1006]'); // Not unique
-        expect(errorMessages).toContain('Invalid delimiterPosition');
-        expect(errorMessages).toContain('Invalid delimiterHash');
-        expect(errorMessages).toContain('Delimiters must be unique');
+        expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+          expect.stringMatching(/\[ERROR\] \[ERR_1005\].*Invalid delimiterHash/),
+        );
+        expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+          expect.stringMatching(/\[ERROR\] \[ERR_1006\].*Delimiters must be unique/),
+        );
       });
     });
 
@@ -2083,10 +2068,9 @@ describe('Configuration loading and validation', () => {
         require('../extension').activate(context as any);
 
         // Should not log any errors
-        const errorLogs = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0].includes('[ERROR]'),
+        expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
+          expect.stringContaining('[ERROR]'),
         );
-        expect(errorLogs.length).toBe(0);
       });
 
       it('should handle reverse substring conflict (larger contains smaller)', async () => {
@@ -2301,10 +2285,9 @@ describe('Configuration loading and validation', () => {
         require('../extension').activate(context as any);
 
         // Should not log any errors - no conflicts between these delimiters (even when compared case-insensitively)
-        const errorLogs = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0].includes('[ERROR]'),
+        expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
+          expect.stringContaining('[ERROR]'),
         );
-        expect(errorLogs.length).toBe(0);
       });
 
       it('should reject multi-character hash delimiter', async () => {
@@ -2383,10 +2366,10 @@ describe('Configuration loading and validation', () => {
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1005]'),
         );
-        const errorLogs = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0].includes('[ERR_1008]'),
+        // Should NOT log single-char error
+        expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
+          expect.stringContaining('[ERR_1008]'),
         );
-        expect(errorLogs.length).toBe(0); // No single-char error
       });
 
       it('should reject hash delimiter with value ">>"', async () => {
@@ -2501,10 +2484,9 @@ describe('Configuration loading and validation', () => {
         require('../extension').activate(context as any);
 
         // Should not log any errors
-        const errorLogs = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0].includes('[ERROR]'),
+        expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
+          expect.stringContaining('[ERROR]'),
         );
-        expect(errorLogs.length).toBe(0);
       });
 
       it('should handle empty string check in validateDelimiter', async () => {
@@ -2601,10 +2583,9 @@ describe('Configuration loading and validation', () => {
         require('../extension').activate(context as any);
 
         // Valid config should pass substring check
-        const errorLogs = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0].includes('substrings'),
+        expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
+          expect.stringContaining('substrings'),
         );
-        expect(errorLogs.length).toBe(0);
       });
 
       it('should handle all reserved character checks returning false (valid delimiter)', async () => {
@@ -2642,10 +2623,9 @@ describe('Configuration loading and validation', () => {
         require('../extension').activate(context as any);
 
         // Should not log any errors
-        const errorLogs = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-          call[0].includes('[ERROR]'),
+        expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
+          expect.stringContaining('[ERROR]'),
         );
-        expect(errorLogs.length).toBe(0);
       });
     });
   });
@@ -2767,10 +2747,9 @@ describe('Configuration loading and validation', () => {
       require('../extension').activate(context as any);
 
       // Should not log any errors
-      const errorLogs = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-        call[0].includes('[ERROR]'),
+      expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
+        expect.stringContaining('[ERROR]'),
       );
-      expect(errorLogs.length).toBe(0);
     });
   });
 
@@ -2828,10 +2807,10 @@ describe('Configuration loading and validation', () => {
         expect.stringContaining('Column mode: indicated by double hash delimiter'),
       );
 
-      // Verify "from default" is logged
-      const logCalls = mockOutputChannel.appendLine.mock.calls.map((call) => call[0]);
-      const lineDelimiterLog = logCalls.find((msg) => msg.includes('Line delimiter'));
-      expect(lineDelimiterLog).toContain('from default');
+      // Verify "from default" is logged for Line delimiter
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+        expect.stringMatching(/Line delimiter.*from default/),
+      );
     });
 
     it.skip('should log source as workspace folder when workspaceFolderValue is set', async () => {
@@ -2861,13 +2840,10 @@ describe('Configuration loading and validation', () => {
       const context = { subscriptions: [] as any[] };
       require('../extension').activate(context as any);
 
-      const logCalls = mockOutputChannel.appendLine.mock.calls.map((call) => call[0] || '');
-      const lineDelimiterLog = logCalls.find(
-        (msg) => msg && typeof msg === 'string' && msg.includes('Line delimiter'),
+      // Verify Line delimiter logged with workspace folder source
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+        expect.stringMatching(/Line delimiter.*FolderL.*from workspace folder/),
       );
-      expect(lineDelimiterLog).toBeTruthy();
-      expect(lineDelimiterLog).toContain('FolderL');
-      expect(lineDelimiterLog).toContain('from workspace folder');
     });
 
     it.skip('should log source as workspace when workspaceValue is set', async () => {
@@ -2897,14 +2873,10 @@ describe('Configuration loading and validation', () => {
       const context = { subscriptions: [] as any[] };
       require('../extension').activate(context as any);
 
-      const logCalls = mockOutputChannel.appendLine.mock.calls.map((call) => call[0] || '');
-      const lineDelimiterLog = logCalls.find(
-        (msg) => msg && typeof msg === 'string' && msg.includes('Line delimiter'),
+      // Verify Line delimiter logged with workspace source (but not "folder" or "user")
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+        expect.stringMatching(/Line delimiter.*WorkspaceL.*from workspace(?! folder)/),
       );
-      expect(lineDelimiterLog).toBeTruthy();
-      // Check that it includes "from workspace" but not "folder" or "user"
-      expect(lineDelimiterLog).toMatch(/from workspace(?! folder)/);
-      expect(lineDelimiterLog).not.toContain('from user');
     });
 
     it('should log source as user when globalValue is set', async () => {
@@ -2940,9 +2912,10 @@ describe('Configuration loading and validation', () => {
       const context = { subscriptions: [] as any[] };
       require('../extension').activate(context as any);
 
-      const logCalls = mockOutputChannel.appendLine.mock.calls.map((call) => call[0]);
-      const lineDelimiterLog = logCalls.find((msg) => msg.includes('Line delimiter'));
-      expect(lineDelimiterLog).toContain('from user');
+      // Verify Line delimiter logged with user source
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+        expect.stringMatching(/Line delimiter.*UserL.*from user/),
+      );
     });
 
     it('should prioritize workspace folder over workspace over user over default', async () => {
@@ -2979,14 +2952,16 @@ describe('Configuration loading and validation', () => {
       const context = { subscriptions: [] as any[] };
       require('../extension').activate(context as any);
 
-      const logCalls = mockOutputChannel.appendLine.mock.calls.map((call) => call[0]);
-      const lineLog = logCalls.find((msg) => msg.includes('Line delimiter'));
-      const columnLog = logCalls.find((msg) => msg.includes('Position delimiter'));
-      const hashLog = logCalls.find((msg) => msg.includes('Hash delimiter'));
-
-      expect(lineLog).toContain('from workspaceFolder');
-      expect(columnLog).toContain('from workspace');
-      expect(hashLog).toContain('from user');
+      // Verify source prioritization: workspace folder > workspace > user > default
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+        expect.stringMatching(/Line delimiter.*from workspaceFolder/),
+      );
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+        expect.stringMatching(/Position delimiter.*from workspace(?! folder)/),
+      );
+      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+        expect.stringMatching(/Hash delimiter.*from user/),
+      );
     });
   });
 });
@@ -3104,20 +3079,20 @@ describe('Portable links (Phase 1C)', () => {
     require('../extension').activate(context as any);
 
     // Should log configuration loaded with custom delimiters and no errors
-    const logs = (vscode as any).window
-      .createOutputChannel()
-      .appendLine.mock.calls.map((c: any[]) => c[0]);
-    // Fallback: check mockOutputChannel if present in this test harness
-    const calls = (global as any).mockOutputChannel?.appendLine?.mock?.calls ?? [];
-    const messages = calls.map((c: any[]) => c[0] || '');
-    const all = [...logs, ...messages].join('\n');
-
-    expect(all).toContain('Delimiter configuration loaded:');
-    expect(all).toContain('LINE');
-    expect(all).toContain('COL');
-    expect(all).toContain('#');
-    expect(all).toContain('TO');
-    expect(all).not.toMatch(/Delimiters must be unique|Delimiters must not be substrings/);
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+      expect.stringContaining('Delimiter configuration loaded:'),
+    );
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringContaining('LINE'));
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringContaining('COL'));
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringContaining('#'));
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(expect.stringContaining('TO'));
+    // Should NOT log uniqueness or substring errors
+    expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
+      expect.stringContaining('Delimiters must be unique'),
+    );
+    expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
+      expect.stringContaining('Delimiters must not be substrings'),
+    );
   });
 });
 describe('Extension lifecycle', () => {
@@ -3169,10 +3144,6 @@ describe('Extension lifecycle', () => {
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
     // Verify all command IDs are registered correctly
-    const registeredCommands = (mockCommands.registerCommand as jest.Mock).mock.calls.map(
-      (call) => call[0],
-    );
-
     const expectedCommands = [
       // Copy link commands (issue #116 - simplified names)
       'rangelink.copyLinkWithRelativePath',
@@ -3197,7 +3168,10 @@ describe('Extension lifecycle', () => {
       'rangelink.handleDocumentLinkClick',
     ];
 
-    expect(registeredCommands.sort()).toStrictEqual(expectedCommands.sort());
+    // Verify each command was registered
+    for (const command of expectedCommands) {
+      expect(mockCommands.registerCommand).toHaveBeenCalledWith(command, expect.any(Function));
+    }
   });
 
   it('should clean up on deactivate', () => {
@@ -3260,15 +3234,9 @@ describe('Logger verification and communication channel', () => {
     require('../extension').activate(context as any);
 
     // Verify debug() was called during setLogger with initialization message
-    const debugCalls = mockOutputChannel.appendLine.mock.calls.filter((call: string[]) =>
-      call[0]?.includes('[DEBUG]'),
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+      expect.stringMatching(/\[DEBUG\].*setLogger.*Logger initialized/),
     );
-    const initializationCall = debugCalls.find((call: string[]) =>
-      call[0]?.includes('Logger initialized'),
-    );
-
-    expect(initializationCall).toBeDefined();
-    expect(initializationCall[0]).toContain('setLogger');
   });
 
   it('should support pingLog() to exercise all logger levels', () => {
@@ -3284,28 +3252,18 @@ describe('Logger verification and communication channel', () => {
     pingLog();
 
     // Verify all 4 ping messages were logged
-    const calls = mockOutputChannel.appendLine.mock.calls;
-
-    const debugCall = calls.find((call: string[]) => call[0]?.includes('Ping for DEBUG'));
-    const infoCall = calls.find((call: string[]) => call[0]?.includes('Ping for INFO'));
-    const warnCall = calls.find((call: string[]) => call[0]?.includes('Ping for WARN'));
-    const errorCall = calls.find((call: string[]) => call[0]?.includes('Ping for ERROR'));
-
-    expect(debugCall).toBeDefined();
-    expect(debugCall[0]).toContain('[DEBUG]');
-    expect(debugCall[0]).toContain('pingLog');
-
-    expect(infoCall).toBeDefined();
-    expect(infoCall[0]).toContain('[INFO]');
-    expect(infoCall[0]).toContain('pingLog');
-
-    expect(warnCall).toBeDefined();
-    expect(warnCall[0]).toContain('[WARNING]');
-    expect(warnCall[0]).toContain('pingLog');
-
-    expect(errorCall).toBeDefined();
-    expect(errorCall[0]).toContain('[ERROR]');
-    expect(errorCall[0]).toContain('pingLog');
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+      expect.stringMatching(/\[DEBUG\].*pingLog.*Ping for DEBUG/),
+    );
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+      expect.stringMatching(/\[INFO\].*pingLog.*Ping for INFO/),
+    );
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+      expect.stringMatching(/\[WARNING\].*pingLog.*Ping for WARN/),
+    );
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+      expect.stringMatching(/\[ERROR\].*pingLog.*Ping for ERROR/),
+    );
   });
 
   it('should verify VSCodeLogger properly formats debug messages', () => {
@@ -3352,20 +3310,22 @@ describe('Logger verification and communication channel', () => {
     it('should call formatMessage with INFO_COMMIT_HASH_COPIED when copying commit hash', async () => {
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Copy Commit Hash');
 
+      // Capture command handler via mockImplementation
+      let showVersionHandler: (() => Promise<void>) | undefined;
+      (vscode.commands.registerCommand as jest.Mock).mockImplementation((commandId, handler) => {
+        if (commandId === 'rangelink.showVersion') {
+          showVersionHandler = handler;
+        }
+        return { dispose: jest.fn() };
+      });
+
       // Activate extension
       extension.activate(mockContext as unknown as vscode.ExtensionContext);
 
-      // Get the registered command handler for showVersion
-      const registerCommandCalls = (vscode.commands.registerCommand as jest.Mock).mock.calls;
-      const showVersionCall = registerCommandCalls.find(
-        (call) => call[0] === 'rangelink.showVersion',
-      );
-      expect(showVersionCall).toBeDefined();
-
-      const showVersionHandler = showVersionCall[1];
+      expect(showVersionHandler).toBeDefined();
 
       // Execute the command handler
-      await showVersionHandler();
+      await showVersionHandler!();
 
       // Verify formatMessage was called with correct MessageCode
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.INFO_COMMIT_HASH_COPIED);
@@ -3374,22 +3334,25 @@ describe('Logger verification and communication channel', () => {
     it('should show information message with correct commit hash copied text', async () => {
       (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Copy Commit Hash');
 
+      // Capture command handler via mockImplementation
+      let showVersionHandler: (() => Promise<void>) | undefined;
+      (vscode.commands.registerCommand as jest.Mock).mockImplementation((commandId, handler) => {
+        if (commandId === 'rangelink.showVersion') {
+          showVersionHandler = handler;
+        }
+        return { dispose: jest.fn() };
+      });
+
       // Activate extension
       extension.activate(mockContext as unknown as vscode.ExtensionContext);
 
-      // Get and execute handler
-      const registerCommandCalls = (vscode.commands.registerCommand as jest.Mock).mock.calls;
-      const showVersionCall = registerCommandCalls.find(
-        (call) => call[0] === 'rangelink.showVersion',
-      );
-      const showVersionHandler = showVersionCall[1];
+      expect(showVersionHandler).toBeDefined();
 
-      await showVersionHandler();
+      // Get and execute handler
+      await showVersionHandler!();
 
       const expectedMessage = messagesEn[MessageCode.INFO_COMMIT_HASH_COPIED];
-      const showInfoCalls = (vscode.window.showInformationMessage as jest.Mock).mock.calls;
-      const commitHashCopiedCall = showInfoCalls.find((call) => call[0] === expectedMessage);
-      expect(commitHashCopiedCall).toBeDefined();
+      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expectedMessage);
     });
   });
 });

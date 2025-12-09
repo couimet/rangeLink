@@ -99,43 +99,62 @@ describe('DestinationRegistry', () => {
       });
     });
 
-    it('should pass context with factories to builder', () => {
+    it('should pass context with factories to builder (reference equality)', () => {
       const factories = createMockFactories();
       const registry = createRegistry(factories);
       const mockDestination = createMockPasteDestination();
-      const builder = jest.fn().mockReturnValue(mockDestination);
+
+      // Capture context for reference equality assertions
+      let capturedContext: DestinationBuilderContext | undefined;
+      const builder = jest.fn().mockImplementation((_opts, ctx) => {
+        capturedContext = ctx;
+        return mockDestination;
+      });
       registry.register('cursor-ai', builder);
 
       registry.create({ type: 'cursor-ai' });
 
-      const [, context] = builder.mock.calls[0] as [CreateOptions, DestinationBuilderContext];
-      expect(context.factories.textInserter).toBe(factories.textInserter);
-      expect(context.factories.eligibilityChecker).toBe(factories.eligibilityChecker);
-      expect(context.factories.focusManager).toBe(factories.focusManager);
+      expect(builder).toHaveBeenCalledTimes(1);
+      expect(capturedContext).toBeDefined();
+      expect(capturedContext!.factories.textInserter).toBe(factories.textInserter);
+      expect(capturedContext!.factories.eligibilityChecker).toBe(factories.eligibilityChecker);
+      expect(capturedContext!.factories.focusManager).toBe(factories.focusManager);
     });
 
-    it('should pass ideAdapter to builder context', () => {
+    it('should pass ideAdapter to builder context (reference equality)', () => {
       const registry = createRegistry();
       const mockDestination = createMockPasteDestination();
-      const builder = jest.fn().mockReturnValue(mockDestination);
+
+      let capturedContext: DestinationBuilderContext | undefined;
+      const builder = jest.fn().mockImplementation((_opts, ctx) => {
+        capturedContext = ctx;
+        return mockDestination;
+      });
       registry.register('text-editor', builder);
 
       registry.create({ type: 'text-editor', editor: {} as never });
 
-      const [, context] = builder.mock.calls[0] as [CreateOptions, DestinationBuilderContext];
-      expect(context.ideAdapter).toBe(mockAdapter);
+      expect(builder).toHaveBeenCalledTimes(1);
+      expect(capturedContext).toBeDefined();
+      expect(capturedContext!.ideAdapter).toBe(mockAdapter);
     });
 
-    it('should pass logger to builder context', () => {
+    it('should pass logger to builder context (reference equality)', () => {
       const registry = createRegistry();
       const mockDestination = createMockPasteDestination();
-      const builder = jest.fn().mockReturnValue(mockDestination);
+
+      let capturedContext: DestinationBuilderContext | undefined;
+      const builder = jest.fn().mockImplementation((_opts, ctx) => {
+        capturedContext = ctx;
+        return mockDestination;
+      });
       registry.register('claude-code', builder);
 
       registry.create({ type: 'claude-code' });
 
-      const [, context] = builder.mock.calls[0] as [CreateOptions, DestinationBuilderContext];
-      expect(context.logger).toBe(mockLogger);
+      expect(builder).toHaveBeenCalledTimes(1);
+      expect(capturedContext).toBeDefined();
+      expect(capturedContext!.logger).toBe(mockLogger);
     });
 
     it('should return destination from builder', () => {

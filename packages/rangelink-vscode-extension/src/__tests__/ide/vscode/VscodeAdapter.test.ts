@@ -479,11 +479,16 @@ describe('VscodeAdapter', () => {
 
   describe('insertTextAtCursor', () => {
     it('should call editor.edit and insert text at cursor position', async () => {
+      // Capture the callback passed to edit()
+      let capturedCallback: ((builder: { insert: jest.Mock }) => void) | undefined;
       const mockEditor = {
         selection: {
           active: { line: 5, character: 10 },
         },
-        edit: jest.fn().mockResolvedValue(true),
+        edit: jest.fn().mockImplementation((callback) => {
+          capturedCallback = callback;
+          return Promise.resolve(true);
+        }),
       } as any;
       const text = 'inserted text';
 
@@ -493,11 +498,11 @@ describe('VscodeAdapter', () => {
       expect(result).toBe(true);
 
       // Verify the editBuilder callback was used correctly
-      const editCallback = (mockEditor.edit as jest.Mock).mock.calls[0][0];
+      expect(capturedCallback).toBeDefined();
       const mockEditBuilder = {
         insert: jest.fn(),
       };
-      editCallback(mockEditBuilder);
+      capturedCallback!(mockEditBuilder);
       expect(mockEditBuilder.insert).toHaveBeenCalledWith(mockEditor.selection.active, text);
     });
 
@@ -515,19 +520,23 @@ describe('VscodeAdapter', () => {
     });
 
     it('should handle empty text insertion', async () => {
+      let capturedCallback: ((builder: { insert: jest.Mock }) => void) | undefined;
       const mockEditor = {
         selection: {
           active: { line: 0, character: 0 },
         },
-        edit: jest.fn().mockResolvedValue(true),
+        edit: jest.fn().mockImplementation((callback) => {
+          capturedCallback = callback;
+          return Promise.resolve(true);
+        }),
       } as any;
 
       const result = await adapter.insertTextAtCursor(mockEditor, '');
 
       expect(result).toBe(true);
-      const editCallback = (mockEditor.edit as jest.Mock).mock.calls[0][0];
+      expect(capturedCallback).toBeDefined();
       const mockEditBuilder = { insert: jest.fn() };
-      editCallback(mockEditBuilder);
+      capturedCallback!(mockEditBuilder);
       expect(mockEditBuilder.insert).toHaveBeenCalledWith(mockEditor.selection.active, '');
     });
   });

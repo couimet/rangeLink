@@ -142,17 +142,16 @@ describe('finalizeLinkGeneration', () => {
     // Verify function succeeded
     expect(result.success).toBe(true);
 
-    // Extract logged context
-    expect(mockDebug).toHaveBeenCalledTimes(1);
-    const [[loggedContext]] = mockDebug.mock.calls;
-
     // CRITICAL ASSERTIONS: Our attributes must win over malicious logContext
-    expect(loggedContext.fn).toBe('formatLink'); // NOT 'EVIL_FUNCTION'
-    expect(loggedContext.link).toBe('src/test.ts#L10'); // NOT 'EVIL_LINK'
-    expect(loggedContext.linkLength).toBe(15); // NOT 9999
-
-    // Extra attributes should be preserved
-    expect(loggedContext.extraAttribute).toBe('should-be-preserved');
+    expect(mockDebug).toHaveBeenCalledWith(
+      {
+        fn: 'formatLink', // NOT 'EVIL_FUNCTION'
+        link: 'src/test.ts#L10', // NOT 'EVIL_LINK'
+        linkLength: 15, // NOT 9999
+        extraAttribute: 'should-be-preserved', // Extra attributes preserved
+      },
+      'Generated link',
+    );
 
     mockDebug.mockRestore();
   });

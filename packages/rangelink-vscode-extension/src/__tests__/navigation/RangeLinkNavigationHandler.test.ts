@@ -69,19 +69,16 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     await handler.navigateToLink(parsed, linkText);
 
     // Assert: Should log extension
-    const debugCalls = (mockLogger.debug as jest.Mock).mock.calls;
-    const extensionLog = debugCalls.find((call) =>
-      call[1]?.includes('Extended single-position selection'),
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      {
+        fn: 'RangeLinkNavigationHandler.navigateToLink',
+        linkText: 'file.ts#L32C1',
+        originalPos: '32:1',
+        extendedTo: '32:2',
+        reason: 'single-position selection needs visibility',
+      },
+      'Extended single-position selection by 1 character',
     );
-
-    expect(extensionLog).toBeDefined();
-    expect(extensionLog[0]).toMatchObject({
-      fn: 'RangeLinkNavigationHandler.navigateToLink',
-      linkText: 'file.ts#L32C1',
-      originalPos: '32:1',
-      extendedTo: '32:2',
-      reason: 'single-position selection needs visibility',
-    });
 
     // Should call adapter's createSelection with extended positions (31,0) to (31,1) in 0-indexed coords
     expect(createSelectionSpy).toHaveBeenCalledWith(
@@ -107,17 +104,16 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     await handler.navigateToLink(parsed, linkText);
 
     // Assert: Should log that it's keeping cursor only
-    const debugCalls = (mockLogger.debug as jest.Mock).mock.calls;
-    const boundaryLog = debugCalls.find((call) => call[1]?.includes('keeping cursor only'));
-
-    expect(boundaryLog).toBeDefined();
-    expect(boundaryLog[0]).toMatchObject({
-      fn: 'RangeLinkNavigationHandler.navigateToLink',
-      linkText: 'file.ts#L10C6',
-      position: '10:6',
-      lineLength: 5,
-      reason: 'end of line',
-    });
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      {
+        fn: 'RangeLinkNavigationHandler.navigateToLink',
+        linkText: 'file.ts#L10C6',
+        position: '10:6',
+        lineLength: 5,
+        reason: 'end of line',
+      },
+      'Single-position selection at line boundary - keeping cursor only',
+    );
 
     // Should NOT extend - selection remains at same position (clamped to lineLength)
     expect(createSelectionSpy).toHaveBeenCalledWith(
@@ -143,17 +139,16 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     await handler.navigateToLink(parsed, linkText);
 
     // Assert: Should log that it's an empty line
-    const debugCalls = (mockLogger.debug as jest.Mock).mock.calls;
-    const boundaryLog = debugCalls.find((call) => call[1]?.includes('keeping cursor only'));
-
-    expect(boundaryLog).toBeDefined();
-    expect(boundaryLog[0]).toMatchObject({
-      fn: 'RangeLinkNavigationHandler.navigateToLink',
-      linkText: 'file.ts#L5C1',
-      position: '5:1',
-      lineLength: 0,
-      reason: 'empty line',
-    });
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      {
+        fn: 'RangeLinkNavigationHandler.navigateToLink',
+        linkText: 'file.ts#L5C1',
+        position: '5:1',
+        lineLength: 0,
+        reason: 'empty line',
+      },
+      'Single-position selection at line boundary - keeping cursor only',
+    );
   });
 
   it('should extend line-only single position (no character specified)', async () => {
@@ -171,16 +166,16 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     await handler.navigateToLink(parsed, linkText);
 
     // Assert: Should extend from start of line (char 1 → 0-indexed = 0) to character 1
-    const debugCalls = (mockLogger.debug as jest.Mock).mock.calls;
-    const extensionLog = debugCalls.find((call) =>
-      call[1]?.includes('Extended single-position selection'),
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      {
+        fn: 'RangeLinkNavigationHandler.navigateToLink',
+        linkText: 'file.ts#L20',
+        originalPos: '20:1',
+        extendedTo: '20:2',
+        reason: 'single-position selection needs visibility',
+      },
+      'Extended single-position selection by 1 character',
     );
-
-    expect(extensionLog).toBeDefined();
-    expect(extensionLog[0]).toMatchObject({
-      originalPos: '20:1',
-      extendedTo: '20:2',
-    });
   });
 
   it('should NOT extend multi-line range selection', async () => {
@@ -198,12 +193,10 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     await handler.navigateToLink(parsed, linkText);
 
     // Assert: Should NOT log extension (not a single position)
-    const debugCalls = (mockLogger.debug as jest.Mock).mock.calls;
-    const extensionLog = debugCalls.find((call) =>
-      call[1]?.includes('Extended single-position selection'),
+    expect(mockLogger.debug).not.toHaveBeenCalledWith(
+      expect.any(Object),
+      'Extended single-position selection by 1 character',
     );
-
-    expect(extensionLog).toBeUndefined();
 
     // Should create selection from line 10 to line 20 (not extended)
     expect(createSelectionSpy).toHaveBeenCalledWith(
@@ -707,15 +700,14 @@ describe('RangeLinkNavigationHandler - Rectangular Selection Mode', () => {
     await handler.navigateToLink(parsed, linkText);
 
     // Should log rectangular selection
-    const infoCalls = (mockLogger.info as jest.Mock).mock.calls;
-    const rectangularLog = infoCalls.find((call) => call[1]?.includes('Set rectangular selection'));
-
-    expect(rectangularLog).toBeDefined();
-    expect(rectangularLog[0]).toMatchObject({
-      fn: 'RangeLinkNavigationHandler.navigateToLink',
-      linkText: 'file.ts##L10C5-L12C10',
-      lineCount: 3, // Lines 10, 11, 12
-    });
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      {
+        fn: 'RangeLinkNavigationHandler.navigateToLink',
+        linkText: 'file.ts##L10C5-L12C10',
+        lineCount: 3, // Lines 10, 11, 12
+      },
+      'Set rectangular selection (multi-cursor)',
+    );
 
     // Should set editor.selections (not editor.selection)
     expect(mockEditor.selections).toBeDefined();
