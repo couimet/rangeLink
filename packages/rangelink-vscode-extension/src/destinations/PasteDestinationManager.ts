@@ -8,10 +8,10 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
+import { isTextLikeFile } from '../utils/isTextLikeFile';
 
 import type { DestinationRegistry } from './DestinationRegistry';
 import type { DestinationType, PasteDestination } from './PasteDestination';
-import { TextEditorDestination } from './TextEditorDestination';
 
 /**
  * Unified destination manager for RangeLink (Phase 3)
@@ -363,7 +363,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     // Check if editor is text-like (not binary)
-    if (!TextEditorDestination.isTextLikeFile(this.vscodeAdapter, activeEditor)) {
+    if (!isTextLikeFile(this.vscodeAdapter, activeEditor)) {
       const fileName = activeEditor.document.uri.fsPath.split('/').pop() || 'Unknown';
       this.logger.warn(
         { fn: 'PasteDestinationManager.bindTextEditor', fileName },
