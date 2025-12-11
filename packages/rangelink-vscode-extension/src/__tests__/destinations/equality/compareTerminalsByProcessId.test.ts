@@ -1,12 +1,13 @@
 import { compareTerminalsByProcessId } from '../../../destinations/equality/compareTerminalsByProcessId';
+import { createMockSingletonComposablePasteDestination } from '../../helpers/createMockSingletonComposablePasteDestination';
 import { createMockTerminal } from '../../helpers/createMockTerminal';
-import { createMockTerminalDestination } from '../../helpers/createMockTerminalDestination';
+import { createMockTerminalComposablePasteDestination } from '../../helpers/createMockTerminalComposablePasteDestination';
 
 describe('compareTerminalsByProcessId', () => {
   describe('when terminals have matching process IDs', () => {
     it('should return true', async () => {
       const thisTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
-      const otherDestination = createMockTerminalDestination({
+      const otherDestination = createMockTerminalComposablePasteDestination({
         terminal: createMockTerminal({ processId: Promise.resolve(12345) }),
       });
 
@@ -19,7 +20,7 @@ describe('compareTerminalsByProcessId', () => {
   describe('when terminals have different process IDs', () => {
     it('should return false', async () => {
       const thisTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
-      const otherDestination = createMockTerminalDestination({
+      const otherDestination = createMockTerminalComposablePasteDestination({
         terminal: createMockTerminal({ processId: Promise.resolve(67890) }),
       });
 
@@ -29,10 +30,10 @@ describe('compareTerminalsByProcessId', () => {
     });
   });
 
-  describe('when other destination has no terminal property', () => {
-    it('should return false', async () => {
+  describe('when other destination is not a terminal', () => {
+    it('should return false for singleton resource', async () => {
       const thisTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
-      const otherDestination = createMockTerminalDestination();
+      const otherDestination = createMockSingletonComposablePasteDestination();
 
       const result = await compareTerminalsByProcessId(thisTerminal, otherDestination);
 
@@ -43,7 +44,7 @@ describe('compareTerminalsByProcessId', () => {
   describe('when this terminal process ID is undefined', () => {
     it('should return false', async () => {
       const thisTerminal = createMockTerminal({ processId: Promise.resolve(undefined) });
-      const otherDestination = createMockTerminalDestination({
+      const otherDestination = createMockTerminalComposablePasteDestination({
         terminal: createMockTerminal({ processId: Promise.resolve(12345) }),
       });
 
@@ -56,7 +57,7 @@ describe('compareTerminalsByProcessId', () => {
   describe('when other terminal process ID is undefined', () => {
     it('should return false', async () => {
       const thisTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
-      const otherDestination = createMockTerminalDestination({
+      const otherDestination = createMockTerminalComposablePasteDestination({
         terminal: createMockTerminal({ processId: Promise.resolve(undefined) }),
       });
 
@@ -69,7 +70,7 @@ describe('compareTerminalsByProcessId', () => {
   describe('when both terminal process IDs are undefined', () => {
     it('should return false', async () => {
       const thisTerminal = createMockTerminal({ processId: Promise.resolve(undefined) });
-      const otherDestination = createMockTerminalDestination({
+      const otherDestination = createMockTerminalComposablePasteDestination({
         terminal: createMockTerminal({ processId: Promise.resolve(undefined) }),
       });
 
@@ -85,7 +86,7 @@ describe('compareTerminalsByProcessId', () => {
       const otherPidPromise = Promise.resolve(12345);
 
       const thisTerminal = createMockTerminal({ processId: thisPidPromise });
-      const otherDestination = createMockTerminalDestination({
+      const otherDestination = createMockTerminalComposablePasteDestination({
         terminal: createMockTerminal({ processId: otherPidPromise }),
       });
 

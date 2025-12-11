@@ -1,5 +1,6 @@
 import type * as vscode from 'vscode';
 
+import { ComposablePasteDestination } from '../ComposablePasteDestination';
 import type { PasteDestination } from '../PasteDestination';
 
 /**
@@ -16,11 +17,11 @@ export const compareTerminalsByProcessId = async (
   thisTerminal: vscode.Terminal,
   other: PasteDestination,
 ): Promise<boolean> => {
-  const otherTerminal = (other as any).terminal;
-  if (!otherTerminal) {
+  if (!(other instanceof ComposablePasteDestination) || other.resource?.kind !== 'terminal') {
     return false;
   }
 
+  const otherTerminal = other.resource.terminal;
   const [thisPid, otherPid] = await Promise.all([thisTerminal.processId, otherTerminal.processId]);
 
   return thisPid !== undefined && thisPid === otherPid;
