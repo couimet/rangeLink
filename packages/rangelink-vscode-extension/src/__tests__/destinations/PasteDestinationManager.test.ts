@@ -19,7 +19,10 @@ import { createMockPasteDestination } from '../helpers/createMockPasteDestinatio
 import { createMockTerminal } from '../helpers/createMockTerminal';
 import { createMockTerminalPasteDestination } from '../helpers/createMockTerminalPasteDestination';
 import { createMockText } from '../helpers/createMockText';
-import { createMockTextEditorDestination } from '../helpers/createMockTextEditorDestination';
+import {
+  createMockEditorComposablePasteDestination,
+  createMockTextInserterForEditor,
+} from '../helpers/createMockEditorComposablePasteDestination';
 import { createMockUri } from '../helpers/createMockUri';
 import {
   createMockVscodeAdapter,
@@ -98,21 +101,11 @@ describe('PasteDestinationManager', () => {
           return destinationCache.get(cacheKey);
         }
         if (options.type === 'text-editor' && options.editor) {
-          const doc = options.editor.document;
-          const fileName = doc.uri.fsPath.split('/').pop() || 'Unknown';
-          const cacheKey = `text-editor:${doc.uri.fsPath}`;
+          const cacheKey = `text-editor:${options.editor.document.uri.fsPath}`;
           if (!destinationCache.has(cacheKey)) {
             destinationCache.set(
               cacheKey,
-              createMockTextEditorDestination({
-                displayName: `Text Editor ("${fileName}")`,
-                resourceName: fileName,
-                getLoggingDetails: jest.fn().mockReturnValue({
-                  editorName: fileName.split('/').pop(),
-                  editorPath: doc.uri.fsPath,
-                }),
-                getBoundDocumentUri: jest.fn().mockReturnValue(doc.uri),
-              }),
+              createMockEditorComposablePasteDestination({ editor: options.editor }),
             );
           }
           return destinationCache.get(cacheKey);
@@ -233,7 +226,8 @@ describe('PasteDestinationManager', () => {
       const controlledFactory = createMockDestinationRegistry({
         destinations: {
           terminal: terminalDest,
-          'text-editor': createMockTextEditorDestination(),
+          'text-editor':
+            createMockEditorComposablePasteDestination() as unknown as jest.Mocked<PasteDestination>,
           'cursor-ai': createMockCursorAIDestination(),
           'claude-code': createMockClaudeCodeDestination(),
         },
@@ -866,13 +860,15 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show text-editor specific warning when editor paste fails', async () => {
-      // Create a mock text editor destination that mimics a bound text editor
-      const mockTextEditorDest = createMockTextEditorDestination({
-        id: 'text-editor',
+      // Create a mock text editor destination with textInserter that fails
+      const mockFailingInserter = createMockTextInserterForEditor(false);
+      const mockTextEditorDest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor',
-        getUserInstruction: jest.fn().mockReturnValue(undefined),
-        pasteLink: jest.fn().mockResolvedValue(false), // Simulate paste failure
+        textInserter: mockFailingInserter,
       });
+
+      // Spy on pasteLink to verify it was called
+      const pasteLinkSpy = jest.spyOn(mockTextEditorDest, 'pasteLink');
 
       // Manually set the bound destination to bypass bind() complexity
       (manager as any).boundDestination = mockTextEditorDest;
@@ -885,7 +881,7 @@ describe('PasteDestinationManager', () => {
       );
 
       expect(result).toBe(false);
-      expect(mockTextEditorDest.pasteLink).toHaveBeenCalledTimes(1);
+      expect(pasteLinkSpy).toHaveBeenCalledTimes(1);
 
       // Verify text-editor specific failure message
       expect(showWarningSpy).toHaveBeenCalledTimes(1);
@@ -1487,14 +1483,16 @@ describe('PasteDestinationManager', () => {
     // Mock factory and destinations for unit tests
     let mockRegistryForJump: ReturnType<typeof createMockDestinationRegistry>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
-    let mockEditorDest: jest.Mocked<PasteDestination>;
+    let mockEditorDest: PasteDestination;
+    let mockEditorDestFocusSpy: jest.SpyInstance;
     let mockCursorAIDest: jest.Mocked<PasteDestination>;
     let mockClaudeCodeDest: jest.Mocked<PasteDestination>;
 
     beforeEach(() => {
       // Use specialized factories with default values (all already have sensible defaults)
       mockTerminalDest = createMockTerminalPasteDestination();
-      mockEditorDest = createMockTextEditorDestination();
+      mockEditorDest = createMockEditorComposablePasteDestination();
+      mockEditorDestFocusSpy = jest.spyOn(mockEditorDest, 'focus');
       mockCursorAIDest = createMockCursorAIDestination();
       mockClaudeCodeDest = createMockClaudeCodeDestination();
 
@@ -1560,7 +1558,7 @@ describe('PasteDestinationManager', () => {
       const result = await manager.jumpToBoundDestination();
 
       expect(result).toBe(true);
-      expect(mockEditorDest.focus).toHaveBeenCalledTimes(1);
+      expect(mockEditorDestFocusSpy).toHaveBeenCalledTimes(1);
     });
 
     it('should focus bound Cursor AI successfully', async () => {
@@ -1704,11 +1702,11 @@ describe('PasteDestinationManager', () => {
         {
           fn: 'PasteDestinationManager.jumpToBoundDestination',
           destinationType: 'text-editor',
-          displayName: 'Text Editor',
+          displayName: 'Text Editor ("src/file.ts")',
           editorName: 'src/file.ts',
           editorPath: '/workspace/src/file.ts',
         },
-        'Successfully focused Text Editor',
+        'Successfully focused Text Editor ("src/file.ts")',
       );
     });
 
@@ -1785,7 +1783,7 @@ describe('PasteDestinationManager', () => {
       await manager.jumpToBoundDestination();
 
       expect(mockTerminalDest.focus).not.toHaveBeenCalled();
-      expect(mockEditorDest.focus).not.toHaveBeenCalled();
+      expect(mockEditorDestFocusSpy).not.toHaveBeenCalled();
       expect(mockCursorAIDest.focus).not.toHaveBeenCalled();
       expect(mockClaudeCodeDest.focus).not.toHaveBeenCalled();
     });
@@ -2173,7 +2171,7 @@ describe('PasteDestinationManager', () => {
     });
 
     describe('Document Close Auto-Unbind', () => {
-      let mockTextEditorDest: ReturnType<typeof createMockTextEditorDestination>;
+      let mockTextEditorDest: ReturnType<typeof createMockEditorComposablePasteDestination>;
       let mockRegistryForDocument: ReturnType<typeof createMockDestinationRegistry>;
       let localDocumentCloseListener: (doc: vscode.TextDocument) => void;
 
@@ -2183,11 +2181,10 @@ describe('PasteDestinationManager', () => {
             if (options.type === 'text-editor' && options.editor) {
               const doc = options.editor.document;
               const fileName = doc.uri.fsPath.split('/').pop() || 'Unknown';
-              mockTextEditorDest = createMockTextEditorDestination({
+              // Use real ComposablePasteDestination for document close listener to work
+              mockTextEditorDest = createMockEditorComposablePasteDestination({
                 displayName: `Text Editor (${fileName})`,
-                resourceName: fileName,
-                // Key: Return the actual editor's document URI, not a pre-mocked static one
-                getBoundDocumentUri: jest.fn().mockReturnValue(doc.uri),
+                editor: options.editor,
               });
               return mockTextEditorDest;
             }
@@ -2307,44 +2304,6 @@ describe('PasteDestinationManager', () => {
         expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
       });
 
-      it('should handle early return when boundDocumentUri is undefined', async () => {
-        const mockUri = {
-          toString: () => 'file:///workspace/file.ts',
-          fsPath: '/workspace/file.ts',
-          scheme: 'file',
-        } as vscode.Uri;
-        const mockDocument = {
-          uri: mockUri,
-          languageId: 'typescript',
-        } as vscode.TextDocument;
-        const mockEditor = { document: mockDocument } as vscode.TextEditor;
-
-        mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
-
-        const bindResult = await manager.bind('text-editor');
-
-        expect(bindResult).toBe(true);
-        expect(manager.getBoundDestination()).toBe(mockTextEditorDest);
-
-        // Clear bind() messages to isolate close behavior
-        const mockVscode = mockAdapter.__getVscodeInstance();
-        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
-        (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
-        (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
-
-        // AFTER binding, change mock to return undefined (simulates edge case)
-        (mockTextEditorDest.getBoundDocumentUri as jest.Mock).mockReturnValue(undefined);
-
-        // Simulate document closure
-        localDocumentCloseListener(mockDocument);
-
-        // Should not crash or unbind (early return when URI is undefined)
-        expect(manager.getBoundDestination()).toBe(mockTextEditorDest);
-
-        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
-        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
-        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
-      });
     });
   });
 });

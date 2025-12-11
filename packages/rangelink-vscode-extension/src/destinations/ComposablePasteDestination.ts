@@ -36,6 +36,26 @@ export interface TerminalDestinationParams {
 }
 
 /**
+ * Parameters for creating an editor destination via factory method.
+ *
+ * Editor destinations:
+ * - Require eligibility checking (prevent self-paste)
+ * - Always available (editor exists at construction time)
+ * - Compare equality by document URI
+ */
+export interface EditorDestinationParams {
+  readonly editor: vscode.TextEditor;
+  readonly displayName: string;
+  readonly textInserter: TextInserter;
+  readonly eligibilityChecker: EligibilityChecker;
+  readonly focusManager: FocusManager;
+  readonly jumpSuccessMessage: string;
+  readonly loggingDetails: Record<string, unknown>;
+  readonly logger: Logger;
+  readonly compareWith: (other: PasteDestination) => Promise<boolean>;
+}
+
+/**
  * Configuration for creating a ComposablePasteDestination instance.
  *
  * Separates required dependencies from optional customization functions to improve
@@ -405,6 +425,34 @@ export class ComposablePasteDestination implements PasteDestination {
       resource: { kind: 'terminal', terminal: params.terminal },
       textInserter: params.textInserter,
       eligibilityChecker: new AlwaysEligibleChecker(params.logger),
+      focusManager: params.focusManager,
+      isAvailable: async () => true,
+      jumpSuccessMessage: params.jumpSuccessMessage,
+      loggingDetails: params.loggingDetails,
+      logger: params.logger,
+      getUserInstruction: undefined,
+      compareWith: params.compareWith,
+    });
+  }
+
+  /**
+   * Create a text editor destination.
+   *
+   * Editor destinations:
+   * - Require eligibility checking (prevent self-paste)
+   * - Are always available (editor exists at construction)
+   * - Compare equality by document URI
+   *
+   * @param params - Editor-specific parameters
+   * @returns ComposablePasteDestination configured for editor paste
+   */
+  static createEditor(params: EditorDestinationParams): ComposablePasteDestination {
+    return new ComposablePasteDestination({
+      id: 'text-editor',
+      displayName: params.displayName,
+      resource: { kind: 'editor', editor: params.editor },
+      textInserter: params.textInserter,
+      eligibilityChecker: params.eligibilityChecker,
       focusManager: params.focusManager,
       isAvailable: async () => true,
       jumpSuccessMessage: params.jumpSuccessMessage,

@@ -7,8 +7,7 @@ import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorC
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
-import { formatMessage } from '../utils/formatMessage';
-import { isTextLikeFile } from '../utils/isTextLikeFile';
+import { formatMessage, isEditorDestination, isTextLikeFile } from '../utils';
 
 import type { DestinationRegistry } from './DestinationRegistry';
 import type { DestinationType, PasteDestination } from './PasteDestination';
@@ -379,7 +378,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     const newDestination = this.registry.create({
       type: 'text-editor',
       editor: activeEditor,
-    }) as TextEditorDestination;
+    });
 
     // Check if already bound to same destination using equals()
     if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
@@ -423,7 +422,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       {
         fn: 'PasteDestinationManager.bindTextEditor',
         displayName: newDestination.displayName,
-        editorPath: newDestination.editorPath,
+        ...newDestination.getLoggingDetails(),
         tabGroupCount,
       },
       `Successfully bound to "${newDestination.displayName}" (${tabGroupCount} tab groups)`,
@@ -535,22 +534,16 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   private setupTextDocumentCloseListener(): void {
     const documentCloseDisposable = this.vscodeAdapter.onDidCloseTextDocument((closedDocument) => {
-      // Only check if we have a text editor destination bound
-      if (!this.boundDestination || this.boundDestination.id !== 'text-editor') {
+      if (!isEditorDestination(this.boundDestination)) {
         return;
       }
 
-      const textEditorDest = this.boundDestination as TextEditorDestination;
-      const boundDocumentUri = textEditorDest.getBoundDocumentUri();
-
-      if (!boundDocumentUri) {
-        return;
-      }
+      const boundDocumentUri = this.boundDestination.resource.editor.document.uri;
 
       // Check if the closed document matches the bound document
       if (closedDocument.uri.toString() === boundDocumentUri.toString()) {
         // Document actually closed - auto-unbind
-        const editorDisplayName = textEditorDest.displayName || 'Unknown';
+        const editorDisplayName = this.boundDestination.displayName || 'Unknown';
         this.logger.info(
           {
             fn: 'PasteDestinationManager.onDidCloseTextDocument',

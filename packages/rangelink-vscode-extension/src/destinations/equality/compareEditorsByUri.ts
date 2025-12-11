@@ -1,5 +1,6 @@
 import type * as vscode from 'vscode';
 
+import { isEditorDestination } from '../../utils/destinationTypeGuards';
 import type { PasteDestination } from '../PasteDestination';
 
 /**
@@ -16,10 +17,10 @@ export const compareEditorsByUri = async (
   thisEditor: vscode.TextEditor,
   other: PasteDestination,
 ): Promise<boolean> => {
-  const otherEditor = (other as any).editor;
-  if (!otherEditor) {
+  if (!isEditorDestination(other)) {
     return false;
   }
 
+  const otherEditor = other.resource.editor;
   return thisEditor.document.uri.toString() === otherEditor.document.uri.toString();
 };
