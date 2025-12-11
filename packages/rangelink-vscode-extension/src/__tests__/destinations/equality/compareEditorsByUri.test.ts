@@ -1,7 +1,8 @@
 import { compareEditorsByUri } from '../../../destinations/equality/compareEditorsByUri';
 import { createMockDocument } from '../../helpers/createMockDocument';
 import { createMockEditor } from '../../helpers/createMockEditor';
-import { createMockTextEditorDestination } from '../../helpers/createMockTextEditorDestination';
+import { createMockEditorComposablePasteDestination } from '../../helpers/createMockEditorComposablePasteDestination';
+import { createMockSingletonComposablePasteDestination } from '../../helpers/createMockSingletonComposablePasteDestination';
 import { createMockUri } from '../../helpers/createMockUri';
 
 describe('compareEditorsByUri', () => {

@@ -1,9 +1,8 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-// Mock the isEligibleForPaste utility
 jest.mock('../../../utils/isEligibleForPaste');
 
-import { isEligibleForPaste } from '../../../utils/isEligibleForPaste';
+import { isEligibleForPaste } from '../../../utils';
 import { SelfPasteChecker } from '../../../destinations/capabilities/SelfPasteChecker';
 
 describe('SelfPasteChecker', () => {

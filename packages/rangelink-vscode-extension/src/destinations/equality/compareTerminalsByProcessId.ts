@@ -1,6 +1,6 @@
 import type * as vscode from 'vscode';
 
-import { ComposablePasteDestination } from '../ComposablePasteDestination';
+import { isTerminalDestination } from '../../utils';
 import type { PasteDestination } from '../PasteDestination';
 
 /**

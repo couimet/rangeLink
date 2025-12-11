@@ -7,8 +7,7 @@
  */
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { MessageCode } from '../types/MessageCode';
-import { formatMessage } from '../utils/formatMessage';
-import { getUntitledDisplayName } from '../utils/getUntitledDisplayName';
+import { formatMessage, getUntitledDisplayName } from '../utils';
 
 import { ChatPasteHelperFactory } from './ChatPasteHelperFactory';
 import { ClaudeCodeDestination } from './ClaudeCodeDestination';

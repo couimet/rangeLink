@@ -5,9 +5,9 @@ import type { DestinationType, PasteDestination } from '../../destinations/Paste
 
 import { createMockClaudeCodeDestination } from './createMockClaudeCodeDestination';
 import { createMockCursorAIDestination } from './createMockCursorAIDestination';
+import { createMockEditorComposablePasteDestination } from './createMockEditorComposablePasteDestination';
 import { createMockGitHubCopilotChatDestination } from './createMockGitHubCopilotChatDestination';
 import { createMockTerminalPasteDestination } from './createMockTerminalPasteDestination';
-import { createMockTextEditorDestination } from './createMockTextEditorDestination';
 
 /**
  * Options for configuring mock destination registry behavior.

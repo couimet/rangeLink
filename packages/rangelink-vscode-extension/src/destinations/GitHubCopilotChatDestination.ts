@@ -3,8 +3,7 @@ import type { FormattedLink } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types/MessageCode';
-import { applySmartPadding } from '../utils/applySmartPadding';
-import { formatMessage } from '../utils/formatMessage';
+import { applySmartPadding, formatMessage } from '../utils';
 
 import type { DestinationType, PasteDestination } from './PasteDestination';
 

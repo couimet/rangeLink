@@ -1,6 +1,6 @@
 import type * as vscode from 'vscode';
 
-import { isEditorDestination } from '../../utils/destinationTypeGuards';
+import { isEditorDestination } from '../../utils';
 import type { PasteDestination } from '../PasteDestination';
 
 /**

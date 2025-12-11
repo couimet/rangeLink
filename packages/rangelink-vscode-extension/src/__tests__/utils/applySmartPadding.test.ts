@@ -1,4 +1,4 @@
-import { applySmartPadding } from '../../utils/applySmartPadding';
+import { applySmartPadding } from '../../utils';
 
 describe('applySmartPadding', () => {
   describe('Basic padding behavior', () => {

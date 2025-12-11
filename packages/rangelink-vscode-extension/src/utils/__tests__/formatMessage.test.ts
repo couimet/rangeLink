@@ -1,11 +1,11 @@
 import { getLogger } from 'barebone-logger';
 
+import { formatMessage } from '..';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { getCurrentLocale, setLocale } from '../../i18n/LocaleManager';
 import { messagesEn } from '../../i18n/messages.en';
 import { supportedLocales } from '../../i18n/supportedLocales';
 import { MessageCode } from '../../types/MessageCode';
-import { formatMessage } from '../formatMessage';
 
 /**
  * Test-only message codes (decoupled from actual UI MessageCode enum).

@@ -5,8 +5,7 @@ import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErr
 import { BehaviourAfterPaste } from '../../types/BehaviourAfterPaste';
 import type { SendTextToTerminalOptions } from '../../types/SendTextToTerminalOptions';
 import { TerminalFocusType } from '../../types/TerminalFocusType';
-import { getUntitledDisplayName } from '../../utils/getUntitledDisplayName';
-import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
+import { getUntitledDisplayName, resolveWorkspacePath } from '../../utils';
 
 /**
  * Default timeout for status bar messages in milliseconds.

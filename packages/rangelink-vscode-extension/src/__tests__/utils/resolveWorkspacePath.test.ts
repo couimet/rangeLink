@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 
-import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
+import { resolveWorkspacePath } from '../../utils';
 import { createMockUri } from '../helpers/createMockUri';
 import { createMockWorkspaceFolder } from '../helpers/createMockWorkspaceFolder';
 

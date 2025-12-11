@@ -4,7 +4,7 @@ import type * as vscode from 'vscode';
 
 import type { AutoPasteResult } from '../types/AutoPasteResult';
 import { PasteContentType } from '../types/PasteContentType';
-import { applySmartPadding } from '../utils/applySmartPadding';
+import { applySmartPadding } from '../utils';
 
 import { AlwaysEligibleChecker } from './capabilities/AlwaysEligibleChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';

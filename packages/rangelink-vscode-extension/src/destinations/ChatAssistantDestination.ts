@@ -4,7 +4,7 @@ import type { FormattedLink } from 'rangelink-core-ts';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { PasteContentType } from '../types/PasteContentType';
-import { applySmartPadding } from '../utils/applySmartPadding';
+import { applySmartPadding } from '../utils';
 
 import type { ChatPasteHelperFactory } from './ChatPasteHelperFactory';
 import type { DestinationType, PasteDestination } from './PasteDestination';
