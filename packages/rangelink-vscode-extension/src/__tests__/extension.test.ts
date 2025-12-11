@@ -578,9 +578,7 @@ describe('RangeLinkService', () => {
 
       await service.createLink(PathFormat.Absolute);
 
-      expect(mockClipboard.writeText).toHaveBeenCalledWith(
-        expect.not.stringContaining('\\'),
-      );
+      expect(mockClipboard.writeText).toHaveBeenCalledWith(expect.not.stringContaining('\\'));
     });
   });
 
@@ -985,9 +983,7 @@ describe('RangeLinkService', () => {
       await service.createLink(PathFormat.Absolute);
 
       // Absolute path with rectangular mode (double hash)
-      expect(mockClipboard.writeText).toHaveBeenCalledWith(
-        '/absolute/path/to/file.ts##L2C1-L4C6',
-      );
+      expect(mockClipboard.writeText).toHaveBeenCalledWith('/absolute/path/to/file.ts##L2C1-L4C6');
     });
 
     // TODO: MOVE to RangeLinkService.test.ts
