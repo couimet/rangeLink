@@ -1,6 +1,5 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
 import { AutoPasteResult } from '../../types/AutoPasteResult';
 import { PasteContentType } from '../../types/PasteContentType';
 import {
@@ -446,32 +445,16 @@ describe('ComposablePasteDestination', () => {
     });
 
     it('should expose displayName from config', () => {
-      const destination = new ComposablePasteDestination({
-        id: 'text-editor',
+      const destination = createMockComposablePasteDestination({
         displayName: 'Custom Display Name',
-        textInserter: createMockTextInserter(),
-        eligibilityChecker: createMockEligibilityChecker(),
-        focusManager: createMockFocusManager(),
-        isAvailable: jest.fn().mockResolvedValue(true),
-        jumpSuccessMessage: 'Jump success',
-        loggingDetails: {},
-        logger: mockLogger,
       });
 
       expect(destination.displayName).toBe('Custom Display Name');
     });
 
     it('should return jumpSuccessMessage from getJumpSuccessMessage', () => {
-      const destination = new ComposablePasteDestination({
-        id: 'text-editor',
-        displayName: 'Test',
-        textInserter: createMockTextInserter(),
-        eligibilityChecker: createMockEligibilityChecker(),
-        focusManager: createMockFocusManager(),
-        isAvailable: jest.fn().mockResolvedValue(true),
+      const destination = createMockComposablePasteDestination({
         jumpSuccessMessage: 'Custom jump message',
-        loggingDetails: {},
-        logger: mockLogger,
       });
 
       const message = destination.getJumpSuccessMessage();
@@ -481,17 +464,7 @@ describe('ComposablePasteDestination', () => {
 
     it('should return loggingDetails from getLoggingDetails', () => {
       const loggingDetails = { terminal: 'bash', pid: 12345 };
-      const destination = new ComposablePasteDestination({
-        id: 'terminal',
-        displayName: 'Test',
-        textInserter: createMockTextInserter(),
-        eligibilityChecker: createMockEligibilityChecker(),
-        focusManager: createMockFocusManager(),
-        isAvailable: jest.fn().mockResolvedValue(true),
-        jumpSuccessMessage: 'Jump success',
-        loggingDetails,
-        logger: mockLogger,
-      });
+      const destination = createMockComposablePasteDestination({ loggingDetails });
 
       const details = destination.getLoggingDetails();
 

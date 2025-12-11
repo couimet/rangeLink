@@ -73,6 +73,7 @@ export const createMockComposablePasteDestination = (
   const config: ComposablePasteDestinationConfig = {
     id: 'text-editor',
     displayName: 'Mock Destination',
+    resource: { kind: 'singleton' },
     textInserter: createMockTextInserter(),
     eligibilityChecker: createMockEligibilityChecker(),
     focusManager: createMockFocusManager(),
@@ -83,5 +84,5 @@ export const createMockComposablePasteDestination = (
     ...overrides,
   };
 
-  return new ComposablePasteDestination(config);
+  return ComposablePasteDestination.createForTesting(config);
 };

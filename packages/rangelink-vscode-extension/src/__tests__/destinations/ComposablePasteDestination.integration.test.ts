@@ -62,9 +62,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
         mockLogger,
       );
 
-      const destination = new ComposablePasteDestination({
+      const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',
         displayName: 'Terminal',
+        resource: { kind: 'terminal', terminal: mockTerminal },
         textInserter,
         eligibilityChecker,
         focusManager,
@@ -107,9 +108,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
         return true;
       });
 
-      const destination = new ComposablePasteDestination({
+      const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',
         displayName: 'Terminal',
+        resource: { kind: 'terminal', terminal: mockTerminal },
         textInserter,
         eligibilityChecker,
         focusManager,
@@ -145,9 +147,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const focusSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
 
-      const destination = new ComposablePasteDestination({
+      const destination = ComposablePasteDestination.createForTesting({
         id: 'github-copilot-chat',
         displayName: 'GitHub Copilot Chat',
+        resource: { kind: 'singleton' },
         textInserter,
         eligibilityChecker,
         focusManager,
@@ -194,9 +197,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
         .mockResolvedValueOnce(undefined) // Second succeeds (focus)
         .mockResolvedValueOnce(undefined); // Insert succeeds
 
-      const destination = new ComposablePasteDestination({
+      const destination = ComposablePasteDestination.createForTesting({
         id: 'github-copilot-chat',
         displayName: 'GitHub Copilot Chat',
+        resource: { kind: 'singleton' },
         textInserter,
         eligibilityChecker,
         focusManager,
@@ -231,9 +235,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor');
 
-      const destination = new ComposablePasteDestination({
+      const destination = ComposablePasteDestination.createForTesting({
         id: 'text-editor',
         displayName: 'Text Editor',
+        resource: { kind: 'editor', editor: boundEditor },
         textInserter,
         eligibilityChecker,
         focusManager,
@@ -267,9 +272,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
       jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(boundEditor);
       const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
 
-      const destination = new ComposablePasteDestination({
+      const destination = ComposablePasteDestination.createForTesting({
         id: 'text-editor',
         displayName: 'Text Editor',
+        resource: { kind: 'editor', editor: boundEditor },
         textInserter,
         eligibilityChecker,
         focusManager,
@@ -302,9 +308,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const showDocSpy = jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(boundEditor);
       jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
 
-      const destination = new ComposablePasteDestination({
+      const destination = ComposablePasteDestination.createForTesting({
         id: 'text-editor',
         displayName: 'Text Editor',
+        resource: { kind: 'editor', editor: boundEditor },
         textInserter,
         eligibilityChecker,
         focusManager,
@@ -337,9 +344,10 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const showTerminalSpy = jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(undefined);
       const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor');
 
-      const destination = new ComposablePasteDestination({
+      const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',
         displayName: 'Terminal',
+        resource: { kind: 'terminal', terminal: mockTerminal },
         textInserter,
         eligibilityChecker,
         focusManager,

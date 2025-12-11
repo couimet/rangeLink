@@ -414,4 +414,26 @@ export class ComposablePasteDestination implements PasteDestination {
       compareWith: params.compareWith,
     });
   }
+
+  /**
+   * Create a destination with full config injection (for testing only).
+   *
+   * **WARNING: This method is for unit tests only.**
+   *
+   * Production code should use:
+   * - `createTerminal()` - for terminal destinations
+   * - `createEditor()` - for editor destinations
+   * - `createAiAssistant()` - for AI assistant destinations
+   *
+   * This method is exposed for unit tests that need to:
+   * - Inject mocked capabilities (TextInserter, EligibilityChecker, etc.)
+   * - Test specific orchestration scenarios
+   * - Create destinations with non-standard configurations
+   *
+   * @param config - Full configuration object (all fields required)
+   * @returns ComposablePasteDestination with injected config
+   */
+  static createForTesting(config: ComposablePasteDestinationConfig): ComposablePasteDestination {
+    return new ComposablePasteDestination(config);
+  }
 }
