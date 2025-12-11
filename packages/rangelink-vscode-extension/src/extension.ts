@@ -5,6 +5,7 @@ import { getDelimitersForExtension } from './config';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
 import { FocusManagerFactory } from './destinations/capabilities/FocusManagerFactory';
 import { TextInserterFactory } from './destinations/capabilities/TextInserterFactory';
+import { registerAllDestinationBuilders } from './destinations/destinationBuilders';
 import { DestinationRegistry } from './destinations/DestinationRegistry';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { setLocale } from './i18n/LocaleManager';
@@ -59,6 +60,9 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter,
     getLogger(),
   );
+
+  // Register all destination builders with the registry
+  registerAllDestinationBuilders(registry);
 
   // Create unified destination manager
   const destinationManager = new PasteDestinationManager(
