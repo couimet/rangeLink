@@ -440,17 +440,7 @@ describe('ComposablePasteDestination', () => {
 
   describe('configuration properties', () => {
     it('should expose id from config', () => {
-      const destination = new ComposablePasteDestination({
-        id: 'terminal',
-        displayName: 'Test',
-        textInserter: createMockTextInserter(),
-        eligibilityChecker: createMockEligibilityChecker(),
-        focusManager: createMockFocusManager(),
-        isAvailable: jest.fn().mockResolvedValue(true),
-        jumpSuccessMessage: 'Jump success',
-        loggingDetails: {},
-        logger: mockLogger,
-      });
+      const destination = createMockComposablePasteDestination({ id: 'terminal' });
 
       expect(destination.id).toBe('terminal');
     });

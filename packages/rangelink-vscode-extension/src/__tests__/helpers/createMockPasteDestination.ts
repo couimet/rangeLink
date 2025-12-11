@@ -60,8 +60,8 @@ const processConvenienceOptions = (options?: MockDestinationOptions): Partial<an
  * via the overrides parameter.
  *
  * This base factory only includes methods from the PasteDestination interface.
- * For destination-specific methods, use the specialized factories:
- * - createMockTerminalDestination() - adds setTerminal(), getTerminalName()
+ * For destination-specific defaults, use the specialized factories:
+ * - createMockTerminalPasteDestination() - terminal defaults
  * - createMockTextEditorDestination() - adds setEditor(), getBoundDocumentUri(), etc.
  * - createMockCursorAIDestination() - convenience wrapper with CursorAI defaults
  * - createMockClaudeCodeDestination() - convenience wrapper with ClaudeCode defaults

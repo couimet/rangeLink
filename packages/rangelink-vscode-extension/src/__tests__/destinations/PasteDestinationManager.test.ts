@@ -17,7 +17,7 @@ import { createMockEditor } from '../helpers/createMockEditor';
 import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
 import { createMockPasteDestination } from '../helpers/createMockPasteDestination';
 import { createMockTerminal } from '../helpers/createMockTerminal';
-import { createMockTerminalDestination } from '../helpers/createMockTerminalDestination';
+import { createMockTerminalPasteDestination } from '../helpers/createMockTerminalPasteDestination';
 import { createMockText } from '../helpers/createMockText';
 import { createMockTextEditorDestination } from '../helpers/createMockTextEditorDestination';
 import { createMockUri } from '../helpers/createMockUri';
@@ -81,7 +81,7 @@ describe('PasteDestinationManager', () => {
           const terminalName = options.terminal.name;
           const cacheKey = `terminal:${terminalName}`;
           if (!destinationCache.has(cacheKey)) {
-            const dest = createMockTerminalDestination({
+            const dest = createMockTerminalPasteDestination({
               displayName: `Terminal ("${terminalName}")`,
               resourceName: terminalName,
               getLoggingDetails: jest.fn().mockReturnValue({ terminalName }),
@@ -220,7 +220,7 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
       // Create terminal destination that recognizes itself as equal
-      const terminalDest = createMockTerminalDestination({
+      const terminalDest = createMockTerminalPasteDestination({
         displayName: 'Terminal ("bash")',
         resourceName: 'bash',
       });
@@ -535,7 +535,7 @@ describe('PasteDestinationManager', () => {
       });
 
       // Mock terminal destination
-      const mockTerminalDest = createMockTerminalDestination({
+      const mockTerminalDest = createMockTerminalPasteDestination({
         displayName: 'Terminal ("bash")',
         resourceName: 'bash',
       });
@@ -665,7 +665,7 @@ describe('PasteDestinationManager', () => {
     let mockChatDest: jest.Mocked<PasteDestination>;
 
     beforeEach(() => {
-      mockTerminalDest = createMockTerminalDestination({
+      mockTerminalDest = createMockTerminalPasteDestination({
         displayName: 'Terminal ("bash")',
         resourceName: 'bash',
         getUserInstruction: jest.fn().mockReturnValue('Instructions'),
@@ -919,7 +919,7 @@ describe('PasteDestinationManager', () => {
 
     it('should throw DESTINATION_NOT_IMPLEMENTED for unknown destination type', async () => {
       // Create a mock destination with an unknown ID
-      const mockUnknownDest = createMockTerminalDestination({
+      const mockUnknownDest = createMockTerminalPasteDestination({
         id: 'unknown-destination-type' as any,
         displayName: 'Unknown Destination',
         getUserInstruction: jest.fn().mockReturnValue(undefined),
@@ -1493,7 +1493,7 @@ describe('PasteDestinationManager', () => {
 
     beforeEach(() => {
       // Use specialized factories with default values (all already have sensible defaults)
-      mockTerminalDest = createMockTerminalDestination();
+      mockTerminalDest = createMockTerminalPasteDestination();
       mockEditorDest = createMockTextEditorDestination();
       mockCursorAIDest = createMockCursorAIDestination();
       mockClaudeCodeDest = createMockClaudeCodeDestination();
@@ -1825,7 +1825,7 @@ describe('PasteDestinationManager', () => {
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
       beforeEach(() => {
-        mockTerminalDest = createMockTerminalDestination({
+        mockTerminalDest = createMockTerminalPasteDestination({
           displayName: 'Terminal ("bash")',
         });
 
@@ -1956,12 +1956,12 @@ describe('PasteDestinationManager', () => {
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
       beforeEach(() => {
-        mockTerminalDest1 = createMockTerminalDestination({
+        mockTerminalDest1 = createMockTerminalPasteDestination({
           displayName: 'Terminal ("bash")',
           resourceName: 'bash',
         });
 
-        mockTerminalDest2 = createMockTerminalDestination({
+        mockTerminalDest2 = createMockTerminalPasteDestination({
           displayName: 'Terminal ("zsh")',
           resourceName: 'zsh',
         });
@@ -2070,7 +2070,7 @@ describe('PasteDestinationManager', () => {
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
       beforeEach(() => {
-        mockTerminalDest = createMockTerminalDestination({
+        mockTerminalDest = createMockTerminalPasteDestination({
           displayName: 'Terminal ("bash")',
         });
 

@@ -1,14 +1,39 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
+import type * as vscode from 'vscode';
 
 import type { AutoPasteResult } from '../types/AutoPasteResult';
 import { PasteContentType } from '../types/PasteContentType';
 import { applySmartPadding } from '../utils/applySmartPadding';
 
+import { AlwaysEligibleChecker } from './capabilities/AlwaysEligibleChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
 import type { FocusManager } from './capabilities/FocusManager';
 import type { TextInserter } from './capabilities/TextInserter';
 import type { DestinationType, PasteDestination } from './PasteDestination';
+
+// ============================================================================
+// Factory Method Parameter Types
+// ============================================================================
+
+/**
+ * Parameters for creating a terminal destination via factory method.
+ *
+ * Terminal destinations:
+ * - Always eligible for paste (no self-paste checking needed)
+ * - Always available (terminal exists at construction time)
+ * - Compare equality by process ID
+ */
+export interface TerminalDestinationParams {
+  readonly terminal: vscode.Terminal;
+  readonly displayName: string;
+  readonly textInserter: TextInserter;
+  readonly focusManager: FocusManager;
+  readonly jumpSuccessMessage: string;
+  readonly loggingDetails: Record<string, unknown>;
+  readonly logger: Logger;
+  readonly compareWith: (other: PasteDestination) => Promise<boolean>;
+}
 
 /**
  * Configuration for creating a ComposablePasteDestination instance.
@@ -22,6 +47,13 @@ export interface ComposablePasteDestinationConfig {
 
   /** User-friendly display name shown in status messages and UI */
   readonly displayName: string;
+
+  /**
+   * The underlying VSCode resource this destination is bound to.
+   *
+   * This enables type-safe resource access for equality comparison and logging.
+   */
+  readonly resource: DestinationResource;
 
   /** Capability for inserting text into the destination */
   readonly textInserter: TextInserter;
@@ -90,6 +122,14 @@ export class ComposablePasteDestination implements PasteDestination {
   readonly id: DestinationType;
   readonly displayName: string;
 
+  /**
+   * The underlying VSCode resource this destination is bound to.
+   *
+   * Exposed as readonly for type-safe access in equality comparison functions.
+   * Use discriminated union narrowing to access the specific resource:
+   */
+  readonly resource: DestinationResource;
+
   private readonly textInserter: TextInserter;
   private readonly eligibilityChecker: EligibilityChecker;
   private readonly focusManager: FocusManager;
@@ -100,9 +140,10 @@ export class ComposablePasteDestination implements PasteDestination {
   private readonly getUserInstructionFn?: (autoPasteResult: AutoPasteResult) => string | undefined;
   private readonly compareWithFn?: (other: PasteDestination) => Promise<boolean>;
 
-  constructor(config: ComposablePasteDestinationConfig) {
+  private constructor(config: ComposablePasteDestinationConfig) {
     this.id = config.id;
     this.displayName = config.displayName;
+    this.resource = config.resource;
     this.textInserter = config.textInserter;
     this.eligibilityChecker = config.eligibilityChecker;
     this.focusManager = config.focusManager;
@@ -340,5 +381,37 @@ export class ComposablePasteDestination implements PasteDestination {
 
     // Default: singleton comparison
     return this === other;
+  }
+
+  // ============================================================================
+  // Static Factory Methods
+  // ============================================================================
+
+  /**
+   * Create a terminal destination.
+   *
+   * Terminal destinations:
+   * - Use AlwaysEligibleChecker (terminals accept all content)
+   * - Are always available (terminal exists at construction)
+   * - Compare equality by process ID
+   *
+   * @param params - Terminal-specific parameters
+   * @returns ComposablePasteDestination configured for terminal paste
+   */
+  static createTerminal(params: TerminalDestinationParams): ComposablePasteDestination {
+    return new ComposablePasteDestination({
+      id: 'terminal',
+      displayName: params.displayName,
+      resource: { kind: 'terminal', terminal: params.terminal },
+      textInserter: params.textInserter,
+      eligibilityChecker: new AlwaysEligibleChecker(params.logger),
+      focusManager: params.focusManager,
+      isAvailable: async () => true,
+      jumpSuccessMessage: params.jumpSuccessMessage,
+      loggingDetails: params.loggingDetails,
+      logger: params.logger,
+      getUserInstruction: undefined,
+      compareWith: params.compareWith,
+    });
   }
 }

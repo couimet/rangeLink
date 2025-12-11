@@ -6,7 +6,7 @@ import type { DestinationType, PasteDestination } from '../../destinations/Paste
 import { createMockClaudeCodeDestination } from './createMockClaudeCodeDestination';
 import { createMockCursorAIDestination } from './createMockCursorAIDestination';
 import { createMockGitHubCopilotChatDestination } from './createMockGitHubCopilotChatDestination';
-import { createMockTerminalDestination } from './createMockTerminalDestination';
+import { createMockTerminalPasteDestination } from './createMockTerminalPasteDestination';
 import { createMockTextEditorDestination } from './createMockTextEditorDestination';
 
 /**
@@ -58,7 +58,7 @@ export const createMockDestinationRegistry = (
   options?: MockDestinationRegistryOptions,
 ): jest.Mocked<DestinationRegistry> => {
   const destinations = options?.destinations ?? {
-    terminal: createMockTerminalDestination(),
+    terminal: createMockTerminalPasteDestination(),
     'text-editor': createMockTextEditorDestination(),
     'cursor-ai': createMockCursorAIDestination(),
     'claude-code': createMockClaudeCodeDestination(),
