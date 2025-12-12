@@ -1,32 +1,17 @@
-/**
- * Create a mock CursorAIDestination for testing
- */
-
-import type { CursorAIDestination } from '../../destinations/CursorAIDestination';
-
 import {
   createMockPasteDestination,
   type MockDestinationOptions,
 } from './createMockPasteDestination';
 
 /**
- * Create a mock CursorAIDestination for testing
+ * Create a mock Cursor AI destination for testing.
  *
- * Convenience factory for CursorAI destination with appropriate defaults.
- * Uses base PasteDestination mock (no extra methods beyond interface).
- *
- * **Convenience options:**
- * - `isAvailable: boolean` - Auto-wraps in jest.fn().mockResolvedValue()
- *
- * @param overrides - Optional partial object to override default properties/methods
- * @returns Mock Cursor AI destination with jest.fn() implementations
+ * @param overrides - Optional overrides for mock behavior
+ * @returns Mock PasteDestination configured as Cursor AI
  */
-export const createMockCursorAIDestination = (
-  overrides?: MockDestinationOptions,
-): jest.Mocked<CursorAIDestination> =>
+export const createMockCursorAIDestination = (overrides?: MockDestinationOptions) =>
   createMockPasteDestination({
     id: 'cursor-ai',
     displayName: 'Cursor AI Assistant',
-    getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused Cursor AI Assistant'),
     ...overrides,
-  }) as jest.Mocked<CursorAIDestination>;
+  });
