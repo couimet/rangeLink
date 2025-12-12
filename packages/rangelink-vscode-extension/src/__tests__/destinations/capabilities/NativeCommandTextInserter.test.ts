@@ -1,7 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { createMockVscodeAdapter } from '../../helpers/mockVSCode';
 import { NativeCommandTextInserter } from '../../../destinations/capabilities/NativeCommandTextInserter';
+import { createMockVscodeAdapter } from '../../helpers';
 
 describe('NativeCommandTextInserter', () => {
   const mockLogger = createMockLogger();

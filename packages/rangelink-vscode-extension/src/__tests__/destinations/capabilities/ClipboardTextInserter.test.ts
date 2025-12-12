@@ -1,8 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { FOCUS_TO_PASTE_DELAY_MS } from '../../../constants/chatPasteConstants';
-import { createMockVscodeAdapter } from '../../helpers/mockVSCode';
 import { ClipboardTextInserter } from '../../../destinations/capabilities/ClipboardTextInserter';
+import { createMockVscodeAdapter } from '../../helpers';
 
 describe('ClipboardTextInserter', () => {
   const mockLogger = createMockLogger();

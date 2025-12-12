@@ -1,7 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { CommandFocusManager } from '../../../destinations/capabilities/CommandFocusManager';
-import { createMockVscodeAdapter } from '../../helpers/mockVSCode';
+import { createMockVscodeAdapter } from '../../helpers';
 
 describe('CommandFocusManager', () => {
   const mockLogger = createMockLogger();
