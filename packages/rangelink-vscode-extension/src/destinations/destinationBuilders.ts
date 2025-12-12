@@ -195,7 +195,9 @@ export const buildClaudeCodeDestination: DestinationBuilder = (options, context)
     });
   }
 
-  const focusManager = context.factories.focusManager.createCommandFocus(CLAUDE_CODE_FOCUS_COMMANDS);
+  const focusManager = context.factories.focusManager.createCommandFocus(
+    CLAUDE_CODE_FOCUS_COMMANDS,
+  );
 
   return ComposablePasteDestination.createAiAssistant({
     id: 'claude-code',

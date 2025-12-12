@@ -38,7 +38,10 @@ const BINARY_EXTENSIONS = [
  * @param editor - The editor to check
  * @returns true if editor is text-like, false if binary or invalid scheme
  */
-export const isTextLikeFile = (vscodeAdapter: VscodeAdapter, editor: vscode.TextEditor): boolean => {
+export const isTextLikeFile = (
+  vscodeAdapter: VscodeAdapter,
+  editor: vscode.TextEditor,
+): boolean => {
   const editorUri = vscodeAdapter.getDocumentUri(editor);
   const scheme = editorUri.scheme;
 

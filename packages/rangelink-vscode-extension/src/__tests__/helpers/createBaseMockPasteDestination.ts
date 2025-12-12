@@ -49,9 +49,7 @@ export interface BaseMockDestinationOptions extends MockDestinationOptions {
  * @param options - Raw options object with convenience properties
  * @returns Processed overrides ready for destination creation
  */
-const processConvenienceOptions = (
-  options?: MockDestinationOptions,
-): Record<string, unknown> => {
+const processConvenienceOptions = (options?: MockDestinationOptions): Record<string, unknown> => {
   if (!options) return {};
 
   const { isAvailable, ...rest } = options;

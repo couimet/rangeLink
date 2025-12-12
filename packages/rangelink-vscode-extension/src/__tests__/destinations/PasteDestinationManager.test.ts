@@ -2377,7 +2377,6 @@ describe('PasteDestinationManager', () => {
         expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
         expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
       });
-
     });
   });
 });

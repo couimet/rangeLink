@@ -4,7 +4,10 @@
 
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../../__tests__/helpers';
+import {
+  createMockVscodeAdapter,
+  type VscodeAdapterWithTestHooks,
+} from '../../../__tests__/helpers';
 
 import {
   isGitHubCopilotChatAvailable,
@@ -42,7 +45,11 @@ describe('isGitHubCopilotChatAvailable', () => {
     it('should return true when chat command is among many commands', async () => {
       mockAdapter = createMockVscodeAdapter({
         commandsOptions: {
-          availableCommands: ['other.command.one', GITHUB_COPILOT_CHAT_COMMAND, 'another.command.two'],
+          availableCommands: [
+            'other.command.one',
+            GITHUB_COPILOT_CHAT_COMMAND,
+            'another.command.two',
+          ],
         },
       });
 

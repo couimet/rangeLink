@@ -4,7 +4,10 @@
 
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../../__tests__/helpers';
+import {
+  createMockVscodeAdapter,
+  type VscodeAdapterWithTestHooks,
+} from '../../../__tests__/helpers';
 
 import {
   isClaudeCodeAvailable,
@@ -84,9 +87,7 @@ describe('isClaudeCodeAvailable', () => {
   describe('edge cases', () => {
     it('should not match other Anthropic extensions', () => {
       mockAdapter = createMockVscodeAdapter({
-        extensionsOptions: [
-          { id: 'anthropic.other-extension', isActive: true },
-        ],
+        extensionsOptions: [{ id: 'anthropic.other-extension', isActive: true }],
       });
 
       const result = isClaudeCodeAvailable(mockAdapter, mockLogger);

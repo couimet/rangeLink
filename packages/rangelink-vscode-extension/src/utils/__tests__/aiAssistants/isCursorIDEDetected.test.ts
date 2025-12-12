@@ -4,7 +4,10 @@
 
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../../__tests__/helpers';
+import {
+  createMockVscodeAdapter,
+  type VscodeAdapterWithTestHooks,
+} from '../../../__tests__/helpers';
 
 import { isCursorIDEDetected } from '../../aiAssistants/isCursorIDEDetected';
 
