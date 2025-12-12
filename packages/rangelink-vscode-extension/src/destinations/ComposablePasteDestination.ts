@@ -56,6 +56,22 @@ export interface EditorDestinationParams {
 }
 
 /**
+ * Discriminated union for destination resources.
+ *
+ * Terminal and TextEditor destinations bind to VSCode resources.
+ * AI assistants are singletons with no bound resource.
+ *
+ * This provides type-safe access to underlying resources for:
+ * - Equality comparison (comparing terminal process IDs, editor URIs)
+ * - Logging and debugging
+ * - Resource lifecycle management
+ */
+export type DestinationResource =
+  | { readonly kind: 'terminal'; readonly terminal: vscode.Terminal }
+  | { readonly kind: 'editor'; readonly editor: vscode.TextEditor }
+  | { readonly kind: 'singleton' };
+
+/**
  * Configuration for creating a ComposablePasteDestination instance.
  *
  * Separates required dependencies from optional customization functions to improve
