@@ -9,6 +9,7 @@ import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
 import {
   configureEmptyTabGroups,
+  createBaseMockPasteDestination,
   createMockClaudeCodeDestination,
   createMockCursorAIDestination,
   createMockDestinationRegistry,
@@ -17,7 +18,6 @@ import {
   createMockEditorComposablePasteDestination,
   createMockFormattedLink,
   createMockGitHubCopilotChatDestination,
-  createMockPasteDestination,
   createMockTerminal,
   createMockTerminalPasteDestination,
   createMockText,
@@ -1273,9 +1273,9 @@ describe('PasteDestinationManager', () => {
       displayName: string,
       isAvailable = true,
     ): jest.Mocked<PasteDestination> => {
-      // Use createMockPasteDestination with custom equals implementation for instance comparison
-      const dest = createMockPasteDestination({
-        id,
+      // Use createBaseMockPasteDestination with custom equals for instance comparison
+      const dest = createBaseMockPasteDestination({
+        id: id as import('../../destinations').DestinationType,
         displayName,
         isAvailable: jest.fn().mockResolvedValue(isAvailable),
       });
