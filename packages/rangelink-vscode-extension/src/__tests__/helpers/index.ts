@@ -62,5 +62,4 @@ export * from './configureEmptyTabGroups';
 export * from './simulateClosedEditor';
 export * from './simulateFileOutsideWorkspace';
 
-// Export complex utilities and types from mockVSCode
-export * from './mockVSCode';
+export * from './createMockVscodeAdapter';
