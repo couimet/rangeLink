@@ -1,40 +1,49 @@
+import type { DestinationType } from '../../destinations';
+
 import {
   createMockComposablePasteDestination,
   type MockComposablePasteDestinationConfig,
 } from './createMockComposablePasteDestination';
 
 /**
- * Configuration overrides for creating a mock singleton ComposablePasteDestination.
+ * Configuration for creating a mock singleton ComposablePasteDestination.
  *
  * Extends base config, excluding resource (always singleton).
+ * Requires explicit `id` for consistency with other mock helpers.
  */
-export type MockSingletonComposablePasteDestinationConfig = Omit<
-  MockComposablePasteDestinationConfig,
-  'resource'
->;
+export interface MockSingletonComposablePasteDestinationConfig
+  extends Omit<MockComposablePasteDestinationConfig, 'resource' | 'id'> {
+  /** Required: The destination type being mocked */
+  id: DestinationType;
+}
 
 /**
- * Create a mock ComposablePasteDestination configured as a singleton (no bound resource).
+ * BASE FACTORY for creating mock singleton ComposablePasteDestination objects.
  *
- * Provides sensible singleton defaults:
- * - id: 'singleton'
- * - resource: { kind: 'singleton' }
- * - displayName: 'Mock Singleton Destination'
+ * ⚠️ NOT INTENDED FOR DIRECT USE IN TESTS - use specialized helpers instead:
+ * - createMockCursorAIComposableDestination() - Cursor AI (Paradigm B)
+ * - createMockClaudeCodeComposableDestination() - Claude Code (Paradigm B)
+ * - createMockGitHubCopilotChatComposableDestination() - GitHub Copilot Chat (Paradigm B)
  *
- * Useful for testing code paths that handle non-terminal/non-editor destinations.
+ * Creates a ComposablePasteDestination with singleton resource (no bound terminal/editor).
  *
- * @param overrides - Optional config overrides
+ * **Why require explicit `id`?**
+ * Forces test authors to be explicit about what they're testing, making tests
+ * self-documenting and preventing accidental type mismatches.
+ *
+ * @param config - Configuration with REQUIRED `id` and optional overrides
  * @returns ComposablePasteDestination instance configured as singleton
  */
 export const createMockSingletonComposablePasteDestination = (
-  overrides: MockSingletonComposablePasteDestinationConfig = {},
+  config: MockSingletonComposablePasteDestinationConfig,
 ): ReturnType<typeof createMockComposablePasteDestination> => {
+  const { id, ...overrides } = config;
   return createMockComposablePasteDestination({
-    id: 'github-copilot-chat', // Using valid DestinationType for singleton-style destination
-    displayName: 'Mock Singleton Destination',
+    id,
+    displayName: overrides.displayName ?? 'Mock Singleton Destination',
     resource: { kind: 'singleton' },
-    jumpSuccessMessage: 'Focused singleton destination',
-    loggingDetails: { type: 'singleton' },
+    jumpSuccessMessage: overrides.jumpSuccessMessage ?? 'Focused singleton destination',
+    loggingDetails: overrides.loggingDetails ?? { type: 'singleton' },
     ...overrides,
   });
 };
