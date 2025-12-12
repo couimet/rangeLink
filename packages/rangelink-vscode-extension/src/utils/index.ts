@@ -1,3 +1,4 @@
+export * from './aiAssistants';
 export * from './applySmartPadding';
 export * from './convertRangeLinkPosition';
 export * from './destinationTypeGuards';

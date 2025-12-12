@@ -13,7 +13,7 @@ import * as vscode from 'vscode';
 
 import { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
-import { createMockCommands } from './createMockCommands';
+import { createMockCommands, type MockCommandsOptions } from './createMockCommands';
 import { createMockDocumentLink } from './createMockDocumentLink';
 import { createMockEnv } from './createMockEnv';
 import { createMockExtensions, type MockExtensionConfig } from './createMockExtensions';
@@ -27,6 +27,8 @@ import { MockTabInputText } from './tabTestHelpers';
  * Options for creating mock vscode instances.
  */
 export interface MockVscodeOptions {
+  /** Commands configuration - list of available command IDs */
+  commandsOptions?: MockCommandsOptions;
   /** Environment overrides - accepts either a config object or a partial vscode.Env */
   envOptions?: Record<string, unknown> | Partial<typeof vscode.env>;
   /** Window overrides - accepts either a config object or a partial vscode.Window */
@@ -75,7 +77,7 @@ const createMockVscode = (options?: MockVscodeOptions, overrides?: Partial<typeo
     workspace: createMockWorkspace(options?.workspaceOptions),
     env: createMockEnv(options?.envOptions),
     extensions: createMockExtensions(options?.extensionsOptions),
-    commands: createMockCommands(),
+    commands: createMockCommands(options?.commandsOptions),
     languages: createMockLanguages(),
     Uri: createMockUri(),
     // Constructor mocks - return jest.fn() that creates instances
