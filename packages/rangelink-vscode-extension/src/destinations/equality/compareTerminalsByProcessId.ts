@@ -17,7 +17,7 @@ export const compareTerminalsByProcessId = async (
   thisTerminal: vscode.Terminal,
   other: PasteDestination,
 ): Promise<boolean> => {
-  if (!(other instanceof ComposablePasteDestination) || other.resource?.kind !== 'terminal') {
+  if (!isTerminalDestination(other)) {
     return false;
   }
 
