@@ -1,29 +1,22 @@
 /**
- * Create a mock PasteDestination for testing
+ * Base factory for creating mock PasteDestination objects.
+ *
+ * This is a BASE FACTORY - not intended for direct use in tests.
+ * Use specialized helpers instead:
+ * - createMockTerminalPasteDestination() - terminal destinations
+ * - createMockCursorAIDestination() - Cursor AI destinations
+ * - createMockClaudeCodeDestination() - Claude Code destinations
+ * - createMockGitHubCopilotChatDestination() - GitHub Copilot Chat destinations
+ *
+ * For Paradigm B (real class with mocked capabilities), use:
+ * - createMockEditorComposablePasteDestination() - text editor
+ * - createMock*ComposableDestination() - AI assistants
  */
 
-import type { PasteDestination } from '../../destinations';
+import type { DestinationType, PasteDestination } from '../../destinations';
 
 /**
- * Options for creating mock destinations with convenience properties.
- *
- * **Convenience properties** (auto-wrapped in jest mocks):
- * - `isAvailable: boolean` → Automatically wraps in `jest.fn().mockResolvedValue(boolean)`
- *
- * **Manual overrides** (used as-is):
- * - Any other property is applied directly without transformation
- *
- * This allows both patterns:
- * ```typescript
- * // Convenient boolean syntax
- * createMockDestination({ isAvailable: false })
- *
- * // Advanced mock syntax (for custom implementations)
- * createMockDestination({ isAvailable: jest.fn().mockImplementation(...) })
- * ```
- */
-/**
- * Options for mock destination creation.
+ * Options for mock destination creation (used by specialized helpers).
  *
  * Accepts any PasteDestination property plus convenience overrides.
  * Properties can be raw values or jest mocks.
@@ -33,6 +26,16 @@ export interface MockDestinationOptions {
   isAvailable?: boolean | jest.Mock;
   /** Override any PasteDestination property */
   [key: string]: unknown;
+}
+
+/**
+ * Options for base mock destination creation.
+ *
+ * Requires explicit `id` to ensure tests are self-documenting.
+ */
+export interface BaseMockDestinationOptions extends MockDestinationOptions {
+  /** Required: The destination type being mocked */
+  id: DestinationType;
 }
 
 /**
@@ -64,33 +67,38 @@ const processConvenienceOptions = (
 };
 
 /**
- * Create a mock PasteDestination for testing
+ * BASE FACTORY for creating mock PasteDestination objects.
  *
- * Provides a minimal mock implementation with sensible defaults for all required
- * PasteDestination interface methods. Individual properties/methods can be overridden
- * via the overrides parameter.
+ * ⚠️ NOT INTENDED FOR DIRECT USE IN TESTS - use specialized helpers instead:
+ * - createMockTerminalPasteDestination() - terminal destinations (Paradigm A)
+ * - createMockCursorAIDestination() - Cursor AI destinations (Paradigm A)
+ * - createMockClaudeCodeDestination() - Claude Code destinations (Paradigm A)
+ * - createMockGitHubCopilotChatDestination() - GitHub Copilot Chat destinations (Paradigm A)
  *
- * This base factory only includes methods from the PasteDestination interface.
- * For destination-specific defaults, use the specialized factories:
- * - createMockTerminalPasteDestination() - terminal defaults
- * - createMockTextEditorDestination() - adds setEditor(), getBoundDocumentUri(), etc.
- * - createMockCursorAIDestination() - convenience wrapper with CursorAI defaults
- * - createMockClaudeCodeDestination() - convenience wrapper with ClaudeCode defaults
- * - createMockGitHubCopilotChatDestination() - convenience wrapper with GitHub Copilot defaults
+ * For Paradigm B (real class with mocked capabilities):
+ * - createMockEditorComposablePasteDestination() - text editor
+ * - createMockCursorAIComposableDestination() - Cursor AI
+ * - createMockClaudeCodeComposableDestination() - Claude Code
+ * - createMockGitHubCopilotChatComposableDestination() - GitHub Copilot Chat
+ *
+ * **Why require explicit `id`?**
+ * Forces test authors to be explicit about what they're testing, making tests
+ * self-documenting and preventing accidental type mismatches.
  *
  * **Convenience options:**
  * - `isAvailable: boolean` - Automatically wraps in jest.fn().mockResolvedValue()
  *
- * @param overrides - Optional partial object to override default properties/methods
+ * @param options - Configuration with REQUIRED `id` and optional overrides
  * @returns Mock destination with jest.fn() implementations
  */
-export const createMockPasteDestination = (
-  overrides?: MockDestinationOptions,
+export const createBaseMockPasteDestination = (
+  options: BaseMockDestinationOptions,
 ): jest.Mocked<PasteDestination> => {
+  const { id, ...overrides } = options;
   const processedOverrides = processConvenienceOptions(overrides);
 
   return {
-    id: 'test-destination',
+    id,
     displayName: 'Test Destination',
     isAvailable: jest.fn().mockResolvedValue(true),
     isEligibleForPasteLink: jest.fn().mockResolvedValue(true),

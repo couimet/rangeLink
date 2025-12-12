@@ -31,7 +31,7 @@ export * from './createMockLanguages';
 export * from './createMockLineAt';
 export * from './createMockNavigationHandler';
 export * from './createMockOutputChannel';
-export * from './createMockPasteDestination';
+export * from './createBaseMockPasteDestination';
 export * from './createMockPosition';
 export * from './createMockPositionAt';
 export * from './createMockRange';
