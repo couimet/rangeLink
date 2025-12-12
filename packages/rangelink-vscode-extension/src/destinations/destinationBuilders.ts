@@ -137,14 +137,13 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
 };
 
 /**
- * Build a CursorAI destination using existing class (adapter pattern).
+ * Build a CursorAI destination using ComposablePasteDestination factory method.
  *
- * For Phase 4, we keep the existing CursorAIDestination class.
- * Migration to ComposablePasteDestination will happen in a later phase.
+ * Cursor AI uses clipboard-based paste with focus commands.
  *
  * @param options - Type-discriminated options
  * @param context - Builder context with dependencies
- * @returns CursorAIDestination instance
+ * @returns ComposablePasteDestination configured for Cursor AI
  */
 export const buildCursorAIDestination: DestinationBuilder = (options, context) => {
   if (options.type !== 'cursor-ai') {
@@ -156,19 +155,35 @@ export const buildCursorAIDestination: DestinationBuilder = (options, context) =
     });
   }
 
-  const chatPasteHelperFactory = new ChatPasteHelperFactory(context.ideAdapter, context.logger);
-  return new CursorAIDestination(context.ideAdapter, chatPasteHelperFactory, context.logger);
+  const focusManager = context.factories.focusManager.createCommandFocus(CURSOR_AI_FOCUS_COMMANDS);
+
+  return ComposablePasteDestination.createAiAssistant({
+    id: 'cursor-ai',
+    displayName: 'Cursor AI Assistant',
+    textInserter: context.factories.textInserter.createClipboardInserter(
+      [...CHAT_PASTE_COMMANDS],
+      () => focusManager.focus({ fn: 'buildCursorAIDestination.beforePaste' }),
+    ),
+    focusManager,
+    isAvailable: async () => isCursorIDEDetected(context.ideAdapter, context.logger),
+    jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI),
+    loggingDetails: {},
+    logger: context.logger,
+    getUserInstruction: (autoPasteResult) =>
+      autoPasteResult === AutoPasteResult.Success
+        ? undefined
+        : formatMessage(MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS),
+  });
 };
 
 /**
- * Build a ClaudeCode destination using existing class (adapter pattern).
+ * Build a ClaudeCode destination using ComposablePasteDestination factory method.
  *
- * For Phase 4, we keep the existing ClaudeCodeDestination class.
- * Migration to ComposablePasteDestination will happen in a later phase.
+ * Claude Code uses clipboard-based paste with focus commands.
  *
  * @param options - Type-discriminated options
  * @param context - Builder context with dependencies
- * @returns ClaudeCodeDestination instance
+ * @returns ComposablePasteDestination configured for Claude Code
  */
 export const buildClaudeCodeDestination: DestinationBuilder = (options, context) => {
   if (options.type !== 'claude-code') {
@@ -180,21 +195,55 @@ export const buildClaudeCodeDestination: DestinationBuilder = (options, context)
     });
   }
 
-  const chatPasteHelperFactory = new ChatPasteHelperFactory(context.ideAdapter, context.logger);
-  return new ClaudeCodeDestination(context.ideAdapter, chatPasteHelperFactory, context.logger);
+  const focusManager = context.factories.focusManager.createCommandFocus(CLAUDE_CODE_FOCUS_COMMANDS);
+
+  return ComposablePasteDestination.createAiAssistant({
+    id: 'claude-code',
+    displayName: 'Claude Code Chat',
+    textInserter: context.factories.textInserter.createClipboardInserter(
+      [...CHAT_PASTE_COMMANDS],
+      () => focusManager.focus({ fn: 'buildClaudeCodeDestination.beforePaste' }),
+    ),
+    focusManager,
+    isAvailable: async () => isClaudeCodeAvailable(context.ideAdapter, context.logger),
+    jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE),
+    loggingDetails: {},
+    logger: context.logger,
+    getUserInstruction: (autoPasteResult) =>
+      autoPasteResult === AutoPasteResult.Success
+        ? undefined
+        : formatMessage(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS),
+  });
 };
 
+// ============================================================================
+// AI Assistant Constants
+// ============================================================================
+
+const CURSOR_AI_FOCUS_COMMANDS = [
+  'aichat.newchataction', // Primary: Cursor-specific command (Cmd+L / Ctrl+L)
+  'workbench.action.toggleAuxiliaryBar', // Fallback: Toggle secondary sidebar
+];
+
+const CLAUDE_CODE_FOCUS_COMMANDS = [
+  'claude-vscode.focus', // Primary: Direct input focus (Cmd+Escape)
+  'claude-vscode.sidebar.open', // Fallback: Open sidebar
+  'claude-vscode.editor.open', // Fallback: Open in new tab
+];
+
+// ============================================================================
+// AI Assistant Builders
+// ============================================================================
+
 /**
- * Build a GitHubCopilotChat destination using existing class (adapter pattern).
+ * Build a GitHubCopilotChat destination using ComposablePasteDestination factory method.
  *
- * For Phase 4, we keep the existing GitHubCopilotChatDestination class.
- * Migration to ComposablePasteDestination will happen in a later phase.
- *
- * Note: GitHubCopilotChatDestination doesn't use ChatPasteHelperFactory - it has native API.
+ * GitHub Copilot Chat uses native VSCode API with workbench.action.chat.open command.
+ * This is the simplest AI assistant - no clipboard needed, direct API insertion.
  *
  * @param options - Type-discriminated options
  * @param context - Builder context with dependencies
- * @returns GitHubCopilotChatDestination instance
+ * @returns ComposablePasteDestination configured for GitHub Copilot Chat
  */
 export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, context) => {
   if (options.type !== 'github-copilot-chat') {
@@ -206,7 +255,21 @@ export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, c
     });
   }
 
-  return new GitHubCopilotChatDestination(context.ideAdapter, context.logger);
+  return ComposablePasteDestination.createAiAssistant({
+    id: 'github-copilot-chat',
+    displayName: 'GitHub Copilot Chat',
+    textInserter: context.factories.textInserter.createNativeCommandInserter(
+      GITHUB_COPILOT_CHAT_COMMAND,
+      (text) => ({ query: text, isPartialQuery: true }),
+    ),
+    focusManager: context.factories.focusManager.createCommandFocus([GITHUB_COPILOT_CHAT_COMMAND]),
+    isAvailable: () => isGitHubCopilotChatAvailable(context.ideAdapter, context.logger),
+    jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT),
+    loggingDetails: {},
+    logger: context.logger,
+    // GitHub Copilot performs automatic paste, so no manual instruction is needed
+    getUserInstruction: () => undefined,
+  });
 };
 
 /**
