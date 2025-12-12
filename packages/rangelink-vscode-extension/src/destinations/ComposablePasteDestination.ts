@@ -56,6 +56,32 @@ export interface EditorDestinationParams {
 }
 
 /**
+ * AI assistant destination IDs (singletons with no bound VSCode resource).
+ */
+export type AiAssistantId = 'claude-code' | 'cursor-ai' | 'github-copilot-chat';
+
+/**
+ * Parameters for creating an AI assistant destination via factory method.
+ *
+ * AI assistant destinations:
+ * - Always eligible for paste (no self-paste possible)
+ * - May require availability checking (extension presence)
+ * - Singleton equality (compared by reference)
+ * - May provide user instructions for manual paste fallback
+ */
+export interface AiAssistantDestinationParams {
+  readonly id: AiAssistantId;
+  readonly displayName: string;
+  readonly textInserter: TextInserter;
+  readonly focusManager: FocusManager;
+  readonly isAvailable: () => Promise<boolean>;
+  readonly jumpSuccessMessage: string;
+  readonly loggingDetails: Record<string, unknown>;
+  readonly logger: Logger;
+  readonly getUserInstruction?: (autoPasteResult: AutoPasteResult) => string | undefined;
+}
+
+/**
  * Discriminated union for destination resources.
  *
  * Terminal and TextEditor destinations bind to VSCode resources.
@@ -476,6 +502,35 @@ export class ComposablePasteDestination implements PasteDestination {
       logger: params.logger,
       getUserInstruction: undefined,
       compareWith: params.compareWith,
+    });
+  }
+
+  /**
+   * Create an AI assistant destination (Claude Code, Cursor AI, GitHub Copilot Chat).
+   *
+   * AI assistant destinations:
+   * - Use AlwaysEligibleChecker (no self-paste possible)
+   * - May require availability checking (extension presence)
+   * - Singleton equality (compared by reference)
+   * - May provide user instructions for manual paste fallback
+   *
+   * @param params - AI assistant-specific parameters
+   * @returns ComposablePasteDestination configured for AI assistant paste
+   */
+  static createAiAssistant(params: AiAssistantDestinationParams): ComposablePasteDestination {
+    return new ComposablePasteDestination({
+      id: params.id,
+      displayName: params.displayName,
+      resource: { kind: 'singleton' },
+      textInserter: params.textInserter,
+      eligibilityChecker: new AlwaysEligibleChecker(params.logger),
+      focusManager: params.focusManager,
+      isAvailable: params.isAvailable,
+      jumpSuccessMessage: params.jumpSuccessMessage,
+      loggingDetails: params.loggingDetails,
+      logger: params.logger,
+      getUserInstruction: params.getUserInstruction,
+      compareWith: undefined, // Singleton comparison (this === other)
     });
   }
 
