@@ -320,7 +320,11 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.boundTerminal = activeTerminal; // Track for closure events
 
     this.logger.info(
-      { fn: 'PasteDestinationManager.bindTerminal', displayName: newDestination.displayName },
+      {
+        fn: 'PasteDestinationManager.bindTerminal',
+        displayName: newDestination.displayName,
+        ...newDestination.getLoggingDetails(),
+      },
       `Successfully bound to "${newDestination.displayName}"`,
     );
 
@@ -515,6 +519,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       {
         fn: 'PasteDestinationManager.bindGenericDestination',
         displayName: newDestination.displayName,
+        ...newDestination.getLoggingDetails(),
       },
       `Successfully bound to ${newDestination.displayName}`,
     );

@@ -196,6 +196,21 @@ describe('PasteDestinationManager', () => {
       );
     });
 
+    it('should log success with logging details when binding terminal', async () => {
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+      await manager.bind('terminal');
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindTerminal',
+          displayName: 'Terminal ("bash")',
+          terminalName: 'bash',
+        },
+        'Successfully bound to "Terminal ("bash")"',
+      );
+    });
+
     it('should fail when no active terminal', async () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = undefined;
 
@@ -336,6 +351,21 @@ describe('PasteDestinationManager', () => {
       );
     });
 
+    it('should log success with logging details when binding chat destination', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('github-copilot-chat');
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindGenericDestination',
+          displayName: 'GitHub Copilot Chat',
+        },
+        'Successfully bound to GitHub Copilot Chat',
+      );
+    });
+
     it('should fail when github-copilot-chat not available', async () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: false });
       jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
@@ -394,6 +424,31 @@ describe('PasteDestinationManager', () => {
   });
 
   describe('bind() - text-editor', () => {
+    it('should log success with logging details when binding text editor', async () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({
+        document: mockDocument,
+        selection: { active: { line: 0, character: 0 } } as vscode.Selection,
+      });
+
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+      await manager.bind('text-editor');
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindTextEditor',
+          displayName: 'Text Editor ("file.ts")',
+          editorName: 'file.ts',
+          editorPath: '/workspace/src/file.ts',
+          tabGroupCount: 2,
+        },
+        'Successfully bound to "Text Editor ("file.ts")" (2 tab groups)',
+      );
+    });
+
     it('should fail to bind text editor with less than 2 tab groups', async () => {
       // Setup: Single tab group (no split editor)
       mockAdapter.__getVscodeInstance().window.activeTextEditor = {
