@@ -52,10 +52,8 @@ export * from './createMockWindow';
 export * from './createMockWorkspace';
 export * from './createMockWorkspaceFolder';
 
-// Export MockTabInputText class
 export * from './tabTestHelpers';
 
-// Export helper functions
 export * from './configureWorkspaceMocks';
 export * from './createWindowOptionsForEditor';
 export * from './configureEmptyTabGroups';
