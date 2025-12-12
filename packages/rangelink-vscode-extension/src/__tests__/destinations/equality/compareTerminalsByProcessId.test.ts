@@ -1,6 +1,6 @@
 import { compareTerminalsByProcessId } from '../../../destinations/equality/compareTerminalsByProcessId';
 import {
-  createMockSingletonComposablePasteDestination,
+  createMockCursorAIComposableDestination,
   createMockTerminal,
   createMockTerminalComposablePasteDestination,
 } from '../../helpers';
@@ -35,7 +35,7 @@ describe('compareTerminalsByProcessId', () => {
   describe('when other destination is not a terminal', () => {
     it('should return false for singleton resource', async () => {
       const thisTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
-      const otherDestination = createMockSingletonComposablePasteDestination();
+      const otherDestination = createMockCursorAIComposableDestination();
 
       const result = await compareTerminalsByProcessId(thisTerminal, otherDestination);
 

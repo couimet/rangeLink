@@ -1,9 +1,9 @@
 import { compareEditorsByUri } from '../../../destinations/equality/compareEditorsByUri';
 import {
+  createMockCursorAIComposableDestination,
   createMockDocument,
   createMockEditor,
   createMockEditorComposablePasteDestination,
-  createMockSingletonComposablePasteDestination,
   createMockUri,
 } from '../../helpers';
 
@@ -44,7 +44,7 @@ describe('compareEditorsByUri', () => {
       const thisEditor = createMockEditor({
         document: createMockDocument({ uri: createMockUri('/path/to/file.ts') }),
       });
-      const otherDestination = createMockSingletonComposablePasteDestination();
+      const otherDestination = createMockCursorAIComposableDestination();
 
       const result = await compareEditorsByUri(thisEditor, otherDestination);
 
