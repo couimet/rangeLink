@@ -3,8 +3,10 @@ import type * as vscode from 'vscode';
 import type { DestinationRegistry } from '../../destinations/DestinationRegistry';
 import type { DestinationType, PasteDestination } from '../../destinations/PasteDestination';
 
-import { createMockComposablePasteDestination } from './createMockComposablePasteDestination';
+import { createMockClaudeCodeComposableDestination } from './createMockClaudeCodeComposableDestination';
+import { createMockCursorAIComposableDestination } from './createMockCursorAIComposableDestination';
 import { createMockEditorComposablePasteDestination } from './createMockEditorComposablePasteDestination';
+import { createMockGitHubCopilotChatComposableDestination } from './createMockGitHubCopilotChatComposableDestination';
 import { createMockTerminalPasteDestination } from './createMockTerminalPasteDestination';
 
 /**
@@ -57,10 +59,14 @@ export const createMockDestinationRegistry = (
 ): jest.Mocked<DestinationRegistry> => {
   const destinations = options?.destinations ?? {
     terminal: createMockTerminalPasteDestination(),
-    'text-editor': createMockTextEditorDestination(),
-    'cursor-ai': createMockCursorAIDestination(),
-    'claude-code': createMockClaudeCodeDestination(),
-    'github-copilot-chat': createMockGitHubCopilotChatDestination(),
+    'text-editor':
+      createMockEditorComposablePasteDestination() as unknown as jest.Mocked<PasteDestination>,
+    'cursor-ai':
+      createMockCursorAIComposableDestination() as unknown as jest.Mocked<PasteDestination>,
+    'claude-code':
+      createMockClaudeCodeComposableDestination() as unknown as jest.Mocked<PasteDestination>,
+    'github-copilot-chat':
+      createMockGitHubCopilotChatComposableDestination() as unknown as jest.Mocked<PasteDestination>,
   };
 
   const defaultCreateImpl = (createOptions: {
@@ -68,6 +74,14 @@ export const createMockDestinationRegistry = (
     terminal?: vscode.Terminal;
     editor?: vscode.TextEditor;
   }): PasteDestination | undefined => {
+    // For text-editor, create a real ComposablePasteDestination so document close listener works
+    if (createOptions.type === 'text-editor' && createOptions.editor) {
+      const fileName = createOptions.editor.document.uri.fsPath.split('/').pop() || 'Unknown';
+      return createMockEditorComposablePasteDestination({
+        displayName: `Text Editor ("${fileName}")`,
+        editor: createOptions.editor,
+      });
+    }
     return destinations[createOptions.type as keyof typeof destinations];
   };
 
