@@ -20,10 +20,17 @@
  * createMockDestination({ isAvailable: jest.fn().mockImplementation(...) })
  * ```
  */
+/**
+ * Options for mock destination creation.
+ *
+ * Accepts any PasteDestination property plus convenience overrides.
+ * Properties can be raw values or jest mocks.
+ */
 export interface MockDestinationOptions {
   /** Convenience: true/false auto-wraps in jest.fn().mockResolvedValue() */
   isAvailable?: boolean | jest.Mock;
-  [key: string]: any;
+  /** Override any PasteDestination property */
+  [key: string]: unknown;
 }
 
 /**
@@ -37,11 +44,13 @@ export interface MockDestinationOptions {
  * @param options - Raw options object with convenience properties
  * @returns Processed overrides ready for destination creation
  */
-const processConvenienceOptions = (options?: MockDestinationOptions): Partial<any> => {
+const processConvenienceOptions = (
+  options?: MockDestinationOptions,
+): Record<string, unknown> => {
   if (!options) return {};
 
   const { isAvailable, ...rest } = options;
-  const processed: Partial<any> = { ...rest };
+  const processed: Record<string, unknown> = { ...rest };
 
   // Smart isAvailable handling: boolean → wrapped mock, jest.Mock → as-is
   if (isAvailable !== undefined) {
@@ -73,7 +82,9 @@ const processConvenienceOptions = (options?: MockDestinationOptions): Partial<an
  * @param overrides - Optional partial object to override default properties/methods
  * @returns Mock destination with jest.fn() implementations
  */
-export const createMockPasteDestination = (overrides?: MockDestinationOptions): any => {
+export const createMockPasteDestination = (
+  overrides?: MockDestinationOptions,
+): jest.Mocked<PasteDestination> => {
   const processedOverrides = processConvenienceOptions(overrides);
 
   return {
@@ -90,5 +101,5 @@ export const createMockPasteDestination = (overrides?: MockDestinationOptions): 
     getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused'),
     equals: jest.fn().mockResolvedValue(false),
     ...processedOverrides,
-  };
+  } as unknown as jest.Mocked<PasteDestination>;
 };
