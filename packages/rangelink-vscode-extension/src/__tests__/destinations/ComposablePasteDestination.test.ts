@@ -6,9 +6,9 @@ import {
   createMockComposablePasteDestination,
   createMockEligibilityChecker,
   createMockFocusManager,
+  createMockFormattedLink,
   createMockTextInserter,
-} from '../helpers/createMockComposablePasteDestination';
-import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
+} from '../helpers';
 
 describe('ComposablePasteDestination', () => {
   const mockLogger = createMockLogger();

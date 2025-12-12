@@ -1,11 +1,13 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { EditorTextInserter } from '../../../destinations/capabilities/EditorTextInserter';
-import { createMockDocument } from '../../helpers/createMockDocument';
-import { createMockEditor } from '../../helpers/createMockEditor';
-import { createMockUntitledUri } from '../../helpers/createMockUntitledUri';
-import { createMockUri } from '../../helpers/createMockUri';
-import { createMockVscodeAdapter } from '../../helpers/mockVSCode';
+import {
+  createMockDocument,
+  createMockEditor,
+  createMockUntitledUri,
+  createMockUri,
+  createMockVscodeAdapter,
+} from '../../helpers';
 
 describe('EditorTextInserter', () => {
   const mockLogger = createMockLogger();

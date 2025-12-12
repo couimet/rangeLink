@@ -1,9 +1,11 @@
 import { compareEditorsByUri } from '../../../destinations/equality/compareEditorsByUri';
-import { createMockDocument } from '../../helpers/createMockDocument';
-import { createMockEditor } from '../../helpers/createMockEditor';
-import { createMockEditorComposablePasteDestination } from '../../helpers/createMockEditorComposablePasteDestination';
-import { createMockSingletonComposablePasteDestination } from '../../helpers/createMockSingletonComposablePasteDestination';
-import { createMockUri } from '../../helpers/createMockUri';
+import {
+  createMockDocument,
+  createMockEditor,
+  createMockEditorComposablePasteDestination,
+  createMockSingletonComposablePasteDestination,
+  createMockUri,
+} from '../../helpers';
 
 describe('compareEditorsByUri', () => {
   describe('when editors have matching URIs', () => {

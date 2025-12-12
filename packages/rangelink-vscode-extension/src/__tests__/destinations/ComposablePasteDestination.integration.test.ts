@@ -20,12 +20,14 @@ import { SelfPasteChecker } from '../../destinations/capabilities/SelfPasteCheck
 import { TerminalFocusManager } from '../../destinations/capabilities/TerminalFocusManager';
 import { TerminalFocusType } from '../../types/TerminalFocusType';
 
-import { createMockDocument } from '../helpers/createMockDocument';
-import { createMockEditor } from '../helpers/createMockEditor';
-import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
-import { createMockTerminal } from '../helpers/createMockTerminal';
-import { createMockUri } from '../helpers/createMockUri';
-import { createMockVscodeAdapter } from '../helpers/mockVSCode';
+import {
+  createMockDocument,
+  createMockEditor,
+  createMockFormattedLink,
+  createMockTerminal,
+  createMockUri,
+  createMockVscodeAdapter,
+} from '../helpers';
 
 /**
  * Mock eligibility checker that rejects content (simulates self-paste rejection).

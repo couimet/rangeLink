@@ -4,8 +4,7 @@ import { ClipboardTextInserter } from '../../../destinations/capabilities/Clipbo
 import { EditorTextInserter } from '../../../destinations/capabilities/EditorTextInserter';
 import { NativeCommandTextInserter } from '../../../destinations/capabilities/NativeCommandTextInserter';
 import { TextInserterFactory } from '../../../destinations/capabilities/TextInserterFactory';
-import { createMockEditor } from '../../helpers/createMockEditor';
-import { createMockVscodeAdapter } from '../../helpers/mockVSCode';
+import { createMockEditor, createMockVscodeAdapter } from '../../helpers';
 
 describe('TextInserterFactory', () => {
   const mockLogger = createMockLogger();

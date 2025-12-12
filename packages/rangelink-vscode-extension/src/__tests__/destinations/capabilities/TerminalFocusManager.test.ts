@@ -2,8 +2,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { TerminalFocusManager } from '../../../destinations/capabilities/TerminalFocusManager';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
-import { createMockTerminal } from '../../helpers/createMockTerminal';
-import { createMockVscodeAdapter } from '../../helpers/mockVSCode';
+import { createMockTerminal, createMockVscodeAdapter } from '../../helpers';
 
 describe('TerminalFocusManager', () => {
   const mockLogger = createMockLogger();

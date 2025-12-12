@@ -7,28 +7,26 @@ import { PasteDestinationManager } from '../../destinations/PasteDestinationMana
 import { AutoPasteResult } from '../../types/AutoPasteResult';
 import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
-import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
-import { createMockClaudeCodeDestination } from '../helpers/createMockClaudeCodeDestination';
-import { createMockCursorAIDestination } from '../helpers/createMockCursorAIDestination';
-import { createMockDestinationRegistry } from '../helpers/createMockDestinationRegistry';
-import { createMockGitHubCopilotChatDestination } from '../helpers/createMockGitHubCopilotChatDestination';
-import { createMockDocument } from '../helpers/createMockDocument';
-import { createMockEditor } from '../helpers/createMockEditor';
-import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
-import { createMockPasteDestination } from '../helpers/createMockPasteDestination';
-import { createMockTerminal } from '../helpers/createMockTerminal';
-import { createMockTerminalPasteDestination } from '../helpers/createMockTerminalPasteDestination';
-import { createMockText } from '../helpers/createMockText';
 import {
+  configureEmptyTabGroups,
+  createMockClaudeCodeDestination,
+  createMockCursorAIDestination,
+  createMockDestinationRegistry,
+  createMockDocument,
+  createMockEditor,
   createMockEditorComposablePasteDestination,
+  createMockFormattedLink,
+  createMockGitHubCopilotChatDestination,
+  createMockPasteDestination,
+  createMockTerminal,
+  createMockTerminalPasteDestination,
+  createMockText,
   createMockTextInserterForEditor,
-} from '../helpers/createMockEditorComposablePasteDestination';
-import { createMockUri } from '../helpers/createMockUri';
-import {
+  createMockUri,
   createMockVscodeAdapter,
   type MockVscodeOptions,
   type VscodeAdapterWithTestHooks,
-} from '../helpers/mockVSCode';
+} from '../helpers';
 
 /**
  * Helper to assert QuickPick was called with confirmation dialog for smart bind.

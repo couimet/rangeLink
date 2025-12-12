@@ -5,9 +5,7 @@ import { EditorFocusManager } from '../../../destinations/capabilities/EditorFoc
 import { FocusManagerFactory } from '../../../destinations/capabilities/FocusManagerFactory';
 import { TerminalFocusManager } from '../../../destinations/capabilities/TerminalFocusManager';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
-import { createMockEditor } from '../../helpers/createMockEditor';
-import { createMockTerminal } from '../../helpers/createMockTerminal';
-import { createMockVscodeAdapter } from '../../helpers/mockVSCode';
+import { createMockEditor, createMockTerminal, createMockVscodeAdapter } from '../../helpers';
 
 describe('FocusManagerFactory', () => {
   const mockLogger = createMockLogger();

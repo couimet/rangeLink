@@ -1,7 +1,9 @@
 import { compareTerminalsByProcessId } from '../../../destinations/equality/compareTerminalsByProcessId';
-import { createMockSingletonComposablePasteDestination } from '../../helpers/createMockSingletonComposablePasteDestination';
-import { createMockTerminal } from '../../helpers/createMockTerminal';
-import { createMockTerminalComposablePasteDestination } from '../../helpers/createMockTerminalComposablePasteDestination';
+import {
+  createMockSingletonComposablePasteDestination,
+  createMockTerminal,
+  createMockTerminalComposablePasteDestination,
+} from '../../helpers';
 
 describe('compareTerminalsByProcessId', () => {
   describe('when terminals have matching process IDs', () => {

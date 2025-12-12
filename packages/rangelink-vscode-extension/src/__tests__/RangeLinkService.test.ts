@@ -18,21 +18,24 @@ import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
 import * as toInputSelectionModule from '../utils/toInputSelection';
 
-import { createMockAsRelativePath } from './helpers/createMockAsRelativePath';
-import { createMockDestinationManager } from './helpers/createMockDestinationManager';
-import { createMockDocument } from './helpers/createMockDocument';
-import { createMockEditor } from './helpers/createMockEditor';
-import { createMockEditorWithSelection } from './helpers/createMockEditorWithSelection';
-import { createMockFormattedLink } from './helpers/createMockFormattedLink';
-import { createMockGetWorkspaceFolder } from './helpers/createMockGetWorkspaceFolder';
-import { createMockInputSelection } from './helpers/createMockInputSelection';
-import { createMockPosition } from './helpers/createMockPosition';
-import { createMockSelection } from './helpers/createMockSelection';
-import { createMockTerminalPasteDestination } from './helpers/createMockTerminalPasteDestination';
-import { createMockText } from './helpers/createMockText';
-import { createMockUri } from './helpers/createMockUri';
-import { createWindowOptionsForEditor } from './helpers/createWindowOptionsForEditor';
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from './helpers/mockVSCode';
+import {
+  createMockAsRelativePath,
+  createMockDestinationManager,
+  createMockDocument,
+  createMockEditor,
+  createMockEditorWithSelection,
+  createMockFormattedLink,
+  createMockGetWorkspaceFolder,
+  createMockInputSelection,
+  createMockPosition,
+  createMockSelection,
+  createMockTerminalPasteDestination,
+  createMockText,
+  createMockUri,
+  createMockVscodeAdapter,
+  createWindowOptionsForEditor,
+  type VscodeAdapterWithTestHooks,
+} from './helpers';
 
 let service: RangeLinkService;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;

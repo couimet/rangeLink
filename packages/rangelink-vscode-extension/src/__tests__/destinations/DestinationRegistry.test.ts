@@ -6,11 +6,13 @@ import {
   type DestinationBuilder,
   type DestinationBuilderContext,
 } from '../../destinations/DestinationRegistry';
-import { createMockEligibilityCheckerFactory } from '../helpers/createMockEligibilityCheckerFactory';
-import { createMockFocusManagerFactory } from '../helpers/createMockFocusManagerFactory';
-import { createMockPasteDestination } from '../helpers/createMockPasteDestination';
-import { createMockTextInserterFactory } from '../helpers/createMockTextInserterFactory';
-import { createMockVscodeAdapter } from '../helpers/mockVSCode';
+import {
+  createMockEligibilityCheckerFactory,
+  createMockFocusManagerFactory,
+  createMockPasteDestination,
+  createMockTextInserterFactory,
+  createMockVscodeAdapter,
+} from '../helpers';
 
 describe('DestinationRegistry', () => {
   const mockLogger = createMockLogger();

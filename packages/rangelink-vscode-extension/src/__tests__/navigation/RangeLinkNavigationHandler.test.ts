@@ -5,14 +5,17 @@ import type { ParsedLink } from 'rangelink-core-ts';
 
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import * as formatLinkTooltipModule from '../../utils/formatLinkTooltip';
-import { createMockDocument } from '../helpers/createMockDocument';
-import { createMockEditor } from '../helpers/createMockEditor';
-import { createMockLineAt } from '../helpers/createMockLineAt';
-import { createMockText } from '../helpers/createMockText';
-import { createMockUntitledUri } from '../helpers/createMockUntitledUri';
-import { createMockUri } from '../helpers/createMockUri';
-import { createWindowOptionsForEditor } from '../helpers/createWindowOptionsForEditor';
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
+import {
+  createMockDocument,
+  createMockEditor,
+  createMockLineAt,
+  createMockText,
+  createMockUntitledUri,
+  createMockUri,
+  createMockVscodeAdapter,
+  createWindowOptionsForEditor,
+  type VscodeAdapterWithTestHooks,
+} from '../helpers';
 
 let handler: RangeLinkNavigationHandler;
 let mockLogger: Logger;
