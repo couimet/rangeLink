@@ -6,10 +6,12 @@
 
 export * from './createMockAsRelativePath';
 export * from './createMockCancellationToken';
+export * from './createMockClaudeCodeComposableDestination';
 export * from './createMockClaudeCodeDestination';
 export * from './createMockClipboard';
 export * from './createMockCommands';
 export * from './createMockComposablePasteDestination';
+export * from './createMockCursorAIComposableDestination';
 export * from './createMockCursorAIDestination';
 export * from './createMockDestinationManager';
 export * from './createMockDestinationRegistry';
@@ -25,6 +27,7 @@ export * from './createMockExtensions';
 export * from './createMockFocusManagerFactory';
 export * from './createMockFormattedLink';
 export * from './createMockGetWorkspaceFolder';
+export * from './createMockGitHubCopilotChatComposableDestination';
 export * from './createMockGitHubCopilotChatDestination';
 export * from './createMockInputSelection';
 export * from './createMockLanguages';
