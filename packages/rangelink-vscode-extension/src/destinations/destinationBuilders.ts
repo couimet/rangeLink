@@ -5,18 +5,23 @@
  * Each builder is registered with the DestinationRegistry and invoked when
  * PasteDestinationManager needs to create a destination.
  */
+import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
-import { formatMessage, getUntitledDisplayName } from '../utils';
+import {
+  formatMessage,
+  getUntitledDisplayName,
+  isClaudeCodeAvailable,
+  isCursorIDEDetected,
+  isGitHubCopilotChatAvailable,
+  GITHUB_COPILOT_CHAT_COMMAND,
+} from '../utils';
 
-import { ChatPasteHelperFactory } from './ChatPasteHelperFactory';
-import { ClaudeCodeDestination } from './ClaudeCodeDestination';
 import { ComposablePasteDestination } from './ComposablePasteDestination';
-import { CursorAIDestination } from './CursorAIDestination';
 import type { DestinationBuilder, DestinationBuilderContext } from './DestinationRegistry';
 import { compareEditorsByUri } from './equality/compareEditorsByUri';
 import { compareTerminalsByProcessId } from './equality/compareTerminalsByProcessId';
-import { GitHubCopilotChatDestination } from './GitHubCopilotChatDestination';
 import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**

@@ -2,15 +2,18 @@ import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { BehaviourAfterPaste } from '../../../types/BehaviourAfterPaste';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
 import * as resolveWorkspacePathModule from '../../../utils/resolveWorkspacePath';
-import { createMockDocument } from '../../helpers/createMockDocument';
-import { createMockEditor } from '../../helpers/createMockEditor';
-import { createMockTab } from '../../helpers/createMockTab';
-import { createMockTabGroup } from '../../helpers/createMockTabGroup';
-import { createMockTabGroups } from '../../helpers/createMockTabGroups';
-import { createMockTerminal } from '../../helpers/createMockTerminal';
-import { createMockUri } from '../../helpers/createMockUri';
-import { createMockUntitledUri } from '../../helpers/createMockUntitledUri';
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../helpers/mockVSCode';
+import {
+  createMockDocument,
+  createMockEditor,
+  createMockTab,
+  createMockTabGroup,
+  createMockTabGroups,
+  createMockTerminal,
+  createMockUntitledUri,
+  createMockUri,
+  createMockVscodeAdapter,
+  type VscodeAdapterWithTestHooks,
+} from '../../helpers';
 
 // ============================================================================
 // Tests

@@ -3,10 +3,8 @@ import type * as vscode from 'vscode';
 import type { DestinationRegistry } from '../../destinations/DestinationRegistry';
 import type { DestinationType, PasteDestination } from '../../destinations/PasteDestination';
 
-import { createMockClaudeCodeDestination } from './createMockClaudeCodeDestination';
-import { createMockCursorAIDestination } from './createMockCursorAIDestination';
+import { createMockComposablePasteDestination } from './createMockComposablePasteDestination';
 import { createMockEditorComposablePasteDestination } from './createMockEditorComposablePasteDestination';
-import { createMockGitHubCopilotChatDestination } from './createMockGitHubCopilotChatDestination';
 import { createMockTerminalPasteDestination } from './createMockTerminalPasteDestination';
 
 /**

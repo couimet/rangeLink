@@ -13,8 +13,12 @@ import type * as vscode from 'vscode';
 import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from '../../navigation/RangeLinkTerminalProvider';
 import type { RangeLinkTerminalLink } from '../../types';
-import { createMockCancellationToken, createMockNavigationHandler } from '../helpers';
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
+import {
+  createMockCancellationToken,
+  createMockNavigationHandler,
+  createMockVscodeAdapter,
+  type VscodeAdapterWithTestHooks,
+} from '../helpers';
 
 /**
  * Create a mock TerminalLinkContext for testing.

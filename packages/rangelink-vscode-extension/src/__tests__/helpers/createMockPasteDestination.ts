@@ -2,6 +2,8 @@
  * Create a mock PasteDestination for testing
  */
 
+import type { PasteDestination } from '../../destinations';
+
 /**
  * Options for creating mock destinations with convenience properties.
  *

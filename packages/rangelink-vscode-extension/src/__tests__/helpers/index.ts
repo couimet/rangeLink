@@ -57,6 +57,7 @@ export * from './tabTestHelpers';
 
 // Export helper functions
 export * from './configureWorkspaceMocks';
+export * from './createWindowOptionsForEditor';
 export * from './configureEmptyTabGroups';
 export * from './simulateClosedEditor';
 export * from './simulateFileOutsideWorkspace';
