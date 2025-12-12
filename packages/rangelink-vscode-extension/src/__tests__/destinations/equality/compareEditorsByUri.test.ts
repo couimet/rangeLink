@@ -12,7 +12,7 @@ describe('compareEditorsByUri', () => {
     it('should return true', async () => {
       const uri = createMockUri('/path/to/file.ts');
       const thisEditor = createMockEditor({ document: createMockDocument({ uri }) });
-      const otherDestination = createMockTextEditorDestination({
+      const otherDestination = createMockEditorComposablePasteDestination({
         editor: createMockEditor({ document: createMockDocument({ uri }) }),
       });
 
@@ -27,7 +27,7 @@ describe('compareEditorsByUri', () => {
       const thisEditor = createMockEditor({
         document: createMockDocument({ uri: createMockUri('/path/to/file1.ts') }),
       });
-      const otherDestination = createMockTextEditorDestination({
+      const otherDestination = createMockEditorComposablePasteDestination({
         editor: createMockEditor({
           document: createMockDocument({ uri: createMockUri('/path/to/file2.ts') }),
         }),
@@ -39,12 +39,12 @@ describe('compareEditorsByUri', () => {
     });
   });
 
-  describe('when other destination has no editor property', () => {
-    it('should return false', async () => {
+  describe('when other destination is not an editor', () => {
+    it('should return false for singleton resource', async () => {
       const thisEditor = createMockEditor({
         document: createMockDocument({ uri: createMockUri('/path/to/file.ts') }),
       });
-      const otherDestination = createMockTextEditorDestination();
+      const otherDestination = createMockSingletonComposablePasteDestination();
 
       const result = await compareEditorsByUri(thisEditor, otherDestination);
 
@@ -56,7 +56,7 @@ describe('compareEditorsByUri', () => {
     it('should correctly compare file:// URIs', async () => {
       const uri = createMockUri('/Users/user/project/src/index.ts');
       const thisEditor = createMockEditor({ document: createMockDocument({ uri }) });
-      const otherDestination = createMockTextEditorDestination({
+      const otherDestination = createMockEditorComposablePasteDestination({
         editor: createMockEditor({ document: createMockDocument({ uri }) }),
       });
 
@@ -69,7 +69,7 @@ describe('compareEditorsByUri', () => {
       const thisEditor = createMockEditor({
         document: createMockDocument({ uri: createMockUri('/Users/user/project/src/index.ts') }),
       });
-      const otherDestination = createMockTextEditorDestination({
+      const otherDestination = createMockEditorComposablePasteDestination({
         editor: createMockEditor({
           document: createMockDocument({ uri: createMockUri('/Users/user/project/src/other.ts') }),
         }),
@@ -85,7 +85,7 @@ describe('compareEditorsByUri', () => {
     it('should correctly compare untitled URIs', async () => {
       const uri = createMockUri('untitled:Untitled-1', { scheme: 'untitled' });
       const thisEditor = createMockEditor({ document: createMockDocument({ uri }) });
-      const otherDestination = createMockTextEditorDestination({
+      const otherDestination = createMockEditorComposablePasteDestination({
         editor: createMockEditor({ document: createMockDocument({ uri }) }),
       });
 
@@ -100,7 +100,7 @@ describe('compareEditorsByUri', () => {
           uri: createMockUri('untitled:Untitled-1', { scheme: 'untitled' }),
         }),
       });
-      const otherDestination = createMockTextEditorDestination({
+      const otherDestination = createMockEditorComposablePasteDestination({
         editor: createMockEditor({
           document: createMockDocument({
             uri: createMockUri('untitled:Untitled-2', { scheme: 'untitled' }),
@@ -117,7 +117,7 @@ describe('compareEditorsByUri', () => {
       const thisEditor = createMockEditor({
         document: createMockDocument({ uri: createMockUri('/path/to/file.ts') }),
       });
-      const otherDestination = createMockTextEditorDestination({
+      const otherDestination = createMockEditorComposablePasteDestination({
         editor: createMockEditor({
           document: createMockDocument({
             uri: createMockUri('untitled:Untitled-1', { scheme: 'untitled' }),
