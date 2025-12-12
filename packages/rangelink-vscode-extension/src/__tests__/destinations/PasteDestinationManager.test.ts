@@ -1776,11 +1776,11 @@ describe('PasteDestinationManager', () => {
         {
           fn: 'PasteDestinationManager.jumpToBoundDestination',
           destinationType: 'text-editor',
-          displayName: 'Text Editor ("src/file.ts")',
-          editorName: 'src/file.ts',
+          displayName: 'Text Editor ("file.ts")',
+          editorName: 'file.ts',
           editorPath: '/workspace/src/file.ts',
         },
-        'Successfully focused Text Editor ("src/file.ts")',
+        'Successfully focused Text Editor ("file.ts")',
       );
     });
 
