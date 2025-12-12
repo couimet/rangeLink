@@ -424,6 +424,27 @@ describe('PasteDestinationManager', () => {
   });
 
   describe('bind() - text-editor', () => {
+    it('should bind to active text editor successfully', async () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({
+        document: mockDocument,
+        selection: { active: { line: 0, character: 0 } } as vscode.Selection,
+      });
+
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+      const result = await manager.bind('text-editor');
+
+      expect(result).toBe(true);
+      expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink bound to Text Editor ("file.ts")',
+        3000,
+      );
+    });
+
     it('should log success with logging details when binding text editor', async () => {
       const mockUri = createMockUri('/workspace/src/file.ts');
       const mockDocument = createMockDocument({ uri: mockUri });
