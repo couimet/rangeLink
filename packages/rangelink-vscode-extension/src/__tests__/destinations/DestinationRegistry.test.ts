@@ -7,9 +7,9 @@ import {
   type DestinationBuilderContext,
 } from '../../destinations/DestinationRegistry';
 import {
+  createBaseMockPasteDestination,
   createMockEligibilityCheckerFactory,
   createMockFocusManagerFactory,
-  createMockPasteDestination,
   createMockTextInserterFactory,
   createMockVscodeAdapter,
 } from '../helpers';
@@ -56,7 +56,9 @@ describe('DestinationRegistry', () => {
     it('should overwrite previous builder when registering same type', () => {
       const registry = createRegistry();
       const firstBuilder = jest.fn();
-      const secondBuilder = jest.fn().mockReturnValue(createMockPasteDestination());
+      const secondBuilder = jest
+        .fn()
+        .mockReturnValue(createBaseMockPasteDestination({ id: 'terminal' }));
 
       registry.register('terminal', firstBuilder);
       registry.register('terminal', secondBuilder);
@@ -70,7 +72,7 @@ describe('DestinationRegistry', () => {
   describe('create()', () => {
     it('should execute builder when creating destination', () => {
       const registry = createRegistry();
-      const mockDestination = createMockPasteDestination();
+      const mockDestination = createBaseMockPasteDestination({ id: 'terminal' });
       const builder = jest.fn().mockReturnValue(mockDestination);
       registry.register('terminal', builder);
 
@@ -82,7 +84,7 @@ describe('DestinationRegistry', () => {
     it('should pass options and context to builder', () => {
       const factories = createMockFactories();
       const registry = createRegistry(factories);
-      const mockDestination = createMockPasteDestination();
+      const mockDestination = createBaseMockPasteDestination({ id: 'terminal' });
       const builder = jest.fn().mockReturnValue(mockDestination);
       registry.register('terminal', builder);
       const options: CreateOptions = { type: 'terminal', terminal: { name: 'Test' } as never };
@@ -104,7 +106,7 @@ describe('DestinationRegistry', () => {
     it('should pass context with factories to builder (reference equality)', () => {
       const factories = createMockFactories();
       const registry = createRegistry(factories);
-      const mockDestination = createMockPasteDestination();
+      const mockDestination = createBaseMockPasteDestination({ id: 'cursor-ai' });
 
       // Capture context for reference equality assertions
       let capturedContext: DestinationBuilderContext | undefined;
@@ -125,7 +127,7 @@ describe('DestinationRegistry', () => {
 
     it('should pass ideAdapter to builder context (reference equality)', () => {
       const registry = createRegistry();
-      const mockDestination = createMockPasteDestination();
+      const mockDestination = createBaseMockPasteDestination({ id: 'text-editor' });
 
       let capturedContext: DestinationBuilderContext | undefined;
       const builder = jest.fn().mockImplementation((_opts, ctx) => {
@@ -143,7 +145,7 @@ describe('DestinationRegistry', () => {
 
     it('should pass logger to builder context (reference equality)', () => {
       const registry = createRegistry();
-      const mockDestination = createMockPasteDestination();
+      const mockDestination = createBaseMockPasteDestination({ id: 'claude-code' });
 
       let capturedContext: DestinationBuilderContext | undefined;
       const builder = jest.fn().mockImplementation((_opts, ctx) => {
@@ -161,7 +163,7 @@ describe('DestinationRegistry', () => {
 
     it('should return destination from builder', () => {
       const registry = createRegistry();
-      const mockDestination = createMockPasteDestination({ id: 'terminal' });
+      const mockDestination = createBaseMockPasteDestination({ id: 'terminal' });
       const builder = jest.fn().mockReturnValue(mockDestination);
       registry.register('terminal', builder);
 
@@ -230,7 +232,7 @@ describe('DestinationRegistry', () => {
       let capturedInserter: unknown;
       const builder: DestinationBuilder = (_options, context) => {
         capturedInserter = context.factories.textInserter.createClipboardInserter(['paste']);
-        return createMockPasteDestination();
+        return createBaseMockPasteDestination({ id: 'terminal' });
       };
       registry.register('terminal', builder);
       registry.create({ type: 'terminal', terminal: {} as never });
@@ -248,7 +250,7 @@ describe('DestinationRegistry', () => {
       let capturedChecker: unknown;
       const builder: DestinationBuilder = (_options, context) => {
         capturedChecker = context.factories.eligibilityChecker.createAlwaysEligible();
-        return createMockPasteDestination();
+        return createBaseMockPasteDestination({ id: 'cursor-ai' });
       };
       registry.register('cursor-ai', builder);
       registry.create({ type: 'cursor-ai' });
@@ -266,7 +268,7 @@ describe('DestinationRegistry', () => {
       let capturedFocusManager: unknown;
       const builder: DestinationBuilder = (_options, context) => {
         capturedFocusManager = context.factories.focusManager.createCommandFocus(['cmd']);
-        return createMockPasteDestination();
+        return createBaseMockPasteDestination({ id: 'text-editor' });
       };
       registry.register('text-editor', builder);
       registry.create({ type: 'text-editor', editor: {} as never });
@@ -281,11 +283,11 @@ describe('DestinationRegistry', () => {
 
       const terminalBuilder: DestinationBuilder = (_options, context) => {
         contexts.push(context);
-        return createMockPasteDestination();
+        return createBaseMockPasteDestination({ id: 'terminal' });
       };
       const cursorBuilder: DestinationBuilder = (_options, context) => {
         contexts.push(context);
-        return createMockPasteDestination();
+        return createBaseMockPasteDestination({ id: 'cursor-ai' });
       };
 
       registry.register('terminal', terminalBuilder);
@@ -323,7 +325,7 @@ describe('DestinationRegistry', () => {
         expect(checker).toBe(mockChecker);
         expect(focus).toBe(mockFocus);
 
-        return createMockPasteDestination();
+        return createBaseMockPasteDestination({ id: 'cursor-ai' });
       };
 
       registry.register('cursor-ai', builder);

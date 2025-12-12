@@ -1,16 +1,23 @@
 /**
- * Create a mock terminal PasteDestination for testing.
+ * Create a mock terminal PasteDestination for testing (Paradigm A).
  *
  * This creates a MOCK OBJECT (jest mocks) for unit testing services.
- * For a REAL ComposablePasteDestination instance, use createMockTerminalComposablePasteDestination.
+ * For a REAL ComposablePasteDestination instance (Paradigm B),
+ * use createMockTerminalComposablePasteDestination.
  */
 
-import { createMockPasteDestination, type MockDestinationOptions } from './createMockPasteDestination';
+import {
+  createBaseMockPasteDestination,
+  type MockDestinationOptions,
+} from './createBaseMockPasteDestination';
 
 /**
  * Create a mock terminal PasteDestination for testing.
  *
- * Extends base PasteDestination mock with terminal-specific defaults:
+ * Uses Paradigm A (pure jest mocks). For Paradigm B (real class with mocked
+ * capabilities), use createMockTerminalComposablePasteDestination.
+ *
+ * Terminal-specific defaults:
  * - id: 'terminal'
  * - displayName: 'Terminal'
  * - getLoggingDetails: { terminalName: 'bash' }
@@ -19,8 +26,10 @@ import { createMockPasteDestination, type MockDestinationOptions } from './creat
  * @param overrides - Optional partial object to override default properties/methods
  * @returns Mock terminal destination with jest.fn() implementations
  */
-export const createMockTerminalPasteDestination = (overrides?: MockDestinationOptions): any => {
-  return createMockPasteDestination({
+export const createMockTerminalPasteDestination = (
+  overrides?: Omit<MockDestinationOptions, 'id'>,
+) => {
+  return createBaseMockPasteDestination({
     id: 'terminal',
     displayName: 'Terminal',
     getLoggingDetails: jest.fn().mockReturnValue({ terminalName: 'bash' }),
