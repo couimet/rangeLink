@@ -1,4 +1,4 @@
-# RangeLink - Share Code Across Editors & Tools
+# RangeLink - One Keybinding. Precise References. Any AI assistant or tool.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/couimet/rangelink/main/assets/icon.png" alt="RangeLink Logo" width="128" />
