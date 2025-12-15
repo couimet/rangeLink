@@ -6,7 +6,7 @@
 
 Hey folks! **RangeLink v1.0.0** is here, and this feels like a real milestone.
 
-If you've been following along since [v0.3.0](https://dev.to/couimet/rangelink-v030-one-keybinding-to-rule-them-all-2h01), you know RangeLink brings character-level precision to code references and seamless paste destinations for AI workflows. **v1.0.0 perfects that experience** by eliminating a major v0.3.0 pain point and expanding your choices with new features.
+If you've been following along since [v0.3.0](https://dev.to/couimet/rangelink-v030-one-keybinding-to-rule-them-all-2h01), you know RangeLink brings character-level precision to code references and seamless paste destinations for AI workflows — all with one keybinding that works regardless of which AI assistant you're using. **v1.0.0 perfects that experience** by eliminating a major v0.3.0 pain point and expanding your choices with new features.
 
 This isn't just a version bump — it's a commitment that RangeLink is mature, reliable, and ready for your daily workflow.
 
@@ -110,7 +110,7 @@ You've bound RangeLink to your terminal or AI chat, and now you want to send act
 
 Why the RV emoji? Well, `R-V` **is** literally a Recreational Vehicle. I couldn't resist. 🚐
 
-**Pro tip:** Works with all destinations (Claude Code Extension, Cursor AI, GitHub Copilot Chat, Terminal, Text Editor) and handles multi-selection by concatenating with newlines. Perfect for quickly sharing code snippets with AI assistants.
+**Pro tip:** Works with all destinations (Claude Code Extension, Cursor AI, GitHub Copilot Chat, Terminal, Text Editor) and handles multi-selection by concatenating with newlines. Perfect for quickly sharing code snippets with AI assistants — even if your current AI tool doesn't offer this feature natively.
 
 #### R-J: Jump to Destination
 
@@ -155,6 +155,10 @@ Built-in AI features are convenient, but they lock you into one AI model, one wo
 - **Character-level precision** — Highlight exactly the function signature, the problematic condition, that one sneaky semicolon. Not the whole block. Most AI code-sharing tools only work at line-level.
 
 - **Any AI assistant** — Claude, GPT, Gemini, Copilot, whatever you prefer. No vendor lock-in.
+
+- **One keybinding memory** — Switch between Claude, Copilot, Cursor, or terminal assistants without relearning shortcuts. `Cmd+R Cmd+L` works the same everywhere. Your muscle memory stays constant even as your AI toolkit evolves.
+
+- **Features your AI doesn't have** — `Cmd+R Cmd+V` sends selected text directly to any AI chat. Even if your current tool doesn't offer this natively, RangeLink does.
 
 - **Flexible workflows** — Terminal for quick questions, scratchpad for complex prompts, direct AI chat integrations. All with the same seamless UX.
 
