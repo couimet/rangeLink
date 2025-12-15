@@ -86,6 +86,7 @@ pnpm publish:vscode-extension:vsix
 ### Verify Publication
 
 Wait 5-10 minutes, then check:
+
 - Marketplace URL: https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension
 - Version number shows `1.0.0`
 
@@ -121,6 +122,7 @@ cd ../..
 ### Verify Publication
 
 Check:
+
 - Open-VSX URL: https://open-vsx.org/extension/couimet/rangelink-vscode-extension
 - Version shows `1.0.0`
 
