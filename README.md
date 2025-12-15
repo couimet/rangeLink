@@ -4,132 +4,110 @@
   <img src="./assets/icon.png" alt="RangeLink Logo" width="128" />
 </div>
 
-**Range links that work everywhere — claude-code, Cursor, VSCode, GitHub, your team.**
-
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/couimet.rangelink-vscode-extension?label=VS%20Code%20Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
 [![Open VSX Version](https://img.shields.io/open-vsx/v/couimet/rangelink-vscode-extension?label=Open%20VSX&color=blue)](https://open-vsx.org/extension/couimet/rangelink-vscode-extension)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
-> **"Hey, check out lines 42 to 58... or was it 48 to 62?"** 🤔
-> **Never again.** RangeLink gives you `src/auth.ts#L42C10-L58C25` — precise, portable, and **just works** across editors, tools, and teams.
+> **"Claude Code today. Cursor AI tomorrow. Different shortcuts, different muscle memory."**<br />
+> **RangeLink ends it.** One keybinding. Any AI, any tool. Character-level precision. `recipes/baking/chickenpie.ts#L3C14-L314C16`
 
-> 🚀 **Ready to use it?** → [Install the VS Code Extension](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension) | 📖 [Read the origin story](#history)
+---
 
 ## Why RangeLink?
 
-**For Developers Who Care About Precision:**
+Every AI coding assistant has its own way to share code — different shortcuts, different formats, different muscle memory. If you use multiple AI tools, you're constantly context-switching.
 
-- 🎯 **No more "around line 42"** — Share exact ranges: `auth.ts#L42C10-L58C25`
-- 🔗 **Works everywhere** — claude-code, VSCode, Cursor, Sublime Text, GitHub, Slack, PRs
-- 🚀 **One keystroke** — `Cmd+R Cmd+L` → link copied, done
-- 📁 **Flexible paths** — Workspace-relative or absolute paths, your choice
-- 🔧 **Portable by design** — Your links work even if teammates use different delimiter configs
-- 📐 **Rectangular selection support** — Share column ranges with `##` notation
+**RangeLink unifies it:**
 
-**Perfect for:**
+- **One keybinding** — `Cmd+R Cmd+L` works with Claude Code, Cursor AI, Copilot, terminal tools, text editors. Learn once, use everywhere.
+- **Better precision** — Character-level ranges, not just lines. Share exactly what matters.
+- **Universal format** — GitHub-style links work in PRs, Slack, docs. Not proprietary.
+- **AI-agnostic** — Your workflow doesn't change when you switch AI assistants.
 
-- 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`"
-- 🤖 **AI assistants** — Multi-file context in one prompt. Paste destinations auto-send links to terminals, text editors, or Cursor AI. Built-in claude-code: single selection, current file only.
-- 👥 **Team collaboration** — Universal format everyone can use
+---
 
-## Quick Start
+## Quick Install
 
-### Installation
+**VS Code:**
+[📦 Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
 
-**[📦 Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)**
+**Cursor:**
+[📦 Install from Open VSX Registry](https://open-vsx.org/extension/couimet/rangelink-vscode-extension)
 
-Or search for **"RangeLink"** in your editor's Extensions panel (`Ctrl+Shift+X` / `Cmd+Shift+X`)
+Or search for **"RangeLink"** in your editor's Extensions panel (`Cmd+Shift+X` / `Ctrl+Shift+X`)
 
-### Create Your First Link (5 seconds)
+---
 
-1. **Select some code** in your editor
-2. **Press `Cmd+R Cmd+L`** (Mac) or `Ctrl+R Ctrl+L` (Windows/Linux)
-   _Mnemonic: **R**ange **L**ink_
-3. **Done!** Link is in your clipboard 📋
+## Try It
+
+1. **Bind a destination** (optional but recommended): Command Palette → "Bind RangeLink to..." (Claude Code, Cursor AI, Copilot Chat, Terminal, or Text Editor)
+2. **Select some code** in your editor
+3. **Generate link**: Command Palette → "Copy Range Link" (or `Cmd+R Cmd+L` / `Ctrl+R Ctrl+L` if no keybinding conflicts)
+4. **Done!** Link auto-pastes to your bound destination, or copies to clipboard if no destination bound
 
 **Example output:**
 
-```
-src/utils/parser.ts#L42C10-L58C25
-```
-
-**Try it right now:**
-
-- Select lines 10-25 in any file → `Cmd+R Cmd+L` → Paste into Slack
-- Your teammate clicks → Opens exact location in their editor
-- **No more "wait, which file?" moments** ✨
-
-## Features
-
-- **GitHub-Style Notation** - Uses familiar `#L10-L25` format developers already know
-- **Universal Sharing** - Links work across editors and tools (VSCode, Cursor, Sublime Text, etc.)
-- **Rectangular Selection** - Share column selections with double hash notation (`##`)
-- **Portable Links (BYOD)** - Links work regardless of recipient's delimiter configuration
-- **Customizable Delimiters** - Configure notation to match your preferences
-- **Status Bar Feedback** - Visual confirmation when links are created
-- **Cross-Platform** - Works on Windows, macOS, and Linux
-
-## Link Formats
-
-### Basic Formats
-
-| Selection Type        | Format                              | Example                     |
-| --------------------- | ----------------------------------- | --------------------------- |
-| Single line           | `path#L<line>`                      | `src/file.ts#L42`           |
-| Multiple lines        | `path#L<start>-L<end>`              | `src/file.ts#L10-L25`       |
-| With column precision | `path#L<line>C<col>-L<line>C<col>`  | `src/file.ts#L42C6-L42C15`  |
-| Rectangular selection | `path##L<start>C<col>-L<end>C<col>` | `src/file.ts##L10C5-L20C10` |
-
-### Rectangular Mode
-
-When you use VSCode's column selection (Alt+drag or Shift+Alt+Arrow keys), RangeLink detects this and uses **double hash** (`##`) notation:
-
-- **Normal multi-line**: `path#L10C5-L20C10` (traditional selection)
-- **Rectangular mode**: `path##L10C5-L20C10` (column selection)
-
-The double hash distinguishes these selection types for proper reconstruction.
-
-**Learn more:** [docs/LINK-FORMATS.md](./docs/LINK-FORMATS.md)
-
-### Portable Links (BYOD)
-
-**Share code references that work regardless of delimiter configuration.**
-
-Portable RangeLinks embed delimiter metadata so recipients parse correctly even with different settings:
-
-```
-src/file.ts#L10C5-L20C10~#~L~-~C~
+```text
+recipes/baking/chickenpie.ts#L3C14-L314C16
 ```
 
-The `~` separator marks embedded delimiters (`#`, `L`, `-`, `C`) that override recipient's local config.
+**Tip:** If `Cmd+R Cmd+L` doesn't work, another extension may have claimed that keybinding. Use Command Palette as the reliable fallback.
 
-**Benefits:**
+---
 
-- ✅ No coordination needed between sender and recipient
-- ✅ Works across different editors and tools
-- ✅ Future-proof - survives configuration changes
-- ✅ Zero setup for recipients
+## Features at a Glance
 
-**Learn more:** [docs/BYOD.md](./docs/BYOD.md)
+| Feature                   | Description                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------- |
+| **Paste Destinations**    | Auto-send links to Claude Code, Cursor AI, Copilot Chat, Terminal, or Text Editor |
+| **Link Navigation**       | Cmd+Click any RangeLink in terminal or editor to jump directly to code            |
+| **Character Precision**   | `#L3C14-L314C16` — not just lines, exact character ranges                         |
+| **Portable Links (BYOD)** | Links work regardless of recipient's delimiter configuration                      |
+| **R-Keybinding Family**   | R-L (link), R-C (clipboard), R-V (paste text), R-J (jump to destination)          |
 
-## Commands
+**📖 [Full Feature Guide →](./packages/rangelink-vscode-extension/#readme)**
 
-All commands are available via keyboard shortcuts, Command Palette, and right-click context menu:
+---
 
-| Command                       | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description        |
-| ----------------------------- | ------------------- | --------------------- | ------------------ |
-| Copy Range Link               | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Relative path link |
-| Copy Range Link (Absolute)    | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Absolute path link |
-| Copy Portable Link            | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Portable BYOD link |
-| Copy Portable Link (Absolute) | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Absolute BYOD link |
+## Perfect For
 
-**Customizing shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) → search "RangeLink"
+- 🤖 **AI Assistants** — Claude Code, Cursor AI, GitHub Copilot, terminal claude-code — with exact context
+- 💬 **Code Reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`" (click to view)
+- 👥 **Team Collaboration** — Universal format everyone can use and navigate
+- 📝 **Documentation** — Precise references in docs, Slack, PRs, anywhere
+
+---
+
+## Documentation
+
+### For Users
+
+- **[Extension README](./packages/rangelink-vscode-extension/#readme)** — Full feature guide, commands, configuration
+- **[Link Formats](./docs/LINK-FORMATS.md)** — Complete notation reference
+- **[BYOD Guide](./docs/BYOD.md)** — Portable links specification
+
+### For Contributors
+
+- **[Development Guide](./DEVELOPMENT.md)** — Setup, building, testing
+- **[Contributing Guide](./CONTRIBUTING.md)** — How to contribute
+- **[Architecture](./docs/ARCHITECTURE.md)** — Design principles and patterns
+- **[Roadmap](./docs/ROADMAP.md)** — What's coming next
+
+---
+
+## Monorepo Structure
+
+RangeLink is organized as a pnpm workspace with a platform-agnostic core library and editor-specific extensions. The core has zero dependencies and targets 100% test coverage.
+
+**[📁 See packages/ for details →](./packages/#readme)**
+
+---
 
 ## History
 
 Even though I use Cursor daily, most of my AI work happens with `claude-code` running in a terminal _inside_ Cursor. The constant copy-pasting between terminal and editor was exhausting.
 
-One day, frustrated after the hundredth copy-paste, I tried something: I sent claude-code a link like `auth.ts#L42C10-L58C25` pointing to a specific code snippet.
+One day, frustrated after the hundredth copy-paste, I tried something: I sent claude-code a link like `recipes/baking/chickenpie.ts#L3C14-L314C16` pointing to a specific code snippet.
 
 **It just worked.** No explanation needed. Claude understood immediately.
 
@@ -137,7 +115,7 @@ That was the lightbulb moment: **precise code references should be universal**. 
 
 I built the VS Code extension first, then extracted a platform-agnostic core library. The goal: make this work _everywhere_, for _everyone_.
 
-Today, with **paste destinations**, RangeLink sends links directly where you need them — terminals, text editors, even Cursor AI chat. No more copy-paste friction. It helps developers share code with precision across claude-code, Cursor, VSCode, GitHub, Slack, and more. One format, zero friction.
+Today, with **paste destinations**, RangeLink sends links directly where you need them — Claude Code, Cursor AI, GitHub Copilot Chat, terminals, or text editors. No more copy-paste friction. It helps developers share code with precision across any AI assistant, VSCode, Cursor, GitHub, Slack, and more. One format, zero friction.
 
 **The best part?** Your teammates don't even need RangeLink installed to understand your links. The notation is GitHub-inspired — developers already know it.
 
@@ -259,6 +237,8 @@ From this humble beginning, RangeLink evolved into a comprehensive monorepo with
 
 </details>
 
+---
+
 ## About the Logo
 
 Ever notice the chicken in our logo? That's not just any chicken — it's a **free-range** chicken. Because your code should roam free across editors, tools, and teams. No fences, no boundaries. 🐔
@@ -270,253 +250,21 @@ And here's the nerdy part: look closely at the numbers. You'll see **3.1416** in
 > [!TIP]
 > **π Dad Joke:** Pi is irrational, and so are developers who don't use precise code references. At least Pi has an excuse.
 
-## Configuration
-
-Customize delimiters in VSCode settings (Preferences > Settings > search "rangelink"):
-
-```json
-{
-  "rangelink.delimiterLine": "L",
-  "rangelink.delimiterPosition": "C",
-  "rangelink.delimiterHash": "#",
-  "rangelink.delimiterRange": "-"
-}
-```
-
-### Validation Rules
-
-All delimiters must satisfy:
-
-- ✅ Not empty (min 1 character)
-- ✅ No digits (0-9)
-- ✅ No whitespace
-- ✅ No reserved characters (`~`, `|`, `/`, `\`, `:`, `,`, `@`)
-- ✅ Unique (case-insensitive)
-- ✅ No substring conflicts
-- ✅ Hash must be exactly 1 character
-
-Invalid configurations fall back to defaults with a warning in the output channel.
-
-**Learn more:** [docs/ERROR-HANDLING.md](./docs/ERROR-HANDLING.md#configuration-errors-1xxx)
-
-## Monorepo Structure
-
-RangeLink is organized as a pnpm workspace monorepo with two primary packages:
-
-```
-rangeLink/
-  packages/
-    rangelink-core-ts/            # Pure TypeScript core library
-      - Zero dependencies
-      - Platform-agnostic
-      - 100% test coverage target
-      - Used by all TypeScript-based extensions
-
-    rangelink-vscode-extension/   # VSCode extension
-      - Thin wrapper around core library
-      - VSCode-specific commands and UI
-      - Adapter layer for VSCode types
-
-  docs/                           # Comprehensive documentation
-    - ARCHITECTURE.md             # Design principles and patterns
-    - BYOD.md                     # Portable links specification
-    - ERROR-HANDLING.md           # Error codes and validation
-    - LINK-FORMATS.md             # Link notation reference
-    - LOGGING.md                  # Structured logging approach
-    - ROADMAP.md                  # Development roadmap
-    - architecture-multi-language.md  # Multi-language vision
-```
-
-### Core Library Philosophy
-
-The core library (`rangelink-core-ts`) follows these principles:
-
-1. **Zero Dependencies** - No runtime dependencies (only TypeScript as devDependency)
-2. **Platform-Agnostic** - No VSCode coupling; defines own `Selection` interface
-3. **Comprehensive Testing** - 100% branch coverage target
-4. **Structured Logging** - All messages use stable error codes for i18n readiness
-
-**Learn more:** [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
-
-## Development
-
-**Quick start:**
-
-```bash
-./setup.sh      # One command setup: installs dependencies, builds all packages, runs tests
-```
-
-**For complete development guide:** See [DEVELOPMENT.md](./DEVELOPMENT.md) for detailed instructions on:
-
-- Monorepo structure and commands
-- Debugging the extension
-- Core library development
-- Testing strategy
-- Package creation
-- Development workflow
-
-## Roadmap
-
-RangeLink follows a **micro-iteration** development approach (1-2 hours per iteration) to prevent scope creep and maintain momentum.
-
-### Development Principles
-
-1. **Micro-Iterations (1-2 hours max)** - Small, focused sessions with clear "done when" criteria
-2. **One Focus Per Iteration** - Feature work and refactoring are separate
-3. **Commit Early, Commit Often** - Commit after each micro-iteration
-4. **Explicit Scope Definition** - Document what IS and IS NOT in scope upfront
-5. **Test-Driven Quality** - Aim for 100% branch coverage
-
-### Current Status
-
-- ✅ **Phase 1: Core Enhancements** - Complete (rectangular mode, validation, BYOD generation)
-- ✅ **Phase 2: Core Architecture** - Complete (monorepo, testing, documentation)
-- ✅ **Phase 3: Universal Paste Destinations** - Complete (terminal, text editor, Cursor AI)
-- ✅ **Phase 4: Link Navigation** - Complete (terminal + editor navigation)
-- 🔨 **Current Focus** - Documentation harmonization and marketplace presence
-
-### Upcoming Features
-
-**Enhanced Navigation (Planned):**
-
-- Navigate from clipboard/selection command
-- Clamping detection with contextual feedback
-- Settings for toast notifications
-
-**Enhanced BYOD Support (Planned):**
-
-- Always-portable option (configuration)
-- Improved error messages and recovery
-- Performance optimizations
-
-**Multi-Range Links (Planned):**
-
-- Reference multiple code sections in one link
-- Syntax: `path#L10-L20|L30-L40|L50-L60`
-- Non-contiguous code selections
-
-**Additional Editor Integrations (Planned):**
-
-- Neovim plugin
-- Sublime Text integration
-- JetBrains IDEs support
-
-**Full roadmap:** [docs/ROADMAP.md](./docs/ROADMAP.md)
-
-## Multi-Language Vision
-
-RangeLink is designed for **multi-language expansion** with feature parity across implementations:
-
-### Specification-Driven Development
-
-Future implementations (Java, Rust, C/C++, Go) will:
-
-1. Share a common **JSON specification** defining behavior
-2. Pass the same **contract tests** (language-agnostic test cases)
-3. Enforce **feature parity** via CI
-
-**Architecture example:**
-
-```
-spec/
-  schema/              # JSON Schema for data structures
-  contracts/           # Behavioral contracts (JSON test cases)
-
-packages/
-  rangelink-core-ts/   # TypeScript (current)
-  rangelink-core-java/ # Java (future)
-  rangelink-core-rust/ # Rust (future)
-  rangelink-core-c/    # C/C++ (future)
-```
-
-All implementations run the same contract tests. CI fails if any implementation diverges.
-
-**Learn more:** [docs/architecture-multi-language.md](./docs/architecture-multi-language.md)
-
-## Error Handling
-
-RangeLink uses **structured logging** with stable error codes for i18n readiness:
-
-```
-[LEVEL] [CODE] message
-```
-
-**Example logs:**
-
-```
-[INFO] [MSG_1001] Configuration loaded: line="L", column="C", hash="#", range="-"
-[ERROR] [ERR_1005] Invalid delimiterLine value "L~" (reserved character '~')
-[WARN] [WARN_2001] Position delimiter not in BYOD metadata. Used local setting 'C'
-```
-
-### Error Code Categories
-
-| Range       | Category             | Description                         |
-| ----------- | -------------------- | ----------------------------------- |
-| `MSG_1xxx`  | Configuration Info   | Configuration status messages       |
-| `ERR_1xxx`  | Configuration Errors | Delimiter validation failures       |
-| `ERR_2xxx`  | BYOD Errors          | Portable link parsing failures      |
-| `WARN_2xxx` | BYOD Warnings        | BYOD recovery and fallback warnings |
-
-**Accessing logs:**
-
-1. Open Output panel: View > Output (`Ctrl+Shift+U` / `Cmd+Shift+U`)
-2. Select "RangeLink" from dropdown
-
-**Learn more:** [docs/ERROR-HANDLING.md](./docs/ERROR-HANDLING.md), [docs/LOGGING.md](./docs/LOGGING.md)
-
-## Requirements
-
-- VSCode or Cursor version 1.80.0 or higher
-- pnpm 8.0+ (for development)
-- Node.js 18+ (for development)
-
-## Contributing
-
-Contributions are welcome!
-
-**Getting started:**
-
-1. See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines
-2. See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and development workflow
-
-## Documentation
-
-### For Users
-
-- **[Extension README](./packages/rangelink-vscode-extension/README.md)** - Marketplace-ready documentation
-- **[Link Formats](./docs/LINK-FORMATS.md)** - Complete notation reference
-- **[BYOD Guide](./docs/BYOD.md)** - Portable links specification
-- **[Error Codes](./docs/ERROR-HANDLING.md)** - Troubleshooting reference
-
-### For Developers
-
-- **[Architecture](./docs/ARCHITECTURE.md)** - Design principles and patterns
-- **[Roadmap](./docs/ROADMAP.md)** - Development plan and iterations
-- **[Logging](./docs/LOGGING.md)** - Structured logging approach
-- **[Multi-Language Vision](./docs/architecture-multi-language.md)** - Future expansion plans
-
-## Contributors
-
-- [Yan Bohler](https://www.instagram.com/ybohler/) - Refined the DALL-E generated logo with a designer's eye for developer-friendly details
-
-Want to contribute code? Check out our [Contributing Guide](./CONTRIBUTING.md)!
-
-## Known Issues
-
-If you find a bug, please [report it](https://github.com/couimet/rangelink/issues).
-
-## License
-
-MIT - see [LICENSE](./LICENSE) file for details.
+---
 
 ## Links
 
-- 📦 [VSCode Extension](./packages/rangelink-vscode-extension)
+- 📦 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension)
+- 📦 [Open VSX Registry](https://open-vsx.org/extension/couimet/rangelink-vscode-extension)
 - 💎 [Core Library](./packages/rangelink-core-ts)
 - 🐛 [Report Issues](https://github.com/couimet/rangelink/issues)
 - 📚 [Full Documentation](./docs/)
-- 🤝 [Contributing Guide](./CONTRIBUTING.md)
+
+---
+
+## License
+
+MIT — see [LICENSE](./LICENSE) file for details.
 
 ---
 

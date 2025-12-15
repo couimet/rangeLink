@@ -1,4 +1,4 @@
-# RangeLink - Share Code Across Editors & Tools
+# RangeLink - One Keybinding. Precise References. Any AI assistant or tool.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/couimet/rangelink/main/assets/icon.png" alt="RangeLink Logo" width="128" />
@@ -8,10 +8,19 @@
 [![Open VSX Version](https://img.shields.io/open-vsx/v/couimet/rangelink-vscode-extension?label=Open%20VSX&color=blue)](https://open-vsx.org/extension/couimet/rangelink-vscode-extension)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/couimet/rangelink/blob/main/LICENSE)
 
-> **"Hey, check out lines 42 to 58... or was it 48 to 62?"** 🤔
-> **Never again.** RangeLink gives you `src/auth.ts#L42C10-L58C25` — precise, portable, and **just works** across editors, tools, and teams.
+> **"Claude Code today. Cursor AI tomorrow. Different shortcuts, different muscle memory."**<br />
+> **RangeLink ends it.** One keybinding. Any AI, any tool. Character-level precision. `recipes/baking/chickenpie.ts#L3C14-L314C16`
 
 ## Why RangeLink?
+
+Every AI coding assistant has its own way to share code — different shortcuts, different formats, different muscle memory. If you use multiple AI tools, you're constantly context-switching.
+
+**RangeLink unifies it:**
+
+- **One keybinding** — `Cmd+R Cmd+L` works with Claude, Copilot, Cursor, terminal tools, text editors. Learn once, use everywhere.
+- **Better precision** — Character-level ranges, not just lines. Share exactly what matters.
+- **Universal format** — GitHub-style links work in PRs, Slack, docs. Not proprietary.
+- **AI-agnostic** — Your workflow doesn't change when you switch AI assistants.
 
 ### For AI-Assisted Development
 
@@ -20,7 +29,7 @@
 1. **Select code** → Generate link (`Cmd+R Cmd+L`)
 2. **Paste Destination handles delivery** → Link appears where your AI can see it
 3. **AI reads precise context** → No manual copy/paste, no lost focus
-4. **AI responds with links** → **Click to jump directly to code** (Cmd+Click in terminal)
+4. **AI responds with links** → **Click to jump directly to code** (Cmd+Click in terminal or editor)
 
 **Compete with built-in AI features** by making external AI assistants feel integrated. You get:
 
@@ -65,25 +74,25 @@ src/utils/parser.ts#L42C10-L58C25
 
 **The killer feature for AI-assisted workflows:** Auto-send generated links to your preferred destination.
 
-**RangeLink's unified pattern:** All paste destinations share the same seamless workflow—links paste exactly at your cursor position, the destination auto-focuses, and you immediately continue typing. No copy/paste friction, no manual clicking, no context switching. This is what makes RangeLink competitive with integrated AI assistants like Cursor's `Cmd+L`, but works across any destination and any AI.
+**RangeLink's unified pattern:** All paste destinations share the same seamless workflow—links paste exactly at your insertion point, the destination auto-focuses, and you immediately continue typing. No copy/paste friction, no manual clicking, no context switching. This is what makes RangeLink competitive with integrated AI assistants like Cursor's `Cmd+L`, but works across any destination and any AI.
 
 #### Terminal Paste Destination
 
 Bind a terminal to RangeLink, and all generated links auto-paste directly there — even if you switch to other terminals for work.
 
-**Perfect for terminal-based AI workflows (claude-code CLI):** Links paste **exactly at your cursor position** in the terminal (not appended at the end), **and the terminal auto-focuses** so you can immediately continue typing your prompt.
+**Perfect for terminal-based AI workflows (claude-code CLI):** Links paste **exactly at your insertion point** in the terminal (not appended at the end), **and the terminal auto-focuses** so you can immediately continue typing your prompt.
 
 **How to use:**
 
 1. Open integrated terminal
 2. Command Palette → "Bind RangeLink to Terminal Destination"
-3. Select code → Generate link → Link pastes **at cursor position** + **terminal focuses automatically**
+3. Select code → Generate link → Link pastes **at insertion point** + **terminal focuses automatically**
 
 #### Text Editor Destination
 
 **Build AI prompts in any text document before sending to your AI assistant?** Bind any text editor as your paste destination—works with untitled files, markdown, code files, notes, anything text-based.
 
-**Perfect for complex prompts:** Links paste **exactly at your cursor position** in the bound editor, **and the editor auto-focuses** so you can immediately continue typing.
+**Perfect for complex prompts:** Links paste **exactly at your insertion point** in the bound editor, **and the editor auto-focuses** so you can immediately continue typing.
 
 **How to use:**
 
@@ -91,7 +100,7 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 2. Open scratchpad file in one pane: untitled (`Cmd+N` / `Ctrl+N`) or any text file
 3. Command Palette → "Bind RangeLink to Text Editor Destination"
 4. Keep scratchpad visible (active tab in its pane)
-5. Select code in other pane → Generate links → They paste **at cursor position** + **editor focuses automatically**
+5. Select code in other pane → Generate links → They paste **at insertion point** + **editor focuses automatically**
 
 **Workflow:**
 
@@ -125,8 +134,6 @@ If bound file is hidden behind other tabs, link copies to clipboard with a remin
 2. Select code → `Cmd+R Cmd+L` → Link auto-pastes into chat
 3. Review and send
 
-RangeLink handles the paste automatically and keeps a clipboard copy as backup for maximum reliability.
-
 **One destination at a time:** Bind to Claude Code, Cursor AI, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command to replace your current binding with confirmation—no need to unbind first.
 
 ---
@@ -140,7 +147,7 @@ RangeLink handles the paste automatically and keeps a clipboard copy as backup f
 Any RangeLink in your terminal becomes clickable — whether from claude-code responses, your own links you're validating before sending, or references shared by teammates:
 
 - **Cmd+Click** (Mac) or **Ctrl+Click** (Windows/Linux) to navigate
-- **Instant file opening** with precise cursor positioning
+- **Instant file opening** with precise caret positioning
 - **Works with all formats:** single-line, ranges, columns, rectangular selections
 - **Smart path resolution:** workspace-relative and absolute paths supported
 
@@ -179,22 +186,23 @@ The `~` separator marks embedded delimiters that override recipient's local sett
 
 All commands are available via keyboard shortcuts, Command Palette, and right-click context menu:
 
-| Command                                           | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                                             |
-| ------------------------------------------------- | ------------------- | --------------------- | ------------------------------------------------------- |
-| Copy Range Link                                   | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Create relative path link                               |
-| Copy Range Link (Absolute)                        | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link                               |
-| Copy Portable Link                                | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link                               |
-| Copy Portable Link (Absolute)                     | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link                               |
-| Copy Range Link (Clipboard Only)                  | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`       | Copy link to clipboard only (skip bound destination)    |
-| Copy Range Link (Clipboard Only, Absolute)        | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C` | Copy absolute path link to clipboard only               |
-| Paste Selected Text to Bound Destination          | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination        |
-| Bind RangeLink to Claude Code Destination         | —                   | —                     | Copy link + open Claude Code chat (clipboard workflow)  |
-| Bind RangeLink to Cursor AI Destination           | —                   | —                     | Copy link + open Cursor AI chat (clipboard workflow)    |
-| Bind RangeLink to GitHub Copilot Chat Destination | —                   | —                     | Auto-send links to Copilot Chat                         |
-| Bind RangeLink to Terminal Destination            | —                   | —                     | Auto-send links to integrated terminal for AI workflows |
-| Bind RangeLink to Text Editor Destination         | —                   | —                     | Auto-send links at cursor in active bound text editor   |
-| Unbind Destination                                | —                   | —                     | Stop auto-sending links to bound destination            |
-| Show Version Info                                 | —                   | —                     | Display version and build info                          |
+| Command                                           | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                                              |
+| ------------------------------------------------- | ------------------- | --------------------- | -------------------------------------------------------- |
+| Copy Range Link                                   | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Create relative path link                                |
+| Copy Range Link (Absolute)                        | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Create absolute path link                                |
+| Copy Portable Link                                | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Create BYOD portable link                                |
+| Copy Portable Link (Absolute)                     | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Create absolute BYOD link                                |
+| Copy Range Link (Clipboard Only)                  | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`       | Copy link to clipboard only (skip bound destination)     |
+| Copy Range Link (Clipboard Only, Absolute)        | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C` | Copy absolute path link to clipboard only                |
+| Paste Selected Text to Bound Destination          | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination         |
+| Jump to Bound Destination                         | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound paste destination             |
+| Bind RangeLink to Claude Code Destination         | —                   | —                     | Auto-send links to Claude Code chat                      |
+| Bind RangeLink to Cursor AI Destination           | —                   | —                     | Auto-send links to Cursor AI chat                        |
+| Bind RangeLink to GitHub Copilot Chat Destination | —                   | —                     | Auto-send links to Copilot Chat                          |
+| Bind RangeLink to Terminal Destination            | —                   | —                     | Auto-send links to integrated terminal for AI workflows  |
+| Bind RangeLink to Text Editor Destination         | —                   | —                     | Auto-paste links at insertion point in bound text editor |
+| Unbind Destination                                | —                   | —                     | Stop auto-sending links to bound destination             |
+| Show Version Info                                 | —                   | —                     | Display version and build info                           |
 
 **Customizing Shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) to open Keyboard Shortcuts, then search for "RangeLink".
 

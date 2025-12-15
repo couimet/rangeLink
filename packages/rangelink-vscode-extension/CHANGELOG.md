@@ -5,10 +5,22 @@ All notable changes to the RangeLink VS Code extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0]
 
 ### Added
 
+- **Fully automatic paste for Claude Code and Cursor AI** - Zero-friction workflow completes the v0.3.0 vision
+  - v0.3.0 required manual `Cmd+V` paste after link was copied — that friction is gone
+  - Now uses clipboard + programmatic paste technique for seamless auto-insertion
+  - All AI chat destinations now provide identical UX: select code → link appears → keep typing
+  - "One Keybinding to Rule Them All" — now it truly does
+  - Switch AI assistants without relearning shortcuts — same R-keybindings, any AI
+- **GitHub Copilot Chat Integration** - Native paste destination for GitHub Copilot Chat
+  - Automatically inserts links and selected text directly into GitHub Copilot Chat
+  - Uses VSCode Chat API for true automatic paste workflow (unlike clipboard-based destinations)
+  - Command: "Bind RangeLink to GitHub Copilot Chat Destination"
+  - Requires GitHub Copilot Chat extension
+  - Consistent with RangeLink's unified paste destination workflow (auto-focus, cursor positioning)
 - **Smart bind with confirmation** - Quick switching between paste destinations
   - Run any "Bind to..." command when already bound to automatically replace with confirmation
   - QuickPick dialog shows current and new destination before replacing
@@ -16,13 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents accidental binding to same destination (shows info message instead)
   - Toast notifications show replacement info: "Unbound X, now bound to Y"
   - Integrated with all bind commands (Claude Code, Cursor AI, GitHub Copilot Chat, Terminal, Text Editor)
-- **GitHub Copilot Chat Integration** - Native paste destination for GitHub Copilot Chat
-  - Automatically inserts links and selected text directly into GitHub Copilot Chat
-  - Uses VSCode Chat API for true automatic paste workflow (unlike clipboard-based destinations)
-  - Command: "Bind RangeLink to GitHub Copilot Chat Destination"
-  - Requires GitHub Copilot Chat extension
-  - Consistent with RangeLink's unified paste destination workflow (auto-focus, cursor positioning)
-- **🚐 Paste Selected Text to Destination** - Send selected text directly to bound destinations, not just links
+- **Paste Selected Text to Destination (R-V) 🚐** - Send selected text directly to bound destinations, not just links
   - New command: "Paste Selected Text to Bound Destination" (`Cmd+R Cmd+V` / `Ctrl+R Ctrl+V`)
   - Works with all destination types: Claude Code Extension, Cursor AI, GitHub Copilot Chat, Terminal, Text Editor
   - Supports single and multi-selection (concatenates with newlines)
@@ -30,6 +36,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Perfect for quickly sharing code snippets with AI assistants
   - Consistent with existing paste destination workflow (auto-focus, cursor positioning)
   - **Why 🚐 (RV emoji)?** Keybinding preserves `R` prefix (like RangeLink's `R+L`), and `V` mirrors the standard paste gesture (`Cmd+V`). The RV/camper emoji is a playful reminder of this mnemonic.
+- **Jump to Bound Destination (R-J)** - Quickly focus your currently bound destination
+  - New command: "Jump to Bound Destination" (`Cmd+R Cmd+J` / `Ctrl+R Ctrl+J`)
+  - Instantly brings focus to terminal, text editor, or AI chat destination
+  - No more hunting for bound destinations buried under tabs or panes
+- **RangeLink Clipboard-Only Mode (R-C)** - Generate RangeLinks directly to clipboard, bypassing paste destinations
+  - New commands: "Copy Range Link (Clipboard Only)" (`Cmd+R Cmd+C` / `Ctrl+R Ctrl+C`)
+  - Generates formatted RangeLinks (e.g., `src/auth.ts#L42C10-L58C25`) with relative or absolute paths
+  - Useful for sharing absolute-path links across projects or IDE instances without requiring to unbind a destination first.
+  - Gives explicit control over when links paste to bound destinations vs clipboard only
 - **i18n foundation** - Message code system for future localization support. English only currently.
 
 ### Changed
@@ -160,7 +175,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Cmd+R Cmd+P` / `Ctrl+R Ctrl+P` - Copy Portable Link
   - `Cmd+R Cmd+Shift+P` / `Ctrl+R Ctrl+Shift+P` - Copy Portable Link (Absolute)
 
-[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.3.0...HEAD
+[Unreleased]: https://github.com/couimet/rangelink/compare/vscode-extension-v1.0.0...HEAD
+[1.0.0]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.3.0...vscode-extension-v1.0.0
 [0.3.0]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.2.1...vscode-extension-v0.3.0
 [0.2.1]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.2.0...vscode-extension-v0.2.1
 [0.2.0]: https://github.com/couimet/rangelink/compare/vscode-extension-v0.1.0...vscode-extension-v0.2.0
