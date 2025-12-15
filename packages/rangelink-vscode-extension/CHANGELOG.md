@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Fully automatic paste for Claude Code and Cursor AI** - Zero-friction workflow completes the v0.3.0 vision
+  - v0.3.0 required manual `Cmd+V` paste after link was copied — that friction is gone
+  - Now uses clipboard + programmatic paste technique for seamless auto-insertion
+  - All AI chat destinations now provide identical UX: select code → link appears → keep typing
+  - "One Keybinding to Rule Them All" — now it truly does
 - **GitHub Copilot Chat Integration** - Native paste destination for GitHub Copilot Chat
   - Automatically inserts links and selected text directly into GitHub Copilot Chat
   - Uses VSCode Chat API for true automatic paste workflow (unlike clipboard-based destinations)
@@ -44,11 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Less intrusive auto-unbind notifications** - When a bound text editor document closes, the auto-unbind notification now appears in the status bar (2 seconds) instead of as a popup dialog. This makes the background cleanup less disruptive to your workflow.
-- **Improved Claude Code and Cursor AI destinations** - Now fully automatic, no manual paste needed
-  - Previously required manual Cmd+V paste after link was copied (v0.3.0 limitation)
-  - Now uses clipboard + delay technique to programmatically paste into chat
-  - User experience now identical to Terminal, Text Editor, and Copilot Chat destinations
-  - No more workflow interruption—select code, link appears, keep typing
 
 ### Fixed
 

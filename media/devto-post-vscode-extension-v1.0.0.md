@@ -19,6 +19,7 @@ This isn't just a version bump — it's a commitment that RangeLink is mature, r
 - Claude Code Extension and Cursor AI now **fully automatic** — no more manual Cmd+V paste!
 - In v0.3.0, these destinations required you to manually paste after RangeLink copied the link. That workflow interruption is gone.
 - All AI chat destinations now provide identical seamless UX: select code → link appears → keep typing.
+- Remember "One Keybinding to Rule Them All"? **In v1.0.0, it truly does.**
 
 **🤖 GitHub Copilot Chat Integration (3rd AI Chat Option)**
 
@@ -72,7 +73,7 @@ The lightbulb moment came from [PR #136](https://github.com/couimet/rangeLink/pu
 
 It's a clipboard-based workaround, but from the user's perspective it's indistinguishable from true API-based insertion. The workflow is seamless, and that's what matters.
 
-**Result:** Claude Code, Cursor AI, and Copilot Chat all provide identical automatic paste UX. Choose your AI based on preference, not workflow limitations.
+**Result:** Claude Code, Cursor AI, and Copilot Chat all provide identical automatic paste UX. Choose your AI based on preference, not workflow limitations. The v0.3.0 promise of "One Keybinding to Rule Them All" is now fully delivered.
 
 ---
 
