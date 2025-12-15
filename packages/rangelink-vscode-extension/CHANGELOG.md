@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now uses clipboard + programmatic paste technique for seamless auto-insertion
   - All AI chat destinations now provide identical UX: select code → link appears → keep typing
   - "One Keybinding to Rule Them All" — now it truly does
+  - Switch AI assistants without relearning shortcuts — same R-keybindings, any AI
 - **GitHub Copilot Chat Integration** - Native paste destination for GitHub Copilot Chat
   - Automatically inserts links and selected text directly into GitHub Copilot Chat
   - Uses VSCode Chat API for true automatic paste workflow (unlike clipboard-based destinations)
