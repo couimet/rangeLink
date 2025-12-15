@@ -4,52 +4,63 @@
  * Re-exports all test helper modules for convenient importing.
  */
 
-// Export individual mock factories
-export { createMockAsRelativePath } from './createMockAsRelativePath';
-export { createMockCancellationToken } from './createMockCancellationToken';
-export {
-  createMockChatPasteHelper,
-  createMockChatPasteHelperFactory,
-  type MockChatPasteHelper,
-} from './createMockChatPasteHelperFactory';
-export { createMockClipboard } from './createMockClipboard';
-export { createMockCommands } from './createMockCommands';
-export {
-  createMockDestinationFactory,
-  type MockDestinationFactoryOptions,
-} from './createMockDestinationFactory';
-export { createMockDocument } from './createMockDocument';
-export { createMockDocumentLink } from './createMockDocumentLink';
-export { createMockEditor } from './createMockEditor';
-export { createMockEnv } from './createMockEnv';
-export { createMockExtensions } from './createMockExtensions';
-export { createMockGetWorkspaceFolder } from './createMockGetWorkspaceFolder';
-export { createMockInputSelection } from './createMockInputSelection';
-export { createMockNavigationHandler } from './createMockNavigationHandler';
-export { createMockOutputChannel } from './createMockOutputChannel';
-export { createMockPosition } from './createMockPosition';
-export { createMockPositionAt } from './createMockPositionAt';
-export { createMockRange } from './createMockRange';
-export { createMockSelection } from './createMockSelection';
-export { createMockStatusBarItem } from './createMockStatusBarItem';
-export { createMockTab } from './createMockTab';
-export { createMockTabGroup } from './createMockTabGroup';
-export { createMockTabGroups } from './createMockTabGroups';
-export { createMockTerminal } from './createMockTerminal';
-export { createMockText } from './createMockText';
-export { createMockUri } from './createMockUri';
-export { createMockWindow } from './createMockWindow';
-export { createMockWorkspace } from './createMockWorkspace';
-export { createMockWorkspaceFolder } from './createMockWorkspaceFolder';
+export * from './createMockAsRelativePath';
+export * from './createMockCancellationToken';
+export * from './createMockClaudeCodeComposableDestination';
+export * from './createMockClaudeCodeDestination';
+export * from './createMockClipboard';
+export * from './createMockCommands';
+export * from './createMockComposablePasteDestination';
+export * from './createMockCursorAIComposableDestination';
+export * from './createMockCursorAIDestination';
+export * from './createMockDestinationManager';
+export * from './createMockDestinationRegistry';
+export * from './createMockDocument';
+export * from './createMockDocumentLink';
+export * from './createMockEditor';
+export * from './createMockEditorComposablePasteDestination';
+export * from './createMockEditorWithSelection';
+export * from './createMockEligibilityCheckerFactory';
+export * from './createMockEnv';
+export * from './createMockExtension';
+export * from './createMockExtensions';
+export * from './createMockFocusManagerFactory';
+export * from './createMockFormattedLink';
+export * from './createMockGetWorkspaceFolder';
+export * from './createMockGitHubCopilotChatComposableDestination';
+export * from './createMockGitHubCopilotChatDestination';
+export * from './createMockInputSelection';
+export * from './createMockLanguages';
+export * from './createMockLineAt';
+export * from './createMockNavigationHandler';
+export * from './createMockOutputChannel';
+export * from './createBaseMockPasteDestination';
+export * from './createMockPosition';
+export * from './createMockPositionAt';
+export * from './createMockRange';
+export * from './createMockSelection';
+export * from './createMockSingletonComposablePasteDestination';
+export * from './createMockStatusBarItem';
+export * from './createMockTab';
+export * from './createMockTabGroup';
+export * from './createMockTabGroups';
+export * from './createMockTerminal';
+export * from './createMockTerminalComposablePasteDestination';
+export * from './createMockTerminalPasteDestination';
+export * from './createMockText';
+export * from './createMockTextInserterFactory';
+export * from './createMockUntitledUri';
+export * from './createMockUri';
+export * from './createMockWindow';
+export * from './createMockWorkspace';
+export * from './createMockWorkspaceFolder';
 
-// Export MockTabInputText class
-export { MockTabInputText } from './tabTestHelpers';
+export * from './tabTestHelpers';
 
-// Export helper functions
-export { configureWorkspaceMocks } from './configureWorkspaceMocks';
-export { configureEmptyTabGroups } from './configureEmptyTabGroups';
-export { simulateClosedEditor } from './simulateClosedEditor';
-export { simulateFileOutsideWorkspace } from './simulateFileOutsideWorkspace';
+export * from './configureWorkspaceMocks';
+export * from './createWindowOptionsForEditor';
+export * from './configureEmptyTabGroups';
+export * from './simulateClosedEditor';
+export * from './simulateFileOutsideWorkspace';
 
-// Export complex utilities and types from mockVSCode
-export * from './mockVSCode';
+export * from './createMockVscodeAdapter';

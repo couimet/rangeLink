@@ -7,11 +7,10 @@ import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorC
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
-import { formatMessage } from '../utils/formatMessage';
+import { formatMessage, isEditorDestination, isTextLikeFile } from '../utils';
 
-import { DestinationFactory } from './DestinationFactory';
+import type { DestinationRegistry } from './DestinationRegistry';
 import type { DestinationType, PasteDestination } from './PasteDestination';
-import { TextEditorDestination } from './TextEditorDestination';
 
 /**
  * Unified destination manager for RangeLink (Phase 3)
@@ -27,6 +26,18 @@ import { TextEditorDestination } from './TextEditorDestination';
  * - No state persistence across reloads (same as legacy behavior)
  */
 export class PasteDestinationManager implements vscode.Disposable {
+  /**
+   * Static lookup table mapping AI assistant destination types to unavailable error message codes
+   */
+  private static readonly AI_ASSISTANT_ERROR_CODES: Record<
+    'cursor-ai' | 'claude-code' | 'github-copilot-chat',
+    MessageCode
+  > = {
+    'claude-code': MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE,
+    'cursor-ai': MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE,
+    'github-copilot-chat': MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE,
+  };
+
   private boundDestination: PasteDestination | undefined;
   private boundTerminal: vscode.Terminal | undefined; // Track for closure events
   private disposables: vscode.Disposable[] = [];
@@ -34,7 +45,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly factory: DestinationFactory,
+    private readonly registry: DestinationRegistry,
     private readonly vscodeAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
@@ -267,7 +278,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     // Create new destination with resource
-    const newDestination = this.factory.create({ type: 'terminal', terminal: activeTerminal });
+    const newDestination = this.registry.create({ type: 'terminal', terminal: activeTerminal });
 
     // Check if already bound to same destination using equals()
     if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
@@ -309,7 +320,11 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.boundTerminal = activeTerminal; // Track for closure events
 
     this.logger.info(
-      { fn: 'PasteDestinationManager.bindTerminal', displayName: newDestination.displayName },
+      {
+        fn: 'PasteDestinationManager.bindTerminal',
+        displayName: newDestination.displayName,
+        ...newDestination.getLoggingDetails(),
+      },
       `Successfully bound to "${newDestination.displayName}"`,
     );
 
@@ -351,7 +366,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     // Check if editor is text-like (not binary)
-    if (!TextEditorDestination.isTextLikeFile(this.vscodeAdapter, activeEditor)) {
+    if (!isTextLikeFile(this.vscodeAdapter, activeEditor)) {
       const fileName = activeEditor.document.uri.fsPath.split('/').pop() || 'Unknown';
       this.logger.warn(
         { fn: 'PasteDestinationManager.bindTextEditor', fileName },
@@ -364,10 +379,10 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     // Create new destination with resource
-    const newDestination = this.factory.create({
+    const newDestination = this.registry.create({
       type: 'text-editor',
       editor: activeEditor,
-    }) as TextEditorDestination;
+    });
 
     // Check if already bound to same destination using equals()
     if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
@@ -411,7 +426,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       {
         fn: 'PasteDestinationManager.bindTextEditor',
         displayName: newDestination.displayName,
-        editorPath: newDestination.editorPath,
+        ...newDestination.getLoggingDetails(),
         tabGroupCount,
       },
       `Successfully bound to "${newDestination.displayName}" (${tabGroupCount} tab groups)`,
@@ -425,26 +440,34 @@ export class PasteDestinationManager implements vscode.Disposable {
   /**
    * Bind to generic destination (AI assistant destinations, etc.)
    *
-   * @param type - The destination type (e.g., 'cursor-ai', 'claude-code', 'github-copilot')
+   * @param type - The destination type (AI assistants only)
    * @returns true if binding succeeded, false if destination not available
    */
-  private async bindGenericDestination(type: DestinationType): Promise<boolean> {
+  private async bindGenericDestination(
+    type: 'cursor-ai' | 'claude-code' | 'github-copilot-chat',
+  ): Promise<boolean> {
     // Generic destinations don't require resources at construction
-    const newDestination = this.factory.create({
-      type: type as 'cursor-ai' | 'claude-code' | 'github-copilot',
-    });
+    const newDestination = this.registry.create({ type });
 
-    // Check if destination is available (e.g., Cursor IDE detection, Claude Code extension)
+    // Check if destination is available
     if (!(await newDestination.isAvailable())) {
       this.logger.warn(
         { fn: 'PasteDestinationManager.bindGenericDestination', type },
         `Cannot bind: ${newDestination.displayName} not available`,
       );
 
+      // Lookup error message code from static table with runtime safety fallback
       const messageCode =
-        type === 'cursor-ai'
-          ? MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE
-          : MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE;
+        PasteDestinationManager.AI_ASSISTANT_ERROR_CODES[type] ??
+        (() => {
+          // Exhaustiveness check - should never happen due to compile-time Record type checking
+          throw new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+            message: `Unhandled AI assistant destination type: ${type}`,
+            functionName: 'PasteDestinationManager.bindGenericDestination',
+            details: { type },
+          });
+        })();
 
       this.vscodeAdapter.showErrorMessage(formatMessage(messageCode));
 
@@ -496,6 +519,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       {
         fn: 'PasteDestinationManager.bindGenericDestination',
         displayName: newDestination.displayName,
+        ...newDestination.getLoggingDetails(),
       },
       `Successfully bound to ${newDestination.displayName}`,
     );
@@ -515,22 +539,16 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   private setupTextDocumentCloseListener(): void {
     const documentCloseDisposable = this.vscodeAdapter.onDidCloseTextDocument((closedDocument) => {
-      // Only check if we have a text editor destination bound
-      if (!this.boundDestination || this.boundDestination.id !== 'text-editor') {
+      if (!isEditorDestination(this.boundDestination)) {
         return;
       }
 
-      const textEditorDest = this.boundDestination as TextEditorDestination;
-      const boundDocumentUri = textEditorDest.getBoundDocumentUri();
-
-      if (!boundDocumentUri) {
-        return;
-      }
+      const boundDocumentUri = this.boundDestination.resource.editor.document.uri;
 
       // Check if the closed document matches the bound document
       if (closedDocument.uri.toString() === boundDocumentUri.toString()) {
         // Document actually closed - auto-unbind
-        const editorDisplayName = textEditorDest.displayName || 'Unknown';
+        const editorDisplayName = this.boundDestination.displayName || 'Unknown';
         this.logger.info(
           {
             fn: 'PasteDestinationManager.onDidCloseTextDocument',

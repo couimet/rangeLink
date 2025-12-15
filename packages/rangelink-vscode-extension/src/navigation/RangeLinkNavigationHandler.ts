@@ -6,10 +6,12 @@ import { TextEditorRevealType } from 'vscode';
 
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types/MessageCode';
-import { convertRangeLinkPosition } from '../utils/convertRangeLinkPosition';
-import { formatLinkPosition } from '../utils/formatLinkPosition';
-import { formatLinkTooltip } from '../utils/formatLinkTooltip';
-import { formatMessage } from '../utils/formatMessage';
+import {
+  convertRangeLinkPosition,
+  formatLinkPosition,
+  formatLinkTooltip,
+  formatMessage,
+} from '../utils';
 
 /**
  * Core navigation handler for RangeLink format detection and navigation.

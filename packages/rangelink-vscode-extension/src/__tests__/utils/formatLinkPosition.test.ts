@@ -1,6 +1,6 @@
 import type { LinkPosition } from 'rangelink-core-ts';
 
-import { formatLinkPosition } from '../../utils/formatLinkPosition';
+import { formatLinkPosition } from '../../utils';
 
 describe('formatLinkPosition', () => {
   describe('Single position (start equals end)', () => {

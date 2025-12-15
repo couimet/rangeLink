@@ -4,7 +4,7 @@ import { createMockPosition } from './createMockPosition';
 import { createMockSelection } from './createMockSelection';
 import { createMockText } from './createMockText';
 import { createMockUri } from './createMockUri';
-import { createMockVscodeAdapter } from './mockVSCode';
+import { createMockVscodeAdapter } from './createMockVscodeAdapter';
 import { createWindowOptionsForEditor } from './createWindowOptionsForEditor';
 
 /**

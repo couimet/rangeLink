@@ -5,8 +5,7 @@ import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErr
 import { BehaviourAfterPaste } from '../../types/BehaviourAfterPaste';
 import type { SendTextToTerminalOptions } from '../../types/SendTextToTerminalOptions';
 import { TerminalFocusType } from '../../types/TerminalFocusType';
-import { getUntitledDisplayName } from '../../utils/getUntitledDisplayName';
-import { resolveWorkspacePath } from '../../utils/resolveWorkspacePath';
+import { getUntitledDisplayName, resolveWorkspacePath } from '../../utils';
 
 /**
  * Default timeout for status bar messages in milliseconds.
@@ -317,6 +316,18 @@ export class VscodeAdapter {
    */
   async executeCommand<T = unknown>(command: string, ...args: unknown[]): Promise<T | undefined> {
     return this.ideInstance.commands.executeCommand<T>(command, ...args);
+  }
+
+  /**
+   * Get all available commands in VSCode.
+   *
+   * Used for feature detection (e.g., checking if chat commands exist).
+   *
+   * @param filterInternal - If true, filters out internal commands (default: false)
+   * @returns Promise resolving to array of command identifiers
+   */
+  async getCommands(filterInternal = false): Promise<string[]> {
+    return this.ideInstance.commands.getCommands(filterInternal);
   }
 
   // ============================================================================

@@ -19,8 +19,9 @@ import {
   createMockPositionAt,
   createMockText,
   createMockUri,
+  createMockVscodeAdapter,
+  type VscodeAdapterWithTestHooks,
 } from '../helpers';
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
 
 describe('RangeLinkDocumentProvider', () => {
   let provider: RangeLinkDocumentProvider;

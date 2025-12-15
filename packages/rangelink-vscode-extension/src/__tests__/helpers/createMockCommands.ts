@@ -5,13 +5,25 @@
 import * as vscode from 'vscode';
 
 /**
+ * Options for configuring mock commands.
+ */
+export interface MockCommandsOptions {
+  /** List of command IDs that getCommands() should return */
+  availableCommands?: string[];
+}
+
+/**
  * Mock vscode.commands object for command execution tests.
  *
- * @returns Mock commands object with executeCommand and registerCommand spies
+ * @param options - Optional configuration for available commands
+ * @returns Mock commands object with registerCommand, executeCommand, and getCommands spies
  */
-export const createMockCommands = (): typeof vscode.commands => {
+export const createMockCommands = (options?: MockCommandsOptions): typeof vscode.commands => {
+  const availableCommands = options?.availableCommands ?? [];
+
   return {
     registerCommand: jest.fn(),
     executeCommand: jest.fn().mockResolvedValue(undefined),
+    getCommands: jest.fn().mockResolvedValue(availableCommands),
   } as unknown as typeof vscode.commands;
 };

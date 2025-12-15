@@ -13,8 +13,12 @@ import type * as vscode from 'vscode';
 import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from '../../navigation/RangeLinkTerminalProvider';
 import type { RangeLinkTerminalLink } from '../../types';
-import { createMockCancellationToken, createMockNavigationHandler } from '../helpers';
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers/mockVSCode';
+import {
+  createMockCancellationToken,
+  createMockNavigationHandler,
+  createMockVscodeAdapter,
+  type VscodeAdapterWithTestHooks,
+} from '../helpers';
 
 /**
  * Create a mock TerminalLinkContext for testing.
@@ -263,14 +267,12 @@ describe('RangeLinkTerminalProvider', () => {
       await provider.handleTerminalLink(link);
 
       // Assert: Logger should receive linkText in logCtx plus full link object
-      expect(mockLogger.warn).toHaveBeenCalledTimes(1);
-      const warnCall = (mockLogger.warn as jest.Mock).mock.calls[0];
-      expect(warnCall[0]).toStrictEqual({
-        fn: 'RangeLinkTerminalProvider.handleTerminalLink',
-        linkText: 'file.ts#L0',
-        link,
-      });
-      expect(warnCall[1]).toStrictEqual(
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkTerminalProvider.handleTerminalLink',
+          linkText: 'file.ts#L0',
+          link,
+        },
         'Terminal link clicked but parse data missing (safety net triggered)',
       );
 

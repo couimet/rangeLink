@@ -2,7 +2,7 @@ import { SelectionCoverage, SelectionType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { isRectangularSelection } from '../isRectangularSelection';
-import { toInputSelection } from '../utils/toInputSelection';
+import { toInputSelection } from '../utils';
 
 // Mock the isRectangularSelection function
 jest.mock('../isRectangularSelection');

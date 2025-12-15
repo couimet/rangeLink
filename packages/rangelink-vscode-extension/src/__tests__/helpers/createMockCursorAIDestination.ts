@@ -1,29 +1,20 @@
-/**
- * Create a mock CursorAIDestination for testing
- */
-
-import type { CursorAIDestination } from '../../destinations/CursorAIDestination';
-
-import { createMockPasteDestination } from './createMockPasteDestination';
+import {
+  createBaseMockPasteDestination,
+  type MockDestinationOptions,
+} from './createBaseMockPasteDestination';
 
 /**
- * Create a mock CursorAIDestination for testing
+ * Create a mock Cursor AI destination for testing (Paradigm A).
  *
- * Convenience factory for CursorAI destination with appropriate defaults.
- * Uses base PasteDestination mock (no extra methods beyond interface).
+ * Uses Paradigm A (pure jest mocks). For Paradigm B (real class with mocked
+ * capabilities), use createMockCursorAIComposableDestination.
  *
- * Note: Override parameter uses `any` for test flexibility (allows overriding readonly properties),
- * but return type is properly typed for type safety in test code.
- *
- * @param overrides - Optional partial object to override default properties/methods
- * @returns Mock Cursor AI destination with jest.fn() implementations
+ * @param overrides - Optional overrides for mock behavior
+ * @returns Mock PasteDestination configured as Cursor AI
  */
-export const createMockCursorAIDestination = (
-  overrides?: Partial<any>,
-): jest.Mocked<CursorAIDestination> =>
-  createMockPasteDestination({
+export const createMockCursorAIDestination = (overrides?: Omit<MockDestinationOptions, 'id'>) =>
+  createBaseMockPasteDestination({
     id: 'cursor-ai',
     displayName: 'Cursor AI Assistant',
-    getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused Cursor AI Assistant'),
     ...overrides,
-  }) as jest.Mocked<CursorAIDestination>;
+  });

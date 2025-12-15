@@ -3,20 +3,23 @@ import type { FormattedLink } from 'rangelink-core-ts';
 import type { AutoPasteResult } from '../types/AutoPasteResult';
 
 /**
- * Supported paste destination types
+ * All supported paste destination type identifiers
  *
- * - `terminal`: Active terminal (existing feature)
- * - `text-editor`: Active text editor at cursor position (future)
- * - `cursor-ai`: Cursor AI assistant input (future)
- * - `github-copilot`: GitHub Copilot Chat (future)
- * - `claude-code`: Claude Code chat (experimental - hybrid approach, see docs/RESEARCH-CLAUDE-CODE-INTEGRATION-UPDATE.md)
+ * Single source of truth - DestinationType is derived from this array.
+ * Keep in alphabetical order for maintainability.
  */
-export type DestinationType =
-  | 'terminal'
-  | 'text-editor'
-  | 'cursor-ai'
-  | 'github-copilot'
-  | 'claude-code';
+export const DESTINATION_TYPES = [
+  'claude-code',
+  'cursor-ai',
+  'github-copilot-chat',
+  'terminal',
+  'text-editor',
+] as const;
+
+/**
+ * Supported paste destination types (derived from DESTINATION_TYPES array)
+ */
+export type DestinationType = (typeof DESTINATION_TYPES)[number];
 
 /**
  * Interface for RangeLink paste destinations

@@ -18,21 +18,24 @@ import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
 import * as toInputSelectionModule from '../utils/toInputSelection';
 
-import { createMockAsRelativePath } from './helpers/createMockAsRelativePath';
-import { createMockDestinationManager } from './helpers/createMockDestinationManager';
-import { createMockDocument } from './helpers/createMockDocument';
-import { createMockEditor } from './helpers/createMockEditor';
-import { createMockEditorWithSelection } from './helpers/createMockEditorWithSelection';
-import { createMockFormattedLink } from './helpers/createMockFormattedLink';
-import { createMockGetWorkspaceFolder } from './helpers/createMockGetWorkspaceFolder';
-import { createMockInputSelection } from './helpers/createMockInputSelection';
-import { createMockPosition } from './helpers/createMockPosition';
-import { createMockSelection } from './helpers/createMockSelection';
-import { createMockTerminalDestination } from './helpers/createMockTerminalDestination';
-import { createMockText } from './helpers/createMockText';
-import { createMockUri } from './helpers/createMockUri';
-import { createWindowOptionsForEditor } from './helpers/createWindowOptionsForEditor';
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from './helpers/mockVSCode';
+import {
+  createMockAsRelativePath,
+  createMockDestinationManager,
+  createMockDocument,
+  createMockEditor,
+  createMockEditorWithSelection,
+  createMockFormattedLink,
+  createMockGetWorkspaceFolder,
+  createMockInputSelection,
+  createMockPosition,
+  createMockSelection,
+  createMockTerminalPasteDestination,
+  createMockText,
+  createMockUri,
+  createMockVscodeAdapter,
+  createWindowOptionsForEditor,
+  type VscodeAdapterWithTestHooks,
+} from './helpers';
 
 let service: RangeLinkService;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
@@ -200,7 +203,7 @@ describe('RangeLinkService', () => {
 
     describe('when destination is bound and paste succeeds', () => {
       beforeEach(() => {
-        const mockDestination = createMockTerminalDestination({ displayName: 'bash' });
+        const mockDestination = createMockTerminalPasteDestination({ displayName: 'bash' });
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
           sendLinkToDestinationResult: true,
@@ -275,7 +278,7 @@ describe('RangeLinkService', () => {
 
     describe('when destination is bound but paste fails', () => {
       beforeEach(() => {
-        const terminalDest = createMockTerminalDestination({
+        const terminalDest = createMockTerminalPasteDestination({
           displayName: 'Terminal',
         });
         mockDestinationManager = createMockDestinationManager({
@@ -346,7 +349,7 @@ describe('RangeLinkService', () => {
 
     describe('when destination is bound but content not eligible', () => {
       beforeEach(() => {
-        const mockDestination = createMockTerminalDestination({
+        const mockDestination = createMockTerminalPasteDestination({
           displayName: 'Terminal',
           isEligibleForPasteLink: jest.fn().mockResolvedValue(false),
         });
@@ -759,7 +762,7 @@ describe('RangeLinkService', () => {
         let mockDestination: any;
 
         beforeEach(() => {
-          mockDestination = createMockTerminalDestination({
+          mockDestination = createMockTerminalPasteDestination({
             displayName: 'Terminal',
           });
           mockDestinationManager = createMockDestinationManager({
@@ -795,7 +798,7 @@ describe('RangeLinkService', () => {
         let mockDestination: any;
 
         beforeEach(() => {
-          mockDestination = createMockTerminalDestination({
+          mockDestination = createMockTerminalPasteDestination({
             displayName: 'Terminal',
             isEligibleForPasteContent: jest.fn().mockResolvedValue(false),
           });
@@ -959,7 +962,7 @@ describe('RangeLinkService', () => {
       });
 
       it('should send concatenated text to destination', async () => {
-        const mockDestination = createMockTerminalDestination({
+        const mockDestination = createMockTerminalPasteDestination({
           displayName: 'Terminal',
         });
         mockDestinationManager = createMockDestinationManager({
@@ -1028,7 +1031,7 @@ describe('RangeLinkService', () => {
       });
 
       it('should send only non-empty selections to destination', async () => {
-        const mockDestination = createMockTerminalDestination({
+        const mockDestination = createMockTerminalPasteDestination({
           displayName: 'Terminal',
         });
         mockDestinationManager = createMockDestinationManager({

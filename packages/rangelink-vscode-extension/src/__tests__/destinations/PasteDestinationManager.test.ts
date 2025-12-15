@@ -7,24 +7,26 @@ import { PasteDestinationManager } from '../../destinations/PasteDestinationMana
 import { AutoPasteResult } from '../../types/AutoPasteResult';
 import { MessageCode } from '../../types/MessageCode';
 import * as formatMessageModule from '../../utils/formatMessage';
-import { configureEmptyTabGroups } from '../helpers/configureEmptyTabGroups';
-import { createMockClaudeCodeDestination } from '../helpers/createMockClaudeCodeDestination';
-import { createMockDestinationFactory } from '../helpers/createMockDestinationFactory';
-import { createMockCursorAIDestination } from '../helpers/createMockCursorAIDestination';
-import { createMockDocument } from '../helpers/createMockDocument';
-import { createMockEditor } from '../helpers/createMockEditor';
-import { createMockFormattedLink } from '../helpers/createMockFormattedLink';
-import { createMockPasteDestination } from '../helpers/createMockPasteDestination';
-import { createMockTerminal } from '../helpers/createMockTerminal';
-import { createMockTerminalDestination } from '../helpers/createMockTerminalDestination';
-import { createMockText } from '../helpers/createMockText';
-import { createMockTextEditorDestination } from '../helpers/createMockTextEditorDestination';
-import { createMockUri } from '../helpers/createMockUri';
 import {
+  configureEmptyTabGroups,
+  createBaseMockPasteDestination,
+  createMockClaudeCodeDestination,
+  createMockCursorAIDestination,
+  createMockDestinationRegistry,
+  createMockDocument,
+  createMockEditor,
+  createMockEditorComposablePasteDestination,
+  createMockFormattedLink,
+  createMockGitHubCopilotChatDestination,
+  createMockTerminal,
+  createMockTerminalPasteDestination,
+  createMockText,
+  createMockTextInserterForEditor,
+  createMockUri,
   createMockVscodeAdapter,
   type MockVscodeOptions,
   type VscodeAdapterWithTestHooks,
-} from '../helpers/mockVSCode';
+} from '../helpers';
 
 /**
  * Helper to assert QuickPick was called with confirmation dialog for smart bind.
@@ -56,7 +58,7 @@ const expectQuickPickConfirmation = (
 describe('PasteDestinationManager', () => {
   let manager: PasteDestinationManager;
   let mockContext: vscode.ExtensionContext;
-  let mockFactory: ReturnType<typeof createMockDestinationFactory>;
+  let mockRegistry: ReturnType<typeof createMockDestinationRegistry>;
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockLogger: Logger;
   let terminalCloseListener: (terminal: vscode.Terminal) => void;
@@ -73,14 +75,14 @@ describe('PasteDestinationManager', () => {
     // Cache for destinations so same instance is returned for same terminal/editor
     const destinationCache = new Map<string, any>();
 
-    // Create factory that generates mock destinations on demand with correct context
-    const factory = createMockDestinationFactory({
+    // Create registry that generates mock destinations on demand with correct context
+    const registry = createMockDestinationRegistry({
       createImpl: (options) => {
         if (options.type === 'terminal' && options.terminal) {
           const terminalName = options.terminal.name;
           const cacheKey = `terminal:${terminalName}`;
           if (!destinationCache.has(cacheKey)) {
-            const dest = createMockTerminalDestination({
+            const dest = createMockTerminalPasteDestination({
               displayName: `Terminal ("${terminalName}")`,
               resourceName: terminalName,
               getLoggingDetails: jest.fn().mockReturnValue({ terminalName }),
@@ -97,21 +99,11 @@ describe('PasteDestinationManager', () => {
           return destinationCache.get(cacheKey);
         }
         if (options.type === 'text-editor' && options.editor) {
-          const doc = options.editor.document;
-          const fileName = doc.uri.fsPath.split('/').pop() || 'Unknown';
-          const cacheKey = `text-editor:${doc.uri.fsPath}`;
+          const cacheKey = `text-editor:${options.editor.document.uri.fsPath}`;
           if (!destinationCache.has(cacheKey)) {
             destinationCache.set(
               cacheKey,
-              createMockTextEditorDestination({
-                displayName: `Text Editor ("${fileName}")`,
-                resourceName: fileName,
-                getLoggingDetails: jest.fn().mockReturnValue({
-                  editorName: fileName.split('/').pop(),
-                  editorPath: doc.uri.fsPath,
-                }),
-                getBoundDocumentUri: jest.fn().mockReturnValue(doc.uri),
-              }),
+              createMockEditorComposablePasteDestination({ editor: options.editor }),
             );
           }
           return destinationCache.get(cacheKey);
@@ -140,7 +132,7 @@ describe('PasteDestinationManager', () => {
         return undefined;
       },
     });
-    const mgr = new PasteDestinationManager(mockContext, factory, adapter, mockLogger);
+    const mgr = new PasteDestinationManager(mockContext, registry, adapter, mockLogger);
 
     // Extract event listeners from mock calls (made by PasteDestinationManager constructor)
     // These are needed for tests that simulate terminal/document closure events
@@ -152,7 +144,7 @@ describe('PasteDestinationManager', () => {
     terminalCloseListener = onDidCloseTerminalMock.mock.calls[0]?.[0];
     documentCloseListener = onDidCloseTextDocumentMock.mock.calls[0]?.[0];
 
-    return { manager: mgr, adapter, factory };
+    return { manager: mgr, adapter, registry };
   };
 
   beforeEach(() => {
@@ -175,7 +167,7 @@ describe('PasteDestinationManager', () => {
     const result = createManager();
     manager = result.manager;
     mockAdapter = result.adapter;
-    mockFactory = result.factory;
+    mockRegistry = result.registry;
   });
 
   afterEach(() => {
@@ -186,12 +178,7 @@ describe('PasteDestinationManager', () => {
     let mockTerminal: vscode.Terminal;
 
     beforeEach(() => {
-      mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-        processId: Promise.resolve(12345),
-      } as unknown as vscode.Terminal;
+      mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
     });
 
     it('should bind to active terminal successfully', async () => {
@@ -204,6 +191,21 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Terminal ("bash")',
         3000,
+      );
+    });
+
+    it('should log success with logging details when binding terminal', async () => {
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+      await manager.bind('terminal');
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindTerminal',
+          displayName: 'Terminal ("bash")',
+          terminalName: 'bash',
+        },
+        'Successfully bound to "Terminal ("bash")"',
       );
     });
 
@@ -224,7 +226,7 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
       // Create terminal destination that recognizes itself as equal
-      const terminalDest = createMockTerminalDestination({
+      const terminalDest = createMockTerminalPasteDestination({
         displayName: 'Terminal ("bash")',
         resourceName: 'bash',
       });
@@ -234,10 +236,11 @@ describe('PasteDestinationManager', () => {
       );
 
       // Create manager with a fresh factory that returns the same terminal instance
-      const controlledFactory = createMockDestinationFactory({
+      const controlledFactory = createMockDestinationRegistry({
         destinations: {
           terminal: terminalDest,
-          'text-editor': createMockTextEditorDestination(),
+          'text-editor':
+            createMockEditorComposablePasteDestination() as unknown as jest.Mocked<PasteDestination>,
           'cursor-ai': createMockCursorAIDestination(),
           'claude-code': createMockClaudeCodeDestination(),
         },
@@ -311,7 +314,7 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
 
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE);
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_CURSOR_AI_NOT_AVAILABLE');
 
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
@@ -319,17 +322,59 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should fail when claude-code not available', async () => {
-      const mockDestination = createMockClaudeCodeDestination();
-      mockDestination.isAvailable = jest.fn().mockResolvedValue(false);
-      jest.spyOn(mockFactory, 'create').mockReturnValue(mockDestination);
+      const mockDestination = createMockClaudeCodeDestination({ isAvailable: false });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
       const result = await manager.bind('claude-code');
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE);
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_CLAUDE_CODE_NOT_AVAILABLE');
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind Claude Code - extension not installed or not active',
+      );
+    });
+
+    it('should bind to github-copilot-chat when available', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      const result = await manager.bind('github-copilot-chat');
+
+      expect(result).toBe(true);
+      expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink bound to GitHub Copilot Chat',
+        3000,
+      );
+    });
+
+    it('should log success with logging details when binding chat destination', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('github-copilot-chat');
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindGenericDestination',
+          displayName: 'GitHub Copilot Chat',
+        },
+        'Successfully bound to GitHub Copilot Chat',
+      );
+    });
+
+    it('should fail when github-copilot-chat not available', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: false });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      const result = await manager.bind('github-copilot-chat');
+
+      expect(result).toBe(false);
+      expect(manager.isBound()).toBe(false);
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE');
+      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
       );
     });
 
@@ -350,9 +395,79 @@ describe('PasteDestinationManager', () => {
 
       localManager.dispose();
     });
+
+    it('should show info message when already bound to github-copilot-chat', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({
+        isAvailable: true,
+        equals: jest.fn().mockImplementation(async (other) => other?.id === 'github-copilot-chat'),
+      });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      // Bind first time
+      await manager.bind('github-copilot-chat');
+
+      // Clear adapter calls to isolate second bind attempt (but keep factory mock intact)
+      const mockVscode = mockAdapter.__getVscodeInstance();
+      (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+      (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
+
+      // Try binding again to same destination
+      const result = await manager.bind('github-copilot-chat');
+
+      expect(result).toBe(false);
+      expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
+        'RangeLink: Already bound to GitHub Copilot Chat',
+      );
+    });
   });
 
   describe('bind() - text-editor', () => {
+    it('should bind to active text editor successfully', async () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({
+        document: mockDocument,
+        selection: { active: { line: 0, character: 0 } } as vscode.Selection,
+      });
+
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+      const result = await manager.bind('text-editor');
+
+      expect(result).toBe(true);
+      expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink bound to Text Editor ("file.ts")',
+        3000,
+      );
+    });
+
+    it('should log success with logging details when binding text editor', async () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({
+        document: mockDocument,
+        selection: { active: { line: 0, character: 0 } } as vscode.Selection,
+      });
+
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+      await manager.bind('text-editor');
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindTextEditor',
+          displayName: 'Text Editor ("file.ts")',
+          editorName: 'file.ts',
+          editorPath: '/workspace/src/file.ts',
+          tabGroupCount: 2,
+        },
+        'Successfully bound to "Text Editor ("file.ts")" (2 tab groups)',
+      );
+    });
+
     it('should fail to bind text editor with less than 2 tab groups', async () => {
       // Setup: Single tab group (no split editor)
       mockAdapter.__getVscodeInstance().window.activeTextEditor = {
@@ -412,11 +527,7 @@ describe('PasteDestinationManager', () => {
     it('should show confirmation when binding chat while terminal already bound', async () => {
       const { manager: localManager, adapter: localAdapter } = createManager({ appName: 'Cursor' });
 
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await localManager.bind('terminal');
@@ -446,11 +557,7 @@ describe('PasteDestinationManager', () => {
       showQuickPickMock.mockResolvedValueOnce(undefined);
 
       // Try binding to terminal
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       const result = await localManager.bind('terminal');
@@ -463,15 +570,103 @@ describe('PasteDestinationManager', () => {
 
       localManager.dispose();
     });
+
+    it('should show confirmation when binding github-copilot-chat while terminal already bound', async () => {
+      const mockTerminal = createMockTerminal();
+
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await manager.bind('terminal');
+
+      // Mock GitHub Copilot Chat as available
+      const mockCopilotDest = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockCopilotDest);
+
+      // Mock user cancels confirmation
+      const showQuickPickMock = mockAdapter.__getVscodeInstance().window.showQuickPick;
+      showQuickPickMock.mockResolvedValueOnce(undefined);
+
+      // Try binding to GitHub Copilot Chat
+      const result = await manager.bind('github-copilot-chat');
+
+      expect(result).toBe(false);
+      expectQuickPickConfirmation(showQuickPickMock, {
+        currentDestination: 'Terminal ("bash")',
+        newDestination: 'GitHub Copilot Chat',
+      });
+    });
+
+    it('should show confirmation when binding terminal while github-copilot-chat already bound', async () => {
+      // Mock GitHub Copilot Chat as available
+      const mockCopilotDest = createMockGitHubCopilotChatDestination({
+        isAvailable: true,
+        equals: jest.fn().mockImplementation(async (other) => other?.id === 'github-copilot-chat'),
+      });
+
+      // Mock terminal destination
+      const mockTerminalDest = createMockTerminalPasteDestination({
+        displayName: 'Terminal ("bash")',
+        resourceName: 'bash',
+      });
+
+      // Configure factory to return appropriate destination based on type
+      jest.spyOn(mockRegistry, 'create').mockImplementation((options) => {
+        if (options.type === 'github-copilot-chat') return mockCopilotDest;
+        if (options.type === 'terminal') return mockTerminalDest;
+        return undefined as any;
+      });
+
+      await manager.bind('github-copilot-chat');
+
+      // Mock user cancels confirmation
+      const showQuickPickMock = mockAdapter.__getVscodeInstance().window.showQuickPick;
+      showQuickPickMock.mockResolvedValueOnce(undefined);
+
+      // Try binding to terminal
+      const mockTerminal = createMockTerminal();
+
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      const result = await manager.bind('terminal');
+
+      expect(result).toBe(false);
+      expectQuickPickConfirmation(showQuickPickMock, {
+        currentDestination: 'GitHub Copilot Chat',
+        newDestination: 'Terminal ("bash")',
+      });
+    });
+
+    it('should show confirmation when replacing cursor-ai with github-copilot-chat', async () => {
+      const { manager: localManager, adapter: localAdapter } = createManager({ appName: 'Cursor' });
+      await localManager.bind('cursor-ai');
+
+      // Mock GitHub Copilot Chat as available
+      const mockCopilotDest = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      const mockRegistryForCopilot = createMockDestinationRegistry({
+        destinations: { 'github-copilot-chat': mockCopilotDest as any },
+      });
+      // Override the registry's create method to return our mock
+      (localManager as unknown as { registry: typeof mockRegistryForCopilot }).registry =
+        mockRegistryForCopilot;
+
+      // Mock user cancels confirmation
+      const showQuickPickMock = localAdapter.__getVscodeInstance().window.showQuickPick;
+      showQuickPickMock.mockResolvedValueOnce(undefined);
+
+      // Try binding to GitHub Copilot Chat
+      const result = await localManager.bind('github-copilot-chat');
+
+      expect(result).toBe(false);
+      expectQuickPickConfirmation(showQuickPickMock, {
+        currentDestination: 'Cursor AI Assistant',
+        newDestination: 'GitHub Copilot Chat',
+      });
+
+      localManager.dispose();
+    });
   });
 
   describe('unbind()', () => {
     it('should unbind terminal successfully', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -502,6 +697,22 @@ describe('PasteDestinationManager', () => {
       localManager.dispose();
     });
 
+    it('should unbind github-copilot-chat successfully', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('github-copilot-chat');
+
+      manager.unbind();
+
+      expect(manager.isBound()).toBe(false);
+      expect(manager.getBoundDestination()).toBeUndefined();
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink unbound from GitHub Copilot Chat',
+        2000,
+      );
+    });
+
     it('should handle unbind when nothing bound', () => {
       manager.unbind();
 
@@ -517,12 +728,12 @@ describe('PasteDestinationManager', () => {
     const TEST_STATUS_MESSAGE = 'RangeLink copied to clipboard';
 
     // Mock factory and destinations for unit tests
-    let mockFactoryForSend: ReturnType<typeof createMockDestinationFactory>;
+    let mockRegistryForSend: ReturnType<typeof createMockDestinationRegistry>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockChatDest: jest.Mocked<PasteDestination>;
 
     beforeEach(() => {
-      mockTerminalDest = createMockTerminalDestination({
+      mockTerminalDest = createMockTerminalPasteDestination({
         displayName: 'Terminal ("bash")',
         resourceName: 'bash',
         getUserInstruction: jest.fn().mockReturnValue('Instructions'),
@@ -533,7 +744,7 @@ describe('PasteDestinationManager', () => {
         getUserInstruction: jest.fn().mockReturnValue('Instructions'),
       });
 
-      mockFactoryForSend = createMockDestinationFactory({
+      mockRegistryForSend = createMockDestinationRegistry({
         createImpl: (options) => {
           if (options.type === 'terminal') return mockTerminalDest;
           if (options.type === 'cursor-ai') return mockChatDest;
@@ -544,18 +755,14 @@ describe('PasteDestinationManager', () => {
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
         mockContext,
-        mockFactoryForSend,
+        mockRegistryForSend,
         mockAdapter,
         mockLogger,
       );
     });
 
     it('should send to bound terminal successfully and show enhanced status bar message', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
@@ -612,6 +819,20 @@ describe('PasteDestinationManager', () => {
       cursorManager.dispose();
     });
 
+    it('should send to bound GitHub Copilot Chat successfully', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockRegistryForSend, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('github-copilot-chat');
+
+      const formattedLink = createMockFormattedLink('src/file.ts#L10');
+      const result = await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE);
+
+      expect(result).toBe(true);
+      expect(mockDestination.pasteLink).toHaveBeenCalledTimes(1);
+      expect(mockDestination.pasteLink).toHaveBeenCalledWith(formattedLink);
+    });
+
     it('should return false when no destination bound', async () => {
       const result = await manager.sendLinkToDestination(
         createMockFormattedLink('src/file.ts#L10'),
@@ -624,11 +845,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show warning message when terminal paste fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
@@ -696,11 +913,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should log destination details when sending to terminal', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -721,13 +934,15 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show text-editor specific warning when editor paste fails', async () => {
-      // Create a mock text editor destination that mimics a bound text editor
-      const mockTextEditorDest = createMockTextEditorDestination({
-        id: 'text-editor',
+      // Create a mock text editor destination with textInserter that fails
+      const mockFailingInserter = createMockTextInserterForEditor(false);
+      const mockTextEditorDest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor',
-        getUserInstruction: jest.fn().mockReturnValue(undefined),
-        pasteLink: jest.fn().mockResolvedValue(false), // Simulate paste failure
+        textInserter: mockFailingInserter,
       });
+
+      // Spy on pasteLink to verify it was called
+      const pasteLinkSpy = jest.spyOn(mockTextEditorDest, 'pasteLink');
 
       // Manually set the bound destination to bypass bind() complexity
       (manager as any).boundDestination = mockTextEditorDest;
@@ -740,7 +955,7 @@ describe('PasteDestinationManager', () => {
       );
 
       expect(result).toBe(false);
-      expect(mockTextEditorDest.pasteLink).toHaveBeenCalledTimes(1);
+      expect(pasteLinkSpy).toHaveBeenCalledTimes(1);
 
       // Verify text-editor specific failure message
       expect(showWarningSpy).toHaveBeenCalledTimes(1);
@@ -774,7 +989,7 @@ describe('PasteDestinationManager', () => {
 
     it('should throw DESTINATION_NOT_IMPLEMENTED for unknown destination type', async () => {
       // Create a mock destination with an unknown ID
-      const mockUnknownDest = createMockTerminalDestination({
+      const mockUnknownDest = createMockTerminalPasteDestination({
         id: 'unknown-destination-type' as any,
         displayName: 'Unknown Destination',
         getUserInstruction: jest.fn().mockReturnValue(undefined),
@@ -798,11 +1013,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should log error when paste fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -828,11 +1039,7 @@ describe('PasteDestinationManager', () => {
 
   describe('Terminal closure auto-unbind', () => {
     it('should auto-unbind when bound terminal closes', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -848,17 +1055,9 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not unbind when different terminal closes', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
-      const otherTerminal = {
-        name: 'zsh',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const otherTerminal = createMockTerminal({ name: 'zsh' });
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -873,11 +1072,7 @@ describe('PasteDestinationManager', () => {
       const { manager: localManager } = createManager({ appName: 'Cursor' });
       await localManager.bind('cursor-ai');
 
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       // Simulate terminal close (should not affect chat binding)
       terminalCloseListener(mockTerminal);
@@ -961,11 +1156,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not auto-unbind for non-text-editor destinations', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -983,11 +1174,7 @@ describe('PasteDestinationManager', () => {
 
   describe('getBoundDestination()', () => {
     it('should return bound destination', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1008,11 +1195,7 @@ describe('PasteDestinationManager', () => {
 
   describe('isBound()', () => {
     it('should return true when terminal bound', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1034,11 +1217,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should return false after unbind', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1062,7 +1241,7 @@ describe('PasteDestinationManager', () => {
 
       const newManager = new PasteDestinationManager(
         mockContext,
-        mockFactory,
+        mockRegistry,
         testAdapter,
         mockLogger,
       );
@@ -1086,7 +1265,7 @@ describe('PasteDestinationManager', () => {
    */
   describe('Smart Bind Feature', () => {
     // Mock factory for smart bind tests
-    let mockFactoryForSmartBind: ReturnType<typeof createMockDestinationFactory>;
+    let mockRegistryForSmartBind: ReturnType<typeof createMockDestinationRegistry>;
 
     // Helper to create mock destinations using the existing infrastructure
     const createMockDestinationForTest = (
@@ -1094,9 +1273,9 @@ describe('PasteDestinationManager', () => {
       displayName: string,
       isAvailable = true,
     ): jest.Mocked<PasteDestination> => {
-      // Use createMockPasteDestination with custom equals implementation for instance comparison
-      const dest = createMockPasteDestination({
-        id,
+      // Use createBaseMockPasteDestination with custom equals for instance comparison
+      const dest = createBaseMockPasteDestination({
+        id: id as import('../../destinations').DestinationType,
         displayName,
         isAvailable: jest.fn().mockResolvedValue(isAvailable),
       });
@@ -1109,12 +1288,12 @@ describe('PasteDestinationManager', () => {
 
     beforeEach(() => {
       // Create mock factory for smart bind tests
-      mockFactoryForSmartBind = createMockDestinationFactory();
+      mockRegistryForSmartBind = createMockDestinationRegistry();
 
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
         mockContext,
-        mockFactoryForSmartBind,
+        mockRegistryForSmartBind,
         mockAdapter,
         mockLogger,
       );
@@ -1133,7 +1312,7 @@ describe('PasteDestinationManager', () => {
         );
 
         // Mock factory to return destinations
-        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
+        (mockRegistryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -1209,7 +1388,7 @@ describe('PasteDestinationManager', () => {
           'Text Editor ("file.ts")',
         );
 
-        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
+        (mockRegistryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -1255,7 +1434,7 @@ describe('PasteDestinationManager', () => {
     describe('Scenario 3: Prevent binding same destination twice', () => {
       it('should show info message when binding same destination', async () => {
         // Mock equals() to return true when comparing instances of same terminal
-        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation(() => {
+        (mockRegistryForSmartBind.create as jest.Mock).mockImplementation(() => {
           const newDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
           // Make all terminal destinations equal to each other
           (newDest.equals as jest.Mock).mockImplementation(
@@ -1301,7 +1480,7 @@ describe('PasteDestinationManager', () => {
       it('should show standard toast without replacement prefix', async () => {
         // Setup: Create mock terminal destination
         const terminalDest = createMockDestinationForTest('terminal', 'Terminal ("TestTerminal")');
-        (mockFactoryForSmartBind.create as jest.Mock).mockReturnValue(terminalDest);
+        (mockRegistryForSmartBind.create as jest.Mock).mockReturnValue(terminalDest);
 
         // Mock active terminal
         const mockVscode = mockAdapter.__getVscodeInstance();
@@ -1334,7 +1513,7 @@ describe('PasteDestinationManager', () => {
           'Text Editor ("file.ts")',
         );
 
-        (mockFactoryForSmartBind.create as jest.Mock).mockImplementation((options) => {
+        (mockRegistryForSmartBind.create as jest.Mock).mockImplementation((options) => {
           if (options.type === 'terminal') return terminalDest;
           if (options.type === 'text-editor') return textEditorDest;
           throw new Error(`Unexpected type: ${options.type}`);
@@ -1376,20 +1555,22 @@ describe('PasteDestinationManager', () => {
 
   describe('jumpToBoundDestination()', () => {
     // Mock factory and destinations for unit tests
-    let mockFactoryForJump: ReturnType<typeof createMockDestinationFactory>;
+    let mockRegistryForJump: ReturnType<typeof createMockDestinationRegistry>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
-    let mockEditorDest: jest.Mocked<PasteDestination>;
+    let mockEditorDest: PasteDestination;
+    let mockEditorDestFocusSpy: jest.SpyInstance;
     let mockCursorAIDest: jest.Mocked<PasteDestination>;
     let mockClaudeCodeDest: jest.Mocked<PasteDestination>;
 
     beforeEach(() => {
       // Use specialized factories with default values (all already have sensible defaults)
-      mockTerminalDest = createMockTerminalDestination();
-      mockEditorDest = createMockTextEditorDestination();
+      mockTerminalDest = createMockTerminalPasteDestination();
+      mockEditorDest = createMockEditorComposablePasteDestination();
+      mockEditorDestFocusSpy = jest.spyOn(mockEditorDest, 'focus');
       mockCursorAIDest = createMockCursorAIDestination();
       mockClaudeCodeDest = createMockClaudeCodeDestination();
 
-      mockFactoryForJump = createMockDestinationFactory({
+      mockRegistryForJump = createMockDestinationRegistry({
         createImpl: (options) => {
           if (options.type === 'terminal') return mockTerminalDest;
           if (options.type === 'text-editor') return mockEditorDest;
@@ -1402,7 +1583,7 @@ describe('PasteDestinationManager', () => {
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
         mockContext,
-        mockFactoryForJump,
+        mockRegistryForJump,
         mockAdapter,
         mockLogger,
       );
@@ -1421,11 +1602,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should focus bound terminal successfully', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1455,7 +1632,7 @@ describe('PasteDestinationManager', () => {
       const result = await manager.jumpToBoundDestination();
 
       expect(result).toBe(true);
-      expect(mockEditorDest.focus).toHaveBeenCalledTimes(1);
+      expect(mockEditorDestFocusSpy).toHaveBeenCalledTimes(1);
     });
 
     it('should focus bound Cursor AI successfully', async () => {
@@ -1490,12 +1667,20 @@ describe('PasteDestinationManager', () => {
       expect(mockClaudeCodeDest.focus).toHaveBeenCalledTimes(1);
     });
 
+    it('should focus bound GitHub Copilot Chat successfully', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockRegistryForJump, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('github-copilot-chat');
+
+      const result = await manager.jumpToBoundDestination();
+
+      expect(result).toBe(true);
+      expect(mockDestination.focus).toHaveBeenCalledTimes(1);
+    });
+
     it('should return false when focus fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1510,11 +1695,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show failure message when focus fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       const mockVscode = mockAdapter.__getVscodeInstance();
       mockVscode.window.activeTerminal = mockTerminal;
@@ -1531,11 +1712,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show success message in status bar when focus succeeds', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       const mockVscode = mockAdapter.__getVscodeInstance();
       mockVscode.window.activeTerminal = mockTerminal;
@@ -1553,11 +1730,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should log success with destination details for terminal', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1603,11 +1776,11 @@ describe('PasteDestinationManager', () => {
         {
           fn: 'PasteDestinationManager.jumpToBoundDestination',
           destinationType: 'text-editor',
-          displayName: 'Text Editor',
-          editorName: 'src/file.ts',
+          displayName: 'Text Editor ("file.ts")',
+          editorName: 'file.ts',
           editorPath: '/workspace/src/file.ts',
         },
-        'Successfully focused Text Editor',
+        'Successfully focused Text Editor ("file.ts")',
       );
     });
 
@@ -1634,12 +1807,29 @@ describe('PasteDestinationManager', () => {
       cursorManager.dispose();
     });
 
+    it('should log success with empty details for GitHub Copilot Chat', async () => {
+      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+      jest.spyOn(mockRegistryForJump, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('github-copilot-chat');
+
+      // Clear logger calls from bind()
+      jest.clearAllMocks();
+
+      await manager.jumpToBoundDestination();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.jumpToBoundDestination',
+          destinationType: 'github-copilot-chat',
+          displayName: 'GitHub Copilot Chat',
+        },
+        'Successfully focused GitHub Copilot Chat',
+      );
+    });
+
     it('should log warning when focus fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
@@ -1667,7 +1857,7 @@ describe('PasteDestinationManager', () => {
       await manager.jumpToBoundDestination();
 
       expect(mockTerminalDest.focus).not.toHaveBeenCalled();
-      expect(mockEditorDest.focus).not.toHaveBeenCalled();
+      expect(mockEditorDestFocusSpy).not.toHaveBeenCalled();
       expect(mockCursorAIDest.focus).not.toHaveBeenCalled();
       expect(mockClaudeCodeDest.focus).not.toHaveBeenCalled();
     });
@@ -1679,11 +1869,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not show success message when focus fails', async () => {
-      const mockTerminal = {
-        name: 'bash',
-        sendText: jest.fn(),
-        show: jest.fn(),
-      } as unknown as vscode.Terminal;
+      const mockTerminal = createMockTerminal();
 
       const mockVscode = mockAdapter.__getVscodeInstance();
       mockVscode.window.activeTerminal = mockTerminal;
@@ -1707,21 +1893,21 @@ describe('PasteDestinationManager', () => {
       const TEST_STATUS = 'Content sent successfully';
 
       let mockTerminalDest: jest.Mocked<PasteDestination>;
-      let mockFactoryForSend: ReturnType<typeof createMockDestinationFactory>;
+      let mockRegistryForSend: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
       beforeEach(() => {
-        mockTerminalDest = createMockTerminalDestination({
+        mockTerminalDest = createMockTerminalPasteDestination({
           displayName: 'Terminal ("bash")',
         });
 
-        mockFactoryForSend = createMockDestinationFactory({
+        mockRegistryForSend = createMockDestinationRegistry({
           createImpl: () => mockTerminalDest,
         });
 
         manager = new PasteDestinationManager(
           mockContext,
-          mockFactoryForSend,
+          mockRegistryForSend,
           mockAdapter,
           mockLogger,
         );
@@ -1730,9 +1916,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should successfully send text to bound destination', async () => {
-        const mockTerminal = {
-          name: 'bash',
-        } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -1751,10 +1935,21 @@ describe('PasteDestinationManager', () => {
         expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
       });
 
+      it('should successfully send text to bound GitHub Copilot Chat', async () => {
+        const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
+        jest.spyOn(mockRegistryForSend, 'create').mockReturnValue(mockDestination);
+
+        await manager.bind('github-copilot-chat');
+        mockDestination.pasteContent.mockResolvedValueOnce(true);
+
+        const result = await manager.sendTextToDestination(TEST_CONTENT, TEST_STATUS);
+
+        expect(result).toBe(true);
+        expect(mockDestination.pasteContent).toHaveBeenCalledWith(TEST_CONTENT);
+      });
+
       it('should handle destination.pasteContent returning false', async () => {
-        const mockTerminal = {
-          name: 'bash',
-        } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -1786,9 +1981,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should verify status bar message shown on success', async () => {
-        const mockTerminal = {
-          name: 'bash',
-        } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -1807,9 +2000,7 @@ describe('PasteDestinationManager', () => {
 
       it('should test with large content (>1000 chars)', async () => {
         const largeContent = 'x'.repeat(1500);
-        const mockTerminal = {
-          name: 'bash',
-        } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -1833,21 +2024,21 @@ describe('PasteDestinationManager', () => {
     describe('Replace Binding Confirmation', () => {
       let mockTerminalDest1: jest.Mocked<PasteDestination>;
       let mockTerminalDest2: jest.Mocked<PasteDestination>;
-      let mockFactoryForReplace: ReturnType<typeof createMockDestinationFactory>;
+      let mockRegistryForReplace: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
       beforeEach(() => {
-        mockTerminalDest1 = createMockTerminalDestination({
+        mockTerminalDest1 = createMockTerminalPasteDestination({
           displayName: 'Terminal ("bash")',
           resourceName: 'bash',
         });
 
-        mockTerminalDest2 = createMockTerminalDestination({
+        mockTerminalDest2 = createMockTerminalPasteDestination({
           displayName: 'Terminal ("zsh")',
           resourceName: 'zsh',
         });
 
-        mockFactoryForReplace = createMockDestinationFactory({
+        mockRegistryForReplace = createMockDestinationRegistry({
           createImpl: (options) => {
             if (options.terminal?.name === 'bash') return mockTerminalDest1;
             if (options.terminal?.name === 'zsh') return mockTerminalDest2;
@@ -1857,7 +2048,7 @@ describe('PasteDestinationManager', () => {
 
         manager = new PasteDestinationManager(
           mockContext,
-          mockFactoryForReplace,
+          mockRegistryForReplace,
           mockAdapter,
           mockLogger,
         );
@@ -1866,8 +2057,8 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should set replacedDestinationName when user confirms replacement', async () => {
-        const mockTerminal1 = { name: 'bash' } as unknown as vscode.Terminal;
-        const mockTerminal2 = { name: 'zsh' } as unknown as vscode.Terminal;
+        const mockTerminal1 = createMockTerminal({ name: 'bash' });
+        const mockTerminal2 = createMockTerminal({ name: 'zsh' });
 
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
         await manager.bind('terminal');
@@ -1891,8 +2082,8 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should unbind old destination when user confirms replacement', async () => {
-        const mockTerminal1 = { name: 'bash' } as unknown as vscode.Terminal;
-        const mockTerminal2 = { name: 'zsh' } as unknown as vscode.Terminal;
+        const mockTerminal1 = createMockTerminal({ name: 'bash' });
+        const mockTerminal2 = createMockTerminal({ name: 'zsh' });
 
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
         await manager.bind('terminal');
@@ -1918,8 +2109,8 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should verify no changes when user cancels replacement', async () => {
-        const mockTerminal1 = { name: 'bash' } as unknown as vscode.Terminal;
-        const mockTerminal2 = { name: 'zsh' } as unknown as vscode.Terminal;
+        const mockTerminal1 = createMockTerminal({ name: 'bash' });
+        const mockTerminal2 = createMockTerminal({ name: 'zsh' });
 
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
         await manager.bind('terminal');
@@ -1947,21 +2138,21 @@ describe('PasteDestinationManager', () => {
 
     describe('Already Bound Check', () => {
       let mockTerminalDest: jest.Mocked<PasteDestination>;
-      let mockFactoryForDuplicate: ReturnType<typeof createMockDestinationFactory>;
+      let mockRegistryForDuplicate: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
       beforeEach(() => {
-        mockTerminalDest = createMockTerminalDestination({
+        mockTerminalDest = createMockTerminalPasteDestination({
           displayName: 'Terminal ("bash")',
         });
 
-        mockFactoryForDuplicate = createMockDestinationFactory({
+        mockRegistryForDuplicate = createMockDestinationRegistry({
           createImpl: () => mockTerminalDest,
         });
 
         manager = new PasteDestinationManager(
           mockContext,
-          mockFactoryForDuplicate,
+          mockRegistryForDuplicate,
           mockAdapter,
           mockLogger,
         );
@@ -1970,7 +2161,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should show already bound message when binding to same terminal twice', async () => {
-        const mockTerminal = { name: 'bash' } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -1997,7 +2188,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should verify no rebind occurs when already bound to same destination', async () => {
-        const mockTerminal = { name: 'bash' } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -2022,7 +2213,7 @@ describe('PasteDestinationManager', () => {
       });
 
       it('should verify info message shown to user for duplicate binding', async () => {
-        const mockTerminal = { name: 'bash' } as unknown as vscode.Terminal;
+        const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
         await manager.bind('terminal');
@@ -2054,21 +2245,20 @@ describe('PasteDestinationManager', () => {
     });
 
     describe('Document Close Auto-Unbind', () => {
-      let mockTextEditorDest: ReturnType<typeof createMockTextEditorDestination>;
-      let mockFactoryForDocument: ReturnType<typeof createMockDestinationFactory>;
+      let mockTextEditorDest: ReturnType<typeof createMockEditorComposablePasteDestination>;
+      let mockRegistryForDocument: ReturnType<typeof createMockDestinationRegistry>;
       let localDocumentCloseListener: (doc: vscode.TextDocument) => void;
 
       beforeEach(() => {
-        mockFactoryForDocument = createMockDestinationFactory({
+        mockRegistryForDocument = createMockDestinationRegistry({
           createImpl: (options) => {
             if (options.type === 'text-editor' && options.editor) {
               const doc = options.editor.document;
               const fileName = doc.uri.fsPath.split('/').pop() || 'Unknown';
-              mockTextEditorDest = createMockTextEditorDestination({
+              // Use real ComposablePasteDestination for document close listener to work
+              mockTextEditorDest = createMockEditorComposablePasteDestination({
                 displayName: `Text Editor (${fileName})`,
-                resourceName: fileName,
-                // Key: Return the actual editor's document URI, not a pre-mocked static one
-                getBoundDocumentUri: jest.fn().mockReturnValue(doc.uri),
+                editor: options.editor,
               });
               return mockTextEditorDest;
             }
@@ -2078,7 +2268,7 @@ describe('PasteDestinationManager', () => {
 
         manager = new PasteDestinationManager(
           mockContext,
-          mockFactoryForDocument,
+          mockRegistryForDocument,
           mockAdapter,
           mockLogger,
         );
@@ -2181,45 +2371,6 @@ describe('PasteDestinationManager', () => {
         localDocumentCloseListener(closedDocument);
 
         // Should still be bound since we closed a different document
-        expect(manager.getBoundDestination()).toBe(mockTextEditorDest);
-
-        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
-        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
-        expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
-      });
-
-      it('should handle early return when boundDocumentUri is undefined', async () => {
-        const mockUri = {
-          toString: () => 'file:///workspace/file.ts',
-          fsPath: '/workspace/file.ts',
-          scheme: 'file',
-        } as vscode.Uri;
-        const mockDocument = {
-          uri: mockUri,
-          languageId: 'typescript',
-        } as vscode.TextDocument;
-        const mockEditor = { document: mockDocument } as vscode.TextEditor;
-
-        mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
-
-        const bindResult = await manager.bind('text-editor');
-
-        expect(bindResult).toBe(true);
-        expect(manager.getBoundDestination()).toBe(mockTextEditorDest);
-
-        // Clear bind() messages to isolate close behavior
-        const mockVscode = mockAdapter.__getVscodeInstance();
-        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
-        (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
-        (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
-
-        // AFTER binding, change mock to return undefined (simulates edge case)
-        (mockTextEditorDest.getBoundDocumentUri as jest.Mock).mockReturnValue(undefined);
-
-        // Simulate document closure
-        localDocumentCloseListener(mockDocument);
-
-        // Should not crash or unbind (early return when URI is undefined)
         expect(manager.getBoundDestination()).toBe(mockTextEditorDest);
 
         expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();

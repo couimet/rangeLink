@@ -1,29 +1,20 @@
-/**
- * Create a mock ClaudeCodeDestination for testing
- */
-
-import type { ClaudeCodeDestination } from '../../destinations/ClaudeCodeDestination';
-
-import { createMockPasteDestination } from './createMockPasteDestination';
+import {
+  createBaseMockPasteDestination,
+  type MockDestinationOptions,
+} from './createBaseMockPasteDestination';
 
 /**
- * Create a mock ClaudeCodeDestination for testing
+ * Create a mock Claude Code destination for testing (Paradigm A).
  *
- * Convenience factory for ClaudeCode destination with appropriate defaults.
- * Uses base PasteDestination mock (no extra methods beyond interface).
+ * Uses Paradigm A (pure jest mocks). For Paradigm B (real class with mocked
+ * capabilities), use createMockClaudeCodeComposableDestination.
  *
- * Note: Override parameter uses `any` for test flexibility (allows overriding readonly properties),
- * but return type is properly typed for type safety in test code.
- *
- * @param overrides - Optional partial object to override default properties/methods
- * @returns Mock Claude Code destination with jest.fn() implementations
+ * @param overrides - Optional overrides for mock behavior
+ * @returns Mock PasteDestination configured as Claude Code
  */
-export const createMockClaudeCodeDestination = (
-  overrides?: Partial<any>,
-): jest.Mocked<ClaudeCodeDestination> =>
-  createMockPasteDestination({
+export const createMockClaudeCodeDestination = (overrides?: Omit<MockDestinationOptions, 'id'>) =>
+  createBaseMockPasteDestination({
     id: 'claude-code',
     displayName: 'Claude Code Chat',
-    getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused Claude Code Chat'),
     ...overrides,
-  }) as jest.Mocked<ClaudeCodeDestination>;
+  });

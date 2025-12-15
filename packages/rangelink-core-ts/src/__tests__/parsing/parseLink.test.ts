@@ -765,7 +765,7 @@ describe('parseLink', () => {
       parseLink('file.ts#L10');
 
       expect(loggerDebugSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'parseLink',
           link: 'file.ts#L10',
           delimiters: {
@@ -774,7 +774,7 @@ describe('parseLink', () => {
             position: 'C',
             range: '-',
           },
-        }),
+        },
         'No delimiter config provided, using DEFAULT_DELIMITERS',
       );
     });
@@ -790,11 +790,11 @@ describe('parseLink', () => {
       parseLink('file.ts@line10', customDelimiters);
 
       expect(loggerDebugSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'parseLink',
           link: 'file.ts@line10',
           delimiters: customDelimiters,
-        }),
+        },
         'Using provided delimiter config',
       );
     });
@@ -810,11 +810,11 @@ describe('parseLink', () => {
       parseLink('file.ts#L10', explicitDefaults);
 
       expect(loggerDebugSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'parseLink',
           link: 'file.ts#L10',
           delimiters: explicitDefaults,
-        }),
+        },
         'Using provided delimiter config',
       );
     });
@@ -832,11 +832,11 @@ describe('parseLink', () => {
 
       // Logger should still be called before the error
       expect(loggerDebugSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'parseLink',
           link: 'file.ts#L10',
           delimiters: customDelimiters,
-        }),
+        },
         'Using provided delimiter config',
       );
     });

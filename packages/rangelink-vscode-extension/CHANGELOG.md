@@ -15,10 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - No need to manually unbind first - flow handles unbind → bind seamlessly
   - Prevents accidental binding to same destination (shows info message instead)
   - Toast notifications show replacement info: "Unbound X, now bound to Y"
-  - Integrated with all four bind commands (Claude Code, Cursor AI, Terminal, Text Editor)
+  - Integrated with all bind commands (Claude Code, Cursor AI, GitHub Copilot Chat, Terminal, Text Editor)
+- **GitHub Copilot Chat Integration** - Native paste destination for GitHub Copilot Chat
+  - Automatically inserts links and selected text directly into GitHub Copilot Chat
+  - Uses VSCode Chat API for true automatic paste workflow (unlike clipboard-based destinations)
+  - Command: "Bind RangeLink to GitHub Copilot Chat Destination"
+  - Requires GitHub Copilot Chat extension
+  - Consistent with RangeLink's unified paste destination workflow (auto-focus, cursor positioning)
 - **🚐 Paste Selected Text to Destination** - Send selected text directly to bound destinations, not just links
   - New command: "Paste Selected Text to Bound Destination" (`Cmd+R Cmd+V` / `Ctrl+R Ctrl+V`)
-  - Works with all destination types: Terminal, Text Editor, Claude Code Extension, Cursor AI
+  - Works with all destination types: Claude Code Extension, Cursor AI, GitHub Copilot Chat, Terminal, Text Editor
   - Supports single and multi-selection (concatenates with newlines)
   - Clipboard fallback when no destination bound
   - Perfect for quickly sharing code snippets with AI assistants

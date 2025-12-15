@@ -728,23 +728,16 @@ describe('formatLink', () => {
         });
       });
 
-      // Verify logger.debug was called
-      expect(mockDebug).toHaveBeenCalledTimes(1);
-
-      // Extract the actual context object passed to logger.debug
-      const [[loggedContext, loggedMessage]] = mockDebug.mock.calls;
-
-      // Verify core logging attributes
-      expect(loggedContext).toHaveProperty('fn', 'formatLink');
-      expect(loggedContext).toHaveProperty('link', 'src/file.ts#L11C6-L21C16');
-      expect(loggedContext).toHaveProperty('linkLength', 24);
-
-      // Verify extra context attributes from generator
-      expect(loggedContext).toHaveProperty('selectionType', 'Normal');
-      expect(loggedContext).toHaveProperty('rangeFormat', 'WithPositions');
-
-      // Verify log message
-      expect(loggedMessage).toBe('Generated link');
+      expect(mockDebug).toHaveBeenCalledWith(
+        {
+          fn: 'formatLink',
+          link: 'src/file.ts#L11C6-L21C16',
+          linkLength: 24,
+          selectionType: 'Normal',
+          rangeFormat: 'WithPositions',
+        },
+        'Generated link',
+      );
 
       mockDebug.mockRestore();
     });
@@ -785,16 +778,15 @@ describe('formatLink', () => {
         });
       });
 
-      expect(mockDebug).toHaveBeenCalledTimes(1);
-      const [[loggedContext]] = mockDebug.mock.calls;
-
-      // Verify core logging attributes
-      expect(loggedContext).toHaveProperty('fn', 'formatLink');
-      expect(loggedContext).toHaveProperty('link', 'src/file.ts#L42~#~L~-~');
-      expect(loggedContext).toHaveProperty('linkLength', 22);
-
-      // Verify simple line reference context
-      expect(loggedContext).toHaveProperty('format', 'simple');
+      expect(mockDebug).toHaveBeenCalledWith(
+        {
+          fn: 'formatLink',
+          link: 'src/file.ts#L42~#~L~-~',
+          linkLength: 22,
+          format: 'simple',
+        },
+        'Generated link',
+      );
 
       mockDebug.mockRestore();
     });

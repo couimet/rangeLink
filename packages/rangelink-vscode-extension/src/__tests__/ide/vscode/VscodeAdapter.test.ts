@@ -2,15 +2,18 @@ import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { BehaviourAfterPaste } from '../../../types/BehaviourAfterPaste';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
 import * as resolveWorkspacePathModule from '../../../utils/resolveWorkspacePath';
-import { createMockDocument } from '../../helpers/createMockDocument';
-import { createMockEditor } from '../../helpers/createMockEditor';
-import { createMockTab } from '../../helpers/createMockTab';
-import { createMockTabGroup } from '../../helpers/createMockTabGroup';
-import { createMockTabGroups } from '../../helpers/createMockTabGroups';
-import { createMockTerminal } from '../../helpers/createMockTerminal';
-import { createMockUri } from '../../helpers/createMockUri';
-import { createMockUntitledUri } from '../../helpers/createMockUntitledUri';
-import { createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../../helpers/mockVSCode';
+import {
+  createMockDocument,
+  createMockEditor,
+  createMockTab,
+  createMockTabGroup,
+  createMockTabGroups,
+  createMockTerminal,
+  createMockUntitledUri,
+  createMockUri,
+  createMockVscodeAdapter,
+  type VscodeAdapterWithTestHooks,
+} from '../../helpers';
 
 // ============================================================================
 // Tests
@@ -479,11 +482,16 @@ describe('VscodeAdapter', () => {
 
   describe('insertTextAtCursor', () => {
     it('should call editor.edit and insert text at cursor position', async () => {
+      // Capture the callback passed to edit()
+      let capturedCallback: ((builder: { insert: jest.Mock }) => void) | undefined;
       const mockEditor = {
         selection: {
           active: { line: 5, character: 10 },
         },
-        edit: jest.fn().mockResolvedValue(true),
+        edit: jest.fn().mockImplementation((callback) => {
+          capturedCallback = callback;
+          return Promise.resolve(true);
+        }),
       } as any;
       const text = 'inserted text';
 
@@ -493,11 +501,11 @@ describe('VscodeAdapter', () => {
       expect(result).toBe(true);
 
       // Verify the editBuilder callback was used correctly
-      const editCallback = (mockEditor.edit as jest.Mock).mock.calls[0][0];
+      expect(capturedCallback).toBeDefined();
       const mockEditBuilder = {
         insert: jest.fn(),
       };
-      editCallback(mockEditBuilder);
+      capturedCallback!(mockEditBuilder);
       expect(mockEditBuilder.insert).toHaveBeenCalledWith(mockEditor.selection.active, text);
     });
 
@@ -515,19 +523,23 @@ describe('VscodeAdapter', () => {
     });
 
     it('should handle empty text insertion', async () => {
+      let capturedCallback: ((builder: { insert: jest.Mock }) => void) | undefined;
       const mockEditor = {
         selection: {
           active: { line: 0, character: 0 },
         },
-        edit: jest.fn().mockResolvedValue(true),
+        edit: jest.fn().mockImplementation((callback) => {
+          capturedCallback = callback;
+          return Promise.resolve(true);
+        }),
       } as any;
 
       const result = await adapter.insertTextAtCursor(mockEditor, '');
 
       expect(result).toBe(true);
-      const editCallback = (mockEditor.edit as jest.Mock).mock.calls[0][0];
+      expect(capturedCallback).toBeDefined();
       const mockEditBuilder = { insert: jest.fn() };
-      editCallback(mockEditBuilder);
+      capturedCallback!(mockEditBuilder);
       expect(mockEditBuilder.insert).toHaveBeenCalledWith(mockEditor.selection.active, '');
     });
   });

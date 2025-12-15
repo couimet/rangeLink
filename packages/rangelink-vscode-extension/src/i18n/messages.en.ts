@@ -17,6 +17,8 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: Cannot bind Claude Code - extension not installed or not active',
   [MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE]:
     'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
+  [MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE]:
+    'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
   [MessageCode.ERROR_NAVIGATION_FAILED]: 'RangeLink: Failed to navigate to {path}: {error}',
   [MessageCode.ERROR_NO_ACTIVE_TERMINAL]:
     'RangeLink: No active terminal. Open a terminal and try again.',
@@ -54,6 +56,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE]: '✓ Focused Claude Code Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]: '✓ Focused Cursor AI Assistant',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: '✓ Focused Editor: "{resourceName}"',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT]: '✓ Focused GitHub Copilot Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: "{resourceName}"',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
 

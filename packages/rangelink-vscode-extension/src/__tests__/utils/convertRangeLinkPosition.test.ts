@@ -1,7 +1,7 @@
 import type { LinkPosition } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import { convertRangeLinkPosition } from '../../utils/convertRangeLinkPosition';
+import { convertRangeLinkPosition } from '../../utils';
 
 // Mock document
 const createMockDocument = (lineCount: number, lineLengths: number[]): vscode.TextDocument => {

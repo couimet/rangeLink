@@ -1,4 +1,4 @@
-import { isEligibleForPaste } from '../../utils/isEligibleForPaste';
+import { isEligibleForPaste } from '../../utils';
 
 describe('isEligibleForPaste', () => {
   describe('Null and undefined handling', () => {
