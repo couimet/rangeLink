@@ -12,6 +12,7 @@ import {
   isGitHubCopilotChatAvailable,
   GITHUB_COPILOT_CHAT_COMMAND,
   GITHUB_COPILOT_CHAT_EXTENSION_ID,
+  GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
 } from '../../aiAssistants/isGitHubCopilotChatAvailable';
 
 describe('isGitHubCopilotChatAvailable', () => {
@@ -182,5 +183,18 @@ describe('isGitHubCopilotChatAvailable', () => {
 
       expect(result).toBe(true);
     });
+  });
+});
+
+describe('GITHUB_COPILOT_CHAT_FOCUS_COMMANDS', () => {
+  it('should export focus commands array with primary and fallback commands', () => {
+    expect(GITHUB_COPILOT_CHAT_FOCUS_COMMANDS).toStrictEqual([
+      'workbench.action.chat.open',
+      'workbench.panel.chat.view.copilot.focus',
+    ]);
+  });
+
+  it('should have the chat.open command as the primary (first) command', () => {
+    expect(GITHUB_COPILOT_CHAT_FOCUS_COMMANDS[0]).toBe('workbench.action.chat.open');
   });
 });

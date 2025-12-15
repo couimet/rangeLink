@@ -33,6 +33,8 @@ export const messagesEn: Record<MessageCode, string> = {
     'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
   [MessageCode.INFO_COMMIT_HASH_COPIED]: 'Commit hash copied to clipboard',
   [MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS]: 'Paste (Cmd/Ctrl+V) in Cursor chat to use.',
+  [MessageCode.INFO_GITHUB_COPILOT_CHAT_USER_INSTRUCTIONS]:
+    'Paste (Cmd/Ctrl+V) in GitHub Copilot chat to use.',
   [MessageCode.INFO_JUMP_FOCUS_FAILED]: 'RangeLink: Failed to focus {destinationName}',
   [MessageCode.INFO_JUMP_NO_DESTINATION_BOUND]:
     'RangeLink: No destination bound. Bind a destination first.',
