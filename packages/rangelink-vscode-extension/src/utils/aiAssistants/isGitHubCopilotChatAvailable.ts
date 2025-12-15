@@ -1,7 +1,6 @@
 import type { Logger } from 'barebone-logger';
 import type { Extension } from 'vscode';
 
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 export const GITHUB_COPILOT_CHAT_COMMAND = 'workbench.action.chat.open';

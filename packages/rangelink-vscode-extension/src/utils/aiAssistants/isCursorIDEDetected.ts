@@ -1,7 +1,6 @@
 import type { Logger } from 'barebone-logger';
 import type { Extension } from 'vscode';
 
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 export const isCursorIDEDetected = (ideAdapter: VscodeAdapter, logger: Logger): boolean => {
