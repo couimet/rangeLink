@@ -254,7 +254,6 @@ When filing a bug report, please include:
 - 📦 [Extension Source](https://github.com/couimet/rangelink/tree/main/packages/rangelink-vscode-extension)
 - 🐛 [Report Issues](https://github.com/couimet/rangelink/issues)
 - 📚 [Monorepo Documentation](https://github.com/couimet/rangelink#readme)
-- 🤝 [Contributing Guide](https://github.com/couimet/rangelink/blob/main/CONTRIBUTING.md)
 
 ## Featured In
 
@@ -280,7 +279,7 @@ Curious about how RangeLink came to be or want to contribute?
 - 📖 **[Project Origin Story](https://github.com/couimet/rangelink#history)** - Why RangeLink exists (spoiler: claude-code changed everything)
 - 🐔 **[About the Logo](https://github.com/couimet/rangelink#about-the-logo)** - Free-range chickens, precision, and Pi (yes, really)
 - 🏗️ **[Architecture & Monorepo](https://github.com/couimet/rangelink#monorepo-structure)** - How it's built and organized
-- 🤝 **[Contributing Guide](https://github.com/couimet/rangelink#contributing)** - Help make RangeLink even better
+- 🤝 **[Contributing Guide](https://github.com/couimet/rangelink/blob/main/CONTRIBUTING.md)** - Help make RangeLink even better
 - 🗺️ **[Roadmap](https://github.com/couimet/rangelink/blob/main/docs/ROADMAP.md)** - What's coming next (enhanced navigation, multi-range support, and more!)
 
 ## License
