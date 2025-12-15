@@ -38,17 +38,20 @@ Or search for **"RangeLink"** in your editor's Extensions panel (`Cmd+Shift+X` /
 
 ---
 
-## Try It (10 seconds)
+## Try It
 
-1. **Select some code** in your editor
-2. **Press `Cmd+R Cmd+L`** (Mac) or `Ctrl+R Ctrl+L` (Windows/Linux)
-3. **Done!** Link is ready — in your clipboard or auto-pasted to your bound destination
+1. **Bind a destination** (optional but recommended): Command Palette → "Bind RangeLink to..." (Claude Code, Cursor AI, Copilot Chat, Terminal, or Text Editor)
+2. **Select some code** in your editor
+3. **Generate link**: Command Palette → "Copy Range Link" (or `Cmd+R Cmd+L` / `Ctrl+R Ctrl+L` if no keybinding conflicts)
+4. **Done!** Link auto-pastes to your bound destination, or copies to clipboard if no destination bound
 
 **Example output:**
 
 ```text
 recipes/baking/chickenpie.ts#L3C14-L314C16
 ```
+
+**Tip:** If `Cmd+R Cmd+L` doesn't work, another extension may have claimed that keybinding. Use Command Palette as the reliable fallback.
 
 ---
 
