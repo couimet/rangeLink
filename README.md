@@ -107,7 +107,7 @@ RangeLink is organized as a pnpm workspace with a platform-agnostic core library
 
 Even though I use Cursor daily, most of my AI work happens with `claude-code` running in a terminal _inside_ Cursor. The constant copy-pasting between terminal and editor was exhausting.
 
-One day, frustrated after the hundredth copy-paste, I tried something: I sent claude-code a link like `auth.ts#L42C10-L58C25` pointing to a specific code snippet.
+One day, frustrated after the hundredth copy-paste, I tried something: I sent claude-code a link like `recipes/baking/chickenpie.ts#L3C14-L314C16` pointing to a specific code snippet.
 
 **It just worked.** No explanation needed. Claude understood immediately.
 
