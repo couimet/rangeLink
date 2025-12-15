@@ -29,7 +29,7 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 1. **Select code** → Generate link (`Cmd+R Cmd+L`)
 2. **Paste Destination handles delivery** → Link appears where your AI can see it
 3. **AI reads precise context** → No manual copy/paste, no lost focus
-4. **AI responds with links** → **Click to jump directly to code** (Cmd+Click in terminal)
+4. **AI responds with links** → **Click to jump directly to code** (Cmd+Click in terminal or editor)
 
 **Compete with built-in AI features** by making external AI assistants feel integrated. You get:
 
