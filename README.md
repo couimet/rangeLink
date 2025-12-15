@@ -241,7 +241,14 @@ From this humble beginning, RangeLink evolved into a comprehensive monorepo with
 
 ## About the Logo
 
-A **free-range** chicken — because your code should roam free across editors, tools, and teams. The chains represent links. And **3.1416** instead of 3.14? Because precision matters. 🐔
+Ever notice the chicken in our logo? That's not just any chicken — it's a **free-range** chicken. Because your code should roam free across editors, tools, and teams. No fences, no boundaries. 🐔
+
+The chains? Those represent links — connections between developers, tools, and ideas. Collaboration without constraints.
+
+And here's the nerdy part: look closely at the numbers. You'll see **3.1416** instead of just 3.14. Because when you're sharing code references, **precision matters**. RangeLink shares exact ranges — period.
+
+> [!TIP]
+> **π Dad Joke:** Pi is irrational, and so are developers who don't use precise code references. At least Pi has an excuse.
 
 ---
 
