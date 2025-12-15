@@ -16,6 +16,7 @@ import {
   isCursorIDEDetected,
   isGitHubCopilotChatAvailable,
   GITHUB_COPILOT_CHAT_COMMAND,
+  GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
 } from '../utils';
 
 import { ComposablePasteDestination } from './ComposablePasteDestination';
@@ -240,8 +241,7 @@ const CLAUDE_CODE_FOCUS_COMMANDS = [
 /**
  * Build a GitHubCopilotChat destination using ComposablePasteDestination factory method.
  *
- * GitHub Copilot Chat uses native VSCode API with workbench.action.chat.open command.
- * This is the simplest AI assistant - no clipboard needed, direct API insertion.
+ * GitHub Copilot Chat uses clipboard-based paste with focus commands.
  *
  * @param options - Type-discriminated options
  * @param context - Builder context with dependencies
@@ -257,20 +257,26 @@ export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, c
     });
   }
 
+  const focusManager = context.factories.focusManager.createCommandFocus(
+    GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
+  );
+
   return ComposablePasteDestination.createAiAssistant({
     id: 'github-copilot-chat',
     displayName: 'GitHub Copilot Chat',
-    textInserter: context.factories.textInserter.createNativeCommandInserter(
-      GITHUB_COPILOT_CHAT_COMMAND,
-      (text) => ({ query: text, isPartialQuery: true }),
+    textInserter: context.factories.textInserter.createClipboardInserter(
+      [...CHAT_PASTE_COMMANDS],
+      () => focusManager.focus({ fn: 'buildGitHubCopilotChatDestination.beforePaste' }),
     ),
-    focusManager: context.factories.focusManager.createCommandFocus([GITHUB_COPILOT_CHAT_COMMAND]),
+    focusManager,
     isAvailable: () => isGitHubCopilotChatAvailable(context.ideAdapter, context.logger),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT),
     loggingDetails: {},
     logger: context.logger,
-    // GitHub Copilot performs automatic paste, so no manual instruction is needed
-    getUserInstruction: () => undefined,
+    getUserInstruction: (autoPasteResult) =>
+      autoPasteResult === AutoPasteResult.Success
+        ? undefined
+        : formatMessage(MessageCode.INFO_GITHUB_COPILOT_CHAT_USER_INSTRUCTIONS),
   });
 };
 

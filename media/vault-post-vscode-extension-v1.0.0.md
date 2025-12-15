@@ -23,7 +23,7 @@ This isn't just a version bump — it's a commitment that RangeLink is mature, r
 
 **🤖 GitHub Copilot Chat Integration (3rd AI Chat Option)**
 
-- Native paste destination for GitHub Copilot Chat
+- Paste destination for GitHub Copilot Chat
 - Expands your AI choices: Claude, Cursor AI, or Copilot — your preference, your workflow
 
 **⌨️ Complete R-Keybinding Family (New Commands)**
@@ -122,7 +122,7 @@ Not about Roger Junior. Just a quick jump to where your links are going. 🎯
 
 ### GitHub Copilot Chat: Your 3rd AI Chat Option
 
-v1.0.0 adds native GitHub Copilot Chat support as a paste destination, giving you three AI chat options:
+v1.0.0 adds GitHub Copilot Chat support as a paste destination, giving you three AI chat options:
 
 - **Claude Code Extension** — Anthropic's official extension (works in VSCode and Cursor)
 - **Cursor AI** — Built into Cursor IDE

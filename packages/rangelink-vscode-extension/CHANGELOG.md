@@ -15,9 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - All AI chat destinations now provide identical UX: select code → link appears → keep typing
   - "One Keybinding to Rule Them All" — now it truly does
   - Switch AI assistants without relearning shortcuts — same R-keybindings, any AI
-- **GitHub Copilot Chat Integration** - Native paste destination for GitHub Copilot Chat
+- **GitHub Copilot Chat Integration** - Paste destination for GitHub Copilot Chat
   - Automatically inserts links and selected text directly into GitHub Copilot Chat
-  - Uses VSCode Chat API for true automatic paste workflow (unlike clipboard-based destinations)
   - Command: "Bind RangeLink to GitHub Copilot Chat Destination"
   - Requires GitHub Copilot Chat extension
   - Consistent with RangeLink's unified paste destination workflow (auto-focus, cursor positioning)
