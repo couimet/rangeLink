@@ -13,6 +13,15 @@
 
 ## Why RangeLink?
 
+Every AI coding assistant has its own way to share code — different shortcuts, different formats, different muscle memory. If you use multiple AI tools, you're constantly context-switching.
+
+**RangeLink unifies it:**
+
+- **One keybinding** — `Cmd+R Cmd+L` works with Claude, Copilot, Cursor, terminal tools, text editors. Learn once, use everywhere.
+- **Better precision** — Character-level ranges, not just lines. Share exactly what matters.
+- **Universal format** — GitHub-style links work in PRs, Slack, docs. Not proprietary.
+- **AI-agnostic** — Your workflow doesn't change when you switch AI assistants.
+
 ### For AI-Assisted Development
 
 **Using Claude Code Extension, terminal claude-code, ChatGPT, or Cursor for development?** RangeLink eliminates the context-sharing friction:
