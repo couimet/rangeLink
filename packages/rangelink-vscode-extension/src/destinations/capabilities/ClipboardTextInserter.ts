@@ -2,6 +2,7 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 
 import { FOCUS_TO_PASTE_DELAY_MS } from '../../constants/chatPasteConstants';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+
 import type { TextInserter } from './TextInserter';
 
 /**

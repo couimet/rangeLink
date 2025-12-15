@@ -10,6 +10,7 @@ import { PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
 import { VSCodeLogger } from '../VSCodeLogger';
+
 import {
   createMockClipboard,
   createMockCommands,

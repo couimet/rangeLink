@@ -4,8 +4,8 @@
  * Provides factory function to create mock destination managers with sensible defaults.
  */
 
-import type { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
 import type { PasteDestination } from '../../destinations/PasteDestination';
+import type { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
 
 /**
  * Options for creating a mock destination manager

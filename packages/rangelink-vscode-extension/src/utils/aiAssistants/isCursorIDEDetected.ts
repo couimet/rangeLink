@@ -1,6 +1,6 @@
+import type { Logger } from 'barebone-logger';
 import type { Extension } from 'vscode';
 
-import type { Logger } from 'barebone-logger';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 

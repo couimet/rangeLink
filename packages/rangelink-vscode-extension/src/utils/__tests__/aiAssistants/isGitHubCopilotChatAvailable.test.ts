@@ -8,7 +8,6 @@ import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../../../__tests__/helpers';
-
 import {
   isGitHubCopilotChatAvailable,
   GITHUB_COPILOT_CHAT_COMMAND,

@@ -8,7 +8,6 @@ import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../../../__tests__/helpers';
-
 import {
   isClaudeCodeAvailable,
   CLAUDE_CODE_EXTENSION_ID,

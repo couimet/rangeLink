@@ -2,6 +2,7 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+
 import type { FocusManager } from './FocusManager';
 
 /**

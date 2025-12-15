@@ -8,7 +8,6 @@ import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../../../__tests__/helpers';
-
 import { isCursorIDEDetected } from '../../aiAssistants/isCursorIDEDetected';
 
 describe('isCursorIDEDetected', () => {

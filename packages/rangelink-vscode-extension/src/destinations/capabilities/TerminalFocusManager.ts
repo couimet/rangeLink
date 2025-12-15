@@ -3,6 +3,7 @@ import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { TerminalFocusType } from '../../types/TerminalFocusType';
+
 import type { FocusManager } from './FocusManager';
 
 /**

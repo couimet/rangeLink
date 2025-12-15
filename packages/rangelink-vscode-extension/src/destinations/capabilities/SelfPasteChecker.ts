@@ -1,6 +1,7 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
 
 import { isEligibleForPaste } from '../../utils';
+
 import type { EligibilityChecker } from './EligibilityChecker';
 
 /**

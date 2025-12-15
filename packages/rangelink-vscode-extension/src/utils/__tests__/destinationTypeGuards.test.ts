@@ -1,7 +1,5 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
-import type { PasteDestination } from '../../destinations/PasteDestination';
 import {
   isEditorDestination,
   isPasteDestinationType,
@@ -10,6 +8,8 @@ import {
 } from '..';
 import { createMockEditor } from '../../__tests__/helpers/createMockEditor';
 import { createMockTerminal } from '../../__tests__/helpers/createMockTerminal';
+import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
+import type { PasteDestination } from '../../destinations/PasteDestination';
 
 const createMockTextInserter = () => ({
   insert: jest.fn().mockResolvedValue(true),

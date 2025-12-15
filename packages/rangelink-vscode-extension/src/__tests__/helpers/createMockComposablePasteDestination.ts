@@ -1,6 +1,5 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import type { AutoPasteResult } from '../../types/AutoPasteResult';
 import type { EligibilityChecker } from '../../destinations/capabilities/EligibilityChecker';
 import type { FocusManager } from '../../destinations/capabilities/FocusManager';
 import type { TextInserter } from '../../destinations/capabilities/TextInserter';
@@ -9,6 +8,7 @@ import {
   type ComposablePasteDestinationConfig,
 } from '../../destinations/ComposablePasteDestination';
 import type { PasteDestination } from '../../destinations/PasteDestination';
+import type { AutoPasteResult } from '../../types/AutoPasteResult';
 
 /**
  * Configuration overrides for creating a mock ComposablePasteDestination.

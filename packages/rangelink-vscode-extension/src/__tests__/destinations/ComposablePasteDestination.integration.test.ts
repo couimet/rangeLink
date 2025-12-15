@@ -9,7 +9,6 @@
  */
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
 import { AlwaysEligibleChecker } from '../../destinations/capabilities/AlwaysEligibleChecker';
 import { CommandFocusManager } from '../../destinations/capabilities/CommandFocusManager';
 import { EditorFocusManager } from '../../destinations/capabilities/EditorFocusManager';
@@ -18,8 +17,8 @@ import type { EligibilityChecker } from '../../destinations/capabilities/Eligibi
 import { NativeCommandTextInserter } from '../../destinations/capabilities/NativeCommandTextInserter';
 import { SelfPasteChecker } from '../../destinations/capabilities/SelfPasteChecker';
 import { TerminalFocusManager } from '../../destinations/capabilities/TerminalFocusManager';
+import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
 import { TerminalFocusType } from '../../types/TerminalFocusType';
-
 import {
   createMockDocument,
   createMockEditor,

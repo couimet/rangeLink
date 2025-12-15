@@ -1,5 +1,5 @@
-import { createMockUntitledUri } from '../../__tests__/helpers/createMockUntitledUri';
 import { getUntitledDisplayName } from '..';
+import { createMockUntitledUri } from '../../__tests__/helpers/createMockUntitledUri';
 
 describe('getUntitledDisplayName', () => {
   describe('valid untitled URIs', () => {
