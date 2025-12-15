@@ -115,7 +115,7 @@ That was the lightbulb moment: **precise code references should be universal**. 
 
 I built the VS Code extension first, then extracted a platform-agnostic core library. The goal: make this work _everywhere_, for _everyone_.
 
-Today, with **paste destinations**, RangeLink sends links directly where you need them — terminals, text editors, even Cursor AI chat. No more copy-paste friction. It helps developers share code with precision across claude-code, Cursor, VSCode, GitHub, Slack, and more. One format, zero friction.
+Today, with **paste destinations**, RangeLink sends links directly where you need them — Claude Code, Cursor AI, GitHub Copilot Chat, terminals, or text editors. No more copy-paste friction. It helps developers share code with precision across any AI assistant, VSCode, Cursor, GitHub, Slack, and more. One format, zero friction.
 
 **The best part?** Your teammates don't even need RangeLink installed to understand your links. The notation is GitHub-inspired — developers already know it.
 
