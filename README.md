@@ -62,7 +62,7 @@ recipes/baking/chickenpie.ts#L3C14-L314C16
 | **Portable Links (BYOD)** | Links work regardless of recipient's delimiter configuration                      |
 | **R-Keybinding Family**   | R-L (link), R-C (clipboard), R-V (paste text), R-J (jump to destination)          |
 
-**📖 [Full Feature Guide →](./packages/rangelink-vscode-extension/README.md)**
+**📖 [Full Feature Guide →](./packages/rangelink-vscode-extension/#readme)**
 
 ---
 
@@ -79,7 +79,7 @@ recipes/baking/chickenpie.ts#L3C14-L314C16
 
 ### For Users
 
-- **[Extension README](./packages/rangelink-vscode-extension/README.md)** — Full feature guide, commands, configuration
+- **[Extension README](./packages/rangelink-vscode-extension/#readme)** — Full feature guide, commands, configuration
 - **[Link Formats](./docs/LINK-FORMATS.md)** — Complete notation reference
 - **[BYOD Guide](./docs/BYOD.md)** — Portable links specification
 
@@ -96,7 +96,7 @@ recipes/baking/chickenpie.ts#L3C14-L314C16
 
 RangeLink is organized as a pnpm workspace with a platform-agnostic core library and editor-specific extensions. The core has zero dependencies and targets 100% test coverage.
 
-**[📁 See packages/ for details →](./packages/README.md)**
+**[📁 See packages/ for details →](./packages/#readme)**
 
 ---
 
