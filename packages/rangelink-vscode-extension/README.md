@@ -8,8 +8,8 @@
 [![Open VSX Version](https://img.shields.io/open-vsx/v/couimet/rangelink-vscode-extension?label=Open%20VSX&color=blue)](https://open-vsx.org/extension/couimet/rangelink-vscode-extension)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/couimet/rangelink/blob/main/LICENSE)
 
-> **"Hey, check out lines 42 to 58... or was it 48 to 62?"** 🤔
-> **Never again.** RangeLink gives you `src/auth.ts#L42C10-L58C25` — precise, portable, and **just works** across editors, tools, and teams.
+> **"Claude Code today. Cursor AI tomorrow. Different shortcuts, different muscle memory."**<br />
+> **RangeLink ends it.** One keybinding. Any AI, any tool. Character-level precision. `recipes/baking/chickenpie.ts#L3C14-L314C16`
 
 ## Why RangeLink?
 
