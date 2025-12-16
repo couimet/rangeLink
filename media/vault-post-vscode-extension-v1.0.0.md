@@ -6,7 +6,7 @@
 
 Hey folks! **RangeLink v1.0.0** is here, and this feels like a real milestone.
 
-If you've been following along since [v0.3.0](https://vault.shopify.io/posts/330080), you know RangeLink brings character-level precision to code references and seamless paste destinations for AI workflows — all with one keybinding that works regardless of which AI assistant you're using. **v1.0.0 perfects that experience** by eliminating a major v0.3.0 pain point and expanding your choices with new features.
+If you've been following along since [v0.3.0](https://vault.shopify.io/posts/331356), you know RangeLink brings character-level precision to code references and seamless paste destinations for AI workflows — all with one keybinding that works regardless of which AI assistant you're using. **v1.0.0 perfects that experience** by eliminating a major v0.3.0 pain point and expanding your choices with new features.
 
 This isn't just a version bump — it's a commitment that RangeLink is mature, reliable, and ready for your daily workflow.
 
