@@ -314,8 +314,6 @@ https://github.com/couimet/rangeLink?utm_source=twitter&utm_medium=demo&utm_camp
 
 - [Main README](../README.md)
 - [VSCode Extension README](../packages/rangelink-vscode-extension/README.md)
-- [Architecture Overview](../docs/ARCHITECTURE.md)
-- [Roadmap](../docs/ROADMAP.md)
 
 ### Demo Best Practices
 
