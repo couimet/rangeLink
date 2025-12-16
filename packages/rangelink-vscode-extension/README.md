@@ -259,6 +259,7 @@ When filing a bug report, please include:
 
 The most recent posts are at the top.
 
+- [RangeLink v1.0.0: Perfected AI Workflows + The R-Keybinding Family](https://dev.to/couimet/rangelink-v100-perfected-ai-workflows-the-r-keybinding-family-104b) - DEV Community
 - [RangeLink v0.3.0: One Keybinding to Rule Them All](https://dev.to/couimet/rangelink-v030-one-keybinding-to-rule-them-all-2h01) - DEV Community
 - [I Built a VS Code Extension to Stop the Copy-Paste Madness](https://dev.to/couimet/i-built-a-vs-code-extension-to-stop-the-copy-paste-madness-3d7l) - DEV Community
 
