@@ -16,17 +16,28 @@ cd demo/01-basic-usage
 # Use QUICK-REFERENCE.md as a cheat sheet while recording
 ```
 
+## Creating New Demos
+
+Use the `/create-demo` custom Claude command for a guided wizard:
+
+```bash
+/create-demo
+```
+
+The wizard walks you through:
+
+1. **Discovery questions** — purpose, audience, features, scenario, production style
+2. **Flow formalization** — timestamped recording script with acts and steps
+3. **File generation** — README.md, QUICK-REFERENCE.md, sample code files
+
 ## Structure
 
-```
+Each demo folder contains README.md (recording instructions), QUICK-REFERENCE.md (cheat sheet), and sample code files.
+
+```text
 demo/
-├── README.md              # This index
-├── ASSET-STORAGE.md       # How to store/reference demo videos
-└── 01-basic-usage/
-    ├── README.md          # Recording instructions + script
-    ├── QUICK-REFERENCE.md # Cheat sheet for during recording
-    ├── calculateDiscount.ts
-    └── ShoppingCart.tsx
+├── ASSET-STORAGE.md   # Binary storage strategy
+└── 01-basic-usage/    # First demo
 ```
 
 ## Recording Tools (macOS)
