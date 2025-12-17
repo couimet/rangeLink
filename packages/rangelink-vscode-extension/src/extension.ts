@@ -2,6 +2,7 @@ import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { getDelimitersForExtension } from './config';
+import { CMD_OPEN_STATUS_BAR_MENU } from './constants';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
 import { FocusManagerFactory } from './destinations/capabilities/FocusManagerFactory';
 import { TextInserterFactory } from './destinations/capabilities/TextInserterFactory';
@@ -14,6 +15,7 @@ import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvide
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
+import { RangeLinkStatusBar } from './statusBar';
 import type { RangeLinkClickArgs } from './types';
 import { MessageCode } from './types/MessageCode';
 import { formatMessage } from './utils/formatMessage';
@@ -73,6 +75,12 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   const service = new RangeLinkService(delimiters, ideAdapter, destinationManager, getLogger());
+
+  const statusBar = new RangeLinkStatusBar(ideAdapter, destinationManager, getLogger());
+  context.subscriptions.push(statusBar);
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_OPEN_STATUS_BAR_MENU, () => statusBar.openMenu()),
+  );
 
   // Register destinationManager for automatic disposal on deactivation
   context.subscriptions.push(destinationManager);
