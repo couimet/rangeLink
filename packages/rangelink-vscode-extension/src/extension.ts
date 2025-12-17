@@ -2,7 +2,25 @@ import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { getDelimitersForExtension } from './config';
-import { CMD_OPEN_STATUS_BAR_MENU } from './constants';
+import {
+  CMD_BIND_TO_CLAUDE_CODE,
+  CMD_BIND_TO_CURSOR_AI,
+  CMD_BIND_TO_GITHUB_COPILOT_CHAT,
+  CMD_BIND_TO_TERMINAL,
+  CMD_BIND_TO_TEXT_EDITOR,
+  CMD_COPY_LINK_ABSOLUTE,
+  CMD_COPY_LINK_ONLY_ABSOLUTE,
+  CMD_COPY_LINK_ONLY_RELATIVE,
+  CMD_COPY_LINK_RELATIVE,
+  CMD_COPY_PORTABLE_LINK_ABSOLUTE,
+  CMD_COPY_PORTABLE_LINK_RELATIVE,
+  CMD_HANDLE_DOCUMENT_LINK_CLICK,
+  CMD_JUMP_TO_DESTINATION,
+  CMD_OPEN_STATUS_BAR_MENU,
+  CMD_PASTE_TO_DESTINATION,
+  CMD_SHOW_VERSION,
+  CMD_UNBIND_DESTINATION,
+} from './constants';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
 import { FocusManagerFactory } from './destinations/capabilities/FocusManagerFactory';
 import { TextInserterFactory } from './destinations/capabilities/TextInserterFactory';
@@ -124,52 +142,52 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register commands
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.copyLinkWithRelativePath', () =>
+    ideAdapter.registerCommand(CMD_COPY_LINK_RELATIVE, () =>
       service.createLink(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.copyLinkWithAbsolutePath', () =>
+    ideAdapter.registerCommand(CMD_COPY_LINK_ABSOLUTE, () =>
       service.createLink(PathFormat.Absolute),
     ),
   );
 
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.copyPortableLinkWithRelativePath', () =>
+    ideAdapter.registerCommand(CMD_COPY_PORTABLE_LINK_RELATIVE, () =>
       service.createPortableLink(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.copyPortableLinkWithAbsolutePath', () =>
+    ideAdapter.registerCommand(CMD_COPY_PORTABLE_LINK_ABSOLUTE, () =>
       service.createPortableLink(PathFormat.Absolute),
     ),
   );
 
   // Register clipboard-only commands (issue #117)
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.copyLinkOnlyWithRelativePath', () =>
+    vscode.commands.registerCommand(CMD_COPY_LINK_ONLY_RELATIVE, () =>
       service.createLinkOnly(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('rangelink.copyLinkOnlyWithAbsolutePath', () =>
+    vscode.commands.registerCommand(CMD_COPY_LINK_ONLY_ABSOLUTE, () =>
       service.createLinkOnly(PathFormat.Absolute),
     ),
   );
 
   // Register paste selected text command (issue #89)
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.pasteSelectedTextToDestination', () =>
+    ideAdapter.registerCommand(CMD_PASTE_TO_DESTINATION, () =>
       service.pasteSelectedTextToDestination(),
     ),
   );
 
   // Register version info command
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.showVersion', async () => {
+    ideAdapter.registerCommand(CMD_SHOW_VERSION, async () => {
       try {
         const versionInfo = require('./version.json');
         const isDirtyIndicator = versionInfo.isDirty ? ' (with uncommitted changes)' : '';
@@ -199,13 +217,13 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register destination binding commands
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.bindToTerminal', async () => {
+    ideAdapter.registerCommand(CMD_BIND_TO_TERMINAL, async () => {
       await destinationManager.bind('terminal');
     }),
   );
 
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.bindToTextEditor', async () => {
+    ideAdapter.registerCommand(CMD_BIND_TO_TEXT_EDITOR, async () => {
       await destinationManager.bind('text-editor');
     }),
   );
@@ -215,7 +233,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // Runtime availability checks show helpful messages when IDE/extension not available
   // This prevents "command not found" errors while maintaining discoverability
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.bindToCursorAI', async () => {
+    ideAdapter.registerCommand(CMD_BIND_TO_CURSOR_AI, async () => {
       const cursorDestination = registry.create({ type: 'cursor-ai' });
       if (!(await cursorDestination.isAvailable())) {
         void ideAdapter.showInformationMessage(
@@ -228,7 +246,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.bindToClaudeCode', async () => {
+    ideAdapter.registerCommand(CMD_BIND_TO_CLAUDE_CODE, async () => {
       const claudeCodeDestination = registry.create({ type: 'claude-code' });
       if (!(await claudeCodeDestination.isAvailable())) {
         void ideAdapter.showInformationMessage(
@@ -241,7 +259,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.bindToGitHubCopilotChat', async () => {
+    ideAdapter.registerCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT, async () => {
       const gitHubCopilotChatDestination = registry.create({ type: 'github-copilot-chat' });
       if (!(await gitHubCopilotChatDestination.isAvailable())) {
         void ideAdapter.showInformationMessage(
@@ -254,21 +272,21 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.unbindDestination', () => {
+    ideAdapter.registerCommand(CMD_UNBIND_DESTINATION, () => {
       destinationManager.unbind();
     }),
   );
 
   // Register jump to bound destination command
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.jumpToBoundDestination', async () => {
+    ideAdapter.registerCommand(CMD_JUMP_TO_DESTINATION, async () => {
       await destinationManager.jumpToBoundDestination();
     }),
   );
 
   // Register document link navigation command
   context.subscriptions.push(
-    ideAdapter.registerCommand('rangelink.handleDocumentLinkClick', (args) => {
+    ideAdapter.registerCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, (args) => {
       return documentLinkProvider.handleLinkClick(args as RangeLinkClickArgs);
     }),
   );
