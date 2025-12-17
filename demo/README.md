@@ -32,15 +32,12 @@ The wizard walks you through:
 
 ## Structure
 
-```
+Each demo folder contains README.md (recording instructions), QUICK-REFERENCE.md (cheat sheet), and sample code files.
+
+```text
 demo/
-├── README.md              # This index
-├── ASSET-STORAGE.md       # How to store/reference demo videos
-└── 01-basic-usage/
-    ├── README.md          # Recording instructions + script
-    ├── QUICK-REFERENCE.md # Cheat sheet for during recording
-    ├── calculateDiscount.ts
-    └── ShoppingCart.tsx
+├── ASSET-STORAGE.md   # Binary storage strategy
+└── 01-basic-usage/    # First demo
 ```
 
 ## Recording Tools (macOS)
