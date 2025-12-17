@@ -4,7 +4,7 @@ Use this as a cheat sheet while recording.
 
 ## Files
 
-- 📄 `calculateDiscount.ts` - Start here, highlight lines 20-42
+- 📄 `calculateDiscount.ts` - Start here, highlight lines 21-44
 - 📄 `ShoppingCart.tsx` - Switch to this to demo navigation
 
 ## The Three-Part Prompt
@@ -17,7 +17,7 @@ I'm reviewing the discount logic in the shopping cart.
 
 ### Part 2: RangeLink (Generate with extension)
 
-1. Highlight lines 20-42 in `calculateDiscount.ts`
+1. Highlight lines 21-44 in `calculateDiscount.ts`
 2. `Cmd+Shift+P` → "RangeLink: Copy RangeLink"
 3. Paste into terminal
 
@@ -50,7 +50,7 @@ How does this handle edge cases when the cart subtotal is exactly at the minPurc
 - [ ] **Light theme enabled** ("Light+ (default light)" recommended)
 - [ ] Font size 16-18px
 - [ ] Line numbers visible
-- [ ] `calculateDiscount.ts` scrolled to show lines 20-42
+- [ ] `calculateDiscount.ts` scrolled to show lines 21-44
 - [ ] Recording tool ready (Monosnap for Shopify employees, or Kap/built-in)
 - [ ] Notifications disabled
 - [ ] Dock hidden (optional)
