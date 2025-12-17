@@ -16,6 +16,20 @@ cd demo/01-basic-usage
 # Use QUICK-REFERENCE.md as a cheat sheet while recording
 ```
 
+## Creating New Demos
+
+Use the `/create-demo` custom Claude command for a guided wizard:
+
+```bash
+/create-demo
+```
+
+The wizard walks you through:
+
+1. **Discovery questions** — purpose, audience, features, scenario, production style
+2. **Flow formalization** — timestamped recording script with acts and steps
+3. **File generation** — README.md, QUICK-REFERENCE.md, sample code files
+
 ## Structure
 
 ```
