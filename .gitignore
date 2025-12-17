@@ -26,9 +26,10 @@ packages/*/src/version.json
 packages/*/icon.png
 packages/*/icon_large.png
 
-# Commit message drafts (managed by Claude Code)
-.commit-msgs/
-
 # Claude config
 .claude/settings.local.json
+
+# Folders where Claude Code is told to create and manage working documents
 .claude-questions/
+.commit-msgs/
+.scratchpads/
