@@ -387,6 +387,27 @@ export class VscodeAdapter {
   }
 
   /**
+   * Create a status bar item.
+   *
+   * @param alignment - Alignment in status bar (Left or Right)
+   * @param priority - Priority determines position relative to other items (higher = more left)
+   * @returns StatusBarItem instance
+   */
+  createStatusBarItem(
+    alignment: vscode.StatusBarAlignment,
+    priority?: number,
+  ): vscode.StatusBarItem {
+    return this.ideInstance.window.createStatusBarItem(alignment, priority);
+  }
+
+  /**
+   * Get StatusBarAlignment enum for status bar item positioning.
+   */
+  get StatusBarAlignment(): typeof vscode.StatusBarAlignment {
+    return this.ideInstance.StatusBarAlignment;
+  }
+
+  /**
    * Get IDE language/locale setting.
    *
    * @returns Language code (e.g., 'en', 'fr', 'ja')
