@@ -4,9 +4,9 @@ Demo scripts, sample files, and recording instructions for RangeLink promotional
 
 ## Available Demos
 
-| Demo | Duration | Description |
-|------|----------|-------------|
-| [01-basic-usage](./01-basic-usage/) | 40-45s | Core workflow: select → copy link → paste → navigate back |
+| Demo                                | Duration | Description                                               |
+| ----------------------------------- | -------- | --------------------------------------------------------- |
+| [01-basic-usage](./01-basic-usage/) | 40-45s   | Core workflow: select → copy link → paste → navigate back |
 
 ## Quick Start
 

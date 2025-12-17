@@ -18,10 +18,7 @@ export interface CartItem {
 /**
  * Calculate the discount amount for a given subtotal
  */
-export const calculateDiscount = (
-  subtotal: number,
-  rule: DiscountRule
-): number => {
+export const calculateDiscount = (subtotal: number, rule: DiscountRule): number => {
   // Check minimum purchase requirement
   if (rule.minPurchase && subtotal < rule.minPurchase) {
     return 0;

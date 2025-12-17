@@ -32,6 +32,7 @@ How to add demo GIFs to the RangeLink README.
 ---
 
 ## Why RangeLink?
+
 ...
 ```
 
@@ -40,6 +41,7 @@ How to add demo GIFs to the RangeLink README.
 ## Theme: Light Mode
 
 **Use light mode for demos.** It provides:
+
 - Better contrast in compressed GIFs
 - Readability at small sizes (mobile, Twitter)
 - Stands out against GitHub's dark mode option
@@ -84,22 +86,23 @@ Test the raw URL in incognito browser before committing.
 
 Choose based on demo content:
 
-| Style | Caption |
-|-------|---------|
-| Process | `Set context → Generate link → Complete question → Navigate back` |
-| Benefit | `Precise code references, effortless navigation` |
-| Use case | `Works seamlessly with Claude Code and other AI assistants` |
+| Style    | Caption                                                           |
+| -------- | ----------------------------------------------------------------- |
+| Process  | `Set context → Generate link → Complete question → Navigate back` |
+| Benefit  | `Precise code references, effortless navigation`                  |
+| Use case | `Works seamlessly with Claude Code and other AI assistants`       |
 
 ---
 
 ## File Size Targets
 
-| Format | Target | Use case |
-|--------|--------|----------|
-| GIF | <5MB | GitHub README, Twitter |
-| MP4 | <20MB | YouTube, longer demos |
+| Format | Target | Use case               |
+| ------ | ------ | ---------------------- |
+| GIF    | <5MB   | GitHub README, Twitter |
+| MP4    | <20MB  | YouTube, longer demos  |
 
 **If too large:**
+
 ```bash
 # Reduce FPS
 gifski -o demo.gif --fps 12 --quality 90 --width 800 recording.mp4

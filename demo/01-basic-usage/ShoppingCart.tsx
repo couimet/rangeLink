@@ -21,16 +21,16 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, discountRule 
         {items.map((item) => (
           <li key={item.id}>
             <span>{item.id}</span>
-            <span>${item.price.toFixed(2)} × {item.quantity}</span>
+            <span>
+              ${item.price.toFixed(2)} × {item.quantity}
+            </span>
             <span>${(item.price * item.quantity).toFixed(2)}</span>
           </li>
         ))}
       </ul>
 
       <div className="cart-summary">
-        <div className="subtotal">
-          Subtotal: ${subtotal.toFixed(2)}
-        </div>
+        <div className="subtotal">Subtotal: ${subtotal.toFixed(2)}</div>
 
         {discountRule && discount > 0 && (
           <div className="discount">
@@ -41,9 +41,7 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, discountRule 
           </div>
         )}
 
-        <div className="total">
-          Total: ${total.toFixed(2)}
-        </div>
+        <div className="total">Total: ${total.toFixed(2)}</div>
       </div>
     </div>
   );

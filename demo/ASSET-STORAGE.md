@@ -22,6 +22,7 @@ https://github.com/couimet/rangeLink/releases/download/{tag}/{filename}
 ```
 
 **Example:**
+
 ```
 https://github.com/couimet/rangeLink/releases/download/demo-assets-v1/basic-usage.gif
 ```
@@ -33,11 +34,13 @@ https://github.com/couimet/rangeLink/releases/download/demo-assets-v1/basic-usag
 ### 1. Record
 
 **Recommended tools (macOS):**
+
 - **Kap** (free) — [getkap.co](https://getkap.co)
 - **CleanShot X** (paid) — professional editing
 - **Built-in** — `Cmd+Shift+5` → Record Selection
 
 **Settings:**
+
 - Light theme for readability
 - Font size 16-18px
 - Hide dock and notifications
@@ -45,6 +48,7 @@ https://github.com/couimet/rangeLink/releases/download/demo-assets-v1/basic-usag
 ### 2. Optimize
 
 **GIF (for GitHub/Twitter):**
+
 ```bash
 brew install gifski
 gifski -o demo.gif --fps 15 --quality 90 --width 800 recording.mp4
@@ -53,6 +57,7 @@ gifski -o demo.gif --fps 15 --quality 90 --width 800 recording.mp4
 **Target:** <5MB
 
 **MP4 (for YouTube/longer content):**
+
 - Resolution: 1080p or 720p
 - Codec: H.264
 - Bitrate: 5-10 Mbps
@@ -92,6 +97,7 @@ gh release upload demo-assets-v1 basic-usage.gif navigation-demo.gif
 ```
 
 **Examples:**
+
 - `basic-usage.gif` — primary demo
 - `basic-usage-15s.gif` — short version for social
 - `navigation-demo.gif` — feature-specific demo
@@ -101,6 +107,7 @@ gh release upload demo-assets-v1 basic-usage.gif navigation-demo.gif
 ## Updating Assets
 
 **Option A: Replace in existing release**
+
 ```bash
 # Delete old asset
 gh release delete-asset demo-assets-v1 basic-usage.gif
@@ -110,6 +117,7 @@ gh release upload demo-assets-v1 basic-usage.gif
 ```
 
 **Option B: Create new release (recommended for major changes)**
+
 ```bash
 gh release create demo-assets-v2 basic-usage.gif \
   --title "Demo Assets v2" \

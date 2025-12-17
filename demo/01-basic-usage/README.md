@@ -116,21 +116,21 @@ How does this handle edge cases when the cart subtotal is exactly at the minPurc
 
 ### Alternative Prompts
 
-| Lines | Context | Question |
-|-------|---------|----------|
-| 21-44 | "The ShoppingCart component is calling this discount function." | "Should we add validation before passing the subtotal here?" |
+| Lines | Context                                                         | Question                                                                |
+| ----- | --------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| 21-44 | "The ShoppingCart component is calling this discount function." | "Should we add validation before passing the subtotal here?"            |
 | 25-28 | "Users are reporting that discounts aren't applying correctly." | "Could this minPurchase check be causing issues with zero-value carts?" |
 
 ---
 
 ## Text Overlays (Optional)
 
-| Time | Text |
-|------|------|
-| 0:05 | "Set context" |
+| Time | Text                      |
+| ---- | ------------------------- |
+| 0:05 | "Set context"             |
 | 0:10 | "Reference specific code" |
-| 0:18 | "Complete your question" |
-| 0:30 | "Navigate back anytime" |
+| 0:18 | "Complete your question"  |
+| 0:30 | "Navigate back anytime"   |
 
 ---
 
@@ -155,12 +155,12 @@ gifski -o demo.gif --fps 15 --quality 90 --width 800 recording.mp4
 
 ## Troubleshooting
 
-| Problem | Solution |
-|---------|----------|
+| Problem                     | Solution                                                               |
+| --------------------------- | ---------------------------------------------------------------------- |
 | RangeLink command not found | Verify extension installed: `code --list-extensions \| grep rangelink` |
-| Claude Code not responding | Check terminal is focused, Claude Code is running |
-| Video too large | Reduce FPS, quality, or width (see above) |
-| Actions feel rushed | Add 1-2 second pauses after each action |
+| Claude Code not responding  | Check terminal is focused, Claude Code is running                      |
+| Video too large             | Reduce FPS, quality, or width (see above)                              |
+| Actions feel rushed         | Add 1-2 second pauses after each action                                |
 
 ---
 
