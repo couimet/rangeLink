@@ -31,21 +31,83 @@ https://github.com/couimet/rangeLink/releases/download/demo-assets-v1/basic-usag
 
 ## Recording Workflow
 
-### 1. Record
+### 1. Record Visual
 
 **Recommended tools (macOS):**
 
-- **Kap** (free) — [getkap.co](https://getkap.co)
-- **CleanShot X** (paid) — professional editing
-- **Built-in** — `Cmd+Shift+5` → Record Selection
+| Tool | Cost | Notes |
+|------|------|-------|
+| **Kap** | Free | [getkap.co](https://getkap.co), open source, exports GIF/MP4 |
+| **OBS Studio** | Free | Professional, open source |
+| **Built-in** | Free | `Cmd+Shift+5` → Record Selection |
+| **CleanShot X** | Paid | Professional features |
 
 **Settings:**
 
 - Light theme for readability
 - Font size 16-18px
 - Hide dock and notifications
+- Export as MP4 (1080p) for editing
 
-### 2. Optimize
+### 2. Add AI Voiceover (Optional)
+
+For YouTube/video content, add AI-generated voiceover after recording.
+
+**Recommended: Edge TTS** (free, unlimited, Microsoft neural voices)
+
+```bash
+# Install
+pip install edge-tts
+
+# Generate voiceover with pauses (SSML)
+edge-tts --text "RangeLink captures the exact location. <break time='2s'/> Click any link to jump back." \
+  --voice en-US-GuyNeural \
+  --write-media voiceover.mp3
+
+# List available voices
+edge-tts --list-voices
+```
+
+**Alternative voice tools:**
+
+| Tool | Free Tier | Notes |
+|------|-----------|-------|
+| **Edge TTS** | Unlimited | Best free option, SSML pause support |
+| **ElevenLabs** | 10k chars/month | Highest quality |
+| **OpenAI TTS API** | Pay-per-use | ~$0.01 for 60s script |
+
+### 3. Add Background Music (Optional)
+
+**Royalty-free sources:**
+
+| Source | Cost | Notes |
+|--------|------|-------|
+| **YouTube Audio Library** | Free | No attribution for most tracks |
+| **Pixabay Music** | Free | Attribution sometimes required |
+| **Free Music Archive** | Free | Various licenses |
+| **Incompetech** | Free | Attribution required |
+
+### 4. Combine in Video Editor
+
+For videos with voiceover/music, use a video editor to combine tracks.
+
+**Recommended: DaVinci Resolve** (free, professional grade)
+
+| Tool | Cost | Notes |
+|------|------|-------|
+| **DaVinci Resolve** | Free | Professional, best for audio sync |
+| **CapCut** | Free | Easy timeline, basic AI voice built-in |
+| **iMovie** | Free | macOS only, simple |
+| **Kdenlive** | Free | Open source, all platforms |
+
+**Workflow:**
+1. Import video recording (MP4)
+2. Import voiceover (MP3)
+3. Import background music
+4. Align voiceover to video timeline
+5. Export final MP4
+
+### 5. Optimize for Platforms
 
 **GIF (for GitHub/Twitter):**
 
@@ -63,7 +125,7 @@ gifski -o demo.gif --fps 15 --quality 90 --width 800 recording.mp4
 - Bitrate: 5-10 Mbps
 - Target: <20MB
 
-### 3. Upload to GitHub Release
+### 6. Upload to GitHub Release
 
 ```bash
 # Create release (first time)
@@ -78,7 +140,7 @@ gh release upload demo-assets-v1 demo.gif
 gh release upload demo-assets-v1 basic-usage.gif navigation-demo.gif
 ```
 
-### 4. Reference in README
+### 7. Reference in README
 
 ```markdown
 <div align="center">
