@@ -83,11 +83,31 @@ const mockCommands = {
   executeCommand: jest.fn().mockResolvedValue(undefined),
 };
 
+/**
+ * Create a mock StatusBarItem for testing.
+ */
+export const createMockStatusBarItem = (): vscode.StatusBarItem => ({
+  alignment: vscode.StatusBarAlignment.Right,
+  priority: undefined,
+  text: '',
+  tooltip: undefined,
+  color: undefined,
+  backgroundColor: undefined,
+  command: undefined,
+  accessibilityInformation: undefined,
+  name: undefined,
+  id: 'mock-status-bar-item',
+  show: jest.fn(),
+  hide: jest.fn(),
+  dispose: jest.fn(),
+});
+
 const mockWindow = {
   showInformationMessage: jest.fn().mockResolvedValue(undefined),
   showWarningMessage: jest.fn().mockResolvedValue(undefined),
   showErrorMessage: jest.fn().mockResolvedValue(undefined),
   showTextDocument: jest.fn(),
+  createStatusBarItem: jest.fn(() => createMockStatusBarItem()),
 };
 
 const mockWorkspace = {
@@ -128,14 +148,31 @@ const mockDocumentLink = jest.fn(function (this: any, range: any) {
   this.target = undefined;
 });
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Mocking enums values to match the real vscode enums -- BEGIN
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const mockTextEditorRevealType = {
   InCenterIfOutsideViewport: 2,
 };
+
+const mockStatusBarAlignment = {
+  Left: 1,
+  Right: 2,
+};
+
+const mockQuickPickItemKind = {
+  Separator: -1,
+  Default: 0,
+};
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Mocking enums values to match the real vscode enums -- END
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Export mocked module
 module.exports = {
   ...vscode,
   createMockEvent,
+  createMockStatusBarItem,
   ExtensionContext: MockExtensionContext,
   env: mockEnv,
   extensions: mockExtensions,
@@ -149,4 +186,6 @@ module.exports = {
   Selection: mockSelection,
   DocumentLink: mockDocumentLink,
   TextEditorRevealType: mockTextEditorRevealType,
+  StatusBarAlignment: mockStatusBarAlignment,
+  QuickPickItemKind: mockQuickPickItemKind,
 };
