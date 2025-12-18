@@ -1329,7 +1329,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       expect(mockConfig.inspect).toHaveBeenCalledWith(setting);
     });
@@ -1386,7 +1386,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       expect(mockConfig.get).toHaveBeenCalled();
     });
@@ -1433,7 +1433,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       // Verify error was logged with specific error code (digits = ERR_1003, reserved = ERR_1005, etc.)
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1475,7 +1475,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Verify error was logged with specific error code
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1514,7 +1514,7 @@ describe('Configuration loading and validation', () => {
 
           // Extension imported at top
           const context = { subscriptions: [] as any[] };
-          require('../extension').activate(context as any);
+          extension.activate(context as any);
 
           expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
             expect.stringContaining('[ERROR] [ERR_1005] Invalid delimiterLine'),
@@ -1549,7 +1549,7 @@ describe('Configuration loading and validation', () => {
 
           // Extension imported at top
           const context = { subscriptions: [] as any[] };
-          require('../extension').activate(context as any);
+          extension.activate(context as any);
 
           expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
             expect.stringContaining('[ERROR] [ERR_1005] Invalid delimiterPosition'),
@@ -1584,7 +1584,7 @@ describe('Configuration loading and validation', () => {
 
           // Extension imported at top
           const context = { subscriptions: [] as any[] };
-          require('../extension').activate(context as any);
+          extension.activate(context as any);
 
           expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
             expect.stringContaining('[ERROR] [ERR_1005] Invalid delimiterHash'),
@@ -1619,7 +1619,7 @@ describe('Configuration loading and validation', () => {
 
           // Extension imported at top
           const context = { subscriptions: [] as any[] };
-          require('../extension').activate(context as any);
+          extension.activate(context as any);
 
           expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
             expect.stringContaining('[ERROR] [ERR_1005] Invalid delimiterRange'),
@@ -1652,7 +1652,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1005] Invalid delimiterLine'),
@@ -1693,7 +1693,7 @@ describe('Configuration loading and validation', () => {
 
           // Extension imported at top
           const context = { subscriptions: [] as any[] };
-          require('../extension').activate(context as any);
+          extension.activate(context as any);
 
           expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
             expect.stringContaining(`[ERROR] [${expectedCode}] Invalid delimiterLine`),
@@ -1740,7 +1740,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
@@ -1778,7 +1778,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
@@ -1816,7 +1816,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
@@ -1854,7 +1854,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
@@ -1892,7 +1892,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should log uniqueness error (L and l are same when case-insensitive)
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1933,7 +1933,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should log error for reserved char (ERR_1005) and digits (ERR_1003)
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1981,7 +1981,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should log error for uniqueness (ERR_1006) and substring conflict (ERR_1007)
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2023,7 +2023,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should log error for digits (ERR_1003), reserved char (ERR_1005), and uniqueness (ERR_1006)
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2070,7 +2070,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should not log any errors
         expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
@@ -2115,7 +2115,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
@@ -2145,7 +2145,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         let context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('Delimiters cannot be substrings'),
@@ -2171,7 +2171,7 @@ describe('Configuration loading and validation', () => {
         };
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig2);
         context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1007] Delimiters cannot be substrings'),
@@ -2209,7 +2209,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should log uniqueness error - same delimiter with different case
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2248,7 +2248,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should log substring conflict error (case-insensitive check finds "Lin" in "LINE")
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2287,7 +2287,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should not log any errors - no conflicts between these delimiters (even when compared case-insensitively)
         expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
@@ -2326,7 +2326,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should log ERR_1008 (CONFIG_ERR_HASH_NOT_SINGLE_CHAR)
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2365,7 +2365,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should log ERR_1005 (reserved char), not ERR_1008 (single char check passes)
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2408,7 +2408,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should log ERR_1008
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2447,7 +2447,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should log ERR_1008
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2486,7 +2486,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should not log any errors
         expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
@@ -2520,7 +2520,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
           expect.stringContaining('[ERROR] [ERR_1002] Invalid delimiterLine'),
@@ -2547,7 +2547,7 @@ describe('Configuration loading and validation', () => {
         const context = { subscriptions: [] as any[] };
 
         // Should not throw, should use fallback values
-        expect(() => require('../extension').activate(context as any)).not.toThrow();
+        expect(() => extension.activate(context as any)).not.toThrow();
       });
 
       it('should handle empty delimiter length check in haveSubstringConflicts', async () => {
@@ -2585,7 +2585,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Valid config should pass substring check
         expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
@@ -2625,7 +2625,7 @@ describe('Configuration loading and validation', () => {
 
         // Extension imported at top
         const context = { subscriptions: [] as any[] };
-        require('../extension').activate(context as any);
+        extension.activate(context as any);
 
         // Should not log any errors
         expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
@@ -2662,7 +2662,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       // Verify error was logged about non-unique delimiters
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2702,7 +2702,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       // Verify error was logged
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2749,7 +2749,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       // Should not log any errors
       expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
@@ -2790,7 +2790,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       // Should log configuration info
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2843,7 +2843,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       // Verify Line delimiter logged with workspace folder source
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2876,7 +2876,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       // Verify Line delimiter logged with workspace source (but not "folder" or "user")
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2915,7 +2915,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       // Verify Line delimiter logged with user source
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2955,7 +2955,7 @@ describe('Configuration loading and validation', () => {
 
       // Extension imported at top
       const context = { subscriptions: [] as any[] };
-      require('../extension').activate(context as any);
+      extension.activate(context as any);
 
       // Verify source prioritization: workspace folder > workspace > user > default
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -3082,7 +3082,7 @@ describe('Portable links (Phase 1C)', () => {
 
     // Extension imported at top
     const context = { subscriptions: [] as any[] };
-    require('../extension').activate(context as any);
+    extension.activate(context as any);
 
     // Should log configuration loaded with custom delimiters and no errors
     expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -3206,7 +3206,7 @@ describe('Extension lifecycle', () => {
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
     // Extension imported at top
-    require('../extension').activate(mockContext as any);
+    extension.activate(mockContext as any);
 
     extension.deactivate();
 
@@ -3236,7 +3236,7 @@ describe('Logger verification and communication channel', () => {
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
     const context = { subscriptions: [] as any[] };
-    require('../extension').activate(context as any);
+    extension.activate(context as any);
 
     // Verify debug() was called during setLogger with initialization message
     expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
