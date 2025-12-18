@@ -3132,37 +3132,33 @@ describe('Extension lifecycle', () => {
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
     // Extension imported at top
-    require('../extension').activate(mockContext as any);
+    extension.activate(mockContext as any);
 
-    // Verify all 16 commands are registered
+    // Verify all commands are registered
     // Note: Command registration is IDE-agnostic; runtime availability differs by environment
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(16);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(17);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
-    // Verify all command IDs are registered correctly
+    // Verify all command IDs are registered correctly (sorted alphabetically)
     const expectedCommands = [
-      // Copy link commands (issue #116 - simplified names)
-      'rangelink.copyLinkWithRelativePath',
-      'rangelink.copyLinkWithAbsolutePath',
-      'rangelink.copyPortableLinkWithRelativePath',
-      'rangelink.copyPortableLinkWithAbsolutePath',
-      // Clipboard-only commands (issue #117)
-      'rangelink.copyLinkOnlyWithRelativePath',
-      'rangelink.copyLinkOnlyWithAbsolutePath',
-      // Paste and destination commands
-      'rangelink.pasteSelectedTextToDestination',
-      'rangelink.jumpToBoundDestination',
-      // Destination binding commands
+      'rangelink.bindToClaudeCode',
+      'rangelink.bindToCursorAI',
+      'rangelink.bindToGitHubCopilotChat',
       'rangelink.bindToTerminal',
       'rangelink.bindToTextEditor',
-      'rangelink.bindToCursorAI',
-      'rangelink.bindToClaudeCode',
-      'rangelink.bindToGitHubCopilotChat',
-      'rangelink.unbindDestination',
-      // Version and utility commands
-      'rangelink.showVersion',
+      'rangelink.copyLinkOnlyWithAbsolutePath',
+      'rangelink.copyLinkOnlyWithRelativePath',
+      'rangelink.copyLinkWithAbsolutePath',
+      'rangelink.copyLinkWithRelativePath',
+      'rangelink.copyPortableLinkWithAbsolutePath',
+      'rangelink.copyPortableLinkWithRelativePath',
       'rangelink.handleDocumentLinkClick',
+      'rangelink.jumpToBoundDestination',
+      'rangelink.openStatusBarMenu',
+      'rangelink.pasteSelectedTextToDestination',
+      'rangelink.showVersion',
+      'rangelink.unbindDestination',
     ];
 
     // Verify each command was registered
