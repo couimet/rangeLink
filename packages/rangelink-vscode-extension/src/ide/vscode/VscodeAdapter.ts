@@ -401,13 +401,6 @@ export class VscodeAdapter {
   }
 
   /**
-   * Get StatusBarAlignment enum for status bar item positioning.
-   */
-  get StatusBarAlignment(): typeof vscode.StatusBarAlignment {
-    return this.ideInstance.StatusBarAlignment;
-  }
-
-  /**
    * Get IDE language/locale setting.
    *
    * @returns Language code (e.g., 'en', 'fr', 'ja')

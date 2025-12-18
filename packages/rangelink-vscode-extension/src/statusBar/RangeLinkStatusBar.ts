@@ -35,7 +35,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     private readonly logger: Logger,
   ) {
     this.statusBarItem = this.ideAdapter.createStatusBarItem(
-      this.ideAdapter.StatusBarAlignment.Right,
+      vscode.StatusBarAlignment.Right,
       STATUS_BAR_PRIORITY,
     );
 
