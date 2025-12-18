@@ -55,7 +55,14 @@ jest.mock('vscode', () => ({
   window: {
     activeTextEditor: null,
     activeTerminal: null,
-    createStatusBarItem: jest.fn(),
+    createStatusBarItem: jest.fn(() => ({
+      text: '',
+      tooltip: undefined,
+      command: undefined,
+      show: jest.fn(),
+      hide: jest.fn(),
+      dispose: jest.fn(),
+    })),
     createOutputChannel: jest.fn(),
     showErrorMessage: jest.fn(),
     showInformationMessage: jest.fn(),
@@ -1284,6 +1291,7 @@ describe('Configuration loading and validation', () => {
     mockOutputChannel.appendLine.mockClear();
 
     // Wire up mocks - use arrow function to allow dynamic reassignment
+    (vscode.window.createStatusBarItem as jest.Mock).mockReturnValue(mockStatusBarItem);
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
     (vscode.window.showErrorMessage as jest.Mock).mockImplementation(mockWindow.showErrorMessage);
     (vscode.workspace.getConfiguration as jest.Mock).mockImplementation((...args) =>
@@ -2969,6 +2977,7 @@ describe('Configuration loading and validation', () => {
 describe('Portable links (Phase 1C)', () => {
   beforeEach(() => {
     // Wire up mocks
+    (vscode.window.createStatusBarItem as jest.Mock).mockReturnValue(mockStatusBarItem);
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
     (vscode.window.showErrorMessage as jest.Mock).mockImplementation(mockWindow.showErrorMessage);
     (vscode.workspace.getWorkspaceFolder as jest.Mock).mockImplementation(
@@ -3095,6 +3104,7 @@ describe('Portable links (Phase 1C)', () => {
 describe('Extension lifecycle', () => {
   beforeEach(() => {
     // Wire up mocks
+    (vscode.window.createStatusBarItem as jest.Mock).mockReturnValue(mockStatusBarItem);
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
     (vscode.window.showErrorMessage as jest.Mock).mockImplementation(mockWindow.showErrorMessage);
     (vscode.workspace.getConfiguration as jest.Mock).mockImplementation(
@@ -3209,6 +3219,8 @@ describe('Logger verification and communication channel', () => {
     mockOutputChannel.appendLine.mockClear();
     // Ensure vscode.window.createOutputChannel returns mockOutputChannel
     (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
+    // Ensure createStatusBarItem returns mockStatusBarItem for tests that call activate()
+    (vscode.window.createStatusBarItem as jest.Mock).mockReturnValue(mockStatusBarItem);
   });
 
   it('should confirm logger initialization by calling debug() when setLogger is called', () => {
