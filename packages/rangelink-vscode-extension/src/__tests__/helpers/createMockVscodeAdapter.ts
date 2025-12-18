@@ -13,7 +13,7 @@ import * as vscode from 'vscode';
 
 import { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
-import { createMockCommands, type MockCommandsOptions } from './createMockCommands';
+import { createMockCommands, type MockCommandsInput } from './createMockCommands';
 import { createMockDocumentLink } from './createMockDocumentLink';
 import { createMockEnv } from './createMockEnv';
 import { createMockExtensions, type MockExtensionConfig } from './createMockExtensions';
@@ -27,8 +27,8 @@ import { MockTabInputText } from './tabTestHelpers';
  * Options for creating mock vscode instances.
  */
 export interface MockVscodeOptions {
-  /** Commands configuration - list of available command IDs */
-  commandsOptions?: MockCommandsOptions;
+  /** Commands configuration - accepts either a config object or a partial vscode.commands */
+  commandsOptions?: MockCommandsInput;
   /** Environment overrides - accepts either a config object or a partial vscode.Env */
   envOptions?: Record<string, unknown> | Partial<typeof vscode.env>;
   /** Window overrides - accepts either a config object or a partial vscode.Window */
