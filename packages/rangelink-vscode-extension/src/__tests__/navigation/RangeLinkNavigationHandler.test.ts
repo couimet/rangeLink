@@ -9,6 +9,8 @@ import {
   createMockDocument,
   createMockEditor,
   createMockLineAt,
+  createMockPosition,
+  createMockRange,
   createMockText,
   createMockUntitledUri,
   createMockUri,
@@ -207,6 +209,56 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
       { line: 19, character: 0 }, // 0-indexed
     );
   });
+
+  it('should call revealRange with createRange result and InCenterIfOutsideViewport (value 2)', async () => {
+    // Arrange: Multi-line selection to avoid single-position extension path
+    // Define 1-indexed values as they appear in the link
+    const startLine = 10;
+    const startChar = 5;
+    const endLine = 15;
+    const endChar = 10;
+
+    const parsed: ParsedLink = {
+      path: 'file.ts',
+      start: { line: startLine, char: startChar },
+      end: { line: endLine, char: endChar },
+      linkType: LinkType.Regular,
+      selectionType: SelectionType.Normal,
+    };
+
+    const mockVsStart = createMockPosition({
+      line: startLine - 1,
+      character: startChar - 1,
+    });
+    const mockVsEnd = createMockPosition({
+      line: endLine - 1,
+      character: endChar - 1,
+    });
+    const mockRange = createMockRange({ start: mockVsStart, end: mockVsEnd });
+
+    const createPositionSpy = jest
+      .spyOn(mockAdapter, 'createPosition')
+      .mockReturnValueOnce(mockVsStart)
+      .mockReturnValueOnce(mockVsEnd);
+
+    const createRangeSpy = jest.spyOn(mockAdapter, 'createRange').mockReturnValue(mockRange);
+
+    // Act
+    await handler.navigateToLink(
+      parsed,
+      `file.ts#L${startLine}C${startChar}-L${endLine}C${endChar}`,
+    );
+
+    expect(createPositionSpy).toHaveBeenCalledTimes(2);
+    expect(createPositionSpy).toHaveBeenNthCalledWith(1, startLine - 1, startChar - 1);
+    expect(createPositionSpy).toHaveBeenNthCalledWith(2, endLine - 1, endChar - 1);
+
+    expect(createRangeSpy).toHaveBeenCalledTimes(1);
+    expect(createRangeSpy).toHaveBeenCalledWith(mockVsStart, mockVsEnd);
+
+    expect(mockEditor.revealRange).toHaveBeenCalledTimes(1);
+    expect(mockEditor.revealRange).toHaveBeenCalledWith(mockRange, 2);
+  });
 });
 
 describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)', () => {
@@ -341,6 +393,12 @@ describe('RangeLinkNavigationHandler - Untitled File Error Handling (Issue #16)'
       // Assert: Should NOT show warning, should show success
       expect(showWarningSpy).not.toHaveBeenCalled();
       expect(showInfoSpy).toHaveBeenCalledWith('RangeLink: Navigated to Untitled-1 @ 10');
+
+      expect(mockEditor.revealRange).toHaveBeenCalledTimes(1);
+      expect(mockEditor.revealRange).toHaveBeenCalledWith(
+        expect.objectContaining({ start: expect.any(Object), end: expect.any(Object) }),
+        2,
+      );
     });
   });
 
