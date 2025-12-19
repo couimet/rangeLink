@@ -80,7 +80,7 @@ export class BookmarksStore {
   }
 
   /**
-   * Finds a bookmark by its UUID.
+   * Finds a bookmark by its id.
    */
   getById(id: string): Bookmark | undefined {
     const data = this.load();
@@ -119,7 +119,7 @@ export class BookmarksStore {
   }
 
   /**
-   * Removes a bookmark by its UUID.
+   * Removes a bookmark by its id.
    * Returns true if removed, false if not found.
    */
   async remove(id: string): Promise<boolean> {
