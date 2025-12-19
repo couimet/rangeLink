@@ -166,7 +166,11 @@ export class BookmarksStore {
     void this.save(data);
 
     this.logger.debug(
-      { fn: 'BookmarksStore.recordAccess', bookmarkId: id, accessCount: updatedBookmark.accessCount },
+      {
+        fn: 'BookmarksStore.recordAccess',
+        bookmarkId: id,
+        accessCount: updatedBookmark.accessCount,
+      },
       `Recorded access for bookmark: ${updatedBookmark.label}`,
     );
   }
