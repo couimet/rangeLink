@@ -70,7 +70,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   /**
    * Build QuickPick items with context-aware enabled/disabled states.
    *
-   * Items without a `command` property are disabled - clicking them does nothing.
+   * Items without a `command` property are disabled.
    */
   private buildQuickPickItems(): MenuQuickPickItem[] {
     const isBound = this.destinationManager.isBound();
@@ -78,7 +78,6 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
     const result: MenuQuickPickItem[] = [];
 
-    // Jump to Bound Destination - disabled when no destination bound
     if (isBound && boundDest) {
       result.push({
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL),
