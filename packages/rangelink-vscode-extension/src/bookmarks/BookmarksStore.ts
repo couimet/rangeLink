@@ -11,6 +11,7 @@ const STORAGE_KEY = 'rangelink.bookmarks';
 const createEmptyStoreData = (): BookmarksStoreData => ({ version: 1, bookmarks: [] });
 
 const defaultIdGenerator: IdGenerator = nanoid;
+const defaultTimestampGenerator: TimestampGenerator = createIsoTimestamp;
 
 type GlobalStateWithSync = vscode.Memento & {
   setKeysForSync?: (keys: readonly string[]) => void;
@@ -25,6 +26,7 @@ export class BookmarksStore {
     private readonly globalState: GlobalStateWithSync | undefined,
     private readonly logger: Logger,
     private readonly idGenerator: IdGenerator = defaultIdGenerator,
+    private readonly timestampGenerator: TimestampGenerator = defaultTimestampGenerator,
   ) {
     if (!globalState) {
       this.logger.warn(
@@ -54,7 +56,7 @@ export class BookmarksStore {
       link: input.link,
       description: input.description,
       scope: input.scope ?? 'global',
-      createdAt: new Date().toISOString(),
+      createdAt: this.timestampGenerator(),
       accessCount: 0,
     };
 
@@ -153,7 +155,7 @@ export class BookmarksStore {
     const bookmark = data.bookmarks[index];
     const updatedBookmark: Bookmark = {
       ...bookmark,
-      lastAccessedAt: new Date().toISOString(),
+      lastAccessedAt: this.timestampGenerator(),
       accessCount: bookmark.accessCount + 1,
     };
 
