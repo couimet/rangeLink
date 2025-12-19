@@ -45,6 +45,17 @@ export class BookmarksStore {
     }
   }
 
+  private findBookmarkIndex(data: BookmarksStoreData, id: BookmarkId, operation: string): number {
+    const index = data.bookmarks.findIndex((b) => b.id === id);
+    if (index === -1) {
+      this.logger.warn(
+        { fn: `BookmarksStore.${operation}`, bookmarkId: id },
+        `Cannot ${operation} bookmark: not found`,
+      );
+    }
+    return index;
+  }
+
   /**
    * Creates a new bookmark with generated id, createdAt, and accessCount=0.
    */
@@ -82,7 +93,7 @@ export class BookmarksStore {
   /**
    * Finds a bookmark by its id.
    */
-  getById(id: string): Bookmark | undefined {
+  getById(id: BookmarkId): Bookmark | undefined {
     const data = this.load();
     return data.bookmarks.find((b) => b.id === id);
   }
@@ -91,9 +102,9 @@ export class BookmarksStore {
    * Updates a bookmark's label, link, or description.
    * Returns the updated bookmark, or undefined if not found.
    */
-  async update(id: string, updates: BookmarkUpdate): Promise<Bookmark | undefined> {
+  async update(id: BookmarkId, updates: BookmarkUpdate): Promise<Bookmark | undefined> {
     const data = this.load();
-    const index = data.bookmarks.findIndex((b) => b.id === id);
+    const index = this.findBookmarkIndex(data, id, 'update');
 
     if (index === -1) {
       return undefined;
@@ -122,9 +133,9 @@ export class BookmarksStore {
    * Removes a bookmark by its id.
    * Returns true if removed, false if not found.
    */
-  async remove(id: string): Promise<boolean> {
+  async remove(id: BookmarkId): Promise<boolean> {
     const data = this.load();
-    const index = data.bookmarks.findIndex((b) => b.id === id);
+    const index = this.findBookmarkIndex(data, id, 'remove');
 
     if (index === -1) {
       return false;
@@ -144,9 +155,9 @@ export class BookmarksStore {
   /**
    * Records an access to a bookmark, updating lastAccessedAt and incrementing accessCount.
    */
-  async recordAccess(id: string): Promise<void> {
+  async recordAccess(id: BookmarkId): Promise<void> {
     const data = this.load();
-    const index = data.bookmarks.findIndex((b) => b.id === id);
+    const index = this.findBookmarkIndex(data, id, 'recordAccess');
 
     if (index === -1) {
       return;
