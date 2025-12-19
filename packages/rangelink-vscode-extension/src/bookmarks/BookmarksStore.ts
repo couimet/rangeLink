@@ -1,6 +1,5 @@
-import * as crypto from 'node:crypto';
-
 import type { Logger } from 'barebone-logger';
+import { nanoid } from 'nanoid';
 import type * as vscode from 'vscode';
 
 import type { Bookmark, BookmarkInput, BookmarksStoreData, BookmarkUpdate } from './types';
@@ -9,7 +8,7 @@ const STORAGE_KEY = 'rangelink.bookmarks';
 
 export type IdGenerator = () => string;
 
-const defaultIdGenerator: IdGenerator = () => crypto.randomUUID();
+const defaultIdGenerator: IdGenerator = nanoid;
 
 type GlobalStateWithSync = vscode.Memento & {
   setKeysForSync?: (keys: readonly string[]) => void;
