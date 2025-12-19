@@ -5,6 +5,15 @@ All notable changes to the RangeLink VS Code extension will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Status Bar Menu** - Click the `🔗 RangeLink` status bar item to access ⚡ quick actions
+  - Jump to Bound Destination (or disabled indicator when no destination bound)
+  - Show Version Info
+  - Foundation for future features (bookmarks, paste destination display)
+
 ## [1.0.0]
 
 ### Added
