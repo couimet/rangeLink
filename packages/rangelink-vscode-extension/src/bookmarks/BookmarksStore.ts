@@ -4,7 +4,17 @@ import type * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
-import type { Bookmark, BookmarkInput, BookmarksStoreData, BookmarkUpdate } from './types';
+import { createIsoTimestamp } from '../utils';
+
+import type {
+  Bookmark,
+  BookmarkId,
+  BookmarkInput,
+  BookmarksStoreData,
+  BookmarkUpdate,
+  IdGenerator,
+  TimestampGenerator,
+} from './types';
 
 const STORAGE_KEY = 'rangelink.bookmarks';
 
