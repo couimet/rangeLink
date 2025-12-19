@@ -1,6 +1,7 @@
 import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
+import { BookmarksStore } from './bookmarks';
 import { getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
@@ -61,6 +62,12 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Initialize i18n locale from VSCode environment
   setLocale(ideAdapter.language);
+
+  // Create bookmarks store for cross-workspace bookmark persistence
+  // TODO: Wire up to bookmark commands in issues #163-#166
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const bookmarksStore = new BookmarksStore(context.globalState, getLogger());
+  getLogger().debug({ fn: 'activate' }, 'Bookmarks store initialized');
 
   // Load delimiter configuration
   const vscodeConfig = ideAdapter.getConfiguration('rangelink');
