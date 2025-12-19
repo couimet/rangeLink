@@ -1,4 +1,9 @@
 /**
+ * Semantic type alias for bookmark identifiers.
+ */
+export type BookmarkId = string;
+
+/**
  * Scope of a bookmark - determines storage location.
  * Currently only 'global' is supported; 'workspace' is reserved for future use.
  */
@@ -7,7 +12,7 @@ export type BookmarkScope = 'global';
 /**
  * Function that generates unique identifiers for bookmarks.
  */
-export type IdGenerator = () => string;
+export type IdGenerator = () => BookmarkId;
 
 /**
  * Function that generates ISO 8601 timestamps.
@@ -19,7 +24,7 @@ export type TimestampGenerator = () => string;
  */
 export interface Bookmark {
   /** Unique identifier for stable references */
-  readonly id: string;
+  readonly id: BookmarkId;
   /** User-friendly name (e.g., "CLAUDE.md Instructions") */
   readonly label: string;
   /** Full RangeLink (absolute path + range) */
