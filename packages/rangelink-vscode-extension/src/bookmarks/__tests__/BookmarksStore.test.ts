@@ -187,7 +187,18 @@ describe('BookmarksStore', () => {
       await store.add({ label: 'Test Bookmark', link: '/test#L1' });
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.add', bookmarkId: TEST_ID, label: 'Test Bookmark' },
+        {
+          fn: 'BookmarksStore.add',
+          bookmark: {
+            id: TEST_ID,
+            label: 'Test Bookmark',
+            link: '/test#L1',
+            description: undefined,
+            scope: 'global',
+            createdAt: TEST_TIMESTAMP,
+            accessCount: 0,
+          },
+        },
         'Added bookmark: Test Bookmark',
       );
     });

@@ -85,7 +85,7 @@ export class BookmarksStore {
     await this.save(data, 'add');
 
     this.logger.debug(
-      { fn: 'BookmarksStore.add', bookmarkId: bookmark.id, label: bookmark.label },
+      { fn: 'BookmarksStore.add', bookmark },
       `Added bookmark: ${bookmark.label}`,
     );
 
