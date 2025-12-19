@@ -37,6 +37,20 @@ export const createMockDestinationManager = (
     sendTextToDestinationResult = false,
   } = options;
 
+  if (isBound && boundDestination === undefined) {
+    throw new Error(
+      'createMockDestinationManager: isBound is true but boundDestination is undefined. ' +
+        'Provide a boundDestination when isBound is true.',
+    );
+  }
+
+  if (!isBound && boundDestination !== undefined) {
+    throw new Error(
+      'createMockDestinationManager: isBound is false but boundDestination is defined. ' +
+        'Remove boundDestination or set isBound to true.',
+    );
+  }
+
   return {
     isBound: jest.fn().mockReturnValue(isBound),
     sendLinkToDestination: jest.fn().mockResolvedValue(sendLinkToDestinationResult),
