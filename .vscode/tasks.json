@@ -55,7 +55,7 @@
     {
       "label": "Build: rangelink-vscode-extension",
       "type": "shell",
-      "command": "./scripts/pnpm-exec.sh -C packages/rangelink-vscode-extension exec tsc -p .",
+      "command": "./scripts/pnpm-exec.sh --filter rangelink-vscode-extension compile",
       "problemMatcher": "$tsc"
     }
   ]

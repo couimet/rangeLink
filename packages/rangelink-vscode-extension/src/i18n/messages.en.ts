@@ -55,12 +55,21 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_DESTINATION_REBOUND]:
     'Unbound {previousDestination}, now bound to {newDestination}',
   [MessageCode.STATUS_BAR_DESTINATION_UNBOUND]: '✓ RangeLink unbound from {destinationName}',
+  [MessageCode.STATUS_BAR_ITEM_TEXT]: '$(link) RangeLink',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE]: '✓ Focused Claude Code Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]: '✓ Focused Cursor AI Assistant',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: '✓ Focused Editor: "{resourceName}"',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT]: '✓ Focused GitHub Copilot Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: "{resourceName}"',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
+  [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_DISABLED_DESC]: '(no destination bound)',
+  [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_DISABLED_LABEL]:
+    '$(circle-slash) Jump to Bound Destination',
+  [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL]: '$(arrow-right) Jump to Bound Destination',
+  [MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL]: '$(info) Show Version Info',
+  [MessageCode.STATUS_BAR_MENU_PLACEHOLDER]: 'Select an action',
+  [MessageCode.STATUS_BAR_MENU_TITLE]: 'RangeLink',
+  [MessageCode.STATUS_BAR_MENU_TOOLTIP]: 'RangeLink Menu',
 
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
   [MessageCode.WARN_NAVIGATION_UNTITLED_FILE]:

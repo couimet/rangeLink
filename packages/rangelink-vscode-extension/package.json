@@ -146,6 +146,12 @@
         "title": "Jump to Bound Destination",
         "category": "RangeLink",
         "icon": "$(target)"
+      },
+      {
+        "command": "rangelink.openStatusBarMenu",
+        "title": "Open RangeLink Status Bar Menu",
+        "category": "RangeLink",
+        "icon": "$(link)"
       }
     ],
     "configuration": {

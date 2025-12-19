@@ -4,6 +4,8 @@
 
 import * as vscode from 'vscode';
 
+import { createMockStatusBarItem } from './createMockStatusBarItem';
+
 /**
  * Mock vscode.window object for testing.
  *
@@ -39,7 +41,7 @@ export const createMockWindow = (
       onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
       close: jest.fn(),
     } as unknown as vscode.TabGroups,
-    createStatusBarItem: jest.fn(),
+    createStatusBarItem: jest.fn(() => createMockStatusBarItem()),
     createOutputChannel: jest.fn(),
     setStatusBarMessage: jest.fn(() => ({
       dispose: jest.fn(),

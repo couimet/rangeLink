@@ -34,6 +34,21 @@
   </checklist>
 </rule>
 
+<rule id="C002" priority="critical">
+  <title>No narrating comments</title>
+  <never>Add comments that simply describe what the code does (the code is self-documenting)</never>
+  <do>Only add comments for non-obvious behavior, gotchas, or "why" explanations</do>
+  <bad-examples>
+    - `// Create mock objects`
+    - `// Configure adapter with options`
+    - `// First item should be X`
+  </bad-examples>
+  <good-examples>
+    - `// Workaround for VSCode API limitation`
+    - `// Using raw value 2 to test external contract (not enum reference)`
+  </good-examples>
+</rule>
+
 <rule id="S001" priority="critical">
   <title>Scratchpads for working documents</title>
   <do>Save working documents to `.scratchpads/NNNN-description.txt`</do>
@@ -67,6 +82,26 @@
   <rationale>Catches undefined vs missing properties, stricter type checking</rationale>
 </rule>
 
+<rule id="T003" priority="critical">
+  <title>Literal values for contract assertions</title>
+  <do>Use string literals for OUR enums: `'Regular'` not `LinkType.Regular`</do>
+  <do>Use string literals for user-facing text: `'RangeLink Menu'` not `messagesEn[MessageCode.X]`</do>
+  <exception>External library enums: use actual constant `vscode.TextEditorRevealType.InCenterIfOutsideViewport`</exception>
+  <rationale>Tests freeze user-facing contracts - catches accidental changes to enum values or UI text</rationale>
+  <bad-example>
+    ```typescript
+    expect(item.tooltip).toBe(messagesEn[MessageCode.STATUS_BAR_MENU_TOOLTIP]);
+    expect(result.linkType).toBe(LinkType.Regular);
+    ```
+  </bad-example>
+  <good-example>
+    ```typescript
+    expect(item.tooltip).toBe('RangeLink Menu');
+    expect(result.linkType).toBe('Regular');
+    ```
+  </good-example>
+</rule>
+
 <rule id="T004" priority="critical">
   <title>No partial matchers</title>
   <never>Use `expect.objectContaining()` or `expect.stringContaining()`</never>
@@ -74,11 +109,52 @@
   <rationale>Partial matchers hide unexpected properties and make tests less precise</rationale>
 </rule>
 
-<rule id="T003" priority="critical">
-  <title>String literals for enum assertions</title>
-  <do>Use string literals for OUR enums: `'Regular'` not `LinkType.Regular`</do>
-  <exception>External library enums: use actual constant `vscode.TextEditorRevealType.InCenterIfOutsideViewport`</exception>
-  <rationale>Tests the contract - catches accidental enum value changes</rationale>
+<rule id="T005" priority="critical">
+  <title>No manual mock cleanup</title>
+  <never>Use `afterEach(() => { jest.clearAllMocks(); })` or similar manual cleanup</never>
+  <rationale>Jest config already has `clearMocks`, `resetMocks`, `restoreMocks` set to `true`</rationale>
+  <see>jest.config.js lines 5-7</see>
+</rule>
+
+<rule id="T006" priority="critical">
+  <title>Use toHaveBeenCalledWith for mock assertions</title>
+  <do>Use `.toHaveBeenCalledWith(param1, param2, ...)` to verify mock call parameters</do>
+  <never>Access `.mock.calls[0]` to extract and assert parameters separately</never>
+  <bad-example>
+    ```typescript
+    const [items] = mockFn.mock.calls[0];
+    expect(items[0]).toStrictEqual({ label: 'foo' });
+    ```
+  </bad-example>
+  <good-example>
+    ```typescript
+    expect(mockFn).toHaveBeenCalledWith(
+      [{ label: 'foo' }, { label: 'bar' }],
+      { option: 'value' },
+    );
+    ```
+  </good-example>
+</rule>
+
+<rule id="T007" priority="critical">
+  <title>Always test logging behavior</title>
+  <do>Include logger assertions in tests that verify method behavior - logging provides critical visibility for debugging</do>
+  <never>Create separate tests just for logging - consolidate with behavior tests</never>
+  <rationale>Log statements are part of the method contract; they provide visibility needed when bugs are reported</rationale>
+  <good-example>
+    ```typescript
+    it('creates and configures component', () => {
+      myComponent.initialize();
+
+      expect(mockDependency.create).toHaveBeenCalledWith(config);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'MyComponent.initialize' },
+        'Component initialized',
+      );
+    });
+    ```
+
+  </good-example>
 </rule>
 
 <rule id="E001" priority="critical">
