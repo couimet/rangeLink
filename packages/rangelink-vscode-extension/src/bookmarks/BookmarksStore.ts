@@ -21,17 +21,11 @@ type GlobalStateWithSync = vscode.Memento & {
  * Enables cross-workspace bookmark storage with Settings Sync support.
  */
 export class BookmarksStore {
-  private readonly generateId: IdGenerator;
-  private readonly globalState: GlobalStateWithSync | undefined;
-
   constructor(
-    globalState: GlobalStateWithSync | undefined,
+    private readonly globalState: GlobalStateWithSync | undefined,
     private readonly logger: Logger,
-    idGenerator: IdGenerator = defaultIdGenerator,
+    private readonly idGenerator: IdGenerator = defaultIdGenerator,
   ) {
-    this.generateId = idGenerator;
-    this.globalState = globalState;
-
     if (!globalState) {
       this.logger.warn(
         { fn: 'BookmarksStore.constructor' },
@@ -56,7 +50,7 @@ export class BookmarksStore {
   add(input: BookmarkInput): Bookmark {
     const data = this.load();
     const bookmark: Bookmark = {
-      id: this.generateId(),
+      id: this.idGenerator(),
       label: input.label,
       link: input.link,
       description: input.description,
