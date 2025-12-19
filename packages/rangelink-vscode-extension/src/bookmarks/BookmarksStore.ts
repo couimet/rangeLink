@@ -2,6 +2,8 @@ import type { Logger } from 'barebone-logger';
 import { nanoid } from 'nanoid';
 import type * as vscode from 'vscode';
 
+import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { Bookmark, BookmarkInput, BookmarksStoreData, BookmarkUpdate } from './types';
 
 const STORAGE_KEY = 'rangelink.bookmarks';
@@ -45,9 +47,8 @@ export class BookmarksStore {
 
   /**
    * Creates a new bookmark with generated id, createdAt, and accessCount=0.
-   * Defaults scope to 'global' if not specified.
    */
-  add(input: BookmarkInput): Bookmark {
+  async add(input: BookmarkInput): Promise<Bookmark> {
     const data = this.load();
     const bookmark: Bookmark = {
       id: this.idGenerator(),
@@ -60,7 +61,7 @@ export class BookmarksStore {
     };
 
     data.bookmarks.unshift(bookmark);
-    void this.save(data);
+    await this.save(data, 'add');
 
     this.logger.debug(
       { fn: 'BookmarksStore.add', bookmarkId: bookmark.id, label: bookmark.label },
@@ -90,7 +91,7 @@ export class BookmarksStore {
    * Updates a bookmark's label, link, or description.
    * Returns the updated bookmark, or undefined if not found.
    */
-  update(id: string, updates: BookmarkUpdate): Bookmark | undefined {
+  async update(id: string, updates: BookmarkUpdate): Promise<Bookmark | undefined> {
     const data = this.load();
     const index = data.bookmarks.findIndex((b) => b.id === id);
 
@@ -107,7 +108,7 @@ export class BookmarksStore {
     };
 
     data.bookmarks[index] = updated;
-    void this.save(data);
+    await this.save(data, 'update');
 
     this.logger.debug(
       { fn: 'BookmarksStore.update', bookmarkId: id, updates },
@@ -121,7 +122,7 @@ export class BookmarksStore {
    * Removes a bookmark by its UUID.
    * Returns true if removed, false if not found.
    */
-  remove(id: string): boolean {
+  async remove(id: string): Promise<boolean> {
     const data = this.load();
     const index = data.bookmarks.findIndex((b) => b.id === id);
 
@@ -130,7 +131,7 @@ export class BookmarksStore {
     }
 
     const [removed] = data.bookmarks.splice(index, 1);
-    void this.save(data);
+    await this.save(data, 'remove');
 
     this.logger.debug(
       { fn: 'BookmarksStore.remove', bookmarkId: id, label: removed.label },
@@ -143,7 +144,7 @@ export class BookmarksStore {
   /**
    * Records an access to a bookmark, updating lastAccessedAt and incrementing accessCount.
    */
-  recordAccess(id: string): void {
+  async recordAccess(id: string): Promise<void> {
     const data = this.load();
     const index = data.bookmarks.findIndex((b) => b.id === id);
 
@@ -159,7 +160,7 @@ export class BookmarksStore {
     };
 
     data.bookmarks[index] = updatedBookmark;
-    void this.save(data);
+    await this.save(data, 'recordAccess');
 
     this.logger.debug(
       {
@@ -179,11 +180,25 @@ export class BookmarksStore {
     return this.migrate(raw);
   }
 
-  private save(data: BookmarksStoreData): PromiseLike<void> {
+  private async save(data: BookmarksStoreData, operation: string): Promise<void> {
     if (!this.globalState) {
-      return Promise.resolve();
+      return;
     }
-    return this.globalState.update(STORAGE_KEY, data);
+    try {
+      await this.globalState.update(STORAGE_KEY, data);
+    } catch (error) {
+      this.logger.error(
+        { fn: `BookmarksStore.${operation}`, error },
+        `Failed to save bookmarks during ${operation}`,
+      );
+      throw new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
+        message: `Failed to persist bookmarks during ${operation}`,
+        functionName: `BookmarksStore.${operation}`,
+        details: { operation },
+        cause: error instanceof Error ? error : undefined,
+      });
+    }
   }
 
   private migrate(data: unknown): BookmarksStoreData {
