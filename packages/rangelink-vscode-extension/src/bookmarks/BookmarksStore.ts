@@ -6,6 +6,8 @@ import type { Bookmark, BookmarkInput, BookmarksStoreData, BookmarkUpdate } from
 
 const STORAGE_KEY = 'rangelink.bookmarks';
 
+const createEmptyStoreData = (): BookmarksStoreData => ({ version: 1, bookmarks: [] });
+
 export type IdGenerator = () => string;
 
 const defaultIdGenerator: IdGenerator = nanoid;
@@ -177,7 +179,7 @@ export class BookmarksStore {
 
   private load(): BookmarksStoreData {
     if (!this.globalState) {
-      return { version: 1, bookmarks: [] };
+      return createEmptyStoreData();
     }
     const raw = this.globalState.get<unknown>(STORAGE_KEY);
     return this.migrate(raw);
@@ -192,7 +194,7 @@ export class BookmarksStore {
 
   private migrate(data: unknown): BookmarksStoreData {
     if (!data || typeof data !== 'object') {
-      return { version: 1, bookmarks: [] };
+      return createEmptyStoreData();
     }
 
     const typed = data as Record<string, unknown>;
@@ -205,6 +207,6 @@ export class BookmarksStore {
       { fn: 'BookmarksStore.migrate', data },
       'Unknown bookmark data format, resetting to empty',
     );
-    return { version: 1, bookmarks: [] };
+    return createEmptyStoreData();
   }
 }
