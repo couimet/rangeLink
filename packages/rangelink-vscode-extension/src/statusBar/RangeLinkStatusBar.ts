@@ -39,7 +39,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       STATUS_BAR_PRIORITY,
     );
 
-    this.statusBarItem.text = '$(link) RangeLink';
+    this.statusBarItem.text = formatMessage(MessageCode.STATUS_BAR_ITEM_TEXT);
     this.statusBarItem.tooltip = formatMessage(MessageCode.STATUS_BAR_MENU_TOOLTIP);
     this.statusBarItem.command = CMD_OPEN_STATUS_BAR_MENU;
     this.statusBarItem.show();
@@ -81,14 +81,14 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     // Jump to Bound Destination - disabled when no destination bound
     if (isBound && boundDest) {
       result.push({
-        label: '$(arrow-right) Jump to Bound Destination',
+        label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL),
         description: `→ ${boundDest.displayName}`,
         command: CMD_JUMP_TO_DESTINATION,
       });
     } else {
       result.push({
-        label: '$(circle-slash) Jump to Bound Destination',
-        description: '(no destination bound)',
+        label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_DISABLED_LABEL),
+        description: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_DISABLED_DESC),
       });
     }
 
@@ -98,7 +98,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     });
 
     result.push({
-      label: '$(info) Show Version Info',
+      label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
       command: CMD_SHOW_VERSION,
     });
 
