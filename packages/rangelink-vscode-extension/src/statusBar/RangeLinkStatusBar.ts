@@ -61,7 +61,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     if (selected?.command) {
       await this.ideAdapter.executeCommand(selected.command);
       this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', command: selected.command },
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
         'Menu item selected',
       );
     }
