@@ -5,10 +5,20 @@
 export type BookmarkScope = 'global';
 
 /**
+ * Function that generates unique identifiers for bookmarks.
+ */
+export type IdGenerator = () => string;
+
+/**
+ * Function that generates ISO 8601 timestamps.
+ */
+export type TimestampGenerator = () => string;
+
+/**
  * A saved bookmark to a code location
  */
 export interface Bookmark {
-  /** UUID for stable references */
+  /** Unique identifier for stable references */
   readonly id: string;
   /** User-friendly name (e.g., "CLAUDE.md Instructions") */
   readonly label: string;

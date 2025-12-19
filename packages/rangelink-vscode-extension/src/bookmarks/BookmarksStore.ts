@@ -10,8 +10,6 @@ const STORAGE_KEY = 'rangelink.bookmarks';
 
 const createEmptyStoreData = (): BookmarksStoreData => ({ version: 1, bookmarks: [] });
 
-export type IdGenerator = () => string;
-
 const defaultIdGenerator: IdGenerator = nanoid;
 
 type GlobalStateWithSync = vscode.Memento & {
