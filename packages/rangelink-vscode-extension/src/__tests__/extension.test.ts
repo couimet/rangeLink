@@ -14,6 +14,7 @@ import { VSCodeLogger } from '../VSCodeLogger';
 import {
   createMockClipboard,
   createMockCommands,
+  createMockMemento,
   createMockOutputChannel,
   createMockStatusBarItem,
   createMockWindow,
@@ -1328,7 +1329,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       expect(mockConfig.inspect).toHaveBeenCalledWith(setting);
@@ -1385,7 +1389,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       expect(mockConfig.get).toHaveBeenCalled();
@@ -1432,7 +1439,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       // Verify error was logged with specific error code (digits = ERR_1003, reserved = ERR_1005, etc.)
@@ -1474,7 +1484,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Verify error was logged with specific error code
@@ -1513,7 +1526,10 @@ describe('Configuration loading and validation', () => {
           mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
           // Extension imported at top
-          const context = { subscriptions: [] as any[] };
+          const context = {
+            subscriptions: [] as vscode.Disposable[],
+            globalState: createMockMemento(),
+          };
           extension.activate(context as any);
 
           expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1548,7 +1564,10 @@ describe('Configuration loading and validation', () => {
           mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
           // Extension imported at top
-          const context = { subscriptions: [] as any[] };
+          const context = {
+            subscriptions: [] as vscode.Disposable[],
+            globalState: createMockMemento(),
+          };
           extension.activate(context as any);
 
           expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1583,7 +1602,10 @@ describe('Configuration loading and validation', () => {
           mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
           // Extension imported at top
-          const context = { subscriptions: [] as any[] };
+          const context = {
+            subscriptions: [] as vscode.Disposable[],
+            globalState: createMockMemento(),
+          };
           extension.activate(context as any);
 
           expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1618,7 +1640,10 @@ describe('Configuration loading and validation', () => {
           mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
           // Extension imported at top
-          const context = { subscriptions: [] as any[] };
+          const context = {
+            subscriptions: [] as vscode.Disposable[],
+            globalState: createMockMemento(),
+          };
           extension.activate(context as any);
 
           expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1651,7 +1676,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1692,7 +1720,10 @@ describe('Configuration loading and validation', () => {
           mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
           // Extension imported at top
-          const context = { subscriptions: [] as any[] };
+          const context = {
+            subscriptions: [] as vscode.Disposable[],
+            globalState: createMockMemento(),
+          };
           extension.activate(context as any);
 
           expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1739,7 +1770,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1777,7 +1811,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1815,7 +1852,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1853,7 +1893,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -1891,7 +1934,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should log uniqueness error (L and l are same when case-insensitive)
@@ -1932,7 +1978,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should log error for reserved char (ERR_1005) and digits (ERR_1003)
@@ -1980,7 +2029,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should log error for uniqueness (ERR_1006) and substring conflict (ERR_1007)
@@ -2022,7 +2074,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should log error for digits (ERR_1003), reserved char (ERR_1005), and uniqueness (ERR_1006)
@@ -2069,7 +2124,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should not log any errors
@@ -2114,7 +2172,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2144,7 +2205,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig1);
 
         // Extension imported at top
-        let context = { subscriptions: [] as any[] };
+        let context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2170,7 +2234,7 @@ describe('Configuration loading and validation', () => {
           })),
         };
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig2);
-        context = { subscriptions: [] as any[] };
+        context = { subscriptions: [] as vscode.Disposable[], globalState: createMockMemento() };
         extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2208,7 +2272,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should log uniqueness error - same delimiter with different case
@@ -2247,7 +2314,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should log substring conflict error (case-insensitive check finds "Lin" in "LINE")
@@ -2286,7 +2356,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should not log any errors - no conflicts between these delimiters (even when compared case-insensitively)
@@ -2325,7 +2398,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should log ERR_1008 (CONFIG_ERR_HASH_NOT_SINGLE_CHAR)
@@ -2364,7 +2440,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should log ERR_1005 (reserved char), not ERR_1008 (single char check passes)
@@ -2407,7 +2486,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should log ERR_1008
@@ -2446,7 +2528,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should log ERR_1008
@@ -2485,7 +2570,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should not log any errors
@@ -2519,7 +2607,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
@@ -2544,7 +2635,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
 
         // Should not throw, should use fallback values
         expect(() => extension.activate(context as any)).not.toThrow();
@@ -2584,7 +2678,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Valid config should pass substring check
@@ -2624,7 +2721,10 @@ describe('Configuration loading and validation', () => {
         mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
         // Extension imported at top
-        const context = { subscriptions: [] as any[] };
+        const context = {
+          subscriptions: [] as vscode.Disposable[],
+          globalState: createMockMemento(),
+        };
         extension.activate(context as any);
 
         // Should not log any errors
@@ -2661,7 +2761,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       // Verify error was logged about non-unique delimiters
@@ -2701,7 +2804,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       // Verify error was logged
@@ -2748,7 +2854,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       // Should not log any errors
@@ -2789,7 +2898,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       // Should log configuration info
@@ -2842,7 +2954,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       // Verify Line delimiter logged with workspace folder source
@@ -2875,7 +2990,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       // Verify Line delimiter logged with workspace source (but not "folder" or "user")
@@ -2914,7 +3032,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       // Verify Line delimiter logged with user source
@@ -2954,7 +3075,10 @@ describe('Configuration loading and validation', () => {
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
 
       // Extension imported at top
-      const context = { subscriptions: [] as any[] };
+      const context = {
+        subscriptions: [] as vscode.Disposable[],
+        globalState: createMockMemento(),
+      };
       extension.activate(context as any);
 
       // Verify source prioritization: workspace folder > workspace > user > default
@@ -3081,7 +3205,7 @@ describe('Portable links (Phase 1C)', () => {
     (vscode as any).workspace.getConfiguration = jest.fn(() => mockConfig);
 
     // Extension imported at top
-    const context = { subscriptions: [] as any[] };
+    const context = { subscriptions: [] as vscode.Disposable[], globalState: createMockMemento() };
     extension.activate(context as any);
 
     // Should log configuration loaded with custom delimiters and no errors
@@ -3115,7 +3239,8 @@ describe('Extension lifecycle', () => {
 
   it('should register all commands on activate', async () => {
     const mockContext = {
-      subscriptions: [] as any[],
+      subscriptions: [] as vscode.Disposable[],
+      globalState: createMockMemento(),
     };
 
     // Mock configuration
@@ -3179,7 +3304,8 @@ describe('Extension lifecycle', () => {
 
   it('should clean up on deactivate', () => {
     const mockContext = {
-      subscriptions: [] as any[],
+      subscriptions: [] as vscode.Disposable[],
+      globalState: createMockMemento(),
     };
 
     // Mock configuration
@@ -3235,7 +3361,7 @@ describe('Logger verification and communication channel', () => {
     mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
     (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
 
-    const context = { subscriptions: [] as any[] };
+    const context = { subscriptions: [] as vscode.Disposable[], globalState: createMockMemento() };
     extension.activate(context as any);
 
     // Verify debug() was called during setLogger with initialization message
@@ -3290,7 +3416,8 @@ describe('Logger verification and communication channel', () => {
   describe('i18n integration for version command', () => {
     let formatMessageSpy: jest.SpyInstance;
     const mockContext = {
-      subscriptions: [] as any[],
+      subscriptions: [] as vscode.Disposable[],
+      globalState: createMockMemento(),
     };
 
     beforeEach(() => {
