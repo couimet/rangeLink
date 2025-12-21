@@ -37,24 +37,13 @@ describe('BookmarksStore', () => {
       expect(store).toBeDefined();
     });
 
-    it('logs warning and operates without persistence when globalState is undefined', async () => {
-      const mockIdGenerator = createTestIdGenerator();
-      const mockTimestampGenerator = createTestTimestampGenerator();
-      const store = new BookmarksStore(
-        undefined,
-        mockLogger,
-        mockIdGenerator,
-        mockTimestampGenerator,
-      );
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.constructor' },
-        'No globalState provided - bookmarks will not be persisted',
-      );
-
-      const bookmark = await store.add({ label: 'Test', link: '/test#L1' });
-      expect(bookmark.id).toBe(TEST_ID);
-      expect(store.getAll()).toStrictEqual([]);
+    it('throws when globalState is undefined', () => {
+      expect(
+        () => new BookmarksStore(undefined as never, mockLogger),
+      ).toThrowRangeLinkExtensionError('BOOKMARK_STORE_NOT_AVAILABLE', {
+        message: 'Cannot create BookmarksStore: globalState is required for bookmark persistence',
+        functionName: 'BookmarksStore.constructor',
+      });
     });
   });
 

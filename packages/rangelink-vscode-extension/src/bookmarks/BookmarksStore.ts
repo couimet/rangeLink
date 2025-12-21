@@ -33,17 +33,17 @@ type GlobalStateWithSync = vscode.Memento & {
  */
 export class BookmarksStore {
   constructor(
-    private readonly globalState: GlobalStateWithSync | undefined,
+    private readonly globalState: GlobalStateWithSync,
     private readonly logger: Logger,
     private readonly idGenerator: IdGenerator = defaultIdGenerator,
     private readonly timestampGenerator: TimestampGenerator = defaultTimestampGenerator,
   ) {
     if (!globalState) {
-      this.logger.warn(
-        { fn: 'BookmarksStore.constructor' },
-        'No globalState provided - bookmarks will not be persisted',
-      );
-      return;
+      throw new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.BOOKMARK_STORE_NOT_AVAILABLE,
+        message: 'Cannot create BookmarksStore: globalState is required for bookmark persistence',
+        functionName: 'BookmarksStore.constructor',
+      });
     }
 
     if ('setKeysForSync' in globalState && typeof globalState.setKeysForSync === 'function') {
@@ -187,17 +187,11 @@ export class BookmarksStore {
   }
 
   private load(): BookmarksStoreData {
-    if (!this.globalState) {
-      return createEmptyStoreData();
-    }
     const raw = this.globalState.get<unknown>(STORAGE_KEY);
     return this.migrate(raw);
   }
 
   private async save(data: BookmarksStoreData, operation: string): Promise<void> {
-    if (!this.globalState) {
-      return;
-    }
     try {
       await this.globalState.update(STORAGE_KEY, data);
     } catch (error) {
