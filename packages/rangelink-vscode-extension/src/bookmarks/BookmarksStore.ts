@@ -84,10 +84,7 @@ export class BookmarksStore {
     data.bookmarks.unshift(bookmark);
     await this.save(data, 'add');
 
-    this.logger.debug(
-      { fn: 'BookmarksStore.add', bookmark },
-      `Added bookmark: ${bookmark.label}`,
-    );
+    this.logger.debug({ fn: 'BookmarksStore.add', bookmark }, `Added bookmark: ${bookmark.label}`);
 
     return bookmark;
   }
