@@ -132,7 +132,7 @@ export class BookmarksStore {
     await this.save(data, 'update');
 
     this.logger.debug(
-      { fn: 'BookmarksStore.update', bookmarkId: id, updates },
+      { fn: 'BookmarksStore.update', bookmarkId: id, updates, updatedBookmark: updated },
       `Updated bookmark: ${updated.label}`,
     );
 
@@ -155,7 +155,7 @@ export class BookmarksStore {
     await this.save(data, 'remove');
 
     this.logger.debug(
-      { fn: 'BookmarksStore.remove', bookmarkId: id, label: removed.label },
+      { fn: 'BookmarksStore.remove', removedBookmark: removed },
       `Removed bookmark: ${removed.label}`,
     );
 
@@ -184,11 +184,7 @@ export class BookmarksStore {
     await this.save(data, 'recordAccess');
 
     this.logger.debug(
-      {
-        fn: 'BookmarksStore.recordAccess',
-        bookmarkId: id,
-        accessCount: updatedBookmark.accessCount,
-      },
+      { fn: 'BookmarksStore.recordAccess', updatedBookmark },
       `Recorded access for bookmark: ${updatedBookmark.label}`,
     );
   }

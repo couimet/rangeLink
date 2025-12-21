@@ -440,6 +440,15 @@ describe('BookmarksStore', () => {
           fn: 'BookmarksStore.update',
           bookmarkId: 'existing-id',
           updates: { label: 'Updated Label' },
+          updatedBookmark: {
+            id: 'existing-id',
+            label: 'Updated Label',
+            link: '/original#L1',
+            description: 'Original description',
+            scope: 'global',
+            createdAt: '2025-01-01T00:00:00.000Z',
+            accessCount: 5,
+          },
         },
         'Updated bookmark: Updated Label',
       );
@@ -517,7 +526,17 @@ describe('BookmarksStore', () => {
       await store.remove('to-remove');
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.remove', bookmarkId: 'to-remove', label: 'Remove Me' },
+        {
+          fn: 'BookmarksStore.remove',
+          removedBookmark: {
+            id: 'to-remove',
+            label: 'Remove Me',
+            link: '/remove#L1',
+            scope: 'global',
+            createdAt: TEST_TIMESTAMP,
+            accessCount: 0,
+          },
+        },
         'Removed bookmark: Remove Me',
       );
     });
@@ -626,7 +645,18 @@ describe('BookmarksStore', () => {
       await store.recordAccess('access-me');
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.recordAccess', bookmarkId: 'access-me', accessCount: 3 },
+        {
+          fn: 'BookmarksStore.recordAccess',
+          updatedBookmark: {
+            id: 'access-me',
+            label: 'Access Test',
+            link: '/access#L1',
+            scope: 'global',
+            createdAt: '2025-01-01T00:00:00.000Z',
+            lastAccessedAt: TEST_TIMESTAMP,
+            accessCount: 3,
+          },
+        },
         'Recorded access for bookmark: Access Test',
       );
     });
