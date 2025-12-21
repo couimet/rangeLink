@@ -32,6 +32,7 @@ export * from './createMockGitHubCopilotChatDestination';
 export * from './createMockInputSelection';
 export * from './createMockLanguages';
 export * from './createMockLineAt';
+export * from './createMockMemento';
 export * from './createMockNavigationHandler';
 export * from './createMockOutputChannel';
 export * from './createBaseMockPasteDestination';

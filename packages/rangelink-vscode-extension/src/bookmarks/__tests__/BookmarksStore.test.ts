@@ -1,6 +1,6 @@
 import { createMockLogger } from 'barebone-logger-testing';
-import type * as vscode from 'vscode';
 
+import { createMockMemento } from '../../__tests__/helpers';
 import { BookmarksStore } from '../BookmarksStore';
 import type { Bookmark, BookmarksStoreData } from '../types';
 
@@ -8,25 +8,6 @@ const STORAGE_KEY = 'rangelink.bookmarks';
 
 const TEST_ID = 'test-bookmark-id-001';
 const TEST_TIMESTAMP = '2025-01-15T10:30:00.000Z';
-
-const createMockMemento = (): vscode.Memento & {
-  setKeysForSync: jest.Mock;
-  _storage: Map<string, unknown>;
-} => {
-  const storage = new Map<string, unknown>();
-  return {
-    get: jest.fn(<T>(key: string, defaultValue?: T): T | undefined => {
-      return (storage.get(key) as T | undefined) ?? defaultValue;
-    }),
-    update: jest.fn((key: string, value: unknown): Thenable<void> => {
-      storage.set(key, value);
-      return Promise.resolve();
-    }),
-    keys: jest.fn(() => Array.from(storage.keys())),
-    setKeysForSync: jest.fn(),
-    _storage: storage,
-  };
-};
 
 const createTestIdGenerator = () => jest.fn(() => TEST_ID);
 const createTestTimestampGenerator = () => jest.fn(() => TEST_TIMESTAMP);
@@ -49,7 +30,7 @@ describe('BookmarksStore', () => {
 
     it('handles globalState without setKeysForSync gracefully', () => {
       const mockMemento = createMockMemento();
-      delete (mockMemento as any).setKeysForSync;
+      delete (mockMemento as { setKeysForSync?: jest.Mock }).setKeysForSync;
 
       const store = new BookmarksStore(mockMemento, mockLogger);
 
