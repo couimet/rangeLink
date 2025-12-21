@@ -14,12 +14,14 @@ describe('BookmarksStore', () => {
   let mockMemento: MockMemento;
   let mockIdGenerator: jest.Mock<string>;
   let mockTimestampGenerator: jest.Mock<string>;
+  let store: BookmarksStore;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockMemento = createMockMemento();
     mockIdGenerator = jest.fn(() => TEST_ID);
     mockTimestampGenerator = jest.fn(() => TEST_TIMESTAMP);
+    store = new BookmarksStore(mockMemento, mockLogger, mockIdGenerator, mockTimestampGenerator);
   });
 
   describe('constructor', () => {
@@ -36,7 +38,7 @@ describe('BookmarksStore', () => {
     it('handles globalState without setKeysForSync gracefully', () => {
       delete (mockMemento as { setKeysForSync?: jest.Mock }).setKeysForSync;
 
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       expect(store).toBeDefined();
     });
@@ -53,13 +55,6 @@ describe('BookmarksStore', () => {
 
   describe('add()', () => {
     it('creates bookmark with generated id and timestamps', async () => {
-      const store = new BookmarksStore(
-        mockMemento,
-        mockLogger,
-        mockIdGenerator,
-        mockTimestampGenerator,
-      );
-
       const result = await store.add({
         label: 'CLAUDE.md Instructions',
         link: '/Users/test/project/CLAUDE.md#L10-L20',
@@ -77,13 +72,6 @@ describe('BookmarksStore', () => {
     });
 
     it('includes description when provided', async () => {
-      const store = new BookmarksStore(
-        mockMemento,
-        mockLogger,
-        mockIdGenerator,
-        mockTimestampGenerator,
-      );
-
       const result = await store.add({
         label: 'My Bookmark',
         link: '/path/to/file.ts#L5',
@@ -94,13 +82,6 @@ describe('BookmarksStore', () => {
     });
 
     it('defaults scope to global when not provided', async () => {
-      const store = new BookmarksStore(
-        mockMemento,
-        mockLogger,
-        mockIdGenerator,
-        mockTimestampGenerator,
-      );
-
       const result = await store.add({
         label: 'My Bookmark',
         link: '/path/to/file.ts#L5',
@@ -110,13 +91,6 @@ describe('BookmarksStore', () => {
     });
 
     it('persists to globalState', async () => {
-      const store = new BookmarksStore(
-        mockMemento,
-        mockLogger,
-        mockIdGenerator,
-        mockTimestampGenerator,
-      );
-
       await store.add({ label: 'Test', link: '/test#L1' });
 
       expect(mockMemento.update).toHaveBeenCalledWith(STORAGE_KEY, {
@@ -136,13 +110,6 @@ describe('BookmarksStore', () => {
     });
 
     it('logs debug message', async () => {
-      const store = new BookmarksStore(
-        mockMemento,
-        mockLogger,
-        mockIdGenerator,
-        mockTimestampGenerator,
-      );
-
       await store.add({ label: 'Test Bookmark', link: '/test#L1' });
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -177,13 +144,6 @@ describe('BookmarksStore', () => {
         ],
       };
       mockMemento._storage.set(STORAGE_KEY, existingData);
-      const store = new BookmarksStore(
-        mockMemento,
-        mockLogger,
-        mockIdGenerator,
-        mockTimestampGenerator,
-      );
-
       await store.add({ label: 'New', link: '/new#L1' });
 
       const saved = mockMemento._storage.get(STORAGE_KEY) as BookmarksStoreData;
@@ -194,7 +154,7 @@ describe('BookmarksStore', () => {
 
   describe('getAll()', () => {
     it('returns empty array when no bookmarks', () => {
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = store.getAll();
 
@@ -219,7 +179,7 @@ describe('BookmarksStore', () => {
         accessCount: 3,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark1, bookmark2] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = store.getAll();
 
@@ -236,7 +196,7 @@ describe('BookmarksStore', () => {
         accessCount: 0,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result1 = store.getAll();
       const result2 = store.getAll();
@@ -257,7 +217,7 @@ describe('BookmarksStore', () => {
         accessCount: 0,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = store.getById('target-id');
 
@@ -266,7 +226,7 @@ describe('BookmarksStore', () => {
 
     it('returns undefined when not found', () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = store.getById('non-existent-id');
 
@@ -287,7 +247,7 @@ describe('BookmarksStore', () => {
 
     it('updates label field', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [{ ...existingBookmark }] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = await store.update('existing-id', { label: 'New Label' });
 
@@ -298,7 +258,7 @@ describe('BookmarksStore', () => {
 
     it('updates link field', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [{ ...existingBookmark }] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = await store.update('existing-id', { link: '/new/path#L10' });
 
@@ -308,7 +268,7 @@ describe('BookmarksStore', () => {
 
     it('updates description field', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [{ ...existingBookmark }] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = await store.update('existing-id', {
         description: 'New description',
@@ -319,7 +279,7 @@ describe('BookmarksStore', () => {
 
     it('updates multiple fields', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [{ ...existingBookmark }] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = await store.update('existing-id', {
         label: 'Updated Label',
@@ -340,7 +300,7 @@ describe('BookmarksStore', () => {
 
     it('does not modify other fields (createdAt, accessCount, scope)', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [{ ...existingBookmark }] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = await store.update('existing-id', { label: 'Changed' });
 
@@ -351,7 +311,7 @@ describe('BookmarksStore', () => {
 
     it('returns undefined and logs warning for non-existent id', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = await store.update('non-existent', { label: 'New' });
 
@@ -364,7 +324,7 @@ describe('BookmarksStore', () => {
 
     it('persists changes', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [{ ...existingBookmark }] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       await store.update('existing-id', { label: 'Persisted' });
 
@@ -374,7 +334,7 @@ describe('BookmarksStore', () => {
 
     it('logs debug message', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [{ ...existingBookmark }] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       await store.update('existing-id', { label: 'Updated Label' });
 
@@ -409,7 +369,7 @@ describe('BookmarksStore', () => {
         accessCount: 0,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = await store.remove('to-remove');
 
@@ -419,7 +379,7 @@ describe('BookmarksStore', () => {
 
     it('returns false and logs warning for non-existent id', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = await store.remove('non-existent');
 
@@ -440,7 +400,7 @@ describe('BookmarksStore', () => {
         accessCount: 0,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       await store.remove('to-remove');
 
@@ -460,7 +420,7 @@ describe('BookmarksStore', () => {
         accessCount: 0,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       await store.remove('to-remove');
 
@@ -492,7 +452,7 @@ describe('BookmarksStore', () => {
         accessCount: 0,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      const store = new BookmarksStore(mockMemento, mockLogger, undefined, mockTimestampGenerator);
+      store = new BookmarksStore(mockMemento, mockLogger, undefined, mockTimestampGenerator);
 
       await store.recordAccess('access-me');
 
@@ -510,7 +470,7 @@ describe('BookmarksStore', () => {
         accessCount: 5,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       await store.recordAccess('access-me');
 
@@ -520,7 +480,7 @@ describe('BookmarksStore', () => {
 
     it('logs warning and skips persistence for non-existent id', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       await store.recordAccess('non-existent');
 
@@ -541,7 +501,7 @@ describe('BookmarksStore', () => {
         accessCount: 0,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      const store = new BookmarksStore(mockMemento, mockLogger, undefined, mockTimestampGenerator);
+      store = new BookmarksStore(mockMemento, mockLogger, undefined, mockTimestampGenerator);
 
       await store.recordAccess('access-me');
 
@@ -571,7 +531,7 @@ describe('BookmarksStore', () => {
         accessCount: 2,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      const store = new BookmarksStore(mockMemento, mockLogger, undefined, mockTimestampGenerator);
+      store = new BookmarksStore(mockMemento, mockLogger, undefined, mockTimestampGenerator);
 
       await store.recordAccess('access-me');
 
@@ -596,7 +556,7 @@ describe('BookmarksStore', () => {
   describe('migration', () => {
     it('handles null globalState data', () => {
       mockMemento._storage.set(STORAGE_KEY, null);
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = store.getAll();
 
@@ -604,7 +564,7 @@ describe('BookmarksStore', () => {
     });
 
     it('handles undefined globalState data', () => {
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = store.getAll();
 
@@ -621,7 +581,7 @@ describe('BookmarksStore', () => {
         accessCount: 0,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = store.getAll();
 
@@ -630,7 +590,7 @@ describe('BookmarksStore', () => {
 
     it('resets malformed data with warning', () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 999, invalid: true });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = store.getAll();
 
@@ -643,7 +603,7 @@ describe('BookmarksStore', () => {
 
     it('resets data with missing bookmarks array', () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1 });
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = store.getAll();
 
@@ -653,7 +613,7 @@ describe('BookmarksStore', () => {
 
     it('resets non-object data', () => {
       mockMemento._storage.set(STORAGE_KEY, 'invalid string');
-      const store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = store.getAll();
 
