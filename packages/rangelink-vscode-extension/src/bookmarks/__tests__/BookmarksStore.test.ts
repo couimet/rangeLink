@@ -150,6 +150,68 @@ describe('BookmarksStore', () => {
       expect(saved.bookmarks[0].label).toBe('New');
       expect(saved.bookmarks[1].label).toBe('Existing');
     });
+
+    it('retries ID generation on collision and logs debug message', async () => {
+      const existingBookmark: Bookmark = {
+        id: 'colliding-id',
+        label: 'Existing',
+        link: '/existing#L1',
+        scope: 'global',
+        createdAt: '2025-01-01T00:00:00.000Z',
+        accessCount: 0,
+      };
+      mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [existingBookmark] });
+      mockIdGenerator
+        .mockReturnValueOnce('colliding-id')
+        .mockReturnValueOnce('unique-id');
+      store = new BookmarksStore(mockMemento, mockLogger, mockIdGenerator, mockTimestampGenerator);
+
+      const result = await store.add({ label: 'New', link: '/new#L1' });
+
+      expect(result.id).toBe('unique-id');
+      expect(mockIdGenerator).toHaveBeenCalledTimes(2);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'BookmarksStore.generateUniqueId', attempt: 1, collidingId: 'colliding-id' },
+        'ID collision detected, generating new ID',
+      );
+    });
+
+    it('throws after max retries when all generated IDs collide', async () => {
+      const existingBookmark: Bookmark = {
+        id: 'always-collides',
+        label: 'Existing',
+        link: '/existing#L1',
+        scope: 'global',
+        createdAt: '2025-01-01T00:00:00.000Z',
+        accessCount: 0,
+      };
+      mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [existingBookmark] });
+      mockIdGenerator.mockReturnValue('always-collides');
+      store = new BookmarksStore(mockMemento, mockLogger, mockIdGenerator, mockTimestampGenerator);
+
+      await expect(store.add({ label: 'New', link: '/new#L1' })).rejects.toThrow();
+      expect(mockIdGenerator).toHaveBeenCalledTimes(10);
+    });
+
+    it('throws RangeLinkExtensionError with correct code on max retries', async () => {
+      const existingBookmark: Bookmark = {
+        id: 'always-collides',
+        label: 'Existing',
+        link: '/existing#L1',
+        scope: 'global',
+        createdAt: '2025-01-01T00:00:00.000Z',
+        accessCount: 0,
+      };
+      mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [existingBookmark] });
+      mockIdGenerator.mockReturnValue('always-collides');
+      store = new BookmarksStore(mockMemento, mockLogger, mockIdGenerator, mockTimestampGenerator);
+
+      await expect(store.add({ label: 'New', link: '/new#L1' })).rejects.toMatchObject({
+        code: 'BOOKMARK_ID_GENERATION_FAILED',
+        message: 'Failed to generate unique bookmark ID after 10 attempts',
+        functionName: 'BookmarksStore.generateUniqueId',
+      });
+    });
   });
 
   describe('getAll()', () => {

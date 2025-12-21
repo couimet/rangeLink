@@ -17,6 +17,7 @@ import type {
 } from './types';
 
 const STORAGE_KEY = 'rangelink.bookmarks';
+const MAX_ID_GENERATION_RETRIES = 10;
 
 const createEmptyStoreData = (): BookmarksStoreData => ({ version: 1, bookmarks: [] });
 
@@ -66,13 +67,32 @@ export class BookmarksStore {
     return index;
   }
 
+  private generateUniqueId(existingIds: Set<BookmarkId>): BookmarkId {
+    for (let attempt = 1; attempt <= MAX_ID_GENERATION_RETRIES; attempt++) {
+      const id = this.idGenerator();
+      if (!existingIds.has(id)) {
+        return id;
+      }
+      this.logger.debug(
+        { fn: 'BookmarksStore.generateUniqueId', attempt, collidingId: id },
+        'ID collision detected, generating new ID',
+      );
+    }
+    throw new RangeLinkExtensionError({
+      code: RangeLinkExtensionErrorCodes.BOOKMARK_ID_GENERATION_FAILED,
+      message: `Failed to generate unique bookmark ID after ${MAX_ID_GENERATION_RETRIES} attempts`,
+      functionName: 'BookmarksStore.generateUniqueId',
+    });
+  }
+
   /**
    * Creates a new bookmark with generated id, createdAt, and accessCount=0.
    */
   async add(input: BookmarkInput): Promise<Bookmark> {
     const data = this.load();
+    const existingIds = new Set(data.bookmarks.map((b) => b.id));
     const bookmark: Bookmark = {
-      id: this.idGenerator(),
+      id: this.generateUniqueId(existingIds),
       label: input.label,
       link: input.link,
       description: input.description,
