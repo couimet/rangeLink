@@ -40,6 +40,7 @@ export * from './createBaseMockPasteDestination';
 export * from './createMockPosition';
 export * from './createMockPositionAt';
 export * from './createMockRange';
+export * from './createMockRangeLinkParser';
 export * from './createMockSelection';
 export * from './createMockSingletonComposablePasteDestination';
 export * from './createMockStatusBarItem';

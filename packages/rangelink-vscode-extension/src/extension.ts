@@ -35,6 +35,7 @@ import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
+import { RangeLinkParser } from './RangeLinkParser';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { RangeLinkStatusBar } from './statusBar';
 import type { RangeLinkClickArgs } from './types';
@@ -115,9 +116,10 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register destinationManager for automatic disposal on deactivation
   context.subscriptions.push(destinationManager);
 
-  // Create shared navigation handler (used by both terminal and document providers)
-  const navigationHandler = new RangeLinkNavigationHandler(delimiters, ideAdapter, getLogger());
-  getLogger().debug({ fn: 'activate' }, 'Navigation handler created');
+  // Create parser and navigation handler (used by both terminal and document providers)
+  const parser = new RangeLinkParser(delimiters, getLogger());
+  const navigationHandler = new RangeLinkNavigationHandler(parser, ideAdapter, getLogger());
+  getLogger().debug({ fn: 'activate' }, 'Parser and navigation handler created');
 
   // Register terminal link provider for clickable links
   const terminalLinkProvider = new RangeLinkTerminalProvider(
