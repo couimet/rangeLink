@@ -141,9 +141,59 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       kind: vscode.QuickPickItemKind.Separator,
     });
 
+    result.push(...this.buildBookmarksQuickPickItems());
+
     result.push({
       label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
       command: CMD_SHOW_VERSION,
+    });
+
+    return result;
+  }
+
+  private buildBookmarksQuickPickItems(): MenuQuickPickItem[] {
+    const result: MenuQuickPickItem[] = [];
+    const bookmarks = this.bookmarksStore.getAll();
+    const countSuffix = bookmarks.length > 0 ? ` (${bookmarks.length})` : '';
+
+    result.push({
+      label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL) + countSuffix,
+      kind: vscode.QuickPickItemKind.Separator,
+    });
+
+    if (bookmarks.length === 0) {
+      result.push({
+        label: `    ${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_EMPTY)}`,
+      });
+    } else {
+      for (const bookmark of bookmarks) {
+        result.push({
+          label: `    $(file) ${bookmark.label}`,
+          description: bookmark.description,
+          command: CMD_BOOKMARK_NAVIGATE,
+          bookmarkId: bookmark.id,
+        });
+      }
+    }
+
+    result.push({
+      label: '',
+      kind: vscode.QuickPickItemKind.Separator,
+    });
+
+    result.push({
+      label: `    ${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_ADD_CURRENT)}`,
+      command: CMD_BOOKMARK_ADD,
+    });
+
+    result.push({
+      label: `    ${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_MANAGE)}`,
+      command: CMD_BOOKMARK_MANAGE,
+    });
+
+    result.push({
+      label: '',
+      kind: vscode.QuickPickItemKind.Separator,
     });
 
     return result;
