@@ -15,7 +15,7 @@ import { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 import { createMockCommands, type MockCommandsInput } from './createMockCommands';
 import { createMockDocumentLink } from './createMockDocumentLink';
-import { createMockEnv } from './createMockEnv';
+import { createMockEnv, type MockEnvOptions } from './createMockEnv';
 import { createMockExtensions, type MockExtensionConfig } from './createMockExtensions';
 import { createMockLanguages } from './createMockLanguages';
 import { createMockUri } from './createMockUri';
@@ -29,8 +29,8 @@ import { MockTabInputText } from './tabTestHelpers';
 export interface MockVscodeOptions {
   /** Commands configuration - accepts either a config object or a partial vscode.commands */
   commandsOptions?: MockCommandsInput;
-  /** Environment overrides - accepts either a config object or a partial vscode.Env */
-  envOptions?: Record<string, unknown> | Partial<typeof vscode.env>;
+  /** Environment overrides for appName, uriScheme, clipboard, etc.. */
+  envOptions?: MockEnvOptions;
   /** Window overrides - accepts either a config object or a partial vscode.Window */
   windowOptions?: Record<string, unknown> | Partial<typeof vscode.window>;
   /** Workspace overrides - accepts either a config object or a partial vscode.Workspace */
@@ -100,15 +100,8 @@ export interface VscodeAdapterWithTestHooks extends VscodeAdapter {
   /**
    * Test-only accessor to the underlying vscode instance.
    *
-   * **Use only for mutating vscode state** (e.g., `mockVscode.window.activeTextEditor = undefined`).
+   * Use only for mutating vscode state (e.g., setting activeTextEditor to undefined).
    * VscodeAdapter properties are readonly, so use this to simulate IDE state changes.
-   *
-   * **Don't use for spying** - spy on adapter methods directly:
-   * ```typescript
-   * jest.spyOn(adapter, 'writeTextToClipboard'); // ✅ Correct
-   * ```
-   *
-   * Returns `any` to allow property mutation in tests (the actual return is the mock vscode instance).
    */
   __getVscodeInstance(): any;
 }
