@@ -57,12 +57,12 @@ describe('BookmarksStore', () => {
         {
           fn: 'BookmarksStore.add',
           bookmark: {
-            id: TEST_ID,
+            id: 'test-bookmark-id-001',
             label: 'Test',
             link: '/test#L1',
             description: undefined,
             scope: 'global',
-            createdAt: TEST_TIMESTAMP,
+            createdAt: '2025-01-15T10:30:00.000Z',
             accessCount: 0,
           },
           syncEnabled: false,
@@ -90,24 +90,24 @@ describe('BookmarksStore', () => {
 
       expect(result.success).toBe(true);
       expect(result.value).toStrictEqual({
-        id: TEST_ID,
+        id: 'test-bookmark-id-001',
         label: 'CLAUDE.md Instructions',
         link: '/Users/test/project/CLAUDE.md#L10-L20',
         description: undefined,
         scope: 'global',
-        createdAt: TEST_TIMESTAMP,
+        createdAt: '2025-01-15T10:30:00.000Z',
         accessCount: 0,
       });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'BookmarksStore.add',
           bookmark: {
-            id: TEST_ID,
+            id: 'test-bookmark-id-001',
             label: 'CLAUDE.md Instructions',
             link: '/Users/test/project/CLAUDE.md#L10-L20',
             description: undefined,
             scope: 'global',
-            createdAt: TEST_TIMESTAMP,
+            createdAt: '2025-01-15T10:30:00.000Z',
             accessCount: 0,
           },
           syncEnabled: true,
@@ -144,12 +144,12 @@ describe('BookmarksStore', () => {
         version: 1,
         bookmarks: [
           {
-            id: TEST_ID,
+            id: 'test-bookmark-id-001',
             label: 'Test',
             link: '/test#L1',
             description: undefined,
             scope: 'global',
-            createdAt: TEST_TIMESTAMP,
+            createdAt: '2025-01-15T10:30:00.000Z',
             accessCount: 0,
           },
         ],
@@ -462,7 +462,7 @@ describe('BookmarksStore', () => {
             label: 'Remove Me',
             link: '/remove#L1',
             scope: 'global',
-            createdAt: TEST_TIMESTAMP,
+            createdAt: '2025-01-15T10:30:00.000Z',
             accessCount: 0,
           },
           syncEnabled: true,
@@ -526,7 +526,7 @@ describe('BookmarksStore', () => {
 
       expect(result.success).toBe(true);
       const saved = mockMemento._storage.get(STORAGE_KEY) as BookmarksStoreData;
-      expect(saved.bookmarks[0].lastAccessedAt).toBe(TEST_TIMESTAMP);
+      expect(saved.bookmarks[0].lastAccessedAt).toBe('2025-01-15T10:30:00.000Z');
     });
 
     it('increments accessCount', async () => {
@@ -555,7 +555,7 @@ describe('BookmarksStore', () => {
             link: '/access#L1',
             scope: 'global',
             createdAt: '2025-01-01T00:00:00.000Z',
-            lastAccessedAt: TEST_TIMESTAMP,
+            lastAccessedAt: '2025-01-15T10:30:00.000Z',
             accessCount: 6,
           },
           syncEnabled: true,
@@ -605,7 +605,7 @@ describe('BookmarksStore', () => {
             link: '/access#L1',
             scope: 'global',
             createdAt: '2025-01-01T00:00:00.000Z',
-            lastAccessedAt: TEST_TIMESTAMP,
+            lastAccessedAt: '2025-01-15T10:30:00.000Z',
             accessCount: 1,
           },
         ],
