@@ -7,6 +7,8 @@
 
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
+import type { PaddingMode } from '../utils/applySmartPadding';
+
 // =============================================================================
 // Delimiter Defaults (re-exported from core for extension use)
 // =============================================================================
@@ -15,3 +17,10 @@ export const DEFAULT_DELIMITER_HASH = DEFAULT_DELIMITERS.hash;
 export const DEFAULT_DELIMITER_LINE = DEFAULT_DELIMITERS.line;
 export const DEFAULT_DELIMITER_POSITION = DEFAULT_DELIMITERS.position;
 export const DEFAULT_DELIMITER_RANGE = DEFAULT_DELIMITERS.range;
+
+// =============================================================================
+// Smart Padding Defaults
+// =============================================================================
+
+export const DEFAULT_SMART_PADDING_PASTE_CONTENT: PaddingMode = 'none';
+export const DEFAULT_SMART_PADDING_PASTE_LINK: PaddingMode = 'both';

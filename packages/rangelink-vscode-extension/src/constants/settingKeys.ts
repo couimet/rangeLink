@@ -19,3 +19,10 @@ export const SETTING_DELIMITER_HASH = 'delimiterHash';
 export const SETTING_DELIMITER_LINE = 'delimiterLine';
 export const SETTING_DELIMITER_POSITION = 'delimiterPosition';
 export const SETTING_DELIMITER_RANGE = 'delimiterRange';
+
+// =============================================================================
+// Smart Padding Settings
+// =============================================================================
+
+export const SETTING_SMART_PADDING_PASTE_CONTENT = 'smartPadding.pasteContent';
+export const SETTING_SMART_PADDING_PASTE_LINK = 'smartPadding.pasteLink';
