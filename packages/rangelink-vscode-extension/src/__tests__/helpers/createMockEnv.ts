@@ -4,29 +4,31 @@
 
 import * as vscode from 'vscode';
 
+import { createMockClipboard, type MockClipboard } from './createMockClipboard';
+
+/**
+ * Options for creating mock vscode.env
+ */
+export interface MockEnvOptions {
+  appName?: string;
+  uriScheme?: string;
+  clipboard?: MockClipboard;
+}
+
 /**
  * Mock vscode.env object for environment detection tests.
  *
  * Provides complete mock of vscode.env with:
  * - appName and uriScheme for environment detection
- * - clipboard.writeText() for VscodeAdapter clipboard operations
- * - clipboard.readText() for test completeness
- *
- * All clipboard methods return proper Promise types matching VSCode API.
+ * - clipboard via createMockClipboard() for consistent clipboard mocking
  *
  * @param options - Environment properties to override
  * @returns Mock env object compatible with VscodeAdapter
  */
-export const createMockEnv = (options?: {
-  appName?: string;
-  uriScheme?: string;
-}): typeof vscode.env => {
+export const createMockEnv = (options?: MockEnvOptions): typeof vscode.env => {
   return {
     appName: options?.appName || 'Visual Studio Code',
     uriScheme: options?.uriScheme || 'vscode',
-    clipboard: {
-      writeText: jest.fn().mockResolvedValue(undefined),
-      readText: jest.fn().mockResolvedValue(''),
-    },
+    clipboard: options?.clipboard ?? createMockClipboard(),
   } as unknown as typeof vscode.env;
 };
