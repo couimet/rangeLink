@@ -143,4 +143,102 @@ describe('applySmartPadding', () => {
       expect(applySmartPadding('text   ')).toBe(' text   ');
     });
   });
+
+  describe('Padding modes', () => {
+    describe('mode: both (default)', () => {
+      it('should add both leading and trailing spaces when explicit', () => {
+        expect(applySmartPadding('link', 'both')).toBe(' link ');
+      });
+
+      it('should use both as default when mode omitted', () => {
+        expect(applySmartPadding('link')).toBe(' link ');
+      });
+
+      it('should preserve existing leading space', () => {
+        expect(applySmartPadding(' link', 'both')).toBe(' link ');
+      });
+
+      it('should preserve existing trailing space', () => {
+        expect(applySmartPadding('link ', 'both')).toBe(' link ');
+      });
+
+      it('should preserve whitespace-only strings', () => {
+        expect(applySmartPadding('   ', 'both')).toBe('   ');
+      });
+
+      it('should add both spaces to empty string', () => {
+        expect(applySmartPadding('', 'both')).toBe('  ');
+      });
+    });
+
+    describe('mode: before', () => {
+      it('should add only leading space', () => {
+        expect(applySmartPadding('link', 'before')).toBe(' link');
+      });
+
+      it('should preserve existing leading space', () => {
+        expect(applySmartPadding(' link', 'before')).toBe(' link');
+      });
+
+      it('should not add trailing space', () => {
+        expect(applySmartPadding('link', 'before')).toBe(' link');
+      });
+
+      it('should preserve whitespace-only strings', () => {
+        expect(applySmartPadding('   ', 'before')).toBe('   ');
+      });
+
+      it('should add leading space to empty string', () => {
+        expect(applySmartPadding('', 'before')).toBe(' ');
+      });
+    });
+
+    describe('mode: after', () => {
+      it('should add only trailing space', () => {
+        expect(applySmartPadding('link', 'after')).toBe('link ');
+      });
+
+      it('should not add leading space', () => {
+        expect(applySmartPadding('link', 'after')).toBe('link ');
+      });
+
+      it('should preserve existing trailing space', () => {
+        expect(applySmartPadding('link ', 'after')).toBe('link ');
+      });
+
+      it('should preserve whitespace-only strings', () => {
+        expect(applySmartPadding('   ', 'after')).toBe('   ');
+      });
+
+      it('should add trailing space to empty string', () => {
+        expect(applySmartPadding('', 'after')).toBe(' ');
+      });
+    });
+
+    describe('mode: none', () => {
+      it('should return text unchanged', () => {
+        expect(applySmartPadding('link', 'none')).toBe('link');
+      });
+
+      it('should preserve existing leading space', () => {
+        expect(applySmartPadding(' link', 'none')).toBe(' link');
+      });
+
+      it('should preserve existing trailing space', () => {
+        expect(applySmartPadding('link ', 'none')).toBe('link ');
+      });
+
+      it('should preserve whitespace-only strings', () => {
+        expect(applySmartPadding('   ', 'none')).toBe('   ');
+      });
+
+      it('should preserve empty string', () => {
+        expect(applySmartPadding('', 'none')).toBe('');
+      });
+
+      it('should preserve text with both leading and trailing spaces', () => {
+        expect(applySmartPadding(' link ', 'none')).toBe(' link ');
+      });
+    });
+  });
 });
