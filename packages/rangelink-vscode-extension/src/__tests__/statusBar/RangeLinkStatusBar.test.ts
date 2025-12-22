@@ -1,8 +1,10 @@
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
+import type { Bookmark } from '../../bookmarks';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
 import {
+  createMockBookmarksStore,
   createMockDestinationManager,
   createMockStatusBarItem,
   createMockTerminalPasteDestination,
@@ -22,6 +24,8 @@ describe('RangeLinkStatusBar', () => {
   let mockStatusBarItem: ReturnType<typeof createMockStatusBarItem>;
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
+  let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
+  let mockBookmarksStore: ReturnType<typeof createMockBookmarksStore>;
 
   beforeEach(() => {
     mockStatusBarItem = createMockStatusBarItem();
@@ -38,13 +42,13 @@ describe('RangeLinkStatusBar', () => {
         executeCommand: executeCommandMock,
       },
     });
+    mockDestinationManager = createMockDestinationManager();
+    mockBookmarksStore = createMockBookmarksStore();
   });
 
   describe('constructor', () => {
     it('creates and configures status bar item', () => {
-      const mockDestinationManager = createMockDestinationManager();
-
-      new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockLogger);
+      new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockBookmarksStore, mockLogger);
 
       expect(createStatusBarItemMock).toHaveBeenCalledTimes(1);
       expect(createStatusBarItemMock).toHaveBeenCalledWith(vscode.StatusBarAlignment.Right, 100);
@@ -120,12 +124,16 @@ describe('RangeLinkStatusBar', () => {
    */
   describe('openMenu - selection behavior', () => {
     it('executes command and logs when item with command is selected', async () => {
-      const mockDestinationManager = createMockDestinationManager();
       showQuickPickMock.mockResolvedValue({
         label: 'Synthetic Item',
         command: 'synthetic.testCommand',
       });
-      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockLogger);
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockBookmarksStore,
+        mockLogger,
+      );
 
       await statusBar.openMenu();
 
@@ -141,11 +149,15 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('does not execute command or log when item without command is selected', async () => {
-      const mockDestinationManager = createMockDestinationManager();
       showQuickPickMock.mockResolvedValue({
         label: 'Synthetic Disabled Item',
       });
-      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockLogger);
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockBookmarksStore,
+        mockLogger,
+      );
       (mockLogger.debug as jest.Mock).mockClear();
 
       await statusBar.openMenu();
@@ -155,9 +167,13 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('does not execute command or log when user dismisses QuickPick', async () => {
-      const mockDestinationManager = createMockDestinationManager();
       showQuickPickMock.mockResolvedValue(QUICK_PICK_DISMISSED);
-      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockLogger);
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockBookmarksStore,
+        mockLogger,
+      );
       (mockLogger.debug as jest.Mock).mockClear();
 
       await statusBar.openMenu();
@@ -169,8 +185,12 @@ describe('RangeLinkStatusBar', () => {
 
   describe('dispose', () => {
     it('disposes status bar item and logs', () => {
-      const mockDestinationManager = createMockDestinationManager();
-      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockLogger);
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockBookmarksStore,
+        mockLogger,
+      );
 
       statusBar.dispose();
 
