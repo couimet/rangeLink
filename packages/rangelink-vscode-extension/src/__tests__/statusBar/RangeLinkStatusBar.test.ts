@@ -68,11 +68,13 @@ describe('RangeLinkStatusBar', () => {
    * These freeze the user-facing contract (labels, descriptions, commands).
    */
   describe('openMenu - menu content', () => {
-    it('shows disabled Jump item when no destination is bound', async () => {
-      const mockDestinationManager = createMockDestinationManager({
-        isBound: false,
-      });
-      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockLogger);
+    it('shows disabled Jump item and empty bookmarks when no destination is bound', async () => {
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockBookmarksStore,
+        mockLogger,
+      );
 
       await statusBar.openMenu();
 
@@ -84,6 +86,12 @@ describe('RangeLinkStatusBar', () => {
             description: '(no destination bound)',
           },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: '$(bookmark) Bookmarks', kind: vscode.QuickPickItemKind.Separator },
+          { label: '    No bookmarks yet' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: '    $(add) Add Current Selection', command: 'rangelink.bookmark.add' },
+          { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '$(info) Show Version Info', command: 'rangelink.showVersion' },
         ],
         { title: 'RangeLink', placeHolder: 'Select an action' },
@@ -94,11 +102,16 @@ describe('RangeLinkStatusBar', () => {
       const mockBoundDestination = createMockTerminalPasteDestination({
         displayName: 'Terminal ("zsh")',
       });
-      const mockDestinationManager = createMockDestinationManager({
+      const boundDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: mockBoundDestination,
       });
-      const statusBar = new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockLogger);
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        boundDestinationManager,
+        mockBookmarksStore,
+        mockLogger,
+      );
 
       await statusBar.openMenu();
 
@@ -109,6 +122,73 @@ describe('RangeLinkStatusBar', () => {
             description: '→ Terminal ("zsh")',
             command: 'rangelink.jumpToBoundDestination',
           },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: '$(bookmark) Bookmarks', kind: vscode.QuickPickItemKind.Separator },
+          { label: '    No bookmarks yet' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: '    $(add) Add Current Selection', command: 'rangelink.bookmark.add' },
+          { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: '$(info) Show Version Info', command: 'rangelink.showVersion' },
+        ],
+        { title: 'RangeLink', placeHolder: 'Select an action' },
+      );
+    });
+
+    it('shows bookmark items with count in section header', async () => {
+      const bookmarksStoreWithItems = createMockBookmarksStore({
+        bookmarks: [
+          {
+            id: 'bookmark-1',
+            label: 'CLAUDE.md Instructions',
+            link: '/Users/test/project/CLAUDE.md#L10-L20',
+            description: 'Important rules',
+            scope: 'global',
+            createdAt: '2025-01-15T10:00:00.000Z',
+            accessCount: 5,
+          },
+          {
+            id: 'bookmark-2',
+            label: 'API Error Codes',
+            link: '/Users/test/project/src/errors.ts#L1-L50',
+            scope: 'global',
+            createdAt: '2025-01-14T10:00:00.000Z',
+            accessCount: 2,
+          },
+        ],
+      });
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        bookmarksStoreWithItems,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showQuickPickMock).toHaveBeenCalledWith(
+        [
+          {
+            label: '$(circle-slash) Jump to Bound Destination',
+            description: '(no destination bound)',
+          },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: '$(bookmark) Bookmarks (2)', kind: vscode.QuickPickItemKind.Separator },
+          {
+            label: '    $(file) CLAUDE.md Instructions',
+            description: 'Important rules',
+            command: 'rangelink.bookmark.navigate',
+            bookmarkId: 'bookmark-1',
+          },
+          {
+            label: '    $(file) API Error Codes',
+            description: undefined,
+            command: 'rangelink.bookmark.navigate',
+            bookmarkId: 'bookmark-2',
+          },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: '    $(add) Add Current Selection', command: 'rangelink.bookmark.add' },
+          { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '$(info) Show Version Info', command: 'rangelink.showVersion' },
         ],
