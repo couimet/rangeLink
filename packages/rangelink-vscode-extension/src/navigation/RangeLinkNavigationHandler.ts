@@ -1,62 +1,38 @@
 import type { Logger } from 'barebone-logger';
-import type { DelimiterConfig, ParsedLink, Result } from 'rangelink-core-ts';
-import { buildLinkPattern, parseLink, RangeLinkError, SelectionType } from 'rangelink-core-ts';
+import type { ParsedLink, Result } from 'rangelink-core-ts';
+import { RangeLinkError, SelectionType } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 import { TextEditorRevealType } from 'vscode';
 
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import { RangeLinkParser } from '../RangeLinkParser';
 import { MessageCode } from '../types/MessageCode';
-import {
-  convertRangeLinkPosition,
-  formatLinkPosition,
-  formatLinkTooltip,
-  formatMessage,
-} from '../utils';
+import { convertRangeLinkPosition, formatLinkPosition, formatMessage } from '../utils';
 
 /**
- * Core navigation handler for RangeLink format detection and navigation.
+ * Navigation handler for RangeLink file navigation.
  *
- * Provides shared functionality for both terminal and document link providers:
- * - Pattern building and link detection
- * - Link parsing and validation
- * - Tooltip formatting
- * - File navigation with selection handling
- *
- * **Supported formats:**
- * - Single line: `file.ts#L10`
- * - Multi-line: `file.ts#L10-L20`
- * - With columns: `file.ts#L10C5-L20C10`
- * - Rectangular: `file.ts##L10C5-L20C10`
- * - Hash in filename: `file#1.ts#L10`
- *
- * **Usage:**
- * ```typescript
- * const handler = new RangeLinkNavigationHandler(delimiters, logger);
- * const pattern = handler.getPattern();
- * const parseResult = handler.parseLink(linkText);
- * await handler.navigateToLink(parseResult.value, linkText);
- * ```
+ * Delegates parsing to RangeLinkParser and handles VSCode-specific navigation:
+ * - File resolution and opening
+ * - Selection positioning (single, range, rectangular)
+ * - User feedback (messages, reveal in editor)
  */
 export class RangeLinkNavigationHandler {
-  private readonly pattern: RegExp;
-
   /**
    * Create a new navigation handler.
    *
-   * @param delimiters - Delimiter configuration for link detection
+   * @param parser - RangeLinkParser for link detection and parsing
    * @param ideAdapter - VSCode adapter providing complete VSCode API facade
    * @param logger - Logger instance for structured logging
    */
   constructor(
-    private readonly delimiters: DelimiterConfig,
+    private readonly parser: RangeLinkParser,
     private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
-    this.pattern = buildLinkPattern(delimiters);
-
     this.logger.debug(
-      { fn: 'RangeLinkNavigationHandler.constructor', delimiters },
-      'RangeLinkNavigationHandler initialized with delimiter config',
+      { fn: 'RangeLinkNavigationHandler.constructor' },
+      'RangeLinkNavigationHandler initialized',
     );
   }
 
@@ -66,32 +42,27 @@ export class RangeLinkNavigationHandler {
    * @returns RegExp pattern for matching RangeLinks
    */
   getPattern(): RegExp {
-    return this.pattern;
+    return this.parser.getPattern();
   }
 
   /**
    * Parse a RangeLink string into structured data.
    *
-   * Thin wrapper around core parseLink() for consistency and potential
-   * future provider-specific parsing logic.
-   *
    * @param linkText - Raw link text to parse
    * @returns Result with ParsedLink or RangeLinkError
    */
   parseLink(linkText: string): Result<ParsedLink, RangeLinkError> {
-    return parseLink(linkText, this.delimiters);
+    return this.parser.parseLink(linkText);
   }
 
   /**
    * Format tooltip text for a parsed link.
    *
-   * Thin wrapper around formatLinkTooltip() for consistency.
-   *
    * @param parsed - Parsed link data
    * @returns Formatted tooltip string or undefined
    */
   formatTooltip(parsed: ParsedLink): string | undefined {
-    return formatLinkTooltip(parsed);
+    return this.parser.formatTooltip(parsed);
   }
 
   /**

@@ -1,35 +1,38 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
-import { LinkType, SelectionType, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import { LinkType, SelectionType } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
-import * as formatLinkTooltipModule from '../../utils/formatLinkTooltip';
 import {
   createMockDocument,
   createMockEditor,
   createMockLineAt,
   createMockPosition,
   createMockRange,
+  createMockRangeLinkParser,
   createMockText,
   createMockUntitledUri,
   createMockUri,
   createMockVscodeAdapter,
   createWindowOptionsForEditor,
+  type MockRangeLinkParser,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
 
 describe('RangeLinkNavigationHandler', () => {
   let handler: RangeLinkNavigationHandler;
   let mockLogger: Logger;
+  let mockParser: MockRangeLinkParser;
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockDocument: ReturnType<typeof createMockDocument>;
   let mockEditor: ReturnType<typeof createMockEditor>;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
+    mockParser = createMockRangeLinkParser();
     mockAdapter = createMockVscodeAdapter();
-    handler = new RangeLinkNavigationHandler(DEFAULT_DELIMITERS, mockAdapter, mockLogger);
+    handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
   });
 
   describe('Single Position Selection Extension', () => {
@@ -57,7 +60,7 @@ describe('RangeLinkNavigationHandler', () => {
       });
 
       createSelectionSpy = jest.spyOn(mockAdapter, 'createSelection');
-      handler = new RangeLinkNavigationHandler(DEFAULT_DELIMITERS, mockAdapter, mockLogger);
+      handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
     });
 
     it('should extend single-position selection by 1 character (normal case)', async () => {
@@ -713,7 +716,7 @@ describe('RangeLinkNavigationHandler', () => {
     });
 
     describe('formatTooltip', () => {
-      it('should delegate to formatLinkTooltip utility and return result exactly', () => {
+      it('should delegate to parser and return result exactly', () => {
         const parsed: ParsedLink = {
           path: 'file.ts',
           start: { line: 10 },
@@ -722,40 +725,26 @@ describe('RangeLinkNavigationHandler', () => {
           selectionType: SelectionType.Normal,
         };
         const expectedTooltip = 'Open file.ts:10 • RangeLink';
-
-        // Mock the utility function
-        const formatLinkTooltipSpy = jest
-          .spyOn(formatLinkTooltipModule, 'formatLinkTooltip')
-          .mockReturnValue(expectedTooltip);
+        mockParser.formatTooltip.mockReturnValue(expectedTooltip);
 
         const result = handler.formatTooltip(parsed);
 
-        // Verify delegation with exact parameter
-        expect(formatLinkTooltipSpy).toHaveBeenCalledTimes(1);
-        expect(formatLinkTooltipSpy).toHaveBeenCalledWith(parsed);
-
-        // Verify return value is passed through exactly
+        expect(mockParser.formatTooltip).toHaveBeenCalledTimes(1);
+        expect(mockParser.formatTooltip).toHaveBeenCalledWith(parsed);
         expect(result).toBe(expectedTooltip);
       });
 
-      it('should pass through undefined return value from formatLinkTooltip', () => {
+      it('should pass through undefined return value from parser', () => {
         const invalidParsed = {
           path: '',
           start: { line: 10 },
           end: { line: 10 },
         } as ParsedLink;
-
-        // Mock utility to return undefined (invalid data case)
-        const formatLinkTooltipSpy = jest
-          .spyOn(formatLinkTooltipModule, 'formatLinkTooltip')
-          .mockReturnValue(undefined);
+        mockParser.formatTooltip.mockReturnValue(undefined);
 
         const result = handler.formatTooltip(invalidParsed);
 
-        // Verify delegation
-        expect(formatLinkTooltipSpy).toHaveBeenCalledWith(invalidParsed);
-
-        // Verify undefined is passed through exactly
+        expect(mockParser.formatTooltip).toHaveBeenCalledWith(invalidParsed);
         expect(result).toBeUndefined();
       });
     });
@@ -844,7 +833,7 @@ describe('RangeLinkNavigationHandler', () => {
         },
       });
 
-      handler = new RangeLinkNavigationHandler(DEFAULT_DELIMITERS, mockAdapter, mockLogger);
+      handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
     });
 
     it('should create multi-cursor selections for rectangular mode', async () => {
