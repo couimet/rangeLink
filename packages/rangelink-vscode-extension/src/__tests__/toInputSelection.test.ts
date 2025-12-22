@@ -304,7 +304,7 @@ describe('toInputSelection', () => {
       expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
     });
 
-    it('should handle multi-line selection with PartialLine coverage', () => {
+    it('should handle multi-line selection with PartialLine coverage (both partial)', () => {
       const lineTexts = ['const x = 5;', 'const y = 10;', 'const z = 15;'];
       const editor = createMockEditor([createSelection(0, 5, 2, 8)], lineTexts);
 
@@ -313,6 +313,38 @@ describe('toInputSelection', () => {
       const result = toInputSelection(editor, editor.selections);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
+      expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
+      expect(result.selections[0].end).toStrictEqual({ line: 2, char: 8 });
+    });
+
+    it('should handle multi-line with full start, partial end (no normalization)', () => {
+      // Start at beginning of line 0, end mid-line on line 2
+      // This should NOT trigger newline normalization (end.character !== 0)
+      const lineTexts = ['const x = 5;', 'const y = 10;', 'const z = 15;'];
+      const editor = createMockEditor([createSelection(0, 0, 2, 8)], lineTexts);
+
+      (isRectangularSelection as jest.Mock).mockReturnValue(false);
+
+      const result = toInputSelection(editor, editor.selections);
+
+      expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
+      expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
+      expect(result.selections[0].end).toStrictEqual({ line: 2, char: 8 }); // NOT normalized
+    });
+
+    it('should handle multi-line with partial start, full end (no normalization)', () => {
+      // Start mid-line on line 0, end at end of line 2
+      // This should NOT trigger newline normalization (end.character !== 0)
+      const lineTexts = ['const x = 5;', 'const y = 10;', 'const z = 15;'];
+      const editor = createMockEditor([createSelection(0, 5, 2, lineTexts[2].length)], lineTexts);
+
+      (isRectangularSelection as jest.Mock).mockReturnValue(false);
+
+      const result = toInputSelection(editor, editor.selections);
+
+      expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
+      expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
+      expect(result.selections[0].end).toStrictEqual({ line: 2, char: lineTexts[2].length }); // NOT normalized
     });
   });
 
