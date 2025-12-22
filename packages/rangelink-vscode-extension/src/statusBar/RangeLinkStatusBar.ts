@@ -1,7 +1,15 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import { CMD_JUMP_TO_DESTINATION, CMD_OPEN_STATUS_BAR_MENU, CMD_SHOW_VERSION } from '../constants';
+import type { BookmarkId, BookmarksStore } from '../bookmarks';
+import {
+  CMD_BOOKMARK_ADD,
+  CMD_BOOKMARK_MANAGE,
+  CMD_BOOKMARK_NAVIGATE,
+  CMD_JUMP_TO_DESTINATION,
+  CMD_OPEN_STATUS_BAR_MENU,
+  CMD_SHOW_VERSION,
+} from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types/MessageCode';
@@ -12,6 +20,7 @@ import { formatMessage } from '../utils/formatMessage';
  */
 interface MenuQuickPickItem extends vscode.QuickPickItem {
   command?: string;
+  bookmarkId?: BookmarkId;
 }
 
 /**
@@ -32,6 +41,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
+    private readonly bookmarksStore: BookmarksStore,
     private readonly logger: Logger,
   ) {
     this.statusBarItem = this.ideAdapter.createStatusBarItem(
@@ -59,10 +69,55 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     });
 
     if (selected?.command) {
-      await this.ideAdapter.executeCommand(selected.command);
+      if (selected.command === CMD_BOOKMARK_NAVIGATE && selected.bookmarkId) {
+        await this.pasteBookmarkToDestination(selected.bookmarkId);
+      } else {
+        await this.ideAdapter.executeCommand(selected.command);
+      }
       this.logger.debug(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
         'Menu item selected',
+      );
+    }
+  }
+
+  /**
+   * Copy bookmark link to clipboard and paste to bound destination.
+   */
+  private async pasteBookmarkToDestination(bookmarkId: BookmarkId): Promise<void> {
+    const bookmark = this.bookmarksStore.getById(bookmarkId);
+    if (!bookmark) {
+      this.logger.warn(
+        { fn: 'RangeLinkStatusBar.pasteBookmarkToDestination', bookmarkId },
+        'Bookmark not found',
+      );
+      return;
+    }
+
+    await this.bookmarksStore.recordAccess(bookmarkId);
+    await this.ideAdapter.writeTextToClipboard(bookmark.link);
+
+    if (this.destinationManager.isBound()) {
+      await this.destinationManager.sendTextToDestination(
+        bookmark.link,
+        `Bookmark pasted: ${bookmark.label}`,
+      );
+      this.logger.debug(
+        {
+          fn: 'RangeLinkStatusBar.pasteBookmarkToDestination',
+          bookmark,
+          pastedToDestination: true,
+        },
+        `Pasted bookmark to destination: ${bookmark.label}`,
+      );
+    } else {
+      this.logger.debug(
+        {
+          fn: 'RangeLinkStatusBar.pasteBookmarkToDestination',
+          bookmark,
+          pastedToDestination: false,
+        },
+        `Copied bookmark to clipboard (no destination bound): ${bookmark.label}`,
       );
     }
   }
@@ -96,9 +151,59 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       kind: vscode.QuickPickItemKind.Separator,
     });
 
+    result.push(...this.buildBookmarksQuickPickItems());
+
     result.push({
       label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
       command: CMD_SHOW_VERSION,
+    });
+
+    return result;
+  }
+
+  private buildBookmarksQuickPickItems(): MenuQuickPickItem[] {
+    const result: MenuQuickPickItem[] = [];
+    const bookmarks = this.bookmarksStore.getAll();
+    const countSuffix = bookmarks.length > 0 ? ` (${bookmarks.length})` : '';
+
+    result.push({
+      label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL) + countSuffix,
+      kind: vscode.QuickPickItemKind.Separator,
+    });
+
+    if (bookmarks.length === 0) {
+      result.push({
+        label: `    ${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_EMPTY)}`,
+      });
+    } else {
+      for (const bookmark of bookmarks) {
+        result.push({
+          label: `    $(file) ${bookmark.label}`,
+          description: bookmark.description,
+          command: CMD_BOOKMARK_NAVIGATE,
+          bookmarkId: bookmark.id,
+        });
+      }
+    }
+
+    result.push({
+      label: '',
+      kind: vscode.QuickPickItemKind.Separator,
+    });
+
+    result.push({
+      label: `    ${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_ADD_CURRENT)}`,
+      command: CMD_BOOKMARK_ADD,
+    });
+
+    result.push({
+      label: `    ${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_MANAGE)}`,
+      command: CMD_BOOKMARK_MANAGE,
+    });
+
+    result.push({
+      label: '',
+      kind: vscode.QuickPickItemKind.Separator,
     });
 
     return result;
