@@ -1,7 +1,15 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import { CMD_JUMP_TO_DESTINATION, CMD_OPEN_STATUS_BAR_MENU, CMD_SHOW_VERSION } from '../constants';
+import type { BookmarkId, BookmarksStore } from '../bookmarks';
+import {
+  CMD_BOOKMARK_ADD,
+  CMD_BOOKMARK_MANAGE,
+  CMD_BOOKMARK_NAVIGATE,
+  CMD_JUMP_TO_DESTINATION,
+  CMD_OPEN_STATUS_BAR_MENU,
+  CMD_SHOW_VERSION,
+} from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types/MessageCode';
@@ -12,6 +20,7 @@ import { formatMessage } from '../utils/formatMessage';
  */
 interface MenuQuickPickItem extends vscode.QuickPickItem {
   command?: string;
+  bookmarkId?: BookmarkId;
 }
 
 /**
@@ -32,6 +41,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
+    private readonly bookmarksStore: BookmarksStore,
     private readonly logger: Logger,
   ) {
     this.statusBarItem = this.ideAdapter.createStatusBarItem(
