@@ -13,7 +13,11 @@ import * as vscode from 'vscode';
 
 import { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
-import { createMockCommands, type MockCommands, type MockCommandsOverrides } from './createMockCommands';
+import {
+  createMockCommands,
+  type MockCommands,
+  type MockCommandsOverrides,
+} from './createMockCommands';
 import { createMockDocumentLink } from './createMockDocumentLink';
 import { createMockEnv, type MockEnvOptions } from './createMockEnv';
 import { createMockExtensions, type MockExtensionConfig } from './createMockExtensions';

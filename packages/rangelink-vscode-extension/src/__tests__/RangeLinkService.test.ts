@@ -268,8 +268,7 @@ describe('RangeLinkService', () => {
           '✓ RangeLink copied to clipboard',
         );
         // Verify call order (service handles clipboard, manager handles destination + feedback)
-        const clipboardCall = (mockClipboard.writeText as jest.Mock).mock
-          .invocationCallOrder[0];
+        const clipboardCall = (mockClipboard.writeText as jest.Mock).mock.invocationCallOrder[0];
         const managerCall = (mockDestinationManager.sendLinkToDestination as jest.Mock).mock
           .invocationCallOrder[0];
         expect(clipboardCall).toBeLessThan(managerCall);
@@ -614,7 +613,7 @@ describe('RangeLinkService', () => {
           windowOptions: { activeTextEditor: undefined },
         });
         jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-          service = new RangeLinkService(
+        service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
@@ -654,7 +653,7 @@ describe('RangeLinkService', () => {
           windowOptions: createWindowOptionsForEditor(mockEditor),
         });
         jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-          service = new RangeLinkService(
+        service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
@@ -692,7 +691,7 @@ describe('RangeLinkService', () => {
           windowOptions: createWindowOptionsForEditor(mockEditor),
         });
         jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-          service = new RangeLinkService(
+        service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
@@ -956,9 +955,7 @@ describe('RangeLinkService', () => {
       it('should concatenate selections with newlines', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(
-          'first line\nsecond line\nthird line',
-        );
+        expect(mockClipboard.writeText).toHaveBeenCalledWith('first line\nsecond line\nthird line');
       });
 
       it('should send concatenated text to destination', async () => {
@@ -1174,7 +1171,7 @@ describe('RangeLinkService', () => {
           windowOptions: { activeTextEditor: undefined },
         });
         jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-          service = new RangeLinkService(
+        service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
@@ -1398,7 +1395,7 @@ describe('RangeLinkService', () => {
         jest
           .spyOn(mockVscodeAdapter, 'asRelativePath')
           .mockImplementation(createMockAsRelativePath('file.ts'));
-          service = new RangeLinkService(
+        service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
