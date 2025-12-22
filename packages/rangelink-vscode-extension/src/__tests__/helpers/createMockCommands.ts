@@ -2,34 +2,42 @@
  * Create a mock vscode.commands object for testing
  */
 
-import * as vscode from 'vscode';
-
 /**
- * Special configuration options for mock commands.
+ * Type for mock commands overrides
  */
-export interface MockCommandsOptions {
-  /** List of command IDs that getCommands() should return */
+export interface MockCommandsOverrides {
+  registerCommand?: jest.Mock;
+  executeCommand?: jest.Mock;
+  getCommands?: jest.Mock;
+  /** Convenience: list of command IDs that getCommands() should return */
   availableCommands?: string[];
 }
 
 /**
- * Input type for createMockCommands - accepts either special config or direct overrides.
- */
-export type MockCommandsInput = MockCommandsOptions | Partial<typeof vscode.commands>;
-
-/**
- * Mock vscode.commands object for command execution tests.
+ * Create a mock commands object for testing.
  *
- * @param options - Optional configuration or property overrides
- * @returns Mock commands object with registerCommand, executeCommand, and getCommands spies
+ * This is the canonical way to mock command operations. Use this utility
+ * instead of creating inline mocks to ensure consistency across tests.
+ *
+ * @param overrides - Optional property overrides for specialized behavior
+ * @returns Mock commands object with registerCommand, executeCommand, and getCommands methods
  */
-export const createMockCommands = (options?: MockCommandsInput): typeof vscode.commands => {
-  const availableCommands = (options as MockCommandsOptions)?.availableCommands ?? [];
+export const createMockCommands = (overrides?: MockCommandsOverrides) => {
+  const { availableCommands, ...restOverrides } = overrides ?? {};
 
-  return {
+  const baseCommands = {
     registerCommand: jest.fn(),
     executeCommand: jest.fn().mockResolvedValue(undefined),
-    getCommands: jest.fn().mockResolvedValue(availableCommands),
-    ...options,
-  } as unknown as typeof vscode.commands;
+    getCommands: jest.fn().mockResolvedValue(availableCommands ?? []),
+  };
+
+  return {
+    ...baseCommands,
+    ...restOverrides,
+  };
 };
+
+/**
+ * Type for the mock commands returned by createMockCommands()
+ */
+export type MockCommands = ReturnType<typeof createMockCommands>;
