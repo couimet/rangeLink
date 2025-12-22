@@ -4,11 +4,14 @@ import { ClipboardTextInserter } from '../../../destinations/capabilities/Clipbo
 import { EditorTextInserter } from '../../../destinations/capabilities/EditorTextInserter';
 import { NativeCommandTextInserter } from '../../../destinations/capabilities/NativeCommandTextInserter';
 import { TextInserterFactory } from '../../../destinations/capabilities/TextInserterFactory';
-import { createMockEditor, createMockVscodeAdapter } from '../../helpers';
+import { createMockClipboard, createMockEditor, createMockVscodeAdapter } from '../../helpers';
 
 describe('TextInserterFactory', () => {
   const mockLogger = createMockLogger();
-  const mockAdapter = createMockVscodeAdapter();
+  const mockClipboard = createMockClipboard();
+  const mockAdapter = createMockVscodeAdapter({
+    envOptions: { clipboard: mockClipboard },
+  });
 
   describe('createClipboardInserter()', () => {
     it('should create ClipboardTextInserter instance', () => {
@@ -23,7 +26,6 @@ describe('TextInserterFactory', () => {
       const factory = new TextInserterFactory(mockAdapter, mockLogger);
       const pasteCommands = ['command1', 'command2'];
       const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
-      jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
 
       const inserter = factory.createClipboardInserter(pasteCommands);
       await inserter.insert('test', { fn: 'test' });
@@ -35,7 +37,6 @@ describe('TextInserterFactory', () => {
       const factory = new TextInserterFactory(mockAdapter, mockLogger);
       const beforePaste = jest.fn().mockResolvedValue(undefined);
       jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
-      jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
 
       const inserter = factory.createClipboardInserter(['paste'], beforePaste);
       await inserter.insert('test', { fn: 'test' });
