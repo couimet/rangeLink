@@ -155,42 +155,68 @@ export class RangeLinkNavigationHandler {
 
       // Convert positions (LinkPosition → ConvertedPosition → vscode.Position)
       const document = editor.document;
+
+      // Detect full-line selection: both start.char and end.char are undefined
+      // This distinguishes #L10 (full line) from #L10C1 (explicit point)
+      const isFullLineSelection = start.char === undefined && end.char === undefined;
+
       const convertedStart = convertRangeLinkPosition(start, document);
-      const convertedEnd = end ? convertRangeLinkPosition(end, document) : convertedStart;
+      const convertedEnd = convertRangeLinkPosition(end, document);
 
       let vsStart = this.ideAdapter.createPosition(convertedStart.line, convertedStart.character);
-      let vsEnd = this.ideAdapter.createPosition(convertedEnd.line, convertedEnd.character);
+      let vsEnd: ReturnType<typeof this.ideAdapter.createPosition>;
 
-      // Single-position selection extension for visibility
-      // When navigating to a single position (e.g., file.ts#L32C1), extend the selection
-      // by 1 character to make it visible. Without this, users see only an invisible cursor.
-      if (vsStart.line === vsEnd.line && vsStart.character === vsEnd.character) {
-        const lineLength = document.lineAt(vsStart.line).text.length;
+      if (isFullLineSelection) {
+        // Full-line selection: extend end to line length
+        // For empty lines, both start and end will be at character 0 (the full empty line)
+        const endLineLength = document.lineAt(convertedEnd.line).text.length;
+        vsEnd = this.ideAdapter.createPosition(convertedEnd.line, endLineLength);
 
-        if (lineLength > 0 && vsStart.character < lineLength) {
-          // Normal case: Extend by 1 character for visibility
-          vsEnd = this.ideAdapter.createPosition(vsEnd.line, vsEnd.character + 1);
+        this.logger.debug(
+          {
+            ...logCtx,
+            startLine: convertedStart.line + 1,
+            endLine: convertedEnd.line + 1,
+            endLineLength,
+            reason: 'full-line selection detected',
+          },
+          'Extended selection to full line(s)',
+        );
+      } else {
+        // Explicit position selection (e.g., #L10C5 or #L10C5-L20C10)
+        vsEnd = this.ideAdapter.createPosition(convertedEnd.line, convertedEnd.character);
 
-          this.logger.debug(
-            {
-              ...logCtx,
-              originalPos: `${vsStart.line + 1}:${vsStart.character + 1}`,
-              extendedTo: `${vsEnd.line + 1}:${vsEnd.character + 1}`,
-              reason: 'single-position selection needs visibility',
-            },
-            'Extended single-position selection by 1 character',
-          );
-        } else {
-          // Edge case: Empty line or end of line - keep cursor only
-          this.logger.debug(
-            {
-              ...logCtx,
-              position: `${vsStart.line + 1}:${vsStart.character + 1}`,
-              lineLength,
-              reason: lineLength === 0 ? 'empty line' : 'end of line',
-            },
-            'Single-position selection at line boundary - keeping cursor only',
-          );
+        // Single-position selection extension for visibility
+        // When navigating to a single position (e.g., file.ts#L32C1), extend the selection
+        // by 1 character to make it visible. Without this, users see only an invisible cursor.
+        if (vsStart.line === vsEnd.line && vsStart.character === vsEnd.character) {
+          const lineLength = document.lineAt(vsStart.line).text.length;
+
+          if (lineLength > 0 && vsStart.character < lineLength) {
+            // Normal case: Extend by 1 character for visibility
+            vsEnd = this.ideAdapter.createPosition(vsEnd.line, vsEnd.character + 1);
+
+            this.logger.debug(
+              {
+                ...logCtx,
+                originalPos: `${vsStart.line + 1}:${vsStart.character + 1}`,
+                extendedTo: `${vsEnd.line + 1}:${vsEnd.character + 1}`,
+                reason: 'single-position selection needs visibility',
+              },
+              'Extended single-position selection by 1 character',
+            );
+          } else {
+            // Edge case: Empty line or end of line - keep cursor only
+            this.logger.debug(
+              {
+                ...logCtx,
+                position: `${vsStart.line + 1}:${vsStart.character + 1}`,
+                lineLength,
+                reason: lineLength === 0 ? 'empty line' : 'end of line',
+              },
+              'Single-position selection at line boundary - keeping cursor only',
+            );
+          }
         }
       }
 
