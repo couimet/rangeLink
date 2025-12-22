@@ -180,6 +180,30 @@
           "default": "-",
           "description": "Delimiter used between start and end positions (e.g., - in #L10-L20)",
           "pattern": "^[^0-9]+$"
+        },
+        "rangelink.smartPadding.pasteLink": {
+          "type": "string",
+          "enum": ["both", "before", "after", "none"],
+          "default": "both",
+          "enumDescriptions": [
+            "Add space before and after (prevents concatenation)",
+            "Add space before only",
+            "Add space after only",
+            "No padding (paste link as-is)"
+          ],
+          "description": "Smart padding for generated RangeLinks when pasting to destinations"
+        },
+        "rangelink.smartPadding.pasteContent": {
+          "type": "string",
+          "enum": ["both", "before", "after", "none"],
+          "default": "none",
+          "enumDescriptions": [
+            "Add space before and after",
+            "Add space before only",
+            "Add space after only",
+            "No padding (paste text exactly as selected)"
+          ],
+          "description": "Smart padding for selected text when using Paste Selected Text to Destination (R-V)"
         }
       }
     },
