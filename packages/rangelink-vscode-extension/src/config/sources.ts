@@ -1,7 +1,12 @@
 import type { DelimiterConfig } from 'rangelink-core-ts';
 
+import {
+  SETTING_DELIMITER_HASH,
+  SETTING_DELIMITER_LINE,
+  SETTING_DELIMITER_POSITION,
+  SETTING_DELIMITER_RANGE,
+} from '../constants';
 import type { ConfigGetter, ConfigInspection, ConfigSource, DelimiterConfigSources } from './types';
-import { DelimiterConfigKey } from './types';
 
 /**
  * Determines config source from inspection data
@@ -22,16 +27,15 @@ export const determineSource = (inspect: ConfigInspection | undefined): ConfigSo
 /**
  * Determines sources for all delimiter fields
  * Pure function, no side effects
- * Uses DelimiterConfigKey enum to avoid string typos
  *
  * @param config - Configuration getter interface
  * @returns Source for each delimiter field
  */
 export const determineAllSources = (config: ConfigGetter): DelimiterConfigSources => {
   return {
-    line: determineSource(config.inspect(DelimiterConfigKey.Line)),
-    position: determineSource(config.inspect(DelimiterConfigKey.Position)),
-    hash: determineSource(config.inspect(DelimiterConfigKey.Hash)),
-    range: determineSource(config.inspect(DelimiterConfigKey.Range)),
+    line: determineSource(config.inspect(SETTING_DELIMITER_LINE)),
+    position: determineSource(config.inspect(SETTING_DELIMITER_POSITION)),
+    hash: determineSource(config.inspect(SETTING_DELIMITER_HASH)),
+    range: determineSource(config.inspect(SETTING_DELIMITER_RANGE)),
   };
 };

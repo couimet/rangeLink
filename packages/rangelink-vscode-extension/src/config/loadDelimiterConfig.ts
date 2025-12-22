@@ -1,10 +1,15 @@
 import type { Logger } from 'barebone-logger';
 import { DEFAULT_DELIMITERS, type RangeLinkError } from 'rangelink-core-ts';
 
+import {
+  SETTING_DELIMITER_HASH,
+  SETTING_DELIMITER_LINE,
+  SETTING_DELIMITER_POSITION,
+  SETTING_DELIMITER_RANGE,
+} from '../constants';
 import { logSuccessfulConfig, logValidationErrors } from './logging';
 import { determineAllSources } from './sources';
 import type { ConfigGetter, LoadDelimiterConfigResult } from './types';
-import { DelimiterConfigKey } from './types';
 import { validateDelimiterFields, validateDelimiterRelationships } from './validation';
 
 /**
@@ -34,12 +39,11 @@ export const loadDelimiterConfig = (
   config: ConfigGetter,
   logger: Logger,
 ): LoadDelimiterConfigResult => {
-  // Get raw config values using enum keys (type-safe, prevents typos)
-  // Keep undefined separate from empty string (undefined = not set, '' = explicitly set to invalid)
-  const userLine = config.get<string>(DelimiterConfigKey.Line);
-  const userPosition = config.get<string>(DelimiterConfigKey.Position);
-  const userHash = config.get<string>(DelimiterConfigKey.Hash);
-  const userRange = config.get<string>(DelimiterConfigKey.Range);
+  // Get raw config values (undefined = not set, '' = explicitly set to invalid)
+  const userLine = config.get<string>(SETTING_DELIMITER_LINE);
+  const userPosition = config.get<string>(SETTING_DELIMITER_POSITION);
+  const userHash = config.get<string>(SETTING_DELIMITER_HASH);
+  const userRange = config.get<string>(SETTING_DELIMITER_RANGE);
 
   // If no config provided at all (all undefined), use defaults silently (no errors)
   const hasNoConfig =
