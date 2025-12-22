@@ -1,5 +1,6 @@
 import type { Logger } from 'barebone-logger';
 import { nanoid } from 'nanoid';
+import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
@@ -88,25 +89,42 @@ export class BookmarksStore {
   /**
    * Creates a new bookmark with generated id, createdAt, and accessCount=0.
    */
-  async add(input: BookmarkInput): Promise<Bookmark> {
-    const data = this.load();
-    const existingIds = new Set(data.bookmarks.map((b) => b.id));
-    const bookmark: Bookmark = {
-      id: this.generateUniqueId(existingIds),
-      label: input.label,
-      link: input.link,
-      description: input.description,
-      scope: input.scope ?? 'global',
-      createdAt: this.timestampGenerator(),
-      accessCount: 0,
-    };
+  async add(input: BookmarkInput): Promise<Result<Bookmark, RangeLinkExtensionError>> {
+    try {
+      const data = this.load();
+      const existingIds = new Set(data.bookmarks.map((b) => b.id));
+      const bookmark: Bookmark = {
+        id: this.generateUniqueId(existingIds),
+        label: input.label,
+        link: input.link,
+        description: input.description,
+        scope: input.scope ?? 'global',
+        createdAt: this.timestampGenerator(),
+        accessCount: 0,
+      };
 
-    data.bookmarks.unshift(bookmark);
-    await this.save(data, 'add');
+      data.bookmarks.unshift(bookmark);
+      await this.save(data, 'add');
 
-    this.logger.debug({ fn: 'BookmarksStore.add', bookmark }, `Added bookmark: ${bookmark.label}`);
+      this.logger.debug(
+        { fn: 'BookmarksStore.add', bookmark },
+        `Added bookmark: ${bookmark.label}`,
+      );
 
-    return bookmark;
+      return Result.ok(bookmark);
+    } catch (error) {
+      if (error instanceof RangeLinkExtensionError) {
+        return Result.err(error);
+      }
+      return Result.err(
+        new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
+          message: 'Unexpected error while adding bookmark',
+          functionName: 'BookmarksStore.add',
+          cause: error instanceof Error ? error : undefined,
+        }),
+      );
+    }
   }
 
   /**
@@ -129,81 +147,148 @@ export class BookmarksStore {
    * Updates a bookmark's label, link, or description.
    * Returns the updated bookmark, or undefined if not found.
    */
-  async update(id: BookmarkId, updates: BookmarkUpdate): Promise<Bookmark | undefined> {
-    const data = this.load();
-    const index = this.findBookmarkIndex(data, id, 'update');
+  async update(
+    id: BookmarkId,
+    updates: BookmarkUpdate,
+  ): Promise<Result<Bookmark, RangeLinkExtensionError>> {
+    try {
+      const data = this.load();
+      const index = this.findBookmarkIndex(data, id, 'update');
 
-    if (index === -1) {
-      return undefined;
+      if (index === -1) {
+        return Result.err(
+          new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.BOOKMARK_NOT_FOUND,
+            message: `Cannot update bookmark: not found`,
+            functionName: 'BookmarksStore.update',
+            details: { bookmarkId: id },
+          }),
+        );
+      }
+
+      const bookmark = data.bookmarks[index];
+      const updated: Bookmark = {
+        ...bookmark,
+        ...(updates.label !== undefined && { label: updates.label }),
+        ...(updates.link !== undefined && { link: updates.link }),
+        ...(updates.description !== undefined && { description: updates.description }),
+      };
+
+      data.bookmarks[index] = updated;
+      await this.save(data, 'update');
+
+      this.logger.debug(
+        { fn: 'BookmarksStore.update', bookmarkId: id, updates, updatedBookmark: updated },
+        `Updated bookmark: ${updated.label}`,
+      );
+
+      return Result.ok(updated);
+    } catch (error) {
+      if (error instanceof RangeLinkExtensionError) {
+        return Result.err(error);
+      }
+      return Result.err(
+        new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
+          message: 'Unexpected error while updating bookmark',
+          functionName: 'BookmarksStore.update',
+          cause: error instanceof Error ? error : undefined,
+        }),
+      );
     }
-
-    const bookmark = data.bookmarks[index];
-    const updated: Bookmark = {
-      ...bookmark,
-      ...(updates.label !== undefined && { label: updates.label }),
-      ...(updates.link !== undefined && { link: updates.link }),
-      ...(updates.description !== undefined && { description: updates.description }),
-    };
-
-    data.bookmarks[index] = updated;
-    await this.save(data, 'update');
-
-    this.logger.debug(
-      { fn: 'BookmarksStore.update', bookmarkId: id, updates, updatedBookmark: updated },
-      `Updated bookmark: ${updated.label}`,
-    );
-
-    return updated;
   }
 
   /**
    * Removes a bookmark by its id.
-   * Returns true if removed, false if not found.
    */
-  async remove(id: BookmarkId): Promise<boolean> {
-    const data = this.load();
-    const index = this.findBookmarkIndex(data, id, 'remove');
+  async remove(id: BookmarkId): Promise<Result<void, RangeLinkExtensionError>> {
+    try {
+      const data = this.load();
+      const index = this.findBookmarkIndex(data, id, 'remove');
 
-    if (index === -1) {
-      return false;
+      if (index === -1) {
+        return Result.err(
+          new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.BOOKMARK_NOT_FOUND,
+            message: `Cannot remove bookmark: not found`,
+            functionName: 'BookmarksStore.remove',
+            details: { bookmarkId: id },
+          }),
+        );
+      }
+
+      const [removed] = data.bookmarks.splice(index, 1);
+      await this.save(data, 'remove');
+
+      this.logger.debug(
+        { fn: 'BookmarksStore.remove', removedBookmark: removed },
+        `Removed bookmark: ${removed.label}`,
+      );
+
+      return Result.ok(undefined);
+    } catch (error) {
+      if (error instanceof RangeLinkExtensionError) {
+        return Result.err(error);
+      }
+      return Result.err(
+        new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
+          message: 'Unexpected error while removing bookmark',
+          functionName: 'BookmarksStore.remove',
+          cause: error instanceof Error ? error : undefined,
+        }),
+      );
     }
-
-    const [removed] = data.bookmarks.splice(index, 1);
-    await this.save(data, 'remove');
-
-    this.logger.debug(
-      { fn: 'BookmarksStore.remove', removedBookmark: removed },
-      `Removed bookmark: ${removed.label}`,
-    );
-
-    return true;
   }
 
   /**
    * Records an access to a bookmark, updating lastAccessedAt and incrementing accessCount.
    */
-  async recordAccess(id: BookmarkId): Promise<void> {
-    const data = this.load();
-    const index = this.findBookmarkIndex(data, id, 'recordAccess');
+  async recordAccess(id: BookmarkId): Promise<Result<void, RangeLinkExtensionError>> {
+    try {
+      const data = this.load();
+      const index = this.findBookmarkIndex(data, id, 'recordAccess');
 
-    if (index === -1) {
-      return;
+      if (index === -1) {
+        return Result.err(
+          new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.BOOKMARK_NOT_FOUND,
+            message: `Cannot record access: bookmark not found`,
+            functionName: 'BookmarksStore.recordAccess',
+            details: { bookmarkId: id },
+          }),
+        );
+      }
+
+      const bookmark = data.bookmarks[index];
+      const updatedBookmark: Bookmark = {
+        ...bookmark,
+        lastAccessedAt: this.timestampGenerator(),
+        accessCount: bookmark.accessCount + 1,
+      };
+
+      data.bookmarks[index] = updatedBookmark;
+      await this.save(data, 'recordAccess');
+
+      this.logger.debug(
+        { fn: 'BookmarksStore.recordAccess', updatedBookmark },
+        `Recorded access for bookmark: ${updatedBookmark.label}`,
+      );
+
+      return Result.ok(undefined);
+    } catch (error) {
+      if (error instanceof RangeLinkExtensionError) {
+        return Result.err(error);
+      }
+      return Result.err(
+        new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
+          message: 'Unexpected error while recording bookmark access',
+          functionName: 'BookmarksStore.recordAccess',
+          cause: error instanceof Error ? error : undefined,
+        }),
+      );
     }
-
-    const bookmark = data.bookmarks[index];
-    const updatedBookmark: Bookmark = {
-      ...bookmark,
-      lastAccessedAt: this.timestampGenerator(),
-      accessCount: bookmark.accessCount + 1,
-    };
-
-    data.bookmarks[index] = updatedBookmark;
-    await this.save(data, 'recordAccess');
-
-    this.logger.debug(
-      { fn: 'BookmarksStore.recordAccess', updatedBookmark },
-      `Recorded access for bookmark: ${updatedBookmark.label}`,
-    );
   }
 
   private load(): BookmarksStoreData {

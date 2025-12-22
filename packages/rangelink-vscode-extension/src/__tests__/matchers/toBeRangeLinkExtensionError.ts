@@ -1,4 +1,4 @@
-import type { ErrorDetails } from 'rangelink-core-ts';
+import type { ErrorDetails, Result } from 'rangelink-core-ts';
 
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 
@@ -173,4 +173,30 @@ export const toThrowRangeLinkExtensionErrorAsync = async (
 
   // Use the existing validation logic from toBeRangeLinkExtensionError
   return toBeRangeLinkExtensionError(caughtError, expectedCode, expected);
+};
+
+/**
+ * Custom Jest matcher for Result<T, RangeLinkExtensionError> types.
+ * Combines toBeErrWith and toBeRangeLinkExtensionError into a single assertion for cleaner tests.
+ *
+ * @param received - The Result to test
+ * @param expectedCode - Expected error code as string literal (e.g., 'BOOKMARK_NOT_FOUND')
+ * @param expected - Expected error properties (message, functionName, details, cause)
+ */
+export const toBeRangeLinkExtensionErrorErr = (
+  received: Result<unknown, unknown>,
+  expectedCode: string,
+  expected: ExpectedRangeLinkExtensionError,
+): jest.CustomMatcherResult => {
+  // First check if it's an error Result
+  if (received.success) {
+    return {
+      pass: false,
+      message: () =>
+        `Expected result to be an error, but it succeeded with value: ${JSON.stringify(received.value)}`,
+    };
+  }
+
+  // Then validate it's a RangeLinkExtensionError with correct properties
+  return toBeRangeLinkExtensionError(received.error, expectedCode, expected);
 };

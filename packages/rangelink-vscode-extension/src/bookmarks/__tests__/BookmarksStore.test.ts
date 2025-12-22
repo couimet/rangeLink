@@ -60,7 +60,8 @@ describe('BookmarksStore', () => {
         link: '/Users/test/project/CLAUDE.md#L10-L20',
       });
 
-      expect(result).toStrictEqual({
+      expect(result.success).toBe(true);
+      expect(result.value).toStrictEqual({
         id: TEST_ID,
         label: 'CLAUDE.md Instructions',
         link: '/Users/test/project/CLAUDE.md#L10-L20',
@@ -78,7 +79,8 @@ describe('BookmarksStore', () => {
         description: 'Important code section',
       });
 
-      expect(result.description).toBe('Important code section');
+      expect(result.success).toBe(true);
+      expect(result.value.description).toBe('Important code section');
     });
 
     it('defaults scope to global when not provided', async () => {
@@ -87,7 +89,8 @@ describe('BookmarksStore', () => {
         link: '/path/to/file.ts#L5',
       });
 
-      expect(result.scope).toBe('global');
+      expect(result.success).toBe(true);
+      expect(result.value.scope).toBe('global');
     });
 
     it('persists to globalState', async () => {
@@ -161,14 +164,13 @@ describe('BookmarksStore', () => {
         accessCount: 0,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [existingBookmark] });
-      mockIdGenerator
-        .mockReturnValueOnce('colliding-id')
-        .mockReturnValueOnce('unique-id');
+      mockIdGenerator.mockReturnValueOnce('colliding-id').mockReturnValueOnce('unique-id');
       store = new BookmarksStore(mockMemento, mockLogger, mockIdGenerator, mockTimestampGenerator);
 
       const result = await store.add({ label: 'New', link: '/new#L1' });
 
-      expect(result.id).toBe('unique-id');
+      expect(result.success).toBe(true);
+      expect(result.value.id).toBe('unique-id');
       expect(mockIdGenerator).toHaveBeenCalledTimes(2);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'BookmarksStore.generateUniqueId', attempt: 1, collidingId: 'colliding-id' },
@@ -176,7 +178,7 @@ describe('BookmarksStore', () => {
       );
     });
 
-    it('throws after max retries when all generated IDs collide', async () => {
+    it('returns error after max retries when all generated IDs collide', async () => {
       const existingBookmark: Bookmark = {
         id: 'always-collides',
         label: 'Existing',
@@ -189,28 +191,13 @@ describe('BookmarksStore', () => {
       mockIdGenerator.mockReturnValue('always-collides');
       store = new BookmarksStore(mockMemento, mockLogger, mockIdGenerator, mockTimestampGenerator);
 
-      await expect(store.add({ label: 'New', link: '/new#L1' })).rejects.toThrow();
-      expect(mockIdGenerator).toHaveBeenCalledTimes(10);
-    });
+      const result = await store.add({ label: 'New', link: '/new#L1' });
 
-    it('throws RangeLinkExtensionError with correct code on max retries', async () => {
-      const existingBookmark: Bookmark = {
-        id: 'always-collides',
-        label: 'Existing',
-        link: '/existing#L1',
-        scope: 'global',
-        createdAt: '2025-01-01T00:00:00.000Z',
-        accessCount: 0,
-      };
-      mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [existingBookmark] });
-      mockIdGenerator.mockReturnValue('always-collides');
-      store = new BookmarksStore(mockMemento, mockLogger, mockIdGenerator, mockTimestampGenerator);
-
-      await expect(store.add({ label: 'New', link: '/new#L1' })).rejects.toMatchObject({
-        code: 'BOOKMARK_ID_GENERATION_FAILED',
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_ID_GENERATION_FAILED', {
         message: 'Failed to generate unique bookmark ID after 10 attempts',
         functionName: 'BookmarksStore.generateUniqueId',
       });
+      expect(mockIdGenerator).toHaveBeenCalledTimes(10);
     });
   });
 
@@ -313,9 +300,10 @@ describe('BookmarksStore', () => {
 
       const result = await store.update('existing-id', { label: 'New Label' });
 
-      expect(result?.label).toBe('New Label');
-      expect(result?.link).toBe('/original#L1');
-      expect(result?.description).toBe('Original description');
+      expect(result.success).toBe(true);
+      expect(result.value.label).toBe('New Label');
+      expect(result.value.link).toBe('/original#L1');
+      expect(result.value.description).toBe('Original description');
     });
 
     it('updates link field', async () => {
@@ -324,8 +312,9 @@ describe('BookmarksStore', () => {
 
       const result = await store.update('existing-id', { link: '/new/path#L10' });
 
-      expect(result?.link).toBe('/new/path#L10');
-      expect(result?.label).toBe('Original Label');
+      expect(result.success).toBe(true);
+      expect(result.value.link).toBe('/new/path#L10');
+      expect(result.value.label).toBe('Original Label');
     });
 
     it('updates description field', async () => {
@@ -336,7 +325,8 @@ describe('BookmarksStore', () => {
         description: 'New description',
       });
 
-      expect(result?.description).toBe('New description');
+      expect(result.success).toBe(true);
+      expect(result.value.description).toBe('New description');
     });
 
     it('updates multiple fields', async () => {
@@ -349,7 +339,8 @@ describe('BookmarksStore', () => {
         description: 'Updated description',
       });
 
-      expect(result).toStrictEqual({
+      expect(result.success).toBe(true);
+      expect(result.value).toStrictEqual({
         id: 'existing-id',
         label: 'Updated Label',
         link: '/updated#L5',
@@ -366,18 +357,23 @@ describe('BookmarksStore', () => {
 
       const result = await store.update('existing-id', { label: 'Changed' });
 
-      expect(result?.createdAt).toBe('2025-01-01T00:00:00.000Z');
-      expect(result?.accessCount).toBe(5);
-      expect(result?.scope).toBe('global');
+      expect(result.success).toBe(true);
+      expect(result.value.createdAt).toBe('2025-01-01T00:00:00.000Z');
+      expect(result.value.accessCount).toBe(5);
+      expect(result.value.scope).toBe('global');
     });
 
-    it('returns undefined and logs warning for non-existent id', async () => {
+    it('returns Result.err and logs warning for non-existent id', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [] });
       store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = await store.update('non-existent', { label: 'New' });
 
-      expect(result).toBeUndefined();
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_NOT_FOUND', {
+        message: 'Cannot update bookmark: not found',
+        functionName: 'BookmarksStore.update',
+        details: { bookmarkId: 'non-existent' },
+      });
       expect(mockLogger.warn).toHaveBeenCalledWith(
         { fn: 'BookmarksStore.update', bookmarkId: 'non-existent' },
         'Cannot update bookmark: not found',
@@ -421,7 +417,7 @@ describe('BookmarksStore', () => {
   });
 
   describe('remove()', () => {
-    it('removes existing bookmark and returns true', async () => {
+    it('removes existing bookmark and returns Result.ok', async () => {
       const bookmark: Bookmark = {
         id: 'to-remove',
         label: 'Remove Me',
@@ -435,17 +431,21 @@ describe('BookmarksStore', () => {
 
       const result = await store.remove('to-remove');
 
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
       expect(store.getAll()).toStrictEqual([]);
     });
 
-    it('returns false and logs warning for non-existent id', async () => {
+    it('returns Result.err and logs warning for non-existent id', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [] });
       store = new BookmarksStore(mockMemento, mockLogger);
 
       const result = await store.remove('non-existent');
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_NOT_FOUND', {
+        message: 'Cannot remove bookmark: not found',
+        functionName: 'BookmarksStore.remove',
+        details: { bookmarkId: 'non-existent' },
+      });
       expect(mockLogger.warn).toHaveBeenCalledWith(
         { fn: 'BookmarksStore.remove', bookmarkId: 'non-existent' },
         'Cannot remove bookmark: not found',
@@ -516,8 +516,9 @@ describe('BookmarksStore', () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
       store = new BookmarksStore(mockMemento, mockLogger, undefined, mockTimestampGenerator);
 
-      await store.recordAccess('access-me');
+      const result = await store.recordAccess('access-me');
 
+      expect(result.success).toBe(true);
       const saved = mockMemento._storage.get(STORAGE_KEY) as BookmarksStoreData;
       expect(saved.bookmarks[0].lastAccessedAt).toBe(TEST_TIMESTAMP);
     });
@@ -534,18 +535,24 @@ describe('BookmarksStore', () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
       store = new BookmarksStore(mockMemento, mockLogger);
 
-      await store.recordAccess('access-me');
+      const result = await store.recordAccess('access-me');
 
+      expect(result.success).toBe(true);
       const saved = mockMemento._storage.get(STORAGE_KEY) as BookmarksStoreData;
       expect(saved.bookmarks[0].accessCount).toBe(6);
     });
 
-    it('logs warning and skips persistence for non-existent id', async () => {
+    it('returns Result.err and logs warning for non-existent id', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [] });
       store = new BookmarksStore(mockMemento, mockLogger);
 
-      await store.recordAccess('non-existent');
+      const result = await store.recordAccess('non-existent');
 
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_NOT_FOUND', {
+        message: 'Cannot record access: bookmark not found',
+        functionName: 'BookmarksStore.recordAccess',
+        details: { bookmarkId: 'non-existent' },
+      });
       expect(mockMemento.update).not.toHaveBeenCalled();
       expect(mockLogger.warn).toHaveBeenCalledWith(
         { fn: 'BookmarksStore.recordAccess', bookmarkId: 'non-existent' },
