@@ -27,13 +27,17 @@ export const toInputSelection = (
     // If lineAt throws, it means the document was modified and selection is invalid
     let coverage = SelectionCoverage.PartialLine;
 
+    // Detect if selection includes trailing newline (VSCode quirk)
+    // When user selects "line 20 + newline", VSCode reports end as (21, 0)
+    const includesTrailingNewline = sel.end.line > sel.start.line && sel.end.character === 0;
+
     try {
       const endLine = editor.document.lineAt(sel.end.line);
       const startsAtBeginning = sel.start.character === 0;
       const endsAtEndOfLine =
         sel.end.character === endLine.range.end.character ||
         sel.end.character >= endLine.text.length ||
-        (sel.end.line > sel.start.line && sel.end.character === 0);
+        includesTrailingNewline;
 
       if (startsAtBeginning && endsAtEndOfLine) {
         coverage = SelectionCoverage.FullLine;
@@ -55,9 +59,13 @@ export const toInputSelection = (
       throw new Error(message);
     }
 
+    // Normalize end line when selection includes trailing newline
+    // VSCode reports (21, 0) for "line 20 + newline" - adjust to point to actual content line
+    const adjustedEndLine = includesTrailingNewline ? sel.end.line - 1 : sel.end.line;
+
     selections.push({
       start: { line: sel.start.line, char: sel.start.character },
-      end: { line: sel.end.line, char: sel.end.character },
+      end: { line: adjustedEndLine, char: sel.end.character },
       coverage,
     });
   }

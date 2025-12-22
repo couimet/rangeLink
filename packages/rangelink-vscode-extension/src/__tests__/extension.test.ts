@@ -457,7 +457,9 @@ describe('RangeLinkService', () => {
 
       await service.createLink(PathFormat.WorkspaceRelative);
 
-      expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L11-L26');
+      // Selection L10-L25 with end char=0 means "lines 10-24 + newline"
+      // Normalized to L11-L25 (1-indexed): lines 10-24 = L11-L25
+      expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L11-L25');
     });
 
     // TODO: MOVE to RangeLinkService.test.ts
