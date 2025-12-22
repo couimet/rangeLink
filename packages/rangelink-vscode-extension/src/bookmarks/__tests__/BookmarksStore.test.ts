@@ -98,6 +98,22 @@ describe('BookmarksStore', () => {
         createdAt: TEST_TIMESTAMP,
         accessCount: 0,
       });
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'BookmarksStore.add',
+          bookmark: {
+            id: TEST_ID,
+            label: 'CLAUDE.md Instructions',
+            link: '/Users/test/project/CLAUDE.md#L10-L20',
+            description: undefined,
+            scope: 'global',
+            createdAt: TEST_TIMESTAMP,
+            accessCount: 0,
+          },
+          syncEnabled: true,
+        },
+        'Added bookmark: CLAUDE.md Instructions',
+      );
     });
 
     it('includes description when provided', async () => {
@@ -138,27 +154,6 @@ describe('BookmarksStore', () => {
           },
         ],
       });
-    });
-
-    it('logs debug message', async () => {
-      await store.add({ label: 'Test Bookmark', link: '/test#L1' });
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'BookmarksStore.add',
-          bookmark: {
-            id: TEST_ID,
-            label: 'Test Bookmark',
-            link: '/test#L1',
-            description: undefined,
-            scope: 'global',
-            createdAt: TEST_TIMESTAMP,
-            accessCount: 0,
-          },
-          syncEnabled: true,
-        },
-        'Added bookmark: Test Bookmark',
-      );
     });
 
     it('adds new bookmarks at the beginning of the list', async () => {
@@ -378,6 +373,28 @@ describe('BookmarksStore', () => {
         createdAt: '2025-01-01T00:00:00.000Z',
         accessCount: 5,
       });
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'BookmarksStore.update',
+          bookmarkId: 'existing-id',
+          updates: {
+            label: 'Updated Label',
+            link: '/updated#L5',
+            description: 'Updated description',
+          },
+          updatedBookmark: {
+            id: 'existing-id',
+            label: 'Updated Label',
+            link: '/updated#L5',
+            description: 'Updated description',
+            scope: 'global',
+            createdAt: '2025-01-01T00:00:00.000Z',
+            accessCount: 5,
+          },
+          syncEnabled: true,
+        },
+        'Updated bookmark: Updated Label',
+      );
     });
 
     it('does not modify other fields (createdAt, accessCount, scope)', async () => {
@@ -418,32 +435,6 @@ describe('BookmarksStore', () => {
       const saved = mockMemento._storage.get(STORAGE_KEY) as BookmarksStoreData;
       expect(saved.bookmarks[0].label).toBe('Persisted');
     });
-
-    it('logs debug message', async () => {
-      mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [{ ...existingBookmark }] });
-      store = new BookmarksStore(mockMemento, mockLogger);
-
-      await store.update('existing-id', { label: 'Updated Label' });
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'BookmarksStore.update',
-          bookmarkId: 'existing-id',
-          updates: { label: 'Updated Label' },
-          updatedBookmark: {
-            id: 'existing-id',
-            label: 'Updated Label',
-            link: '/original#L1',
-            description: 'Original description',
-            scope: 'global',
-            createdAt: '2025-01-01T00:00:00.000Z',
-            accessCount: 5,
-          },
-          syncEnabled: true,
-        },
-        'Updated bookmark: Updated Label',
-      );
-    });
   });
 
   describe('remove()', () => {
@@ -463,6 +454,21 @@ describe('BookmarksStore', () => {
 
       expect(result.success).toBe(true);
       expect(store.getAll()).toStrictEqual([]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'BookmarksStore.remove',
+          removedBookmark: {
+            id: 'to-remove',
+            label: 'Remove Me',
+            link: '/remove#L1',
+            scope: 'global',
+            createdAt: TEST_TIMESTAMP,
+            accessCount: 0,
+          },
+          syncEnabled: true,
+        },
+        'Removed bookmark: Remove Me',
+      );
     });
 
     it('returns Result.err and logs warning for non-existent id', async () => {
@@ -501,37 +507,6 @@ describe('BookmarksStore', () => {
         bookmarks: [],
       });
     });
-
-    it('logs debug message', async () => {
-      const bookmark: Bookmark = {
-        id: 'to-remove',
-        label: 'Remove Me',
-        link: '/remove#L1',
-        scope: 'global',
-        createdAt: TEST_TIMESTAMP,
-        accessCount: 0,
-      };
-      mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      store = new BookmarksStore(mockMemento, mockLogger);
-
-      await store.remove('to-remove');
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'BookmarksStore.remove',
-          removedBookmark: {
-            id: 'to-remove',
-            label: 'Remove Me',
-            link: '/remove#L1',
-            scope: 'global',
-            createdAt: TEST_TIMESTAMP,
-            accessCount: 0,
-          },
-          syncEnabled: true,
-        },
-        'Removed bookmark: Remove Me',
-      );
-    });
   });
 
   describe('recordAccess()', () => {
@@ -564,13 +539,29 @@ describe('BookmarksStore', () => {
         accessCount: 5,
       };
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      store = new BookmarksStore(mockMemento, mockLogger);
+      store = new BookmarksStore(mockMemento, mockLogger, undefined, mockTimestampGenerator);
 
       const result = await store.recordAccess('access-me');
 
       expect(result.success).toBe(true);
       const saved = mockMemento._storage.get(STORAGE_KEY) as BookmarksStoreData;
       expect(saved.bookmarks[0].accessCount).toBe(6);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'BookmarksStore.recordAccess',
+          updatedBookmark: {
+            id: 'access-me',
+            label: 'Access Test',
+            link: '/access#L1',
+            scope: 'global',
+            createdAt: '2025-01-01T00:00:00.000Z',
+            lastAccessedAt: TEST_TIMESTAMP,
+            accessCount: 6,
+          },
+          syncEnabled: true,
+        },
+        'Recorded access for bookmark: Access Test',
+      );
     });
 
     it('returns Result.err and logs warning for non-existent id', async () => {
@@ -619,38 +610,6 @@ describe('BookmarksStore', () => {
           },
         ],
       });
-    });
-
-    it('logs debug message', async () => {
-      const bookmark: Bookmark = {
-        id: 'access-me',
-        label: 'Access Test',
-        link: '/access#L1',
-        scope: 'global',
-        createdAt: '2025-01-01T00:00:00.000Z',
-        accessCount: 2,
-      };
-      mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [bookmark] });
-      store = new BookmarksStore(mockMemento, mockLogger, undefined, mockTimestampGenerator);
-
-      await store.recordAccess('access-me');
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'BookmarksStore.recordAccess',
-          updatedBookmark: {
-            id: 'access-me',
-            label: 'Access Test',
-            link: '/access#L1',
-            scope: 'global',
-            createdAt: '2025-01-01T00:00:00.000Z',
-            lastAccessedAt: TEST_TIMESTAMP,
-            accessCount: 3,
-          },
-          syncEnabled: true,
-        },
-        'Recorded access for bookmark: Access Test',
-      );
     });
   });
 
