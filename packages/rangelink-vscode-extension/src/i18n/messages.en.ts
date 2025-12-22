@@ -62,6 +62,10 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT]: '✓ Focused GitHub Copilot Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: "{resourceName}"',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
+  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_ADD_CURRENT]: '$(add) Add Current Selection',
+  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_EMPTY]: 'No bookmarks yet',
+  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_MANAGE]: '$(gear) Manage Bookmarks...',
+  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: '$(bookmark) Bookmarks',
   [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_DISABLED_DESC]: '(no destination bound)',
   [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_DISABLED_LABEL]:
     '$(circle-slash) Jump to Bound Destination',

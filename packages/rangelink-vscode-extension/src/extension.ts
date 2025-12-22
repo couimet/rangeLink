@@ -9,6 +9,8 @@ import {
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
   CMD_BIND_TO_TERMINAL,
   CMD_BIND_TO_TEXT_EDITOR,
+  CMD_BOOKMARK_ADD,
+  CMD_BOOKMARK_MANAGE,
   CMD_COPY_LINK_ABSOLUTE,
   CMD_COPY_LINK_ONLY_ABSOLUTE,
   CMD_COPY_LINK_ONLY_RELATIVE,
@@ -64,8 +66,6 @@ export function activate(context: vscode.ExtensionContext): void {
   setLocale(ideAdapter.language);
 
   // Create bookmarks store for cross-workspace bookmark persistence
-  // TODO: Wire up to bookmark commands in issues #163-#166
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const bookmarksStore = new BookmarksStore(context.globalState, getLogger());
   getLogger().debug({ fn: 'activate' }, 'Bookmarks store initialized');
 
@@ -101,7 +101,12 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const service = new RangeLinkService(delimiters, ideAdapter, destinationManager, getLogger());
 
-  const statusBar = new RangeLinkStatusBar(ideAdapter, destinationManager, getLogger());
+  const statusBar = new RangeLinkStatusBar(
+    ideAdapter,
+    destinationManager,
+    bookmarksStore,
+    getLogger(),
+  );
   context.subscriptions.push(statusBar);
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_OPEN_STATUS_BAR_MENU, () => statusBar.openMenu()),
@@ -295,6 +300,19 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, (args) => {
       return documentLinkProvider.handleLinkClick(args as RangeLinkClickArgs);
+    }),
+  );
+
+  // Register bookmark commands (stub implementations - full implementation in issues #164-#166)
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_BOOKMARK_ADD, () => {
+      getLogger().info({ fn: 'CMD_BOOKMARK_ADD' }, 'Add bookmark command invoked (stub)');
+    }),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_BOOKMARK_MANAGE, () => {
+      getLogger().info({ fn: 'CMD_BOOKMARK_MANAGE' }, 'Manage bookmarks command invoked (stub)');
     }),
   );
 
