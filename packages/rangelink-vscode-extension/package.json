@@ -154,6 +154,13 @@
         "title": "Open RangeLink Status Bar Menu",
         "category": "RangeLink",
         "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.bookmark.add",
+        "title": "Add Bookmark",
+        "category": "RangeLink",
+        "icon": "$(bookmark)",
+        "enablement": "editorTextFocus"
       }
     ],
     "configuration": {
