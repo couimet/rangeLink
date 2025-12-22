@@ -377,6 +377,15 @@ describe('BookmarksStore', () => {
         {
           fn: 'BookmarksStore.update',
           bookmarkId: 'existing-id',
+          originalBookmark: {
+            id: 'existing-id',
+            label: 'Original Label',
+            link: '/original#L1',
+            description: 'Original description',
+            scope: 'global',
+            createdAt: '2025-01-01T00:00:00.000Z',
+            accessCount: 5,
+          },
           updates: {
             label: 'Updated Label',
             link: '/updated#L5',

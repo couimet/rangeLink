@@ -190,6 +190,7 @@ export class BookmarksStore {
         {
           fn: 'BookmarksStore.update',
           bookmarkId: id,
+          originalBookmark: bookmark,
           updates,
           updatedBookmark: updated,
           syncEnabled: this.syncEnabled,
