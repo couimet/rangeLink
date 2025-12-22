@@ -95,6 +95,37 @@ describe('toInputSelection', () => {
         // The selection is processed as a single selection from line 0 to line 2
         // Character 0 at end of multi-line selection counts as full line
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
+        // Verify normalized coordinates: end line adjusted from 2 to 1
+        expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
+        expect(result.selections[0].end).toStrictEqual({ line: 1, char: 0 });
+      });
+
+      it('should normalize end line when single-line selection includes trailing newline', () => {
+        // VSCode reports L0 C0 → L1 C0 when selecting line 0 + newline
+        const lineTexts = ['line zero content', 'line one'];
+        const editor = createMockEditor([createSelection(0, 0, 1, 0)], lineTexts);
+
+        (isRectangularSelection as jest.Mock).mockReturnValue(false);
+
+        const result = toInputSelection(editor, editor.selections);
+
+        expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
+        expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
+        expect(result.selections[0].end).toStrictEqual({ line: 0, char: 0 }); // Normalized to line 0, not 1
+      });
+
+      it('should normalize end line when multi-line selection includes trailing newline', () => {
+        // VSCode reports L0 C0 → L3 C0 when selecting lines 0-2 + newline
+        const lineTexts = ['line zero', 'line one', 'line two', 'line three'];
+        const editor = createMockEditor([createSelection(0, 0, 3, 0)], lineTexts);
+
+        (isRectangularSelection as jest.Mock).mockReturnValue(false);
+
+        const result = toInputSelection(editor, editor.selections);
+
+        expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
+        expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
+        expect(result.selections[0].end).toStrictEqual({ line: 2, char: 0 }); // Normalized to line 2, not 3
       });
     });
 
@@ -143,6 +174,20 @@ describe('toInputSelection', () => {
 
         // Empty selection at start of empty line - technically FullLine
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
+      });
+
+      it('should normalize end line for partial selection ending at next line char 0', () => {
+        // User selects from L0 C5 to L1 C0 (partial start, includes newline)
+        const lineTexts = ['line zero content', 'line one'];
+        const editor = createMockEditor([createSelection(0, 5, 1, 0)], lineTexts);
+
+        (isRectangularSelection as jest.Mock).mockReturnValue(false);
+
+        const result = toInputSelection(editor, editor.selections);
+
+        expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine); // NOT FullLine (start != 0)
+        expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
+        expect(result.selections[0].end).toStrictEqual({ line: 0, char: 0 }); // Normalized to line 0
       });
     });
   });

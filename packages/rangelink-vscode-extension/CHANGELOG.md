@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Full-line navigation selection** - Fixed `#L10` selecting only first character instead of entire line. Full-line links (`#L10`, `#L10-L15`) now correctly select from start of first line to end of last line.
+- **Full-line link generation with newline** - Fixed link generation when selection includes trailing newline. Selecting "line 20 + newline" now correctly generates `#L20` instead of `#L20-L21`.
 
 ## [1.0.0]
 
