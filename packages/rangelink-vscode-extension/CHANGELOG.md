@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Show Version Info
   - Foundation for future features (bookmarks, paste destination display)
 
+### Fixed
+
+- **Full-line navigation selection** - Fixed `#L10` selecting only first character instead of entire line. Full-line links (`#L10`, `#L10-L15`) now correctly select from start of first line to end of last line.
+
 ## [1.0.0]
 
 ### Added

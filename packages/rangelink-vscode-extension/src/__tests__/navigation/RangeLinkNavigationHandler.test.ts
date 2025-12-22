@@ -156,11 +156,11 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     );
   });
 
-  it('should extend line-only single position (no character specified)', async () => {
-    // Arrange: Single line position (defaults to char 1 after conversion)
+  it('should select entire line for line-only notation (no character specified)', async () => {
+    // Arrange: Single line position - this is full-line selection, not single-position
     const parsed: ParsedLink = {
       path: 'file.ts',
-      start: { line: 20 }, // No char specified
+      start: { line: 20 }, // No char specified = full line
       end: { line: 20 },
       linkType: LinkType.Regular,
       selectionType: SelectionType.Normal,
@@ -170,25 +170,33 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     // Act
     await handler.navigateToLink(parsed, linkText);
 
-    // Assert: Should extend from start of line (char 1 → 0-indexed = 0) to character 1
+    // Assert: Should log full-line selection (NOT single-position extension)
     expect(mockLogger.debug).toHaveBeenCalledWith(
       {
         fn: 'RangeLinkNavigationHandler.navigateToLink',
         linkText: 'file.ts#L20',
-        originalPos: '20:1',
-        extendedTo: '20:2',
-        reason: 'single-position selection needs visibility',
+        startLine: 20,
+        endLine: 20,
+        endLineLength: 36,
+        reason: 'full-line selection detected',
       },
-      'Extended single-position selection by 1 character',
+      'Extended selection to full line(s)',
+    );
+
+    // Should create selection from start of line to end of line
+    // Line content is 'const x = 42; // Sample line content' (36 chars)
+    expect(createSelectionSpy).toHaveBeenCalledWith(
+      { line: 19, character: 0 },
+      { line: 19, character: 36 },
     );
   });
 
-  it('should NOT extend multi-line range selection', async () => {
-    // Arrange: Multi-line range (should NOT be extended)
+  it('should select from start of first line to end of last line for multi-line range', async () => {
+    // Arrange: Multi-line range with no chars specified = full-line selection
     const parsed: ParsedLink = {
       path: 'file.ts',
       start: { line: 10 },
-      end: { line: 20 }, // Different line
+      end: { line: 20 }, // Different line, no char = full lines
       linkType: LinkType.Regular,
       selectionType: SelectionType.Normal,
     };
@@ -197,16 +205,119 @@ describe('RangeLinkNavigationHandler - Single Position Selection Extension', () 
     // Act
     await handler.navigateToLink(parsed, linkText);
 
-    // Assert: Should NOT log extension (not a single position)
+    // Assert: Should log full-line selection
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      {
+        fn: 'RangeLinkNavigationHandler.navigateToLink',
+        linkText: 'file.ts#L10-L20',
+        startLine: 10,
+        endLine: 20,
+        endLineLength: 36,
+        reason: 'full-line selection detected',
+      },
+      'Extended selection to full line(s)',
+    );
+
+    // Should NOT trigger single-position extension
     expect(mockLogger.debug).not.toHaveBeenCalledWith(
       expect.any(Object),
       'Extended single-position selection by 1 character',
     );
 
-    // Should create selection from line 10 to line 20 (not extended)
+    // Should create selection from start of line 10 to END of line 20
     expect(createSelectionSpy).toHaveBeenCalledWith(
-      { line: 9, character: 0 }, // 0-indexed
-      { line: 19, character: 0 }, // 0-indexed
+      { line: 9, character: 0 },
+      { line: 19, character: 36 },
+    );
+  });
+
+  it('should NOT use full-line selection when start has explicit char (#L10C5-L15)', async () => {
+    // Arrange: Explicit start char means NOT full-line selection
+    const parsed: ParsedLink = {
+      path: 'file.ts',
+      start: { line: 10, char: 5 }, // Explicit char
+      end: { line: 15 }, // No char
+      linkType: LinkType.Regular,
+      selectionType: SelectionType.Normal,
+    };
+    const linkText = 'file.ts#L10C5-L15';
+
+    // Act
+    await handler.navigateToLink(parsed, linkText);
+
+    // Assert: Should NOT log full-line selection (start.char is defined)
+    expect(mockLogger.debug).not.toHaveBeenCalledWith(
+      expect.any(Object),
+      'Extended selection to full line(s)',
+    );
+
+    // Should create selection from L10C5 to L15C0 (end defaults to 0)
+    expect(createSelectionSpy).toHaveBeenCalledWith(
+      { line: 9, character: 4 },
+      { line: 14, character: 0 },
+    );
+  });
+
+  it('should NOT use full-line selection when end has explicit char (#L10-L15C10)', async () => {
+    // Arrange: Explicit end char means NOT full-line selection
+    const parsed: ParsedLink = {
+      path: 'file.ts',
+      start: { line: 10 }, // No char
+      end: { line: 15, char: 10 }, // Explicit char
+      linkType: LinkType.Regular,
+      selectionType: SelectionType.Normal,
+    };
+    const linkText = 'file.ts#L10-L15C10';
+
+    // Act
+    await handler.navigateToLink(parsed, linkText);
+
+    // Assert: Should NOT log full-line selection (end.char is defined)
+    expect(mockLogger.debug).not.toHaveBeenCalledWith(
+      expect.any(Object),
+      'Extended selection to full line(s)',
+    );
+
+    // Should create selection from L10C0 to L15C10
+    expect(createSelectionSpy).toHaveBeenCalledWith(
+      { line: 9, character: 0 },
+      { line: 14, character: 9 },
+    );
+  });
+
+  it('should handle full-line selection on empty line', async () => {
+    // Arrange: Mock empty line
+    mockDocument.lineAt = createMockLineAt('');
+
+    const parsed: ParsedLink = {
+      path: 'file.ts',
+      start: { line: 5 },
+      end: { line: 5 },
+      linkType: LinkType.Regular,
+      selectionType: SelectionType.Normal,
+    };
+    const linkText = 'file.ts#L5';
+
+    // Act
+    await handler.navigateToLink(parsed, linkText);
+
+    // Assert: Should still log full-line selection with length 0
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      {
+        fn: 'RangeLinkNavigationHandler.navigateToLink',
+        linkText: 'file.ts#L5',
+        startLine: 5,
+        endLine: 5,
+        endLineLength: 0,
+        reason: 'full-line selection detected',
+      },
+      'Extended selection to full line(s)',
+    );
+
+    // Selection from 0 to 0 (empty line)
+    expect(createSelectionSpy).toHaveBeenCalledWith(
+      { line: 4, character: 0 },
+      { line: 4, character: 0 },
     );
   });
 
