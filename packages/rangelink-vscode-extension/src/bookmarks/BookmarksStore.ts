@@ -34,6 +34,8 @@ type GlobalStateWithSync = vscode.Memento & {
  * Enables cross-workspace bookmark storage with Settings Sync support.
  */
 export class BookmarksStore {
+  private readonly syncEnabled: boolean;
+
   constructor(
     private readonly globalState: GlobalStateWithSync,
     private readonly logger: Logger,
@@ -50,9 +52,16 @@ export class BookmarksStore {
 
     if ('setKeysForSync' in globalState && typeof globalState.setKeysForSync === 'function') {
       globalState.setKeysForSync([STORAGE_KEY]);
+      this.syncEnabled = true;
       this.logger.debug(
-        { fn: 'BookmarksStore.constructor' },
+        { fn: 'BookmarksStore.constructor', syncEnabled: true },
         'Settings Sync enabled for bookmarks',
+      );
+    } else {
+      this.syncEnabled = false;
+      this.logger.warn(
+        { fn: 'BookmarksStore.constructor', syncEnabled: false },
+        'Settings Sync not available - bookmarks will only be stored locally',
       );
     }
   }
@@ -107,7 +116,7 @@ export class BookmarksStore {
       await this.save(data, 'add');
 
       this.logger.debug(
-        { fn: 'BookmarksStore.add', bookmark },
+        { fn: 'BookmarksStore.add', bookmark, syncEnabled: this.syncEnabled },
         `Added bookmark: ${bookmark.label}`,
       );
 
@@ -178,7 +187,13 @@ export class BookmarksStore {
       await this.save(data, 'update');
 
       this.logger.debug(
-        { fn: 'BookmarksStore.update', bookmarkId: id, updates, updatedBookmark: updated },
+        {
+          fn: 'BookmarksStore.update',
+          bookmarkId: id,
+          updates,
+          updatedBookmark: updated,
+          syncEnabled: this.syncEnabled,
+        },
         `Updated bookmark: ${updated.label}`,
       );
 
@@ -221,7 +236,7 @@ export class BookmarksStore {
       await this.save(data, 'remove');
 
       this.logger.debug(
-        { fn: 'BookmarksStore.remove', removedBookmark: removed },
+        { fn: 'BookmarksStore.remove', removedBookmark: removed, syncEnabled: this.syncEnabled },
         `Removed bookmark: ${removed.label}`,
       );
 
@@ -271,7 +286,7 @@ export class BookmarksStore {
       await this.save(data, 'recordAccess');
 
       this.logger.debug(
-        { fn: 'BookmarksStore.recordAccess', updatedBookmark },
+        { fn: 'BookmarksStore.recordAccess', updatedBookmark, syncEnabled: this.syncEnabled },
         `Recorded access for bookmark: ${updatedBookmark.label}`,
       );
 
@@ -301,7 +316,7 @@ export class BookmarksStore {
       await this.globalState.update(STORAGE_KEY, data);
     } catch (error) {
       this.logger.error(
-        { fn: `BookmarksStore.${operation}`, error },
+        { fn: `BookmarksStore.${operation}`, error, syncEnabled: this.syncEnabled },
         `Failed to save bookmarks during ${operation}`,
       );
       throw new RangeLinkExtensionError({

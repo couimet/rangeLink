@@ -30,17 +30,45 @@ describe('BookmarksStore', () => {
 
       expect(mockMemento.setKeysForSync).toHaveBeenCalledWith([STORAGE_KEY]);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'BookmarksStore.constructor' },
+        { fn: 'BookmarksStore.constructor', syncEnabled: true },
         'Settings Sync enabled for bookmarks',
       );
     });
 
-    it('handles globalState without setKeysForSync gracefully', () => {
+    it('logs warning when setKeysForSync is not available', () => {
       delete (mockMemento as { setKeysForSync?: jest.Mock }).setKeysForSync;
 
       store = new BookmarksStore(mockMemento, mockLogger);
 
       expect(store).toBeDefined();
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'BookmarksStore.constructor', syncEnabled: false },
+        'Settings Sync not available - bookmarks will only be stored locally',
+      );
+    });
+
+    it('includes syncEnabled: false in mutation debug logs when sync not available', async () => {
+      delete (mockMemento as { setKeysForSync?: jest.Mock }).setKeysForSync;
+      store = new BookmarksStore(mockMemento, mockLogger, mockIdGenerator, mockTimestampGenerator);
+
+      await store.add({ label: 'Test', link: '/test#L1' });
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'BookmarksStore.add',
+          bookmark: {
+            id: TEST_ID,
+            label: 'Test',
+            link: '/test#L1',
+            description: undefined,
+            scope: 'global',
+            createdAt: TEST_TIMESTAMP,
+            accessCount: 0,
+          },
+          syncEnabled: false,
+        },
+        'Added bookmark: Test',
+      );
     });
 
     it('throws when globalState is undefined', () => {
@@ -127,6 +155,7 @@ describe('BookmarksStore', () => {
             createdAt: TEST_TIMESTAMP,
             accessCount: 0,
           },
+          syncEnabled: true,
         },
         'Added bookmark: Test Bookmark',
       );
@@ -410,6 +439,7 @@ describe('BookmarksStore', () => {
             createdAt: '2025-01-01T00:00:00.000Z',
             accessCount: 5,
           },
+          syncEnabled: true,
         },
         'Updated bookmark: Updated Label',
       );
@@ -497,6 +527,7 @@ describe('BookmarksStore', () => {
             createdAt: TEST_TIMESTAMP,
             accessCount: 0,
           },
+          syncEnabled: true,
         },
         'Removed bookmark: Remove Me',
       );
@@ -616,6 +647,7 @@ describe('BookmarksStore', () => {
             lastAccessedAt: TEST_TIMESTAMP,
             accessCount: 3,
           },
+          syncEnabled: true,
         },
         'Recorded access for bookmark: Access Test',
       );
