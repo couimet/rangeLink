@@ -20,20 +20,20 @@ describe('applySmartPadding', () => {
   });
 
   describe('Whitespace-only strings', () => {
-    it('should trim single space to empty', () => {
-      expect(applySmartPadding(' ')).toBe('');
+    it('should preserve single space (already has leading and trailing whitespace)', () => {
+      expect(applySmartPadding(' ')).toBe(' ');
     });
 
-    it('should trim multiple spaces to empty', () => {
-      expect(applySmartPadding('   ')).toBe('');
+    it('should preserve multiple spaces', () => {
+      expect(applySmartPadding('   ')).toBe('   ');
     });
 
-    it('should trim whitespace-only strings with mixed whitespace', () => {
-      expect(applySmartPadding(' \t\n ')).toBe('');
+    it('should preserve mixed whitespace', () => {
+      expect(applySmartPadding(' \t\n ')).toBe(' \t\n ');
     });
 
-    it('should handle empty string without adding padding', () => {
-      expect(applySmartPadding('')).toBe('');
+    it('should add both leading and trailing space to empty string', () => {
+      expect(applySmartPadding('')).toBe('  ');
     });
   });
 
