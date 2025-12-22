@@ -5,6 +5,7 @@ import type { Bookmark } from '../../bookmarks';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
 import {
   createMockBookmarksStore,
+  createMockClipboard,
   createMockDestinationManager,
   createMockStatusBarItem,
   createMockTerminalPasteDestination,
@@ -263,6 +264,144 @@ describe('RangeLinkStatusBar', () => {
     });
   });
 
+  describe('openMenu - bookmark selection', () => {
+    it('copies bookmark link to clipboard and pastes to bound destination', async () => {
+      const mockBoundDestination = createMockTerminalPasteDestination({
+        displayName: 'Terminal ("zsh")',
+      });
+      const boundDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: mockBoundDestination,
+      });
+      const bookmark: Bookmark = {
+        id: 'bookmark-1',
+        label: 'Test Bookmark',
+        link: '/Users/test/project/file.ts#L10-L20',
+        scope: 'global',
+        createdAt: '2025-01-15T10:00:00.000Z',
+        accessCount: 0,
+      };
+      const bookmarksStoreWithItem = createMockBookmarksStore({ bookmarks: [bookmark] });
+      const clipboardWriteTextMock = jest.fn().mockResolvedValue(undefined);
+      const mockClipboard = createMockClipboard({ writeText: clipboardWriteTextMock });
+      const adapterWithClipboard = createMockVscodeAdapter({
+        windowOptions: {
+          createStatusBarItem: createStatusBarItemMock,
+          showQuickPick: showQuickPickMock,
+        },
+        commandsOptions: {
+          executeCommand: executeCommandMock,
+        },
+        envOptions: {
+          clipboard: mockClipboard,
+        },
+      });
+
+      showQuickPickMock.mockResolvedValue({
+        label: '    $(file) Test Bookmark',
+        command: 'rangelink.bookmark.navigate',
+        bookmarkId: 'bookmark-1',
+      });
+      const statusBar = new RangeLinkStatusBar(
+        adapterWithClipboard,
+        boundDestinationManager,
+        bookmarksStoreWithItem,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(bookmarksStoreWithItem.recordAccess).toHaveBeenCalledWith('bookmark-1');
+      expect(clipboardWriteTextMock).toHaveBeenCalledWith('/Users/test/project/file.ts#L10-L20');
+      expect(boundDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
+        '/Users/test/project/file.ts#L10-L20',
+        'Bookmark pasted: Test Bookmark',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.pasteBookmarkToDestination',
+          bookmark,
+          pastedToDestination: true,
+        },
+        'Pasted bookmark to destination: Test Bookmark',
+      );
+    });
+
+    it('copies bookmark link to clipboard without pasting when no destination bound', async () => {
+      const bookmark: Bookmark = {
+        id: 'bookmark-1',
+        label: 'Test Bookmark',
+        link: '/Users/test/project/file.ts#L10-L20',
+        scope: 'global',
+        createdAt: '2025-01-15T10:00:00.000Z',
+        accessCount: 0,
+      };
+      const bookmarksStoreWithItem = createMockBookmarksStore({ bookmarks: [bookmark] });
+      const clipboardWriteTextMock = jest.fn().mockResolvedValue(undefined);
+      const mockClipboard = createMockClipboard({ writeText: clipboardWriteTextMock });
+      const adapterWithClipboard = createMockVscodeAdapter({
+        windowOptions: {
+          createStatusBarItem: createStatusBarItemMock,
+          showQuickPick: showQuickPickMock,
+        },
+        commandsOptions: {
+          executeCommand: executeCommandMock,
+        },
+        envOptions: {
+          clipboard: mockClipboard,
+        },
+      });
+
+      showQuickPickMock.mockResolvedValue({
+        label: '    $(file) Test Bookmark',
+        command: 'rangelink.bookmark.navigate',
+        bookmarkId: 'bookmark-1',
+      });
+      const statusBar = new RangeLinkStatusBar(
+        adapterWithClipboard,
+        mockDestinationManager,
+        bookmarksStoreWithItem,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(bookmarksStoreWithItem.recordAccess).toHaveBeenCalledWith('bookmark-1');
+      expect(clipboardWriteTextMock).toHaveBeenCalledWith('/Users/test/project/file.ts#L10-L20');
+      expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.pasteBookmarkToDestination',
+          bookmark,
+          pastedToDestination: false,
+        },
+        'Copied bookmark to clipboard (no destination bound): Test Bookmark',
+      );
+    });
+
+    it('logs warning when selected bookmark not found', async () => {
+      showQuickPickMock.mockResolvedValue({
+        label: '    $(file) Deleted Bookmark',
+        command: 'rangelink.bookmark.navigate',
+        bookmarkId: 'non-existent-id',
+      });
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockBookmarksStore,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.pasteBookmarkToDestination', bookmarkId: 'non-existent-id' },
+        'Bookmark not found',
+      );
+      expect(mockBookmarksStore.recordAccess).not.toHaveBeenCalled();
+    });
+  });
+
   describe('dispose', () => {
     it('disposes status bar item and logs', () => {
       const statusBar = new RangeLinkStatusBar(
@@ -279,6 +418,94 @@ describe('RangeLinkStatusBar', () => {
         { fn: 'RangeLinkStatusBar.dispose' },
         'Status bar disposed',
       );
+    });
+  });
+
+  describe('buildBookmarksQuickPickItems', () => {
+    it('returns empty bookmarks message when no bookmarks', () => {
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockBookmarksStore,
+        mockLogger,
+      );
+
+      const items = (statusBar as any).buildBookmarksQuickPickItems();
+
+      expect(items).toStrictEqual([
+        { label: '$(bookmark) Bookmarks', kind: vscode.QuickPickItemKind.Separator },
+        { label: '    No bookmarks yet' },
+        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        { label: '    $(add) Add Current Selection', command: 'rangelink.bookmark.add' },
+        { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+        { label: '', kind: vscode.QuickPickItemKind.Separator },
+      ]);
+    });
+
+    it('returns bookmark items with count in header', () => {
+      const bookmarksStoreWithItems = createMockBookmarksStore({
+        bookmarks: [
+          {
+            id: 'bookmark-1',
+            label: 'CLAUDE.md Instructions',
+            link: '/Users/test/project/CLAUDE.md#L10-L20',
+            description: 'Important rules',
+            scope: 'global',
+            createdAt: '2025-01-15T10:00:00.000Z',
+            accessCount: 5,
+          },
+          {
+            id: 'bookmark-2',
+            label: 'API Error Codes',
+            link: '/Users/test/project/src/errors.ts#L1-L50',
+            scope: 'global',
+            createdAt: '2025-01-14T10:00:00.000Z',
+            accessCount: 2,
+          },
+        ],
+      });
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        bookmarksStoreWithItems,
+        mockLogger,
+      );
+
+      const items = (statusBar as any).buildBookmarksQuickPickItems();
+
+      expect(items).toStrictEqual([
+        { label: '$(bookmark) Bookmarks (2)', kind: vscode.QuickPickItemKind.Separator },
+        {
+          label: '    $(file) CLAUDE.md Instructions',
+          description: 'Important rules',
+          command: 'rangelink.bookmark.navigate',
+          bookmarkId: 'bookmark-1',
+        },
+        {
+          label: '    $(file) API Error Codes',
+          description: undefined,
+          command: 'rangelink.bookmark.navigate',
+          bookmarkId: 'bookmark-2',
+        },
+        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        { label: '    $(add) Add Current Selection', command: 'rangelink.bookmark.add' },
+        { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+        { label: '', kind: vscode.QuickPickItemKind.Separator },
+      ]);
+    });
+
+    it('is called by buildQuickPickItems', async () => {
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockBookmarksStore,
+        mockLogger,
+      );
+      const spy = jest.spyOn(statusBar as any, 'buildBookmarksQuickPickItems');
+
+      await statusBar.openMenu();
+
+      expect(spy).toHaveBeenCalledTimes(1);
     });
   });
 });
