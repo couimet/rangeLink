@@ -20,6 +20,7 @@ import * as toInputSelectionModule from '../utils/toInputSelection';
 
 import {
   createMockAsRelativePath,
+  createMockClipboard,
   createMockDestinationManager,
   createMockDocument,
   createMockEditor,
@@ -34,6 +35,7 @@ import {
   createMockUri,
   createMockVscodeAdapter,
   createWindowOptionsForEditor,
+  type MockClipboard,
   type VscodeAdapterWithTestHooks,
 } from './helpers';
 
@@ -41,6 +43,7 @@ let service: RangeLinkService;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
 let mockDestinationManager: PasteDestinationManager;
 let mockLogger: Logger;
+let mockClipboard: MockClipboard;
 const delimiters: DelimiterConfig = {
   line: 'L',
   position: 'C',
@@ -74,14 +77,14 @@ const mockSelection = (
 describe('RangeLinkService', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
-
-    mockVscodeAdapter = createMockVscodeAdapter();
+    mockClipboard = createMockClipboard();
+    mockVscodeAdapter = createMockVscodeAdapter({
+      envOptions: { clipboard: mockClipboard },
+    });
   });
 
   describe('copyToClipboardAndDestination', () => {
     beforeEach(() => {
-      // Spy on adapter methods used in these tests
-      jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
       jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
       jest.spyOn(mockVscodeAdapter, 'showWarningMessage').mockResolvedValue(undefined);
       jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
@@ -110,8 +113,8 @@ describe('RangeLinkService', () => {
         // Access private method via any cast for testing
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
         );
@@ -126,8 +129,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
         );
@@ -142,8 +145,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
         );
@@ -158,8 +161,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'Portable RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ Portable RangeLink copied to clipboard',
         );
@@ -174,8 +177,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
         );
@@ -190,8 +193,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
         );
@@ -223,8 +226,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
@@ -241,8 +244,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
@@ -259,13 +262,13 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
         );
         // Verify call order (service handles clipboard, manager handles destination + feedback)
-        const clipboardCall = (mockVscodeAdapter.writeTextToClipboard as jest.Mock).mock
+        const clipboardCall = (mockClipboard.writeText as jest.Mock).mock
           .invocationCallOrder[0];
         const managerCall = (mockDestinationManager.sendLinkToDestination as jest.Mock).mock
           .invocationCallOrder[0];
@@ -300,8 +303,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
@@ -318,8 +321,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
@@ -334,8 +337,8 @@ describe('RangeLinkService', () => {
         const formattedLink = createMockFormattedLink('src/file.ts#L1');
         await (service as any).copyToClipboardAndDestination(formattedLink, 'Portable RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L1');
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L1');
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ Portable RangeLink copied to clipboard',
@@ -371,8 +374,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
@@ -394,8 +397,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
@@ -416,8 +419,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
@@ -438,8 +441,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
@@ -461,8 +464,8 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(link);
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
+        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink copied to clipboard',
@@ -483,7 +486,7 @@ describe('RangeLinkService', () => {
         const formattedLink = createMockFormattedLink('');
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('');
+        expect(mockClipboard.writeText).toHaveBeenCalledWith('');
         expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalled();
       });
 
@@ -493,7 +496,7 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(longLink);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(longLink);
       });
 
       it('should handle special characters in link', async () => {
@@ -502,7 +505,7 @@ describe('RangeLinkService', () => {
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(specialLink);
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(specialLink);
       });
 
       it('should handle special characters in link type name', async () => {
@@ -586,7 +589,6 @@ describe('RangeLinkService', () => {
   describe('pasteSelectedTextToDestination', () => {
     beforeEach(() => {
       // Spy on adapter methods used in these tests
-      jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
       jest.spyOn(mockVscodeAdapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
       jest.spyOn(mockVscodeAdapter, 'showWarningMessage').mockResolvedValue(undefined);
       jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
@@ -612,8 +614,7 @@ describe('RangeLinkService', () => {
           windowOptions: { activeTextEditor: undefined },
         });
         jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        service = new RangeLinkService(
+          service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
@@ -632,7 +633,7 @@ describe('RangeLinkService', () => {
       it('should not copy to clipboard', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockVscodeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
       });
 
       it('should not attempt to send to destination', async () => {
@@ -653,8 +654,7 @@ describe('RangeLinkService', () => {
           windowOptions: createWindowOptionsForEditor(mockEditor),
         });
         jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        service = new RangeLinkService(
+          service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
@@ -673,7 +673,7 @@ describe('RangeLinkService', () => {
       it('should not copy to clipboard', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockVscodeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
       });
     });
 
@@ -692,8 +692,7 @@ describe('RangeLinkService', () => {
           windowOptions: createWindowOptionsForEditor(mockEditor),
         });
         jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        service = new RangeLinkService(
+          service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
@@ -712,18 +711,19 @@ describe('RangeLinkService', () => {
       it('should not copy to clipboard', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockVscodeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
       });
     });
 
     describe('with single selection', () => {
       beforeEach(() => {
+        mockClipboard = createMockClipboard();
         const { adapter } = createMockEditorWithSelection({
           content: 'const foo = "bar";',
           selections: [[0, 0, 0, 18]],
+          adapterOptions: { envOptions: { clipboard: mockClipboard } },
         });
         mockVscodeAdapter = adapter;
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
         jest
           .spyOn(mockVscodeAdapter, 'setStatusBarMessage')
           .mockReturnValue({ dispose: jest.fn() });
@@ -740,7 +740,7 @@ describe('RangeLinkService', () => {
         it('should copy selected text to clipboard', async () => {
           await service.pasteSelectedTextToDestination();
 
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('const foo = "bar";');
+          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
         });
 
         it('should show clipboard fallback message', async () => {
@@ -781,7 +781,7 @@ describe('RangeLinkService', () => {
         it('should copy text to clipboard first (always available fallback)', async () => {
           await service.pasteSelectedTextToDestination();
 
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('const foo = "bar";');
+          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
         });
 
         it('should send selected text to bound destination with basicStatusMessage', async () => {
@@ -817,8 +817,8 @@ describe('RangeLinkService', () => {
         it('should copy text to clipboard', async () => {
           await service.pasteSelectedTextToDestination();
 
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('const foo = "bar";');
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
+          expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
           expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
           expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
             '✓ Selected text copied to clipboard',
@@ -837,8 +837,8 @@ describe('RangeLinkService', () => {
         it('should NOT send to destination when text content not eligible', async () => {
           await service.pasteSelectedTextToDestination();
 
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('const foo = "bar";');
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
+          expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
           expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
           expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
             '✓ Selected text copied to clipboard',
@@ -857,8 +857,8 @@ describe('RangeLinkService', () => {
         it('should show clipboard-only status message', async () => {
           await service.pasteSelectedTextToDestination();
 
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('const foo = "bar";');
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
+          expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
           expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
           expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
             '✓ Selected text copied to clipboard',
@@ -877,8 +877,8 @@ describe('RangeLinkService', () => {
         it('should log debug message about skipping auto-paste', async () => {
           await service.pasteSelectedTextToDestination();
 
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('const foo = "bar";');
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
+          expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
           expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
           expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
             '✓ Selected text copied to clipboard',
@@ -897,8 +897,8 @@ describe('RangeLinkService', () => {
         it('should verify isEligibleForPasteContent was called with correct text', async () => {
           await service.pasteSelectedTextToDestination();
 
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('const foo = "bar";');
-          expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledTimes(1);
+          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
+          expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
           expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
           expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
             '✓ Selected text copied to clipboard',
@@ -919,7 +919,7 @@ describe('RangeLinkService', () => {
 
     describe('with multi-selection', () => {
       beforeEach(() => {
-        // Note: Multi-selection with custom getText behavior - need to override document.getText
+        mockClipboard = createMockClipboard();
         const { adapter, document } = createMockEditorWithSelection({
           content: 'first line\nsecond line\nthird line',
           selections: [
@@ -927,21 +927,21 @@ describe('RangeLinkService', () => {
             [1, 0, 1, 11],
             [2, 0, 2, 10],
           ],
+          adapterOptions: { envOptions: { clipboard: mockClipboard } },
         });
 
         // Override getText to return different text per selection (test requirement)
         const selection1 = adapter.activeTextEditor!.selections[0];
         const selection2 = adapter.activeTextEditor!.selections[1];
         const selection3 = adapter.activeTextEditor!.selections[2];
-        document.getText = jest.fn((selection) => {
+        document.getText = jest.fn((selection?: vscode.Range) => {
           if (selection === selection1) return 'first line';
           if (selection === selection2) return 'second line';
           if (selection === selection3) return 'third line';
           return '';
-        }) as any;
+        });
 
         mockVscodeAdapter = adapter;
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
         jest
           .spyOn(mockVscodeAdapter, 'setStatusBarMessage')
           .mockReturnValue({ dispose: jest.fn() });
@@ -956,7 +956,7 @@ describe('RangeLinkService', () => {
       it('should concatenate selections with newlines', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(
+        expect(mockClipboard.writeText).toHaveBeenCalledWith(
           'first line\nsecond line\nthird line',
         );
       });
@@ -997,7 +997,7 @@ describe('RangeLinkService', () => {
 
     describe('with mixed empty and non-empty selections', () => {
       beforeEach(() => {
-        // Create selections: 2 empty, 1 with text
+        mockClipboard = createMockClipboard();
         const { adapter, document } = createMockEditorWithSelection({
           content: 'valid text',
           selections: [
@@ -1005,17 +1005,17 @@ describe('RangeLinkService', () => {
             [1, 0, 1, 10],
             [2, 0, 2, 0], // empty (collapsed)
           ],
+          adapterOptions: { envOptions: { clipboard: mockClipboard } },
         });
 
         // Override getText to return text only for second selection (test requirement)
         const selection2 = adapter.activeTextEditor!.selections[1];
-        document.getText = jest.fn((selection) => {
+        document.getText = jest.fn((selection?: vscode.Range) => {
           if (selection === selection2) return 'valid text';
           return '';
-        }) as any;
+        });
 
         mockVscodeAdapter = adapter;
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
         service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
@@ -1027,7 +1027,7 @@ describe('RangeLinkService', () => {
       it('should filter out empty selections', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith('valid text');
+        expect(mockClipboard.writeText).toHaveBeenCalledWith('valid text');
       });
 
       it('should send only non-empty selections to destination', async () => {
@@ -1058,68 +1058,51 @@ describe('RangeLinkService', () => {
     describe('edge cases', () => {
       it('should handle very long selection', async () => {
         const longText = 'a'.repeat(10000);
+        const clipboard = createMockClipboard();
         const { adapter } = createMockEditorWithSelection({
           content: longText,
           selections: [[0, 0, 0, 10000]],
+          adapterOptions: { envOptions: { clipboard } },
         });
-        mockVscodeAdapter = adapter;
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        jest
-          .spyOn(mockVscodeAdapter, 'setStatusBarMessage')
-          .mockReturnValue({ dispose: jest.fn() });
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockLogger,
-        );
+        jest.spyOn(adapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
+        service = new RangeLinkService(delimiters, adapter, mockDestinationManager, mockLogger);
 
         await service.pasteSelectedTextToDestination();
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(longText);
-        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(clipboard.writeText).toHaveBeenCalledWith(longText);
+        expect(adapter.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ Selected text copied to clipboard',
         );
       });
 
       it('should handle special characters in selection', async () => {
         const specialText = 'const regex = /\\d+/g;\n"quotes" & <tags>';
+        const clipboard = createMockClipboard();
         const { adapter } = createMockEditorWithSelection({
           content: specialText,
           selections: [[0, 0, 0, 40]],
+          adapterOptions: { envOptions: { clipboard } },
         });
-        mockVscodeAdapter = adapter;
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockLogger,
-        );
+        service = new RangeLinkService(delimiters, adapter, mockDestinationManager, mockLogger);
 
         await service.pasteSelectedTextToDestination();
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(specialText);
+        expect(clipboard.writeText).toHaveBeenCalledWith(specialText);
       });
 
       it('should handle unicode characters in selection', async () => {
         const unicodeText = '你好世界 🚀 émojis';
+        const clipboard = createMockClipboard();
         const { adapter } = createMockEditorWithSelection({
           content: unicodeText,
           selections: [[0, 0, 0, 20]],
+          adapterOptions: { envOptions: { clipboard } },
         });
-        mockVscodeAdapter = adapter;
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockLogger,
-        );
+        service = new RangeLinkService(delimiters, adapter, mockDestinationManager, mockLogger);
 
         await service.pasteSelectedTextToDestination();
 
-        expect(mockVscodeAdapter.writeTextToClipboard).toHaveBeenCalledWith(unicodeText);
+        expect(clipboard.writeText).toHaveBeenCalledWith(unicodeText);
       });
     });
   });
@@ -1133,7 +1116,6 @@ describe('RangeLinkService', () => {
 
       // Spy on adapter methods used in these tests
       jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-      jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
 
       // Create mock destination manager
       mockDestinationManager = createMockDestinationManager({
@@ -1192,8 +1174,7 @@ describe('RangeLinkService', () => {
           windowOptions: { activeTextEditor: undefined },
         });
         jest.spyOn(mockVscodeAdapter, 'showErrorMessage').mockResolvedValue(undefined);
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        service = new RangeLinkService(
+          service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
@@ -1214,7 +1195,7 @@ describe('RangeLinkService', () => {
         await service.pasteSelectedTextToDestination();
 
         // Verify we bailed early (no clipboard or destination operations)
-        expect(mockVscodeAdapter.writeTextToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
         expect(mockVscodeAdapter.showErrorMessage).toHaveBeenCalledTimes(1);
       });
     });
@@ -1417,8 +1398,7 @@ describe('RangeLinkService', () => {
         jest
           .spyOn(mockVscodeAdapter, 'asRelativePath')
           .mockImplementation(createMockAsRelativePath('file.ts'));
-        jest.spyOn(mockVscodeAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-        service = new RangeLinkService(
+          service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
