@@ -59,10 +59,55 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     });
 
     if (selected?.command) {
-      await this.ideAdapter.executeCommand(selected.command);
+      if (selected.command === CMD_BOOKMARK_NAVIGATE && selected.bookmarkId) {
+        await this.pasteBookmarkToDestination(selected.bookmarkId);
+      } else {
+        await this.ideAdapter.executeCommand(selected.command);
+      }
       this.logger.debug(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
         'Menu item selected',
+      );
+    }
+  }
+
+  /**
+   * Copy bookmark link to clipboard and paste to bound destination.
+   */
+  private async pasteBookmarkToDestination(bookmarkId: BookmarkId): Promise<void> {
+    const bookmark = this.bookmarksStore.getById(bookmarkId);
+    if (!bookmark) {
+      this.logger.warn(
+        { fn: 'RangeLinkStatusBar.pasteBookmarkToDestination', bookmarkId },
+        'Bookmark not found',
+      );
+      return;
+    }
+
+    await this.bookmarksStore.recordAccess(bookmarkId);
+    await this.ideAdapter.writeTextToClipboard(bookmark.link);
+
+    if (this.destinationManager.isBound()) {
+      await this.destinationManager.sendTextToDestination(
+        bookmark.link,
+        `Bookmark pasted: ${bookmark.label}`,
+      );
+      this.logger.debug(
+        {
+          fn: 'RangeLinkStatusBar.pasteBookmarkToDestination',
+          bookmark,
+          pastedToDestination: true,
+        },
+        `Pasted bookmark to destination: ${bookmark.label}`,
+      );
+    } else {
+      this.logger.debug(
+        {
+          fn: 'RangeLinkStatusBar.pasteBookmarkToDestination',
+          bookmark,
+          pastedToDestination: false,
+        },
+        `Copied bookmark to clipboard (no destination bound): ${bookmark.label}`,
       );
     }
   }
