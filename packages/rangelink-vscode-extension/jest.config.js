@@ -28,6 +28,8 @@ module.exports = {
   },
   moduleNameMapper: {
     '^vscode$': '<rootDir>/src/__tests__/__mocks__/vscode',
+    // Mock nanoid (ESM-only package) - tests use injected IdGenerator anyway
+    '^nanoid$': '<rootDir>/src/__tests__/__mocks__/nanoid.ts',
   },
   transform: {
     '^.+\\.ts$': 'ts-jest',

@@ -8,6 +8,7 @@ import {
 } from '../matchers/toBeRangeLinkError';
 import {
   toBeRangeLinkExtensionError,
+  toBeRangeLinkExtensionErrorErr,
   toThrowRangeLinkExtensionError,
   toThrowRangeLinkExtensionErrorAsync,
   type ExpectedRangeLinkExtensionError,
@@ -28,6 +29,7 @@ declare global {
       toThrowRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
       // RangeLinkExtensionError matchers
       toBeRangeLinkExtensionError(code: string, expected: ExpectedRangeLinkExtensionError): R;
+      toBeRangeLinkExtensionErrorErr(code: string, expected: ExpectedRangeLinkExtensionError): R;
       toThrowRangeLinkExtensionError(code: string, expected: ExpectedRangeLinkExtensionError): R;
       toThrowRangeLinkExtensionErrorAsync(
         code: string,
@@ -49,6 +51,7 @@ expect.extend({
   toThrowRangeLinkError,
   // RangeLinkExtensionError matchers
   toBeRangeLinkExtensionError,
+  toBeRangeLinkExtensionErrorErr,
   toThrowRangeLinkExtensionError,
   toThrowRangeLinkExtensionErrorAsync,
 });
