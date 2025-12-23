@@ -86,18 +86,21 @@
   <title>Literal values for contract assertions</title>
   <do>Use string literals for OUR enums: `'Regular'` not `LinkType.Regular`</do>
   <do>Use string literals for user-facing text: `'RangeLink Menu'` not `messagesEn[MessageCode.X]`</do>
+  <do>Use string literals for configuration keys: `'delimiterLine'` not `SETTING_DELIMITER_LINE`</do>
   <exception>External library enums: use actual constant `vscode.TextEditorRevealType.InCenterIfOutsideViewport`</exception>
-  <rationale>Tests freeze user-facing contracts - catches accidental changes to enum values or UI text</rationale>
+  <rationale>Tests freeze user-facing contracts - catches accidental changes to enum values, UI text, or setting keys</rationale>
   <bad-example>
     ```typescript
     expect(item.tooltip).toBe(messagesEn[MessageCode.STATUS_BAR_MENU_TOOLTIP]);
     expect(result.linkType).toBe(LinkType.Regular);
+    createMockConfigGetter({ [SETTING_DELIMITER_LINE]: 'L' });
     ```
   </bad-example>
   <good-example>
     ```typescript
     expect(item.tooltip).toBe('RangeLink Menu');
     expect(result.linkType).toBe('Regular');
+    createMockConfigGetter({ 'delimiterLine': 'L' });
     ```
   </good-example>
 </rule>
@@ -335,6 +338,7 @@
     - First line: conventional commit format
     - Body: 1-3 sentences of context
     - Omit file lists (redundant with diff)
+    - NO line wrapping at 80 columns - use natural line breaks only
   </principles>
 
   <good-example>
