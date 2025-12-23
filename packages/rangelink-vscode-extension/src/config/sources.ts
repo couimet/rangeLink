@@ -1,11 +1,10 @@
-import type { DelimiterConfig } from 'rangelink-core-ts';
-
 import {
   SETTING_DELIMITER_HASH,
   SETTING_DELIMITER_LINE,
   SETTING_DELIMITER_POSITION,
   SETTING_DELIMITER_RANGE,
 } from '../constants';
+
 import type { ConfigGetter, ConfigInspection, ConfigSource, DelimiterConfigSources } from './types';
 
 /**

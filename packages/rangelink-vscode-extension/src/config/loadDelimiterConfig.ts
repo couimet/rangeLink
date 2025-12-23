@@ -7,6 +7,7 @@ import {
   SETTING_DELIMITER_POSITION,
   SETTING_DELIMITER_RANGE,
 } from '../constants';
+
 import { logSuccessfulConfig, logValidationErrors } from './logging';
 import { determineAllSources } from './sources';
 import type { ConfigGetter, LoadDelimiterConfigResult } from './types';
