@@ -41,7 +41,7 @@ export class ConfigReader implements ConfigGetter {
 
     if (value === undefined) {
       this.logger.debug(
-        { fn: 'ConfigReader.getSetting', key },
+        { fn: 'ConfigReader.getSetting', key, defaultValue },
         `No ${key} configured, using default: ${String(defaultValue)}`,
       );
       return defaultValue;
