@@ -2,7 +2,7 @@ import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { BookmarksStore } from './bookmarks';
-import { getDelimitersForExtension } from './config';
+import { ConfigReader, getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_CURSOR_AI,
@@ -56,6 +56,7 @@ let outputChannel: vscode.OutputChannel;
 export function activate(context: vscode.ExtensionContext): void {
   // Create adapter FIRST (only direct vscode reference in entire file)
   const ideAdapter = new VscodeAdapter(vscode);
+  const configReader = ConfigReader.create(ideAdapter, getLogger());
 
   outputChannel = ideAdapter.createOutputChannel('RangeLink');
 
@@ -70,10 +71,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const bookmarksStore = new BookmarksStore(context.globalState, getLogger());
   getLogger().debug({ fn: 'activate' }, 'Bookmarks store initialized');
 
-  // Load delimiter configuration
-  const vscodeConfig = ideAdapter.getConfiguration('rangelink');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const delimiters = getDelimitersForExtension(vscodeConfig as any, ideAdapter, getLogger());
+  const delimiters = getDelimitersForExtension(configReader, ideAdapter, getLogger());
 
   // Create capability factories for composition-based destinations
   const textInserterFactory = new TextInserterFactory(ideAdapter, getLogger());
