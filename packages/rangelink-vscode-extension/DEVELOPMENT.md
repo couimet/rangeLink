@@ -58,28 +58,28 @@ The Extension Development Host runs your extension in a separate Cursor/VSCode w
    - Your extension is loaded and ready to test (no conflicts with installed extensions)
    - No preLaunchTask delay since watch is already running
 
-4. **View extension logs** (important for debugging):
+3. **View extension logs** (important for debugging):
    - Open the Output panel in the Extension Development Host window
    - Quick access: `Cmd+Shift+U` (Mac) or `Ctrl+Shift+U` (Windows/Linux)
    - Or via Command Palette: "View: Toggle Output" (`Cmd+Shift+P` → type "output")
    - Select "RangeLink" from the dropdown in the Output panel
    - All extension logs (INFO, WARN, ERROR) appear here with structured formatting
 
-5. **Make code changes** in your main window
+4. **Make code changes** in your main window
    - Files are auto-compiled by the watch task
    - Changes are ready immediately
 
-6. **Reload to see changes:** Press `Cmd+R` (Mac) or `Ctrl+R` (Windows/Linux) in the Extension Development Host window
+5. **Reload to see changes:** Press `Cmd+R` (Mac) or `Ctrl+R` (Windows/Linux) in the Extension Development Host window
    - This reloads ONLY the dev host window
    - Your main window and terminals stay intact
    - Much faster than full window reload
 
-7. **Debug with breakpoints:**
+6. **Debug with breakpoints:**
    - Set breakpoints in your TypeScript code
    - They'll hit when you trigger commands in the dev host
    - Inspect variables, step through code, etc.
 
-8. **Stop/restart debugging freely:**
+7. **Stop/restart debugging freely:**
    - The watch task keeps running independently
    - Press `Shift+F5` to stop, `F5` to restart
    - No need to restart the watch task
