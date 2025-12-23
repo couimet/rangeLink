@@ -45,31 +45,44 @@ The Extension Development Host runs your extension in a separate Cursor/VSCode w
 
 ### Development Workflow
 
-1. Press `F5` (or Run > Start Debugging)
-   - This opens a new "[Extension Development Host]" window
-   - Your extension is loaded and ready to test
-   - TypeScript watch mode auto-compiles on file changes
+1. **Start the watch task** (once per session):
+   - Open Command Palette: `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux)
+   - Type "Tasks: Run Task" and select it
+   - Choose "Watch: All"
+   - This builds core, regenerates `version.json`, then starts TypeScript watch for both packages
+   - The watch task runs independently and survives debug restarts
+   - **Important:** If restarting, kill existing watch tasks first (Terminal > Terminate Task)
 
-2. **View extension logs** (important for debugging):
+2. **Press `F5`** (or Run > Start Debugging)
+   - This opens a new "[Extension Development Host]" window with a **clean temporary profile**
+   - Your extension is loaded and ready to test (no conflicts with installed extensions)
+   - No preLaunchTask delay since watch is already running
+
+3. **View extension logs** (important for debugging):
    - Open the Output panel in the Extension Development Host window
    - Quick access: `Cmd+Shift+U` (Mac) or `Ctrl+Shift+U` (Windows/Linux)
    - Or via Command Palette: "View: Toggle Output" (`Cmd+Shift+P` → type "output")
    - Select "RangeLink" from the dropdown in the Output panel
    - All extension logs (INFO, WARN, ERROR) appear here with structured formatting
 
-3. Make code changes in your main window
+4. **Make code changes** in your main window
    - Files are auto-compiled by the watch task
    - Changes are ready immediately
 
-4. **Reload to see changes:** Press `Cmd+R` (Mac) or `Ctrl+R` (Windows/Linux) in the Extension Development Host window
+5. **Reload to see changes:** Press `Cmd+R` (Mac) or `Ctrl+R` (Windows/Linux) in the Extension Development Host window
    - This reloads ONLY the dev host window
    - Your main window and terminals stay intact
    - Much faster than full window reload
 
-5. **Debug with breakpoints:**
+6. **Debug with breakpoints:**
    - Set breakpoints in your TypeScript code
    - They'll hit when you trigger commands in the dev host
    - Inspect variables, step through code, etc.
+
+7. **Stop/restart debugging freely:**
+   - The watch task keeps running independently
+   - Press `Shift+F5` to stop, `F5` to restart
+   - No need to restart the watch task
 
 ### Advantages
 
@@ -312,6 +325,28 @@ The `compile` script ensures both exist:
 - Without `out/version.json` → F5 debugging breaks (missing file error)
 - Without `dist/version.json` → Still works (bundled inline) but inconsistent
 
+**When it's regenerated:**
+
+The watch task regenerates `version.json` **once at startup** (via the "Generate version.json" dependency). During a dev session, it stays the same since `tsc --watch` only recompiles `.ts` files.
+
+- Start watch task → `version.json` regenerated with current git commit hash
+- During dev session → version.json unchanged
+- Restart watch → regenerated with new git hash
+
+This is correct for typical workflows since the commit hash doesn't change during a session. If you make new commits and want the updated hash in "RangeLink: Show Version Info", restart the watch task.
+
+**Manual regeneration:**
+
+```bash
+# For development (copies to out/ only)
+pnpm --filter rangelink-vscode-extension generate-version
+
+# For production build (copies to out/ and dist/)
+pnpm --filter rangelink-vscode-extension generate-version:all
+```
+
+The script outputs all version metadata and logs when it deletes existing files.
+
 ### What Gets Packaged?
 
 When you run `pnpm package`, the `.vscodeignore` file controls what's included:
@@ -457,9 +492,15 @@ In the Extension Development Host:
 
 **Changes not appearing:**
 
-1. Ensure watch mode is running: `pnpm watch`
-2. Check for TypeScript compilation errors
-3. Reload the Extension Development Host window
+1. Ensure watch task is running (see [Development Workflow](#development-workflow) step 1)
+2. Check for TypeScript compilation errors in the watch terminal
+3. Reload the Extension Development Host window (`Cmd+R` / `Ctrl+R`)
+
+**Debugger won't start (F5 hangs or fails):**
+
+1. Check for orphaned watch processes: `ps aux | grep rangelink`
+2. Kill them if found: `pkill -f "rangelink.*watch"; pkill -f "rangelink.*tsc"`
+3. Try F5 again
 
 **Breakpoints not hitting:**
 
@@ -470,7 +511,7 @@ In the Extension Development Host:
 **"Cannot find module" errors:**
 
 1. **In development (F5):** Check `out/` directory has compiled files
-2. **In packaged extension:** See [Debugging Directory Issues](#debugging-directory-issues) section above
+2. **In packaged extension:** See [Build Output Structure](#build-output-structure) section
 
 ---
 

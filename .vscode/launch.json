@@ -2,26 +2,17 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run RangeLink Extension (with watch)",
+      "name": "Debug RangeLink Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}/packages/rangelink-vscode-extension"],
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/rangelink-vscode-extension",
+        "--profile-temp"
+      ],
       "outFiles": [
         "${workspaceFolder}/packages/rangelink-vscode-extension/out/**/*.js",
         "${workspaceFolder}/packages/rangelink-core-ts/out/**/*.js"
-      ],
-      "preLaunchTask": "Watch: All (Parallel)"
-    },
-    {
-      "name": "Run RangeLink Extension (build once)",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}/packages/rangelink-vscode-extension"],
-      "outFiles": [
-        "${workspaceFolder}/packages/rangelink-vscode-extension/out/**/*.js",
-        "${workspaceFolder}/packages/rangelink-core-ts/out/**/*.js"
-      ],
-      "preLaunchTask": "Build: All"
+      ]
     }
   ]
 }
