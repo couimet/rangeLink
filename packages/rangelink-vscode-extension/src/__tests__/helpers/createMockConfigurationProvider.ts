@@ -1,4 +1,5 @@
-import type { ConfigGetter, ConfigurationProvider } from '../../config/types';
+import type { ConfigGetter } from '../../config/types';
+import type { ConfigurationProvider } from '../../ide/ConfigurationProvider';
 
 import { createMockConfigGetter } from './createMockConfigGetter';
 

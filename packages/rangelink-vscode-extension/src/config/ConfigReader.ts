@@ -1,14 +1,10 @@
 import type { Logger } from 'barebone-logger';
 
 import { SETTING_NAMESPACE } from '../constants/settingKeys';
+import type { ConfigurationProvider } from '../ide/ConfigurationProvider';
 import type { PaddingMode } from '../utils/applySmartPadding';
 
-import type {
-  ConfigGetter,
-  ConfigGetterFactory,
-  ConfigInspection,
-  ConfigurationProvider,
-} from './types';
+import type { ConfigGetter, ConfigGetterFactory, ConfigInspection } from './types';
 
 /**
  * Facade for RangeLink extension configuration access.

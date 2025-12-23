@@ -2,7 +2,6 @@
 export type {
   ConfigGetterFactory,
   ConfigSource,
-  ConfigurationProvider,
   DelimiterConfigSources,
   LoadDelimiterConfigResult,
 } from './types';
