@@ -1,36 +1,27 @@
 import type { Logger } from 'barebone-logger';
-import { type DelimiterConfig } from 'rangelink-core-ts';
+import type { DelimiterConfig } from 'rangelink-core-ts';
 
-import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { ErrorFeedbackProvider } from '../ide/ErrorFeedbackProvider';
 
 import { loadDelimiterConfig } from './loadDelimiterConfig';
 import type { ConfigGetter } from './types';
 
 /**
- * Loads delimiter configuration from workspace settings.
+ * Load delimiter configuration with user notification on validation errors.
  *
- * Pure function that accepts dependencies as parameters for better testability.
- * Handles configuration-specific concerns:
- * - Validates configuration using loadDelimiterConfig
- * - Shows error notification via ideAdapter if configuration is invalid
- * - Returns default delimiters on error (never throws)
- *
- * @param config - Configuration getter (e.g., VSCode WorkspaceConfiguration)
- * @param ideAdapter - IDE adapter for showing error notifications
- * @param logger - Logger instance for debugging
- * @returns DelimiterConfig - validated delimiters (defaults if invalid)
+ * Encapsulates the pattern of loading delimiters, validating them,
+ * and notifying the user if configuration is invalid.
  */
 export const getDelimitersForExtension = (
   config: ConfigGetter,
-  ideAdapter: VscodeAdapter,
+  errorFeedbackProvider: ErrorFeedbackProvider,
   logger: Logger,
 ): DelimiterConfig => {
   const result = loadDelimiterConfig(config, logger);
 
-  // Show error notification if there were validation errors
   if (result.errors.length > 0) {
-    void ideAdapter.showErrorMessage(
-      `RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.`,
+    void errorFeedbackProvider.showErrorMessage(
+      'RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.',
     );
   }
 
