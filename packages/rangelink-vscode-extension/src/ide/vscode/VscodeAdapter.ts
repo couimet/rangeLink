@@ -6,6 +6,8 @@ import { BehaviourAfterPaste } from '../../types/BehaviourAfterPaste';
 import type { SendTextToTerminalOptions } from '../../types/SendTextToTerminalOptions';
 import { TerminalFocusType } from '../../types/TerminalFocusType';
 import { getUntitledDisplayName, resolveWorkspacePath } from '../../utils';
+import type { ConfigurationProvider } from '../ConfigurationProvider';
+import type { ErrorFeedbackProvider } from '../ErrorFeedbackProvider';
 
 /**
  * Default timeout for status bar messages in milliseconds.
@@ -29,7 +31,7 @@ const DEFAULT_STATUS_BAR_TIMEOUT_MS = 2000;
  * Enables testing by abstracting VSCode API calls and avoiding direct
  * vscode module imports in business logic classes.
  */
-export class VscodeAdapter {
+export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvider {
   /**
    * Create a new VSCode adapter.
    *

@@ -1,10 +1,17 @@
 // Public types
-export type { ConfigSource, DelimiterConfigSources, LoadDelimiterConfigResult } from './types';
-export { DelimiterConfigKey } from './types';
+export type {
+  ConfigGetterFactory,
+  ConfigSource,
+  DelimiterConfigSources,
+  LoadDelimiterConfigResult,
+} from './types';
+
+// Public classes
+export { ConfigReader } from './ConfigReader';
 
 // Public functions
-export { loadDelimiterConfig } from './loadDelimiterConfig';
 export { getDelimitersForExtension } from './getDelimitersForExtension';
+export { loadDelimiterConfig } from './loadDelimiterConfig';
 
 // Note: Validation, sources, and logging modules are NOT exported
 // They are implementation details

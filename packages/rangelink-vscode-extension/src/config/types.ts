@@ -22,39 +22,19 @@ export type DelimiterConfigSources = {
 };
 
 // ============================================================================
-// Configuration Key Enum
-// ============================================================================
-
-/**
- * Enum for delimiter configuration keys
- * Prevents typos and enables type-safe config access
- *
- * Use this enum instead of string literals when accessing VSCode config:
- * - config.get(DelimiterConfigKey.Line) instead of config.get('delimiterLine')
- * - config.inspect(DelimiterConfigKey.Hash) instead of config.inspect('delimiterHash')
- */
-export enum DelimiterConfigKey {
-  Line = 'delimiterLine',
-  Position = 'delimiterPosition',
-  Hash = 'delimiterHash',
-  Range = 'delimiterRange',
-}
-
-// ============================================================================
 // Configuration Inspection Types
 // ============================================================================
 
 /**
  * Configuration inspection result
  * Simplified to string-only (YAGNI - we only use strings for delimiters)
- * Strong typing: key must be valid DelimiterConfig key
  *
  * Maps to VSCode's ConfigurationInspect but with:
  * - Removed generic (we only use strings)
- * - Strong typing for key field (keyof DelimiterConfig)
+ * - key is string to match VSCode's WorkspaceConfiguration.inspect()
  */
 export type ConfigInspection = {
-  key: keyof DelimiterConfig;
+  key: string;
   defaultValue?: string;
   globalValue?: string;
   workspaceValue?: string;
@@ -72,6 +52,12 @@ export interface ConfigGetter {
   get<T>(key: string): T | undefined;
   inspect(key: string): ConfigInspection | undefined;
 }
+
+/**
+ * Factory function type for obtaining fresh configuration.
+ * Called on every read to enable dynamic configuration updates.
+ */
+export type ConfigGetterFactory = () => ConfigGetter;
 
 // ============================================================================
 // Result Types
