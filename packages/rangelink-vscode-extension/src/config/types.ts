@@ -53,6 +53,20 @@ export interface ConfigGetter {
   inspect(key: string): ConfigInspection | undefined;
 }
 
+/**
+ * Factory function type for obtaining fresh configuration.
+ * Called on every read to enable dynamic configuration updates.
+ */
+export type ConfigGetterFactory = () => ConfigGetter;
+
+/**
+ * Minimal interface for IDE adapters that provide configuration access.
+ * Decouples ConfigReader from concrete VscodeAdapter.
+ */
+export interface ConfigurationProvider {
+  getConfiguration(section: string): ConfigGetter;
+}
+
 // ============================================================================
 // Result Types
 // ============================================================================
