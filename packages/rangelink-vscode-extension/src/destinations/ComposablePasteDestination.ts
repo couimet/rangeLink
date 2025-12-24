@@ -4,7 +4,7 @@ import type * as vscode from 'vscode';
 
 import type { AutoPasteResult } from '../types/AutoPasteResult';
 import { PasteContentType } from '../types/PasteContentType';
-import { applySmartPadding } from '../utils';
+import { applySmartPadding, type PaddingMode } from '../utils';
 
 import { AlwaysEligibleChecker } from './capabilities/AlwaysEligibleChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
@@ -264,13 +264,15 @@ export class ComposablePasteDestination implements PasteDestination {
    * Paste a RangeLink to this destination with appropriate padding and focus.
    *
    * @param formattedLink - The formatted RangeLink with metadata
+   * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  async pasteLink(formattedLink: FormattedLink): Promise<boolean> {
+  async pasteLink(formattedLink: FormattedLink, paddingMode: PaddingMode): Promise<boolean> {
     const context: LoggingContext = {
       fn: `${this.constructor.name}.pasteLink`,
       formattedLink,
       linkLength: formattedLink.link.length,
+      paddingMode,
       ...this.loggingDetails,
     };
 
@@ -279,6 +281,7 @@ export class ComposablePasteDestination implements PasteDestination {
       context,
       () => this.isEligibleForPasteLink(formattedLink),
       PasteContentType.Link,
+      paddingMode,
     );
   }
 
@@ -286,12 +289,14 @@ export class ComposablePasteDestination implements PasteDestination {
    * Paste text content to this destination with appropriate padding and focus.
    *
    * @param content - The text content to paste
+   * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  async pasteContent(content: string): Promise<boolean> {
+  async pasteContent(content: string, paddingMode: PaddingMode): Promise<boolean> {
     const context: LoggingContext = {
       fn: `${this.constructor.name}.pasteContent`,
       contentLength: content.length,
+      paddingMode,
       ...this.loggingDetails,
     };
 
@@ -300,6 +305,7 @@ export class ComposablePasteDestination implements PasteDestination {
       context,
       () => this.isEligibleForPasteContent(content),
       PasteContentType.Text,
+      paddingMode,
     );
   }
 
@@ -309,7 +315,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * Coordinates capabilities in order:
    * 1. Check availability
    * 2. Check eligibility
-   * 3. Apply smart padding
+   * 3. Apply smart padding based on provided mode
    * 4. Focus destination
    * 5. Insert text
    *
@@ -317,6 +323,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * @param context - Logging context with operation details
    * @param eligibilityCheck - Function to check if content is eligible
    * @param contentType - Type of content being pasted (for log messages)
+   * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
   private async performPaste(
@@ -324,6 +331,7 @@ export class ComposablePasteDestination implements PasteDestination {
     context: LoggingContext,
     eligibilityCheck: () => Promise<boolean>,
     contentType: PasteContentType,
+    paddingMode: PaddingMode,
   ): Promise<boolean> {
     const contentLabel = contentType === PasteContentType.Link ? 'link' : 'content';
 
@@ -344,8 +352,7 @@ export class ComposablePasteDestination implements PasteDestination {
       return false;
     }
 
-    // Apply smart padding
-    const paddedText = applySmartPadding(text);
+    const paddedText = applySmartPadding(text, paddingMode);
 
     // Focus destination
     await this.focusManager.focus(context);

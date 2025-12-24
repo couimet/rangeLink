@@ -7,7 +7,7 @@ import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorC
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
-import { formatMessage, isEditorDestination, isTextLikeFile } from '../utils';
+import { formatMessage, isEditorDestination, isTextLikeFile, type PaddingMode } from '../utils';
 
 import type { DestinationRegistry } from './DestinationRegistry';
 import type { DestinationType, PasteDestination } from './PasteDestination';
@@ -188,21 +188,24 @@ export class PasteDestinationManager implements vscode.Disposable {
    *
    * @param formattedLink - The formatted RangeLink with metadata
    * @param basicStatusMessage - Base message for status bar (e.g., "RangeLink copied to clipboard")
+   * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns true if sent successfully, false otherwise
    */
   async sendLinkToDestination(
     formattedLink: FormattedLink,
     basicStatusMessage: string,
+    paddingMode: PaddingMode,
   ): Promise<boolean> {
     return this.sendWithFeedback({
       basicStatusMessage,
       logContext: {
         fn: 'PasteDestinationManager.sendLinkToDestination',
         formattedLink,
+        paddingMode,
       },
       debugMessage: (displayName) => `Sending link to ${displayName}`,
       errorMessage: (displayName) => `Paste link failed to ${displayName}`,
-      execute: (destination) => destination.pasteLink(formattedLink),
+      execute: (destination) => destination.pasteLink(formattedLink, paddingMode),
     });
   }
 
@@ -214,18 +217,24 @@ export class PasteDestinationManager implements vscode.Disposable {
    *
    * @param content - The text content to send
    * @param basicStatusMessage - Base message for status bar (e.g., "Text copied to clipboard")
+   * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns true if sent successfully, false otherwise
    */
-  async sendTextToDestination(content: string, basicStatusMessage: string): Promise<boolean> {
+  async sendTextToDestination(
+    content: string,
+    basicStatusMessage: string,
+    paddingMode: PaddingMode,
+  ): Promise<boolean> {
     return this.sendWithFeedback({
       basicStatusMessage,
       logContext: {
         fn: 'PasteDestinationManager.sendTextToDestination',
         contentLength: content.length,
+        paddingMode,
       },
       debugMessage: (displayName) => `Sending content to ${displayName} (${content.length} chars)`,
       errorMessage: (displayName) => `Paste content failed to ${displayName}`,
-      execute: (destination) => destination.pasteContent(content),
+      execute: (destination) => destination.pasteContent(content, paddingMode),
     });
   }
 

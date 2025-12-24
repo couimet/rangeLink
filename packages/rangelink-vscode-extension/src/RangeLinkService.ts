@@ -9,6 +9,13 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { ConfigReader } from './config/ConfigReader';
+import {
+  DEFAULT_SMART_PADDING_PASTE_CONTENT,
+  DEFAULT_SMART_PADDING_PASTE_LINK,
+  SETTING_SMART_PADDING_PASTE_CONTENT,
+  SETTING_SMART_PADDING_PASTE_LINK,
+} from './constants';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
@@ -47,6 +54,7 @@ export class RangeLinkService {
     private readonly delimiters: DelimiterConfig,
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
+    private readonly configReader: ConfigReader,
     private readonly logger: Logger,
   ) {}
 
@@ -126,11 +134,16 @@ export class RangeLinkService {
       `Extracted ${content.length} chars from ${selectedTexts.length} selection(s)`,
     );
 
+    const paddingMode = this.configReader.getPaddingMode(
+      SETTING_SMART_PADDING_PASTE_CONTENT,
+      DEFAULT_SMART_PADDING_PASTE_CONTENT,
+    );
+
     await this.copyAndSendToDestination(
       content,
       content,
       (text, basicStatusMessage) =>
-        this.destinationManager.sendTextToDestination(text, basicStatusMessage),
+        this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
       (destination, text) => destination.isEligibleForPasteContent(text),
       'Selected text',
       'pasteSelectedTextToDestination',
@@ -210,11 +223,16 @@ export class RangeLinkService {
     formattedLink: FormattedLink,
     linkTypeName: string,
   ): Promise<void> {
+    const paddingMode = this.configReader.getPaddingMode(
+      SETTING_SMART_PADDING_PASTE_LINK,
+      DEFAULT_SMART_PADDING_PASTE_LINK,
+    );
+
     await this.copyAndSendToDestination(
       formattedLink.link,
       formattedLink,
       (link, basicStatusMessage) =>
-        this.destinationManager.sendLinkToDestination(link, basicStatusMessage),
+        this.destinationManager.sendLinkToDestination(link, basicStatusMessage, paddingMode),
       (destination, link) => destination.isEligibleForPasteLink(link),
       linkTypeName,
       'copyToClipboardAndDestination',
