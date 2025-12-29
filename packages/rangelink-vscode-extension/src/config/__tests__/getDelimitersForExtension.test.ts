@@ -15,10 +15,10 @@ describe('getDelimitersForExtension', () => {
   describe('valid configuration', () => {
     it('should load valid default delimiters without showing error', () => {
       const config = createMockConfigGetter({
-        'delimiterLine': 'L',
-        'delimiterPosition': 'C',
-        'delimiterHash': '#',
-        'delimiterRange': '-',
+        delimiterLine: 'L',
+        delimiterPosition: 'C',
+        delimiterHash: '#',
+        delimiterRange: '-',
       });
       const errorFeedbackProvider = createMockErrorFeedbackProvider();
 
@@ -36,10 +36,10 @@ describe('getDelimitersForExtension', () => {
 
     it('should load valid custom delimiters without showing error', () => {
       const config = createMockConfigGetter({
-        'delimiterLine': 'LINE',
-        'delimiterPosition': 'COL',
-        'delimiterHash': '$',
-        'delimiterRange': 'TO',
+        delimiterLine: 'LINE',
+        delimiterPosition: 'COL',
+        delimiterHash: '$',
+        delimiterRange: 'TO',
       });
       const errorFeedbackProvider = createMockErrorFeedbackProvider();
 
@@ -69,10 +69,10 @@ describe('getDelimitersForExtension', () => {
   describe('invalid configuration', () => {
     it('should show error message when configuration has validation errors', () => {
       const config = createMockConfigGetter({
-        'delimiterLine': 'L',
-        'delimiterPosition': 'L',
-        'delimiterHash': '#',
-        'delimiterRange': '-',
+        delimiterLine: 'L',
+        delimiterPosition: 'L',
+        delimiterHash: '#',
+        delimiterRange: '-',
       });
       const errorFeedbackProvider = createMockErrorFeedbackProvider();
 
@@ -87,10 +87,10 @@ describe('getDelimitersForExtension', () => {
 
     it('should show error when delimiter contains numbers', () => {
       const config = createMockConfigGetter({
-        'delimiterLine': 'L2',
-        'delimiterPosition': 'C',
-        'delimiterHash': '#',
-        'delimiterRange': '-',
+        delimiterLine: 'L2',
+        delimiterPosition: 'C',
+        delimiterHash: '#',
+        delimiterRange: '-',
       });
       const errorFeedbackProvider = createMockErrorFeedbackProvider();
 
@@ -102,10 +102,10 @@ describe('getDelimitersForExtension', () => {
 
     it('should show error when delimiter is empty string', () => {
       const config = createMockConfigGetter({
-        'delimiterLine': '',
-        'delimiterPosition': 'C',
-        'delimiterHash': '#',
-        'delimiterRange': '-',
+        delimiterLine: '',
+        delimiterPosition: 'C',
+        delimiterHash: '#',
+        delimiterRange: '-',
       });
       const errorFeedbackProvider = createMockErrorFeedbackProvider();
 
@@ -117,10 +117,10 @@ describe('getDelimitersForExtension', () => {
 
     it('should show error when delimiters have substring conflicts', () => {
       const config = createMockConfigGetter({
-        'delimiterLine': 'L',
-        'delimiterPosition': 'LINE',
-        'delimiterHash': '#',
-        'delimiterRange': '-',
+        delimiterLine: 'L',
+        delimiterPosition: 'LINE',
+        delimiterHash: '#',
+        delimiterRange: '-',
       });
       const errorFeedbackProvider = createMockErrorFeedbackProvider();
 
@@ -132,10 +132,10 @@ describe('getDelimitersForExtension', () => {
 
     it('should log validation errors', () => {
       const config = createMockConfigGetter({
-        'delimiterLine': 'L',
-        'delimiterPosition': 'L',
-        'delimiterHash': '#',
-        'delimiterRange': '-',
+        delimiterLine: 'L',
+        delimiterPosition: 'L',
+        delimiterHash: '#',
+        delimiterRange: '-',
       });
       const errorFeedbackProvider = createMockErrorFeedbackProvider();
 
@@ -148,8 +148,8 @@ describe('getDelimitersForExtension', () => {
   describe('edge cases', () => {
     it('should handle partial configuration with some valid and some invalid delimiters', () => {
       const config = createMockConfigGetter({
-        'delimiterLine': 'L',
-        'delimiterPosition': '123',
+        delimiterLine: 'L',
+        delimiterPosition: '123',
       });
       const errorFeedbackProvider = createMockErrorFeedbackProvider();
 
@@ -161,10 +161,10 @@ describe('getDelimitersForExtension', () => {
 
     it('should handle config with whitespace delimiters', () => {
       const config = createMockConfigGetter({
-        'delimiterLine': ' ',
-        'delimiterPosition': 'C',
-        'delimiterHash': '#',
-        'delimiterRange': '-',
+        delimiterLine: ' ',
+        delimiterPosition: 'C',
+        delimiterHash: '#',
+        delimiterRange: '-',
       });
       const errorFeedbackProvider = createMockErrorFeedbackProvider();
 
