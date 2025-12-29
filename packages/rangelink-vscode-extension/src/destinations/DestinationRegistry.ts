@@ -7,7 +7,11 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
 import type { FocusManagerFactory } from './capabilities/FocusManagerFactory';
 import type { TextInserterFactory } from './capabilities/TextInserterFactory';
-import type { DestinationType, PasteDestination } from './PasteDestination';
+import type {
+  AIAssistantDestinationType,
+  DestinationType,
+  PasteDestination,
+} from './PasteDestination';
 
 /**
  * Display names for destination types
@@ -31,7 +35,7 @@ const DISPLAY_NAMES: Record<DestinationType, string> = {
 export type CreateOptions =
   | { type: 'terminal'; terminal: vscode.Terminal }
   | { type: 'text-editor'; editor: vscode.TextEditor }
-  | { type: 'cursor-ai' | 'claude-code' | 'github-copilot-chat' };
+  | { type: AIAssistantDestinationType };
 
 /**
  * Factory bundle passed to destination builders.

@@ -10,7 +10,11 @@ import { MessageCode } from '../types/MessageCode';
 import { formatMessage, isEditorDestination, isTextLikeFile, type PaddingMode } from '../utils';
 
 import type { DestinationRegistry } from './DestinationRegistry';
-import type { DestinationType, PasteDestination } from './PasteDestination';
+import type {
+  AIAssistantDestinationType,
+  DestinationType,
+  PasteDestination,
+} from './PasteDestination';
 
 /**
  * Unified destination manager for RangeLink (Phase 3)
@@ -30,7 +34,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * Static lookup table mapping AI assistant destination types to unavailable error message codes
    */
   private static readonly AI_ASSISTANT_ERROR_CODES: Record<
-    'cursor-ai' | 'claude-code' | 'github-copilot-chat',
+    AIAssistantDestinationType,
     MessageCode
   > = {
     'claude-code': MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE,
@@ -452,9 +456,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * @param type - The destination type (AI assistants only)
    * @returns true if binding succeeded, false if destination not available
    */
-  private async bindGenericDestination(
-    type: 'cursor-ai' | 'claude-code' | 'github-copilot-chat',
-  ): Promise<boolean> {
+  private async bindGenericDestination(type: AIAssistantDestinationType): Promise<boolean> {
     // Generic destinations don't require resources at construction
     const newDestination = this.registry.create({ type });
 

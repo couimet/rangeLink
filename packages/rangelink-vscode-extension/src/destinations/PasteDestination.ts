@@ -23,6 +23,17 @@ export const DESTINATION_TYPES = [
 export type DestinationType = (typeof DESTINATION_TYPES)[number];
 
 /**
+ * AI assistant destination types (subset of DestinationType)
+ *
+ * These destinations require extension availability checks rather than
+ * resource binding (like terminal or text-editor).
+ */
+export type AIAssistantDestinationType = Extract<
+  DestinationType,
+  'claude-code' | 'cursor-ai' | 'github-copilot-chat'
+>;
+
+/**
  * Interface for RangeLink paste destinations
  *
  * Destinations are targets where generated RangeLinks can be automatically pasted.
