@@ -96,6 +96,16 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
   }
 
   /**
+   * Show an input box to get user input
+   *
+   * @param options - Configuration for the input box
+   * @returns Promise resolving to the entered string, or undefined if cancelled
+   */
+  async showInputBox(options?: vscode.InputBoxOptions): Promise<string | undefined> {
+    return this.ideInstance.window.showInputBox(options);
+  }
+
+  /**
    * Open a document and show it in the editor
    *
    * Supports full VSCode API options for fine-grained control:
