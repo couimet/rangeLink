@@ -209,10 +209,9 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   private buildBookmarksQuickPickItems(): MenuQuickPickItem[] {
     const result: MenuQuickPickItem[] = [];
     const bookmarks = this.bookmarksStore.getAll();
-    const countSuffix = bookmarks.length > 0 ? ` (${bookmarks.length})` : '';
 
     result.push({
-      label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL) + countSuffix,
+      label: '',
       kind: vscode.QuickPickItemKind.Separator,
     });
 
