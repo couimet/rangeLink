@@ -61,13 +61,19 @@ export const testPasteReturnValues = (
   describe('pasteLink() return values', () => {
     it('should return true on successful paste', async () => {
       await successScenario();
-      const result = await destination.pasteLink(createMockFormattedLink('test'), UNUSED_PADDING_MODE);
+      const result = await destination.pasteLink(
+        createMockFormattedLink('test'),
+        UNUSED_PADDING_MODE,
+      );
       expect(result).toBe(true);
     });
 
     it('should return false when destination not available', async () => {
       await failureScenario();
-      const result = await destination.pasteLink(createMockFormattedLink('test'), UNUSED_PADDING_MODE);
+      const result = await destination.pasteLink(
+        createMockFormattedLink('test'),
+        UNUSED_PADDING_MODE,
+      );
       expect(result).toBe(false);
     });
   });
