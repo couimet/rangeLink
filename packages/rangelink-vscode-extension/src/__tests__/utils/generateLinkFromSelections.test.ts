@@ -2,7 +2,6 @@ import { createMockLogger } from 'barebone-logger-testing';
 import {
   DEFAULT_DELIMITERS,
   LinkType,
-  RangeLinkErrorCodes,
   SelectionCoverage,
   SelectionType,
 } from 'rangelink-core-ts';
@@ -50,10 +49,10 @@ describe('generateLinkFromSelections', () => {
         logger: mockLogger,
       });
 
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe('SELECTION_EMPTY');
-      expect(result.error.message).toBe('No text selected');
-      expect(result.error.functionName).toBe('generateLinkFromSelections');
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_SELECTION_EMPTY', {
+        message: 'No text selected',
+        functionName: 'generateLinkFromSelections',
+      });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections' },
         'Empty selections - rejecting',
@@ -70,8 +69,10 @@ describe('generateLinkFromSelections', () => {
         logger: mockLogger,
       });
 
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe('SELECTION_EMPTY');
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_SELECTION_EMPTY', {
+        message: 'No text selected',
+        functionName: 'generateLinkFromSelections',
+      });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections' },
         'Empty selections - rejecting',
@@ -179,10 +180,11 @@ describe('generateLinkFromSelections', () => {
         logger: mockLogger,
       });
 
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe('SELECTION_CONVERSION_FAILED');
-      expect(result.error.message).toBe('Document was modified');
-      expect(result.error.functionName).toBe('generateLinkFromSelections');
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_SELECTION_CONVERSION_FAILED', {
+        message: 'Document was modified',
+        functionName: 'generateLinkFromSelections',
+        cause: testError,
+      });
       expect(mockLogger.error).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections', error: testError },
         'Failed to convert selections to InputSelection',
@@ -190,8 +192,8 @@ describe('generateLinkFromSelections', () => {
     });
   });
 
-  describe('formatLink error propagation', () => {
-    it('propagates error from formatLink when InputSelection is invalid', () => {
+  describe('formatLink error handling', () => {
+    it('wraps formatLink error in extension error', () => {
       mockToInputSelection.mockReturnValue({
         selections: [
           {
@@ -212,8 +214,10 @@ describe('generateLinkFromSelections', () => {
         logger: mockLogger,
       });
 
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe(RangeLinkErrorCodes.SELECTION_BACKWARD_LINE);
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_FORMAT_FAILED', {
+        message: 'Backward selection not allowed (startLine=10 > endLine=5)',
+        functionName: 'generateLinkFromSelections',
+      });
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({ fn: 'generateLinkFromSelections' }),
         'formatLink failed',
