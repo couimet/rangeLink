@@ -159,7 +159,7 @@ export class RangeLinkService {
 
     let inputSelection: InputSelection;
     try {
-      inputSelection = toInputSelection(editor, selections);
+      inputSelection = toInputSelection(document, selections);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to process selection';
       this.logger.error(
