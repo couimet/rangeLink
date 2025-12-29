@@ -10,7 +10,11 @@ import { AlwaysEligibleChecker } from './capabilities/AlwaysEligibleChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
 import type { FocusManager } from './capabilities/FocusManager';
 import type { TextInserter } from './capabilities/TextInserter';
-import type { DestinationType, PasteDestination } from './PasteDestination';
+import type {
+  AIAssistantDestinationType,
+  DestinationType,
+  PasteDestination,
+} from './PasteDestination';
 
 // ============================================================================
 // Factory Method Parameter Types
@@ -56,11 +60,6 @@ export interface EditorDestinationParams {
 }
 
 /**
- * AI assistant destination IDs (singletons with no bound VSCode resource).
- */
-export type AiAssistantId = 'claude-code' | 'cursor-ai' | 'github-copilot-chat';
-
-/**
  * Parameters for creating an AI assistant destination via factory method.
  *
  * AI assistant destinations:
@@ -70,7 +69,7 @@ export type AiAssistantId = 'claude-code' | 'cursor-ai' | 'github-copilot-chat';
  * - May provide user instructions for manual paste fallback
  */
 export interface AiAssistantDestinationParams {
-  readonly id: AiAssistantId;
+  readonly id: AIAssistantDestinationType;
   readonly displayName: string;
   readonly textInserter: TextInserter;
   readonly focusManager: FocusManager;
