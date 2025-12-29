@@ -110,6 +110,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter,
     destinationManager,
     bookmarksStore,
+    configReader,
     getLogger(),
   );
   context.subscriptions.push(statusBar);

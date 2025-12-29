@@ -24,5 +24,6 @@ export const SETTING_DELIMITER_RANGE = 'delimiterRange';
 // Smart Padding Settings
 // =============================================================================
 
+export const SETTING_SMART_PADDING_PASTE_BOOKMARK = 'smartPadding.pasteBookmark';
 export const SETTING_SMART_PADDING_PASTE_CONTENT = 'smartPadding.pasteContent';
 export const SETTING_SMART_PADDING_PASTE_LINK = 'smartPadding.pasteLink';

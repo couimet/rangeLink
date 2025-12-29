@@ -2,6 +2,7 @@ import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import type { BookmarkId, BookmarksStore } from '../bookmarks';
+import type { ConfigReader } from '../config/ConfigReader';
 import {
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_MANAGE,
@@ -9,6 +10,8 @@ import {
   CMD_JUMP_TO_DESTINATION,
   CMD_OPEN_STATUS_BAR_MENU,
   CMD_SHOW_VERSION,
+  DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
+  SETTING_SMART_PADDING_PASTE_BOOKMARK,
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -42,6 +45,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
     private readonly bookmarksStore: BookmarksStore,
+    private readonly configReader: ConfigReader,
     private readonly logger: Logger,
   ) {
     this.statusBarItem = this.ideAdapter.createStatusBarItem(
@@ -98,9 +102,14 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     await this.ideAdapter.writeTextToClipboard(bookmark.link);
 
     if (this.destinationManager.isBound()) {
+      const paddingMode = this.configReader.getPaddingMode(
+        SETTING_SMART_PADDING_PASTE_BOOKMARK,
+        DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
+      );
       await this.destinationManager.sendTextToDestination(
         bookmark.link,
         `Bookmark pasted: ${bookmark.label}`,
+        paddingMode,
       );
       this.logger.debug(
         {
