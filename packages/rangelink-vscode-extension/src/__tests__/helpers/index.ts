@@ -13,6 +13,7 @@ export * from './createMockClipboard';
 export * from './createMockCommands';
 export * from './createMockComposablePasteDestination';
 export * from './createMockConfigGetter';
+export * from './createMockConfigReader';
 export * from './createMockConfigurationProvider';
 export * from './createMockCursorAIComposableDestination';
 export * from './createMockCursorAIDestination';
