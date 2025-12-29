@@ -9,7 +9,7 @@ import { isRectangularSelection } from '../isRectangularSelection';
  * Detects coverage (FullLine vs PartialLine) for each selection
  */
 export const toInputSelection = (
-  editor: vscode.TextEditor,
+  document: vscode.TextDocument,
   vscodeSelections: readonly vscode.Selection[],
 ): InputSelection => {
   // VSCode doesn't expose rectangular selection mode in API
@@ -32,7 +32,7 @@ export const toInputSelection = (
     const includesTrailingNewline = sel.end.line > sel.start.line && sel.end.character === 0;
 
     try {
-      const endLine = editor.document.lineAt(sel.end.line);
+      const endLine = document.lineAt(sel.end.line);
       const startsAtBeginning = sel.start.character === 0;
       const endsAtEndOfLine =
         sel.end.character === endLine.range.end.character ||
@@ -51,7 +51,7 @@ export const toInputSelection = (
           fn: 'toInputSelection',
           error,
           line: sel.end.line,
-          documentLines: editor.document.lineCount,
+          documentLines: document.lineCount,
         },
         'Document modified during link generation - selection out of bounds',
       );

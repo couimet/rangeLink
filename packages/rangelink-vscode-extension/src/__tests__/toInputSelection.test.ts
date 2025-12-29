@@ -62,7 +62,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections).toHaveLength(1);
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
@@ -79,7 +79,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
       });
@@ -90,7 +90,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections);
 
         // The selection is processed as a single selection from line 0 to line 2
         // Character 0 at end of multi-line selection counts as full line
@@ -107,7 +107,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
         expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
@@ -121,7 +121,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
         expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
@@ -136,7 +136,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
         expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
@@ -148,7 +148,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
         expect(result.selections[0].end).toStrictEqual({ line: 0, char: 10 });
@@ -160,7 +160,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
       });
@@ -170,7 +170,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections);
 
         // Empty selection at start of empty line - technically FullLine
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
@@ -183,7 +183,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine); // NOT FullLine (start != 0)
         expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
@@ -203,7 +203,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
 
-      toInputSelection(editor, selections);
+      toInputSelection(editor.document, selections);
 
       expect(isRectangularSelection).toHaveBeenCalledWith(selections);
       expect(isRectangularSelection).toHaveBeenCalledTimes(1);
@@ -215,7 +215,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
 
-      const result = toInputSelection(editor, selections);
+      const result = toInputSelection(editor.document, selections);
 
       expect(result.selectionType).toBe(SelectionType.Rectangular);
       expect(result.selections).toHaveLength(2); // Both selections converted
@@ -230,7 +230,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor, selections);
+      const result = toInputSelection(editor.document, selections);
 
       expect(result.selectionType).toBe(SelectionType.Normal);
       expect(result.selections).toHaveLength(1); // Only first selection used
@@ -246,7 +246,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
 
-      const result = toInputSelection(editor, selections);
+      const result = toInputSelection(editor.document, selections);
 
       expect(result.selections).toHaveLength(3);
       expect(result.selections[0]).toStrictEqual({
@@ -282,7 +282,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor, selections);
+      const result = toInputSelection(editor.document, selections);
 
       expect(result.selections).toHaveLength(1);
       expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
@@ -296,7 +296,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections).toHaveLength(1);
       expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
@@ -310,7 +310,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
       expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
@@ -325,7 +325,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
       expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
@@ -340,7 +340,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
       expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
@@ -364,7 +364,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      expect(() => toInputSelection(editor, editor.selections)).toThrow(
+      expect(() => toInputSelection(editor.document, editor.selections)).toThrow(
         'Cannot generate link: document was modified and selection is no longer valid',
       );
     });
@@ -384,7 +384,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      expect(() => toInputSelection(editor, editor.selections)).toThrow(
+      expect(() => toInputSelection(editor.document, editor.selections)).toThrow(
         'Please reselect and try again',
       );
     });
@@ -396,7 +396,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
       expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
@@ -409,7 +409,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
     });
@@ -419,7 +419,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections[0].start.line).toBe(0);
     });
@@ -439,7 +439,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor, [selection]);
+      const result = toInputSelection(editor.document, [selection]);
 
       // Should use start/end, not anchor/active
       expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
