@@ -38,7 +38,7 @@ describe('generateLinkFromSelections', () => {
   const mockToInputSelection = toInputSelection as jest.MockedFunction<typeof toInputSelection>;
   const mockLogger = createMockLogger();
 
-  describe('empty selection rejection', () => {
+  describe('no selection rejection', () => {
     it('returns error when selections array is empty', () => {
       const result = generateLinkFromSelections({
         referencePath: '/test/file.ts',
@@ -49,16 +49,18 @@ describe('generateLinkFromSelections', () => {
         logger: mockLogger,
       });
 
-      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_SELECTION_EMPTY', {
-        message: 'No text selected',
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_NO_SELECTION', {
+        message: 'No selection provided',
         functionName: 'generateLinkFromSelections',
       });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections' },
-        'Empty selections - rejecting',
+        'No selections provided',
       );
     });
+  });
 
+  describe('empty selection rejection', () => {
     it('returns error when all selections are empty (cursor positions)', () => {
       const result = generateLinkFromSelections({
         referencePath: '/test/file.ts',
@@ -75,7 +77,7 @@ describe('generateLinkFromSelections', () => {
       });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections' },
-        'Empty selections - rejecting',
+        'All selections are empty',
       );
     });
   });

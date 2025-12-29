@@ -45,8 +45,19 @@ export const generateLinkFromSelections = (
 ): Result<FormattedLink, RangeLinkExtensionError> => {
   const { referencePath, document, selections, delimiters, linkType, logger } = options;
 
-  if (selections.length === 0 || selections.every((s) => s.isEmpty)) {
-    logger.debug({ fn: FUNCTION_NAME }, 'Empty selections - rejecting');
+  if (selections.length === 0) {
+    logger.debug({ fn: FUNCTION_NAME }, 'No selections provided');
+    return Result.err(
+      new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.GENERATE_LINK_NO_SELECTION,
+        message: 'No selection provided',
+        functionName: FUNCTION_NAME,
+      }),
+    );
+  }
+
+  if (selections.every((s) => s.isEmpty)) {
+    logger.debug({ fn: FUNCTION_NAME }, 'All selections are empty');
     return Result.err(
       new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.GENERATE_LINK_SELECTION_EMPTY,
