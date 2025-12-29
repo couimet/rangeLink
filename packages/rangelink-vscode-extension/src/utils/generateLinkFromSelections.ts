@@ -5,12 +5,12 @@ import {
   type FormattedLink,
   type FormatOptions,
   LinkType,
-  RangeLinkError,
-  RangeLinkErrorCodes,
   Result,
 } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
+import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { toInputSelection } from './toInputSelection';
 
 /**
@@ -38,18 +38,18 @@ const FUNCTION_NAME = 'generateLinkFromSelections';
  * Pure utility function - no side effects (no showErrorMessage, no clipboard).
  * Caller handles error presentation via i18n MessageCode mapping.
  *
- * @returns Result.ok(FormattedLink) on success, Result.err(RangeLinkError) on failure
+ * @returns Result.ok(FormattedLink) on success, Result.err on failure
  */
 export const generateLinkFromSelections = (
   options: GenerateLinkOptions,
-): Result<FormattedLink, RangeLinkError> => {
+): Result<FormattedLink, RangeLinkExtensionError> => {
   const { referencePath, document, selections, delimiters, linkType, logger } = options;
 
   if (selections.length === 0 || selections.every((s) => s.isEmpty)) {
     logger.debug({ fn: FUNCTION_NAME }, 'Empty selections - rejecting');
     return Result.err(
-      new RangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_EMPTY,
+      new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.GENERATE_LINK_SELECTION_EMPTY,
         message: 'No text selected',
         functionName: FUNCTION_NAME,
       }),
@@ -63,8 +63,8 @@ export const generateLinkFromSelections = (
     const message = error instanceof Error ? error.message : 'Failed to process selection';
     logger.error({ fn: FUNCTION_NAME, error }, 'Failed to convert selections to InputSelection');
     return Result.err(
-      new RangeLinkError({
-        code: RangeLinkErrorCodes.SELECTION_CONVERSION_FAILED,
+      new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.GENERATE_LINK_SELECTION_CONVERSION_FAILED,
         message,
         functionName: FUNCTION_NAME,
         cause: error instanceof Error ? error : undefined,
@@ -78,7 +78,14 @@ export const generateLinkFromSelections = (
 
   if (!result.success) {
     logger.error({ fn: FUNCTION_NAME, error: result.error }, 'formatLink failed');
-    return result;
+    return Result.err(
+      new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.GENERATE_LINK_FORMAT_FAILED,
+        message: result.error.message,
+        functionName: FUNCTION_NAME,
+        cause: result.error,
+      }),
+    );
   }
 
   logger.debug(
@@ -86,5 +93,5 @@ export const generateLinkFromSelections = (
     `Generated ${linkType} link: ${result.value.link}`,
   );
 
-  return result;
+  return Result.ok(result.value);
 };
