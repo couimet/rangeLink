@@ -183,7 +183,12 @@
         },
         "rangelink.smartPadding.pasteLink": {
           "type": "string",
-          "enum": ["both", "before", "after", "none"],
+          "enum": [
+            "both",
+            "before",
+            "after",
+            "none"
+          ],
           "default": "both",
           "enumDescriptions": [
             "Add space before and after (prevents concatenation)",
@@ -195,7 +200,12 @@
         },
         "rangelink.smartPadding.pasteContent": {
           "type": "string",
-          "enum": ["both", "before", "after", "none"],
+          "enum": [
+            "both",
+            "before",
+            "after",
+            "none"
+          ],
           "default": "none",
           "enumDescriptions": [
             "Add space before and after",
