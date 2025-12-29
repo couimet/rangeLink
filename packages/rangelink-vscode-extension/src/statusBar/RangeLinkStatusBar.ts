@@ -186,7 +186,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     } else {
       for (const bookmark of bookmarks) {
         result.push({
-          label: `    $(file) ${bookmark.label}`,
+          label: `    $(bookmark) ${bookmark.label}`,
           description: bookmark.description,
           command: CMD_BOOKMARK_NAVIGATE,
           bookmarkId: bookmark.id,
