@@ -1,5 +1,6 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
+import type { PaddingMode } from '../../utils/applySmartPadding';
 import { AutoPasteResult } from '../../types/AutoPasteResult';
 import { PasteContentType } from '../../types/PasteContentType';
 import {
@@ -9,6 +10,9 @@ import {
   createMockFormattedLink,
   createMockTextInserter,
 } from '../helpers';
+
+const UNUSED_PADDING_MODE = 'parameter not used' as unknown as PaddingMode;
+const ARBITRARY_PADDING_MODE: PaddingMode = 'none';
 
 describe('ComposablePasteDestination', () => {
   const mockLogger = createMockLogger();
@@ -20,7 +24,13 @@ describe('ComposablePasteDestination', () => {
       const context = { fn: 'test', mock: true };
       const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
-      await destination['performPaste']('text', context, eligibilityCheck, PasteContentType.Link);
+      await destination['performPaste'](
+        'text',
+        context,
+        eligibilityCheck,
+        PasteContentType.Link,
+        ARBITRARY_PADDING_MODE,
+      );
 
       expect(isAvailable).toHaveBeenCalledTimes(1);
     });
@@ -41,6 +51,7 @@ describe('ComposablePasteDestination', () => {
         context,
         eligibilityCheck,
         PasteContentType.Link,
+        UNUSED_PADDING_MODE,
       );
 
       expect(result).toBe(false);
@@ -53,7 +64,13 @@ describe('ComposablePasteDestination', () => {
       const destination = createMockComposablePasteDestination({ logger: mockLogger });
       const context = { fn: 'test', mock: true };
 
-      await destination['performPaste']('text', context, eligibilityCheck, PasteContentType.Link);
+      await destination['performPaste'](
+        'text',
+        context,
+        eligibilityCheck,
+        PasteContentType.Link,
+        ARBITRARY_PADDING_MODE,
+      );
 
       expect(eligibilityCheck).toHaveBeenCalledTimes(1);
     });
@@ -72,29 +89,11 @@ describe('ComposablePasteDestination', () => {
         context,
         eligibilityCheck,
         PasteContentType.Text,
+        UNUSED_PADDING_MODE,
       );
 
       expect(result).toBe(false);
       expect(textInserter.insert).not.toHaveBeenCalled();
-    });
-
-    it('should apply smart padding to text', async () => {
-      const textInserter = createMockTextInserter();
-      const destination = createMockComposablePasteDestination({
-        textInserter,
-        logger: mockLogger,
-      });
-      const context = { fn: 'test', mock: true };
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
-
-      await destination['performPaste'](
-        'unpadded',
-        context,
-        eligibilityCheck,
-        PasteContentType.Link,
-      );
-
-      expect(textInserter.insert).toHaveBeenCalledWith(' unpadded ', context);
     });
 
     it('should not double-pad already padded text', async () => {
@@ -111,6 +110,7 @@ describe('ComposablePasteDestination', () => {
         context,
         eligibilityCheck,
         PasteContentType.Link,
+        'both',
       );
 
       expect(textInserter.insert).toHaveBeenCalledWith(' already-padded ', context);
@@ -127,7 +127,13 @@ describe('ComposablePasteDestination', () => {
       const context = { fn: 'test', mock: true };
       const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
-      await destination['performPaste']('text', context, eligibilityCheck, PasteContentType.Link);
+      await destination['performPaste'](
+        'text',
+        context,
+        eligibilityCheck,
+        PasteContentType.Link,
+        ARBITRARY_PADDING_MODE,
+      );
 
       expect(focusManager.focus).toHaveBeenCalledTimes(1);
       expect(focusManager.focus).toHaveBeenCalledWith(context);
@@ -152,6 +158,7 @@ describe('ComposablePasteDestination', () => {
         context,
         eligibilityCheck,
         PasteContentType.Link,
+        ARBITRARY_PADDING_MODE,
       );
 
       expect(result).toBe(true);
@@ -172,6 +179,7 @@ describe('ComposablePasteDestination', () => {
         context,
         eligibilityCheck,
         PasteContentType.Link,
+        ARBITRARY_PADDING_MODE,
       );
 
       expect(result).toBe(false);
@@ -186,7 +194,13 @@ describe('ComposablePasteDestination', () => {
       const context = { fn: 'test', mock: true };
       const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
-      await destination['performPaste']('text', context, eligibilityCheck, PasteContentType.Link);
+      await destination['performPaste'](
+        'text',
+        context,
+        eligibilityCheck,
+        PasteContentType.Link,
+        UNUSED_PADDING_MODE,
+      );
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         context,
@@ -203,7 +217,13 @@ describe('ComposablePasteDestination', () => {
       const context = { fn: 'test', mock: true };
       const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
-      await destination['performPaste']('text', context, eligibilityCheck, PasteContentType.Text);
+      await destination['performPaste'](
+        'text',
+        context,
+        eligibilityCheck,
+        PasteContentType.Text,
+        UNUSED_PADDING_MODE,
+      );
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         context,
@@ -213,7 +233,7 @@ describe('ComposablePasteDestination', () => {
   });
 
   describe('pasteLink() delegation', () => {
-    it('should build context with formattedLink and linkLength', async () => {
+    it('should build context with formattedLink, linkLength, and paddingMode', async () => {
       const focusManager = createMockFocusManager();
       const destination = createMockComposablePasteDestination({
         focusManager,
@@ -221,12 +241,13 @@ describe('ComposablePasteDestination', () => {
       });
       const formattedLink = createMockFormattedLink('test-link');
 
-      await destination.pasteLink(formattedLink);
+      await destination.pasteLink(formattedLink, 'both');
 
       expect(focusManager.focus).toHaveBeenCalledWith({
         fn: 'ComposablePasteDestination.pasteLink',
         formattedLink,
         linkLength: 9,
+        paddingMode: 'both',
         mock: true,
       });
     });
@@ -239,7 +260,7 @@ describe('ComposablePasteDestination', () => {
       });
       const formattedLink = createMockFormattedLink('test-link');
 
-      await destination.pasteLink(formattedLink);
+      await destination.pasteLink(formattedLink, 'both');
 
       expect(eligibilityChecker.isEligible).toHaveBeenCalledWith('test-link', {
         fn: 'ComposablePasteDestination.isEligibleForPasteLink',
@@ -247,7 +268,7 @@ describe('ComposablePasteDestination', () => {
       });
     });
 
-    it('should pass link text to performPaste', async () => {
+    it('should pass link text to performPaste with paddingMode', async () => {
       const textInserter = createMockTextInserter();
       const destination = createMockComposablePasteDestination({
         textInserter,
@@ -255,30 +276,32 @@ describe('ComposablePasteDestination', () => {
       });
       const formattedLink = createMockFormattedLink('my-link');
 
-      await destination.pasteLink(formattedLink);
+      await destination.pasteLink(formattedLink, 'both');
 
       expect(textInserter.insert).toHaveBeenCalledWith(' my-link ', {
         fn: 'ComposablePasteDestination.pasteLink',
         formattedLink,
         linkLength: 7,
+        paddingMode: 'both',
         mock: true,
       });
     });
   });
 
   describe('pasteContent() delegation', () => {
-    it('should build context with contentLength', async () => {
+    it('should build context with contentLength and paddingMode', async () => {
       const focusManager = createMockFocusManager();
       const destination = createMockComposablePasteDestination({
         focusManager,
         logger: mockLogger,
       });
 
-      await destination.pasteContent('test content');
+      await destination.pasteContent('test content', 'none');
 
       expect(focusManager.focus).toHaveBeenCalledWith({
         fn: 'ComposablePasteDestination.pasteContent',
         contentLength: 12,
+        paddingMode: 'none',
         mock: true,
       });
     });
@@ -290,7 +313,7 @@ describe('ComposablePasteDestination', () => {
         logger: mockLogger,
       });
 
-      await destination.pasteContent('test content');
+      await destination.pasteContent('test content', 'none');
 
       expect(eligibilityChecker.isEligible).toHaveBeenCalledWith('test content', {
         fn: 'ComposablePasteDestination.isEligibleForPasteContent',
@@ -298,18 +321,19 @@ describe('ComposablePasteDestination', () => {
       });
     });
 
-    it('should pass content text to performPaste', async () => {
+    it('should pass content text to performPaste with paddingMode', async () => {
       const textInserter = createMockTextInserter();
       const destination = createMockComposablePasteDestination({
         textInserter,
         logger: mockLogger,
       });
 
-      await destination.pasteContent('my content');
+      await destination.pasteContent('my content', 'both');
 
       expect(textInserter.insert).toHaveBeenCalledWith(' my content ', {
         fn: 'ComposablePasteDestination.pasteContent',
         contentLength: 10,
+        paddingMode: 'both',
         mock: true,
       });
     });

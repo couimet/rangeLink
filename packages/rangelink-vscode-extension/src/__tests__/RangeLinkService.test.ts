@@ -11,6 +11,7 @@ import {
 import * as rangeLinkCore from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { ConfigReader } from '../config/ConfigReader';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { messagesEn } from '../i18n/messages.en';
 import { PathFormat, RangeLinkService } from '../RangeLinkService';
@@ -21,6 +22,7 @@ import * as toInputSelectionModule from '../utils/toInputSelection';
 import {
   createMockAsRelativePath,
   createMockClipboard,
+  createMockConfigReader,
   createMockDestinationManager,
   createMockDocument,
   createMockEditor,
@@ -42,8 +44,10 @@ import {
 let service: RangeLinkService;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
 let mockDestinationManager: PasteDestinationManager;
+let mockConfigReader: jest.Mocked<ConfigReader>;
 let mockLogger: Logger;
 let mockClipboard: MockClipboard;
+
 const delimiters: DelimiterConfig = {
   line: 'L',
   position: 'C',
@@ -78,6 +82,7 @@ describe('RangeLinkService', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockClipboard = createMockClipboard();
+    mockConfigReader = createMockConfigReader();
     mockVscodeAdapter = createMockVscodeAdapter({
       envOptions: { clipboard: mockClipboard },
     });
@@ -101,6 +106,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockConfigReader,
         mockLogger,
       );
     });
@@ -216,6 +222,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -231,6 +238,7 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
+          'both',
         );
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).not.toHaveBeenCalled();
@@ -249,6 +257,7 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
+          'both',
         );
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).not.toHaveBeenCalled();
@@ -266,6 +275,7 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
+          'both',
         );
         // Verify call order (service handles clipboard, manager handles destination + feedback)
         const clipboardCall = (mockClipboard.writeText as jest.Mock).mock.invocationCallOrder[0];
@@ -292,6 +302,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -307,6 +318,7 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
+          'both',
         );
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).not.toHaveBeenCalled();
@@ -325,6 +337,7 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ RangeLink copied to clipboard',
+          'both',
         );
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).not.toHaveBeenCalled();
@@ -341,6 +354,7 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
           formattedLink,
           '✓ Portable RangeLink copied to clipboard',
+          'both',
         );
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
         expect(mockVscodeAdapter.setStatusBarMessage).not.toHaveBeenCalled();
@@ -363,6 +377,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -603,6 +618,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockConfigReader,
         mockLogger,
       );
     });
@@ -617,6 +633,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -657,6 +674,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -695,6 +713,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -731,6 +750,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -773,6 +793,7 @@ describe('RangeLinkService', () => {
             delimiters,
             mockVscodeAdapter,
             mockDestinationManager,
+            mockConfigReader,
             mockLogger,
           );
         });
@@ -789,6 +810,7 @@ describe('RangeLinkService', () => {
           expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
             'const foo = "bar";',
             '✓ Selected text copied to clipboard',
+            'none',
           );
         });
       });
@@ -809,6 +831,7 @@ describe('RangeLinkService', () => {
             delimiters,
             mockVscodeAdapter,
             mockDestinationManager,
+            mockConfigReader,
             mockLogger,
           );
         });
@@ -948,6 +971,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -971,6 +995,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
 
@@ -979,6 +1004,7 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
           'first line\nsecond line\nthird line',
           '✓ Selected text copied to clipboard',
+          'none',
         );
       });
 
@@ -1017,6 +1043,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -1040,6 +1067,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
 
@@ -1048,6 +1076,7 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
           'valid text',
           '✓ Selected text copied to clipboard',
+          'none',
         );
       });
     });
@@ -1062,7 +1091,13 @@ describe('RangeLinkService', () => {
           adapterOptions: { envOptions: { clipboard } },
         });
         jest.spyOn(adapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
-        service = new RangeLinkService(delimiters, adapter, mockDestinationManager, mockLogger);
+        service = new RangeLinkService(
+          delimiters,
+          adapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await service.pasteSelectedTextToDestination();
 
@@ -1080,7 +1115,13 @@ describe('RangeLinkService', () => {
           selections: [[0, 0, 0, 40]],
           adapterOptions: { envOptions: { clipboard } },
         });
-        service = new RangeLinkService(delimiters, adapter, mockDestinationManager, mockLogger);
+        service = new RangeLinkService(
+          delimiters,
+          adapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await service.pasteSelectedTextToDestination();
 
@@ -1095,7 +1136,13 @@ describe('RangeLinkService', () => {
           selections: [[0, 0, 0, 20]],
           adapterOptions: { envOptions: { clipboard } },
         });
-        service = new RangeLinkService(delimiters, adapter, mockDestinationManager, mockLogger);
+        service = new RangeLinkService(
+          delimiters,
+          adapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await service.pasteSelectedTextToDestination();
 
@@ -1123,6 +1170,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockConfigReader,
         mockLogger,
       );
     });
@@ -1137,6 +1185,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -1175,6 +1224,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -1207,6 +1257,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
       });
@@ -1237,6 +1288,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
 
@@ -1269,6 +1321,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
 
@@ -1293,6 +1346,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
 
@@ -1316,6 +1370,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
 
@@ -1348,6 +1403,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
 
@@ -1399,6 +1455,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockConfigReader,
           mockLogger,
         );
 
@@ -1437,6 +1494,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -1508,6 +1566,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -1596,6 +1655,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -1687,6 +1747,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -1770,6 +1831,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -1884,6 +1946,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockConfigReader,
         mockLogger,
       );
 
