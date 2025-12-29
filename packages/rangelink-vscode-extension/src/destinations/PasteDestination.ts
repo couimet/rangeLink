@@ -1,6 +1,7 @@
 import type { FormattedLink } from 'rangelink-core-ts';
 
 import type { AutoPasteResult } from '../types/AutoPasteResult';
+import type { PaddingMode } from '../utils/applySmartPadding';
 
 /**
  * All supported paste destination type identifiers
@@ -93,15 +94,16 @@ export interface PasteDestination {
    *
    * Implementation requirements:
    * - Check eligibility internally (defensive programming)
-   * - Add padding if needed (smart padding: skip if already padded)
+   * - Apply padding based on provided paddingMode
    * - Focus destination after paste (terminal.show(), chat.open(), etc.)
    * - Log success/failure for debugging
    * - Return false on failure or ineligibility (no throwing)
    *
    * @param formattedLink - The formatted RangeLink with metadata
+   * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  pasteLink(formattedLink: FormattedLink): Promise<boolean>;
+  pasteLink(formattedLink: FormattedLink, paddingMode: PaddingMode): Promise<boolean>;
 
   /**
    * Paste text content to this destination with appropriate padding and focus
@@ -111,15 +113,16 @@ export interface PasteDestination {
    *
    * Implementation requirements:
    * - Check eligibility internally (defensive programming)
-   * - Add padding if needed (smart padding: skip if already padded)
+   * - Apply padding based on provided paddingMode
    * - Focus destination after paste (terminal.show(), chat.open(), etc.)
    * - Log success/failure for debugging
    * - Return false on failure or ineligibility (no throwing)
    *
    * @param content - The text content to paste
+   * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns Promise resolving to true if paste succeeded, false otherwise
    */
-  pasteContent(content: string): Promise<boolean>;
+  pasteContent(content: string, paddingMode: PaddingMode): Promise<boolean>;
 
   /**
    * Get user instruction for manual paste action (clipboard-based destinations only)

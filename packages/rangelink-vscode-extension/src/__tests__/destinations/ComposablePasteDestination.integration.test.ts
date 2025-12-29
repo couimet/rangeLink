@@ -78,7 +78,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
 
-      const result = await destination.pasteLink(formattedLink);
+      const result = await destination.pasteLink(formattedLink, 'both');
 
       expect(result).toStrictEqual(true);
       expect(showTerminalSpy).toHaveBeenCalledTimes(1);
@@ -122,7 +122,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      await destination.pasteLink(createMockFormattedLink('test-link'));
+      await destination.pasteLink(createMockFormattedLink('test-link'), 'both');
 
       expect(callOrder).toStrictEqual(['focus', 'insert']);
     });
@@ -163,7 +163,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
 
-      const result = await destination.pasteLink(formattedLink);
+      const result = await destination.pasteLink(formattedLink, 'both');
 
       expect(result).toStrictEqual(true);
       // Focus command called first, then insert command
@@ -211,7 +211,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      const result = await destination.pasteLink(createMockFormattedLink('test'));
+      const result = await destination.pasteLink(createMockFormattedLink('test'), 'both');
 
       expect(result).toStrictEqual(true);
       expect(commandSpy).toHaveBeenCalledTimes(3);
@@ -251,7 +251,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
 
-      const result = await destination.pasteLink(formattedLink);
+      const result = await destination.pasteLink(formattedLink, 'both');
 
       expect(result).toStrictEqual(false);
       expect(insertSpy).not.toHaveBeenCalled();
@@ -288,7 +288,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
 
-      const result = await destination.pasteLink(formattedLink);
+      const result = await destination.pasteLink(formattedLink, 'both');
 
       expect(result).toStrictEqual(true);
       expect(insertSpy).toHaveBeenCalledTimes(1);
@@ -322,7 +322,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         logger: mockLogger,
       });
 
-      await destination.pasteLink(createMockFormattedLink('test'));
+      await destination.pasteLink(createMockFormattedLink('test'), 'both');
 
       expect(showDocSpy).toHaveBeenCalledTimes(1);
       expect(showDocSpy).toHaveBeenCalledWith(boundEditorUri, { viewColumn: 2 });
@@ -363,6 +363,103 @@ describe('ComposablePasteDestination Integration Tests', () => {
       expect(result).toStrictEqual(true);
       expect(showTerminalSpy).toHaveBeenCalledTimes(1);
       expect(insertSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('paddingMode forwarding verification', () => {
+    const setupCopilotChatDestination = (
+      mockAdapter: ReturnType<typeof createMockVscodeAdapter>,
+    ) => {
+      const focusManager = new CommandFocusManager(
+        mockAdapter,
+        ['github.copilot.chat.focus'],
+        mockLogger,
+      );
+      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+      const textInserter = new NativeCommandTextInserter(
+        mockAdapter,
+        'github.copilot.chat.insert',
+        (text) => ({ query: text, isPartialQuery: true }),
+        mockLogger,
+      );
+
+      return ComposablePasteDestination.createForTesting({
+        id: 'github-copilot-chat',
+        displayName: 'GitHub Copilot Chat',
+        resource: { kind: 'singleton' },
+        textInserter,
+        eligibilityChecker,
+        focusManager,
+        isAvailable: () => Promise.resolve(true),
+        jumpSuccessMessage: 'Focused Copilot Chat',
+        loggingDetails: {},
+        logger: mockLogger,
+      });
+    };
+
+    it('should apply both-side padding when paddingMode is "both"', async () => {
+      const mockAdapter = createMockVscodeAdapter();
+      const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+      const destination = setupCopilotChatDestination(mockAdapter);
+
+      await destination.pasteLink(createMockFormattedLink('file.ts#L5'), 'both');
+
+      expect(commandSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
+        query: ' file.ts#L5 ',
+        isPartialQuery: true,
+      });
+    });
+
+    it('should apply before-only padding when paddingMode is "before"', async () => {
+      const mockAdapter = createMockVscodeAdapter();
+      const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+      const destination = setupCopilotChatDestination(mockAdapter);
+
+      await destination.pasteLink(createMockFormattedLink('file.ts#L5'), 'before');
+
+      expect(commandSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
+        query: ' file.ts#L5',
+        isPartialQuery: true,
+      });
+    });
+
+    it('should apply after-only padding when paddingMode is "after"', async () => {
+      const mockAdapter = createMockVscodeAdapter();
+      const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+      const destination = setupCopilotChatDestination(mockAdapter);
+
+      await destination.pasteLink(createMockFormattedLink('file.ts#L5'), 'after');
+
+      expect(commandSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
+        query: 'file.ts#L5 ',
+        isPartialQuery: true,
+      });
+    });
+
+    it('should apply no padding when paddingMode is "none"', async () => {
+      const mockAdapter = createMockVscodeAdapter();
+      const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+      const destination = setupCopilotChatDestination(mockAdapter);
+
+      await destination.pasteLink(createMockFormattedLink('file.ts#L5'), 'none');
+
+      expect(commandSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
+        query: 'file.ts#L5',
+        isPartialQuery: true,
+      });
+    });
+
+    it('should forward paddingMode through pasteContent as well', async () => {
+      const mockAdapter = createMockVscodeAdapter();
+      const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+      const destination = setupCopilotChatDestination(mockAdapter);
+
+      await destination.pasteContent('const x = 1;', 'both');
+
+      expect(commandSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
+        query: ' const x = 1; ',
+        isPartialQuery: true,
+      });
     });
   });
 });

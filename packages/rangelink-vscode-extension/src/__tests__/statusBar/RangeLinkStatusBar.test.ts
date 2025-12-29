@@ -2,10 +2,12 @@ import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
 import type { Bookmark } from '../../bookmarks';
+import type { ConfigReader } from '../../config/ConfigReader';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
 import {
   createMockBookmarksStore,
   createMockClipboard,
+  createMockConfigReader,
   createMockDestinationManager,
   createMockStatusBarItem,
   createMockTerminalPasteDestination,
@@ -26,11 +28,13 @@ describe('RangeLinkStatusBar', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
+  let mockConfigReader: jest.Mocked<ConfigReader>;
   let mockBookmarksStore: ReturnType<typeof createMockBookmarksStore>;
 
   beforeEach(() => {
     mockStatusBarItem = createMockStatusBarItem();
     mockLogger = createMockLogger();
+    mockConfigReader = createMockConfigReader();
     createStatusBarItemMock = jest.fn(() => mockStatusBarItem);
     showQuickPickMock = jest.fn().mockResolvedValue(undefined);
     executeCommandMock = jest.fn().mockResolvedValue(undefined);
@@ -49,7 +53,13 @@ describe('RangeLinkStatusBar', () => {
 
   describe('constructor', () => {
     it('creates and configures status bar item', () => {
-      new RangeLinkStatusBar(mockAdapter, mockDestinationManager, mockBookmarksStore, mockLogger);
+      new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockBookmarksStore,
+        mockConfigReader,
+        mockLogger,
+      );
 
       expect(createStatusBarItemMock).toHaveBeenCalledTimes(1);
       expect(createStatusBarItemMock).toHaveBeenCalledWith(vscode.StatusBarAlignment.Right, 100);
@@ -74,6 +84,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         mockDestinationManager,
         mockBookmarksStore,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -111,6 +122,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         boundDestinationManager,
         mockBookmarksStore,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -162,6 +174,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         mockDestinationManager,
         bookmarksStoreWithItems,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -213,6 +226,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         mockDestinationManager,
         mockBookmarksStore,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -237,6 +251,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         mockDestinationManager,
         mockBookmarksStore,
+        mockConfigReader,
         mockLogger,
       );
       (mockLogger.debug as jest.Mock).mockClear();
@@ -253,6 +268,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         mockDestinationManager,
         mockBookmarksStore,
+        mockConfigReader,
         mockLogger,
       );
       (mockLogger.debug as jest.Mock).mockClear();
@@ -306,6 +322,7 @@ describe('RangeLinkStatusBar', () => {
         adapterWithClipboard,
         boundDestinationManager,
         bookmarksStoreWithItem,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -316,6 +333,7 @@ describe('RangeLinkStatusBar', () => {
       expect(boundDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
         '/Users/test/project/file.ts#L10-L20',
         'Bookmark pasted: Test Bookmark',
+        'both',
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
@@ -361,6 +379,7 @@ describe('RangeLinkStatusBar', () => {
         adapterWithClipboard,
         mockDestinationManager,
         bookmarksStoreWithItem,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -389,6 +408,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         mockDestinationManager,
         mockBookmarksStore,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -400,6 +420,123 @@ describe('RangeLinkStatusBar', () => {
       );
       expect(mockBookmarksStore.recordAccess).not.toHaveBeenCalled();
     });
+
+    it('does not read paddingMode when menu is dismissed without selection', async () => {
+      const customConfigReader = createMockConfigReader();
+      showQuickPickMock.mockResolvedValue(QUICK_PICK_DISMISSED);
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockBookmarksStore,
+        customConfigReader,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(customConfigReader.getPaddingMode).not.toHaveBeenCalled();
+    });
+
+    it('reads paddingMode at paste time with correct setting key and default', async () => {
+      const mockBoundDestination = createMockTerminalPasteDestination({
+        displayName: 'Terminal ("zsh")',
+      });
+      const boundDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: mockBoundDestination,
+      });
+      const bookmark: Bookmark = {
+        id: 'bookmark-1',
+        label: 'Test Bookmark',
+        link: '/Users/test/project/file.ts#L10-L20',
+        scope: 'global',
+        createdAt: '2025-01-15T10:00:00.000Z',
+        accessCount: 0,
+      };
+      const bookmarksStoreWithItem = createMockBookmarksStore({ bookmarks: [bookmark] });
+      const adapterWithClipboard = createMockVscodeAdapter({
+        windowOptions: {
+          createStatusBarItem: createStatusBarItemMock,
+          showQuickPick: showQuickPickMock,
+        },
+        commandsOptions: {
+          executeCommand: executeCommandMock,
+        },
+      });
+      const customConfigReader = createMockConfigReader();
+
+      showQuickPickMock.mockResolvedValue({
+        label: '    $(file) Test Bookmark',
+        command: 'rangelink.bookmark.navigate',
+        bookmarkId: 'bookmark-1',
+      });
+      const statusBar = new RangeLinkStatusBar(
+        adapterWithClipboard,
+        boundDestinationManager,
+        bookmarksStoreWithItem,
+        customConfigReader,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(customConfigReader.getPaddingMode).toHaveBeenCalledWith(
+        'smartPadding.pasteBookmark',
+        'both',
+      );
+    });
+
+    it('forwards custom paddingMode from configReader to sendTextToDestination', async () => {
+      const mockBoundDestination = createMockTerminalPasteDestination({
+        displayName: 'Terminal ("zsh")',
+      });
+      const boundDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: mockBoundDestination,
+      });
+      const bookmark: Bookmark = {
+        id: 'bookmark-1',
+        label: 'Test Bookmark',
+        link: '/Users/test/project/file.ts#L10-L20',
+        scope: 'global',
+        createdAt: '2025-01-15T10:00:00.000Z',
+        accessCount: 0,
+      };
+      const bookmarksStoreWithItem = createMockBookmarksStore({ bookmarks: [bookmark] });
+      const adapterWithClipboard = createMockVscodeAdapter({
+        windowOptions: {
+          createStatusBarItem: createStatusBarItemMock,
+          showQuickPick: showQuickPickMock,
+        },
+        commandsOptions: {
+          executeCommand: executeCommandMock,
+        },
+      });
+      const customConfigReader = createMockConfigReader({
+        getPaddingMode: jest.fn().mockReturnValue('none'),
+      });
+
+      showQuickPickMock.mockResolvedValue({
+        label: '    $(file) Test Bookmark',
+        command: 'rangelink.bookmark.navigate',
+        bookmarkId: 'bookmark-1',
+      });
+      const statusBar = new RangeLinkStatusBar(
+        adapterWithClipboard,
+        boundDestinationManager,
+        bookmarksStoreWithItem,
+        customConfigReader,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(boundDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
+        '/Users/test/project/file.ts#L10-L20',
+        'Bookmark pasted: Test Bookmark',
+        'none',
+      );
+    });
   });
 
   describe('dispose', () => {
@@ -408,6 +545,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         mockDestinationManager,
         mockBookmarksStore,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -427,6 +565,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         mockDestinationManager,
         mockBookmarksStore,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -468,6 +607,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         mockDestinationManager,
         bookmarksStoreWithItems,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -499,6 +639,7 @@ describe('RangeLinkStatusBar', () => {
         mockAdapter,
         mockDestinationManager,
         mockBookmarksStore,
+        mockConfigReader,
         mockLogger,
       );
       const spy = jest.spyOn(statusBar as any, 'buildBookmarksQuickPickItems');

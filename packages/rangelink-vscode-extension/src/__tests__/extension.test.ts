@@ -3,6 +3,7 @@ import { pingLog, setLogger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
+import type { ConfigReader } from '../config/ConfigReader';
 import * as extension from '../extension';
 import { messagesEn } from '../i18n/messages.en';
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -14,13 +15,14 @@ import { VSCodeLogger } from '../VSCodeLogger';
 import {
   createMockClipboard,
   createMockCommands,
+  createMockConfigReader,
+  createMockDestinationManager,
   createMockMemento,
   createMockOutputChannel,
   createMockStatusBarItem,
   createMockWindow,
   createMockWorkspace,
 } from './helpers';
-import { createMockDestinationManager } from './helpers/createMockDestinationManager';
 
 // Mock logger for testing
 let mockLogger: Logger;
@@ -174,6 +176,7 @@ describe('RangeLinkService', () => {
       },
       ideAdapter,
       createMockDestinationManager() as any,
+      createMockConfigReader(),
       mockLogger,
     );
   });
@@ -695,6 +698,7 @@ describe('RangeLinkService', () => {
         },
         new VscodeAdapter(vscode),
         createMockDestinationManager() as any,
+        createMockConfigReader(),
         mockLogger,
       );
 
@@ -752,6 +756,7 @@ describe('RangeLinkService', () => {
         },
         new VscodeAdapter(vscode),
         createMockDestinationManager() as any,
+        createMockConfigReader(),
         mockLogger,
       );
 
@@ -3155,6 +3160,7 @@ describe('Portable links (Phase 1C)', () => {
       },
       new VscodeAdapter(vscode),
       createMockDestinationManager() as any,
+      createMockConfigReader(),
       mockLogger,
     );
 

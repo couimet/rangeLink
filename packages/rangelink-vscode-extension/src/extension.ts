@@ -98,12 +98,19 @@ export function activate(context: vscode.ExtensionContext): void {
     getLogger(),
   );
 
-  const service = new RangeLinkService(delimiters, ideAdapter, destinationManager, getLogger());
+  const service = new RangeLinkService(
+    delimiters,
+    ideAdapter,
+    destinationManager,
+    configReader,
+    getLogger(),
+  );
 
   const statusBar = new RangeLinkStatusBar(
     ideAdapter,
     destinationManager,
     bookmarksStore,
+    configReader,
     getLogger(),
   );
   context.subscriptions.push(statusBar);
