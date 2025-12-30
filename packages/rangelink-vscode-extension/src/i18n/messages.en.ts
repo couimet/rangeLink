@@ -74,9 +74,9 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_EMPTY]: 'No bookmarks yet',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_MANAGE]: '$(gear) Manage Bookmarks...',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: '$(bookmark) Bookmarks',
-  [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_DISABLED_DESC]: '(no destination bound)',
-  [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_DISABLED_LABEL]:
-    '$(circle-slash) Jump to Bound Destination',
+  [MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW]:
+    'No bound destination. Choose below to bind:',
+  [MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE]: 'No destinations available',
   [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL]: '$(arrow-right) Jump to Bound Destination',
   [MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL]: '$(info) Show Version Info',
   [MessageCode.STATUS_BAR_MENU_PLACEHOLDER]: 'Select an action',
