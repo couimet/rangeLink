@@ -273,7 +273,13 @@ describe('DestinationAvailabilityService', () => {
             isTextEditorEligible: true,
             isTerminalEligible: true,
             availableCount: 5,
-            availableTypes: ['text-editor', 'terminal', 'claude-code', 'github-copilot-chat', 'cursor-ai'],
+            availableTypes: [
+              'text-editor',
+              'terminal',
+              'claude-code',
+              'github-copilot-chat',
+              'cursor-ai',
+            ],
           },
           'Found 5 available destinations',
         );
