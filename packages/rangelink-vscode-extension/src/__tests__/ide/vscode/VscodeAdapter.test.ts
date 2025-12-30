@@ -636,6 +636,26 @@ describe('VscodeAdapter', () => {
       expect(result).toBe('Unknown');
     });
 
+    it('returns "Unknown" for undefined uri', () => {
+      const result = adapter.getFilenameFromUri(undefined as any);
+
+      expect(result).toBe('Unknown');
+    });
+
+    it('returns "Unknown" for null uri', () => {
+      const result = adapter.getFilenameFromUri(null as any);
+
+      expect(result).toBe('Unknown');
+    });
+
+    it('returns "Unknown" for undefined fsPath', () => {
+      const mockUri = { fsPath: undefined } as any;
+
+      const result = adapter.getFilenameFromUri(mockUri);
+
+      expect(result).toBe('Unknown');
+    });
+
     it('handles filename-only path (no directory)', () => {
       const mockUri = createMockUri('standalone.ts');
 
