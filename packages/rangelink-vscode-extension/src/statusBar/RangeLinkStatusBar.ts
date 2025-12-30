@@ -33,6 +33,11 @@ interface MenuQuickPickItem extends vscode.QuickPickItem {
 const STATUS_BAR_PRIORITY = 100;
 
 /**
+ * Indentation prefix for nested menu items (4 spaces).
+ */
+const MENU_ITEM_INDENT = '    ';
+
+/**
  * Manages RangeLink status bar item and menu.
  *
  * Creates a status bar item that opens a QuickPick menu when clicked.
@@ -182,12 +187,12 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
     if (bookmarks.length === 0) {
       result.push({
-        label: `    ${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_EMPTY)}`,
+        label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_EMPTY)}`,
       });
     } else {
       for (const bookmark of bookmarks) {
         result.push({
-          label: `    $(file) ${bookmark.label}`,
+          label: `${MENU_ITEM_INDENT}$(file) ${bookmark.label}`,
           description: bookmark.description,
           command: CMD_BOOKMARK_NAVIGATE,
           bookmarkId: bookmark.id,
@@ -201,12 +206,12 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     });
 
     result.push({
-      label: `    ${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_ADD_CURRENT)}`,
+      label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_ADD_CURRENT)}`,
       command: CMD_BOOKMARK_ADD,
     });
 
     result.push({
-      label: `    ${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_MANAGE)}`,
+      label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_MANAGE)}`,
       command: CMD_BOOKMARK_MANAGE,
     });
 
