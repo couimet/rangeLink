@@ -1629,13 +1629,85 @@ describe('PasteDestinationManager', () => {
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
     });
 
-    it('should return false when no destination bound', async () => {
-      const result = await manager.jumpToBoundDestination();
+    describe('when no destination bound', () => {
+      it('shows info message and returns false when no destinations available', async () => {
+        const result = await manager.jumpToBoundDestination();
 
-      expect(result).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
-        'RangeLink: No destination bound. Bind a destination first.',
-      );
+        expect(result).toBe(false);
+        expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
+          'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump' },
+          'No destination bound, showing quick pick',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump' },
+          'No destinations available',
+        );
+      });
+
+      it('shows quick pick with available destinations', async () => {
+        mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
+          { type: 'terminal', displayName: 'Terminal' },
+          { type: 'claude-code', displayName: 'Claude Code Chat' },
+        ]);
+        mockAdapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce(undefined);
+
+        await manager.jumpToBoundDestination();
+
+        expect(mockAdapter.__getVscodeInstance().window.showQuickPick).toHaveBeenCalledWith(
+          [
+            { label: 'Terminal', destinationType: 'terminal' },
+            { label: 'Claude Code Chat', destinationType: 'claude-code' },
+          ],
+          { placeHolder: 'No destination bound. Choose destination to jump to:' },
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'PasteDestinationManager.showDestinationQuickPickAndJump',
+            availableCount: 2,
+            items: [
+              { label: 'Terminal', destinationType: 'terminal' },
+              { label: 'Claude Code Chat', destinationType: 'claude-code' },
+            ],
+          },
+          'Showing quick pick with 2 destinations',
+        );
+      });
+
+      it('returns false when user cancels quick pick', async () => {
+        mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
+          { type: 'terminal', displayName: 'Terminal' },
+        ]);
+        mockAdapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce(undefined);
+
+        const result = await manager.jumpToBoundDestination();
+
+        expect(result).toBe(false);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump' },
+          'User cancelled quick pick',
+        );
+      });
+
+      it('binds to selected destination and focuses it', async () => {
+        const mockTerminal = createMockTerminal();
+        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+        mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
+          { type: 'terminal', displayName: 'Terminal' },
+        ]);
+        mockAdapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce({
+          label: 'Terminal',
+          destinationType: 'terminal',
+        });
+
+        const result = await manager.jumpToBoundDestination();
+
+        expect(result).toBe(true);
+        expect(manager.isBound()).toBe(true);
+        expect(mockTerminalDest.focus).toHaveBeenCalledTimes(1);
+      });
     });
 
     it('should focus bound terminal successfully', async () => {
