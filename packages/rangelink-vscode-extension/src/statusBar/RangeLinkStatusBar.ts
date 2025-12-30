@@ -155,11 +155,6 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       });
     }
 
-    result.push({
-      label: '',
-      kind: vscode.QuickPickItemKind.Separator,
-    });
-
     result.push(...this.buildBookmarksQuickPickItems());
 
     result.push({
@@ -173,10 +168,9 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   private buildBookmarksQuickPickItems(): MenuQuickPickItem[] {
     const result: MenuQuickPickItem[] = [];
     const bookmarks = this.bookmarksStore.getAll();
-    const countSuffix = bookmarks.length > 0 ? ` (${bookmarks.length})` : '';
 
     result.push({
-      label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL) + countSuffix,
+      label: '',
       kind: vscode.QuickPickItemKind.Separator,
     });
 
@@ -187,7 +181,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     } else {
       for (const bookmark of bookmarks) {
         result.push({
-          label: `    $(file) ${bookmark.label}`,
+          label: `    $(bookmark) ${bookmark.label}`,
           description: bookmark.description,
           command: CMD_BOOKMARK_NAVIGATE,
           bookmarkId: bookmark.id,
