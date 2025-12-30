@@ -231,7 +231,6 @@ export class PasteDestinationManager implements vscode.Disposable {
       return false;
     }
 
-    // Success - show status bar message from destination
     const successMessage = this.boundDestination.getJumpSuccessMessage();
     this.vscodeAdapter.setStatusBarMessage(successMessage);
 
