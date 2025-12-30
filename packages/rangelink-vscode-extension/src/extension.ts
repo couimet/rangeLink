@@ -113,6 +113,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const statusBar = new RangeLinkStatusBar(
     ideAdapter,
     destinationManager,
+    availabilityService,
     bookmarksStore,
     configReader,
     getLogger(),
