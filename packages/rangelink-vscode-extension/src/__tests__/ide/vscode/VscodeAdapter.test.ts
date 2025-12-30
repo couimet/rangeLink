@@ -595,6 +595,56 @@ describe('VscodeAdapter', () => {
     });
   });
 
+  describe('getFilenameFromUri', () => {
+    it('extracts filename from Unix-style path', () => {
+      const mockUri = createMockUri('/workspace/src/auth.ts');
+
+      const result = adapter.getFilenameFromUri(mockUri);
+
+      expect(result).toBe('auth.ts');
+    });
+
+    it('extracts filename from Windows-style path', () => {
+      const mockUri = { fsPath: 'C:\\Users\\dev\\project\\index.js' } as any;
+
+      const result = adapter.getFilenameFromUri(mockUri);
+
+      expect(result).toBe('index.js');
+    });
+
+    it('handles deeply nested Unix paths', () => {
+      const mockUri = createMockUri('/a/b/c/d/e/f/deeply-nested.tsx');
+
+      const result = adapter.getFilenameFromUri(mockUri);
+
+      expect(result).toBe('deeply-nested.tsx');
+    });
+
+    it('handles deeply nested Windows paths', () => {
+      const mockUri = { fsPath: 'C:\\a\\b\\c\\d\\e\\f\\deeply-nested.tsx' } as any;
+
+      const result = adapter.getFilenameFromUri(mockUri);
+
+      expect(result).toBe('deeply-nested.tsx');
+    });
+
+    it('returns "Unknown" for empty fsPath', () => {
+      const mockUri = { fsPath: '' } as any;
+
+      const result = adapter.getFilenameFromUri(mockUri);
+
+      expect(result).toBe('Unknown');
+    });
+
+    it('handles filename-only path (no directory)', () => {
+      const mockUri = createMockUri('standalone.ts');
+
+      const result = adapter.getFilenameFromUri(mockUri);
+
+      expect(result).toBe('standalone.ts');
+    });
+  });
+
   describe('Extension Lifecycle Operations (commit 0140)', () => {
     describe('createOutputChannel', () => {
       it('should create output channel using VSCode API', () => {

@@ -94,7 +94,7 @@ const getEditorResourceName = (
   }
 
   // Fallback to filename if not in workspace
-  return uri.fsPath.split('/').pop() || 'Unknown';
+  return context.ideAdapter.getFilenameFromUri(uri);
 };
 
 /**

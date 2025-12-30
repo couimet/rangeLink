@@ -432,7 +432,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     // Check if editor is text-like (not binary)
     if (!isTextLikeFile(this.vscodeAdapter, activeEditor)) {
-      const fileName = activeEditor.document.uri.fsPath.split('/').pop() || 'Unknown';
+      const fileName = this.vscodeAdapter.getFilenameFromUri(activeEditor.document.uri);
       this.logger.warn(
         { fn: 'PasteDestinationManager.bindTextEditor', fileName },
         'Cannot bind: Editor is not a text-like file',

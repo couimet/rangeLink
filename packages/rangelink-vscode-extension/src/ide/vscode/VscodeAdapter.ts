@@ -254,6 +254,21 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
     return editor.document.uri;
   }
 
+  /**
+   * Extract filename from a URI's file system path.
+   *
+   * Handles both Unix (/) and Windows (\) path separators regardless of platform.
+   *
+   * @param uri - URI to extract filename from
+   * @returns Filename portion of the path, or 'Unknown' if extraction fails
+   */
+  getFilenameFromUri(uri: vscode.Uri): string {
+    const fsPath = uri.fsPath;
+    const lastSeparatorIndex = Math.max(fsPath.lastIndexOf('/'), fsPath.lastIndexOf('\\'));
+    const filename = lastSeparatorIndex >= 0 ? fsPath.slice(lastSeparatorIndex + 1) : fsPath;
+    return filename || 'Unknown';
+  }
+
   // ============================================================================
   // Environment Information
   // ============================================================================
