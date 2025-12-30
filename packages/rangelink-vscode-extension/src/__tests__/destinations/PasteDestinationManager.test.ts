@@ -1634,7 +1634,9 @@ describe('PasteDestinationManager', () => {
         const result = await manager.jumpToBoundDestination();
 
         expect(result).toBe(false);
-        expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
+        expect(
+          mockAdapter.__getVscodeInstance().window.showInformationMessage,
+        ).toHaveBeenCalledWith(
           'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
