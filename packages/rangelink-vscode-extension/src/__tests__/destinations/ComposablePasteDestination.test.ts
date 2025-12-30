@@ -1,8 +1,8 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import type { PaddingMode } from '../../utils/applySmartPadding';
 import { AutoPasteResult } from '../../types/AutoPasteResult';
 import { PasteContentType } from '../../types/PasteContentType';
+import type { PaddingMode } from '../../utils/applySmartPadding';
 import {
   createMockComposablePasteDestination,
   createMockEligibilityChecker,
