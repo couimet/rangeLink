@@ -167,7 +167,7 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 
 Click the **RangeLink** item in the status bar (bottom right) to access quick actions:
 
-- **Jump to Bound Destination** — Focus your currently bound paste destination (disabled when no destination bound)
+- **Jump to Bound Destination** — Focus your currently bound paste destination (shows quick pick of available destinations when unbound)
 - **Show Version Info** — Display extension version and build details
 
 The menu provides quick access without memorizing keyboard shortcuts. More actions coming in future releases.
