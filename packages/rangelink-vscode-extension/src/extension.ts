@@ -27,6 +27,7 @@ import {
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
 import { FocusManagerFactory } from './destinations/capabilities/FocusManagerFactory';
 import { TextInserterFactory } from './destinations/capabilities/TextInserterFactory';
+import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
 import { registerAllDestinationBuilders } from './destinations/destinationBuilders';
 import { DestinationRegistry } from './destinations/DestinationRegistry';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
@@ -89,6 +90,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register all destination builders with the registry
   registerAllDestinationBuilders(registry);
+
+  const availabilityService = new DestinationAvailabilityService(registry, ideAdapter, getLogger());
 
   // Create unified destination manager
   const destinationManager = new PasteDestinationManager(
@@ -253,10 +256,9 @@ export function activate(context: vscode.ExtensionContext): void {
   // This prevents "command not found" errors while maintaining discoverability
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BIND_TO_CURSOR_AI, async () => {
-      const cursorDestination = registry.create({ type: 'cursor-ai' });
-      if (!(await cursorDestination.isAvailable())) {
+      if (!(await availabilityService.isAIAssistantAvailable('cursor-ai'))) {
         void ideAdapter.showInformationMessage(
-          "This command is designed for Cursor IDE, which has built-in AI chat.\n\nRangeLink can paste code ranges directly into Cursor's AI chat for faster context sharing. To use this feature, open your project in Cursor IDE instead of VS Code.",
+          formatMessage(availabilityService.getUnavailableMessageCode('cursor-ai')),
         );
         return;
       }
@@ -266,10 +268,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BIND_TO_CLAUDE_CODE, async () => {
-      const claudeCodeDestination = registry.create({ type: 'claude-code' });
-      if (!(await claudeCodeDestination.isAvailable())) {
+      if (!(await availabilityService.isAIAssistantAvailable('claude-code'))) {
         void ideAdapter.showInformationMessage(
-          'RangeLink can seamlessly integrate with Claude Code for faster context sharing of precise code ranges.\n\nInstall and activate the Claude Code extension to use it as a paste destination.',
+          formatMessage(availabilityService.getUnavailableMessageCode('claude-code')),
         );
         return;
       }
@@ -279,10 +280,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT, async () => {
-      const gitHubCopilotChatDestination = registry.create({ type: 'github-copilot-chat' });
-      if (!(await gitHubCopilotChatDestination.isAvailable())) {
+      if (!(await availabilityService.isAIAssistantAvailable('github-copilot-chat'))) {
         void ideAdapter.showInformationMessage(
-          'RangeLink can seamlessly integrate with GitHub Copilot Chat for faster context sharing of precise code ranges.\n\nInstall and activate the GitHub Copilot Chat extension to use it as a paste destination.',
+          formatMessage(availabilityService.getUnavailableMessageCode('github-copilot-chat')),
         );
         return;
       }
