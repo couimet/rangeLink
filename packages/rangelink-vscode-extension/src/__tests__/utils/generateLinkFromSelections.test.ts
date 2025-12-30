@@ -1,10 +1,5 @@
 import { createMockLogger } from 'barebone-logger-testing';
-import {
-  DEFAULT_DELIMITERS,
-  LinkType,
-  SelectionCoverage,
-  SelectionType,
-} from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, LinkType, SelectionCoverage, SelectionType } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import { generateLinkFromSelections } from '../../utils/generateLinkFromSelections';
