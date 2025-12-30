@@ -1998,6 +1998,65 @@ describe('PasteDestinationManager', () => {
     });
   });
 
+  describe('bindAndJump()', () => {
+    let mockRegistryForBindAndJump: ReturnType<typeof createMockDestinationRegistry>;
+    let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
+    let mockTerminalDest: jest.Mocked<PasteDestination>;
+    let mockTerminal: vscode.Terminal;
+
+    beforeEach(() => {
+      mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
+      mockTerminalDest = createMockTerminalPasteDestination();
+
+      mockRegistryForBindAndJump = createMockDestinationRegistry({
+        createImpl: (options) => {
+          if (options.type === 'terminal') return mockTerminalDest;
+          throw new Error(`Unexpected type: ${options.type}`);
+        },
+      });
+
+      mockAvailabilityService = createMockDestinationAvailabilityService();
+
+      manager = new PasteDestinationManager(
+        mockContext,
+        mockRegistryForBindAndJump,
+        mockAvailabilityService,
+        mockAdapter,
+        mockLogger,
+      );
+    });
+
+    it('binds and jumps to destination when bind succeeds', async () => {
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+
+      const result = await manager.bindAndJump('terminal');
+
+      expect(result).toBe(true);
+      expect(manager.isBound()).toBe(true);
+      expect(mockTerminalDest.focus).toHaveBeenCalled();
+    });
+
+    it('returns false without jumping when bind fails', async () => {
+      mockAdapter.__getVscodeInstance().window.activeTerminal = undefined;
+
+      const result = await manager.bindAndJump('terminal');
+
+      expect(result).toBe(false);
+      expect(manager.isBound()).toBe(false);
+      expect(mockTerminalDest.focus).not.toHaveBeenCalled();
+    });
+
+    it('returns false when focus fails after successful bind', async () => {
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      mockTerminalDest.focus.mockResolvedValueOnce(false);
+
+      const result = await manager.bindAndJump('terminal');
+
+      expect(result).toBe(false);
+      expect(manager.isBound()).toBe(true);
+    });
+  });
+
   describe('Edge Cases Coverage', () => {
     describe('sendTextToDestination() - Error Path', () => {
       const TEST_CONTENT = 'Test content to paste';

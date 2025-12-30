@@ -154,6 +154,22 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
+   * Bind to a destination type and immediately jump to it.
+   *
+   * Convenience method that combines bind() and jumpToBoundDestination().
+   *
+   * @param type - The destination type to bind and jump to
+   * @returns true if bind and jump both succeeded, false otherwise
+   */
+  async bindAndJump(type: DestinationType): Promise<boolean> {
+    const bound = await this.bind(type);
+    if (!bound) {
+      return false;
+    }
+    return this.jumpToBoundDestination();
+  }
+
+  /**
    * Show quick pick of available destinations when no destination is bound.
    * Binds AND jumps to selected destination in one action
    */
