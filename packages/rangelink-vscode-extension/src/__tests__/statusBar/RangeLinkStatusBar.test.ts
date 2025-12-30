@@ -3,11 +3,13 @@ import * as vscode from 'vscode';
 
 import type { Bookmark } from '../../bookmarks';
 import type { ConfigReader } from '../../config/ConfigReader';
+import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
 import {
   createMockBookmarksStore,
   createMockClipboard,
   createMockConfigReader,
+  createMockDestinationAvailabilityService,
   createMockDestinationManager,
   createMockStatusBarItem,
   createMockTerminalPasteDestination,
@@ -28,6 +30,7 @@ describe('RangeLinkStatusBar', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
+  let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
   let mockConfigReader: jest.Mocked<ConfigReader>;
   let mockBookmarksStore: ReturnType<typeof createMockBookmarksStore>;
 
@@ -35,6 +38,7 @@ describe('RangeLinkStatusBar', () => {
     mockStatusBarItem = createMockStatusBarItem();
     mockLogger = createMockLogger();
     mockConfigReader = createMockConfigReader();
+    mockAvailabilityService = createMockDestinationAvailabilityService();
     createStatusBarItemMock = jest.fn(() => mockStatusBarItem);
     showQuickPickMock = jest.fn().mockResolvedValue(undefined);
     executeCommandMock = jest.fn().mockResolvedValue(undefined);
@@ -56,6 +60,7 @@ describe('RangeLinkStatusBar', () => {
       new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         mockConfigReader,
         mockLogger,
@@ -79,10 +84,15 @@ describe('RangeLinkStatusBar', () => {
    * These freeze the user-facing contract (labels, descriptions, commands).
    */
   describe('openMenu - menu content', () => {
-    it('shows disabled Jump item and empty bookmarks when no destination is bound', async () => {
+    it('shows inline destinations when no destination is bound', async () => {
+      mockAvailabilityService.getAvailableDestinations.mockResolvedValue([
+        { type: 'terminal', displayName: 'Terminal' },
+        { type: 'claude-code', displayName: 'Claude Code Chat' },
+      ]);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         mockConfigReader,
         mockLogger,
@@ -93,10 +103,38 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledTimes(1);
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          {
-            label: '$(circle-slash) Jump to Bound Destination',
-            description: '(no destination bound)',
-          },
+          { label: 'No bound destination. Choose below to bind:' },
+          { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
+          { label: '    $(arrow-right) Claude Code Chat', destinationType: 'claude-code' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: '$(bookmark) Bookmarks', kind: vscode.QuickPickItemKind.Separator },
+          { label: '    No bookmarks yet' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: '    $(add) Add Current Selection', command: 'rangelink.bookmark.add' },
+          { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: '$(info) Show Version Info', command: 'rangelink.showVersion' },
+        ],
+        { title: 'RangeLink', placeHolder: 'Select an action' },
+      );
+    });
+
+    it('shows "no destinations available" when unbound and no destinations exist', async () => {
+      mockAvailabilityService.getAvailableDestinations.mockResolvedValue([]);
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarksStore,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showQuickPickMock).toHaveBeenCalledWith(
+        [
+          { label: 'No destinations available' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '$(bookmark) Bookmarks', kind: vscode.QuickPickItemKind.Separator },
           { label: '    No bookmarks yet' },
@@ -121,6 +159,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         boundDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         mockConfigReader,
         mockLogger,
@@ -149,6 +188,9 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('shows bookmark items with count in section header', async () => {
+      mockAvailabilityService.getAvailableDestinations.mockResolvedValue([
+        { type: 'terminal', displayName: 'Terminal' },
+      ]);
       const bookmarksStoreWithItems = createMockBookmarksStore({
         bookmarks: [
           {
@@ -173,6 +215,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         bookmarksStoreWithItems,
         mockConfigReader,
         mockLogger,
@@ -182,10 +225,8 @@ describe('RangeLinkStatusBar', () => {
 
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          {
-            label: '$(circle-slash) Jump to Bound Destination',
-            description: '(no destination bound)',
-          },
+          { label: 'No bound destination. Choose below to bind:' },
+          { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '$(bookmark) Bookmarks (2)', kind: vscode.QuickPickItemKind.Separator },
           {
@@ -213,7 +254,7 @@ describe('RangeLinkStatusBar', () => {
 
   /**
    * Selection behavior tests: Verify openMenu() handles selections correctly.
-   * Uses synthetic items (not real menu items) to test the `if (selected?.command)` logic
+   * Uses synthetic items (not real menu items) to test the selection logic
    * independently of actual menu content.
    */
   describe('openMenu - selection behavior', () => {
@@ -225,6 +266,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         mockConfigReader,
         mockLogger,
@@ -243,6 +285,62 @@ describe('RangeLinkStatusBar', () => {
       );
     });
 
+    it('binds and jumps when item with destinationType is selected', async () => {
+      mockDestinationManager.bindAndJump.mockResolvedValue(true);
+      showQuickPickMock.mockResolvedValue({
+        label: '    $(arrow-right) Terminal',
+        destinationType: 'terminal',
+      });
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarksStore,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(mockDestinationManager.bindAndJump).toHaveBeenCalledWith('terminal');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.openMenu',
+          selectedItem: { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
+          bindAndJumpSuccess: true,
+        },
+        'Destination item selected',
+      );
+    });
+
+    it('logs failure when bindAndJump fails', async () => {
+      mockDestinationManager.bindAndJump.mockResolvedValue(false);
+      showQuickPickMock.mockResolvedValue({
+        label: '    $(arrow-right) Terminal',
+        destinationType: 'terminal',
+      });
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarksStore,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(mockDestinationManager.bindAndJump).toHaveBeenCalledWith('terminal');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.openMenu',
+          selectedItem: { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
+          bindAndJumpSuccess: false,
+        },
+        'Destination item selected',
+      );
+    });
+
     it('does not execute command or log when item without command is selected', async () => {
       showQuickPickMock.mockResolvedValue({
         label: 'Synthetic Disabled Item',
@@ -250,6 +348,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         mockConfigReader,
         mockLogger,
@@ -267,6 +366,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         mockConfigReader,
         mockLogger,
@@ -321,6 +421,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         adapterWithClipboard,
         boundDestinationManager,
+        mockAvailabilityService,
         bookmarksStoreWithItem,
         mockConfigReader,
         mockLogger,
@@ -378,6 +479,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         adapterWithClipboard,
         mockDestinationManager,
+        mockAvailabilityService,
         bookmarksStoreWithItem,
         mockConfigReader,
         mockLogger,
@@ -407,6 +509,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         mockConfigReader,
         mockLogger,
@@ -427,6 +530,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         customConfigReader,
         mockLogger,
@@ -473,6 +577,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         adapterWithClipboard,
         boundDestinationManager,
+        mockAvailabilityService,
         bookmarksStoreWithItem,
         customConfigReader,
         mockLogger,
@@ -524,6 +629,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         adapterWithClipboard,
         boundDestinationManager,
+        mockAvailabilityService,
         bookmarksStoreWithItem,
         customConfigReader,
         mockLogger,
@@ -544,6 +650,7 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         mockConfigReader,
         mockLogger,
@@ -564,12 +671,15 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         mockConfigReader,
         mockLogger,
       );
 
-      const items = (statusBar as any).buildBookmarksQuickPickItems();
+      const items = (
+        statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }
+      ).buildBookmarksQuickPickItems();
 
       expect(items).toStrictEqual([
         { label: '$(bookmark) Bookmarks', kind: vscode.QuickPickItemKind.Separator },
@@ -606,12 +716,15 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         bookmarksStoreWithItems,
         mockConfigReader,
         mockLogger,
       );
 
-      const items = (statusBar as any).buildBookmarksQuickPickItems();
+      const items = (
+        statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }
+      ).buildBookmarksQuickPickItems();
 
       expect(items).toStrictEqual([
         { label: '$(bookmark) Bookmarks (2)', kind: vscode.QuickPickItemKind.Separator },
@@ -638,11 +751,15 @@ describe('RangeLinkStatusBar', () => {
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
+        mockAvailabilityService,
         mockBookmarksStore,
         mockConfigReader,
         mockLogger,
       );
-      const spy = jest.spyOn(statusBar as any, 'buildBookmarksQuickPickItems');
+      const spy = jest.spyOn(
+        statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] },
+        'buildBookmarksQuickPickItems',
+      );
 
       await statusBar.openMenu();
 

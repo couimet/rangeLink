@@ -5,6 +5,8 @@
  * Each builder is registered with the DestinationRegistry and invoked when
  * PasteDestinationManager needs to create a destination.
  */
+import type * as vscode from 'vscode';
+
 import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { AutoPasteResult } from '../types/AutoPasteResult';
@@ -76,7 +78,7 @@ export const buildTerminalDestination: DestinationBuilder = (options, context) =
  */
 const getEditorResourceName = (
   context: DestinationBuilderContext,
-  editor: import('vscode').TextEditor,
+  editor: vscode.TextEditor,
 ): string => {
   const uri = context.ideAdapter.getDocumentUri(editor);
 
@@ -92,7 +94,7 @@ const getEditorResourceName = (
   }
 
   // Fallback to filename if not in workspace
-  return uri.fsPath.split('/').pop() || 'Unknown';
+  return context.ideAdapter.getFilenameFromUri(uri);
 };
 
 /**

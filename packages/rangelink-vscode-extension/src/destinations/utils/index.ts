@@ -1,2 +1,8 @@
-export { isTerminalDestinationEligible } from './isTerminalDestinationEligible';
-export { isTextEditorDestinationEligible } from './isTextEditorDestinationEligible';
+export {
+  isTerminalDestinationEligible,
+  type TerminalEligibility,
+} from './isTerminalDestinationEligible';
+export {
+  isTextEditorDestinationEligible,
+  type TextEditorEligibility,
+} from './isTextEditorDestinationEligible';

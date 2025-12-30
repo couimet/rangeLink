@@ -42,8 +42,10 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_GITHUB_COPILOT_CHAT_USER_INSTRUCTIONS]:
     'Paste (Cmd/Ctrl+V) in GitHub Copilot chat to use.',
   [MessageCode.INFO_JUMP_FOCUS_FAILED]: 'RangeLink: Failed to focus {destinationName}',
-  [MessageCode.INFO_JUMP_NO_DESTINATION_BOUND]:
-    'RangeLink: No destination bound. Bind a destination first.',
+  [MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE]:
+    'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
+  [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
+    'No destination bound. Choose destination to jump to:',
   [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
 
   [MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION]: 'Stay bound to {currentDestination}',
@@ -72,9 +74,9 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_EMPTY]: 'No bookmarks yet',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_MANAGE]: '$(gear) Manage Bookmarks...',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: '$(bookmark) Bookmarks',
-  [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_DISABLED_DESC]: '(no destination bound)',
-  [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_DISABLED_LABEL]:
-    '$(circle-slash) Jump to Bound Destination',
+  [MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW]:
+    'No bound destination. Choose below to bind:',
+  [MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE]: 'No destinations available',
   [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL]: '$(arrow-right) Jump to Bound Destination',
   [MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL]: '$(info) Show Version Info',
   [MessageCode.STATUS_BAR_MENU_PLACEHOLDER]: 'Select an action',

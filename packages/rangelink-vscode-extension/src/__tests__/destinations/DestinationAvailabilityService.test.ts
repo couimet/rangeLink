@@ -114,7 +114,9 @@ describe('DestinationAvailabilityService', () => {
 
         const result = await service.getAvailableDestinations();
 
-        expect(result).toStrictEqual([{ type: 'text-editor', displayName: 'Text Editor' }]);
+        expect(result).toStrictEqual([
+          { type: 'text-editor', displayName: 'Text Editor ("file.ts")' },
+        ]);
       });
 
       it('excludes text-editor when hasActiveTextEditor is false', async () => {
@@ -173,7 +175,7 @@ describe('DestinationAvailabilityService', () => {
 
         const result = await service.getAvailableDestinations();
 
-        expect(result).toStrictEqual([{ type: 'terminal', displayName: 'Terminal' }]);
+        expect(result).toStrictEqual([{ type: 'terminal', displayName: 'Terminal ("bash")' }]);
       });
 
       it('excludes terminal when hasActiveTerminal is false', async () => {
@@ -259,13 +261,12 @@ describe('DestinationAvailabilityService', () => {
 
         const result = await service.getAvailableDestinations();
 
-        expect(result).toHaveLength(5);
-        expect(result.map((d) => d.type)).toStrictEqual([
-          'text-editor',
-          'terminal',
-          'claude-code',
-          'github-copilot-chat',
-          'cursor-ai',
+        expect(result).toStrictEqual([
+          { type: 'text-editor', displayName: 'Text Editor ("file.ts")' },
+          { type: 'terminal', displayName: 'Terminal ("bash")' },
+          { type: 'claude-code', displayName: 'Claude Code Chat' },
+          { type: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
+          { type: 'cursor-ai', displayName: 'Cursor AI Assistant' },
         ]);
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {

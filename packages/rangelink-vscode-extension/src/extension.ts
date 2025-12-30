@@ -97,6 +97,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const destinationManager = new PasteDestinationManager(
     context,
     registry,
+    availabilityService,
     ideAdapter,
     getLogger(),
   );
@@ -112,6 +113,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const statusBar = new RangeLinkStatusBar(
     ideAdapter,
     destinationManager,
+    availabilityService,
     bookmarksStore,
     configReader,
     getLogger(),

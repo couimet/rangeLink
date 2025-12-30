@@ -10,9 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Status Bar Menu** - Click the `🔗 RangeLink` status bar item to access ⚡ quick actions
-  - Jump to Bound Destination (or disabled indicator when no destination bound)
+  - Jump to Bound Destination (shows quick pick of available destinations when unbound)
   - Show Version Info
   - Foundation for future features (bookmarks, paste destination display)
+
+### Changed
+
+- **Jump to Bound Destination UX** - Improved behavior when no destination is bound (#173)
+  - **Before:** Showed error message "No destination bound. Bind a destination first."
+  - **After:** Shows quick pick of available destinations, then binds and jumps in one action
+  - Dismisses silently when user presses Escape
+  - Edge case: Shows info notification if no destinations exist (e.g., no terminal, single tab group, no AI extensions)
 
 ### Fixed
 
