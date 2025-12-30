@@ -1779,7 +1779,7 @@ describe('PasteDestinationManager', () => {
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
-          fn: 'PasteDestinationManager.jumpToBoundDestination',
+          fn: 'PasteDestinationManager.focusBoundDestination',
           destinationType: 'terminal',
           displayName: 'Terminal',
           terminalName: 'bash',
@@ -1811,7 +1811,7 @@ describe('PasteDestinationManager', () => {
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
-          fn: 'PasteDestinationManager.jumpToBoundDestination',
+          fn: 'PasteDestinationManager.focusBoundDestination',
           destinationType: 'text-editor',
           displayName: 'Text Editor ("file.ts")',
           editorName: 'file.ts',
@@ -1834,7 +1834,7 @@ describe('PasteDestinationManager', () => {
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
-          fn: 'PasteDestinationManager.jumpToBoundDestination',
+          fn: 'PasteDestinationManager.focusBoundDestination',
           destinationType: 'cursor-ai',
           displayName: 'Cursor AI Assistant',
         },
@@ -1857,7 +1857,7 @@ describe('PasteDestinationManager', () => {
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
-          fn: 'PasteDestinationManager.jumpToBoundDestination',
+          fn: 'PasteDestinationManager.focusBoundDestination',
           destinationType: 'github-copilot-chat',
           displayName: 'GitHub Copilot Chat',
         },
@@ -1881,7 +1881,7 @@ describe('PasteDestinationManager', () => {
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
-          fn: 'PasteDestinationManager.jumpToBoundDestination',
+          fn: 'PasteDestinationManager.focusBoundDestination',
           destinationType: 'terminal',
           displayName: 'Terminal',
           terminalName: 'bash',
