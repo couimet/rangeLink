@@ -97,6 +97,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const destinationManager = new PasteDestinationManager(
     context,
     registry,
+    availabilityService,
     ideAdapter,
     getLogger(),
   );
