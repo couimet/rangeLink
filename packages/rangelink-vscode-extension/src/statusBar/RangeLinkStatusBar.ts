@@ -156,7 +156,10 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       ...(await this.buildJumpOrDestinationsSection()),
       { label: '', kind: vscode.QuickPickItemKind.Separator },
       ...this.buildBookmarksQuickPickItems(),
-      { label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL), command: CMD_SHOW_VERSION },
+      {
+        label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
+        command: CMD_SHOW_VERSION,
+      },
     ];
   }
 

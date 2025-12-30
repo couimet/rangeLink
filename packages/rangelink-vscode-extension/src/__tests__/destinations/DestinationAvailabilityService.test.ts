@@ -114,7 +114,9 @@ describe('DestinationAvailabilityService', () => {
 
         const result = await service.getAvailableDestinations();
 
-        expect(result).toStrictEqual([{ type: 'text-editor', displayName: 'Text Editor ("file.ts")' }]);
+        expect(result).toStrictEqual([
+          { type: 'text-editor', displayName: 'Text Editor ("file.ts")' },
+        ]);
       });
 
       it('excludes text-editor when hasActiveTextEditor is false', async () => {

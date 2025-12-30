@@ -2,8 +2,7 @@ import { isTextEditorDestinationEligible } from '../../../destinations/utils';
 import { createMockVscodeAdapter } from '../../helpers';
 
 describe('isTextEditorDestinationEligible', () => {
-  const createMockEditor = (fsPath = '/test/file.ts') =>
-    ({ document: { uri: { fsPath } } }) as any;
+  const createMockEditor = (fsPath = '/test/file.ts') => ({ document: { uri: { fsPath } } }) as any;
   const createMockTabGroups = (count: number) => ({
     all: Array(count).fill({ tabs: [] }),
     activeTabGroup: undefined,

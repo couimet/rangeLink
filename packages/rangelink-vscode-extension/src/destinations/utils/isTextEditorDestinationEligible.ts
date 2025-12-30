@@ -20,15 +20,15 @@ export interface TextEditorEligibility {
  * @param ideAdapter - IDE adapter for reading editor state
  * @returns Eligibility result with filename when eligible
  */
-export const isTextEditorDestinationEligible = (ideAdapter: VscodeAdapter): TextEditorEligibility => {
+export const isTextEditorDestinationEligible = (
+  ideAdapter: VscodeAdapter,
+): TextEditorEligibility => {
   const activeEditor = ideAdapter.activeTextEditor;
   const hasActiveEditor = activeEditor !== undefined;
   const hasSplitEditor = ideAdapter.tabGroups.all.length >= MIN_TAB_GROUPS_FOR_SPLIT_EDITOR;
   const eligible = hasActiveEditor && hasSplitEditor;
 
-  const filename = eligible
-    ? ideAdapter.getFilenameFromUri(activeEditor.document.uri)
-    : undefined;
+  const filename = eligible ? ideAdapter.getFilenameFromUri(activeEditor.document.uri) : undefined;
 
   return { eligible, filename };
 };

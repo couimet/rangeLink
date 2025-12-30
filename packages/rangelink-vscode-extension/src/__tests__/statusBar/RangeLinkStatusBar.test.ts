@@ -677,7 +677,9 @@ describe('RangeLinkStatusBar', () => {
         mockLogger,
       );
 
-      const items = (statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }).buildBookmarksQuickPickItems();
+      const items = (
+        statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }
+      ).buildBookmarksQuickPickItems();
 
       expect(items).toStrictEqual([
         { label: '$(bookmark) Bookmarks', kind: vscode.QuickPickItemKind.Separator },
@@ -720,7 +722,9 @@ describe('RangeLinkStatusBar', () => {
         mockLogger,
       );
 
-      const items = (statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }).buildBookmarksQuickPickItems();
+      const items = (
+        statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }
+      ).buildBookmarksQuickPickItems();
 
       expect(items).toStrictEqual([
         { label: '$(bookmark) Bookmarks (2)', kind: vscode.QuickPickItemKind.Separator },
@@ -752,7 +756,10 @@ describe('RangeLinkStatusBar', () => {
         mockConfigReader,
         mockLogger,
       );
-      const spy = jest.spyOn(statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] }, 'buildBookmarksQuickPickItems');
+      const spy = jest.spyOn(
+        statusBar as unknown as { buildBookmarksQuickPickItems: () => unknown[] },
+        'buildBookmarksQuickPickItems',
+      );
 
       await statusBar.openMenu();
 
