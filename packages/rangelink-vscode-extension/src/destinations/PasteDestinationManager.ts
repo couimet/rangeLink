@@ -9,6 +9,7 @@ import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage, isEditorDestination, isTextLikeFile, type PaddingMode } from '../utils';
 
+import type { DestinationAvailabilityService } from './DestinationAvailabilityService';
 import type { DestinationRegistry } from './DestinationRegistry';
 import type {
   AIAssistantDestinationType,
@@ -50,6 +51,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly registry: DestinationRegistry,
+    private readonly availabilityService: DestinationAvailabilityService,
     private readonly vscodeAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
@@ -134,25 +136,76 @@ export class PasteDestinationManager implements vscode.Disposable {
    * Jump to (focus) the currently bound destination without performing a paste
    *
    * Brings the bound destination into focus/view for quick navigation.
-   * Used by the "Jump to Bound Destination" command (issue #99).
    *
    * **Behavior:**
-   * - No destination bound: Shows information message
+   * - No destination bound: Shows quick pick of available destinations
    * - Terminal: Focuses terminal panel
    * - Text Editor: Focuses editor document (cursor stays at current position)
    * - AI Assistants: Opens/focuses chat interface
    *
-   * @returns true if jump succeeded, false if no destination bound or focus failed
+   * @returns true if jump succeeded, false if no destination bound/selected or focus failed
    */
   async jumpToBoundDestination(): Promise<boolean> {
     if (!this.boundDestination) {
-      this.logger.debug(
-        { fn: 'PasteDestinationManager.jumpToBoundDestination' },
-        'No destination bound',
-      );
+      return this.showDestinationQuickPickAndJump();
+    }
+
+    return this.focusBoundDestination();
+  }
+
+  /**
+   * Show quick pick of available destinations when no destination is bound.
+   * Binds AND jumps to selected destination in one action
+   */
+  private async showDestinationQuickPickAndJump(): Promise<boolean> {
+    const logCtx = { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump' };
+
+    this.logger.debug(logCtx, 'No destination bound, showing quick pick');
+
+    const availableDestinations = await this.availabilityService.getAvailableDestinations();
+
+    if (availableDestinations.length === 0) {
+      this.logger.debug(logCtx, 'No destinations available');
       this.vscodeAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_JUMP_NO_DESTINATION_BOUND),
+        formatMessage(MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE),
       );
+      return false;
+    }
+
+    const items = availableDestinations.map((dest) => ({
+      label: dest.displayName,
+      destinationType: dest.type,
+    }));
+
+    this.logger.debug(
+      { ...logCtx, availableCount: items.length, items },
+      `Showing quick pick with ${items.length} destinations`,
+    );
+
+    const selected = await this.vscodeAdapter.showQuickPick(items, {
+      placeHolder: formatMessage(MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER),
+    });
+
+    if (!selected) {
+      this.logger.debug(logCtx, 'User cancelled quick pick');
+      return false;
+    }
+
+    this.logger.debug(
+      { ...logCtx, selectedType: selected.destinationType },
+      `User selected ${selected.destinationType}`,
+    );
+
+    await this.bind(selected.destinationType);
+
+    return this.focusBoundDestination();
+  }
+
+  /**
+   * Focus the currently bound destination
+   */
+  private async focusBoundDestination(): Promise<boolean> {
+    if (!this.boundDestination) {
       return false;
     }
 
@@ -160,7 +213,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     const displayName = this.boundDestination.displayName;
 
     const logCtx = {
-      fn: 'PasteDestinationManager.jumpToBoundDestination',
+      fn: 'PasteDestinationManager.focusBoundDestination',
       destinationType,
       displayName,
       ...this.boundDestination.getLoggingDetails(),
