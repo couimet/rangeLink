@@ -75,20 +75,20 @@ export class DestinationAvailabilityService {
     const displayNames = this.registry.getDisplayNames();
     const available: AvailableDestination[] = [];
 
-    const isTextEditorEligible = isTextEditorDestinationEligible(this.ideAdapter);
-    const isTerminalEligible = isTerminalDestinationEligible(this.ideAdapter);
+    const textEditorEligibility = isTextEditorDestinationEligible(this.ideAdapter);
+    const terminalEligibility = isTerminalDestinationEligible(this.ideAdapter);
 
-    if (isTextEditorEligible) {
+    if (textEditorEligibility.eligible) {
       available.push({
         type: 'text-editor',
-        displayName: displayNames['text-editor'],
+        displayName: `${displayNames['text-editor']} ("${textEditorEligibility.filename}")`,
       });
     }
 
-    if (isTerminalEligible) {
+    if (terminalEligibility.eligible) {
       available.push({
         type: 'terminal',
-        displayName: displayNames.terminal,
+        displayName: `${displayNames.terminal} ("${terminalEligibility.terminalName}")`,
       });
     }
 
@@ -111,8 +111,8 @@ export class DestinationAvailabilityService {
     this.logger.debug(
       {
         fn: 'DestinationAvailabilityService.getAvailableDestinations',
-        isTextEditorEligible,
-        isTerminalEligible,
+        isTextEditorEligible: textEditorEligibility.eligible,
+        isTerminalEligible: terminalEligibility.eligible,
         availableCount: available.length,
         availableTypes: available.map((d) => d.type),
       },
