@@ -44,6 +44,10 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_JUMP_FOCUS_FAILED]: 'RangeLink: Failed to focus {destinationName}',
   [MessageCode.INFO_JUMP_NO_DESTINATION_BOUND]:
     'RangeLink: No destination bound. Bind a destination first.',
+  [MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE]:
+    'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
+  [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
+    'No destination bound. Choose destination to jump to:',
   [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
 
   [MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION]: 'Stay bound to {currentDestination}',
