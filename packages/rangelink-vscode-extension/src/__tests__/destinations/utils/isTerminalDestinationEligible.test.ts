@@ -1,26 +1,47 @@
 import { isTerminalDestinationEligible } from '../../../destinations/utils';
-import { createMockVscodeAdapter } from '../../helpers';
+import { createMockTerminal, createMockVscodeAdapter } from '../../helpers';
 
 describe('isTerminalDestinationEligible', () => {
-  const createMockTerminal = () => ({ name: 'Mock Terminal' }) as any;
+  describe('eligible scenarios', () => {
+    it('returns eligible with terminalName when activeTerminal exists', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTerminal: createMockTerminal({ name: 'zsh' }),
+        },
+      });
 
-  it('returns true when activeTerminal exists', () => {
-    const ideAdapter = createMockVscodeAdapter({
-      windowOptions: {
-        activeTerminal: createMockTerminal(),
-      },
+      expect(isTerminalDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: true,
+        terminalName: 'zsh',
+      });
     });
 
-    expect(isTerminalDestinationEligible(ideAdapter)).toBe(true);
+    it('returns terminal name for different terminal types', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTerminal: createMockTerminal({ name: 'Node.js Debug Console' }),
+        },
+      });
+
+      expect(isTerminalDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: true,
+        terminalName: 'Node.js Debug Console',
+      });
+    });
   });
 
-  it('returns false when activeTerminal is undefined', () => {
-    const ideAdapter = createMockVscodeAdapter({
-      windowOptions: {
-        activeTerminal: undefined,
-      },
-    });
+  describe('ineligible scenarios', () => {
+    it('returns ineligible with undefined terminalName when activeTerminal is undefined', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTerminal: undefined,
+        },
+      });
 
-    expect(isTerminalDestinationEligible(ideAdapter)).toBe(false);
+      expect(isTerminalDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: false,
+        terminalName: undefined,
+      });
+    });
   });
 });
