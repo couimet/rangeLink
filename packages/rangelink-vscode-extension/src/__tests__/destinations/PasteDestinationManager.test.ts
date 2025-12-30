@@ -2,6 +2,7 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
+import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
 import { AutoPasteResult } from '../../types/AutoPasteResult';
@@ -12,6 +13,7 @@ import {
   createBaseMockPasteDestination,
   createMockClaudeCodeDestination,
   createMockCursorAIDestination,
+  createMockDestinationAvailabilityService,
   createMockDestinationRegistry,
   createMockDocument,
   createMockEditor,
@@ -132,7 +134,14 @@ describe('PasteDestinationManager', () => {
         return undefined;
       },
     });
-    const mgr = new PasteDestinationManager(mockContext, registry, adapter, mockLogger);
+    const availabilityService = createMockDestinationAvailabilityService();
+    const mgr = new PasteDestinationManager(
+      mockContext,
+      registry,
+      availabilityService,
+      adapter,
+      mockLogger,
+    );
 
     // Extract event listeners from mock calls (made by PasteDestinationManager constructor)
     // These are needed for tests that simulate terminal/document closure events
@@ -248,6 +257,7 @@ describe('PasteDestinationManager', () => {
       const controlledManager = new PasteDestinationManager(
         mockContext,
         controlledFactory,
+        createMockDestinationAvailabilityService(),
         mockAdapter,
         mockLogger,
       );
@@ -756,6 +766,7 @@ describe('PasteDestinationManager', () => {
       manager = new PasteDestinationManager(
         mockContext,
         mockRegistryForSend,
+        createMockDestinationAvailabilityService(),
         mockAdapter,
         mockLogger,
       );
@@ -1262,6 +1273,7 @@ describe('PasteDestinationManager', () => {
       const newManager = new PasteDestinationManager(
         mockContext,
         mockRegistry,
+        createMockDestinationAvailabilityService(),
         testAdapter,
         mockLogger,
       );
@@ -1314,6 +1326,7 @@ describe('PasteDestinationManager', () => {
       manager = new PasteDestinationManager(
         mockContext,
         mockRegistryForSmartBind,
+        createMockDestinationAvailabilityService(),
         mockAdapter,
         mockLogger,
       );
@@ -1576,6 +1589,7 @@ describe('PasteDestinationManager', () => {
   describe('jumpToBoundDestination()', () => {
     // Mock factory and destinations for unit tests
     let mockRegistryForJump: ReturnType<typeof createMockDestinationRegistry>;
+    let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
     let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockEditorDest: PasteDestination;
     let mockEditorDestFocusSpy: jest.SpyInstance;
@@ -1600,10 +1614,13 @@ describe('PasteDestinationManager', () => {
         },
       });
 
+      mockAvailabilityService = createMockDestinationAvailabilityService();
+
       // Recreate manager with mock factory
       manager = new PasteDestinationManager(
         mockContext,
         mockRegistryForJump,
+        mockAvailabilityService,
         mockAdapter,
         mockLogger,
       );
@@ -1928,6 +1945,7 @@ describe('PasteDestinationManager', () => {
         manager = new PasteDestinationManager(
           mockContext,
           mockRegistryForSend,
+          createMockDestinationAvailabilityService(),
           mockAdapter,
           mockLogger,
         );
@@ -2070,6 +2088,7 @@ describe('PasteDestinationManager', () => {
         manager = new PasteDestinationManager(
           mockContext,
           mockRegistryForReplace,
+          createMockDestinationAvailabilityService(),
           mockAdapter,
           mockLogger,
         );
@@ -2174,6 +2193,7 @@ describe('PasteDestinationManager', () => {
         manager = new PasteDestinationManager(
           mockContext,
           mockRegistryForDuplicate,
+          createMockDestinationAvailabilityService(),
           mockAdapter,
           mockLogger,
         );
@@ -2290,6 +2310,7 @@ describe('PasteDestinationManager', () => {
         manager = new PasteDestinationManager(
           mockContext,
           mockRegistryForDocument,
+          createMockDestinationAvailabilityService(),
           mockAdapter,
           mockLogger,
         );
