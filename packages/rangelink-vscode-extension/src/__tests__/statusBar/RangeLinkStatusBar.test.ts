@@ -136,7 +136,6 @@ describe('RangeLinkStatusBar', () => {
         [
           { label: 'No destinations available' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '    No bookmarks yet' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '    $(add) Add Current Selection', command: 'rangelink.bookmark.add' },
@@ -174,7 +173,6 @@ describe('RangeLinkStatusBar', () => {
             description: '→ Terminal ("zsh")',
             command: 'rangelink.jumpToBoundDestination',
           },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '    No bookmarks yet' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
@@ -227,7 +225,6 @@ describe('RangeLinkStatusBar', () => {
         [
           { label: 'No bound destination. Choose below to bind:' },
           { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
-          { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '    $(bookmark) CLAUDE.md Instructions',
