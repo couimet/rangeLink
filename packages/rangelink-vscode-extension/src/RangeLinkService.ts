@@ -1,12 +1,5 @@
 import type { Logger } from 'barebone-logger';
-import {
-  DelimiterConfig,
-  formatLink,
-  type FormattedLink,
-  FormatOptions,
-  InputSelection,
-  LinkType,
-} from 'rangelink-core-ts';
+import { DelimiterConfig, type FormattedLink, LinkType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { ConfigReader } from './config/ConfigReader';
@@ -22,7 +15,7 @@ import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { ActiveSelections } from './types/ActiveSelections';
 import { MessageCode } from './types/MessageCode';
 import { formatMessage } from './utils/formatMessage';
-import { toInputSelection } from './utils/toInputSelection';
+import { generateLinkFromSelections } from './utils/generateLinkFromSelections';
 
 export enum PathFormat {
   WorkspaceRelative = 'workspace-relative',
@@ -167,33 +160,24 @@ export class RangeLinkService {
 
     const { editor, selections } = validated;
     const document = editor.document;
-
     const referencePath = this.getReferencePath(document, pathFormat);
+    const linkType = isPortable ? LinkType.Portable : LinkType.Regular;
 
-    let inputSelection: InputSelection;
-    try {
-      inputSelection = toInputSelection(document, selections);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to process selection';
-      this.logger.error(
-        { fn: 'generateLinkFromSelection', error },
-        'Failed to convert selections to InputSelection',
-      );
-      this.ideAdapter.showErrorMessage(`RangeLink: ${message}`);
-      return undefined;
-    }
-
-    const options: FormatOptions = {
-      linkType: isPortable ? LinkType.Portable : LinkType.Regular,
-    };
-
-    const result = formatLink(referencePath, inputSelection, this.delimiters, options);
+    const result = generateLinkFromSelections({
+      referencePath,
+      document,
+      selections,
+      delimiters: this.delimiters,
+      linkType,
+      logger: this.logger,
+    });
 
     if (!result.success) {
-      const linkType = isPortable ? 'portable link' : 'link';
+      const linkTypeName = isPortable ? 'portable link' : 'link';
       this.logger.error(
-        { fn: 'generateLinkFromSelection', errorCode: result.error },
-        `Failed to generate ${linkType}`,
+        { fn: 'generateLinkFromSelection', error: result.error, linkType },
+        `Failed to generate ${linkTypeName}`,
+      );
       );
       this.ideAdapter.showErrorMessage(`RangeLink: Failed to generate ${linkType}`);
       return undefined;
