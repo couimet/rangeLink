@@ -595,6 +595,52 @@ describe('VscodeAdapter', () => {
     });
   });
 
+  describe('getDocumentScheme', () => {
+    it('returns scheme from editor document URI', () => {
+      const mockUri = createMockUri('/path/to/file.ts', { scheme: 'file' });
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: mockUri }),
+      });
+
+      const result = adapter.getDocumentScheme(mockEditor);
+
+      expect(result).toBe('file');
+    });
+
+    it('returns untitled scheme for new unsaved files', () => {
+      const mockUri = createMockUri('Untitled-1', { scheme: 'untitled' });
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: mockUri }),
+      });
+
+      const result = adapter.getDocumentScheme(mockEditor);
+
+      expect(result).toBe('untitled');
+    });
+
+    it('returns git scheme for diff views', () => {
+      const mockUri = createMockUri('/repo/file.ts', { scheme: 'git' });
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: mockUri }),
+      });
+
+      const result = adapter.getDocumentScheme(mockEditor);
+
+      expect(result).toBe('git');
+    });
+
+    it('returns output scheme for output panel', () => {
+      const mockUri = createMockUri('/output/channel', { scheme: 'output' });
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: mockUri }),
+      });
+
+      const result = adapter.getDocumentScheme(mockEditor);
+
+      expect(result).toBe('output');
+    });
+  });
+
   describe('getFilenameFromUri', () => {
     it('extracts filename from Unix-style path', () => {
       const mockUri = createMockUri('/workspace/src/auth.ts');

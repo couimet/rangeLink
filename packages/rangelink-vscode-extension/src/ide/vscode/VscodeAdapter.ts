@@ -260,6 +260,19 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
   }
 
   /**
+   * Get document URI scheme from editor.
+   *
+   * Convenience method for accessing the scheme portion of editor.document.uri.
+   * Common schemes: 'file' (regular files), 'untitled' (new unsaved), 'git' (diff views).
+   *
+   * @param editor - Editor to get document scheme from
+   * @returns URI scheme string
+   */
+  getDocumentScheme(editor: vscode.TextEditor): string {
+    return editor.document.uri.scheme;
+  }
+
+  /**
    * Extract filename from a URI's file system path.
    *
    * Handles both Unix (/) and Windows (\) path separators regardless of platform.
