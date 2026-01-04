@@ -393,8 +393,17 @@ describe('package.json contributions', () => {
       });
     });
 
-    it('has exactly 8 keybindings', () => {
-      expect(keybindings).toHaveLength(8);
+    it('rangelink.bookmark.add keybinding', () => {
+      expect(findKeybinding('rangelink.bookmark.add')).toStrictEqual({
+        command: 'rangelink.bookmark.add',
+        key: 'ctrl+r ctrl+b ctrl+s',
+        mac: 'cmd+r cmd+b cmd+s',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('has exactly 9 keybindings', () => {
+      expect(keybindings).toHaveLength(9);
     });
   });
 

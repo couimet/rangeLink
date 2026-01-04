@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
   - Show Version Info
   - Foundation for future features (bookmarks, paste destination display)
+- **Save Selection as Bookmark (R-B-S)** - New keyboard shortcut for saving bookmarks
+  - `Cmd+R Cmd+B Cmd+S` (Mac) / `Ctrl+R Ctrl+B Ctrl+S` (Win/Linux)
+  - `R-B` prefix reserved for future bookmark sub-menu expansion
+  - Command also available via Command Palette: "RangeLink: Save Selection as Bookmark"
 
 ### Changed
 

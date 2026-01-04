@@ -290,6 +290,12 @@
         "command": "rangelink.jumpToBoundDestination",
         "key": "ctrl+r ctrl+j",
         "mac": "cmd+r cmd+j"
+      },
+      {
+        "command": "rangelink.bookmark.add",
+        "key": "ctrl+r ctrl+b ctrl+s",
+        "mac": "cmd+r cmd+b cmd+s",
+        "when": "editorHasSelection"
       }
     ],
     "menus": {
