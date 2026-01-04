@@ -1,64 +1,17 @@
-import type * as vscode from 'vscode';
-
-import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-
-/**
- * Known binary file extensions to block from text editor binding.
- */
-const BINARY_EXTENSIONS = [
-  '.png',
-  '.jpg',
-  '.jpeg',
-  '.gif',
-  '.bmp',
-  '.ico',
-  '.svg',
-  '.pdf',
-  '.zip',
-  '.tar',
-  '.gz',
-  '.7z',
-  '.rar',
-  '.exe',
-  '.dll',
-  '.bin',
-  '.dat',
-  '.db',
-  '.sqlite',
-];
+import { isBinaryFile } from './isBinaryFile';
+import { isWritableScheme } from './isWritableScheme';
 
 /**
- * Check if editor is a text-like file (not binary).
+ * Check if a document is a text-like file (writable scheme and not binary).
  *
- * **Restrictions:**
- * - Only allows file:// and untitled:// schemes
- * - Blocks known binary extensions
+ * This is a composed check that validates:
+ * 1. URI scheme is writable (file:// or untitled://)
+ * 2. File extension is not a known binary format
  *
- * @param vscodeAdapter - VscodeAdapter instance for accessing document URI
- * @param editor - The editor to check
- * @returns true if editor is text-like, false if binary or invalid scheme
+ * @param scheme - The URI scheme
+ * @param fsPath - The file system path
+ * @returns true if text-like, false if read-only scheme or binary
  */
-export const isTextLikeFile = (
-  vscodeAdapter: VscodeAdapter,
-  editor: vscode.TextEditor,
-): boolean => {
-  const editorUri = vscodeAdapter.getDocumentUri(editor);
-  const scheme = editorUri.scheme;
-
-  // Only allow file:// and untitled:// schemes
-  const isTextScheme = scheme === 'file' || scheme === 'untitled';
-  if (!isTextScheme) {
-    return false;
-  }
-
-  // For untitled files, always allow
-  if (scheme === 'untitled') {
-    return true;
-  }
-
-  // Check for binary extensions
-  const path = editorUri.fsPath.toLowerCase();
-  const isBinary = BINARY_EXTENSIONS.some((ext) => path.endsWith(ext));
-
-  return !isBinary;
+export const isTextLikeFile = (scheme: string, fsPath: string): boolean => {
+  return isWritableScheme(scheme) && !isBinaryFile(scheme, fsPath);
 };

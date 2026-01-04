@@ -112,7 +112,7 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 - **Split editor (2+ tab groups)** - Ensures bound file stays visible while you browse code
 - **Bound file must be topmost tab** - Auto-paste only works when it's the active tab in its pane
-- **Text-like files only** - Binary files (images, PDFs, archives) are blocked
+- **Writable text files only** - Binary files (images, PDFs) and read-only views (git diffs, output panels) are blocked
 
 If bound file is hidden behind other tabs, link copies to clipboard with a reminder to make it active. When you close the bound file, RangeLink auto-unbinds with a notification.
 
