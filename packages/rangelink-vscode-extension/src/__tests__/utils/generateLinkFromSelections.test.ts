@@ -2,6 +2,7 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import {
   DelimiterConfig,
+  type FormattedLink,
   LinkType,
   Result,
   SelectionCoverage,
@@ -89,11 +90,10 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.code).toBe('GENERATE_LINK_NO_SELECTION');
-        expect(result.error.message).toBe('No selections provided');
-      }
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_NO_SELECTION', {
+        message: 'No selections provided',
+        functionName: 'generateLinkFromSelections',
+      });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections' },
         'No selections provided',
@@ -114,11 +114,10 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.code).toBe('GENERATE_LINK_SELECTION_EMPTY');
-        expect(result.error.message).toBe('All selections are empty');
-      }
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_SELECTION_EMPTY', {
+        message: 'All selections are empty',
+        functionName: 'generateLinkFromSelections',
+      });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections' },
         'All selections are empty',
@@ -155,11 +154,10 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.value.link).toBe('src/utils/test.ts#L1C1-C11');
-        expect(result.value.linkType).toBe('regular');
-      }
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value.link).toBe('src/utils/test.ts#L1C1-C11');
+        expect(value.linkType).toBe('regular');
+      });
       expect(mockLogger.info).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections', formattedLink: expectedLink },
         'Generated link: src/utils/test.ts#L1C1-C11',
@@ -196,10 +194,9 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.value.linkType).toBe('portable');
-      }
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value.linkType).toBe('portable');
+      });
       expect(rangeLinkCore.formatLink).toHaveBeenCalledWith(
         REFERENCE_PATH,
         {
@@ -238,12 +235,11 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.code).toBe('GENERATE_LINK_SELECTION_CONVERSION_FAILED');
-        expect(result.error.message).toBe('Document modified during selection');
-        expect(result.error.cause).toBe(conversionError);
-      }
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_SELECTION_CONVERSION_FAILED', {
+        message: 'Document modified during selection',
+        functionName: 'generateLinkFromSelections',
+        cause: conversionError,
+      });
       expect(mockLogger.error).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections', error: conversionError },
         'Failed to convert selections to InputSelection',
@@ -285,11 +281,10 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.code).toBe('GENERATE_LINK_FORMAT_FAILED');
-        expect(result.error.message).toBe('Failed to generate link');
-      }
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_FORMAT_FAILED', {
+        message: 'Failed to generate link',
+        functionName: 'generateLinkFromSelections',
+      });
       expect(mockLogger.error).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections', errorCode: expect.any(rangeLinkCore.RangeLinkError) },
         'Failed to generate link',
@@ -331,10 +326,10 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.message).toBe('Failed to generate portable link');
-      }
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_FORMAT_FAILED', {
+        message: 'Failed to generate portable link',
+        functionName: 'generateLinkFromSelections',
+      });
       expect(mockLogger.error).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections', errorCode: expect.any(rangeLinkCore.RangeLinkError) },
         'Failed to generate portable link',
@@ -359,12 +354,10 @@ describe('generateLinkFromSelections', () => {
 
       const result = generateLinkFromSelections(options);
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.code).toBe('GENERATE_LINK_SELECTION_CONVERSION_FAILED');
-        expect(result.error.message).toBe('Failed to process selection');
-        expect(result.error.cause).toBeUndefined();
-      }
+      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_SELECTION_CONVERSION_FAILED', {
+        message: 'Failed to process selection',
+        functionName: 'generateLinkFromSelections',
+      });
     });
   });
 });
