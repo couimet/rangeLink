@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Text editor binding validation** - Prevents binding to read-only editors (git diff views, output panels, settings UI) that would cause paste operations to fail with confusing errors. Now shows clear error messages: "Cannot bind to read-only editor (git)" or "Cannot bind to file.png - binary file".
 - **Full-line navigation selection** - Fixed `#L10` selecting only first character instead of entire line. Full-line links (`#L10`, `#L10-L15`) now correctly select from start of first line to end of last line.
 - **Full-line link generation with newline** - Fixed link generation when selection includes trailing newline. Selecting "line 20 + newline" now correctly generates `#L20` instead of `#L20-L21`.
 - **Smart padding preserves whitespace-only text** - Fixed `applySmartPadding()` incorrectly trimming whitespace-only strings to empty. Now whitespace-only content is preserved when using paste destinations.
