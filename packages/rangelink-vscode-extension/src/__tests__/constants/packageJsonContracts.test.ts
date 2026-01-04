@@ -202,8 +202,20 @@ describe('package.json contributions', () => {
       });
     });
 
-    it('has exactly 16 commands', () => {
-      expect(commands).toHaveLength(16);
+    describe('bookmark commands', () => {
+      it('rangelink.bookmark.add', () => {
+        expect(findCommand('rangelink.bookmark.add')).toStrictEqual({
+          command: 'rangelink.bookmark.add',
+          title: 'Save Selection as Bookmark',
+          category: 'RangeLink',
+          icon: '$(bookmark)',
+          enablement: 'editorHasSelection',
+        });
+      });
+    });
+
+    it('has exactly 17 commands', () => {
+      expect(commands).toHaveLength(17);
     });
   });
 

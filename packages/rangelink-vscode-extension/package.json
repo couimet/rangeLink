@@ -160,7 +160,7 @@
         "title": "Save Selection as Bookmark",
         "category": "RangeLink",
         "icon": "$(bookmark)",
-        "enablement": "editorTextFocus"
+        "enablement": "editorHasSelection"
       }
     ],
     "configuration": {
