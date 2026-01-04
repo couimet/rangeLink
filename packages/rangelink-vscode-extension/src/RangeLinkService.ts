@@ -178,8 +178,9 @@ export class RangeLinkService {
         { fn: 'generateLinkFromSelection', error: result.error, linkType },
         `Failed to generate ${linkTypeName}`,
       );
+      this.ideAdapter.showErrorMessage(
+        formatMessage(MessageCode.ERROR_LINK_GENERATION_FAILED, { linkTypeName }),
       );
-      this.ideAdapter.showErrorMessage(`RangeLink: Failed to generate ${linkType}`);
       return undefined;
     }
 

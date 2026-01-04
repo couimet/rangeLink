@@ -19,6 +19,7 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
   [MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE]:
     'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
+  [MessageCode.ERROR_LINK_GENERATION_FAILED]: 'RangeLink: Failed to generate {linkTypeName}',
   [MessageCode.ERROR_NAVIGATION_FAILED]: 'RangeLink: Failed to navigate to {path}: {error}',
   [MessageCode.ERROR_NO_ACTIVE_TERMINAL]:
     'RangeLink: No active terminal. Open a terminal and try again.',
