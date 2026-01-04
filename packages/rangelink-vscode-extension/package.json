@@ -157,7 +157,7 @@
       },
       {
         "command": "rangelink.bookmark.add",
-        "title": "Add Bookmark",
+        "title": "Save Selection as Bookmark",
         "category": "RangeLink",
         "icon": "$(bookmark)",
         "enablement": "editorTextFocus"
