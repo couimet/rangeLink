@@ -1,0 +1,436 @@
+import packageJson from '../../../package.json';
+
+interface CommandContribution {
+  command: string;
+  title: string;
+  category: string;
+  icon?: string;
+  enablement?: string;
+}
+
+interface ConfigurationProperty {
+  type: string;
+  default: string;
+  description: string;
+  pattern?: string;
+  enum?: string[];
+  enumDescriptions?: string[];
+}
+
+interface KeybindingContribution {
+  command: string;
+  key: string;
+  mac: string;
+  when?: string;
+}
+
+interface MenuContribution {
+  when?: string;
+  command: string;
+  group: string;
+}
+
+/**
+ * Contract tests for package.json contributions.
+ *
+ * These tests freeze user-facing contracts (command titles, categories,
+ * keybindings, configuration) to catch accidental changes.
+ */
+describe('package.json contributions', () => {
+  describe('commands', () => {
+    const commands = packageJson.contributes.commands as CommandContribution[];
+
+    const findCommand = (commandId: string): CommandContribution | undefined =>
+      commands.find((cmd) => cmd.command === commandId);
+
+    describe('link copy commands', () => {
+      it('rangelink.copyLinkWithRelativePath', () => {
+        expect(findCommand('rangelink.copyLinkWithRelativePath')).toStrictEqual({
+          command: 'rangelink.copyLinkWithRelativePath',
+          title: 'Copy Range Link',
+          category: 'RangeLink',
+          icon: '$(link)',
+          enablement: 'editorHasSelection',
+        });
+      });
+
+      it('rangelink.copyLinkWithAbsolutePath', () => {
+        expect(findCommand('rangelink.copyLinkWithAbsolutePath')).toStrictEqual({
+          command: 'rangelink.copyLinkWithAbsolutePath',
+          title: 'Copy Range Link (Absolute)',
+          category: 'RangeLink',
+          icon: '$(link-external)',
+          enablement: 'editorHasSelection',
+        });
+      });
+
+      it('rangelink.copyPortableLinkWithRelativePath', () => {
+        expect(findCommand('rangelink.copyPortableLinkWithRelativePath')).toStrictEqual({
+          command: 'rangelink.copyPortableLinkWithRelativePath',
+          title: 'Copy Portable RangeLink',
+          category: 'RangeLink',
+          icon: '$(link-external)',
+          enablement: 'editorHasSelection',
+        });
+      });
+
+      it('rangelink.copyPortableLinkWithAbsolutePath', () => {
+        expect(findCommand('rangelink.copyPortableLinkWithAbsolutePath')).toStrictEqual({
+          command: 'rangelink.copyPortableLinkWithAbsolutePath',
+          title: 'Copy Portable RangeLink (Absolute)',
+          category: 'RangeLink',
+          icon: '$(link-external)',
+          enablement: 'editorHasSelection',
+        });
+      });
+
+      it('rangelink.copyLinkOnlyWithRelativePath', () => {
+        expect(findCommand('rangelink.copyLinkOnlyWithRelativePath')).toStrictEqual({
+          command: 'rangelink.copyLinkOnlyWithRelativePath',
+          title: 'Copy Range Link (Clipboard Only)',
+          category: 'RangeLink',
+          icon: '$(clippy)',
+          enablement: 'editorHasSelection',
+        });
+      });
+
+      it('rangelink.copyLinkOnlyWithAbsolutePath', () => {
+        expect(findCommand('rangelink.copyLinkOnlyWithAbsolutePath')).toStrictEqual({
+          command: 'rangelink.copyLinkOnlyWithAbsolutePath',
+          title: 'Copy Range Link (Clipboard Only, Absolute)',
+          category: 'RangeLink',
+          icon: '$(clippy)',
+          enablement: 'editorHasSelection',
+        });
+      });
+    });
+
+    describe('paste commands', () => {
+      it('rangelink.pasteSelectedTextToDestination', () => {
+        expect(findCommand('rangelink.pasteSelectedTextToDestination')).toStrictEqual({
+          command: 'rangelink.pasteSelectedTextToDestination',
+          title: 'Paste Selected Text to Bound Destination',
+          category: 'RangeLink',
+          icon: '$(symbol-snippet)',
+          enablement: 'editorHasSelection',
+        });
+      });
+    });
+
+    describe('destination binding commands', () => {
+      it('rangelink.bindToTerminal', () => {
+        expect(findCommand('rangelink.bindToTerminal')).toStrictEqual({
+          command: 'rangelink.bindToTerminal',
+          title: 'Bind RangeLink to Terminal Destination',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.bindToTextEditor', () => {
+        expect(findCommand('rangelink.bindToTextEditor')).toStrictEqual({
+          command: 'rangelink.bindToTextEditor',
+          title: 'Bind RangeLink to Text Editor Destination',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.bindToCursorAI', () => {
+        expect(findCommand('rangelink.bindToCursorAI')).toStrictEqual({
+          command: 'rangelink.bindToCursorAI',
+          title: 'Bind RangeLink to Cursor AI Destination',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.bindToClaudeCode', () => {
+        expect(findCommand('rangelink.bindToClaudeCode')).toStrictEqual({
+          command: 'rangelink.bindToClaudeCode',
+          title: 'Bind RangeLink to Claude Code Destination',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.bindToGitHubCopilotChat', () => {
+        expect(findCommand('rangelink.bindToGitHubCopilotChat')).toStrictEqual({
+          command: 'rangelink.bindToGitHubCopilotChat',
+          title: 'Bind RangeLink to GitHub Copilot Chat Destination',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.unbindDestination', () => {
+        expect(findCommand('rangelink.unbindDestination')).toStrictEqual({
+          command: 'rangelink.unbindDestination',
+          title: 'Unbind RangeLink Destination',
+          category: 'RangeLink',
+          icon: '$(close)',
+        });
+      });
+
+      it('rangelink.jumpToBoundDestination', () => {
+        expect(findCommand('rangelink.jumpToBoundDestination')).toStrictEqual({
+          command: 'rangelink.jumpToBoundDestination',
+          title: 'Jump to Bound Destination',
+          category: 'RangeLink',
+          icon: '$(target)',
+        });
+      });
+    });
+
+    describe('status bar commands', () => {
+      it('rangelink.openStatusBarMenu', () => {
+        expect(findCommand('rangelink.openStatusBarMenu')).toStrictEqual({
+          command: 'rangelink.openStatusBarMenu',
+          title: 'Open RangeLink Status Bar Menu',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.showVersion', () => {
+        expect(findCommand('rangelink.showVersion')).toStrictEqual({
+          command: 'rangelink.showVersion',
+          title: 'Show Version Info',
+          category: 'RangeLink',
+          icon: '$(info)',
+        });
+      });
+    });
+
+    it('has exactly 16 commands', () => {
+      expect(commands).toHaveLength(16);
+    });
+  });
+
+  describe('configuration', () => {
+    const properties = packageJson.contributes.configuration.properties as Record<
+      string,
+      ConfigurationProperty
+    >;
+
+    describe('delimiter settings', () => {
+      it('rangelink.delimiterLine', () => {
+        expect(properties['rangelink.delimiterLine']).toStrictEqual({
+          type: 'string',
+          default: 'L',
+          description: 'Delimiter used before line numbers (e.g., L in #L10-L20)',
+          pattern: '^[^0-9]+$',
+        });
+      });
+
+      it('rangelink.delimiterPosition', () => {
+        expect(properties['rangelink.delimiterPosition']).toStrictEqual({
+          type: 'string',
+          default: 'C',
+          description: 'Delimiter used before position numbers (e.g., C in #L10C5-L20C10)',
+          pattern: '^[^0-9]+$',
+        });
+      });
+
+      it('rangelink.delimiterHash', () => {
+        expect(properties['rangelink.delimiterHash']).toStrictEqual({
+          type: 'string',
+          default: '#',
+          description: 'Delimiter used before the range specification (e.g., # in path#L10-L20)',
+          pattern: '^[^0-9]+$',
+        });
+      });
+
+      it('rangelink.delimiterRange', () => {
+        expect(properties['rangelink.delimiterRange']).toStrictEqual({
+          type: 'string',
+          default: '-',
+          description: 'Delimiter used between start and end positions (e.g., - in #L10-L20)',
+          pattern: '^[^0-9]+$',
+        });
+      });
+    });
+
+    describe('smart padding settings', () => {
+      it('rangelink.smartPadding.pasteLink', () => {
+        expect(properties['rangelink.smartPadding.pasteLink']).toStrictEqual({
+          type: 'string',
+          enum: ['both', 'before', 'after', 'none'],
+          default: 'both',
+          enumDescriptions: [
+            'Add space before and after (prevents concatenation)',
+            'Add space before only',
+            'Add space after only',
+            'No padding (paste link as-is)',
+          ],
+          description: 'Smart padding for generated RangeLinks when pasting to destinations',
+        });
+      });
+
+      it('rangelink.smartPadding.pasteContent', () => {
+        expect(properties['rangelink.smartPadding.pasteContent']).toStrictEqual({
+          type: 'string',
+          enum: ['both', 'before', 'after', 'none'],
+          default: 'none',
+          enumDescriptions: [
+            'Add space before and after',
+            'Add space before only',
+            'Add space after only',
+            'No padding (paste text exactly as selected)',
+          ],
+          description:
+            'Smart padding for selected text when using Paste Selected Text to Destination (R-V)',
+        });
+      });
+
+      it('rangelink.smartPadding.pasteBookmark', () => {
+        expect(properties['rangelink.smartPadding.pasteBookmark']).toStrictEqual({
+          type: 'string',
+          enum: ['both', 'before', 'after', 'none'],
+          default: 'both',
+          enumDescriptions: [
+            'Add space before and after (prevents concatenation)',
+            'Add space before only',
+            'Add space after only',
+            'No padding (paste bookmark as-is)',
+          ],
+          description: 'Smart padding for saved bookmarks when pasting to destinations',
+        });
+      });
+    });
+
+    it('has exactly 7 configuration properties', () => {
+      expect(Object.keys(properties)).toHaveLength(7);
+    });
+  });
+
+  describe('keybindings', () => {
+    const keybindings = packageJson.contributes.keybindings as KeybindingContribution[];
+
+    const findKeybinding = (commandId: string): KeybindingContribution | undefined =>
+      keybindings.find((kb) => kb.command === commandId);
+
+    it('rangelink.copyLinkWithRelativePath keybinding', () => {
+      expect(findKeybinding('rangelink.copyLinkWithRelativePath')).toStrictEqual({
+        command: 'rangelink.copyLinkWithRelativePath',
+        key: 'ctrl+r ctrl+l',
+        mac: 'cmd+r cmd+l',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('rangelink.copyLinkWithAbsolutePath keybinding', () => {
+      expect(findKeybinding('rangelink.copyLinkWithAbsolutePath')).toStrictEqual({
+        command: 'rangelink.copyLinkWithAbsolutePath',
+        key: 'ctrl+r ctrl+shift+l',
+        mac: 'cmd+r cmd+shift+l',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('rangelink.copyPortableLinkWithRelativePath keybinding', () => {
+      expect(findKeybinding('rangelink.copyPortableLinkWithRelativePath')).toStrictEqual({
+        command: 'rangelink.copyPortableLinkWithRelativePath',
+        key: 'ctrl+r ctrl+p',
+        mac: 'cmd+r cmd+p',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('rangelink.copyPortableLinkWithAbsolutePath keybinding', () => {
+      expect(findKeybinding('rangelink.copyPortableLinkWithAbsolutePath')).toStrictEqual({
+        command: 'rangelink.copyPortableLinkWithAbsolutePath',
+        key: 'ctrl+r ctrl+shift+p',
+        mac: 'cmd+r cmd+shift+p',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('rangelink.copyLinkOnlyWithRelativePath keybinding', () => {
+      expect(findKeybinding('rangelink.copyLinkOnlyWithRelativePath')).toStrictEqual({
+        command: 'rangelink.copyLinkOnlyWithRelativePath',
+        key: 'ctrl+r ctrl+c',
+        mac: 'cmd+r cmd+c',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('rangelink.copyLinkOnlyWithAbsolutePath keybinding', () => {
+      expect(findKeybinding('rangelink.copyLinkOnlyWithAbsolutePath')).toStrictEqual({
+        command: 'rangelink.copyLinkOnlyWithAbsolutePath',
+        key: 'ctrl+r ctrl+shift+c',
+        mac: 'cmd+r cmd+shift+c',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('rangelink.pasteSelectedTextToDestination keybinding', () => {
+      expect(findKeybinding('rangelink.pasteSelectedTextToDestination')).toStrictEqual({
+        command: 'rangelink.pasteSelectedTextToDestination',
+        key: 'ctrl+r ctrl+v',
+        mac: 'cmd+r cmd+v',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('rangelink.jumpToBoundDestination keybinding', () => {
+      expect(findKeybinding('rangelink.jumpToBoundDestination')).toStrictEqual({
+        command: 'rangelink.jumpToBoundDestination',
+        key: 'ctrl+r ctrl+j',
+        mac: 'cmd+r cmd+j',
+      });
+    });
+
+    it('has exactly 8 keybindings', () => {
+      expect(keybindings).toHaveLength(8);
+    });
+  });
+
+  describe('menus', () => {
+    const editorContextMenu = packageJson.contributes.menus['editor/context'] as MenuContribution[];
+
+    it('has 5 editor context menu items', () => {
+      expect(editorContextMenu).toHaveLength(5);
+    });
+
+    it('copyLinkWithRelativePath in context menu', () => {
+      expect(editorContextMenu[0]).toStrictEqual({
+        when: 'editorHasSelection',
+        command: 'rangelink.copyLinkWithRelativePath',
+        group: '8_rangelink@1',
+      });
+    });
+
+    it('copyLinkWithAbsolutePath in context menu', () => {
+      expect(editorContextMenu[1]).toStrictEqual({
+        when: 'editorHasSelection',
+        command: 'rangelink.copyLinkWithAbsolutePath',
+        group: '8_rangelink@2',
+      });
+    });
+
+    it('copyPortableLinkWithRelativePath in context menu', () => {
+      expect(editorContextMenu[2]).toStrictEqual({
+        when: 'editorHasSelection',
+        command: 'rangelink.copyPortableLinkWithRelativePath',
+        group: '8_rangelink@3',
+      });
+    });
+
+    it('copyPortableLinkWithAbsolutePath in context menu', () => {
+      expect(editorContextMenu[3]).toStrictEqual({
+        when: 'editorHasSelection',
+        command: 'rangelink.copyPortableLinkWithAbsolutePath',
+        group: '8_rangelink@4',
+      });
+    });
+
+    it('pasteSelectedTextToDestination in context menu', () => {
+      expect(editorContextMenu[4]).toStrictEqual({
+        when: 'editorHasSelection',
+        command: 'rangelink.pasteSelectedTextToDestination',
+        group: '8_rangelink@5',
+      });
+    });
+  });
+});
