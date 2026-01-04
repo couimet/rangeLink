@@ -69,14 +69,15 @@ const createMockDocumentForTest = (): vscode.TextDocument => {
 
 describe('generateLinkFromSelections', () => {
   let mockLogger: Logger;
+  let document: vscode.TextDocument;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
+    document = createMockDocumentForTest();
   });
 
   describe('input validation', () => {
     it('returns error when selections array is empty', () => {
-      const document = createMockDocumentForTest();
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
         document,
@@ -100,7 +101,6 @@ describe('generateLinkFromSelections', () => {
     });
 
     it('returns error when all selections are empty', () => {
-      const document = createMockDocumentForTest();
       const emptySelection = mockSelection(0, 5, 0, 5, true);
 
       const options: GenerateLinkFromSelectionsOptions = {
@@ -128,7 +128,6 @@ describe('generateLinkFromSelections', () => {
 
   describe('successful link generation', () => {
     it('generates regular link for single line selection', () => {
-      const document = createMockDocumentForTest();
       const selection = mockSelection(0, 0, 0, 10);
       const expectedLink = createMockFormattedLink('src/utils/test.ts#L1C1-C11');
 
@@ -168,7 +167,6 @@ describe('generateLinkFromSelections', () => {
     });
 
     it('generates portable link when linkType is Portable', () => {
-      const document = createMockDocumentForTest();
       const selection = mockSelection(0, 0, 0, 10);
       const expectedLink = createMockFormattedLink('src/utils/test.ts#[L:C:_:-]L1C1-C11', {
         linkType: LinkType.Portable,
@@ -222,7 +220,6 @@ describe('generateLinkFromSelections', () => {
 
   describe('error handling', () => {
     it('returns error when toInputSelection throws', () => {
-      const document = createMockDocumentForTest();
       const selection = mockSelection(0, 0, 0, 10);
       const conversionError = new Error('Document modified during selection');
 
@@ -254,7 +251,6 @@ describe('generateLinkFromSelections', () => {
     });
 
     it('returns error when formatLink fails', () => {
-      const document = createMockDocumentForTest();
       const selection = mockSelection(0, 0, 0, 10);
 
       jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue({
@@ -301,7 +297,6 @@ describe('generateLinkFromSelections', () => {
     });
 
     it('returns error with portable link type name when portable link fails', () => {
-      const document = createMockDocumentForTest();
       const selection = mockSelection(0, 0, 0, 10);
 
       jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue({
@@ -347,7 +342,6 @@ describe('generateLinkFromSelections', () => {
     });
 
     it('handles non-Error exceptions from toInputSelection', () => {
-      const document = createMockDocumentForTest();
       const selection = mockSelection(0, 0, 0, 10);
 
       jest.spyOn(toInputSelectionModule, 'toInputSelection').mockImplementation(() => {
