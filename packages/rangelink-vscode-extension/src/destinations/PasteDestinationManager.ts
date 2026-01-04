@@ -7,7 +7,13 @@ import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorC
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
-import { formatMessage, isEditorDestination, isTextLikeFile, type PaddingMode } from '../utils';
+import {
+  formatMessage,
+  isBinaryFile,
+  isEditorDestination,
+  isWritableScheme,
+  type PaddingMode,
+} from '../utils';
 
 import type { DestinationAvailabilityService } from './DestinationAvailabilityService';
 import type { DestinationRegistry } from './DestinationRegistry';
@@ -425,7 +431,6 @@ export class PasteDestinationManager implements vscode.Disposable {
    * @returns true if binding succeeded, false if validation fails
    */
   private async bindTextEditor(): Promise<boolean> {
-    // Validate: Require 2+ tab groups for split editor workflow
     const tabGroupCount = this.vscodeAdapter.tabGroups.all.length;
     if (tabGroupCount < 2) {
       this.logger.warn(
@@ -439,22 +444,31 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     const activeEditor = this.vscodeAdapter.activeTextEditor;
-
     if (!activeEditor) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
       this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
       return false;
     }
 
-    // Check if editor is text-like (not binary)
-    if (!isTextLikeFile(this.vscodeAdapter, activeEditor)) {
-      const fileName = this.vscodeAdapter.getFilenameFromUri(activeEditor.document.uri);
-      this.logger.warn(
-        { fn: 'PasteDestinationManager.bindTextEditor', fileName },
-        'Cannot bind: Editor is not a text-like file',
-      );
+    // Extract URI properties for logging and validation
+    const editorUri = this.vscodeAdapter.getDocumentUri(activeEditor);
+    const scheme = editorUri.scheme;
+    const fsPath = editorUri.fsPath;
+    const fileName = this.vscodeAdapter.getFilenameFromUri(editorUri);
+    const logCtx = { fn: 'PasteDestinationManager.bindTextEditor', scheme, fileName };
+
+    if (!isWritableScheme(scheme)) {
+      this.logger.warn(logCtx, `Cannot bind: Editor is read-only (scheme: ${scheme})`);
       this.vscodeAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TEXT_EDITOR_NOT_TEXT_LIKE, { fileName }),
+        formatMessage(MessageCode.ERROR_TEXT_EDITOR_READ_ONLY, { scheme }),
+      );
+      return false;
+    }
+
+    if (isBinaryFile(scheme, fsPath)) {
+      this.logger.warn(logCtx, 'Cannot bind: Editor is a binary file');
+      this.vscodeAdapter.showErrorMessage(
+        formatMessage(MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE, { fileName }),
       );
       return false;
     }
