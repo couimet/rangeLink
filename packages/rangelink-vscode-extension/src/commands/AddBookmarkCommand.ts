@@ -81,7 +81,9 @@ export class AddBookmarkCommand {
 
       if (!result.success) {
         this.logger.error({ ...logCtx, error: result.error }, 'Failed to generate link');
-        this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_LINK_GENERATION_FAILED));
+        this.ideAdapter.showErrorMessage(
+          formatMessage(MessageCode.ERROR_BOOKMARK_LINK_GENERATION_FAILED),
+        );
         return;
       }
 

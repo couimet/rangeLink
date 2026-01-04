@@ -14,6 +14,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONFIG_USING_DEFAULTS]: 'Using default configuration',
 
   [MessageCode.ERROR_BOOKMARK_EMPTY_LABEL]: 'RangeLink: Bookmark label cannot be empty',
+  [MessageCode.ERROR_BOOKMARK_LINK_GENERATION_FAILED]:
+    'RangeLink: Cannot add bookmark - failed to generate link from selection',
   [MessageCode.ERROR_BOOKMARK_NO_ACTIVE_EDITOR]:
     'RangeLink: Cannot add bookmark - no active editor',
   [MessageCode.ERROR_BOOKMARK_SAVE_FAILED]: 'RangeLink: Failed to save bookmark',

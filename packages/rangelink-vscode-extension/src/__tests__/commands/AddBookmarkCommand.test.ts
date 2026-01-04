@@ -367,7 +367,7 @@ describe('AddBookmarkCommand', () => {
         await command.execute();
 
         expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: Failed to generate link',
+          'RangeLink: Cannot add bookmark - failed to generate link from selection',
         );
         expect(mockBookmarksStore.add).not.toHaveBeenCalled();
       });
