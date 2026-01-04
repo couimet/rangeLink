@@ -24,6 +24,7 @@ export * from './createMockDocument';
 export * from './createMockDocumentLink';
 export * from './createMockEditor';
 export * from './createMockEditorComposablePasteDestination';
+export * from './createEditorWithScheme';
 export * from './createMockEditorWithSelection';
 export * from './createMockEligibilityCheckerFactory';
 export * from './createMockEnv';
