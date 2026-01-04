@@ -1,114 +1,259 @@
 import { isTextEditorDestinationEligible } from '../../../destinations/utils';
-import { createMockVscodeAdapter } from '../../helpers';
+import {
+  createEditorWithScheme,
+  createMockTabGroupsWithCount,
+  createMockVscodeAdapter,
+} from '../../helpers';
 
 describe('isTextEditorDestinationEligible', () => {
-  const createMockEditor = (fsPath = '/test/file.ts') => ({ document: { uri: { fsPath } } }) as any;
-  const createMockTabGroups = (count: number) => ({
-    all: Array(count).fill({ tabs: [] }),
-    activeTabGroup: undefined,
-    onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
-    onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
-    close: jest.fn(),
-  });
-
   describe('eligible scenarios', () => {
-    it('returns eligible with filename when activeTextEditor exists and tabGroupCount >= 2', () => {
+    it('returns eligible with filename when all conditions are met', () => {
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
-          activeTextEditor: createMockEditor('/workspace/src/auth.ts'),
-          tabGroups: createMockTabGroups(2),
+          activeTextEditor: createEditorWithScheme('/workspace/src/auth.ts'),
+          tabGroups: createMockTabGroupsWithCount(2),
         },
       });
 
       expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
         eligible: true,
         filename: 'auth.ts',
+        ineligibleReason: undefined,
       });
     });
 
-    it('returns eligible with filename when tabGroupCount > 2', () => {
+    it('returns eligible when tabGroupCount > 2', () => {
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
-          activeTextEditor: createMockEditor('/project/index.js'),
-          tabGroups: createMockTabGroups(3),
+          activeTextEditor: createEditorWithScheme('/project/index.js'),
+          tabGroups: createMockTabGroupsWithCount(3),
         },
       });
 
       expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
         eligible: true,
         filename: 'index.js',
+        ineligibleReason: undefined,
       });
     });
 
     it('returns "Unknown" filename when fsPath has no filename component', () => {
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
-          activeTextEditor: createMockEditor('/'),
-          tabGroups: createMockTabGroups(2),
+          activeTextEditor: createEditorWithScheme('/'),
+          tabGroups: createMockTabGroupsWithCount(2),
         },
       });
 
       expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
         eligible: true,
         filename: 'Unknown',
+        ineligibleReason: undefined,
+      });
+    });
+
+    it('returns eligible for untitled files', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: createEditorWithScheme('Untitled-1', 'untitled'),
+          tabGroups: createMockTabGroupsWithCount(2),
+        },
+      });
+
+      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: true,
+        filename: 'Untitled-1',
+        ineligibleReason: undefined,
       });
     });
   });
 
-  describe('ineligible scenarios', () => {
-    it('returns ineligible with undefined filename when activeTextEditor is undefined', () => {
+  describe('ineligible: no editor', () => {
+    it('returns ineligible with reason no-editor when activeTextEditor is undefined', () => {
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
           activeTextEditor: undefined,
-          tabGroups: createMockTabGroups(2),
+          tabGroups: createMockTabGroupsWithCount(2),
         },
       });
 
       expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
         eligible: false,
         filename: undefined,
+        ineligibleReason: 'no-editor',
       });
     });
+  });
 
-    it('returns ineligible with undefined filename when tabGroupCount < 2', () => {
+  describe('ineligible: no split editor', () => {
+    it('returns ineligible with reason no-split when tabGroupCount < 2', () => {
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
-          activeTextEditor: createMockEditor(),
-          tabGroups: createMockTabGroups(1),
+          activeTextEditor: createEditorWithScheme('/test/file.ts'),
+          tabGroups: createMockTabGroupsWithCount(1),
         },
       });
 
       expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
         eligible: false,
         filename: undefined,
+        ineligibleReason: 'no-split',
       });
     });
 
-    it('returns ineligible with undefined filename when tabGroupCount is 0', () => {
+    it('returns ineligible with reason no-split when tabGroupCount is 0', () => {
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
-          activeTextEditor: createMockEditor(),
-          tabGroups: createMockTabGroups(0),
+          activeTextEditor: createEditorWithScheme('/test/file.ts'),
+          tabGroups: createMockTabGroupsWithCount(0),
         },
       });
 
       expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
         eligible: false,
         filename: undefined,
+        ineligibleReason: 'no-split',
+      });
+    });
+  });
+
+  describe('ineligible: read-only scheme', () => {
+    it('returns ineligible with reason read-only for git scheme', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: createEditorWithScheme('/repo/file.ts', 'git'),
+          tabGroups: createMockTabGroupsWithCount(2),
+        },
+      });
+
+      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: false,
+        filename: undefined,
+        ineligibleReason: 'read-only',
       });
     });
 
-    it('returns ineligible with undefined filename when both conditions are not met', () => {
+    it('returns ineligible with reason read-only for output scheme', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: createEditorWithScheme('/output/channel', 'output'),
+          tabGroups: createMockTabGroupsWithCount(2),
+        },
+      });
+
+      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: false,
+        filename: undefined,
+        ineligibleReason: 'read-only',
+      });
+    });
+
+    it('returns ineligible with reason read-only for vscode-settings scheme', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: createEditorWithScheme('/settings', 'vscode-settings'),
+          tabGroups: createMockTabGroupsWithCount(2),
+        },
+      });
+
+      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: false,
+        filename: undefined,
+        ineligibleReason: 'read-only',
+      });
+    });
+  });
+
+  describe('ineligible: binary file', () => {
+    it('returns ineligible with reason binary-file for .png files', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: createEditorWithScheme('/project/logo.png'),
+          tabGroups: createMockTabGroupsWithCount(2),
+        },
+      });
+
+      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: false,
+        filename: undefined,
+        ineligibleReason: 'binary-file',
+      });
+    });
+
+    it('returns ineligible with reason binary-file for .pdf files', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: createEditorWithScheme('/project/document.pdf'),
+          tabGroups: createMockTabGroupsWithCount(2),
+        },
+      });
+
+      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: false,
+        filename: undefined,
+        ineligibleReason: 'binary-file',
+      });
+    });
+
+    it('returns ineligible with reason binary-file for .exe files', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: createEditorWithScheme('/project/app.exe'),
+          tabGroups: createMockTabGroupsWithCount(2),
+        },
+      });
+
+      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: false,
+        filename: undefined,
+        ineligibleReason: 'binary-file',
+      });
+    });
+  });
+
+  describe('priority of reasons', () => {
+    it('returns no-editor before checking other conditions', () => {
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
           activeTextEditor: undefined,
-          tabGroups: createMockTabGroups(1),
+          tabGroups: createMockTabGroupsWithCount(1),
         },
       });
 
       expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
         eligible: false,
         filename: undefined,
+        ineligibleReason: 'no-editor',
+      });
+    });
+
+    it('returns no-split before checking read-only when both apply', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: createEditorWithScheme('/repo/file.ts', 'git'),
+          tabGroups: createMockTabGroupsWithCount(1),
+        },
+      });
+
+      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: false,
+        filename: undefined,
+        ineligibleReason: 'no-split',
+      });
+    });
+
+    it('returns read-only before checking binary-file when both apply', () => {
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: createEditorWithScheme('/repo/image.png', 'git'),
+          tabGroups: createMockTabGroupsWithCount(2),
+        },
+      });
+
+      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
+        eligible: false,
+        filename: undefined,
+        ineligibleReason: 'read-only',
       });
     });
   });
