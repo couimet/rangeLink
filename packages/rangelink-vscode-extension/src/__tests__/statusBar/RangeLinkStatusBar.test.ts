@@ -106,7 +106,8 @@ describe('RangeLinkStatusBar', () => {
           { label: 'No bound destination. Choose below to bind:' },
           { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
           { label: '    $(arrow-right) Claude Code Chat', destinationType: 'claude-code' },
-          { label: 'Bookmarks', kind: vscode.QuickPickItemKind.Separator },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: 'Bookmarks' },
           { label: '    No bookmarks yet' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '    $(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
@@ -134,7 +135,8 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
           { label: 'No destinations available' },
-          { label: 'Bookmarks', kind: vscode.QuickPickItemKind.Separator },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: 'Bookmarks' },
           { label: '    No bookmarks yet' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '    $(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
@@ -172,7 +174,8 @@ describe('RangeLinkStatusBar', () => {
             description: '→ Terminal ("zsh")',
             command: 'rangelink.jumpToBoundDestination',
           },
-          { label: 'Bookmarks', kind: vscode.QuickPickItemKind.Separator },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: 'Bookmarks' },
           { label: '    No bookmarks yet' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: '    $(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
@@ -224,7 +227,8 @@ describe('RangeLinkStatusBar', () => {
         [
           { label: 'No bound destination. Choose below to bind:' },
           { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
-          { label: 'Bookmarks', kind: vscode.QuickPickItemKind.Separator },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: 'Bookmarks' },
           {
             label: '    $(bookmark) CLAUDE.md Instructions',
             description: 'Important rules',
@@ -678,7 +682,8 @@ describe('RangeLinkStatusBar', () => {
       ).buildBookmarksQuickPickItems();
 
       expect(items).toStrictEqual([
-        { label: 'Bookmarks', kind: vscode.QuickPickItemKind.Separator },
+        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        { label: 'Bookmarks' },
         { label: '    No bookmarks yet' },
         { label: '', kind: vscode.QuickPickItemKind.Separator },
         { label: '    $(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
@@ -723,7 +728,8 @@ describe('RangeLinkStatusBar', () => {
       ).buildBookmarksQuickPickItems();
 
       expect(items).toStrictEqual([
-        { label: 'Bookmarks', kind: vscode.QuickPickItemKind.Separator },
+        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        { label: 'Bookmarks' },
         {
           label: '    $(bookmark) CLAUDE.md Instructions',
           description: 'Important rules',

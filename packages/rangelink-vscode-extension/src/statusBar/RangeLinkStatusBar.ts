@@ -210,8 +210,12 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     const bookmarks = this.bookmarksStore.getAll();
 
     result.push({
-      label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL),
+      label: '',
       kind: vscode.QuickPickItemKind.Separator,
+    });
+
+    result.push({
+      label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL),
     });
 
     if (bookmarks.length === 0) {
