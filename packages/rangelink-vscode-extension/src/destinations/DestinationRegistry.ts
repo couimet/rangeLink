@@ -5,8 +5,7 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
-import type { FocusManagerFactory } from './capabilities/FocusManagerFactory';
-import type { TextInserterFactory } from './capabilities/TextInserterFactory';
+import type { PasteExecutorFactory } from './capabilities/PasteExecutorFactory';
 import type {
   AIAssistantDestinationType,
   DestinationType,
@@ -45,9 +44,8 @@ export type CreateOptions =
  * with proper dependency injection.
  */
 export interface DestinationBuilderFactories {
-  readonly textInserter: TextInserterFactory;
+  readonly pasteExecutor: PasteExecutorFactory;
   readonly eligibilityChecker: EligibilityCheckerFactory;
-  readonly focusManager: FocusManagerFactory;
 }
 
 /**
@@ -96,17 +94,15 @@ export class DestinationRegistry {
   private readonly context: DestinationBuilderContext;
 
   constructor(
-    textInserterFactory: TextInserterFactory,
+    pasteExecutorFactory: PasteExecutorFactory,
     eligibilityCheckerFactory: EligibilityCheckerFactory,
-    focusManagerFactory: FocusManagerFactory,
     ideAdapter: VscodeAdapter,
     logger: Logger,
   ) {
     this.context = {
       factories: {
-        textInserter: textInserterFactory,
+        pasteExecutor: pasteExecutorFactory,
         eligibilityChecker: eligibilityCheckerFactory,
-        focusManager: focusManagerFactory,
       },
       ideAdapter,
       logger,

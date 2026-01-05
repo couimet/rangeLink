@@ -2,6 +2,7 @@ import type { Logger } from 'barebone-logger';
 import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import { CommandPasteExecutor } from './CommandPasteExecutor';
 import { EditorPasteExecutor } from './EditorPasteExecutor';
 import type { PasteExecutor } from './PasteExecutor';
 import { TerminalPasteExecutor } from './TerminalPasteExecutor';
@@ -29,5 +30,9 @@ export class PasteExecutorFactory {
 
   createTerminalExecutor(terminal: vscode.Terminal): PasteExecutor {
     return new TerminalPasteExecutor(terminal, this.logger);
+  }
+
+  createCommandExecutor(focusCommands: string[], pasteCommands: string[]): PasteExecutor {
+    return new CommandPasteExecutor(this.ideAdapter, focusCommands, pasteCommands, this.logger);
   }
 }

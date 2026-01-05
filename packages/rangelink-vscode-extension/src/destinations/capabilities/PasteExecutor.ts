@@ -7,6 +7,7 @@ import type { Result } from 'rangelink-core-ts';
 export const FocusErrorReason = {
   SHOW_DOCUMENT_FAILED: 'SHOW_DOCUMENT_FAILED',
   TERMINAL_FOCUS_FAILED: 'TERMINAL_FOCUS_FAILED',
+  COMMAND_FOCUS_FAILED: 'COMMAND_FOCUS_FAILED',
 } as const;
 
 export type FocusErrorReason = (typeof FocusErrorReason)[keyof typeof FocusErrorReason];

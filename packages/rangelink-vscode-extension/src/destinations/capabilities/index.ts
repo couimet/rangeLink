@@ -48,6 +48,7 @@ export { FocusManagerFactory } from './FocusManagerFactory';
 
 export type { PasteExecutor, FocusResult, FocusSuccess, FocusError } from './PasteExecutor';
 export { FocusErrorReason } from './PasteExecutor';
+export { CommandPasteExecutor } from './CommandPasteExecutor';
 export { EditorPasteExecutor } from './EditorPasteExecutor';
 export { TerminalPasteExecutor } from './TerminalPasteExecutor';
 export { PasteExecutorFactory } from './PasteExecutorFactory';

@@ -25,8 +25,7 @@ import {
   CMD_UNBIND_DESTINATION,
 } from './constants';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
-import { FocusManagerFactory } from './destinations/capabilities/FocusManagerFactory';
-import { TextInserterFactory } from './destinations/capabilities/TextInserterFactory';
+import { PasteExecutorFactory } from './destinations/capabilities/PasteExecutorFactory';
 import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
 import { registerAllDestinationBuilders } from './destinations/destinationBuilders';
 import { DestinationRegistry } from './destinations/DestinationRegistry';
@@ -75,15 +74,13 @@ export function activate(context: vscode.ExtensionContext): void {
   const delimiters = getDelimitersForExtension(configReader, ideAdapter, getLogger());
 
   // Create capability factories for composition-based destinations
-  const textInserterFactory = new TextInserterFactory(ideAdapter, getLogger());
+  const pasteExecutorFactory = new PasteExecutorFactory(ideAdapter, getLogger());
   const eligibilityCheckerFactory = new EligibilityCheckerFactory(getLogger());
-  const focusManagerFactory = new FocusManagerFactory(ideAdapter, getLogger());
 
   // Create destination registry with capability factories
   const registry = new DestinationRegistry(
-    textInserterFactory,
+    pasteExecutorFactory,
     eligibilityCheckerFactory,
-    focusManagerFactory,
     ideAdapter,
     getLogger(),
   );

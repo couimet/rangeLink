@@ -1,7 +1,5 @@
 import type * as vscode from 'vscode';
 
-import type { TextInserter } from '../../destinations/capabilities/TextInserter';
-
 import {
   createMockComposablePasteDestination,
   type MockComposablePasteDestinationConfig,
@@ -9,19 +7,6 @@ import {
 import { createMockDocument } from './createMockDocument';
 import { createMockEditor } from './createMockEditor';
 import { createMockUri } from './createMockUri';
-
-/**
- * Create a mock TextInserter for editor destinations.
- *
- * @param insertReturns - What insert() should return (default: true)
- * @returns Mocked TextInserter
- */
-export const createMockTextInserterForEditor = (
-  insertReturns: boolean = true,
-): jest.Mocked<TextInserter> =>
-  ({
-    insert: jest.fn().mockResolvedValue(insertReturns),
-  }) as unknown as jest.Mocked<TextInserter>;
 
 /**
  * Configuration overrides for creating a mock editor ComposablePasteDestination.
@@ -73,7 +58,6 @@ export const createMockEditorComposablePasteDestination = (
       document: createMockDocument({ uri: createMockUri('/workspace/src/file.ts') }),
     });
 
-  // Derive metadata from editor - allows tests to pass editor and get correct defaults
   const { editorName, editorPath } = getEditorMetadata(mockEditor);
 
   return createMockComposablePasteDestination({

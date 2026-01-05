@@ -1,7 +1,7 @@
 /**
  * Integration tests for ComposablePasteDestination.
  *
- * These tests use REAL capability implementations (not mocks) to verify
+ * These tests use REAL PasteExecutor implementations (not mocks) to verify
  * end-to-end orchestration works correctly. The VscodeAdapter is mocked
  * to control IDE behavior without requiring a real VSCode instance.
  *
@@ -10,15 +10,12 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { AlwaysEligibleChecker } from '../../destinations/capabilities/AlwaysEligibleChecker';
-import { CommandFocusManager } from '../../destinations/capabilities/CommandFocusManager';
-import { EditorFocusManager } from '../../destinations/capabilities/EditorFocusManager';
-import { EditorTextInserter } from '../../destinations/capabilities/EditorTextInserter';
+import { CommandPasteExecutor } from '../../destinations/capabilities/CommandPasteExecutor';
+import { EditorPasteExecutor } from '../../destinations/capabilities/EditorPasteExecutor';
 import type { EligibilityChecker } from '../../destinations/capabilities/EligibilityChecker';
-import { NativeCommandTextInserter } from '../../destinations/capabilities/NativeCommandTextInserter';
 import { SelfPasteChecker } from '../../destinations/capabilities/SelfPasteChecker';
-import { TerminalFocusManager } from '../../destinations/capabilities/TerminalFocusManager';
+import { TerminalPasteExecutor } from '../../destinations/capabilities/TerminalPasteExecutor';
 import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
-import { TerminalFocusType } from '../../types/TerminalFocusType';
 import {
   createMockDocument,
   createMockEditor,
@@ -40,36 +37,27 @@ class RejectingEligibilityChecker implements EligibilityChecker {
 describe('ComposablePasteDestination Integration Tests', () => {
   const mockLogger = createMockLogger();
 
-  describe('Terminal-like destination (real capabilities)', () => {
-    it('should complete end-to-end paste flow with TerminalFocusManager', async () => {
+  describe('Terminal-like destination (real TerminalPasteExecutor)', () => {
+    it('should complete end-to-end paste flow with TerminalPasteExecutor', async () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({
         name: 'Test Terminal',
         processId: Promise.resolve(12345),
       });
 
-      // Use REAL capability implementations
-      const focusManager = new TerminalFocusManager(mockAdapter, mockTerminal, mockLogger);
+      const pasteExecutor = new TerminalPasteExecutor(mockAdapter, mockTerminal, mockLogger);
       const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
 
-      // Mock the adapter methods
-      const showTerminalSpy = jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(undefined);
-      const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
-
-      // Create a mock text inserter that uses the adapter
-      const textInserter = new EditorTextInserter(
-        mockAdapter,
-        createMockEditor({ document: createMockDocument({ uri: createMockUri('/test.ts') }) }),
-        mockLogger,
-      );
+      const pasteTextSpy = jest
+        .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
+        .mockResolvedValue(undefined);
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',
         displayName: 'Terminal',
         resource: { kind: 'terminal', terminal: mockTerminal },
-        textInserter,
+        pasteExecutor,
         eligibilityChecker,
-        focusManager,
         isAvailable: () => Promise.resolve(true),
         jumpSuccessMessage: 'Focused terminal',
         loggingDetails: { terminalName: 'Test Terminal' },
@@ -80,42 +68,36 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const result = await destination.pasteLink(formattedLink, 'both');
 
-      expect(result).toStrictEqual(true);
-      expect(showTerminalSpy).toHaveBeenCalledTimes(1);
-      expect(showTerminalSpy).toHaveBeenCalledWith(mockTerminal, TerminalFocusType.StealFocus);
-      expect(insertSpy).toHaveBeenCalledTimes(1);
+      expect(result).toBe(true);
+      expect(mockTerminal.show).toHaveBeenCalledTimes(1);
+      expect(mockTerminal.show).toHaveBeenCalledWith(true);
+      expect(pasteTextSpy).toHaveBeenCalledTimes(1);
+      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, ' src/file.ts#L10 ');
     });
 
     it('should verify focus happens before text insertion', async () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
-      const mockEditor = createMockEditor({
-        document: createMockDocument({ uri: createMockUri('/test.ts') }),
-      });
 
-      const focusManager = new TerminalFocusManager(mockAdapter, mockTerminal, mockLogger);
+      const pasteExecutor = new TerminalPasteExecutor(mockAdapter, mockTerminal, mockLogger);
       const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
-      const textInserter = new EditorTextInserter(mockAdapter, mockEditor, mockLogger);
 
       const callOrder: string[] = [];
 
-      jest.spyOn(mockAdapter, 'showTerminal').mockImplementation(() => {
+      (mockTerminal.show as jest.Mock).mockImplementation(() => {
         callOrder.push('focus');
-        return undefined;
       });
 
-      jest.spyOn(mockAdapter, 'insertTextAtCursor').mockImplementation(async () => {
+      jest.spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard').mockImplementation(async () => {
         callOrder.push('insert');
-        return true;
       });
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',
         displayName: 'Terminal',
         resource: { kind: 'terminal', terminal: mockTerminal },
-        textInserter,
+        pasteExecutor,
         eligibilityChecker,
-        focusManager,
         isAvailable: () => Promise.resolve(true),
         jumpSuccessMessage: 'Focused terminal',
         loggingDetails: {},
@@ -128,35 +110,33 @@ describe('ComposablePasteDestination Integration Tests', () => {
     });
   });
 
-  describe('GitHub Copilot-like destination (NativeCommandTextInserter)', () => {
-    it('should use native API insertion without clipboard', async () => {
+  describe('AI Assistant-like destination (real CommandPasteExecutor)', () => {
+    it('should complete end-to-end paste flow with clipboard and commands', async () => {
       const mockAdapter = createMockVscodeAdapter();
 
-      // Use REAL capability implementations
-      const focusManager = new CommandFocusManager(
+      const pasteExecutor = new CommandPasteExecutor(
         mockAdapter,
-        ['github.copilot.chat.focus'],
+        ['ai.assistant.focus'],
+        ['editor.action.clipboardPasteAction'],
         mockLogger,
       );
       const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
-      const textInserter = new NativeCommandTextInserter(
-        mockAdapter,
-        'github.copilot.chat.insert',
-        (text) => ({ query: text, isPartialQuery: true }),
-        mockLogger,
-      );
 
-      const focusSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+      const executeCommandSpy = jest
+        .spyOn(mockAdapter, 'executeCommand')
+        .mockResolvedValue(undefined);
+      const clipboardSpy = jest
+        .spyOn(mockAdapter, 'writeTextToClipboard')
+        .mockResolvedValue(undefined);
 
       const destination = ComposablePasteDestination.createForTesting({
-        id: 'github-copilot-chat',
-        displayName: 'GitHub Copilot Chat',
+        id: 'claude-code',
+        displayName: 'Claude Code Chat',
         resource: { kind: 'singleton' },
-        textInserter,
+        pasteExecutor,
         eligibilityChecker,
-        focusManager,
         isAvailable: () => Promise.resolve(true),
-        jumpSuccessMessage: 'Focused Copilot Chat',
+        jumpSuccessMessage: 'Focused Claude Code',
         loggingDetails: {},
         logger: mockLogger,
       });
@@ -165,46 +145,37 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const result = await destination.pasteLink(formattedLink, 'both');
 
-      expect(result).toStrictEqual(true);
-      // Focus command called first, then insert command
-      expect(focusSpy).toHaveBeenCalledTimes(2);
-      expect(focusSpy).toHaveBeenNthCalledWith(1, 'github.copilot.chat.focus');
-      expect(focusSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
-        query: ' src/file.ts#L10 ', // padded
-        isPartialQuery: true,
-      });
+      expect(result).toBe(true);
+      expect(executeCommandSpy).toHaveBeenCalledTimes(2);
+      expect(executeCommandSpy).toHaveBeenNthCalledWith(1, 'ai.assistant.focus');
+      expect(clipboardSpy).toHaveBeenCalledWith(' src/file.ts#L10 ');
+      expect(executeCommandSpy).toHaveBeenNthCalledWith(2, 'editor.action.clipboardPasteAction');
     });
 
     it('should try focus commands in order until success', async () => {
       const mockAdapter = createMockVscodeAdapter();
 
-      const focusManager = new CommandFocusManager(
+      const pasteExecutor = new CommandPasteExecutor(
         mockAdapter,
         ['command.first', 'command.second', 'command.third'],
+        ['editor.action.clipboardPasteAction'],
         mockLogger,
       );
       const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
-      const textInserter = new NativeCommandTextInserter(
-        mockAdapter,
-        'insert.command',
-        (text) => ({ text }),
-        mockLogger,
-      );
 
-      // First command fails, second succeeds
-      const commandSpy = jest
+      const executeCommandSpy = jest
         .spyOn(mockAdapter, 'executeCommand')
         .mockRejectedValueOnce(new Error('First failed'))
-        .mockResolvedValueOnce(undefined) // Second succeeds (focus)
-        .mockResolvedValueOnce(undefined); // Insert succeeds
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(undefined);
+      jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
 
       const destination = ComposablePasteDestination.createForTesting({
-        id: 'github-copilot-chat',
-        displayName: 'GitHub Copilot Chat',
+        id: 'claude-code',
+        displayName: 'Claude Code Chat',
         resource: { kind: 'singleton' },
-        textInserter,
+        pasteExecutor,
         eligibilityChecker,
-        focusManager,
         isAvailable: () => Promise.resolve(true),
         jumpSuccessMessage: 'Focused',
         loggingDetails: {},
@@ -213,26 +184,63 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const result = await destination.pasteLink(createMockFormattedLink('test'), 'both');
 
-      expect(result).toStrictEqual(true);
-      expect(commandSpy).toHaveBeenCalledTimes(3);
-      expect(commandSpy).toHaveBeenNthCalledWith(1, 'command.first');
-      expect(commandSpy).toHaveBeenNthCalledWith(2, 'command.second');
-      expect(commandSpy).toHaveBeenNthCalledWith(3, 'insert.command', { text: ' test ' });
+      expect(result).toBe(true);
+      expect(executeCommandSpy).toHaveBeenCalledTimes(3);
+      expect(executeCommandSpy).toHaveBeenNthCalledWith(1, 'command.first');
+      expect(executeCommandSpy).toHaveBeenNthCalledWith(2, 'command.second');
+      expect(executeCommandSpy).toHaveBeenNthCalledWith(3, 'editor.action.clipboardPasteAction');
+    });
+
+    it('should return false when all focus commands fail', async () => {
+      const mockAdapter = createMockVscodeAdapter();
+
+      const pasteExecutor = new CommandPasteExecutor(
+        mockAdapter,
+        ['command.first', 'command.second'],
+        ['editor.action.clipboardPasteAction'],
+        mockLogger,
+      );
+      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+
+      jest
+        .spyOn(mockAdapter, 'executeCommand')
+        .mockRejectedValueOnce(new Error('First failed'))
+        .mockRejectedValueOnce(new Error('Second failed'));
+
+      const destination = ComposablePasteDestination.createForTesting({
+        id: 'claude-code',
+        displayName: 'Claude Code Chat',
+        resource: { kind: 'singleton' },
+        pasteExecutor,
+        eligibilityChecker,
+        isAvailable: () => Promise.resolve(true),
+        jumpSuccessMessage: 'Focused',
+        loggingDetails: {},
+        logger: mockLogger,
+      });
+
+      const result = await destination.pasteLink(createMockFormattedLink('test'), 'both');
+
+      expect(result).toBe(false);
     });
   });
 
-  describe('Text Editor-like destination (EditorTextInserter)', () => {
+  describe('Text Editor-like destination (real EditorPasteExecutor)', () => {
     it('should reject paste when eligibility checker returns false', async () => {
       const mockAdapter = createMockVscodeAdapter();
       const boundEditorUri = createMockUri('/bound-editor.ts');
       const boundEditor = createMockEditor({
         document: createMockDocument({ uri: boundEditorUri }),
+        viewColumn: 1,
       });
 
-      // Use REAL focus manager and text inserter, but mock eligibility to reject
-      const focusManager = new EditorFocusManager(mockAdapter, boundEditor, mockLogger);
+      const pasteExecutor = new EditorPasteExecutor(
+        mockAdapter,
+        boundEditorUri,
+        boundEditor.viewColumn,
+        mockLogger,
+      );
       const eligibilityChecker = new RejectingEligibilityChecker();
-      const textInserter = new EditorTextInserter(mockAdapter, boundEditor, mockLogger);
 
       const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor');
 
@@ -240,9 +248,8 @@ describe('ComposablePasteDestination Integration Tests', () => {
         id: 'text-editor',
         displayName: 'Text Editor',
         resource: { kind: 'editor', editor: boundEditor },
-        textInserter,
+        pasteExecutor,
         eligibilityChecker,
-        focusManager,
         isAvailable: () => Promise.resolve(true),
         jumpSuccessMessage: 'Focused editor',
         loggingDetails: { editorPath: '/bound-editor.ts' },
@@ -253,7 +260,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const result = await destination.pasteLink(formattedLink, 'both');
 
-      expect(result).toStrictEqual(false);
+      expect(result).toBe(false);
       expect(insertSpy).not.toHaveBeenCalled();
     });
 
@@ -263,12 +270,16 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const boundEditorUri = createMockUri('/bound-editor.ts');
       const boundEditor = createMockEditor({
         document: createMockDocument({ uri: boundEditorUri }),
+        viewColumn: 1,
       });
 
-      // Use REAL capability implementations
-      const focusManager = new EditorFocusManager(mockAdapter, boundEditor, mockLogger);
+      const pasteExecutor = new EditorPasteExecutor(
+        mockAdapter,
+        boundEditorUri,
+        boundEditor.viewColumn,
+        mockLogger,
+      );
       const eligibilityChecker = new SelfPasteChecker(mockLogger);
-      const textInserter = new EditorTextInserter(mockAdapter, boundEditor, mockLogger);
 
       jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(boundEditor);
       const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
@@ -277,9 +288,8 @@ describe('ComposablePasteDestination Integration Tests', () => {
         id: 'text-editor',
         displayName: 'Text Editor',
         resource: { kind: 'editor', editor: boundEditor },
-        textInserter,
+        pasteExecutor,
         eligibilityChecker,
-        focusManager,
         isAvailable: () => Promise.resolve(true),
         jumpSuccessMessage: 'Focused editor',
         loggingDetails: { editorPath: '/bound-editor.ts' },
@@ -290,11 +300,11 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const result = await destination.pasteLink(formattedLink, 'both');
 
-      expect(result).toStrictEqual(true);
+      expect(result).toBe(true);
       expect(insertSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('should use EditorFocusManager to focus editor document', async () => {
+    it('should use EditorPasteExecutor to focus editor document', async () => {
       const mockAdapter = createMockVscodeAdapter();
       const boundEditorUri = createMockUri('/bound-editor.ts');
       const boundEditor = createMockEditor({
@@ -302,9 +312,13 @@ describe('ComposablePasteDestination Integration Tests', () => {
         viewColumn: 2,
       });
 
-      const focusManager = new EditorFocusManager(mockAdapter, boundEditor, mockLogger);
+      const pasteExecutor = new EditorPasteExecutor(
+        mockAdapter,
+        boundEditorUri,
+        boundEditor.viewColumn,
+        mockLogger,
+      );
       const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
-      const textInserter = new EditorTextInserter(mockAdapter, boundEditor, mockLogger);
 
       const showDocSpy = jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(boundEditor);
       jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
@@ -313,9 +327,8 @@ describe('ComposablePasteDestination Integration Tests', () => {
         id: 'text-editor',
         displayName: 'Text Editor',
         resource: { kind: 'editor', editor: boundEditor },
-        textInserter,
+        pasteExecutor,
         eligibilityChecker,
-        focusManager,
         isAvailable: () => Promise.resolve(true),
         jumpSuccessMessage: 'Focused editor',
         loggingDetails: {},
@@ -327,6 +340,43 @@ describe('ComposablePasteDestination Integration Tests', () => {
       expect(showDocSpy).toHaveBeenCalledTimes(1);
       expect(showDocSpy).toHaveBeenCalledWith(boundEditorUri, { viewColumn: 2 });
     });
+
+    it('should return false when showTextDocument fails', async () => {
+      const mockAdapter = createMockVscodeAdapter();
+      const boundEditorUri = createMockUri('/bound-editor.ts');
+      const boundEditor = createMockEditor({
+        document: createMockDocument({ uri: boundEditorUri }),
+        viewColumn: 1,
+      });
+
+      const pasteExecutor = new EditorPasteExecutor(
+        mockAdapter,
+        boundEditorUri,
+        boundEditor.viewColumn,
+        mockLogger,
+      );
+      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+
+      jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(new Error('Editor closed'));
+      const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor');
+
+      const destination = ComposablePasteDestination.createForTesting({
+        id: 'text-editor',
+        displayName: 'Text Editor',
+        resource: { kind: 'editor', editor: boundEditor },
+        pasteExecutor,
+        eligibilityChecker,
+        isAvailable: () => Promise.resolve(true),
+        jumpSuccessMessage: 'Focused editor',
+        loggingDetails: {},
+        logger: mockLogger,
+      });
+
+      const result = await destination.pasteLink(createMockFormattedLink('test'), 'both');
+
+      expect(result).toBe(false);
+      expect(insertSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('focus() standalone operation', () => {
@@ -334,24 +384,17 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const focusManager = new TerminalFocusManager(mockAdapter, mockTerminal, mockLogger);
+      const pasteExecutor = new TerminalPasteExecutor(mockAdapter, mockTerminal, mockLogger);
       const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
-      const textInserter = new EditorTextInserter(
-        mockAdapter,
-        createMockEditor({ document: createMockDocument({ uri: createMockUri('/test.ts') }) }),
-        mockLogger,
-      );
 
-      const showTerminalSpy = jest.spyOn(mockAdapter, 'showTerminal').mockReturnValue(undefined);
-      const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor');
+      const pasteTextSpy = jest.spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard');
 
       const destination = ComposablePasteDestination.createForTesting({
         id: 'terminal',
         displayName: 'Terminal',
         resource: { kind: 'terminal', terminal: mockTerminal },
-        textInserter,
+        pasteExecutor,
         eligibilityChecker,
-        focusManager,
         isAvailable: () => Promise.resolve(true),
         jumpSuccessMessage: 'Focused terminal',
         loggingDetails: {},
@@ -360,38 +403,28 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const result = await destination.focus();
 
-      expect(result).toStrictEqual(true);
-      expect(showTerminalSpy).toHaveBeenCalledTimes(1);
-      expect(insertSpy).not.toHaveBeenCalled();
+      expect(result).toBe(true);
+      expect(mockTerminal.show).toHaveBeenCalledTimes(1);
+      expect(pasteTextSpy).not.toHaveBeenCalled();
     });
   });
 
   describe('paddingMode forwarding verification', () => {
-    const setupCopilotChatDestination = (
+    const setupTerminalDestination = (
       mockAdapter: ReturnType<typeof createMockVscodeAdapter>,
+      mockTerminal: ReturnType<typeof createMockTerminal>,
     ) => {
-      const focusManager = new CommandFocusManager(
-        mockAdapter,
-        ['github.copilot.chat.focus'],
-        mockLogger,
-      );
+      const pasteExecutor = new TerminalPasteExecutor(mockAdapter, mockTerminal, mockLogger);
       const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
-      const textInserter = new NativeCommandTextInserter(
-        mockAdapter,
-        'github.copilot.chat.insert',
-        (text) => ({ query: text, isPartialQuery: true }),
-        mockLogger,
-      );
 
       return ComposablePasteDestination.createForTesting({
-        id: 'github-copilot-chat',
-        displayName: 'GitHub Copilot Chat',
-        resource: { kind: 'singleton' },
-        textInserter,
+        id: 'terminal',
+        displayName: 'Terminal',
+        resource: { kind: 'terminal', terminal: mockTerminal },
+        pasteExecutor,
         eligibilityChecker,
-        focusManager,
         isAvailable: () => Promise.resolve(true),
-        jumpSuccessMessage: 'Focused Copilot Chat',
+        jumpSuccessMessage: 'Focused terminal',
         loggingDetails: {},
         logger: mockLogger,
       });
@@ -399,67 +432,72 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
     it('should apply both-side padding when paddingMode is "both"', async () => {
       const mockAdapter = createMockVscodeAdapter();
-      const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
-      const destination = setupCopilotChatDestination(mockAdapter);
+      const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
+      const pasteTextSpy = jest
+        .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
+        .mockResolvedValue(undefined);
+
+      const destination = setupTerminalDestination(mockAdapter, mockTerminal);
 
       await destination.pasteLink(createMockFormattedLink('file.ts#L5'), 'both');
 
-      expect(commandSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
-        query: ' file.ts#L5 ',
-        isPartialQuery: true,
-      });
+      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, ' file.ts#L5 ');
     });
 
     it('should apply before-only padding when paddingMode is "before"', async () => {
       const mockAdapter = createMockVscodeAdapter();
-      const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
-      const destination = setupCopilotChatDestination(mockAdapter);
+      const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
+      const pasteTextSpy = jest
+        .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
+        .mockResolvedValue(undefined);
+
+      const destination = setupTerminalDestination(mockAdapter, mockTerminal);
 
       await destination.pasteLink(createMockFormattedLink('file.ts#L5'), 'before');
 
-      expect(commandSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
-        query: ' file.ts#L5',
-        isPartialQuery: true,
-      });
+      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, ' file.ts#L5');
     });
 
     it('should apply after-only padding when paddingMode is "after"', async () => {
       const mockAdapter = createMockVscodeAdapter();
-      const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
-      const destination = setupCopilotChatDestination(mockAdapter);
+      const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
+      const pasteTextSpy = jest
+        .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
+        .mockResolvedValue(undefined);
+
+      const destination = setupTerminalDestination(mockAdapter, mockTerminal);
 
       await destination.pasteLink(createMockFormattedLink('file.ts#L5'), 'after');
 
-      expect(commandSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
-        query: 'file.ts#L5 ',
-        isPartialQuery: true,
-      });
+      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, 'file.ts#L5 ');
     });
 
     it('should apply no padding when paddingMode is "none"', async () => {
       const mockAdapter = createMockVscodeAdapter();
-      const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
-      const destination = setupCopilotChatDestination(mockAdapter);
+      const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
+      const pasteTextSpy = jest
+        .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
+        .mockResolvedValue(undefined);
+
+      const destination = setupTerminalDestination(mockAdapter, mockTerminal);
 
       await destination.pasteLink(createMockFormattedLink('file.ts#L5'), 'none');
 
-      expect(commandSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
-        query: 'file.ts#L5',
-        isPartialQuery: true,
-      });
+      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, 'file.ts#L5');
     });
 
     it('should forward paddingMode through pasteContent as well', async () => {
       const mockAdapter = createMockVscodeAdapter();
-      const commandSpy = jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
-      const destination = setupCopilotChatDestination(mockAdapter);
+      const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
+      const pasteTextSpy = jest
+        .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
+        .mockResolvedValue(undefined);
+
+      const destination = setupTerminalDestination(mockAdapter, mockTerminal);
 
       await destination.pasteContent('const x = 1;', 'both');
 
-      expect(commandSpy).toHaveBeenNthCalledWith(2, 'github.copilot.chat.insert', {
-        query: ' const x = 1; ',
-        isPartialQuery: true,
-      });
+      expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, ' const x = 1; ');
     });
   });
 });

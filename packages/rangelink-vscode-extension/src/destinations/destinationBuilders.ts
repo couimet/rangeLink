@@ -17,7 +17,6 @@ import {
   isClaudeCodeAvailable,
   isCursorIDEDetected,
   isGitHubCopilotChatAvailable,
-  GITHUB_COPILOT_CHAT_COMMAND,
   GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
 } from '../utils';
 
@@ -52,14 +51,10 @@ export const buildTerminalDestination: DestinationBuilder = (options, context) =
   const terminal = options.terminal;
   const terminalName = context.ideAdapter.getTerminalName(terminal);
 
-  // Delegate to factory method - no config duplication!
   return ComposablePasteDestination.createTerminal({
     terminal,
     displayName: `Terminal ("${terminalName}")`,
-    textInserter: context.factories.textInserter.createClipboardInserter([
-      'workbench.action.terminal.paste',
-    ]),
-    focusManager: context.factories.focusManager.createTerminalFocus(terminal),
+    pasteExecutor: context.factories.pasteExecutor.createTerminalExecutor(terminal),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL, {
       resourceName: terminalName,
     }),
@@ -123,13 +118,11 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
   const resourceName = getEditorResourceName(context, editor);
   const editorPath = context.ideAdapter.getDocumentUri(editor).toString();
 
-  // Delegate to factory method - no config duplication!
   return ComposablePasteDestination.createEditor({
     editor,
     displayName: `Text Editor ("${resourceName}")`,
-    textInserter: context.factories.textInserter.createEditorInserter(editor),
+    pasteExecutor: context.factories.pasteExecutor.createEditorExecutor(editor),
     eligibilityChecker: context.factories.eligibilityChecker.createSelfPasteChecker(),
-    focusManager: context.factories.focusManager.createEditorFocus(editor),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, {
       resourceName,
     }),
@@ -158,16 +151,13 @@ export const buildCursorAIDestination: DestinationBuilder = (options, context) =
     });
   }
 
-  const focusManager = context.factories.focusManager.createCommandFocus(CURSOR_AI_FOCUS_COMMANDS);
-
   return ComposablePasteDestination.createAiAssistant({
     id: 'cursor-ai',
     displayName: 'Cursor AI Assistant',
-    textInserter: context.factories.textInserter.createClipboardInserter(
+    pasteExecutor: context.factories.pasteExecutor.createCommandExecutor(
+      CURSOR_AI_FOCUS_COMMANDS,
       [...CHAT_PASTE_COMMANDS],
-      () => focusManager.focus({ fn: 'buildCursorAIDestination.beforePaste' }),
     ),
-    focusManager,
     isAvailable: async () => isCursorIDEDetected(context.ideAdapter, context.logger),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI),
     loggingDetails: {},
@@ -198,18 +188,13 @@ export const buildClaudeCodeDestination: DestinationBuilder = (options, context)
     });
   }
 
-  const focusManager = context.factories.focusManager.createCommandFocus(
-    CLAUDE_CODE_FOCUS_COMMANDS,
-  );
-
   return ComposablePasteDestination.createAiAssistant({
     id: 'claude-code',
     displayName: 'Claude Code Chat',
-    textInserter: context.factories.textInserter.createClipboardInserter(
+    pasteExecutor: context.factories.pasteExecutor.createCommandExecutor(
+      CLAUDE_CODE_FOCUS_COMMANDS,
       [...CHAT_PASTE_COMMANDS],
-      () => focusManager.focus({ fn: 'buildClaudeCodeDestination.beforePaste' }),
     ),
-    focusManager,
     isAvailable: async () => isClaudeCodeAvailable(context.ideAdapter, context.logger),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE),
     loggingDetails: {},
@@ -259,18 +244,13 @@ export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, c
     });
   }
 
-  const focusManager = context.factories.focusManager.createCommandFocus(
-    GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
-  );
-
   return ComposablePasteDestination.createAiAssistant({
     id: 'github-copilot-chat',
     displayName: 'GitHub Copilot Chat',
-    textInserter: context.factories.textInserter.createClipboardInserter(
+    pasteExecutor: context.factories.pasteExecutor.createCommandExecutor(
+      GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
       [...CHAT_PASTE_COMMANDS],
-      () => focusManager.focus({ fn: 'buildGitHubCopilotChatDestination.beforePaste' }),
     ),
-    focusManager,
     isAvailable: () => isGitHubCopilotChatAvailable(context.ideAdapter, context.logger),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT),
     loggingDetails: {},
