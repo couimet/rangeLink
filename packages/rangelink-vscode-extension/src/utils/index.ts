@@ -6,6 +6,7 @@ export * from './destinationTypeGuards';
 export * from './formatLinkPosition';
 export * from './formatLinkTooltip';
 export * from './formatMessage';
+export * from './generateLinkFromSelections';
 export * from './getUntitledDisplayName';
 export * from './isBinaryFile';
 export * from './isEligibleForPaste';

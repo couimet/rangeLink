@@ -186,7 +186,7 @@ describe('package.json contributions', () => {
       it('rangelink.openStatusBarMenu', () => {
         expect(findCommand('rangelink.openStatusBarMenu')).toStrictEqual({
           command: 'rangelink.openStatusBarMenu',
-          title: 'Open RangeLink Status Bar Menu',
+          title: 'Open RangeLink Menu',
           category: 'RangeLink',
           icon: '$(link)',
         });
@@ -202,8 +202,20 @@ describe('package.json contributions', () => {
       });
     });
 
-    it('has exactly 16 commands', () => {
-      expect(commands).toHaveLength(16);
+    describe('bookmark commands', () => {
+      it('rangelink.bookmark.add', () => {
+        expect(findCommand('rangelink.bookmark.add')).toStrictEqual({
+          command: 'rangelink.bookmark.add',
+          title: 'Save Selection as Bookmark',
+          category: 'RangeLink',
+          icon: '$(bookmark)',
+          enablement: 'editorHasSelection',
+        });
+      });
+    });
+
+    it('has the expected number of commands', () => {
+      expect(commands).toHaveLength(17);
     });
   });
 
@@ -299,7 +311,7 @@ describe('package.json contributions', () => {
       });
     });
 
-    it('has exactly 7 configuration properties', () => {
+    it('has the expected number of configuration properties', () => {
       expect(Object.keys(properties)).toHaveLength(7);
     });
   });
@@ -381,15 +393,24 @@ describe('package.json contributions', () => {
       });
     });
 
-    it('has exactly 8 keybindings', () => {
-      expect(keybindings).toHaveLength(8);
+    it('rangelink.bookmark.add keybinding', () => {
+      expect(findKeybinding('rangelink.bookmark.add')).toStrictEqual({
+        command: 'rangelink.bookmark.add',
+        key: 'ctrl+r ctrl+b ctrl+s',
+        mac: 'cmd+r cmd+b cmd+s',
+        when: 'editorHasSelection',
+      });
+    });
+
+    it('has the expected number of keybindings', () => {
+      expect(keybindings).toHaveLength(9);
     });
   });
 
   describe('menus', () => {
     const editorContextMenu = packageJson.contributes.menus['editor/context'] as MenuContribution[];
 
-    it('has 5 editor context menu items', () => {
+    it('has the expected number of editor context menu items', () => {
       expect(editorContextMenu).toHaveLength(5);
     });
 

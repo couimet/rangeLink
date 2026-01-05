@@ -2,6 +2,7 @@ import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { BookmarksStore } from './bookmarks';
+import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
 import { ConfigReader, getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
@@ -127,6 +128,14 @@ export function activate(context: vscode.ExtensionContext): void {
   const parser = new RangeLinkParser(delimiters, getLogger());
   const navigationHandler = new RangeLinkNavigationHandler(parser, ideAdapter, getLogger());
   getLogger().debug({ fn: 'activate' }, 'Parser and navigation handler created');
+
+  const addBookmarkCommand = new AddBookmarkCommand(
+    parser,
+    delimiters,
+    ideAdapter,
+    bookmarksStore,
+    getLogger(),
+  );
 
   // Register terminal link provider for clickable links
   const terminalLinkProvider = new RangeLinkTerminalProvider(
@@ -309,11 +318,8 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  // Register bookmark commands (stub implementations - full implementation in issues #164-#166)
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_BOOKMARK_ADD, () => {
-      getLogger().info({ fn: 'CMD_BOOKMARK_ADD' }, 'Add bookmark command invoked (stub)');
-    }),
+    ideAdapter.registerCommand(CMD_BOOKMARK_ADD, () => addBookmarkCommand.execute()),
   );
 
   context.subscriptions.push(
