@@ -29,7 +29,7 @@ export class PasteExecutorFactory {
   }
 
   createTerminalExecutor(terminal: vscode.Terminal): PasteExecutor {
-    return new TerminalPasteExecutor(terminal, this.logger);
+    return new TerminalPasteExecutor(this.ideAdapter, terminal, this.logger);
   }
 
   createCommandExecutor(focusCommands: string[], pasteCommands: string[]): PasteExecutor {

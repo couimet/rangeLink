@@ -2,15 +2,18 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
+import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+
 import { FocusErrorReason, type FocusResult, type PasteExecutor } from './PasteExecutor';
 
 /**
  * PasteExecutor for terminal destinations.
  *
- * Stores the terminal reference and provides focus/insert capabilities.
+ * Uses clipboard-based paste (pasteTextToTerminalViaClipboard) to insert text.
  */
 export class TerminalPasteExecutor implements PasteExecutor {
   constructor(
+    private readonly ideAdapter: VscodeAdapter,
     private readonly terminal: vscode.Terminal,
     private readonly logger: Logger,
   ) {}
@@ -42,16 +45,16 @@ export class TerminalPasteExecutor implements PasteExecutor {
   private createInsertFunction(): (text: string, context: LoggingContext) => Promise<boolean> {
     return async (text: string, context: LoggingContext): Promise<boolean> => {
       try {
-        this.terminal.sendText(text, false);
+        await this.ideAdapter.pasteTextToTerminalViaClipboard(this.terminal, text);
         this.logger.info(
           { ...context, terminalName: this.terminal.name },
-          'Terminal sendText succeeded',
+          'Terminal clipboard paste succeeded',
         );
         return true;
       } catch (error) {
         this.logger.warn(
           { ...context, terminalName: this.terminal.name, error },
-          'Terminal sendText threw exception',
+          'Terminal clipboard paste threw exception',
         );
         return false;
       }
