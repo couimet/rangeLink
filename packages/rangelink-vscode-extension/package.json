@@ -161,6 +161,12 @@
         "category": "RangeLink",
         "icon": "$(bookmark)",
         "enablement": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.bookmark.list",
+        "title": "Open Bookmarks",
+        "category": "RangeLink",
+        "icon": "$(bookmark)"
       }
     ],
     "configuration": {
@@ -296,6 +302,11 @@
         "key": "ctrl+r ctrl+b ctrl+s",
         "mac": "cmd+r cmd+b cmd+s",
         "when": "editorHasSelection"
+      },
+      {
+        "command": "rangelink.bookmark.list",
+        "key": "ctrl+r ctrl+b",
+        "mac": "cmd+r cmd+b"
       }
     ],
     "menus": {
