@@ -41,3 +41,13 @@ export { TerminalFocusManager } from './TerminalFocusManager';
 export { EditorFocusManager } from './EditorFocusManager';
 export { CommandFocusManager } from './CommandFocusManager';
 export { FocusManagerFactory } from './FocusManagerFactory';
+
+// ============================================================================
+// PasteExecutor: Unified focus + insert capability (replaces FocusManager + TextInserter for destinations)
+// ============================================================================
+
+export type { PasteExecutor, FocusResult, FocusSuccess, FocusError } from './PasteExecutor';
+export { FocusErrorReason } from './PasteExecutor';
+export { EditorPasteExecutor } from './EditorPasteExecutor';
+export { TerminalPasteExecutor } from './TerminalPasteExecutor';
+export { PasteExecutorFactory } from './PasteExecutorFactory';

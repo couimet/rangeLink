@@ -1,0 +1,60 @@
+import type { Logger, LoggingContext } from 'barebone-logger';
+import { Result } from 'rangelink-core-ts';
+import type * as vscode from 'vscode';
+
+import { FocusErrorReason, type FocusResult, type PasteExecutor } from './PasteExecutor';
+
+/**
+ * PasteExecutor for terminal destinations.
+ *
+ * Stores the terminal reference and provides focus/insert capabilities.
+ */
+export class TerminalPasteExecutor implements PasteExecutor {
+  constructor(
+    private readonly terminal: vscode.Terminal,
+    private readonly logger: Logger,
+  ) {}
+
+  async focus(context: LoggingContext): Promise<FocusResult> {
+    try {
+      this.terminal.show(true);
+
+      this.logger.debug(
+        { ...context, terminalName: this.terminal.name },
+        'Terminal focused via show()',
+      );
+
+      return Result.ok({
+        insert: this.createInsertFunction(),
+      });
+    } catch (error) {
+      this.logger.warn(
+        { ...context, terminalName: this.terminal.name, error },
+        'Failed to focus terminal',
+      );
+      return Result.err({
+        reason: FocusErrorReason.TERMINAL_FOCUS_FAILED,
+        cause: error,
+      });
+    }
+  }
+
+  private createInsertFunction(): (text: string, context: LoggingContext) => Promise<boolean> {
+    return async (text: string, context: LoggingContext): Promise<boolean> => {
+      try {
+        this.terminal.sendText(text, false);
+        this.logger.info(
+          { ...context, terminalName: this.terminal.name },
+          'Terminal sendText succeeded',
+        );
+        return true;
+      } catch (error) {
+        this.logger.warn(
+          { ...context, terminalName: this.terminal.name, error },
+          'Terminal sendText threw exception',
+        );
+        return false;
+      }
+    };
+  }
+}
