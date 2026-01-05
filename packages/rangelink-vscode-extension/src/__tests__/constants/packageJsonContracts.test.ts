@@ -214,7 +214,7 @@ describe('package.json contributions', () => {
       });
     });
 
-    it('has exactly 17 commands', () => {
+    it('has the expected number of commands', () => {
       expect(commands).toHaveLength(17);
     });
   });
@@ -311,7 +311,7 @@ describe('package.json contributions', () => {
       });
     });
 
-    it('has exactly 7 configuration properties', () => {
+    it('has the expected number of configuration properties', () => {
       expect(Object.keys(properties)).toHaveLength(7);
     });
   });
@@ -402,7 +402,7 @@ describe('package.json contributions', () => {
       });
     });
 
-    it('has exactly 9 keybindings', () => {
+    it('has the expected number of keybindings', () => {
       expect(keybindings).toHaveLength(9);
     });
   });
@@ -410,7 +410,7 @@ describe('package.json contributions', () => {
   describe('menus', () => {
     const editorContextMenu = packageJson.contributes.menus['editor/context'] as MenuContribution[];
 
-    it('has 5 editor context menu items', () => {
+    it('has the expected number of editor context menu items', () => {
       expect(editorContextMenu).toHaveLength(5);
     });
 
