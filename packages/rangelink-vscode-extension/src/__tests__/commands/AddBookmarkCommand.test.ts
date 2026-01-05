@@ -206,15 +206,19 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockBookmarksStore.add).toHaveBeenCalled();
-        const addCall = mockBookmarksStore.add.mock.calls[0][0];
-        expect(addCall.label).toBe('Generated Bookmark');
-        expect(addCall.link).toMatch(/component\.ts#L10-L19/);
+        expect(mockBookmarksStore.add).toHaveBeenCalledWith({
+          label: 'Generated Bookmark',
+          link: '/Users/test/project/src/component.ts#L10-L19',
+          scope: 'global',
+        });
         expect(mockLogger.info).toHaveBeenCalledWith(
-          expect.objectContaining({
+          {
             fn: 'AddBookmarkCommand.execute',
             source: 'generated',
-          }),
+            link: '/Users/test/project/src/component.ts#L10-L19',
+            selectionCount: 1,
+            isRectangular: false,
+          },
           'Generated link from selection',
         );
       });
@@ -282,17 +286,19 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockBookmarksStore.add).toHaveBeenCalled();
-        const addCall = mockBookmarksStore.add.mock.calls[0][0];
-        expect(addCall.label).toBe('Rectangular Selection');
-        expect(addCall.link).toMatch(/columns\.ts#.*L2.*L4/);
+        expect(mockBookmarksStore.add).toHaveBeenCalledWith({
+          label: 'Rectangular Selection',
+          link: '/Users/test/project/src/columns.ts##L2C1-L4C4',
+          scope: 'global',
+        });
         expect(mockLogger.info).toHaveBeenCalledWith(
-          expect.objectContaining({
+          {
             fn: 'AddBookmarkCommand.execute',
             source: 'generated',
+            link: '/Users/test/project/src/columns.ts##L2C1-L4C4',
             selectionCount: 3,
             isRectangular: true,
-          }),
+          },
           'Generated link from selection',
         );
       });
@@ -433,6 +439,7 @@ describe('AddBookmarkCommand', () => {
 
     describe('BookmarksStore.add() failure', () => {
       it('shows error when BookmarksStore.add() fails', async () => {
+        const storageError = new Error('Storage quota exceeded');
         const editor = createMockEditor({ text: TEST_LINK });
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
@@ -441,7 +448,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         setupAdapterSpies(mockAdapter);
-        mockBookmarksStore.add.mockRejectedValue(new Error('Storage quota exceeded'));
+        mockBookmarksStore.add.mockRejectedValue(storageError);
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -456,7 +463,7 @@ describe('AddBookmarkCommand', () => {
           'RangeLink: Failed to save bookmark',
         );
         expect(mockLogger.error).toHaveBeenCalledWith(
-          expect.objectContaining({ fn: 'AddBookmarkCommand.execute' }),
+          { fn: 'AddBookmarkCommand.execute', error: storageError },
           'Failed to save bookmark',
         );
       });
