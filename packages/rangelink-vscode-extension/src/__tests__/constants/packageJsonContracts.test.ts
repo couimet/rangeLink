@@ -186,7 +186,7 @@ describe('package.json contributions', () => {
       it('rangelink.openStatusBarMenu', () => {
         expect(findCommand('rangelink.openStatusBarMenu')).toStrictEqual({
           command: 'rangelink.openStatusBarMenu',
-          title: 'Open RangeLink Status Bar Menu',
+          title: 'Open RangeLink Menu',
           category: 'RangeLink',
           icon: '$(link)',
         });
