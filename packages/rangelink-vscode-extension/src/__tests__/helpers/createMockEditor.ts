@@ -10,7 +10,7 @@ import { createMockUri } from './createMockUri';
 
 /**
  * Structured options for creating mock editors with common test scenarios.
- * Use this when you need a quick mock with text content and selections.
+ * Properties here don't exist on vscode.TextEditor, enabling type discrimination.
  */
 export interface MockEditorOptions {
   text?: string;
@@ -23,20 +23,22 @@ export interface MockEditorOptions {
 
 const DEFAULT_FS_PATH = '/test/file.ts';
 
+const STRUCTURED_OPTION_KEYS: (keyof MockEditorOptions)[] = [
+  'text',
+  'isUntitled',
+  'fsPath',
+  'selectionStart',
+  'selectionEnd',
+  'isEmpty',
+];
+
 const isStructuredOptions = (
   options: MockEditorOptions | Partial<vscode.TextEditor> | undefined,
 ): options is MockEditorOptions => {
   if (!options) return false;
-  const keys = Object.keys(options);
-  const structuredKeys = [
-    'text',
-    'isUntitled',
-    'fsPath',
-    'selectionStart',
-    'selectionEnd',
-    'isEmpty',
-  ];
-  return keys.some((key) => structuredKeys.includes(key));
+  return Object.keys(options).some((key) =>
+    STRUCTURED_OPTION_KEYS.includes(key as keyof MockEditorOptions),
+  );
 };
 
 const createEditorFromStructuredOptions = (options: MockEditorOptions): vscode.TextEditor => {
@@ -88,10 +90,31 @@ const createEditorFromStructuredOptions = (options: MockEditorOptions): vscode.T
   } as unknown as vscode.TextEditor;
 };
 
+const createEditorFromOverrides = (overrides?: Partial<vscode.TextEditor>): vscode.TextEditor => {
+  const defaultDocument = createMockDocument({
+    getText: createMockText('const x = 42; // Sample line content'),
+    uri: createMockUri(DEFAULT_FS_PATH),
+  });
+
+  const baseEditor = {
+    document: defaultDocument,
+    selection: null as unknown as vscode.Selection,
+    selections: [] as vscode.Selection[],
+    revealRange: jest.fn(),
+    edit: jest.fn().mockResolvedValue(true),
+    viewColumn: 1,
+  };
+
+  return {
+    ...baseEditor,
+    ...overrides,
+  } as unknown as vscode.TextEditor;
+};
+
 /**
  * Create a mock TextEditor with sensible defaults.
  *
- * Supports two usage patterns:
+ * Supports two usage patterns (auto-detected):
  *
  * **Pattern 1: Structured options (recommended for most tests)**
  * ```typescript
@@ -114,29 +137,13 @@ const createEditorFromStructuredOptions = (options: MockEditorOptions): vscode.T
  * @param options - Structured options OR direct property overrides
  * @returns Mock TextEditor
  */
-export const createMockEditor = (
+export function createMockEditor(options: MockEditorOptions): vscode.TextEditor;
+export function createMockEditor(overrides?: Partial<vscode.TextEditor>): vscode.TextEditor;
+export function createMockEditor(
   options?: MockEditorOptions | Partial<vscode.TextEditor>,
-): vscode.TextEditor => {
+): vscode.TextEditor {
   if (isStructuredOptions(options)) {
     return createEditorFromStructuredOptions(options);
   }
-
-  const defaultDocument = createMockDocument({
-    getText: createMockText('const x = 42; // Sample line content'),
-    uri: createMockUri(DEFAULT_FS_PATH),
-  });
-
-  const baseEditor = {
-    document: defaultDocument,
-    selection: null as unknown as vscode.Selection,
-    selections: [] as vscode.Selection[],
-    revealRange: jest.fn(),
-    edit: jest.fn().mockResolvedValue(true),
-    viewColumn: 1,
-  };
-
-  return {
-    ...baseEditor,
-    ...options,
-  } as unknown as vscode.TextEditor;
-};
+  return createEditorFromOverrides(options);
+}

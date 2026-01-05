@@ -154,7 +154,6 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   private async buildQuickPickItems(): Promise<MenuQuickPickItem[]> {
     return [
       ...(await this.buildJumpOrDestinationsSection()),
-      { label: '', kind: vscode.QuickPickItemKind.Separator },
       ...this.buildBookmarksQuickPickItems(),
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
@@ -209,11 +208,14 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   private buildBookmarksQuickPickItems(): MenuQuickPickItem[] {
     const result: MenuQuickPickItem[] = [];
     const bookmarks = this.bookmarksStore.getAll();
-    const countSuffix = bookmarks.length > 0 ? ` (${bookmarks.length})` : '';
 
     result.push({
-      label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL) + countSuffix,
+      label: '',
       kind: vscode.QuickPickItemKind.Separator,
+    });
+
+    result.push({
+      label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL),
     });
 
     if (bookmarks.length === 0) {
@@ -223,7 +225,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     } else {
       for (const bookmark of bookmarks) {
         result.push({
-          label: `${MENU_ITEM_INDENT}$(file) ${bookmark.label}`,
+          label: `${MENU_ITEM_INDENT}$(bookmark) ${bookmark.label}`,
           description: bookmark.description,
           command: CMD_BOOKMARK_NAVIGATE,
           bookmarkId: bookmark.id,

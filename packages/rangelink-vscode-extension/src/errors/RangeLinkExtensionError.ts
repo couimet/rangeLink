@@ -12,7 +12,7 @@ import type { RangeLinkExtensionErrorCodes } from './RangeLinkExtensionErrorCode
  * - Cause chaining
  *
  * Inherits shared error codes from rangelink-core-ts (VALIDATION, UNKNOWN, UNEXPECTED_CODE_PATH)
- * and adds extension-specific codes (DESTINATION_NOT_IMPLEMENTED, EMPTY_SELECTION, etc.).
+ * and adds extension-specific codes (DESTINATION_NOT_IMPLEMENTED, GENERATE_LINK_SELECTION_EMPTY, etc.).
  */
 export class RangeLinkExtensionError extends DetailedError<RangeLinkExtensionErrorCodes> {
   constructor(options: ErrorOptions<RangeLinkExtensionErrorCodes>) {

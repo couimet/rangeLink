@@ -183,6 +183,48 @@ describe('VscodeAdapter', () => {
     });
   });
 
+  describe('showInputBox', () => {
+    it('should show input box with options', async () => {
+      const options = {
+        prompt: 'Enter a label',
+        value: 'default',
+        placeHolder: 'Type here...',
+      };
+      (mockVSCode.window.showInputBox as jest.Mock).mockResolvedValue('user input');
+
+      const result = await adapter.showInputBox(options);
+
+      expect(mockVSCode.window.showInputBox).toHaveBeenCalledWith(options);
+      expect(mockVSCode.window.showInputBox).toHaveBeenCalledTimes(1);
+      expect(result).toBe('user input');
+    });
+
+    it('should return undefined when user cancels', async () => {
+      (mockVSCode.window.showInputBox as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await adapter.showInputBox({ prompt: 'test' });
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return empty string when user clears input and confirms', async () => {
+      (mockVSCode.window.showInputBox as jest.Mock).mockResolvedValue('');
+
+      const result = await adapter.showInputBox({ prompt: 'test' });
+
+      expect(result).toBe('');
+    });
+
+    it('should work without options', async () => {
+      (mockVSCode.window.showInputBox as jest.Mock).mockResolvedValue('input');
+
+      const result = await adapter.showInputBox();
+
+      expect(mockVSCode.window.showInputBox).toHaveBeenCalledWith(undefined);
+      expect(result).toBe('input');
+    });
+  });
+
   describe('integration scenarios', () => {
     it('should handle multiple clipboard operations sequentially', async () => {
       await adapter.writeTextToClipboard('first');
