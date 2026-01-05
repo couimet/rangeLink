@@ -154,10 +154,9 @@ export const buildCursorAIDestination: DestinationBuilder = (options, context) =
   return ComposablePasteDestination.createAiAssistant({
     id: 'cursor-ai',
     displayName: 'Cursor AI Assistant',
-    pasteExecutor: context.factories.pasteExecutor.createCommandExecutor(
-      CURSOR_AI_FOCUS_COMMANDS,
-      [...CHAT_PASTE_COMMANDS],
-    ),
+    pasteExecutor: context.factories.pasteExecutor.createCommandExecutor(CURSOR_AI_FOCUS_COMMANDS, [
+      ...CHAT_PASTE_COMMANDS,
+    ]),
     isAvailable: async () => isCursorIDEDetected(context.ideAdapter, context.logger),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI),
     loggingDetails: {},
