@@ -85,11 +85,11 @@ describe('AddBookmarkCommand', () => {
           selectionEnd: { line: 0, character: TEST_LINK.length },
         });
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue('My Bookmark'),
+          },
         });
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest
-          .fn()
-          .mockResolvedValue('My Bookmark');
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -119,11 +119,11 @@ describe('AddBookmarkCommand', () => {
           selectionEnd: { line: 0, character: TEST_LINK.length },
         });
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue('Bookmark from Scratchpad'),
+          },
         });
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest
-          .fn()
-          .mockResolvedValue('Bookmark from Scratchpad');
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -150,11 +150,11 @@ describe('AddBookmarkCommand', () => {
         });
         editor.document.getText = jest.fn(() => multiLineLink);
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue('Multi-line Bookmark'),
+          },
         });
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest
-          .fn()
-          .mockResolvedValue('Multi-line Bookmark');
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -190,12 +190,12 @@ describe('AddBookmarkCommand', () => {
           }) as Result<ParsedLink, RangeLinkError>,
         );
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue('Generated Bookmark'),
+          },
         });
         setupAdapterSpies(mockAdapter);
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest
-          .fn()
-          .mockResolvedValue('Generated Bookmark');
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -266,12 +266,12 @@ describe('AddBookmarkCommand', () => {
           }) as Result<ParsedLink, RangeLinkError>,
         );
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue('Rectangular Selection'),
+          },
         });
         setupAdapterSpies(mockAdapter);
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest
-          .fn()
-          .mockResolvedValue('Rectangular Selection');
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -377,11 +377,11 @@ describe('AddBookmarkCommand', () => {
       it('does not save bookmark when user cancels InputBox', async () => {
         const editor = createMockEditor({ text: TEST_LINK });
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue(undefined),
+          },
         });
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest
-          .fn()
-          .mockResolvedValue(undefined);
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -404,10 +404,12 @@ describe('AddBookmarkCommand', () => {
       it('shows error when user enters empty label', async () => {
         const editor = createMockEditor({ text: TEST_LINK });
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue('   '),
+          },
         });
         setupAdapterSpies(mockAdapter);
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest.fn().mockResolvedValue('   ');
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -433,12 +435,12 @@ describe('AddBookmarkCommand', () => {
       it('shows error when BookmarksStore.add() fails', async () => {
         const editor = createMockEditor({ text: TEST_LINK });
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue('Test Label'),
+          },
         });
         setupAdapterSpies(mockAdapter);
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest
-          .fn()
-          .mockResolvedValue('Test Label');
         mockBookmarksStore.add.mockRejectedValue(new Error('Storage quota exceeded'));
         command = new AddBookmarkCommand(
           mockParser,
@@ -464,12 +466,12 @@ describe('AddBookmarkCommand', () => {
       it('shows status bar confirmation when bookmark is saved', async () => {
         const editor = createMockEditor({ text: TEST_LINK });
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue('Success Bookmark'),
+          },
         });
         setupAdapterSpies(mockAdapter);
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest
-          .fn()
-          .mockResolvedValue('Success Bookmark');
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -492,11 +494,11 @@ describe('AddBookmarkCommand', () => {
       it('trims whitespace from label', async () => {
         const editor = createMockEditor({ text: TEST_LINK });
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue('  Trimmed Label  '),
+          },
         });
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest
-          .fn()
-          .mockResolvedValue('  Trimmed Label  ');
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -517,16 +519,16 @@ describe('AddBookmarkCommand', () => {
       it('generates default label from link filename', async () => {
         const testLink = 'src/components/Button.tsx#L10';
         const editor = createMockEditor({ text: testLink });
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
-        });
         const capturedOptions: { value?: string; prompt?: string }[] = [];
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest.fn(
-          (opts: { value?: string; prompt?: string }) => {
-            capturedOptions.push(opts);
-            return Promise.resolve('Final Label');
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn((opts: { value?: string; prompt?: string }) => {
+              capturedOptions.push(opts);
+              return Promise.resolve('Final Label');
+            }),
           },
-        );
+        });
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -544,11 +546,11 @@ describe('AddBookmarkCommand', () => {
       it('logs when showing bookmark label input', async () => {
         const editor = createMockEditor({ text: TEST_LINK });
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showInputBox: jest.fn().mockResolvedValue('Label'),
+          },
         });
-        mockAdapter.__getVscodeInstance().window.showInputBox = jest
-          .fn()
-          .mockResolvedValue('Label');
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
