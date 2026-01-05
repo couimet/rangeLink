@@ -628,7 +628,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * **Lazy unbind strategy:**
    * - Only unbinds when bound document is actually closed (not just hidden)
    * - Allows user to move document between tab groups or switch to other files
-   * - Paste attempt will show "not topmost" warning if document exists but not visible
+   * - Paste automatically brings hidden document to foreground via showTextDocument()
    */
   private setupTextDocumentCloseListener(): void {
     const documentCloseDisposable = this.vscodeAdapter.onDidCloseTextDocument((closedDocument) => {
