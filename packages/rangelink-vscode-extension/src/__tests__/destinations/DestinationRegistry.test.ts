@@ -9,8 +9,7 @@ import {
 import {
   createBaseMockPasteDestination,
   createMockEligibilityCheckerFactory,
-  createMockFocusManagerFactory,
-  createMockTextInserterFactory,
+  createMockPasteExecutorFactory,
   createMockVscodeAdapter,
 } from '../helpers';
 
@@ -19,16 +18,14 @@ describe('DestinationRegistry', () => {
   const mockAdapter = createMockVscodeAdapter();
 
   const createMockFactories = () => ({
-    textInserter: createMockTextInserterFactory(),
+    pasteExecutor: createMockPasteExecutorFactory(),
     eligibilityChecker: createMockEligibilityCheckerFactory(),
-    focusManager: createMockFocusManagerFactory(),
   });
 
   const createRegistry = (factories = createMockFactories()) =>
     new DestinationRegistry(
-      factories.textInserter,
+      factories.pasteExecutor,
       factories.eligibilityChecker,
-      factories.focusManager,
       mockAdapter,
       mockLogger,
     );
@@ -94,9 +91,8 @@ describe('DestinationRegistry', () => {
       expect(builder).toHaveBeenCalledTimes(1);
       expect(builder).toHaveBeenCalledWith(options, {
         factories: {
-          textInserter: factories.textInserter,
+          pasteExecutor: factories.pasteExecutor,
           eligibilityChecker: factories.eligibilityChecker,
-          focusManager: factories.focusManager,
         },
         ideAdapter: mockAdapter,
         logger: mockLogger,
@@ -108,7 +104,6 @@ describe('DestinationRegistry', () => {
       const registry = createRegistry(factories);
       const mockDestination = createBaseMockPasteDestination({ id: 'cursor-ai' });
 
-      // Capture context for reference equality assertions
       let capturedContext: DestinationBuilderContext | undefined;
       const builder = jest.fn().mockImplementation((_opts, ctx) => {
         capturedContext = ctx;
@@ -120,9 +115,8 @@ describe('DestinationRegistry', () => {
 
       expect(builder).toHaveBeenCalledTimes(1);
       expect(capturedContext).toBeDefined();
-      expect(capturedContext!.factories.textInserter).toBe(factories.textInserter);
+      expect(capturedContext!.factories.pasteExecutor).toBe(factories.pasteExecutor);
       expect(capturedContext!.factories.eligibilityChecker).toBe(factories.eligibilityChecker);
-      expect(capturedContext!.factories.focusManager).toBe(factories.focusManager);
     });
 
     it('should pass ideAdapter to builder context (reference equality)', () => {
@@ -223,22 +217,28 @@ describe('DestinationRegistry', () => {
   });
 
   describe('factory injection', () => {
-    it('should allow mocking TextInserterFactory methods in builder', () => {
+    it('should allow mocking PasteExecutorFactory methods in builder', () => {
       const factories = createMockFactories();
-      const mockInserter = { insert: jest.fn() };
-      factories.textInserter.createClipboardInserter.mockReturnValue(mockInserter as never);
+      const mockExecutor = { focus: jest.fn() };
+      factories.pasteExecutor.createCommandExecutor.mockReturnValue(mockExecutor as never);
       const registry = createRegistry(factories);
 
-      let capturedInserter: unknown;
+      let capturedExecutor: unknown;
       const builder: DestinationBuilder = (_options, context) => {
-        capturedInserter = context.factories.textInserter.createClipboardInserter(['paste']);
+        capturedExecutor = context.factories.pasteExecutor.createCommandExecutor(
+          ['focus'],
+          ['paste'],
+        );
         return createBaseMockPasteDestination({ id: 'terminal' });
       };
       registry.register('terminal', builder);
       registry.create({ type: 'terminal', terminal: {} as never });
 
-      expect(capturedInserter).toBe(mockInserter);
-      expect(factories.textInserter.createClipboardInserter).toHaveBeenCalledWith(['paste']);
+      expect(capturedExecutor).toBe(mockExecutor);
+      expect(factories.pasteExecutor.createCommandExecutor).toHaveBeenCalledWith(
+        ['focus'],
+        ['paste'],
+      );
     });
 
     it('should allow mocking EligibilityCheckerFactory methods in builder', () => {
@@ -257,24 +257,6 @@ describe('DestinationRegistry', () => {
 
       expect(capturedChecker).toBe(mockChecker);
       expect(factories.eligibilityChecker.createAlwaysEligible).toHaveBeenCalledTimes(1);
-    });
-
-    it('should allow mocking FocusManagerFactory methods in builder', () => {
-      const factories = createMockFactories();
-      const mockFocusManager = { focus: jest.fn() };
-      factories.focusManager.createCommandFocus.mockReturnValue(mockFocusManager as never);
-      const registry = createRegistry(factories);
-
-      let capturedFocusManager: unknown;
-      const builder: DestinationBuilder = (_options, context) => {
-        capturedFocusManager = context.factories.focusManager.createCommandFocus(['cmd']);
-        return createBaseMockPasteDestination({ id: 'text-editor' });
-      };
-      registry.register('text-editor', builder);
-      registry.create({ type: 'text-editor', editor: {} as never });
-
-      expect(capturedFocusManager).toBe(mockFocusManager);
-      expect(factories.focusManager.createCommandFocus).toHaveBeenCalledWith(['cmd']);
     });
 
     it('should provide same context to all builder invocations', () => {
@@ -303,27 +285,23 @@ describe('DestinationRegistry', () => {
   describe('real-world usage pattern', () => {
     it('should support building ComposablePasteDestination with injected capabilities', () => {
       const factories = createMockFactories();
-      const mockInserter = { insert: jest.fn() };
+      const mockExecutor = { focus: jest.fn() };
       const mockChecker = { isEligible: jest.fn() };
-      const mockFocus = { focus: jest.fn() };
 
-      factories.textInserter.createClipboardInserter.mockReturnValue(mockInserter as never);
+      factories.pasteExecutor.createCommandExecutor.mockReturnValue(mockExecutor as never);
       factories.eligibilityChecker.createAlwaysEligible.mockReturnValue(mockChecker as never);
-      factories.focusManager.createCommandFocus.mockReturnValue(mockFocus as never);
 
       const registry = createRegistry(factories);
 
-      // Simulate how a real builder would use the factories
       const builder: DestinationBuilder = (_options, context) => {
-        const inserter = context.factories.textInserter.createClipboardInserter(['paste']);
+        const executor = context.factories.pasteExecutor.createCommandExecutor(
+          ['focus.cmd'],
+          ['paste'],
+        );
         const checker = context.factories.eligibilityChecker.createAlwaysEligible();
-        const focus = context.factories.focusManager.createCommandFocus(['open.chat']);
 
-        // In real implementation, these would be passed to ComposablePasteDestination
-        // Here we just verify they were created correctly
-        expect(inserter).toBe(mockInserter);
+        expect(executor).toBe(mockExecutor);
         expect(checker).toBe(mockChecker);
-        expect(focus).toBe(mockFocus);
 
         return createBaseMockPasteDestination({ id: 'cursor-ai' });
       };
@@ -332,9 +310,11 @@ describe('DestinationRegistry', () => {
       const destination = registry.create({ type: 'cursor-ai' });
 
       expect(destination).toBeDefined();
-      expect(factories.textInserter.createClipboardInserter).toHaveBeenCalledWith(['paste']);
+      expect(factories.pasteExecutor.createCommandExecutor).toHaveBeenCalledWith(
+        ['focus.cmd'],
+        ['paste'],
+      );
       expect(factories.eligibilityChecker.createAlwaysEligible).toHaveBeenCalledTimes(1);
-      expect(factories.focusManager.createCommandFocus).toHaveBeenCalledWith(['open.chat']);
     });
   });
 });

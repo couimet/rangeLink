@@ -23,7 +23,7 @@ import {
   createMockTerminal,
   createMockTerminalPasteDestination,
   createMockText,
-  createMockTextInserterForEditor,
+  createMockPasteExecutor,
   createMockUri,
   createMockVscodeAdapter,
   type MockVscodeOptions,
@@ -980,11 +980,10 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show text-editor specific warning when editor paste fails', async () => {
-      // Create a mock text editor destination with textInserter that fails
-      const mockFailingInserter = createMockTextInserterForEditor(false);
+      const mockFailingExecutor = createMockPasteExecutor(false);
       const mockTextEditorDest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor',
-        textInserter: mockFailingInserter,
+        pasteExecutor: mockFailingExecutor,
       });
 
       // Spy on pasteLink to verify it was called

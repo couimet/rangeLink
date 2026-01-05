@@ -14,9 +14,8 @@ import {
   createMockDocument,
   createMockEditor,
   createMockEligibilityCheckerFactory,
-  createMockFocusManagerFactory,
+  createMockPasteExecutorFactory,
   createMockTerminal,
-  createMockTextInserterFactory,
   createMockUri,
   createMockVscodeAdapter,
 } from '../helpers';
@@ -28,9 +27,8 @@ describe('destinationBuilders', () => {
     adapterOverrides?: Parameters<typeof createMockVscodeAdapter>[0],
   ): DestinationBuilderContext => ({
     factories: {
-      textInserter: createMockTextInserterFactory(),
+      pasteExecutor: createMockPasteExecutorFactory(),
       eligibilityChecker: createMockEligibilityCheckerFactory(),
-      focusManager: createMockFocusManagerFactory(),
     },
     ideAdapter: createMockVscodeAdapter(adapterOverrides),
     logger: mockLogger,

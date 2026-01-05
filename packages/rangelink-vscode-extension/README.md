@@ -99,8 +99,7 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 1. Split your editor (2+ tab groups) — side-by-side or vertical split
 2. Open scratchpad file in one pane: untitled (`Cmd+N` / `Ctrl+N`) or any text file
 3. Command Palette → "Bind RangeLink to Text Editor Destination"
-4. Keep scratchpad visible (active tab in its pane)
-5. Select code in other pane → Generate links → They paste **at insertion point** + **editor focuses automatically**
+4. Select code in other pane → Generate links → They paste **at insertion point** + **editor focuses automatically**
 
 **Workflow:**
 
@@ -110,11 +109,10 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 **Requirements:**
 
-- **Split editor (2+ tab groups)** - Ensures bound file stays visible while you browse code
-- **Bound file must be topmost tab** - Auto-paste only works when it's the active tab in its pane
+- **Split editor (2+ tab groups)** - Ensures bound file stays accessible while you browse code
 - **Writable text files only** - Binary files (images, PDFs) and read-only views (git diffs, output panels) are blocked
 
-If bound file is hidden behind other tabs, link copies to clipboard with a reminder to make it active. When you close the bound file, RangeLink auto-unbinds with a notification.
+When you close the bound file, RangeLink auto-unbinds with a notification. If the bound file is hidden behind other tabs, RangeLink automatically brings it to the foreground during paste.
 
 #### AI Chat Integrations (Claude Code, Cursor AI & GitHub Copilot)
 

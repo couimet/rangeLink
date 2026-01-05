@@ -1,8 +1,8 @@
 import { createMockLogger } from 'barebone-logger-testing';
+import { Result } from 'rangelink-core-ts';
 
 import type { EligibilityChecker } from '../../destinations/capabilities/EligibilityChecker';
-import type { FocusManager } from '../../destinations/capabilities/FocusManager';
-import type { TextInserter } from '../../destinations/capabilities/TextInserter';
+import type { FocusSuccess, PasteExecutor } from '../../destinations/capabilities/PasteExecutor';
 import {
   ComposablePasteDestination,
   type ComposablePasteDestinationConfig,
@@ -17,22 +17,29 @@ import type { AutoPasteResult } from '../../types/AutoPasteResult';
  */
 export interface MockComposablePasteDestinationConfig
   extends Partial<ComposablePasteDestinationConfig> {
-  textInserter?: jest.Mocked<TextInserter>;
+  pasteExecutor?: jest.Mocked<PasteExecutor>;
   eligibilityChecker?: jest.Mocked<EligibilityChecker>;
-  focusManager?: jest.Mocked<FocusManager>;
   getUserInstruction?: jest.Mock<string | undefined, [AutoPasteResult]>;
   compareWith?: jest.Mock<Promise<boolean>, [PasteDestination]>;
 }
 
 /**
- * Create a mock jest.Mocked<TextInserter> for testing.
+ * Create a mock jest.Mocked<PasteExecutor> for testing.
  *
- * @returns Mocked TextInserter with insert() stub returning true
+ * @param insertReturns - What insert() should return (default: true)
+ * @returns Mocked PasteExecutor with focus() returning Result.ok({ insert: ... })
  */
-export const createMockTextInserter = (): jest.Mocked<TextInserter> =>
-  ({
-    insert: jest.fn().mockResolvedValue(true),
-  }) as unknown as jest.Mocked<TextInserter>;
+export const createMockPasteExecutor = (
+  insertReturns: boolean = true,
+): jest.Mocked<PasteExecutor> => {
+  const mockInsert = jest.fn().mockResolvedValue(insertReturns);
+  const focusSuccess: FocusSuccess = { insert: mockInsert };
+
+  return {
+    focus: jest.fn().mockResolvedValue(Result.ok(focusSuccess)),
+    _mockInsert: mockInsert,
+  } as unknown as jest.Mocked<PasteExecutor> & { _mockInsert: jest.Mock };
+};
 
 /**
  * Create a mock jest.Mocked<EligibilityChecker> for testing.
@@ -45,22 +52,11 @@ export const createMockEligibilityChecker = (): jest.Mocked<EligibilityChecker> 
   }) as unknown as jest.Mocked<EligibilityChecker>;
 
 /**
- * Create a mock jest.Mocked<FocusManager> for testing.
- *
- * @returns Mocked FocusManager with focus() stub returning void
- */
-export const createMockFocusManager = (): jest.Mocked<FocusManager> =>
-  ({
-    focus: jest.fn().mockResolvedValue(undefined),
-  }) as unknown as jest.Mocked<FocusManager>;
-
-/**
  * Create a mock ComposablePasteDestination for testing.
  *
  * Provides default mocks for all capabilities with sensible behaviors:
- * - TextInserter: Returns true (success)
+ * - PasteExecutor: Returns Result.ok({ insert: ... }) that returns true
  * - EligibilityChecker: Returns true (always eligible)
- * - FocusManager: Returns void (no-op)
  * - isAvailable: Returns true (always available)
  * - All other config: Sensible defaults
  *
@@ -74,9 +70,8 @@ export const createMockComposablePasteDestination = (
     id: 'text-editor',
     displayName: 'Mock Destination',
     resource: { kind: 'singleton' },
-    textInserter: createMockTextInserter(),
+    pasteExecutor: createMockPasteExecutor(),
     eligibilityChecker: createMockEligibilityChecker(),
-    focusManager: createMockFocusManager(),
     isAvailable: jest.fn().mockResolvedValue(true),
     jumpSuccessMessage: 'Mock jump success',
     loggingDetails: { mock: true },

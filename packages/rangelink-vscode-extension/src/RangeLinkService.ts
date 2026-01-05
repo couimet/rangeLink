@@ -198,8 +198,7 @@ export class RangeLinkService {
    *
    * **Auto-paste behavior (text editor destination):**
    * - Skips auto-paste if creating link FROM the bound editor itself
-   * - Shows "not topmost" warning if bound editor hidden behind other tabs
-   * - Pastes successfully if bound editor is topmost in its tab group
+   * - Automatically brings hidden editor to foreground if needed
    *
    * @param formattedLink The formatted RangeLink with metadata
    * @param linkTypeName User-friendly name for status messages (e.g., "RangeLink", "Portable RangeLink")
