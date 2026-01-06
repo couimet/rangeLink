@@ -2572,4 +2572,151 @@ describe('PasteDestinationManager', () => {
       });
     });
   });
+
+  describe('showDestinationQuickPickAndSend()', () => {
+    let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
+    let mockSendFn: jest.Mock<Promise<boolean>>;
+    let showQuickPickMock: jest.Mock;
+    let mockWindow: ReturnType<typeof mockAdapter.__getVscodeInstance>['window'];
+
+    beforeEach(() => {
+      mockAvailabilityService = createMockDestinationAvailabilityService();
+      mockSendFn = jest.fn().mockResolvedValue(true);
+      mockWindow = mockAdapter.__getVscodeInstance().window;
+      showQuickPickMock = mockWindow.showQuickPick as jest.Mock;
+
+      manager = new PasteDestinationManager(
+        mockContext,
+        mockRegistry,
+        mockAvailabilityService,
+        mockAdapter,
+        mockLogger,
+      );
+    });
+
+    it('shows quick pick with available destinations', async () => {
+      mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
+        { type: 'terminal', displayName: 'Terminal ("bash")' },
+        { type: 'claude-code', displayName: 'Claude Code Chat' },
+      ]);
+      showQuickPickMock.mockResolvedValueOnce(undefined);
+
+      await manager.showDestinationQuickPickAndSend(mockSendFn);
+
+      expect(showQuickPickMock).toHaveBeenCalledWith(
+        [
+          { label: 'Terminal ("bash")', destinationType: 'terminal' },
+          { label: 'Claude Code Chat', destinationType: 'claude-code' },
+        ],
+        { placeHolder: 'No bound destination. Choose below to bind and paste:' },
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.showDestinationQuickPickAndSend' },
+        'No destination bound, showing quick pick for R-V',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.showDestinationQuickPickAndSend',
+          availableCount: 2,
+        },
+        'Showing quick pick with 2 destinations',
+      );
+    });
+
+    it('returns NoDestinationsAvailable and shows message when no destinations', async () => {
+      mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([]);
+
+      const result = await manager.showDestinationQuickPickAndSend(mockSendFn);
+
+      expect(result).toBe('NoDestinationsAvailable');
+      expect(showQuickPickMock).not.toHaveBeenCalled();
+      expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
+        'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.showDestinationQuickPickAndSend' },
+        'No destinations available',
+      );
+    });
+
+    it('returns Cancelled when user cancels quick pick (Escape)', async () => {
+      mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
+        { type: 'terminal', displayName: 'Terminal' },
+      ]);
+      showQuickPickMock.mockResolvedValueOnce(undefined);
+
+      const result = await manager.showDestinationQuickPickAndSend(mockSendFn);
+
+      expect(result).toBe('Cancelled');
+      expect(mockSendFn).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.showDestinationQuickPickAndSend' },
+        'User cancelled quick pick',
+      );
+    });
+
+    it('returns SentToDestination when user selects destination and send succeeds', async () => {
+      const mockTerminal = createMockTerminal();
+      mockWindow.activeTerminal = mockTerminal;
+      mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
+        { type: 'terminal', displayName: 'Terminal ("bash")' },
+      ]);
+      showQuickPickMock.mockResolvedValueOnce({
+        label: 'Terminal ("bash")',
+        destinationType: 'terminal',
+      });
+
+      const result = await manager.showDestinationQuickPickAndSend(mockSendFn);
+
+      expect(result).toBe('SentToDestination');
+      expect(manager.isBound()).toBe(true);
+      expect(mockSendFn).toHaveBeenCalledTimes(1);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.showDestinationQuickPickAndSend',
+          selectedType: 'terminal',
+        },
+        'User selected terminal',
+      );
+    });
+
+    it('returns BindingFailed when binding fails', async () => {
+      mockWindow.activeTerminal = undefined;
+      mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
+        { type: 'terminal', displayName: 'Terminal' },
+      ]);
+      showQuickPickMock.mockResolvedValueOnce({
+        label: 'Terminal',
+        destinationType: 'terminal',
+      });
+
+      const result = await manager.showDestinationQuickPickAndSend(mockSendFn);
+
+      expect(result).toBe('BindingFailed');
+      expect(mockSendFn).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.showDestinationQuickPickAndSend' },
+        'Binding failed',
+      );
+    });
+
+    it('returns SendFailed when sendFn fails', async () => {
+      const mockTerminal = createMockTerminal();
+      mockWindow.activeTerminal = mockTerminal;
+      mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
+        { type: 'terminal', displayName: 'Terminal' },
+      ]);
+      showQuickPickMock.mockResolvedValueOnce({
+        label: 'Terminal',
+        destinationType: 'terminal',
+      });
+      mockSendFn.mockResolvedValueOnce(false);
+
+      const result = await manager.showDestinationQuickPickAndSend(mockSendFn);
+
+      expect(result).toBe('SendFailed');
+      expect(mockSendFn).toHaveBeenCalledTimes(1);
+      expect(manager.isBound()).toBe(true);
+    });
+  });
 });

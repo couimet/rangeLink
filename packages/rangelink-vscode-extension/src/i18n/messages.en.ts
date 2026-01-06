@@ -57,7 +57,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
     'No destination bound. Choose destination to jump to:',
   [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
-  [MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_CLIPBOARD_OPTION]: '$(clippy) Just Copy to Clipboard',
+  [MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE]:
+    'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
   [MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind and paste:',
 

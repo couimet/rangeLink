@@ -7,6 +7,7 @@ import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorC
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
+import { QuickPickPasteResult } from '../types/QuickPickPasteResult';
 import {
   formatMessage,
   isBinaryFile,
@@ -173,6 +174,68 @@ export class PasteDestinationManager implements vscode.Disposable {
       return false;
     }
     return this.jumpToBoundDestination();
+  }
+
+  /**
+   * Show quick pick of available destinations when no destination is bound,
+   * then bind to selected destination and send content.
+   *
+   * Used specifically for R-V (Paste to Destination) command when no destination is bound.
+   *
+   * @param sendFn - Function to call after successful binding to send content
+   * @returns Enum indicating the outcome (sent, failed, binding failed, cancelled)
+   */
+  async showDestinationQuickPickAndSend(
+    sendFn: () => Promise<boolean>,
+  ): Promise<QuickPickPasteResult> {
+    const logCtx = { fn: 'PasteDestinationManager.showDestinationQuickPickAndSend' };
+
+    this.logger.debug(logCtx, 'No destination bound, showing quick pick for R-V');
+
+    const availableDestinations = await this.availabilityService.getAvailableDestinations();
+
+    if (availableDestinations.length === 0) {
+      this.logger.debug(logCtx, 'No destinations available');
+      await this.vscodeAdapter.showInformationMessage(
+        formatMessage(MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE),
+      );
+      return QuickPickPasteResult.NoDestinationsAvailable;
+    }
+
+    const items = availableDestinations.map((dest) => ({
+      label: dest.displayName,
+      destinationType: dest.type,
+    }));
+
+    this.logger.debug(
+      { ...logCtx, availableCount: items.length },
+      `Showing quick pick with ${items.length} destinations`,
+    );
+
+    const selected = await this.vscodeAdapter.showQuickPick(items, {
+      placeHolder: formatMessage(
+        MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
+      ),
+    });
+
+    if (!selected) {
+      this.logger.debug(logCtx, 'User cancelled quick pick');
+      return QuickPickPasteResult.Cancelled;
+    }
+
+    this.logger.debug(
+      { ...logCtx, selectedType: selected.destinationType },
+      `User selected ${selected.destinationType}`,
+    );
+
+    const bound = await this.bind(selected.destinationType);
+    if (!bound) {
+      this.logger.debug(logCtx, 'Binding failed');
+      return QuickPickPasteResult.BindingFailed;
+    }
+
+    const sent = await sendFn();
+    return sent ? QuickPickPasteResult.SentToDestination : QuickPickPasteResult.SendFailed;
   }
 
   /**
