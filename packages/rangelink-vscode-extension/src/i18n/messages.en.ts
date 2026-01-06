@@ -8,6 +8,9 @@ export const messagesEn: Record<MessageCode, string> = {
   // Keep the keys in alphabetical order.
 
   [MessageCode.ALREADY_BOUND_TO_DESTINATION]: 'RangeLink: Already bound to {destinationName}',
+  [MessageCode.BOOKMARK_LIST_EMPTY]: 'No bookmarks saved',
+  [MessageCode.BOOKMARK_LIST_PLACEHOLDER]: 'Select a bookmark to paste to destination',
+  [MessageCode.BOOKMARK_LIST_TITLE]: 'Bookmarks',
   [MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND]: 'RangeLink: Bound editor closed. Unbound.',
 
   [MessageCode.CONFIG_LOADED]: 'Configuration loaded',
