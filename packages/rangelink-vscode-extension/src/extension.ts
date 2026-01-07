@@ -1,7 +1,7 @@
 import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import { BookmarksStore } from './bookmarks';
+import { BookmarkService, BookmarksStore } from './bookmarks';
 import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
 import { ConfigReader, getDelimitersForExtension } from './config';
 import {
@@ -100,6 +100,14 @@ export function activate(context: vscode.ExtensionContext): void {
     getLogger(),
   );
 
+  const bookmarkService = new BookmarkService(
+    bookmarksStore,
+    ideAdapter,
+    configReader,
+    destinationManager,
+    getLogger(),
+  );
+
   const service = new RangeLinkService(
     delimiters,
     ideAdapter,
@@ -112,8 +120,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter,
     destinationManager,
     availabilityService,
-    bookmarksStore,
-    configReader,
+    bookmarkService,
     getLogger(),
   );
   context.subscriptions.push(statusBar);
@@ -133,7 +140,7 @@ export function activate(context: vscode.ExtensionContext): void {
     parser,
     delimiters,
     ideAdapter,
-    bookmarksStore,
+    bookmarkService,
     getLogger(),
   );
 

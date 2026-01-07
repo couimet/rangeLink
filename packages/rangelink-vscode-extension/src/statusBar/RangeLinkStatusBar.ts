@@ -1,8 +1,8 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import type { BookmarkId, BookmarksStore } from '../bookmarks';
-import type { ConfigReader } from '../config/ConfigReader';
+import type { BookmarkId } from '../bookmarks';
+import type { BookmarkService } from '../bookmarks';
 import {
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_MANAGE,
@@ -10,8 +10,6 @@ import {
   CMD_JUMP_TO_DESTINATION,
   CMD_OPEN_STATUS_BAR_MENU,
   CMD_SHOW_VERSION,
-  DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
-  SETTING_SMART_PADDING_PASTE_BOOKMARK,
 } from '../constants';
 import type { DestinationAvailabilityService } from '../destinations/DestinationAvailabilityService';
 import type { DestinationType } from '../destinations/PasteDestination';
@@ -53,8 +51,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
     private readonly availabilityService: DestinationAvailabilityService,
-    private readonly bookmarksStore: BookmarksStore,
-    private readonly configReader: ConfigReader,
+    private readonly bookmarkService: BookmarkService,
     private readonly logger: Logger,
   ) {
     this.statusBarItem = this.ideAdapter.createStatusBarItem(
@@ -89,59 +86,13 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       );
     } else if (selected?.command) {
       if (selected.command === CMD_BOOKMARK_NAVIGATE && selected.bookmarkId) {
-        await this.pasteBookmarkToDestination(selected.bookmarkId);
+        await this.bookmarkService.pasteBookmark(selected.bookmarkId);
       } else {
         await this.ideAdapter.executeCommand(selected.command);
       }
       this.logger.debug(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
         'Menu item selected',
-      );
-    }
-  }
-
-  /**
-   * Copy bookmark link to clipboard and paste to bound destination.
-   */
-  private async pasteBookmarkToDestination(bookmarkId: BookmarkId): Promise<void> {
-    const bookmark = this.bookmarksStore.getById(bookmarkId);
-    if (!bookmark) {
-      this.logger.warn(
-        { fn: 'RangeLinkStatusBar.pasteBookmarkToDestination', bookmarkId },
-        'Bookmark not found',
-      );
-      return;
-    }
-
-    await this.bookmarksStore.recordAccess(bookmarkId);
-    await this.ideAdapter.writeTextToClipboard(bookmark.link);
-
-    if (this.destinationManager.isBound()) {
-      const paddingMode = this.configReader.getPaddingMode(
-        SETTING_SMART_PADDING_PASTE_BOOKMARK,
-        DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
-      );
-      await this.destinationManager.sendTextToDestination(
-        bookmark.link,
-        `Bookmark pasted: ${bookmark.label}`,
-        paddingMode,
-      );
-      this.logger.debug(
-        {
-          fn: 'RangeLinkStatusBar.pasteBookmarkToDestination',
-          bookmark,
-          pastedToDestination: true,
-        },
-        `Pasted bookmark to destination: ${bookmark.label}`,
-      );
-    } else {
-      this.logger.debug(
-        {
-          fn: 'RangeLinkStatusBar.pasteBookmarkToDestination',
-          bookmark,
-          pastedToDestination: false,
-        },
-        `Copied bookmark to clipboard (no destination bound): ${bookmark.label}`,
       );
     }
   }
@@ -207,7 +158,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
   private buildBookmarksQuickPickItems(): MenuQuickPickItem[] {
     const result: MenuQuickPickItem[] = [];
-    const bookmarks = this.bookmarksStore.getAll();
+    const bookmarks = this.bookmarkService.getAllBookmarks();
 
     result.push({
       label: '',

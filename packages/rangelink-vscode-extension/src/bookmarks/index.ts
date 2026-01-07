@@ -1,3 +1,4 @@
+export { BookmarkService } from './BookmarkService';
 export { BookmarksStore } from './BookmarksStore';
 export type {
   Bookmark,
