@@ -78,6 +78,7 @@
 <rule id="T002" priority="critical">
   <title>Use .toStrictEqual() for objects and arrays</title>
   <do>Use `.toStrictEqual()` when asserting objects or arrays</do>
+  <never>Use `.toContainEqual()` - it's a partial matcher that hides unexpected properties</never>
   <scope>Objects and arrays only - primitives (strings, booleans, numbers) don't need this</scope>
   <rationale>Catches undefined vs missing properties, stricter type checking</rationale>
 </rule>

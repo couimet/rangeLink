@@ -101,6 +101,16 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
   }
 
   /**
+   * Show an input box to get user input
+   *
+   * @param options - Configuration for the input box
+   * @returns Promise resolving to the entered string, or undefined if cancelled
+   */
+  async showInputBox(options?: vscode.InputBoxOptions): Promise<string | undefined> {
+    return this.ideInstance.window.showInputBox(options);
+  }
+
+  /**
    * Open a document and show it in the editor
    *
    * Supports full VSCode API options for fine-grained control:
@@ -257,6 +267,19 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    */
   getDocumentUri(editor: vscode.TextEditor): vscode.Uri {
     return editor.document.uri;
+  }
+
+  /**
+   * Get document URI scheme from editor.
+   *
+   * Convenience method for accessing the scheme portion of editor.document.uri.
+   * Common schemes: 'file' (regular files), 'untitled' (new unsaved), 'git' (diff views).
+   *
+   * @param editor - Editor to get document scheme from
+   * @returns URI scheme string
+   */
+  getDocumentScheme(editor: vscode.TextEditor): string {
+    return editor.document.uri.scheme;
   }
 
   /**

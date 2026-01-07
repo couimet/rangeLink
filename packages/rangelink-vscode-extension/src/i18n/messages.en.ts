@@ -13,19 +13,29 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONFIG_LOADED]: 'Configuration loaded',
   [MessageCode.CONFIG_USING_DEFAULTS]: 'Using default configuration',
 
+  [MessageCode.ERROR_BOOKMARK_EMPTY_LABEL]: 'RangeLink: Bookmark label cannot be empty',
+  [MessageCode.ERROR_BOOKMARK_LINK_GENERATION_FAILED]:
+    'RangeLink: Cannot add bookmark - failed to generate link from selection',
+  [MessageCode.ERROR_BOOKMARK_NO_ACTIVE_EDITOR]:
+    'RangeLink: Cannot add bookmark - no active editor',
+  [MessageCode.ERROR_BOOKMARK_SAVE_FAILED]: 'RangeLink: Failed to save bookmark',
+  [MessageCode.ERROR_BOOKMARK_UNTITLED_FILE]:
+    'RangeLink: Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
   [MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE]:
     'RangeLink: Cannot bind Claude Code - extension not installed or not active',
   [MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE]:
     'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
   [MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE]:
     'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
+  [MessageCode.ERROR_LINK_GENERATION_FAILED]: 'RangeLink: Failed to generate {linkTypeName}',
   [MessageCode.ERROR_NAVIGATION_FAILED]: 'RangeLink: Failed to navigate to {path}: {error}',
   [MessageCode.ERROR_NO_ACTIVE_TERMINAL]:
     'RangeLink: No active terminal. Open a terminal and try again.',
   [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]:
     'RangeLink: No active text editor. Open a file and try again.',
-  [MessageCode.ERROR_TEXT_EDITOR_NOT_TEXT_LIKE]:
-    'RangeLink: Cannot bind to {fileName} - not a text-like file (binary or special scheme)',
+  [MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE]: 'RangeLink: Cannot bind to {fileName} - binary file',
+  [MessageCode.ERROR_TEXT_EDITOR_READ_ONLY]:
+    'RangeLink: Cannot bind to read-only editor ({scheme})',
   [MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT]:
     'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
 
@@ -69,11 +79,12 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: '✓ Focused Editor: "{resourceName}"',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT]: '✓ Focused GitHub Copilot Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: "{resourceName}"',
+  [MessageCode.STATUS_BAR_BOOKMARK_SAVED]: '✓ Bookmark saved: {label}',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
-  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_ADD_CURRENT]: '$(add) Add Current Selection',
+  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_ADD_CURRENT]: '$(add) Save Selection as Bookmark',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_EMPTY]: 'No bookmarks yet',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_MANAGE]: '$(gear) Manage Bookmarks...',
-  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: '$(bookmark) Bookmarks',
+  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: 'Bookmarks',
   [MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind:',
   [MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE]: 'No destinations available',

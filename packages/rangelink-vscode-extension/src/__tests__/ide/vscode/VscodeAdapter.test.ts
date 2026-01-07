@@ -183,6 +183,48 @@ describe('VscodeAdapter', () => {
     });
   });
 
+  describe('showInputBox', () => {
+    it('should show input box with options', async () => {
+      const options = {
+        prompt: 'Enter a label',
+        value: 'default',
+        placeHolder: 'Type here...',
+      };
+      (mockVSCode.window.showInputBox as jest.Mock).mockResolvedValue('user input');
+
+      const result = await adapter.showInputBox(options);
+
+      expect(mockVSCode.window.showInputBox).toHaveBeenCalledWith(options);
+      expect(mockVSCode.window.showInputBox).toHaveBeenCalledTimes(1);
+      expect(result).toBe('user input');
+    });
+
+    it('should return undefined when user cancels', async () => {
+      (mockVSCode.window.showInputBox as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await adapter.showInputBox({ prompt: 'test' });
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return empty string when user clears input and confirms', async () => {
+      (mockVSCode.window.showInputBox as jest.Mock).mockResolvedValue('');
+
+      const result = await adapter.showInputBox({ prompt: 'test' });
+
+      expect(result).toBe('');
+    });
+
+    it('should work without options', async () => {
+      (mockVSCode.window.showInputBox as jest.Mock).mockResolvedValue('input');
+
+      const result = await adapter.showInputBox();
+
+      expect(mockVSCode.window.showInputBox).toHaveBeenCalledWith(undefined);
+      expect(result).toBe('input');
+    });
+  });
+
   describe('integration scenarios', () => {
     it('should handle multiple clipboard operations sequentially', async () => {
       await adapter.writeTextToClipboard('first');
@@ -592,6 +634,52 @@ describe('VscodeAdapter', () => {
       expect(result1).toBe(uri1);
       expect(result2).toBe(uri2);
       expect(result1).not.toBe(result2);
+    });
+  });
+
+  describe('getDocumentScheme', () => {
+    it('returns scheme from editor document URI', () => {
+      const mockUri = createMockUri('/path/to/file.ts', { scheme: 'file' });
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: mockUri }),
+      });
+
+      const result = adapter.getDocumentScheme(mockEditor);
+
+      expect(result).toBe('file');
+    });
+
+    it('returns untitled scheme for new unsaved files', () => {
+      const mockUri = createMockUri('Untitled-1', { scheme: 'untitled' });
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: mockUri }),
+      });
+
+      const result = adapter.getDocumentScheme(mockEditor);
+
+      expect(result).toBe('untitled');
+    });
+
+    it('returns git scheme for diff views', () => {
+      const mockUri = createMockUri('/repo/file.ts', { scheme: 'git' });
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: mockUri }),
+      });
+
+      const result = adapter.getDocumentScheme(mockEditor);
+
+      expect(result).toBe('git');
+    });
+
+    it('returns output scheme for output panel', () => {
+      const mockUri = createMockUri('/output/channel', { scheme: 'output' });
+      const mockEditor = createMockEditor({
+        document: createMockDocument({ uri: mockUri }),
+      });
+
+      const result = adapter.getDocumentScheme(mockEditor);
+
+      expect(result).toBe('output');
     });
   });
 

@@ -8,8 +8,7 @@ import { applySmartPadding, type PaddingMode } from '../utils';
 
 import { AlwaysEligibleChecker } from './capabilities/AlwaysEligibleChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
-import type { FocusManager } from './capabilities/FocusManager';
-import type { TextInserter } from './capabilities/TextInserter';
+import type { PasteExecutor } from './capabilities/PasteExecutor';
 import type {
   AIAssistantDestinationType,
   DestinationType,
@@ -31,8 +30,7 @@ import type {
 export interface TerminalDestinationParams {
   readonly terminal: vscode.Terminal;
   readonly displayName: string;
-  readonly textInserter: TextInserter;
-  readonly focusManager: FocusManager;
+  readonly pasteExecutor: PasteExecutor;
   readonly jumpSuccessMessage: string;
   readonly loggingDetails: Record<string, unknown>;
   readonly logger: Logger;
@@ -50,9 +48,8 @@ export interface TerminalDestinationParams {
 export interface EditorDestinationParams {
   readonly editor: vscode.TextEditor;
   readonly displayName: string;
-  readonly textInserter: TextInserter;
+  readonly pasteExecutor: PasteExecutor;
   readonly eligibilityChecker: EligibilityChecker;
-  readonly focusManager: FocusManager;
   readonly jumpSuccessMessage: string;
   readonly loggingDetails: Record<string, unknown>;
   readonly logger: Logger;
@@ -71,8 +68,7 @@ export interface EditorDestinationParams {
 export interface AiAssistantDestinationParams {
   readonly id: AIAssistantDestinationType;
   readonly displayName: string;
-  readonly textInserter: TextInserter;
-  readonly focusManager: FocusManager;
+  readonly pasteExecutor: PasteExecutor;
   readonly isAvailable: () => Promise<boolean>;
   readonly jumpSuccessMessage: string;
   readonly loggingDetails: Record<string, unknown>;
@@ -116,14 +112,11 @@ export interface ComposablePasteDestinationConfig {
    */
   readonly resource: DestinationResource;
 
-  /** Capability for inserting text into the destination */
-  readonly textInserter: TextInserter;
+  /** Capability for focusing and inserting text into the destination */
+  readonly pasteExecutor: PasteExecutor;
 
   /** Capability for checking eligibility of content */
   readonly eligibilityChecker: EligibilityChecker;
-
-  /** Capability for focusing the destination */
-  readonly focusManager: FocusManager;
 
   /** Check if destination is currently available for pasting */
   readonly isAvailable: () => Promise<boolean>;
@@ -165,7 +158,7 @@ export interface ComposablePasteDestinationConfig {
  *
  * Provides a composition-based alternative to inheritance for implementing PasteDestination.
  * Instead of subclassing and overriding methods, clients inject capability implementations
- * (TextInserter, EligibilityChecker, FocusManager) and configuration.
+ * (PasteExecutor, EligibilityChecker) and configuration.
  *
  * Benefits:
  * - **Eliminates duplication**: Shared orchestration logic in one place, not duplicated
@@ -191,9 +184,8 @@ export class ComposablePasteDestination implements PasteDestination {
    */
   readonly resource: DestinationResource;
 
-  private readonly textInserter: TextInserter;
+  private readonly pasteExecutor: PasteExecutor;
   private readonly eligibilityChecker: EligibilityChecker;
-  private readonly focusManager: FocusManager;
   private readonly isAvailableFn: () => Promise<boolean>;
   private readonly jumpSuccessMessage: string;
   private readonly loggingDetails: Record<string, unknown>;
@@ -205,9 +197,8 @@ export class ComposablePasteDestination implements PasteDestination {
     this.id = config.id;
     this.displayName = config.displayName;
     this.resource = config.resource;
-    this.textInserter = config.textInserter;
+    this.pasteExecutor = config.pasteExecutor;
     this.eligibilityChecker = config.eligibilityChecker;
-    this.focusManager = config.focusManager;
     this.isAvailableFn = config.isAvailable;
     this.jumpSuccessMessage = config.jumpSuccessMessage;
     this.loggingDetails = config.loggingDetails;
@@ -353,11 +344,17 @@ export class ComposablePasteDestination implements PasteDestination {
 
     const paddedText = applySmartPadding(text, paddingMode);
 
-    // Focus destination
-    await this.focusManager.focus(context);
+    const focusResult = await this.pasteExecutor.focus(context);
 
-    // Insert text
-    const success = await this.textInserter.insert(paddedText, context);
+    if (!focusResult.success) {
+      this.logger.warn(
+        { ...context, reason: focusResult.error.reason },
+        `Focus failed, cannot paste ${contentLabel}`,
+      );
+      return false;
+    }
+
+    const success = await focusResult.value.insert(paddedText, context);
 
     if (success) {
       this.logger.info(context, `Pasted ${contentLabel} to ${this.displayName}`);
@@ -403,8 +400,8 @@ export class ComposablePasteDestination implements PasteDestination {
       return false;
     }
 
-    await this.focusManager.focus(context);
-    return true;
+    const result = await this.pasteExecutor.focus(context);
+    return result.success;
   }
 
   /**
@@ -471,9 +468,8 @@ export class ComposablePasteDestination implements PasteDestination {
       id: 'terminal',
       displayName: params.displayName,
       resource: { kind: 'terminal', terminal: params.terminal },
-      textInserter: params.textInserter,
+      pasteExecutor: params.pasteExecutor,
       eligibilityChecker: new AlwaysEligibleChecker(params.logger),
-      focusManager: params.focusManager,
       isAvailable: async () => true,
       jumpSuccessMessage: params.jumpSuccessMessage,
       loggingDetails: params.loggingDetails,
@@ -499,9 +495,8 @@ export class ComposablePasteDestination implements PasteDestination {
       id: 'text-editor',
       displayName: params.displayName,
       resource: { kind: 'editor', editor: params.editor },
-      textInserter: params.textInserter,
+      pasteExecutor: params.pasteExecutor,
       eligibilityChecker: params.eligibilityChecker,
-      focusManager: params.focusManager,
       isAvailable: async () => true,
       jumpSuccessMessage: params.jumpSuccessMessage,
       loggingDetails: params.loggingDetails,
@@ -528,9 +523,8 @@ export class ComposablePasteDestination implements PasteDestination {
       id: params.id,
       displayName: params.displayName,
       resource: { kind: 'singleton' },
-      textInserter: params.textInserter,
+      pasteExecutor: params.pasteExecutor,
       eligibilityChecker: new AlwaysEligibleChecker(params.logger),
-      focusManager: params.focusManager,
       isAvailable: params.isAvailable,
       jumpSuccessMessage: params.jumpSuccessMessage,
       loggingDetails: params.loggingDetails,

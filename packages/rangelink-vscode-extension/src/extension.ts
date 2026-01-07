@@ -2,6 +2,7 @@ import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { BookmarksStore } from './bookmarks';
+import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
 import { ConfigReader, getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
@@ -25,8 +26,7 @@ import {
   CMD_UNBIND_DESTINATION,
 } from './constants';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
-import { FocusManagerFactory } from './destinations/capabilities/FocusManagerFactory';
-import { TextInserterFactory } from './destinations/capabilities/TextInserterFactory';
+import { PasteExecutorFactory } from './destinations/capabilities/PasteExecutorFactory';
 import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
 import { registerAllDestinationBuilders } from './destinations/destinationBuilders';
 import { DestinationRegistry } from './destinations/DestinationRegistry';
@@ -75,15 +75,13 @@ export function activate(context: vscode.ExtensionContext): void {
   const delimiters = getDelimitersForExtension(configReader, ideAdapter, getLogger());
 
   // Create capability factories for composition-based destinations
-  const textInserterFactory = new TextInserterFactory(ideAdapter, getLogger());
+  const pasteExecutorFactory = new PasteExecutorFactory(ideAdapter, getLogger());
   const eligibilityCheckerFactory = new EligibilityCheckerFactory(getLogger());
-  const focusManagerFactory = new FocusManagerFactory(ideAdapter, getLogger());
 
   // Create destination registry with capability factories
   const registry = new DestinationRegistry(
-    textInserterFactory,
+    pasteExecutorFactory,
     eligibilityCheckerFactory,
-    focusManagerFactory,
     ideAdapter,
     getLogger(),
   );
@@ -130,6 +128,14 @@ export function activate(context: vscode.ExtensionContext): void {
   const parser = new RangeLinkParser(delimiters, getLogger());
   const navigationHandler = new RangeLinkNavigationHandler(parser, ideAdapter, getLogger());
   getLogger().debug({ fn: 'activate' }, 'Parser and navigation handler created');
+
+  const addBookmarkCommand = new AddBookmarkCommand(
+    parser,
+    delimiters,
+    ideAdapter,
+    bookmarksStore,
+    getLogger(),
+  );
 
   // Register terminal link provider for clickable links
   const terminalLinkProvider = new RangeLinkTerminalProvider(
@@ -312,11 +318,8 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  // Register bookmark commands (stub implementations - full implementation in issues #164-#166)
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_BOOKMARK_ADD, () => {
-      getLogger().info({ fn: 'CMD_BOOKMARK_ADD' }, 'Add bookmark command invoked (stub)');
-    }),
+    ideAdapter.registerCommand(CMD_BOOKMARK_ADD, () => addBookmarkCommand.execute()),
   );
 
   context.subscriptions.push(

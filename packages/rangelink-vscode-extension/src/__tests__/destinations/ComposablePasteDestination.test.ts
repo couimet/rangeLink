@@ -1,14 +1,15 @@
 import { createMockLogger } from 'barebone-logger-testing';
+import { Result } from 'rangelink-core-ts';
 
+import { FocusErrorReason } from '../../destinations/capabilities/PasteExecutor';
 import { AutoPasteResult } from '../../types/AutoPasteResult';
 import { PasteContentType } from '../../types/PasteContentType';
 import type { PaddingMode } from '../../utils/applySmartPadding';
 import {
   createMockComposablePasteDestination,
   createMockEligibilityChecker,
-  createMockFocusManager,
   createMockFormattedLink,
-  createMockTextInserter,
+  createMockPasteExecutor,
 } from '../helpers';
 
 const UNUSED_PADDING_MODE = 'parameter not used' as unknown as PaddingMode;
@@ -38,10 +39,10 @@ describe('ComposablePasteDestination', () => {
     it('should return false when unavailable without checking eligibility', async () => {
       const isAvailable = jest.fn().mockResolvedValue(false);
       const eligibilityCheck = jest.fn().mockResolvedValue(true);
-      const textInserter = createMockTextInserter();
+      const pasteExecutor = createMockPasteExecutor();
       const destination = createMockComposablePasteDestination({
         isAvailable,
-        textInserter,
+        pasteExecutor,
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
@@ -56,7 +57,7 @@ describe('ComposablePasteDestination', () => {
 
       expect(result).toBe(false);
       expect(eligibilityCheck).not.toHaveBeenCalled();
-      expect(textInserter.insert).not.toHaveBeenCalled();
+      expect(pasteExecutor.focus).not.toHaveBeenCalled();
     });
 
     it('should call eligibility check after availability', async () => {
@@ -75,11 +76,11 @@ describe('ComposablePasteDestination', () => {
       expect(eligibilityCheck).toHaveBeenCalledTimes(1);
     });
 
-    it('should return false when not eligible without inserting', async () => {
+    it('should return false when not eligible without focusing', async () => {
       const eligibilityCheck = jest.fn().mockResolvedValue(false);
-      const textInserter = createMockTextInserter();
+      const pasteExecutor = createMockPasteExecutor();
       const destination = createMockComposablePasteDestination({
-        textInserter,
+        pasteExecutor,
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
@@ -93,13 +94,17 @@ describe('ComposablePasteDestination', () => {
       );
 
       expect(result).toBe(false);
-      expect(textInserter.insert).not.toHaveBeenCalled();
+      expect(pasteExecutor.focus).not.toHaveBeenCalled();
     });
 
     it('should not double-pad already padded text', async () => {
-      const textInserter = createMockTextInserter();
+      const mockInsert = jest.fn().mockResolvedValue(true);
+      const pasteExecutor = createMockPasteExecutor();
+      (pasteExecutor as unknown as { _mockInsert: jest.Mock })._mockInsert = mockInsert;
+      pasteExecutor.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
+
       const destination = createMockComposablePasteDestination({
-        textInserter,
+        pasteExecutor,
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
@@ -113,15 +118,24 @@ describe('ComposablePasteDestination', () => {
         'both',
       );
 
-      expect(textInserter.insert).toHaveBeenCalledWith(' already-padded ', context);
+      expect(mockInsert).toHaveBeenCalledWith(' already-padded ', context);
     });
 
     it('should focus before inserting text', async () => {
-      const focusManager = createMockFocusManager();
-      const textInserter = createMockTextInserter();
+      const callOrder: string[] = [];
+      const mockInsert = jest.fn().mockImplementation(async () => {
+        callOrder.push('insert');
+        return true;
+      });
+
+      const pasteExecutor = createMockPasteExecutor();
+      pasteExecutor.focus.mockImplementation(async () => {
+        callOrder.push('focus');
+        return Result.ok({ insert: mockInsert });
+      });
+
       const destination = createMockComposablePasteDestination({
-        focusManager,
-        textInserter,
+        pasteExecutor,
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
@@ -135,19 +149,18 @@ describe('ComposablePasteDestination', () => {
         ARBITRARY_PADDING_MODE,
       );
 
-      expect(focusManager.focus).toHaveBeenCalledTimes(1);
-      expect(focusManager.focus).toHaveBeenCalledWith(context);
-
-      const focusOrder = focusManager.focus.mock.invocationCallOrder[0];
-      const insertOrder = textInserter.insert.mock.invocationCallOrder[0];
-      expect(focusOrder).toBeLessThan(insertOrder);
+      expect(pasteExecutor.focus).toHaveBeenCalledTimes(1);
+      expect(pasteExecutor.focus).toHaveBeenCalledWith(context);
+      expect(callOrder).toStrictEqual(['focus', 'insert']);
     });
 
     it('should return true when insertion succeeds', async () => {
-      const textInserter = createMockTextInserter();
-      textInserter.insert.mockResolvedValue(true);
+      const mockInsert = jest.fn().mockResolvedValue(true);
+      const pasteExecutor = createMockPasteExecutor();
+      pasteExecutor.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
+
       const destination = createMockComposablePasteDestination({
-        textInserter,
+        pasteExecutor,
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
@@ -165,10 +178,36 @@ describe('ComposablePasteDestination', () => {
     });
 
     it('should return false when insertion fails', async () => {
-      const textInserter = createMockTextInserter();
-      textInserter.insert.mockResolvedValue(false);
+      const mockInsert = jest.fn().mockResolvedValue(false);
+      const pasteExecutor = createMockPasteExecutor();
+      pasteExecutor.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
+
       const destination = createMockComposablePasteDestination({
-        textInserter,
+        pasteExecutor,
+        logger: mockLogger,
+      });
+      const context = { fn: 'test', mock: true };
+      const eligibilityCheck = jest.fn().mockResolvedValue(true);
+
+      const result = await destination['performPaste'](
+        'text',
+        context,
+        eligibilityCheck,
+        PasteContentType.Link,
+        ARBITRARY_PADDING_MODE,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when focus fails', async () => {
+      const pasteExecutor = createMockPasteExecutor();
+      pasteExecutor.focus.mockResolvedValue(
+        Result.err({ reason: FocusErrorReason.SHOW_DOCUMENT_FAILED }),
+      );
+
+      const destination = createMockComposablePasteDestination({
+        pasteExecutor,
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
@@ -234,16 +273,16 @@ describe('ComposablePasteDestination', () => {
 
   describe('pasteLink() delegation', () => {
     it('should build context with formattedLink, linkLength, and paddingMode', async () => {
-      const focusManager = createMockFocusManager();
+      const pasteExecutor = createMockPasteExecutor();
       const destination = createMockComposablePasteDestination({
-        focusManager,
+        pasteExecutor,
         logger: mockLogger,
       });
       const formattedLink = createMockFormattedLink('test-link');
 
       await destination.pasteLink(formattedLink, 'both');
 
-      expect(focusManager.focus).toHaveBeenCalledWith({
+      expect(pasteExecutor.focus).toHaveBeenCalledWith({
         fn: 'ComposablePasteDestination.pasteLink',
         formattedLink,
         linkLength: 9,
@@ -268,17 +307,20 @@ describe('ComposablePasteDestination', () => {
       });
     });
 
-    it('should pass link text to performPaste with paddingMode', async () => {
-      const textInserter = createMockTextInserter();
+    it('should pass link text to insert function with paddingMode applied', async () => {
+      const mockInsert = jest.fn().mockResolvedValue(true);
+      const pasteExecutor = createMockPasteExecutor();
+      pasteExecutor.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
+
       const destination = createMockComposablePasteDestination({
-        textInserter,
+        pasteExecutor,
         logger: mockLogger,
       });
       const formattedLink = createMockFormattedLink('my-link');
 
       await destination.pasteLink(formattedLink, 'both');
 
-      expect(textInserter.insert).toHaveBeenCalledWith(' my-link ', {
+      expect(mockInsert).toHaveBeenCalledWith(' my-link ', {
         fn: 'ComposablePasteDestination.pasteLink',
         formattedLink,
         linkLength: 7,
@@ -290,15 +332,15 @@ describe('ComposablePasteDestination', () => {
 
   describe('pasteContent() delegation', () => {
     it('should build context with contentLength and paddingMode', async () => {
-      const focusManager = createMockFocusManager();
+      const pasteExecutor = createMockPasteExecutor();
       const destination = createMockComposablePasteDestination({
-        focusManager,
+        pasteExecutor,
         logger: mockLogger,
       });
 
       await destination.pasteContent('test content', 'none');
 
-      expect(focusManager.focus).toHaveBeenCalledWith({
+      expect(pasteExecutor.focus).toHaveBeenCalledWith({
         fn: 'ComposablePasteDestination.pasteContent',
         contentLength: 12,
         paddingMode: 'none',
@@ -321,16 +363,19 @@ describe('ComposablePasteDestination', () => {
       });
     });
 
-    it('should pass content text to performPaste with paddingMode', async () => {
-      const textInserter = createMockTextInserter();
+    it('should pass content text to insert function with paddingMode applied', async () => {
+      const mockInsert = jest.fn().mockResolvedValue(true);
+      const pasteExecutor = createMockPasteExecutor();
+      pasteExecutor.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
+
       const destination = createMockComposablePasteDestination({
-        textInserter,
+        pasteExecutor,
         logger: mockLogger,
       });
 
       await destination.pasteContent('my content', 'both');
 
-      expect(textInserter.insert).toHaveBeenCalledWith(' my content ', {
+      expect(mockInsert).toHaveBeenCalledWith(' my content ', {
         fn: 'ComposablePasteDestination.pasteContent',
         contentLength: 10,
         paddingMode: 'both',
@@ -351,30 +396,30 @@ describe('ComposablePasteDestination', () => {
 
     it('should return false when destination unavailable', async () => {
       const isAvailable = jest.fn().mockResolvedValue(false);
-      const focusManager = createMockFocusManager();
+      const pasteExecutor = createMockPasteExecutor();
       const destination = createMockComposablePasteDestination({
         isAvailable,
-        focusManager,
+        pasteExecutor,
         logger: mockLogger,
       });
 
       const result = await destination.focus();
 
       expect(result).toBe(false);
-      expect(focusManager.focus).not.toHaveBeenCalled();
+      expect(pasteExecutor.focus).not.toHaveBeenCalled();
     });
 
-    it('should delegate to focusManager when available', async () => {
-      const focusManager = createMockFocusManager();
+    it('should delegate to pasteExecutor when available', async () => {
+      const pasteExecutor = createMockPasteExecutor();
       const destination = createMockComposablePasteDestination({
-        focusManager,
+        pasteExecutor,
         logger: mockLogger,
       });
 
       await destination.focus();
 
-      expect(focusManager.focus).toHaveBeenCalledTimes(1);
-      expect(focusManager.focus).toHaveBeenCalledWith({
+      expect(pasteExecutor.focus).toHaveBeenCalledTimes(1);
+      expect(pasteExecutor.focus).toHaveBeenCalledWith({
         fn: 'ComposablePasteDestination.focus',
         mock: true,
       });
@@ -386,6 +431,22 @@ describe('ComposablePasteDestination', () => {
       const result = await destination.focus();
 
       expect(result).toBe(true);
+    });
+
+    it('should return false when focus fails', async () => {
+      const pasteExecutor = createMockPasteExecutor();
+      pasteExecutor.focus.mockResolvedValue(
+        Result.err({ reason: FocusErrorReason.TERMINAL_FOCUS_FAILED }),
+      );
+
+      const destination = createMockComposablePasteDestination({
+        pasteExecutor,
+        logger: mockLogger,
+      });
+
+      const result = await destination.focus();
+
+      expect(result).toBe(false);
     });
   });
 

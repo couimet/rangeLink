@@ -23,7 +23,7 @@ import {
   createMockTerminal,
   createMockTerminalPasteDestination,
   createMockText,
-  createMockTextInserterForEditor,
+  createMockPasteExecutor,
   createMockUri,
   createMockVscodeAdapter,
   type MockVscodeOptions,
@@ -510,12 +510,10 @@ describe('PasteDestinationManager', () => {
       );
     });
 
-    it('should fail to bind text editor to binary file', async () => {
-      // Setup: Binary file (non-text scheme)
-      const testFileName = 'binary.dat';
+    it('should fail to bind text editor to read-only scheme', async () => {
       mockAdapter.__getVscodeInstance().window.activeTextEditor = {
         document: {
-          uri: { scheme: 'vscode-userdata', fsPath: `/test/${testFileName}` },
+          uri: { scheme: 'git', fsPath: '/repo/file.ts' },
         },
       } as vscode.TextEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
@@ -524,11 +522,32 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_NOT_TEXT_LIKE, {
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_READ_ONLY, {
+        scheme: 'git',
+      });
+      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: Cannot bind to read-only editor (git)',
+      );
+    });
+
+    it('should fail to bind text editor to binary file', async () => {
+      const testFileName = 'binary.dat';
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = {
+        document: {
+          uri: { scheme: 'file', fsPath: `/test/${testFileName}` },
+        },
+      } as vscode.TextEditor;
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+      const result = await manager.bind('text-editor');
+
+      expect(result).toBe(false);
+      expect(manager.isBound()).toBe(false);
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE, {
         fileName: testFileName,
       });
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        `RangeLink: Cannot bind to ${testFileName} - not a text-like file (binary or special scheme)`,
+        `RangeLink: Cannot bind to ${testFileName} - binary file`,
       );
     });
   });
@@ -961,11 +980,10 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show text-editor specific warning when editor paste fails', async () => {
-      // Create a mock text editor destination with textInserter that fails
-      const mockFailingInserter = createMockTextInserterForEditor(false);
+      const mockFailingExecutor = createMockPasteExecutor(false);
       const mockTextEditorDest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor',
-        textInserter: mockFailingInserter,
+        pasteExecutor: mockFailingExecutor,
       });
 
       // Spy on pasteLink to verify it was called
