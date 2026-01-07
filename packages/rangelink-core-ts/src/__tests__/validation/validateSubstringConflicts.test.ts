@@ -13,6 +13,17 @@ describe('validateSubstringConflicts', () => {
     expect(result).toBeOk();
   });
 
+  it('should return Ok for LINE/COL/#/TO (multi-char delimiters with no substring overlap)', () => {
+    const delimiters: DelimiterConfig = {
+      line: 'LINE',
+      position: 'COL',
+      hash: '#',
+      range: 'TO',
+    };
+    const result = validateSubstringConflicts(delimiters);
+    expect(result).toBeOk();
+  });
+
   it('should return Err when line contains position', () => {
     const delimiters: DelimiterConfig = {
       line: 'LC',

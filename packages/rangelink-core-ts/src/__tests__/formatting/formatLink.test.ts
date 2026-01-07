@@ -269,6 +269,100 @@ describe('formatLink', () => {
     });
   });
 
+  it('should format rectangular selection with custom single-char delimiters', () => {
+    const customDelimiters: DelimiterConfig = {
+      line: 'X',
+      position: 'Y',
+      hash: '@',
+      range: '..',
+    };
+    const inputSelection: InputSelection = {
+      selections: [
+        {
+          start: { line: 5, char: 3 },
+          end: { line: 5, char: 8 },
+          coverage: SelectionCoverage.PartialLine,
+        },
+        {
+          start: { line: 6, char: 3 },
+          end: { line: 6, char: 8 },
+          coverage: SelectionCoverage.PartialLine,
+        },
+        {
+          start: { line: 7, char: 3 },
+          end: { line: 7, char: 8 },
+          coverage: SelectionCoverage.PartialLine,
+        },
+      ],
+      selectionType: SelectionType.Rectangular,
+    };
+    const result = formatLink('src/file.ts', inputSelection, customDelimiters);
+
+    expect(result).toBeOkWith((value: FormattedLink) => {
+      expect(value).toStrictEqual({
+        link: 'src/file.ts@@X6Y4..X8Y9',
+        linkType: 'regular',
+        rangeFormat: 'WithPositions',
+        selectionType: 'Rectangular',
+        delimiters: customDelimiters,
+        computedSelection: {
+          startLine: 6,
+          endLine: 8,
+          startPosition: 4,
+          endPosition: 9,
+          rangeFormat: 'WithPositions',
+        },
+      });
+    });
+  });
+
+  it('should format rectangular selection with custom multi-char delimiters (hash doubling)', () => {
+    const customDelimiters: DelimiterConfig = {
+      line: 'LINE',
+      position: 'COL',
+      hash: '##',
+      range: 'TO',
+    };
+    const inputSelection: InputSelection = {
+      selections: [
+        {
+          start: { line: 20, char: 10 },
+          end: { line: 20, char: 15 },
+          coverage: SelectionCoverage.PartialLine,
+        },
+        {
+          start: { line: 21, char: 10 },
+          end: { line: 21, char: 15 },
+          coverage: SelectionCoverage.PartialLine,
+        },
+        {
+          start: { line: 22, char: 10 },
+          end: { line: 22, char: 15 },
+          coverage: SelectionCoverage.PartialLine,
+        },
+      ],
+      selectionType: SelectionType.Rectangular,
+    };
+    const result = formatLink('src/file.ts', inputSelection, customDelimiters);
+
+    expect(result).toBeOkWith((value: FormattedLink) => {
+      expect(value).toStrictEqual({
+        link: 'src/file.ts####LINE21COL11TOLINE23COL16',
+        linkType: 'regular',
+        rangeFormat: 'WithPositions',
+        selectionType: 'Rectangular',
+        delimiters: customDelimiters,
+        computedSelection: {
+          startLine: 21,
+          endLine: 23,
+          startPosition: 11,
+          endPosition: 16,
+          rangeFormat: 'WithPositions',
+        },
+      });
+    });
+  });
+
   it('should use WithPositions format with EnforcePositions notation even for FullLine', () => {
     const inputSelection: InputSelection = {
       selections: [
@@ -436,6 +530,55 @@ describe('formatLink', () => {
             endLine: 8,
             startPosition: 11,
             endPosition: 21,
+            rangeFormat: 'WithPositions',
+          },
+        });
+      });
+    });
+
+    it('should append BYOD metadata for rectangular selection with custom delimiters', () => {
+      const customDelimiters: DelimiterConfig = {
+        line: 'LINE',
+        position: 'COL',
+        hash: '#',
+        range: 'TO',
+      };
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 9, char: 4 },
+            end: { line: 9, char: 9 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+          {
+            start: { line: 10, char: 4 },
+            end: { line: 10, char: 9 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+          {
+            start: { line: 11, char: 4 },
+            end: { line: 11, char: 9 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+        ],
+        selectionType: SelectionType.Rectangular,
+      };
+      const result = formatLink('src/file.ts', inputSelection, customDelimiters, {
+        linkType: LinkType.Portable,
+      });
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: 'src/file.ts##LINE10COL5TOLINE12COL10~#~LINE~TO~COL~',
+          linkType: 'portable',
+          rangeFormat: 'WithPositions',
+          selectionType: 'Rectangular',
+          delimiters: customDelimiters,
+          computedSelection: {
+            startLine: 10,
+            endLine: 12,
+            startPosition: 5,
+            endPosition: 10,
             rangeFormat: 'WithPositions',
           },
         });
