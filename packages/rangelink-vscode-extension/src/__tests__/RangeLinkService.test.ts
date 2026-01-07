@@ -1727,6 +1727,16 @@ describe('RangeLinkService', () => {
         computedSelection: expect.any(Object),
       });
     });
+
+    it('should use absolute path when PathFormat.Absolute is specified', async () => {
+      const result = await (service as any).generateLinkFromSelection(
+        PathFormat.Absolute,
+        false,
+      );
+
+      expect(result.link).toMatch(/^\/test\/file\.ts#L/);
+      expect(mockVscodeAdapter.__getVscodeInstance().workspace.asRelativePath).not.toHaveBeenCalled();
+    });
   });
 
   describe('generateLinkFromSelection() - error handling', () => {
