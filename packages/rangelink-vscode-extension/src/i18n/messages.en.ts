@@ -8,6 +8,8 @@ export const messagesEn: Record<MessageCode, string> = {
   // Keep the keys in alphabetical order.
 
   [MessageCode.ALREADY_BOUND_TO_DESTINATION]: 'RangeLink: Already bound to {destinationName}',
+  [MessageCode.BOOKMARK_ACTION_ADD]: '$(add) Save Selection as Bookmark',
+  [MessageCode.BOOKMARK_ACTION_MANAGE]: '$(gear) Manage Bookmarks...',
   [MessageCode.BOOKMARK_LIST_EMPTY]: 'No bookmarks saved',
   [MessageCode.BOOKMARK_LIST_PLACEHOLDER]: 'Select a bookmark to paste to destination',
   [MessageCode.BOOKMARK_LIST_TITLE]: 'Bookmarks',
@@ -84,9 +86,6 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: "{resourceName}"',
   [MessageCode.STATUS_BAR_BOOKMARK_SAVED]: '✓ Bookmark saved: {label}',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
-  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_ADD_CURRENT]: '$(add) Save Selection as Bookmark',
-  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_EMPTY]: 'No bookmarks yet',
-  [MessageCode.STATUS_BAR_MENU_BOOKMARKS_MANAGE]: '$(gear) Manage Bookmarks...',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: 'Bookmarks',
   [MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind:',

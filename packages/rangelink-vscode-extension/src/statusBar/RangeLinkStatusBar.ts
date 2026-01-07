@@ -171,7 +171,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
     if (bookmarks.length === 0) {
       result.push({
-        label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_EMPTY)}`,
+        label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_LIST_EMPTY)}`,
       });
     } else {
       for (const bookmark of bookmarks) {
@@ -189,12 +189,12 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     });
 
     result.push({
-      label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_ADD_CURRENT)}`,
+      label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_ADD)}`,
       command: CMD_BOOKMARK_ADD,
     });
 
     result.push({
-      label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_MANAGE)}`,
+      label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_MANAGE)}`,
       command: CMD_BOOKMARK_MANAGE,
     });
 
