@@ -1,20 +1,14 @@
 /**
- * Result of showing quick pick for paste destination selection.
+ * Result of showing quick pick for destination binding.
  *
  * Represents the distinct outcomes when a user is prompted to choose
- * a destination for the R-V (Paste to Destination) command (issue #90).
+ * a destination to bind to (used by both Jump and Paste flows).
  */
-export enum QuickPickPasteResult {
+export enum QuickPickBindResult {
   /**
-   * User selected a destination, binding succeeded, and content was sent successfully.
+   * User selected a destination and binding succeeded.
    */
-  SentToDestination = 'SentToDestination',
-
-  /**
-   * User selected a destination but sending content failed.
-   * Binding succeeded, but sendFn returned false.
-   */
-  SendFailed = 'SendFailed',
+  Bound = 'Bound',
 
   /**
    * User selected a destination but binding failed.
@@ -24,7 +18,6 @@ export enum QuickPickPasteResult {
 
   /**
    * User cancelled the quick pick (pressed Escape).
-   * No clipboard copy - R-V requires a destination.
    */
   Cancelled = 'Cancelled',
 

@@ -7,7 +7,7 @@ import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorC
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
-import { QuickPickPasteResult } from '../types/QuickPickPasteResult';
+import { QuickPickBindResult } from '../types/QuickPickPasteResult';
 import {
   formatMessage,
   isBinaryFile,
@@ -177,29 +177,43 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Show quick pick of available destinations when no destination is bound,
-   * then bind to selected destination and send content.
+   * Show quick pick of available destinations for R-V (Paste to Destination).
+   * Only binds to selected destination - caller handles the actual paste.
    *
-   * Used specifically for R-V (Paste to Destination) command when no destination is bound.
-   *
-   * @param sendFn - Function to call after successful binding to send content
-   * @returns Enum indicating the outcome (sent, failed, binding failed, cancelled)
+   * @returns true if binding succeeded, false if cancelled/failed/no destinations
    */
-  async showDestinationQuickPickAndSend(
-    sendFn: () => Promise<boolean>,
-  ): Promise<QuickPickPasteResult> {
-    const logCtx = { fn: 'PasteDestinationManager.showDestinationQuickPickAndSend' };
+  async showDestinationQuickPickForPaste(): Promise<QuickPickBindResult> {
+    return this.showDestinationQuickPickAndBind(
+      MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE,
+      MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
+      { fn: 'PasteDestinationManager.showDestinationQuickPickForPaste' },
+    );
+  }
 
-    this.logger.debug(logCtx, 'No destination bound, showing quick pick for R-V');
+  /**
+   * Show quick pick of available destinations and bind to selected one.
+   * Common logic shared by jump and paste flows.
+   *
+   * @param noDestinationsMessageCode - Message to show when no destinations available
+   * @param quickPickPlaceholderMessageCode - Placeholder text for quick pick
+   * @param callerContext - Logging context from caller (fn will be extended with ::showDestinationQuickPickAndBind)
+   * @returns Rich result indicating binding outcome
+   */
+  private async showDestinationQuickPickAndBind(
+    noDestinationsMessageCode: MessageCode,
+    quickPickPlaceholderMessageCode: MessageCode,
+    callerContext: LoggingContext,
+  ): Promise<QuickPickBindResult> {
+    const logCtx = { ...callerContext, fn: `${callerContext.fn}::showDestinationQuickPickAndBind` };
+
+    this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
     const availableDestinations = await this.availabilityService.getAvailableDestinations();
 
     if (availableDestinations.length === 0) {
       this.logger.debug(logCtx, 'No destinations available');
-      await this.vscodeAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE),
-      );
-      return QuickPickPasteResult.NoDestinationsAvailable;
+      await this.vscodeAdapter.showInformationMessage(formatMessage(noDestinationsMessageCode));
+      return QuickPickBindResult.NoDestinationsAvailable;
     }
 
     const items = availableDestinations.map((dest) => ({
@@ -213,14 +227,12 @@ export class PasteDestinationManager implements vscode.Disposable {
     );
 
     const selected = await this.vscodeAdapter.showQuickPick(items, {
-      placeHolder: formatMessage(
-        MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
-      ),
+      placeHolder: formatMessage(quickPickPlaceholderMessageCode),
     });
 
     if (!selected) {
       this.logger.debug(logCtx, 'User cancelled quick pick');
-      return QuickPickPasteResult.Cancelled;
+      return QuickPickBindResult.Cancelled;
     }
 
     this.logger.debug(
@@ -231,57 +243,25 @@ export class PasteDestinationManager implements vscode.Disposable {
     const bound = await this.bind(selected.destinationType);
     if (!bound) {
       this.logger.debug(logCtx, 'Binding failed');
-      return QuickPickPasteResult.BindingFailed;
+      return QuickPickBindResult.BindingFailed;
     }
-
-    const sent = await sendFn();
-    return sent ? QuickPickPasteResult.SentToDestination : QuickPickPasteResult.SendFailed;
+    return QuickPickBindResult.Bound;
   }
 
   /**
    * Show quick pick of available destinations when no destination is bound.
-   * Binds AND jumps to selected destination in one action
+   * Binds AND jumps to selected destination in one action.
    */
   private async showDestinationQuickPickAndJump(): Promise<boolean> {
-    const logCtx = { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump' };
-
-    this.logger.debug(logCtx, 'No destination bound, showing quick pick');
-
-    const availableDestinations = await this.availabilityService.getAvailableDestinations();
-
-    if (availableDestinations.length === 0) {
-      this.logger.debug(logCtx, 'No destinations available');
-      this.vscodeAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE),
-      );
-      return false;
-    }
-
-    const items = availableDestinations.map((dest) => ({
-      label: dest.displayName,
-      destinationType: dest.type,
-    }));
-
-    this.logger.debug(
-      { ...logCtx, availableCount: items.length, items },
-      `Showing quick pick with ${items.length} destinations`,
+    const result = await this.showDestinationQuickPickAndBind(
+      MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE,
+      MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER,
+      { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump' },
     );
 
-    const selected = await this.vscodeAdapter.showQuickPick(items, {
-      placeHolder: formatMessage(MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER),
-    });
-
-    if (!selected) {
-      this.logger.debug(logCtx, 'User cancelled quick pick');
+    if (result !== QuickPickBindResult.Bound) {
       return false;
     }
-
-    this.logger.debug(
-      { ...logCtx, selectedType: selected.destinationType },
-      `User selected ${selected.destinationType}`,
-    );
-
-    await this.bind(selected.destinationType);
 
     return this.focusBoundDestination();
   }

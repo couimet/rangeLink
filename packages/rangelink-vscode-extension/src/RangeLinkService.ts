@@ -14,6 +14,7 @@ import type { PasteDestinationManager } from './destinations/PasteDestinationMan
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { ActiveSelections } from './types/ActiveSelections';
 import { MessageCode } from './types/MessageCode';
+import { QuickPickBindResult } from './types/QuickPickPasteResult';
 import { formatMessage } from './utils/formatMessage';
 import { generateLinkFromSelections } from './utils/generateLinkFromSelections';
 
@@ -107,6 +108,8 @@ export class RangeLinkService {
    * - Skips empty selections
    */
   async pasteSelectedTextToDestination(): Promise<void> {
+    const logCtx = { fn: 'RangeLinkService.pasteSelectedTextToDestination' };
+
     const validated = this.validateSelectionsAndShowError();
     if (!validated) {
       return;
@@ -119,11 +122,7 @@ export class RangeLinkService {
     const content = selectedTexts.join('\n');
 
     this.logger.debug(
-      {
-        fn: 'pasteSelectedTextToDestination',
-        selectionCount: selectedTexts.length,
-        contentLength: content.length,
-      },
+      { ...logCtx, selectionCount: selectedTexts.length, contentLength: content.length },
       `Extracted ${content.length} chars from ${selectedTexts.length} selection(s)`,
     );
 
@@ -131,6 +130,16 @@ export class RangeLinkService {
       SETTING_SMART_PADDING_PASTE_CONTENT,
       DEFAULT_SMART_PADDING_PASTE_CONTENT,
     );
+
+    if (!this.destinationManager.isBound()) {
+      this.logger.debug(logCtx, 'No destination bound, showing quick pick');
+
+      const result = await this.destinationManager.showDestinationQuickPickForPaste();
+      if (result !== QuickPickBindResult.Bound) {
+        this.logger.info(logCtx, 'User cancelled quick pick or binding failed - no action taken');
+        return;
+      }
+    }
 
     await this.copyAndSendToDestination(
       content,
