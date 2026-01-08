@@ -195,7 +195,7 @@ The `~` separator marks embedded delimiters that override recipient's local sett
 
 ## Commands
 
-All commands are available via keyboard shortcuts, Command Palette, and right-click context menu:
+All commands are available via keyboard shortcuts and Command Palette. Commands that require a selection are also available in the right-click context menu:
 
 | Command                                           | Shortcut (Mac)      | Shortcut (Win/Linux)   | Description                                              |
 | ------------------------------------------------- | ------------------- | ---------------------- | -------------------------------------------------------- |
