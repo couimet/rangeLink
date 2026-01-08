@@ -212,10 +212,19 @@ describe('package.json contributions', () => {
           enablement: 'editorHasSelection',
         });
       });
+
+      it('rangelink.bookmark.list', () => {
+        expect(findCommand('rangelink.bookmark.list')).toStrictEqual({
+          command: 'rangelink.bookmark.list',
+          title: 'Open Bookmarks',
+          category: 'RangeLink',
+          icon: '$(bookmark)',
+        });
+      });
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(17);
+      expect(commands).toHaveLength(18);
     });
   });
 
@@ -402,8 +411,16 @@ describe('package.json contributions', () => {
       });
     });
 
+    it('rangelink.bookmark.list keybinding', () => {
+      expect(findKeybinding('rangelink.bookmark.list')).toStrictEqual({
+        command: 'rangelink.bookmark.list',
+        key: 'ctrl+r ctrl+b',
+        mac: 'cmd+r cmd+b',
+      });
+    });
+
     it('has the expected number of keybindings', () => {
-      expect(keybindings).toHaveLength(9);
+      expect(keybindings).toHaveLength(10);
     });
   });
 

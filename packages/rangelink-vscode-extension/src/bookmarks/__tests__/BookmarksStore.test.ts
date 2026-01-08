@@ -93,7 +93,6 @@ describe('BookmarksStore', () => {
         id: 'test-bookmark-id-001',
         label: 'CLAUDE.md Instructions',
         link: '/Users/test/project/CLAUDE.md#L10-L20',
-        description: undefined,
         scope: 'global',
         createdAt: '2025-01-15T10:30:00.000Z',
         accessCount: 0,
@@ -105,7 +104,6 @@ describe('BookmarksStore', () => {
             id: 'test-bookmark-id-001',
             label: 'CLAUDE.md Instructions',
             link: '/Users/test/project/CLAUDE.md#L10-L20',
-            description: undefined,
             scope: 'global',
             createdAt: '2025-01-15T10:30:00.000Z',
             accessCount: 0,
@@ -114,17 +112,6 @@ describe('BookmarksStore', () => {
         },
         'Added bookmark: CLAUDE.md Instructions',
       );
-    });
-
-    it('includes description when provided', async () => {
-      const result = await store.add({
-        label: 'My Bookmark',
-        link: '/path/to/file.ts#L5',
-        description: 'Important code section',
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.value.description).toBe('Important code section');
     });
 
     it('defaults scope to global when not provided', async () => {
@@ -312,7 +299,6 @@ describe('BookmarksStore', () => {
       id: 'existing-id',
       label: 'Original Label',
       link: '/original#L1',
-      description: 'Original description',
       scope: 'global',
       createdAt: '2025-01-01T00:00:00.000Z',
       accessCount: 5,
@@ -327,7 +313,6 @@ describe('BookmarksStore', () => {
       expect(result.success).toBe(true);
       expect(result.value.label).toBe('New Label');
       expect(result.value.link).toBe('/original#L1');
-      expect(result.value.description).toBe('Original description');
     });
 
     it('updates link field', async () => {
@@ -341,18 +326,6 @@ describe('BookmarksStore', () => {
       expect(result.value.label).toBe('Original Label');
     });
 
-    it('updates description field', async () => {
-      mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [{ ...existingBookmark }] });
-      store = new BookmarksStore(mockMemento, mockLogger);
-
-      const result = await store.update('existing-id', {
-        description: 'New description',
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.value.description).toBe('New description');
-    });
-
     it('updates multiple fields', async () => {
       mockMemento._storage.set(STORAGE_KEY, { version: 1, bookmarks: [{ ...existingBookmark }] });
       store = new BookmarksStore(mockMemento, mockLogger);
@@ -360,7 +333,6 @@ describe('BookmarksStore', () => {
       const result = await store.update('existing-id', {
         label: 'Updated Label',
         link: '/updated#L5',
-        description: 'Updated description',
       });
 
       expect(result.success).toBe(true);
@@ -368,7 +340,6 @@ describe('BookmarksStore', () => {
         id: 'existing-id',
         label: 'Updated Label',
         link: '/updated#L5',
-        description: 'Updated description',
         scope: 'global',
         createdAt: '2025-01-01T00:00:00.000Z',
         accessCount: 5,
@@ -381,7 +352,6 @@ describe('BookmarksStore', () => {
             id: 'existing-id',
             label: 'Original Label',
             link: '/original#L1',
-            description: 'Original description',
             scope: 'global',
             createdAt: '2025-01-01T00:00:00.000Z',
             accessCount: 5,
@@ -389,13 +359,11 @@ describe('BookmarksStore', () => {
           updates: {
             label: 'Updated Label',
             link: '/updated#L5',
-            description: 'Updated description',
           },
           updatedBookmark: {
             id: 'existing-id',
             label: 'Updated Label',
             link: '/updated#L5',
-            description: 'Updated description',
             scope: 'global',
             createdAt: '2025-01-01T00:00:00.000Z',
             accessCount: 5,

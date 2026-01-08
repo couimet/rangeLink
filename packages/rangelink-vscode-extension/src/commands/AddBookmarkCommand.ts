@@ -3,7 +3,7 @@ import * as path from 'path';
 import type { Logger } from 'barebone-logger';
 import { DelimiterConfig, LinkType, ParsedLink } from 'rangelink-core-ts';
 
-import type { BookmarksStore } from '../bookmarks';
+import type { BookmarkService } from '../bookmarks';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { RangeLinkParser } from '../RangeLinkParser';
 import { MessageCode } from '../types';
@@ -23,7 +23,7 @@ export class AddBookmarkCommand {
     private readonly parser: RangeLinkParser,
     private readonly delimiters: DelimiterConfig,
     private readonly ideAdapter: VscodeAdapter,
-    private readonly bookmarksStore: BookmarksStore,
+    private readonly bookmarkService: BookmarkService,
     private readonly logger: Logger,
   ) {
     this.logger.debug({ fn: 'AddBookmarkCommand.constructor' }, 'AddBookmarkCommand initialized');
@@ -124,7 +124,7 @@ export class AddBookmarkCommand {
     }
 
     try {
-      await this.bookmarksStore.add({
+      await this.bookmarkService.addBookmark({
         label: trimmedLabel,
         link: linkToBookmark,
         scope: 'global',

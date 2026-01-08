@@ -106,7 +106,6 @@ export class BookmarksStore {
         id: this.generateUniqueId(existingIds),
         label: input.label,
         link: input.link,
-        description: input.description,
         scope: input.scope ?? 'global',
         createdAt: this.timestampGenerator(),
         accessCount: 0,
@@ -153,7 +152,7 @@ export class BookmarksStore {
   }
 
   /**
-   * Updates a bookmark's label, link, or description.
+   * Updates a bookmark's label or link.
    * Returns the updated bookmark, or undefined if not found.
    */
   async update(
@@ -180,7 +179,6 @@ export class BookmarksStore {
         ...bookmark,
         ...(updates.label !== undefined && { label: updates.label }),
         ...(updates.link !== undefined && { link: updates.link }),
-        ...(updates.description !== undefined && { description: updates.description }),
       };
 
       data.bookmarks[index] = updated;

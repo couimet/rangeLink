@@ -4,7 +4,7 @@ import type { ParsedLink, RangeLinkError } from 'rangelink-core-ts';
 
 import { AddBookmarkCommand } from '../../commands/AddBookmarkCommand';
 import {
-  createMockBookmarksStore,
+  createMockBookmarkService,
   createMockEditor,
   createMockRangeLinkParser,
   createMockVscodeAdapter,
@@ -13,7 +13,7 @@ import {
 describe('AddBookmarkCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockParser: ReturnType<typeof createMockRangeLinkParser>;
-  let mockBookmarksStore: ReturnType<typeof createMockBookmarksStore>;
+  let mockBookmarkService: ReturnType<typeof createMockBookmarkService>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
   let command: AddBookmarkCommand;
 
@@ -27,7 +27,7 @@ describe('AddBookmarkCommand', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockParser = createMockRangeLinkParser();
-    mockBookmarksStore = createMockBookmarksStore();
+    mockBookmarkService = createMockBookmarkService();
   });
 
   describe('constructor', () => {
@@ -38,7 +38,7 @@ describe('AddBookmarkCommand', () => {
         mockParser,
         DEFAULT_DELIMITERS,
         mockAdapter,
-        mockBookmarksStore,
+        mockBookmarkService,
         mockLogger,
       );
 
@@ -60,7 +60,7 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
@@ -69,7 +69,7 @@ describe('AddBookmarkCommand', () => {
         expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot add bookmark - no active editor',
         );
-        expect(mockBookmarksStore.add).not.toHaveBeenCalled();
+        expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'AddBookmarkCommand.execute' },
           'No active editor',
@@ -94,13 +94,13 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
         await command.execute();
 
-        expect(mockBookmarksStore.add).toHaveBeenCalledWith({
+        expect(mockBookmarkService.addBookmark).toHaveBeenCalledWith({
           label: 'My Bookmark',
           link: TEST_LINK,
           scope: 'global',
@@ -128,13 +128,13 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
         await command.execute();
 
-        expect(mockBookmarksStore.add).toHaveBeenCalledWith({
+        expect(mockBookmarkService.addBookmark).toHaveBeenCalledWith({
           label: 'Bookmark from Scratchpad',
           link: TEST_LINK,
           scope: 'global',
@@ -159,13 +159,13 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
         await command.execute();
 
-        expect(mockBookmarksStore.add).toHaveBeenCalledWith({
+        expect(mockBookmarkService.addBookmark).toHaveBeenCalledWith({
           label: 'Multi-line Bookmark',
           link: multiLineLink,
           scope: 'global',
@@ -200,13 +200,13 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
         await command.execute();
 
-        expect(mockBookmarksStore.add).toHaveBeenCalledWith({
+        expect(mockBookmarkService.addBookmark).toHaveBeenCalledWith({
           label: 'Generated Bookmark',
           link: '/Users/test/project/src/component.ts#L10-L19',
           scope: 'global',
@@ -280,13 +280,13 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
         await command.execute();
 
-        expect(mockBookmarksStore.add).toHaveBeenCalledWith({
+        expect(mockBookmarkService.addBookmark).toHaveBeenCalledWith({
           label: 'Rectangular Selection',
           link: '/Users/test/project/src/columns.ts##L2C1-L4C4',
           scope: 'global',
@@ -324,7 +324,7 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
@@ -333,7 +333,7 @@ describe('AddBookmarkCommand', () => {
         expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
         );
-        expect(mockBookmarksStore.add).not.toHaveBeenCalled();
+        expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'AddBookmarkCommand.execute', reason: 'untitled-file' },
           'Cannot bookmark unsaved file',
@@ -366,7 +366,7 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
@@ -375,7 +375,7 @@ describe('AddBookmarkCommand', () => {
         expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot add bookmark - failed to generate link from selection',
         );
-        expect(mockBookmarksStore.add).not.toHaveBeenCalled();
+        expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
       });
     });
 
@@ -392,13 +392,13 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
         await command.execute();
 
-        expect(mockBookmarksStore.add).not.toHaveBeenCalled();
+        expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'AddBookmarkCommand.execute', link: TEST_LINK },
           'User cancelled bookmark creation',
@@ -420,7 +420,7 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
@@ -429,7 +429,7 @@ describe('AddBookmarkCommand', () => {
         expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Bookmark label cannot be empty',
         );
-        expect(mockBookmarksStore.add).not.toHaveBeenCalled();
+        expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'AddBookmarkCommand.execute' },
           'Empty label provided',
@@ -448,12 +448,12 @@ describe('AddBookmarkCommand', () => {
           },
         });
         setupAdapterSpies(mockAdapter);
-        mockBookmarksStore.add.mockRejectedValue(storageError);
+        mockBookmarkService.addBookmark.mockRejectedValue(storageError);
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
@@ -483,7 +483,7 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
@@ -510,13 +510,13 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
         await command.execute();
 
-        expect(mockBookmarksStore.add).toHaveBeenCalledWith({
+        expect(mockBookmarkService.addBookmark).toHaveBeenCalledWith({
           label: 'Trimmed Label',
           link: TEST_LINK,
           scope: 'global',
@@ -540,7 +540,7 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
@@ -562,7 +562,7 @@ describe('AddBookmarkCommand', () => {
           mockParser,
           DEFAULT_DELIMITERS,
           mockAdapter,
-          mockBookmarksStore,
+          mockBookmarkService,
           mockLogger,
         );
 
