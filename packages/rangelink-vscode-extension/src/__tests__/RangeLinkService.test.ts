@@ -10,7 +10,7 @@ import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { messagesEn } from '../i18n/messages.en';
 import { PathFormat, RangeLinkService } from '../RangeLinkService';
-import { MessageCode } from '../types/MessageCode';
+import { MessageCode, QuickPickBindResult } from '../types';
 import * as formatMessageModule from '../utils/formatMessage';
 import * as generateLinkModule from '../utils/generateLinkFromSelections';
 
@@ -751,24 +751,56 @@ describe('RangeLinkService', () => {
       });
 
       describe('when no destination bound', () => {
-        it('should copy selected text to clipboard', async () => {
+        it('should show quick pick to select destination', async () => {
+          await service.pasteSelectedTextToDestination();
+
+          expect(mockDestinationManager.showDestinationQuickPickForPaste).toHaveBeenCalledTimes(1);
+        });
+
+        describe('when user cancels quick pick', () => {
+          it('should NOT copy to clipboard', async () => {
+            await service.pasteSelectedTextToDestination();
+
+            expect(mockClipboard.writeText).not.toHaveBeenCalled();
+          });
+
+          it('should NOT attempt to send to destination', async () => {
+            await service.pasteSelectedTextToDestination();
+
+            expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
+          });
+        });
+
+        it('should copy to clipboard and send to destination after binding via quick pick', async () => {
+          const mockDestination = createMockTerminalPasteDestination({
+            displayName: 'Terminal',
+          });
+          mockDestinationManager = createMockDestinationManager({
+            isBound: false,
+            showDestinationQuickPickForPasteResult: QuickPickBindResult.Bound,
+          });
+          (mockDestinationManager.isBound as jest.Mock)
+            .mockReturnValueOnce(false)
+            .mockReturnValue(true);
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
+            mockDestination,
+          );
+          service = new RangeLinkService(
+            delimiters,
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            mockLogger,
+          );
+
           await service.pasteSelectedTextToDestination();
 
           expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
-        });
-
-        it('should show clipboard fallback message', async () => {
-          await service.pasteSelectedTextToDestination();
-
-          expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+          expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
+            'const foo = "bar";',
             '✓ Selected text copied to clipboard',
+            'none',
           );
-        });
-
-        it('should not attempt to send to destination', async () => {
-          await service.pasteSelectedTextToDestination();
-
-          expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
         });
       });
 
@@ -962,6 +994,14 @@ describe('RangeLinkService', () => {
         jest
           .spyOn(mockVscodeAdapter, 'setStatusBarMessage')
           .mockReturnValue({ dispose: jest.fn() });
+
+        const mockDestination = createMockTerminalPasteDestination({ displayName: 'Terminal' });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+
         service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
@@ -1003,12 +1043,13 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should show status message for concatenated text', async () => {
+      it('should pass basicStatusMessage to destination manager for status display', async () => {
         await service.pasteSelectedTextToDestination();
 
-        // "first line\nsecond line\nthird line" = 33 chars total
-        expect(mockVscodeAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
+          'first line\nsecond line\nthird line',
           '✓ Selected text copied to clipboard',
+          'none',
         );
       });
     });
@@ -1034,6 +1075,14 @@ describe('RangeLinkService', () => {
         });
 
         mockVscodeAdapter = adapter;
+
+        const mockDestination = createMockTerminalPasteDestination({ displayName: 'Terminal' });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
+
         service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
@@ -1085,11 +1134,16 @@ describe('RangeLinkService', () => {
           selections: [[0, 0, 0, 10000]],
           adapterOptions: { envOptions: { clipboard } },
         });
-        jest.spyOn(adapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
+        const mockDestination = createMockTerminalPasteDestination({ displayName: 'Terminal' });
+        const boundDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
         service = new RangeLinkService(
           delimiters,
           adapter,
-          mockDestinationManager,
+          boundDestinationManager,
           mockConfigReader,
           mockLogger,
         );
@@ -1097,8 +1151,10 @@ describe('RangeLinkService', () => {
         await service.pasteSelectedTextToDestination();
 
         expect(clipboard.writeText).toHaveBeenCalledWith(longText);
-        expect(adapter.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(boundDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
+          longText,
           '✓ Selected text copied to clipboard',
+          'none',
         );
       });
 
@@ -1110,10 +1166,16 @@ describe('RangeLinkService', () => {
           selections: [[0, 0, 0, 40]],
           adapterOptions: { envOptions: { clipboard } },
         });
+        const mockDestination = createMockTerminalPasteDestination({ displayName: 'Terminal' });
+        const boundDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
         service = new RangeLinkService(
           delimiters,
           adapter,
-          mockDestinationManager,
+          boundDestinationManager,
           mockConfigReader,
           mockLogger,
         );
@@ -1131,10 +1193,16 @@ describe('RangeLinkService', () => {
           selections: [[0, 0, 0, 20]],
           adapterOptions: { envOptions: { clipboard } },
         });
+        const mockDestination = createMockTerminalPasteDestination({ displayName: 'Terminal' });
+        const boundDestinationManager = createMockDestinationManager({
+          isBound: true,
+          sendTextToDestinationResult: true,
+          boundDestination: mockDestination,
+        });
         service = new RangeLinkService(
           delimiters,
           adapter,
-          mockDestinationManager,
+          boundDestinationManager,
           mockConfigReader,
           mockLogger,
         );

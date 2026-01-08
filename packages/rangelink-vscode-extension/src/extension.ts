@@ -39,10 +39,8 @@ import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvide
 import { RangeLinkParser } from './RangeLinkParser';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { RangeLinkStatusBar } from './statusBar';
-import type { RangeLinkClickArgs } from './types';
-import { MessageCode } from './types/MessageCode';
-import { formatMessage } from './utils/formatMessage';
-import { registerWithLogging } from './utils/registerWithLogging';
+import { MessageCode, type RangeLinkClickArgs } from './types';
+import { formatMessage, registerWithLogging } from './utils';
 import { VSCodeLogger } from './VSCodeLogger';
 
 // ============================================================================

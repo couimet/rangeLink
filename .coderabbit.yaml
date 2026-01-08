@@ -4,4 +4,4 @@ reviews:
   auto_review: true
   review_status: true
 
-language: "en-US"
+language: 'en-US'
