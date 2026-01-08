@@ -384,6 +384,8 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
+      expect(executeCommandMock).not.toHaveBeenCalled();
+      expect(mockDestinationManager.bindAndJump).not.toHaveBeenCalled();
       expect(mockBookmarkService.pasteBookmark).toHaveBeenCalledWith('bookmark-1');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
