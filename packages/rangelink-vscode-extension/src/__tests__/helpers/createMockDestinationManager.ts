@@ -6,6 +6,7 @@
 
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import type { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
+import { QuickPickBindResult } from '../../types/QuickPickPasteResult';
 
 /**
  * Options for creating a mock destination manager
@@ -19,6 +20,8 @@ export interface MockDestinationManagerOptions {
   sendLinkToDestinationResult?: boolean;
   /** Mock return value for sendTextToDestination (default: false) */
   sendTextToDestinationResult?: boolean;
+  /** Mock return value for showDestinationQuickPickForPaste (default: Cancelled) */
+  showDestinationQuickPickForPasteResult?: QuickPickBindResult;
 }
 
 /**
@@ -35,6 +38,7 @@ export const createMockDestinationManager = (
     boundDestination = undefined,
     sendLinkToDestinationResult = false,
     sendTextToDestinationResult = false,
+    showDestinationQuickPickForPasteResult = QuickPickBindResult.Cancelled,
   } = options;
 
   if (isBound && boundDestination === undefined) {
@@ -60,6 +64,7 @@ export const createMockDestinationManager = (
     unbind: jest.fn(),
     jumpToBoundDestination: jest.fn().mockResolvedValue(false),
     bindAndJump: jest.fn().mockResolvedValue(false),
+    showDestinationQuickPickForPaste: jest.fn().mockResolvedValue(showDestinationQuickPickForPasteResult),
     dispose: jest.fn(),
   } as unknown as jest.Mocked<PasteDestinationManager>;
 };
