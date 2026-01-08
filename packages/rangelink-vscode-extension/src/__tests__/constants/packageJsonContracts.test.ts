@@ -428,7 +428,7 @@ describe('package.json contributions', () => {
     const editorContextMenu = packageJson.contributes.menus['editor/context'] as MenuContribution[];
 
     it('has the expected number of editor context menu items', () => {
-      expect(editorContextMenu).toHaveLength(5);
+      expect(editorContextMenu).toHaveLength(6);
     });
 
     it('copyLinkWithRelativePath in context menu', () => {
@@ -468,6 +468,14 @@ describe('package.json contributions', () => {
         when: 'editorHasSelection',
         command: 'rangelink.pasteSelectedTextToDestination',
         group: '8_rangelink@5',
+      });
+    });
+
+    it('bookmark.add in context menu', () => {
+      expect(editorContextMenu[5]).toStrictEqual({
+        when: 'editorHasSelection',
+        command: 'rangelink.bookmark.add',
+        group: '8_rangelink@6',
       });
     });
   });

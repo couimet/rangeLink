@@ -335,6 +335,11 @@
           "when": "editorHasSelection",
           "command": "rangelink.pasteSelectedTextToDestination",
           "group": "8_rangelink@5"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "rangelink.bookmark.add",
+          "group": "8_rangelink@6"
         }
       ]
     }
