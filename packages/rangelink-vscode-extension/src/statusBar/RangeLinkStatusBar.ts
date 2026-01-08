@@ -78,13 +78,18 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       placeHolder: formatMessage(MessageCode.STATUS_BAR_MENU_PLACEHOLDER),
     });
 
-    if (selected?.destinationType) {
+    if (!selected) {
+      this.logger.debug({ fn: 'RangeLinkStatusBar.openMenu' }, 'User dismissed menu');
+      return;
+    }
+
+    if (selected.destinationType) {
       const success = await this.destinationManager.bindAndJump(selected.destinationType);
       this.logger.debug(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected, bindAndJumpSuccess: success },
         'Destination item selected',
       );
-    } else if (selected?.command) {
+    } else if (selected.command) {
       if (selected.command === CMD_BOOKMARK_NAVIGATE && selected.bookmarkId) {
         await this.bookmarkService.pasteBookmark(selected.bookmarkId);
       } else {
@@ -93,6 +98,11 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       this.logger.debug(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
         'Menu item selected',
+      );
+    } else {
+      this.logger.debug(
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
+        'Non-actionable item selected',
       );
     }
   }
