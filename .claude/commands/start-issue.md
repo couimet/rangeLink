@@ -25,6 +25,7 @@ Fetch the issue details:
    - Open questions
 
 3. **Create questions file (if needed)** - If you have questions that need user input, use `Glob(pattern="*.txt", path=".claude-questions/")` to find the next number, then create `.claude-questions/NNNN-issue-NUMBER-questions.txt` following this format:
+
    ```
    # Questions for Issue #NUMBER
 
