@@ -1658,11 +1658,15 @@ describe('PasteDestinationManager', () => {
           'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind' },
+          {
+            fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind',
+          },
           'No destination bound, showing quick pick',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind' },
+          {
+            fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind',
+          },
           'No destinations available',
         );
       });
@@ -1684,7 +1688,9 @@ describe('PasteDestinationManager', () => {
           { placeHolder: 'No destination bound. Choose destination to jump to:' },
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind' },
+          {
+            fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind',
+          },
           'No destination bound, showing quick pick',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -1706,7 +1712,9 @@ describe('PasteDestinationManager', () => {
 
         expect(result).toBe(false);
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind' },
+          {
+            fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind',
+          },
           'User cancelled quick pick',
         );
       });
@@ -2616,7 +2624,9 @@ describe('PasteDestinationManager', () => {
         { placeHolder: 'No bound destination. Choose below to bind and paste:' },
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind' },
+        {
+          fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',
+        },
         'No destination bound, showing quick pick',
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -2639,7 +2649,9 @@ describe('PasteDestinationManager', () => {
         'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind' },
+        {
+          fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',
+        },
         'No destinations available',
       );
     });
@@ -2654,7 +2666,9 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe('Cancelled');
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind' },
+        {
+          fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',
+        },
         'User cancelled quick pick',
       );
     });
@@ -2673,7 +2687,9 @@ describe('PasteDestinationManager', () => {
 
       expect(result).toBe('BindingFailed');
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind' },
+        {
+          fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',
+        },
         'Binding failed',
       );
     });

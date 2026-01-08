@@ -783,7 +783,9 @@ describe('RangeLinkService', () => {
           (mockDestinationManager.isBound as jest.Mock)
             .mockReturnValueOnce(false)
             .mockReturnValue(true);
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(mockDestination);
+          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
+            mockDestination,
+          );
           service = new RangeLinkService(
             delimiters,
             mockVscodeAdapter,
