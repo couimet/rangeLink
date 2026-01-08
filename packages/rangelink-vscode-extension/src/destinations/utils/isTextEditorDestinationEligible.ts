@@ -1,6 +1,5 @@
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
-import { isBinaryFile } from '../../utils/isBinaryFile';
-import { isWritableScheme } from '../../utils/isWritableScheme';
+import { isBinaryFile, isWritableScheme } from '../../utils';
 
 const MIN_TAB_GROUPS_FOR_SPLIT_EDITOR = 2;
 

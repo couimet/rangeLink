@@ -9,8 +9,7 @@ import type * as vscode from 'vscode';
 
 import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import { AutoPasteResult } from '../types/AutoPasteResult';
-import { MessageCode } from '../types/MessageCode';
+import { AutoPasteResult, MessageCode } from '../types';
 import {
   formatMessage,
   getUntitledDisplayName,

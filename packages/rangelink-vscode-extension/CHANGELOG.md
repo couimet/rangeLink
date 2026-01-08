@@ -20,11 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Jump to Bound Destination UX** - Improved behavior when no destination is bound (#173)
-  - **Before:** Showed error message "No destination bound. Bind a destination first."
-  - **After:** Shows quick pick of available destinations, then binds and jumps in one action
+- **Jump to Bound Destination UX** - Quick pick when no destination bound (#173)
+  - **Before:** Error message "No destination bound. Bind a destination first."
+  - **After:** Select destination → binds and jumps in one action
   - Dismisses silently when user presses Escape
   - Edge case: Shows info notification if no destinations exist (e.g., no terminal, single tab group, no AI extensions)
+- **Paste Selected Text UX** - Quick pick when no destination bound (#90)
+  - **Before:** Silently copied to clipboard with no indication
+  - **After:** Select destination → binds and pastes in one action
+  - Dismisses silently when user presses Escape (no clipboard fallback — user can retry)
+  - Edge case: Shows info notification if no destinations exist
 
 ### Fixed
 

@@ -6,9 +6,8 @@ import { DelimiterConfig, LinkType, ParsedLink } from 'rangelink-core-ts';
 import type { BookmarkService } from '../bookmarks';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { RangeLinkParser } from '../RangeLinkParser';
-import { MessageCode } from '../types/MessageCode';
-import { formatMessage } from '../utils/formatMessage';
-import { generateLinkFromSelections } from '../utils/generateLinkFromSelections';
+import { MessageCode } from '../types';
+import { formatMessage, generateLinkFromSelections } from '../utils';
 
 /**
  * Command handler for adding a bookmark from the current editor selection.

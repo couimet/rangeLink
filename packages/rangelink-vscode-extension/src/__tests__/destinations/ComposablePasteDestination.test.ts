@@ -2,8 +2,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 import { Result } from 'rangelink-core-ts';
 
 import { FocusErrorReason } from '../../destinations/capabilities/PasteExecutor';
-import { AutoPasteResult } from '../../types/AutoPasteResult';
-import { PasteContentType } from '../../types/PasteContentType';
+import { AutoPasteResult, PasteContentType } from '../../types';
 import type { PaddingMode } from '../../utils/applySmartPadding';
 import {
   createMockComposablePasteDestination,

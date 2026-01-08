@@ -2,8 +2,7 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
-import type { AutoPasteResult } from '../types/AutoPasteResult';
-import { PasteContentType } from '../types/PasteContentType';
+import { type AutoPasteResult, PasteContentType } from '../types';
 import { applySmartPadding, type PaddingMode } from '../utils';
 
 import { AlwaysEligibleChecker } from './capabilities/AlwaysEligibleChecker';
