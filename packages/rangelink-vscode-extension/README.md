@@ -76,6 +76,8 @@ src/utils/parser.ts#L42C10-L58C25
 
 **RangeLink's unified pattern:** All paste destinations share the same seamless workflow—links paste exactly at your insertion point, the destination auto-focuses, and you immediately continue typing. No copy/paste friction, no manual clicking, no context switching. This is what makes RangeLink competitive with integrated AI assistants like Cursor's `Cmd+L`, but works across any destination and any AI.
 
+**Send raw text too:** Sometimes you want to send selected code directly without a link wrapper. `Cmd+R Cmd+V` pastes your selection as-is to the bound destination -- perfect for quick code snippets. No destination bound? A quick pick menu appears so you can choose and bind in one action.
+
 #### Terminal Paste Destination
 
 Bind a terminal to RangeLink, and all generated links auto-paste directly there — even if you switch to other terminals for work.
@@ -203,7 +205,7 @@ All commands are available via keyboard shortcuts, Command Palette, and right-cl
 | Copy Portable Link (Absolute)                     | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P`  | Create absolute BYOD link                                |
 | Copy Range Link (Clipboard Only)                  | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`        | Copy link to clipboard only (skip bound destination)     |
 | Copy Range Link (Clipboard Only, Absolute)        | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C`  | Copy absolute path link to clipboard only                |
-| Paste Selected Text to Bound Destination          | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`        | Send selected text directly to bound destination         |
+| Paste Selected Text to Destination                | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`        | Send selected text directly to bound destination         |
 | Jump to Bound Destination                         | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound paste destination             |
 | Save Selection as Bookmark                        | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
 | Bind RangeLink to Claude Code Destination         | —                   | —                      | Auto-send links to Claude Code chat                      |
