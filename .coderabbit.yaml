@@ -4,8 +4,4 @@ reviews:
   auto_review: true
   review_status: true
 
-language:
-  enable:
-    - typescript
-    - javascript
-    - markdown
+language: "en-US"
