@@ -5,6 +5,7 @@
  */
 
 export * from './createMockAsRelativePath';
+export * from './createMockBookmarkService';
 export * from './createMockBookmarksStore';
 export * from './createMockCancellationToken';
 export * from './createMockClaudeCodeComposableDestination';
