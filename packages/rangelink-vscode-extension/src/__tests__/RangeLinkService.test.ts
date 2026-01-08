@@ -10,8 +10,7 @@ import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { messagesEn } from '../i18n/messages.en';
 import { PathFormat, RangeLinkService } from '../RangeLinkService';
-import { MessageCode } from '../types/MessageCode';
-import { QuickPickBindResult } from '../types/QuickPickBindResult';
+import { MessageCode, QuickPickBindResult } from '../types';
 import * as formatMessageModule from '../utils/formatMessage';
 import * as generateLinkModule from '../utils/generateLinkFromSelections';
 

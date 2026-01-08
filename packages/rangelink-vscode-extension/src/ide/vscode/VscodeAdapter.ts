@@ -2,9 +2,11 @@ import * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
-import { BehaviourAfterPaste } from '../../types/BehaviourAfterPaste';
-import type { SendTextToTerminalOptions } from '../../types/SendTextToTerminalOptions';
-import { TerminalFocusType } from '../../types/TerminalFocusType';
+import {
+  BehaviourAfterPaste,
+  type SendTextToTerminalOptions,
+  TerminalFocusType,
+} from '../../types';
 import { getUntitledDisplayName, resolveWorkspacePath } from '../../utils';
 import type { ConfigurationProvider } from '../ConfigurationProvider';
 import type { ErrorFeedbackProvider } from '../ErrorFeedbackProvider';

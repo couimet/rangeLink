@@ -12,11 +12,8 @@ import {
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
-import { ActiveSelections } from './types/ActiveSelections';
-import { MessageCode } from './types/MessageCode';
-import { QuickPickBindResult } from './types/QuickPickBindResult';
-import { formatMessage } from './utils/formatMessage';
-import { generateLinkFromSelections } from './utils/generateLinkFromSelections';
+import { ActiveSelections, MessageCode, QuickPickBindResult } from './types';
+import { formatMessage, generateLinkFromSelections } from './utils';
 
 export enum PathFormat {
   WorkspaceRelative = 'workspace-relative',

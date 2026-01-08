@@ -5,9 +5,7 @@ import * as vscode from 'vscode';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { AutoPasteResult } from '../types/AutoPasteResult';
-import { MessageCode } from '../types/MessageCode';
-import { QuickPickBindResult } from '../types/QuickPickBindResult';
+import { AutoPasteResult, MessageCode, QuickPickBindResult } from '../types';
 import {
   formatMessage,
   isBinaryFile,

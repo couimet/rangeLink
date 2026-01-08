@@ -1,8 +1,7 @@
 import type { Logger } from 'barebone-logger';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { AvailableDestination } from '../types/AvailableDestination';
-import { MessageCode } from '../types/MessageCode';
+import { type AvailableDestination, MessageCode } from '../types';
 
 import type { DestinationRegistry } from './DestinationRegistry';
 import type { AIAssistantDestinationType } from './PasteDestination';
