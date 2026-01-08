@@ -403,6 +403,39 @@
   </parent-child-issues>
 </workflow>
 
+<workflow id="pr-review-comments">
+  <title>Retrieving PR Review Comments</title>
+
+  <when-to-use>
+    - User shares a PR review URL like `https://github.com/owner/repo/pull/123#pullrequestreview-123456789`
+    - Need to analyze reviewer feedback
+  </when-to-use>
+
+  <process>
+    1. Extract the review ID from the URL (the number after `pullrequestreview-`)
+    2. Use gh API to fetch the review:
+       ```bash
+       gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews/{review_id}
+       ```
+    3. Parse the JSON response - the `body` field contains the review content (text or markdown)
+    4. Create a scratchpad with action plan based on feedback
+  </process>
+
+  <example>
+    ```bash
+    # URL: https://github.com/couimet/rangeLink/pull/215#pullrequestreview-3637523002
+    gh api repos/couimet/rangeLink/pulls/215/reviews/3637523002
+    ```
+  </example>
+
+  <response-fields>
+    - `body`: Full review content (text or markdown - format varies by reviewer)
+    - `state`: APPROVED, CHANGES_REQUESTED, COMMENTED
+    - `user.login`: Reviewer username
+    - `submitted_at`: Timestamp
+  </response-fields>
+</workflow>
+
 </workflows>
 
 ---
