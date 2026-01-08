@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 
 import { BookmarkService, BookmarksStore } from './bookmarks';
 import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
+import { ListBookmarksCommand } from './commands/ListBookmarksCommand';
 import { ConfigReader, getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
@@ -11,6 +12,7 @@ import {
   CMD_BIND_TO_TERMINAL,
   CMD_BIND_TO_TEXT_EDITOR,
   CMD_BOOKMARK_ADD,
+  CMD_BOOKMARK_LIST,
   CMD_BOOKMARK_MANAGE,
   CMD_COPY_LINK_ABSOLUTE,
   CMD_COPY_LINK_ONLY_ABSOLUTE,
@@ -327,6 +329,12 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BOOKMARK_ADD, () => addBookmarkCommand.execute()),
+  );
+
+  const listBookmarksCommand = new ListBookmarksCommand(ideAdapter, bookmarkService, getLogger());
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_BOOKMARK_LIST, () => listBookmarksCommand.execute()),
   );
 
   context.subscriptions.push(

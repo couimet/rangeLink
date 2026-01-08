@@ -20,6 +20,25 @@ import {
 const QUICK_PICK_DISMISSED = undefined;
 
 describe('RangeLinkStatusBar', () => {
+  const MOCK_BOOKMARKS: Bookmark[] = [
+    {
+      id: 'bookmark-1',
+      label: 'CLAUDE.md Instructions',
+      link: '/Users/test/project/CLAUDE.md#L10-L20',
+      scope: 'global',
+      createdAt: '2025-01-15T10:00:00.000Z',
+      accessCount: 5,
+    },
+    {
+      id: 'bookmark-2',
+      label: 'API Error Codes',
+      link: '/Users/test/project/src/errors.ts#L1-L50',
+      scope: 'global',
+      createdAt: '2025-01-14T10:00:00.000Z',
+      accessCount: 2,
+    },
+  ];
+
   let createStatusBarItemMock: jest.Mock;
   let showQuickPickMock: jest.Mock;
   let executeCommandMock: jest.Mock;
@@ -182,25 +201,7 @@ describe('RangeLinkStatusBar', () => {
       mockAvailabilityService.getAvailableDestinations.mockResolvedValue([
         { type: 'terminal', displayName: 'Terminal' },
       ]);
-      const bookmarks: Bookmark[] = [
-        {
-          id: 'bookmark-1',
-          label: 'CLAUDE.md Instructions',
-          link: '/Users/test/project/CLAUDE.md#L10-L20',
-          scope: 'global',
-          createdAt: '2025-01-15T10:00:00.000Z',
-          accessCount: 5,
-        },
-        {
-          id: 'bookmark-2',
-          label: 'API Error Codes',
-          link: '/Users/test/project/src/errors.ts#L1-L50',
-          scope: 'global',
-          createdAt: '2025-01-14T10:00:00.000Z',
-          accessCount: 2,
-        },
-      ];
-      mockBookmarkService.getAllBookmarks.mockReturnValue(bookmarks);
+      mockBookmarkService.getAllBookmarks.mockReturnValue(MOCK_BOOKMARKS);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
@@ -444,25 +445,7 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('returns bookmark items when bookmarks exist', () => {
-      const bookmarks: Bookmark[] = [
-        {
-          id: 'bookmark-1',
-          label: 'CLAUDE.md Instructions',
-          link: '/Users/test/project/CLAUDE.md#L10-L20',
-          scope: 'global',
-          createdAt: '2025-01-15T10:00:00.000Z',
-          accessCount: 5,
-        },
-        {
-          id: 'bookmark-2',
-          label: 'API Error Codes',
-          link: '/Users/test/project/src/errors.ts#L1-L50',
-          scope: 'global',
-          createdAt: '2025-01-14T10:00:00.000Z',
-          accessCount: 2,
-        },
-      ];
-      mockBookmarkService.getAllBookmarks.mockReturnValue(bookmarks);
+      mockBookmarkService.getAllBookmarks.mockReturnValue(MOCK_BOOKMARKS);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,

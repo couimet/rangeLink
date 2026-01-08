@@ -13,6 +13,13 @@ interface BookmarkQuickPickItem extends vscode.QuickPickItem {
   command?: string;
 }
 
+/**
+ * Command handler for displaying bookmarks.
+ *
+ * Allows users to select a bookmark to paste its link to the bound destination,
+ * or access bookmark management actions. Updates bookmark access metadata
+ * (lastAccessedAt, accessCount) on selection.
+ */
 export class ListBookmarksCommand {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
