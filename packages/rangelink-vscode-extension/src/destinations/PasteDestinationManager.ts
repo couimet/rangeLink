@@ -7,7 +7,7 @@ import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorC
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { AutoPasteResult } from '../types/AutoPasteResult';
 import { MessageCode } from '../types/MessageCode';
-import { QuickPickBindResult } from '../types/QuickPickPasteResult';
+import { QuickPickBindResult } from '../types/QuickPickBindResult';
 import {
   formatMessage,
   isBinaryFile,

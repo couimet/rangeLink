@@ -6,7 +6,7 @@
 
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import type { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
-import { QuickPickBindResult } from '../../types/QuickPickPasteResult';
+import { QuickPickBindResult } from '../../types/QuickPickBindResult';
 
 /**
  * Options for creating a mock destination manager

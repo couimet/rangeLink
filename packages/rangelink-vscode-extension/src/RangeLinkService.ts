@@ -14,7 +14,7 @@ import type { PasteDestinationManager } from './destinations/PasteDestinationMan
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { ActiveSelections } from './types/ActiveSelections';
 import { MessageCode } from './types/MessageCode';
-import { QuickPickBindResult } from './types/QuickPickPasteResult';
+import { QuickPickBindResult } from './types/QuickPickBindResult';
 import { formatMessage } from './utils/formatMessage';
 import { generateLinkFromSelections } from './utils/generateLinkFromSelections';
 
