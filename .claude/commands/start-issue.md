@@ -47,17 +47,21 @@ Type/Priority/Scope: from labels
 ## Implementation Plan
 
 Numbered steps that are:
+
 - **Commit-sized** - each step could be a single commit or small PR
 - **Specific** - reference exact files, functions, types by name
 - **Ordered** - dependencies between steps are clear
 - **Testable** - each step should mention what tests to add/update
 
 Example format:
+
 ### Step 1: Define new types
+
 - Add `ClampingInfo` interface to `src/types/ClampingInfo.ts`
 - Export from `src/types/index.ts`
 
 ### Step 2: Update implementation
+
 - Modify `convertRangeLinkPosition()` in `src/utils/convertRangeLinkPosition.ts`
 - Import new types, update return shape
 
@@ -66,6 +70,7 @@ Example format:
 ## Assumptions Made
 
 List any reasonable defaults assumed to avoid blocking on minor decisions:
+
 - "Assuming X because Y" - document reasoning
 
 ## Files to Modify
@@ -82,11 +87,13 @@ Checklist from the issue (copy verbatim if provided).
 **Only create questions for decisions that would FUNDAMENTALLY change the implementation plan.**
 
 Do NOT ask questions about:
+
 - Minor choices with clear best practices (assume the better option)
 - Implementation details you can reasonably decide
 - Things you can verify by reading existing code patterns
 
 DO ask questions about:
+
 - Architectural decisions with no clear winner
 - User-facing behavior where preference matters
 - Scope clarification when requirements are ambiguous
@@ -123,6 +130,7 @@ Print the paths of created files so the user knows what was prepared.
 ## Quality Checklist
 
 Before finishing, verify your scratchpad:
+
 - [ ] Implementation plan has specific file/function names (not "update the code")
 - [ ] Each step is small enough to be one commit
 - [ ] Test updates are mentioned for each step that changes behavior
