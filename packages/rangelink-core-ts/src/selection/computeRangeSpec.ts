@@ -1,5 +1,6 @@
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { ComputedSelection } from '../types/ComputedSelection';
+import type { CoreResult } from '../types/CoreResult';
 import { FormatOptions } from '../types/FormatOptions';
 import { InputSelection } from '../types/InputSelection';
 import { RangeFormat } from '../types/RangeFormat';
@@ -16,12 +17,11 @@ import { validateInputSelection } from './validateInputSelection';
  *
  * @param inputSelection InputSelection containing selections array and selectionType
  * @param options Optional formatting parameters (notation, linkType, etc.)
- * @returns Result<ComputedSelection, RangeLinkError> - Ok with computed selection or Err with error
  */
 export function computeRangeSpec(
   inputSelection: InputSelection,
   options?: FormatOptions,
-): Result<ComputedSelection, RangeLinkError> {
+): CoreResult<ComputedSelection> {
   try {
     validateInputSelection(inputSelection);
   } catch (error) {

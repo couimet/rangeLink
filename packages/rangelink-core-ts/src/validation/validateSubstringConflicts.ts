@@ -1,5 +1,6 @@
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
+import type { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { Result } from '../types/Result';
 
@@ -11,11 +12,8 @@ import { Result } from '../types/Result';
  * Checks all delimiter pairs to ensure no delimiter contains another as a substring.
  *
  * @param delimiters - The delimiter configuration to validate
- * @returns Result<void, RangeLinkError> - Ok if no conflicts, Err with RangeLinkError otherwise
  */
-export const validateSubstringConflicts = (
-  delimiters: DelimiterConfig,
-): Result<void, RangeLinkError> => {
+export const validateSubstringConflicts = (delimiters: DelimiterConfig): CoreResult<void> => {
   const values = [delimiters.line, delimiters.position, delimiters.hash, delimiters.range];
 
   for (let i = 0; i < values.length; i++) {

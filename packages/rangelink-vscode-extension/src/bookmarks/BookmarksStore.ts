@@ -5,6 +5,7 @@ import type * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
+import type { ExtensionResult } from '../types';
 import { createIsoTimestamp } from '../utils';
 
 import type {
@@ -98,7 +99,7 @@ export class BookmarksStore {
   /**
    * Creates a new bookmark with generated id, createdAt, and accessCount=0.
    */
-  async add(input: BookmarkInput): Promise<Result<Bookmark, RangeLinkExtensionError>> {
+  async add(input: BookmarkInput): Promise<ExtensionResult<Bookmark>> {
     try {
       const data = this.load();
       const existingIds = new Set(data.bookmarks.map((b) => b.id));
@@ -155,10 +156,7 @@ export class BookmarksStore {
    * Updates a bookmark's label or link.
    * Returns the updated bookmark, or undefined if not found.
    */
-  async update(
-    id: BookmarkId,
-    updates: BookmarkUpdate,
-  ): Promise<Result<Bookmark, RangeLinkExtensionError>> {
+  async update(id: BookmarkId, updates: BookmarkUpdate): Promise<ExtensionResult<Bookmark>> {
     try {
       const data = this.load();
       const index = this.findBookmarkIndex(data, id, 'update');
@@ -215,7 +213,7 @@ export class BookmarksStore {
   /**
    * Removes a bookmark by its id.
    */
-  async remove(id: BookmarkId): Promise<Result<void, RangeLinkExtensionError>> {
+  async remove(id: BookmarkId): Promise<ExtensionResult<void>> {
     try {
       const data = this.load();
       const index = this.findBookmarkIndex(data, id, 'remove');
@@ -258,7 +256,7 @@ export class BookmarksStore {
   /**
    * Records an access to a bookmark, updating lastAccessedAt and incrementing accessCount.
    */
-  async recordAccess(id: BookmarkId): Promise<Result<void, RangeLinkExtensionError>> {
+  async recordAccess(id: BookmarkId): Promise<ExtensionResult<void>> {
     try {
       const data = this.load();
       const index = this.findBookmarkIndex(data, id, 'recordAccess');

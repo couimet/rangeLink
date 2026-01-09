@@ -4,6 +4,7 @@ import { DEFAULT_DELIMITERS } from '../constants/DEFAULT_DELIMITERS';
 import { MAX_LINK_LENGTH } from '../constants/MAX_LINK_LENGTH';
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
+import type { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { LinkPosition } from '../types/LinkPosition';
 import { LinkType } from '../types/LinkType';
@@ -34,12 +35,8 @@ import { escapeRegex } from '../utils/escapeRegex';
  *
  * @param link - The RangeLink string to parse (e.g., "src/auth.ts#L42C10-L58C25")
  * @param delimiters - Optional delimiter configuration. If not provided, falls back to DEFAULT_DELIMITERS
- * @returns Result with ParsedLink on success, RangeLinkError on failure
  */
-export const parseLink = (
-  link: string,
-  delimiters?: DelimiterConfig,
-): Result<ParsedLink, RangeLinkError> => {
+export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResult<ParsedLink> => {
   // Check link length for safety
   if (link.length > MAX_LINK_LENGTH) {
     return Result.err(

@@ -11,6 +11,7 @@ import * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
+import type { ExtensionResult } from '../types';
 
 import { toInputSelection } from './toInputSelection';
 
@@ -67,7 +68,7 @@ const FN_NAME = 'generateLinkFromSelections';
  */
 export const generateLinkFromSelections = (
   options: GenerateLinkFromSelectionsOptions,
-): Result<FormattedLink, RangeLinkExtensionError> => {
+): ExtensionResult<FormattedLink> => {
   const { referencePath, document, selections, delimiters, linkType, logger } = options;
 
   if (selections.length === 0) {
