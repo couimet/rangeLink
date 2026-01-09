@@ -1,7 +1,7 @@
 ---
-allowed-tools: Read, Bash(gh:*), Write, Glob
+allowed-tools: Read, Bash(gh:*), Write, Glob, Grep
 argument-hint: <github-issue-url>
-description: Start working on a GitHub issue - analyze it and create a scratchpad with questions
+description: Start working on a GitHub issue - analyze, explore codebase, and create detailed implementation plan
 ---
 
 # Start GitHub Issue Workflow
@@ -15,31 +15,124 @@ Fetch the issue details:
 
 ## Your Tasks
 
-1. **Analyze the issue** - Read and understand the requirements, acceptance criteria, and any linked context
+### 1. Gather Full Context
 
-2. **Create a scratchpad** - Use `Glob(pattern="*.txt", path=".scratchpads/")` to find the highest NNNN, increment by 1, then create `.scratchpads/NNNN-issue-NUMBER-description.txt` with:
-   - Issue summary
-   - Key requirements
-   - Acceptance criteria (if specified)
-   - Initial implementation approach
-   - Open questions
+- **Fetch parent issues** - If the issue body references a parent (e.g., "Parent Issue: #47"), fetch it to understand the broader goal and how this issue fits into the plan
+- **Note child issues** - If this is a parent/epic, note child issues to understand full scope
+- **Explore the codebase** - Use Grep/Glob/Read to find and examine:
+  - Files/functions mentioned in the issue
+  - Related code that will be affected
+  - Existing patterns to follow
+  - Test files that will need updates
 
-3. **Create questions file (if needed)** - If you have questions that need user input, use `Glob(pattern="*.txt", path=".claude-questions/")` to find the next number, then create `.claude-questions/NNNN-issue-NUMBER-questions.txt` following this format:
+### 2. Create Implementation Plan Scratchpad
 
-   ```
-   # Questions for Issue #NUMBER
+Follow the `scratchpads` workflow in CLAUDE.md for file location and numbering.
+Use filename pattern: `NNNN-issue-NUMBER-description.txt`
 
-   ## Question 001: <question with options/recommendations>
+The scratchpad for issues MUST contain these sections:
 
-   Answer: [prefilled recommended answer when available]
+```markdown
+# Issue #NUMBER: Title
 
-   ---
-   ```
+Parent: #XX (if applicable)
+Type/Priority/Scope: from labels
 
-4. **Report status** - Print the paths of created files so the user knows what was prepared
+## Context
 
-## Important
+- Brief issue summary (1-2 sentences)
+- Parent issue context: how this fits into broader plan (if applicable)
+- Key insight from codebase exploration that shapes the implementation
 
-- Follow all CLAUDE.md rules (use .txt extension, focus on WHY not WHAT, etc.)
-- Be thorough in analysis but concise in documentation
-- Prefill recommended answers when you have a clear recommendation
+## Implementation Plan
+
+Numbered steps that are:
+
+- **Commit-sized** - each step could be a single commit or small PR
+- **Specific** - reference exact files, functions, types by name
+- **Ordered** - dependencies between steps are clear
+- **Testable** - each step should mention what tests to add/update
+
+Example format:
+
+### Step 1: Define new types
+
+- Add `ClampingInfo` interface to `src/types/ClampingInfo.ts`
+- Export from `src/types/index.ts`
+
+### Step 2: Update implementation
+
+- Modify `convertRangeLinkPosition()` in `src/utils/convertRangeLinkPosition.ts`
+- Import new types, update return shape
+
+... etc
+
+## Assumptions Made
+
+List any reasonable defaults assumed to avoid blocking on minor decisions:
+
+- "Assuming X because Y" - document reasoning
+
+## Files to Modify
+
+Bulleted list of all files that will be touched, grouped by step.
+
+## Acceptance Criteria
+
+Checklist from the issue (copy verbatim if provided).
+```
+
+### 3. Create Questions File (Only If Necessary)
+
+**Only create questions for decisions that would FUNDAMENTALLY change the implementation plan.**
+
+Do NOT ask questions about:
+
+- Minor choices with clear best practices (assume the better option)
+- Implementation details you can reasonably decide
+- Things you can verify by reading existing code patterns
+
+DO ask questions about:
+
+- Architectural decisions with no clear winner
+- User-facing behavior where preference matters
+- Scope clarification when requirements are ambiguous
+
+If questions are needed, follow the `questions` workflow in CLAUDE.md for file location and numbering.
+Use filename pattern: `NNNN-issue-NUMBER-questions.txt`
+
+Extend the base format with issue-specific fields:
+
+```markdown
+# Questions for Issue #NUMBER
+
+## Question 001: <specific question>
+
+Context: <why this matters for the plan>
+
+Options:
+A) <option> - <tradeoff>
+B) <option> - <tradeoff>
+
+Recommendation: <your recommendation with reasoning>
+
+**Plan impact:** <which steps would change based on answer>
+
+Answer: <prefilled with recommendation>
+
+---
+```
+
+### 4. Report Status
+
+Print the paths of created files so the user knows what was prepared.
+
+## Quality Checklist
+
+Before finishing, verify your scratchpad:
+
+- [ ] Implementation plan has specific file/function names (not "update the code")
+- [ ] Each step is small enough to be one commit
+- [ ] Test updates are mentioned for each step that changes behavior
+- [ ] Assumptions are documented with reasoning
+- [ ] Questions (if any) would genuinely change the plan if answered differently
