@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { BookmarkService, BookmarksStore } from './bookmarks';
 import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
 import { ListBookmarksCommand } from './commands/ListBookmarksCommand';
+import { ManageBookmarksCommand } from './commands/ManageBookmarksCommand';
 import { ConfigReader, getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
@@ -335,10 +336,14 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter.registerCommand(CMD_BOOKMARK_LIST, () => listBookmarksCommand.execute()),
   );
 
+  const manageBookmarksCommand = new ManageBookmarksCommand(
+    ideAdapter,
+    bookmarkService,
+    getLogger(),
+  );
+
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_BOOKMARK_MANAGE, () => {
-      getLogger().info({ fn: 'CMD_BOOKMARK_MANAGE' }, 'Manage bookmarks command invoked (stub)');
-    }),
+    ideAdapter.registerCommand(CMD_BOOKMARK_MANAGE, () => manageBookmarksCommand.execute()),
   );
 
   // Log version info on startup
