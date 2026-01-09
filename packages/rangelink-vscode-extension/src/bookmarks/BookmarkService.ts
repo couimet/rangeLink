@@ -46,15 +46,11 @@ export class BookmarkService {
    * Add a new bookmark.
    *
    * @param input - The bookmark data (label, link, optional description/scope)
-   * @returns The created bookmark on success
-   * @throws If bookmark creation fails
    */
-  async addBookmark(input: BookmarkInput): Promise<Bookmark> {
-    const result = await this.bookmarksStore.add(input);
-    if (!result.success) {
-      throw result.error;
-    }
-    return result.value;
+  async addBookmark(
+    input: BookmarkInput,
+  ): Promise<Result<Bookmark, RangeLinkExtensionError>> {
+    return this.bookmarksStore.add(input);
   }
 
   /**
