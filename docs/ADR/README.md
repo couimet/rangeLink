@@ -1,6 +1,6 @@
 # Architecture Decision Records (ADR)
 
-> **Coming Soon** - This directory will contain architectural decision records documenting the "why" behind major design choices in RangeLink.
+This directory contains architectural decision records documenting the "why" behind major design choices in RangeLink.
 
 ## What are ADRs?
 
@@ -12,22 +12,24 @@ Architecture Decision Records (ADRs) capture important architectural decisions a
 
 ## Format
 
-We'll follow the format from [adr.github.io](https://adr.github.io/):
+We follow the format from [adr.github.io](https://adr.github.io/):
 
 - **Status:** Accepted / Deprecated / Superseded
 - **Context:** What's the situation and problem?
 - **Decision:** What did we decide to do?
 - **Consequences:** What are the trade-offs and implications?
 
-## Planned ADRs
+## ADRs
 
-Examples of decisions we'll document:
+| #                                               | Title                                 | Status   |
+| ----------------------------------------------- | ------------------------------------- | -------- |
+| [0001](./0001-hexagonal-error-boundary.md)      | Hexagonal Error Boundary              | Accepted |
 
-- `0001-monorepo-structure.md` - Why we chose monorepo over multi-repo
-- `0002-independent-package-versioning.md` - Why packages version independently
-- `0003-git-tagging-convention.md` - Why we use `{package}-v{version}` format
-- `0004-core-library-extraction.md` - Why we extracted platform-agnostic core
+## Future ADRs
 
-## Stay Tuned
+Decisions we may document:
 
-We'll be adding ADRs as the project evolves. Check back soon!
+- Monorepo structure
+- Independent package versioning
+- Git tagging convention (`{package}-v{version}`)
+- Core library extraction (platform-agnostic)
