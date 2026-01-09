@@ -1,5 +1,5 @@
-import { RangeLinkError } from '../errors/RangeLinkError';
 import { computeRangeSpec } from '../selection/computeRangeSpec';
+import type { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { FormatOptions } from '../types/FormatOptions';
 import { FormattedLink } from '../types/FormattedLink';
@@ -20,14 +20,13 @@ import { joinWithHash } from './joinWithHash';
  * @param inputSelection InputSelection containing selections and selectionType
  * @param delimiters Delimiter configuration
  * @param options Optional formatting options
- * @returns Result<FormattedLink, RangeLinkError> - formatted link with metadata or error
  */
 export function formatLink(
   path: string,
   inputSelection: InputSelection,
   delimiters: DelimiterConfig,
   options?: FormatOptions,
-): Result<FormattedLink, RangeLinkError> {
+): CoreResult<FormattedLink> {
   // Validate and compute range spec
   const specResult = computeRangeSpec(inputSelection, options);
   if (!specResult.success) {

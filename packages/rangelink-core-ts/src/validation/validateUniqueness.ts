@@ -1,5 +1,6 @@
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
+import type { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { Result } from '../types/Result';
 
@@ -11,9 +12,8 @@ import { Result } from '../types/Result';
  * This prevents user errors from inconsistent casing (e.g., "L" vs "l").
  *
  * @param delimiters - The delimiter configuration to validate
- * @returns Result<void, RangeLinkError> - Ok if unique, Err with RangeLinkError otherwise
  */
-export const validateUniqueness = (delimiters: DelimiterConfig): Result<void, RangeLinkError> => {
+export const validateUniqueness = (delimiters: DelimiterConfig): CoreResult<void> => {
   const values = [delimiters.line, delimiters.position, delimiters.hash, delimiters.range];
   const lowerCaseValues = values.map((v) => v.toLowerCase());
   const isUnique = new Set(lowerCaseValues).size === lowerCaseValues.length;

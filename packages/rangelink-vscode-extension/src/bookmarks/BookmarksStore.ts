@@ -156,10 +156,7 @@ export class BookmarksStore {
    * Updates a bookmark's label or link.
    * Returns the updated bookmark, or undefined if not found.
    */
-  async update(
-    id: BookmarkId,
-    updates: BookmarkUpdate,
-  ): Promise<ExtensionResult<Bookmark>> {
+  async update(id: BookmarkId, updates: BookmarkUpdate): Promise<ExtensionResult<Bookmark>> {
     try {
       const data = this.load();
       const index = this.findBookmarkIndex(data, id, 'update');

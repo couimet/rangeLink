@@ -1,6 +1,6 @@
 import type { Logger } from 'barebone-logger';
-import type { ParsedLink, Result } from 'rangelink-core-ts';
-import { RangeLinkError, SelectionType } from 'rangelink-core-ts';
+import type { CoreResult, ParsedLink } from 'rangelink-core-ts';
+import { SelectionType } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 import { TextEditorRevealType } from 'vscode';
 
@@ -49,9 +49,8 @@ export class RangeLinkNavigationHandler {
    * Parse a RangeLink string into structured data.
    *
    * @param linkText - Raw link text to parse
-   * @returns Result with ParsedLink or RangeLinkError
    */
-  parseLink(linkText: string): Result<ParsedLink, RangeLinkError> {
+  parseLink(linkText: string): CoreResult<ParsedLink> {
     return this.parser.parseLink(linkText);
   }
 

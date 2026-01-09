@@ -1,6 +1,6 @@
 import type { Logger } from 'barebone-logger';
-import type { DelimiterConfig, ParsedLink, Result } from 'rangelink-core-ts';
-import { buildLinkPattern, parseLink, RangeLinkError } from 'rangelink-core-ts';
+import type { CoreResult, DelimiterConfig, ParsedLink } from 'rangelink-core-ts';
+import { buildLinkPattern, parseLink } from 'rangelink-core-ts';
 
 import { formatLinkTooltip } from './utils';
 
@@ -37,9 +37,8 @@ export class RangeLinkParser {
    * Parse a RangeLink string into structured data.
    *
    * @param linkText - Raw link text to parse
-   * @returns Result with ParsedLink or RangeLinkError
    */
-  parseLink(linkText: string): Result<ParsedLink, RangeLinkError> {
+  parseLink(linkText: string): CoreResult<ParsedLink> {
     return parseLink(linkText, this.delimiters);
   }
 

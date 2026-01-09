@@ -1,7 +1,7 @@
 import { getLogger } from 'barebone-logger';
 
-import { RangeLinkError } from '../errors/RangeLinkError';
 import { ComputedSelection } from '../types/ComputedSelection';
+import type { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { FormattedLink } from '../types/FormattedLink';
 import { InputSelection } from '../types/InputSelection';
@@ -26,7 +26,6 @@ export type LinkGenerationResult = {
  * @param inputSelection Original input selection
  * @param linkType Regular or Portable
  * @param delimiters Delimiter configuration
- * @returns FormattedLink wrapped in Result.ok
  */
 export const finalizeLinkGeneration = (
   generateLink: () => LinkGenerationResult,
@@ -34,7 +33,7 @@ export const finalizeLinkGeneration = (
   inputSelection: InputSelection,
   linkType: LinkType,
   delimiters: DelimiterConfig,
-): Result<FormattedLink, RangeLinkError> => {
+): CoreResult<FormattedLink> => {
   const { link: baseLink, logContext } = generateLink();
 
   // Append BYOD metadata for portable links (creates new string, doesn't mutate)

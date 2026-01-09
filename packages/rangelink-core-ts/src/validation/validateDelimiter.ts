@@ -1,6 +1,7 @@
 import { RESERVED_CHARS } from '../constants/RESERVED_CHARS';
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
+import type { CoreResult } from '../types/CoreResult';
 import { Result } from '../types/Result';
 
 /**
@@ -8,12 +9,8 @@ import { Result } from '../types/Result';
  *
  * @param value The delimiter value to validate
  * @param isHash Optional flag to indicate if this is a hash delimiter (must be single character)
- * @returns Result<void, RangeLinkError> - Ok if valid, Err with RangeLinkError otherwise
  */
-export function validateDelimiter(
-  value: string,
-  isHash: boolean = false,
-): Result<void, RangeLinkError> {
+export function validateDelimiter(value: string, isHash: boolean = false): CoreResult<void> {
   if (!value || value.trim() === '') {
     return Result.err(
       new RangeLinkError({
