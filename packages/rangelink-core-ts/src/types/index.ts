@@ -1,5 +1,5 @@
 export { Result } from './Result';
-export type { CoreResult } from './CoreResult';
+export { CoreResult } from './CoreResult';
 export { Selection } from './Selection';
 export { InputSelection } from './InputSelection';
 export { DelimiterConfig } from './DelimiterConfig';

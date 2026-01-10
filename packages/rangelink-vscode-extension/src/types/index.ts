@@ -2,7 +2,7 @@ export { ActiveSelections } from './ActiveSelections';
 export { AutoPasteResult } from './AutoPasteResult';
 export type { AvailableDestination } from './AvailableDestination';
 export { BehaviourAfterPaste } from './BehaviourAfterPaste';
-export type { ExtensionResult } from './ExtensionResult';
+export { ExtensionResult } from './ExtensionResult';
 export { MessageCode } from './MessageCode';
 export { PasteContentType } from './PasteContentType';
 export { QuickPickBindResult } from './QuickPickBindResult';
