@@ -136,9 +136,16 @@ Answer: <prefilled with recommendation>
 ---
 ```
 
-### 5. Report Status
+### 5. Report Status and STOP
 
 Print the branch name and paths of created files so the user knows what was prepared.
+
+**IMPORTANT: Do NOT proceed with implementation.**
+
+This command is for planning only. After reporting status:
+
+- Wait for the user to review the implementation plan
+- Only begin implementation when the user explicitly asks (e.g., "proceed", "start implementing", "go ahead")
 
 ## Quality Checklist
 
