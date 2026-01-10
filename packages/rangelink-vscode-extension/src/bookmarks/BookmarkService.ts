@@ -7,6 +7,7 @@ import {
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { ExtensionResult } from '../types';
 
 import type { BookmarksStore } from './BookmarksStore';
 import type { Bookmark, BookmarkId, BookmarkInput } from './types';
@@ -47,9 +48,7 @@ export class BookmarkService {
    *
    * @param input - The bookmark data (label, link, optional description/scope)
    */
-  async addBookmark(
-    input: BookmarkInput,
-  ): Promise<Result<Bookmark, RangeLinkExtensionError>> {
+  async addBookmark(input: BookmarkInput): Promise<ExtensionResult<Bookmark>> {
     return this.bookmarksStore.add(input);
   }
 
