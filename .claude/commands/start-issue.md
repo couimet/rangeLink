@@ -138,7 +138,7 @@ Answer: <prefilled with recommendation>
 
 ### 5. Report Status and STOP
 
-Print the branch name and paths of created files so the user knows what was prepared.
+Print the branch name (`issues/<NUMBER>`) and paths of any created scratchpad/questions files.
 
 **IMPORTANT: Do NOT proceed with implementation.**
 
