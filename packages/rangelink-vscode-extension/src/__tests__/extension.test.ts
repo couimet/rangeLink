@@ -215,7 +215,6 @@ describe('Configuration loading and validation', () => {
     });
   });
 
-
   describe('Duplicate delimiter values', () => {
     it('should use defaults when all delimiters are the same', async () => {
       const mockConfig = {
@@ -410,7 +409,6 @@ describe('Configuration loading and validation', () => {
         expect.stringMatching(/Line delimiter.*from default/),
       );
     });
-
 
     it('should log source as user when globalValue is set', async () => {
       const mockConfig = {
