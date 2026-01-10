@@ -1,12 +1,11 @@
 import { getLogger } from 'barebone-logger';
 
 import { ComputedSelection } from '../types/ComputedSelection';
-import type { CoreResult } from '../types/CoreResult';
+import { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { FormattedLink } from '../types/FormattedLink';
 import { InputSelection } from '../types/InputSelection';
 import { LinkType } from '../types/LinkType';
-import { Result } from '../types/Result';
 
 import { composePortableMetadata } from './composePortableMetadata';
 
@@ -53,7 +52,7 @@ export const finalizeLinkGeneration = (
     'Generated link',
   );
 
-  return Result.ok({
+  return CoreResult.ok({
     link,
     linkType,
     delimiters,

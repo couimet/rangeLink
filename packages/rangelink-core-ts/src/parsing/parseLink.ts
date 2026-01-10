@@ -4,12 +4,11 @@ import { DEFAULT_DELIMITERS } from '../constants/DEFAULT_DELIMITERS';
 import { MAX_LINK_LENGTH } from '../constants/MAX_LINK_LENGTH';
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
-import type { CoreResult } from '../types/CoreResult';
+import { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { LinkPosition } from '../types/LinkPosition';
 import { LinkType } from '../types/LinkType';
 import { ParsedLink } from '../types/ParsedLink';
-import { Result } from '../types/Result';
 import { SelectionType } from '../types/SelectionType';
 import { escapeRegex } from '../utils/escapeRegex';
 
@@ -39,7 +38,7 @@ import { escapeRegex } from '../utils/escapeRegex';
 export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResult<ParsedLink> => {
   // Check link length for safety
   if (link.length > MAX_LINK_LENGTH) {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_LINK_TOO_LONG,
         message: `Link exceeds maximum length of ${MAX_LINK_LENGTH} characters`,
@@ -50,7 +49,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
   }
 
   if (!link || link.trim() === '') {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_EMPTY_LINK,
         message: 'Link cannot be empty',
@@ -107,7 +106,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
   if (!match) {
     // Check for empty path (link starts with hash)
     if (link.startsWith(activeDelimiters.hash)) {
-      return Result.err(
+      return CoreResult.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.PARSE_EMPTY_PATH,
           message: 'Path cannot be empty',
@@ -118,7 +117,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
 
     // Check if hash separator is missing entirely
     if (!link.includes(activeDelimiters.hash)) {
-      return Result.err(
+      return CoreResult.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
           message: `Link must contain ${activeDelimiters.hash} separator`,
@@ -129,7 +128,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
     }
 
     // Hash exists but format is invalid
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_INVALID_RANGE_FORMAT,
         message: 'Invalid range format',
@@ -145,7 +144,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
   // Validate that path is not just the hash delimiter or empty
   // Edge case: ##L10 could match with path="#" if regex captures first # as path
   if (path === activeDelimiters.hash || path.trim() === '') {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_EMPTY_PATH,
         message: 'Path cannot be empty',
@@ -180,7 +179,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
 
   // Validation
   if (startLine < 1) {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_LINE_BELOW_MINIMUM,
         message: 'Start line must be >= 1',
@@ -191,7 +190,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
   }
 
   if (endLine < startLine) {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_LINE_BACKWARD,
         message: 'End line cannot be before start line',
@@ -202,7 +201,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
   }
 
   if (startChar !== undefined && startChar < 1) {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_CHAR_BELOW_MINIMUM,
         message: 'Start character must be >= 1',
@@ -213,7 +212,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
   }
 
   if (endChar !== undefined && endChar < 1) {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_CHAR_BELOW_MINIMUM,
         message: 'End character must be >= 1',
@@ -226,7 +225,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
   // If on same line, end char must be >= start char
   if (startLine === endLine && startChar !== undefined && endChar !== undefined) {
     if (endChar < startChar) {
-      return Result.err(
+      return CoreResult.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.PARSE_CHAR_BACKWARD_SAME_LINE,
           message: 'End character cannot be before start character on same line',
@@ -249,7 +248,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
     ...(endChar !== undefined && { char: endChar }),
   };
 
-  return Result.ok({
+  return CoreResult.ok({
     path,
     start,
     end,

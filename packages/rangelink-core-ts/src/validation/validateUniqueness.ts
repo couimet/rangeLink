@@ -1,8 +1,7 @@
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
-import type { CoreResult } from '../types/CoreResult';
+import { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
-import { Result } from '../types/Result';
 
 /**
  * Validates that all delimiters are unique (case-insensitive)
@@ -19,7 +18,7 @@ export const validateUniqueness = (delimiters: DelimiterConfig): CoreResult<void
   const isUnique = new Set(lowerCaseValues).size === lowerCaseValues.length;
 
   if (!isUnique) {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.CONFIG_DELIMITER_NOT_UNIQUE,
         message: 'Delimiters must be unique (case-insensitive)',
@@ -29,7 +28,7 @@ export const validateUniqueness = (delimiters: DelimiterConfig): CoreResult<void
     );
   }
 
-  return Result.ok(undefined);
+  return CoreResult.ok(undefined);
 };
 
 /**

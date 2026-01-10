@@ -1,11 +1,10 @@
 import type { Logger } from 'barebone-logger';
 import { nanoid } from 'nanoid';
-import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
-import type { ExtensionResult } from '../types';
+import { ExtensionResult } from '../types';
 import { createIsoTimestamp } from '../utils';
 
 import type {
@@ -120,12 +119,12 @@ export class BookmarksStore {
         `Added bookmark: ${bookmark.label}`,
       );
 
-      return Result.ok(bookmark);
+      return ExtensionResult.ok(bookmark);
     } catch (error) {
       if (error instanceof RangeLinkExtensionError) {
-        return Result.err(error);
+        return ExtensionResult.err(error);
       }
-      return Result.err(
+      return ExtensionResult.err(
         new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
           message: 'Unexpected error while adding bookmark',
@@ -162,7 +161,7 @@ export class BookmarksStore {
       const index = this.findBookmarkIndex(data, id, 'update');
 
       if (index === -1) {
-        return Result.err(
+        return ExtensionResult.err(
           new RangeLinkExtensionError({
             code: RangeLinkExtensionErrorCodes.BOOKMARK_NOT_FOUND,
             message: `Cannot update bookmark: not found`,
@@ -194,12 +193,12 @@ export class BookmarksStore {
         `Updated bookmark: ${updated.label}`,
       );
 
-      return Result.ok(updated);
+      return ExtensionResult.ok(updated);
     } catch (error) {
       if (error instanceof RangeLinkExtensionError) {
-        return Result.err(error);
+        return ExtensionResult.err(error);
       }
-      return Result.err(
+      return ExtensionResult.err(
         new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
           message: 'Unexpected error while updating bookmark',
@@ -219,7 +218,7 @@ export class BookmarksStore {
       const index = this.findBookmarkIndex(data, id, 'remove');
 
       if (index === -1) {
-        return Result.err(
+        return ExtensionResult.err(
           new RangeLinkExtensionError({
             code: RangeLinkExtensionErrorCodes.BOOKMARK_NOT_FOUND,
             message: `Cannot remove bookmark: not found`,
@@ -237,12 +236,12 @@ export class BookmarksStore {
         `Removed bookmark: ${removed.label}`,
       );
 
-      return Result.ok(undefined);
+      return ExtensionResult.ok(undefined);
     } catch (error) {
       if (error instanceof RangeLinkExtensionError) {
-        return Result.err(error);
+        return ExtensionResult.err(error);
       }
-      return Result.err(
+      return ExtensionResult.err(
         new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
           message: 'Unexpected error while removing bookmark',
@@ -262,7 +261,7 @@ export class BookmarksStore {
       const index = this.findBookmarkIndex(data, id, 'recordAccess');
 
       if (index === -1) {
-        return Result.err(
+        return ExtensionResult.err(
           new RangeLinkExtensionError({
             code: RangeLinkExtensionErrorCodes.BOOKMARK_NOT_FOUND,
             message: `Cannot record access: bookmark not found`,
@@ -287,12 +286,12 @@ export class BookmarksStore {
         `Recorded access for bookmark: ${updatedBookmark.label}`,
       );
 
-      return Result.ok(undefined);
+      return ExtensionResult.ok(undefined);
     } catch (error) {
       if (error instanceof RangeLinkExtensionError) {
-        return Result.err(error);
+        return ExtensionResult.err(error);
       }
-      return Result.err(
+      return ExtensionResult.err(
         new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
           message: 'Unexpected error while recording bookmark access',

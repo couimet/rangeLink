@@ -1,11 +1,10 @@
 import { computeRangeSpec } from '../selection/computeRangeSpec';
-import type { CoreResult } from '../types/CoreResult';
+import { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
 import { FormatOptions } from '../types/FormatOptions';
 import { FormattedLink } from '../types/FormattedLink';
 import { InputSelection } from '../types/InputSelection';
 import { LinkType } from '../types/LinkType';
-import { Result } from '../types/Result';
 
 import { buildAnchor } from './buildAnchor';
 import { finalizeLinkGeneration } from './finalizeLinkGeneration';
@@ -30,7 +29,7 @@ export function formatLink(
   // Validate and compute range spec
   const specResult = computeRangeSpec(inputSelection, options);
   if (!specResult.success) {
-    return Result.err(specResult.error);
+    return CoreResult.err(specResult.error);
   }
   const spec = specResult.value;
 

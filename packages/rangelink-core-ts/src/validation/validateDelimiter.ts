@@ -1,8 +1,7 @@
 import { RESERVED_CHARS } from '../constants/RESERVED_CHARS';
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
-import type { CoreResult } from '../types/CoreResult';
-import { Result } from '../types/Result';
+import { CoreResult } from '../types/CoreResult';
 
 /**
  * Validate a delimiter value and return a result.
@@ -12,7 +11,7 @@ import { Result } from '../types/Result';
  */
 export function validateDelimiter(value: string, isHash: boolean = false): CoreResult<void> {
   if (!value || value.trim() === '') {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.CONFIG_DELIMITER_EMPTY,
         message: 'Delimiter must not be empty',
@@ -24,7 +23,7 @@ export function validateDelimiter(value: string, isHash: boolean = false): CoreR
 
   // Hash delimiter must be exactly 1 character
   if (isHash && value.length !== 1) {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.CONFIG_HASH_NOT_SINGLE_CHAR,
         message: 'Hash delimiter must be exactly one character',
@@ -36,7 +35,7 @@ export function validateDelimiter(value: string, isHash: boolean = false): CoreR
 
   // Must not contain digits
   if (/\d/.test(value)) {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.CONFIG_DELIMITER_DIGITS,
         message: 'Delimiter cannot contain digits',
@@ -48,7 +47,7 @@ export function validateDelimiter(value: string, isHash: boolean = false): CoreR
 
   // Must not contain whitespace
   if (/\s/.test(value)) {
-    return Result.err(
+    return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.CONFIG_DELIMITER_WHITESPACE,
         message: 'Delimiter cannot contain whitespace',
@@ -61,7 +60,7 @@ export function validateDelimiter(value: string, isHash: boolean = false): CoreR
   // Must not contain any reserved characters anywhere
   for (const ch of RESERVED_CHARS) {
     if (value.includes(ch)) {
-      return Result.err(
+      return CoreResult.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.CONFIG_DELIMITER_RESERVED,
           message: `Delimiter cannot contain reserved character '${ch}'`,
@@ -72,5 +71,5 @@ export function validateDelimiter(value: string, isHash: boolean = false): CoreR
     }
   }
 
-  return Result.ok(undefined);
+  return CoreResult.ok(undefined);
 }
