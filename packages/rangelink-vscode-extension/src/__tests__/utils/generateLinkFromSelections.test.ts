@@ -1,10 +1,10 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import {
+  CoreResult,
   DelimiterConfig,
   type FormattedLink,
   LinkType,
-  Result,
   SelectionCoverage,
   SelectionType,
 } from 'rangelink-core-ts';
@@ -141,7 +141,7 @@ describe('generateLinkFromSelections', () => {
         selectionType: SelectionType.Normal,
       });
 
-      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(Result.ok(expectedLink));
+      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(CoreResult.ok(expectedLink));
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
@@ -181,7 +181,7 @@ describe('generateLinkFromSelections', () => {
         selectionType: SelectionType.Normal,
       });
 
-      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(Result.ok(expectedLink));
+      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(CoreResult.ok(expectedLink));
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
@@ -265,7 +265,7 @@ describe('generateLinkFromSelections', () => {
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });
-      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(Result.err(formatLinkError));
+      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(CoreResult.err(formatLinkError));
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
@@ -307,7 +307,7 @@ describe('generateLinkFromSelections', () => {
         message: 'Invalid selection range',
         functionName: 'formatLink',
       });
-      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(Result.err(formatLinkError));
+      jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(CoreResult.err(formatLinkError));
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
