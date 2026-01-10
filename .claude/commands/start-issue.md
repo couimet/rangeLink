@@ -17,10 +17,10 @@ Fetch the issue details:
 
 ### 1. Create Feature Branch
 
-Create a feature branch for this issue using the pattern `issues/<NUMBER>`:
+Create a feature branch using the pattern `issues/<NUMBER>` from the latest remote main:
 
 ```bash
-git checkout -b issues/<NUMBER>
+git fetch origin && git checkout -b issues/<NUMBER> origin/main
 ```
 
 Where `<NUMBER>` is the GitHub issue number (e.g., `issues/223`).
