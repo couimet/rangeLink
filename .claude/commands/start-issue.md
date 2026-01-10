@@ -15,7 +15,17 @@ Fetch the issue details:
 
 ## Your Tasks
 
-### 1. Gather Full Context
+### 1. Create Feature Branch
+
+Create a feature branch using the pattern `issues/<NUMBER>` from the latest remote main:
+
+```bash
+git fetch origin && git checkout -b issues/<NUMBER> origin/main
+```
+
+Where `<NUMBER>` is the GitHub issue number (e.g., `issues/223`).
+
+### 2. Gather Full Context
 
 - **Fetch parent issues** - If the issue body references a parent (e.g., "Parent Issue: #47"), fetch it to understand the broader goal and how this issue fits into the plan
 - **Note child issues** - If this is a parent/epic, note child issues to understand full scope
@@ -25,7 +35,7 @@ Fetch the issue details:
   - Existing patterns to follow
   - Test files that will need updates
 
-### 2. Create Implementation Plan Scratchpad
+### 3. Create Implementation Plan Scratchpad
 
 Follow the `scratchpads` workflow in CLAUDE.md for file location and numbering.
 Use filename pattern: `NNNN-issue-NUMBER-description.txt`
@@ -55,17 +65,20 @@ Numbered steps that are:
 
 Example format:
 
-### Step 1: Define new types
+### Step 1: <brief description>
 
-- Add `ClampingInfo` interface to `src/types/ClampingInfo.ts`
+- Add `<TypeName>` interface to `src/types/<filename>.ts`
 - Export from `src/types/index.ts`
 
-### Step 2: Update implementation
+### Step 2: <brief description>
 
-- Modify `convertRangeLinkPosition()` in `src/utils/convertRangeLinkPosition.ts`
-- Import new types, update return shape
+- Modify `<functionName>()` in `src/<path>/<filename>.ts`
+- Update return type, add new parameters
 
-... etc
+### Step 3: <brief description>
+
+- Add tests in `src/<path>/__tests__/<filename>.test.ts`
+- Cover happy path, edge cases, error conditions
 
 ## Assumptions Made
 
@@ -82,7 +95,7 @@ Bulleted list of all files that will be touched, grouped by step.
 Checklist from the issue (copy verbatim if provided).
 ```
 
-### 3. Create Questions File (Only If Necessary)
+### 4. Create Questions File (Only If Necessary)
 
 **Only create questions for decisions that would FUNDAMENTALLY change the implementation plan.**
 
@@ -123,14 +136,22 @@ Answer: <prefilled with recommendation>
 ---
 ```
 
-### 4. Report Status
+### 5. Report Status and STOP
 
-Print the paths of created files so the user knows what was prepared.
+Print the branch name (`issues/<NUMBER>`) and paths of any created scratchpad/questions files.
+
+**IMPORTANT: Do NOT proceed with implementation.**
+
+This command is for planning only. After reporting status:
+
+- Wait for the user to review the implementation plan
+- Only begin implementation when the user explicitly asks (e.g., "proceed", "start implementing", "go ahead")
 
 ## Quality Checklist
 
-Before finishing, verify your scratchpad:
+Before finishing, verify:
 
+- [ ] Feature branch `issues/<NUMBER>` was created
 - [ ] Implementation plan has specific file/function names (not "update the code")
 - [ ] Each step is small enough to be one commit
 - [ ] Test updates are mentioned for each step that changes behavior
