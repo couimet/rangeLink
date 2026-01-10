@@ -65,17 +65,20 @@ Numbered steps that are:
 
 Example format:
 
-### Step 1: Define new types
+### Step 1: <brief description>
 
-- Add `ClampingInfo` interface to `src/types/ClampingInfo.ts`
+- Add `<TypeName>` interface to `src/types/<filename>.ts`
 - Export from `src/types/index.ts`
 
-### Step 2: Update implementation
+### Step 2: <brief description>
 
-- Modify `convertRangeLinkPosition()` in `src/utils/convertRangeLinkPosition.ts`
-- Import new types, update return shape
+- Modify `<functionName>()` in `src/<path>/<filename>.ts`
+- Update return type, add new parameters
 
-... etc
+### Step 3: <brief description>
+
+- Add tests in `src/<path>/__tests__/<filename>.test.ts`
+- Cover happy path, edge cases, error conditions
 
 ## Assumptions Made
 
