@@ -4,9 +4,8 @@
  * Provides factory function to create mock bookmarks stores with sensible defaults.
  */
 
-import { Result } from 'rangelink-core-ts';
-
 import type { Bookmark, BookmarksStore } from '../../bookmarks';
+import { ExtensionResult } from '../../types';
 
 /**
  * Options for creating a mock bookmarks store
@@ -30,9 +29,9 @@ export const createMockBookmarksStore = (
   return {
     getAll: jest.fn(() => bookmarks),
     getById: jest.fn((id: string) => bookmarks.find((b) => b.id === id)),
-    add: jest.fn().mockResolvedValue(Result.ok({})),
-    update: jest.fn().mockResolvedValue(Result.ok({})),
-    remove: jest.fn().mockResolvedValue(Result.ok(undefined)),
-    recordAccess: jest.fn().mockResolvedValue(Result.ok(undefined)),
+    add: jest.fn().mockResolvedValue(ExtensionResult.ok({})),
+    update: jest.fn().mockResolvedValue(ExtensionResult.ok({})),
+    remove: jest.fn().mockResolvedValue(ExtensionResult.ok(undefined)),
+    recordAccess: jest.fn().mockResolvedValue(ExtensionResult.ok(undefined)),
   } as unknown as jest.Mocked<BookmarksStore>;
 };

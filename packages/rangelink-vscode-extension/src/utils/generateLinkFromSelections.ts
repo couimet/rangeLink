@@ -5,13 +5,12 @@ import {
   type FormattedLink,
   FormatOptions,
   LinkType,
-  Result,
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
-import type { ExtensionResult } from '../types';
+import { ExtensionResult } from '../types';
 
 import { toInputSelection } from './toInputSelection';
 
@@ -78,7 +77,7 @@ export const generateLinkFromSelections = (
       functionName: FN_NAME,
     });
     logger.debug({ fn: FN_NAME }, 'No selections provided');
-    return Result.err(error);
+    return ExtensionResult.err(error);
   }
 
   const hasNonEmptySelection = selections.some((s) => !s.isEmpty);
@@ -89,7 +88,7 @@ export const generateLinkFromSelections = (
       functionName: FN_NAME,
     });
     logger.debug({ fn: FN_NAME }, 'All selections are empty');
-    return Result.err(error);
+    return ExtensionResult.err(error);
   }
 
   let inputSelection;
@@ -98,7 +97,7 @@ export const generateLinkFromSelections = (
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to process selection';
     logger.error({ fn: FN_NAME, error }, 'Failed to convert selections to InputSelection');
-    return Result.err(
+    return ExtensionResult.err(
       new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.GENERATE_LINK_SELECTION_CONVERSION_FAILED,
         message,
@@ -113,8 +112,8 @@ export const generateLinkFromSelections = (
 
   if (!result.success) {
     const linkTypeName = linkType === LinkType.Portable ? 'portable link' : 'link';
-    logger.error({ fn: FN_NAME, errorCode: result.error }, `Failed to generate ${linkTypeName}`);
-    return Result.err(
+    logger.error({ fn: FN_NAME, error: result.error }, `Failed to generate ${linkTypeName}`);
+    return ExtensionResult.err(
       new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.GENERATE_LINK_FORMAT_FAILED,
         message: `Failed to generate ${linkTypeName}`,
@@ -125,5 +124,5 @@ export const generateLinkFromSelections = (
   }
 
   logger.info({ fn: FN_NAME, formattedLink: result.value }, `Generated link: ${result.value.link}`);
-  return Result.ok(result.value);
+  return ExtensionResult.ok(result.value);
 };

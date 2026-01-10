@@ -1,8 +1,7 @@
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
-import type { CoreResult } from '../types/CoreResult';
+import { CoreResult } from '../types/CoreResult';
 import { DelimiterConfig } from '../types/DelimiterConfig';
-import { Result } from '../types/Result';
 
 /**
  * Validates that no delimiter is a substring of another (case-insensitive)
@@ -26,7 +25,7 @@ export const validateSubstringConflicts = (delimiters: DelimiterConfig): CoreRes
       if (a.length === 0 || b.length === 0) continue;
 
       if (a.includes(b)) {
-        return Result.err(
+        return CoreResult.err(
           new RangeLinkError({
             code: RangeLinkErrorCodes.CONFIG_DELIMITER_SUBSTRING_CONFLICT,
             message: 'Delimiters cannot be substrings of each other',
@@ -38,7 +37,7 @@ export const validateSubstringConflicts = (delimiters: DelimiterConfig): CoreRes
     }
   }
 
-  return Result.ok(undefined);
+  return CoreResult.ok(undefined);
 };
 
 /**

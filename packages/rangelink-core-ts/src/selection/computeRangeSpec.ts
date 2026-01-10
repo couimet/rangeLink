@@ -1,11 +1,10 @@
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { ComputedSelection } from '../types/ComputedSelection';
-import type { CoreResult } from '../types/CoreResult';
+import { CoreResult } from '../types/CoreResult';
 import { FormatOptions } from '../types/FormatOptions';
 import { InputSelection } from '../types/InputSelection';
 import { RangeFormat } from '../types/RangeFormat';
 import { RangeNotation } from '../types/RangeNotation';
-import { Result } from '../types/Result';
 import { SelectionCoverage } from '../types/SelectionCoverage';
 import { SelectionType } from '../types/SelectionType';
 
@@ -26,7 +25,7 @@ export function computeRangeSpec(
     validateInputSelection(inputSelection);
   } catch (error) {
     if (error instanceof RangeLinkError) {
-      return Result.err(error);
+      return CoreResult.err(error);
     }
     throw error; // Re-throw unexpected errors
   }
@@ -46,7 +45,7 @@ export function computeRangeSpec(
 
   // Rectangular selection always uses positions
   if (selectionType === SelectionType.Rectangular) {
-    return Result.ok({
+    return CoreResult.ok({
       startLine,
       endLine,
       startPosition,
@@ -72,7 +71,7 @@ export function computeRangeSpec(
 
   const usePositions = rangeFormat === RangeFormat.WithPositions;
 
-  return Result.ok({
+  return CoreResult.ok({
     startLine,
     endLine,
     ...(usePositions && { startPosition, endPosition }),

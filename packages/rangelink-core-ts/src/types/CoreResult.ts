@@ -1,6 +1,6 @@
 import type { RangeLinkError } from '../errors';
 
-import type { Result } from './Result';
+import { Result } from './Result';
 
 /**
  * Specialized Result type for core library operations.
@@ -9,3 +9,13 @@ import type { Result } from './Result';
  * and making function signatures cleaner throughout the core library.
  */
 export type CoreResult<T> = Result<T, RangeLinkError>;
+
+/**
+ * Companion object for CoreResult type.
+ *
+ * Enables cleaner syntax: `CoreResult.ok(value)` instead of `Result.ok(value)`.
+ */
+export const CoreResult = {
+  ok: <T>(value: T): CoreResult<T> => Result.ok(value),
+  err: <T = never>(error: RangeLinkError): CoreResult<T> => Result.err(error),
+};
