@@ -362,6 +362,19 @@
   <location>.scratchpads/NNNN-description.txt</location>
   <extension>.txt</extension>
 
+  <naming-pattern>
+    Base pattern: `NNNN-description.txt`
+
+    When working on a GitHub issue (branch matches `issues/<NUMBER>`):
+    - Extract issue number from branch name
+    - Use: `NNNN-issue-NUMBER-description.txt`
+    - Example: `0008-issue-223-char-to-character.txt`
+
+    When no issue context:
+    - Use base pattern: `NNNN-description.txt`
+    - Example: `0002-misplaced-tests-analysis.txt`
+  </naming-pattern>
+
   <when-to-use>
     - PR descriptions being drafted
     - Implementation plans and analysis
