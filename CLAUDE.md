@@ -373,6 +373,7 @@
     When no issue context:
     - Use base pattern: `NNNN-description.txt`
     - Example: `0002-misplaced-tests-analysis.txt`
+
   </naming-pattern>
 
   <when-to-use>
