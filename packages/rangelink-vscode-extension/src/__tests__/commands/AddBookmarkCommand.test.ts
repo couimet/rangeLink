@@ -3,6 +3,8 @@ import { DEFAULT_DELIMITERS, RangeLinkErrorCodes, Result } from 'rangelink-core-
 import type { ParsedLink, RangeLinkError } from 'rangelink-core-ts';
 
 import { AddBookmarkCommand } from '../../commands/AddBookmarkCommand';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
+import { ExtensionResult } from '../../types';
 import {
   createMockBookmarkService,
   createMockEditor,
@@ -442,7 +444,11 @@ describe('AddBookmarkCommand', () => {
 
     describe('BookmarksStore.add() failure', () => {
       it('shows error when BookmarksStore.add() fails', async () => {
-        const storageError = new Error('Storage quota exceeded');
+        const storageError = new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
+          message: 'Storage quota exceeded',
+          functionName: 'BookmarksStore.add',
+        });
         const editor = createMockEditor({ text: TEST_LINK });
         const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
         mockAdapter = createMockVscodeAdapter({
@@ -452,7 +458,7 @@ describe('AddBookmarkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        mockBookmarkService.addBookmark.mockRejectedValue(storageError);
+        mockBookmarkService.addBookmark.mockResolvedValue(ExtensionResult.err(storageError));
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
