@@ -87,7 +87,10 @@ Git worktrees allow you to work on multiple features in parallel without switchi
 # List all worktrees
 git worktree list
 
-# Create a new worktree
+# Create a new worktree from origin/main (recommended for fresh starts)
+git worktree add <path> -b <branch-name> origin/main
+
+# Create a new worktree from current HEAD (for side-quests)
 git worktree add <path> -b <branch-name>
 
 # Remove a worktree
@@ -97,28 +100,57 @@ git worktree remove <path>
 git worktree prune
 ```
 
+### Understanding Worktree Starting Points
+
+When creating a worktree with `-b <branch-name>`, you can optionally specify a **start-point** (the last argument):
+
+| Command                                         | New branch starts from | Use case                     |
+| ----------------------------------------------- | ---------------------- | ---------------------------- |
+| `git worktree add ../wt -b feature origin/main` | Latest origin/main     | Fresh start for new features |
+| `git worktree add ../wt -b feature`             | Current HEAD           | Side-quest from current work |
+| `git worktree add ../wt -b feature some-branch` | Tip of some-branch     | Branch off specific branch   |
+
+**Recommendation:** For new features, always use `origin/main` as the start-point to ensure a clean base.
+
 ### Real-Life Scenario: Feature Development
 
 Let's walk through developing a new feature using a worktree:
 
 #### 1. Create a Worktree for Your Feature
 
+#### Option A: Fresh start from origin/main (recommended for new features)
+
 ```bash
 # From your main rangelink directory
 cd ~/geek/src/rangeLink
 
-# Create a new worktree in a sibling directory
-# Using generic worktree name - branch name contains the feature description
-git worktree add ../rangeLink-001 -b feature/add-copy-link-command
+# Fetch latest changes first
+git fetch origin
+
+# Create a new worktree from origin/main
+git worktree add ../rangeLink-001 -b feature/add-copy-link-command origin/main
 
 # Navigate to the new worktree
 cd ../rangeLink-001
 ```
 
+#### Option B: Side-quest from current work (for quick tangents)
+
+```bash
+# You're in the middle of working on something and have an idea for a side-quest
+# Current branch: feature/main-work (with uncommitted changes)
+
+# Create a worktree that branches from your current HEAD
+git worktree add ../rangeLink-002 -b feature/side-quest
+
+# Your main worktree keeps your WIP, the new worktree has a snapshot of HEAD
+cd ../rangeLink-002
+```
+
 **What happened:**
 
-- Created a new directory `rangeLink-001` alongside your main repo
-- Created and checked out branch `feature/add-copy-link-command`
+- Created a new directory alongside your main repo
+- Created and checked out a new branch from the specified start-point
 - The worktree is fully independent but shares the same Git repository
 
 #### 2. Set Up the Worktree and Implement the New Feature
@@ -127,7 +159,7 @@ cd ../rangeLink-001
 # Run project's setup script
 ./setup.sh
 
-# Open your favortite IDE
+# Open your favorite IDE
 code .
 
 # Implement new feature
