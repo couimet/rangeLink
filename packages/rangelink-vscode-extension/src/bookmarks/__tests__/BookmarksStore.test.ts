@@ -415,7 +415,7 @@ describe('BookmarksStore', () => {
   });
 
   describe('remove()', () => {
-    it('removes existing bookmark and returns Result.ok', async () => {
+    it('removes existing bookmark and returns the deleted bookmark', async () => {
       const bookmark: Bookmark = {
         id: 'to-remove',
         label: 'Remove Me',
@@ -429,7 +429,9 @@ describe('BookmarksStore', () => {
 
       const result = await store.remove('to-remove');
 
-      expect(result.success).toBe(true);
+      expect(result).toBeOkWith((deleted) => {
+        expect(deleted).toStrictEqual(bookmark);
+      });
       expect(store.getAll()).toStrictEqual([]);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
