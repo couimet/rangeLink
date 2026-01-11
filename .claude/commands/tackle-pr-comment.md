@@ -36,10 +36,10 @@ These may be part of a threaded conversation. After fetching the target comment:
 ### For Issue Comments (`issuecomment-*`)
 
 1. First, get the total count: `gh api repos/{owner}/{repo}/issues/{pr}/comments --jq 'length'`
-2. Fetch the 5 most recent comments for context
+2. Fetch the 5 most recent comments for context (sorted by creation time, newest first)
 3. **If total > 5**: Inform the user:
    > "This PR has {N} comments. I loaded the 5 most recent for context. Would you like me to load all {N} for a holistic view?"
-4. Wait for user response before proceeding if they want full context
+4. Wait for user response before proceeding if they want full context (workflow blocks until user responds)
 
 ### For Reviews (`pullrequestreview-*`)
 
