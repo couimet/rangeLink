@@ -159,7 +159,7 @@ cd ../rangeLink-002
 # Run project's setup script
 ./setup.sh
 
-# Open your favortite IDE
+# Open your favorite IDE
 code .
 
 # Implement new feature
