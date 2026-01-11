@@ -14,11 +14,11 @@ PR Comment URL: $ARGUMENTS
 
 Parse the URL to determine the comment type and extract IDs:
 
-| URL Fragment | Type | API Call |
-|--------------|------|----------|
-| `#pullrequestreview-{id}` | Review | `gh api repos/{owner}/{repo}/pulls/{pr}/reviews/{id}` |
-| `#discussion_r{id}` | Inline code comment | `gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}` |
-| `#issuecomment-{id}` | Conversation comment | `gh api repos/{owner}/{repo}/issues/{pr}/comments/{id}` |
+| URL Fragment              | Type                 | API Call                                                |
+| ------------------------- | -------------------- | ------------------------------------------------------- |
+| `#pullrequestreview-{id}` | Review               | `gh api repos/{owner}/{repo}/pulls/{pr}/reviews/{id}`   |
+| `#discussion_r{id}`       | Inline code comment  | `gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}`  |
+| `#issuecomment-{id}`      | Conversation comment | `gh api repos/{owner}/{repo}/issues/{pr}/comments/{id}` |
 
 Extract: owner, repo, PR number, comment type, and comment ID from the URL.
 
@@ -68,6 +68,7 @@ Fetch the review directly - reviews are standalone with their body containing th
 Before creating the scratchpad, assess if the feedback is clear enough to act on:
 
 **If unclear**: Stop and tell the user:
+
 > "The reviewer's feedback is ambiguous. Before I create an implementation plan, we may need to ask a clarifying question. Here's what's unclear: [explain]. Would you like me to draft a clarifying question for the PR?"
 
 **If clear**: Proceed to Step 5.
@@ -79,6 +80,7 @@ Follow the `scratchpads` workflow in CLAUDE.md.
 **Naming pattern**: `NNNN-pr-{PR_NUMBER}-{COMMENT_TYPE}-{COMMENT_ID}.txt`
 
 Where:
+
 - `{COMMENT_TYPE}` is: `review`, `discussion`, or `issuecomment`
 - `{COMMENT_ID}` is the numeric ID from the URL (e.g., `3647271799`, `r1234567`, `987654`)
 
@@ -131,6 +133,7 @@ Only create a questions file for decisions that would fundamentally change the i
 ## Step 7: Report and Stop
 
 Print:
+
 1. The scratchpad file path
 2. The questions file path (if created)
 3. Brief summary of what you found
