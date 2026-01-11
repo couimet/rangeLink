@@ -118,7 +118,7 @@ Let's walk through developing a new feature using a worktree:
 
 #### 1. Create a Worktree for Your Feature
 
-**Option A: Fresh start from origin/main (recommended for new features)**
+#### Option A: Fresh start from origin/main (recommended for new features)
 
 ```bash
 # From your main rangelink directory
@@ -134,7 +134,7 @@ git worktree add ../rangeLink-001 -b feature/add-copy-link-command origin/main
 cd ../rangeLink-001
 ```
 
-**Option B: Side-quest from current work (for quick tangents)**
+#### Option B: Side-quest from current work (for quick tangents)
 
 ```bash
 # You're in the middle of working on something and have an idea for a side-quest
