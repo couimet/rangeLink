@@ -148,7 +148,7 @@ When the user approves the plan and asks to proceed:
 
 1. **Ask**: "Would you like me to create a commit message file now? (The implementation plan has enough context to draft it.)"
 
-2. **If yes**: Follow the `commits` workflow in CLAUDE.md to create the commit message file. Use the scratchpad's implementation plan and reviewer feedback summary to craft the message.
+2. **If yes**: Follow the `commits` workflow in CLAUDE.md to create the commit message file. Use the scratchpad's implementation plan and reviewer feedback summary to craft the message. Use `[PR feedback]` as the commit prefix (instead of conventional commit format). Include a `Ref: {PR_COMMENT_URL}` footer to link back to the review comment.
 
 3. **Then**: Proceed with implementation.
 
@@ -168,4 +168,4 @@ Before finishing initial analysis (Step 7):
 After user approves (Step 8):
 
 - [ ] Asked user if they want a commit message file created
-- [ ] If yes, created commit message following `commits` workflow in CLAUDE.md
+- [ ] If yes, created commit message with `[PR feedback]` prefix and `Ref:` footer
