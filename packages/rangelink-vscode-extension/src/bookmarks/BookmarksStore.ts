@@ -211,8 +211,9 @@ export class BookmarksStore {
 
   /**
    * Removes a bookmark by its id.
+   * Returns the deleted bookmark on success, enabling undo or confirmation messages.
    */
-  async remove(id: BookmarkId): Promise<ExtensionResult<void>> {
+  async remove(id: BookmarkId): Promise<ExtensionResult<Bookmark>> {
     try {
       const data = this.load();
       const index = this.findBookmarkIndex(data, id, 'remove');
@@ -236,7 +237,7 @@ export class BookmarksStore {
         `Removed bookmark: ${removed.label}`,
       );
 
-      return ExtensionResult.ok(undefined);
+      return ExtensionResult.ok(removed);
     } catch (error) {
       if (error instanceof RangeLinkExtensionError) {
         return ExtensionResult.err(error);
