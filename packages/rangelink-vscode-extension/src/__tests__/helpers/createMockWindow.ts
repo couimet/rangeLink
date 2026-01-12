@@ -4,6 +4,7 @@
 
 import * as vscode from 'vscode';
 
+import { createMockQuickPick } from './createMockQuickPick';
 import { createMockStatusBarItem } from './createMockStatusBarItem';
 
 /**
@@ -51,6 +52,7 @@ export const createMockWindow = (
     showErrorMessage: jest.fn().mockResolvedValue(undefined),
     showQuickPick: jest.fn().mockResolvedValue(undefined),
     showInputBox: jest.fn().mockResolvedValue(undefined),
+    createQuickPick: jest.fn(() => createMockQuickPick()),
     showTextDocument: jest.fn().mockResolvedValue(undefined),
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
     registerTerminalLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),

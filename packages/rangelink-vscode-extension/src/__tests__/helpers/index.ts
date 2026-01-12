@@ -46,6 +46,7 @@ export * from './createMockOutputChannel';
 export * from './createBaseMockPasteDestination';
 export * from './createMockPosition';
 export * from './createMockPositionAt';
+export * from './createMockQuickPick';
 export * from './createMockRange';
 export * from './createMockRangeLinkParser';
 export * from './createMockSelection';
