@@ -53,6 +53,16 @@ export class BookmarkService {
   }
 
   /**
+   * Remove a bookmark by ID.
+   *
+   * @param id - The ID of the bookmark to remove
+   * @returns The deleted bookmark on success
+   */
+  async removeBookmark(id: BookmarkId): Promise<ExtensionResult<Bookmark>> {
+    return this.bookmarksStore.remove(id);
+  }
+
+  /**
    * Paste a bookmark's link to clipboard and bound destination (if any).
    *
    * - Records access (updates lastAccessedAt, accessCount)

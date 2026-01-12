@@ -16,5 +16,6 @@ export const createMockBookmarkService = (): jest.Mocked<BookmarkService> =>
     getAllBookmarks: jest.fn().mockReturnValue([]),
     hasBookmarks: jest.fn().mockReturnValue(false),
     addBookmark: jest.fn().mockResolvedValue(ExtensionResult.ok(DEFAULT_BOOKMARK)),
+    removeBookmark: jest.fn().mockResolvedValue(ExtensionResult.ok(DEFAULT_BOOKMARK)),
     pasteBookmark: jest.fn(),
   }) as unknown as jest.Mocked<BookmarkService>;
