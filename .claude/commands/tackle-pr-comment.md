@@ -14,11 +14,11 @@ PR Comment URL: $ARGUMENTS
 
 Parse the URL to determine the comment type and extract IDs:
 
-| URL Fragment              | Type                 | API Call                                                |
-| ------------------------- | -------------------- | ------------------------------------------------------- |
-| `#pullrequestreview-{id}` | Review               | `gh api repos/{owner}/{repo}/pulls/{pr}/reviews/{id}`   |
-| `#discussion_r{id}`       | Inline code comment  | `gh api repos/{owner}/{repo}/pulls/comments/{id}`       |
-| `#issuecomment-{id}`      | Conversation comment | `gh api repos/{owner}/{repo}/issues/comments/{id}`      |
+| URL Fragment              | Type                 | API Call                                              |
+| ------------------------- | -------------------- | ----------------------------------------------------- |
+| `#pullrequestreview-{id}` | Review               | `gh api repos/{owner}/{repo}/pulls/{pr}/reviews/{id}` |
+| `#discussion_r{id}`       | Inline code comment  | `gh api repos/{owner}/{repo}/pulls/comments/{id}`     |
+| `#issuecomment-{id}`      | Conversation comment | `gh api repos/{owner}/{repo}/issues/comments/{id}`    |
 
 Extract: owner, repo, PR number, comment type, and comment ID from the URL.
 
