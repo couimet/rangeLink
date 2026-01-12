@@ -216,7 +216,7 @@ describe('package.json contributions', () => {
       it('rangelink.bookmark.list', () => {
         expect(findCommand('rangelink.bookmark.list')).toStrictEqual({
           command: 'rangelink.bookmark.list',
-          title: 'Open Bookmarks',
+          title: 'List Bookmarks',
           category: 'RangeLink',
           icon: '$(bookmark)',
         });
@@ -414,8 +414,8 @@ describe('package.json contributions', () => {
     it('rangelink.bookmark.list keybinding', () => {
       expect(findKeybinding('rangelink.bookmark.list')).toStrictEqual({
         command: 'rangelink.bookmark.list',
-        key: 'ctrl+r ctrl+b',
-        mac: 'cmd+r cmd+b',
+        key: 'ctrl+r ctrl+b ctrl+l',
+        mac: 'cmd+r cmd+b cmd+l',
       });
     });
 
