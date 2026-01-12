@@ -1,7 +1,6 @@
 import { createMockLogger } from 'barebone-logger-testing';
 import type * as vscode from 'vscode';
 
-import type { DestinationBuilderContext } from '../../destinations/DestinationRegistry';
 import {
   buildClaudeCodeDestination,
   buildCursorAIDestination,
@@ -10,6 +9,7 @@ import {
   buildTextEditorDestination,
   registerAllDestinationBuilders,
 } from '../../destinations/destinationBuilders';
+import type { DestinationBuilderContext } from '../../destinations/DestinationRegistry';
 import {
   createMockDocument,
   createMockEditor,

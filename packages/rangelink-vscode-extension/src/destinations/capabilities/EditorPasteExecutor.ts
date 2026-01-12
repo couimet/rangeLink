@@ -3,6 +3,7 @@ import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+
 import { FocusErrorReason, type FocusResult, type PasteExecutor } from './PasteExecutor';
 
 /**
