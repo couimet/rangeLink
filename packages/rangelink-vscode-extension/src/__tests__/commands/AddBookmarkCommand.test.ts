@@ -19,11 +19,6 @@ describe('AddBookmarkCommand', () => {
 
   const TEST_LINK = 'src/foo.ts#L10-L20';
 
-  const setupAdapterSpies = (adapter: ReturnType<typeof createMockVscodeAdapter>) => {
-    jest.spyOn(adapter, 'showErrorMessage').mockResolvedValue(undefined);
-    jest.spyOn(adapter, 'setStatusBarMessage').mockReturnValue({ dispose: jest.fn() });
-  };
-
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockParser = createMockRangeLinkParser();
@@ -52,10 +47,13 @@ describe('AddBookmarkCommand', () => {
   describe('execute()', () => {
     describe('no active editor', () => {
       it('shows error when no active editor', async () => {
+        const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: undefined },
+          windowOptions: {
+            activeTextEditor: undefined,
+            showErrorMessage: mockShowErrorMessage,
+          },
         });
-        setupAdapterSpies(mockAdapter);
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -66,7 +64,7 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
+        expect(mockShowErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot add bookmark - no active editor',
         );
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
@@ -195,7 +193,6 @@ describe('AddBookmarkCommand', () => {
             showInputBox: jest.fn().mockResolvedValue('Generated Bookmark'),
           },
         });
-        setupAdapterSpies(mockAdapter);
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -275,7 +272,6 @@ describe('AddBookmarkCommand', () => {
             showInputBox: jest.fn().mockResolvedValue('Rectangular Selection'),
           },
         });
-        setupAdapterSpies(mockAdapter);
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -316,10 +312,13 @@ describe('AddBookmarkCommand', () => {
             functionName: 'parseLink',
           }) as Result<ParsedLink, RangeLinkError>,
         );
+        const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showErrorMessage: mockShowErrorMessage,
+          },
         });
-        setupAdapterSpies(mockAdapter);
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -330,7 +329,7 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
+        expect(mockShowErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
         );
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
@@ -358,10 +357,13 @@ describe('AddBookmarkCommand', () => {
             functionName: 'parseLink',
           }) as Result<ParsedLink, RangeLinkError>,
         );
+        const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: editor },
+          windowOptions: {
+            activeTextEditor: editor,
+            showErrorMessage: mockShowErrorMessage,
+          },
         });
-        setupAdapterSpies(mockAdapter);
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -372,7 +374,7 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
+        expect(mockShowErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot add bookmark - failed to generate link from selection',
         );
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
@@ -409,13 +411,14 @@ describe('AddBookmarkCommand', () => {
     describe('empty label', () => {
       it('shows error when user enters empty label', async () => {
         const editor = createMockEditor({ text: TEST_LINK });
+        const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
             activeTextEditor: editor,
             showInputBox: jest.fn().mockResolvedValue('   '),
+            showErrorMessage: mockShowErrorMessage,
           },
         });
-        setupAdapterSpies(mockAdapter);
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -426,7 +429,7 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
+        expect(mockShowErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Bookmark label cannot be empty',
         );
         expect(mockBookmarkService.addBookmark).not.toHaveBeenCalled();
@@ -441,13 +444,14 @@ describe('AddBookmarkCommand', () => {
       it('shows error when BookmarksStore.add() fails', async () => {
         const storageError = new Error('Storage quota exceeded');
         const editor = createMockEditor({ text: TEST_LINK });
+        const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
             activeTextEditor: editor,
             showInputBox: jest.fn().mockResolvedValue('Test Label'),
+            showErrorMessage: mockShowErrorMessage,
           },
         });
-        setupAdapterSpies(mockAdapter);
         mockBookmarkService.addBookmark.mockRejectedValue(storageError);
         command = new AddBookmarkCommand(
           mockParser,
@@ -459,7 +463,7 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockAdapter.showErrorMessage).toHaveBeenCalledWith(
+        expect(mockShowErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Failed to save bookmark',
         );
         expect(mockLogger.error).toHaveBeenCalledWith(
@@ -472,13 +476,14 @@ describe('AddBookmarkCommand', () => {
     describe('successful bookmark creation', () => {
       it('shows status bar confirmation when bookmark is saved', async () => {
         const editor = createMockEditor({ text: TEST_LINK });
+        const mockSetStatusBarMessage = jest.fn().mockReturnValue({ dispose: jest.fn() });
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
             activeTextEditor: editor,
             showInputBox: jest.fn().mockResolvedValue('Success Bookmark'),
+            setStatusBarMessage: mockSetStatusBarMessage,
           },
         });
-        setupAdapterSpies(mockAdapter);
         command = new AddBookmarkCommand(
           mockParser,
           DEFAULT_DELIMITERS,
@@ -489,8 +494,9 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockAdapter.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
           '✓ Bookmark saved: Success Bookmark',
+          2000,
         );
         expect(mockLogger.info).toHaveBeenCalledWith(
           { fn: 'AddBookmarkCommand.execute', label: 'Success Bookmark', link: TEST_LINK },
