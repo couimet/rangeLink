@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Glob, Grep, Write, Bash(gh api repos/*/*/pulls/*/reviews/*), Bash(gh api repos/*/*/pulls/comments/*), Bash(gh api repos/*/*/issues/*/comments/*), Bash(gh api repos/*/*/pulls/*/comments), Bash(gh api repos/*/*/issues/*/comments)
+allowed-tools: Read, Glob, Grep, Write, Bash(gh api repos/*/*/pulls/*/reviews/*), Bash(gh api repos/*/*/pulls/comments/*), Bash(gh api repos/*/*/issues/comments/*), Bash(gh api repos/*/*/pulls/*/comments), Bash(gh api repos/*/*/issues/*/comments)
 argument-hint: <pr-comment-url>
 description: Tackle a PR comment - analyze feedback, explore code, and create implementation scratchpad
 ---
@@ -18,7 +18,7 @@ Parse the URL to determine the comment type and extract IDs:
 | ------------------------- | -------------------- | ------------------------------------------------------- |
 | `#pullrequestreview-{id}` | Review               | `gh api repos/{owner}/{repo}/pulls/{pr}/reviews/{id}`   |
 | `#discussion_r{id}`       | Inline code comment  | `gh api repos/{owner}/{repo}/pulls/comments/{id}`       |
-| `#issuecomment-{id}`      | Conversation comment | `gh api repos/{owner}/{repo}/issues/{pr}/comments/{id}` |
+| `#issuecomment-{id}`      | Conversation comment | `gh api repos/{owner}/{repo}/issues/comments/{id}`      |
 
 Extract: owner, repo, PR number, comment type, and comment ID from the URL.
 
