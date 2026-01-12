@@ -107,6 +107,15 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
   }
 
   /**
+   * Create a QuickPick instance for advanced usage (buttons, multiple selection, etc.)
+   *
+   * @returns A new QuickPick instance that must be shown and disposed by the caller
+   */
+  createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
+    return this.ideInstance.window.createQuickPick<T>();
+  }
+
+  /**
    * Show an input box to get user input
    *
    * @param options - Configuration for the input box

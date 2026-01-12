@@ -234,6 +234,35 @@ describe('VscodeAdapter', () => {
     });
   });
 
+  describe('createQuickPick', () => {
+    it('should create QuickPick instance using VSCode API', () => {
+      const quickPick = adapter.createQuickPick();
+
+      expect(mockVSCode.window.createQuickPick).toHaveBeenCalledTimes(1);
+      expect(quickPick).toBeDefined();
+    });
+
+    it('should return QuickPick with configurable properties', () => {
+      const quickPick = adapter.createQuickPick();
+
+      quickPick.title = 'Test Title';
+      quickPick.placeholder = 'Select an item';
+      quickPick.items = [{ label: 'Item 1' }, { label: 'Item 2' }];
+
+      expect(quickPick.title).toBe('Test Title');
+      expect(quickPick.placeholder).toBe('Select an item');
+      expect(quickPick.items).toStrictEqual([{ label: 'Item 1' }, { label: 'Item 2' }]);
+    });
+
+    it('should return QuickPick with show, hide, and dispose methods', () => {
+      const quickPick = adapter.createQuickPick();
+
+      expect(typeof quickPick.show).toBe('function');
+      expect(typeof quickPick.hide).toBe('function');
+      expect(typeof quickPick.dispose).toBe('function');
+    });
+  });
+
   describe('integration scenarios', () => {
     it('should handle multiple clipboard operations sequentially', async () => {
       await adapter.writeTextToClipboard('first');
