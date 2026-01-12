@@ -33,7 +33,9 @@ import {
  * Helper to assert setContext was NOT called with terminal binding context.
  * Used to verify non-terminal destinations don't affect terminal context state.
  */
-const expectTerminalContextNotSet = (mockVscode: ReturnType<VscodeAdapterWithTestHooks['__getVscodeInstance']>): void => {
+const expectTerminalContextNotSet = (
+  mockVscode: ReturnType<VscodeAdapterWithTestHooks['__getVscodeInstance']>,
+): void => {
   expect(mockVscode.commands.executeCommand).not.toHaveBeenCalledWith(
     'setContext',
     'rangelink.terminalIsBound',
