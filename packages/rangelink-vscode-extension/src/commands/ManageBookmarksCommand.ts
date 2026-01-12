@@ -100,7 +100,7 @@ export class ManageBookmarksCommand {
   private async confirmAndDelete(
     bookmark: Bookmark,
   ): Promise<ExtensionResult<Bookmark> | undefined> {
-    const logCtx = { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmarkId: bookmark.id };
+    const logCtx = { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark };
 
     const confirmMessage = formatMessage(MessageCode.BOOKMARK_MANAGE_CONFIRM_DELETE, {
       label: bookmark.label,

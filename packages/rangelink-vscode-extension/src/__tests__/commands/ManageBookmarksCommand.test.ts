@@ -188,7 +188,7 @@ describe('ManageBookmarksCommand', () => {
 
         expect(mockBookmarkService.removeBookmark).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmarkId: 'bookmark-1' },
+          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark: TEST_BOOKMARK },
           'Delete cancelled by user',
         );
       });
@@ -213,7 +213,7 @@ describe('ManageBookmarksCommand', () => {
 
         expect(mockBookmarkService.removeBookmark).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmarkId: 'bookmark-1' },
+          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark: TEST_BOOKMARK },
           'Delete cancelled by user',
         );
       });
@@ -243,7 +243,7 @@ describe('ManageBookmarksCommand', () => {
         expect(mockBookmarkService.removeBookmark).toHaveBeenCalledWith('bookmark-1');
         expect(mockShowInformationMessage).toHaveBeenCalledWith('✓ Bookmark deleted: Test Bookmark');
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmarkId: 'bookmark-1' },
+          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark: TEST_BOOKMARK },
           'Bookmark deleted successfully',
         );
       });
@@ -324,10 +324,7 @@ describe('ManageBookmarksCommand', () => {
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: Failed to delete bookmark');
         expect(mockLogger.warn).toHaveBeenCalledWith(
-          expect.objectContaining({
-            fn: 'ManageBookmarksCommand.confirmAndDelete',
-            bookmarkId: 'bookmark-1',
-          }),
+          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmark: TEST_BOOKMARK, error: storageError },
           'Failed to delete bookmark',
         );
       });
