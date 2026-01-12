@@ -12,11 +12,13 @@ export interface MockQuickPickItem extends vscode.QuickPickItem {
  * Use `__trigger*` methods to simulate user interactions.
  */
 export const createMockQuickPick = () => {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   const handlers: {
-    onDidTriggerItemButton?: (event: vscode.QuickPickItemButtonEvent<MockQuickPickItem>) => void;
-    onDidAccept?: () => void;
-    onDidHide?: () => void;
+    onDidTriggerItemButton?: (event: vscode.QuickPickItemButtonEvent<MockQuickPickItem>) => any;
+    onDidAccept?: () => any;
+    onDidHide?: () => any;
   } = {};
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   return {
     items: [] as MockQuickPickItem[],
@@ -26,16 +28,19 @@ export const createMockQuickPick = () => {
     hide: jest.fn(),
     dispose: jest.fn(),
     onDidTriggerItemButton: jest.fn(
-      (handler: (event: vscode.QuickPickItemButtonEvent<MockQuickPickItem>) => void) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (handler: (event: vscode.QuickPickItemButtonEvent<MockQuickPickItem>) => any) => {
         handlers.onDidTriggerItemButton = handler;
         return { dispose: jest.fn() };
       },
     ),
-    onDidAccept: jest.fn((handler: () => void) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onDidAccept: jest.fn((handler: () => any) => {
       handlers.onDidAccept = handler;
       return { dispose: jest.fn() };
     }),
-    onDidHide: jest.fn((handler: () => void) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onDidHide: jest.fn((handler: () => any) => {
       handlers.onDidHide = handler;
       return { dispose: jest.fn() };
     }),
