@@ -478,5 +478,57 @@ describe('package.json contributions', () => {
         group: '8_rangelink@6',
       });
     });
+
+    describe('terminal/title/context', () => {
+      const terminalTitleContextMenu = packageJson.contributes.menus[
+        'terminal/title/context'
+      ] as MenuContribution[];
+
+      it('has the expected number of terminal title context menu items', () => {
+        expect(terminalTitleContextMenu).toHaveLength(2);
+      });
+
+      it('bindToTerminal shows when no terminal bound', () => {
+        expect(terminalTitleContextMenu[0]).toStrictEqual({
+          when: '!rangelink.terminalIsBound',
+          command: 'rangelink.bindToTerminal',
+          group: 'rangelink@1',
+        });
+      });
+
+      it('unbindDestination shows when terminal bound', () => {
+        expect(terminalTitleContextMenu[1]).toStrictEqual({
+          when: 'rangelink.terminalIsBound',
+          command: 'rangelink.unbindDestination',
+          group: 'rangelink@2',
+        });
+      });
+    });
+
+    describe('terminal/context', () => {
+      const terminalContextMenu = packageJson.contributes.menus[
+        'terminal/context'
+      ] as MenuContribution[];
+
+      it('has the expected number of terminal context menu items', () => {
+        expect(terminalContextMenu).toHaveLength(2);
+      });
+
+      it('bindToTerminal shows when no terminal bound', () => {
+        expect(terminalContextMenu[0]).toStrictEqual({
+          when: '!rangelink.terminalIsBound',
+          command: 'rangelink.bindToTerminal',
+          group: 'rangelink@1',
+        });
+      });
+
+      it('unbindDestination shows when terminal bound', () => {
+        expect(terminalContextMenu[1]).toStrictEqual({
+          when: 'rangelink.terminalIsBound',
+          command: 'rangelink.unbindDestination',
+          group: 'rangelink@2',
+        });
+      });
+    });
   });
 });

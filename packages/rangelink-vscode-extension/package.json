@@ -341,6 +341,30 @@
           "command": "rangelink.bookmark.add",
           "group": "8_rangelink@6"
         }
+      ],
+      "terminal/title/context": [
+        {
+          "when": "!rangelink.terminalIsBound",
+          "command": "rangelink.bindToTerminal",
+          "group": "rangelink@1"
+        },
+        {
+          "when": "rangelink.terminalIsBound",
+          "command": "rangelink.unbindDestination",
+          "group": "rangelink@2"
+        }
+      ],
+      "terminal/context": [
+        {
+          "when": "!rangelink.terminalIsBound",
+          "command": "rangelink.bindToTerminal",
+          "group": "rangelink@1"
+        },
+        {
+          "when": "rangelink.terminalIsBound",
+          "command": "rangelink.unbindDestination",
+          "group": "rangelink@2"
+        }
       ]
     }
   },
