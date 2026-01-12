@@ -82,6 +82,7 @@ Numbered list of specific changes:
 ## Why Split This Out
 
 Brief explanation of why this is orthogonal to the parent work:
+
 - Doesn't block the parent issue
 - Can be reviewed/merged independently
 - Keeps parent PR focused
@@ -136,7 +137,7 @@ This command sets up the side-quest context. Wait for user to:
 
 Before finishing, verify:
 
-- [ ] Current work stashed (if on issues/* branch with changes)
+- [ ] Current work stashed (if on issues/\* branch with changes)
 - [ ] Side-quest branch created from origin/main
 - [ ] Scratchpad has specific file/change details
 - [ ] Parent branch noted for easy return
