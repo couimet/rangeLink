@@ -141,12 +141,13 @@ describe('ManageBookmarksCommand', () => {
       it('shows confirmation dialog when delete button clicked', async () => {
         mockBookmarkService = createMockBookmarkService({ bookmarks: [TEST_BOOKMARK] });
         const mockQuickPick = createMockQuickPick();
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
+          windowOptions: {
+            createQuickPick: jest.fn(() => mockQuickPick),
+            showWarningMessage: mockShowWarningMessage,
+          },
         });
-        const showWarningSpy = jest
-          .spyOn(mockAdapter, 'showWarningMessage')
-          .mockResolvedValue(undefined);
         command = new ManageBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
@@ -156,7 +157,7 @@ describe('ManageBookmarksCommand', () => {
           button: deleteButton,
         });
 
-        expect(showWarningSpy).toHaveBeenCalledWith(
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
           'Delete bookmark "Test Bookmark"?',
           'Delete',
           'Cancel',
@@ -167,9 +168,11 @@ describe('ManageBookmarksCommand', () => {
         mockBookmarkService = createMockBookmarkService({ bookmarks: [TEST_BOOKMARK] });
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
+          windowOptions: {
+            createQuickPick: jest.fn(() => mockQuickPick),
+            showWarningMessage: jest.fn().mockResolvedValue('Cancel'),
+          },
         });
-        jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue('Cancel');
         command = new ManageBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
@@ -190,9 +193,11 @@ describe('ManageBookmarksCommand', () => {
         mockBookmarkService = createMockBookmarkService({ bookmarks: [TEST_BOOKMARK] });
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
+          windowOptions: {
+            createQuickPick: jest.fn(() => mockQuickPick),
+            showWarningMessage: jest.fn().mockResolvedValue(undefined),
+          },
         });
-        jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue(undefined);
         command = new ManageBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
@@ -210,11 +215,14 @@ describe('ManageBookmarksCommand', () => {
           .mockReturnValueOnce([TEST_BOOKMARK])
           .mockReturnValueOnce([]);
         const mockQuickPick = createMockQuickPick();
+        const mockShowInformationMessage = jest.fn();
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
+          windowOptions: {
+            createQuickPick: jest.fn(() => mockQuickPick),
+            showWarningMessage: jest.fn().mockResolvedValue('Delete'),
+            showInformationMessage: mockShowInformationMessage,
+          },
         });
-        jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue('Delete');
-        const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
         command = new ManageBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
@@ -225,7 +233,7 @@ describe('ManageBookmarksCommand', () => {
         });
 
         expect(mockBookmarkService.removeBookmark).toHaveBeenCalledWith('bookmark-1');
-        expect(showInfoSpy).toHaveBeenCalledWith('✓ Bookmark deleted: Test Bookmark');
+        expect(mockShowInformationMessage).toHaveBeenCalledWith('✓ Bookmark deleted: Test Bookmark');
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'ManageBookmarksCommand.deleteBookmark', bookmarkId: 'bookmark-1' },
           'Bookmark deleted successfully',
@@ -238,9 +246,11 @@ describe('ManageBookmarksCommand', () => {
           .mockReturnValueOnce([]);
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
+          windowOptions: {
+            createQuickPick: jest.fn(() => mockQuickPick),
+            showWarningMessage: jest.fn().mockResolvedValue('Delete'),
+          },
         });
-        jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue('Delete');
         command = new ManageBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
@@ -259,9 +269,11 @@ describe('ManageBookmarksCommand', () => {
           .mockReturnValueOnce([TEST_BOOKMARK_2]);
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
+          windowOptions: {
+            createQuickPick: jest.fn(() => mockQuickPick),
+            showWarningMessage: jest.fn().mockResolvedValue('Delete'),
+          },
         });
-        jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue('Delete');
         command = new ManageBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
@@ -285,11 +297,14 @@ describe('ManageBookmarksCommand', () => {
         });
         mockBookmarkService.removeBookmark.mockResolvedValue(ExtensionResult.err(storageError));
         const mockQuickPick = createMockQuickPick();
+        const mockShowErrorMessage = jest.fn();
         mockAdapter = createMockVscodeAdapter({
-          windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
+          windowOptions: {
+            createQuickPick: jest.fn(() => mockQuickPick),
+            showWarningMessage: jest.fn().mockResolvedValue('Delete'),
+            showErrorMessage: mockShowErrorMessage,
+          },
         });
-        jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue('Delete');
-        const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
         command = new ManageBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
         await command.execute();
@@ -299,7 +314,7 @@ describe('ManageBookmarksCommand', () => {
           button: deleteButton,
         });
 
-        expect(showErrorSpy).toHaveBeenCalledWith('RangeLink: Failed to delete bookmark');
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: Failed to delete bookmark');
         expect(mockLogger.warn).toHaveBeenCalledWith(
           expect.objectContaining({
             fn: 'ManageBookmarksCommand.deleteBookmark',
