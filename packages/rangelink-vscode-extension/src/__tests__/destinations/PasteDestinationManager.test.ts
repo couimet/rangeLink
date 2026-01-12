@@ -206,13 +206,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to Terminal ("bash")',
         3000,
       );
-    });
-
-    it('should log success with logging details when binding terminal', async () => {
-      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-
-      await manager.bind('terminal');
-
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.bindTerminal',
@@ -362,14 +355,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to GitHub Copilot Chat',
         3000,
       );
-    });
-
-    it('should log success with logging details when binding chat destination', async () => {
-      const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
-      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
-
-      await manager.bind('github-copilot-chat');
-
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.bindGenericDestination',
@@ -456,21 +441,6 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to Text Editor ("file.ts")',
         3000,
       );
-    });
-
-    it('should log success with logging details when binding text editor', async () => {
-      const mockUri = createMockUri('/workspace/src/file.ts');
-      const mockDocument = createMockDocument({ uri: mockUri });
-      const mockEditor = createMockEditor({
-        document: mockDocument,
-        selection: { active: { line: 0, character: 0 } } as vscode.Selection,
-      });
-
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
-      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
-
-      await manager.bind('text-editor');
-
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.bindTextEditor',
