@@ -87,7 +87,9 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 **How to use:**
 
 1. Open integrated terminal
-2. Command Palette → "Bind RangeLink to Terminal Destination"
+2. Bind using either:
+   - **Command Palette** → "Bind RangeLink to Terminal Destination"
+   - **Right-click terminal tab** or **right-click inside terminal** → "Bind RangeLink Here"
 3. Select code → Generate link → Link pastes **at insertion point** + **terminal focuses automatically**
 
 #### Text Editor Destination
