@@ -55,7 +55,6 @@ describe('ManageBookmarksCommand', () => {
   describe('execute()', () => {
     describe('empty state', () => {
       it('shows information message when no bookmarks exist', async () => {
-        mockBookmarkService.getAllBookmarks.mockReturnValue([]);
         const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
         command = new ManageBookmarksCommand(mockAdapter, mockBookmarkService, mockLogger);
 
@@ -71,7 +70,9 @@ describe('ManageBookmarksCommand', () => {
 
     describe('with bookmarks', () => {
       it('shows QuickPick with bookmark items and delete buttons', async () => {
-        mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK, TEST_BOOKMARK_2]);
+        mockBookmarkService = createMockBookmarkService({
+          bookmarks: [TEST_BOOKMARK, TEST_BOOKMARK_2],
+        });
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
@@ -100,7 +101,7 @@ describe('ManageBookmarksCommand', () => {
       });
 
       it('disposes QuickPick on hide', async () => {
-        mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK]);
+        mockBookmarkService = createMockBookmarkService({ bookmarks: [TEST_BOOKMARK] });
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
@@ -118,7 +119,7 @@ describe('ManageBookmarksCommand', () => {
       });
 
       it('hides QuickPick on accept without action', async () => {
-        mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK]);
+        mockBookmarkService = createMockBookmarkService({ bookmarks: [TEST_BOOKMARK] });
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
@@ -138,7 +139,7 @@ describe('ManageBookmarksCommand', () => {
 
     describe('delete flow', () => {
       it('shows confirmation dialog when delete button clicked', async () => {
-        mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK]);
+        mockBookmarkService = createMockBookmarkService({ bookmarks: [TEST_BOOKMARK] });
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
@@ -163,7 +164,7 @@ describe('ManageBookmarksCommand', () => {
       });
 
       it('cancels deletion when user selects Cancel', async () => {
-        mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK]);
+        mockBookmarkService = createMockBookmarkService({ bookmarks: [TEST_BOOKMARK] });
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
@@ -186,7 +187,7 @@ describe('ManageBookmarksCommand', () => {
       });
 
       it('cancels deletion when user dismisses dialog', async () => {
-        mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK]);
+        mockBookmarkService = createMockBookmarkService({ bookmarks: [TEST_BOOKMARK] });
         const mockQuickPick = createMockQuickPick();
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { createQuickPick: jest.fn(() => mockQuickPick) },
@@ -276,7 +277,7 @@ describe('ManageBookmarksCommand', () => {
       });
 
       it('shows error message when deletion fails', async () => {
-        mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK]);
+        mockBookmarkService = createMockBookmarkService({ bookmarks: [TEST_BOOKMARK] });
         const storageError = new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.BOOKMARK_SAVE_FAILED,
           message: 'Storage error',
