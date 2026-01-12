@@ -28,10 +28,13 @@ Extract: owner, repo, PR number, comment type, and comment ID from the URL.
 
 These may be part of a threaded conversation. After fetching the target comment:
 
-1. Check if it has `in_reply_to_id` (meaning it's a reply in a thread)
-2. Fetch all comments on the PR: `gh api repos/{owner}/{repo}/pulls/{pr}/comments`
-3. Filter to find all comments in the same thread (same `in_reply_to_id` chain or replies to the target)
-4. Present the full thread chronologically
+1. Check if it has `in_reply_to` (meaning it's a reply to a top-level comment)
+2. If it is a reply, fetch the top-level comment it replies to
+3. Fetch all comments on the PR: `gh api repos/{owner}/{repo}/pulls/{pr}/comments`
+4. Filter to find all direct replies to the top-level comment
+5. Present the full thread chronologically (one level deep: top comment + direct replies)
+
+**Note:** GitHub's REST API does not support nested threads (replies to replies). All comments in a thread are direct replies to a single top-level comment.
 
 ### For Issue Comments (`issuecomment-*`)
 
