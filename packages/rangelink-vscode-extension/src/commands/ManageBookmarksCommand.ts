@@ -1,9 +1,10 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import type { Bookmark, BookmarkId } from '../bookmarks';
+import type { Bookmark } from '../bookmarks';
 import type { BookmarkService } from '../bookmarks';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { ExtensionResult } from '../types';
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
 
@@ -47,6 +48,7 @@ export class ManageBookmarksCommand {
       return;
     }
 
+    this.logger.debug({ ...logCtx, bookmarkCount: bookmarks.length }, 'Showing manage QuickPick');
     await this.showManageQuickPick(bookmarks);
   }
 
@@ -61,8 +63,8 @@ export class ManageBookmarksCommand {
     quickPick.onDidTriggerItemButton(async (event) => {
       const item = event.item;
       if (event.button === DELETE_BUTTON) {
-        const deleted = await this.confirmAndDelete(item.bookmark);
-        if (deleted) {
+        const result = await this.confirmAndDelete(item.bookmark);
+        if (result?.success) {
           const remainingBookmarks = this.bookmarkService.getAllBookmarks();
           if (remainingBookmarks.length === 0) {
             quickPick.hide();
@@ -95,7 +97,9 @@ export class ManageBookmarksCommand {
     }));
   }
 
-  private async confirmAndDelete(bookmark: Bookmark): Promise<boolean> {
+  private async confirmAndDelete(
+    bookmark: Bookmark,
+  ): Promise<ExtensionResult<Bookmark> | undefined> {
     const logCtx = { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmarkId: bookmark.id };
 
     const confirmMessage = formatMessage(MessageCode.BOOKMARK_MANAGE_CONFIRM_DELETE, {
@@ -112,29 +116,23 @@ export class ManageBookmarksCommand {
 
     if (choice !== deleteLabel) {
       this.logger.debug(logCtx, 'Delete cancelled by user');
-      return false;
+      return undefined;
     }
 
-    return this.deleteBookmark(bookmark.id, bookmark.label);
-  }
+    const result = await this.bookmarkService.removeBookmark(bookmark.id);
 
-  private async deleteBookmark(bookmarkId: BookmarkId, label: string): Promise<boolean> {
-    const logCtx = { fn: 'ManageBookmarksCommand.deleteBookmark', bookmarkId };
-
-    const result = await this.bookmarkService.removeBookmark(bookmarkId);
-
-    if (!result.success) {
+    if (result.success) {
+      this.logger.debug(logCtx, 'Bookmark deleted successfully');
+      await this.ideAdapter.showInformationMessage(
+        formatMessage(MessageCode.BOOKMARK_MANAGE_DELETED, { label: bookmark.label }),
+      );
+    } else {
       this.logger.warn({ ...logCtx, error: result.error }, 'Failed to delete bookmark');
       await this.ideAdapter.showErrorMessage(
         formatMessage(MessageCode.BOOKMARK_MANAGE_ERROR_DELETE_FAILED),
       );
-      return false;
     }
 
-    this.logger.debug(logCtx, 'Bookmark deleted successfully');
-    await this.ideAdapter.showInformationMessage(
-      formatMessage(MessageCode.BOOKMARK_MANAGE_DELETED, { label }),
-    );
-    return true;
+    return result;
   }
 }

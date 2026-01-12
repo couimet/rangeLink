@@ -98,6 +98,10 @@ describe('ManageBookmarksCommand', () => {
           },
         ]);
         expect(mockQuickPick.show).toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'ManageBookmarksCommand.execute', bookmarkCount: 2 },
+          'Showing manage QuickPick',
+        );
       });
 
       it('disposes QuickPick on hide', async () => {
@@ -208,6 +212,10 @@ describe('ManageBookmarksCommand', () => {
         });
 
         expect(mockBookmarkService.removeBookmark).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmarkId: 'bookmark-1' },
+          'Delete cancelled by user',
+        );
       });
 
       it('deletes bookmark when user confirms', async () => {
@@ -235,7 +243,7 @@ describe('ManageBookmarksCommand', () => {
         expect(mockBookmarkService.removeBookmark).toHaveBeenCalledWith('bookmark-1');
         expect(mockShowInformationMessage).toHaveBeenCalledWith('✓ Bookmark deleted: Test Bookmark');
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ManageBookmarksCommand.deleteBookmark', bookmarkId: 'bookmark-1' },
+          { fn: 'ManageBookmarksCommand.confirmAndDelete', bookmarkId: 'bookmark-1' },
           'Bookmark deleted successfully',
         );
       });
@@ -317,7 +325,7 @@ describe('ManageBookmarksCommand', () => {
         expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: Failed to delete bookmark');
         expect(mockLogger.warn).toHaveBeenCalledWith(
           expect.objectContaining({
-            fn: 'ManageBookmarksCommand.deleteBookmark',
+            fn: 'ManageBookmarksCommand.confirmAndDelete',
             bookmarkId: 'bookmark-1',
           }),
           'Failed to delete bookmark',
