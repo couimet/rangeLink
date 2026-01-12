@@ -164,6 +164,13 @@ const mockQuickPickItemKind = {
   Separator: -1,
   Default: 0,
 };
+
+class MockThemeIcon {
+  constructor(
+    public readonly id: string,
+    public readonly color?: any,
+  ) {}
+}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Mocking enums values to match the real vscode enums -- END
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -188,4 +195,5 @@ module.exports = {
   TextEditorRevealType: mockTextEditorRevealType,
   StatusBarAlignment: mockStatusBarAlignment,
   QuickPickItemKind: mockQuickPickItemKind,
+  ThemeIcon: MockThemeIcon,
 };
