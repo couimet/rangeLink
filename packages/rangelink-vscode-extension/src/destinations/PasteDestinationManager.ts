@@ -2,6 +2,7 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { CONTEXT_TERMINAL_IS_BOUND } from '../constants';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -110,8 +111,15 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     const displayName = this.boundDestination.displayName;
+    const wasTerminalBound = this.boundTerminal !== undefined;
+
     this.boundDestination = undefined;
     this.boundTerminal = undefined;
+
+    // Clear terminal context for menu visibility (when clauses)
+    if (wasTerminalBound) {
+      void this.vscodeAdapter.executeCommand('setContext', CONTEXT_TERMINAL_IS_BOUND, false);
+    }
 
     this.logger.info(
       { fn: 'PasteDestinationManager.unbind', displayName },
@@ -446,6 +454,9 @@ export class PasteDestinationManager implements vscode.Disposable {
     // Bind new destination
     this.boundDestination = newDestination;
     this.boundTerminal = activeTerminal; // Track for closure events
+
+    // Set context for menu visibility (when clauses)
+    await this.vscodeAdapter.executeCommand('setContext', CONTEXT_TERMINAL_IS_BOUND, true);
 
     this.logger.info(
       {

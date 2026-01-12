@@ -30,6 +30,18 @@ import {
 } from '../helpers';
 
 /**
+ * Helper to assert setContext was NOT called with terminal binding context.
+ * Used to verify non-terminal destinations don't affect terminal context state.
+ */
+const expectTerminalContextNotSet = (mockVscode: ReturnType<VscodeAdapterWithTestHooks['__getVscodeInstance']>): void => {
+  expect(mockVscode.commands.executeCommand).not.toHaveBeenCalledWith(
+    'setContext',
+    'rangelink.terminalIsBound',
+    expect.anything(),
+  );
+};
+
+/**
  * Helper to assert QuickPick was called with confirmation dialog for smart bind.
  * Validates that items contain expected labels and that placeholder is present.
  */
@@ -214,6 +226,11 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully bound to "Terminal ("bash")"',
       );
+      expect(mockAdapter.__getVscodeInstance().commands.executeCommand).toHaveBeenCalledWith(
+        'setContext',
+        'rangelink.terminalIsBound',
+        true,
+      );
     });
 
     it('should fail when no active terminal', async () => {
@@ -311,6 +328,7 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to Cursor AI Assistant',
         3000,
       );
+      expectTerminalContextNotSet(localAdapter.__getVscodeInstance());
 
       localManager.dispose();
     });
@@ -343,6 +361,21 @@ describe('PasteDestinationManager', () => {
       );
     });
 
+    it('should bind to claude-code when available', async () => {
+      const mockDestination = createMockClaudeCodeDestination({ isAvailable: true });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      const result = await manager.bind('claude-code');
+
+      expect(result).toBe(true);
+      expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink bound to Claude Code Chat',
+        3000,
+      );
+      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
+    });
+
     it('should bind to github-copilot-chat when available', async () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
       jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
@@ -362,6 +395,7 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully bound to GitHub Copilot Chat',
       );
+      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
     });
 
     it('should fail when github-copilot-chat not available', async () => {
@@ -451,6 +485,7 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully bound to "Text Editor ("file.ts")" (2 tab groups)',
       );
+      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
     });
 
     it('should fail to bind text editor with less than 2 tab groups', async () => {
@@ -688,6 +723,11 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink unbound from Terminal ("bash")',
         2000,
       );
+      expect(mockAdapter.__getVscodeInstance().commands.executeCommand).toHaveBeenCalledWith(
+        'setContext',
+        'rangelink.terminalIsBound',
+        false,
+      );
     });
 
     it('should unbind chat destination successfully', async () => {
@@ -703,6 +743,7 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink unbound from Cursor AI Assistant',
         2000,
       );
+      expectTerminalContextNotSet(localAdapter.__getVscodeInstance());
 
       localManager.dispose();
     });
@@ -721,6 +762,48 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink unbound from GitHub Copilot Chat',
         2000,
       );
+      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
+    });
+
+    it('should unbind claude-code successfully', async () => {
+      const mockDestination = createMockClaudeCodeDestination({ isAvailable: true });
+      jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
+
+      await manager.bind('claude-code');
+
+      manager.unbind();
+
+      expect(manager.isBound()).toBe(false);
+      expect(manager.getBoundDestination()).toBeUndefined();
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink unbound from Claude Code Chat',
+        2000,
+      );
+      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
+    });
+
+    it('should unbind text-editor successfully', async () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      const mockDocument = createMockDocument({ uri: mockUri });
+      const mockEditor = createMockEditor({
+        document: mockDocument,
+        selection: { active: { line: 0, character: 0 } } as vscode.Selection,
+      });
+
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+      await manager.bind('text-editor');
+
+      manager.unbind();
+
+      expect(manager.isBound()).toBe(false);
+      expect(manager.getBoundDestination()).toBeUndefined();
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink unbound from Text Editor ("file.ts")',
+        2000,
+      );
+      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
     });
 
     it('should handle unbind when nothing bound', () => {
