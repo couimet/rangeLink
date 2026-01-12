@@ -136,6 +136,15 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith('');
     });
+
+    it('should pass action items to VSCode API and return selected item', async () => {
+      (mockVSCode.window.showWarningMessage as jest.Mock).mockResolvedValue('Yes');
+
+      const result = await adapter.showWarningMessage('Delete this?', 'Yes', 'No');
+
+      expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith('Delete this?', 'Yes', 'No');
+      expect(result).toBe('Yes');
+    });
   });
 
   describe('showErrorMessage', () => {
