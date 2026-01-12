@@ -34,13 +34,16 @@ describe('RangeLinkTerminalProvider', () => {
   let mockLogger: Logger;
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockHandler: jest.Mocked<RangeLinkNavigationHandler>;
+  let mockShowWarningMessage: jest.Mock;
 
   beforeEach(() => {
     // Mock logger
     mockLogger = createMockLogger();
 
-    mockAdapter = createMockVscodeAdapter();
-    jest.spyOn(mockAdapter, 'showWarningMessage').mockResolvedValue(undefined);
+    mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+    mockAdapter = createMockVscodeAdapter({
+      windowOptions: { showWarningMessage: mockShowWarningMessage },
+    });
 
     // Create mock handler - test provider orchestration, not handler implementation
     mockHandler = createMockNavigationHandler();
@@ -276,7 +279,7 @@ describe('RangeLinkTerminalProvider', () => {
         'Terminal link clicked but parse data missing (safety net triggered)',
       );
 
-      expect(mockAdapter.showWarningMessage).toHaveBeenCalledWith(
+      expect(mockShowWarningMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot navigate - invalid link format: file.ts#L0',
       );
 
@@ -311,7 +314,7 @@ describe('RangeLinkTerminalProvider', () => {
 
       // Should NOT trigger the safety net warning
       expect(mockLogger.warn).not.toHaveBeenCalled();
-      expect(mockAdapter.showWarningMessage).not.toHaveBeenCalled();
+      expect(mockShowWarningMessage).not.toHaveBeenCalled();
     });
   });
 });
