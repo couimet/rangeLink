@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Terminal Context Menu** - Right-click on terminal tabs or inside terminals to bind/unbind (#73)
+  - "Bind RangeLink Here" appears when no terminal is bound
+  - "Unbind RangeLink" appears when a terminal is bound
+  - Complements existing Command Palette commands
 - **Status Bar Menu** - Click the `🔗 RangeLink` status bar item to access ⚡ quick actions
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
   - Show Version Info
