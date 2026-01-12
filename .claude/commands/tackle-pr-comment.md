@@ -85,7 +85,7 @@ Follow the `scratchpads` workflow in CLAUDE.md.
 Where:
 
 - `{COMMENT_TYPE}` is: `review`, `discussion`, or `issuecomment`
-- `{COMMENT_ID}` is the numeric ID from the URL (e.g., `3647271799`, `r1234567`, `987654`)
+- `{COMMENT_ID}` is the numeric ID from the URL (e.g., `3647271799`, `2680237139`, `987654`)
 
 Use Glob to find the highest existing NNNN in `.scratchpads/` and increment.
 
