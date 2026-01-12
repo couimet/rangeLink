@@ -123,7 +123,8 @@ Ready to implement. When done:
 1. Run tests: pnpm test
 2. Create commit message per CLAUDE.md `commits` workflow
 3. Commit and create PR
-4. Return to parent: git checkout <parent-branch> && git stash pop
+4. Return to parent: git checkout <parent-branch>
+   (run `git stash pop` only if changes were stashed)
 ```
 
 **IMPORTANT: Do NOT proceed with implementation.**
