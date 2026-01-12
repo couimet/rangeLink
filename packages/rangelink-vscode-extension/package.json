@@ -164,7 +164,7 @@
       },
       {
         "command": "rangelink.bookmark.list",
-        "title": "Open Bookmarks",
+        "title": "List Bookmarks",
         "category": "RangeLink",
         "icon": "$(bookmark)"
       }
