@@ -142,7 +142,11 @@ describe('VscodeAdapter', () => {
 
       const result = await adapter.showWarningMessage('Delete this?', 'Yes', 'No');
 
-      expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith('Delete this?', 'Yes', 'No');
+      expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith(
+        'Delete this?',
+        'Yes',
+        'No',
+      );
       expect(result).toBe('Yes');
     });
   });

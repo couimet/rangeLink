@@ -21,9 +21,9 @@ We follow the format from [adr.github.io](https://adr.github.io/):
 
 ## ADRs
 
-| #                                               | Title                                 | Status   |
-| ----------------------------------------------- | ------------------------------------- | -------- |
-| [0001](./0001-hexagonal-error-boundary.md)      | Hexagonal Error Boundary              | Accepted |
+| #                                          | Title                    | Status   |
+| ------------------------------------------ | ------------------------ | -------- |
+| [0001](./0001-hexagonal-error-boundary.md) | Hexagonal Error Boundary | Accepted |
 
 ## Future ADRs
 
