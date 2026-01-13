@@ -39,7 +39,12 @@ const expectTerminalContextNotSet = (
   expect(mockVscode.commands.executeCommand).not.toHaveBeenCalledWith(
     'setContext',
     'rangelink.terminalIsBound',
-    expect.anything(),
+    true,
+  );
+  expect(mockVscode.commands.executeCommand).not.toHaveBeenCalledWith(
+    'setContext',
+    'rangelink.terminalIsBound',
+    false,
   );
 };
 
