@@ -528,7 +528,9 @@ describe('RangeLinkNavigationHandler', () => {
 
         // Assert: Should NOT show warning, should show success
         expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockShowInformationMessage).toHaveBeenCalledWith('RangeLink: Navigated to Untitled-1 @ 10');
+        expect(mockShowInformationMessage).toHaveBeenCalledWith(
+          'RangeLink: Navigated to Untitled-1 @ 10',
+        );
 
         expect(mockEditor.revealRange).toHaveBeenCalledTimes(1);
         expect(mockEditor.revealRange).toHaveBeenCalledWith(
@@ -560,7 +562,9 @@ describe('RangeLinkNavigationHandler', () => {
 
         // Should show generic error (not untitled-specific)
         expect(mockShowWarningMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).toHaveBeenCalledWith('RangeLink: Cannot find file: src/missing.ts');
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
+          'RangeLink: Cannot find file: src/missing.ts',
+        );
       });
 
       it('should show generic error for absolute path "/tmp/missing.ts"', async () => {
@@ -582,7 +586,9 @@ describe('RangeLinkNavigationHandler', () => {
 
         await handler.navigateToLink(parsed, '/tmp/missing.ts#L1');
 
-        expect(mockShowWarningMessage).toHaveBeenCalledWith('RangeLink: Cannot find file: /tmp/missing.ts');
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
+          'RangeLink: Cannot find file: /tmp/missing.ts',
+        );
       });
 
       it('should show generic error for "MyUntitledFile.ts" (not untitled pattern)', async () => {
@@ -652,7 +658,9 @@ describe('RangeLinkNavigationHandler', () => {
         // Assert: Should find and navigate (no warning)
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-1');
         expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockShowInformationMessage).toHaveBeenCalledWith('RangeLink: Navigated to Untitled-1 @ 10');
+        expect(mockShowInformationMessage).toHaveBeenCalledWith(
+          'RangeLink: Navigated to Untitled-1 @ 10',
+        );
         expect(mockLogger.info).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkNavigationHandler.navigateToLink',

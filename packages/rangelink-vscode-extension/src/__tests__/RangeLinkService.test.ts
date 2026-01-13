@@ -653,9 +653,7 @@ describe('RangeLinkService', () => {
       it('should show error message', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: No active editor',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
       });
 
       it('should not copy to clipboard', async () => {
@@ -1297,9 +1295,7 @@ describe('RangeLinkService', () => {
         );
 
         expect(result).toBeUndefined();
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: No active editor',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
         expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
       });
 
@@ -1335,9 +1331,7 @@ describe('RangeLinkService', () => {
       it('should show consistent error message when no editor', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: No active editor',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
         expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
       });
 
@@ -1370,17 +1364,13 @@ describe('RangeLinkService', () => {
       it('should show "No active editor" via generateLinkFromSelection', async () => {
         await (service as any).generateLinkFromSelection('workspace-relative', false);
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: No active editor',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
       });
 
       it('should show "No active editor" via pasteSelectedTextToDestination', async () => {
         await service.pasteSelectedTextToDestination();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: No active editor',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
       });
     });
 
@@ -1836,9 +1826,7 @@ describe('RangeLinkService', () => {
       );
 
       expect(result).toBeUndefined();
-      expect(mockShowErrorMessage).toHaveBeenCalledWith(
-        'RangeLink: Failed to generate link',
-      );
+      expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: Failed to generate link');
       expect(mockLogger.error).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelection', error: testError, linkType: 'regular' },
         'Failed to generate link',

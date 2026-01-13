@@ -306,7 +306,9 @@ describe('PasteDestinationManager', () => {
 
   describe('bind() - chat destinations', () => {
     it('should bind to cursor-ai when available', async () => {
-      const { manager: localManager, adapter: localAdapter } = createManager({ envOptions: { appName: 'Cursor' } });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
 
       const result = await localManager.bind('cursor-ai');
 
@@ -393,7 +395,9 @@ describe('PasteDestinationManager', () => {
 
     it('should show info message when binding same chat destination twice', async () => {
       // Create manager with Cursor IDE environment
-      const { manager: localManager, adapter: localAdapter } = createManager({ envOptions: { appName: 'Cursor' } });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
       await localManager.bind('cursor-ai');
 
       // Try binding again to same destination
@@ -555,7 +559,9 @@ describe('PasteDestinationManager', () => {
 
   describe('bind() - cross-destination conflicts', () => {
     it('should show confirmation when binding chat while terminal already bound', async () => {
-      const { manager: localManager, adapter: localAdapter } = createManager({ envOptions: { appName: 'Cursor' } });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
 
       const mockTerminal = createMockTerminal();
 
@@ -579,7 +585,9 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show confirmation when binding terminal while chat already bound', async () => {
-      const { manager: localManager, adapter: localAdapter } = createManager({ envOptions: { appName: 'Cursor' } });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
       await localManager.bind('cursor-ai');
 
       // Mock user cancels confirmation
@@ -665,7 +673,9 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show confirmation when replacing cursor-ai with github-copilot-chat', async () => {
-      const { manager: localManager, adapter: localAdapter } = createManager({ envOptions: { appName: 'Cursor' } });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
       await localManager.bind('cursor-ai');
 
       // Mock GitHub Copilot Chat as available
@@ -711,7 +721,9 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should unbind chat destination successfully', async () => {
-      const { manager: localManager, adapter: localAdapter } = createManager({ envOptions: { appName: 'Cursor' } });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
       await localManager.bind('cursor-ai');
 
       localManager.unbind();

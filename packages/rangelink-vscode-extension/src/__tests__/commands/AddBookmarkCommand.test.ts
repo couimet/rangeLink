@@ -463,9 +463,7 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: Failed to save bookmark',
-        );
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: Failed to save bookmark');
         expect(mockLogger.error).toHaveBeenCalledWith(
           { fn: 'AddBookmarkCommand.execute', error: storageError },
           'Failed to save bookmark',
