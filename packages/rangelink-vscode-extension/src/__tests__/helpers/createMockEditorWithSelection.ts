@@ -53,7 +53,10 @@ export const createMockEditorWithSelection = (options: {
 
   const mockAdapter = createMockVscodeAdapter({
     ...options.adapterOptions,
-    windowOptions: createWindowOptionsForEditor(mockEditor),
+    windowOptions: {
+      ...createWindowOptionsForEditor(mockEditor),
+      ...options.adapterOptions?.windowOptions,
+    },
   });
 
   return { editor: mockEditor, adapter: mockAdapter, document: mockDocument };
