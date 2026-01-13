@@ -389,15 +389,20 @@ describe('RangeLinkNavigationHandler', () => {
         };
         const linkText = 'Untitled-1#L10C5-L10C10';
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showWarningMessage: mockShowWarningMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         // Act
         await handler.navigateToLink(parsed, linkText);
 
         // Assert: Should show untitled-specific warning (exact message)
-        expect(showWarningSpy).toHaveBeenCalledTimes(1);
-        expect(showWarningSpy).toHaveBeenCalledWith(
+        expect(mockShowWarningMessage).toHaveBeenCalledTimes(1);
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot navigate to unsaved file (Untitled-1). Save the file first, then try again.',
         );
 
@@ -421,12 +426,17 @@ describe('RangeLinkNavigationHandler', () => {
           selectionType: SelectionType.Normal,
         };
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showWarningMessage: mockShowWarningMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'Untitled-2#L5');
 
-        expect(showWarningSpy).toHaveBeenCalledWith(
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot navigate to unsaved file (Untitled-2). Save the file first, then try again.',
         );
       });
@@ -440,12 +450,17 @@ describe('RangeLinkNavigationHandler', () => {
           selectionType: SelectionType.Normal,
         };
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showWarningMessage: mockShowWarningMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'untitled-1#L1');
 
-        expect(showWarningSpy).toHaveBeenCalledWith(
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot navigate to unsaved file (untitled-1). Save the file first, then try again.',
         );
       });
@@ -459,12 +474,17 @@ describe('RangeLinkNavigationHandler', () => {
           selectionType: SelectionType.Normal,
         };
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showWarningMessage: mockShowWarningMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'Untitled#L1');
 
-        expect(showWarningSpy).toHaveBeenCalledWith(
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot navigate to unsaved file (Untitled). Save the file first, then try again.',
         );
       });
@@ -490,17 +510,27 @@ describe('RangeLinkNavigationHandler', () => {
         });
         const mockEditor = createMockEditor({ document: mockDocument });
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        const mockShowInformationMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            showWarningMessage: mockShowWarningMessage,
+            showInformationMessage: mockShowInformationMessage,
+          },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(mockDocument) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
-        const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         // Act
         await handler.navigateToLink(parsed, linkText);
 
         // Assert: Should NOT show warning, should show success
-        expect(showWarningSpy).not.toHaveBeenCalled();
-        expect(showInfoSpy).toHaveBeenCalledWith('RangeLink: Navigated to Untitled-1 @ 10');
+        expect(mockShowWarningMessage).not.toHaveBeenCalled();
+        expect(mockShowInformationMessage).toHaveBeenCalledWith(
+          'RangeLink: Navigated to Untitled-1 @ 10',
+        );
 
         expect(mockEditor.revealRange).toHaveBeenCalledTimes(1);
         expect(mockEditor.revealRange).toHaveBeenCalledWith(
@@ -520,14 +550,21 @@ describe('RangeLinkNavigationHandler', () => {
           selectionType: SelectionType.Normal,
         };
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showWarningMessage: mockShowWarningMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'src/missing.ts#L10');
 
         // Should show generic error (not untitled-specific)
-        expect(showWarningSpy).toHaveBeenCalledTimes(1);
-        expect(showWarningSpy).toHaveBeenCalledWith('RangeLink: Cannot find file: src/missing.ts');
+        expect(mockShowWarningMessage).toHaveBeenCalledTimes(1);
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
+          'RangeLink: Cannot find file: src/missing.ts',
+        );
       });
 
       it('should show generic error for absolute path "/tmp/missing.ts"', async () => {
@@ -539,12 +576,19 @@ describe('RangeLinkNavigationHandler', () => {
           selectionType: SelectionType.Normal,
         };
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showWarningMessage: mockShowWarningMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, '/tmp/missing.ts#L1');
 
-        expect(showWarningSpy).toHaveBeenCalledWith('RangeLink: Cannot find file: /tmp/missing.ts');
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
+          'RangeLink: Cannot find file: /tmp/missing.ts',
+        );
       });
 
       it('should show generic error for "MyUntitledFile.ts" (not untitled pattern)', async () => {
@@ -556,13 +600,18 @@ describe('RangeLinkNavigationHandler', () => {
           selectionType: SelectionType.Normal,
         };
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showWarningMessage: mockShowWarningMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'MyUntitledFile.ts#L1');
 
         // "MyUntitledFile" doesn't match /^Untitled-?\d*$/i pattern
-        expect(showWarningSpy).toHaveBeenCalledWith(
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot find file: MyUntitledFile.ts',
         );
       });
@@ -587,21 +636,31 @@ describe('RangeLinkNavigationHandler', () => {
         });
         const mockEditor = createMockEditor({ document: mockDocument });
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        const mockShowInformationMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            showWarningMessage: mockShowWarningMessage,
+            showInformationMessage: mockShowInformationMessage,
+          },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(mockDocument) },
+        });
         // File not saved (resolveWorkspacePath fails)
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         // But file is open (findOpenUntitledFile succeeds)
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(untitledUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
-        const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         // Act
         await handler.navigateToLink(parsed, linkText);
 
         // Assert: Should find and navigate (no warning)
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-1');
-        expect(showWarningSpy).not.toHaveBeenCalled();
-        expect(showInfoSpy).toHaveBeenCalledWith('RangeLink: Navigated to Untitled-1 @ 10');
+        expect(mockShowWarningMessage).not.toHaveBeenCalled();
+        expect(mockShowInformationMessage).toHaveBeenCalledWith(
+          'RangeLink: Navigated to Untitled-1 @ 10',
+        );
         expect(mockLogger.info).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkNavigationHandler.navigateToLink',
@@ -630,15 +689,20 @@ describe('RangeLinkNavigationHandler', () => {
         });
         const mockEditor = createMockEditor({ document: mockDocument });
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showWarningMessage: mockShowWarningMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(mockDocument) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(untitledUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'Untitled-2#L5');
 
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-2');
-        expect(showWarningSpy).not.toHaveBeenCalled();
+        expect(mockShowWarningMessage).not.toHaveBeenCalled();
       });
 
       it('should show error when untitled file not found in open documents', async () => {
@@ -650,17 +714,22 @@ describe('RangeLinkNavigationHandler', () => {
           selectionType: SelectionType.Normal,
         };
 
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showWarningMessage: mockShowWarningMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
+        });
         // File not saved AND not open
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(undefined);
-        const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'Untitled-3#L1');
 
         // Should try to find it first
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-3');
         // Then show error (ultimate last resort)
-        expect(showWarningSpy).toHaveBeenCalledWith(
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot navigate to unsaved file (Untitled-3). Save the file first, then try again.',
         );
         expect(mockLogger.info).toHaveBeenCalledWith(
@@ -763,9 +832,14 @@ describe('RangeLinkNavigationHandler', () => {
         const mockUri = createMockUri('/test/file.ts');
         const showTextDocumentError = new Error('Failed to open document');
 
+        const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showErrorMessage: mockShowErrorMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(showTextDocumentError);
-        const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         // Should re-throw the exact same error object (reference equality)
         await expect(handler.navigateToLink(parsed, linkText)).rejects.toBe(showTextDocumentError);
@@ -781,7 +855,7 @@ describe('RangeLinkNavigationHandler', () => {
         );
 
         // Should show error message to user
-        expect(showErrorSpy).toHaveBeenCalledWith(
+        expect(mockShowErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Failed to navigate to file.ts: Failed to open document',
         );
       });
@@ -798,15 +872,20 @@ describe('RangeLinkNavigationHandler', () => {
         const mockUri = createMockUri('/test/file.ts');
         const nonErrorException = 'string error';
 
+        const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showErrorMessage: mockShowErrorMessage },
+          workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
+        });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(nonErrorException);
-        const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
+        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
 
         // Should re-throw the exact same exception value (reference equality)
         await expect(handler.navigateToLink(parsed, 'file.ts#L10')).rejects.toBe(nonErrorException);
 
         // Should handle non-Error exception and show error message
-        expect(showErrorSpy).toHaveBeenCalledWith(
+        expect(mockShowErrorMessage).toHaveBeenCalledWith(
           'RangeLink: Failed to navigate to file.ts: string error',
         );
       });

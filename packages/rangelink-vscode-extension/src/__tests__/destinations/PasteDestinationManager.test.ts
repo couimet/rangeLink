@@ -67,11 +67,17 @@ describe('PasteDestinationManager', () => {
   let formatMessageSpy: jest.SpyInstance;
 
   /**
-   * Helper to create a manager with optional environment overrides.
-   * Useful for tests that need to simulate Cursor IDE.
+   * Helper to create a manager with optional environment and window overrides.
+   * Useful for tests that need to simulate Cursor IDE or configure message mocks.
    */
-  const createManager = (envOptions?: MockVscodeOptions['envOptions']) => {
-    const adapter = createMockVscodeAdapter({ envOptions });
+  const createManager = (options?: {
+    envOptions?: MockVscodeOptions['envOptions'];
+    windowOptions?: MockVscodeOptions['windowOptions'];
+  }) => {
+    const adapter = createMockVscodeAdapter({
+      envOptions: options?.envOptions,
+      windowOptions: options?.windowOptions,
+    });
 
     // Cache for destinations so same instance is returned for same terminal/editor
     const destinationCache = new Map<string, any>();
@@ -301,7 +307,7 @@ describe('PasteDestinationManager', () => {
   describe('bind() - chat destinations', () => {
     it('should bind to cursor-ai when available', async () => {
       const { manager: localManager, adapter: localAdapter } = createManager({
-        appName: 'Cursor',
+        envOptions: { appName: 'Cursor' },
       });
 
       const result = await localManager.bind('cursor-ai');
@@ -390,7 +396,7 @@ describe('PasteDestinationManager', () => {
     it('should show info message when binding same chat destination twice', async () => {
       // Create manager with Cursor IDE environment
       const { manager: localManager, adapter: localAdapter } = createManager({
-        appName: 'Cursor',
+        envOptions: { appName: 'Cursor' },
       });
       await localManager.bind('cursor-ai');
 
@@ -553,7 +559,9 @@ describe('PasteDestinationManager', () => {
 
   describe('bind() - cross-destination conflicts', () => {
     it('should show confirmation when binding chat while terminal already bound', async () => {
-      const { manager: localManager, adapter: localAdapter } = createManager({ appName: 'Cursor' });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
 
       const mockTerminal = createMockTerminal();
 
@@ -577,7 +585,9 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show confirmation when binding terminal while chat already bound', async () => {
-      const { manager: localManager, adapter: localAdapter } = createManager({ appName: 'Cursor' });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
       await localManager.bind('cursor-ai');
 
       // Mock user cancels confirmation
@@ -663,7 +673,9 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show confirmation when replacing cursor-ai with github-copilot-chat', async () => {
-      const { manager: localManager, adapter: localAdapter } = createManager({ appName: 'Cursor' });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
       await localManager.bind('cursor-ai');
 
       // Mock GitHub Copilot Chat as available
@@ -710,7 +722,7 @@ describe('PasteDestinationManager', () => {
 
     it('should unbind chat destination successfully', async () => {
       const { manager: localManager, adapter: localAdapter } = createManager({
-        appName: 'Cursor',
+        envOptions: { appName: 'Cursor' },
       });
       await localManager.bind('cursor-ai');
 
@@ -819,14 +831,19 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should send to bound chat destination successfully with user instructions', async () => {
-      // Create manager with Cursor environment
-      const { manager: cursorManager, adapter: cursorAdapter } = createManager({
-        appName: 'Cursor',
+      const mockSetStatusBarMessage = jest.fn();
+      const mockShowInformationMessage = jest.fn().mockResolvedValue(undefined);
+      const { manager: cursorManager } = createManager({
+        envOptions: { appName: 'Cursor' },
+        windowOptions: {
+          setStatusBarMessage: mockSetStatusBarMessage,
+          showInformationMessage: mockShowInformationMessage,
+        },
       });
 
       await cursorManager.bind('cursor-ai');
+      mockSetStatusBarMessage.mockClear();
 
-      // Get the actual bound destination and configure it
       const boundDest = cursorManager.getBoundDestination()!;
       const successInstruction = 'Paste the link in Cursor AI chat';
       boundDest.getUserInstruction = jest
@@ -834,9 +851,6 @@ describe('PasteDestinationManager', () => {
         .mockImplementation((result) =>
           result === AutoPasteResult.Success ? successInstruction : undefined,
         );
-
-      const setStatusBarSpy = jest.spyOn(cursorAdapter, 'setStatusBarMessage');
-      const showInfoSpy = jest.spyOn(cursorAdapter, 'showInformationMessage');
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
       const result = await cursorManager.sendLinkToDestination(
@@ -849,9 +863,8 @@ describe('PasteDestinationManager', () => {
       expect(boundDest.pasteLink).toHaveBeenCalledTimes(1);
       expect(boundDest.pasteLink).toHaveBeenCalledWith(formattedLink, 'both');
 
-      // Verify adapter calls for chat success with instructions
-      expect(setStatusBarSpy).toHaveBeenCalledWith(TEST_STATUS_MESSAGE);
-      expect(showInfoSpy).toHaveBeenCalledWith(successInstruction);
+      expect(mockSetStatusBarMessage).toHaveBeenCalledWith(TEST_STATUS_MESSAGE, 2000);
+      expect(mockShowInformationMessage).toHaveBeenCalledWith(successInstruction);
 
       cursorManager.dispose();
     });
@@ -887,45 +900,51 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show warning message when terminal paste fails', async () => {
+      const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        windowOptions: { showWarningMessage: mockShowWarningMessage },
+      });
+
       const mockTerminal = createMockTerminal();
+      localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await localManager.bind('terminal');
 
-      // Terminal destinations don't provide failure instructions
-      mockTerminalDest.getUserInstruction = jest.fn().mockReturnValue(undefined);
+      const boundDest = localManager.getBoundDestination()!;
+      boundDest.getUserInstruction = jest.fn().mockReturnValue(undefined);
+      (boundDest.pasteLink as jest.Mock).mockResolvedValueOnce(false);
 
-      await manager.bind('terminal');
-
-      // Mock paste failure
-      mockTerminalDest.pasteLink.mockResolvedValueOnce(false);
-
-      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
-
-      const result = await manager.sendLinkToDestination(
+      const result = await localManager.sendLinkToDestination(
         createMockFormattedLink('src/file.ts#L10'),
         TEST_STATUS_MESSAGE,
         'both',
       );
 
       expect(result).toBe(false);
-      expect(mockTerminalDest.pasteLink).toHaveBeenCalledTimes(1);
+      expect(boundDest.pasteLink).toHaveBeenCalledTimes(1);
 
-      // Verify adapter calls for terminal failure without instructions
-      expect(showWarningSpy).toHaveBeenCalledTimes(1);
-      expect(showWarningSpy).toHaveBeenCalledWith(
+      expect(mockShowWarningMessage).toHaveBeenCalledTimes(1);
+      expect(mockShowWarningMessage).toHaveBeenCalledWith(
         'RangeLink copied to clipboard. Could not send to terminal. Terminal may be closed or not accepting input.',
       );
+
+      localManager.dispose();
     });
 
     it('should show warning with user instructions when chat paste fails', async () => {
-      // Create manager with Cursor environment
-      const { manager: cursorManager, adapter: cursorAdapter } = createManager({
-        appName: 'Cursor',
+      const mockSetStatusBarMessage = jest.fn();
+      const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+      const { manager: cursorManager } = createManager({
+        envOptions: { appName: 'Cursor' },
+        windowOptions: {
+          setStatusBarMessage: mockSetStatusBarMessage,
+          showWarningMessage: mockShowWarningMessage,
+        },
       });
 
       await cursorManager.bind('cursor-ai');
+      mockSetStatusBarMessage.mockClear();
 
-      // Get the actual bound destination and configure it
       const boundDest = cursorManager.getBoundDestination()!;
       const failureInstruction = 'Manual paste: Open Cursor AI and paste the link';
       boundDest.getUserInstruction = jest
@@ -934,11 +953,7 @@ describe('PasteDestinationManager', () => {
           result === AutoPasteResult.Failure ? failureInstruction : undefined,
         );
 
-      // Mock paste failure
       (boundDest.pasteLink as jest.Mock).mockResolvedValueOnce(false);
-
-      const setStatusBarSpy = jest.spyOn(cursorAdapter, 'setStatusBarMessage');
-      const showWarningSpy = jest.spyOn(cursorAdapter, 'showWarningMessage');
 
       const result = await cursorManager.sendLinkToDestination(
         createMockFormattedLink('src/file.ts#L10'),
@@ -949,9 +964,8 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(false);
       expect(boundDest.pasteLink).toHaveBeenCalledTimes(1);
 
-      // Verify adapter calls for chat failure with instructions
-      expect(setStatusBarSpy).toHaveBeenCalledWith(TEST_STATUS_MESSAGE);
-      expect(showWarningSpy).toHaveBeenCalledWith(failureInstruction);
+      expect(mockSetStatusBarMessage).toHaveBeenCalledWith(TEST_STATUS_MESSAGE, 2000);
+      expect(mockShowWarningMessage).toHaveBeenCalledWith(failureInstruction);
 
       cursorManager.dispose();
     });
@@ -979,21 +993,22 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should show text-editor specific warning when editor paste fails', async () => {
+      const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+      const { manager: localManager } = createManager({
+        windowOptions: { showWarningMessage: mockShowWarningMessage },
+      });
+
       const mockFailingExecutor = createMockPasteExecutor(false);
       const mockTextEditorDest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor',
         pasteExecutor: mockFailingExecutor,
       });
 
-      // Spy on pasteLink to verify it was called
       const pasteLinkSpy = jest.spyOn(mockTextEditorDest, 'pasteLink');
 
-      // Manually set the bound destination to bypass bind() complexity
-      (manager as any).boundDestination = mockTextEditorDest;
+      (localManager as any).boundDestination = mockTextEditorDest;
 
-      const showWarningSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
-
-      const result = await manager.sendLinkToDestination(
+      const result = await localManager.sendLinkToDestination(
         createMockFormattedLink('src/file.ts#L10'),
         TEST_STATUS_MESSAGE,
         'both',
@@ -1002,11 +1017,12 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(false);
       expect(pasteLinkSpy).toHaveBeenCalledTimes(1);
 
-      // Verify text-editor specific failure message
-      expect(showWarningSpy).toHaveBeenCalledTimes(1);
-      expect(showWarningSpy).toHaveBeenCalledWith(
+      expect(mockShowWarningMessage).toHaveBeenCalledTimes(1);
+      expect(mockShowWarningMessage).toHaveBeenCalledWith(
         'RangeLink copied to clipboard. Could not send to editor. Bound editor is hidden behind other tabs.',
       );
+
+      localManager.dispose();
     });
 
     it('should throw UNEXPECTED_CODE_PATH when chat assistant reaches buildPasteFailureMessage', async () => {
@@ -1117,7 +1133,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not auto-unbind for chat destinations', async () => {
-      const { manager: localManager } = createManager({ appName: 'Cursor' });
+      const { manager: localManager } = createManager({ envOptions: { appName: 'Cursor' } });
       await localManager.bind('cursor-ai');
 
       const mockTerminal = createMockTerminal();
@@ -1252,7 +1268,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should return true when chat destination bound', async () => {
-      const { manager: localManager } = createManager({ appName: 'Cursor' });
+      const { manager: localManager } = createManager({ envOptions: { appName: 'Cursor' } });
       await localManager.bind('cursor-ai');
 
       expect(localManager.isBound()).toBe(true);
@@ -1773,7 +1789,7 @@ describe('PasteDestinationManager', () => {
 
     it('should focus bound Cursor AI successfully', async () => {
       // Create manager with Cursor environment
-      const { manager: cursorManager } = createManager({ appName: 'Cursor' });
+      const { manager: cursorManager } = createManager({ envOptions: { appName: 'Cursor' } });
 
       await cursorManager.bind('cursor-ai');
 
@@ -1922,7 +1938,7 @@ describe('PasteDestinationManager', () => {
 
     it('should log success with empty details for AI assistants', async () => {
       // Create manager with Cursor environment
-      const { manager: cursorManager } = createManager({ appName: 'Cursor' });
+      const { manager: cursorManager } = createManager({ envOptions: { appName: 'Cursor' } });
 
       await cursorManager.bind('cursor-ai');
 
