@@ -1,3 +1,6 @@
+import type { Logger } from 'barebone-logger';
+import { createMockLogger } from 'barebone-logger-testing';
+
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { BehaviourAfterPaste } from '../../../types/BehaviourAfterPaste';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
@@ -11,8 +14,7 @@ import {
   createMockTerminal,
   createMockUntitledUri,
   createMockUri,
-  createMockVscodeAdapter,
-  type VscodeAdapterWithTestHooks,
+  createMockVscode,
 } from '../../helpers';
 
 // ============================================================================
@@ -20,12 +22,14 @@ import {
 // ============================================================================
 
 describe('VscodeAdapter', () => {
-  let adapter: VscodeAdapterWithTestHooks;
+  let adapter: VscodeAdapter;
   let mockVSCode: any;
+  let mockLogger: jest.Mocked<Logger>;
 
   beforeEach(() => {
-    adapter = createMockVscodeAdapter();
-    mockVSCode = adapter.__getVscodeInstance();
+    mockLogger = createMockLogger() as jest.Mocked<Logger>;
+    mockVSCode = createMockVscode();
+    adapter = new VscodeAdapter(mockVSCode, mockLogger);
   });
 
   describe('writeTextToClipboard', () => {
@@ -71,6 +75,10 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
       expect(result).toBeDefined();
       expect(result.dispose).toBeDefined();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.setStatusBarMessage', message, timeout: 2000 },
+        'Setting status bar message',
+      );
     });
 
     it('should forward custom timeout to underlying VSCode API', () => {
@@ -82,6 +90,10 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith(message, customTimeout);
       expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
       expect(result).toBeDefined();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.setStatusBarMessage', message, timeout: customTimeout },
+        'Setting status bar message',
+      );
     });
 
     it('should handle zero timeout', () => {
@@ -112,6 +124,10 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith(message);
       expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledTimes(1);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.showWarningMessage', message, items: [] },
+        'Showing warning message',
+      );
     });
 
     it('should return undefined when no button is selected', async () => {
@@ -159,6 +175,10 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showErrorMessage).toHaveBeenCalledWith(message);
       expect(mockVSCode.window.showErrorMessage).toHaveBeenCalledTimes(1);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.showErrorMessage', message },
+        'Showing error message',
+      );
     });
 
     it('should return undefined when no button is selected', async () => {
@@ -209,6 +229,10 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showInputBox).toHaveBeenCalledWith(options);
       expect(mockVSCode.window.showInputBox).toHaveBeenCalledTimes(1);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.showInputBox', options },
+        'Showing input box',
+      );
       expect(result).toBe('user input');
     });
 
@@ -1267,7 +1291,7 @@ describe('VscodeAdapter', () => {
 
   describe('getExtension', () => {
     it('should return extension when it exists', () => {
-      const customAdapter = createMockVscodeAdapter({
+      const customVscode = createMockVscode({
         extensionsOptions: [
           {
             id: 'test.extension',
@@ -1276,17 +1300,19 @@ describe('VscodeAdapter', () => {
           },
         ],
       });
+      const customAdapter = new VscodeAdapter(customVscode, mockLogger);
 
       const result = customAdapter.getExtension('test.extension');
 
       expect(result).toBeDefined();
       expect(result?.id).toBe('test.extension');
       expect(result?.extensionPath).toBe('/path/to/extension');
-      expect(result?.isActive).toBe(true); // Default from createMockExtension
+      expect(result?.isActive).toBe(true);
     });
 
     it('should return undefined when extension does not exist', () => {
-      const customAdapter = createMockVscodeAdapter(); // No extensions
+      const customVscode = createMockVscode();
+      const customAdapter = new VscodeAdapter(customVscode, mockLogger);
 
       const result = customAdapter.getExtension('nonexistent.extension');
 
@@ -1294,9 +1320,10 @@ describe('VscodeAdapter', () => {
     });
 
     it('should return correct extension by exact extensionId', () => {
-      const customAdapter = createMockVscodeAdapter({
+      const customVscode = createMockVscode({
         extensionsOptions: ['anthropic.claude-code', 'github.copilot'],
       });
+      const customAdapter = new VscodeAdapter(customVscode, mockLogger);
 
       const result = customAdapter.getExtension('anthropic.claude-code');
 
@@ -1306,9 +1333,10 @@ describe('VscodeAdapter', () => {
 
     it('should handle special characters in extensionId', () => {
       const extensionId = 'publisher.extension-with-dash_and_underscore';
-      const customAdapter = createMockVscodeAdapter({
+      const customVscode = createMockVscode({
         extensionsOptions: [extensionId],
       });
+      const customAdapter = new VscodeAdapter(customVscode, mockLogger);
 
       const result = customAdapter.getExtension(extensionId);
 
@@ -1523,6 +1551,10 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.commands.executeCommand).toHaveBeenCalledWith(commandId);
       expect(mockVSCode.commands.executeCommand).toHaveBeenCalledTimes(1);
       expect(result).toBeUndefined();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.executeCommand', command: commandId, args: [] },
+        'Executing command',
+      );
     });
 
     it('should execute command with single argument', async () => {

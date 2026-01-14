@@ -1,3 +1,4 @@
+import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
@@ -43,8 +44,12 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * Create a new VSCode adapter.
    *
    * @param ideInstance - The vscode module instance to use for all operations
+   * @param logger - Logger instance for debug logging of API calls
    */
-  constructor(private readonly ideInstance: typeof vscode) {}
+  constructor(
+    private readonly ideInstance: typeof vscode,
+    private readonly logger: Logger,
+  ) {}
 
   /**
    * Write text to clipboard using VSCode API
@@ -60,6 +65,10 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
     message: string,
     timeout: number = DEFAULT_STATUS_BAR_TIMEOUT_MS,
   ): vscode.Disposable {
+    this.logger.debug(
+      { fn: 'VscodeAdapter.setStatusBarMessage', message, timeout },
+      'Setting status bar message',
+    );
     return this.ideInstance.window.setStatusBarMessage(message, timeout);
   }
 
@@ -71,6 +80,10 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns Promise resolving to selected button label, or undefined if dismissed
    */
   async showWarningMessage(message: string, ...items: string[]): Promise<string | undefined> {
+    this.logger.debug(
+      { fn: 'VscodeAdapter.showWarningMessage', message, items },
+      'Showing warning message',
+    );
     return this.ideInstance.window.showWarningMessage(message, ...items);
   }
 
@@ -78,6 +91,7 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * Show error notification using VSCode API
    */
   async showErrorMessage(message: string): Promise<string | undefined> {
+    this.logger.debug({ fn: 'VscodeAdapter.showErrorMessage', message }, 'Showing error message');
     return this.ideInstance.window.showErrorMessage(message);
   }
 
@@ -89,6 +103,10 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns Promise resolving to selected button label, or undefined if dismissed
    */
   async showInformationMessage(message: string, ...items: string[]): Promise<string | undefined> {
+    this.logger.debug(
+      { fn: 'VscodeAdapter.showInformationMessage', message, items },
+      'Showing info message',
+    );
     return this.ideInstance.window.showInformationMessage(message, ...items);
   }
 
@@ -103,6 +121,10 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
     items: T[],
     options?: vscode.QuickPickOptions,
   ): Promise<T | undefined> {
+    this.logger.debug(
+      { fn: 'VscodeAdapter.showQuickPick', itemCount: items.length, options },
+      'Showing quick pick',
+    );
     return this.ideInstance.window.showQuickPick(items, options);
   }
 
@@ -122,6 +144,7 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns Promise resolving to the entered string, or undefined if cancelled
    */
   async showInputBox(options?: vscode.InputBoxOptions): Promise<string | undefined> {
+    this.logger.debug({ fn: 'VscodeAdapter.showInputBox', options }, 'Showing input box');
     return this.ideInstance.window.showInputBox(options);
   }
 
@@ -378,6 +401,7 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns Promise resolving to command result
    */
   async executeCommand<T = unknown>(command: string, ...args: unknown[]): Promise<T | undefined> {
+    this.logger.debug({ fn: 'VscodeAdapter.executeCommand', command, args }, 'Executing command');
     return this.ideInstance.commands.executeCommand<T>(command, ...args);
   }
 

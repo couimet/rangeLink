@@ -73,4 +73,5 @@ export * from './configureEmptyTabGroups';
 export * from './simulateClosedEditor';
 export * from './simulateFileOutsideWorkspace';
 
+export * from './createMockVscode';
 export * from './createMockVscodeAdapter';

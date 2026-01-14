@@ -56,15 +56,14 @@ let outputChannel: vscode.OutputChannel;
  * Extension activation entry point
  */
 export function activate(context: vscode.ExtensionContext): void {
-  // Create adapter FIRST (only direct vscode reference in entire file)
-  const ideAdapter = new VscodeAdapter(vscode);
-  const configReader = ConfigReader.create(ideAdapter, getLogger());
-
-  outputChannel = ideAdapter.createOutputChannel('RangeLink');
-
-  // Initialize core library logger with VSCode adapter
+  // Initialize logger FIRST so it can be passed to VscodeAdapter
+  outputChannel = vscode.window.createOutputChannel('RangeLink');
   const vscodeLogger = new VSCodeLogger(outputChannel);
   setLogger(vscodeLogger);
+  const logger = getLogger();
+
+  const ideAdapter = new VscodeAdapter(vscode, logger);
+  const configReader = ConfigReader.create(ideAdapter, logger);
 
   // Initialize i18n locale from VSCode environment
   setLocale(ideAdapter.language);
