@@ -301,6 +301,10 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, undefined);
       expect(mockVSCode.window.showQuickPick).toHaveBeenCalledTimes(1);
       expect(result).toStrictEqual({ label: 'Item 1' });
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.showQuickPick', itemCount: 2, options: undefined },
+        'Showing quick pick',
+      );
     });
 
     it('should pass options to VSCode API', async () => {
@@ -312,6 +316,10 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, options);
       expect(result).toStrictEqual({ label: 'Option B' });
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.showQuickPick', itemCount: 2, options },
+        'Showing quick pick',
+      );
     });
 
     it('should return undefined when user cancels', async () => {
