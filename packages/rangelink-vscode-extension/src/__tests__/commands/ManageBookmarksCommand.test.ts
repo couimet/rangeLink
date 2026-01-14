@@ -88,13 +88,13 @@ describe('ManageBookmarksCommand', () => {
             label: '$(bookmark) Test Bookmark',
             detail: 'src/utils/helper.ts#L10-L20',
             bookmark: TEST_BOOKMARK,
-            buttons: [{ iconPath: expect.any(vscode.ThemeIcon), tooltip: 'Delete bookmark' }],
+            buttons: [{ iconPath: new vscode.ThemeIcon('trash'), tooltip: 'Delete bookmark' }],
           },
           {
             label: '$(bookmark) Another Bookmark',
             detail: '/absolute/path/to/file.ts#L5C1-L10C15',
             bookmark: TEST_BOOKMARK_2,
-            buttons: [{ iconPath: expect.any(vscode.ThemeIcon), tooltip: 'Delete bookmark' }],
+            buttons: [{ iconPath: new vscode.ThemeIcon('trash'), tooltip: 'Delete bookmark' }],
           },
         ]);
         expect(mockQuickPick.show).toHaveBeenCalled();
