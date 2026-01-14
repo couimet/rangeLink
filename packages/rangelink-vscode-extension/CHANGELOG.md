@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Also available via Command Palette and editor context menu (right-click)
   - **List Bookmarks (R-B-L)** - `Cmd+R Cmd+B Cmd+L` (Mac) / `Ctrl+R Ctrl+B Ctrl+L` (Win/Linux)
     - Select a bookmark to paste its link to bound destination (or clipboard if unbound)
-    - Manage bookmarks via the gear icon action to organize your collection
+    - Manage bookmarks via the gear icon action in the bookmark list
 
 ### Changed
 

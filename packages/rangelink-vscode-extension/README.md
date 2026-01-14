@@ -194,7 +194,7 @@ Also available via Command Palette → "Save Selection as Bookmark" or right-cli
 **Press `Cmd+R Cmd+B Cmd+L`** (Mac) or `Ctrl+R Ctrl+B Ctrl+L` (Windows/Linux) to list your bookmarks:
 
 - **Select a bookmark** to paste its link to your bound destination (or clipboard if unbound)
-- **Manage bookmarks** via the gear icon action to organize your collection
+- **Manage bookmarks** via the gear icon action in the bookmark list
 
 ---
 
