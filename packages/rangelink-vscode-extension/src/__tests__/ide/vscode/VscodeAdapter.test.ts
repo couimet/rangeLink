@@ -267,6 +267,49 @@ describe('VscodeAdapter', () => {
     });
   });
 
+  describe('showQuickPick', () => {
+    it('should show quick pick with items using VSCode API', async () => {
+      const items = [{ label: 'Item 1' }, { label: 'Item 2' }];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(items[0]);
+
+      const result = await adapter.showQuickPick(items);
+
+      expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, undefined);
+      expect(mockVSCode.window.showQuickPick).toHaveBeenCalledTimes(1);
+      expect(result).toStrictEqual({ label: 'Item 1' });
+    });
+
+    it('should pass options to VSCode API', async () => {
+      const items = [{ label: 'Option A' }, { label: 'Option B' }];
+      const options = { placeHolder: 'Select an option', canPickMany: false };
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(items[1]);
+
+      const result = await adapter.showQuickPick(items, options);
+
+      expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, options);
+      expect(result).toStrictEqual({ label: 'Option B' });
+    });
+
+    it('should return undefined when user cancels', async () => {
+      const items = [{ label: 'Item 1' }];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await adapter.showQuickPick(items);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle empty items array', async () => {
+      const items: { label: string }[] = [];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await adapter.showQuickPick(items);
+
+      expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, undefined);
+      expect(result).toBeUndefined();
+    });
+  });
+
   describe('integration scenarios', () => {
     it('should handle multiple clipboard operations sequentially', async () => {
       await adapter.writeTextToClipboard('first');
