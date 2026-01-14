@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from 'node:path';
 
 import type { Logger } from 'barebone-logger';
 import { DelimiterConfig, LinkType, ParsedLink } from 'rangelink-core-ts';
@@ -123,22 +123,23 @@ export class AddBookmarkCommand {
       return;
     }
 
-    try {
-      await this.bookmarkService.addBookmark({
-        label: trimmedLabel,
-        link: linkToBookmark,
-        scope: 'global',
-      });
+    const result = await this.bookmarkService.addBookmark({
+      label: trimmedLabel,
+      link: linkToBookmark,
+      scope: 'global',
+    });
 
-      this.logger.info({ ...logCtx, label: trimmedLabel, link: linkToBookmark }, 'Bookmark saved');
-
-      this.ideAdapter.setStatusBarMessage(
-        formatMessage(MessageCode.STATUS_BAR_BOOKMARK_SAVED, { label: trimmedLabel }),
-      );
-    } catch (error) {
-      this.logger.error({ ...logCtx, error }, 'Failed to save bookmark');
+    if (!result.success) {
+      this.logger.error({ ...logCtx, error: result.error }, 'Failed to save bookmark');
       this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BOOKMARK_SAVE_FAILED));
+      return;
     }
+
+    this.logger.info({ ...logCtx, label: trimmedLabel, link: linkToBookmark }, 'Bookmark saved');
+
+    this.ideAdapter.setStatusBarMessage(
+      formatMessage(MessageCode.STATUS_BAR_BOOKMARK_SAVED, { label: trimmedLabel }),
+    );
   }
 
   /**

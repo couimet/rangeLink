@@ -136,6 +136,19 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith('');
     });
+
+    it('should pass action items to VSCode API and return selected item', async () => {
+      (mockVSCode.window.showWarningMessage as jest.Mock).mockResolvedValue('Yes');
+
+      const result = await adapter.showWarningMessage('Delete this?', 'Yes', 'No');
+
+      expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith(
+        'Delete this?',
+        'Yes',
+        'No',
+      );
+      expect(result).toBe('Yes');
+    });
   });
 
   describe('showErrorMessage', () => {
@@ -222,6 +235,78 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showInputBox).toHaveBeenCalledWith(undefined);
       expect(result).toBe('input');
+    });
+  });
+
+  describe('createQuickPick', () => {
+    it('should create QuickPick instance using VSCode API', () => {
+      const quickPick = adapter.createQuickPick();
+
+      expect(mockVSCode.window.createQuickPick).toHaveBeenCalledTimes(1);
+      expect(quickPick).toBeDefined();
+    });
+
+    it('should return QuickPick with configurable properties', () => {
+      const quickPick = adapter.createQuickPick();
+
+      quickPick.title = 'Test Title';
+      quickPick.placeholder = 'Select an item';
+      quickPick.items = [{ label: 'Item 1' }, { label: 'Item 2' }];
+
+      expect(quickPick.title).toBe('Test Title');
+      expect(quickPick.placeholder).toBe('Select an item');
+      expect(quickPick.items).toStrictEqual([{ label: 'Item 1' }, { label: 'Item 2' }]);
+    });
+
+    it('should return QuickPick with show, hide, and dispose methods', () => {
+      const quickPick = adapter.createQuickPick();
+
+      expect(typeof quickPick.show).toBe('function');
+      expect(typeof quickPick.hide).toBe('function');
+      expect(typeof quickPick.dispose).toBe('function');
+    });
+  });
+
+  describe('showQuickPick', () => {
+    it('should show quick pick with items using VSCode API', async () => {
+      const items = [{ label: 'Item 1' }, { label: 'Item 2' }];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(items[0]);
+
+      const result = await adapter.showQuickPick(items);
+
+      expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, undefined);
+      expect(mockVSCode.window.showQuickPick).toHaveBeenCalledTimes(1);
+      expect(result).toStrictEqual({ label: 'Item 1' });
+    });
+
+    it('should pass options to VSCode API', async () => {
+      const items = [{ label: 'Option A' }, { label: 'Option B' }];
+      const options = { placeHolder: 'Select an option', canPickMany: false };
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(items[1]);
+
+      const result = await adapter.showQuickPick(items, options);
+
+      expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, options);
+      expect(result).toStrictEqual({ label: 'Option B' });
+    });
+
+    it('should return undefined when user cancels', async () => {
+      const items = [{ label: 'Item 1' }];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await adapter.showQuickPick(items);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle empty items array', async () => {
+      const items: { label: string }[] = [];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await adapter.showQuickPick(items);
+
+      expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, undefined);
+      expect(result).toBeUndefined();
     });
   });
 

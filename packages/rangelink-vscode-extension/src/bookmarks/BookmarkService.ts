@@ -7,6 +7,7 @@ import {
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { ExtensionResult } from '../types';
 
 import type { BookmarksStore } from './BookmarksStore';
 import type { Bookmark, BookmarkId, BookmarkInput } from './types';
@@ -46,15 +47,19 @@ export class BookmarkService {
    * Add a new bookmark.
    *
    * @param input - The bookmark data (label, link, optional description/scope)
-   * @returns The created bookmark on success
-   * @throws If bookmark creation fails
    */
-  async addBookmark(input: BookmarkInput): Promise<Bookmark> {
-    const result = await this.bookmarksStore.add(input);
-    if (!result.success) {
-      throw result.error;
-    }
-    return result.value;
+  async addBookmark(input: BookmarkInput): Promise<ExtensionResult<Bookmark>> {
+    return this.bookmarksStore.add(input);
+  }
+
+  /**
+   * Remove a bookmark by ID.
+   *
+   * @param id - The ID of the bookmark to remove
+   * @returns The deleted bookmark on success
+   */
+  async removeBookmark(id: BookmarkId): Promise<ExtensionResult<Bookmark>> {
+    return this.bookmarksStore.remove(id);
   }
 
   /**

@@ -101,6 +101,12 @@ jest.mock('vscode', () => ({
     appendLine = jest.fn();
     dispose = jest.fn();
   },
+  ThemeIcon: class {
+    constructor(
+      public id: string,
+      public color?: any,
+    ) {}
+  },
 }));
 
 describe('Configuration loading and validation', () => {

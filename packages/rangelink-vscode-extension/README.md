@@ -174,6 +174,30 @@ The menu provides quick access without memorizing keyboard shortcuts. More actio
 
 ---
 
+### 🔖 Bookmarks
+
+**Save code locations for quick access later.** Bookmark commonly-referenced code (config files, error definitions, key functions) and paste them to your AI assistant whenever needed — no navigating back to those files.
+
+#### Save Selection as Bookmark
+
+Turn any code selection into a reusable bookmark:
+
+1. **Select code** in the editor
+2. **Press `Cmd+R Cmd+B Cmd+S`** (Mac) or `Ctrl+R Ctrl+B Ctrl+S` (Windows/Linux)
+3. **Enter a label** when prompted (e.g., "Auth middleware", "API error codes")
+4. Bookmark saved!
+
+Also available via Command Palette → "Save Selection as Bookmark" or right-click context menu.
+
+#### List Bookmarks
+
+**Press `Cmd+R Cmd+B Cmd+L`** (Mac) or `Ctrl+R Ctrl+B Ctrl+L` (Windows/Linux) to list your bookmarks:
+
+- **Select a bookmark** to paste its link to your bound destination (or clipboard if unbound)
+- **Manage bookmarks** via the gear icon action in the bookmark list
+
+---
+
 ### 🔗 Flexible Link Formats
 
 - **Single line:** `src/file.ts#L42`
@@ -208,6 +232,7 @@ All commands are available via keyboard shortcuts and Command Palette. Commands 
 | Paste Selected Text to Destination                | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`        | Send selected text directly to bound destination         |
 | Jump to Bound Destination                         | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound paste destination             |
 | Save Selection as Bookmark                        | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
+| List Bookmarks                                    | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
 | Bind RangeLink to Claude Code Destination         | —                   | —                      | Auto-send links to Claude Code chat                      |
 | Bind RangeLink to Cursor AI Destination           | —                   | —                      | Auto-send links to Cursor AI chat                        |
 | Bind RangeLink to GitHub Copilot Chat Destination | —                   | —                      | Auto-send links to Copilot Chat                          |

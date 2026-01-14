@@ -2,6 +2,7 @@ import type { Logger } from 'barebone-logger';
 import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+
 import { CommandPasteExecutor } from './CommandPasteExecutor';
 import { EditorPasteExecutor } from './EditorPasteExecutor';
 import type { PasteExecutor } from './PasteExecutor';

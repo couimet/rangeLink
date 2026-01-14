@@ -65,9 +65,13 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
 
   /**
    * Show warning notification using VSCode API
+   *
+   * @param message - Message to display
+   * @param items - Optional action button labels
+   * @returns Promise resolving to selected button label, or undefined if dismissed
    */
-  async showWarningMessage(message: string): Promise<string | undefined> {
-    return this.ideInstance.window.showWarningMessage(message);
+  async showWarningMessage(message: string, ...items: string[]): Promise<string | undefined> {
+    return this.ideInstance.window.showWarningMessage(message, ...items);
   }
 
   /**
@@ -100,6 +104,15 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
     options?: vscode.QuickPickOptions,
   ): Promise<T | undefined> {
     return this.ideInstance.window.showQuickPick(items, options);
+  }
+
+  /**
+   * Create a QuickPick instance for advanced usage (buttons, multiple selection, etc.)
+   *
+   * @returns A new QuickPick instance that must be shown and disposed by the caller
+   */
+  createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
+    return this.ideInstance.window.createQuickPick<T>();
   }
 
   /**

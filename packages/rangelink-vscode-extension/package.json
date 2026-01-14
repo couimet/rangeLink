@@ -164,7 +164,7 @@
       },
       {
         "command": "rangelink.bookmark.list",
-        "title": "Open Bookmarks",
+        "title": "List Bookmarks",
         "category": "RangeLink",
         "icon": "$(bookmark)"
       }
@@ -305,8 +305,8 @@
       },
       {
         "command": "rangelink.bookmark.list",
-        "key": "ctrl+r ctrl+b",
-        "mac": "cmd+r cmd+b"
+        "key": "ctrl+r ctrl+b ctrl+l",
+        "mac": "cmd+r cmd+b cmd+l"
       }
     ],
     "menus": {
