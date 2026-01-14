@@ -110,9 +110,7 @@ describe('VscodeAdapter', () => {
       expect(result).toBeDefined();
       expect(result.dispose).toBeDefined();
       expect(typeof result.dispose).toBe('function');
-
-      // Verify dispose can be called without errors
-      expect(() => result.dispose()).not.toThrow();
+      result.dispose();
     });
   });
 
@@ -1162,6 +1160,10 @@ describe('VscodeAdapter', () => {
 
       expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith(message);
       expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledTimes(1);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.showInformationMessage', message, items: [] },
+        'Showing info message',
+      );
     });
 
     it('should show information message with single button', async () => {
