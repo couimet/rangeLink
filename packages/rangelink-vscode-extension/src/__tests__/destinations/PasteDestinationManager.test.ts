@@ -30,22 +30,35 @@ import {
 } from '../helpers';
 
 /**
- * Helper to assert setContext was NOT called with terminal binding context.
- * Used to verify non-terminal destinations don't affect terminal context state.
+ * Validates setContext calls: only expected keys were set, each with expected final value.
+ * Uses "last value" semantics to handle bind->unbind sequences correctly.
+ *
+ * @param expectedKeyValues - Record of expected context keys and their final values
+ *   - Bind success: { 'rangelink.isBound': true }
+ *   - Unbind success: { 'rangelink.isBound': false }
+ *   - Bind failure: {} (empty - no keys should be set)
  */
-const expectTerminalContextNotSet = (
+const expectContextKeys = (
   mockVscode: ReturnType<VscodeAdapterWithTestHooks['__getVscodeInstance']>,
+  expectedKeyValues: Record<string, unknown>,
 ): void => {
-  expect(mockVscode.commands.executeCommand).not.toHaveBeenCalledWith(
-    'setContext',
-    'rangelink.terminalIsBound',
-    true,
+  const setContextCalls = (mockVscode.commands.executeCommand as jest.Mock).mock.calls.filter(
+    (call: unknown[]) => call[0] === 'setContext',
   );
-  expect(mockVscode.commands.executeCommand).not.toHaveBeenCalledWith(
-    'setContext',
-    'rangelink.terminalIsBound',
-    false,
-  );
+
+  const lastValues = new Map<string, unknown>();
+  for (const call of setContextCalls) {
+    lastValues.set(call[1] as string, call[2]);
+  }
+
+  const expectedKeys = Object.keys(expectedKeyValues);
+  const actualKeys = [...lastValues.keys()];
+  const unexpectedKeys = actualKeys.filter((key) => !expectedKeys.includes(key));
+  expect(unexpectedKeys).toStrictEqual([]);
+
+  for (const [key, expectedValue] of Object.entries(expectedKeyValues)) {
+    expect(lastValues.get(key)).toBe(expectedValue);
+  }
 };
 
 /**
@@ -233,11 +246,7 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully bound to "Terminal ("bash")"',
       );
-      expect(mockAdapter.__getVscodeInstance().commands.executeCommand).toHaveBeenCalledWith(
-        'setContext',
-        'rangelink.terminalIsBound',
-        true,
-      );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
     });
 
     it('should fail when no active terminal', async () => {
@@ -251,6 +260,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: No active terminal. Open a terminal and try again.',
       );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
     it('should show info message when binding same terminal twice', async () => {
@@ -335,7 +345,7 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to Cursor AI Assistant',
         3000,
       );
-      expectTerminalContextNotSet(localAdapter.__getVscodeInstance());
+      expectContextKeys(localAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
 
       localManager.dispose();
     });
@@ -352,6 +362,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
       );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
     it('should fail when claude-code not available', async () => {
@@ -366,6 +377,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind Claude Code - extension not installed or not active',
       );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
     it('should bind to claude-code when available', async () => {
@@ -380,7 +392,7 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to Claude Code Chat',
         3000,
       );
-      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
     });
 
     it('should bind to github-copilot-chat when available', async () => {
@@ -395,6 +407,7 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to GitHub Copilot Chat',
         3000,
       );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.bindGenericDestination',
@@ -402,7 +415,6 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully bound to GitHub Copilot Chat',
       );
-      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
     });
 
     it('should fail when github-copilot-chat not available', async () => {
@@ -417,6 +429,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
       );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
     it('should show info message when binding same chat destination twice', async () => {
@@ -492,7 +505,7 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully bound to "Text Editor ("file.ts")" (2 tab groups)',
       );
-      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
     });
 
     it('should fail to bind text editor with less than 2 tab groups', async () => {
@@ -510,6 +523,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
       );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
     it('should fail to bind text editor when no active editor', async () => {
@@ -525,6 +539,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: No active text editor. Open a file and try again.',
       );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
     it('should fail to bind text editor to read-only scheme', async () => {
@@ -545,6 +560,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind to read-only editor (git)',
       );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
     it('should fail to bind text editor to binary file', async () => {
@@ -566,6 +582,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         `RangeLink: Cannot bind to ${testFileName} - binary file`,
       );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
   });
 
@@ -730,11 +747,7 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink unbound from Terminal ("bash")',
         2000,
       );
-      expect(mockAdapter.__getVscodeInstance().commands.executeCommand).toHaveBeenCalledWith(
-        'setContext',
-        'rangelink.terminalIsBound',
-        false,
-      );
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should unbind chat destination successfully', async () => {
@@ -750,7 +763,7 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink unbound from Cursor AI Assistant',
         2000,
       );
-      expectTerminalContextNotSet(localAdapter.__getVscodeInstance());
+      expectContextKeys(localAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
 
       localManager.dispose();
     });
@@ -769,7 +782,7 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink unbound from GitHub Copilot Chat',
         2000,
       );
-      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should unbind claude-code successfully', async () => {
@@ -786,7 +799,7 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink unbound from Claude Code Chat',
         2000,
       );
-      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should unbind text-editor successfully', async () => {
@@ -810,7 +823,7 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink unbound from Text Editor ("file.ts")',
         2000,
       );
-      expectTerminalContextNotSet(mockAdapter.__getVscodeInstance());
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should handle unbind when nothing bound', () => {

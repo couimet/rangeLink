@@ -114,6 +114,12 @@
         "icon": "$(link)"
       },
       {
+        "command": "rangelink.bindToTerminalHere",
+        "title": "Bind RangeLink Here",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.bindToTextEditor",
         "title": "Bind RangeLink to Text Editor Destination",
         "category": "RangeLink",
@@ -139,7 +145,7 @@
       },
       {
         "command": "rangelink.unbindDestination",
-        "title": "Unbind RangeLink Destination",
+        "title": "Unbind RangeLink",
         "category": "RangeLink",
         "icon": "$(close)"
       },
@@ -310,6 +316,12 @@
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "rangelink.bindToTerminalHere",
+          "when": "false"
+        }
+      ],
       "editor/context": [
         {
           "when": "editorHasSelection",
@@ -344,24 +356,22 @@
       ],
       "terminal/title/context": [
         {
-          "when": "!rangelink.terminalIsBound",
-          "command": "rangelink.bindToTerminal",
+          "command": "rangelink.bindToTerminalHere",
           "group": "rangelink@1"
         },
         {
-          "when": "rangelink.terminalIsBound",
+          "when": "rangelink.isBound",
           "command": "rangelink.unbindDestination",
           "group": "rangelink@2"
         }
       ],
       "terminal/context": [
         {
-          "when": "!rangelink.terminalIsBound",
-          "command": "rangelink.bindToTerminal",
+          "command": "rangelink.bindToTerminalHere",
           "group": "rangelink@1"
         },
         {
-          "when": "rangelink.terminalIsBound",
+          "when": "rangelink.isBound",
           "command": "rangelink.unbindDestination",
           "group": "rangelink@2"
         }

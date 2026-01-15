@@ -7,6 +7,6 @@
  * Keep entries sorted alphabetically by constant name.
  */
 
-export const CONTEXT_TERMINAL_IS_BOUND = 'rangelink.terminalIsBound';
+export const CONTEXT_IS_BOUND = 'rangelink.isBound';
 
 // Keep entries sorted alphabetically by constant name.

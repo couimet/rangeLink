@@ -2,7 +2,7 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import { CONTEXT_TERMINAL_IS_BOUND } from '../constants';
+import { CONTEXT_IS_BOUND } from '../constants';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -111,15 +111,8 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     const displayName = this.boundDestination.displayName;
-    const wasTerminalBound = this.boundTerminal !== undefined;
 
-    this.boundDestination = undefined;
-    this.boundTerminal = undefined;
-
-    // Clear terminal context for menu visibility (when clauses)
-    if (wasTerminalBound) {
-      void this.vscodeAdapter.executeCommand('setContext', CONTEXT_TERMINAL_IS_BOUND, false);
-    }
+    this.clearBoundDestination();
 
     this.logger.info(
       { fn: 'PasteDestinationManager.unbind', displayName },
@@ -451,12 +444,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.unbind();
     }
 
-    // Bind new destination
-    this.boundDestination = newDestination;
-    this.boundTerminal = activeTerminal; // Track for closure events
-
-    // Set context for menu visibility (when clauses)
-    await this.vscodeAdapter.executeCommand('setContext', CONTEXT_TERMINAL_IS_BOUND, true);
+    await this.setBoundDestination(newDestination, activeTerminal);
 
     this.logger.info(
       {
@@ -566,8 +554,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.unbind();
     }
 
-    // Bind new destination
-    this.boundDestination = newDestination;
+    await this.setBoundDestination(newDestination);
 
     this.logger.info(
       {
@@ -657,8 +644,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.unbind();
     }
 
-    // Bind new destination
-    this.boundDestination = newDestination;
+    await this.setBoundDestination(newDestination);
 
     this.logger.info(
       {
@@ -672,6 +658,32 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.showBindSuccessToast(newDestination.displayName);
 
     return true;
+  }
+
+  /**
+   * Update internal state when binding a new destination.
+   * Centralizes state mutation and context key management.
+   *
+   * @param destination - The destination to bind
+   * @param terminal - Optional terminal reference (only for terminal destinations)
+   */
+  private async setBoundDestination(
+    destination: PasteDestination,
+    terminal?: vscode.Terminal,
+  ): Promise<void> {
+    this.boundDestination = destination;
+    this.boundTerminal = terminal;
+    await this.vscodeAdapter.executeCommand('setContext', CONTEXT_IS_BOUND, true);
+  }
+
+  /**
+   * Clear internal state when unbinding.
+   * Centralizes state mutation and context key management.
+   */
+  private clearBoundDestination(): void {
+    this.boundDestination = undefined;
+    this.boundTerminal = undefined;
+    void this.vscodeAdapter.executeCommand('setContext', CONTEXT_IS_BOUND, false);
   }
 
   /**
