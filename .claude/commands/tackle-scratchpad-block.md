@@ -21,6 +21,7 @@ Read the lines specified by the RangeLink to get the step(s) to execute.
 ## Step 2: Understand the Context
 
 Read the full scratchpad to understand:
+
 - The overall goal/issue being addressed
 - Parent issue context (if noted)
 - Files to modify (from "Files to Modify" section if present)
@@ -39,6 +40,7 @@ Use filename pattern: `NNNN-scratchpad-block-questions.txt`
 ## Step 4: Execute the Steps
 
 Perform the implementation work as specified in the selected lines:
+
 - Make code changes
 - Add/update tests as needed
 - Fix any issues that arise
@@ -46,6 +48,7 @@ Perform the implementation work as specified in the selected lines:
 ### Test Execution
 
 Follow rule E001 in CLAUDE.md for shell environment setup, then run:
+
 ```bash
 pnpm test
 ```
@@ -61,6 +64,7 @@ Follow the `commits` workflow in CLAUDE.md.
 Use filename pattern: `NNNN-scratchpad-step-description.txt`
 
 Include context from:
+
 - The scratchpad's goal/issue number
 - What was implemented in this block
 - Reference to the scratchpad file
@@ -68,6 +72,7 @@ Include context from:
 ## Step 6: Report Status and STOP
 
 Print:
+
 1. Summary of changes made
 2. Files modified
 3. Test results (pass/fail count)
@@ -76,6 +81,7 @@ Print:
 **IMPORTANT: Do NOT run `git commit`.**
 
 Wait for user to:
+
 - Review the changes
 - Review the commit message
 - Manually commit when ready
@@ -83,6 +89,7 @@ Wait for user to:
 ## Quality Checklist
 
 Before finishing:
+
 - [ ] All steps in the RangeLink block were executed
 - [ ] Tests pass (unless scratchpad explicitly skipped them)
 - [ ] NEW commit message file created with clear "why" context
