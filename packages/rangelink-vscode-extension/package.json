@@ -285,6 +285,12 @@
         "command": "rangelink.terminal.unbind",
         "title": "RangeLink: Unbind",
         "icon": "$(close)"
+      },
+      {
+        "command": "rangelink.navigateToRangeLink",
+        "title": "Navigate to Link",
+        "category": "RangeLink",
+        "icon": "$(go-to-file)"
       }
     ],
     "configuration": {

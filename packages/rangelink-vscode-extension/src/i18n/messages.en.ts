@@ -71,6 +71,9 @@ export const messagesEn: Record<MessageCode, string> = {
     'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
   [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
     'No destination bound. Choose destination to jump to:',
+  [MessageCode.INFO_NAVIGATION_INPUT_BOX_PLACEHOLDER]: 'src/auth.ts#L42C10-L58C25',
+  [MessageCode.INFO_NAVIGATION_INPUT_BOX_PROMPT]: 'Enter RangeLink to navigate',
+  [MessageCode.INFO_NAVIGATION_INVALID_LINK]: 'RangeLink: Invalid link format - {error}',
   [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
   [MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE]:
     'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',

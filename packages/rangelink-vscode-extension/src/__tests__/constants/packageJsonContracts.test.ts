@@ -239,6 +239,15 @@ describe('package.json contributions', () => {
           icon: '$(bookmark)',
         });
       });
+
+      it('rangelink.navigateToRangeLink', () => {
+        expect(findCommand('rangelink.navigateToRangeLink')).toStrictEqual({
+          command: 'rangelink.navigateToRangeLink',
+          title: 'Navigate to Link',
+          category: 'RangeLink',
+          icon: '$(go-to-file)',
+        });
+      });
     });
 
     describe('paste file path commands (context menu)', () => {
@@ -414,7 +423,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(40);
+      expect(commands).toHaveLength(41);
     });
   });
 
