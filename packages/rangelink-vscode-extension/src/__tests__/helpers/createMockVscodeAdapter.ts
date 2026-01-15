@@ -1,98 +1,24 @@
 /**
- * Mock VSCode objects and utilities for testing
+ * Mock VscodeAdapter factory for testing
  *
- * Provides pre-configured mocks for common VSCode API objects used across
- * destination tests. Reduces boilerplate and ensures consistent test setups.
- *
- * NOTE: Some commonly used utilities have been extracted to separate files for better
- * discoverability. This file serves as a barrel export while keeping complex utilities
- * that depend on multiple other functions.
+ * Provides the recommended way to create VscodeAdapter instances in tests.
+ * Use createMockVscodeAdapter() for all test files except VscodeAdapter.test.ts.
  */
 
-import * as vscode from 'vscode';
+import type { Logger } from 'barebone-logger';
+import { createMockLogger } from 'barebone-logger-testing';
 
 import { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
-import {
-  createMockCommands,
-  type MockCommands,
-  type MockCommandsOverrides,
-} from './createMockCommands';
-import { createMockDocumentLink } from './createMockDocumentLink';
-import { createMockEnv, type MockEnvOptions } from './createMockEnv';
-import { createMockExtensions, type MockExtensionConfig } from './createMockExtensions';
-import { createMockLanguages } from './createMockLanguages';
-import { createMockUri } from './createMockUri';
-import { createMockWindow } from './createMockWindow';
-import { createMockWorkspace } from './createMockWorkspace';
-import { MockTabInputText } from './tabTestHelpers';
+import { createMockVscode, type MockVscodeOptions } from './createMockVscode';
 
 /**
- * Options for creating mock vscode instances.
+ * Extended options for createMockVscodeAdapter that includes logger.
  */
-export interface MockVscodeOptions {
-  /** Commands configuration - accepts MockCommands object or overrides */
-  commandsOptions?: MockCommands | MockCommandsOverrides;
-  /** Environment overrides for appName, uriScheme, clipboard, etc.. */
-  envOptions?: MockEnvOptions;
-  /** Window overrides - accepts either a config object or a partial vscode.Window */
-  windowOptions?: Record<string, unknown> | Partial<typeof vscode.window>;
-  /** Workspace overrides - accepts either a config object or a partial vscode.Workspace */
-  workspaceOptions?: Record<string, unknown> | Partial<typeof vscode.workspace>;
-  /** Extensions to mock - array of extension IDs (shorthand) or detailed configs */
-  extensionsOptions?: MockExtensionConfig[];
+export interface MockVscodeAdapterOptions extends MockVscodeOptions {
+  /** Logger instance - defaults to createMockLogger() if not provided */
+  logger?: Logger;
 }
-
-/**
- * Create a mock vscode module for testing.
- *
- * **Internal function** - Use `createMockVscodeAdapter()` instead for all tests.
- * This function is an implementation detail and should not be exported.
- *
- * Provides complete mock of VSCode API with sensible defaults:
- * - window.activeTerminal, activeTextEditor
- * - window.visibleTextEditors
- * - window.setStatusBarMessage (returns Disposable)
- * - window.show*Message methods (return Promise)
- * - window.showTextDocument
- * - window.tabGroups
- * - workspace.openTextDocument
- * - workspace.workspaceFolders
- * - workspace.getWorkspaceFolder
- * - workspace.fs.stat
- * - workspace.asRelativePath
- * - workspace.onDidCloseTextDocument
- * - env.clipboard.writeText
- * - extensions.all, extensions.getExtension
- * - Uri.file, Uri.parse
- * - Position, Selection, Range constructors
- * - DocumentLink constructor
- *
- * This mock object is passed to `new VscodeAdapter(mockVscode)` internally
- * by `createMockVscodeAdapter()` to create real VscodeAdapter instances.
- *
- * @param options - Optional configuration
- * @param overrides - Optional VSCode API property overrides (spread last for flexibility)
- * @returns Mock vscode module compatible with VscodeAdapter constructor
- */
-const createMockVscode = (options?: MockVscodeOptions, overrides?: Partial<typeof vscode>): any => {
-  return {
-    window: createMockWindow(options?.windowOptions),
-    workspace: createMockWorkspace(options?.workspaceOptions),
-    env: createMockEnv(options?.envOptions),
-    extensions: createMockExtensions(options?.extensionsOptions),
-    commands: createMockCommands(options?.commandsOptions),
-    languages: createMockLanguages(),
-    Uri: createMockUri(),
-    // Constructor mocks - return jest.fn() that creates instances
-    Position: jest.fn((line: number, character: number) => ({ line, character })),
-    Selection: jest.fn((anchor: vscode.Position, active: vscode.Position) => ({ anchor, active })),
-    Range: jest.fn((start: vscode.Position, end: vscode.Position) => ({ start, end })),
-    DocumentLink: createMockDocumentLink(),
-    TabInputText: MockTabInputText,
-    ...overrides,
-  };
-};
 
 /**
  * Test-only extension of VscodeAdapter that exposes the underlying vscode instance.
@@ -124,10 +50,11 @@ export interface VscodeAdapterWithTestHooks extends VscodeAdapter {
  * @returns Real VscodeAdapter instance with test hooks for accessing underlying mock
  */
 export const createMockVscodeAdapter = (
-  options?: MockVscodeOptions,
+  options?: MockVscodeAdapterOptions,
 ): VscodeAdapterWithTestHooks => {
   const vscodeInstance = createMockVscode(options);
-  const adapter = new VscodeAdapter(vscodeInstance) as VscodeAdapterWithTestHooks;
+  const logger = options?.logger ?? createMockLogger();
+  const adapter = new VscodeAdapter(vscodeInstance, logger) as VscodeAdapterWithTestHooks;
 
   // Add test-only hook to access the underlying vscode instance
   adapter.__getVscodeInstance = () => vscodeInstance;

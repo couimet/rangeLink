@@ -56,41 +56,40 @@ let outputChannel: vscode.OutputChannel;
  * Extension activation entry point
  */
 export function activate(context: vscode.ExtensionContext): void {
-  // Create adapter FIRST (only direct vscode reference in entire file)
-  const ideAdapter = new VscodeAdapter(vscode);
-  const configReader = ConfigReader.create(ideAdapter, getLogger());
-
-  outputChannel = ideAdapter.createOutputChannel('RangeLink');
-
-  // Initialize core library logger with VSCode adapter
+  // Initialize logger FIRST so it can be passed to VscodeAdapter
+  outputChannel = vscode.window.createOutputChannel('RangeLink');
   const vscodeLogger = new VSCodeLogger(outputChannel);
   setLogger(vscodeLogger);
+  const logger = getLogger();
+
+  const ideAdapter = new VscodeAdapter(vscode, logger);
+  const configReader = ConfigReader.create(ideAdapter, logger);
 
   // Initialize i18n locale from VSCode environment
   setLocale(ideAdapter.language);
 
   // Create bookmarks store for cross-workspace bookmark persistence
-  const bookmarksStore = new BookmarksStore(context.globalState, getLogger());
-  getLogger().debug({ fn: 'activate' }, 'Bookmarks store initialized');
+  const bookmarksStore = new BookmarksStore(context.globalState, logger);
+  logger.debug({ fn: 'activate' }, 'Bookmarks store initialized');
 
-  const delimiters = getDelimitersForExtension(configReader, ideAdapter, getLogger());
+  const delimiters = getDelimitersForExtension(configReader, ideAdapter, logger);
 
   // Create capability factories for composition-based destinations
-  const pasteExecutorFactory = new PasteExecutorFactory(ideAdapter, getLogger());
-  const eligibilityCheckerFactory = new EligibilityCheckerFactory(getLogger());
+  const pasteExecutorFactory = new PasteExecutorFactory(ideAdapter, logger);
+  const eligibilityCheckerFactory = new EligibilityCheckerFactory(logger);
 
   // Create destination registry with capability factories
   const registry = new DestinationRegistry(
     pasteExecutorFactory,
     eligibilityCheckerFactory,
     ideAdapter,
-    getLogger(),
+    logger,
   );
 
   // Register all destination builders with the registry
   registerAllDestinationBuilders(registry);
 
-  const availabilityService = new DestinationAvailabilityService(registry, ideAdapter, getLogger());
+  const availabilityService = new DestinationAvailabilityService(registry, ideAdapter, logger);
 
   // Create unified destination manager
   const destinationManager = new PasteDestinationManager(
@@ -98,7 +97,7 @@ export function activate(context: vscode.ExtensionContext): void {
     registry,
     availabilityService,
     ideAdapter,
-    getLogger(),
+    logger,
   );
 
   const bookmarkService = new BookmarkService(
@@ -106,7 +105,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter,
     configReader,
     destinationManager,
-    getLogger(),
+    logger,
   );
 
   const service = new RangeLinkService(
@@ -114,7 +113,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter,
     destinationManager,
     configReader,
-    getLogger(),
+    logger,
   );
 
   const statusBar = new RangeLinkStatusBar(
@@ -122,7 +121,7 @@ export function activate(context: vscode.ExtensionContext): void {
     destinationManager,
     availabilityService,
     bookmarkService,
-    getLogger(),
+    logger,
   );
   context.subscriptions.push(statusBar);
   context.subscriptions.push(
@@ -133,24 +132,20 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(destinationManager);
 
   // Create parser and navigation handler (used by both terminal and document providers)
-  const parser = new RangeLinkParser(delimiters, getLogger());
-  const navigationHandler = new RangeLinkNavigationHandler(parser, ideAdapter, getLogger());
-  getLogger().debug({ fn: 'activate' }, 'Parser and navigation handler created');
+  const parser = new RangeLinkParser(delimiters, logger);
+  const navigationHandler = new RangeLinkNavigationHandler(parser, ideAdapter, logger);
+  logger.debug({ fn: 'activate' }, 'Parser and navigation handler created');
 
   const addBookmarkCommand = new AddBookmarkCommand(
     parser,
     delimiters,
     ideAdapter,
     bookmarkService,
-    getLogger(),
+    logger,
   );
 
   // Register terminal link provider for clickable links
-  const terminalLinkProvider = new RangeLinkTerminalProvider(
-    navigationHandler,
-    ideAdapter,
-    getLogger(),
-  );
+  const terminalLinkProvider = new RangeLinkTerminalProvider(navigationHandler, ideAdapter, logger);
   context.subscriptions.push(
     registerWithLogging(
       ideAdapter.registerTerminalLinkProvider(terminalLinkProvider),
@@ -160,11 +155,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register document link provider for clickable links in editor files
   // Only register for specific schemes to prevent infinite recursion when scanning output channels
-  const documentLinkProvider = new RangeLinkDocumentProvider(
-    navigationHandler,
-    ideAdapter,
-    getLogger(),
-  );
+  const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, ideAdapter, logger);
   context.subscriptions.push(
     registerWithLogging(
       ideAdapter.registerDocumentLinkProvider(
@@ -237,7 +228,7 @@ export function activate(context: vscode.ExtensionContext): void {
             formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED),
           );
         }
-        getLogger().info(
+        logger.info(
           {
             fn: 'showVersion',
             version: versionInfo.version,
@@ -247,7 +238,7 @@ export function activate(context: vscode.ExtensionContext): void {
           'Version info displayed',
         );
       } catch (error) {
-        getLogger().error({ fn: 'showVersion', error }, 'Failed to load version info');
+        logger.error({ fn: 'showVersion', error }, 'Failed to load version info');
         await ideAdapter.showErrorMessage('Version information not available');
       }
     }),
@@ -330,17 +321,13 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter.registerCommand(CMD_BOOKMARK_ADD, () => addBookmarkCommand.execute()),
   );
 
-  const listBookmarksCommand = new ListBookmarksCommand(ideAdapter, bookmarkService, getLogger());
+  const listBookmarksCommand = new ListBookmarksCommand(ideAdapter, bookmarkService, logger);
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BOOKMARK_LIST, () => listBookmarksCommand.execute()),
   );
 
-  const manageBookmarksCommand = new ManageBookmarksCommand(
-    ideAdapter,
-    bookmarkService,
-    getLogger(),
-  );
+  const manageBookmarksCommand = new ManageBookmarksCommand(ideAdapter, bookmarkService, logger);
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BOOKMARK_MANAGE, () => manageBookmarksCommand.execute()),
@@ -349,7 +336,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // Log version info on startup
   try {
     const versionInfo = require('./version.json');
-    getLogger().info(
+    logger.info(
       {
         fn: 'activate',
         version: versionInfo.version,
@@ -361,7 +348,7 @@ export function activate(context: vscode.ExtensionContext): void {
       `RangeLink extension activated - v${versionInfo.version} (${versionInfo.commit}${versionInfo.isDirty ? ' dirty' : ''})`,
     );
   } catch (error) {
-    getLogger().warn(
+    logger.warn(
       { fn: 'activate', error },
       'RangeLink extension activated (version info unavailable)',
     );
