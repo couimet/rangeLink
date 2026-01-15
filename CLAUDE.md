@@ -167,13 +167,14 @@
 
   <prerequisites>
     1. Ensure working directory is project root (where pnpm-workspace.yaml lives)
-    2. Use zsh shell (default on this machine)
+    2. Shell config must have nvm configured (Claude Code runs non-interactive shells that don't auto-source config files)
   </prerequisites>
 
   <setup-sequence>
     Run this sequence to initialize the environment:
-    ```bash
-    source ~/.zshrc && nvm use && npm run enable-pnpm
+    ```
+    For zsh:  source ~/.zshrc && nvm use && npm run enable-pnpm
+    For bash: source ~/.bashrc && nvm use && npm run enable-pnpm
     ```
   </setup-sequence>
 
@@ -187,8 +188,8 @@
 
   <troubleshooting>
     <problem symptom="nvm: command not found">
-      <cause>zshrc not sourced - nvm function not loaded</cause>
-      <fix>Run: `source ~/.zshrc`</fix>
+      <cause>Shell config not sourced - nvm function not loaded</cause>
+      <fix>Run: `source ~/.zshrc` (zsh) or `source ~/.bashrc` (bash)</fix>
     </problem>
 
     <problem symptom="N/A: version 'N/A' not found" or ".nvmrc not found">
@@ -198,7 +199,7 @@
 
     <problem symptom="command not found: node">
       <cause>nvm not loaded OR node not installed</cause>
-      <fix>Run: `source ~/.zshrc && nvm install && nvm use`</fix>
+      <fix>Run: `source ~/.zshrc && nvm install && nvm use` (zsh) or `source ~/.bashrc && nvm install && nvm use` (bash)</fix>
     </problem>
 
     <problem symptom="command not found: pnpm">
