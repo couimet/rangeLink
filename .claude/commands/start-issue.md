@@ -34,6 +34,11 @@ Where `<NUMBER>` is the GitHub issue number (e.g., `issues/223`).
   - Related code that will be affected
   - Existing patterns to follow
   - Test files that will need updates
+- **Check integration points** - For new commands/features, review:
+  - `RangeLinkStatusBar.ts` for status bar menu integration
+  - `package.json` menus/keybindings sections
+  - README.md feature documentation
+  - CHANGELOG.md for release notes pattern
 
 ### 3. Create Implementation Plan Scratchpad
 
@@ -89,6 +94,20 @@ List any reasonable defaults assumed to avoid blocking on minor decisions:
 ## Files to Modify
 
 Bulleted list of all files that will be touched, grouped by step.
+
+## Documentation & Discoverability
+
+**User-facing changes require:**
+
+- [ ] CHANGELOG.md entry (under appropriate version section)
+- [ ] README.md update (if new command, setting, or feature)
+
+**Discoverability touchpoints to consider:**
+
+- Status bar menu integration (for commands users invoke frequently)
+- Context menu entries (for selection-based actions)
+- Keybinding (if high-frequency action)
+- Command palette title (clear, searchable naming)
 
 ## Acceptance Criteria
 
@@ -157,3 +176,5 @@ Before finishing, verify:
 - [ ] Test updates are mentioned for each step that changes behavior
 - [ ] Assumptions are documented with reasoning
 - [ ] Questions (if any) would genuinely change the plan if answered differently
+- [ ] Documentation planned: CHANGELOG entry, README updates if user-facing
+- [ ] Discoverability considered: status bar menu, context menus, keybindings
