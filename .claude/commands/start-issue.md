@@ -35,8 +35,8 @@ Where `<NUMBER>` is the GitHub issue number (e.g., `issues/223`).
   - Existing patterns to follow
   - Test files that will need updates
 - **Check integration points** - For new commands/features, review:
-  - `RangeLinkStatusBar.ts` for status bar menu integration
-  - `package.json` menus/keybindings sections
+  - `packages/rangelink-vscode-extension/src/statusBar/RangeLinkStatusBar.ts` for status bar menu integration
+  - `packages/rangelink-vscode-extension/package.json` contributes section (menus/keybindings)
   - README.md feature documentation
   - CHANGELOG.md for release notes pattern
 
