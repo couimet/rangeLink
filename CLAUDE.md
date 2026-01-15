@@ -210,9 +210,10 @@
       <cause>Not in project root directory</cause>
       <fix>Navigate to project root before running commands</fix>
     </problem>
+
   </troubleshooting>
 
-  <rationale>Claude Code runs non-interactive shells; node/pnpm not in PATH by default</rationale>
+<rationale>Claude Code runs non-interactive shells; node/pnpm not in PATH by default</rationale>
 </rule>
 
 <rule id="A001" priority="critical">
