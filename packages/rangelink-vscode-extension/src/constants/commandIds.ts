@@ -44,6 +44,7 @@ export const CMD_COPY_PORTABLE_LINK_RELATIVE = 'rangelink.copyPortableLinkWithRe
 export const CMD_GO_TO_RANGELINK = 'rangelink.goToRangeLink';
 export const CMD_HANDLE_DOCUMENT_LINK_CLICK = 'rangelink.handleDocumentLinkClick';
 export const CMD_JUMP_TO_DESTINATION = 'rangelink.jumpToBoundDestination';
+export const CMD_NAVIGATE_TO_RANGELINK = 'rangelink.navigateToRangeLink';
 export const CMD_OPEN_STATUS_BAR_MENU = 'rangelink.openStatusBarMenu';
 export const CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE = 'rangelink.pasteCurrentFileAbsolutePath';
 export const CMD_PASTE_CURRENT_FILE_PATH_RELATIVE = 'rangelink.pasteCurrentFileRelativePath';
