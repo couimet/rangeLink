@@ -163,8 +163,58 @@
 
 <rule id="E001" priority="critical">
   <title>Shell environment setup</title>
-  <do>Run before any pnpm command: `source ~/.zshrc && nvm use && npm run enable-pnpm`</do>
-  <rationale>Claude Code runs non-interactive shells; node/pnpm not in PATH by default</rationale>
+  <when>Before running pnpm, npm, node, or any JS tooling commands</when>
+
+  <prerequisites>
+    1. Ensure working directory is project root (where pnpm-workspace.yaml lives)
+    2. Shell config must have nvm configured (Claude Code runs non-interactive shells that don't auto-source config files)
+  </prerequisites>
+
+  <setup-sequence>
+    Run this sequence to initialize the environment:
+    ```
+    For zsh:  source ~/.zshrc && nvm use && npm run enable-pnpm
+    For bash: source ~/.bashrc && nvm use && npm run enable-pnpm
+    ```
+  </setup-sequence>
+
+  <verification>
+    After setup, verify tools are available:
+    ```bash
+    node --version && pnpm --version
+    ```
+    Both commands should return version numbers.
+  </verification>
+
+  <troubleshooting>
+    <problem symptom="nvm: command not found">
+      <cause>Shell config not sourced - nvm function not loaded</cause>
+      <fix>Run: `source ~/.zshrc` (zsh) or `source ~/.bashrc` (bash)</fix>
+    </problem>
+
+    <problem symptom="N/A: version 'N/A' not found" or ".nvmrc not found">
+      <cause>Node version not installed via nvm</cause>
+      <fix>Run: `nvm install` (installs version from .nvmrc)</fix>
+    </problem>
+
+    <problem symptom="command not found: node">
+      <cause>nvm not loaded OR node not installed</cause>
+      <fix>Run: `source ~/.zshrc && nvm install && nvm use` (zsh) or `source ~/.bashrc && nvm install && nvm use` (bash)</fix>
+    </problem>
+
+    <problem symptom="command not found: pnpm">
+      <cause>corepack/pnpm not enabled</cause>
+      <fix>Run: `npm run enable-pnpm` from the root of the project</fix>
+    </problem>
+
+    <problem symptom="ENOENT pnpm-workspace.yaml">
+      <cause>Not in project root directory</cause>
+      <fix>Navigate to project root before running commands</fix>
+    </problem>
+
+  </troubleshooting>
+
+<rationale>Claude Code runs non-interactive shells; node/pnpm not in PATH by default</rationale>
 </rule>
 
 <rule id="A001" priority="critical">
