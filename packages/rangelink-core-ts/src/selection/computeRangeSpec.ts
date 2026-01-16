@@ -40,8 +40,8 @@ export function computeRangeSpec(
     (selectionType === SelectionType.Rectangular
       ? selections[selections.length - 1].start.line
       : primary.end.line) + 1;
-  const startPosition = primary.start.char + 1;
-  const endPosition = primary.end.char + 1;
+  const startPosition = primary.start.character + 1;
+  const endPosition = primary.end.character + 1;
 
   // Rectangular selection always uses positions
   if (selectionType === SelectionType.Rectangular) {

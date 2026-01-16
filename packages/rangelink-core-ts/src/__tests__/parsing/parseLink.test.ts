@@ -28,8 +28,8 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'src/auth.ts',
-            start: { line: 42, char: 10 },
-            end: { line: 42, char: 10 },
+            start: { line: 42, character: 10 },
+            end: { line: 42, character: 10 },
             linkType: 'regular',
             selectionType: 'Normal',
           });
@@ -86,7 +86,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
             end: { line: 20 },
             linkType: 'regular',
             selectionType: 'Normal',
@@ -101,7 +101,7 @@ describe('parseLink', () => {
           expect(value).toStrictEqual({
             path: 'file.ts',
             start: { line: 10 },
-            end: { line: 20, char: 15 },
+            end: { line: 20, character: 15 },
             linkType: 'regular',
             selectionType: 'Normal',
           });
@@ -114,8 +114,8 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'src/auth.ts',
-            start: { line: 42, char: 10 },
-            end: { line: 58, char: 25 },
+            start: { line: 42, character: 10 },
+            end: { line: 58, character: 25 },
             linkType: 'regular',
             selectionType: 'Normal',
           });
@@ -130,8 +130,8 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
-            start: { line: 10, char: 5 },
-            end: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
+            end: { line: 10, character: 5 },
             linkType: 'regular',
             selectionType: 'Rectangular',
           });
@@ -144,8 +144,8 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
-            start: { line: 10, char: 5 },
-            end: { line: 20, char: 10 },
+            start: { line: 10, character: 5 },
+            end: { line: 20, character: 10 },
             linkType: 'regular',
             selectionType: 'Rectangular',
           });
@@ -175,8 +175,8 @@ describe('parseLink', () => {
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
           path: 'issue#123#fix.ts',
-          start: { line: 42, char: 5 },
-          end: { line: 42, char: 5 },
+          start: { line: 42, character: 5 },
+          end: { line: 42, character: 5 },
           linkType: 'regular',
           selectionType: 'Normal',
         });
@@ -217,8 +217,8 @@ describe('parseLink', () => {
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
           path: 'file#1.ts',
-          start: { line: 10, char: 5 },
-          end: { line: 20, char: 10 },
+          start: { line: 10, character: 5 },
+          end: { line: 20, character: 10 },
           linkType: 'regular',
           selectionType: 'Rectangular',
         });
@@ -255,8 +255,8 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
-            start: { line: 10, char: 5 },
-            end: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
+            end: { line: 10, character: 5 },
             linkType: 'regular',
             selectionType: 'Normal',
           });
@@ -297,8 +297,8 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
-            start: { line: 10, char: 5 },
-            end: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
+            end: { line: 10, character: 5 },
             linkType: 'regular',
             selectionType: 'Rectangular',
           });
@@ -320,8 +320,8 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
-            start: { line: 10, char: 5 },
-            end: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
+            end: { line: 10, character: 5 },
             linkType: 'regular',
             selectionType: 'Normal',
           });
@@ -341,8 +341,8 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
-            start: { line: 10, char: 5 },
-            end: { line: 20, char: 10 },
+            start: { line: 10, character: 5 },
+            end: { line: 20, character: 10 },
             linkType: 'regular',
             selectionType: 'Normal',
           });
@@ -362,8 +362,8 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
-            start: { line: 10, char: 5 },
-            end: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
+            end: { line: 10, character: 5 },
             linkType: 'regular',
             selectionType: 'Rectangular',
           });
@@ -676,7 +676,7 @@ describe('parseLink', () => {
         expect(result).toBeRangeLinkErrorErr('PARSE_CHAR_BACKWARD_SAME_LINE', {
           message: 'End character cannot be before start character on same line',
           functionName: 'parseLink',
-          details: { startChar: 20, endChar: 5, line: 10 },
+          details: { startCharacter: 20, endCharacter: 5, line: 10 },
         });
       });
 
@@ -684,8 +684,8 @@ describe('parseLink', () => {
         const result = parseLink('file.ts#L10C20-L11C5');
 
         expect(result).toBeOkWith((value: ParsedLink) => {
-          expect(value.start).toStrictEqual({ line: 10, char: 20 });
-          expect(value.end).toStrictEqual({ line: 11, char: 5 });
+          expect(value.start).toStrictEqual({ line: 10, character: 20 });
+          expect(value.end).toStrictEqual({ line: 11, character: 5 });
         });
       });
     });
@@ -747,8 +747,8 @@ describe('parseLink', () => {
       const result = parseLink('file.ts#L10C5-L10C5');
 
       expect(result).toBeOkWith((value: ParsedLink) => {
-        expect(value.start).toStrictEqual({ line: 10, char: 5 });
-        expect(value.end).toStrictEqual({ line: 10, char: 5 });
+        expect(value.start).toStrictEqual({ line: 10, character: 5 });
+        expect(value.end).toStrictEqual({ line: 10, character: 5 });
       });
     });
   });

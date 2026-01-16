@@ -40,8 +40,8 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 20, char: 0 },
-            end: { line: 10, char: 10 }, // Backward
+            start: { line: 20, character: 0 },
+            end: { line: 10, character: 10 }, // Backward
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -68,9 +68,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 20 },
+            start: { line: 10, character: 20 },
 
-            end: { line: 10, char: 5 }, // Backward on same line
+            end: { line: 10, character: 5 }, // Backward on same line
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -80,13 +80,13 @@ describe('validateInputSelection', () => {
       expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
         'SELECTION_BACKWARD_CHARACTER',
         {
-          message: 'Backward character selection not allowed (startChar=20 > endChar=5 on line 10)',
+          message: 'Backward character selection not allowed (startCharacter=20 > endCharacter=5 on line 10)',
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
             line: 10,
-            startChar: 20,
-            endChar: 5,
+            startCharacter: 20,
+            endCharacter: 5,
           },
         },
       );
@@ -96,9 +96,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 20 },
+            start: { line: 10, character: 20 },
 
-            end: { line: 15, char: 5 }, // Different line, OK
+            end: { line: 15, character: 5 }, // Different line, OK
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -114,9 +114,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: -1, char: 0 },
+            start: { line: -1, character: 0 },
 
-            end: { line: 10, char: 10 },
+            end: { line: 10, character: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -127,14 +127,14 @@ describe('validateInputSelection', () => {
         'SELECTION_NEGATIVE_COORDINATES',
         {
           message:
-            'Negative coordinates not allowed (startLine=-1, endLine=10, startChar=0, endChar=10)',
+            'Negative coordinates not allowed (startLine=-1, endLine=10, startCharacter=0, endCharacter=10)',
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
             startLine: -1,
             endLine: 10,
-            startChar: 0,
-            endChar: 10,
+            startCharacter: 0,
+            endCharacter: 10,
           },
         },
       );
@@ -144,9 +144,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 0, char: 0 },
+            start: { line: 0, character: 0 },
 
-            end: { line: -1, char: 10 },
+            end: { line: -1, character: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -157,14 +157,14 @@ describe('validateInputSelection', () => {
         'SELECTION_NEGATIVE_COORDINATES',
         {
           message:
-            'Negative coordinates not allowed (startLine=0, endLine=-1, startChar=0, endChar=10)',
+            'Negative coordinates not allowed (startLine=0, endLine=-1, startCharacter=0, endCharacter=10)',
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
             startLine: 0,
             endLine: -1,
-            startChar: 0,
-            endChar: 10,
+            startCharacter: 0,
+            endCharacter: 10,
           },
         },
       );
@@ -174,9 +174,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 0, char: -1 },
+            start: { line: 0, character: -1 },
 
-            end: { line: 10, char: 10 },
+            end: { line: 10, character: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -187,14 +187,14 @@ describe('validateInputSelection', () => {
         'SELECTION_NEGATIVE_COORDINATES',
         {
           message:
-            'Negative coordinates not allowed (startLine=0, endLine=10, startChar=-1, endChar=10)',
+            'Negative coordinates not allowed (startLine=0, endLine=10, startCharacter=-1, endCharacter=10)',
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
             startLine: 0,
             endLine: 10,
-            startChar: -1,
-            endChar: 10,
+            startCharacter: -1,
+            endCharacter: 10,
           },
         },
       );
@@ -204,9 +204,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 0, char: 0 },
+            start: { line: 0, character: 0 },
 
-            end: { line: 10, char: -1 },
+            end: { line: 10, character: -1 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -217,14 +217,14 @@ describe('validateInputSelection', () => {
         'SELECTION_NEGATIVE_COORDINATES',
         {
           message:
-            'Negative coordinates not allowed (startLine=0, endLine=10, startChar=0, endChar=-1)',
+            'Negative coordinates not allowed (startLine=0, endLine=10, startCharacter=0, endCharacter=-1)',
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
             startLine: 0,
             endLine: 10,
-            startChar: 0,
-            endChar: -1,
+            startCharacter: 0,
+            endCharacter: -1,
           },
         },
       );
@@ -236,9 +236,9 @@ describe('validateInputSelection', () => {
       const inputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 10, char: 15 },
+            end: { line: 10, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -261,9 +261,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 10, char: 5 }, // Same position = zero-width
+            end: { line: 10, character: 5 }, // Same position = zero-width
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -273,12 +273,12 @@ describe('validateInputSelection', () => {
       expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
         'SELECTION_ZERO_WIDTH',
         {
-          message: 'Zero-width selection not allowed (cursor position at line 10, char 5)',
+          message: 'Zero-width selection not allowed (cursor position at line 10, character 5)',
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
             line: 10,
-            char: 5,
+            character: 5,
           },
         },
       );
@@ -288,9 +288,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 0, char: 0 },
+            start: { line: 0, character: 0 },
 
-            end: { line: 0, char: 0 },
+            end: { line: 0, character: 0 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -300,12 +300,12 @@ describe('validateInputSelection', () => {
       expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
         'SELECTION_ZERO_WIDTH',
         {
-          message: 'Zero-width selection not allowed (cursor position at line 0, char 0)',
+          message: 'Zero-width selection not allowed (cursor position at line 0, character 0)',
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
             line: 0,
-            char: 0,
+            character: 0,
           },
         },
       );
@@ -322,8 +322,8 @@ describe('validateInputSelection', () => {
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, char: 5 },
-              end: { line: 20, char: 15 },
+              start: { line: 10, character: 5 },
+              end: { line: 20, character: 15 },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -350,13 +350,13 @@ describe('validateInputSelection', () => {
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, char: 5 },
-              end: { line: 10, char: 15 },
+              start: { line: 10, character: 5 },
+              end: { line: 10, character: 15 },
               coverage: SelectionCoverage.PartialLine,
             },
             {
-              start: { line: 15, char: 0 },
-              end: { line: 15, char: 10 },
+              start: { line: 15, character: 0 },
+              end: { line: 15, character: 10 },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -374,8 +374,8 @@ describe('validateInputSelection', () => {
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, char: 5 },
-              end: { line: 20, char: 15 },
+              start: { line: 10, character: 5 },
+              end: { line: 20, character: 15 },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -397,13 +397,13 @@ describe('validateInputSelection', () => {
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, char: 5 },
-              end: { line: 10, char: 15 },
+              start: { line: 10, character: 5 },
+              end: { line: 10, character: 15 },
               coverage: SelectionCoverage.PartialLine,
             },
             {
-              start: { line: 11, char: 5 },
-              end: { line: 11, char: 15 },
+              start: { line: 11, character: 5 },
+              end: { line: 11, character: 15 },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -430,13 +430,13 @@ describe('validateInputSelection', () => {
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, char: 5 },
-              end: { line: 10, char: 15 },
+              start: { line: 10, character: 5 },
+              end: { line: 10, character: 15 },
               coverage: SelectionCoverage.PartialLine,
             },
             {
-              start: { line: 8, char: 5 },
-              end: { line: 8, char: 15 },
+              start: { line: 8, character: 5 },
+              end: { line: 8, character: 15 },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -454,13 +454,13 @@ describe('validateInputSelection', () => {
         const inputSelection: InputSelection = {
           selections: [
             {
-              start: { line: 10, char: 5 },
-              end: { line: 10, char: 15 },
+              start: { line: 10, character: 5 },
+              end: { line: 10, character: 15 },
               coverage: SelectionCoverage.PartialLine,
             },
             {
-              start: { line: 11, char: 5 },
-              end: { line: 11, char: 15 },
+              start: { line: 11, character: 5 },
+              end: { line: 11, character: 15 },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -483,9 +483,9 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 20, char: 15 },
+            end: { line: 20, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -504,21 +504,21 @@ describe('validateInputSelection', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 10, char: 15 },
+            end: { line: 10, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 11, char: 5 },
+            start: { line: 11, character: 5 },
 
-            end: { line: 11, char: 15 },
+            end: { line: 11, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 12, char: 5 },
+            start: { line: 12, character: 5 },
 
-            end: { line: 12, char: 15 },
+            end: { line: 12, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],

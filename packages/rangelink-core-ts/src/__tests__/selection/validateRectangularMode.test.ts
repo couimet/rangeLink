@@ -17,8 +17,8 @@ describe('validateRectangularMode', () => {
     it('should throw error when selection spans multiple lines', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 12, char: 15 }, // Multi-line
+          start: { line: 10, character: 5 },
+          end: { line: 12, character: 15 }, // Multi-line
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -41,13 +41,13 @@ describe('validateRectangularMode', () => {
     it('should throw error for second selection spanning multiple lines', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 11, char: 5 },
-          end: { line: 13, char: 15 }, // Multi-line
+          start: { line: 11, character: 5 },
+          end: { line: 13, character: 15 }, // Multi-line
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -70,8 +70,8 @@ describe('validateRectangularMode', () => {
     it('should not throw for valid single-line selection', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -81,16 +81,16 @@ describe('validateRectangularMode', () => {
   });
 
   describe('Consistent column range requirement', () => {
-    it('should throw error for mismatched startChar', () => {
+    it('should throw error for mismatched startCharacter', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 11, char: 7 }, // Mismatched
-          end: { line: 11, char: 15 },
+          start: { line: 11, character: 7 }, // Mismatched
+          end: { line: 11, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -103,25 +103,25 @@ describe('validateRectangularMode', () => {
           functionName: 'validateRectangularMode',
           details: {
             selectionIndex: 1,
-            expectedStartChar: 5,
-            expectedEndChar: 15,
-            actualStartChar: 7,
-            actualEndChar: 15,
+            expectedStartCharacter: 5,
+            expectedEndCharacter: 15,
+            actualStartCharacter: 7,
+            actualEndCharacter: 15,
           },
         },
       );
     });
 
-    it('should throw error for mismatched endChar', () => {
+    it('should throw error for mismatched endCharacter', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 11, char: 5 },
-          end: { line: 11, char: 17 }, // Mismatched
+          start: { line: 11, character: 5 },
+          end: { line: 11, character: 17 }, // Mismatched
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -134,25 +134,25 @@ describe('validateRectangularMode', () => {
           functionName: 'validateRectangularMode',
           details: {
             selectionIndex: 1,
-            expectedStartChar: 5,
-            expectedEndChar: 15,
-            actualStartChar: 5,
-            actualEndChar: 17,
+            expectedStartCharacter: 5,
+            expectedEndCharacter: 15,
+            actualStartCharacter: 5,
+            actualEndCharacter: 17,
           },
         },
       );
     });
 
-    it('should throw error for both startChar and endChar mismatched', () => {
+    it('should throw error for both startCharacter and endCharacter mismatched', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 11, char: 3 }, // Both mismatched
-          end: { line: 11, char: 20 },
+          start: { line: 11, character: 3 }, // Both mismatched
+          end: { line: 11, character: 20 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -165,10 +165,10 @@ describe('validateRectangularMode', () => {
           functionName: 'validateRectangularMode',
           details: {
             selectionIndex: 1,
-            expectedStartChar: 5,
-            expectedEndChar: 15,
-            actualStartChar: 3,
-            actualEndChar: 20,
+            expectedStartCharacter: 5,
+            expectedEndCharacter: 15,
+            actualStartCharacter: 3,
+            actualEndCharacter: 20,
           },
         },
       );
@@ -177,18 +177,18 @@ describe('validateRectangularMode', () => {
     it('should not throw for consistent column ranges', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 11, char: 5 },
-          end: { line: 11, char: 15 },
+          start: { line: 11, character: 5 },
+          end: { line: 11, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 12, char: 5 },
-          end: { line: 12, char: 15 },
+          start: { line: 12, character: 5 },
+          end: { line: 12, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -201,13 +201,13 @@ describe('validateRectangularMode', () => {
     it('should throw error for unsorted selections', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 8, char: 5 }, // Out of order
-          end: { line: 8, char: 15 },
+          start: { line: 8, character: 5 }, // Out of order
+          end: { line: 8, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -230,18 +230,18 @@ describe('validateRectangularMode', () => {
     it('should throw error when middle selection is out of order', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 15, char: 5 }, // Jump ahead
-          end: { line: 15, char: 15 },
+          start: { line: 15, character: 5 }, // Jump ahead
+          end: { line: 15, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 12, char: 5 }, // Out of order
-          end: { line: 12, char: 15 },
+          start: { line: 12, character: 5 }, // Out of order
+          end: { line: 12, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -264,18 +264,18 @@ describe('validateRectangularMode', () => {
     it('should not throw for properly sorted selections', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 11, char: 5 },
-          end: { line: 11, char: 15 },
+          start: { line: 11, character: 5 },
+          end: { line: 11, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 12, char: 5 },
-          end: { line: 12, char: 15 },
+          start: { line: 12, character: 5 },
+          end: { line: 12, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -288,13 +288,13 @@ describe('validateRectangularMode', () => {
     it('should throw error for non-contiguous lines (gap of 1)', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 12, char: 5 }, // Gap (missing line 11)
-          end: { line: 12, char: 15 },
+          start: { line: 12, character: 5 }, // Gap (missing line 11)
+          end: { line: 12, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -317,13 +317,13 @@ describe('validateRectangularMode', () => {
     it('should throw error for non-contiguous lines (gap of 5)', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 16, char: 5 }, // Gap (missing lines 11-15)
-          end: { line: 16, char: 15 },
+          start: { line: 16, character: 5 }, // Gap (missing lines 11-15)
+          end: { line: 16, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -346,23 +346,23 @@ describe('validateRectangularMode', () => {
     it('should not throw for contiguous lines', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 11, char: 5 },
-          end: { line: 11, char: 15 },
+          start: { line: 11, character: 5 },
+          end: { line: 11, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 12, char: 5 },
-          end: { line: 12, char: 15 },
+          start: { line: 12, character: 5 },
+          end: { line: 12, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 13, char: 5 },
-          end: { line: 13, char: 15 },
+          start: { line: 13, character: 5 },
+          end: { line: 13, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -375,8 +375,8 @@ describe('validateRectangularMode', () => {
     it('should not throw for single valid rectangular selection', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 42, char: 10 },
-          end: { line: 42, char: 20 },
+          start: { line: 42, character: 10 },
+          end: { line: 42, character: 20 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -387,18 +387,18 @@ describe('validateRectangularMode', () => {
     it('should not throw for valid rectangular block (3 lines)', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 11, char: 5 },
-          end: { line: 11, char: 15 },
+          start: { line: 11, character: 5 },
+          end: { line: 11, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 12, char: 5 },
-          end: { line: 12, char: 15 },
+          start: { line: 12, character: 5 },
+          end: { line: 12, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -409,13 +409,13 @@ describe('validateRectangularMode', () => {
     it('should not throw for valid rectangular block starting at line 0', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 0, char: 0 },
-          end: { line: 0, char: 10 },
+          start: { line: 0, character: 0 },
+          end: { line: 0, character: 10 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 1, char: 0 },
-          end: { line: 1, char: 10 },
+          start: { line: 1, character: 0 },
+          end: { line: 1, character: 10 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -425,8 +425,8 @@ describe('validateRectangularMode', () => {
 
     it('should not throw for large rectangular block (10 lines)', () => {
       const selections: InputSelection['selections'] = Array.from({ length: 10 }, (_, i) => ({
-        start: { line: 100 + i, char: 20 },
-        end: { line: 100 + i, char: 50 },
+        start: { line: 100 + i, character: 20 },
+        end: { line: 100 + i, character: 50 },
         coverage: SelectionCoverage.PartialLine,
       }));
 

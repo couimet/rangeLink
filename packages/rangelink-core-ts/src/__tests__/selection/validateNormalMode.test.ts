@@ -7,13 +7,13 @@ describe('validateNormalMode', () => {
     it('should throw error for 2 selections', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 15, char: 0 },
-          end: { line: 15, char: 10 },
+          start: { line: 15, character: 0 },
+          end: { line: 15, character: 10 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -32,18 +32,18 @@ describe('validateNormalMode', () => {
     it('should throw error for 3 selections', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 15, char: 0 },
-          end: { line: 15, char: 10 },
+          start: { line: 15, character: 0 },
+          end: { line: 15, character: 10 },
           coverage: SelectionCoverage.PartialLine,
         },
         {
-          start: { line: 20, char: 0 },
-          end: { line: 20, char: 10 },
+          start: { line: 20, character: 0 },
+          end: { line: 20, character: 10 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -61,8 +61,8 @@ describe('validateNormalMode', () => {
 
     it('should throw error for 10 selections', () => {
       const selections: InputSelection['selections'] = Array.from({ length: 10 }, (_, i) => ({
-        start: { line: i * 10, char: 0 },
-        end: { line: i * 10, char: 10 },
+        start: { line: i * 10, character: 0 },
+        end: { line: i * 10, character: 10 },
         coverage: SelectionCoverage.PartialLine,
       }));
 
@@ -98,8 +98,8 @@ describe('validateNormalMode', () => {
     it('should not throw for single selection', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 20, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 20, character: 15 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -110,8 +110,8 @@ describe('validateNormalMode', () => {
     it('should not throw for single-line selection', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 42, char: 10 },
-          end: { line: 42, char: 50 },
+          start: { line: 42, character: 10 },
+          end: { line: 42, character: 50 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -122,8 +122,8 @@ describe('validateNormalMode', () => {
     it('should not throw for multi-line selection', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 10, char: 5 },
-          end: { line: 100, char: 20 },
+          start: { line: 10, character: 5 },
+          end: { line: 100, character: 20 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];
@@ -134,8 +134,8 @@ describe('validateNormalMode', () => {
     it('should not throw for selection at line 0', () => {
       const selections: InputSelection['selections'] = [
         {
-          start: { line: 0, char: 0 },
-          end: { line: 0, char: 10 },
+          start: { line: 0, character: 0 },
+          end: { line: 0, character: 10 },
           coverage: SelectionCoverage.PartialLine,
         },
       ];

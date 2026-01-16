@@ -166,16 +166,16 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
 
   // Parse line and character positions
   const startLine = parseInt(startLineStr, 10);
-  const startChar = startCharStr ? parseInt(startCharStr, 10) : undefined;
+  const startCharacter = startCharStr ? parseInt(startCharStr, 10) : undefined;
 
-  // If no end line specified, end equals start (both line and char)
-  // If end line is specified, only copy char if explicitly provided
+  // If no end line specified, end equals start (both line and character)
+  // If end line is specified, only copy character if explicitly provided
   const endLine = endLineStr ? parseInt(endLineStr, 10) : startLine;
-  const endChar = endCharStr
+  const endCharacter = endCharStr
     ? parseInt(endCharStr, 10)
     : endLineStr
-      ? undefined // Different line but no end char specified
-      : startChar; // Same line, copy start char
+      ? undefined // Different line but no end character specified
+      : startCharacter; // Same line, copy start character
 
   // Validation
   if (startLine < 1) {
@@ -200,52 +200,52 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
     );
   }
 
-  if (startChar !== undefined && startChar < 1) {
+  if (startCharacter !== undefined && startCharacter < 1) {
     return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_CHAR_BELOW_MINIMUM,
         message: 'Start character must be >= 1',
         functionName: 'parseLink',
-        details: { received: startChar, minimum: 1, position: 'start' },
+        details: { received: startCharacter, minimum: 1, position: 'start' },
       }),
     );
   }
 
-  if (endChar !== undefined && endChar < 1) {
+  if (endCharacter !== undefined && endCharacter < 1) {
     return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_CHAR_BELOW_MINIMUM,
         message: 'End character must be >= 1',
         functionName: 'parseLink',
-        details: { received: endChar, minimum: 1, position: 'end' },
+        details: { received: endCharacter, minimum: 1, position: 'end' },
       }),
     );
   }
 
-  // If on same line, end char must be >= start char
-  if (startLine === endLine && startChar !== undefined && endChar !== undefined) {
-    if (endChar < startChar) {
+  // If on same line, end character must be >= start character
+  if (startLine === endLine && startCharacter !== undefined && endCharacter !== undefined) {
+    if (endCharacter < startCharacter) {
       return CoreResult.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.PARSE_CHAR_BACKWARD_SAME_LINE,
           message: 'End character cannot be before start character on same line',
           functionName: 'parseLink',
-          details: { startChar, endChar, line: startLine },
+          details: { startCharacter, endCharacter, line: startLine },
         }),
       );
     }
   }
 
-  // Build start position (only include char if defined)
+  // Build start position (only include character if defined)
   const start: LinkPosition = {
     line: startLine,
-    ...(startChar !== undefined && { char: startChar }),
+    ...(startCharacter !== undefined && { character: startCharacter }),
   };
 
-  // Build end position (only include char if defined)
+  // Build end position (only include character if defined)
   const end: LinkPosition = {
     line: endLine,
-    ...(endChar !== undefined && { char: endChar }),
+    ...(endCharacter !== undefined && { character: endCharacter }),
   };
 
   return CoreResult.ok({
