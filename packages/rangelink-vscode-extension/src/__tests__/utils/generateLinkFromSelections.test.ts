@@ -34,13 +34,13 @@ const REFERENCE_PATH = 'src/utils/test.ts';
 
 const mockSelection = (
   startLine: number,
-  startChar: number,
+  startCharacter: number,
   endLine: number,
-  endChar: number,
+  endCharacter: number,
   isEmpty = false,
 ): vscode.Selection => {
-  const start = createMockPosition({ line: startLine, character: startChar });
-  const end = createMockPosition({ line: endLine, character: endChar });
+  const start = createMockPosition({ line: startLine, character: startCharacter });
+  const end = createMockPosition({ line: endLine, character: endCharacter });
   return createMockSelection({
     anchor: start,
     active: end,
@@ -133,8 +133,8 @@ describe('generateLinkFromSelections', () => {
       jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue({
         selections: [
           {
-            start: { line: 0, char: 0 },
-            end: { line: 0, char: 10 },
+            start: { line: 0, character: 0 },
+            end: { line: 0, character: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -173,8 +173,8 @@ describe('generateLinkFromSelections', () => {
       jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue({
         selections: [
           {
-            start: { line: 0, char: 0 },
-            end: { line: 0, char: 10 },
+            start: { line: 0, character: 0 },
+            end: { line: 0, character: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -202,8 +202,8 @@ describe('generateLinkFromSelections', () => {
         {
           selections: [
             {
-              start: { line: 0, char: 0 },
-              end: { line: 0, char: 10 },
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: 10 },
               coverage: SelectionCoverage.PartialLine,
             },
           ],
@@ -252,8 +252,8 @@ describe('generateLinkFromSelections', () => {
       jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue({
         selections: [
           {
-            start: { line: 0, char: 0 },
-            end: { line: 0, char: 10 },
+            start: { line: 0, character: 0 },
+            end: { line: 0, character: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -294,8 +294,8 @@ describe('generateLinkFromSelections', () => {
       jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue({
         selections: [
           {
-            start: { line: 0, char: 0 },
-            end: { line: 0, char: 10 },
+            start: { line: 0, character: 0 },
+            end: { line: 0, character: 10 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],

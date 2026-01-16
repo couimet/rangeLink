@@ -20,5 +20,5 @@ export interface LinkPosition {
    * Character position within the line (1-indexed, OPTIONAL)
    * Undefined represents a full-line reference.
    */
-  readonly char?: number;
+  readonly character?: number;
 }

@@ -6,17 +6,17 @@ import { isRectangularSelection } from '../isRectangularSelection';
  */
 function createSelection(
   startLine: number,
-  startChar: number,
+  startCharacter: number,
   endLine: number,
-  endChar: number,
+  endCharacter: number,
 ): any {
   return {
-    start: { line: startLine, character: startChar },
-    end: { line: endLine, character: endChar },
-    anchor: { line: startLine, character: startChar },
-    active: { line: endLine, character: endChar },
+    start: { line: startLine, character: startCharacter },
+    end: { line: endLine, character: endCharacter },
+    anchor: { line: startLine, character: startCharacter },
+    active: { line: endLine, character: endCharacter },
     isReversed: false,
-    isEmpty: startLine === endLine && startChar === endChar,
+    isEmpty: startLine === endLine && startCharacter === endCharacter,
   };
 }
 

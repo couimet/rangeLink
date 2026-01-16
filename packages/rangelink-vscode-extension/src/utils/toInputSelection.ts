@@ -64,8 +64,8 @@ export const toInputSelection = (
     const adjustedEndLine = includesTrailingNewline ? sel.end.line - 1 : sel.end.line;
 
     selections.push({
-      start: { line: sel.start.line, char: sel.start.character },
-      end: { line: adjustedEndLine, char: sel.end.character },
+      start: { line: sel.start.line, character: sel.start.character },
+      end: { line: adjustedEndLine, character: sel.end.character },
       coverage,
     });
   }

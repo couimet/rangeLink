@@ -30,17 +30,22 @@ export function validateInputSelection(inputSelection: InputSelection): void {
   for (let i = 0; i < selections.length; i++) {
     const sel = selections[i];
 
-    if (sel.start.line < 0 || sel.end.line < 0 || sel.start.char < 0 || sel.end.char < 0) {
+    if (
+      sel.start.line < 0 ||
+      sel.end.line < 0 ||
+      sel.start.character < 0 ||
+      sel.end.character < 0
+    ) {
       throw new RangeLinkError({
         code: RangeLinkErrorCodes.SELECTION_NEGATIVE_COORDINATES,
-        message: `Negative coordinates not allowed (startLine=${sel.start.line}, endLine=${sel.end.line}, startChar=${sel.start.char}, endChar=${sel.end.char})`,
+        message: `Negative coordinates not allowed (startLine=${sel.start.line}, endLine=${sel.end.line}, startCharacter=${sel.start.character}, endCharacter=${sel.end.character})`,
         functionName: 'validateInputSelection',
         details: {
           selectionIndex: i,
           startLine: sel.start.line,
           endLine: sel.end.line,
-          startChar: sel.start.char,
-          endChar: sel.end.char,
+          startCharacter: sel.start.character,
+          endCharacter: sel.end.character,
         },
       });
     }
@@ -58,29 +63,29 @@ export function validateInputSelection(inputSelection: InputSelection): void {
       });
     }
 
-    if (sel.start.line === sel.end.line && sel.start.char > sel.end.char) {
+    if (sel.start.line === sel.end.line && sel.start.character > sel.end.character) {
       throw new RangeLinkError({
         code: RangeLinkErrorCodes.SELECTION_BACKWARD_CHARACTER,
-        message: `Backward character selection not allowed (startChar=${sel.start.char} > endChar=${sel.end.char} on line ${sel.start.line})`,
+        message: `Backward character selection not allowed (startCharacter=${sel.start.character} > endCharacter=${sel.end.character} on line ${sel.start.line})`,
         functionName: 'validateInputSelection',
         details: {
           selectionIndex: i,
           line: sel.start.line,
-          startChar: sel.start.char,
-          endChar: sel.end.char,
+          startCharacter: sel.start.character,
+          endCharacter: sel.end.character,
         },
       });
     }
 
-    if (sel.start.line === sel.end.line && sel.start.char === sel.end.char) {
+    if (sel.start.line === sel.end.line && sel.start.character === sel.end.character) {
       throw new RangeLinkError({
         code: RangeLinkErrorCodes.SELECTION_ZERO_WIDTH,
-        message: `Zero-width selection not allowed (cursor position at line ${sel.start.line}, char ${sel.start.char})`,
+        message: `Zero-width selection not allowed (cursor position at line ${sel.start.line}, character ${sel.start.character})`,
         functionName: 'validateInputSelection',
         details: {
           selectionIndex: i,
           line: sel.start.line,
-          char: sel.start.char,
+          character: sel.start.character,
         },
       });
     }

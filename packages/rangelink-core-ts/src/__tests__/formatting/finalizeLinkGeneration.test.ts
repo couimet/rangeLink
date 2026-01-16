@@ -35,8 +35,8 @@ describe('finalizeLinkGeneration', () => {
     const inputSelection = {
       selections: [
         {
-          start: { line: 9, char: 0 },
-          end: { line: 19, char: 0 },
+          start: { line: 9, character: 0 },
+          end: { line: 19, character: 0 },
           coverage: SelectionCoverage.FullLine,
         },
       ],
@@ -73,8 +73,8 @@ describe('finalizeLinkGeneration', () => {
     const inputSelection = {
       selections: [
         {
-          start: { line: 9, char: 0 },
-          end: { line: 19, char: 0 },
+          start: { line: 9, character: 0 },
+          end: { line: 19, character: 0 },
           coverage: SelectionCoverage.FullLine,
         },
       ],
@@ -123,8 +123,8 @@ describe('finalizeLinkGeneration', () => {
     const inputSelection = {
       selections: [
         {
-          start: { line: 9, char: 0 },
-          end: { line: 9, char: 50 },
+          start: { line: 9, character: 0 },
+          end: { line: 9, character: 50 },
           coverage: SelectionCoverage.FullLine,
         },
       ],
@@ -173,8 +173,8 @@ describe('finalizeLinkGeneration', () => {
     const inputSelection = {
       selections: [
         {
-          start: { line: 4, char: 9 },
-          end: { line: 14, char: 19 },
+          start: { line: 4, character: 9 },
+          end: { line: 14, character: 19 },
           coverage: SelectionCoverage.PartialLine,
         },
       ],

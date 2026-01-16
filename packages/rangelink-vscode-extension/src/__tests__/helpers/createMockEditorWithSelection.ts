@@ -15,7 +15,7 @@ import { createWindowOptionsForEditor } from './createWindowOptionsForEditor';
  *
  * @param options.content - Text content of the document
  * @param options.uri - Document URI (defaults to '/test/file.ts')
- * @param options.selections - Array of selections as [startLine, startChar, endLine, endChar]
+ * @param options.selections - Array of selections as [startLine, startCharacter, endLine, endCharacter]
  * @param options.adapterOptions - Optional additional adapter configuration
  * @returns Object with { editor, adapter, document } for test use
  */
@@ -32,19 +32,21 @@ export const createMockEditorWithSelection = (options: {
   });
 
   // Convert selection tuples to mock Selection objects
-  const selections = options.selections.map(([startLine, startChar, endLine, endChar]) => {
-    const anchor = createMockPosition({ line: startLine, character: startChar });
-    const active = createMockPosition({ line: endLine, character: endChar });
-    const isEmpty = startLine === endLine && startChar === endChar;
-    return createMockSelection({
-      anchor,
-      active,
-      start: anchor,
-      end: active,
-      isReversed: false,
-      isEmpty,
-    });
-  });
+  const selections = options.selections.map(
+    ([startLine, startCharacter, endLine, endCharacter]) => {
+      const anchor = createMockPosition({ line: startLine, character: startCharacter });
+      const active = createMockPosition({ line: endLine, character: endCharacter });
+      const isEmpty = startLine === endLine && startCharacter === endCharacter;
+      return createMockSelection({
+        anchor,
+        active,
+        start: anchor,
+        end: active,
+        isReversed: false,
+        isEmpty,
+      });
+    },
+  );
 
   const mockEditor = createMockEditor({
     document: mockDocument,

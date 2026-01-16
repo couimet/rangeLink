@@ -93,8 +93,8 @@ describe('RangeLinkDocumentProvider', () => {
     it('should detect link with columns', () => {
       const mockParsed: ParsedLink = {
         path: 'src/file.ts',
-        start: { line: 5, char: 10 },
-        end: { line: 10, char: 20 },
+        start: { line: 5, character: 10 },
+        end: { line: 10, character: 20 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -116,8 +116,8 @@ describe('RangeLinkDocumentProvider', () => {
     it('should detect rectangular mode link', () => {
       const mockParsed: ParsedLink = {
         path: 'src/file.ts',
-        start: { line: 5, char: 10 },
-        end: { line: 10, char: 20 },
+        start: { line: 5, character: 10 },
+        end: { line: 10, character: 20 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Rectangular,
       };

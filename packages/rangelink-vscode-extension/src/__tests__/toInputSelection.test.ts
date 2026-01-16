@@ -12,17 +12,17 @@ jest.mock('../isRectangularSelection');
  */
 const createSelection = (
   startLine: number,
-  startChar: number,
+  startCharacter: number,
   endLine: number,
-  endChar: number,
+  endCharacter: number,
 ): vscode.Selection => {
   return {
-    start: { line: startLine, character: startChar },
-    end: { line: endLine, character: endChar },
-    anchor: { line: startLine, character: startChar },
-    active: { line: endLine, character: endChar },
+    start: { line: startLine, character: startCharacter },
+    end: { line: endLine, character: endCharacter },
+    anchor: { line: startLine, character: startCharacter },
+    active: { line: endLine, character: endCharacter },
     isReversed: false,
-    isEmpty: startLine === endLine && startChar === endChar,
+    isEmpty: startLine === endLine && startCharacter === endCharacter,
   } as vscode.Selection;
 };
 
@@ -66,8 +66,8 @@ describe('toInputSelection', () => {
 
         expect(result.selections).toHaveLength(1);
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
-        expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
-        expect(result.selections[0].end).toStrictEqual({ line: 0, char: lineText.length });
+        expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
+        expect(result.selections[0].end).toStrictEqual({ line: 0, character: lineText.length });
       });
 
       it('should detect FullLine when selection extends beyond actual line end', () => {
@@ -96,8 +96,8 @@ describe('toInputSelection', () => {
         // Character 0 at end of multi-line selection counts as full line
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
         // Verify normalized coordinates: end line adjusted from 2 to 1
-        expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
-        expect(result.selections[0].end).toStrictEqual({ line: 1, char: 0 });
+        expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
+        expect(result.selections[0].end).toStrictEqual({ line: 1, character: 0 });
       });
 
       it('should normalize end line when single-line selection includes trailing newline', () => {
@@ -110,8 +110,8 @@ describe('toInputSelection', () => {
         const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
-        expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
-        expect(result.selections[0].end).toStrictEqual({ line: 0, char: 0 }); // Normalized to line 0, not 1
+        expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
+        expect(result.selections[0].end).toStrictEqual({ line: 0, character: 0 }); // Normalized to line 0, not 1
       });
 
       it('should normalize end line when multi-line selection includes trailing newline', () => {
@@ -124,8 +124,8 @@ describe('toInputSelection', () => {
         const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
-        expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
-        expect(result.selections[0].end).toStrictEqual({ line: 2, char: 0 }); // Normalized to line 2, not 3
+        expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
+        expect(result.selections[0].end).toStrictEqual({ line: 2, character: 0 }); // Normalized to line 2, not 3
       });
     });
 
@@ -139,7 +139,7 @@ describe('toInputSelection', () => {
         const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
-        expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
+        expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
       });
 
       it('should detect PartialLine when selection does not reach end of line', () => {
@@ -151,7 +151,7 @@ describe('toInputSelection', () => {
         const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
-        expect(result.selections[0].end).toStrictEqual({ line: 0, char: 10 });
+        expect(result.selections[0].end).toStrictEqual({ line: 0, character: 10 });
       });
 
       it('should detect PartialLine when selection starts mid-line and ends mid-line', () => {
@@ -186,8 +186,8 @@ describe('toInputSelection', () => {
         const result = toInputSelection(editor.document, editor.selections);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine); // NOT FullLine (start != 0)
-        expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
-        expect(result.selections[0].end).toStrictEqual({ line: 0, char: 0 }); // Normalized to line 0
+        expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
+        expect(result.selections[0].end).toStrictEqual({ line: 0, character: 0 }); // Normalized to line 0
       });
     });
   });
@@ -250,18 +250,18 @@ describe('toInputSelection', () => {
 
       expect(result.selections).toHaveLength(3);
       expect(result.selections[0]).toStrictEqual({
-        start: { line: 0, char: 5 },
-        end: { line: 0, char: 10 },
+        start: { line: 0, character: 5 },
+        end: { line: 0, character: 10 },
         coverage: SelectionCoverage.PartialLine,
       });
       expect(result.selections[1]).toStrictEqual({
-        start: { line: 1, char: 5 },
-        end: { line: 1, char: 10 },
+        start: { line: 1, character: 5 },
+        end: { line: 1, character: 10 },
         coverage: SelectionCoverage.PartialLine,
       });
       expect(result.selections[2]).toStrictEqual({
-        start: { line: 2, char: 5 },
-        end: { line: 2, char: 10 },
+        start: { line: 2, character: 5 },
+        end: { line: 2, character: 10 },
         coverage: SelectionCoverage.PartialLine,
       });
     });
@@ -285,7 +285,7 @@ describe('toInputSelection', () => {
       const result = toInputSelection(editor.document, selections);
 
       expect(result.selections).toHaveLength(1);
-      expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
+      expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
     });
   });
 
@@ -299,8 +299,8 @@ describe('toInputSelection', () => {
       const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections).toHaveLength(1);
-      expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
-      expect(result.selections[0].end).toStrictEqual({ line: 2, char: lineTexts[2].length });
+      expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
+      expect(result.selections[0].end).toStrictEqual({ line: 2, character: lineTexts[2].length });
       expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
     });
 
@@ -313,8 +313,8 @@ describe('toInputSelection', () => {
       const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
-      expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
-      expect(result.selections[0].end).toStrictEqual({ line: 2, char: 8 });
+      expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
+      expect(result.selections[0].end).toStrictEqual({ line: 2, character: 8 });
     });
 
     it('should handle multi-line with full start, partial end (no normalization)', () => {
@@ -328,8 +328,8 @@ describe('toInputSelection', () => {
       const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
-      expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
-      expect(result.selections[0].end).toStrictEqual({ line: 2, char: 8 }); // NOT normalized
+      expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
+      expect(result.selections[0].end).toStrictEqual({ line: 2, character: 8 }); // NOT normalized
     });
 
     it('should handle multi-line with partial start, full end (no normalization)', () => {
@@ -343,8 +343,8 @@ describe('toInputSelection', () => {
       const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
-      expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
-      expect(result.selections[0].end).toStrictEqual({ line: 2, char: lineTexts[2].length }); // NOT normalized
+      expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
+      expect(result.selections[0].end).toStrictEqual({ line: 2, character: lineTexts[2].length }); // NOT normalized
     });
   });
 
@@ -399,8 +399,8 @@ describe('toInputSelection', () => {
       const result = toInputSelection(editor.document, editor.selections);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
-      expect(result.selections[0].start).toStrictEqual({ line: 0, char: 0 });
-      expect(result.selections[0].end).toStrictEqual({ line: 0, char: 0 });
+      expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
+      expect(result.selections[0].end).toStrictEqual({ line: 0, character: 0 });
     });
 
     it('should handle very long lines', () => {
@@ -442,8 +442,8 @@ describe('toInputSelection', () => {
       const result = toInputSelection(editor.document, [selection]);
 
       // Should use start/end, not anchor/active
-      expect(result.selections[0].start).toStrictEqual({ line: 0, char: 5 });
-      expect(result.selections[0].end).toStrictEqual({ line: 0, char: 10 });
+      expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
+      expect(result.selections[0].end).toStrictEqual({ line: 0, character: 10 });
     });
   });
 });

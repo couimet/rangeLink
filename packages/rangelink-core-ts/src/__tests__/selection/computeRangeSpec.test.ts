@@ -12,9 +12,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 10, char: 15 },
+            end: { line: 10, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -37,9 +37,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 0 },
+            start: { line: 10, character: 0 },
 
-            end: { line: 10, char: 50 },
+            end: { line: 10, character: 50 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -62,9 +62,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 10, char: 15 },
+            end: { line: 10, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -87,9 +87,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 20, char: 15 },
+            end: { line: 20, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -112,9 +112,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 0 },
+            start: { line: 10, character: 0 },
 
-            end: { line: 15, char: 0 },
+            end: { line: 15, character: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -135,9 +135,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 0 },
+            start: { line: 10, character: 0 },
 
-            end: { line: 10, char: 50 },
+            end: { line: 10, character: 50 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -160,21 +160,21 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 10, char: 15 },
+            end: { line: 10, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 11, char: 5 },
+            start: { line: 11, character: 5 },
 
-            end: { line: 11, char: 15 },
+            end: { line: 11, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 12, char: 5 },
+            start: { line: 12, character: 5 },
 
-            end: { line: 12, char: 15 },
+            end: { line: 12, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -197,21 +197,21 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 9, char: 10 },
+            start: { line: 9, character: 10 },
 
-            end: { line: 9, char: 20 },
+            end: { line: 9, character: 20 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 10, char: 10 },
+            start: { line: 10, character: 10 },
 
-            end: { line: 10, char: 20 },
+            end: { line: 10, character: 20 },
             coverage: SelectionCoverage.PartialLine,
           },
           {
-            start: { line: 11, char: 10 },
+            start: { line: 11, character: 10 },
 
-            end: { line: 11, char: 20 },
+            end: { line: 11, character: 20 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -236,9 +236,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 10, char: 15 },
+            end: { line: 10, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -259,9 +259,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 20, char: 15 },
+            end: { line: 20, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],
@@ -282,9 +282,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 0 },
+            start: { line: 10, character: 0 },
 
-            end: { line: 15, char: 0 },
+            end: { line: 15, character: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -307,9 +307,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 0 },
+            start: { line: 10, character: 0 },
 
-            end: { line: 10, char: 50 },
+            end: { line: 10, character: 50 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -332,9 +332,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 0 },
+            start: { line: 10, character: 0 },
 
-            end: { line: 15, char: 0 },
+            end: { line: 15, character: 0 },
             coverage: SelectionCoverage.FullLine,
           },
         ],
@@ -357,9 +357,9 @@ describe('computeRangeSpec', () => {
       const inputSelection: InputSelection = {
         selections: [
           {
-            start: { line: 10, char: 5 },
+            start: { line: 10, character: 5 },
 
-            end: { line: 10, char: 15 },
+            end: { line: 10, character: 15 },
             coverage: SelectionCoverage.PartialLine,
           },
         ],

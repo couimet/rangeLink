@@ -39,22 +39,25 @@ export const validateRectangularMode = (selections: InputSelection['selections']
   }
 
   // Validate consistent column ranges
-  const expectedStartChar = first.start.char;
-  const expectedEndChar = first.end.char;
+  const expectedStartCharacter = first.start.character;
+  const expectedEndCharacter = first.end.character;
 
   for (let i = 1; i < selections.length; i++) {
     const sel = selections[i];
-    if (sel.start.char !== expectedStartChar || sel.end.char !== expectedEndChar) {
+    if (
+      sel.start.character !== expectedStartCharacter ||
+      sel.end.character !== expectedEndCharacter
+    ) {
       throw new RangeLinkError({
         code: RangeLinkErrorCodes.SELECTION_RECTANGULAR_MISMATCHED_COLUMNS,
-        message: `Rectangular mode requires consistent column range (expected ${expectedStartChar}-${expectedEndChar}, got ${sel.start.char}-${sel.end.char} at selection ${i})`,
+        message: `Rectangular mode requires consistent column range (expected ${expectedStartCharacter}-${expectedEndCharacter}, got ${sel.start.character}-${sel.end.character} at selection ${i})`,
         functionName: 'validateRectangularMode',
         details: {
           selectionIndex: i,
-          expectedStartChar,
-          expectedEndChar,
-          actualStartChar: sel.start.char,
-          actualEndChar: sel.end.char,
+          expectedStartCharacter,
+          expectedEndCharacter,
+          actualStartCharacter: sel.start.character,
+          actualEndCharacter: sel.end.character,
         },
       });
     }

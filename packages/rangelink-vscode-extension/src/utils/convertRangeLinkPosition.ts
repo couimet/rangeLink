@@ -43,7 +43,9 @@ export const convertRangeLinkPosition = (
 
   // Convert character (default to 0 if undefined) and clamp to line length
   const character =
-    position.char !== undefined ? Math.max(0, Math.min(position.char - 1, lineLength)) : 0;
+    position.character !== undefined
+      ? Math.max(0, Math.min(position.character - 1, lineLength))
+      : 0;
 
   return { line, character };
 };
