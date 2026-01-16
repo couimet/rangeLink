@@ -126,9 +126,9 @@ export class RangeLinkNavigationHandler {
       // Convert positions (LinkPosition → ConvertedPosition → vscode.Position)
       const document = editor.document;
 
-      // Detect full-line selection: both start.char and end.char are undefined
+      // Detect full-line selection: both start.character and end.character are undefined
       // This distinguishes #L10 (full line) from #L10C1 (explicit point)
-      const isFullLineSelection = start.char === undefined && end.char === undefined;
+      const isFullLineSelection = start.character === undefined && end.character === undefined;
 
       const convertedStart = convertRangeLinkPosition(start, document);
       const convertedEnd = convertRangeLinkPosition(end, document);

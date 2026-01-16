@@ -40,12 +40,12 @@ export const formatLinkTooltip = (parsed: ParsedLink): string | undefined => {
     return undefined;
   }
 
-  // Validate char properties if present (must be non-negative)
-  if (parsed.start.char !== undefined && parsed.start.char < 0) {
+  // Validate character properties if present (must be non-negative)
+  if (parsed.start.character !== undefined && parsed.start.character < 0) {
     return undefined;
   }
 
-  if (parsed.end.char !== undefined && parsed.end.char < 0) {
+  if (parsed.end.character !== undefined && parsed.end.character < 0) {
     return undefined;
   }
 

@@ -16,11 +16,11 @@ import type { LinkPosition } from 'rangelink-core-ts';
  */
 export const formatLinkPosition = (start: LinkPosition, end: LinkPosition): string => {
   // Format individual positions
-  const startPos = start.char !== undefined ? `${start.line}:${start.char}` : `${start.line}`;
-  const endPos = end.char !== undefined ? `${end.line}:${end.char}` : `${end.line}`;
+  const startPos = start.character !== undefined ? `${start.line}:${start.character}` : `${start.line}`;
+  const endPos = end.character !== undefined ? `${end.line}:${end.character}` : `${end.line}`;
 
   // Check if start and end are the same position
-  const isSamePosition = start.line === end.line && start.char === end.char;
+  const isSamePosition = start.line === end.line && start.character === end.character;
 
   // Return single position or range
   return isSamePosition ? startPos : `${startPos}-${endPos}`;

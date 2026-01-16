@@ -83,8 +83,8 @@ describe('RangeLinkParser', () => {
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
           path: 'file.ts',
-          start: { line: 10, char: 5 },
-          end: { line: 20, char: 15 },
+          start: { line: 10, character: 5 },
+          end: { line: 20, character: 15 },
           linkType: 'regular',
           selectionType: 'Normal',
         });
@@ -97,8 +97,8 @@ describe('RangeLinkParser', () => {
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
           path: 'file.ts',
-          start: { line: 10, char: 5 },
-          end: { line: 20, char: 10 },
+          start: { line: 10, character: 5 },
+          end: { line: 20, character: 10 },
           linkType: 'regular',
           selectionType: 'Rectangular',
         });

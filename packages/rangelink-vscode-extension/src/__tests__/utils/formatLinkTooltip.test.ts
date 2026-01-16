@@ -8,8 +8,8 @@ describe('formatLinkTooltip', () => {
     it('should format tooltip with path, line, and character', () => {
       const parsed: ParsedLink = {
         path: 'src/auth.ts',
-        start: { line: 42, char: 10 },
-        end: { line: 42, char: 10 },
+        start: { line: 42, character: 10 },
+        end: { line: 42, character: 10 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -20,8 +20,8 @@ describe('formatLinkTooltip', () => {
     it('should format tooltip with different path and position', () => {
       const parsed: ParsedLink = {
         path: 'src/validation.ts',
-        start: { line: 10, char: 5 },
-        end: { line: 10, char: 5 },
+        start: { line: 10, character: 5 },
+        end: { line: 10, character: 5 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -60,8 +60,8 @@ describe('formatLinkTooltip', () => {
     it('should show full range to highlight RangeLink value prop', () => {
       const parsed: ParsedLink = {
         path: 'src/auth.ts',
-        start: { line: 10, char: 5 },
-        end: { line: 25, char: 30 },
+        start: { line: 10, character: 5 },
+        end: { line: 25, character: 30 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -75,8 +75,8 @@ describe('formatLinkTooltip', () => {
     it('should format tooltip for rectangular selection showing full range', () => {
       const parsed: ParsedLink = {
         path: 'data.csv',
-        start: { line: 10, char: 5 },
-        end: { line: 20, char: 10 },
+        start: { line: 10, character: 5 },
+        end: { line: 20, character: 10 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Rectangular,
       };
@@ -89,8 +89,8 @@ describe('formatLinkTooltip', () => {
     it('should handle Windows-style path', () => {
       const parsed: ParsedLink = {
         path: 'C:\\Users\\dev\\project\\src\\file.ts',
-        start: { line: 42, char: 10 },
-        end: { line: 42, char: 10 },
+        start: { line: 42, character: 10 },
+        end: { line: 42, character: 10 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -115,8 +115,8 @@ describe('formatLinkTooltip', () => {
     it('should handle relative path', () => {
       const parsed: ParsedLink = {
         path: './src/utils/helper.ts',
-        start: { line: 5, char: 0 },
-        end: { line: 5, char: 0 },
+        start: { line: 5, character: 0 },
+        end: { line: 5, character: 0 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -127,8 +127,8 @@ describe('formatLinkTooltip', () => {
     it('should handle absolute Unix path', () => {
       const parsed: ParsedLink = {
         path: '/home/user/project/src/file.ts',
-        start: { line: 100, char: 25 },
-        end: { line: 100, char: 25 },
+        start: { line: 100, character: 25 },
+        end: { line: 100, character: 25 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -143,8 +143,8 @@ describe('formatLinkTooltip', () => {
     it('should handle line 1 column 1', () => {
       const parsed: ParsedLink = {
         path: 'file.ts',
-        start: { line: 1, char: 1 },
-        end: { line: 1, char: 1 },
+        start: { line: 1, character: 1 },
+        end: { line: 1, character: 1 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -155,8 +155,8 @@ describe('formatLinkTooltip', () => {
     it('should handle large line numbers with range', () => {
       const parsed: ParsedLink = {
         path: 'bigfile.ts',
-        start: { line: 9999, char: 99 },
-        end: { line: 10000, char: 1 },
+        start: { line: 9999, character: 99 },
+        end: { line: 10000, character: 1 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -169,8 +169,8 @@ describe('formatLinkTooltip', () => {
     it('should handle character position 0', () => {
       const parsed: ParsedLink = {
         path: 'src/index.ts',
-        start: { line: 10, char: 0 },
-        end: { line: 10, char: 0 },
+        start: { line: 10, character: 0 },
+        end: { line: 10, character: 0 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -249,7 +249,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for missing start.line', () => {
       const parsed = {
         path: 'file.ts',
-        start: { char: 5 },
+        start: { character: 5 },
         end: { line: 10 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
@@ -309,7 +309,7 @@ describe('formatLinkTooltip', () => {
       const parsed = {
         path: 'file.ts',
         start: { line: 10 },
-        end: { char: 5 },
+        end: { character: 5 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       } as unknown as ParsedLink;
@@ -353,10 +353,10 @@ describe('formatLinkTooltip', () => {
       expect(formatLinkTooltip(parsed)).toBeUndefined();
     });
 
-    it('should return undefined for negative start.char', () => {
+    it('should return undefined for negative start.character', () => {
       const parsed = {
         path: 'file.ts',
-        start: { line: 10, char: -5 },
+        start: { line: 10, character: -5 },
         end: { line: 10 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
@@ -365,11 +365,11 @@ describe('formatLinkTooltip', () => {
       expect(formatLinkTooltip(parsed)).toBeUndefined();
     });
 
-    it('should return undefined for negative end.char', () => {
+    it('should return undefined for negative end.character', () => {
       const parsed = {
         path: 'file.ts',
         start: { line: 10 },
-        end: { line: 10, char: -3 },
+        end: { line: 10, character: -3 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       } as unknown as ParsedLink;

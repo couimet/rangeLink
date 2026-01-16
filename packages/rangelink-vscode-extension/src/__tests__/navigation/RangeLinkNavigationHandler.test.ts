@@ -67,8 +67,8 @@ describe('RangeLinkNavigationHandler', () => {
       // Arrange: Single position at line 32, char 1
       const parsed: ParsedLink = {
         path: 'file.ts',
-        start: { line: 32, char: 1 },
-        end: { line: 32, char: 1 }, // Same position
+        start: { line: 32, character: 1 },
+        end: { line: 32, character: 1 }, // Same position
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -102,8 +102,8 @@ describe('RangeLinkNavigationHandler', () => {
 
       const parsed: ParsedLink = {
         path: 'file.ts',
-        start: { line: 10, char: 6 }, // After "short" (position 6 = after all chars)
-        end: { line: 10, char: 6 },
+        start: { line: 10, character: 6 }, // After "short" (position 6 = after all chars)
+        end: { line: 10, character: 6 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -137,8 +137,8 @@ describe('RangeLinkNavigationHandler', () => {
 
       const parsed: ParsedLink = {
         path: 'file.ts',
-        start: { line: 5, char: 1 },
-        end: { line: 5, char: 1 },
+        start: { line: 5, character: 1 },
+        end: { line: 5, character: 1 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -239,7 +239,7 @@ describe('RangeLinkNavigationHandler', () => {
       // Arrange: Explicit start char means NOT full-line selection
       const parsed: ParsedLink = {
         path: 'file.ts',
-        start: { line: 10, char: 5 }, // Explicit char
+        start: { line: 10, character: 5 }, // Explicit char
         end: { line: 15 }, // No char
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
@@ -249,7 +249,7 @@ describe('RangeLinkNavigationHandler', () => {
       // Act
       await handler.navigateToLink(parsed, linkText);
 
-      // Assert: Should NOT log full-line selection (start.char is defined)
+      // Assert: Should NOT log full-line selection (start.character is defined)
       expect(mockLogger.debug).not.toHaveBeenCalledWith(
         expect.any(Object),
         'Extended selection to full line(s)',
@@ -267,7 +267,7 @@ describe('RangeLinkNavigationHandler', () => {
       const parsed: ParsedLink = {
         path: 'file.ts',
         start: { line: 10 }, // No char
-        end: { line: 15, char: 10 }, // Explicit char
+        end: { line: 15, character: 10 }, // Explicit char
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -276,7 +276,7 @@ describe('RangeLinkNavigationHandler', () => {
       // Act
       await handler.navigateToLink(parsed, linkText);
 
-      // Assert: Should NOT log full-line selection (end.char is defined)
+      // Assert: Should NOT log full-line selection (end.character is defined)
       expect(mockLogger.debug).not.toHaveBeenCalledWith(
         expect.any(Object),
         'Extended selection to full line(s)',
@@ -335,8 +335,8 @@ describe('RangeLinkNavigationHandler', () => {
 
       const parsed: ParsedLink = {
         path: 'file.ts',
-        start: { line: startLine, char: startChar },
-        end: { line: endLine, char: endChar },
+        start: { line: startLine, character: startChar },
+        end: { line: endLine, character: endChar },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
@@ -382,8 +382,8 @@ describe('RangeLinkNavigationHandler', () => {
         // Arrange: Path looks like untitled file and resolveWorkspacePath returns undefined
         const parsed: ParsedLink = {
           path: 'Untitled-1',
-          start: { line: 10, char: 5 },
-          end: { line: 10, char: 10 },
+          start: { line: 10, character: 5 },
+          end: { line: 10, character: 10 },
           linkType: LinkType.Regular,
           selectionType: SelectionType.Normal,
         };
@@ -918,8 +918,8 @@ describe('RangeLinkNavigationHandler', () => {
     it('should create multi-cursor selections for rectangular mode', async () => {
       const parsed: ParsedLink = {
         path: 'file.ts',
-        start: { line: 10, char: 5 },
-        end: { line: 12, char: 10 }, // 3 lines: 10, 11, 12
+        start: { line: 10, character: 5 },
+        end: { line: 12, character: 10 }, // 3 lines: 10, 11, 12
         linkType: LinkType.Regular,
         selectionType: SelectionType.Rectangular,
       };
@@ -945,8 +945,8 @@ describe('RangeLinkNavigationHandler', () => {
     it('should create selections for each line in rectangular range', async () => {
       const parsed: ParsedLink = {
         path: 'file.ts',
-        start: { line: 5, char: 1 },
-        end: { line: 7, char: 8 }, // 3 lines
+        start: { line: 5, character: 1 },
+        end: { line: 7, character: 8 }, // 3 lines
         linkType: LinkType.Regular,
         selectionType: SelectionType.Rectangular,
       };
