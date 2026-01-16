@@ -11,6 +11,7 @@ import {
   CMD_BIND_TO_CURSOR_AI,
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
   CMD_BIND_TO_TERMINAL,
+  CMD_BIND_TO_TERMINAL_HERE,
   CMD_BIND_TO_TEXT_EDITOR,
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_LIST,
@@ -99,6 +100,10 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter,
     logger,
   );
+
+  const bindToTerminalHandler = async () => {
+    await destinationManager.bind('terminal');
+  };
 
   const bookmarkService = new BookmarkService(
     bookmarksStore,
@@ -244,11 +249,11 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  // Register destination binding commands
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_BIND_TO_TERMINAL, async () => {
-      await destinationManager.bind('terminal');
-    }),
+    ideAdapter.registerCommand(CMD_BIND_TO_TERMINAL, bindToTerminalHandler),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_BIND_TO_TERMINAL_HERE, bindToTerminalHandler),
   );
 
   context.subscriptions.push(

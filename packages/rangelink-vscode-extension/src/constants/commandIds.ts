@@ -8,6 +8,7 @@ export const CMD_BIND_TO_CLAUDE_CODE = 'rangelink.bindToClaudeCode';
 export const CMD_BIND_TO_CURSOR_AI = 'rangelink.bindToCursorAI';
 export const CMD_BIND_TO_GITHUB_COPILOT_CHAT = 'rangelink.bindToGitHubCopilotChat';
 export const CMD_BIND_TO_TERMINAL = 'rangelink.bindToTerminal';
+export const CMD_BIND_TO_TERMINAL_HERE = 'rangelink.bindToTerminalHere';
 export const CMD_BIND_TO_TEXT_EDITOR = 'rangelink.bindToTextEditor';
 export const CMD_BOOKMARK_ADD = 'rangelink.bookmark.add';
 export const CMD_BOOKMARK_LIST = 'rangelink.bookmark.list';

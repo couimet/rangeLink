@@ -127,6 +127,15 @@ describe('package.json contributions', () => {
         });
       });
 
+      it('rangelink.bindToTerminalHere', () => {
+        expect(findCommand('rangelink.bindToTerminalHere')).toStrictEqual({
+          command: 'rangelink.bindToTerminalHere',
+          title: 'Bind RangeLink Here',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
       it('rangelink.bindToTextEditor', () => {
         expect(findCommand('rangelink.bindToTextEditor')).toStrictEqual({
           command: 'rangelink.bindToTextEditor',
@@ -166,7 +175,7 @@ describe('package.json contributions', () => {
       it('rangelink.unbindDestination', () => {
         expect(findCommand('rangelink.unbindDestination')).toStrictEqual({
           command: 'rangelink.unbindDestination',
-          title: 'Unbind RangeLink Destination',
+          title: 'Unbind RangeLink',
           category: 'RangeLink',
           icon: '$(close)',
         });
@@ -224,7 +233,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(18);
+      expect(commands).toHaveLength(19);
     });
   });
 
@@ -476,6 +485,56 @@ describe('package.json contributions', () => {
         when: 'editorHasSelection',
         command: 'rangelink.bookmark.add',
         group: '8_rangelink@6',
+      });
+    });
+
+    describe('terminal/title/context', () => {
+      const terminalTitleContextMenu = packageJson.contributes.menus[
+        'terminal/title/context'
+      ] as MenuContribution[];
+
+      it('has the expected number of terminal title context menu items', () => {
+        expect(terminalTitleContextMenu).toHaveLength(2);
+      });
+
+      it('bindToTerminalHere is always visible', () => {
+        expect(terminalTitleContextMenu[0]).toStrictEqual({
+          command: 'rangelink.bindToTerminalHere',
+          group: 'rangelink@1',
+        });
+      });
+
+      it('unbindDestination shows when any destination bound', () => {
+        expect(terminalTitleContextMenu[1]).toStrictEqual({
+          when: 'rangelink.isBound',
+          command: 'rangelink.unbindDestination',
+          group: 'rangelink@2',
+        });
+      });
+    });
+
+    describe('terminal/context', () => {
+      const terminalContextMenu = packageJson.contributes.menus[
+        'terminal/context'
+      ] as MenuContribution[];
+
+      it('has the expected number of terminal context menu items', () => {
+        expect(terminalContextMenu).toHaveLength(2);
+      });
+
+      it('bindToTerminalHere is always visible', () => {
+        expect(terminalContextMenu[0]).toStrictEqual({
+          command: 'rangelink.bindToTerminalHere',
+          group: 'rangelink@1',
+        });
+      });
+
+      it('unbindDestination shows when any destination bound', () => {
+        expect(terminalContextMenu[1]).toStrictEqual({
+          when: 'rangelink.isBound',
+          command: 'rangelink.unbindDestination',
+          group: 'rangelink@2',
+        });
       });
     });
   });

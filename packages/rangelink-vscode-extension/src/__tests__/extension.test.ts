@@ -555,7 +555,7 @@ describe('Extension lifecycle', () => {
 
     // Verify all commands are registered
     // Note: Command registration is IDE-agnostic; runtime availability differs by environment
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(20);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(21);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
@@ -565,6 +565,7 @@ describe('Extension lifecycle', () => {
       'rangelink.bindToCursorAI',
       'rangelink.bindToGitHubCopilotChat',
       'rangelink.bindToTerminal',
+      'rangelink.bindToTerminalHere',
       'rangelink.bindToTextEditor',
       'rangelink.bookmark.add',
       'rangelink.bookmark.list',
