@@ -32,19 +32,21 @@ export const createMockEditorWithSelection = (options: {
   });
 
   // Convert selection tuples to mock Selection objects
-  const selections = options.selections.map(([startLine, startCharacter, endLine, endCharacter]) => {
-    const anchor = createMockPosition({ line: startLine, character: startCharacter });
-    const active = createMockPosition({ line: endLine, character: endCharacter });
-    const isEmpty = startLine === endLine && startCharacter === endCharacter;
-    return createMockSelection({
-      anchor,
-      active,
-      start: anchor,
-      end: active,
-      isReversed: false,
-      isEmpty,
-    });
-  });
+  const selections = options.selections.map(
+    ([startLine, startCharacter, endLine, endCharacter]) => {
+      const anchor = createMockPosition({ line: startLine, character: startCharacter });
+      const active = createMockPosition({ line: endLine, character: endCharacter });
+      const isEmpty = startLine === endLine && startCharacter === endCharacter;
+      return createMockSelection({
+        anchor,
+        active,
+        start: anchor,
+        end: active,
+        isReversed: false,
+        isEmpty,
+      });
+    },
+  );
 
   const mockEditor = createMockEditor({
     document: mockDocument,

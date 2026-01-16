@@ -30,7 +30,12 @@ export function validateInputSelection(inputSelection: InputSelection): void {
   for (let i = 0; i < selections.length; i++) {
     const sel = selections[i];
 
-    if (sel.start.line < 0 || sel.end.line < 0 || sel.start.character < 0 || sel.end.character < 0) {
+    if (
+      sel.start.line < 0 ||
+      sel.end.line < 0 ||
+      sel.start.character < 0 ||
+      sel.end.character < 0
+    ) {
       throw new RangeLinkError({
         code: RangeLinkErrorCodes.SELECTION_NEGATIVE_COORDINATES,
         message: `Negative coordinates not allowed (startLine=${sel.start.line}, endLine=${sel.end.line}, startCharacter=${sel.start.character}, endCharacter=${sel.end.character})`,

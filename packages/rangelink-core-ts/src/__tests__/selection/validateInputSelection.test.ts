@@ -80,7 +80,8 @@ describe('validateInputSelection', () => {
       expect(() => validateInputSelection(inputSelection)).toThrowRangeLinkError(
         'SELECTION_BACKWARD_CHARACTER',
         {
-          message: 'Backward character selection not allowed (startCharacter=20 > endCharacter=5 on line 10)',
+          message:
+            'Backward character selection not allowed (startCharacter=20 > endCharacter=5 on line 10)',
           functionName: 'validateInputSelection',
           details: {
             selectionIndex: 0,
