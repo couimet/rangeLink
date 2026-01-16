@@ -18,5 +18,5 @@ export interface EditorPosition {
    * Character position within the line (0-indexed, REQUIRED)
    * Editor selections always provide character position.
    */
-  readonly char: number;
+  readonly character: number;
 }
