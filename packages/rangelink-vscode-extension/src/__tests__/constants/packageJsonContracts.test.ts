@@ -456,7 +456,7 @@ describe('package.json contributions', () => {
         expect(editorContextMenu[0]).toStrictEqual({
           command: 'rangelink.bindToTextEditorHere',
           group: '8_rangelink@0',
-          when: 'resourceScheme == file',
+          when: 'resourceScheme == file || resourceScheme == untitled',
         });
       });
 

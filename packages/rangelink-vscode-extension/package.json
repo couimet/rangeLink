@@ -336,7 +336,7 @@
         {
           "command": "rangelink.bindToTextEditorHere",
           "group": "8_rangelink@0",
-          "when": "resourceScheme == file"
+          "when": "resourceScheme == file || resourceScheme == untitled"
         },
         {
           "when": "editorHasSelection",
