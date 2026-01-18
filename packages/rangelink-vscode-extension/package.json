@@ -268,6 +268,23 @@
           ],
           "description": "Smart padding for selected text when using Paste Selected Text to Destination (R-V)"
         },
+        "rangelink.smartPadding.pasteFilePath": {
+          "type": "string",
+          "enum": [
+            "both",
+            "before",
+            "after",
+            "none"
+          ],
+          "default": "both",
+          "enumDescriptions": [
+            "Add space before and after (prevents concatenation)",
+            "Add space before only",
+            "Add space after only",
+            "No padding (paste path as-is)"
+          ],
+          "description": "Smart padding for file paths when using Paste Path commands"
+        },
         "rangelink.smartPadding.pasteBookmark": {
           "type": "string",
           "enum": [
