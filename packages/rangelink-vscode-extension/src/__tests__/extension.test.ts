@@ -555,7 +555,7 @@ describe('Extension lifecycle', () => {
 
     // Verify all commands are registered
     // Note: Command registration is IDE-agnostic; runtime availability differs by environment
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(22);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(26);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
@@ -580,6 +580,10 @@ describe('Extension lifecycle', () => {
       'rangelink.handleDocumentLinkClick',
       'rangelink.jumpToBoundDestination',
       'rangelink.openStatusBarMenu',
+      'rangelink.pasteCurrentFilePath',
+      'rangelink.pasteCurrentFilePathRelative',
+      'rangelink.pasteFilePath',
+      'rangelink.pasteFilePathRelative',
       'rangelink.pasteSelectedTextToDestination',
       'rangelink.showVersion',
       'rangelink.unbindDestination',

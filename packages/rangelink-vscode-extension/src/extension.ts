@@ -26,6 +26,10 @@ import {
   CMD_HANDLE_DOCUMENT_LINK_CLICK,
   CMD_JUMP_TO_DESTINATION,
   CMD_OPEN_STATUS_BAR_MENU,
+  CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE,
+  CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
+  CMD_PASTE_FILE_PATH_ABSOLUTE,
+  CMD_PASTE_FILE_PATH_RELATIVE,
   CMD_PASTE_TO_DESTINATION,
   CMD_SHOW_VERSION,
   CMD_UNBIND_DESTINATION,
@@ -342,6 +346,28 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BOOKMARK_MANAGE, () => manageBookmarksCommand.execute()),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_PASTE_FILE_PATH_ABSOLUTE, (uri) =>
+      service.pasteFilePathToDestination(uri as vscode.Uri),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_PASTE_FILE_PATH_RELATIVE, (uri) =>
+      service.pasteRelativeFilePathToDestination(uri as vscode.Uri),
+    ),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE, () =>
+      service.pasteCurrentFilePathToDestination(),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE, () =>
+      service.pasteCurrentRelativeFilePathToDestination(),
+    ),
   );
 
   // Log version info on startup
