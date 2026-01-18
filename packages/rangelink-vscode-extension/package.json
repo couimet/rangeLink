@@ -179,6 +179,32 @@
         "title": "List Bookmarks",
         "category": "RangeLink",
         "icon": "$(bookmark)"
+      },
+      {
+        "command": "rangelink.pasteFilePath",
+        "title": "RangeLink: Paste Path",
+        "category": "RangeLink",
+        "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "rangelink.pasteFilePathRelative",
+        "title": "RangeLink: Paste Relative Path",
+        "category": "RangeLink",
+        "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "rangelink.pasteCurrentFilePath",
+        "title": "Paste Current File Path",
+        "category": "RangeLink",
+        "icon": "$(file-symlink-file)",
+        "enablement": "editorIsOpen"
+      },
+      {
+        "command": "rangelink.pasteCurrentFilePathRelative",
+        "title": "Paste Current Relative File Path",
+        "category": "RangeLink",
+        "icon": "$(file-symlink-file)",
+        "enablement": "editorIsOpen"
       }
     ],
     "configuration": {
@@ -330,6 +356,14 @@
         {
           "command": "rangelink.bindToTextEditorHere",
           "when": "false"
+        },
+        {
+          "command": "rangelink.pasteFilePath",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.pasteFilePathRelative",
+          "when": "false"
         }
       ],
       "editor/context": [
@@ -372,6 +406,34 @@
           "when": "rangelink.isBound",
           "command": "rangelink.unbindDestination",
           "group": "8_rangelink@7"
+        },
+        {
+          "command": "rangelink.pasteFilePathRelative",
+          "group": "5_cutcopypaste@10"
+        },
+        {
+          "command": "rangelink.pasteFilePath",
+          "group": "5_cutcopypaste@11"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "rangelink.pasteFilePathRelative",
+          "group": "5_cutcopypaste@10"
+        },
+        {
+          "command": "rangelink.pasteFilePath",
+          "group": "5_cutcopypaste@11"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "rangelink.pasteFilePathRelative",
+          "group": "5_cutcopypaste@10"
+        },
+        {
+          "command": "rangelink.pasteFilePath",
+          "group": "5_cutcopypaste@11"
         }
       ],
       "terminal/title/context": [

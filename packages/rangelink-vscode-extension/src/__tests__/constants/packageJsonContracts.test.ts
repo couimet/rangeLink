@@ -241,8 +241,50 @@ describe('package.json contributions', () => {
       });
     });
 
+    describe('paste file path commands (context menu)', () => {
+      it('rangelink.pasteFilePath', () => {
+        expect(findCommand('rangelink.pasteFilePath')).toStrictEqual({
+          command: 'rangelink.pasteFilePath',
+          title: 'RangeLink: Paste Path',
+          category: 'RangeLink',
+          icon: '$(file-symlink-file)',
+        });
+      });
+
+      it('rangelink.pasteFilePathRelative', () => {
+        expect(findCommand('rangelink.pasteFilePathRelative')).toStrictEqual({
+          command: 'rangelink.pasteFilePathRelative',
+          title: 'RangeLink: Paste Relative Path',
+          category: 'RangeLink',
+          icon: '$(file-symlink-file)',
+        });
+      });
+    });
+
+    describe('paste current file path commands (command palette)', () => {
+      it('rangelink.pasteCurrentFilePath', () => {
+        expect(findCommand('rangelink.pasteCurrentFilePath')).toStrictEqual({
+          command: 'rangelink.pasteCurrentFilePath',
+          title: 'Paste Current File Path',
+          category: 'RangeLink',
+          icon: '$(file-symlink-file)',
+          enablement: 'editorIsOpen',
+        });
+      });
+
+      it('rangelink.pasteCurrentFilePathRelative', () => {
+        expect(findCommand('rangelink.pasteCurrentFilePathRelative')).toStrictEqual({
+          command: 'rangelink.pasteCurrentFilePathRelative',
+          title: 'Paste Current Relative File Path',
+          category: 'RangeLink',
+          icon: '$(file-symlink-file)',
+          enablement: 'editorIsOpen',
+        });
+      });
+    });
+
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(20);
+      expect(commands).toHaveLength(24);
     });
   });
 
@@ -449,7 +491,7 @@ describe('package.json contributions', () => {
       ] as MenuContribution[];
 
       it('has the expected number of editor context menu items', () => {
-        expect(editorContextMenu).toHaveLength(8);
+        expect(editorContextMenu).toHaveLength(10);
       });
 
       it('bindToTextEditorHere at top of RangeLink group', () => {
@@ -515,6 +557,106 @@ describe('package.json contributions', () => {
           group: '8_rangelink@7',
         });
       });
+
+      it('pasteFilePathRelative in editor context menu', () => {
+        expect(editorContextMenu[8]).toStrictEqual({
+          command: 'rangelink.pasteFilePathRelative',
+          group: '5_cutcopypaste@10',
+        });
+      });
+
+      it('pasteFilePath in editor context menu', () => {
+        expect(editorContextMenu[9]).toStrictEqual({
+          command: 'rangelink.pasteFilePath',
+          group: '5_cutcopypaste@11',
+        });
+      });
+    });
+
+    describe('editor/title/context', () => {
+      const editorTitleContextMenu = packageJson.contributes.menus[
+        'editor/title/context'
+      ] as MenuContribution[];
+
+      it('has the expected number of editor title context menu items', () => {
+        expect(editorTitleContextMenu).toHaveLength(2);
+      });
+
+      it('pasteFilePathRelative in editor title context menu', () => {
+        expect(editorTitleContextMenu[0]).toStrictEqual({
+          command: 'rangelink.pasteFilePathRelative',
+          group: '5_cutcopypaste@10',
+        });
+      });
+
+      it('pasteFilePath in editor title context menu', () => {
+        expect(editorTitleContextMenu[1]).toStrictEqual({
+          command: 'rangelink.pasteFilePath',
+          group: '5_cutcopypaste@11',
+        });
+      });
+    });
+
+    describe('explorer/context', () => {
+      const explorerContextMenu = packageJson.contributes.menus[
+        'explorer/context'
+      ] as MenuContribution[];
+
+      it('has the expected number of explorer context menu items', () => {
+        expect(explorerContextMenu).toHaveLength(2);
+      });
+
+      it('pasteFilePathRelative in explorer context menu', () => {
+        expect(explorerContextMenu[0]).toStrictEqual({
+          command: 'rangelink.pasteFilePathRelative',
+          group: '5_cutcopypaste@10',
+        });
+      });
+
+      it('pasteFilePath in explorer context menu', () => {
+        expect(explorerContextMenu[1]).toStrictEqual({
+          command: 'rangelink.pasteFilePath',
+          group: '5_cutcopypaste@11',
+        });
+      });
+    });
+
+    describe('commandPalette', () => {
+      const commandPalette = packageJson.contributes.menus[
+        'commandPalette'
+      ] as MenuContribution[];
+
+      it('has the expected number of commandPalette entries', () => {
+        expect(commandPalette).toHaveLength(4);
+      });
+
+      it('bindToTerminalHere is hidden from command palette', () => {
+        expect(commandPalette[0]).toStrictEqual({
+          command: 'rangelink.bindToTerminalHere',
+          when: 'false',
+        });
+      });
+
+      it('bindToTextEditorHere is hidden from command palette', () => {
+        expect(commandPalette[1]).toStrictEqual({
+          command: 'rangelink.bindToTextEditorHere',
+          when: 'false',
+        });
+      });
+
+      it('pasteFilePath is hidden from command palette', () => {
+        expect(commandPalette[2]).toStrictEqual({
+          command: 'rangelink.pasteFilePath',
+          when: 'false',
+        });
+      });
+
+      it('pasteFilePathRelative is hidden from command palette', () => {
+        expect(commandPalette[3]).toStrictEqual({
+          command: 'rangelink.pasteFilePathRelative',
+          when: 'false',
+        });
+      });
     });
 
     describe('terminal/title/context', () => {
@@ -567,26 +709,5 @@ describe('package.json contributions', () => {
       });
     });
 
-    describe('commandPalette', () => {
-      const commandPalette = packageJson.contributes.menus['commandPalette'] as MenuContribution[];
-
-      it('has the expected number of hidden commands', () => {
-        expect(commandPalette).toHaveLength(2);
-      });
-
-      it('bindToTerminalHere is hidden from command palette', () => {
-        expect(commandPalette[0]).toStrictEqual({
-          command: 'rangelink.bindToTerminalHere',
-          when: 'false',
-        });
-      });
-
-      it('bindToTextEditorHere is hidden from command palette', () => {
-        expect(commandPalette[1]).toStrictEqual({
-          command: 'rangelink.bindToTextEditorHere',
-          when: 'false',
-        });
-      });
-    });
   });
 });
