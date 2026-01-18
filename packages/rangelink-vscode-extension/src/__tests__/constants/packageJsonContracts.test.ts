@@ -145,6 +145,15 @@ describe('package.json contributions', () => {
         });
       });
 
+      it('rangelink.bindToTextEditorHere', () => {
+        expect(findCommand('rangelink.bindToTextEditorHere')).toStrictEqual({
+          command: 'rangelink.bindToTextEditorHere',
+          title: 'Bind RangeLink Here',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
       it('rangelink.bindToCursorAI', () => {
         expect(findCommand('rangelink.bindToCursorAI')).toStrictEqual({
           command: 'rangelink.bindToCursorAI',
@@ -233,7 +242,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(19);
+      expect(commands).toHaveLength(20);
     });
   });
 
@@ -434,57 +443,77 @@ describe('package.json contributions', () => {
   });
 
   describe('menus', () => {
-    const editorContextMenu = packageJson.contributes.menus['editor/context'] as MenuContribution[];
+    describe('editor/context', () => {
+      const editorContextMenu = packageJson.contributes.menus[
+        'editor/context'
+      ] as MenuContribution[];
 
-    it('has the expected number of editor context menu items', () => {
-      expect(editorContextMenu).toHaveLength(6);
-    });
-
-    it('copyLinkWithRelativePath in context menu', () => {
-      expect(editorContextMenu[0]).toStrictEqual({
-        when: 'editorHasSelection',
-        command: 'rangelink.copyLinkWithRelativePath',
-        group: '8_rangelink@1',
+      it('has the expected number of editor context menu items', () => {
+        expect(editorContextMenu).toHaveLength(8);
       });
-    });
 
-    it('copyLinkWithAbsolutePath in context menu', () => {
-      expect(editorContextMenu[1]).toStrictEqual({
-        when: 'editorHasSelection',
-        command: 'rangelink.copyLinkWithAbsolutePath',
-        group: '8_rangelink@2',
+      it('bindToTextEditorHere at top of RangeLink group', () => {
+        expect(editorContextMenu[0]).toStrictEqual({
+          command: 'rangelink.bindToTextEditorHere',
+          group: '8_rangelink@0',
+          when: 'resourceScheme == file',
+        });
       });
-    });
 
-    it('copyPortableLinkWithRelativePath in context menu', () => {
-      expect(editorContextMenu[2]).toStrictEqual({
-        when: 'editorHasSelection',
-        command: 'rangelink.copyPortableLinkWithRelativePath',
-        group: '8_rangelink@3',
+      it('copyLinkWithRelativePath in context menu', () => {
+        expect(editorContextMenu[1]).toStrictEqual({
+          when: 'editorHasSelection',
+          command: 'rangelink.copyLinkWithRelativePath',
+          group: '8_rangelink@1',
+        });
       });
-    });
 
-    it('copyPortableLinkWithAbsolutePath in context menu', () => {
-      expect(editorContextMenu[3]).toStrictEqual({
-        when: 'editorHasSelection',
-        command: 'rangelink.copyPortableLinkWithAbsolutePath',
-        group: '8_rangelink@4',
+      it('copyLinkWithAbsolutePath in context menu', () => {
+        expect(editorContextMenu[2]).toStrictEqual({
+          when: 'editorHasSelection',
+          command: 'rangelink.copyLinkWithAbsolutePath',
+          group: '8_rangelink@2',
+        });
       });
-    });
 
-    it('pasteSelectedTextToDestination in context menu', () => {
-      expect(editorContextMenu[4]).toStrictEqual({
-        when: 'editorHasSelection',
-        command: 'rangelink.pasteSelectedTextToDestination',
-        group: '8_rangelink@5',
+      it('copyPortableLinkWithRelativePath in context menu', () => {
+        expect(editorContextMenu[3]).toStrictEqual({
+          when: 'editorHasSelection',
+          command: 'rangelink.copyPortableLinkWithRelativePath',
+          group: '8_rangelink@3',
+        });
       });
-    });
 
-    it('bookmark.add in context menu', () => {
-      expect(editorContextMenu[5]).toStrictEqual({
-        when: 'editorHasSelection',
-        command: 'rangelink.bookmark.add',
-        group: '8_rangelink@6',
+      it('copyPortableLinkWithAbsolutePath in context menu', () => {
+        expect(editorContextMenu[4]).toStrictEqual({
+          when: 'editorHasSelection',
+          command: 'rangelink.copyPortableLinkWithAbsolutePath',
+          group: '8_rangelink@4',
+        });
+      });
+
+      it('pasteSelectedTextToDestination in context menu', () => {
+        expect(editorContextMenu[5]).toStrictEqual({
+          when: 'editorHasSelection',
+          command: 'rangelink.pasteSelectedTextToDestination',
+          group: '8_rangelink@5',
+        });
+      });
+
+      it('bookmark.add in context menu', () => {
+        expect(editorContextMenu[6]).toStrictEqual({
+          when: 'editorHasSelection',
+          command: 'rangelink.bookmark.add',
+          group: '8_rangelink@6',
+        });
+      });
+
+      it('unbindDestination at bottom of RangeLink group', () => {
+        expect(editorContextMenu[7]).toStrictEqual({
+          when: 'rangelink.isBound',
+          command: 'rangelink.unbindDestination',
+          group: '8_rangelink@7',
+        });
       });
     });
 
@@ -534,6 +563,28 @@ describe('package.json contributions', () => {
           when: 'rangelink.isBound',
           command: 'rangelink.unbindDestination',
           group: 'rangelink@2',
+        });
+      });
+    });
+
+    describe('commandPalette', () => {
+      const commandPalette = packageJson.contributes.menus['commandPalette'] as MenuContribution[];
+
+      it('has the expected number of hidden commands', () => {
+        expect(commandPalette).toHaveLength(2);
+      });
+
+      it('bindToTerminalHere is hidden from command palette', () => {
+        expect(commandPalette[0]).toStrictEqual({
+          command: 'rangelink.bindToTerminalHere',
+          when: 'false',
+        });
+      });
+
+      it('bindToTextEditorHere is hidden from command palette', () => {
+        expect(commandPalette[1]).toStrictEqual({
+          command: 'rangelink.bindToTextEditorHere',
+          when: 'false',
         });
       });
     });

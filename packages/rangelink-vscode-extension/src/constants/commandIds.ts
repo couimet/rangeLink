@@ -10,6 +10,7 @@ export const CMD_BIND_TO_GITHUB_COPILOT_CHAT = 'rangelink.bindToGitHubCopilotCha
 export const CMD_BIND_TO_TERMINAL = 'rangelink.bindToTerminal';
 export const CMD_BIND_TO_TERMINAL_HERE = 'rangelink.bindToTerminalHere';
 export const CMD_BIND_TO_TEXT_EDITOR = 'rangelink.bindToTextEditor';
+export const CMD_BIND_TO_TEXT_EDITOR_HERE = 'rangelink.bindToTextEditorHere';
 export const CMD_BOOKMARK_ADD = 'rangelink.bookmark.add';
 export const CMD_BOOKMARK_LIST = 'rangelink.bookmark.list';
 export const CMD_BOOKMARK_MANAGE = 'rangelink.bookmark.manage';
