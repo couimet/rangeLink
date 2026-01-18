@@ -364,6 +364,21 @@ describe('package.json contributions', () => {
         });
       });
 
+      it('rangelink.smartPadding.pasteFilePath', () => {
+        expect(properties['rangelink.smartPadding.pasteFilePath']).toStrictEqual({
+          type: 'string',
+          enum: ['both', 'before', 'after', 'none'],
+          default: 'both',
+          enumDescriptions: [
+            'Add space before and after (prevents concatenation)',
+            'Add space before only',
+            'Add space after only',
+            'No padding (paste path as-is)',
+          ],
+          description: 'Smart padding for file paths when using Paste Path commands',
+        });
+      });
+
       it('rangelink.smartPadding.pasteBookmark', () => {
         expect(properties['rangelink.smartPadding.pasteBookmark']).toStrictEqual({
           type: 'string',
@@ -381,7 +396,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(7);
+      expect(Object.keys(properties)).toHaveLength(8);
     });
   });
 
