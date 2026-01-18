@@ -5,8 +5,10 @@ import * as vscode from 'vscode';
 import type { ConfigReader } from './config/ConfigReader';
 import {
   DEFAULT_SMART_PADDING_PASTE_CONTENT,
+  DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
   DEFAULT_SMART_PADDING_PASTE_LINK,
   SETTING_SMART_PADDING_PASTE_CONTENT,
+  SETTING_SMART_PADDING_PASTE_FILE_PATH,
   SETTING_SMART_PADDING_PASTE_LINK,
 } from './constants';
 import type { PasteDestination } from './destinations/PasteDestination';
@@ -146,6 +148,121 @@ export class RangeLinkService {
       (destination, text) => destination.isEligibleForPasteContent(text),
       'Selected text',
       'pasteSelectedTextToDestination',
+    );
+  }
+
+  /**
+   * Pastes the absolute file path to the bound destination (context menu)
+   *
+   * Used by context menu commands where URI is provided from right-click context.
+   *
+   * @param uri - URI from context menu (mandatory)
+   */
+  async pasteFilePathToDestination(uri: vscode.Uri): Promise<void> {
+    await this.pasteFilePath(uri, PathFormat.Absolute, 'context-menu');
+  }
+
+  /**
+   * Pastes the workspace-relative file path to the bound destination (context menu)
+   *
+   * Used by context menu commands where URI is provided from right-click context.
+   * Falls back to absolute path if file is outside workspace.
+   *
+   * @param uri - URI from context menu (mandatory)
+   */
+  async pasteRelativeFilePathToDestination(uri: vscode.Uri): Promise<void> {
+    await this.pasteFilePath(uri, PathFormat.WorkspaceRelative, 'context-menu');
+  }
+
+  /**
+   * Pastes the absolute file path of the current active editor to the bound destination
+   *
+   * Used by command palette commands. Resolves URI from active text editor.
+   * Shows error if no active editor.
+   */
+  async pasteCurrentFilePathToDestination(): Promise<void> {
+    await this.pasteCurrentFilePath(PathFormat.Absolute);
+  }
+
+  /**
+   * Pastes the workspace-relative file path of the current active editor to the bound destination
+   *
+   * Used by command palette commands. Resolves URI from active text editor.
+   * Falls back to absolute path if file is outside workspace.
+   * Shows error if no active editor.
+   */
+  async pasteCurrentRelativeFilePathToDestination(): Promise<void> {
+    await this.pasteCurrentFilePath(PathFormat.WorkspaceRelative);
+  }
+
+  /**
+   * Core implementation for command palette file path pasting
+   *
+   * Resolves URI from active text editor and delegates to pasteFilePath.
+   * Shows error if no active editor.
+   *
+   * @param pathFormat - Whether to use relative or absolute paths
+   */
+  private async pasteCurrentFilePath(pathFormat: PathFormat): Promise<void> {
+    const uri = this.ideAdapter.getActiveTextEditorUri();
+    if (!uri) {
+      this.logger.debug(
+        { fn: 'RangeLinkService.pasteCurrentFilePath', pathFormat },
+        'No active editor',
+      );
+      await this.ideAdapter.showErrorMessage(
+        formatMessage(MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE),
+      );
+      return;
+    }
+    await this.pasteFilePath(uri, pathFormat, 'command-palette');
+  }
+
+  /**
+   * Core implementation for pasting file paths to bound destination
+   *
+   * Follows the R-V (Paste Selected Text) pattern:
+   * 1. Format the path based on pathFormat preference
+   * 2. Show quick pick if no destination bound
+   * 3. Copy to clipboard and send to destination
+   *
+   * @param uri - File URI (mandatory - caller responsible for resolution)
+   * @param pathFormat - Whether to use relative or absolute paths
+   * @param uriSource - Source of the URI for logging ('context-menu' or 'command-palette')
+   */
+  private async pasteFilePath(
+    uri: vscode.Uri,
+    pathFormat: PathFormat,
+    uriSource: 'context-menu' | 'command-palette',
+  ): Promise<void> {
+    const logCtx = { fn: 'RangeLinkService.pasteFilePath', pathFormat, uriSource };
+
+    const filePath = this.getReferencePath(uri, pathFormat);
+    this.logger.debug({ ...logCtx, filePath }, `Resolved file path: ${filePath}`);
+
+    const paddingMode = this.configReader.getPaddingMode(
+      SETTING_SMART_PADDING_PASTE_FILE_PATH,
+      DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
+    );
+
+    if (!this.destinationManager.isBound()) {
+      this.logger.debug(logCtx, 'No destination bound, showing quick pick');
+
+      const result = await this.destinationManager.showDestinationQuickPickForPaste();
+      if (result !== QuickPickBindResult.Bound) {
+        this.logger.info(logCtx, 'User cancelled quick pick or binding failed - no action taken');
+        return;
+      }
+    }
+
+    await this.copyAndSendToDestination(
+      filePath,
+      filePath,
+      (text, basicStatusMessage) =>
+        this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
+      (destination, text) => destination.isEligibleForPasteContent(text),
+      'File path',
+      'pasteFilePath',
     );
   }
 
