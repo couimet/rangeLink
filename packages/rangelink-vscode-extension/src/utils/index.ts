@@ -12,6 +12,7 @@ export * from './isBinaryFile';
 export * from './isEligibleForPaste';
 export * from './isTextLikeFile';
 export * from './isWritableScheme';
+export * from './quotePathForShell';
 export * from './registerWithLogging';
 export * from './resolveWorkspacePath';
 export * from './toInputSelection';

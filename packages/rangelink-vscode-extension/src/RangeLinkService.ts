@@ -15,7 +15,12 @@ import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { ActiveSelections, MessageCode, QuickPickBindResult } from './types';
-import { formatMessage, generateLinkFromSelections } from './utils';
+import {
+  formatMessage,
+  generateLinkFromSelections,
+  isTerminalDestination,
+  quotePathForShell,
+} from './utils';
 
 export enum PathFormat {
   WorkspaceRelative = 'workspace-relative',
@@ -255,9 +260,21 @@ export class RangeLinkService {
       }
     }
 
+    const boundDestination = this.destinationManager.getBoundDestination();
+    const destinationFilePath = isTerminalDestination(boundDestination)
+      ? quotePathForShell(filePath)
+      : filePath;
+
+    if (destinationFilePath !== filePath) {
+      this.logger.debug(
+        { ...logCtx, before: filePath, after: destinationFilePath },
+        'Quoted path for terminal destination',
+      );
+    }
+
     await this.copyAndSendToDestination(
       filePath,
-      filePath,
+      destinationFilePath,
       (text, basicStatusMessage) =>
         this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
       (destination, text) => destination.isEligibleForPasteContent(text),
