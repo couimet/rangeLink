@@ -9,12 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Terminal Context Menu** - Right-click on terminal tabs or inside terminals to bind/unbind (#73)
-  - "Bind RangeLink Here" appears when no terminal is bound
-  - "Unbind RangeLink" appears when a terminal is bound
+- **Context Menu Binding** - Right-click to bind/unbind destinations (#73, #246)
+  - **Editor:** Right-click inside editor text area → "Bind RangeLink Here"
+  - **Terminal:** Right-click on terminal tabs or inside terminal → "Bind RangeLink Here"
+  - "Unbind RangeLink" appears in both menus when any destination is bound
   - Complements existing Command Palette commands
 - **Status Bar Menu** - Click the `🔗 RangeLink` status bar item to access ⚡ quick actions
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
+  - List Bookmarks / Manage Bookmarks
   - Show Version Info
 - **Bookmarks System** - Save code locations for quick access later
   - **Save Selection as Bookmark (R-B-S)** - `Cmd+R Cmd+B Cmd+S` (Mac) / `Ctrl+R Ctrl+B Ctrl+S` (Win/Linux)

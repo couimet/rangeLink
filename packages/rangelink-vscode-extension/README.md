@@ -102,7 +102,9 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 1. Split your editor (2+ tab groups) — side-by-side or vertical split
 2. Open scratchpad file in one pane: untitled (`Cmd+N` / `Ctrl+N`) or any text file
-3. Command Palette → "Bind RangeLink to Text Editor Destination"
+3. Bind using either:
+   - **Command Palette** → "Bind RangeLink to Text Editor Destination"
+   - **Right-click inside editor** → "Bind RangeLink Here"
 4. Select code in other pane → Generate links → They paste **at insertion point** + **editor focuses automatically**
 
 **Workflow:**

@@ -126,6 +126,12 @@
         "icon": "$(link)"
       },
       {
+        "command": "rangelink.bindToTextEditorHere",
+        "title": "Bind RangeLink Here",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.bindToCursorAI",
         "title": "Bind RangeLink to Cursor AI Destination",
         "category": "RangeLink",
@@ -320,9 +326,18 @@
         {
           "command": "rangelink.bindToTerminalHere",
           "when": "false"
+        },
+        {
+          "command": "rangelink.bindToTextEditorHere",
+          "when": "false"
         }
       ],
       "editor/context": [
+        {
+          "command": "rangelink.bindToTextEditorHere",
+          "group": "8_rangelink@0",
+          "when": "resourceScheme == file || resourceScheme == untitled"
+        },
         {
           "when": "editorHasSelection",
           "command": "rangelink.copyLinkWithRelativePath",
@@ -352,6 +367,11 @@
           "when": "editorHasSelection",
           "command": "rangelink.bookmark.add",
           "group": "8_rangelink@6"
+        },
+        {
+          "when": "rangelink.isBound",
+          "command": "rangelink.unbindDestination",
+          "group": "8_rangelink@7"
         }
       ],
       "terminal/title/context": [
