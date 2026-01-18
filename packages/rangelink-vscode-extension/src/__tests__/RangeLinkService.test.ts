@@ -2051,4 +2051,50 @@ describe('RangeLinkService', () => {
       expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
     });
   });
+
+  describe('getReferencePath (private)', () => {
+    const WORKSPACE_ROOT = '/workspace';
+    const RELATIVE_PATH = 'src/file.ts';
+    const ABSOLUTE_PATH = `${WORKSPACE_ROOT}/${RELATIVE_PATH}`;
+    const mockUri = { fsPath: ABSOLUTE_PATH } as vscode.Uri;
+
+    describe('when workspaceFolder is defined', () => {
+      beforeEach(() => {
+        mockVscodeAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({ uri: { fsPath: WORKSPACE_ROOT } });
+        mockVscodeAdapter.asRelativePath = jest.fn().mockReturnValue(RELATIVE_PATH);
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+      });
+
+      it('should return relative path when pathFormat is WorkspaceRelative', () => {
+        const result = (service as any).getReferencePath(mockUri, 'workspace-relative');
+
+        expect(result).toBe(RELATIVE_PATH);
+      });
+
+      it('should return absolute path when pathFormat is Absolute', () => {
+        const result = (service as any).getReferencePath(mockUri, 'absolute');
+
+        expect(result).toBe(ABSOLUTE_PATH);
+      });
+    });
+
+    describe('when workspaceFolder is undefined', () => {
+      beforeEach(() => {
+        mockVscodeAdapter.getWorkspaceFolder = jest.fn().mockReturnValue(undefined);
+        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+      });
+
+      it('should fall back to absolute path when pathFormat is WorkspaceRelative', () => {
+        const result = (service as any).getReferencePath(mockUri, 'workspace-relative');
+
+        expect(result).toBe(ABSOLUTE_PATH);
+      });
+
+      it('should return absolute path when pathFormat is Absolute', () => {
+        const result = (service as any).getReferencePath(mockUri, 'absolute');
+
+        expect(result).toBe(ABSOLUTE_PATH);
+      });
+    });
+  });
 });

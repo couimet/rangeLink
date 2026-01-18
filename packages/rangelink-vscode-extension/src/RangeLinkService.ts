@@ -283,7 +283,7 @@ export class RangeLinkService {
 
     const { editor, selections } = validated;
     const document = editor.document;
-    const referencePath = this.getReferencePath(document, pathFormat);
+    const referencePath = this.getReferencePath(document.uri, pathFormat);
     const linkType = isPortable ? LinkType.Portable : LinkType.Regular;
 
     const result = generateLinkFromSelections({
@@ -387,13 +387,17 @@ export class RangeLinkService {
 
   /**
    * Gets the reference path based on the path format preference
+   *
+   * Returns workspace-relative path only when both conditions are met:
+   * - pathFormat is WorkspaceRelative
+   * - file is inside a workspace folder (required to compute relative path)
    */
-  private getReferencePath(document: vscode.TextDocument, pathFormat: PathFormat): string {
-    const workspaceFolder = this.ideAdapter.getWorkspaceFolder(document.uri);
+  private getReferencePath(uri: vscode.Uri, pathFormat: PathFormat): string {
+    const workspaceFolder = this.ideAdapter.getWorkspaceFolder(uri);
     if (workspaceFolder && pathFormat === PathFormat.WorkspaceRelative) {
-      return this.ideAdapter.asRelativePath(document.uri);
+      return this.ideAdapter.asRelativePath(uri);
     }
-    return document.uri.fsPath;
+    return uri.fsPath;
   }
 
   /**
