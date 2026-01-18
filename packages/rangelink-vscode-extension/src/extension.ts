@@ -13,6 +13,7 @@ import {
   CMD_BIND_TO_TERMINAL,
   CMD_BIND_TO_TERMINAL_HERE,
   CMD_BIND_TO_TEXT_EDITOR,
+  CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_LIST,
   CMD_BOOKMARK_MANAGE,
@@ -103,6 +104,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const bindToTerminalHandler = async () => {
     await destinationManager.bind('terminal');
+  };
+
+  const bindToTextEditorHandler = async () => {
+    await destinationManager.bind('text-editor');
   };
 
   const bookmarkService = new BookmarkService(
@@ -257,9 +262,10 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_BIND_TO_TEXT_EDITOR, async () => {
-      await destinationManager.bind('text-editor');
-    }),
+    ideAdapter.registerCommand(CMD_BIND_TO_TEXT_EDITOR, bindToTextEditorHandler),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, bindToTextEditorHandler),
   );
 
   // Register AI assistant destination binding commands
