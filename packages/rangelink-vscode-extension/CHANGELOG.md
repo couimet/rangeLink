@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Complements existing Command Palette commands
 - **Status Bar Menu** - Click the `🔗 RangeLink` status bar item to access ⚡ quick actions
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
+  - List Bookmarks / Manage Bookmarks
   - Show Version Info
 - **Bookmarks System** - Save code locations for quick access later
   - **Save Selection as Bookmark (R-B-S)** - `Cmd+R Cmd+B Cmd+S` (Mac) / `Ctrl+R Ctrl+B Ctrl+S` (Win/Linux)
