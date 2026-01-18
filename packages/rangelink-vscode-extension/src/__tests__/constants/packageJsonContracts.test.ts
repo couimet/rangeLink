@@ -469,6 +469,24 @@ describe('package.json contributions', () => {
       });
     });
 
+    it('rangelink.pasteCurrentFilePathRelative keybinding', () => {
+      expect(findKeybinding('rangelink.pasteCurrentFilePathRelative')).toStrictEqual({
+        command: 'rangelink.pasteCurrentFilePathRelative',
+        key: 'ctrl+r ctrl+f',
+        mac: 'cmd+r cmd+f',
+        when: 'editorIsOpen',
+      });
+    });
+
+    it('rangelink.pasteCurrentFilePath keybinding', () => {
+      expect(findKeybinding('rangelink.pasteCurrentFilePath')).toStrictEqual({
+        command: 'rangelink.pasteCurrentFilePath',
+        key: 'ctrl+r ctrl+shift+f',
+        mac: 'cmd+r cmd+shift+f',
+        when: 'editorIsOpen',
+      });
+    });
+
     it('rangelink.jumpToBoundDestination keybinding', () => {
       expect(findKeybinding('rangelink.jumpToBoundDestination')).toStrictEqual({
         command: 'rangelink.jumpToBoundDestination',
@@ -495,7 +513,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of keybindings', () => {
-      expect(keybindings).toHaveLength(10);
+      expect(keybindings).toHaveLength(12);
     });
   });
 

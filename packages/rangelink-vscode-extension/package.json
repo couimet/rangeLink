@@ -348,6 +348,18 @@
         "when": "editorHasSelection"
       },
       {
+        "command": "rangelink.pasteCurrentFilePathRelative",
+        "key": "ctrl+r ctrl+f",
+        "mac": "cmd+r cmd+f",
+        "when": "editorIsOpen"
+      },
+      {
+        "command": "rangelink.pasteCurrentFilePath",
+        "key": "ctrl+r ctrl+shift+f",
+        "mac": "cmd+r cmd+shift+f",
+        "when": "editorIsOpen"
+      },
+      {
         "command": "rangelink.jumpToBoundDestination",
         "key": "ctrl+r ctrl+j",
         "mac": "cmd+r cmd+j"
