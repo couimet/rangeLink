@@ -275,7 +275,7 @@ describe('package.json contributions', () => {
       it('rangelink.pasteCurrentFilePathRelative', () => {
         expect(findCommand('rangelink.pasteCurrentFilePathRelative')).toStrictEqual({
           command: 'rangelink.pasteCurrentFilePathRelative',
-          title: 'Paste Current Relative File Path',
+          title: 'Paste Current File Relative Path',
           category: 'RangeLink',
           icon: '$(file-symlink-file)',
           enablement: 'editorIsOpen',
