@@ -46,6 +46,8 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: No active terminal. Open a terminal and try again.',
   [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]:
     'RangeLink: No active text editor. Open a file and try again.',
+  [MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE]:
+    'RangeLink: No active file. Open a file and try again.',
   [MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE]: 'RangeLink: Cannot bind to {fileName} - binary file',
   [MessageCode.ERROR_TEXT_EDITOR_READ_ONLY]:
     'RangeLink: Cannot bind to read-only editor ({scheme})',
