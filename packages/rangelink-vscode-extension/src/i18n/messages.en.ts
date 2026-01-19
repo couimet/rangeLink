@@ -72,7 +72,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
     'No destination bound. Choose destination to jump to:',
   [MessageCode.INFO_NAVIGATION_EMPTY_INPUT]: 'RangeLink: Please enter a link to navigate',
-  [MessageCode.INFO_NAVIGATION_INPUT_BOX_PLACEHOLDER]: 'src/auth.ts#L42C10-L58C25',
+  [MessageCode.INFO_NAVIGATION_INPUT_BOX_PLACEHOLDER]: 'src/magic/RangeLink.ts#L3C14-L15C9',
   [MessageCode.INFO_NAVIGATION_INPUT_BOX_PROMPT]: 'Enter RangeLink to navigate',
   [MessageCode.INFO_NAVIGATION_INVALID_LINK]: "RangeLink: Invalid link format: '{input}'",
   [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
