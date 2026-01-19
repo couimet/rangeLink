@@ -118,6 +118,7 @@ describe('RangeLinkStatusBar', () => {
           { label: 'No bound destination. Choose below to bind:' },
           { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
           { label: '    $(arrow-right) Claude Code Chat', destinationType: 'claude-code' },
+          { label: '$(link-external) Navigate to Link', command: 'rangelink.navigateToRangeLink' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: 'Bookmarks' },
           { label: '    No bookmarks saved' },
@@ -146,6 +147,7 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
           { label: 'No destinations available' },
+          { label: '$(link-external) Navigate to Link', command: 'rangelink.navigateToRangeLink' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: 'Bookmarks' },
           { label: '    No bookmarks saved' },
@@ -184,6 +186,7 @@ describe('RangeLinkStatusBar', () => {
             description: '→ Terminal ("zsh")',
             command: 'rangelink.jumpToBoundDestination',
           },
+          { label: '$(link-external) Navigate to Link', command: 'rangelink.navigateToRangeLink' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: 'Bookmarks' },
           { label: '    No bookmarks saved' },
@@ -216,6 +219,7 @@ describe('RangeLinkStatusBar', () => {
         [
           { label: 'No bound destination. Choose below to bind:' },
           { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
+          { label: '$(link-external) Navigate to Link', command: 'rangelink.navigateToRangeLink' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: 'Bookmarks' },
           {
