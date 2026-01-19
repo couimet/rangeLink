@@ -660,7 +660,10 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns URI of active document or undefined if no editor is active
    */
   getActiveTextEditorUri(): vscode.Uri | undefined {
-    this.logger.debug({ fn: 'VscodeAdapter.getActiveTextEditorUri' }, 'Getting active text editor URI');
+    this.logger.debug(
+      { fn: 'VscodeAdapter.getActiveTextEditorUri' },
+      'Getting active text editor URI',
+    );
     return this.activeTextEditor?.document.uri;
   }
 

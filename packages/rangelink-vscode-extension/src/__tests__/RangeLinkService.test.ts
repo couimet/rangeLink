@@ -2069,15 +2069,25 @@ describe('RangeLinkService', () => {
         isBound: true,
         boundDestination: createMockEditorComposablePasteDestination({ displayName: 'Editor' }),
       });
-      service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+      service = new RangeLinkService(
+        delimiters,
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockLogger,
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      copyAndSendSpy = jest.spyOn(service as any, 'copyAndSendToDestination').mockResolvedValue(undefined);
+      copyAndSendSpy = jest
+        .spyOn(service as any, 'copyAndSendToDestination')
+        .mockResolvedValue(undefined);
     });
 
     describe('path resolution', () => {
       it('should delegate to getReferencePath and pass result to copyAndSendToDestination', async () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const getRefPathSpy = jest.spyOn(service as any, 'getReferencePath').mockReturnValue('mocked/path.ts');
+        const getRefPathSpy = jest
+          .spyOn(service as any, 'getReferencePath')
+          .mockReturnValue('mocked/path.ts');
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2093,7 +2103,12 @@ describe('RangeLinkService', () => {
           'pasteFilePath',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.pasteFilePath', pathFormat: 'workspace-relative', uriSource: 'context-menu', filePath: 'mocked/path.ts' },
+          {
+            fn: 'RangeLinkService.pasteFilePath',
+            pathFormat: 'workspace-relative',
+            uriSource: 'context-menu',
+            filePath: 'mocked/path.ts',
+          },
           'Resolved file path: mocked/path.ts',
         );
       });
@@ -2107,11 +2122,18 @@ describe('RangeLinkService', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
-        expect(mockConfigReader.getPaddingMode).toHaveBeenCalledWith('smartPadding.pasteFilePath', 'both');
+        expect(mockConfigReader.getPaddingMode).toHaveBeenCalledWith(
+          'smartPadding.pasteFilePath',
+          'both',
+        );
 
         const sendFn = copyAndSendSpy.mock.calls[0][2];
         await sendFn('test-text', 'test-message');
-        expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith('test-text', 'test-message', 'before');
+        expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
+          'test-text',
+          'test-message',
+          'before',
+        );
 
         const eligibilityFn = copyAndSendSpy.mock.calls[0][3];
         const mockDestination = { isEligibleForPasteContent: jest.fn().mockResolvedValue(true) };
@@ -2136,9 +2158,17 @@ describe('RangeLinkService', () => {
           isBound: false,
           showDestinationQuickPickForPasteResult: QuickPickBindResult.Cancelled,
         });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+        service = new RangeLinkService(
+          delimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockLogger,
+        );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        copyAndSendSpy = jest.spyOn(service as any, 'copyAndSendToDestination').mockResolvedValue(undefined);
+        copyAndSendSpy = jest
+          .spyOn(service as any, 'copyAndSendToDestination')
+          .mockResolvedValue(undefined);
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2146,12 +2176,20 @@ describe('RangeLinkService', () => {
 
         expect(mockDestinationManager.showDestinationQuickPickForPaste).toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.pasteFilePath', pathFormat: 'absolute', uriSource: 'context-menu' },
+          {
+            fn: 'RangeLinkService.pasteFilePath',
+            pathFormat: 'absolute',
+            uriSource: 'context-menu',
+          },
           'No destination bound, showing quick pick',
         );
         expect(copyAndSendSpy).not.toHaveBeenCalled();
         expect(mockLogger.info).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.pasteFilePath', pathFormat: 'absolute', uriSource: 'context-menu' },
+          {
+            fn: 'RangeLinkService.pasteFilePath',
+            pathFormat: 'absolute',
+            uriSource: 'context-menu',
+          },
           'User cancelled quick pick or binding failed - no action taken',
         );
       });
@@ -2161,11 +2199,21 @@ describe('RangeLinkService', () => {
       it('should quote path for terminal destination and log the change', async () => {
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
-          boundDestination: createMockTerminalComposablePasteDestination({ displayName: 'Terminal' }),
+          boundDestination: createMockTerminalComposablePasteDestination({
+            displayName: 'Terminal',
+          }),
         });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+        service = new RangeLinkService(
+          delimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockLogger,
+        );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        copyAndSendSpy = jest.spyOn(service as any, 'copyAndSendToDestination').mockResolvedValue(undefined);
+        copyAndSendSpy = jest
+          .spyOn(service as any, 'copyAndSendToDestination')
+          .mockResolvedValue(undefined);
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH_WITH_SPACES);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2180,7 +2228,13 @@ describe('RangeLinkService', () => {
           'pasteFilePath',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.pasteFilePath', pathFormat: 'absolute', uriSource: 'context-menu', before: TEST_ABSOLUTE_PATH_WITH_SPACES, after: TEST_QUOTED_PATH_WITH_SPACES },
+          {
+            fn: 'RangeLinkService.pasteFilePath',
+            pathFormat: 'absolute',
+            uriSource: 'context-menu',
+            before: TEST_ABSOLUTE_PATH_WITH_SPACES,
+            after: TEST_QUOTED_PATH_WITH_SPACES,
+          },
           'Quoted path for terminal destination',
         );
       });
@@ -2204,11 +2258,21 @@ describe('RangeLinkService', () => {
       it('should not log when terminal path has no special characters', async () => {
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
-          boundDestination: createMockTerminalComposablePasteDestination({ displayName: 'Terminal' }),
+          boundDestination: createMockTerminalComposablePasteDestination({
+            displayName: 'Terminal',
+          }),
         });
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+        service = new RangeLinkService(
+          delimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockLogger,
+        );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        copyAndSendSpy = jest.spyOn(service as any, 'copyAndSendToDestination').mockResolvedValue(undefined);
+        copyAndSendSpy = jest
+          .spyOn(service as any, 'copyAndSendToDestination')
+          .mockResolvedValue(undefined);
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2240,28 +2304,46 @@ describe('RangeLinkService', () => {
       mockVscodeAdapter = createMockVscodeAdapter({
         windowOptions: { activeTextEditor: mockEditor, showErrorMessage: mockShowErrorMessage },
       });
-      service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+      service = new RangeLinkService(
+        delimiters,
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockLogger,
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       pasteFilePathSpy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (service as any).pasteCurrentFilePath(PathFormat.WorkspaceRelative);
 
-      expect(pasteFilePathSpy).toHaveBeenCalledWith(mockUri, PathFormat.WorkspaceRelative, 'command-palette');
+      expect(pasteFilePathSpy).toHaveBeenCalledWith(
+        mockUri,
+        PathFormat.WorkspaceRelative,
+        'command-palette',
+      );
     });
 
     it('should show error and not delegate when no active editor', async () => {
       mockVscodeAdapter = createMockVscodeAdapter({
         windowOptions: { activeTextEditor: undefined, showErrorMessage: mockShowErrorMessage },
       });
-      service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+      service = new RangeLinkService(
+        delimiters,
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockLogger,
+      );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       pasteFilePathSpy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (service as any).pasteCurrentFilePath(PathFormat.Absolute);
 
-      expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active file. Open a file and try again.');
+      expect(mockShowErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: No active file. Open a file and try again.',
+      );
       expect(pasteFilePathSpy).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'RangeLinkService.pasteCurrentFilePath', pathFormat: 'absolute' },
@@ -2275,9 +2357,17 @@ describe('RangeLinkService', () => {
 
     describe('when workspaceFolder is defined', () => {
       beforeEach(() => {
-        mockVscodeAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({ uri: { fsPath: TEST_WORKSPACE_ROOT } });
+        mockVscodeAdapter.getWorkspaceFolder = jest
+          .fn()
+          .mockReturnValue({ uri: { fsPath: TEST_WORKSPACE_ROOT } });
         mockVscodeAdapter.asRelativePath = jest.fn().mockReturnValue(TEST_RELATIVE_PATH);
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+        service = new RangeLinkService(
+          delimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockLogger,
+        );
       });
 
       it('should return relative path when pathFormat is WorkspaceRelative', () => {
@@ -2298,7 +2388,13 @@ describe('RangeLinkService', () => {
     describe('when workspaceFolder is undefined', () => {
       beforeEach(() => {
         mockVscodeAdapter.getWorkspaceFolder = jest.fn().mockReturnValue(undefined);
-        service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+        service = new RangeLinkService(
+          delimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockLogger,
+        );
       });
 
       it('should fall back to absolute path when pathFormat is WorkspaceRelative', () => {

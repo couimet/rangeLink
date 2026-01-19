@@ -123,7 +123,9 @@ describe('quotePathForShell', () => {
     });
 
     it('should quote path with multiple special characters', () => {
-      expect(quotePathForShell('/my workspace/file (copy).ts')).toBe('"/my workspace/file (copy).ts"');
+      expect(quotePathForShell('/my workspace/file (copy).ts')).toBe(
+        '"/my workspace/file (copy).ts"',
+      );
     });
 
     it('should quote path with ampersand', () => {
@@ -141,11 +143,15 @@ describe('quotePathForShell', () => {
     });
 
     it('should escape multiple double quotes', () => {
-      expect(quotePathForShell('/workspace/"my" "file".ts')).toBe('"/workspace/\\"my\\" \\"file\\".ts"');
+      expect(quotePathForShell('/workspace/"my" "file".ts')).toBe(
+        '"/workspace/\\"my\\" \\"file\\".ts"',
+      );
     });
 
     it('should escape double quote in path with other special chars', () => {
-      expect(quotePathForShell('/workspace/file "name" (1).ts')).toBe('"/workspace/file \\"name\\" (1).ts"');
+      expect(quotePathForShell('/workspace/file "name" (1).ts')).toBe(
+        '"/workspace/file \\"name\\" (1).ts"',
+      );
     });
   });
 

@@ -655,9 +655,7 @@ describe('package.json contributions', () => {
     });
 
     describe('commandPalette', () => {
-      const commandPalette = packageJson.contributes.menus[
-        'commandPalette'
-      ] as MenuContribution[];
+      const commandPalette = packageJson.contributes.menus['commandPalette'] as MenuContribution[];
 
       it('has the expected number of commandPalette entries', () => {
         expect(commandPalette).toHaveLength(4);
