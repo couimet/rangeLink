@@ -6,6 +6,7 @@ import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
 import { GoToRangeLinkCommand } from './commands/GoToRangeLinkCommand';
 import { ListBookmarksCommand } from './commands/ListBookmarksCommand';
 import { ManageBookmarksCommand } from './commands/ManageBookmarksCommand';
+import { NavigateToRangeLinkCommand } from './commands/NavigateToRangeLinkCommand';
 import { ConfigReader, getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,

@@ -588,6 +588,7 @@ describe('Extension lifecycle', () => {
       'rangelink.goToRangeLink',
       'rangelink.handleDocumentLinkClick',
       'rangelink.jumpToBoundDestination',
+      'rangelink.navigateToRangeLink',
       'rangelink.openStatusBarMenu',
       'rangelink.pasteCurrentFileAbsolutePath',
       'rangelink.pasteCurrentFileRelativePath',
