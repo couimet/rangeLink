@@ -2230,6 +2230,46 @@ describe('RangeLinkService', () => {
     });
   });
 
+  describe('pasteCurrentFilePath (private)', () => {
+    let pasteFilePathSpy: jest.SpyInstance;
+
+    it('should resolve URI from active editor and delegate to pasteFilePath', async () => {
+      const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
+      const mockDocument = createMockDocument({ getText: createMockText('content'), uri: mockUri });
+      const mockEditor = createMockEditor({ document: mockDocument, selections: [] });
+      mockVscodeAdapter = createMockVscodeAdapter({
+        windowOptions: { activeTextEditor: mockEditor, showErrorMessage: mockShowErrorMessage },
+      });
+      service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pasteFilePathSpy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (service as any).pasteCurrentFilePath(PathFormat.WorkspaceRelative);
+
+      expect(pasteFilePathSpy).toHaveBeenCalledWith(mockUri, PathFormat.WorkspaceRelative, 'command-palette');
+    });
+
+    it('should show error and not delegate when no active editor', async () => {
+      mockVscodeAdapter = createMockVscodeAdapter({
+        windowOptions: { activeTextEditor: undefined, showErrorMessage: mockShowErrorMessage },
+      });
+      service = new RangeLinkService(delimiters, mockVscodeAdapter, mockDestinationManager, mockConfigReader, mockLogger);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pasteFilePathSpy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (service as any).pasteCurrentFilePath(PathFormat.Absolute);
+
+      expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active file. Open a file and try again.');
+      expect(pasteFilePathSpy).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.pasteCurrentFilePath', pathFormat: 'absolute' },
+        'No active editor',
+      );
+    });
+  });
+
   describe('getReferencePath (private)', () => {
     const WORKSPACE_ROOT = '/workspace';
     const RELATIVE_PATH = 'src/file.ts';
