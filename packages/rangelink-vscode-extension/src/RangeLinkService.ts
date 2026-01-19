@@ -157,47 +157,29 @@ export class RangeLinkService {
   }
 
   /**
-   * Pastes the absolute file path to the bound destination (context menu)
+   * Pastes the file path to the bound destination (context menu)
    *
    * Used by context menu commands where URI is provided from right-click context.
+   * Falls back to absolute path if pathFormat is WorkspaceRelative and file is outside workspace.
    *
    * @param uri - URI from context menu (mandatory)
+   * @param pathFormat - Whether to use absolute or workspace-relative path
    */
-  async pasteFilePathToDestination(uri: vscode.Uri): Promise<void> {
-    await this.pasteFilePath(uri, PathFormat.Absolute, 'context-menu');
+  async pasteFilePathToDestination(uri: vscode.Uri, pathFormat: PathFormat): Promise<void> {
+    await this.pasteFilePath(uri, pathFormat, 'context-menu');
   }
 
   /**
-   * Pastes the workspace-relative file path to the bound destination (context menu)
-   *
-   * Used by context menu commands where URI is provided from right-click context.
-   * Falls back to absolute path if file is outside workspace.
-   *
-   * @param uri - URI from context menu (mandatory)
-   */
-  async pasteRelativeFilePathToDestination(uri: vscode.Uri): Promise<void> {
-    await this.pasteFilePath(uri, PathFormat.WorkspaceRelative, 'context-menu');
-  }
-
-  /**
-   * Pastes the absolute file path of the current active editor to the bound destination
+   * Pastes the file path of the current active editor to the bound destination
    *
    * Used by command palette commands. Resolves URI from active text editor.
+   * Falls back to absolute path if pathFormat is WorkspaceRelative and file is outside workspace.
    * Shows error if no active editor.
-   */
-  async pasteCurrentFilePathToDestination(): Promise<void> {
-    await this.pasteCurrentFilePath(PathFormat.Absolute);
-  }
-
-  /**
-   * Pastes the workspace-relative file path of the current active editor to the bound destination
    *
-   * Used by command palette commands. Resolves URI from active text editor.
-   * Falls back to absolute path if file is outside workspace.
-   * Shows error if no active editor.
+   * @param pathFormat - Whether to use absolute or workspace-relative path
    */
-  async pasteCurrentRelativeFilePathToDestination(): Promise<void> {
-    await this.pasteCurrentFilePath(PathFormat.WorkspaceRelative);
+  async pasteCurrentFilePathToDestination(pathFormat: PathFormat): Promise<void> {
+    await this.pasteCurrentFilePath(pathFormat);
   }
 
   /**
