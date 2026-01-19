@@ -249,6 +249,8 @@ RangeLink integrates where you already work. Explore the context menus — you'l
 | Copy Range Link (Clipboard Only)                  | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`        | Copy link to clipboard only (skip bound destination)     |
 | Copy Range Link (Clipboard Only, Absolute)        | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C`  | Copy absolute path link to clipboard only                |
 | Paste Selected Text to Destination                | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`        | Send selected text directly to bound destination         |
+| Paste Current File Path                           | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`        | Send active editor's path to bound destination           |
+| Paste Current File Path (Absolute)                | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F`  | Send active editor's absolute path to bound destination  |
 | Jump to Bound Destination                         | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound paste destination             |
 | Save Selection as Bookmark                        | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
 | List Bookmarks                                    | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
