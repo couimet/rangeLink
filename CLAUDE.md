@@ -669,7 +669,6 @@
     myFunction(input);
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith(input);
-    spy.mockRestore();
     ```
   </example>
 </spy-verification>
