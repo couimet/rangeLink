@@ -109,7 +109,7 @@ export const messagesEn: Record<MessageCode, string> = {
     'No bound destination. Choose below to bind:',
   [MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE]: 'No destinations available',
   [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL]: '$(arrow-right) Jump to Bound Destination',
-  [MessageCode.STATUS_BAR_MENU_ITEM_NAVIGATE_TO_LINK_LABEL]: '$(link-external) Navigate to Link',
+  [MessageCode.STATUS_BAR_MENU_ITEM_NAVIGATE_TO_LINK_LABEL]: '$(link-external) Go to Link',
   [MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL]: '$(info) Show Version Info',
   [MessageCode.STATUS_BAR_MENU_PLACEHOLDER]: 'Select an action',
   [MessageCode.STATUS_BAR_MENU_TITLE]: 'RangeLink',

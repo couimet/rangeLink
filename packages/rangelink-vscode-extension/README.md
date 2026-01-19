@@ -172,6 +172,16 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 - **Cmd+Click** to jump to code
 - **Perfect for scratchpads** - Validate links before sending to claude-code
 
+#### Go to Link
+
+**Have a RangeLink but no clickable context?** Paste or type it directly:
+
+- **Press `Cmd+R Cmd+G`** (Mac) or **`Ctrl+R Ctrl+G`** (Windows/Linux)
+- **Input any RangeLink** — `src/magic/RangeLink.ts#L3C14-L15C9`, `#L10-L20`, any format
+- **Jump instantly** to that exact code location
+
+**Perfect for:** Links from Slack, email, documentation, or AI responses you can't click directly.
+
 ---
 
 ### ⚡ Status Bar Menu
@@ -179,6 +189,7 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 Click the **RangeLink** item in the status bar (bottom right) to access quick actions:
 
 - **Jump to Bound Destination** — Focus your currently bound paste destination (shows quick pick of available destinations when unbound)
+- **Go to Link** — Paste or type a RangeLink to go directly to that code location
 - **Show Version Info** — Display extension version and build details
 
 The menu provides quick access without memorizing keyboard shortcuts. More actions coming in future releases.
@@ -248,6 +259,7 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | Jump to Bound Destination                  | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound paste destination             |
 | Save Selection as Bookmark                 | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
 | List Bookmarks                             | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
+| Go to Link                                 | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`        | Paste/type a RangeLink to go to that code location       |
 | Bind to Claude Code                        | —                   | —                      | Auto-send links to Claude Code chat                      |
 | Bind to Cursor AI                          | —                   | —                      | Auto-send links to Cursor AI chat                        |
 | Bind to GitHub Copilot Chat                | —                   | —                      | Auto-send links to Copilot Chat                          |

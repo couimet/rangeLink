@@ -240,10 +240,10 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('rangelink.navigateToRangeLink', () => {
-        expect(findCommand('rangelink.navigateToRangeLink')).toStrictEqual({
-          command: 'rangelink.navigateToRangeLink',
-          title: 'Navigate to Link',
+      it('rangelink.goToRangeLink', () => {
+        expect(findCommand('rangelink.goToRangeLink')).toStrictEqual({
+          command: 'rangelink.goToRangeLink',
+          title: 'Go to Link',
           category: 'RangeLink',
           icon: '$(go-to-file)',
         });
@@ -652,7 +652,15 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of keybindings', () => {
-      expect(keybindings).toHaveLength(12);
+      expect(keybindings).toHaveLength(13);
+    });
+
+    it('goToRangeLink keybinding (R-G)', () => {
+      expect(keybindings[12]).toStrictEqual({
+        command: 'rangelink.goToRangeLink',
+        key: 'ctrl+r ctrl+g',
+        mac: 'cmd+r cmd+g',
+      });
     });
   });
 

@@ -287,8 +287,8 @@
         "icon": "$(close)"
       },
       {
-        "command": "rangelink.navigateToRangeLink",
-        "title": "Navigate to Link",
+        "command": "rangelink.goToRangeLink",
+        "title": "Go to Link",
         "category": "RangeLink",
         "icon": "$(go-to-file)"
       }
@@ -460,6 +460,11 @@
         "command": "rangelink.bookmark.list",
         "key": "ctrl+r ctrl+b ctrl+l",
         "mac": "cmd+r cmd+b cmd+l"
+      },
+      {
+        "command": "rangelink.goToRangeLink",
+        "key": "ctrl+r ctrl+g",
+        "mac": "cmd+r cmd+g"
       }
     ],
     "menus": {

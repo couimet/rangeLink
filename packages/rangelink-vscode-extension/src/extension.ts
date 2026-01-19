@@ -5,7 +5,7 @@ import { BookmarkService, BookmarksStore } from './bookmarks';
 import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
 import { ListBookmarksCommand } from './commands/ListBookmarksCommand';
 import { ManageBookmarksCommand } from './commands/ManageBookmarksCommand';
-import { NavigateToRangeLinkCommand } from './commands/NavigateToRangeLinkCommand';
+import { GoToRangeLinkCommand } from './commands/GoToRangeLinkCommand';
 import { ConfigReader, getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
@@ -34,7 +34,7 @@ import {
   CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH,
   CMD_CONTEXT_TERMINAL_BIND,
   CMD_CONTEXT_TERMINAL_UNBIND,
-  CMD_NAVIGATE_TO_RANGELINK,
+  CMD_GO_TO_RANGELINK,
   CMD_COPY_LINK_ABSOLUTE,
   CMD_COPY_LINK_ONLY_ABSOLUTE,
   CMD_COPY_LINK_ONLY_RELATIVE,
@@ -350,14 +350,14 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  const navigateToRangeLinkCommand = new NavigateToRangeLinkCommand(
+  const goToRangeLinkCommand = new GoToRangeLinkCommand(
     ideAdapter,
     navigationHandler,
     logger,
   );
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_NAVIGATE_TO_RANGELINK, () =>
-      navigateToRangeLinkCommand.execute(),
+    ideAdapter.registerCommand(CMD_GO_TO_RANGELINK, () =>
+      goToRangeLinkCommand.execute(),
     ),
   );
 

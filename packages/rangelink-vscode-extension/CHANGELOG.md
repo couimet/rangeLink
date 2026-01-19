@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Includes separate `smartPadding.pasteFilePath` setting (default: `both`) for controlling whitespace around pasted paths
   - Copies to clipboard + sends to bound destination (like other paste commands)
   - Shows quick pick to bind a destination when unbound
+- **Go to Link Command (R-G)** - Paste or type a RangeLink to go directly to that code location
+  - **Keyboard shortcut:** `Cmd+R Cmd+G` (Mac) / `Ctrl+R Ctrl+G` (Win/Linux)
+  - Input any RangeLink format (`src/magic/RangeLink.ts#L3C14-L15C9`) and jump to that location
+  - Also available via Command Palette and status bar menu for discoverability
 - **Context Menu Integrations** - Right-click access to RangeLink commands (#73, #243, #246)
   - **Explorer** (right-click on files):
     - "RangeLink: Paste File Path" - Send absolute path to bound destination
@@ -45,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "RangeLink: Unbind" - Unbind current paste destination (when bound)
 - **Status Bar Menu** - Click the `🔗 RangeLink` status bar item to access ⚡ quick actions
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
+  - Go to Link
   - List Bookmarks / Manage Bookmarks
   - Show Version Info
 - **Bookmarks System** - Save code locations for quick access later

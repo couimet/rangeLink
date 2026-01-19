@@ -8,10 +8,10 @@ import {
 } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
-import { NavigateToRangeLinkCommand } from '../../commands/NavigateToRangeLinkCommand';
+import { GoToRangeLinkCommand } from '../../commands/GoToRangeLinkCommand';
 import { createMockNavigationHandler, createMockVscodeAdapter } from '../helpers';
 
-describe('NavigateToRangeLinkCommand', () => {
+describe('GoToRangeLinkCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockNavigationHandler: ReturnType<typeof createMockNavigationHandler>;
 
@@ -24,11 +24,11 @@ describe('NavigateToRangeLinkCommand', () => {
     it('logs initialization', () => {
       const mockAdapter = createMockVscodeAdapter();
 
-      new NavigateToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
+      new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'NavigateToRangeLinkCommand.constructor' },
-        'NavigateToRangeLinkCommand initialized',
+        { fn: 'GoToRangeLinkCommand.constructor' },
+        'GoToRangeLinkCommand initialized',
       );
     });
   });
@@ -42,7 +42,7 @@ describe('NavigateToRangeLinkCommand', () => {
             showInputBox: mockShowInputBox,
           },
         });
-        const command = new NavigateToRangeLinkCommand(
+        const command = new GoToRangeLinkCommand(
           mockAdapter,
           mockNavigationHandler,
           mockLogger,
@@ -57,7 +57,7 @@ describe('NavigateToRangeLinkCommand', () => {
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'NavigateToRangeLinkCommand.execute' },
+          { fn: 'GoToRangeLinkCommand.execute' },
           'User cancelled input',
         );
       });
@@ -73,7 +73,7 @@ describe('NavigateToRangeLinkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        const command = new NavigateToRangeLinkCommand(
+        const command = new GoToRangeLinkCommand(
           mockAdapter,
           mockNavigationHandler,
           mockLogger,
@@ -87,7 +87,7 @@ describe('NavigateToRangeLinkCommand', () => {
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'NavigateToRangeLinkCommand.execute' },
+          { fn: 'GoToRangeLinkCommand.execute' },
           'Empty input provided',
         );
       });
@@ -101,7 +101,7 @@ describe('NavigateToRangeLinkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        const command = new NavigateToRangeLinkCommand(
+        const command = new GoToRangeLinkCommand(
           mockAdapter,
           mockNavigationHandler,
           mockLogger,
@@ -115,7 +115,7 @@ describe('NavigateToRangeLinkCommand', () => {
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'NavigateToRangeLinkCommand.execute' },
+          { fn: 'GoToRangeLinkCommand.execute' },
           'Empty input provided',
         );
       });
@@ -139,7 +139,7 @@ describe('NavigateToRangeLinkCommand', () => {
           },
         });
         mockNavigationHandler.parseLink.mockReturnValue(Result.err(mockError));
-        const command = new NavigateToRangeLinkCommand(
+        const command = new GoToRangeLinkCommand(
           mockAdapter,
           mockNavigationHandler,
           mockLogger,
@@ -154,7 +154,7 @@ describe('NavigateToRangeLinkCommand', () => {
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'NavigateToRangeLinkCommand.execute',
+            fn: 'GoToRangeLinkCommand.execute',
             input: invalidInput,
             trimmedInput: invalidInput,
             error: mockError,
@@ -175,7 +175,7 @@ describe('NavigateToRangeLinkCommand', () => {
           },
         });
         mockNavigationHandler.parseLink.mockReturnValue(Result.err(mockError));
-        const command = new NavigateToRangeLinkCommand(
+        const command = new GoToRangeLinkCommand(
           mockAdapter,
           mockNavigationHandler,
           mockLogger,
@@ -189,7 +189,7 @@ describe('NavigateToRangeLinkCommand', () => {
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'NavigateToRangeLinkCommand.execute',
+            fn: 'GoToRangeLinkCommand.execute',
             input: inputWithWhitespace,
             trimmedInput,
             error: mockError,
@@ -217,7 +217,7 @@ describe('NavigateToRangeLinkCommand', () => {
           },
         });
         mockNavigationHandler.parseLink.mockReturnValue(Result.ok(mockParsedLink));
-        const command = new NavigateToRangeLinkCommand(
+        const command = new GoToRangeLinkCommand(
           mockAdapter,
           mockNavigationHandler,
           mockLogger,
@@ -228,15 +228,15 @@ describe('NavigateToRangeLinkCommand', () => {
         expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(validLink);
         expect(mockNavigationHandler.navigateToLink).toHaveBeenCalledWith(mockParsedLink, validLink);
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'NavigateToRangeLinkCommand.execute' },
+          { fn: 'GoToRangeLinkCommand.execute' },
           'Showing input box for RangeLink',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'NavigateToRangeLinkCommand.execute', input: validLink },
+          { fn: 'GoToRangeLinkCommand.execute', input: validLink },
           'Parsing RangeLink',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'NavigateToRangeLinkCommand.execute', parsed: mockParsedLink },
+          { fn: 'GoToRangeLinkCommand.execute', parsed: mockParsedLink },
           'Navigating to link',
         );
       });
@@ -251,7 +251,7 @@ describe('NavigateToRangeLinkCommand', () => {
           },
         });
         mockNavigationHandler.parseLink.mockReturnValue(Result.ok(mockParsedLink));
-        const command = new NavigateToRangeLinkCommand(
+        const command = new GoToRangeLinkCommand(
           mockAdapter,
           mockNavigationHandler,
           mockLogger,

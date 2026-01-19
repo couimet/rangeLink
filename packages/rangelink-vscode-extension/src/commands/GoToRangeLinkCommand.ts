@@ -6,26 +6,26 @@ import { MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 /**
- * Command handler for navigating to a RangeLink entered via input box.
+ * Command handler for going to a RangeLink entered via input box.
  *
  * Allows users to paste or type a RangeLink in the Command Palette and
- * navigate directly to it. Complements existing navigation via terminal
+ * go directly to it. Complements existing navigation via terminal
  * and document link clicking.
  */
-export class NavigateToRangeLinkCommand {
+export class GoToRangeLinkCommand {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
     private readonly navigationHandler: RangeLinkNavigationHandler,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
-      { fn: 'NavigateToRangeLinkCommand.constructor' },
-      'NavigateToRangeLinkCommand initialized',
+      { fn: 'GoToRangeLinkCommand.constructor' },
+      'GoToRangeLinkCommand initialized',
     );
   }
 
   async execute(): Promise<void> {
-    const logCtx = { fn: 'NavigateToRangeLinkCommand.execute' };
+    const logCtx = { fn: 'GoToRangeLinkCommand.execute' };
 
     this.logger.debug(logCtx, 'Showing input box for RangeLink');
 
