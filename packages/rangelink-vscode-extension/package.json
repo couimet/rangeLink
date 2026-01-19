@@ -181,27 +181,27 @@
         "icon": "$(bookmark)"
       },
       {
-        "command": "rangelink.pasteFilePath",
-        "title": "RangeLink: Paste Path",
+        "command": "rangelink.pasteFileAbsolutePath",
+        "title": "RangeLink: Paste File Path (Absolute)",
         "category": "RangeLink",
         "icon": "$(file-symlink-file)"
       },
       {
-        "command": "rangelink.pasteFilePathRelative",
-        "title": "RangeLink: Paste Relative Path",
+        "command": "rangelink.pasteFileRelativePath",
+        "title": "RangeLink: Paste File Path",
         "category": "RangeLink",
         "icon": "$(file-symlink-file)"
       },
       {
-        "command": "rangelink.pasteCurrentFilePath",
-        "title": "Paste Current File Path",
+        "command": "rangelink.pasteCurrentFileAbsolutePath",
+        "title": "Paste Current File Path (Absolute)",
         "category": "RangeLink",
         "icon": "$(file-symlink-file)",
         "enablement": "editorIsOpen"
       },
       {
-        "command": "rangelink.pasteCurrentFilePathRelative",
-        "title": "Paste Current File Relative Path",
+        "command": "rangelink.pasteCurrentFileRelativePath",
+        "title": "Paste Current File Path",
         "category": "RangeLink",
         "icon": "$(file-symlink-file)",
         "enablement": "editorIsOpen"
@@ -348,13 +348,13 @@
         "when": "editorHasSelection"
       },
       {
-        "command": "rangelink.pasteCurrentFilePathRelative",
+        "command": "rangelink.pasteCurrentFileRelativePath",
         "key": "ctrl+r ctrl+f",
         "mac": "cmd+r cmd+f",
         "when": "editorIsOpen"
       },
       {
-        "command": "rangelink.pasteCurrentFilePath",
+        "command": "rangelink.pasteCurrentFileAbsolutePath",
         "key": "ctrl+r ctrl+shift+f",
         "mac": "cmd+r cmd+shift+f",
         "when": "editorIsOpen"
@@ -387,11 +387,11 @@
           "when": "false"
         },
         {
-          "command": "rangelink.pasteFilePath",
+          "command": "rangelink.pasteFileAbsolutePath",
           "when": "false"
         },
         {
-          "command": "rangelink.pasteFilePathRelative",
+          "command": "rangelink.pasteFileRelativePath",
           "when": "false"
         }
       ],
@@ -437,31 +437,31 @@
           "group": "8_rangelink@7"
         },
         {
-          "command": "rangelink.pasteFilePathRelative",
+          "command": "rangelink.pasteFileRelativePath",
           "group": "5_cutcopypaste@10"
         },
         {
-          "command": "rangelink.pasteFilePath",
+          "command": "rangelink.pasteFileAbsolutePath",
           "group": "5_cutcopypaste@11"
         }
       ],
       "editor/title/context": [
         {
-          "command": "rangelink.pasteFilePathRelative",
+          "command": "rangelink.pasteFileRelativePath",
           "group": "5_cutcopypaste@10"
         },
         {
-          "command": "rangelink.pasteFilePath",
+          "command": "rangelink.pasteFileAbsolutePath",
           "group": "5_cutcopypaste@11"
         }
       ],
       "explorer/context": [
         {
-          "command": "rangelink.pasteFilePathRelative",
+          "command": "rangelink.pasteFileRelativePath",
           "group": "5_cutcopypaste@10"
         },
         {
-          "command": "rangelink.pasteFilePath",
+          "command": "rangelink.pasteFileAbsolutePath",
           "group": "5_cutcopypaste@11"
         }
       ],

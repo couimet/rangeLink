@@ -242,19 +242,19 @@ describe('package.json contributions', () => {
     });
 
     describe('paste file path commands (context menu)', () => {
-      it('rangelink.pasteFilePath', () => {
-        expect(findCommand('rangelink.pasteFilePath')).toStrictEqual({
-          command: 'rangelink.pasteFilePath',
-          title: 'RangeLink: Paste Path',
+      it('rangelink.pasteFileAbsolutePath', () => {
+        expect(findCommand('rangelink.pasteFileAbsolutePath')).toStrictEqual({
+          command: 'rangelink.pasteFileAbsolutePath',
+          title: 'RangeLink: Paste File Path (Absolute)',
           category: 'RangeLink',
           icon: '$(file-symlink-file)',
         });
       });
 
-      it('rangelink.pasteFilePathRelative', () => {
-        expect(findCommand('rangelink.pasteFilePathRelative')).toStrictEqual({
-          command: 'rangelink.pasteFilePathRelative',
-          title: 'RangeLink: Paste Relative Path',
+      it('rangelink.pasteFileRelativePath', () => {
+        expect(findCommand('rangelink.pasteFileRelativePath')).toStrictEqual({
+          command: 'rangelink.pasteFileRelativePath',
+          title: 'RangeLink: Paste File Path',
           category: 'RangeLink',
           icon: '$(file-symlink-file)',
         });
@@ -262,20 +262,20 @@ describe('package.json contributions', () => {
     });
 
     describe('paste current file path commands (command palette)', () => {
-      it('rangelink.pasteCurrentFilePath', () => {
-        expect(findCommand('rangelink.pasteCurrentFilePath')).toStrictEqual({
-          command: 'rangelink.pasteCurrentFilePath',
-          title: 'Paste Current File Path',
+      it('rangelink.pasteCurrentFileAbsolutePath', () => {
+        expect(findCommand('rangelink.pasteCurrentFileAbsolutePath')).toStrictEqual({
+          command: 'rangelink.pasteCurrentFileAbsolutePath',
+          title: 'Paste Current File Path (Absolute)',
           category: 'RangeLink',
           icon: '$(file-symlink-file)',
           enablement: 'editorIsOpen',
         });
       });
 
-      it('rangelink.pasteCurrentFilePathRelative', () => {
-        expect(findCommand('rangelink.pasteCurrentFilePathRelative')).toStrictEqual({
-          command: 'rangelink.pasteCurrentFilePathRelative',
-          title: 'Paste Current File Relative Path',
+      it('rangelink.pasteCurrentFileRelativePath', () => {
+        expect(findCommand('rangelink.pasteCurrentFileRelativePath')).toStrictEqual({
+          command: 'rangelink.pasteCurrentFileRelativePath',
+          title: 'Paste Current File Path',
           category: 'RangeLink',
           icon: '$(file-symlink-file)',
           enablement: 'editorIsOpen',
@@ -469,18 +469,18 @@ describe('package.json contributions', () => {
       });
     });
 
-    it('rangelink.pasteCurrentFilePathRelative keybinding', () => {
-      expect(findKeybinding('rangelink.pasteCurrentFilePathRelative')).toStrictEqual({
-        command: 'rangelink.pasteCurrentFilePathRelative',
+    it('rangelink.pasteCurrentFileRelativePath keybinding', () => {
+      expect(findKeybinding('rangelink.pasteCurrentFileRelativePath')).toStrictEqual({
+        command: 'rangelink.pasteCurrentFileRelativePath',
         key: 'ctrl+r ctrl+f',
         mac: 'cmd+r cmd+f',
         when: 'editorIsOpen',
       });
     });
 
-    it('rangelink.pasteCurrentFilePath keybinding', () => {
-      expect(findKeybinding('rangelink.pasteCurrentFilePath')).toStrictEqual({
-        command: 'rangelink.pasteCurrentFilePath',
+    it('rangelink.pasteCurrentFileAbsolutePath keybinding', () => {
+      expect(findKeybinding('rangelink.pasteCurrentFileAbsolutePath')).toStrictEqual({
+        command: 'rangelink.pasteCurrentFileAbsolutePath',
         key: 'ctrl+r ctrl+shift+f',
         mac: 'cmd+r cmd+shift+f',
         when: 'editorIsOpen',
@@ -591,16 +591,16 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('pasteFilePathRelative in editor context menu', () => {
+      it('pasteFileRelativePath in editor context menu', () => {
         expect(editorContextMenu[8]).toStrictEqual({
-          command: 'rangelink.pasteFilePathRelative',
+          command: 'rangelink.pasteFileRelativePath',
           group: '5_cutcopypaste@10',
         });
       });
 
-      it('pasteFilePath in editor context menu', () => {
+      it('pasteFileAbsolutePath in editor context menu', () => {
         expect(editorContextMenu[9]).toStrictEqual({
-          command: 'rangelink.pasteFilePath',
+          command: 'rangelink.pasteFileAbsolutePath',
           group: '5_cutcopypaste@11',
         });
       });
@@ -617,14 +617,14 @@ describe('package.json contributions', () => {
 
       it('pasteFilePathRelative in editor title context menu', () => {
         expect(editorTitleContextMenu[0]).toStrictEqual({
-          command: 'rangelink.pasteFilePathRelative',
+          command: 'rangelink.pasteFileRelativePath',
           group: '5_cutcopypaste@10',
         });
       });
 
       it('pasteFilePath in editor title context menu', () => {
         expect(editorTitleContextMenu[1]).toStrictEqual({
-          command: 'rangelink.pasteFilePath',
+          command: 'rangelink.pasteFileAbsolutePath',
           group: '5_cutcopypaste@11',
         });
       });
@@ -641,14 +641,14 @@ describe('package.json contributions', () => {
 
       it('pasteFilePathRelative in explorer context menu', () => {
         expect(explorerContextMenu[0]).toStrictEqual({
-          command: 'rangelink.pasteFilePathRelative',
+          command: 'rangelink.pasteFileRelativePath',
           group: '5_cutcopypaste@10',
         });
       });
 
       it('pasteFilePath in explorer context menu', () => {
         expect(explorerContextMenu[1]).toStrictEqual({
-          command: 'rangelink.pasteFilePath',
+          command: 'rangelink.pasteFileAbsolutePath',
           group: '5_cutcopypaste@11',
         });
       });
@@ -677,16 +677,16 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('pasteFilePath is hidden from command palette', () => {
+      it('pasteFileAbsolutePath is hidden from command palette', () => {
         expect(commandPalette[2]).toStrictEqual({
-          command: 'rangelink.pasteFilePath',
+          command: 'rangelink.pasteFileAbsolutePath',
           when: 'false',
         });
       });
 
-      it('pasteFilePathRelative is hidden from command palette', () => {
+      it('pasteFileRelativePath is hidden from command palette', () => {
         expect(commandPalette[3]).toStrictEqual({
-          command: 'rangelink.pasteFilePathRelative',
+          command: 'rangelink.pasteFileRelativePath',
           when: 'false',
         });
       });
