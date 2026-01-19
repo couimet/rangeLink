@@ -739,6 +739,5 @@ describe('package.json contributions', () => {
         });
       });
     });
-
   });
 });
