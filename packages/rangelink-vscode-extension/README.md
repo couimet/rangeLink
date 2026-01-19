@@ -63,7 +63,7 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 **Example output:**
 
 ```
-src/utils/parser.ts#L42C10-L58C25
+src/magic/RangeLink.ts#L3C14-L15C9
 ```
 
 **Note:** `R` then `L` - the letters stand for **R**ange **L**ink.
@@ -131,7 +131,7 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 
 **One keybinding to rule them all.** AI assistants have their own ways to share code — different shortcuts, different formats, and only work with _their_ AI. RangeLink unifies it all: **one keybinding** (`Cmd+R Cmd+L`), **character-level precision** (not just lines), and works with **any AI assistant**.
 
-**The precision advantage:** Most AI code-sharing tools work at _line-level_ precision. RangeLink goes deeper with _character-level_ ranges (`#L42C10-L58C25`), letting you highlight exactly the function signature, the problematic condition, or that one sneaky semicolon — not the whole block.
+**The precision advantage:** Most AI code-sharing tools work at _line-level_ precision. RangeLink goes deeper with _character-level_ ranges (`#L3C14-L15C9`), letting you highlight exactly the function signature, the problematic condition, or that one sneaky semicolon — not the whole block.
 
 **Supported AI assistants:**
 
@@ -162,7 +162,7 @@ Any RangeLink in your terminal becomes clickable — whether from claude-code re
 - **Works with all formats:** single-line, ranges, columns, rectangular selections
 - **Smart path resolution:** workspace-relative and absolute paths supported
 
-**Example:** AI suggests checking `src/auth.ts#L42C10-L58C25` → Click → VSCode opens file at exact selection.
+**Example:** AI suggests checking `src/magic/RangeLink.ts#L3C14-L15C9` → Click → VSCode opens file at exact selection.
 
 #### Editor Navigation
 
@@ -222,10 +222,10 @@ Also available via Command Palette → "Save Selection as Bookmark" or right-cli
 
 ### 🔗 Flexible Link Formats
 
-- **Single line:** `src/file.ts#L42`
-- **Line ranges:** `src/file.ts#L10-L25`
-- **Column precision:** `src/file.ts#L42C6-L42C15`
-- **Rectangular selections:** `src/file.ts##L10C5-L20C10` (double hash)
+- **Single line:** `src/magic/RangeLink.ts#L42`
+- **Line ranges:** `src/magic/RangeLink.ts#L10-L25`
+- **Column precision:** `src/magic/RangeLink.ts#L3C14-L15C9`
+- **Rectangular selections:** `src/magic/RangeLink.ts##L10C5-L20C10` (double hash)
 
 ### 📦 Portable Links (BYOD)
 

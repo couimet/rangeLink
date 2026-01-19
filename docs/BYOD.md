@@ -581,7 +581,7 @@ Alice (Team A) uses default delimiters. Bob (Team B) uses custom delimiters `@l:
 
 ```
 # Alice shares portable link:
-src/auth/login.ts#L42C10-L58C25~#~L~-~C~
+src/magic/RangeLink.ts#L3C14-L15C9~#~L~-~C~
 
 # Bob receives and parses correctly using embedded delimiters
 # Even though his local config is: @l10p5:l20p10
@@ -592,7 +592,7 @@ src/auth/login.ts#L42C10-L58C25~#~L~-~C~
 Tech writer creates docs with portable links. Future readers parse correctly regardless of their config:
 
 ```markdown
-See the implementation in [parser.ts#L89C5-L102C20~#~L~-~C~](src/parser.ts#L89C5-L102C20~#~L~-~C~)
+See the implementation in [RangeLink.ts#L3C14-L15C9~#~L~-~C~](src/magic/RangeLink.ts#L3C14-L15C9~#~L~-~C~)
 ```
 
 **Scenario 3: AI Assistant**
@@ -600,7 +600,7 @@ See the implementation in [parser.ts#L89C5-L102C20~#~L~-~C~](src/parser.ts#L89C5
 Developer shares code location with claude-code using portable link. AI parses correctly regardless of delimiter expectations:
 
 ```
-"Check the bug in auth/login.ts#L42C10-L58C25~#~L~-~C~"
+"Check the bug in src/magic/RangeLink.ts#L3C14-L15C9~#~L~-~C~"
 ```
 
 **Scenario 4: Issue Tracker**
@@ -608,8 +608,8 @@ Developer shares code location with claude-code using portable link. AI parses c
 Bug report includes portable link. Link works months later even if team changes delimiter configuration:
 
 ```
-Issue #123: Authentication bug
-Location: src/auth/login.ts#L42-L58~#~L~-~
+Issue #123: Bug in link formatting
+Location: src/magic/RangeLink.ts#L3-L15~#~L~-~
 ```
 
 ---
