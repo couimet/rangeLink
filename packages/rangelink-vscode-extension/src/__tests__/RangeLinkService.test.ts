@@ -2316,4 +2316,46 @@ describe('RangeLinkService', () => {
       });
     });
   });
+
+  describe('pasteFilePathToDestination', () => {
+    it('should delegate to pasteFilePath with Absolute and context-menu', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const spy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
+      const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
+
+      await service.pasteFilePathToDestination(mockUri, PathFormat.Absolute);
+
+      expect(spy).toHaveBeenCalledWith(mockUri, PathFormat.Absolute, 'context-menu');
+    });
+
+    it('should delegate to pasteFilePath with WorkspaceRelative and context-menu', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const spy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
+      const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
+
+      await service.pasteFilePathToDestination(mockUri, PathFormat.WorkspaceRelative);
+
+      expect(spy).toHaveBeenCalledWith(mockUri, PathFormat.WorkspaceRelative, 'context-menu');
+    });
+  });
+
+  describe('pasteCurrentFilePathToDestination', () => {
+    it('should delegate to pasteCurrentFilePath with Absolute', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const spy = jest.spyOn(service as any, 'pasteCurrentFilePath').mockResolvedValue(undefined);
+
+      await service.pasteCurrentFilePathToDestination(PathFormat.Absolute);
+
+      expect(spy).toHaveBeenCalledWith(PathFormat.Absolute);
+    });
+
+    it('should delegate to pasteCurrentFilePath with WorkspaceRelative', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const spy = jest.spyOn(service as any, 'pasteCurrentFilePath').mockResolvedValue(undefined);
+
+      await service.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative);
+
+      expect(spy).toHaveBeenCalledWith(PathFormat.WorkspaceRelative);
+    });
+  });
 });
