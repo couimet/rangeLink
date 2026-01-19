@@ -587,6 +587,7 @@ describe('Extension lifecycle', () => {
       'rangelink.explorer.pasteRelativeFilePath',
       'rangelink.handleDocumentLinkClick',
       'rangelink.jumpToBoundDestination',
+      'rangelink.navigateToRangeLink',
       'rangelink.openStatusBarMenu',
       'rangelink.pasteCurrentFileAbsolutePath',
       'rangelink.pasteCurrentFileRelativePath',
