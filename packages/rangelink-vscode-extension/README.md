@@ -230,7 +230,15 @@ The `~` separator marks embedded delimiters that override recipient's local sett
 
 ## Commands
 
-All commands are available via keyboard shortcuts and Command Palette. Commands that require a selection are also available in the right-click context menu:
+All commands are available via keyboard shortcuts and Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`).
+
+**Discover more by right-clicking:**
+
+- In text editors (with or without a selection)
+- On files in the explorer or editor tabs
+- On terminals or inside terminal panels
+
+RangeLink integrates where you already work. Explore the context menus — you'll find productivity shortcuts for binding destinations, pasting paths, and more.
 
 | Command                                           | Shortcut (Mac)      | Shortcut (Win/Linux)   | Description                                              |
 | ------------------------------------------------- | ------------------- | ---------------------- | -------------------------------------------------------- |
