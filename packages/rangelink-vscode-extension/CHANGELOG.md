@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Paste File Path Commands** - Send file paths directly to bound destinations (#243)
+  - **Context menu commands** - Right-click on files in explorer, editor tabs, or editor content
+    - "Paste File Path" - Sends workspace-relative path (default)
+    - "Paste File Path (Absolute)" - Sends absolute path
+  - **Command palette commands** - For the currently active editor
+    - "Paste Current File Path" - Sends workspace-relative path (default)
+    - "Paste Current File Path (Absolute)" - Sends absolute path
+  - **Keyboard shortcuts** - `Cmd+R Cmd+F` for relative, `Cmd+R Cmd+Shift+F` for absolute
+  - **Shell-safe quoting for terminals** - Paths with special characters (spaces, parentheses, etc.) are automatically quoted when sent to terminal destinations. Clipboard retains unquoted path for non-shell contexts.
+  - Includes separate `smartPadding.pasteFilePath` setting (default: `both`) for controlling whitespace around pasted paths
+  - Copies to clipboard + sends to bound destination (like other paste commands)
+  - Shows quick pick to bind a destination when unbound
 - **Context Menu Binding** - Right-click to bind/unbind destinations (#73, #246)
   - **Editor:** Right-click inside editor text area → "Bind RangeLink Here"
   - **Terminal:** Right-click on terminal tabs or inside terminal → "Bind RangeLink Here"
