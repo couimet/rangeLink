@@ -76,7 +76,14 @@ src/utils/parser.ts#L42C10-L58C25
 
 **RangeLink's unified pattern:** All paste destinations share the same seamless workflow—links paste exactly at your insertion point, the destination auto-focuses, and you immediately continue typing. No copy/paste friction, no manual clicking, no context switching. This is what makes RangeLink competitive with integrated AI assistants like Cursor's `Cmd+L`, but works across any destination and any AI.
 
-**Send raw text too:** Sometimes you want to send selected code directly without a link wrapper. `Cmd+R Cmd+V` pastes your selection as-is to the bound destination -- perfect for quick code snippets. No destination bound? A quick pick menu appears so you can choose and bind in one action.
+**Send more than links:**
+
+- `Cmd+R Cmd+V` — Paste your selection as-is (perfect for quick code snippets)
+- `Cmd+R Cmd+F` — Paste current file's path (`Shift` for absolute)
+
+No destination bound? A quick pick menu appears so you can choose and bind in one action.
+
+**Pro tip:** Power users rebind destinations on the fly. Working with Claude Code? Bind there. Switching to debug in terminal? Rebind with a right-click. Your workflow, your rules.
 
 #### Terminal Paste Destination
 
