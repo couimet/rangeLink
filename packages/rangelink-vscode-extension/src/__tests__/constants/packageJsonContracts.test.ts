@@ -363,10 +363,58 @@ describe('package.json contributions', () => {
           icon: '$(close)',
         });
       });
+
+      it('rangelink.editorContext.copyLink', () => {
+        expect(findCommand('rangelink.editorContext.copyLink')).toStrictEqual({
+          command: 'rangelink.editorContext.copyLink',
+          title: 'RangeLink: Copy Range Link',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.editorContext.copyLinkAbsolute', () => {
+        expect(findCommand('rangelink.editorContext.copyLinkAbsolute')).toStrictEqual({
+          command: 'rangelink.editorContext.copyLinkAbsolute',
+          title: 'RangeLink: Copy Range Link (Absolute)',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.editorContext.copyPortableLink', () => {
+        expect(findCommand('rangelink.editorContext.copyPortableLink')).toStrictEqual({
+          command: 'rangelink.editorContext.copyPortableLink',
+          title: 'RangeLink: Copy Portable Link',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.editorContext.copyPortableLinkAbsolute', () => {
+        expect(findCommand('rangelink.editorContext.copyPortableLinkAbsolute')).toStrictEqual({
+          command: 'rangelink.editorContext.copyPortableLinkAbsolute',
+          title: 'RangeLink: Copy Portable Link (Absolute)',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.editorContext.pasteSelectedText', () => {
+        expect(findCommand('rangelink.editorContext.pasteSelectedText')).toStrictEqual({
+          command: 'rangelink.editorContext.pasteSelectedText',
+          title: 'RangeLink: Paste Selected Text',
+          icon: '$(clippy)',
+        });
+      });
+
+      it('rangelink.editorContext.saveBookmark', () => {
+        expect(findCommand('rangelink.editorContext.saveBookmark')).toStrictEqual({
+          command: 'rangelink.editorContext.saveBookmark',
+          title: 'RangeLink: Save Selection as Bookmark',
+          icon: '$(bookmark)',
+        });
+      });
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(34);
+      expect(commands).toHaveLength(40);
     });
   });
 
@@ -609,81 +657,81 @@ describe('package.json contributions', () => {
         expect(editorContextMenu).toHaveLength(10);
       });
 
-      it('editorContent.pasteFilePath at top of RangeLink group', () => {
+      it('editorContext.copyLink at top of RangeLink group', () => {
         expect(editorContextMenu[0]).toStrictEqual({
-          command: 'rangelink.editorContent.pasteFilePath',
+          when: 'editorHasSelection',
+          command: 'rangelink.editorContext.copyLink',
           group: '8_rangelink@0',
         });
       });
 
-      it('editorContent.pasteRelativeFilePath in context menu', () => {
+      it('editorContext.copyLinkAbsolute in context menu', () => {
         expect(editorContextMenu[1]).toStrictEqual({
-          command: 'rangelink.editorContent.pasteRelativeFilePath',
+          when: 'editorHasSelection',
+          command: 'rangelink.editorContext.copyLinkAbsolute',
           group: '8_rangelink@1',
         });
       });
 
-      it('editorContent.bind for text editors', () => {
+      it('editorContext.copyPortableLink in context menu', () => {
         expect(editorContextMenu[2]).toStrictEqual({
-          command: 'rangelink.editorContent.bind',
+          when: 'editorHasSelection',
+          command: 'rangelink.editorContext.copyPortableLink',
           group: '8_rangelink@2',
+        });
+      });
+
+      it('editorContext.copyPortableLinkAbsolute in context menu', () => {
+        expect(editorContextMenu[3]).toStrictEqual({
+          when: 'editorHasSelection',
+          command: 'rangelink.editorContext.copyPortableLinkAbsolute',
+          group: '8_rangelink@3',
+        });
+      });
+
+      it('editorContext.pasteSelectedText in context menu', () => {
+        expect(editorContextMenu[4]).toStrictEqual({
+          when: 'editorHasSelection',
+          command: 'rangelink.editorContext.pasteSelectedText',
+          group: '8_rangelink@4',
+        });
+      });
+
+      it('editorContext.saveBookmark in context menu', () => {
+        expect(editorContextMenu[5]).toStrictEqual({
+          when: 'editorHasSelection',
+          command: 'rangelink.editorContext.saveBookmark',
+          group: '8_rangelink@5',
+        });
+      });
+
+      it('editorContent.pasteFilePath in context menu', () => {
+        expect(editorContextMenu[6]).toStrictEqual({
+          command: 'rangelink.editorContent.pasteFilePath',
+          group: '8_rangelink_files@0',
+        });
+      });
+
+      it('editorContent.pasteRelativeFilePath in context menu', () => {
+        expect(editorContextMenu[7]).toStrictEqual({
+          command: 'rangelink.editorContent.pasteRelativeFilePath',
+          group: '8_rangelink_files@1',
+        });
+      });
+
+      it('editorContent.bind for text editors', () => {
+        expect(editorContextMenu[8]).toStrictEqual({
+          command: 'rangelink.editorContent.bind',
+          group: '8_rangelink_files@2',
           when: 'resourceScheme == file || resourceScheme == untitled',
         });
       });
 
       it('editorContent.unbind shows when bound', () => {
-        expect(editorContextMenu[3]).toStrictEqual({
+        expect(editorContextMenu[9]).toStrictEqual({
           when: 'rangelink.isBound',
           command: 'rangelink.editorContent.unbind',
-          group: '8_rangelink@3',
-        });
-      });
-
-      it('copyLinkWithRelativePath in context menu', () => {
-        expect(editorContextMenu[4]).toStrictEqual({
-          when: 'editorHasSelection',
-          command: 'rangelink.copyLinkWithRelativePath',
-          group: '8_rangelink@10',
-        });
-      });
-
-      it('copyLinkWithAbsolutePath in context menu', () => {
-        expect(editorContextMenu[5]).toStrictEqual({
-          when: 'editorHasSelection',
-          command: 'rangelink.copyLinkWithAbsolutePath',
-          group: '8_rangelink@11',
-        });
-      });
-
-      it('copyPortableLinkWithRelativePath in context menu', () => {
-        expect(editorContextMenu[6]).toStrictEqual({
-          when: 'editorHasSelection',
-          command: 'rangelink.copyPortableLinkWithRelativePath',
-          group: '8_rangelink@12',
-        });
-      });
-
-      it('copyPortableLinkWithAbsolutePath in context menu', () => {
-        expect(editorContextMenu[7]).toStrictEqual({
-          when: 'editorHasSelection',
-          command: 'rangelink.copyPortableLinkWithAbsolutePath',
-          group: '8_rangelink@13',
-        });
-      });
-
-      it('pasteSelectedTextToDestination in context menu', () => {
-        expect(editorContextMenu[8]).toStrictEqual({
-          when: 'editorHasSelection',
-          command: 'rangelink.pasteSelectedTextToDestination',
-          group: '8_rangelink@14',
-        });
-      });
-
-      it('bookmark.add in context menu', () => {
-        expect(editorContextMenu[9]).toStrictEqual({
-          when: 'editorHasSelection',
-          command: 'rangelink.bookmark.add',
-          group: '8_rangelink@15',
+          group: '8_rangelink_files@3',
         });
       });
     });
@@ -694,20 +742,36 @@ describe('package.json contributions', () => {
       ] as MenuContribution[];
 
       it('has the expected number of editor title context menu items', () => {
-        expect(editorTitleContextMenu).toHaveLength(2);
+        expect(editorTitleContextMenu).toHaveLength(4);
       });
 
       it('editorTab.pasteFilePath in editor title context menu', () => {
         expect(editorTitleContextMenu[0]).toStrictEqual({
           command: 'rangelink.editorTab.pasteFilePath',
-          group: '2_copypath@100',
+          group: '3_rangelink@1',
         });
       });
 
       it('editorTab.pasteRelativeFilePath in editor title context menu', () => {
         expect(editorTitleContextMenu[1]).toStrictEqual({
           command: 'rangelink.editorTab.pasteRelativeFilePath',
-          group: '2_copypath@101',
+          group: '3_rangelink@2',
+        });
+      });
+
+      it('editorContent.bind in editor title context menu', () => {
+        expect(editorTitleContextMenu[2]).toStrictEqual({
+          command: 'rangelink.editorContent.bind',
+          group: '3_rangelink@3',
+          when: 'resourceScheme == file || resourceScheme == untitled',
+        });
+      });
+
+      it('editorContent.unbind in editor title context menu', () => {
+        expect(editorTitleContextMenu[3]).toStrictEqual({
+          when: 'rangelink.isBound',
+          command: 'rangelink.editorContent.unbind',
+          group: '3_rangelink@4',
         });
       });
     });
@@ -740,7 +804,7 @@ describe('package.json contributions', () => {
       const commandPalette = packageJson.contributes.menus['commandPalette'] as MenuContribution[];
 
       it('has the expected number of commandPalette entries', () => {
-        expect(commandPalette).toHaveLength(14);
+        expect(commandPalette).toHaveLength(20);
       });
 
       it('bindToTerminalHere is hidden from command palette', () => {
@@ -827,15 +891,57 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('terminal.bind is hidden from command palette', () => {
+      it('editorContext.copyLink is hidden from command palette', () => {
         expect(commandPalette[12]).toStrictEqual({
+          command: 'rangelink.editorContext.copyLink',
+          when: 'false',
+        });
+      });
+
+      it('editorContext.copyLinkAbsolute is hidden from command palette', () => {
+        expect(commandPalette[13]).toStrictEqual({
+          command: 'rangelink.editorContext.copyLinkAbsolute',
+          when: 'false',
+        });
+      });
+
+      it('editorContext.copyPortableLink is hidden from command palette', () => {
+        expect(commandPalette[14]).toStrictEqual({
+          command: 'rangelink.editorContext.copyPortableLink',
+          when: 'false',
+        });
+      });
+
+      it('editorContext.copyPortableLinkAbsolute is hidden from command palette', () => {
+        expect(commandPalette[15]).toStrictEqual({
+          command: 'rangelink.editorContext.copyPortableLinkAbsolute',
+          when: 'false',
+        });
+      });
+
+      it('editorContext.pasteSelectedText is hidden from command palette', () => {
+        expect(commandPalette[16]).toStrictEqual({
+          command: 'rangelink.editorContext.pasteSelectedText',
+          when: 'false',
+        });
+      });
+
+      it('editorContext.saveBookmark is hidden from command palette', () => {
+        expect(commandPalette[17]).toStrictEqual({
+          command: 'rangelink.editorContext.saveBookmark',
+          when: 'false',
+        });
+      });
+
+      it('terminal.bind is hidden from command palette', () => {
+        expect(commandPalette[18]).toStrictEqual({
           command: 'rangelink.terminal.bind',
           when: 'false',
         });
       });
 
       it('terminal.unbind is hidden from command palette', () => {
-        expect(commandPalette[13]).toStrictEqual({
+        expect(commandPalette[19]).toStrictEqual({
           command: 'rangelink.terminal.unbind',
           when: 'false',
         });

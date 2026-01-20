@@ -247,6 +247,36 @@
         "icon": "$(close)"
       },
       {
+        "command": "rangelink.editorContext.copyLink",
+        "title": "RangeLink: Copy Range Link",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.editorContext.copyLinkAbsolute",
+        "title": "RangeLink: Copy Range Link (Absolute)",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.editorContext.copyPortableLink",
+        "title": "RangeLink: Copy Portable Link",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.editorContext.copyPortableLinkAbsolute",
+        "title": "RangeLink: Copy Portable Link (Absolute)",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.editorContext.pasteSelectedText",
+        "title": "RangeLink: Paste Selected Text",
+        "icon": "$(clippy)"
+      },
+      {
+        "command": "rangelink.editorContext.saveBookmark",
+        "title": "RangeLink: Save Selection as Bookmark",
+        "icon": "$(bookmark)"
+      },
+      {
         "command": "rangelink.terminal.bind",
         "title": "RangeLink: Bind Here",
         "icon": "$(link)"
@@ -477,6 +507,30 @@
           "when": "false"
         },
         {
+          "command": "rangelink.editorContext.copyLink",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorContext.copyLinkAbsolute",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorContext.copyPortableLink",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorContext.copyPortableLinkAbsolute",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorContext.pasteSelectedText",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorContext.saveBookmark",
+          "when": "false"
+        },
+        {
           "command": "rangelink.terminal.bind",
           "when": "false"
         },
@@ -487,62 +541,72 @@
       ],
       "editor/context": [
         {
-          "command": "rangelink.editorContent.pasteFilePath",
+          "when": "editorHasSelection",
+          "command": "rangelink.editorContext.copyLink",
           "group": "8_rangelink@0"
         },
         {
-          "command": "rangelink.editorContent.pasteRelativeFilePath",
+          "when": "editorHasSelection",
+          "command": "rangelink.editorContext.copyLinkAbsolute",
           "group": "8_rangelink@1"
         },
         {
+          "when": "editorHasSelection",
+          "command": "rangelink.editorContext.copyPortableLink",
+          "group": "8_rangelink@2"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "rangelink.editorContext.copyPortableLinkAbsolute",
+          "group": "8_rangelink@3"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "rangelink.editorContext.pasteSelectedText",
+          "group": "8_rangelink@4"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "rangelink.editorContext.saveBookmark",
+          "group": "8_rangelink@5"
+        },
+        {
+          "command": "rangelink.editorContent.pasteFilePath",
+          "group": "8_rangelink_files@0"
+        },
+        {
+          "command": "rangelink.editorContent.pasteRelativeFilePath",
+          "group": "8_rangelink_files@1"
+        },
+        {
           "command": "rangelink.editorContent.bind",
-          "group": "8_rangelink@2",
+          "group": "8_rangelink_files@2",
           "when": "resourceScheme == file || resourceScheme == untitled"
         },
         {
           "when": "rangelink.isBound",
           "command": "rangelink.editorContent.unbind",
-          "group": "8_rangelink@3"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyLinkWithRelativePath",
-          "group": "8_rangelink@10"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyLinkWithAbsolutePath",
-          "group": "8_rangelink@11"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyPortableLinkWithRelativePath",
-          "group": "8_rangelink@12"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyPortableLinkWithAbsolutePath",
-          "group": "8_rangelink@13"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.pasteSelectedTextToDestination",
-          "group": "8_rangelink@14"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "rangelink.bookmark.add",
-          "group": "8_rangelink@15"
+          "group": "8_rangelink_files@3"
         }
       ],
       "editor/title/context": [
         {
           "command": "rangelink.editorTab.pasteFilePath",
-          "group": "2_copypath@100"
+          "group": "3_rangelink@1"
         },
         {
           "command": "rangelink.editorTab.pasteRelativeFilePath",
-          "group": "2_copypath@101"
+          "group": "3_rangelink@2"
+        },
+        {
+          "command": "rangelink.editorContent.bind",
+          "group": "3_rangelink@3",
+          "when": "resourceScheme == file || resourceScheme == untitled"
+        },
+        {
+          "when": "rangelink.isBound",
+          "command": "rangelink.editorContent.unbind",
+          "group": "3_rangelink@4"
         }
       ],
       "explorer/context": [

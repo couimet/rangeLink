@@ -555,7 +555,7 @@ describe('Extension lifecycle', () => {
 
     // Verify all commands are registered
     // Note: Command registration is IDE-agnostic; runtime availability differs by environment
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(36);
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(42);
     expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
@@ -581,6 +581,12 @@ describe('Extension lifecycle', () => {
       'rangelink.editorContent.pasteFilePath',
       'rangelink.editorContent.pasteRelativeFilePath',
       'rangelink.editorContent.unbind',
+      'rangelink.editorContext.copyLink',
+      'rangelink.editorContext.copyLinkAbsolute',
+      'rangelink.editorContext.copyPortableLink',
+      'rangelink.editorContext.copyPortableLinkAbsolute',
+      'rangelink.editorContext.pasteSelectedText',
+      'rangelink.editorContext.saveBookmark',
       'rangelink.editorTab.pasteFilePath',
       'rangelink.editorTab.pasteRelativeFilePath',
       'rangelink.explorer.pasteFilePath',

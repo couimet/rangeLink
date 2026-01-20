@@ -262,7 +262,7 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 
 RangeLink integrates directly into VSCode's right-click menus for fast, keyboard-free workflows. Items are positioned near related VSCode commands for discoverability.
 
-#### Explorer & Editor Tab (right-click on files)
+#### Explorer (right-click on files)
 
 Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 
@@ -271,21 +271,30 @@ Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 | RangeLink: Paste File Path          | Send absolute path to bound destination |
 | RangeLink: Paste Relative File Path | Send relative path to bound destination |
 
+#### Editor Tab (right-click on tabs)
+
+| Menu Item                           | Visibility       | Action                                  |
+| ----------------------------------- | ---------------- | --------------------------------------- |
+| RangeLink: Paste File Path          | Always           | Send absolute path to bound destination |
+| RangeLink: Paste Relative File Path | Always           | Send relative path to bound destination |
+| RangeLink: Bind Here                | File or untitled | Bind this editor as paste destination   |
+| RangeLink: Unbind                   | When bound       | Unbind current paste destination        |
+
 #### Editor Content (right-click inside editor)
 
-| Menu Item                                           | Visibility       | Action                                  |
-| --------------------------------------------------- | ---------------- | --------------------------------------- |
-| RangeLink: Paste This File's Path                   | Always           | Send absolute path to bound destination |
-| RangeLink: Paste This File's Relative Path          | Always           | Send relative path to bound destination |
-| RangeLink: Bind Here                                | File or untitled | Bind this editor as paste destination   |
-| RangeLink: Unbind                                   | When bound       | Unbind current paste destination        |
-| ─── _separator_ ───                                 |                  |                                         |
-| RangeLink: Copy Range Link                          | Has selection    | Create relative path link               |
-| RangeLink: Copy Range Link (Absolute)               | Has selection    | Create absolute path link               |
-| RangeLink: Copy Portable Link                       | Has selection    | Create BYOD portable link               |
-| RangeLink: Copy Portable Link (Absolute)            | Has selection    | Create BYOD portable link (absolute)    |
-| RangeLink: Paste Selected Text to Bound Destination | Has selection    | Send selected text to bound destination |
-| RangeLink: Save Selection as Bookmark               | Has selection    | Save selection for quick access later   |
+| Menu Item                                  | Visibility       | Action                                  |
+| ------------------------------------------ | ---------------- | --------------------------------------- |
+| RangeLink: Copy Range Link                 | Has selection    | Create relative path link               |
+| RangeLink: Copy Range Link (Absolute)      | Has selection    | Create absolute path link               |
+| RangeLink: Copy Portable Link              | Has selection    | Create BYOD portable link               |
+| RangeLink: Copy Portable Link (Absolute)   | Has selection    | Create BYOD portable link (absolute)    |
+| RangeLink: Paste Selected Text             | Has selection    | Send selected text to bound destination |
+| RangeLink: Save Selection as Bookmark      | Has selection    | Save selection for quick access later   |
+| ─── _separator_ ───                        |                  |                                         |
+| RangeLink: Paste This File's Path          | Always           | Send absolute path to bound destination |
+| RangeLink: Paste This File's Relative Path | Always           | Send relative path to bound destination |
+| RangeLink: Bind Here                       | File or untitled | Bind this editor as paste destination   |
+| RangeLink: Unbind                          | When bound       | Unbind current paste destination        |
 
 #### Terminal (right-click on tab or inside terminal)
 

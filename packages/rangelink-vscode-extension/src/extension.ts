@@ -21,6 +21,12 @@ import {
   CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH,
   CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH,
   CMD_CONTEXT_EDITOR_CONTENT_UNBIND,
+  CMD_CONTEXT_EDITOR_COPY_LINK,
+  CMD_CONTEXT_EDITOR_COPY_LINK_ABSOLUTE,
+  CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK,
+  CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK_ABSOLUTE,
+  CMD_CONTEXT_EDITOR_PASTE_SELECTED_TEXT,
+  CMD_CONTEXT_EDITOR_SAVE_BOOKMARK,
   CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH,
   CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH,
   CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH,
@@ -428,6 +434,35 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter.registerCommand(CMD_CONTEXT_TERMINAL_UNBIND, () => {
       destinationManager.unbind();
     }),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_LINK, () =>
+      service.createLink(PathFormat.WorkspaceRelative),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_LINK_ABSOLUTE, () =>
+      service.createLink(PathFormat.Absolute),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK, () =>
+      service.createPortableLink(PathFormat.WorkspaceRelative),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK_ABSOLUTE, () =>
+      service.createPortableLink(PathFormat.Absolute),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_PASTE_SELECTED_TEXT, () =>
+      service.pasteSelectedTextToDestination(),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_SAVE_BOOKMARK, () => addBookmarkCommand.execute()),
   );
 
   // Log version info on startup

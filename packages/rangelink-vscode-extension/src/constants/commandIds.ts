@@ -20,6 +20,13 @@ export const CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH = 'rangelink.editorConte
 export const CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH =
   'rangelink.editorContent.pasteRelativeFilePath';
 export const CMD_CONTEXT_EDITOR_CONTENT_UNBIND = 'rangelink.editorContent.unbind';
+export const CMD_CONTEXT_EDITOR_COPY_LINK = 'rangelink.editorContext.copyLink';
+export const CMD_CONTEXT_EDITOR_COPY_LINK_ABSOLUTE = 'rangelink.editorContext.copyLinkAbsolute';
+export const CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK = 'rangelink.editorContext.copyPortableLink';
+export const CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK_ABSOLUTE =
+  'rangelink.editorContext.copyPortableLinkAbsolute';
+export const CMD_CONTEXT_EDITOR_PASTE_SELECTED_TEXT = 'rangelink.editorContext.pasteSelectedText';
+export const CMD_CONTEXT_EDITOR_SAVE_BOOKMARK = 'rangelink.editorContext.saveBookmark';
 export const CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH = 'rangelink.editorTab.pasteFilePath';
 export const CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH =
   'rangelink.editorTab.pasteRelativeFilePath';
