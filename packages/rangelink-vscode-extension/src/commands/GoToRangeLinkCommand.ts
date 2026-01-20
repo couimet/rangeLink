@@ -52,7 +52,10 @@ export class GoToRangeLinkCommand {
     const parseResult = this.navigationHandler.parseLink(trimmedInput);
 
     if (!parseResult.success) {
-      this.logger.debug({ ...logCtx, input, trimmedInput, error: parseResult.error }, 'Invalid link format');
+      this.logger.debug(
+        { ...logCtx, input, trimmedInput, error: parseResult.error },
+        'Invalid link format',
+      );
       this.ideAdapter.showErrorMessage(
         formatMessage(MessageCode.INFO_NAVIGATION_INVALID_LINK, { input: trimmedInput }),
       );

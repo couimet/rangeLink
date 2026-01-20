@@ -350,15 +350,9 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  const goToRangeLinkCommand = new GoToRangeLinkCommand(
-    ideAdapter,
-    navigationHandler,
-    logger,
-  );
+  const goToRangeLinkCommand = new GoToRangeLinkCommand(ideAdapter, navigationHandler, logger);
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_GO_TO_RANGELINK, () =>
-      goToRangeLinkCommand.execute(),
-    ),
+    ideAdapter.registerCommand(CMD_GO_TO_RANGELINK, () => goToRangeLinkCommand.execute()),
   );
 
   context.subscriptions.push(

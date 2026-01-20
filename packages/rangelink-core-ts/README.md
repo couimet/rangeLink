@@ -69,7 +69,12 @@ const delimiters: DelimiterConfig = {
   range: '-',
 };
 
-const result = formatLink('src/magic/RangeLink.ts', selection, delimiters, PathFormat.WorkspaceRelative);
+const result = formatLink(
+  'src/magic/RangeLink.ts',
+  selection,
+  delimiters,
+  PathFormat.WorkspaceRelative,
+);
 
 if (result.success) {
   console.log(result.value); // "src/magic/RangeLink.ts#L3C14-L15C9"

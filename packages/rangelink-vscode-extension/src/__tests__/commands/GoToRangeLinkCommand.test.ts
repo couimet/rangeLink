@@ -42,11 +42,7 @@ describe('GoToRangeLinkCommand', () => {
             showInputBox: mockShowInputBox,
           },
         });
-        const command = new GoToRangeLinkCommand(
-          mockAdapter,
-          mockNavigationHandler,
-          mockLogger,
-        );
+        const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
 
@@ -73,11 +69,7 @@ describe('GoToRangeLinkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        const command = new GoToRangeLinkCommand(
-          mockAdapter,
-          mockNavigationHandler,
-          mockLogger,
-        );
+        const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
 
@@ -101,11 +93,7 @@ describe('GoToRangeLinkCommand', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
-        const command = new GoToRangeLinkCommand(
-          mockAdapter,
-          mockNavigationHandler,
-          mockLogger,
-        );
+        const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
 
@@ -139,11 +127,7 @@ describe('GoToRangeLinkCommand', () => {
           },
         });
         mockNavigationHandler.parseLink.mockReturnValue(Result.err(mockError));
-        const command = new GoToRangeLinkCommand(
-          mockAdapter,
-          mockNavigationHandler,
-          mockLogger,
-        );
+        const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
 
@@ -175,11 +159,7 @@ describe('GoToRangeLinkCommand', () => {
           },
         });
         mockNavigationHandler.parseLink.mockReturnValue(Result.err(mockError));
-        const command = new GoToRangeLinkCommand(
-          mockAdapter,
-          mockNavigationHandler,
-          mockLogger,
-        );
+        const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
 
@@ -217,16 +197,15 @@ describe('GoToRangeLinkCommand', () => {
           },
         });
         mockNavigationHandler.parseLink.mockReturnValue(Result.ok(mockParsedLink));
-        const command = new GoToRangeLinkCommand(
-          mockAdapter,
-          mockNavigationHandler,
-          mockLogger,
-        );
+        const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
 
         expect(mockNavigationHandler.parseLink).toHaveBeenCalledWith(validLink);
-        expect(mockNavigationHandler.navigateToLink).toHaveBeenCalledWith(mockParsedLink, validLink);
+        expect(mockNavigationHandler.navigateToLink).toHaveBeenCalledWith(
+          mockParsedLink,
+          validLink,
+        );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'GoToRangeLinkCommand.execute' },
           'Showing input box for RangeLink',
@@ -251,11 +230,7 @@ describe('GoToRangeLinkCommand', () => {
           },
         });
         mockNavigationHandler.parseLink.mockReturnValue(Result.ok(mockParsedLink));
-        const command = new GoToRangeLinkCommand(
-          mockAdapter,
-          mockNavigationHandler,
-          mockLogger,
-        );
+        const command = new GoToRangeLinkCommand(mockAdapter, mockNavigationHandler, mockLogger);
 
         await command.execute();
 

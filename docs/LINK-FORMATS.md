@@ -14,12 +14,12 @@ RangeLink generates local file paths with GitHub-inspired range notation. Links 
 
 ### Basic Notation
 
-| Selection Type        | Format                              | Example                              |
-| --------------------- | ----------------------------------- | ------------------------------------ |
-| Single line           | `path#L<line>`                      | `src/magic/RangeLink.ts#L3`          |
-| Multiple lines        | `path#L<start>-L<end>`              | `src/magic/RangeLink.ts#L3-L15`      |
-| With column precision | `path#L<line>C<col>-L<line>C<col>`  | `src/magic/RangeLink.ts#L3C14-L15C9` |
-| Rectangular selection | `path##L<start>C<col>-L<end>C<col>` | `src/magic/RangeLink.ts##L3C14-L15C9`|
+| Selection Type        | Format                              | Example                               |
+| --------------------- | ----------------------------------- | ------------------------------------- |
+| Single line           | `path#L<line>`                      | `src/magic/RangeLink.ts#L3`           |
+| Multiple lines        | `path#L<start>-L<end>`              | `src/magic/RangeLink.ts#L3-L15`       |
+| With column precision | `path#L<line>C<col>-L<line>C<col>`  | `src/magic/RangeLink.ts#L3C14-L15C9`  |
+| Rectangular selection | `path##L<start>C<col>-L<end>C<col>` | `src/magic/RangeLink.ts##L3C14-L15C9` |
 
 ### Default Delimiters
 
@@ -326,13 +326,13 @@ src/magic/RangeLink.ts##L3C14-L15C9
 
 ## Format Summary
 
-| Feature           | Syntax                              | Example                                       |
-| ----------------- | ----------------------------------- | --------------------------------------------- |
-| Basic range       | `path#L<start>-L<end>`              | `src/magic/RangeLink.ts#L3-L15`               |
-| With columns      | `path#L<line>C<col>-L<line>C<col>`  | `src/magic/RangeLink.ts#L3C14-L15C9`          |
-| Rectangular       | `path##L<start>C<col>-L<end>C<col>` | `src/magic/RangeLink.ts##L3C14-L15C9`         |
-| Portable (BYOD)   | `path#L<range>~<delimiters>~`       | `src/magic/RangeLink.ts#L3-L15~#~L~-~C~`      |
-| Custom delimiters | Configurable                        | `src/magic/RangeLink.ts@l3:l15` (if configured)|
+| Feature           | Syntax                              | Example                                         |
+| ----------------- | ----------------------------------- | ----------------------------------------------- |
+| Basic range       | `path#L<start>-L<end>`              | `src/magic/RangeLink.ts#L3-L15`                 |
+| With columns      | `path#L<line>C<col>-L<line>C<col>`  | `src/magic/RangeLink.ts#L3C14-L15C9`            |
+| Rectangular       | `path##L<start>C<col>-L<end>C<col>` | `src/magic/RangeLink.ts##L3C14-L15C9`           |
+| Portable (BYOD)   | `path#L<range>~<delimiters>~`       | `src/magic/RangeLink.ts#L3-L15~#~L~-~C~`        |
+| Custom delimiters | Configurable                        | `src/magic/RangeLink.ts@l3:l15` (if configured) |
 
 ---
 
