@@ -10,9 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Paste File Path Commands** - Send file paths directly to bound destinations (#243)
-  - **Context menu commands** - Right-click on files in explorer, editor tabs, or editor content
-    - "Paste File Path" - Sends workspace-relative path (default)
-    - "Paste File Path (Absolute)" - Sends absolute path
+  - **Context menu commands** - See "Context Menu Integrations" section below for full details
   - **Command palette commands** - For the currently active editor
     - "Paste Current File Path" - Sends workspace-relative path (default)
     - "Paste Current File Path (Absolute)" - Sends absolute path
