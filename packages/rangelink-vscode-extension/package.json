@@ -68,14 +68,14 @@
       },
       {
         "command": "rangelink.copyPortableLinkWithRelativePath",
-        "title": "Copy Portable RangeLink",
+        "title": "Copy Portable Link",
         "category": "RangeLink",
         "icon": "$(link-external)",
         "enablement": "editorHasSelection"
       },
       {
         "command": "rangelink.copyPortableLinkWithAbsolutePath",
-        "title": "Copy Portable RangeLink (Absolute)",
+        "title": "Copy Portable Link (Absolute)",
         "category": "RangeLink",
         "icon": "$(link-external)",
         "enablement": "editorHasSelection"
@@ -109,49 +109,49 @@
       },
       {
         "command": "rangelink.bindToTerminal",
-        "title": "Bind RangeLink to Terminal Destination",
+        "title": "Bind to Terminal",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.bindToTerminalHere",
-        "title": "Bind RangeLink Here",
+        "title": "Bind Here",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.bindToTextEditor",
-        "title": "Bind RangeLink to Text Editor Destination",
+        "title": "Bind to Text Editor",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.bindToTextEditorHere",
-        "title": "Bind RangeLink Here",
+        "title": "Bind Here",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.bindToCursorAI",
-        "title": "Bind RangeLink to Cursor AI Destination",
+        "title": "Bind to Cursor AI",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.bindToClaudeCode",
-        "title": "Bind RangeLink to Claude Code Destination",
+        "title": "Bind to Claude Code",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.bindToGitHubCopilotChat",
-        "title": "Bind RangeLink to GitHub Copilot Chat Destination",
+        "title": "Bind to GitHub Copilot Chat",
         "category": "RangeLink",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.unbindDestination",
-        "title": "Unbind RangeLink",
+        "title": "Unbind",
         "category": "RangeLink",
         "icon": "$(close)"
       },
@@ -163,7 +163,7 @@
       },
       {
         "command": "rangelink.openStatusBarMenu",
-        "title": "Open RangeLink Menu",
+        "title": "Open Menu",
         "category": "RangeLink",
         "icon": "$(link)"
       },
@@ -182,13 +182,13 @@
       },
       {
         "command": "rangelink.pasteFileAbsolutePath",
-        "title": "RangeLink: Paste File Path (Absolute)",
+        "title": "Paste File Path (Absolute)",
         "category": "RangeLink",
         "icon": "$(file-symlink-file)"
       },
       {
         "command": "rangelink.pasteFileRelativePath",
-        "title": "RangeLink: Paste File Path",
+        "title": "Paste File Path",
         "category": "RangeLink",
         "icon": "$(file-symlink-file)"
       },
@@ -205,6 +205,56 @@
         "category": "RangeLink",
         "icon": "$(file-symlink-file)",
         "enablement": "editorIsOpen"
+      },
+      {
+        "command": "rangelink.explorer.pasteFilePath",
+        "title": "RangeLink: Paste File Path",
+        "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "rangelink.explorer.pasteRelativeFilePath",
+        "title": "RangeLink: Paste Relative File Path",
+        "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "rangelink.editorTab.pasteFilePath",
+        "title": "RangeLink: Paste File Path",
+        "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "rangelink.editorTab.pasteRelativeFilePath",
+        "title": "RangeLink: Paste Relative File Path",
+        "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "rangelink.editorContent.pasteFilePath",
+        "title": "RangeLink: Paste This File's Path",
+        "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "rangelink.editorContent.pasteRelativeFilePath",
+        "title": "RangeLink: Paste This File's Relative Path",
+        "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "rangelink.editorContent.bind",
+        "title": "RangeLink: Bind Here",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.editorContent.unbind",
+        "title": "RangeLink: Unbind",
+        "icon": "$(close)"
+      },
+      {
+        "command": "rangelink.terminal.bind",
+        "title": "RangeLink: Bind Here",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.terminal.unbind",
+        "title": "RangeLink: Unbind",
+        "icon": "$(close)"
       }
     ],
     "configuration": {
@@ -393,97 +443,137 @@
         {
           "command": "rangelink.pasteFileRelativePath",
           "when": "false"
+        },
+        {
+          "command": "rangelink.explorer.pasteFilePath",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.explorer.pasteRelativeFilePath",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorTab.pasteFilePath",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorTab.pasteRelativeFilePath",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorContent.pasteFilePath",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorContent.pasteRelativeFilePath",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorContent.bind",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.editorContent.unbind",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.terminal.bind",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.terminal.unbind",
+          "when": "false"
         }
       ],
       "editor/context": [
         {
-          "command": "rangelink.bindToTextEditorHere",
-          "group": "8_rangelink@0",
-          "when": "resourceScheme == file || resourceScheme == untitled"
+          "command": "rangelink.editorContent.pasteFilePath",
+          "group": "8_rangelink@0"
         },
         {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyLinkWithRelativePath",
+          "command": "rangelink.editorContent.pasteRelativeFilePath",
           "group": "8_rangelink@1"
         },
         {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyLinkWithAbsolutePath",
-          "group": "8_rangelink@2"
+          "command": "rangelink.editorContent.bind",
+          "group": "8_rangelink@2",
+          "when": "resourceScheme == file || resourceScheme == untitled"
         },
         {
-          "when": "editorHasSelection",
-          "command": "rangelink.copyPortableLinkWithRelativePath",
+          "when": "rangelink.isBound",
+          "command": "rangelink.editorContent.unbind",
           "group": "8_rangelink@3"
         },
         {
           "when": "editorHasSelection",
+          "command": "rangelink.copyLinkWithRelativePath",
+          "group": "8_rangelink@10"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "rangelink.copyLinkWithAbsolutePath",
+          "group": "8_rangelink@11"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "rangelink.copyPortableLinkWithRelativePath",
+          "group": "8_rangelink@12"
+        },
+        {
+          "when": "editorHasSelection",
           "command": "rangelink.copyPortableLinkWithAbsolutePath",
-          "group": "8_rangelink@4"
+          "group": "8_rangelink@13"
         },
         {
           "when": "editorHasSelection",
           "command": "rangelink.pasteSelectedTextToDestination",
-          "group": "8_rangelink@5"
+          "group": "8_rangelink@14"
         },
         {
           "when": "editorHasSelection",
           "command": "rangelink.bookmark.add",
-          "group": "8_rangelink@6"
-        },
-        {
-          "when": "rangelink.isBound",
-          "command": "rangelink.unbindDestination",
-          "group": "8_rangelink@7"
-        },
-        {
-          "command": "rangelink.pasteFileRelativePath",
-          "group": "5_cutcopypaste@10"
-        },
-        {
-          "command": "rangelink.pasteFileAbsolutePath",
-          "group": "5_cutcopypaste@11"
+          "group": "8_rangelink@15"
         }
       ],
       "editor/title/context": [
         {
-          "command": "rangelink.pasteFileRelativePath",
-          "group": "5_cutcopypaste@10"
+          "command": "rangelink.editorTab.pasteFilePath",
+          "group": "2_copypath@100"
         },
         {
-          "command": "rangelink.pasteFileAbsolutePath",
-          "group": "5_cutcopypaste@11"
+          "command": "rangelink.editorTab.pasteRelativeFilePath",
+          "group": "2_copypath@101"
         }
       ],
       "explorer/context": [
         {
-          "command": "rangelink.pasteFileRelativePath",
-          "group": "5_cutcopypaste@10"
+          "command": "rangelink.explorer.pasteFilePath",
+          "group": "6_copypath@100"
         },
         {
-          "command": "rangelink.pasteFileAbsolutePath",
-          "group": "5_cutcopypaste@11"
+          "command": "rangelink.explorer.pasteRelativeFilePath",
+          "group": "6_copypath@101"
         }
       ],
       "terminal/title/context": [
         {
-          "command": "rangelink.bindToTerminalHere",
+          "command": "rangelink.terminal.bind",
           "group": "rangelink@1"
         },
         {
           "when": "rangelink.isBound",
-          "command": "rangelink.unbindDestination",
+          "command": "rangelink.terminal.unbind",
           "group": "rangelink@2"
         }
       ],
       "terminal/context": [
         {
-          "command": "rangelink.bindToTerminalHere",
+          "command": "rangelink.terminal.bind",
           "group": "rangelink@1"
         },
         {
           "when": "rangelink.isBound",
-          "command": "rangelink.unbindDestination",
+          "command": "rangelink.terminal.unbind",
           "group": "rangelink@2"
         }
       ]

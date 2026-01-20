@@ -15,6 +15,19 @@ export const CMD_BOOKMARK_ADD = 'rangelink.bookmark.add';
 export const CMD_BOOKMARK_LIST = 'rangelink.bookmark.list';
 export const CMD_BOOKMARK_MANAGE = 'rangelink.bookmark.manage';
 export const CMD_BOOKMARK_NAVIGATE = 'rangelink.bookmark.navigate';
+export const CMD_CONTEXT_EDITOR_CONTENT_BIND = 'rangelink.editorContent.bind';
+export const CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH = 'rangelink.editorContent.pasteFilePath';
+export const CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH =
+  'rangelink.editorContent.pasteRelativeFilePath';
+export const CMD_CONTEXT_EDITOR_CONTENT_UNBIND = 'rangelink.editorContent.unbind';
+export const CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH = 'rangelink.editorTab.pasteFilePath';
+export const CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH =
+  'rangelink.editorTab.pasteRelativeFilePath';
+export const CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH = 'rangelink.explorer.pasteFilePath';
+export const CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH =
+  'rangelink.explorer.pasteRelativeFilePath';
+export const CMD_CONTEXT_TERMINAL_BIND = 'rangelink.terminal.bind';
+export const CMD_CONTEXT_TERMINAL_UNBIND = 'rangelink.terminal.unbind';
 export const CMD_COPY_LINK_ABSOLUTE = 'rangelink.copyLinkWithAbsolutePath';
 export const CMD_COPY_LINK_ONLY_ABSOLUTE = 'rangelink.copyLinkOnlyWithAbsolutePath';
 export const CMD_COPY_LINK_ONLY_RELATIVE = 'rangelink.copyLinkOnlyWithRelativePath';

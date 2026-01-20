@@ -22,9 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Copies to clipboard + sends to bound destination (like other paste commands)
   - Shows quick pick to bind a destination when unbound
 - **Context Menu Binding** - Right-click to bind/unbind destinations (#73, #246)
-  - **Editor:** Right-click inside editor text area → "Bind RangeLink Here"
-  - **Terminal:** Right-click on terminal tabs or inside terminal → "Bind RangeLink Here"
-  - "Unbind RangeLink" appears in both menus when any destination is bound
+  - **Editor:** Right-click inside editor text area → "RangeLink: Bind Here"
+  - **Terminal:** Right-click on terminal tabs or inside terminal → "RangeLink: Bind Here"
+  - "RangeLink: Unbind" appears in both menus when any destination is bound
   - Complements existing Command Palette commands
 - **Status Bar Menu** - Click the `🔗 RangeLink` status bar item to access ⚡ quick actions
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
@@ -40,6 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Cleaner command titles** - Removed redundant "RangeLink" from command palette titles (#243)
+  - **Before:** "RangeLink: Bind RangeLink to Terminal Destination"
+  - **After:** "RangeLink: Bind to Terminal"
+  - Category "RangeLink" already provides the namespace; titles now focus on the action
+  - Affects 13 commands: bind commands, unbind, portable link, paste file path, status bar menu
+- **Context menu label improvements** - Aligned with VSCode conventions (#243)
+  - **Explorer & Editor Tab:** "Paste File Path" / "Paste Relative File Path" positioned near VSCode's native "Copy Path" items
+  - **Editor Content:** "RangeLink: Paste This File's Path" / "RangeLink: Paste This File's Relative Path" + bind/unbind commands
+  - **Terminal:** "RangeLink: Bind Here" / "RangeLink: Unbind" for quick destination binding
 - **Jump to Bound Destination UX** - Quick pick when no destination bound (#173)
   - **Before:** Error message "No destination bound. Bind a destination first."
   - **After:** Select destination → binds and jumps in one action
