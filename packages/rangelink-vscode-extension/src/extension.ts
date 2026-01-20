@@ -462,7 +462,9 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
   );
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_SAVE_BOOKMARK, () => addBookmarkCommand.execute()),
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_SAVE_BOOKMARK, () =>
+      addBookmarkCommand.execute(),
+    ),
   );
 
   // Log version info on startup
