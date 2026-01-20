@@ -412,6 +412,17 @@
   <location>.scratchpads/NNNN-description.txt</location>
   <extension>.txt</extension>
 
+  <questions-trigger>
+    <mandatory>If design questions arise, FIRST use workflow:questions to gather answers</mandatory>
+    <sequence>
+      1. Identify questions that need user input
+      2. Create .claude-questions/ file using workflow:questions
+      3. Wait for user answers
+      4. Create/update scratchpad with resolved decisions inlined
+    </sequence>
+    <rationale>Questions workflow lets user edit answers in-file; scratchpad captures resolved state</rationale>
+  </questions-trigger>
+
   <naming-pattern>
     Base pattern: `NNNN-description.txt`
 
