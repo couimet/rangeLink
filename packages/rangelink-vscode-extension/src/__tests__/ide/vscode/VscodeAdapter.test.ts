@@ -2103,6 +2103,36 @@ describe('VscodeAdapter', () => {
       });
     });
 
+    describe('getActiveTextEditorUri', () => {
+      it('should return URI when editor is active', () => {
+        const mockUri = createMockUri('/workspace/file.ts');
+        const mockEditor = createMockEditor({
+          document: createMockDocument({ uri: mockUri }),
+        });
+        mockVSCode.window.activeTextEditor = mockEditor;
+
+        const result = adapter.getActiveTextEditorUri();
+
+        expect(result).toBe(mockUri);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'VscodeAdapter.getActiveTextEditorUri' },
+          'Getting active text editor URI',
+        );
+      });
+
+      it('should return undefined when no editor is active', () => {
+        mockVSCode.window.activeTextEditor = undefined;
+
+        const result = adapter.getActiveTextEditorUri();
+
+        expect(result).toBeUndefined();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'VscodeAdapter.getActiveTextEditorUri' },
+          'Getting active text editor URI',
+        );
+      });
+    });
+
     describe('visibleTextEditors', () => {
       it('should return array of visible editors', () => {
         const mockEditor1 = createMockEditor({

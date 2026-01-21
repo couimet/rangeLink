@@ -24,4 +24,5 @@ export const DEFAULT_DELIMITER_RANGE = DEFAULT_DELIMITERS.range;
 
 export const DEFAULT_SMART_PADDING_PASTE_BOOKMARK: PaddingMode = 'both';
 export const DEFAULT_SMART_PADDING_PASTE_CONTENT: PaddingMode = 'none';
+export const DEFAULT_SMART_PADDING_PASTE_FILE_PATH: PaddingMode = 'both';
 export const DEFAULT_SMART_PADDING_PASTE_LINK: PaddingMode = 'both';

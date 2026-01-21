@@ -76,7 +76,14 @@ src/utils/parser.ts#L42C10-L58C25
 
 **RangeLink's unified pattern:** All paste destinations share the same seamless workflow—links paste exactly at your insertion point, the destination auto-focuses, and you immediately continue typing. No copy/paste friction, no manual clicking, no context switching. This is what makes RangeLink competitive with integrated AI assistants like Cursor's `Cmd+L`, but works across any destination and any AI.
 
-**Send raw text too:** Sometimes you want to send selected code directly without a link wrapper. `Cmd+R Cmd+V` pastes your selection as-is to the bound destination -- perfect for quick code snippets. No destination bound? A quick pick menu appears so you can choose and bind in one action.
+**Send more than links:**
+
+- `Cmd+R Cmd+V` — Paste your selection as-is (perfect for quick code snippets)
+- `Cmd+R Cmd+F` — Paste current file's path (`Shift` for absolute)
+
+No destination bound? A quick pick menu appears so you can choose and bind in one action.
+
+**Pro tip:** Power users rebind destinations on the fly. Working with Claude Code? Bind there. Switching to debug in terminal? Rebind with a right-click. Your workflow, your rules.
 
 #### Terminal Paste Destination
 
@@ -88,8 +95,8 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 1. Open integrated terminal
 2. Bind using either:
-   - **Command Palette** → "Bind RangeLink to Terminal Destination"
-   - **Right-click terminal tab** or **right-click inside terminal** → "Bind RangeLink Here"
+   - **Command Palette** → "Bind to Terminal"
+   - **Right-click terminal tab** or **right-click inside terminal** → "RangeLink: Bind Here"
 3. Select code → Generate link → Link pastes **at insertion point** + **terminal focuses automatically**
 
 #### Text Editor Destination
@@ -103,8 +110,8 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 1. Split your editor (2+ tab groups) — side-by-side or vertical split
 2. Open scratchpad file in one pane: untitled (`Cmd+N` / `Ctrl+N`) or any text file
 3. Bind using either:
-   - **Command Palette** → "Bind RangeLink to Text Editor Destination"
-   - **Right-click inside editor** → "Bind RangeLink Here"
+   - **Command Palette** → "Bind to Text Editor"
+   - **Right-click inside editor** → "RangeLink: Bind Here"
 4. Select code in other pane → Generate links → They paste **at insertion point** + **editor focuses automatically**
 
 **Workflow:**
@@ -134,7 +141,7 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 
 **How it works:**
 
-1. Bind your AI assistant: Command Palette → "Bind RangeLink to..."
+1. Bind your AI assistant: Command Palette → "Bind to..."
 2. Select code → `Cmd+R Cmd+L` → Link auto-pastes into chat
 3. Review and send
 
@@ -223,29 +230,78 @@ The `~` separator marks embedded delimiters that override recipient's local sett
 
 ## Commands
 
-All commands are available via keyboard shortcuts and Command Palette. Commands that require a selection are also available in the right-click context menu:
+### Command Palette
 
-| Command                                           | Shortcut (Mac)      | Shortcut (Win/Linux)   | Description                                              |
-| ------------------------------------------------- | ------------------- | ---------------------- | -------------------------------------------------------- |
-| Copy Range Link                                   | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`        | Create relative path link                                |
-| Copy Range Link (Absolute)                        | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L`  | Create absolute path link                                |
-| Copy Portable Link                                | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`        | Create BYOD portable link                                |
-| Copy Portable Link (Absolute)                     | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P`  | Create absolute BYOD link                                |
-| Copy Range Link (Clipboard Only)                  | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`        | Copy link to clipboard only (skip bound destination)     |
-| Copy Range Link (Clipboard Only, Absolute)        | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C`  | Copy absolute path link to clipboard only                |
-| Paste Selected Text to Destination                | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`        | Send selected text directly to bound destination         |
-| Jump to Bound Destination                         | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound paste destination             |
-| Save Selection as Bookmark                        | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
-| List Bookmarks                                    | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
-| Bind RangeLink to Claude Code Destination         | —                   | —                      | Auto-send links to Claude Code chat                      |
-| Bind RangeLink to Cursor AI Destination           | —                   | —                      | Auto-send links to Cursor AI chat                        |
-| Bind RangeLink to GitHub Copilot Chat Destination | —                   | —                      | Auto-send links to Copilot Chat                          |
-| Bind RangeLink to Terminal Destination            | —                   | —                      | Auto-send links to integrated terminal for AI workflows  |
-| Bind RangeLink to Text Editor Destination         | —                   | —                      | Auto-paste links at insertion point in bound text editor |
-| Unbind Destination                                | —                   | —                      | Stop auto-sending links to bound destination             |
-| Show Version Info                                 | —                   | —                      | Display version and build info                           |
+Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "RangeLink".
+
+| Command                                    | Shortcut (Mac)      | Shortcut (Win/Linux)   | Description                                              |
+| ------------------------------------------ | ------------------- | ---------------------- | -------------------------------------------------------- |
+| Copy Range Link                            | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`        | Create relative path link                                |
+| Copy Range Link (Absolute)                 | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L`  | Create absolute path link                                |
+| Copy Portable Link                         | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`        | Create BYOD portable link (relative path)                |
+| Copy Portable Link (Absolute)              | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P`  | Create BYOD portable link (absolute path)                |
+| Copy Range Link (Clipboard Only)           | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`        | Copy link to clipboard only (skip bound destination)     |
+| Copy Range Link (Clipboard Only, Absolute) | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C`  | Copy absolute path link to clipboard only                |
+| Paste Selected Text to Destination         | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`        | Send selected text directly to bound destination         |
+| Paste Current File Path                    | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`        | Send active editor's path to bound destination           |
+| Paste Current File Path (Absolute)         | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F`  | Send active editor's absolute path to bound destination  |
+| Jump to Bound Destination                  | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound paste destination             |
+| Save Selection as Bookmark                 | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
+| List Bookmarks                             | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
+| Bind to Claude Code                        | —                   | —                      | Auto-send links to Claude Code chat                      |
+| Bind to Cursor AI                          | —                   | —                      | Auto-send links to Cursor AI chat                        |
+| Bind to GitHub Copilot Chat                | —                   | —                      | Auto-send links to Copilot Chat                          |
+| Bind to Terminal                           | —                   | —                      | Auto-send links to integrated terminal for AI workflows  |
+| Bind to Text Editor                        | —                   | —                      | Auto-paste links at insertion point in bound text editor |
+| Unbind                                     | —                   | —                      | Stop auto-sending links to bound destination             |
+| Show Version Info                          | —                   | —                      | Display version and build info                           |
 
 **Customizing Shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) to open Keyboard Shortcuts, then search for "RangeLink".
+
+### Context Menus
+
+RangeLink integrates directly into VSCode's right-click menus for fast, keyboard-free workflows. Items are positioned near related VSCode commands for discoverability.
+
+#### Explorer (right-click on files)
+
+Positioned after VSCode's "Copy Path" / "Copy Relative Path":
+
+| Menu Item                           | Action                                  |
+| ----------------------------------- | --------------------------------------- |
+| RangeLink: Paste File Path          | Send absolute path to bound destination |
+| RangeLink: Paste Relative File Path | Send relative path to bound destination |
+
+#### Editor Tab (right-click on tabs)
+
+| Menu Item                           | Visibility       | Action                                  |
+| ----------------------------------- | ---------------- | --------------------------------------- |
+| RangeLink: Paste File Path          | Always           | Send absolute path to bound destination |
+| RangeLink: Paste Relative File Path | Always           | Send relative path to bound destination |
+| RangeLink: Bind Here                | File or untitled | Bind this editor as paste destination   |
+| RangeLink: Unbind                   | When bound       | Unbind current paste destination        |
+
+#### Editor Content (right-click inside editor)
+
+| Menu Item                                  | Visibility       | Action                                  |
+| ------------------------------------------ | ---------------- | --------------------------------------- |
+| RangeLink: Copy Range Link                 | Has selection    | Create relative path link               |
+| RangeLink: Copy Range Link (Absolute)      | Has selection    | Create absolute path link               |
+| RangeLink: Copy Portable Link              | Has selection    | Create BYOD portable link               |
+| RangeLink: Copy Portable Link (Absolute)   | Has selection    | Create BYOD portable link (absolute)    |
+| RangeLink: Paste Selected Text             | Has selection    | Send selected text to bound destination |
+| RangeLink: Save Selection as Bookmark      | Has selection    | Save selection for quick access later   |
+| ─── _separator_ ───                        |                  |                                         |
+| RangeLink: Paste This File's Path          | Always           | Send absolute path to bound destination |
+| RangeLink: Paste This File's Relative Path | Always           | Send relative path to bound destination |
+| RangeLink: Bind Here                       | File or untitled | Bind this editor as paste destination   |
+| RangeLink: Unbind                          | When bound       | Unbind current paste destination        |
+
+#### Terminal (right-click on tab or inside terminal)
+
+| Menu Item            | Visibility | Action                                  |
+| -------------------- | ---------- | --------------------------------------- |
+| RangeLink: Bind Here | Always     | Bind this terminal as paste destination |
+| RangeLink: Unbind    | When bound | Unbind current paste destination        |
 
 ## Configuration
 

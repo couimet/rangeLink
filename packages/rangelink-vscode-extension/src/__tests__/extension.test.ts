@@ -553,13 +553,7 @@ describe('Extension lifecycle', () => {
     // Extension imported at top
     extension.activate(mockContext as any);
 
-    // Verify all commands are registered
-    // Note: Command registration is IDE-agnostic; runtime availability differs by environment
-    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(22);
-    expect(mockContext.subscriptions.length).toBeGreaterThan(0);
-    expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
-
-    // Verify all command IDs are registered correctly (sorted alphabetically)
+    // Command IDs registered (sorted alphabetically)
     const expectedCommands = [
       'rangelink.bindToClaudeCode',
       'rangelink.bindToCursorAI',
@@ -577,18 +571,72 @@ describe('Extension lifecycle', () => {
       'rangelink.copyLinkWithRelativePath',
       'rangelink.copyPortableLinkWithAbsolutePath',
       'rangelink.copyPortableLinkWithRelativePath',
+      'rangelink.editorContent.bind',
+      'rangelink.editorContent.pasteFilePath',
+      'rangelink.editorContent.pasteRelativeFilePath',
+      'rangelink.editorContent.unbind',
+      'rangelink.editorContext.copyLink',
+      'rangelink.editorContext.copyLinkAbsolute',
+      'rangelink.editorContext.copyPortableLink',
+      'rangelink.editorContext.copyPortableLinkAbsolute',
+      'rangelink.editorContext.pasteSelectedText',
+      'rangelink.editorContext.saveBookmark',
+      'rangelink.editorTab.pasteFilePath',
+      'rangelink.editorTab.pasteRelativeFilePath',
+      'rangelink.explorer.pasteFilePath',
+      'rangelink.explorer.pasteRelativeFilePath',
       'rangelink.handleDocumentLinkClick',
       'rangelink.jumpToBoundDestination',
       'rangelink.openStatusBarMenu',
+      'rangelink.pasteCurrentFileAbsolutePath',
+      'rangelink.pasteCurrentFileRelativePath',
+      'rangelink.pasteFileAbsolutePath',
+      'rangelink.pasteFileRelativePath',
       'rangelink.pasteSelectedTextToDestination',
       'rangelink.showVersion',
+      'rangelink.terminal.bind',
+      'rangelink.terminal.unbind',
       'rangelink.unbindDestination',
     ];
+
+    expect(mockCommands.registerCommand).toHaveBeenCalledTimes(expectedCommands.length);
+    expect(vscode.window.createOutputChannel).toHaveBeenCalledWith('RangeLink');
 
     // Verify each command was registered
     for (const command of expectedCommands) {
       expect(mockCommands.registerCommand).toHaveBeenCalledWith(command, expect.any(Function));
     }
+  });
+
+  it('should register expected number of subscriptions', () => {
+    const mockContext = {
+      subscriptions: [] as vscode.Disposable[],
+      globalState: createMockMemento(),
+    };
+
+    const mockConfig = {
+      get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
+      inspect: jest.fn((key: string) => ({
+        key,
+        defaultValue: 'L',
+        globalValue: undefined,
+        workspaceValue: undefined,
+        workspaceFolderValue: undefined,
+      })),
+    };
+
+    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
+
+    extension.activate(mockContext as any);
+
+    const INFRASTRUCTURE_COUNT = 2;
+    const PROVIDER_COUNT = 2;
+    const COMMAND_COUNT = 42;
+    const DESTINATION_MANAGER_LISTENERS = 2;
+    const EXPECTED_SUBSCRIPTION_COUNT =
+      INFRASTRUCTURE_COUNT + PROVIDER_COUNT + COMMAND_COUNT + DESTINATION_MANAGER_LISTENERS;
+
+    expect(mockContext.subscriptions.length).toBe(EXPECTED_SUBSCRIPTION_COUNT);
   });
 
   it('should clean up on deactivate', () => {

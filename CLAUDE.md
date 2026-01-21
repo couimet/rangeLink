@@ -412,6 +412,17 @@
   <location>.scratchpads/NNNN-description.txt</location>
   <extension>.txt</extension>
 
+  <questions-trigger>
+    <mandatory>If design questions arise, FIRST use workflow:questions to gather answers</mandatory>
+    <sequence>
+      1. Identify questions that need user input
+      2. Create .claude-questions/ file using workflow:questions
+      3. Wait for user answers
+      4. Create/update scratchpad with resolved decisions inlined
+    </sequence>
+    <rationale>Questions workflow lets user edit answers in-file; scratchpad captures resolved state</rationale>
+  </questions-trigger>
+
   <naming-pattern>
     Base pattern: `NNNN-description.txt`
 
@@ -430,6 +441,7 @@
     - PR descriptions being drafted
     - Implementation plans and analysis
     - Architecture decision exploration
+    - GitHub issue drafts
     - Any temporary working document
   </when-to-use>
 
@@ -440,9 +452,19 @@
   </when-NOT-to-use>
 </workflow>
 
-<workflow id="github-issues">
-  <title>GitHub Issue Management</title>
+<workflow id="creating-github-issues">
+  <title>Creating GitHub Issues</title>
   <see-also>Rule G002 for required labels</see-also>
+
+  <critical-rule>
+    <title>No references to ephemeral files</title>
+    <never>Reference .scratchpads/ or .claude-questions/ files in GitHub issue content</never>
+    <rationale>These files are local/ephemeral and not accessible from GitHub</rationale>
+    <do>Capture ALL relevant information directly in the issue body</do>
+    <do>If scratchpad references a questions file, inline the decisions in the issue</do>
+    <bad-example>`(from .claude-questions/0062)`</bad-example>
+    <good-example>Inline the actual decisions with context</good-example>
+  </critical-rule>
 
   <parent-child-issues>
     <do>Use GraphQL `addSubIssue` mutation for native relationships</do>
@@ -669,7 +691,6 @@
     myFunction(input);
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith(input);
-    spy.mockRestore();
     ```
   </example>
 </spy-verification>

@@ -9,11 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Context Menu Binding** - Right-click to bind/unbind destinations (#73, #246)
-  - **Editor:** Right-click inside editor text area → "Bind RangeLink Here"
-  - **Terminal:** Right-click on terminal tabs or inside terminal → "Bind RangeLink Here"
-  - "Unbind RangeLink" appears in both menus when any destination is bound
-  - Complements existing Command Palette commands
+- **Paste File Path Commands** - Send file paths directly to bound destinations (#243)
+  - **Context menu commands** - See "Context Menu Integrations" section below for full details
+  - **Command palette commands** - For the currently active editor
+    - "Paste Current File Path" - Sends workspace-relative path (default)
+    - "Paste Current File Path (Absolute)" - Sends absolute path
+  - **Keyboard shortcuts** - `Cmd+R Cmd+F` for relative, `Cmd+R Cmd+Shift+F` for absolute
+  - **Shell-safe quoting for terminals** - Paths with special characters (spaces, parentheses, etc.) are automatically quoted when sent to terminal destinations. Clipboard retains unquoted path for non-shell contexts.
+  - Includes separate `smartPadding.pasteFilePath` setting (default: `both`) for controlling whitespace around pasted paths
+  - Copies to clipboard + sends to bound destination (like other paste commands)
+  - Shows quick pick to bind a destination when unbound
+- **Context Menu Integrations** - Right-click access to RangeLink commands (#73, #243, #246)
+  - **Explorer** (right-click on files):
+    - "RangeLink: Paste File Path" - Send absolute path to bound destination
+    - "RangeLink: Paste Relative File Path" - Send relative path to bound destination
+  - **Editor Tab** (right-click on tabs):
+    - "RangeLink: Paste File Path" - Send absolute path to bound destination
+    - "RangeLink: Paste Relative File Path" - Send relative path to bound destination
+    - "RangeLink: Bind Here" - Bind this editor as paste destination (file/untitled only)
+    - "RangeLink: Unbind" - Unbind current paste destination (when bound)
+  - **Editor Content** (right-click inside editor):
+    - "RangeLink: Copy Range Link" - Create relative path link (has selection)
+    - "RangeLink: Copy Range Link (Absolute)" - Create absolute path link (has selection)
+    - "RangeLink: Copy Portable Link" - Create BYOD portable link (has selection)
+    - "RangeLink: Copy Portable Link (Absolute)" - Create BYOD portable link (has selection)
+    - "RangeLink: Paste Selected Text" - Send selected text to bound destination (has selection)
+    - "RangeLink: Save Selection as Bookmark" - Save selection for quick access (has selection)
+    - ─── _visual separator_ ───
+    - "RangeLink: Paste This File's Path" - Send absolute path to bound destination
+    - "RangeLink: Paste This File's Relative Path" - Send relative path to bound destination
+    - "RangeLink: Bind Here" - Bind this editor as paste destination (file/untitled only)
+    - "RangeLink: Unbind" - Unbind current paste destination (when bound)
+  - **Terminal** (right-click on terminal tabs or inside terminal):
+    - "RangeLink: Bind Here" - Bind this terminal as paste destination
+    - "RangeLink: Unbind" - Unbind current paste destination (when bound)
 - **Status Bar Menu** - Click the `🔗 RangeLink` status bar item to access ⚡ quick actions
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
   - List Bookmarks / Manage Bookmarks
@@ -28,6 +57,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Cleaner command titles** - Removed redundant "RangeLink" from command palette titles (#243)
+  - **Before:** "RangeLink: Bind RangeLink to Terminal Destination"
+  - **After:** "RangeLink: Bind to Terminal"
+  - Category "RangeLink" already provides the namespace; titles now focus on the action
+- **Editor context menu labels** - Selection items now have "RangeLink:" prefix (#243)
+  - **Before:** "Copy Range Link [⌘R ⌘L]" (command palette title with keybinding in title)
+  - **After:** "RangeLink: Copy Range Link" (consistent prefix, cleaner appearance)
 - **Jump to Bound Destination UX** - Quick pick when no destination bound (#173)
   - **Before:** Error message "No destination bound. Bind a destination first."
   - **After:** Select destination → binds and jumps in one action

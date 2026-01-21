@@ -652,6 +652,22 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
   }
 
   /**
+   * Get the URI of the currently active text editor's document.
+   *
+   * Convenience method for accessing the active document's URI without
+   * needing to check for undefined at each step.
+   *
+   * @returns URI of active document or undefined if no editor is active
+   */
+  getActiveTextEditorUri(): vscode.Uri | undefined {
+    this.logger.debug(
+      { fn: 'VscodeAdapter.getActiveTextEditorUri' },
+      'Getting active text editor URI',
+    );
+    return this.activeTextEditor?.document.uri;
+  }
+
+  /**
    * Get all visible text editors.
    *
    * @returns Array of visible text editors

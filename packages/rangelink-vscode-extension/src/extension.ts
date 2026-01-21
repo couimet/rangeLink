@@ -17,6 +17,22 @@ import {
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_LIST,
   CMD_BOOKMARK_MANAGE,
+  CMD_CONTEXT_EDITOR_CONTENT_BIND,
+  CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH,
+  CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH,
+  CMD_CONTEXT_EDITOR_CONTENT_UNBIND,
+  CMD_CONTEXT_EDITOR_COPY_LINK,
+  CMD_CONTEXT_EDITOR_COPY_LINK_ABSOLUTE,
+  CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK,
+  CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK_ABSOLUTE,
+  CMD_CONTEXT_EDITOR_PASTE_SELECTED_TEXT,
+  CMD_CONTEXT_EDITOR_SAVE_BOOKMARK,
+  CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH,
+  CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH,
+  CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH,
+  CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH,
+  CMD_CONTEXT_TERMINAL_BIND,
+  CMD_CONTEXT_TERMINAL_UNBIND,
   CMD_COPY_LINK_ABSOLUTE,
   CMD_COPY_LINK_ONLY_ABSOLUTE,
   CMD_COPY_LINK_ONLY_RELATIVE,
@@ -26,6 +42,10 @@ import {
   CMD_HANDLE_DOCUMENT_LINK_CLICK,
   CMD_JUMP_TO_DESTINATION,
   CMD_OPEN_STATUS_BAR_MENU,
+  CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE,
+  CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
+  CMD_PASTE_FILE_PATH_ABSOLUTE,
+  CMD_PASTE_FILE_PATH_RELATIVE,
   CMD_PASTE_TO_DESTINATION,
   CMD_SHOW_VERSION,
   CMD_UNBIND_DESTINATION,
@@ -342,6 +362,113 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BOOKMARK_MANAGE, () => manageBookmarksCommand.execute()),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_PASTE_FILE_PATH_ABSOLUTE, (uri) =>
+      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_PASTE_FILE_PATH_RELATIVE, (uri) =>
+      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
+    ),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE, () =>
+      service.pasteCurrentFilePathToDestination(PathFormat.Absolute),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE, () =>
+      service.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative),
+    ),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH, (uri) =>
+      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH, (uri) =>
+      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
+    ),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH, (uri) =>
+      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH, (uri) =>
+      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
+    ),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH, (uri) =>
+      uri
+        ? service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute)
+        : service.pasteCurrentFilePathToDestination(PathFormat.Absolute),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH, (uri) =>
+      uri
+        ? service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative)
+        : service.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_CONTENT_BIND, bindToTextEditorHandler),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_CONTENT_UNBIND, () => {
+      destinationManager.unbind();
+    }),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_TERMINAL_BIND, bindToTerminalHandler),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_TERMINAL_UNBIND, () => {
+      destinationManager.unbind();
+    }),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_LINK, () =>
+      service.createLink(PathFormat.WorkspaceRelative),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_LINK_ABSOLUTE, () =>
+      service.createLink(PathFormat.Absolute),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK, () =>
+      service.createPortableLink(PathFormat.WorkspaceRelative),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK_ABSOLUTE, () =>
+      service.createPortableLink(PathFormat.Absolute),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_PASTE_SELECTED_TEXT, () =>
+      service.pasteSelectedTextToDestination(),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_SAVE_BOOKMARK, () =>
+      addBookmarkCommand.execute(),
+    ),
   );
 
   // Log version info on startup
