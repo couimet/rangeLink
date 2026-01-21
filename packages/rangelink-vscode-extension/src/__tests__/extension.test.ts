@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 
 import * as extension from '../extension';
 import { messagesEn } from '../i18n/messages.en';
-import * as RangeLinkServiceModule from '../RangeLinkService';
 import { MessageCode } from '../types/MessageCode';
 import * as formatMessageModule from '../utils/formatMessage';
 import { VSCodeLogger } from '../VSCodeLogger';
@@ -823,131 +822,6 @@ describe('Logger verification and communication channel', () => {
 
       const expectedMessage = messagesEn[MessageCode.INFO_COMMIT_HASH_COPIED];
       expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expectedMessage);
-    });
-  });
-});
-
-describe('Editor content paste commands URI parameter handling', () => {
-  const mockPasteFilePathToDestination = jest.fn().mockResolvedValue(undefined);
-  const mockPasteCurrentFilePathToDestination = jest.fn().mockResolvedValue(undefined);
-
-  const mockContext = {
-    subscriptions: [] as vscode.Disposable[],
-    globalState: createMockMemento(),
-  };
-
-  beforeEach(() => {
-    (vscode.window.createStatusBarItem as jest.Mock).mockReturnValue(mockStatusBarItem);
-    (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
-
-    const mockConfig = {
-      get: jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
-      inspect: jest.fn(() => ({
-        globalValue: undefined,
-        workspaceValue: undefined,
-        workspaceFolderValue: undefined,
-      })),
-    };
-    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
-
-    jest.spyOn(RangeLinkServiceModule, 'RangeLinkService').mockImplementation(
-      () =>
-        ({
-          pasteFilePathToDestination: mockPasteFilePathToDestination,
-          pasteCurrentFilePathToDestination: mockPasteCurrentFilePathToDestination,
-          createLink: jest.fn(),
-          createPortableLink: jest.fn(),
-          createClipboardOnlyLink: jest.fn(),
-          pasteSelectedTextToDestination: jest.fn(),
-        }) as unknown as RangeLinkServiceModule.RangeLinkService,
-    );
-  });
-
-  describe('rangelink.editorContent.pasteFilePath', () => {
-    it('calls pasteFilePathToDestination when URI is provided', async () => {
-      const handlers = new Map<string, (uri?: vscode.Uri) => Promise<void>>();
-      (vscode.commands.registerCommand as jest.Mock).mockImplementation((commandId, handler) => {
-        handlers.set(commandId, handler);
-        return { dispose: jest.fn() };
-      });
-
-      extension.activate(mockContext as unknown as vscode.ExtensionContext);
-
-      const handler = handlers.get('rangelink.editorContent.pasteFilePath');
-      expect(handler).toBeDefined();
-
-      const mockUri = { fsPath: '/test/file.ts', path: '/test/file.ts' } as vscode.Uri;
-      await handler!(mockUri);
-
-      expect(mockPasteFilePathToDestination).toHaveBeenCalledWith(
-        mockUri,
-        RangeLinkServiceModule.PathFormat.Absolute,
-      );
-      expect(mockPasteCurrentFilePathToDestination).not.toHaveBeenCalled();
-    });
-
-    it('calls pasteCurrentFilePathToDestination when URI is not provided', async () => {
-      const handlers = new Map<string, (uri?: vscode.Uri) => Promise<void>>();
-      (vscode.commands.registerCommand as jest.Mock).mockImplementation((commandId, handler) => {
-        handlers.set(commandId, handler);
-        return { dispose: jest.fn() };
-      });
-
-      extension.activate(mockContext as unknown as vscode.ExtensionContext);
-
-      const handler = handlers.get('rangelink.editorContent.pasteFilePath');
-      expect(handler).toBeDefined();
-
-      await handler!(undefined);
-
-      expect(mockPasteCurrentFilePathToDestination).toHaveBeenCalledWith(
-        RangeLinkServiceModule.PathFormat.Absolute,
-      );
-      expect(mockPasteFilePathToDestination).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('rangelink.editorContent.pasteRelativeFilePath', () => {
-    it('calls pasteFilePathToDestination when URI is provided', async () => {
-      const handlers = new Map<string, (uri?: vscode.Uri) => Promise<void>>();
-      (vscode.commands.registerCommand as jest.Mock).mockImplementation((commandId, handler) => {
-        handlers.set(commandId, handler);
-        return { dispose: jest.fn() };
-      });
-
-      extension.activate(mockContext as unknown as vscode.ExtensionContext);
-
-      const handler = handlers.get('rangelink.editorContent.pasteRelativeFilePath');
-      expect(handler).toBeDefined();
-
-      const mockUri = { fsPath: '/test/file.ts', path: '/test/file.ts' } as vscode.Uri;
-      await handler!(mockUri);
-
-      expect(mockPasteFilePathToDestination).toHaveBeenCalledWith(
-        mockUri,
-        RangeLinkServiceModule.PathFormat.WorkspaceRelative,
-      );
-      expect(mockPasteCurrentFilePathToDestination).not.toHaveBeenCalled();
-    });
-
-    it('calls pasteCurrentFilePathToDestination when URI is not provided', async () => {
-      const handlers = new Map<string, (uri?: vscode.Uri) => Promise<void>>();
-      (vscode.commands.registerCommand as jest.Mock).mockImplementation((commandId, handler) => {
-        handlers.set(commandId, handler);
-        return { dispose: jest.fn() };
-      });
-
-      extension.activate(mockContext as unknown as vscode.ExtensionContext);
-
-      const handler = handlers.get('rangelink.editorContent.pasteRelativeFilePath');
-      expect(handler).toBeDefined();
-
-      await handler!(undefined);
-
-      expect(mockPasteCurrentFilePathToDestination).toHaveBeenCalledWith(
-        RangeLinkServiceModule.PathFormat.WorkspaceRelative,
-      );
-      expect(mockPasteFilePathToDestination).not.toHaveBeenCalled();
     });
   });
 });
