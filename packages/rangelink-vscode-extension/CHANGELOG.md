@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Shows quick pick to bind a destination when unbound
 - **Go to Link Command (R-G)** - Paste or type a RangeLink to go directly to that code location
   - **Keyboard shortcut:** `Cmd+R Cmd+G` (Mac) / `Ctrl+R Ctrl+G` (Win/Linux)
-  - Input any RangeLink format (`recipes/baking/chickenpie.ts#L3C14-L15C9`) and jump to that location
+  - Supports all link formats: full paths, ranges, columns (e.g., `recipes/baking/chickenpie.ts#L3C14-L15C9`)
   - Also available via Command Palette and status bar menu for discoverability
 - **Context Menu Integrations** - Right-click access to RangeLink commands (#73, #243, #246)
   - **Explorer** (right-click on files):

@@ -281,7 +281,7 @@ Invalid configurations trigger:
 **Documentation:**
 
 ```markdown
-See the implementation in [RangeLink.ts#L3-L15](recipes/baking/chickenpie.ts#L3-L15)
+See the implementation in [chickenpie.ts#L3-L15](recipes/baking/chickenpie.ts#L3-L15)
 ```
 
 **Code Reviews:**

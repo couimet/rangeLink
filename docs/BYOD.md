@@ -592,7 +592,7 @@ recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~
 Tech writer creates docs with portable links. Future readers parse correctly regardless of their config:
 
 ```markdown
-See the implementation in [RangeLink.ts#L3C14-L15C9~#~L~-~C~](recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~)
+See the implementation in [chickenpie.ts#L3C14-L15C9~#~L~-~C~](recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~)
 ```
 
 **Scenario 3: AI Assistant**

@@ -177,7 +177,7 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 **Have a RangeLink but no clickable context?** Paste or type it directly:
 
 - **Press `Cmd+R Cmd+G`** (Mac) or **`Ctrl+R Ctrl+G`** (Windows/Linux)
-- **Input any RangeLink** — `recipes/baking/chickenpie.ts#L3C14-L15C9`, `#L10-L20`, any format
+- **Supports all link formats:** full paths, ranges, columns (e.g., `recipes/baking/chickenpie.ts#L3C14-L15C9`)
 - **Jump instantly** to that exact code location
 
 **Perfect for:** Links from Slack, email, documentation, or AI responses you can't click directly.
