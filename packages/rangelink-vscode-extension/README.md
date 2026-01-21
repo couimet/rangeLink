@@ -63,7 +63,7 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 **Example output:**
 
 ```
-src/magic/RangeLink.ts#L3C14-L15C9
+recipes/baking/chickenpie.ts#L3C14-L15C9
 ```
 
 **Note:** `R` then `L` - the letters stand for **R**ange **L**ink.
@@ -162,7 +162,7 @@ Any RangeLink in your terminal becomes clickable — whether from claude-code re
 - **Works with all formats:** single-line, ranges, columns, rectangular selections
 - **Smart path resolution:** workspace-relative and absolute paths supported
 
-**Example:** AI suggests checking `src/magic/RangeLink.ts#L3C14-L15C9` → Click → VSCode opens file at exact selection.
+**Example:** AI suggests checking `recipes/baking/chickenpie.ts#L3C14-L15C9` → Click → VSCode opens file at exact selection.
 
 #### Editor Navigation
 
@@ -177,7 +177,7 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 **Have a RangeLink but no clickable context?** Paste or type it directly:
 
 - **Press `Cmd+R Cmd+G`** (Mac) or **`Ctrl+R Ctrl+G`** (Windows/Linux)
-- **Input any RangeLink** — `src/magic/RangeLink.ts#L3C14-L15C9`, `#L10-L20`, any format
+- **Input any RangeLink** — `recipes/baking/chickenpie.ts#L3C14-L15C9`, `#L10-L20`, any format
 - **Jump instantly** to that exact code location
 
 **Perfect for:** Links from Slack, email, documentation, or AI responses you can't click directly.
@@ -222,10 +222,10 @@ Also available via Command Palette → "Save Selection as Bookmark" or right-cli
 
 ### 🔗 Flexible Link Formats
 
-- **Single line:** `src/magic/RangeLink.ts#L42`
-- **Line ranges:** `src/magic/RangeLink.ts#L10-L25`
-- **Column precision:** `src/magic/RangeLink.ts#L3C14-L15C9`
-- **Rectangular selections:** `src/magic/RangeLink.ts##L10C5-L20C10` (double hash)
+- **Single line:** `recipes/baking/chickenpie.ts#L42`
+- **Line ranges:** `recipes/baking/chickenpie.ts#L10-L25`
+- **Column precision:** `recipes/baking/chickenpie.ts#L3C14-L15C9`
+- **Rectangular selections:** `recipes/baking/chickenpie.ts##L10C5-L20C10` (double hash)
 
 ### 📦 Portable Links (BYOD)
 

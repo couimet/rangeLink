@@ -70,14 +70,14 @@ const delimiters: DelimiterConfig = {
 };
 
 const result = formatLink(
-  'src/magic/RangeLink.ts',
+  'recipes/baking/chickenpie.ts',
   selection,
   delimiters,
   PathFormat.WorkspaceRelative,
 );
 
 if (result.success) {
-  console.log(result.value); // "src/magic/RangeLink.ts#L3C14-L15C9"
+  console.log(result.value); // "recipes/baking/chickenpie.ts#L3C14-L15C9"
 }
 ```
 

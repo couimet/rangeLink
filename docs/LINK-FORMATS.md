@@ -14,12 +14,12 @@ RangeLink generates local file paths with GitHub-inspired range notation. Links 
 
 ### Basic Notation
 
-| Selection Type        | Format                              | Example                               |
-| --------------------- | ----------------------------------- | ------------------------------------- |
-| Single line           | `path#L<line>`                      | `src/magic/RangeLink.ts#L3`           |
-| Multiple lines        | `path#L<start>-L<end>`              | `src/magic/RangeLink.ts#L3-L15`       |
-| With column precision | `path#L<line>C<col>-L<line>C<col>`  | `src/magic/RangeLink.ts#L3C14-L15C9`  |
-| Rectangular selection | `path##L<start>C<col>-L<end>C<col>` | `src/magic/RangeLink.ts##L3C14-L15C9` |
+| Selection Type        | Format                              | Example                                     |
+| --------------------- | ----------------------------------- | ------------------------------------------- |
+| Single line           | `path#L<line>`                      | `recipes/baking/chickenpie.ts#L3`           |
+| Multiple lines        | `path#L<start>-L<end>`              | `recipes/baking/chickenpie.ts#L3-L15`       |
+| With column precision | `path#L<line>C<col>-L<line>C<col>`  | `recipes/baking/chickenpie.ts#L3C14-L15C9`  |
+| Rectangular selection | `path##L<start>C<col>-L<end>C<col>` | `recipes/baking/chickenpie.ts##L3C14-L15C9` |
 
 ### Default Delimiters
 
@@ -43,7 +43,7 @@ path##L<start>C<col>-L<end>C<col>
 **Example:**
 
 ```
-src/magic/RangeLink.ts##L3C14-L15C9
+recipes/baking/chickenpie.ts##L3C14-L15C9
 ```
 
 ### Detection Rules
@@ -76,7 +76,7 @@ Different editors use different terminology for this feature:
 **BYOD** (Bring Your Own Delimiters) links embed delimiter metadata so they work regardless of recipient's configuration:
 
 ```
-src/magic/RangeLink.ts#L3C14-L15C9~#~L~-~C~
+recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~
 ```
 
 The `~` separator marks embedded delimiters that override recipient's local settings.
@@ -99,13 +99,13 @@ The `~` separator marks embedded delimiters that override recipient's local sett
 
 **Example breakdown:**
 
-```
-src/magic/RangeLink.ts#L3-L15~#~L~-~C~
-                       └┬──┘ └┬┘ └┬┘ └┬┘
-                        │     │   │   └─ Position delimiter: C
-                        │     │   └───── Range delimiter: -
-                        │     └───────── Line delimiter: L
-                        └───────────────── Hash delimiter: #
+```text
+recipes/baking/chickenpie.ts#L3-L15~#~L~-~C~
+                                   └┬┴┬┴┬┴┬┘
+                                    │ │ │ └─ Position delimiter: C
+                                    │ │ └─── Range delimiter: -
+                                    │ └───── Line delimiter: L
+                                    └─────── Hash delimiter: #
 ```
 
 ### Reserved Characters
@@ -153,7 +153,7 @@ A valid RangeLink must:
 #### Single Position
 
 ```
-src/magic/RangeLink.ts#L3C14
+recipes/baking/chickenpie.ts#L3C14
 ```
 
 - Represents cursor position at line 3, column 14
@@ -162,26 +162,26 @@ src/magic/RangeLink.ts#L3C14
 #### Multi-Line Same Column
 
 ```text
-src/magic/RangeLink.ts#L3C14-L15C14
+recipes/baking/chickenpie.ts#L3C14-L15C14
 ```
 
 - Could be rectangular if all intermediate lines match
 - Or could be traditional selection ending at same column
-- Double hash `##` disambiguates: `src/magic/RangeLink.ts##L3C14-L15C14` = rectangular
+- Double hash `##` disambiguates: `recipes/baking/chickenpie.ts##L3C14-L15C14` = rectangular
 
 #### Reverse Selections
 
 RangeLink normalizes selections so start always comes before end:
 
 - User selects from line 15 to line 3 (bottom-up)
-- RangeLink generates: `src/magic/RangeLink.ts#L3-L15` (normalized)
+- RangeLink generates: `recipes/baking/chickenpie.ts#L3-L15` (normalized)
 
 ### Path Handling
 
 #### Relative Paths
 
 ```
-src/magic/RangeLink.ts#L3-L15
+recipes/baking/chickenpie.ts#L3-L15
 ```
 
 - Relative to workspace root
@@ -190,7 +190,7 @@ src/magic/RangeLink.ts#L3-L15
 #### Absolute Paths
 
 ```
-/Users/alice/project/src/magic/RangeLink.ts#L3-L15
+/Users/alice/project/recipes/baking/chickenpie.ts#L3-L15
 ```
 
 - Machine-specific
@@ -275,32 +275,32 @@ Invalid configurations trigger:
 **AI Assistant Prompts:**
 
 ```
-"Check the bug in src/magic/RangeLink.ts#L3C14-L15C9"
+"Check the bug in recipes/baking/chickenpie.ts#L3C14-L15C9"
 ```
 
 **Documentation:**
 
 ```markdown
-See the implementation in [RangeLink.ts#L3-L15](src/magic/RangeLink.ts#L3-L15)
+See the implementation in [RangeLink.ts#L3-L15](recipes/baking/chickenpie.ts#L3-L15)
 ```
 
 **Code Reviews:**
 
 ```
-"The issue is here: src/magic/RangeLink.ts#L3C14-L15C9"
+"The issue is here: recipes/baking/chickenpie.ts#L3C14-L15C9"
 ```
 
 **Cross-Editor Sharing:**
 
 ```
 # Sender (VSCode with default delimiters)
-src/magic/RangeLink.ts#L3-L15
+recipes/baking/chickenpie.ts#L3-L15
 
 # Recipient (Sublime with custom delimiters @l:p)
 # Standard link won't parse correctly
 
 # Use portable link instead:
-src/magic/RangeLink.ts#L3-L15~#~L~-~C~
+recipes/baking/chickenpie.ts#L3-L15~#~L~-~C~
 # → Recipient sees correct range regardless of their config
 ```
 
@@ -309,30 +309,30 @@ src/magic/RangeLink.ts#L3-L15~#~L~-~C~
 **VSCode column selection:**
 
 ```
-src/magic/RangeLink.ts##L3C14-L15C9
+recipes/baking/chickenpie.ts##L3C14-L15C9
 ```
 
 **Neovim visual block mode:**
 
 ```
-src/magic/RangeLink.ts##L3C14-L15C9
+recipes/baking/chickenpie.ts##L3C14-L15C9
 ```
 
 **Sublime multiple selections:**
 
 ```
-src/magic/RangeLink.ts##L3C14-L15C9
+recipes/baking/chickenpie.ts##L3C14-L15C9
 ```
 
 ## Format Summary
 
-| Feature           | Syntax                              | Example                                         |
-| ----------------- | ----------------------------------- | ----------------------------------------------- |
-| Basic range       | `path#L<start>-L<end>`              | `src/magic/RangeLink.ts#L3-L15`                 |
-| With columns      | `path#L<line>C<col>-L<line>C<col>`  | `src/magic/RangeLink.ts#L3C14-L15C9`            |
-| Rectangular       | `path##L<start>C<col>-L<end>C<col>` | `src/magic/RangeLink.ts##L3C14-L15C9`           |
-| Portable (BYOD)   | `path#L<range>~<delimiters>~`       | `src/magic/RangeLink.ts#L3-L15~#~L~-~C~`        |
-| Custom delimiters | Configurable                        | `src/magic/RangeLink.ts@l3:l15` (if configured) |
+| Feature           | Syntax                              | Example                                               |
+| ----------------- | ----------------------------------- | ----------------------------------------------------- |
+| Basic range       | `path#L<start>-L<end>`              | `recipes/baking/chickenpie.ts#L3-L15`                 |
+| With columns      | `path#L<line>C<col>-L<line>C<col>`  | `recipes/baking/chickenpie.ts#L3C14-L15C9`            |
+| Rectangular       | `path##L<start>C<col>-L<end>C<col>` | `recipes/baking/chickenpie.ts##L3C14-L15C9`           |
+| Portable (BYOD)   | `path#L<range>~<delimiters>~`       | `recipes/baking/chickenpie.ts#L3-L15~#~L~-~C~`        |
+| Custom delimiters | Configurable                        | `recipes/baking/chickenpie.ts@l3:l15` (if configured) |
 
 ---
 

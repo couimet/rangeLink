@@ -42,7 +42,7 @@ describe('GoToRangeLinkCommand', () => {
 
         expect(mockShowInputBox).toHaveBeenCalledWith({
           prompt: 'Enter RangeLink to navigate',
-          placeHolder: 'src/magic/RangeLink.ts#L3C14-L15C9',
+          placeHolder: 'recipes/baking/chickenpie.ts#L3C14-L15C9',
         });
         expect(mockNavigationHandler.parseLink).not.toHaveBeenCalled();
         expect(mockNavigationHandler.navigateToLink).not.toHaveBeenCalled();

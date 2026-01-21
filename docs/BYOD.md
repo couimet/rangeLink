@@ -581,7 +581,7 @@ Alice (Team A) uses default delimiters. Bob (Team B) uses custom delimiters `@l:
 
 ```
 # Alice shares portable link:
-src/magic/RangeLink.ts#L3C14-L15C9~#~L~-~C~
+recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~
 
 # Bob receives and parses correctly using embedded delimiters
 # Even though his local config is: @l10p5:l20p10
@@ -592,7 +592,7 @@ src/magic/RangeLink.ts#L3C14-L15C9~#~L~-~C~
 Tech writer creates docs with portable links. Future readers parse correctly regardless of their config:
 
 ```markdown
-See the implementation in [RangeLink.ts#L3C14-L15C9~#~L~-~C~](src/magic/RangeLink.ts#L3C14-L15C9~#~L~-~C~)
+See the implementation in [RangeLink.ts#L3C14-L15C9~#~L~-~C~](recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~)
 ```
 
 **Scenario 3: AI Assistant**
@@ -600,7 +600,7 @@ See the implementation in [RangeLink.ts#L3C14-L15C9~#~L~-~C~](src/magic/RangeLin
 Developer shares code location with claude-code using portable link. AI parses correctly regardless of delimiter expectations:
 
 ```text
-"Check the bug in src/magic/RangeLink.ts#L3C14-L15C9~#~L~-~C~"
+"Check the bug in recipes/baking/chickenpie.ts#L3C14-L15C9~#~L~-~C~"
 ```
 
 **Scenario 4: Issue Tracker**
@@ -609,7 +609,7 @@ Bug report includes portable link. Link works months later even if team changes 
 
 ```text
 Issue #123: Bug in link formatting
-Location: src/magic/RangeLink.ts#L3-L15~#~L~-~
+Location: recipes/baking/chickenpie.ts#L3-L15~#~L~-~
 ```
 
 ---
