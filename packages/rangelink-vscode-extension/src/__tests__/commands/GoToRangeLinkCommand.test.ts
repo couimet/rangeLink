@@ -233,6 +233,14 @@ describe('GoToRangeLinkCommand', () => {
           mockParsedLink,
           trimmedLink,
         );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'GoToRangeLinkCommand.execute', input: trimmedLink },
+          'Parsing RangeLink',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'GoToRangeLinkCommand.execute', parsed: mockParsedLink },
+          'Navigating to link',
+        );
       });
     });
   });
