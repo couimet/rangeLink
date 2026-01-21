@@ -183,8 +183,8 @@ describe('GoToRangeLinkCommand', () => {
       const validLink = 'src/file.ts#L10C5-L20C15';
       const mockParsedLink: ParsedLink = {
         path: 'src/file.ts',
-        start: { line: 10, char: 5 },
-        end: { line: 20, char: 15 },
+        start: { line: 10, character: 5 },
+        end: { line: 20, character: 15 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
