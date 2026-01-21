@@ -599,7 +599,7 @@ See the implementation in [RangeLink.ts#L3C14-L15C9~#~L~-~C~](src/magic/RangeLin
 
 Developer shares code location with claude-code using portable link. AI parses correctly regardless of delimiter expectations:
 
-```
+```text
 "Check the bug in src/magic/RangeLink.ts#L3C14-L15C9~#~L~-~C~"
 ```
 
@@ -607,7 +607,7 @@ Developer shares code location with claude-code using portable link. AI parses c
 
 Bug report includes portable link. Link works months later even if team changes delimiter configuration:
 
-```
+```text
 Issue #123: Bug in link formatting
 Location: src/magic/RangeLink.ts#L3-L15~#~L~-~
 ```

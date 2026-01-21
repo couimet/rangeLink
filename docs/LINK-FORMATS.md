@@ -161,7 +161,7 @@ src/magic/RangeLink.ts#L3C14
 
 #### Multi-Line Same Column
 
-```
+```text
 src/magic/RangeLink.ts#L3C14-L15C14
 ```
 
