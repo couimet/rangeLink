@@ -2082,6 +2082,26 @@ describe('VscodeAdapter', () => {
       });
     });
 
+    describe('terminals', () => {
+      it('should return all terminals', () => {
+        const mockTerminal1 = createMockTerminal({ name: 'bash' });
+        const mockTerminal2 = createMockTerminal({ name: 'zsh' });
+        mockVSCode.window.terminals = [mockTerminal1, mockTerminal2];
+
+        const result = adapter.terminals;
+
+        expect(result).toStrictEqual([mockTerminal1, mockTerminal2]);
+      });
+
+      it('should return empty array when no terminals exist', () => {
+        mockVSCode.window.terminals = [];
+
+        const result = adapter.terminals;
+
+        expect(result).toStrictEqual([]);
+      });
+    });
+
     describe('activeTextEditor', () => {
       it('should return editor when one is active', () => {
         const mockEditor = createMockEditor({
