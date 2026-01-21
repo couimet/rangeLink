@@ -1,5 +1,5 @@
 import { createMockLogger } from 'barebone-logger-testing';
-import { RangeLinkError, RangeLinkErrorCodes, Result } from 'rangelink-core-ts';
+import { LinkType, RangeLinkError, RangeLinkErrorCodes, Result, SelectionType } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
 import { GoToRangeLinkCommand } from '../../commands/GoToRangeLinkCommand';
@@ -175,13 +175,13 @@ describe('GoToRangeLinkCommand', () => {
 
     describe('user enters valid link', () => {
       const validLink = 'src/file.ts#L10C5-L20C15';
-      const mockParsedLink = {
+      const mockParsedLink: ParsedLink = {
         path: 'src/file.ts',
         start: { line: 10, character: 5 },
         end: { line: 20, character: 15 },
-        linkType: 'Regular',
-        selectionType: 'Normal',
-      } as unknown as ParsedLink;
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
 
       it('parses link, navigates, and logs each step', async () => {
         const mockShowInputBox = jest.fn().mockResolvedValue(validLink);
