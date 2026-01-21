@@ -180,7 +180,7 @@ RangeLink normalizes selections so start always comes before end:
 
 #### Relative Paths
 
-```
+```text
 recipes/baking/chickenpie.ts#L3-L15
 ```
 
@@ -189,7 +189,7 @@ recipes/baking/chickenpie.ts#L3-L15
 
 #### Absolute Paths
 
-```
+```text
 /Users/alice/project/recipes/baking/chickenpie.ts#L3-L15
 ```
 
@@ -286,13 +286,13 @@ See the implementation in [chickenpie.ts#L3-L15](recipes/baking/chickenpie.ts#L3
 
 **Code Reviews:**
 
-```
+```text
 "The issue is here: recipes/baking/chickenpie.ts#L3C14-L15C9"
 ```
 
 **Cross-Editor Sharing:**
 
-```
+```text
 # Sender (VSCode with default delimiters)
 recipes/baking/chickenpie.ts#L3-L15
 
@@ -308,19 +308,19 @@ recipes/baking/chickenpie.ts#L3-L15~#~L~-~C~
 
 **VSCode column selection:**
 
-```
+```text
 recipes/baking/chickenpie.ts##L3C14-L15C9
 ```
 
 **Neovim visual block mode:**
 
-```
+```text
 recipes/baking/chickenpie.ts##L3C14-L15C9
 ```
 
 **Sublime multiple selections:**
 
-```
+```text
 recipes/baking/chickenpie.ts##L3C14-L15C9
 ```
 
