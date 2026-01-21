@@ -409,13 +409,17 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH, () =>
-      service.pasteCurrentFilePathToDestination(PathFormat.Absolute),
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH, (uri) =>
+      uri
+        ? service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute)
+        : service.pasteCurrentFilePathToDestination(PathFormat.Absolute),
     ),
   );
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH, () =>
-      service.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative),
+    ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH, (uri) =>
+      uri
+        ? service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative)
+        : service.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative),
     ),
   );
   context.subscriptions.push(
