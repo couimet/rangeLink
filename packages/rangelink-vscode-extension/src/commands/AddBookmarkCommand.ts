@@ -105,9 +105,9 @@ export class AddBookmarkCommand {
     );
 
     const label = await this.ideAdapter.showInputBox({
-      prompt: `Bookmark: ${linkToBookmark}`,
+      prompt: formatMessage(MessageCode.BOOKMARK_ADD_INPUT_PROMPT, { link: linkToBookmark }),
       value: defaultLabel,
-      placeHolder: 'Enter a label for this bookmark',
+      placeHolder: formatMessage(MessageCode.BOOKMARK_ADD_INPUT_PLACEHOLDER),
     });
 
     if (label === undefined) {

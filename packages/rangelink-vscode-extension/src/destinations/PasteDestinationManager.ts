@@ -798,7 +798,10 @@ export class PasteDestinationManager implements vscode.Disposable {
         this.vscodeAdapter.setStatusBarMessage(options.basicStatusMessage);
         void this.vscodeAdapter.showInformationMessage(successInstruction);
       } else {
-        const enhancedMessage = `✓ ${options.basicStatusMessage} & sent to ${displayName}`;
+        const enhancedMessage = formatMessage(MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION, {
+          statusMessage: options.basicStatusMessage,
+          destinationName: displayName,
+        });
         this.vscodeAdapter.setStatusBarMessage(enhancedMessage);
       }
 
@@ -840,10 +843,14 @@ export class PasteDestinationManager implements vscode.Disposable {
   ): string {
     switch (destination.id) {
       case 'text-editor':
-        return `${basicStatusMessage}. Could not send to editor. Bound editor is hidden behind other tabs.`;
+        return formatMessage(MessageCode.WARN_PASTE_FAILED_EDITOR_HIDDEN, {
+          statusMessage: basicStatusMessage,
+        });
 
       case 'terminal':
-        return `${basicStatusMessage}. Could not send to terminal. Terminal may be closed or not accepting input.`;
+        return formatMessage(MessageCode.WARN_PASTE_FAILED_TERMINAL, {
+          statusMessage: basicStatusMessage,
+        });
 
       case 'claude-code':
       case 'cursor-ai':

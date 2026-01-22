@@ -10,6 +10,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ALREADY_BOUND_TO_DESTINATION]: 'RangeLink: Already bound to {destinationName}',
   [MessageCode.BOOKMARK_ACTION_ADD]: '$(add) Save Selection as Bookmark',
   [MessageCode.BOOKMARK_ACTION_MANAGE]: '$(gear) Manage Bookmarks...',
+  [MessageCode.BOOKMARK_ADD_INPUT_PLACEHOLDER]: 'Enter a label for this bookmark',
+  [MessageCode.BOOKMARK_ADD_INPUT_PROMPT]: 'Bookmark: {link}',
   [MessageCode.BOOKMARK_LIST_EMPTY]: 'No bookmarks saved',
   [MessageCode.BOOKMARK_LIST_PLACEHOLDER]: 'Select a bookmark to paste to destination',
   [MessageCode.BOOKMARK_LIST_TITLE]: 'Bookmarks',
@@ -114,6 +116,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: "{resourceName}"',
   [MessageCode.STATUS_BAR_BOOKMARK_SAVED]: '✓ Bookmark saved: {label}',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
+  [MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION]:
+    '✓ {statusMessage} & sent to {destinationName}',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: 'Bookmarks',
   [MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind:',
@@ -128,6 +132,10 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
   [MessageCode.WARN_NAVIGATION_UNTITLED_FILE]:
     'RangeLink: Cannot navigate to unsaved file ({path}). Save the file first, then try again.',
+  [MessageCode.WARN_PASTE_FAILED_EDITOR_HIDDEN]:
+    '{statusMessage}. Could not send to editor. Bound editor is hidden behind other tabs.',
+  [MessageCode.WARN_PASTE_FAILED_TERMINAL]:
+    '{statusMessage}. Could not send to terminal. Terminal may be closed or not accepting input.',
 
   // Keep the keys in alphabetical order.
 };
