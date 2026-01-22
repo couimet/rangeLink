@@ -1,5 +1,11 @@
 import { createMockLogger } from 'barebone-logger-testing';
-import { LinkType, RangeLinkError, RangeLinkErrorCodes, Result, SelectionType } from 'rangelink-core-ts';
+import {
+  LinkType,
+  RangeLinkError,
+  RangeLinkErrorCodes,
+  Result,
+  SelectionType,
+} from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
 import { GoToRangeLinkCommand } from '../../commands/GoToRangeLinkCommand';
