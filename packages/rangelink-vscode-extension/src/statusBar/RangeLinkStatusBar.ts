@@ -8,6 +8,7 @@ import {
   CMD_BOOKMARK_MANAGE,
   CMD_BOOKMARK_NAVIGATE,
   CMD_JUMP_TO_DESTINATION,
+  CMD_GO_TO_RANGELINK,
   CMD_OPEN_STATUS_BAR_MENU,
   CMD_SHOW_VERSION,
 } from '../constants';
@@ -115,6 +116,10 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   private async buildQuickPickItems(): Promise<MenuQuickPickItem[]> {
     return [
       ...(await this.buildJumpOrDestinationsSection()),
+      {
+        label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_NAVIGATE_TO_LINK_LABEL),
+        command: CMD_GO_TO_RANGELINK,
+      },
       ...this.buildBookmarksQuickPickItems(),
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),

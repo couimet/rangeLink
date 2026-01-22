@@ -85,24 +85,34 @@
 
 <rule id="T003" priority="critical">
   <title>Literal values for contract assertions</title>
-  <do>Use string literals for OUR enums: `'Regular'` not `LinkType.Regular`</do>
-  <do>Use string literals for user-facing text: `'RangeLink Menu'` not `messagesEn[MessageCode.X]`</do>
-  <do>Use string literals for configuration keys: `'delimiterLine'` not `SETTING_DELIMITER_LINE`</do>
-  <exception>External library enums: use actual constant `vscode.TextEditorRevealType.InCenterIfOutsideViewport`</exception>
-  <rationale>Tests freeze user-facing contracts - catches accidental changes to enum values, UI text, or setting keys</rationale>
+  <scope>Applies to expect() assertions only, NOT test setup/mocks</scope>
+  <do>Use string literals in assertions for OUR enums: `expect(x).toBe('Regular')`</do>
+  <do>Use string literals in assertions for user-facing text: `expect(x).toBe('RangeLink Menu')`</do>
+  <do>Use string literals in assertions for config keys: `expect(x).toBe('delimiterLine')`</do>
+  <setup>Enum values ARE allowed in test setup (mocks, fixtures) for type safety</setup>
+  <exception>External library enums in assertions: use actual constant</exception>
+  <rationale>Assertions freeze contracts - catches accidental enum/text changes. Setup code benefits from type safety.</rationale>
   <bad-example>
     ```typescript
-    expect(item.tooltip).toBe(messagesEn[MessageCode.STATUS_BAR_MENU_TOOLTIP]);
+    // BAD: enum in assertion - won't catch if enum value changes
     expect(result.linkType).toBe(LinkType.Regular);
-    createMockConfigGetter({ [SETTING_DELIMITER_LINE]: 'L' });
+    expect(item.tooltip).toBe(messagesEn[MessageCode.STATUS_BAR_MENU_TOOLTIP]);
     ```
   </bad-example>
   <good-example>
     ```typescript
-    expect(item.tooltip).toBe('RangeLink Menu');
+    // GOOD: Setup uses enum for type safety
+    const mockParsedLink: ParsedLink = {
+      linkType: LinkType.Regular,
+      selectionType: SelectionType.Normal,
+      // ...
+    };
+
+    // GOOD: Assertions use literals to freeze contract
     expect(result.linkType).toBe('Regular');
-    createMockConfigGetter({ 'delimiterLine': 'L' });
+    expect(item.tooltip).toBe('RangeLink Menu');
     ```
+
   </good-example>
 </rule>
 

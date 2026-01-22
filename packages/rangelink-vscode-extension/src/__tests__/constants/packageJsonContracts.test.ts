@@ -218,6 +218,15 @@ describe('package.json contributions', () => {
           icon: '$(info)',
         });
       });
+
+      it('rangelink.goToRangeLink', () => {
+        expect(findCommand('rangelink.goToRangeLink')).toStrictEqual({
+          command: 'rangelink.goToRangeLink',
+          title: 'Go to Link',
+          category: 'RangeLink',
+          icon: '$(go-to-file)',
+        });
+      });
     });
 
     describe('bookmark commands', () => {
@@ -414,7 +423,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(40);
+      expect(commands).toHaveLength(41);
     });
   });
 
@@ -642,8 +651,16 @@ describe('package.json contributions', () => {
       });
     });
 
+    it('rangelink.goToRangeLink keybinding', () => {
+      expect(findKeybinding('rangelink.goToRangeLink')).toStrictEqual({
+        command: 'rangelink.goToRangeLink',
+        key: 'ctrl+r ctrl+g',
+        mac: 'cmd+r cmd+g',
+      });
+    });
+
     it('has the expected number of keybindings', () => {
-      expect(keybindings).toHaveLength(12);
+      expect(keybindings).toHaveLength(13);
     });
   });
 

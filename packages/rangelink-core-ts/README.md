@@ -56,10 +56,10 @@ if (!result.success) {
 import { formatLink, Selection, DelimiterConfig, PathFormat } from 'rangelink-core-ts';
 
 const selection: Selection = {
-  startLine: 10,
-  startCharacter: 5,
-  endLine: 20,
-  endCharacter: 15,
+  startLine: 2,
+  startCharacter: 13,
+  endLine: 14,
+  endCharacter: 8,
 };
 
 const delimiters: DelimiterConfig = {
@@ -69,10 +69,15 @@ const delimiters: DelimiterConfig = {
   range: '-',
 };
 
-const result = formatLink('src/file.ts', selection, delimiters, PathFormat.WorkspaceRelative);
+const result = formatLink(
+  'recipes/baking/chickenpie.ts',
+  selection,
+  delimiters,
+  PathFormat.WorkspaceRelative,
+);
 
 if (result.success) {
-  console.log(result.value); // "src/file.ts#L11C6-L21C16"
+  console.log(result.value); // "recipes/baking/chickenpie.ts#L3C14-L15C9"
 }
 ```
 

@@ -2076,6 +2076,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockLogger,
       );
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       copyAndSendSpy = jest
         .spyOn(service as any, 'copyAndSendToDestination')
@@ -2165,6 +2166,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockLogger,
         );
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         copyAndSendSpy = jest
           .spyOn(service as any, 'copyAndSendToDestination')
@@ -2210,6 +2212,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockLogger,
         );
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         copyAndSendSpy = jest
           .spyOn(service as any, 'copyAndSendToDestination')
@@ -2269,6 +2272,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockLogger,
         );
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         copyAndSendSpy = jest
           .spyOn(service as any, 'copyAndSendToDestination')

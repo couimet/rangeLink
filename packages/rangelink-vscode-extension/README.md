@@ -63,7 +63,7 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 **Example output:**
 
 ```
-src/utils/parser.ts#L42C10-L58C25
+recipes/baking/chickenpie.ts#L3C14-L15C9
 ```
 
 **Note:** `R` then `L` - the letters stand for **R**ange **L**ink.
@@ -131,7 +131,7 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 
 **One keybinding to rule them all.** AI assistants have their own ways to share code — different shortcuts, different formats, and only work with _their_ AI. RangeLink unifies it all: **one keybinding** (`Cmd+R Cmd+L`), **character-level precision** (not just lines), and works with **any AI assistant**.
 
-**The precision advantage:** Most AI code-sharing tools work at _line-level_ precision. RangeLink goes deeper with _character-level_ ranges (`#L42C10-L58C25`), letting you highlight exactly the function signature, the problematic condition, or that one sneaky semicolon — not the whole block.
+**The precision advantage:** Most AI code-sharing tools work at _line-level_ precision. RangeLink goes deeper with _character-level_ ranges (`#L3C14-L15C9`), letting you highlight exactly the function signature, the problematic condition, or that one sneaky semicolon — not the whole block.
 
 **Supported AI assistants:**
 
@@ -162,7 +162,7 @@ Any RangeLink in your terminal becomes clickable — whether from claude-code re
 - **Works with all formats:** single-line, ranges, columns, rectangular selections
 - **Smart path resolution:** workspace-relative and absolute paths supported
 
-**Example:** AI suggests checking `src/auth.ts#L42C10-L58C25` → Click → VSCode opens file at exact selection.
+**Example:** AI suggests checking `recipes/baking/chickenpie.ts#L3C14-L15C9` → Click → VSCode opens file at exact selection.
 
 #### Editor Navigation
 
@@ -172,6 +172,16 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 - **Cmd+Click** to jump to code
 - **Perfect for scratchpads** - Validate links before sending to claude-code
 
+#### Go to Link
+
+**Have a RangeLink but no clickable context?** Paste or type it directly:
+
+- **Press `Cmd+R Cmd+G`** (Mac) or **`Ctrl+R Ctrl+G`** (Windows/Linux)
+- **Supports all link formats:** full paths, ranges, columns (e.g., `recipes/baking/chickenpie.ts#L3C14-L15C9`)
+- **Jump instantly** to that exact code location
+
+**Perfect for:** Links from Slack, email, documentation, or AI responses you can't click directly.
+
 ---
 
 ### ⚡ Status Bar Menu
@@ -179,6 +189,7 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 Click the **RangeLink** item in the status bar (bottom right) to access quick actions:
 
 - **Jump to Bound Destination** — Focus your currently bound paste destination (shows quick pick of available destinations when unbound)
+- **Go to Link** — Paste or type a RangeLink to go directly to that code location
 - **Show Version Info** — Display extension version and build details
 
 The menu provides quick access without memorizing keyboard shortcuts. More actions coming in future releases.
@@ -211,10 +222,10 @@ Also available via Command Palette → "Save Selection as Bookmark" or right-cli
 
 ### 🔗 Flexible Link Formats
 
-- **Single line:** `src/file.ts#L42`
-- **Line ranges:** `src/file.ts#L10-L25`
-- **Column precision:** `src/file.ts#L42C6-L42C15`
-- **Rectangular selections:** `src/file.ts##L10C5-L20C10` (double hash)
+- **Single line:** `recipes/baking/chickenpie.ts#L42`
+- **Line ranges:** `recipes/baking/chickenpie.ts#L10-L25`
+- **Column precision:** `recipes/baking/chickenpie.ts#L3C14-L15C9`
+- **Rectangular selections:** `recipes/baking/chickenpie.ts##L10C5-L20C10` (double hash)
 
 ### 📦 Portable Links (BYOD)
 
@@ -248,6 +259,7 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | Jump to Bound Destination                  | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound paste destination             |
 | Save Selection as Bookmark                 | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
 | List Bookmarks                             | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
+| Go to Link                                 | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`        | Paste/type a RangeLink to go to that code location       |
 | Bind to Claude Code                        | —                   | —                      | Auto-send links to Claude Code chat                      |
 | Bind to Cursor AI                          | —                   | —                      | Auto-send links to Cursor AI chat                        |
 | Bind to GitHub Copilot Chat                | —                   | —                      | Auto-send links to Copilot Chat                          |

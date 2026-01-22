@@ -71,6 +71,10 @@ export const messagesEn: Record<MessageCode, string> = {
     'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
   [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
     'No destination bound. Choose destination to jump to:',
+  [MessageCode.INFO_NAVIGATION_EMPTY_INPUT]: 'RangeLink: Please enter a link to navigate',
+  [MessageCode.INFO_NAVIGATION_INPUT_BOX_PLACEHOLDER]: 'recipes/baking/chickenpie.ts#L3C14-L15C9',
+  [MessageCode.INFO_NAVIGATION_INPUT_BOX_PROMPT]: 'Enter RangeLink to navigate',
+  [MessageCode.INFO_NAVIGATION_INVALID_LINK]: "RangeLink: Invalid link format: '{input}'",
   [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
   [MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE]:
     'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
@@ -105,6 +109,7 @@ export const messagesEn: Record<MessageCode, string> = {
     'No bound destination. Choose below to bind:',
   [MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE]: 'No destinations available',
   [MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL]: '$(arrow-right) Jump to Bound Destination',
+  [MessageCode.STATUS_BAR_MENU_ITEM_NAVIGATE_TO_LINK_LABEL]: '$(link-external) Go to Link',
   [MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL]: '$(info) Show Version Info',
   [MessageCode.STATUS_BAR_MENU_PLACEHOLDER]: 'Select an action',
   [MessageCode.STATUS_BAR_MENU_TITLE]: 'RangeLink',
