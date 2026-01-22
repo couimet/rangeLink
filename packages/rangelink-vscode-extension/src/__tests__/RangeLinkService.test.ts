@@ -2077,6 +2077,7 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       copyAndSendSpy = jest
         .spyOn(service as any, 'copyAndSendToDestination')
         .mockResolvedValue(undefined);
@@ -2084,6 +2085,7 @@ describe('RangeLinkService', () => {
 
     describe('path resolution', () => {
       it('should delegate to getReferencePath and pass result to copyAndSendToDestination', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const getRefPathSpy = jest
           .spyOn(service as any, 'getReferencePath')
           .mockReturnValue('mocked/path.ts');
@@ -2165,6 +2167,7 @@ describe('RangeLinkService', () => {
           mockLogger,
         );
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         copyAndSendSpy = jest
           .spyOn(service as any, 'copyAndSendToDestination')
           .mockResolvedValue(undefined);
@@ -2210,6 +2213,7 @@ describe('RangeLinkService', () => {
           mockLogger,
         );
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         copyAndSendSpy = jest
           .spyOn(service as any, 'copyAndSendToDestination')
           .mockResolvedValue(undefined);
@@ -2269,6 +2273,7 @@ describe('RangeLinkService', () => {
           mockLogger,
         );
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         copyAndSendSpy = jest
           .spyOn(service as any, 'copyAndSendToDestination')
           .mockResolvedValue(undefined);
