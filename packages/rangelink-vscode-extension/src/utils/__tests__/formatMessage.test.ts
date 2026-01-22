@@ -485,9 +485,7 @@ describe('formatMessage', () => {
         linkText: 'file.ts#L0',
       });
 
-      expect(result).toStrictEqual(
-        'RangeLink: Cannot navigate - invalid link format: file.ts#L0',
-      );
+      expect(result).toStrictEqual('RangeLink: Cannot navigate - invalid link format: file.ts#L0');
     });
   });
 });
