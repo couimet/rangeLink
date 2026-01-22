@@ -351,8 +351,8 @@ export class RangeLinkService {
    *
    * Consolidates duplicate validation logic from generateLinkFromSelection and other methods.
    * Shows context-appropriate error message based on failure reason:
-   * - No active editor: "RangeLink: No active editor"
-   * - Empty selections: "RangeLink: No text selected. Select text and try again."
+   * - No active editor: ERROR_NO_ACTIVE_EDITOR
+   * - Empty selections: ERROR_NO_TEXT_SELECTED
    *
    * @returns Object with editor and selections if valid, undefined if validation failed
    */
@@ -363,15 +363,16 @@ export class RangeLinkService {
     const nonEmptySelections = activeSelections.getNonEmptySelections();
 
     if (!nonEmptySelections) {
-      const errorMsg = activeSelections.editor
-        ? 'RangeLink: No text selected. Select text and try again.'
-        : 'RangeLink: No active editor';
+      const errorCode = activeSelections.editor
+        ? MessageCode.ERROR_NO_TEXT_SELECTED
+        : MessageCode.ERROR_NO_ACTIVE_EDITOR;
+      const errorMsg = formatMessage(errorCode);
 
       this.logger.debug(
         {
           fn: 'validateSelectionsAndShowError',
           hasEditor: !!activeSelections.editor,
-          errorMsg,
+          errorCode,
         },
         'Empty selection detected - should be prevented by command enablement',
       );

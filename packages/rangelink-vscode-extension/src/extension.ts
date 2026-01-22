@@ -252,9 +252,16 @@ export function activate(context: vscode.ExtensionContext): void {
       try {
         const versionInfo = require('./version.json');
         const isDirtyIndicator = versionInfo.isDirty ? ' (with uncommitted changes)' : '';
-        const message = `RangeLink v${versionInfo.version}\nCommit: ${versionInfo.commit}${isDirtyIndicator}\nBranch: ${versionInfo.branch}\nBuild: ${versionInfo.buildDate}`;
-        const selection = await ideAdapter.showInformationMessage(message, 'Copy Commit Hash');
-        if (selection === 'Copy Commit Hash') {
+        const message = formatMessage(MessageCode.INFO_VERSION_INFO, {
+          version: versionInfo.version,
+          commit: versionInfo.commit,
+          isDirtyIndicator,
+          branch: versionInfo.branch,
+          buildDate: versionInfo.buildDate,
+        });
+        const copyButtonLabel = formatMessage(MessageCode.INFO_VERSION_COPY_COMMIT_HASH_BUTTON);
+        const selection = await ideAdapter.showInformationMessage(message, copyButtonLabel);
+        if (selection === copyButtonLabel) {
           await ideAdapter.writeTextToClipboard(versionInfo.commitFull);
           await ideAdapter.showInformationMessage(
             formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED),
@@ -271,7 +278,9 @@ export function activate(context: vscode.ExtensionContext): void {
         );
       } catch (error) {
         logger.error({ fn: 'showVersion', error }, 'Failed to load version info');
-        await ideAdapter.showErrorMessage('Version information not available');
+        await ideAdapter.showErrorMessage(
+          formatMessage(MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE),
+        );
       }
     }),
   );

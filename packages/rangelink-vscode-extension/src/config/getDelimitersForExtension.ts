@@ -2,6 +2,8 @@ import type { Logger } from 'barebone-logger';
 import type { DelimiterConfig } from 'rangelink-core-ts';
 
 import type { ErrorFeedbackProvider } from '../ide/ErrorFeedbackProvider';
+import { MessageCode } from '../types';
+import { formatMessage } from '../utils';
 
 import { loadDelimiterConfig } from './loadDelimiterConfig';
 import type { ConfigGetter } from './types';
@@ -21,7 +23,7 @@ export const getDelimitersForExtension = (
 
   if (result.errors.length > 0) {
     void errorFeedbackProvider.showErrorMessage(
-      'RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.',
+      formatMessage(MessageCode.ERROR_INVALID_DELIMITER_CONFIG),
     );
   }
 

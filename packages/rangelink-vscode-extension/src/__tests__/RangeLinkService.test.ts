@@ -1403,7 +1403,7 @@ describe('RangeLinkService', () => {
           {
             fn: 'validateSelectionsAndShowError',
             hasEditor: false,
-            errorMsg: 'RangeLink: No active editor',
+            errorCode: 'ERROR_NO_ACTIVE_EDITOR',
           },
           'Empty selection detected - should be prevented by command enablement',
         );
@@ -1436,7 +1436,7 @@ describe('RangeLinkService', () => {
           {
             fn: 'validateSelectionsAndShowError',
             hasEditor: true,
-            errorMsg: 'RangeLink: No text selected. Select text and try again.',
+            errorCode: 'ERROR_NO_TEXT_SELECTED',
           },
           'Empty selection detected - should be prevented by command enablement',
         );
@@ -1460,7 +1460,7 @@ describe('RangeLinkService', () => {
           {
             fn: 'validateSelectionsAndShowError',
             hasEditor: false,
-            errorMsg: 'RangeLink: No active editor',
+            errorCode: 'ERROR_NO_ACTIVE_EDITOR',
           },
           'Empty selection detected - should be prevented by command enablement',
         );
@@ -1485,7 +1485,7 @@ describe('RangeLinkService', () => {
           {
             fn: 'validateSelectionsAndShowError',
             hasEditor: false,
-            errorMsg: 'RangeLink: No active editor',
+            errorCode: 'ERROR_NO_ACTIVE_EDITOR',
           },
           'Empty selection detected - should be prevented by command enablement',
         );
@@ -1518,7 +1518,7 @@ describe('RangeLinkService', () => {
           {
             fn: 'validateSelectionsAndShowError',
             hasEditor: true,
-            errorMsg: 'RangeLink: No text selected. Select text and try again.',
+            errorCode: 'ERROR_NO_TEXT_SELECTED',
           },
           'Empty selection detected - should be prevented by command enablement',
         );
