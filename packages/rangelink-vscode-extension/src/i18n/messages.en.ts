@@ -40,12 +40,17 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
   [MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE]:
     'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
+  [MessageCode.ERROR_INVALID_DELIMITER_CONFIG]:
+    'RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.',
   [MessageCode.ERROR_LINK_GENERATION_FAILED]: 'RangeLink: Failed to generate {linkTypeName}',
   [MessageCode.ERROR_NAVIGATION_FAILED]: 'RangeLink: Failed to navigate to {path}: {error}',
+  [MessageCode.ERROR_NO_ACTIVE_EDITOR]: 'RangeLink: No active editor',
   [MessageCode.ERROR_NO_ACTIVE_TERMINAL]:
     'RangeLink: No active terminal. Open a terminal and try again.',
   [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]:
     'RangeLink: No active text editor. Open a file and try again.',
+  [MessageCode.ERROR_NO_TEXT_SELECTED]:
+    'RangeLink: No text selected. Select text and try again.',
   [MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE]:
     'RangeLink: No active file. Open a file and try again.',
   [MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE]: 'RangeLink: Cannot bind to {fileName} - binary file',
@@ -53,6 +58,7 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: Cannot bind to read-only editor ({scheme})',
   [MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT]:
     'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
+  [MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE]: 'Version information not available',
 
   [MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE]:
     'RangeLink can seamlessly integrate with Claude Code for faster context sharing of precise code ranges.\n\nInstall and activate the Claude Code extension to use it as a paste destination.',
@@ -80,6 +86,9 @@ export const messagesEn: Record<MessageCode, string> = {
     'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
   [MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind and paste:',
+  [MessageCode.INFO_VERSION_COPY_COMMIT_HASH_BUTTON]: 'Copy Commit Hash',
+  [MessageCode.INFO_VERSION_INFO]:
+    'RangeLink v{version}\nCommit: {commit}{isDirtyIndicator}\nBranch: {branch}\nBuild: {buildDate}',
 
   [MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION]: 'Stay bound to {currentDestination}',
   [MessageCode.SMART_BIND_CONFIRM_NO_KEEP]: 'No, keep current binding',
