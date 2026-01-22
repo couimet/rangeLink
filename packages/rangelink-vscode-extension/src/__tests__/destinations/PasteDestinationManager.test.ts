@@ -899,7 +899,7 @@ describe('PasteDestinationManager', () => {
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledWith(formattedLink, 'both');
 
       expect(setStatusBarSpy).toHaveBeenCalledWith(
-        '✓ RangeLink copied to clipboard & sent to Terminal ("bash")',
+        'RangeLink copied to clipboard & sent to Terminal ("bash")',
       );
     });
 
@@ -2212,7 +2212,7 @@ describe('PasteDestinationManager', () => {
         expect(result).toBe(true);
         expect(mockTerminalDest.pasteContent).toHaveBeenCalledWith(TEST_CONTENT, 'none');
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ Content sent successfully & sent to Terminal ("bash")',
+          'Content sent successfully & sent to Terminal ("bash")',
           2000,
         );
 
@@ -2276,7 +2276,7 @@ describe('PasteDestinationManager', () => {
         await manager.sendTextToDestination(TEST_CONTENT, TEST_STATUS, 'none');
 
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ Content sent successfully & sent to Terminal ("bash")',
+          'Content sent successfully & sent to Terminal ("bash")',
           2000,
         );
 
@@ -2298,7 +2298,7 @@ describe('PasteDestinationManager', () => {
         expect(mockTerminalDest.pasteContent).toHaveBeenCalledWith(largeContent, 'none');
 
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ Content sent successfully & sent to Terminal ("bash")',
+          'Content sent successfully & sent to Terminal ("bash")',
           2000,
         );
 

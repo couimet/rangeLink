@@ -116,8 +116,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: "{resourceName}"',
   [MessageCode.STATUS_BAR_BOOKMARK_SAVED]: '✓ Bookmark saved: {label}',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
-  [MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION]:
-    '✓ {statusMessage} & sent to {destinationName}',
+  [MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION]: '{statusMessage} & sent to {destinationName}',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: 'Bookmarks',
   [MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind:',
