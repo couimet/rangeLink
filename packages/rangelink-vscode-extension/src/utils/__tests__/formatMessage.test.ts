@@ -479,5 +479,15 @@ describe('formatMessage', () => {
         'RangeLink v1.0.0\nCommit: def5678\nBranch: feature/test\nBuild: 2024-01-10T08:00:00Z',
       );
     });
+
+    it('should format ERROR_TERMINAL_LINK_INVALID_FORMAT with linkText param', () => {
+      const result = formatMessage(MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT, {
+        linkText: 'file.ts#L0',
+      });
+
+      expect(result).toStrictEqual(
+        'RangeLink: Cannot navigate - invalid link format: file.ts#L0',
+      );
+    });
   });
 });
