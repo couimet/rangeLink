@@ -115,6 +115,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_MENU_TITLE]: 'RangeLink',
   [MessageCode.STATUS_BAR_MENU_TOOLTIP]: 'RangeLink Menu',
 
+  [MessageCode.TERMINAL_PICKER_MORE_LABEL]: 'More terminals...',
+
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
   [MessageCode.WARN_NAVIGATION_UNTITLED_FILE]:
     'RangeLink: Cannot navigate to unsaved file ({path}). Save the file first, then try again.',

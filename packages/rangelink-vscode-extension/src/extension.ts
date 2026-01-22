@@ -114,7 +114,12 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register all destination builders with the registry
   registerAllDestinationBuilders(registry);
 
-  const availabilityService = new DestinationAvailabilityService(registry, ideAdapter, logger);
+  const availabilityService = new DestinationAvailabilityService(
+    registry,
+    ideAdapter,
+    configReader,
+    logger,
+  );
 
   // Create unified destination manager
   const destinationManager = new PasteDestinationManager(

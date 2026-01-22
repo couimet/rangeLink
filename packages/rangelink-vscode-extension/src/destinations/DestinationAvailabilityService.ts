@@ -1,11 +1,18 @@
 import type { Logger } from 'barebone-logger';
 
+import type { ConfigReader } from '../config';
+import { DEFAULT_TERMINAL_PICKER_MAX_INLINE } from '../constants/settingDefaults';
+import { SETTING_TERMINAL_PICKER_MAX_INLINE } from '../constants/settingKeys';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { type AvailableDestination, MessageCode } from '../types';
+import { type AvailableDestinationItem, type DestinationItem, MessageCode } from '../types';
 
 import type { DestinationRegistry } from './DestinationRegistry';
 import type { AIAssistantDestinationType } from './PasteDestination';
-import { isTerminalDestinationEligible, isTextEditorDestinationEligible } from './utils';
+import {
+  buildTerminalItems,
+  isTerminalDestinationEligible,
+  isTextEditorDestinationEligible,
+} from './utils';
 
 /**
  * All AI assistant destination types to check for availability
@@ -42,6 +49,7 @@ export class DestinationAvailabilityService {
   constructor(
     private readonly registry: DestinationRegistry,
     private readonly ideAdapter: VscodeAdapter,
+    private readonly configReader: ConfigReader,
     private readonly logger: Logger,
   ) {}
 
@@ -70,25 +78,40 @@ export class DestinationAvailabilityService {
     return AI_ASSISTANT_UNAVAILABLE_MESSAGE_CODES[type];
   }
 
-  async getAvailableDestinations(): Promise<AvailableDestination[]> {
+  /**
+   * Get available destinations as discriminated union items.
+   *
+   * Returns items suitable for building a QuickPick menu:
+   * - DestinationItem for text-editor and AI assistants
+   * - TerminalSeparatorItem + TerminalItem(s) for terminals
+   * - TerminalMoreItem when terminals exceed configured maxInline setting
+   */
+  async getAvailableDestinationItems(): Promise<AvailableDestinationItem[]> {
     const displayNames = this.registry.getDisplayNames();
-    const available: AvailableDestination[] = [];
+    const items: AvailableDestinationItem[] = [];
 
     const textEditorEligibility = isTextEditorDestinationEligible(this.ideAdapter);
     const terminalEligibility = isTerminalDestinationEligible(this.ideAdapter);
 
     if (textEditorEligibility.eligible) {
-      available.push({
+      items.push({
+        kind: 'destination',
         type: 'text-editor',
         displayName: `${displayNames['text-editor']} ("${textEditorEligibility.filename}")`,
-      });
+      } satisfies DestinationItem);
     }
 
     if (terminalEligibility.eligible) {
-      available.push({
-        type: 'terminal',
-        displayName: `${displayNames.terminal} ("${terminalEligibility.terminalName}")`,
-      });
+      const maxInline = this.configReader.getWithDefault(
+        SETTING_TERMINAL_PICKER_MAX_INLINE,
+        DEFAULT_TERMINAL_PICKER_MAX_INLINE,
+      );
+      const terminalItems = buildTerminalItems(
+        terminalEligibility.terminals,
+        displayNames.terminal,
+        maxInline,
+      );
+      items.push(...terminalItems);
     }
 
     const aiResults = await Promise.all(
@@ -100,24 +123,24 @@ export class DestinationAvailabilityService {
 
     for (const { type, available: isAvailable } of aiResults) {
       if (isAvailable) {
-        available.push({
+        items.push({
+          kind: 'destination',
           type,
           displayName: displayNames[type],
-        });
+        } satisfies DestinationItem);
       }
     }
 
     this.logger.debug(
       {
-        fn: 'DestinationAvailabilityService.getAvailableDestinations',
+        fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
         isTextEditorEligible: textEditorEligibility.eligible,
-        isTerminalEligible: terminalEligibility.eligible,
-        availableCount: available.length,
-        availableTypes: available.map((d) => d.type),
+        terminalCount: terminalEligibility.terminals.length,
+        itemCount: items.length,
       },
-      `Found ${available.length} available destinations`,
+      `Found ${items.length} available destination items`,
     );
 
-    return available;
+    return items;
   }
 }

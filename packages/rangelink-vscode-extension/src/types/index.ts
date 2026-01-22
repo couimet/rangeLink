@@ -1,6 +1,12 @@
 export { ActiveSelections } from './ActiveSelections';
 export { AutoPasteResult } from './AutoPasteResult';
-export type { AvailableDestination } from './AvailableDestination';
+export type {
+  AvailableDestinationItem,
+  DestinationItem,
+  TerminalItem,
+  TerminalMoreItem,
+  TerminalSeparatorItem,
+} from './AvailableDestination';
 export { BehaviourAfterPaste } from './BehaviourAfterPaste';
 export { ExtensionResult } from './ExtensionResult';
 export { MessageCode } from './MessageCode';
