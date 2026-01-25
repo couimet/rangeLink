@@ -68,7 +68,7 @@ Check if documentation updates are needed:
 
 Collect information from:
 
-- Scratchpads matching `*issue-NUMBER*`: `ls .scratchpads/*issue-<NUMBER>*`
+- Scratchpads matching `*issue-<NUMBER>*`: `ls .scratchpads/*issue-<NUMBER>*`
 - Commit messages: `git log --oneline origin/main..HEAD`
 - Commit details: `git log origin/main..HEAD`
 
@@ -106,7 +106,7 @@ The PR description MUST follow this template:
 ### PR Description Rules
 
 - **NEVER** reference `.scratchpads/` or `.claude-questions/` files
-- These are local/ephemeral and not accessible from GitHub
+- These are local/ephemeral and inaccessible from GitHub
 - Capture all relevant information directly in the PR body
 
 ### 6. Handle Ambiguity
@@ -155,7 +155,7 @@ Before finishing, verify:
 
 - [ ] `pnpm format:fix` ran successfully
 - [ ] `pnpm test` passes
-- [ ] No uncommitted changes (or user notified)
+- [ ] No uncommitted changes (or user has been notified)
 - [ ] PR description doesn't reference ephemeral files
 - [ ] Documentation needs assessed
 - [ ] Scratchpad created with PR description
