@@ -83,23 +83,28 @@ The PR description MUST follow this template:
 [issues/NUMBER] Title
 
 ## Summary
+
 2-3 sentences on what this accomplishes.
 
 ## Changes
+
 - Bulleted list of key changes
 - Omit file lists (PR shows modified files)
 - Group related changes
 
 ## Test Plan
+
 - [ ] All existing tests pass
 - [ ] New tests added for: [list]
 - [ ] Manual testing: [describe if applicable]
 
 ## Documentation
+
 - [ ] CHANGELOG.md: [entry added / not needed - reason]
 - [ ] README.md: [updated / not needed - reason]
 
 ## Related
+
 - Closes #NUMBER
 ```
 
