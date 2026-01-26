@@ -103,8 +103,8 @@ export function activate(context: vscode.ExtensionContext): void {
       },
       `RangeLink extension activated - v${versionInfo.version} (${versionInfo.commit}${versionInfo.isDirty ? ' dirty' : ''})`,
     );
-  } catch {
-    logger.warn({ fn: 'activate' }, 'RangeLink extension activated (version info unavailable)');
+  } catch (error) {
+    logger.warn({ fn: 'activate', error }, 'RangeLink extension activated (version info unavailable)');
   }
 
   const ideAdapter = new VscodeAdapter(vscode, logger);

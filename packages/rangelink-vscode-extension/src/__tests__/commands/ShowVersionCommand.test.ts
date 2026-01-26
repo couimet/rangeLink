@@ -103,6 +103,15 @@ describe('ShowVersionCommand', () => {
           'RangeLink v1.0.0\nCommit: abc123 (with uncommitted changes)\nBranch: main\nBuild: 2025-01-16',
           'Copy Commit Hash',
         );
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          {
+            fn: 'ShowVersionCommand.execute',
+            version: '1.0.0',
+            commit: 'abc123',
+            buildDate: '2025-01-16',
+          },
+          'Version info displayed',
+        );
       });
     });
 
@@ -127,6 +136,15 @@ describe('ShowVersionCommand', () => {
 
         expect(mockClipboard.writeText).toHaveBeenCalledWith('abc123def456789');
         expect(mockShowInformationMessage).toHaveBeenCalledWith('Commit hash copied to clipboard');
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          {
+            fn: 'ShowVersionCommand.execute',
+            version: '1.0.0',
+            commit: 'abc123',
+            buildDate: '2025-01-16',
+          },
+          'Version info displayed',
+        );
       });
     });
 
@@ -147,6 +165,15 @@ describe('ShowVersionCommand', () => {
         await command.execute();
 
         expect(mockClipboard.writeText).not.toHaveBeenCalled();
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          {
+            fn: 'ShowVersionCommand.execute',
+            version: '1.0.0',
+            commit: 'abc123',
+            buildDate: '2025-01-16',
+          },
+          'Version info displayed',
+        );
       });
     });
   });
