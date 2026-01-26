@@ -15,7 +15,6 @@ import * as formatMessageModule from '../utils/formatMessage';
 import * as generateLinkModule from '../utils/generateLinkFromSelections';
 
 import {
-  createMockAsRelativePath,
   createMockClipboard,
   createMockConfigReader,
   createMockDestinationManager,
@@ -24,7 +23,6 @@ import {
   createMockEditorComposablePasteDestination,
   createMockEditorWithSelection,
   createMockFormattedLink,
-  createMockGetWorkspaceFolder,
   createMockPosition,
   createMockSelection,
   createMockTerminalComposablePasteDestination,
@@ -659,10 +657,18 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should show error message', async () => {
+      it('should show error message and log debug', async () => {
         await service.pasteSelectedTextToDestination();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'validateSelectionsAndShowError',
+            hasEditor: false,
+            errorCode: 'ERROR_NO_ACTIVE_EDITOR',
+          },
+          'Empty selection detected - should be prevented by command enablement',
+        );
       });
 
       it('should not copy to clipboard', async () => {
@@ -701,11 +707,19 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should show error message', async () => {
+      it('should show error message and log debug', async () => {
         await service.pasteSelectedTextToDestination();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
           'RangeLink: No text selected. Select text and try again.',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'validateSelectionsAndShowError',
+            hasEditor: true,
+            errorCode: 'ERROR_NO_TEXT_SELECTED',
+          },
+          'Empty selection detected - should be prevented by command enablement',
         );
       });
 
@@ -743,11 +757,19 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should show error message', async () => {
+      it('should show error message and log debug', async () => {
         await service.pasteSelectedTextToDestination();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
           'RangeLink: No text selected. Select text and try again.',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'validateSelectionsAndShowError',
+            hasEditor: true,
+            errorCode: 'ERROR_NO_TEXT_SELECTED',
+          },
+          'Empty selection detected - should be prevented by command enablement',
         );
       });
 
@@ -1254,340 +1276,6 @@ describe('RangeLinkService', () => {
     });
   });
 
-  describe('validateSelectionsAndShowError', () => {
-    let mockShowErrorMessage: jest.Mock;
-
-    beforeEach(() => {
-      mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
-      mockVscodeAdapter = createMockVscodeAdapter({
-        windowOptions: {
-          activeTextEditor: undefined,
-          showErrorMessage: mockShowErrorMessage,
-        },
-      });
-
-      mockDestinationManager = createMockDestinationManager({
-        isBound: false,
-      });
-
-      service = new RangeLinkService(
-        delimiters,
-        mockVscodeAdapter,
-        mockDestinationManager,
-        mockConfigReader,
-        mockLogger,
-      );
-    });
-
-    describe('integration with generateLinkFromSelection', () => {
-      beforeEach(() => {
-        mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: {
-            activeTextEditor: undefined,
-            showErrorMessage: mockShowErrorMessage,
-          },
-        });
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockConfigReader,
-          mockLogger,
-        );
-      });
-
-      it('should show consistent error message when no editor', async () => {
-        const result = await (service as any).generateLinkFromSelection(
-          'workspace-relative',
-          false,
-        );
-
-        expect(result).toBeUndefined();
-        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
-        expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
-      });
-
-      it('should return undefined early when no editor', async () => {
-        const result = await (service as any).generateLinkFromSelection(
-          'workspace-relative',
-          false,
-        );
-
-        expect(result).toBeUndefined();
-        expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    describe('integration with pasteSelectedTextToDestination', () => {
-      beforeEach(() => {
-        mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: {
-            activeTextEditor: undefined,
-            showErrorMessage: mockShowErrorMessage,
-          },
-        });
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockConfigReader,
-          mockLogger,
-        );
-      });
-
-      it('should show consistent error message when no editor', async () => {
-        await service.pasteSelectedTextToDestination();
-
-        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
-        expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
-      });
-
-      it('should return early when no editor', async () => {
-        await service.pasteSelectedTextToDestination();
-
-        expect(mockClipboard.writeText).not.toHaveBeenCalled();
-        expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    describe('error message consistency', () => {
-      beforeEach(() => {
-        mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: {
-            activeTextEditor: undefined,
-            showErrorMessage: mockShowErrorMessage,
-          },
-        });
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockConfigReader,
-          mockLogger,
-        );
-      });
-
-      it('should show "No active editor" via generateLinkFromSelection', async () => {
-        await (service as any).generateLinkFromSelection('workspace-relative', false);
-
-        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
-      });
-
-      it('should show "No active editor" via pasteSelectedTextToDestination', async () => {
-        await service.pasteSelectedTextToDestination();
-
-        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
-      });
-    });
-
-    describe('DEBUG logging for empty selection edge case', () => {
-      it('should log DEBUG message when no editor exists', async () => {
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: undefined },
-        });
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockConfigReader,
-          mockLogger,
-        );
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (service as any).generateLinkFromSelection('workspace-relative', false);
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'validateSelectionsAndShowError',
-            hasEditor: false,
-            errorCode: 'ERROR_NO_ACTIVE_EDITOR',
-          },
-          'Empty selection detected - should be prevented by command enablement',
-        );
-      });
-
-      it('should log DEBUG message when editor exists but selections are empty', async () => {
-        const mockEditor = createMockEditor({
-          document: createMockDocument({
-            getText: createMockText(''),
-            uri: createMockUri('/test/file.ts'),
-          }),
-          selection: { isEmpty: true } as any,
-          selections: [{ isEmpty: true } as any],
-        });
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: createWindowOptionsForEditor(mockEditor),
-        });
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockConfigReader,
-          mockLogger,
-        );
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (service as any).generateLinkFromSelection('workspace-relative', false);
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'validateSelectionsAndShowError',
-            hasEditor: true,
-            errorCode: 'ERROR_NO_TEXT_SELECTED',
-          },
-          'Empty selection detected - should be prevented by command enablement',
-        );
-      });
-
-      it('should log DEBUG via pasteSelectedTextToDestination', async () => {
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: undefined },
-        });
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockConfigReader,
-          mockLogger,
-        );
-
-        await service.pasteSelectedTextToDestination();
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'validateSelectionsAndShowError',
-            hasEditor: false,
-            errorCode: 'ERROR_NO_ACTIVE_EDITOR',
-          },
-          'Empty selection detected - should be prevented by command enablement',
-        );
-      });
-
-      it('should include hasEditor:false in DEBUG log when no editor', async () => {
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: { activeTextEditor: undefined },
-        });
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockConfigReader,
-          mockLogger,
-        );
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (service as any).generateLinkFromSelection('workspace-relative', false);
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'validateSelectionsAndShowError',
-            hasEditor: false,
-            errorCode: 'ERROR_NO_ACTIVE_EDITOR',
-          },
-          'Empty selection detected - should be prevented by command enablement',
-        );
-      });
-
-      it('should include hasEditor:true in DEBUG log when editor exists with empty selection', async () => {
-        const mockEditor = createMockEditor({
-          document: createMockDocument({
-            getText: createMockText(''),
-            uri: createMockUri('/test/file.ts'),
-          }),
-          selection: { isEmpty: true } as any,
-          selections: [{ isEmpty: true } as any],
-        });
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: createWindowOptionsForEditor(mockEditor),
-        });
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockConfigReader,
-          mockLogger,
-        );
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (service as any).generateLinkFromSelection('workspace-relative', false);
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'validateSelectionsAndShowError',
-            hasEditor: true,
-            errorCode: 'ERROR_NO_TEXT_SELECTED',
-          },
-          'Empty selection detected - should be prevented by command enablement',
-        );
-      });
-
-      it('should not log DEBUG when validation succeeds', async () => {
-        const mockDocument = createMockDocument({
-          getText: createMockText('line content'),
-          uri: createMockUri('/test/file.ts'),
-        });
-
-        const mockEditor = createMockEditor({
-          document: mockDocument,
-          selection: {
-            start: { line: 0, character: 0 },
-            end: { line: 0, character: 5 },
-            isEmpty: false,
-          } as any,
-          selections: [
-            {
-              start: { line: 0, character: 0 },
-              end: { line: 0, character: 5 },
-              isEmpty: false,
-            } as any,
-          ],
-        });
-
-        mockVscodeAdapter = createMockVscodeAdapter({
-          windowOptions: createWindowOptionsForEditor(mockEditor),
-        });
-        jest
-          .spyOn(mockVscodeAdapter, 'getWorkspaceFolder')
-          .mockImplementation(createMockGetWorkspaceFolder('/test'));
-        jest
-          .spyOn(mockVscodeAdapter, 'asRelativePath')
-          .mockImplementation(createMockAsRelativePath('file.ts'));
-        service = new RangeLinkService(
-          delimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockConfigReader,
-          mockLogger,
-        );
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (service as any).generateLinkFromSelection('workspace-relative', false);
-
-        // Should not log DEBUG when validation succeeds
-        // Verify neither possible context was logged (hasEditor: true or false)
-        expect(mockLogger.debug).not.toHaveBeenCalledWith(
-          {
-            fn: 'validateSelectionsAndShowError',
-            hasEditor: true,
-            errorMsg: expect.any(String),
-          },
-          'Empty selection detected - should be prevented by command enablement',
-        );
-        expect(mockLogger.debug).not.toHaveBeenCalledWith(
-          {
-            fn: 'validateSelectionsAndShowError',
-            hasEditor: false,
-            errorMsg: expect.any(String),
-          },
-          'Empty selection detected - should be prevented by command enablement',
-        );
-      });
-    });
-  });
-
   describe('createLink()', () => {
     let mockGenerateLink: jest.SpyInstance;
     let mockCopyToClipboard: jest.SpyInstance;
@@ -1657,6 +1345,45 @@ describe('RangeLinkService', () => {
       await service.createLink(PathFormat.WorkspaceRelative);
 
       expect(mockCopyToClipboard).not.toHaveBeenCalled();
+    });
+
+    describe('when no active editor', () => {
+      beforeEach(() => {
+        mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
+        mockVscodeAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            activeTextEditor: undefined,
+            showErrorMessage: mockShowErrorMessage,
+          },
+        });
+        service = new RangeLinkService(
+          delimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockLogger,
+        );
+      });
+
+      it('should show error message and log debug', async () => {
+        await service.createLink(PathFormat.WorkspaceRelative);
+
+        expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'validateSelectionsAndShowError',
+            hasEditor: false,
+            errorCode: 'ERROR_NO_ACTIVE_EDITOR',
+          },
+          'Empty selection detected - should be prevented by command enablement',
+        );
+      });
+
+      it('should not copy to clipboard', async () => {
+        await service.createLink(PathFormat.WorkspaceRelative);
+
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
+      });
     });
   });
 
