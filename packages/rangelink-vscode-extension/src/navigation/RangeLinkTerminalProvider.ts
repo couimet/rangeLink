@@ -2,7 +2,8 @@ import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { RangeLinkTerminalLink } from '../types';
+import { MessageCode, type RangeLinkTerminalLink } from '../types';
+import { formatMessage } from '../utils';
 
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
 
@@ -160,7 +161,7 @@ export class RangeLinkTerminalProvider
       );
 
       await this.ideAdapter.showWarningMessage(
-        `RangeLink: Cannot navigate - invalid link format: ${linkText}`,
+        formatMessage(MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT, { linkText }),
       );
       return;
     }

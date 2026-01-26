@@ -10,6 +10,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ALREADY_BOUND_TO_DESTINATION]: 'RangeLink: Already bound to {destinationName}',
   [MessageCode.BOOKMARK_ACTION_ADD]: '$(add) Save Selection as Bookmark',
   [MessageCode.BOOKMARK_ACTION_MANAGE]: '$(gear) Manage Bookmarks...',
+  [MessageCode.BOOKMARK_ADD_INPUT_PLACEHOLDER]: 'Enter a label for this bookmark',
+  [MessageCode.BOOKMARK_ADD_INPUT_PROMPT]: 'Bookmark: {link}',
   [MessageCode.BOOKMARK_LIST_EMPTY]: 'No bookmarks saved',
   [MessageCode.BOOKMARK_LIST_PLACEHOLDER]: 'Select a bookmark to paste to destination',
   [MessageCode.BOOKMARK_LIST_TITLE]: 'Bookmarks',
@@ -40,19 +42,26 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
   [MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE]:
     'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
+  [MessageCode.ERROR_INVALID_DELIMITER_CONFIG]:
+    'RangeLink: Invalid delimiter configuration. Using defaults. Check Output → RangeLink for details.',
   [MessageCode.ERROR_LINK_GENERATION_FAILED]: 'RangeLink: Failed to generate {linkTypeName}',
   [MessageCode.ERROR_NAVIGATION_FAILED]: 'RangeLink: Failed to navigate to {path}: {error}',
+  [MessageCode.ERROR_NO_ACTIVE_EDITOR]: 'RangeLink: No active editor',
   [MessageCode.ERROR_NO_ACTIVE_TERMINAL]:
     'RangeLink: No active terminal. Open a terminal and try again.',
   [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]:
     'RangeLink: No active text editor. Open a file and try again.',
+  [MessageCode.ERROR_NO_TEXT_SELECTED]: 'RangeLink: No text selected. Select text and try again.',
   [MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE]:
     'RangeLink: No active file. Open a file and try again.',
+  [MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT]:
+    'RangeLink: Cannot navigate - invalid link format: {linkText}',
   [MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE]: 'RangeLink: Cannot bind to {fileName} - binary file',
   [MessageCode.ERROR_TEXT_EDITOR_READ_ONLY]:
     'RangeLink: Cannot bind to read-only editor ({scheme})',
   [MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT]:
     'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
+  [MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE]: 'Version information not available',
 
   [MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE]:
     'RangeLink can seamlessly integrate with Claude Code for faster context sharing of precise code ranges.\n\nInstall and activate the Claude Code extension to use it as a paste destination.',
@@ -80,6 +89,10 @@ export const messagesEn: Record<MessageCode, string> = {
     'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
   [MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind and paste:',
+  [MessageCode.INFO_VERSION_COPY_COMMIT_HASH_BUTTON]: 'Copy Commit Hash',
+  [MessageCode.INFO_VERSION_DIRTY_INDICATOR]: ' (with uncommitted changes)',
+  [MessageCode.INFO_VERSION_INFO]:
+    'RangeLink v{version}\nCommit: {commit}{isDirtyIndicator}\nBranch: {branch}\nBuild: {buildDate}',
 
   [MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION]: 'Stay bound to {currentDestination}',
   [MessageCode.SMART_BIND_CONFIRM_NO_KEEP]: 'No, keep current binding',
@@ -104,6 +117,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: "{resourceName}"',
   [MessageCode.STATUS_BAR_BOOKMARK_SAVED]: '✓ Bookmark saved: {label}',
   [MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD]: '✓ {linkTypeName} copied to clipboard',
+  [MessageCode.STATUS_BAR_LINK_SENT_TO_DESTINATION]: '{statusMessage} & sent to {destinationName}',
   [MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL]: 'Bookmarks',
   [MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind:',
@@ -118,6 +132,10 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
   [MessageCode.WARN_NAVIGATION_UNTITLED_FILE]:
     'RangeLink: Cannot navigate to unsaved file ({path}). Save the file first, then try again.',
+  [MessageCode.WARN_PASTE_FAILED_EDITOR_HIDDEN]:
+    '{statusMessage}. Could not send to editor. Bound editor is hidden behind other tabs.',
+  [MessageCode.WARN_PASTE_FAILED_TERMINAL]:
+    '{statusMessage}. Could not send to terminal. Terminal may be closed or not accepting input.',
 
   // Keep the keys in alphabetical order.
 };

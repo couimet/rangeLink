@@ -2,9 +2,6 @@ import { pingLog, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import * as extension from '../extension';
-import { messagesEn } from '../i18n/messages.en';
-import { MessageCode } from '../types/MessageCode';
-import * as formatMessageModule from '../utils/formatMessage';
 import { VSCodeLogger } from '../VSCodeLogger';
 
 import {
@@ -749,80 +746,5 @@ describe('Logger verification and communication channel', () => {
     expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
       expect.stringContaining('Test debug message'),
     );
-  });
-
-  describe('i18n integration for version command', () => {
-    let formatMessageSpy: jest.SpyInstance;
-    const mockContext = {
-      subscriptions: [] as vscode.Disposable[],
-      globalState: createMockMemento(),
-    };
-
-    beforeEach(() => {
-      formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
-      jest.mock('../version.json', () => ({
-        version: '1.0.0',
-        commit: 'abc123',
-        commitFull: 'abc123def456',
-        branch: 'main',
-        buildDate: '2025-01-16',
-        isDirty: false,
-      }));
-
-      // Mock workspace config
-      const mockConfig = {
-        get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
-      };
-      (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
-      (vscode.window.createOutputChannel as jest.Mock).mockReturnValue(mockOutputChannel);
-    });
-
-    it('should call formatMessage with INFO_COMMIT_HASH_COPIED when copying commit hash', async () => {
-      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Copy Commit Hash');
-
-      // Capture command handler via mockImplementation
-      let showVersionHandler: (() => Promise<void>) | undefined;
-      (vscode.commands.registerCommand as jest.Mock).mockImplementation((commandId, handler) => {
-        if (commandId === 'rangelink.showVersion') {
-          showVersionHandler = handler;
-        }
-        return { dispose: jest.fn() };
-      });
-
-      // Activate extension
-      extension.activate(mockContext as unknown as vscode.ExtensionContext);
-
-      expect(showVersionHandler).toBeDefined();
-
-      // Execute the command handler
-      await showVersionHandler!();
-
-      // Verify formatMessage was called with correct MessageCode
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.INFO_COMMIT_HASH_COPIED);
-    });
-
-    it('should show information message with correct commit hash copied text', async () => {
-      (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Copy Commit Hash');
-
-      // Capture command handler via mockImplementation
-      let showVersionHandler: (() => Promise<void>) | undefined;
-      (vscode.commands.registerCommand as jest.Mock).mockImplementation((commandId, handler) => {
-        if (commandId === 'rangelink.showVersion') {
-          showVersionHandler = handler;
-        }
-        return { dispose: jest.fn() };
-      });
-
-      // Activate extension
-      extension.activate(mockContext as unknown as vscode.ExtensionContext);
-
-      expect(showVersionHandler).toBeDefined();
-
-      // Get and execute handler
-      await showVersionHandler!();
-
-      const expectedMessage = messagesEn[MessageCode.INFO_COMMIT_HASH_COPIED];
-      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(expectedMessage);
-    });
   });
 });

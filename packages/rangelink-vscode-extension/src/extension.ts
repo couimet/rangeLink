@@ -6,6 +6,7 @@ import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
 import { GoToRangeLinkCommand } from './commands/GoToRangeLinkCommand';
 import { ListBookmarksCommand } from './commands/ListBookmarksCommand';
 import { ManageBookmarksCommand } from './commands/ManageBookmarksCommand';
+import { ShowVersionCommand } from './commands/ShowVersionCommand';
 import { ConfigReader, getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
@@ -66,7 +67,7 @@ import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvide
 import { RangeLinkParser } from './RangeLinkParser';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { RangeLinkStatusBar } from './statusBar';
-import { MessageCode, type RangeLinkClickArgs } from './types';
+import type { RangeLinkClickArgs, VersionInfo } from './types';
 import { formatMessage, registerWithLogging } from './utils';
 import { VSCodeLogger } from './VSCodeLogger';
 
@@ -85,6 +86,29 @@ export function activate(context: vscode.ExtensionContext): void {
   const vscodeLogger = new VSCodeLogger(outputChannel);
   setLogger(vscodeLogger);
   const logger = getLogger();
+
+  // Load version info once at startup (static, won't change at runtime)
+  let versionInfo: VersionInfo | undefined;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    versionInfo = require('./version.json') as VersionInfo;
+    logger.info(
+      {
+        fn: 'activate',
+        version: versionInfo.version,
+        commit: versionInfo.commit,
+        isDirty: versionInfo.isDirty,
+        branch: versionInfo.branch,
+        buildDate: versionInfo.buildDate,
+      },
+      `RangeLink extension activated - v${versionInfo.version} (${versionInfo.commit}${versionInfo.isDirty ? ' dirty' : ''})`,
+    );
+  } catch (error) {
+    logger.warn(
+      { fn: 'activate', error },
+      'RangeLink extension activated (version info unavailable)',
+    );
+  }
 
   const ideAdapter = new VscodeAdapter(vscode, logger);
   const configReader = ConfigReader.create(ideAdapter, logger);
@@ -247,33 +271,9 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   // Register version info command
+  const showVersionCommand = new ShowVersionCommand(ideAdapter, logger, versionInfo);
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_SHOW_VERSION, async () => {
-      try {
-        const versionInfo = require('./version.json');
-        const isDirtyIndicator = versionInfo.isDirty ? ' (with uncommitted changes)' : '';
-        const message = `RangeLink v${versionInfo.version}\nCommit: ${versionInfo.commit}${isDirtyIndicator}\nBranch: ${versionInfo.branch}\nBuild: ${versionInfo.buildDate}`;
-        const selection = await ideAdapter.showInformationMessage(message, 'Copy Commit Hash');
-        if (selection === 'Copy Commit Hash') {
-          await ideAdapter.writeTextToClipboard(versionInfo.commitFull);
-          await ideAdapter.showInformationMessage(
-            formatMessage(MessageCode.INFO_COMMIT_HASH_COPIED),
-          );
-        }
-        logger.info(
-          {
-            fn: 'showVersion',
-            version: versionInfo.version,
-            commit: versionInfo.commit,
-            buildDate: versionInfo.buildDate,
-          },
-          'Version info displayed',
-        );
-      } catch (error) {
-        logger.error({ fn: 'showVersion', error }, 'Failed to load version info');
-        await ideAdapter.showErrorMessage('Version information not available');
-      }
-    }),
+    ideAdapter.registerCommand(CMD_SHOW_VERSION, () => showVersionCommand.execute()),
   );
 
   context.subscriptions.push(
@@ -477,27 +477,6 @@ export function activate(context: vscode.ExtensionContext): void {
       addBookmarkCommand.execute(),
     ),
   );
-
-  // Log version info on startup
-  try {
-    const versionInfo = require('./version.json');
-    logger.info(
-      {
-        fn: 'activate',
-        version: versionInfo.version,
-        commit: versionInfo.commit,
-        isDirty: versionInfo.isDirty,
-        branch: versionInfo.branch,
-        buildDate: versionInfo.buildDate,
-      },
-      `RangeLink extension activated - v${versionInfo.version} (${versionInfo.commit}${versionInfo.isDirty ? ' dirty' : ''})`,
-    );
-  } catch (error) {
-    logger.warn(
-      { fn: 'activate', error },
-      'RangeLink extension activated (version info unavailable)',
-    );
-  }
 }
 
 /**

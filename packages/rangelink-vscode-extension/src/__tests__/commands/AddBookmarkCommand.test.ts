@@ -536,14 +536,16 @@ describe('AddBookmarkCommand', () => {
       it('generates default label from link filename', async () => {
         const testLink = 'src/components/Button.tsx#L10';
         const editor = createMockEditor({ text: testLink });
-        const capturedOptions: { value?: string; prompt?: string }[] = [];
+        const capturedOptions: { value?: string; prompt?: string; placeHolder?: string }[] = [];
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
             activeTextEditor: editor,
-            showInputBox: jest.fn((opts: { value?: string; prompt?: string }) => {
-              capturedOptions.push(opts);
-              return Promise.resolve('Final Label');
-            }),
+            showInputBox: jest.fn(
+              (opts: { value?: string; prompt?: string; placeHolder?: string }) => {
+                capturedOptions.push(opts);
+                return Promise.resolve('Final Label');
+              },
+            ),
           },
         });
         command = new AddBookmarkCommand(
@@ -556,8 +558,11 @@ describe('AddBookmarkCommand', () => {
 
         await command.execute();
 
-        expect(capturedOptions[0].value).toBe('Button.tsx');
-        expect(capturedOptions[0].prompt).toBe(`Bookmark: ${testLink}`);
+        expect(capturedOptions[0]).toStrictEqual({
+          value: 'Button.tsx',
+          prompt: `Bookmark: ${testLink}`,
+          placeHolder: 'Enter a label for this bookmark',
+        });
       });
 
       it('logs when showing bookmark label input', async () => {
