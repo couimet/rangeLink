@@ -90,6 +90,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind and paste:',
   [MessageCode.INFO_VERSION_COPY_COMMIT_HASH_BUTTON]: 'Copy Commit Hash',
+  [MessageCode.INFO_VERSION_DIRTY_INDICATOR]: ' (with uncommitted changes)',
   [MessageCode.INFO_VERSION_INFO]:
     'RangeLink v{version}\nCommit: {commit}{isDirtyIndicator}\nBranch: {branch}\nBuild: {buildDate}',
 
