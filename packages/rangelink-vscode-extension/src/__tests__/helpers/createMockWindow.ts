@@ -35,6 +35,7 @@ export const createMockWindow = (
     activeTerminal: undefined as vscode.Terminal | undefined,
     activeTextEditor: undefined as vscode.TextEditor | undefined,
     visibleTextEditors: [] as vscode.TextEditor[],
+    terminals: [] as readonly vscode.Terminal[],
     tabGroups: {
       all: [],
       activeTabGroup: undefined,

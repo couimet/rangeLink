@@ -4,6 +4,7 @@ import { DestinationAvailabilityService } from '../../destinations/DestinationAv
 import type { AIAssistantDestinationType } from '../../destinations/PasteDestination';
 import {
   createBaseMockPasteDestination,
+  createMockConfigReader,
   createMockDestinationRegistry,
   createMockEditor,
   createMockTabGroupsWithCount,
@@ -12,7 +13,13 @@ import {
 } from '../helpers';
 
 describe('DestinationAvailabilityService', () => {
-  const mockLogger = createMockLogger();
+  let mockLogger: ReturnType<typeof createMockLogger>;
+  let mockConfigReader: ReturnType<typeof createMockConfigReader>;
+
+  beforeEach(() => {
+    mockLogger = createMockLogger();
+    mockConfigReader = createMockConfigReader();
+  });
 
   const createMockRegistryWithUnifiedAI = (aiAvailable = false) => {
     const mockDestination = createBaseMockPasteDestination({ id: 'claude-code' });
@@ -37,7 +44,7 @@ describe('DestinationAvailabilityService', () => {
       mockDestination.isAvailable.mockResolvedValue(available);
       registry.create.mockReturnValue(mockDestination);
       const ideAdapter = createMockVscodeAdapter();
-      const service = new DestinationAvailabilityService(registry, ideAdapter, mockLogger);
+      const service = new DestinationAvailabilityService(registry, ideAdapter, mockConfigReader, mockLogger);
 
       const result = await service.isAIAssistantAvailable(type);
 
@@ -61,6 +68,7 @@ describe('DestinationAvailabilityService', () => {
       const service = new DestinationAvailabilityService(
         createMockRegistryWithUnifiedAI(),
         ideAdapter,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -74,6 +82,7 @@ describe('DestinationAvailabilityService', () => {
       const service = new DestinationAvailabilityService(
         createMockRegistryWithUnifiedAI(),
         ideAdapter,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -87,6 +96,7 @@ describe('DestinationAvailabilityService', () => {
       const service = new DestinationAvailabilityService(
         createMockRegistryWithUnifiedAI(),
         ideAdapter,
+        mockConfigReader,
         mockLogger,
       );
 
@@ -96,12 +106,13 @@ describe('DestinationAvailabilityService', () => {
     });
   });
 
-  describe('getAvailableDestinations()', () => {
+  describe('getAvailableDestinationItems()', () => {
     describe('text-editor availability', () => {
-      it('includes text-editor when hasActiveTextEditor and tabGroupCount >= 2', async () => {
+      it('includes text-editor DestinationItem when hasActiveTextEditor and tabGroupCount >= 2', async () => {
         const ideAdapter = createMockVscodeAdapter({
           windowOptions: {
             activeTextEditor: createMockEditor(),
+            terminals: [],
             activeTerminal: undefined,
             tabGroups: createMockTabGroupsWithCount(2),
           },
@@ -109,20 +120,31 @@ describe('DestinationAvailabilityService', () => {
         const service = new DestinationAvailabilityService(
           createMockRegistryWithUnifiedAI(),
           ideAdapter,
+          mockConfigReader,
           mockLogger,
         );
 
-        const result = await service.getAvailableDestinations();
+        const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { type: 'text-editor', displayName: 'Text Editor ("file.ts")' },
+          { kind: 'destination', type: 'text-editor', displayName: 'Text Editor ("file.ts")' },
         ]);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
+            isTextEditorEligible: true,
+            terminalCount: 0,
+            itemCount: 1,
+          },
+          'Found 1 available destination items',
+        );
       });
 
       it('excludes text-editor when hasActiveTextEditor is false', async () => {
         const ideAdapter = createMockVscodeAdapter({
           windowOptions: {
             activeTextEditor: undefined,
+            terminals: [],
             activeTerminal: undefined,
             tabGroups: createMockTabGroupsWithCount(2),
           },
@@ -130,39 +152,34 @@ describe('DestinationAvailabilityService', () => {
         const service = new DestinationAvailabilityService(
           createMockRegistryWithUnifiedAI(),
           ideAdapter,
+          mockConfigReader,
           mockLogger,
         );
 
-        const result = await service.getAvailableDestinations();
+        const result = await service.getAvailableDestinationItems();
 
-        expect(result.find((d) => d.type === 'text-editor')).toBeUndefined();
-      });
-
-      it('excludes text-editor when tabGroupCount < 2', async () => {
-        const ideAdapter = createMockVscodeAdapter({
-          windowOptions: {
-            activeTextEditor: createMockEditor(),
-            activeTerminal: undefined,
-            tabGroups: createMockTabGroupsWithCount(1),
+        expect(
+          result.find((d) => d.kind === 'destination' && d.type === 'text-editor'),
+        ).toBeUndefined();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
+            isTextEditorEligible: false,
+            terminalCount: 0,
+            itemCount: 0,
           },
-        });
-        const service = new DestinationAvailabilityService(
-          createMockRegistryWithUnifiedAI(),
-          ideAdapter,
-          mockLogger,
+          'Found 0 available destination items',
         );
-
-        const result = await service.getAvailableDestinations();
-
-        expect(result.find((d) => d.type === 'text-editor')).toBeUndefined();
       });
     });
 
     describe('terminal availability', () => {
-      it('includes terminal when hasActiveTerminal is true', async () => {
+      it('includes terminal separator and single TerminalItem when one terminal exists', async () => {
+        const terminal = createMockTerminal({ name: 'zsh' });
         const ideAdapter = createMockVscodeAdapter({
           windowOptions: {
-            activeTerminal: createMockTerminal(),
+            terminals: [terminal],
+            activeTerminal: terminal,
             activeTextEditor: undefined,
             tabGroups: createMockTabGroupsWithCount(1),
           },
@@ -170,17 +187,154 @@ describe('DestinationAvailabilityService', () => {
         const service = new DestinationAvailabilityService(
           createMockRegistryWithUnifiedAI(),
           ideAdapter,
+          mockConfigReader,
           mockLogger,
         );
 
-        const result = await service.getAvailableDestinations();
+        const result = await service.getAvailableDestinationItems();
 
-        expect(result).toStrictEqual([{ type: 'terminal', displayName: 'Terminal ("bash")' }]);
+        expect(result).toStrictEqual([
+          { kind: 'terminal-separator', displayName: 'Terminal' },
+          { kind: 'terminal', terminal, displayName: 'zsh', isActive: true },
+        ]);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
+            isTextEditorEligible: false,
+            terminalCount: 1,
+            itemCount: 2,
+          },
+          'Found 2 available destination items',
+        );
       });
 
-      it('excludes terminal when hasActiveTerminal is false', async () => {
+      it('includes multiple TerminalItems with correct active status', async () => {
+        const terminal1 = createMockTerminal({ name: 'zsh' });
+        const terminal2 = createMockTerminal({ name: 'bash' });
+        const terminal3 = createMockTerminal({ name: 'node' });
         const ideAdapter = createMockVscodeAdapter({
           windowOptions: {
+            terminals: [terminal1, terminal2, terminal3],
+            activeTerminal: terminal2,
+            activeTextEditor: undefined,
+            tabGroups: createMockTabGroupsWithCount(1),
+          },
+        });
+        const service = new DestinationAvailabilityService(
+          createMockRegistryWithUnifiedAI(),
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getAvailableDestinationItems();
+
+        expect(result).toStrictEqual([
+          { kind: 'terminal-separator', displayName: 'Terminal' },
+          { kind: 'terminal', terminal: terminal1, displayName: 'zsh', isActive: false },
+          { kind: 'terminal', terminal: terminal2, displayName: 'bash', isActive: true },
+          { kind: 'terminal', terminal: terminal3, displayName: 'node', isActive: false },
+        ]);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
+            isTextEditorEligible: false,
+            terminalCount: 3,
+            itemCount: 4,
+          },
+          'Found 4 available destination items',
+        );
+      });
+
+      it('shows first 4 terminals plus "More..." when >5 terminals exist', async () => {
+        const terminal1 = createMockTerminal({ name: 'terminal-1' });
+        const terminal2 = createMockTerminal({ name: 'terminal-2' });
+        const terminal3 = createMockTerminal({ name: 'terminal-3' });
+        const terminal4 = createMockTerminal({ name: 'terminal-4' });
+        const terminal5 = createMockTerminal({ name: 'terminal-5' });
+        const terminal6 = createMockTerminal({ name: 'terminal-6' });
+        const ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            terminals: [terminal1, terminal2, terminal3, terminal4, terminal5, terminal6],
+            activeTerminal: terminal1,
+            activeTextEditor: undefined,
+            tabGroups: createMockTabGroupsWithCount(1),
+          },
+        });
+        const service = new DestinationAvailabilityService(
+          createMockRegistryWithUnifiedAI(),
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getAvailableDestinationItems();
+
+        expect(result).toStrictEqual([
+          { kind: 'terminal-separator', displayName: 'Terminal' },
+          { kind: 'terminal', terminal: terminal1, displayName: 'terminal-1', isActive: true },
+          { kind: 'terminal', terminal: terminal2, displayName: 'terminal-2', isActive: false },
+          { kind: 'terminal', terminal: terminal3, displayName: 'terminal-3', isActive: false },
+          { kind: 'terminal', terminal: terminal4, displayName: 'terminal-4', isActive: false },
+          { kind: 'terminal-more', displayName: 'More terminals...', remainingCount: 2 },
+        ]);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
+            isTextEditorEligible: false,
+            terminalCount: 6,
+            itemCount: 6,
+          },
+          'Found 6 available destination items',
+        );
+      });
+
+      it('shows all 5 terminals without "More..." when exactly 5 terminals exist', async () => {
+        const terminal1 = createMockTerminal({ name: 'terminal-1' });
+        const terminal2 = createMockTerminal({ name: 'terminal-2' });
+        const terminal3 = createMockTerminal({ name: 'terminal-3' });
+        const terminal4 = createMockTerminal({ name: 'terminal-4' });
+        const terminal5 = createMockTerminal({ name: 'terminal-5' });
+        const ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            terminals: [terminal1, terminal2, terminal3, terminal4, terminal5],
+            activeTerminal: terminal3,
+            activeTextEditor: undefined,
+            tabGroups: createMockTabGroupsWithCount(1),
+          },
+        });
+        const service = new DestinationAvailabilityService(
+          createMockRegistryWithUnifiedAI(),
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getAvailableDestinationItems();
+
+        expect(result).toStrictEqual([
+          { kind: 'terminal-separator', displayName: 'Terminal' },
+          { kind: 'terminal', terminal: terminal1, displayName: 'terminal-1', isActive: false },
+          { kind: 'terminal', terminal: terminal2, displayName: 'terminal-2', isActive: false },
+          { kind: 'terminal', terminal: terminal3, displayName: 'terminal-3', isActive: true },
+          { kind: 'terminal', terminal: terminal4, displayName: 'terminal-4', isActive: false },
+          { kind: 'terminal', terminal: terminal5, displayName: 'terminal-5', isActive: false },
+        ]);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
+            isTextEditorEligible: false,
+            terminalCount: 5,
+            itemCount: 6,
+          },
+          'Found 6 available destination items',
+        );
+      });
+
+      it('excludes terminals when no terminals exist', async () => {
+        const ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            terminals: [],
             activeTerminal: undefined,
             activeTextEditor: undefined,
             tabGroups: createMockTabGroupsWithCount(1),
@@ -189,12 +343,66 @@ describe('DestinationAvailabilityService', () => {
         const service = new DestinationAvailabilityService(
           createMockRegistryWithUnifiedAI(),
           ideAdapter,
+          mockConfigReader,
           mockLogger,
         );
 
-        const result = await service.getAvailableDestinations();
+        const result = await service.getAvailableDestinationItems();
 
-        expect(result.find((d) => d.type === 'terminal')).toBeUndefined();
+        expect(result.find((d) => d.kind === 'terminal-separator')).toBeUndefined();
+        expect(result.find((d) => d.kind === 'terminal')).toBeUndefined();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
+            isTextEditorEligible: false,
+            terminalCount: 0,
+            itemCount: 0,
+          },
+          'Found 0 available destination items',
+        );
+      });
+
+      it('respects custom maxInline config value', async () => {
+        const terminal1 = createMockTerminal({ name: 'terminal-1' });
+        const terminal2 = createMockTerminal({ name: 'terminal-2' });
+        const terminal3 = createMockTerminal({ name: 'terminal-3' });
+        const terminal4 = createMockTerminal({ name: 'terminal-4' });
+        const ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            terminals: [terminal1, terminal2, terminal3, terminal4],
+            activeTerminal: terminal1,
+            activeTextEditor: undefined,
+            tabGroups: createMockTabGroupsWithCount(1),
+          },
+        });
+        const configReader = createMockConfigReader({
+          getWithDefault: jest.fn().mockReturnValue(3),
+        });
+        const service = new DestinationAvailabilityService(
+          createMockRegistryWithUnifiedAI(),
+          ideAdapter,
+          configReader,
+          mockLogger,
+        );
+
+        const result = await service.getAvailableDestinationItems();
+
+        expect(result).toStrictEqual([
+          { kind: 'terminal-separator', displayName: 'Terminal' },
+          { kind: 'terminal', terminal: terminal1, displayName: 'terminal-1', isActive: true },
+          { kind: 'terminal', terminal: terminal2, displayName: 'terminal-2', isActive: false },
+          { kind: 'terminal-more', displayName: 'More terminals...', remainingCount: 2 },
+        ]);
+        expect(configReader.getWithDefault).toHaveBeenCalledWith('terminalPicker.maxInline', 5);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
+            isTextEditorEligible: false,
+            terminalCount: 4,
+            itemCount: 4,
+          },
+          'Found 4 available destination items',
+        );
       });
     });
 
@@ -206,20 +414,30 @@ describe('DestinationAvailabilityService', () => {
         registry.create.mockReturnValue(mockDestination);
         const ideAdapter = createMockVscodeAdapter({
           windowOptions: {
+            terminals: [],
             activeTerminal: undefined,
             activeTextEditor: undefined,
             tabGroups: createMockTabGroupsWithCount(1),
           },
         });
-        const service = new DestinationAvailabilityService(registry, ideAdapter, mockLogger);
+        const service = new DestinationAvailabilityService(registry, ideAdapter, mockConfigReader, mockLogger);
 
-        const result = await service.getAvailableDestinations();
+        const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { type: 'claude-code', displayName: 'Claude Code Chat' },
-          { type: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
-          { type: 'cursor-ai', displayName: 'Cursor AI Assistant' },
+          { kind: 'destination', type: 'claude-code', displayName: 'Claude Code Chat' },
+          { kind: 'destination', type: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
+          { kind: 'destination', type: 'cursor-ai', displayName: 'Cursor AI Assistant' },
         ]);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
+            isTextEditorEligible: false,
+            terminalCount: 0,
+            itemCount: 3,
+          },
+          'Found 3 available destination items',
+        );
       });
 
       it('excludes AI assistants when not available', async () => {
@@ -229,60 +447,72 @@ describe('DestinationAvailabilityService', () => {
         registry.create.mockReturnValue(mockDestination);
         const ideAdapter = createMockVscodeAdapter({
           windowOptions: {
+            terminals: [],
             activeTerminal: undefined,
             activeTextEditor: undefined,
             tabGroups: createMockTabGroupsWithCount(1),
           },
         });
-        const service = new DestinationAvailabilityService(registry, ideAdapter, mockLogger);
+        const service = new DestinationAvailabilityService(registry, ideAdapter, mockConfigReader, mockLogger);
 
-        const result = await service.getAvailableDestinations();
+        const result = await service.getAvailableDestinationItems();
 
-        expect(result.find((d) => d.type === 'claude-code')).toBeUndefined();
-        expect(result.find((d) => d.type === 'cursor-ai')).toBeUndefined();
-        expect(result.find((d) => d.type === 'github-copilot-chat')).toBeUndefined();
+        expect(
+          result.find((d) => d.kind === 'destination' && d.type === 'claude-code'),
+        ).toBeUndefined();
+        expect(
+          result.find((d) => d.kind === 'destination' && d.type === 'cursor-ai'),
+        ).toBeUndefined();
+        expect(
+          result.find((d) => d.kind === 'destination' && d.type === 'github-copilot-chat'),
+        ).toBeUndefined();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
+            isTextEditorEligible: false,
+            terminalCount: 0,
+            itemCount: 0,
+          },
+          'Found 0 available destination items',
+        );
       });
     });
 
     describe('combined availability', () => {
-      it('returns all available destinations when everything is available', async () => {
+      it('returns all available items when everything is available', async () => {
         const registry = createMockRegistryWithUnifiedAI();
         const mockDestination = createBaseMockPasteDestination({ id: 'claude-code' });
         mockDestination.isAvailable.mockResolvedValue(true);
         registry.create.mockReturnValue(mockDestination);
+        const terminal = createMockTerminal({ name: 'bash' });
         const ideAdapter = createMockVscodeAdapter({
           windowOptions: {
-            activeTerminal: createMockTerminal(),
+            terminals: [terminal],
+            activeTerminal: terminal,
             activeTextEditor: createMockEditor(),
             tabGroups: createMockTabGroupsWithCount(2),
           },
         });
-        const service = new DestinationAvailabilityService(registry, ideAdapter, mockLogger);
+        const service = new DestinationAvailabilityService(registry, ideAdapter, mockConfigReader, mockLogger);
 
-        const result = await service.getAvailableDestinations();
+        const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { type: 'text-editor', displayName: 'Text Editor ("file.ts")' },
-          { type: 'terminal', displayName: 'Terminal ("bash")' },
-          { type: 'claude-code', displayName: 'Claude Code Chat' },
-          { type: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
-          { type: 'cursor-ai', displayName: 'Cursor AI Assistant' },
+          { kind: 'destination', type: 'text-editor', displayName: 'Text Editor ("file.ts")' },
+          { kind: 'terminal-separator', displayName: 'Terminal' },
+          { kind: 'terminal', terminal, displayName: 'bash', isActive: true },
+          { kind: 'destination', type: 'claude-code', displayName: 'Claude Code Chat' },
+          { kind: 'destination', type: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
+          { kind: 'destination', type: 'cursor-ai', displayName: 'Cursor AI Assistant' },
         ]);
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'DestinationAvailabilityService.getAvailableDestinations',
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
             isTextEditorEligible: true,
-            isTerminalEligible: true,
-            availableCount: 5,
-            availableTypes: [
-              'text-editor',
-              'terminal',
-              'claude-code',
-              'github-copilot-chat',
-              'cursor-ai',
-            ],
+            terminalCount: 1,
+            itemCount: 6,
           },
-          'Found 5 available destinations',
+          'Found 6 available destination items',
         );
       });
 
@@ -293,49 +523,26 @@ describe('DestinationAvailabilityService', () => {
         registry.create.mockReturnValue(mockDestination);
         const ideAdapter = createMockVscodeAdapter({
           windowOptions: {
+            terminals: [],
             activeTerminal: undefined,
             activeTextEditor: undefined,
             tabGroups: createMockTabGroupsWithCount(1),
           },
         });
-        const service = new DestinationAvailabilityService(registry, ideAdapter, mockLogger);
+        const service = new DestinationAvailabilityService(registry, ideAdapter, mockConfigReader, mockLogger);
 
-        const result = await service.getAvailableDestinations();
+        const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([]);
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'DestinationAvailabilityService.getAvailableDestinations',
+            fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
             isTextEditorEligible: false,
-            isTerminalEligible: false,
-            availableCount: 0,
-            availableTypes: [],
+            terminalCount: 0,
+            itemCount: 0,
           },
-          'Found 0 available destinations',
+          'Found 0 available destination items',
         );
-      });
-    });
-
-    describe('checks AI assistants in parallel', () => {
-      it('calls registry.create for each AI assistant type', async () => {
-        const registry = createMockRegistryWithUnifiedAI();
-        const mockDestination = createBaseMockPasteDestination({ id: 'claude-code' });
-        mockDestination.isAvailable.mockResolvedValue(false);
-        registry.create.mockReturnValue(mockDestination);
-        const ideAdapter = createMockVscodeAdapter({
-          windowOptions: {
-            activeTerminal: undefined,
-            activeTextEditor: undefined,
-            tabGroups: createMockTabGroupsWithCount(1),
-          },
-        });
-        const service = new DestinationAvailabilityService(registry, ideAdapter, mockLogger);
-
-        await service.getAvailableDestinations();
-
-        expect(registry.create).toHaveBeenCalledWith({ type: 'claude-code' });
-        expect(registry.create).toHaveBeenCalledWith({ type: 'cursor-ai' });
-        expect(registry.create).toHaveBeenCalledWith({ type: 'github-copilot-chat' });
       });
     });
   });

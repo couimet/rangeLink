@@ -8,3 +8,8 @@ export {
   isTextEditorDestinationEligible,
   type TextEditorEligibility,
 } from './isTextEditorDestinationEligible';
+export {
+  showTerminalPicker,
+  type TerminalPickerOptions,
+  type TerminalPickerResult,
+} from './showTerminalPicker';

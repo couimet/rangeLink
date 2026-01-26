@@ -6,6 +6,7 @@ import {
   DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
   DEFAULT_SMART_PADDING_PASTE_CONTENT,
   DEFAULT_SMART_PADDING_PASTE_LINK,
+  DEFAULT_TERMINAL_PICKER_MAX_INLINE,
 } from '../../constants/settingDefaults';
 
 /**
@@ -44,6 +45,12 @@ describe('settingDefaults', () => {
 
     it('DEFAULT_SMART_PADDING_PASTE_LINK is both', () => {
       expect(DEFAULT_SMART_PADDING_PASTE_LINK).toBe('both');
+    });
+  });
+
+  describe('terminal picker defaults', () => {
+    it('DEFAULT_TERMINAL_PICKER_MAX_INLINE is 5', () => {
+      expect(DEFAULT_TERMINAL_PICKER_MAX_INLINE).toBe(5);
     });
   });
 });
