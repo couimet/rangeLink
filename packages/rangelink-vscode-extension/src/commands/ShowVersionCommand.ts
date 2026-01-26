@@ -16,10 +16,7 @@ export class ShowVersionCommand {
     private readonly logger: Logger,
     private readonly versionInfo: VersionInfo | undefined,
   ) {
-    this.logger.debug(
-      { fn: 'ShowVersionCommand.constructor' },
-      'ShowVersionCommand initialized',
-    );
+    this.logger.debug({ fn: 'ShowVersionCommand.constructor' }, 'ShowVersionCommand initialized');
   }
 
   async execute(): Promise<void> {
