@@ -98,6 +98,10 @@ describe('PasteDestinationManager', () => {
   let documentCloseListener: (document: vscode.TextDocument) => void;
   let formatMessageSpy: jest.SpyInstance;
 
+  // Shared mocks used by multiple describe blocks
+  let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
+  let mockTerminalDest: jest.Mocked<PasteDestination>;
+
   /**
    * Helper to create a manager with optional environment and window overrides.
    * Useful for tests that need to simulate Cursor IDE or configure message mocks.
@@ -826,7 +830,6 @@ describe('PasteDestinationManager', () => {
 
     // Mock factory and destinations for unit tests
     let mockRegistryForSend: ReturnType<typeof createMockDestinationRegistry>;
-    let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockChatDest: jest.Mocked<PasteDestination>;
 
     beforeEach(() => {
@@ -1684,8 +1687,6 @@ describe('PasteDestinationManager', () => {
   describe('jumpToBoundDestination()', () => {
     // Mock factory and destinations for unit tests
     let mockRegistryForJump: ReturnType<typeof createMockDestinationRegistry>;
-    let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
-    let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockEditorDest: PasteDestination;
     let mockEditorDestFocusSpy: jest.SpyInstance;
     let mockCursorAIDest: jest.Mocked<PasteDestination>;
@@ -2099,8 +2100,6 @@ describe('PasteDestinationManager', () => {
 
   describe('bindAndJump()', () => {
     let mockRegistryForBindAndJump: ReturnType<typeof createMockDestinationRegistry>;
-    let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
-    let mockTerminalDest: jest.Mocked<PasteDestination>;
     let mockTerminal: vscode.Terminal;
 
     beforeEach(() => {
@@ -2167,7 +2166,6 @@ describe('PasteDestinationManager', () => {
       const TEST_CONTENT = 'Test content to paste';
       const TEST_STATUS = 'Content sent successfully';
 
-      let mockTerminalDest: jest.Mocked<PasteDestination>;
       let mockRegistryForSend: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
@@ -2415,7 +2413,6 @@ describe('PasteDestinationManager', () => {
     });
 
     describe('Already Bound Check', () => {
-      let mockTerminalDest: jest.Mocked<PasteDestination>;
       let mockRegistryForDuplicate: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
@@ -2661,7 +2658,6 @@ describe('PasteDestinationManager', () => {
   });
 
   describe('showDestinationQuickPickForPaste()', () => {
-    let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
     let showQuickPickMock: jest.Mock;
     let mockWindow: ReturnType<typeof mockAdapter.__getVscodeInstance>['window'];
 
