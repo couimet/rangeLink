@@ -657,17 +657,37 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should show error message and log debug', async () => {
+      it('should show error message and log diagnostic context', async () => {
         await service.pasteSelectedTextToDestination();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'validateSelectionsAndShowError',
+            fn: 'RangeLinkService.validateSelectionsAndShowError',
+            hasEditor: false,
+            selectionCount: 0,
+            selections: [],
+            documentVersion: undefined,
+            documentLineCount: undefined,
+            documentIsDirty: undefined,
+            documentIsClosed: undefined,
+          },
+          'Selection validation starting',
+        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          {
+            fn: 'RangeLinkService.validateSelectionsAndShowError',
             hasEditor: false,
             errorCode: 'ERROR_NO_ACTIVE_EDITOR',
+            selectionCount: 0,
+            selections: [],
+            documentVersion: undefined,
+            documentLineCount: undefined,
+            documentIsDirty: undefined,
+            documentIsClosed: undefined,
+            lineContentAtBoundaries: undefined,
           },
-          'Empty selection detected - should be prevented by command enablement',
+          'Selection validation failed - full diagnostic context',
         );
       });
 
@@ -707,7 +727,7 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should show error message and log debug', async () => {
+      it('should show error message and log diagnostic context', async () => {
         await service.pasteSelectedTextToDestination();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
@@ -715,11 +735,31 @@ describe('RangeLinkService', () => {
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'validateSelectionsAndShowError',
+            fn: 'RangeLinkService.validateSelectionsAndShowError',
+            hasEditor: true,
+            selectionCount: 0,
+            selections: [],
+            documentVersion: undefined,
+            documentLineCount: undefined,
+            documentIsDirty: undefined,
+            documentIsClosed: undefined,
+          },
+          'Selection validation starting',
+        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          {
+            fn: 'RangeLinkService.validateSelectionsAndShowError',
             hasEditor: true,
             errorCode: 'ERROR_NO_TEXT_SELECTED',
+            selectionCount: 0,
+            selections: [],
+            documentVersion: undefined,
+            documentLineCount: undefined,
+            documentIsDirty: undefined,
+            documentIsClosed: undefined,
+            lineContentAtBoundaries: [],
           },
-          'Empty selection detected - should be prevented by command enablement',
+          'Selection validation failed - full diagnostic context',
         );
       });
 
@@ -757,7 +797,7 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should show error message and log debug', async () => {
+      it('should show error message and log diagnostic context', async () => {
         await service.pasteSelectedTextToDestination();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
@@ -765,11 +805,40 @@ describe('RangeLinkService', () => {
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'validateSelectionsAndShowError',
+            fn: 'RangeLinkService.validateSelectionsAndShowError',
+            hasEditor: true,
+            selectionCount: 2,
+            selections: [
+              { index: 0, start: { line: 0, char: 0 }, end: { line: 0, char: 0 }, isEmpty: true },
+              { index: 1, start: { line: 1, char: 0 }, end: { line: 1, char: 0 }, isEmpty: true },
+            ],
+            documentVersion: undefined,
+            documentLineCount: undefined,
+            documentIsDirty: undefined,
+            documentIsClosed: undefined,
+          },
+          'Selection validation starting',
+        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          {
+            fn: 'RangeLinkService.validateSelectionsAndShowError',
             hasEditor: true,
             errorCode: 'ERROR_NO_TEXT_SELECTED',
+            selectionCount: 2,
+            selections: [
+              { index: 0, start: { line: 0, char: 0 }, end: { line: 0, char: 0 }, isEmpty: true },
+              { index: 1, start: { line: 1, char: 0 }, end: { line: 1, char: 0 }, isEmpty: true },
+            ],
+            documentVersion: undefined,
+            documentLineCount: undefined,
+            documentIsDirty: undefined,
+            documentIsClosed: undefined,
+            lineContentAtBoundaries: [
+              { index: 0, startLineContent: undefined, endLineContent: undefined },
+              { index: 1, startLineContent: undefined, endLineContent: undefined },
+            ],
           },
-          'Empty selection detected - should be prevented by command enablement',
+          'Selection validation failed - full diagnostic context',
         );
       });
 
@@ -1365,17 +1434,37 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should show error message and log debug', async () => {
+      it('should show error message and log diagnostic context', async () => {
         await service.createLink(PathFormat.WorkspaceRelative);
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'validateSelectionsAndShowError',
+            fn: 'RangeLinkService.validateSelectionsAndShowError',
+            hasEditor: false,
+            selectionCount: 0,
+            selections: [],
+            documentVersion: undefined,
+            documentLineCount: undefined,
+            documentIsDirty: undefined,
+            documentIsClosed: undefined,
+          },
+          'Selection validation starting',
+        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          {
+            fn: 'RangeLinkService.validateSelectionsAndShowError',
             hasEditor: false,
             errorCode: 'ERROR_NO_ACTIVE_EDITOR',
+            selectionCount: 0,
+            selections: [],
+            documentVersion: undefined,
+            documentLineCount: undefined,
+            documentIsDirty: undefined,
+            documentIsClosed: undefined,
+            lineContentAtBoundaries: undefined,
           },
-          'Empty selection detected - should be prevented by command enablement',
+          'Selection validation failed - full diagnostic context',
         );
       });
 

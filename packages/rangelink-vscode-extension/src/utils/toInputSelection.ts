@@ -1,4 +1,4 @@
-import { getLogger } from 'barebone-logger';
+import type { Logger } from 'barebone-logger';
 import { InputSelection, Selection, SelectionCoverage, SelectionType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -11,7 +11,24 @@ import { isRectangularSelection } from '../isRectangularSelection';
 export const toInputSelection = (
   document: vscode.TextDocument,
   vscodeSelections: readonly vscode.Selection[],
+  logger: Logger,
 ): InputSelection => {
+  logger.debug(
+    {
+      fn: 'toInputSelection',
+      selectionCount: vscodeSelections.length,
+      documentVersion: document.version,
+      documentLineCount: document.lineCount,
+      inputSelections: vscodeSelections.map((s, i) => ({
+        index: i,
+        start: { line: s.start.line, char: s.start.character },
+        end: { line: s.end.line, char: s.end.character },
+        isEmpty: s.isEmpty,
+      })),
+    },
+    'Converting VSCode selections to InputSelection',
+  );
+
   // VSCode doesn't expose rectangular selection mode in API
   // Use heuristic to detect rectangular selections based on patterns
   const isRectangular = isRectangularSelection(vscodeSelections);
@@ -44,19 +61,29 @@ export const toInputSelection = (
       }
     } catch (error) {
       // Selection references invalid line numbers - document was modified
-      const message =
-        'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.';
-      getLogger().error(
+      const startLineContent = getLineContentSafe(document, sel.start.line);
+      const endLineContent = getLineContentSafe(document, sel.end.line);
+
+      logger.error(
         {
           fn: 'toInputSelection',
           error,
-          line: sel.end.line,
-          documentLines: document.lineCount,
+          selection: {
+            start: { line: sel.start.line, char: sel.start.character },
+            end: { line: sel.end.line, char: sel.end.character },
+            isEmpty: sel.isEmpty,
+          },
+          documentVersion: document.version,
+          documentLineCount: document.lineCount,
+          startLineContent,
+          endLineContent,
         },
         'Document modified during link generation - selection out of bounds',
       );
       // TODO: Replace with RangeLinkExtensionError using RangeLinkExtensionErrorCodes.SELECTION_CONVERSION_FAILED
-      throw new Error(message);
+      throw new Error(
+        'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
+      );
     }
 
     // Normalize end line when selection includes trailing newline
@@ -70,8 +97,39 @@ export const toInputSelection = (
     });
   }
 
-  return {
+  const result: InputSelection = {
     selections,
     selectionType: isRectangular ? SelectionType.Rectangular : SelectionType.Normal,
   };
+
+  logger.debug(
+    {
+      fn: 'toInputSelection',
+      isRectangular,
+      outputSelections: result.selections.map((s, i) => ({
+        index: i,
+        start: s.start,
+        end: s.end,
+        coverage: s.coverage,
+      })),
+      selectionType: result.selectionType,
+    },
+    'Selection conversion complete',
+  );
+
+  return result;
+};
+
+/**
+ * Safely retrieves line content, returning undefined if the line is out of bounds
+ */
+const getLineContentSafe = (document: vscode.TextDocument, line: number): string | undefined => {
+  try {
+    if (line >= 0 && line < document.lineCount) {
+      return document.lineAt(line).text;
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
 };

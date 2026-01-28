@@ -93,7 +93,7 @@ export const generateLinkFromSelections = (
 
   let inputSelection;
   try {
-    inputSelection = toInputSelection(document, selections);
+    inputSelection = toInputSelection(document, selections, logger);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to process selection';
     logger.error({ fn: FN_NAME, error }, 'Failed to convert selections to InputSelection');

@@ -1,3 +1,5 @@
+import type { Logger } from 'barebone-logger';
+import { createMockLogger } from 'barebone-logger-testing';
 import { SelectionCoverage, SelectionType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -6,6 +8,8 @@ import { toInputSelection } from '../utils';
 
 // Mock the isRectangularSelection function
 jest.mock('../isRectangularSelection');
+
+let mockLogger: Logger;
 
 /**
  * Helper to create a mock vscode.Selection
@@ -54,6 +58,10 @@ const createMockEditor = (
 };
 
 describe('toInputSelection', () => {
+  beforeEach(() => {
+    mockLogger = createMockLogger();
+  });
+
   describe('Selection coverage detection', () => {
     describe('FullLine coverage', () => {
       it('should detect FullLine when selection starts at column 0 and ends at line end', () => {
@@ -62,7 +70,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor.document, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
         expect(result.selections).toHaveLength(1);
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
@@ -79,7 +87,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor.document, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
       });
@@ -90,7 +98,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor.document, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
         // The selection is processed as a single selection from line 0 to line 2
         // Character 0 at end of multi-line selection counts as full line
@@ -107,7 +115,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor.document, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
         expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
@@ -121,7 +129,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor.document, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
         expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
@@ -136,7 +144,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor.document, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
         expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
@@ -148,7 +156,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor.document, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
         expect(result.selections[0].end).toStrictEqual({ line: 0, character: 10 });
@@ -160,7 +168,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor.document, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
       });
@@ -170,7 +178,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor.document, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
         // Empty selection at start of empty line - technically FullLine
         expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
@@ -183,7 +191,7 @@ describe('toInputSelection', () => {
 
         (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-        const result = toInputSelection(editor.document, editor.selections);
+        const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
         expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine); // NOT FullLine (start != 0)
         expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
@@ -203,7 +211,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
 
-      toInputSelection(editor.document, selections);
+      toInputSelection(editor.document, selections, mockLogger);
 
       expect(isRectangularSelection).toHaveBeenCalledWith(selections);
       expect(isRectangularSelection).toHaveBeenCalledTimes(1);
@@ -215,7 +223,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
 
-      const result = toInputSelection(editor.document, selections);
+      const result = toInputSelection(editor.document, selections, mockLogger);
 
       expect(result.selectionType).toBe(SelectionType.Rectangular);
       expect(result.selections).toHaveLength(2); // Both selections converted
@@ -230,7 +238,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor.document, selections);
+      const result = toInputSelection(editor.document, selections, mockLogger);
 
       expect(result.selectionType).toBe(SelectionType.Normal);
       expect(result.selections).toHaveLength(1); // Only first selection used
@@ -246,7 +254,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(true);
 
-      const result = toInputSelection(editor.document, selections);
+      const result = toInputSelection(editor.document, selections, mockLogger);
 
       expect(result.selections).toHaveLength(3);
       expect(result.selections[0]).toStrictEqual({
@@ -282,7 +290,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor.document, selections);
+      const result = toInputSelection(editor.document, selections, mockLogger);
 
       expect(result.selections).toHaveLength(1);
       expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
@@ -296,7 +304,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor.document, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
       expect(result.selections).toHaveLength(1);
       expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
@@ -310,7 +318,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor.document, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
       expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
@@ -325,7 +333,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor.document, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
       expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
@@ -340,7 +348,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor.document, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.PartialLine);
       expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
@@ -364,7 +372,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      expect(() => toInputSelection(editor.document, editor.selections)).toThrow(
+      expect(() => toInputSelection(editor.document, editor.selections, mockLogger)).toThrow(
         'Cannot generate link: document was modified and selection is no longer valid',
       );
     });
@@ -384,7 +392,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      expect(() => toInputSelection(editor.document, editor.selections)).toThrow(
+      expect(() => toInputSelection(editor.document, editor.selections, mockLogger)).toThrow(
         'Please reselect and try again',
       );
     });
@@ -396,7 +404,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor.document, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
       expect(result.selections[0].start).toStrictEqual({ line: 0, character: 0 });
@@ -409,7 +417,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor.document, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
       expect(result.selections[0].coverage).toBe(SelectionCoverage.FullLine);
     });
@@ -419,7 +427,7 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor.document, editor.selections);
+      const result = toInputSelection(editor.document, editor.selections, mockLogger);
 
       expect(result.selections[0].start.line).toBe(0);
     });
@@ -439,11 +447,111 @@ describe('toInputSelection', () => {
 
       (isRectangularSelection as jest.Mock).mockReturnValue(false);
 
-      const result = toInputSelection(editor.document, [selection]);
+      const result = toInputSelection(editor.document, [selection], mockLogger);
 
       // Should use start/end, not anchor/active
       expect(result.selections[0].start).toStrictEqual({ line: 0, character: 5 });
       expect(result.selections[0].end).toStrictEqual({ line: 0, character: 10 });
+    });
+  });
+
+  /**
+   * Diagnostic logging tests for issue #258 (stale selection debugging)
+   *
+   * Exception to T007: These tests are intentionally separate from behavior tests.
+   * The diagnostic logging captures detailed state for debugging production issues
+   * where external file modifications cause stale selections. The verbose payloads
+   * warrant explicit verification rather than inline assertions.
+   */
+  describe('Diagnostic logging', () => {
+    it('should log DEBUG on entry with input selections and document state', () => {
+      const lineTexts = ['const x = 5;', 'const y = 10;'];
+      const editor = createMockEditor(
+        [createSelection(0, 0, 0, 12), createSelection(1, 0, 1, 13)],
+        lineTexts,
+      );
+
+      (isRectangularSelection as jest.Mock).mockReturnValue(true);
+
+      toInputSelection(editor.document, editor.selections, mockLogger);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'toInputSelection',
+          selectionCount: 2,
+          documentVersion: undefined,
+          documentLineCount: 2,
+          inputSelections: [
+            { index: 0, start: { line: 0, char: 0 }, end: { line: 0, char: 12 }, isEmpty: false },
+            { index: 1, start: { line: 1, char: 0 }, end: { line: 1, char: 13 }, isEmpty: false },
+          ],
+        },
+        'Converting VSCode selections to InputSelection',
+      );
+    });
+
+    it('should log DEBUG on completion with output selections and selection type', () => {
+      const lineTexts = ['const x = 5;'];
+      const editor = createMockEditor([createSelection(0, 0, 0, 12)], lineTexts);
+
+      (isRectangularSelection as jest.Mock).mockReturnValue(false);
+
+      toInputSelection(editor.document, editor.selections, mockLogger);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'toInputSelection',
+          isRectangular: false,
+          outputSelections: [
+            {
+              index: 0,
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: 12 },
+              coverage: 'FullLine',
+            },
+          ],
+          selectionType: 'Normal',
+        },
+        'Selection conversion complete',
+      );
+    });
+
+    it('should log ERROR with diagnostic context when document was modified', () => {
+      const lineAtError = new Error('Line out of bounds');
+
+      const mockDocument = {
+        lineAt: jest.fn(() => {
+          throw lineAtError;
+        }),
+        lineCount: 5,
+        version: 42,
+      } as unknown as vscode.TextDocument;
+
+      const editor = {
+        document: mockDocument,
+        selections: [createSelection(10, 5, 10, 15)],
+      } as unknown as vscode.TextEditor;
+
+      (isRectangularSelection as jest.Mock).mockReturnValue(false);
+
+      expect(() => toInputSelection(editor.document, editor.selections, mockLogger)).toThrow();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          fn: 'toInputSelection',
+          error: lineAtError,
+          selection: {
+            start: { line: 10, char: 5 },
+            end: { line: 10, char: 15 },
+            isEmpty: false,
+          },
+          documentVersion: 42,
+          documentLineCount: 5,
+          startLineContent: undefined,
+          endLineContent: undefined,
+        },
+        'Document modified during link generation - selection out of bounds',
+      );
     });
   });
 });
