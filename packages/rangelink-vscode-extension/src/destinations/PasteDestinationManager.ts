@@ -7,10 +7,10 @@ import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
-  type AvailableDestinationItem,
+  type AnyDestinationQuickPickItem,
+  type AnyPickerItem,
   AutoPasteResult,
   type BindOptions,
-  type DestinationQuickPickItem,
   MessageCode,
   type NonTerminalDestinationType,
   QuickPickBindResult,
@@ -23,13 +23,11 @@ import {
   type PaddingMode,
 } from '../utils';
 
+import type { AIAssistantDestinationType, DestinationType } from '../types';
+
 import type { DestinationAvailabilityService } from './DestinationAvailabilityService';
 import type { DestinationRegistry } from './DestinationRegistry';
-import type {
-  AIAssistantDestinationType,
-  DestinationType,
-  PasteDestination,
-} from './PasteDestination';
+import type { PasteDestination } from './PasteDestination';
 import { showTerminalPicker, type TerminalPickerOptions } from './utils';
 
 /**
@@ -178,7 +176,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     if (!bound) {
       return false;
     }
-    return this.jumpToBoundDestination();
+    return this.focusBoundDestination({ silent: true });
   }
 
   /**
@@ -228,9 +226,12 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Showing quick pick with ${quickPickItems.length} items`,
     );
 
-    const selected = await this.vscodeAdapter.showQuickPick(quickPickItems, {
-      placeHolder: formatMessage(quickPickPlaceholderMessageCode),
-    });
+    const selected = await this.vscodeAdapter.showQuickPick(
+      quickPickItems as unknown as AnyDestinationQuickPickItem[],
+      {
+        placeHolder: formatMessage(quickPickPlaceholderMessageCode),
+      },
+    );
 
     if (!selected) {
       this.logger.debug(logCtx, 'User cancelled quick pick');
@@ -242,12 +243,9 @@ export class PasteDestinationManager implements vscode.Disposable {
 
   /**
    * Build QuickPick items from available destination items.
-   * Handles separators, terminals with indentation, and "More..." items.
    */
-  private buildQuickPickItems(
-    items: AvailableDestinationItem[],
-  ): DestinationQuickPickItem[] {
-    const quickPickItems: DestinationQuickPickItem[] = [];
+  private buildQuickPickItems(items: AnyPickerItem[]): vscode.QuickPickItem[] {
+    const quickPickItems: vscode.QuickPickItem[] = [];
 
     for (const item of items) {
       switch (item.kind) {
@@ -255,37 +253,29 @@ export class PasteDestinationManager implements vscode.Disposable {
           quickPickItems.push({
             label: item.displayName,
             itemKind: 'destination',
-            destinationType: item.type,
-          });
-          break;
-
-        case 'terminal-separator':
-          quickPickItems.push({
-            label: item.displayName,
-            kind: vscode.QuickPickItemKind.Separator,
-            itemKind: 'separator',
-          });
+            destinationType: item.destinationType,
+          } as AnyDestinationQuickPickItem);
           break;
 
         case 'terminal':
           quickPickItems.push({
-            label: `    ${item.displayName}`,
+            label: `Terminal "${item.displayName}"`,
             description: item.isActive
               ? formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION)
               : undefined,
             itemKind: 'terminal',
             terminal: item.terminal,
-          });
+          } as AnyDestinationQuickPickItem);
           break;
 
         case 'terminal-more':
           quickPickItems.push({
-            label: `    ${item.displayName}`,
+            label: item.displayName,
             description: formatMessage(MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION, {
               count: item.remainingCount,
             }),
             itemKind: 'terminal-more',
-          });
+          } as AnyDestinationQuickPickItem);
           break;
       }
     }
@@ -297,7 +287,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * Handle user selection from the destination quick pick.
    */
   private async handleQuickPickSelection(
-    selected: DestinationQuickPickItem,
+    selected: AnyDestinationQuickPickItem,
     logCtx: LoggingContext,
   ): Promise<QuickPickBindResult> {
     switch (selected.itemKind) {
@@ -315,20 +305,13 @@ export class PasteDestinationManager implements vscode.Disposable {
           { ...logCtx, terminalName: selected.terminal?.name },
           `User selected terminal "${selected.terminal?.name}"`,
         );
-        return (await this.bindTerminalWithReference(selected.terminal!))
+        return (await this.bindTerminalWithReference(selected.terminal))
           ? QuickPickBindResult.Bound
           : QuickPickBindResult.BindingFailed;
 
       case 'terminal-more':
         this.logger.debug(logCtx, 'User selected "More terminals...", showing secondary picker');
         return this.showSecondaryTerminalPicker(logCtx);
-
-      case 'separator':
-        this.logger.debug(logCtx, 'Separator selected (should not happen)');
-        return QuickPickBindResult.Cancelled;
-
-      default:
-        return QuickPickBindResult.Cancelled;
     }
   }
 
@@ -383,13 +366,16 @@ export class PasteDestinationManager implements vscode.Disposable {
       return false;
     }
 
-    return this.focusBoundDestination();
+    return this.focusBoundDestination({ silent: true });
   }
 
   /**
    * Focus the currently bound destination
+   *
+   * @param options.silent - If true, suppresses the status bar success message.
+   *   Used by bindAndJump() where the binding message is already shown.
    */
-  private async focusBoundDestination(): Promise<boolean> {
+  private async focusBoundDestination(options?: { silent?: boolean }): Promise<boolean> {
     if (!this.boundDestination) {
       return false;
     }
@@ -416,8 +402,10 @@ export class PasteDestinationManager implements vscode.Disposable {
       return false;
     }
 
-    const successMessage = this.boundDestination.getJumpSuccessMessage();
-    this.vscodeAdapter.setStatusBarMessage(successMessage);
+    if (!options?.silent) {
+      const successMessage = this.boundDestination.getJumpSuccessMessage();
+      this.vscodeAdapter.setStatusBarMessage(successMessage);
+    }
 
     this.logger.info(logCtx, `Successfully focused ${displayName}`);
 

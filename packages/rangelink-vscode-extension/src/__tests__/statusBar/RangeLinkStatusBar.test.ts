@@ -98,9 +98,10 @@ describe('RangeLinkStatusBar', () => {
    */
   describe('openMenu - menu content', () => {
     it('shows inline destinations when no destination is bound', async () => {
-      mockAvailabilityService.getAvailableDestinations.mockResolvedValue([
-        { type: 'terminal', displayName: 'Terminal' },
-        { type: 'claude-code', displayName: 'Claude Code Chat' },
+      const mockTerminal = { name: 'bash' } as vscode.Terminal;
+      mockAvailabilityService.getAvailableDestinationItems.mockResolvedValue([
+        { kind: 'terminal', terminal: mockTerminal, displayName: 'bash', isActive: true },
+        { kind: 'destination', destinationType: 'claude-code', displayName: 'Claude Code Chat' },
       ]);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
@@ -116,8 +117,13 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
           { label: 'No bound destination. Choose below to bind:' },
-          { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
-          { label: '    $(arrow-right) Claude Code Chat', destinationType: 'claude-code' },
+          {
+            label: '    $(arrow-right) Terminal "bash"',
+            description: 'active',
+            terminal: mockTerminal,
+            itemKind: 'terminal',
+          },
+          { label: '    $(arrow-right) Claude Code Chat', destinationType: 'claude-code', itemKind: 'destination' },
           { label: '$(link-external) Go to Link', command: 'rangelink.goToRangeLink' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: 'Bookmarks' },
@@ -133,7 +139,7 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('shows "no destinations available" when unbound and no destinations exist', async () => {
-      mockAvailabilityService.getAvailableDestinations.mockResolvedValue([]);
+      mockAvailabilityService.getAvailableDestinationItems.mockResolvedValue([]);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
@@ -201,8 +207,9 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('shows bookmark items when bookmarks exist', async () => {
-      mockAvailabilityService.getAvailableDestinations.mockResolvedValue([
-        { type: 'terminal', displayName: 'Terminal' },
+      const mockTerminal = { name: 'bash' } as vscode.Terminal;
+      mockAvailabilityService.getAvailableDestinationItems.mockResolvedValue([
+        { kind: 'terminal', terminal: mockTerminal, displayName: 'bash', isActive: true },
       ]);
       mockBookmarkService.getAllBookmarks.mockReturnValue(MOCK_BOOKMARKS);
       const statusBar = new RangeLinkStatusBar(
@@ -218,7 +225,12 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
           { label: 'No bound destination. Choose below to bind:' },
-          { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
+          {
+            label: '    $(arrow-right) Terminal "bash"',
+            description: 'active',
+            terminal: mockTerminal,
+            itemKind: 'terminal',
+          },
           { label: '$(link-external) Go to Link', command: 'rangelink.goToRangeLink' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: 'Bookmarks' },
@@ -291,7 +303,7 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
-      expect(mockDestinationManager.bindAndJump).toHaveBeenCalledWith('terminal');
+      expect(mockDestinationManager.bindAndJump).toHaveBeenCalledWith({ type: 'terminal' });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
@@ -318,7 +330,7 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
-      expect(mockDestinationManager.bindAndJump).toHaveBeenCalledWith('terminal');
+      expect(mockDestinationManager.bindAndJump).toHaveBeenCalledWith({ type: 'terminal' });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',

@@ -294,6 +294,54 @@
   <do>Use SCREAMING_SNAKE_CASE for constant names</do>
 </rule>
 
+<rule id="P004" priority="critical">
+  <title>No internal backwards compatibility</title>
+  <context>We own the entire codebase with no external consumers</context>
+  <do>Replace old APIs with new ones - update all callers in the same or subsequent commits</do>
+  <never>Keep deprecated methods/types "for backwards compatibility during migration"</never>
+  <never>Add @deprecated annotations when the old API can simply be deleted</never>
+  <rationale>
+    - Simpler code is easier to evolve
+    - No external consumers means no migration burden
+    - Deprecated code is dead weight that confuses readers
+    - Multi-phase refactors should break callers early, fix them in later phases
+  </rationale>
+  <exception>Published npm packages with external consumers (none currently)</exception>
+</rule>
+
+<rule id="P005" priority="critical">
+  <title>Don't parameterize static dependencies</title>
+  <do>Import truly static values (i18n strings, compile-time constants) directly where needed</do>
+  <never>Pass static values as function parameters to achieve "purity"</never>
+  <exception>User-configurable values (via ConfigReader) SHOULD be passed as parameters - they vary at runtime</exception>
+  <rationale>
+    - Static values are effectively constants - importing them is no different than importing any other constant
+    - Parameterizing static values pushes boilerplate to callers for no real benefit
+    - Implementation details (like "what label to show") should be encapsulated, not exposed
+    - Config values are different: they represent user preferences and should flow from the config-reading layer
+  </rationale>
+  <bad-example>
+    ```typescript
+    // BAD: Passing i18n string as parameter (it's static!)
+    const buildItems = (data: Data[], moreLabel: string) => { ... }
+    buildItems(data, messagesEn[MessageCode.MORE_LABEL]);
+    ```
+  </bad-example>
+  <good-example>
+    ```typescript
+    // GOOD: Static i18n imported directly, config value passed as parameter
+    import { messagesEn } from '../i18n/messages.en';
+    const buildItems = (data: Data[], maxInline: number) => {
+      // Uses messagesEn[MessageCode.MORE_LABEL] internally (static)
+      // Uses maxInline parameter (user-configurable)
+    }
+    // Caller reads config and passes runtime value:
+    const maxInline = configReader.getWithDefault(SETTING_KEY, DEFAULT);
+    buildItems(data, maxInline);
+    ```
+  </good-example>
+</rule>
+
 </critical-rules>
 
 ---

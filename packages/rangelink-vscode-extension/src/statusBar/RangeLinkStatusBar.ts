@@ -13,19 +13,22 @@ import {
   CMD_SHOW_VERSION,
 } from '../constants';
 import type { DestinationAvailabilityService } from '../destinations/DestinationAvailabilityService';
-import type { DestinationType } from '../destinations/PasteDestination';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { NonTerminalDestinationType, PickerItemKind } from '../types';
 import { MessageCode } from '../types/MessageCode';
 import { formatMessage } from '../utils/formatMessage';
 
 /**
- * QuickPick item with optional command or destinationType to execute on selection.
+ * QuickPick item for status bar menu.
+ * Combines destination picker fields with menu-specific fields (command, bookmarkId).
  */
 interface MenuQuickPickItem extends vscode.QuickPickItem {
-  command?: string;
-  bookmarkId?: BookmarkId;
-  destinationType?: DestinationType;
+  readonly itemKind?: PickerItemKind;
+  readonly destinationType?: NonTerminalDestinationType;
+  readonly terminal?: vscode.Terminal;
+  readonly command?: string;
+  readonly bookmarkId?: BookmarkId;
 }
 
 /**
@@ -84,8 +87,30 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       return;
     }
 
-    if (selected.destinationType) {
-      const success = await this.destinationManager.bindAndJump(selected.destinationType);
+    if (selected.itemKind === 'terminal' && selected.terminal) {
+      const success = await this.destinationManager.bindAndJump({
+        type: 'terminal',
+        terminal: selected.terminal,
+      });
+      this.logger.debug(
+        {
+          fn: 'RangeLinkStatusBar.openMenu',
+          selectedItem: selected.label,
+          terminalName: selected.terminal.name,
+          bindAndJumpSuccess: success,
+        },
+        'Terminal item selected',
+      );
+    } else if (selected.itemKind === 'terminal-more') {
+      this.logger.debug(
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected.label },
+        '"More terminals..." selected, delegating to jumpToBoundDestination',
+      );
+      await this.destinationManager.jumpToBoundDestination();
+    } else if (selected.destinationType) {
+      const success = await this.destinationManager.bindAndJump({
+        type: selected.destinationType as NonTerminalDestinationType,
+      });
       this.logger.debug(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected, bindAndJumpSuccess: success },
         'Destination item selected',
@@ -150,9 +175,9 @@ export class RangeLinkStatusBar implements vscode.Disposable {
    */
   private async buildDestinationsQuickPickItems(): Promise<MenuQuickPickItem[]> {
     const result: MenuQuickPickItem[] = [];
-    const availableDestinations = await this.availabilityService.getAvailableDestinations();
+    const availableItems = await this.availabilityService.getAvailableDestinationItems();
 
-    if (availableDestinations.length === 0) {
+    if (availableItems.length === 0) {
       result.push({
         label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE),
       });
@@ -160,11 +185,38 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       result.push({
         label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW),
       });
-      for (const dest of availableDestinations) {
-        result.push({
-          label: `${MENU_ITEM_INDENT}$(arrow-right) ${dest.displayName}`,
-          destinationType: dest.type,
-        });
+
+      for (const item of availableItems) {
+        switch (item.kind) {
+          case 'destination':
+            result.push({
+              label: `${MENU_ITEM_INDENT}$(arrow-right) ${item.displayName}`,
+              destinationType: item.destinationType,
+              itemKind: 'destination',
+            });
+            break;
+
+          case 'terminal':
+            result.push({
+              label: `${MENU_ITEM_INDENT}$(arrow-right) Terminal "${item.displayName}"`,
+              description: item.isActive
+                ? formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION)
+                : undefined,
+              terminal: item.terminal,
+              itemKind: 'terminal',
+            });
+            break;
+
+          case 'terminal-more':
+            result.push({
+              label: `${MENU_ITEM_INDENT}$(arrow-right) ${item.displayName}`,
+              description: formatMessage(MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION, {
+                count: item.remainingCount,
+              }),
+              itemKind: 'terminal-more',
+            });
+            break;
+        }
       }
     }
 

@@ -16,6 +16,7 @@ import type { EligibilityChecker } from '../../destinations/capabilities/Eligibi
 import { SelfPasteChecker } from '../../destinations/capabilities/SelfPasteChecker';
 import { TerminalPasteExecutor } from '../../destinations/capabilities/TerminalPasteExecutor';
 import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
+import { TerminalFocusType } from '../../types';
 import {
   createMockDocument,
   createMockEditor,
@@ -48,6 +49,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const pasteExecutor = new TerminalPasteExecutor(mockAdapter, mockTerminal, mockLogger);
       const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
 
+      const showTerminalSpy = jest.spyOn(mockAdapter, 'showTerminal');
       const pasteTextSpy = jest
         .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
         .mockResolvedValue(undefined);
@@ -69,8 +71,8 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const result = await destination.pasteLink(formattedLink, 'both');
 
       expect(result).toBe(true);
-      expect(mockTerminal.show).toHaveBeenCalledTimes(1);
-      expect(mockTerminal.show).toHaveBeenCalledWith(true);
+      expect(showTerminalSpy).toHaveBeenCalledTimes(1);
+      expect(showTerminalSpy).toHaveBeenCalledWith(mockTerminal, TerminalFocusType.StealFocus);
       expect(pasteTextSpy).toHaveBeenCalledTimes(1);
       expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, ' src/file.ts#L10 ');
     });
@@ -84,7 +86,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
 
       const callOrder: string[] = [];
 
-      (mockTerminal.show as jest.Mock).mockImplementation(() => {
+      jest.spyOn(mockAdapter, 'showTerminal').mockImplementation(() => {
         callOrder.push('focus');
       });
 

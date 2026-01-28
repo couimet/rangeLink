@@ -4,7 +4,7 @@ import type { ConfigReader } from '../config';
 import { DEFAULT_TERMINAL_PICKER_MAX_INLINE } from '../constants/settingDefaults';
 import { SETTING_TERMINAL_PICKER_MAX_INLINE } from '../constants/settingKeys';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { type AvailableDestinationItem, type DestinationItem, MessageCode } from '../types';
+import { type AnyPickerItem, type DestinationPickerItem, MessageCode } from '../types';
 
 import type { DestinationRegistry } from './DestinationRegistry';
 import type { AIAssistantDestinationType } from '../types';
@@ -82,13 +82,16 @@ export class DestinationAvailabilityService {
    * Get available destinations as discriminated union items.
    *
    * Returns items suitable for building a QuickPick menu:
-   * - DestinationItem for text-editor and AI assistants
-   * - TerminalSeparatorItem + TerminalItem(s) for terminals
-   * - TerminalMoreItem when terminals exceed configured maxInline setting
+   * - DestinationPickerItem for text-editor and AI assistants
+   * - TerminalPickerItem(s) for terminals
+   * - TerminalMorePickerItem when terminals exceed configured maxInline setting
+   *
+   * Note: Separators are not included - they are a UI concern handled
+   * during QuickPickItem conversion.
    */
-  async getAvailableDestinationItems(): Promise<AvailableDestinationItem[]> {
+  async getAvailableDestinationItems(): Promise<AnyPickerItem[]> {
     const displayNames = this.registry.getDisplayNames();
-    const items: AvailableDestinationItem[] = [];
+    const items: AnyPickerItem[] = [];
 
     const textEditorEligibility = isTextEditorDestinationEligible(this.ideAdapter);
     const terminalEligibility = isTerminalDestinationEligible(this.ideAdapter);
@@ -96,9 +99,9 @@ export class DestinationAvailabilityService {
     if (textEditorEligibility.eligible) {
       items.push({
         kind: 'destination',
-        type: 'text-editor',
+        destinationType: 'text-editor',
         displayName: `${displayNames['text-editor']} ("${textEditorEligibility.filename}")`,
-      } satisfies DestinationItem);
+      } satisfies DestinationPickerItem);
     }
 
     if (terminalEligibility.eligible) {
@@ -106,11 +109,7 @@ export class DestinationAvailabilityService {
         SETTING_TERMINAL_PICKER_MAX_INLINE,
         DEFAULT_TERMINAL_PICKER_MAX_INLINE,
       );
-      const terminalItems = buildTerminalItems(
-        terminalEligibility.terminals,
-        displayNames.terminal,
-        maxInline,
-      );
+      const terminalItems = buildTerminalItems(terminalEligibility.terminals, maxInline);
       items.push(...terminalItems);
     }
 
@@ -125,9 +124,9 @@ export class DestinationAvailabilityService {
       if (isAvailable) {
         items.push({
           kind: 'destination',
-          type,
+          destinationType: type,
           displayName: displayNames[type],
-        } satisfies DestinationItem);
+        } satisfies DestinationPickerItem);
       }
     }
 

@@ -3,6 +3,7 @@ import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import { TerminalFocusType } from '../../types';
 
 import { FocusErrorReason, type FocusResult, type PasteExecutor } from './PasteExecutor';
 
@@ -20,11 +21,11 @@ export class TerminalPasteExecutor implements PasteExecutor {
 
   async focus(context: LoggingContext): Promise<FocusResult> {
     try {
-      this.terminal.show(true);
+      this.ideAdapter.showTerminal(this.terminal, TerminalFocusType.StealFocus);
 
       this.logger.debug(
         { ...context, terminalName: this.terminal.name },
-        'Terminal focused via show()',
+        'Terminal focused via showTerminal()',
       );
 
       return Result.ok({

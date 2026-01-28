@@ -1,13 +1,19 @@
 export { ActiveSelections } from './ActiveSelections';
 export { AutoPasteResult } from './AutoPasteResult';
-export type {
-  AvailableDestinationItem,
-  DestinationItem,
-  TerminalItem,
-  TerminalMoreItem,
-  TerminalSeparatorItem,
-} from './AvailableDestination';
 export { BehaviourAfterPaste } from './BehaviourAfterPaste';
+export type { BindOptions } from './BindOptions';
+export type {
+  AnyDestinationQuickPickItem,
+  AnyPickerItem,
+  DestinationPickerItem,
+  DestinationQuickPickItem,
+  NonTerminalDestinationType,
+  PickerItemKind,
+  TerminalMorePickerItem,
+  TerminalMoreQuickPickItem,
+  TerminalPickerItem,
+  TerminalQuickPickItem,
+} from './DestinationPickerTypes';
 export {
   DESTINATION_TYPES,
   type AIAssistantDestinationType,

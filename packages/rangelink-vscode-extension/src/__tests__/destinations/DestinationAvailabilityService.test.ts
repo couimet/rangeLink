@@ -127,7 +127,7 @@ describe('DestinationAvailabilityService', () => {
         const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { kind: 'destination', type: 'text-editor', displayName: 'Text Editor ("file.ts")' },
+          { kind: 'destination', destinationType: 'text-editor', displayName: 'Text Editor ("file.ts")' },
         ]);
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
@@ -159,7 +159,7 @@ describe('DestinationAvailabilityService', () => {
         const result = await service.getAvailableDestinationItems();
 
         expect(
-          result.find((d) => d.kind === 'destination' && d.type === 'text-editor'),
+          result.find((d) => d.kind === 'destination' && d.destinationType === 'text-editor'),
         ).toBeUndefined();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
@@ -174,7 +174,7 @@ describe('DestinationAvailabilityService', () => {
     });
 
     describe('terminal availability', () => {
-      it('includes terminal separator and single TerminalItem when one terminal exists', async () => {
+      it('includes single TerminalItem when one terminal exists', async () => {
         const terminal = createMockTerminal({ name: 'zsh' });
         const ideAdapter = createMockVscodeAdapter({
           windowOptions: {
@@ -194,7 +194,6 @@ describe('DestinationAvailabilityService', () => {
         const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { kind: 'terminal-separator', displayName: 'Terminal' },
           { kind: 'terminal', terminal, displayName: 'zsh', isActive: true },
         ]);
         expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -202,9 +201,9 @@ describe('DestinationAvailabilityService', () => {
             fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
             isTextEditorEligible: false,
             terminalCount: 1,
-            itemCount: 2,
+            itemCount: 1,
           },
-          'Found 2 available destination items',
+          'Found 1 available destination items',
         );
       });
 
@@ -230,7 +229,6 @@ describe('DestinationAvailabilityService', () => {
         const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { kind: 'terminal-separator', displayName: 'Terminal' },
           { kind: 'terminal', terminal: terminal1, displayName: 'zsh', isActive: false },
           { kind: 'terminal', terminal: terminal2, displayName: 'bash', isActive: true },
           { kind: 'terminal', terminal: terminal3, displayName: 'node', isActive: false },
@@ -240,9 +238,9 @@ describe('DestinationAvailabilityService', () => {
             fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
             isTextEditorEligible: false,
             terminalCount: 3,
-            itemCount: 4,
+            itemCount: 3,
           },
-          'Found 4 available destination items',
+          'Found 3 available destination items',
         );
       });
 
@@ -271,7 +269,6 @@ describe('DestinationAvailabilityService', () => {
         const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { kind: 'terminal-separator', displayName: 'Terminal' },
           { kind: 'terminal', terminal: terminal1, displayName: 'terminal-1', isActive: true },
           { kind: 'terminal', terminal: terminal2, displayName: 'terminal-2', isActive: false },
           { kind: 'terminal', terminal: terminal3, displayName: 'terminal-3', isActive: false },
@@ -283,9 +280,9 @@ describe('DestinationAvailabilityService', () => {
             fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
             isTextEditorEligible: false,
             terminalCount: 6,
-            itemCount: 6,
+            itemCount: 5,
           },
-          'Found 6 available destination items',
+          'Found 5 available destination items',
         );
       });
 
@@ -313,7 +310,6 @@ describe('DestinationAvailabilityService', () => {
         const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { kind: 'terminal-separator', displayName: 'Terminal' },
           { kind: 'terminal', terminal: terminal1, displayName: 'terminal-1', isActive: false },
           { kind: 'terminal', terminal: terminal2, displayName: 'terminal-2', isActive: false },
           { kind: 'terminal', terminal: terminal3, displayName: 'terminal-3', isActive: true },
@@ -325,9 +321,9 @@ describe('DestinationAvailabilityService', () => {
             fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
             isTextEditorEligible: false,
             terminalCount: 5,
-            itemCount: 6,
+            itemCount: 5,
           },
-          'Found 6 available destination items',
+          'Found 5 available destination items',
         );
       });
 
@@ -349,7 +345,6 @@ describe('DestinationAvailabilityService', () => {
 
         const result = await service.getAvailableDestinationItems();
 
-        expect(result.find((d) => d.kind === 'terminal-separator')).toBeUndefined();
         expect(result.find((d) => d.kind === 'terminal')).toBeUndefined();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
@@ -388,7 +383,6 @@ describe('DestinationAvailabilityService', () => {
         const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { kind: 'terminal-separator', displayName: 'Terminal' },
           { kind: 'terminal', terminal: terminal1, displayName: 'terminal-1', isActive: true },
           { kind: 'terminal', terminal: terminal2, displayName: 'terminal-2', isActive: false },
           { kind: 'terminal-more', displayName: 'More terminals...', remainingCount: 2 },
@@ -399,9 +393,9 @@ describe('DestinationAvailabilityService', () => {
             fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
             isTextEditorEligible: false,
             terminalCount: 4,
-            itemCount: 4,
+            itemCount: 3,
           },
-          'Found 4 available destination items',
+          'Found 3 available destination items',
         );
       });
     });
@@ -425,9 +419,9 @@ describe('DestinationAvailabilityService', () => {
         const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { kind: 'destination', type: 'claude-code', displayName: 'Claude Code Chat' },
-          { kind: 'destination', type: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
-          { kind: 'destination', type: 'cursor-ai', displayName: 'Cursor AI Assistant' },
+          { kind: 'destination', destinationType: 'claude-code', displayName: 'Claude Code Chat' },
+          { kind: 'destination', destinationType: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
+          { kind: 'destination', destinationType: 'cursor-ai', displayName: 'Cursor AI Assistant' },
         ]);
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
@@ -458,13 +452,13 @@ describe('DestinationAvailabilityService', () => {
         const result = await service.getAvailableDestinationItems();
 
         expect(
-          result.find((d) => d.kind === 'destination' && d.type === 'claude-code'),
+          result.find((d) => d.kind === 'destination' && d.destinationType === 'claude-code'),
         ).toBeUndefined();
         expect(
-          result.find((d) => d.kind === 'destination' && d.type === 'cursor-ai'),
+          result.find((d) => d.kind === 'destination' && d.destinationType === 'cursor-ai'),
         ).toBeUndefined();
         expect(
-          result.find((d) => d.kind === 'destination' && d.type === 'github-copilot-chat'),
+          result.find((d) => d.kind === 'destination' && d.destinationType === 'github-copilot-chat'),
         ).toBeUndefined();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
@@ -498,21 +492,20 @@ describe('DestinationAvailabilityService', () => {
         const result = await service.getAvailableDestinationItems();
 
         expect(result).toStrictEqual([
-          { kind: 'destination', type: 'text-editor', displayName: 'Text Editor ("file.ts")' },
-          { kind: 'terminal-separator', displayName: 'Terminal' },
+          { kind: 'destination', destinationType: 'text-editor', displayName: 'Text Editor ("file.ts")' },
           { kind: 'terminal', terminal, displayName: 'bash', isActive: true },
-          { kind: 'destination', type: 'claude-code', displayName: 'Claude Code Chat' },
-          { kind: 'destination', type: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
-          { kind: 'destination', type: 'cursor-ai', displayName: 'Cursor AI Assistant' },
+          { kind: 'destination', destinationType: 'claude-code', displayName: 'Claude Code Chat' },
+          { kind: 'destination', destinationType: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
+          { kind: 'destination', destinationType: 'cursor-ai', displayName: 'Cursor AI Assistant' },
         ]);
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
             isTextEditorEligible: true,
             terminalCount: 1,
-            itemCount: 6,
+            itemCount: 5,
           },
-          'Found 6 available destination items',
+          'Found 5 available destination items',
         );
       });
 

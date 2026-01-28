@@ -249,14 +249,6 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('rangelink.navigateToRangeLink', () => {
-        expect(findCommand('rangelink.navigateToRangeLink')).toStrictEqual({
-          command: 'rangelink.navigateToRangeLink',
-          title: 'Navigate to Link',
-          category: 'RangeLink',
-          icon: '$(go-to-file)',
-        });
-      });
     });
 
     describe('paste file path commands (context menu)', () => {

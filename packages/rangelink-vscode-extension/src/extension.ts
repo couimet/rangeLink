@@ -6,7 +6,6 @@ import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
 import { GoToRangeLinkCommand } from './commands/GoToRangeLinkCommand';
 import { ListBookmarksCommand } from './commands/ListBookmarksCommand';
 import { ManageBookmarksCommand } from './commands/ManageBookmarksCommand';
-import { NavigateToRangeLinkCommand } from './commands/NavigateToRangeLinkCommand';
 import { ConfigReader, getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
@@ -131,11 +130,16 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   const bindToTerminalHandler = async () => {
-    await destinationManager.bind('terminal');
+    const terminal = ideAdapter.activeTerminal;
+    if (!terminal) {
+      ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
+      return;
+    }
+    await destinationManager.bind({ type: 'terminal', terminal });
   };
 
   const bindToTextEditorHandler = async () => {
-    await destinationManager.bind('text-editor');
+    await destinationManager.bind({ type: 'text-editor' });
   };
 
   const bookmarkService = new BookmarkService(
@@ -308,7 +312,7 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         return;
       }
-      await destinationManager.bind('cursor-ai');
+      await destinationManager.bind({ type: 'cursor-ai' });
     }),
   );
 
@@ -320,7 +324,7 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         return;
       }
-      await destinationManager.bind('claude-code');
+      await destinationManager.bind({ type: 'claude-code' });
     }),
   );
 
@@ -332,7 +336,7 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         return;
       }
-      await destinationManager.bind('github-copilot-chat');
+      await destinationManager.bind({ type: 'github-copilot-chat' });
     }),
   );
 

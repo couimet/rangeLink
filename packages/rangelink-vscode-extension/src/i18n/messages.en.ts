@@ -70,7 +70,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE]:
     'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
   [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
-    'No destination bound. Choose destination to jump to:',
+    'No destination bound. Choose destination to bind and jump to:',
   [MessageCode.INFO_NAVIGATION_EMPTY_INPUT]: 'RangeLink: Please enter a link to navigate',
   [MessageCode.INFO_NAVIGATION_INPUT_BOX_PLACEHOLDER]: 'recipes/baking/chickenpie.ts#L3C14-L15C9',
   [MessageCode.INFO_NAVIGATION_INPUT_BOX_PROMPT]: 'Enter RangeLink to navigate',
@@ -115,7 +115,11 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_MENU_TITLE]: 'RangeLink',
   [MessageCode.STATUS_BAR_MENU_TOOLTIP]: 'RangeLink Menu',
 
+  [MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION]: 'active',
   [MessageCode.TERMINAL_PICKER_MORE_LABEL]: 'More terminals...',
+  [MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION]: '{count} more',
+  [MessageCode.TERMINAL_PICKER_PLACEHOLDER]: 'Select terminal to bind and jump to',
+  [MessageCode.TERMINAL_PICKER_TITLE]: 'RangeLink',
 
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
   [MessageCode.WARN_NAVIGATION_UNTITLED_FILE]:

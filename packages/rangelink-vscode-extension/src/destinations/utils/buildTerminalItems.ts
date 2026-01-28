@@ -1,33 +1,29 @@
 import { messagesEn } from '../../i18n/messages.en';
 import {
-  type AvailableDestinationItem,
+  type AnyPickerItem,
   MessageCode,
-  type TerminalItem,
-  type TerminalMoreItem,
-  type TerminalSeparatorItem,
+  type TerminalMorePickerItem,
+  type TerminalPickerItem,
 } from '../../types';
 
 import type { EligibleTerminal } from './isTerminalDestinationEligible';
 
 /**
- * Builds QuickPick items for terminal destinations.
+ * Builds picker items for terminal destinations.
+ *
+ * Returns only terminal items and optionally a "More..." overflow item.
+ * Separators are NOT included - they are a UI concern handled during
+ * QuickPickItem conversion.
  *
  * @param terminals - Array of eligible terminals from isTerminalDestinationEligible
- * @param separatorLabel - Display label for the terminal separator item
  * @param maxInline - Maximum terminals to show before adding "More..." item
- * @returns Array of terminal-related items: separator, terminal items, and optionally "More..."
+ * @returns Array of terminal-related items: terminal items and optionally "More..."
  */
 export const buildTerminalItems = (
   terminals: readonly EligibleTerminal[],
-  separatorLabel: string,
   maxInline: number,
-): AvailableDestinationItem[] => {
-  const items: AvailableDestinationItem[] = [];
-
-  items.push({
-    kind: 'terminal-separator',
-    displayName: separatorLabel,
-  } satisfies TerminalSeparatorItem);
+): AnyPickerItem[] => {
+  const items: AnyPickerItem[] = [];
 
   const needsMoreItem = terminals.length > maxInline;
   const terminalsToShowCount = needsMoreItem ? maxInline - 1 : terminals.length;
@@ -39,7 +35,7 @@ export const buildTerminalItems = (
       terminal,
       displayName: name,
       isActive,
-    } satisfies TerminalItem);
+    } satisfies TerminalPickerItem);
   }
 
   if (needsMoreItem) {
@@ -47,7 +43,7 @@ export const buildTerminalItems = (
       kind: 'terminal-more',
       displayName: messagesEn[MessageCode.TERMINAL_PICKER_MORE_LABEL],
       remainingCount: terminals.length - terminalsToShowCount,
-    } satisfies TerminalMoreItem);
+    } satisfies TerminalMorePickerItem);
   }
 
   return items;
