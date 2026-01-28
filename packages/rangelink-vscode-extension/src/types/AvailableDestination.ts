@@ -1,6 +1,6 @@
 import type * as vscode from 'vscode';
 
-import type { DestinationType } from '../destinations/PasteDestination';
+import type { DestinationType } from './DestinationType';
 
 /**
  * Base destination item - used for text-editor and AI assistants

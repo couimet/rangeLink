@@ -6,11 +6,9 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
 import type { PasteExecutorFactory } from './capabilities/PasteExecutorFactory';
-import type {
-  AIAssistantDestinationType,
-  DestinationType,
-  PasteDestination,
-} from './PasteDestination';
+import type { AIAssistantDestinationType, DestinationType } from '../types';
+
+import type { PasteDestination } from './PasteDestination';
 
 /**
  * Display names for destination types

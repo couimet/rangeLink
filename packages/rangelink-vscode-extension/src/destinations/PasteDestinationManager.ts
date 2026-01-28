@@ -6,7 +6,15 @@ import { CONTEXT_IS_BOUND } from '../constants';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { AutoPasteResult, MessageCode, QuickPickBindResult } from '../types';
+import {
+  type AvailableDestinationItem,
+  AutoPasteResult,
+  type BindOptions,
+  type DestinationQuickPickItem,
+  MessageCode,
+  type NonTerminalDestinationType,
+  QuickPickBindResult,
+} from '../types';
 import {
   formatMessage,
   isBinaryFile,
@@ -22,6 +30,7 @@ import type {
   DestinationType,
   PasteDestination,
 } from './PasteDestination';
+import { showTerminalPicker, type TerminalPickerOptions } from './utils';
 
 /**
  * Unified destination manager for RangeLink (Phase 3)
@@ -70,7 +79,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   /**
    * Bind to a destination type
    *
-   * For terminal: requires active terminal via vscode.window.activeTerminal
+   * For terminal: requires active terminal via vscode.window.activeTerminal (or explicit terminal reference)
    * For text-editor: requires active text editor via vscode.window.activeTextEditor
    * For AI assistants: checks destination.isAvailable() (e.g., Cursor IDE detection, Claude Code extension)
    *
@@ -80,22 +89,19 @@ export class PasteDestinationManager implements vscode.Disposable {
    * 3. If different destination bound, show confirmation
    * 4. Bind the new destination
    *
-   * @param type - The destination type to bind (e.g., 'terminal', 'text-editor', 'cursor-ai', 'claude-code')
+   * @param options - Discriminated union specifying destination type and type-specific options
    * @returns true if binding succeeded, false otherwise
    */
-  async bind(type: DestinationType): Promise<boolean> {
-    // Special handling for terminal (needs active terminal reference)
-    if (type === 'terminal') {
-      return this.bindTerminal();
+  async bind(options: BindOptions): Promise<boolean> {
+    if (options.type === 'terminal') {
+      return this.bindTerminalWithReference(options.terminal);
     }
 
-    // Special handling for text editor (needs active text editor reference)
-    if (type === 'text-editor') {
+    if (options.type === 'text-editor') {
       return this.bindTextEditor();
     }
 
-    // Generic destination binding (AI assistant destinations, etc.)
-    return this.bindGenericDestination(type);
+    return this.bindGenericDestination(options.type);
   }
 
   /**
@@ -167,8 +173,8 @@ export class PasteDestinationManager implements vscode.Disposable {
    * @param type - The destination type to bind and jump to
    * @returns true if bind and jump both succeeded, false otherwise
    */
-  async bindAndJump(type: DestinationType): Promise<boolean> {
-    const bound = await this.bind(type);
+  async bindAndJump(options: BindOptions): Promise<boolean> {
+    const bound = await this.bind(options);
     if (!bound) {
       return false;
     }
@@ -207,25 +213,22 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
-    const availableDestinations = await this.availabilityService.getAvailableDestinations();
+    const availableItems = await this.availabilityService.getAvailableDestinationItems();
 
-    if (availableDestinations.length === 0) {
+    if (availableItems.length === 0) {
       this.logger.debug(logCtx, 'No destinations available');
       await this.vscodeAdapter.showInformationMessage(formatMessage(noDestinationsMessageCode));
       return QuickPickBindResult.NoDestinationsAvailable;
     }
 
-    const items = availableDestinations.map((dest) => ({
-      label: dest.displayName,
-      destinationType: dest.type,
-    }));
+    const quickPickItems = this.buildQuickPickItems(availableItems);
 
     this.logger.debug(
-      { ...logCtx, availableCount: items.length },
-      `Showing quick pick with ${items.length} destinations`,
+      { ...logCtx, availableCount: quickPickItems.length },
+      `Showing quick pick with ${quickPickItems.length} items`,
     );
 
-    const selected = await this.vscodeAdapter.showQuickPick(items, {
+    const selected = await this.vscodeAdapter.showQuickPick(quickPickItems, {
       placeHolder: formatMessage(quickPickPlaceholderMessageCode),
     });
 
@@ -234,17 +237,135 @@ export class PasteDestinationManager implements vscode.Disposable {
       return QuickPickBindResult.Cancelled;
     }
 
-    this.logger.debug(
-      { ...logCtx, selectedType: selected.destinationType },
-      `User selected ${selected.destinationType}`,
-    );
+    return this.handleQuickPickSelection(selected, logCtx);
+  }
 
-    const bound = await this.bind(selected.destinationType);
-    if (!bound) {
-      this.logger.debug(logCtx, 'Binding failed');
+  /**
+   * Build QuickPick items from available destination items.
+   * Handles separators, terminals with indentation, and "More..." items.
+   */
+  private buildQuickPickItems(
+    items: AvailableDestinationItem[],
+  ): DestinationQuickPickItem[] {
+    const quickPickItems: DestinationQuickPickItem[] = [];
+
+    for (const item of items) {
+      switch (item.kind) {
+        case 'destination':
+          quickPickItems.push({
+            label: item.displayName,
+            itemKind: 'destination',
+            destinationType: item.type,
+          });
+          break;
+
+        case 'terminal-separator':
+          quickPickItems.push({
+            label: item.displayName,
+            kind: vscode.QuickPickItemKind.Separator,
+            itemKind: 'separator',
+          });
+          break;
+
+        case 'terminal':
+          quickPickItems.push({
+            label: `    ${item.displayName}`,
+            description: item.isActive
+              ? formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION)
+              : undefined,
+            itemKind: 'terminal',
+            terminal: item.terminal,
+          });
+          break;
+
+        case 'terminal-more':
+          quickPickItems.push({
+            label: `    ${item.displayName}`,
+            description: formatMessage(MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION, {
+              count: item.remainingCount,
+            }),
+            itemKind: 'terminal-more',
+          });
+          break;
+      }
+    }
+
+    return quickPickItems;
+  }
+
+  /**
+   * Handle user selection from the destination quick pick.
+   */
+  private async handleQuickPickSelection(
+    selected: DestinationQuickPickItem,
+    logCtx: LoggingContext,
+  ): Promise<QuickPickBindResult> {
+    switch (selected.itemKind) {
+      case 'destination':
+        this.logger.debug(
+          { ...logCtx, selectedType: selected.destinationType },
+          `User selected ${selected.destinationType}`,
+        );
+        return (await this.bind({ type: selected.destinationType as NonTerminalDestinationType }))
+          ? QuickPickBindResult.Bound
+          : QuickPickBindResult.BindingFailed;
+
+      case 'terminal':
+        this.logger.debug(
+          { ...logCtx, terminalName: selected.terminal?.name },
+          `User selected terminal "${selected.terminal?.name}"`,
+        );
+        return (await this.bindTerminalWithReference(selected.terminal!))
+          ? QuickPickBindResult.Bound
+          : QuickPickBindResult.BindingFailed;
+
+      case 'terminal-more':
+        this.logger.debug(logCtx, 'User selected "More terminals...", showing secondary picker');
+        return this.showSecondaryTerminalPicker(logCtx);
+
+      case 'separator':
+        this.logger.debug(logCtx, 'Separator selected (should not happen)');
+        return QuickPickBindResult.Cancelled;
+
+      default:
+        return QuickPickBindResult.Cancelled;
+    }
+  }
+
+  /**
+   * Show secondary terminal picker with all terminals.
+   */
+  private async showSecondaryTerminalPicker(logCtx: LoggingContext): Promise<QuickPickBindResult> {
+    const options: TerminalPickerOptions = {
+      maxItemsBeforeMore: 999,
+      title: formatMessage(MessageCode.TERMINAL_PICKER_TITLE),
+      placeholder: formatMessage(MessageCode.TERMINAL_PICKER_PLACEHOLDER),
+      activeDescription: formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION),
+      moreTerminalsLabel: formatMessage(MessageCode.TERMINAL_PICKER_MORE_LABEL),
+      formatMoreDescription: (count) =>
+        formatMessage(MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION, { count }),
+    };
+
+    const result = await showTerminalPicker(this.vscodeAdapter, options, this.logger);
+
+    if (result.cancelled) {
+      this.logger.debug(logCtx, 'User cancelled secondary terminal picker');
+      return QuickPickBindResult.Cancelled;
+    }
+
+    if (result.returnedToDestinationPicker) {
+      this.logger.debug(logCtx, 'User returned to destination picker from secondary');
+      return QuickPickBindResult.Cancelled;
+    }
+
+    if (!result.terminal) {
+      this.logger.debug(logCtx, 'No terminal selected');
       return QuickPickBindResult.BindingFailed;
     }
-    return QuickPickBindResult.Bound;
+
+    return (await this.bindTerminalWithReference(result.terminal))
+      ? QuickPickBindResult.Bound
+      : QuickPickBindResult.BindingFailed;
   }
 
   /**
@@ -393,26 +514,21 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Bind to terminal (special case requiring active terminal)
+   * Bind to a specific terminal by reference.
+   * Caller must provide the terminal (from activeTerminal lookup or picker selection).
    *
-   * @returns true if binding succeeded, false if no active terminal
+   * @param terminal - The specific terminal to bind to
+   * @returns true if binding succeeded, false otherwise
    */
-  private async bindTerminal(): Promise<boolean> {
-    const activeTerminal = this.vscodeAdapter.activeTerminal;
+  private async bindTerminalWithReference(terminal: vscode.Terminal): Promise<boolean> {
+    const newDestination = this.registry.create({ type: 'terminal', terminal });
 
-    if (!activeTerminal) {
-      this.logger.warn({ fn: 'PasteDestinationManager.bindTerminal' }, 'No active terminal');
-      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
-      return false;
-    }
-
-    // Create new destination with resource
-    const newDestination = this.registry.create({ type: 'terminal', terminal: activeTerminal });
-
-    // Check if already bound to same destination using equals()
     if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
       this.logger.debug(
-        { fn: 'PasteDestinationManager.bindTerminal', displayName: newDestination.displayName },
+        {
+          fn: 'PasteDestinationManager.bindTerminalWithReference',
+          displayName: newDestination.displayName,
+        },
         `Already bound to ${newDestination.displayName}, no action taken`,
       );
       this.vscodeAdapter.showInformationMessage(
@@ -423,7 +539,6 @@ export class PasteDestinationManager implements vscode.Disposable {
       return false;
     }
 
-    // If already bound to different destination, show confirmation dialog
     if (this.boundDestination) {
       const confirmed = await this.confirmReplaceBinding(
         this.boundDestination,
@@ -433,22 +548,21 @@ export class PasteDestinationManager implements vscode.Disposable {
 
       if (!confirmed) {
         this.logger.debug(
-          { fn: 'PasteDestinationManager.bindTerminal' },
+          { fn: 'PasteDestinationManager.bindTerminalWithReference' },
           'User cancelled binding replacement',
         );
         return false;
       }
 
-      // User confirmed - track old destination and unbind
       this.replacedDestinationName = this.boundDestination.displayName;
       this.unbind();
     }
 
-    await this.setBoundDestination(newDestination, activeTerminal);
+    await this.setBoundDestination(newDestination, terminal);
 
     this.logger.info(
       {
-        fn: 'PasteDestinationManager.bindTerminal',
+        fn: 'PasteDestinationManager.bindTerminalWithReference',
         displayName: newDestination.displayName,
         ...newDestination.getLoggingDetails(),
       },

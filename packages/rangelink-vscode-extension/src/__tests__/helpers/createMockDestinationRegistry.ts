@@ -1,7 +1,8 @@
 import type * as vscode from 'vscode';
 
 import type { DestinationRegistry } from '../../destinations/DestinationRegistry';
-import type { DestinationType, PasteDestination } from '../../destinations/PasteDestination';
+import type { PasteDestination } from '../../destinations/PasteDestination';
+import type { DestinationType } from '../../types';
 
 import { createMockClaudeCodeComposableDestination } from './createMockClaudeCodeComposableDestination';
 import { createMockCursorAIComposableDestination } from './createMockCursorAIComposableDestination';

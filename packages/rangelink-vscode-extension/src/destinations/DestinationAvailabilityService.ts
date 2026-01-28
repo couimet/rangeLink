@@ -7,7 +7,7 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type AvailableDestinationItem, type DestinationItem, MessageCode } from '../types';
 
 import type { DestinationRegistry } from './DestinationRegistry';
-import type { AIAssistantDestinationType } from './PasteDestination';
+import type { AIAssistantDestinationType } from '../types';
 import {
   buildTerminalItems,
   isTerminalDestinationEligible,

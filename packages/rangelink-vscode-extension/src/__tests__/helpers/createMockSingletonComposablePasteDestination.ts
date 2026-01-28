@@ -1,4 +1,4 @@
-import type { DestinationType } from '../../destinations';
+import type { DestinationType } from '../../types';
 
 import {
   createMockComposablePasteDestination,

@@ -8,7 +8,8 @@
 import type * as vscode from 'vscode';
 
 import { ComposablePasteDestination } from '../destinations/ComposablePasteDestination';
-import type { DestinationType, PasteDestination } from '../destinations/PasteDestination';
+import type { PasteDestination } from '../destinations/PasteDestination';
+import type { DestinationType } from '../types';
 
 /**
  * Generic null-safe type check for any destination type.

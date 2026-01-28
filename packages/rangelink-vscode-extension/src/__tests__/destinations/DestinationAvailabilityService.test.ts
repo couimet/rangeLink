@@ -1,7 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
-import type { AIAssistantDestinationType } from '../../destinations/PasteDestination';
+import type { AIAssistantDestinationType } from '../../types';
 import {
   createBaseMockPasteDestination,
   createMockConfigReader,

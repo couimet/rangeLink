@@ -13,7 +13,8 @@
  * - createMock*ComposableDestination() - AI assistants
  */
 
-import type { DestinationType, PasteDestination } from '../../destinations';
+import type { PasteDestination } from '../../destinations';
+import type { DestinationType } from '../../types';
 
 /**
  * Options for mock destination creation (used by specialized helpers).

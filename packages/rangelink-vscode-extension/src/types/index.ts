@@ -8,6 +8,11 @@ export type {
   TerminalSeparatorItem,
 } from './AvailableDestination';
 export { BehaviourAfterPaste } from './BehaviourAfterPaste';
+export {
+  DESTINATION_TYPES,
+  type AIAssistantDestinationType,
+  type DestinationType,
+} from './DestinationType';
 export { ExtensionResult } from './ExtensionResult';
 export { MessageCode } from './MessageCode';
 export { PasteContentType } from './PasteContentType';

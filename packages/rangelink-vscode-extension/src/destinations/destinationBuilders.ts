@@ -23,7 +23,9 @@ import { ComposablePasteDestination } from './ComposablePasteDestination';
 import type { DestinationBuilder, DestinationBuilderContext } from './DestinationRegistry';
 import { compareEditorsByUri } from './equality/compareEditorsByUri';
 import { compareTerminalsByProcessId } from './equality/compareTerminalsByProcessId';
-import type { DestinationType, PasteDestination } from './PasteDestination';
+import type { DestinationType } from '../types';
+
+import type { PasteDestination } from './PasteDestination';
 
 /**
  * Build a Terminal destination using ComposablePasteDestination factory method.

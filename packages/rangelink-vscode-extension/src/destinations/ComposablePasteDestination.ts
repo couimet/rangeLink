@@ -8,11 +8,9 @@ import { applySmartPadding, type PaddingMode } from '../utils';
 import { AlwaysEligibleChecker } from './capabilities/AlwaysEligibleChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
 import type { PasteExecutor } from './capabilities/PasteExecutor';
-import type {
-  AIAssistantDestinationType,
-  DestinationType,
-  PasteDestination,
-} from './PasteDestination';
+import type { AIAssistantDestinationType, DestinationType } from '../types';
+
+import type { PasteDestination } from './PasteDestination';
 
 // ============================================================================
 // Factory Method Parameter Types
