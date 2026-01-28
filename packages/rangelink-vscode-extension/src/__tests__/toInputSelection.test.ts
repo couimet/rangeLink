@@ -517,9 +517,11 @@ describe('toInputSelection', () => {
     });
 
     it('should log ERROR with diagnostic context when document was modified', () => {
+      const lineAtError = new Error('Line out of bounds');
+
       const mockDocument = {
         lineAt: jest.fn(() => {
-          throw new Error('Line out of bounds');
+          throw lineAtError;
         }),
         lineCount: 5,
         version: 42,
@@ -537,7 +539,7 @@ describe('toInputSelection', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'toInputSelection',
-          error: expect.any(Error),
+          error: lineAtError,
           selection: {
             start: { line: 10, char: 5 },
             end: { line: 10, char: 15 },
