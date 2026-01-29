@@ -51,7 +51,8 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: No active terminal. Open a terminal and try again.',
   [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]:
     'RangeLink: No active text editor. Open a file and try again.',
-  [MessageCode.ERROR_NO_TEXT_SELECTED]: 'RangeLink: No text selected. Select text and try again.',
+  [MessageCode.ERROR_NO_TEXT_SELECTED]:
+    'RangeLink: No text selected. Click in the file, select text, and try again.',
   [MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE]:
     'RangeLink: No active file. Open a file and try again.',
   [MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT]:

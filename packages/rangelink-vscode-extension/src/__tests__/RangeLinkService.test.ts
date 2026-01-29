@@ -731,7 +731,7 @@ describe('RangeLinkService', () => {
         await service.pasteSelectedTextToDestination();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: No text selected. Select text and try again.',
+          'RangeLink: No text selected. Click in the file, select text, and try again.',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
@@ -801,7 +801,7 @@ describe('RangeLinkService', () => {
         await service.pasteSelectedTextToDestination();
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith(
-          'RangeLink: No text selected. Select text and try again.',
+          'RangeLink: No text selected. Click in the file, select text, and try again.',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
