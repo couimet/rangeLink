@@ -119,7 +119,7 @@ export const generateLinkFromSelections = (
         code: RangeLinkExtensionErrorCodes.GENERATE_LINK_FORMAT_FAILED,
         message: `Failed to generate ${linkTypeName}`,
         functionName: FN_NAME,
-        details: { formatError: result.error },
+        cause: result.error,
       }),
     );
   }
