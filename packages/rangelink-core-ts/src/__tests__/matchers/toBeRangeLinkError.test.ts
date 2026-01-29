@@ -23,7 +23,9 @@ describe('toBeRangeLinkError matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Details: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkError to match all properties:\n  Details: expected undefined, received {"key":"value"}',
+      );
     });
 
     it('passes when both error and expected have undefined details', () => {
@@ -71,8 +73,9 @@ describe('toBeRangeLinkError matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Cause: expected undefined');
-      expect(result.message()).toContain('Original error');
+      expect(result.message()).toBe(
+        'Expected RangeLinkError to match all properties:\n  Cause: expected undefined, received error with message "Original error"',
+      );
     });
 
     it('passes when both error and expected have undefined cause', () => {
@@ -123,7 +126,9 @@ describe('toBeRangeLinkErrorErr matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Details: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkError to match all properties:\n  Details: expected undefined, received {"key":"value"}',
+      );
     });
   });
 
@@ -144,7 +149,9 @@ describe('toBeRangeLinkErrorErr matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Cause: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkError to match all properties:\n  Cause: expected undefined, received error with message "Original error"',
+      );
     });
   });
 });
@@ -167,7 +174,9 @@ describe('toThrowRangeLinkError matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Details: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkError to match all properties:\n  Details: expected undefined, received {"key":"value"}',
+      );
     });
   });
 
@@ -189,7 +198,9 @@ describe('toThrowRangeLinkError matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Cause: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkError to match all properties:\n  Cause: expected undefined, received error with message "Original error"',
+      );
     });
   });
 });

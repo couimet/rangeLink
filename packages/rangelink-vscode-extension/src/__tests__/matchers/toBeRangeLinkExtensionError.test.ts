@@ -24,7 +24,9 @@ describe('toBeRangeLinkExtensionError matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Details: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkExtensionError("TERMINAL_NOT_DEFINED") to match:\n  Details: expected undefined, received {"key":"value"}',
+      );
     });
 
     it('passes when both error and expected have undefined details', () => {
@@ -72,8 +74,9 @@ describe('toBeRangeLinkExtensionError matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Cause: expected undefined');
-      expect(result.message()).toContain('Original error');
+      expect(result.message()).toBe(
+        'Expected RangeLinkExtensionError("TERMINAL_NOT_DEFINED") to match:\n  Cause: expected undefined, received error with message "Original error"',
+      );
     });
 
     it('passes when both error and expected have undefined cause', () => {
@@ -124,7 +127,9 @@ describe('toBeRangeLinkExtensionErrorErr matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Details: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkExtensionError("TERMINAL_NOT_DEFINED") to match:\n  Details: expected undefined, received {"key":"value"}',
+      );
     });
   });
 
@@ -145,7 +150,9 @@ describe('toBeRangeLinkExtensionErrorErr matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Cause: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkExtensionError("TERMINAL_NOT_DEFINED") to match:\n  Cause: expected undefined, received error with message "Original error"',
+      );
     });
   });
 });
@@ -168,7 +175,9 @@ describe('toThrowRangeLinkExtensionError matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Details: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkExtensionError("TERMINAL_NOT_DEFINED") to match:\n  Details: expected undefined, received {"key":"value"}',
+      );
     });
   });
 
@@ -190,7 +199,9 @@ describe('toThrowRangeLinkExtensionError matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Cause: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkExtensionError("TERMINAL_NOT_DEFINED") to match:\n  Cause: expected undefined, received error with message "Original error"',
+      );
     });
   });
 });
@@ -213,7 +224,9 @@ describe('toThrowRangeLinkExtensionErrorAsync matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Details: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkExtensionError("TERMINAL_NOT_DEFINED") to match:\n  Details: expected undefined, received {"key":"value"}',
+      );
     });
   });
 
@@ -235,7 +248,9 @@ describe('toThrowRangeLinkExtensionErrorAsync matcher', () => {
       });
 
       expect(result.pass).toBe(false);
-      expect(result.message()).toContain('Cause: expected undefined');
+      expect(result.message()).toBe(
+        'Expected RangeLinkExtensionError("TERMINAL_NOT_DEFINED") to match:\n  Cause: expected undefined, received error with message "Original error"',
+      );
     });
   });
 });
