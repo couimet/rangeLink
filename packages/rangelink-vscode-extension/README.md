@@ -337,8 +337,6 @@ Customize delimiters in VSCode settings (Preferences > Settings > search "rangel
 
 Invalid configurations will fall back to defaults with a warning in the output channel (`Cmd+Shift+U` / `Ctrl+Shift+U`, select "RangeLink"). See [DEVELOPMENT.md](./DEVELOPMENT.md#development-workflow) for details.
 
-[Full configuration guide →](https://github.com/couimet/rangelink#configuration)
-
 ## What's Next
 
 RangeLink is under active development. See the [full roadmap](https://github.com/couimet/rangelink/blob/main/docs/ROADMAP.md) for planned features and other editor integrations.
