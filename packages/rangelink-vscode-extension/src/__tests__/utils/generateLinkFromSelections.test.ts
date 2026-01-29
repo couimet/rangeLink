@@ -11,6 +11,9 @@ import {
 import * as rangeLinkCore from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
+import { ExtensionResult } from '../../types';
 import {
   generateLinkFromSelections,
   GenerateLinkFromSelectionsOptions,
@@ -130,16 +133,18 @@ describe('generateLinkFromSelections', () => {
       const selection = mockSelection(0, 0, 0, 10);
       const expectedLink = createMockFormattedLink('src/utils/test.ts#L1C1-C11');
 
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue({
-        selections: [
-          {
-            start: { line: 0, character: 0 },
-            end: { line: 0, character: 10 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-        ],
-        selectionType: SelectionType.Normal,
-      });
+      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue(
+        ExtensionResult.ok({
+          selections: [
+            {
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: 10 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Normal,
+        }),
+      );
 
       jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(CoreResult.ok(expectedLink));
 
@@ -170,16 +175,18 @@ describe('generateLinkFromSelections', () => {
         linkType: LinkType.Portable,
       });
 
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue({
-        selections: [
-          {
-            start: { line: 0, character: 0 },
-            end: { line: 0, character: 10 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-        ],
-        selectionType: SelectionType.Normal,
-      });
+      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue(
+        ExtensionResult.ok({
+          selections: [
+            {
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: 10 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Normal,
+        }),
+      );
 
       jest.spyOn(rangeLinkCore, 'formatLink').mockReturnValue(CoreResult.ok(expectedLink));
 
@@ -216,13 +223,17 @@ describe('generateLinkFromSelections', () => {
   });
 
   describe('error handling', () => {
-    it('returns error when toInputSelection throws', () => {
+    it('returns error when toInputSelection returns error Result', () => {
       const selection = mockSelection(0, 0, 0, 10);
-      const conversionError = new Error('Document modified during selection');
-
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockImplementation(() => {
-        throw conversionError;
+      const conversionError = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.SELECTION_CONVERSION_FAILED,
+        message: 'Document modified during selection',
+        functionName: 'toInputSelection',
       });
+
+      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue(
+        ExtensionResult.err(conversionError),
+      );
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
@@ -249,16 +260,18 @@ describe('generateLinkFromSelections', () => {
     it('returns error when formatLink fails', () => {
       const selection = mockSelection(0, 0, 0, 10);
 
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue({
-        selections: [
-          {
-            start: { line: 0, character: 0 },
-            end: { line: 0, character: 10 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-        ],
-        selectionType: SelectionType.Normal,
-      });
+      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue(
+        ExtensionResult.ok({
+          selections: [
+            {
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: 10 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Normal,
+        }),
+      );
 
       const formatLinkError = new rangeLinkCore.RangeLinkError({
         code: rangeLinkCore.RangeLinkErrorCodes.VALIDATION,
@@ -281,6 +294,7 @@ describe('generateLinkFromSelections', () => {
       expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_FORMAT_FAILED', {
         message: 'Failed to generate link',
         functionName: 'generateLinkFromSelections',
+        cause: formatLinkError,
       });
       expect(mockLogger.error).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections', error: formatLinkError },
@@ -291,16 +305,18 @@ describe('generateLinkFromSelections', () => {
     it('returns error with portable link type name when portable link fails', () => {
       const selection = mockSelection(0, 0, 0, 10);
 
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue({
-        selections: [
-          {
-            start: { line: 0, character: 0 },
-            end: { line: 0, character: 10 },
-            coverage: SelectionCoverage.PartialLine,
-          },
-        ],
-        selectionType: SelectionType.Normal,
-      });
+      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue(
+        ExtensionResult.ok({
+          selections: [
+            {
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: 10 },
+              coverage: SelectionCoverage.PartialLine,
+            },
+          ],
+          selectionType: SelectionType.Normal,
+        }),
+      );
 
       const formatLinkError = new rangeLinkCore.RangeLinkError({
         code: rangeLinkCore.RangeLinkErrorCodes.VALIDATION,
@@ -323,35 +339,12 @@ describe('generateLinkFromSelections', () => {
       expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_FORMAT_FAILED', {
         message: 'Failed to generate portable link',
         functionName: 'generateLinkFromSelections',
+        cause: formatLinkError,
       });
       expect(mockLogger.error).toHaveBeenCalledWith(
         { fn: 'generateLinkFromSelections', error: formatLinkError },
         'Failed to generate portable link',
       );
-    });
-
-    it('handles non-Error exceptions from toInputSelection', () => {
-      const selection = mockSelection(0, 0, 0, 10);
-
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockImplementation(() => {
-        throw 'String error';
-      });
-
-      const options: GenerateLinkFromSelectionsOptions = {
-        referencePath: REFERENCE_PATH,
-        document,
-        selections: [selection],
-        delimiters: DELIMITERS,
-        linkType: LinkType.Regular,
-        logger: mockLogger,
-      };
-
-      const result = generateLinkFromSelections(options);
-
-      expect(result).toBeRangeLinkExtensionErrorErr('GENERATE_LINK_SELECTION_CONVERSION_FAILED', {
-        message: 'Failed to process selection',
-        functionName: 'generateLinkFromSelections',
-      });
     });
   });
 });
