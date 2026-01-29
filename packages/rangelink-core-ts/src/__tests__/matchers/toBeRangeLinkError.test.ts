@@ -1,6 +1,7 @@
 import { RangeLinkError } from '../../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import { Result } from '../../types/Result';
+
 import {
   toBeRangeLinkError,
   toBeRangeLinkErrorErr,
