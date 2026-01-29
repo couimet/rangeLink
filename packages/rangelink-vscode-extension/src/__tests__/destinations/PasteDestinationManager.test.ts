@@ -1119,6 +1119,7 @@ describe('PasteDestinationManager', () => {
         message:
           "Chat assistant destination 'cursor-ai' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
         functionName: 'PasteDestinationManager.buildPasteFailureMessage',
+        details: { destinationId: 'cursor-ai', displayName: 'Cursor AI Assistant' },
       });
     });
 
@@ -1145,6 +1146,7 @@ describe('PasteDestinationManager', () => {
         message:
           "Unknown destination type 'unknown-destination-type' - missing case in buildPasteFailureMessage()",
         functionName: 'PasteDestinationManager.buildPasteFailureMessage',
+        details: { destinationId: 'unknown-destination-type', displayName: 'Unknown Destination' },
       });
     });
 
