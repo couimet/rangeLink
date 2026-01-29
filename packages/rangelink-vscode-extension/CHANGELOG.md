@@ -79,6 +79,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **After:** Select destination → binds and pastes in one action
   - Dismisses silently when user presses Escape (no clipboard fallback — user can retry)
   - Edge case: Shows info notification if no destinations exist
+- **Improved error message for stale selections** - Better guidance when external file changes cause selection loss (#258)
+  - **Before:** "No text selected. Select text and try again."
+  - **After:** "No text selected. Click in the file, select text, and try again."
+  - Addresses VSCode behavior where `editor.selections` returns stale data after external modifications
 
 ### Fixed
 
