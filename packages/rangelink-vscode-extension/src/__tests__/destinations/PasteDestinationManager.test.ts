@@ -230,7 +230,7 @@ describe('PasteDestinationManager', () => {
     it('should bind to active terminal successfully', async () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-      const result = await manager.bind('terminal');
+      const result = await manager.bind({ type: 'terminal' });
 
       expect(result).toBe(true);
       expect(manager.isBound()).toBe(true);
@@ -252,7 +252,7 @@ describe('PasteDestinationManager', () => {
     it('should fail when no active terminal', async () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = undefined;
 
-      const result = await manager.bind('terminal');
+      const result = await manager.bind({ type: 'terminal' });
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
@@ -295,12 +295,12 @@ describe('PasteDestinationManager', () => {
       );
 
       // First bind
-      await controlledManager.bind('terminal');
+      await controlledManager.bind({ type: 'terminal' });
 
       formatMessageSpy.mockClear();
 
       // Try binding again to same destination
-      const result = await controlledManager.bind('terminal');
+      const result = await controlledManager.bind({ type: 'terminal' });
 
       expect(result).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
@@ -321,7 +321,7 @@ describe('PasteDestinationManager', () => {
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = customTerminal;
 
-      const result = await manager.bind('terminal');
+      const result = await manager.bind({ type: 'terminal' });
 
       expect(result).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
@@ -337,7 +337,7 @@ describe('PasteDestinationManager', () => {
         envOptions: { appName: 'Cursor' },
       });
 
-      const result = await localManager.bind('cursor-ai');
+      const result = await localManager.bind({ type: 'cursor-ai' });
 
       expect(result).toBe(true);
       expect(localManager.isBound()).toBe(true);
@@ -352,7 +352,7 @@ describe('PasteDestinationManager', () => {
 
     it('should fail when cursor-ai not available', async () => {
       // Mock non-Cursor IDE (already configured in beforeEach as non-Cursor)
-      const result = await manager.bind('cursor-ai');
+      const result = await manager.bind({ type: 'cursor-ai' });
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
@@ -369,7 +369,7 @@ describe('PasteDestinationManager', () => {
       const mockDestination = createMockClaudeCodeDestination({ isAvailable: false });
       jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
-      const result = await manager.bind('claude-code');
+      const result = await manager.bind({ type: 'claude-code' });
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
@@ -384,7 +384,7 @@ describe('PasteDestinationManager', () => {
       const mockDestination = createMockClaudeCodeDestination({ isAvailable: true });
       jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
-      const result = await manager.bind('claude-code');
+      const result = await manager.bind({ type: 'claude-code' });
 
       expect(result).toBe(true);
       expect(manager.isBound()).toBe(true);
@@ -399,7 +399,7 @@ describe('PasteDestinationManager', () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
       jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
-      const result = await manager.bind('github-copilot-chat');
+      const result = await manager.bind({ type: 'github-copilot-chat' });
 
       expect(result).toBe(true);
       expect(manager.isBound()).toBe(true);
@@ -421,7 +421,7 @@ describe('PasteDestinationManager', () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: false });
       jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
-      const result = await manager.bind('github-copilot-chat');
+      const result = await manager.bind({ type: 'github-copilot-chat' });
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
@@ -437,10 +437,10 @@ describe('PasteDestinationManager', () => {
       const { manager: localManager, adapter: localAdapter } = createManager({
         envOptions: { appName: 'Cursor' },
       });
-      await localManager.bind('cursor-ai');
+      await localManager.bind({ type: 'cursor-ai' });
 
       // Try binding again to same destination
-      const result = await localManager.bind('cursor-ai');
+      const result = await localManager.bind({ type: 'cursor-ai' });
 
       expect(result).toBe(false);
       expect(localAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
@@ -458,7 +458,7 @@ describe('PasteDestinationManager', () => {
       jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
       // Bind first time
-      await manager.bind('github-copilot-chat');
+      await manager.bind({ type: 'github-copilot-chat' });
 
       // Clear adapter calls to isolate second bind attempt (but keep factory mock intact)
       const mockVscode = mockAdapter.__getVscodeInstance();
@@ -466,7 +466,7 @@ describe('PasteDestinationManager', () => {
       (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
 
       // Try binding again to same destination
-      const result = await manager.bind('github-copilot-chat');
+      const result = await manager.bind({ type: 'github-copilot-chat' });
 
       expect(result).toBe(false);
       expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
@@ -484,10 +484,9 @@ describe('PasteDestinationManager', () => {
         selection: { active: { line: 0, character: 0 } } as vscode.Selection,
       });
 
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      const result = await manager.bind('text-editor');
+      const result = await manager.bind({ type: 'text-editor', editor: mockEditor });
 
       expect(result).toBe(true);
       expect(manager.isBound()).toBe(true);
@@ -510,12 +509,12 @@ describe('PasteDestinationManager', () => {
 
     it('should fail to bind text editor with less than 2 tab groups', async () => {
       // Setup: Single tab group (no split editor)
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = {
+      const mockEditor = {
         document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
       } as vscode.TextEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 1);
 
-      const result = await manager.bind('text-editor');
+      const result = await manager.bind({ type: 'text-editor', editor: mockEditor });
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
@@ -526,31 +525,15 @@ describe('PasteDestinationManager', () => {
       expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
-    it('should fail to bind text editor when no active editor', async () => {
-      // Setup: No active text editor
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
-      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
-
-      const result = await manager.bind('text-editor');
-
-      expect(result).toBe(false);
-      expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR);
-      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        'RangeLink: No active text editor. Open a file and try again.',
-      );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
-    });
-
     it('should fail to bind text editor to read-only scheme', async () => {
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = {
+      const mockEditor = {
         document: {
           uri: { scheme: 'git', fsPath: '/repo/file.ts' },
         },
       } as vscode.TextEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      const result = await manager.bind('text-editor');
+      const result = await manager.bind({ type: 'text-editor', editor: mockEditor });
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
@@ -565,14 +548,14 @@ describe('PasteDestinationManager', () => {
 
     it('should fail to bind text editor to binary file', async () => {
       const testFileName = 'binary.dat';
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = {
+      const mockEditor = {
         document: {
           uri: { scheme: 'file', fsPath: `/test/${testFileName}` },
         },
       } as vscode.TextEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      const result = await manager.bind('text-editor');
+      const result = await manager.bind({ type: 'text-editor', editor: mockEditor });
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
@@ -595,14 +578,14 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await localManager.bind('terminal');
+      await localManager.bind({ type: 'terminal' });
 
       // Mock user cancels confirmation
       const showQuickPickMock = localAdapter.__getVscodeInstance().window.showQuickPick;
       showQuickPickMock.mockResolvedValueOnce(undefined);
 
       // Try binding to Cursor AI
-      const result = await localManager.bind('cursor-ai');
+      const result = await localManager.bind({ type: 'cursor-ai' });
 
       expect(result).toBe(false);
       expectQuickPickConfirmation(showQuickPickMock, {
@@ -617,7 +600,7 @@ describe('PasteDestinationManager', () => {
       const { manager: localManager, adapter: localAdapter } = createManager({
         envOptions: { appName: 'Cursor' },
       });
-      await localManager.bind('cursor-ai');
+      await localManager.bind({ type: 'cursor-ai' });
 
       // Mock user cancels confirmation
       const showQuickPickMock = localAdapter.__getVscodeInstance().window.showQuickPick;
@@ -627,7 +610,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      const result = await localManager.bind('terminal');
+      const result = await localManager.bind({ type: 'terminal' });
 
       expect(result).toBe(false);
       expectQuickPickConfirmation(showQuickPickMock, {
@@ -642,7 +625,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       // Mock GitHub Copilot Chat as available
       const mockCopilotDest = createMockGitHubCopilotChatDestination({ isAvailable: true });
@@ -653,7 +636,7 @@ describe('PasteDestinationManager', () => {
       showQuickPickMock.mockResolvedValueOnce(undefined);
 
       // Try binding to GitHub Copilot Chat
-      const result = await manager.bind('github-copilot-chat');
+      const result = await manager.bind({ type: 'github-copilot-chat' });
 
       expect(result).toBe(false);
       expectQuickPickConfirmation(showQuickPickMock, {
@@ -682,7 +665,7 @@ describe('PasteDestinationManager', () => {
         return undefined as any;
       });
 
-      await manager.bind('github-copilot-chat');
+      await manager.bind({ type: 'github-copilot-chat' });
 
       // Mock user cancels confirmation
       const showQuickPickMock = mockAdapter.__getVscodeInstance().window.showQuickPick;
@@ -692,7 +675,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      const result = await manager.bind('terminal');
+      const result = await manager.bind({ type: 'terminal' });
 
       expect(result).toBe(false);
       expectQuickPickConfirmation(showQuickPickMock, {
@@ -705,7 +688,7 @@ describe('PasteDestinationManager', () => {
       const { manager: localManager, adapter: localAdapter } = createManager({
         envOptions: { appName: 'Cursor' },
       });
-      await localManager.bind('cursor-ai');
+      await localManager.bind({ type: 'cursor-ai' });
 
       // Mock GitHub Copilot Chat as available
       const mockCopilotDest = createMockGitHubCopilotChatDestination({ isAvailable: true });
@@ -721,7 +704,7 @@ describe('PasteDestinationManager', () => {
       showQuickPickMock.mockResolvedValueOnce(undefined);
 
       // Try binding to GitHub Copilot Chat
-      const result = await localManager.bind('github-copilot-chat');
+      const result = await localManager.bind({ type: 'github-copilot-chat' });
 
       expect(result).toBe(false);
       expectQuickPickConfirmation(showQuickPickMock, {
@@ -738,7 +721,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       manager.unbind();
 
@@ -754,7 +737,7 @@ describe('PasteDestinationManager', () => {
       const { manager: localManager, adapter: localAdapter } = createManager({
         envOptions: { appName: 'Cursor' },
       });
-      await localManager.bind('cursor-ai');
+      await localManager.bind({ type: 'cursor-ai' });
 
       localManager.unbind();
 
@@ -772,7 +755,7 @@ describe('PasteDestinationManager', () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
       jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
-      await manager.bind('github-copilot-chat');
+      await manager.bind({ type: 'github-copilot-chat' });
 
       manager.unbind();
 
@@ -789,7 +772,7 @@ describe('PasteDestinationManager', () => {
       const mockDestination = createMockClaudeCodeDestination({ isAvailable: true });
       jest.spyOn(mockRegistry, 'create').mockReturnValue(mockDestination);
 
-      await manager.bind('claude-code');
+      await manager.bind({ type: 'claude-code' });
 
       manager.unbind();
 
@@ -810,10 +793,9 @@ describe('PasteDestinationManager', () => {
         selection: { active: { line: 0, character: 0 } } as vscode.Selection,
       });
 
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      await manager.bind('text-editor');
+      await manager.bind({ type: 'text-editor', editor: mockEditor });
 
       manager.unbind();
 
@@ -883,7 +865,7 @@ describe('PasteDestinationManager', () => {
       // Override getUserInstruction to return undefined (non-chat destinations don't provide instructions)
       mockTerminalDest.getUserInstruction = jest.fn().mockReturnValue(undefined);
 
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       const setStatusBarSpy = jest.spyOn(mockAdapter, 'setStatusBarMessage');
 
@@ -914,7 +896,7 @@ describe('PasteDestinationManager', () => {
         },
       });
 
-      await cursorManager.bind('cursor-ai');
+      await cursorManager.bind({ type: 'cursor-ai' });
       mockSetStatusBarMessage.mockClear();
 
       const boundDest = cursorManager.getBoundDestination()!;
@@ -946,7 +928,7 @@ describe('PasteDestinationManager', () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
       jest.spyOn(mockRegistryForSend, 'create').mockReturnValue(mockDestination);
 
-      await manager.bind('github-copilot-chat');
+      await manager.bind({ type: 'github-copilot-chat' });
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
       const result = await manager.sendLinkToDestination(
@@ -981,7 +963,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
       localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-      await localManager.bind('terminal');
+      await localManager.bind({ type: 'terminal' });
 
       const boundDest = localManager.getBoundDestination()!;
       boundDest.getUserInstruction = jest.fn().mockReturnValue(undefined);
@@ -1015,7 +997,7 @@ describe('PasteDestinationManager', () => {
         },
       });
 
-      await cursorManager.bind('cursor-ai');
+      await cursorManager.bind({ type: 'cursor-ai' });
       mockSetStatusBarMessage.mockClear();
 
       const boundDest = cursorManager.getBoundDestination()!;
@@ -1047,7 +1029,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
       await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE, 'both');
@@ -1152,7 +1134,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       // Mock paste failure
       mockTerminalDest.pasteLink.mockResolvedValueOnce(false);
@@ -1179,7 +1161,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       // Simulate terminal close
       terminalCloseListener(mockTerminal);
@@ -1197,7 +1179,7 @@ describe('PasteDestinationManager', () => {
       const otherTerminal = createMockTerminal({ name: 'zsh' });
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       // Simulate other terminal close
       terminalCloseListener(otherTerminal);
@@ -1207,7 +1189,7 @@ describe('PasteDestinationManager', () => {
 
     it('should not auto-unbind for chat destinations', async () => {
       const { manager: localManager } = createManager({ envOptions: { appName: 'Cursor' } });
-      await localManager.bind('cursor-ai');
+      await localManager.bind({ type: 'cursor-ai' });
 
       const mockTerminal = createMockTerminal();
 
@@ -1230,10 +1212,9 @@ describe('PasteDestinationManager', () => {
         document: mockDocument,
       } as vscode.TextEditor;
 
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      await manager.bind('text-editor');
+      await manager.bind({ type: 'text-editor', editor: mockEditor });
       expect(manager.isBound()).toBe(true);
 
       // Clear mocks to isolate document close behavior
@@ -1280,10 +1261,9 @@ describe('PasteDestinationManager', () => {
         document: boundDocument,
       } as vscode.TextEditor;
 
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      await manager.bind('text-editor');
+      await manager.bind({ type: 'text-editor', editor: mockEditor });
       expect(manager.isBound()).toBe(true);
 
       // Simulate different document close
@@ -1296,7 +1276,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       const mockDocument = {
         uri: { scheme: 'file', fsPath: '/test/file.ts', toString: () => 'file:///test/file.ts' },
@@ -1314,7 +1294,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       const destination = manager.getBoundDestination();
 
@@ -1335,14 +1315,14 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       expect(manager.isBound()).toBe(true);
     });
 
     it('should return true when chat destination bound', async () => {
       const { manager: localManager } = createManager({ envOptions: { appName: 'Cursor' } });
-      await localManager.bind('cursor-ai');
+      await localManager.bind({ type: 'cursor-ai' });
 
       expect(localManager.isBound()).toBe(true);
 
@@ -1357,7 +1337,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
       manager.unbind();
 
       expect(manager.isBound()).toBe(false);
@@ -1468,7 +1448,7 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTerminal = { name: 'TestTerminal' } as vscode.Terminal;
 
         // First bind: Bind to Terminal (normal bind)
-        const firstBindResult = await manager.bind('terminal');
+        const firstBindResult = await manager.bind({ type: 'terminal' });
         expect(firstBindResult).toBe(true);
         expect(manager.isBound()).toBe(true);
         expect(manager.getBoundDestination()?.id).toBe('terminal');
@@ -1480,12 +1460,12 @@ describe('PasteDestinationManager', () => {
         );
 
         // Mock active text editor for second bind
-        mockVscode.window.activeTextEditor = {
+        const mockTextEditor = {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
         } as vscode.TextEditor;
 
         // Second bind: Bind to Text Editor (should show confirmation)
-        const secondBindResult = await manager.bind('text-editor');
+        const secondBindResult = await manager.bind({ type: 'text-editor', editor: mockTextEditor });
 
         // Assert: QuickPick was shown
         expect(mockVscode.window.showQuickPick).toHaveBeenCalledWith(
@@ -1544,19 +1524,19 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTerminal = { name: 'TestTerminal' } as vscode.Terminal;
 
         // First bind: Bind to Terminal
-        const firstBindResult = await manager.bind('terminal');
+        const firstBindResult = await manager.bind({ type: 'terminal' });
         expect(firstBindResult).toBe(true);
 
         // Reset status bar message mock to verify second bind doesn't show toast
         (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
 
         // Mock active text editor for second bind
-        mockVscode.window.activeTextEditor = {
+        const mockTextEditor = {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
         } as vscode.TextEditor;
 
         // Second bind: Try to bind to Text Editor (user cancels)
-        const secondBindResult = await manager.bind('text-editor');
+        const secondBindResult = await manager.bind({ type: 'text-editor', editor: mockTextEditor });
 
         // Assert: Bind failed (cancelled)
         expect(secondBindResult).toBe(false);
@@ -1589,7 +1569,7 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTerminal = { name: 'TestTerminal' } as vscode.Terminal;
 
         // First bind: Bind to Terminal
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
         expect(manager.isBound()).toBe(true);
 
         // Clear mocks to verify second bind behavior
@@ -1597,7 +1577,7 @@ describe('PasteDestinationManager', () => {
         (mockVscode.window.showQuickPick as jest.Mock).mockClear();
 
         // Second bind: Try to bind to Terminal again
-        const result = await manager.bind('terminal');
+        const result = await manager.bind({ type: 'terminal' });
 
         // Assert: Bind failed
         expect(result).toBe(false);
@@ -1626,7 +1606,7 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTerminal = { name: 'TestTerminal' } as vscode.Terminal;
 
         // Bind to Terminal (no existing binding)
-        const result = await manager.bind('terminal');
+        const result = await manager.bind({ type: 'terminal' });
 
         // Assert: Bind succeeded
         expect(result).toBe(true);
@@ -1666,10 +1646,10 @@ describe('PasteDestinationManager', () => {
         mockVscode.window.activeTerminal = { name: 'TestTerminal' } as vscode.Terminal;
 
         // First bind: Bind to Terminal
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         // Mock active text editor for second bind
-        mockVscode.window.activeTextEditor = {
+        const mockTextEditor = {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
         } as vscode.TextEditor;
 
@@ -1677,7 +1657,7 @@ describe('PasteDestinationManager', () => {
         (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
 
         // Second bind: Try to bind to Text Editor (user presses Esc)
-        const result = await manager.bind('text-editor');
+        const result = await manager.bind({ type: 'text-editor', editor: mockTextEditor });
 
         // Assert: Bind failed (cancelled)
         expect(result).toBe(false);
@@ -1830,7 +1810,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       const result = await manager.jumpToBoundDestination();
 
@@ -1850,9 +1830,7 @@ describe('PasteDestinationManager', () => {
         selection: { active: { line: 0, character: 0 } } as any,
       });
 
-      mockVscode.window.activeTextEditor = mockEditor;
-
-      await manager.bind('text-editor');
+      await manager.bind({ type: 'text-editor', editor: mockEditor });
 
       const result = await manager.jumpToBoundDestination();
 
@@ -1864,7 +1842,7 @@ describe('PasteDestinationManager', () => {
       // Create manager with Cursor environment
       const { manager: cursorManager } = createManager({ envOptions: { appName: 'Cursor' } });
 
-      await cursorManager.bind('cursor-ai');
+      await cursorManager.bind({ type: 'cursor-ai' });
 
       // Get the actual bound destination
       const boundDest = cursorManager.getBoundDestination()!;
@@ -1884,7 +1862,7 @@ describe('PasteDestinationManager', () => {
       };
       jest.spyOn(mockAdapter, 'extensions', 'get').mockReturnValue([mockExtension] as any);
 
-      await manager.bind('claude-code');
+      await manager.bind({ type: 'claude-code' });
 
       const result = await manager.jumpToBoundDestination();
 
@@ -1896,7 +1874,7 @@ describe('PasteDestinationManager', () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
       jest.spyOn(mockRegistryForJump, 'create').mockReturnValue(mockDestination);
 
-      await manager.bind('github-copilot-chat');
+      await manager.bind({ type: 'github-copilot-chat' });
 
       const result = await manager.jumpToBoundDestination();
 
@@ -1908,7 +1886,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       // Mock focus failure
       mockTerminalDest.focus.mockResolvedValueOnce(false);
@@ -1924,7 +1902,7 @@ describe('PasteDestinationManager', () => {
 
       const mockVscode = mockAdapter.__getVscodeInstance();
       mockVscode.window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       // Mock focus failure
       mockTerminalDest.focus.mockResolvedValueOnce(false);
@@ -1941,7 +1919,7 @@ describe('PasteDestinationManager', () => {
 
       const mockVscode = mockAdapter.__getVscodeInstance();
       mockVscode.window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       // Clear bind's status bar message
       (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
@@ -1958,7 +1936,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       // Clear logger calls from bind()
       jest.clearAllMocks();
@@ -1988,9 +1966,7 @@ describe('PasteDestinationManager', () => {
         selection: { active: { line: 0, character: 0 } } as any,
       });
 
-      mockVscode.window.activeTextEditor = mockEditor;
-
-      await manager.bind('text-editor');
+      await manager.bind({ type: 'text-editor', editor: mockEditor });
 
       // Clear logger calls from bind()
       jest.clearAllMocks();
@@ -2013,7 +1989,7 @@ describe('PasteDestinationManager', () => {
       // Create manager with Cursor environment
       const { manager: cursorManager } = createManager({ envOptions: { appName: 'Cursor' } });
 
-      await cursorManager.bind('cursor-ai');
+      await cursorManager.bind({ type: 'cursor-ai' });
 
       // Clear logger calls from bind()
       jest.clearAllMocks();
@@ -2036,7 +2012,7 @@ describe('PasteDestinationManager', () => {
       const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
       jest.spyOn(mockRegistryForJump, 'create').mockReturnValue(mockDestination);
 
-      await manager.bind('github-copilot-chat');
+      await manager.bind({ type: 'github-copilot-chat' });
 
       // Clear logger calls from bind()
       jest.clearAllMocks();
@@ -2057,7 +2033,7 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       // Clear logger calls from bind()
       jest.clearAllMocks();
@@ -2098,7 +2074,7 @@ describe('PasteDestinationManager', () => {
 
       const mockVscode = mockAdapter.__getVscodeInstance();
       mockVscode.window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
+      await manager.bind({ type: 'terminal' });
 
       // Clear bind's status bar message
       (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
@@ -2143,7 +2119,7 @@ describe('PasteDestinationManager', () => {
     it('binds and jumps to destination when bind succeeds', async () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-      const result = await manager.bindAndJump('terminal');
+      const result = await manager.bindAndJump({ type: 'terminal' });
 
       expect(result).toBe(true);
       expect(manager.isBound()).toBe(true);
@@ -2153,7 +2129,7 @@ describe('PasteDestinationManager', () => {
     it('returns false without jumping when bind fails', async () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = undefined;
 
-      const result = await manager.bindAndJump('terminal');
+      const result = await manager.bindAndJump({ type: 'terminal' });
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(false);
@@ -2164,7 +2140,7 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       mockTerminalDest.focus.mockResolvedValueOnce(false);
 
-      const result = await manager.bindAndJump('terminal');
+      const result = await manager.bindAndJump({ type: 'terminal' });
 
       expect(result).toBe(false);
       expect(manager.isBound()).toBe(true);
@@ -2204,7 +2180,7 @@ describe('PasteDestinationManager', () => {
         const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
         mockTerminalDest.pasteContent.mockResolvedValueOnce(true);
 
         const result = await manager.sendTextToDestination(TEST_CONTENT, TEST_STATUS, 'none');
@@ -2224,7 +2200,7 @@ describe('PasteDestinationManager', () => {
         const mockDestination = createMockGitHubCopilotChatDestination({ isAvailable: true });
         jest.spyOn(mockRegistryForSend, 'create').mockReturnValue(mockDestination);
 
-        await manager.bind('github-copilot-chat');
+        await manager.bind({ type: 'github-copilot-chat' });
         mockDestination.pasteContent.mockResolvedValueOnce(true);
 
         const result = await manager.sendTextToDestination(TEST_CONTENT, TEST_STATUS, 'none');
@@ -2237,7 +2213,7 @@ describe('PasteDestinationManager', () => {
         const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         // Clear bind() messages to isolate sendTextToDestination behavior
         (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
@@ -2270,7 +2246,7 @@ describe('PasteDestinationManager', () => {
         const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
         mockTerminalDest.pasteContent.mockResolvedValueOnce(true);
 
         await manager.sendTextToDestination(TEST_CONTENT, TEST_STATUS, 'none');
@@ -2289,7 +2265,7 @@ describe('PasteDestinationManager', () => {
         const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
         mockTerminalDest.pasteContent.mockResolvedValueOnce(true);
 
         const result = await manager.sendTextToDestination(largeContent, TEST_STATUS, 'none');
@@ -2348,14 +2324,14 @@ describe('PasteDestinationManager', () => {
         const mockTerminal2 = createMockTerminal({ name: 'zsh' });
 
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal2;
         (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValueOnce({
           label: 'Yes, replace',
         });
 
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
           'Unbound Terminal ("bash"), now bound to Terminal ("zsh")',
@@ -2373,7 +2349,7 @@ describe('PasteDestinationManager', () => {
         const mockTerminal2 = createMockTerminal({ name: 'zsh' });
 
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         expect(manager.getBoundDestination()).toBe(mockTerminalDest1);
 
@@ -2382,7 +2358,7 @@ describe('PasteDestinationManager', () => {
           label: 'Yes, replace',
         });
 
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         expect(manager.getBoundDestination()).toBe(mockTerminalDest2);
 
@@ -2400,7 +2376,7 @@ describe('PasteDestinationManager', () => {
         const mockTerminal2 = createMockTerminal({ name: 'zsh' });
 
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal1;
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         const originalDest = manager.getBoundDestination();
 
@@ -2412,7 +2388,7 @@ describe('PasteDestinationManager', () => {
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal2;
         (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValueOnce(undefined);
 
-        const result = await manager.bind('terminal');
+        const result = await manager.bind({ type: 'terminal' });
 
         expect(result).toBe(false);
         expect(manager.getBoundDestination()).toBe(originalDest);
@@ -2452,7 +2428,7 @@ describe('PasteDestinationManager', () => {
         const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         // Clear mocks from first bind to isolate second bind behavior
         (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
@@ -2462,7 +2438,7 @@ describe('PasteDestinationManager', () => {
         // Mock equals() to return true (same destination)
         mockTerminalDest.equals.mockResolvedValueOnce(true);
 
-        const result = await manager.bind('terminal');
+        const result = await manager.bind({ type: 'terminal' });
 
         expect(result).toBe(false);
 
@@ -2479,7 +2455,7 @@ describe('PasteDestinationManager', () => {
         const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
         const firstDest = manager.getBoundDestination();
 
         // Clear mocks from first bind
@@ -2488,7 +2464,7 @@ describe('PasteDestinationManager', () => {
         (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
 
         mockTerminalDest.equals.mockResolvedValueOnce(true);
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         expect(manager.getBoundDestination()).toBe(firstDest);
 
@@ -2504,7 +2480,7 @@ describe('PasteDestinationManager', () => {
         const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         // Clear mocks from first bind
         (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
@@ -2512,7 +2488,7 @@ describe('PasteDestinationManager', () => {
         (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
 
         mockTerminalDest.equals.mockResolvedValueOnce(true);
-        await manager.bind('terminal');
+        await manager.bind({ type: 'terminal' });
 
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
@@ -2586,9 +2562,7 @@ describe('PasteDestinationManager', () => {
         } as vscode.TextDocument;
         const mockEditor = { document: mockDocument } as vscode.TextEditor;
 
-        mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
-
-        await manager.bind('text-editor');
+        await manager.bind({ type: 'text-editor', editor: mockEditor });
 
         // Clear bind() messages to isolate close behavior
         const mockVscode = mockAdapter.__getVscodeInstance();
@@ -2631,9 +2605,7 @@ describe('PasteDestinationManager', () => {
         } as vscode.TextDocument;
         const mockEditor = { document: mockDocument } as vscode.TextEditor;
 
-        mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
-
-        const bindResult = await manager.bind('text-editor');
+        const bindResult = await manager.bind({ type: 'text-editor', editor: mockEditor });
 
         // Verify binding succeeded
         expect(bindResult).toBe(true);

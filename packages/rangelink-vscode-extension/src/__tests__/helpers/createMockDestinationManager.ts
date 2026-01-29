@@ -64,6 +64,7 @@ export const createMockDestinationManager = (
     unbind: jest.fn(),
     jumpToBoundDestination: jest.fn().mockResolvedValue(false),
     bindAndJump: jest.fn().mockResolvedValue(false),
+    bindAndJumpByType: jest.fn().mockResolvedValue(false),
     showDestinationQuickPickForPaste: jest
       .fn()
       .mockResolvedValue(showDestinationQuickPickForPasteResult),
