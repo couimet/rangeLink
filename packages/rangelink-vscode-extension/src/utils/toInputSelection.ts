@@ -2,7 +2,10 @@ import type { Logger } from 'barebone-logger';
 import { InputSelection, Selection, SelectionCoverage, SelectionType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { isRectangularSelection } from '../isRectangularSelection';
+import { ExtensionResult } from '../types';
 
 /**
  * Adapter: Converts VSCode Selections to core InputSelection interface
@@ -12,7 +15,7 @@ export const toInputSelection = (
   document: vscode.TextDocument,
   vscodeSelections: readonly vscode.Selection[],
   logger: Logger,
-): InputSelection => {
+): ExtensionResult<InputSelection> => {
   logger.debug(
     {
       fn: 'toInputSelection',
@@ -80,9 +83,13 @@ export const toInputSelection = (
         },
         'Document modified during link generation - selection out of bounds',
       );
-      // TODO: Replace with RangeLinkExtensionError using RangeLinkExtensionErrorCodes.SELECTION_CONVERSION_FAILED
-      throw new Error(
-        'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
+      return ExtensionResult.err(
+        new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.SELECTION_CONVERSION_FAILED,
+          message:
+            'Cannot generate link: document was modified and selection is no longer valid. Please reselect and try again.',
+          functionName: 'toInputSelection',
+        }),
       );
     }
 
@@ -117,7 +124,7 @@ export const toInputSelection = (
     'Selection conversion complete',
   );
 
-  return result;
+  return ExtensionResult.ok(result);
 };
 
 /**
