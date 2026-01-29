@@ -24,6 +24,19 @@ import type {
 } from './PasteDestination';
 
 /**
+ * Type-safe options for binding to destinations
+ *
+ * Discriminated union that bundles destination type with its required context.
+ * Terminal binding uses active terminal (no explicit resource needed).
+ * Text-editor binding requires explicit editor reference to avoid race conditions.
+ * AI assistant destinations only need type (availability checked at bind time).
+ */
+export type BindOptions =
+  | { type: 'terminal' }
+  | { type: 'text-editor'; editor: vscode.TextEditor }
+  | { type: AIAssistantDestinationType };
+
+/**
  * Unified destination manager for RangeLink (Phase 3)
  *
  * Manages binding to any paste destination (terminals, text editors, AI assistants, etc.)
@@ -71,7 +84,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * Bind to a destination type
    *
    * For terminal: requires active terminal via vscode.window.activeTerminal
-   * For text-editor: requires active text editor via vscode.window.activeTextEditor
+   * For text-editor: requires explicit editor reference to avoid race conditions
    * For AI assistants: checks destination.isAvailable() (e.g., Cursor IDE detection, Claude Code extension)
    *
    * **Centralized binding logic:**
@@ -80,22 +93,19 @@ export class PasteDestinationManager implements vscode.Disposable {
    * 3. If different destination bound, show confirmation
    * 4. Bind the new destination
    *
-   * @param type - The destination type to bind (e.g., 'terminal', 'text-editor', 'cursor-ai', 'claude-code')
+   * @param options - Type-discriminated binding options (terminal, text-editor with editor, or AI assistant type)
    * @returns true if binding succeeded, false otherwise
    */
-  async bind(type: DestinationType): Promise<boolean> {
-    // Special handling for terminal (needs active terminal reference)
-    if (type === 'terminal') {
+  async bind(options: BindOptions): Promise<boolean> {
+    if (options.type === 'terminal') {
       return this.bindTerminal();
     }
 
-    // Special handling for text editor (needs active text editor reference)
-    if (type === 'text-editor') {
-      return this.bindTextEditor();
+    if (options.type === 'text-editor') {
+      return this.bindTextEditor(options.editor);
     }
 
-    // Generic destination binding (AI assistant destinations, etc.)
-    return this.bindGenericDestination(type);
+    return this.bindGenericDestination(options.type);
   }
 
   /**
@@ -164,11 +174,28 @@ export class PasteDestinationManager implements vscode.Disposable {
    *
    * Convenience method that combines bind() and jumpToBoundDestination().
    *
+   * @param options - Type-discriminated binding options
+   * @returns true if bind and jump both succeeded, false otherwise
+   */
+  async bindAndJump(options: BindOptions): Promise<boolean> {
+    const bound = await this.bind(options);
+    if (!bound) {
+      return false;
+    }
+    return this.jumpToBoundDestination();
+  }
+
+  /**
+   * Bind and jump by destination type (for menu flows where type is selected dynamically).
+   *
+   * Constructs appropriate BindOptions based on type, getting active resources as needed.
+   * Convenience wrapper for callers that have a DestinationType string rather than BindOptions.
+   *
    * @param type - The destination type to bind and jump to
    * @returns true if bind and jump both succeeded, false otherwise
    */
-  async bindAndJump(type: DestinationType): Promise<boolean> {
-    const bound = await this.bind(type);
+  async bindAndJumpByType(type: DestinationType): Promise<boolean> {
+    const bound = await this.bindByType(type);
     if (!bound) {
       return false;
     }
@@ -239,12 +266,42 @@ export class PasteDestinationManager implements vscode.Disposable {
       `User selected ${selected.destinationType}`,
     );
 
-    const bound = await this.bind(selected.destinationType);
+    const bound = await this.bindByType(selected.destinationType);
     if (!bound) {
       this.logger.debug(logCtx, 'Binding failed');
       return QuickPickBindResult.BindingFailed;
     }
     return QuickPickBindResult.Bound;
+  }
+
+  /**
+   * Bind by destination type (for quick pick flows where type is selected dynamically).
+   *
+   * Constructs appropriate BindOptions based on type, getting active resources as needed.
+   * For text-editor, uses activeTextEditor at call time (acceptable for quick pick context
+   * where user just selected it).
+   *
+   * @param type - The destination type to bind
+   * @returns true if binding succeeded, false otherwise
+   */
+  private async bindByType(type: DestinationType): Promise<boolean> {
+    if (type === 'terminal') {
+      return this.bind({ type: 'terminal' });
+    }
+
+    if (type === 'text-editor') {
+      const editor = this.vscodeAdapter.activeTextEditor;
+      if (!editor) {
+        this.logger.error(
+          { fn: 'PasteDestinationManager.bindByType' },
+          'No active text editor for text-editor binding',
+        );
+        return false;
+      }
+      return this.bind({ type: 'text-editor', editor });
+    }
+
+    return this.bind({ type });
   }
 
   /**
@@ -461,16 +518,16 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Bind to text editor (special case requiring active text editor)
+   * Bind to text editor (special case requiring text editor reference)
    *
    * **MVP Requirements:**
    * - Requires 2+ tab groups (split editor)
-   * - Active editor must be text-like file (not binary, not terminal)
-   * - Active editor must have focus
+   * - Editor must be text-like file (not binary, not terminal)
    *
+   * @param editor - Text editor to bind
    * @returns true if binding succeeded, false if validation fails
    */
-  private async bindTextEditor(): Promise<boolean> {
+  private async bindTextEditor(editor: vscode.TextEditor): Promise<boolean> {
     const tabGroupCount = this.vscodeAdapter.tabGroups.all.length;
     if (tabGroupCount < 2) {
       this.logger.warn(
@@ -483,15 +540,8 @@ export class PasteDestinationManager implements vscode.Disposable {
       return false;
     }
 
-    const activeEditor = this.vscodeAdapter.activeTextEditor;
-    if (!activeEditor) {
-      this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
-      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
-      return false;
-    }
-
     // Extract URI properties for logging and validation
-    const editorUri = this.vscodeAdapter.getDocumentUri(activeEditor);
+    const editorUri = this.vscodeAdapter.getDocumentUri(editor);
     const scheme = editorUri.scheme;
     const fsPath = editorUri.fsPath;
     const fileName = this.vscodeAdapter.getFilenameFromUri(editorUri);
@@ -516,7 +566,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     // Create new destination with resource
     const newDestination = this.registry.create({
       type: 'text-editor',
-      editor: activeEditor,
+      editor,
     });
 
     // Check if already bound to same destination using equals()

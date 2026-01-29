@@ -14,7 +14,6 @@ import {
   CMD_BIND_TO_TERMINAL,
   CMD_BIND_TO_TERMINAL_HERE,
   CMD_BIND_TO_TEXT_EDITOR,
-  CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_LIST,
   CMD_BOOKMARK_MANAGE,
@@ -30,8 +29,10 @@ import {
   CMD_CONTEXT_EDITOR_SAVE_BOOKMARK,
   CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH,
   CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH,
+  CMD_CONTEXT_EXPLORER_BIND,
   CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH,
   CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH,
+  CMD_CONTEXT_EXPLORER_UNBIND,
   CMD_CONTEXT_TERMINAL_BIND,
   CMD_CONTEXT_TERMINAL_UNBIND,
   CMD_GO_TO_RANGELINK,
@@ -125,11 +126,21 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   const bindToTerminalHandler = async () => {
-    await destinationManager.bind('terminal');
+    await destinationManager.bind({ type: 'terminal' });
   };
 
-  const bindToTextEditorHandler = async () => {
-    await destinationManager.bind('text-editor');
+  const bindToTextEditorHandler = async (uri?: unknown) => {
+    if (uri) {
+      const editor = await vscode.window.showTextDocument(uri as vscode.Uri);
+      await destinationManager.bind({ type: 'text-editor', editor });
+    } else {
+      const editor = ideAdapter.activeTextEditor;
+      if (!editor) {
+        ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
+        return;
+      }
+      await destinationManager.bind({ type: 'text-editor', editor });
+    }
   };
 
   const bookmarkService = new BookmarkService(
@@ -286,9 +297,6 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BIND_TO_TEXT_EDITOR, bindToTextEditorHandler),
   );
-  context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_BIND_TO_TEXT_EDITOR_HERE, bindToTextEditorHandler),
-  );
 
   // Register AI assistant destination binding commands
   // Both commands are always registered to make them discoverable in Command Palette
@@ -302,7 +310,7 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         return;
       }
-      await destinationManager.bind('cursor-ai');
+      await destinationManager.bind({ type: 'cursor-ai' });
     }),
   );
 
@@ -314,7 +322,7 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         return;
       }
-      await destinationManager.bind('claude-code');
+      await destinationManager.bind({ type: 'claude-code' });
     }),
   );
 
@@ -326,7 +334,7 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         return;
       }
-      await destinationManager.bind('github-copilot-chat');
+      await destinationManager.bind({ type: 'github-copilot-chat' });
     }),
   );
 
@@ -443,6 +451,18 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_TERMINAL_UNBIND, () => {
+      destinationManager.unbind();
+    }),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_BIND, async (uri) => {
+      const editor = await vscode.window.showTextDocument(uri as vscode.Uri);
+      await destinationManager.bind({ type: 'text-editor', editor });
+    }),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_UNBIND, () => {
       destinationManager.unbind();
     }),
   );

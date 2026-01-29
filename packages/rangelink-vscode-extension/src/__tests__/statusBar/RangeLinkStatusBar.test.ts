@@ -276,7 +276,7 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('binds and jumps when item with destinationType is selected', async () => {
-      mockDestinationManager.bindAndJump.mockResolvedValue(true);
+      mockDestinationManager.bindAndJumpByType.mockResolvedValue(true);
       showQuickPickMock.mockResolvedValue({
         label: '    $(arrow-right) Terminal',
         destinationType: 'terminal',
@@ -291,7 +291,7 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
-      expect(mockDestinationManager.bindAndJump).toHaveBeenCalledWith('terminal');
+      expect(mockDestinationManager.bindAndJumpByType).toHaveBeenCalledWith('terminal');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
@@ -303,7 +303,7 @@ describe('RangeLinkStatusBar', () => {
     });
 
     it('logs failure when bindAndJump fails', async () => {
-      mockDestinationManager.bindAndJump.mockResolvedValue(false);
+      mockDestinationManager.bindAndJumpByType.mockResolvedValue(false);
       showQuickPickMock.mockResolvedValue({
         label: '    $(arrow-right) Terminal',
         destinationType: 'terminal',
@@ -318,7 +318,7 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
-      expect(mockDestinationManager.bindAndJump).toHaveBeenCalledWith('terminal');
+      expect(mockDestinationManager.bindAndJumpByType).toHaveBeenCalledWith('terminal');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
@@ -343,7 +343,7 @@ describe('RangeLinkStatusBar', () => {
       await statusBar.openMenu();
 
       expect(executeCommandMock).not.toHaveBeenCalled();
-      expect(mockDestinationManager.bindAndJump).not.toHaveBeenCalled();
+      expect(mockDestinationManager.bindAndJumpByType).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: nonActionableItem },
         'Non-actionable item selected',
@@ -363,7 +363,7 @@ describe('RangeLinkStatusBar', () => {
       await statusBar.openMenu();
 
       expect(executeCommandMock).not.toHaveBeenCalled();
-      expect(mockDestinationManager.bindAndJump).not.toHaveBeenCalled();
+      expect(mockDestinationManager.bindAndJumpByType).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'RangeLinkStatusBar.openMenu' },
         'User dismissed menu',
@@ -389,7 +389,7 @@ describe('RangeLinkStatusBar', () => {
       await statusBar.openMenu();
 
       expect(executeCommandMock).not.toHaveBeenCalled();
-      expect(mockDestinationManager.bindAndJump).not.toHaveBeenCalled();
+      expect(mockDestinationManager.bindAndJumpByType).not.toHaveBeenCalled();
       expect(mockBookmarkService.pasteBookmark).toHaveBeenCalledWith('bookmark-1');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
