@@ -91,21 +91,22 @@ export const generateLinkFromSelections = (
     return ExtensionResult.err(error);
   }
 
-  let inputSelection;
-  try {
-    inputSelection = toInputSelection(document, selections, logger);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to process selection';
-    logger.error({ fn: FN_NAME, error }, 'Failed to convert selections to InputSelection');
+  const inputSelectionResult = toInputSelection(document, selections, logger);
+  if (!inputSelectionResult.success) {
+    logger.error(
+      { fn: FN_NAME, error: inputSelectionResult.error },
+      'Failed to convert selections to InputSelection',
+    );
     return ExtensionResult.err(
       new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.GENERATE_LINK_SELECTION_CONVERSION_FAILED,
-        message,
+        message: inputSelectionResult.error.message,
         functionName: FN_NAME,
-        cause: error instanceof Error ? error : undefined,
+        cause: inputSelectionResult.error,
       }),
     );
   }
+  const inputSelection = inputSelectionResult.value;
 
   const formatOptions: FormatOptions = { linkType };
   const result = formatLink(referencePath, inputSelection, delimiters, formatOptions);
