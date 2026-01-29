@@ -231,9 +231,9 @@ describe('generateLinkFromSelections', () => {
         functionName: 'toInputSelection',
       });
 
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue(
-        ExtensionResult.err(conversionError),
-      );
+      jest
+        .spyOn(toInputSelectionModule, 'toInputSelection')
+        .mockReturnValue(ExtensionResult.err(conversionError));
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
