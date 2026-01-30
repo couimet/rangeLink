@@ -22,6 +22,14 @@ inputs:
     description: 'Allow linting to fail without blocking CI'
     required: false
     default: 'false'
+  lint-changed-only:
+    description: 'Only lint files changed in the PR (strict mode on changed files)'
+    required: false
+    default: 'false'
+  base-ref:
+    description: 'Base branch for changed file comparison (default: main)'
+    required: false
+    default: 'main'
   allow-types-failure:
     description: 'Allow type checking to fail without blocking CI'
     required: false
@@ -43,11 +51,27 @@ runs:
           fi
         fi
 
-    - name: Run ESLint
-      if: inputs.skip-lint != 'true'
+    - name: Run ESLint (changed files only)
+      if: inputs.skip-lint != 'true' && inputs.lint-changed-only == 'true'
+      shell: bash
+      env:
+        BASE_REF: ${{ inputs.base-ref }}
+      run: |
+        echo "Running linter on changed files only (strict mode)..."
+        CHANGED_FILES=$(git diff --name-only --diff-filter=d origin/${BASE_REF}...HEAD -- '*.ts' '*.tsx' || true)
+        if [ -z "$CHANGED_FILES" ]; then
+          echo "No TypeScript files changed - skipping lint"
+        else
+          echo "Linting changed files:"
+          echo "$CHANGED_FILES"
+          echo "$CHANGED_FILES" | xargs pnpm eslint
+        fi
+
+    - name: Run ESLint (all files)
+      if: inputs.skip-lint != 'true' && inputs.lint-changed-only != 'true'
       shell: bash
       run: |
-        echo "Running linter..."
+        echo "Running linter on all files..."
         if ! pnpm lint; then
           if [ "${{ inputs.allow-lint-failure }}" = "true" ]; then
             echo "::warning::Linting found issues (allowed to fail)"

@@ -20,6 +20,7 @@
     "install-local:vscode-extension:cursor": "pnpm --filter rangelink-vscode-extension install-local:cursor",
     "install-local:vscode-extension:vscode": "pnpm --filter rangelink-vscode-extension install-local:vscode",
     "lint": "eslint .",
+    "lint:changed": "git diff --name-only --diff-filter=d origin/${BASE_REF:-main}...HEAD -- '*.ts' '*.tsx' | xargs -r eslint",
     "lint:fix": "eslint . --fix",
     "package:prepare": "pnpm clean:all && pnpm install",
     "package:vscode-extension": "pnpm --filter rangelink-vscode-extension clean && pnpm --filter rangelink-vscode-extension compile && pnpm --filter rangelink-vscode-extension test && pnpm --filter rangelink-vscode-extension package",
