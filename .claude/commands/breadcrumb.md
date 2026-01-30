@@ -29,7 +29,7 @@ git branch --show-current
 
 **If $ARGUMENTS is empty or whitespace:**
 
-- Print: "Usage: /breadcrumb <note text>"
+- Print: "Usage: /breadcrumb `<note text>`"
 - STOP
 
 ## Step 3: Append Breadcrumb
@@ -50,19 +50,19 @@ git branch --show-current
 <note text>
 ```
 
-Where `<TIMESTAMP>` is the current date/time in format `YYYY-MM-DD HH:MM`.
+Where `<TIMESTAMP>` is the current date/time in format `YYYY-MM-DD HH:MM:SS`.
 
 Use bash to get timestamp and append:
 
 ```bash
-date "+%Y-%m-%d %H:%M"
+date "+%Y-%m-%d %H:%M:%S"
 ```
 
 ## Step 4: Confirm
 
 Print a brief confirmation:
 
-```
+```text
 🥖 Breadcrumb dropped in .breadcrumbs/<NUMBER>.md
 ```
 
