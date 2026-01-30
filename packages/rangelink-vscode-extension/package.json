@@ -126,12 +126,6 @@
         "icon": "$(link)"
       },
       {
-        "command": "rangelink.bindToTextEditorHere",
-        "title": "Bind Here",
-        "category": "RangeLink",
-        "icon": "$(link)"
-      },
-      {
         "command": "rangelink.bindToCursorAI",
         "title": "Bind to Cursor AI",
         "category": "RangeLink",
@@ -207,6 +201,11 @@
         "enablement": "editorIsOpen"
       },
       {
+        "command": "rangelink.explorer.bind",
+        "title": "RangeLink: Bind Here",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.explorer.pasteFilePath",
         "title": "RangeLink: Paste File Path",
         "icon": "$(file-symlink-file)"
@@ -215,6 +214,11 @@
         "command": "rangelink.explorer.pasteRelativeFilePath",
         "title": "RangeLink: Paste Relative File Path",
         "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "rangelink.explorer.unbind",
+        "title": "RangeLink: Unbind Destination",
+        "icon": "$(link)"
       },
       {
         "command": "rangelink.editorTab.pasteFilePath",
@@ -474,10 +478,6 @@
           "when": "false"
         },
         {
-          "command": "rangelink.bindToTextEditorHere",
-          "when": "false"
-        },
-        {
           "command": "rangelink.pasteFileAbsolutePath",
           "when": "false"
         },
@@ -486,11 +486,19 @@
           "when": "false"
         },
         {
+          "command": "rangelink.explorer.bind",
+          "when": "false"
+        },
+        {
           "command": "rangelink.explorer.pasteFilePath",
           "when": "false"
         },
         {
           "command": "rangelink.explorer.pasteRelativeFilePath",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.explorer.unbind",
           "when": "false"
         },
         {
@@ -628,6 +636,16 @@
         {
           "command": "rangelink.explorer.pasteRelativeFilePath",
           "group": "6_copypath@101"
+        },
+        {
+          "command": "rangelink.explorer.bind",
+          "group": "6_copypath@102",
+          "when": "explorerResourceIsFolder == false"
+        },
+        {
+          "command": "rangelink.explorer.unbind",
+          "group": "6_copypath@103",
+          "when": "rangelink.isBound && explorerResourceIsFolder == false"
         }
       ],
       "terminal/title/context": [

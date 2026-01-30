@@ -558,7 +558,6 @@ describe('Extension lifecycle', () => {
       'rangelink.bindToTerminal',
       'rangelink.bindToTerminalHere',
       'rangelink.bindToTextEditor',
-      'rangelink.bindToTextEditorHere',
       'rangelink.bookmark.add',
       'rangelink.bookmark.list',
       'rangelink.bookmark.manage',
@@ -580,8 +579,10 @@ describe('Extension lifecycle', () => {
       'rangelink.editorContext.saveBookmark',
       'rangelink.editorTab.pasteFilePath',
       'rangelink.editorTab.pasteRelativeFilePath',
+      'rangelink.explorer.bind',
       'rangelink.explorer.pasteFilePath',
       'rangelink.explorer.pasteRelativeFilePath',
+      'rangelink.explorer.unbind',
       'rangelink.goToRangeLink',
       'rangelink.handleDocumentLinkClick',
       'rangelink.jumpToBoundDestination',
@@ -629,7 +630,7 @@ describe('Extension lifecycle', () => {
 
     const INFRASTRUCTURE_COUNT = 2;
     const PROVIDER_COUNT = 2;
-    const COMMAND_COUNT = 43;
+    const COMMAND_COUNT = 44;
     const DESTINATION_MANAGER_LISTENERS = 2;
     const EXPECTED_SUBSCRIPTION_COUNT =
       INFRASTRUCTURE_COUNT + PROVIDER_COUNT + COMMAND_COUNT + DESTINATION_MANAGER_LISTENERS;

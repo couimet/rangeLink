@@ -85,7 +85,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     }
 
     if (selected.destinationType) {
-      const success = await this.destinationManager.bindAndJump(selected.destinationType);
+      const success = await this.destinationManager.bindAndJumpByType(selected.destinationType);
       this.logger.debug(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected, bindAndJumpSuccess: success },
         'Destination item selected',

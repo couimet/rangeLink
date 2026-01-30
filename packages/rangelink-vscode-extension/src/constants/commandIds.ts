@@ -10,7 +10,6 @@ export const CMD_BIND_TO_GITHUB_COPILOT_CHAT = 'rangelink.bindToGitHubCopilotCha
 export const CMD_BIND_TO_TERMINAL = 'rangelink.bindToTerminal';
 export const CMD_BIND_TO_TERMINAL_HERE = 'rangelink.bindToTerminalHere';
 export const CMD_BIND_TO_TEXT_EDITOR = 'rangelink.bindToTextEditor';
-export const CMD_BIND_TO_TEXT_EDITOR_HERE = 'rangelink.bindToTextEditorHere';
 export const CMD_BOOKMARK_ADD = 'rangelink.bookmark.add';
 export const CMD_BOOKMARK_LIST = 'rangelink.bookmark.list';
 export const CMD_BOOKMARK_MANAGE = 'rangelink.bookmark.manage';
@@ -30,9 +29,11 @@ export const CMD_CONTEXT_EDITOR_SAVE_BOOKMARK = 'rangelink.editorContext.saveBoo
 export const CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH = 'rangelink.editorTab.pasteFilePath';
 export const CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH =
   'rangelink.editorTab.pasteRelativeFilePath';
+export const CMD_CONTEXT_EXPLORER_BIND = 'rangelink.explorer.bind';
 export const CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH = 'rangelink.explorer.pasteFilePath';
 export const CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH =
   'rangelink.explorer.pasteRelativeFilePath';
+export const CMD_CONTEXT_EXPLORER_UNBIND = 'rangelink.explorer.unbind';
 export const CMD_CONTEXT_TERMINAL_BIND = 'rangelink.terminal.bind';
 export const CMD_CONTEXT_TERMINAL_UNBIND = 'rangelink.terminal.unbind';
 export const CMD_COPY_LINK_ABSOLUTE = 'rangelink.copyLinkWithAbsolutePath';
