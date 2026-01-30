@@ -480,6 +480,7 @@ describe('VscodeAdapter', () => {
       ).toThrowRangeLinkExtensionError('UNKNOWN_FOCUS_TYPE', {
         message: 'Unknown focus type: invalid-focus-type',
         functionName: 'VscodeAdapter.showTerminal',
+        details: { focusType: 'invalid-focus-type' },
       });
     });
   });

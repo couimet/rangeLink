@@ -573,6 +573,10 @@ describe('parseLink', () => {
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
+          details: {
+            link: 'file.ts#',
+            delimiters: { line: 'L', position: 'C', hash: '#', range: '-' },
+          },
         });
       });
 
@@ -582,6 +586,10 @@ describe('parseLink', () => {
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
+          details: {
+            link: 'file.ts#L',
+            delimiters: { line: 'L', position: 'C', hash: '#', range: '-' },
+          },
         });
       });
 
@@ -591,6 +599,10 @@ describe('parseLink', () => {
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
+          details: {
+            link: 'file.ts#L10_L20',
+            delimiters: { line: 'L', position: 'C', hash: '#', range: '-' },
+          },
         });
       });
 
@@ -600,6 +612,10 @@ describe('parseLink', () => {
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
+          details: {
+            link: 'file.ts#L10C',
+            delimiters: { line: 'L', position: 'C', hash: '#', range: '-' },
+          },
         });
       });
 
@@ -609,6 +625,10 @@ describe('parseLink', () => {
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
+          details: {
+            link: 'file.ts#L10-L20C',
+            delimiters: { line: 'L', position: 'C', hash: '#', range: '-' },
+          },
         });
       });
     });
@@ -625,12 +645,15 @@ describe('parseLink', () => {
       });
 
       it('should reject negative line number', () => {
-        // Note: Regex won't match negative numbers, so this becomes INVALID_RANGE_FORMAT
         const result = parseLink('file.ts#L-5');
 
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
           functionName: 'parseLink',
+          details: {
+            link: 'file.ts#L-5',
+            delimiters: { line: 'L', position: 'C', hash: '#', range: '-' },
+          },
         });
       });
     });

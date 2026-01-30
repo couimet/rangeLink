@@ -392,6 +392,7 @@ describe('computeRangeSpec', () => {
       expect(result).toBeRangeLinkErrorErr('SELECTION_EMPTY', {
         message: 'Selections array must not be empty',
         functionName: 'validateInputSelection',
+        details: { selectionsLength: 0 },
       });
     });
 

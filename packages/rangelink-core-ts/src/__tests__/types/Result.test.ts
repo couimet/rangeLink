@@ -382,6 +382,7 @@ describe('Result Value Object', () => {
           {
             message: 'Result marked as success cannot have an error defined',
             functionName: 'Result.constructor',
+            details: { success: true, hasValue: true, hasError: true },
           },
         );
       });
@@ -406,6 +407,7 @@ describe('Result Value Object', () => {
           {
             message: 'Result marked as error cannot have a value defined',
             functionName: 'Result.constructor',
+            details: { success: false, hasValue: true, hasError: true },
           },
         );
       });
