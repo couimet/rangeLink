@@ -119,7 +119,7 @@ The PR description MUST follow this template:
 
 ### PR Description Rules
 
-- **NEVER** reference `.scratchpads/` or `.claude-questions/` files
+- **NEVER** reference `.scratchpads/`, `.claude-questions/`, or `.breadcrumbs/` files
 - These are local/ephemeral and inaccessible from GitHub
 - Capture all relevant information directly in the PR body
 

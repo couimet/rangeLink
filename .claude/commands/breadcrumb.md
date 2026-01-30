@@ -63,7 +63,7 @@ date "+%Y-%m-%d %H:%M:%S"
 Print a brief confirmation:
 
 ```text
-🥖 Breadcrumb dropped in .breadcrumbs/<NUMBER>.md
+🍞 Breadcrumb dropped in .breadcrumbs/<NUMBER>.md
 ```
 
 Do NOT print the full file contents—keep it minimal.
