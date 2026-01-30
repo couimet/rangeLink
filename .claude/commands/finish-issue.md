@@ -97,8 +97,8 @@ The PR description MUST follow this template:
 
 ## Key Discoveries (if breadcrumbs exist)
 
-- Notable findings from `.breadcrumbs/<NUMBER>.md`
-- Decisions made and why
+- [Notable finding that shaped the approach]
+- [Key decision made and rationale]
 - (Omit this section if no breadcrumbs)
 
 ## Test Plan
