@@ -30,8 +30,11 @@ jobs:
       - name: Check formatting and linting
         uses: ./.github/actions/check-formatting
         with:
-          # Temporarily allow lint failures while progressively fixing issues
-          allow-lint-failure: 'true'
+          # For PRs: strict lint on changed files only
+          # For pushes to main: informational lint on all files
+          lint-changed-only: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
+          base-ref: ${{ github.base_ref || 'main' }}
+          allow-lint-failure: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
 
       - name: Run tests with coverage
         uses: ./.github/actions/run-tests
