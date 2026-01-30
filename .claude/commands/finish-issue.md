@@ -68,9 +68,12 @@ Check if documentation updates are needed:
 
 Collect information from:
 
+- Breadcrumbs file (if exists): `.breadcrumbs/<NUMBER>.md`
 - Scratchpads matching `*issue-<NUMBER>*`: `ls .scratchpads/*issue-<NUMBER>*`
 - Commit messages: `git log --oneline origin/main..HEAD`
 - Commit details: `git log origin/main..HEAD`
+
+**Breadcrumbs** capture key discoveries and decisions made during implementation. If present, incorporate highlights into the PR description.
 
 ### 5. Generate PR Description Scratchpad
 
@@ -92,6 +95,12 @@ The PR description MUST follow this template:
 - Omit file lists (PR shows modified files)
 - Group related changes
 
+## Key Discoveries (if breadcrumbs exist)
+
+- [Notable finding that shaped the approach]
+- [Key decision made and rationale]
+- (Omit this section if no breadcrumbs)
+
 ## Test Plan
 
 - [ ] All existing tests pass
@@ -110,7 +119,7 @@ The PR description MUST follow this template:
 
 ### PR Description Rules
 
-- **NEVER** reference `.scratchpads/` or `.claude-questions/` files
+- **NEVER** reference `.scratchpads/`, `.claude-questions/`, or `.breadcrumbs/` files
 - These are local/ephemeral and inaccessible from GitHub
 - Capture all relevant information directly in the PR body
 

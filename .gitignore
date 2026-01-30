@@ -30,6 +30,7 @@ packages/*/icon_large.png
 .claude/settings.local.json
 
 # Folders where Claude Code is told to create and manage working documents
+.breadcrumbs/
 .claude-questions/
 .commit-msgs/
 .scratchpads/
