@@ -767,6 +767,7 @@
 Is it a question needing user answer? → .claude-questions/NNNN-description.txt
 Is it a commit message draft?        → .commit-msgs/NNNN-description.txt
 Is it a temporary working document?  → .scratchpads/NNNN-description.txt
+Is it a note during issue work?      → /breadcrumb command (creates .breadcrumbs/<ISSUE>.md)
 Is it permanent documentation?       → docs/ or package README
 ```
 </file-placement-decision-tree>
