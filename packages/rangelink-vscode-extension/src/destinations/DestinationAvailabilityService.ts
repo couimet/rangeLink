@@ -119,17 +119,17 @@ export class DestinationAvailabilityService {
       switch (type) {
         case 'text-editor': {
           const textEditorEligibility = isTextEditorDestinationEligible(this.ideAdapter);
-          if (textEditorEligibility.eligible) {
-            const displayName = `${displayNames['text-editor']} ("${textEditorEligibility.filename}")`;
-            result['text-editor'] = [
-              {
-                label: displayName,
-                displayName,
-                bindOptions: { type: 'text-editor' },
-                itemKind: 'bindable',
-              },
-            ];
-          }
+          if (!textEditorEligibility.eligible) break;
+
+          const displayName = `${displayNames['text-editor']} ("${textEditorEligibility.filename}")`;
+          result['text-editor'] = [
+            {
+              label: displayName,
+              displayName,
+              bindOptions: { type: 'text-editor' },
+              itemKind: 'bindable',
+            },
+          ];
           break;
         }
 
