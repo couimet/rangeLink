@@ -54,6 +54,8 @@ export default [
     rules: {
       ...js.configs.recommended.rules,
       ...tsPlugin.configs.recommended.rules,
+      // Disable base rule - TS version requires type-aware linting to recognize type+const companion pattern
+      'no-redeclare': 'off',
       'import/order': [
         'error',
         {
