@@ -55,7 +55,10 @@ export default [
     rules: {
       ...js.configs.recommended.rules,
       ...tsPlugin.configs.recommended.rules,
-      // Disable base rule - TS version requires type-aware linting to recognize type+const companion pattern
+      // Disable base no-redeclare: @typescript-eslint/no-redeclare requires type-aware linting
+      // (project: true) to recognize valid type+const companion patterns. Without it, the TS rule
+      // still flags valid code. TypeScript compiler catches actual redeclarations at compile time,
+      // and typescript-eslint recommends NOT enabling this rule in TypeScript projects.
       'no-redeclare': 'off',
       'import/order': [
         'error',
