@@ -3,6 +3,16 @@ import { DelimiterConfig } from '../types/DelimiterConfig';
 import { escapeRegex } from './escapeRegex';
 
 /**
+ * URL exclusion patterns for RangeLink detection.
+ *
+ * These prevent web URLs from being matched as RangeLinks:
+ * - NOT_AFTER_URL_CHAR: Lookbehind to block matches mid-URL
+ * - NO_WEB_URL_SCHEME: Lookahead to block matches at URL scheme start
+ */
+const NOT_AFTER_URL_CHAR = '(?<![a-zA-Z0-9:/._?&=%~-])';
+const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
+
+/**
  * Builds a RegExp pattern for detecting RangeLinks in terminal output.
  *
  * The pattern detects links in the format supported by parseLink(), using
@@ -45,10 +55,20 @@ export const buildLinkPattern = (delimiters: DelimiterConfig): RegExp => {
   //   - Without lookahead: path="file.ts>", hash=">>" ❌
   //
   // Trade-off: Multi-char delimiters cannot appear in filenames
+  //
+  // URL exclusion (two-layer defense):
+  // 1. Pattern level: Negative lookbehind + lookahead prevents URLs from matching
+  //    - Lookbehind: Path must NOT be preceded by URL characters [a-zA-Z0-9:/.]
+  //      This stops matching at positions within a URL (e.g., 'ttps://...')
+  //    - Lookahead: Path must NOT start with http://, https://, or ftp://
+  //      This stops matching at the start of a URL
+  // 2. parseLink level: Rejects any path containing "://" (catches edge cases)
+  //
+  // Allowed: file://, domain-like paths (github.com/...), Windows paths (C:\...)
   const pathPattern =
     delimiters.hash.length === 1
-      ? '(\\S+?)' // Single-char: non-whitespace, non-greedy
-      : `((?:(?!${escapedHash})\\S)+)`; // Multi-char: non-whitespace excluding hash
+      ? `(${NOT_AFTER_URL_CHAR}${NO_WEB_URL_SCHEME}\\S+?)` // Single-char: URL exclusion + non-greedy
+      : `(${NOT_AFTER_URL_CHAR}${NO_WEB_URL_SCHEME}(?:(?!${escapedHash})\\S)+)`; // Multi-char: URL exclusion + no hash
 
   // Build complete pattern
   // Pattern: (path)(hash{1,2})(line)(digits)(optional: position)(optional: range)

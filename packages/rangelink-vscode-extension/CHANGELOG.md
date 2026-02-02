@@ -91,6 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Full-line navigation selection** - Fixed `#L10` selecting only first character instead of entire line. Full-line links (`#L10`, `#L10-L15`) now correctly select from start of first line to end of last line.
 - **Full-line link generation with newline** - Fixed link generation when selection includes trailing newline. Selecting "line 20 + newline" now correctly generates `#L20` instead of `#L20-L21`.
 - **Smart padding preserves whitespace-only text** - Fixed `applySmartPadding()` incorrectly trimming whitespace-only strings to empty. Now whitespace-only content is preserved when using paste destinations.
+- **Web URLs no longer hijacked as RangeLinks** - Fixed clickable links incorrectly capturing URLs like `https://example.com/path/file.ts#L10`, which caused "file not found" errors when clicked. HTTP, HTTPS, and FTP URLs are now properly ignored while local file paths continue to work. (#288)
 
 ## [1.0.0]
 
