@@ -566,6 +566,146 @@ describe('parseLink', () => {
       });
     });
 
+    describe('PARSE_URL_NOT_SUPPORTED', () => {
+      it('should reject https:// URLs', () => {
+        const result = parseLink('https://github.com/org/repo/blob/main/file.ts#L10');
+
+        expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
+          message: 'Web URLs are not supported - use local file paths',
+          functionName: 'parseLink',
+          details: { link: 'https://github.com/org/repo/blob/main/file.ts#L10' },
+        });
+      });
+
+      it('should reject http:// URLs', () => {
+        const result = parseLink('http://example.com/file.ts#L5');
+
+        expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
+          message: 'Web URLs are not supported - use local file paths',
+          functionName: 'parseLink',
+          details: { link: 'http://example.com/file.ts#L5' },
+        });
+      });
+
+      it('should reject ftp:// URLs', () => {
+        const result = parseLink('ftp://server.com/path/file.ts#L10');
+
+        expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
+          message: 'Web URLs are not supported - use local file paths',
+          functionName: 'parseLink',
+          details: { link: 'ftp://server.com/path/file.ts#L10' },
+        });
+      });
+
+      it('should accept file:// URLs (local file references)', () => {
+        const result = parseLink('file:///Users/name/file.ts#L10');
+
+        expect(result).toBeOkWith((value: ParsedLink) => {
+          expect(value).toStrictEqual({
+            path: 'file:///Users/name/file.ts',
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          });
+        });
+      });
+
+      it('should reject GitHub permalink with query params', () => {
+        const result = parseLink(
+          'https://github.com/nextjs/deploy-github-pages/blob/main/README.md?plain=1#L3-L9',
+        );
+
+        expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
+          message: 'Web URLs are not supported - use local file paths',
+          functionName: 'parseLink',
+          details: {
+            link: 'https://github.com/nextjs/deploy-github-pages/blob/main/README.md?plain=1#L3-L9',
+          },
+        });
+      });
+
+      it('should reject partial URL matches (ttps:// from shifted regex match)', () => {
+        const result = parseLink('ttps://github.com/file.ts#L10');
+
+        expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
+          message: 'Web URLs are not supported - use local file paths',
+          functionName: 'parseLink',
+          details: { link: 'ttps://github.com/file.ts#L10' },
+        });
+      });
+
+      it('should accept local paths that happen to contain colon', () => {
+        const result = parseLink('C:\\Users\\name\\file.ts#L10');
+
+        expect(result).toBeOkWith((value: ParsedLink) => {
+          expect(value).toStrictEqual({
+            path: 'C:\\Users\\name\\file.ts',
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          });
+        });
+      });
+
+      it('should accept domain-like paths (could be local directories)', () => {
+        const result = parseLink('github.com/org/repo/file.ts#L10');
+
+        expect(result).toBeOkWith((value: ParsedLink) => {
+          expect(value).toStrictEqual({
+            path: 'github.com/org/repo/file.ts',
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          });
+        });
+      });
+
+      it('should accept paths with dot that are not domains (./relative/path)', () => {
+        const result = parseLink('./relative/path.ts#L10');
+
+        expect(result).toBeOkWith((value: ParsedLink) => {
+          expect(value).toStrictEqual({
+            path: './relative/path.ts',
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          });
+        });
+      });
+
+      it('should accept paths that look like domains but have leading slash', () => {
+        const result = parseLink('/github.com/local/file.ts#L10');
+
+        expect(result).toBeOkWith((value: ParsedLink) => {
+          expect(value).toStrictEqual({
+            path: '/github.com/local/file.ts',
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          });
+        });
+      });
+
+      it('should accept files with dots that are not domains', () => {
+        const result = parseLink('my.config.ts#L10');
+
+        expect(result).toBeOkWith((value: ParsedLink) => {
+          expect(value).toStrictEqual({
+            path: 'my.config.ts',
+            start: { line: 10 },
+            end: { line: 10 },
+            linkType: 'regular',
+            selectionType: 'Normal',
+          });
+        });
+      });
+    });
+
     describe('PARSE_INVALID_RANGE_FORMAT', () => {
       it('should reject hash without line number', () => {
         const result = parseLink('file.ts#');

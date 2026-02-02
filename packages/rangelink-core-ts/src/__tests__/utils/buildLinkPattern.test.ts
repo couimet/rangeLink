@@ -368,6 +368,118 @@ describe('buildLinkPattern', () => {
     });
   });
 
+  describe('URL handling', () => {
+    const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+    describe('web URLs are excluded at pattern level', () => {
+      it('should NOT match https:// URLs', () => {
+        const line = 'Check https://github.com/org/repo/file.ts#L10';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(0);
+      });
+
+      it('should NOT match http:// URLs', () => {
+        const line = 'See http://example.com/file.ts#L5 for details';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(0);
+      });
+
+      it('should NOT match ftp:// URLs', () => {
+        const line = 'Download from ftp://server.com/file.ts#L10';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(0);
+      });
+
+      it('should NOT match HTTPS:// URLs (uppercase)', () => {
+        const line = 'Check HTTPS://GITHUB.COM/FILE.TS#L10';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(0);
+      });
+
+      it('should NOT match GitHub permalinks with query params', () => {
+        const line =
+          'https://github.com/nextjs/deploy-github-pages/blob/main/README.md?plain=1#L3-L9';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(0);
+      });
+
+      it('should match only local link when line has both URL and local link', () => {
+        const line = 'Compare https://github.com/file.ts#L5 with local.ts#L10';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('local.ts#L10');
+      });
+    });
+
+    describe('file:// URLs are allowed (local file references)', () => {
+      it('should match file:// URLs', () => {
+        const line = 'Open file:///Users/name/file.ts#L10';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file:///Users/name/file.ts#L10');
+      });
+    });
+
+    describe('domain-like paths are allowed (could be local directories)', () => {
+      it('should match github.com/... paths (could be local directory)', () => {
+        const line = 'Check github.com/org/repo/file.ts#L10';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('github.com/org/repo/file.ts#L10');
+      });
+
+      it('should match example.io/... paths', () => {
+        const line = 'See example.io/path/file.ts#L5';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('example.io/path/file.ts#L5');
+      });
+    });
+
+    describe('local paths', () => {
+      it('should match Windows paths with drive letters', () => {
+        const line = 'Check C:\\Users\\name\\file.ts#L10';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('C:\\Users\\name\\file.ts#L10');
+      });
+
+      it('should match local paths that look like domains but have leading dot or slash', () => {
+        const line = 'See ./github.com/local/file.ts#L10';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('./github.com/local/file.ts#L10');
+      });
+
+      it('should match absolute local paths', () => {
+        const line = 'Check /Users/name/project/file.ts#L42';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('/Users/name/project/file.ts#L42');
+      });
+
+      it('should match paths with HTTP-like names (HttpClient.ts)', () => {
+        const line = 'See HttpClient.ts#L10 for the implementation';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('HttpClient.ts#L10');
+      });
+    });
+  });
+
   describe('edge cases', () => {
     it('should match link at start of line', () => {
       const pattern = buildLinkPattern(DEFAULT_DELIMITERS);

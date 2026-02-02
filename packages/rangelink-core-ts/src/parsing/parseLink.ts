@@ -58,6 +58,21 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
     );
   }
 
+  // Reject web URLs - RangeLink should not hijack browser/terminal URL handling
+  // Check for :// anywhere in the link to catch both full URLs and partial matches
+  // (e.g., 'ttps://...' from regex matching at position 1 of 'https://...')
+  // Exception: file:// URLs are allowed (they're valid local file references)
+  if (link.includes('://') && !/^file:\/\//i.test(link)) {
+    return CoreResult.err(
+      new RangeLinkError({
+        code: RangeLinkErrorCodes.PARSE_URL_NOT_SUPPORTED,
+        message: 'Web URLs are not supported - use local file paths',
+        functionName: 'parseLink',
+        details: { link },
+      }),
+    );
+  }
+
   // Determine which delimiters to use and log accordingly
   const useFallback = delimiters === undefined;
   const activeDelimiters = useFallback ? DEFAULT_DELIMITERS : delimiters;
