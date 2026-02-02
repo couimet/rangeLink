@@ -224,7 +224,12 @@ describe('PasteDestinationManager', () => {
     it('should bind to terminal successfully', async () => {
       const result = await manager.bind({ type: 'terminal', terminal: mockTerminal });
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Terminal ("bash")',
+          destinationType: 'terminal',
+        });
+      });
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Terminal ("bash")',
@@ -232,7 +237,7 @@ describe('PasteDestinationManager', () => {
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
-          fn: 'PasteDestinationManager.bindTerminalWithReference',
+          fn: 'bindTerminal',
           displayName: 'Terminal ("bash")',
           terminalName: 'bash',
         },
@@ -279,7 +284,11 @@ describe('PasteDestinationManager', () => {
       // Try binding again to same destination
       const result = await controlledManager.bind({ type: 'terminal', terminal: mockTerminal });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Already bound to same destination',
+        functionName: 'PasteDestinationManager.bindTerminal',
+        details: { reason: 'ALREADY_BOUND_TO_SAME' },
+      });
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
         destinationName: 'Terminal ("bash")',
       });
@@ -300,7 +309,12 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ type: 'terminal', terminal: customTerminal });
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Terminal ("zsh")',
+          destinationType: 'terminal',
+        });
+      });
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Terminal ("zsh")',
         3000,
@@ -316,7 +330,12 @@ describe('PasteDestinationManager', () => {
 
       const result = await localManager.bind({ type: 'cursor-ai' });
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Cursor AI Assistant',
+          destinationType: 'cursor-ai',
+        });
+      });
       expect(localManager.isBound()).toBe(true);
       expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Cursor AI Assistant',
@@ -331,7 +350,11 @@ describe('PasteDestinationManager', () => {
       // Mock non-Cursor IDE (already configured in beforeEach as non-Cursor)
       const result = await manager.bind({ type: 'cursor-ai' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Cursor AI Assistant not available',
+        functionName: 'PasteDestinationManager.bindGenericDestination',
+        details: { reason: 'DESTINATION_NOT_AVAILABLE' },
+      });
       expect(manager.isBound()).toBe(false);
 
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_CURSOR_AI_NOT_AVAILABLE');
@@ -348,7 +371,11 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ type: 'claude-code' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Claude Code Chat not available',
+        functionName: 'PasteDestinationManager.bindGenericDestination',
+        details: { reason: 'DESTINATION_NOT_AVAILABLE' },
+      });
       expect(manager.isBound()).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_CLAUDE_CODE_NOT_AVAILABLE');
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
@@ -363,7 +390,12 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ type: 'claude-code' });
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Claude Code Chat',
+          destinationType: 'claude-code',
+        });
+      });
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Claude Code Chat',
@@ -378,7 +410,12 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ type: 'github-copilot-chat' });
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'GitHub Copilot Chat',
+          destinationType: 'github-copilot-chat',
+        });
+      });
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to GitHub Copilot Chat',
@@ -400,7 +437,11 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ type: 'github-copilot-chat' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'GitHub Copilot Chat not available',
+        functionName: 'PasteDestinationManager.bindGenericDestination',
+        details: { reason: 'DESTINATION_NOT_AVAILABLE' },
+      });
       expect(manager.isBound()).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE');
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
@@ -419,7 +460,11 @@ describe('PasteDestinationManager', () => {
       // Try binding again to same destination
       const result = await localManager.bind({ type: 'cursor-ai' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Already bound to same destination',
+        functionName: 'PasteDestinationManager.bindGenericDestination',
+        details: { reason: 'ALREADY_BOUND_TO_SAME' },
+      });
       expect(localAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
         'RangeLink: Already bound to Cursor AI Assistant',
       );
@@ -445,7 +490,11 @@ describe('PasteDestinationManager', () => {
       // Try binding again to same destination
       const result = await manager.bind({ type: 'github-copilot-chat' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Already bound to same destination',
+        functionName: 'PasteDestinationManager.bindGenericDestination',
+        details: { reason: 'ALREADY_BOUND_TO_SAME' },
+      });
       expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
         'RangeLink: Already bound to GitHub Copilot Chat',
       );
@@ -466,7 +515,12 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ type: 'text-editor' });
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Text Editor ("file.ts")',
+          destinationType: 'text-editor',
+        });
+      });
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Text Editor ("file.ts")',
@@ -494,7 +548,11 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ type: 'text-editor' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Requires 2+ tab groups',
+        functionName: 'PasteDestinationManager.bindTextEditor',
+        details: { reason: 'REQUIRES_SPLIT_EDITOR' },
+      });
       expect(manager.isBound()).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT);
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
@@ -510,7 +568,11 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ type: 'text-editor' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'No active text editor',
+        functionName: 'PasteDestinationManager.bindTextEditor',
+        details: { reason: 'NO_ACTIVE_EDITOR' },
+      });
       expect(manager.isBound()).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR);
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
@@ -529,7 +591,11 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ type: 'text-editor' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Editor is read-only (scheme: git)',
+        functionName: 'PasteDestinationManager.bindTextEditor',
+        details: { reason: 'EDITOR_READ_ONLY' },
+      });
       expect(manager.isBound()).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_READ_ONLY, {
         scheme: 'git',
@@ -551,7 +617,11 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.bind({ type: 'text-editor' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Editor is a binary file',
+        functionName: 'PasteDestinationManager.bindTextEditor',
+        details: { reason: 'EDITOR_BINARY_FILE' },
+      });
       expect(manager.isBound()).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE, {
         fileName: testFileName,
@@ -581,7 +651,11 @@ describe('PasteDestinationManager', () => {
       // Try binding to Cursor AI
       const result = await localManager.bind({ type: 'cursor-ai' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'User cancelled binding replacement',
+        functionName: 'PasteDestinationManager.bindGenericDestination',
+        details: { reason: 'USER_CANCELLED_REPLACEMENT' },
+      });
       expectQuickPickConfirmation(showQuickPickMock, {
         currentDestination: 'Terminal ("bash")',
         newDestination: 'Cursor AI Assistant',
@@ -606,7 +680,11 @@ describe('PasteDestinationManager', () => {
       localAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       const result = await localManager.bind({ type: 'terminal', terminal: mockTerminal });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'User cancelled binding replacement',
+        functionName: 'PasteDestinationManager.bindTerminal',
+        details: { reason: 'USER_CANCELLED_REPLACEMENT' },
+      });
       expectQuickPickConfirmation(showQuickPickMock, {
         currentDestination: 'Cursor AI Assistant',
         newDestination: 'Terminal ("bash")',
@@ -632,7 +710,11 @@ describe('PasteDestinationManager', () => {
       // Try binding to GitHub Copilot Chat
       const result = await manager.bind({ type: 'github-copilot-chat' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'User cancelled binding replacement',
+        functionName: 'PasteDestinationManager.bindGenericDestination',
+        details: { reason: 'USER_CANCELLED_REPLACEMENT' },
+      });
       expectQuickPickConfirmation(showQuickPickMock, {
         currentDestination: 'Terminal ("bash")',
         newDestination: 'GitHub Copilot Chat',
@@ -671,7 +753,11 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       const result = await manager.bind({ type: 'terminal', terminal: mockTerminal });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'User cancelled binding replacement',
+        functionName: 'PasteDestinationManager.bindTerminal',
+        details: { reason: 'USER_CANCELLED_REPLACEMENT' },
+      });
       expectQuickPickConfirmation(showQuickPickMock, {
         currentDestination: 'GitHub Copilot Chat',
         newDestination: 'Terminal ("bash")',
@@ -700,7 +786,11 @@ describe('PasteDestinationManager', () => {
       // Try binding to GitHub Copilot Chat
       const result = await localManager.bind({ type: 'github-copilot-chat' });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'User cancelled binding replacement',
+        functionName: 'PasteDestinationManager.bindGenericDestination',
+        details: { reason: 'USER_CANCELLED_REPLACEMENT' },
+      });
       expectQuickPickConfirmation(showQuickPickMock, {
         currentDestination: 'Cursor AI Assistant',
         newDestination: 'GitHub Copilot Chat',
@@ -1435,6 +1525,7 @@ describe('PasteDestinationManager', () => {
         (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValue({
           label: 'Yes, replace',
           description: 'Switch from Terminal to Text Editor',
+          itemKind: 'confirm',
         });
 
         // Mock active terminal for first bind
@@ -1443,7 +1534,12 @@ describe('PasteDestinationManager', () => {
 
         // First bind: Bind to Terminal (normal bind)
         const firstBindResult = await manager.bind({ type: 'terminal', terminal: testTerminal });
-        expect(firstBindResult).toBe(true);
+        expect(firstBindResult).toBeOkWith((value) => {
+          expect(value).toStrictEqual({
+            destinationName: 'Terminal ("TestTerminal")',
+            destinationType: 'terminal',
+          });
+        });
         expect(manager.isBound()).toBe(true);
         expect(manager.getBoundDestination()?.id).toBe('terminal');
 
@@ -1482,7 +1578,12 @@ describe('PasteDestinationManager', () => {
         );
 
         // Assert: Bind succeeded
-        expect(secondBindResult).toBe(true);
+        expect(secondBindResult).toBeOkWith((value) => {
+          expect(value).toStrictEqual({
+            destinationName: 'Text Editor ("file.ts")',
+            destinationType: 'text-editor',
+          });
+        });
         expect(manager.isBound()).toBe(true);
         expect(manager.getBoundDestination()?.id).toBe('text-editor');
 
@@ -1522,7 +1623,12 @@ describe('PasteDestinationManager', () => {
 
         // First bind: Bind to Terminal
         const firstBindResult = await manager.bind({ type: 'terminal', terminal: testTerminal });
-        expect(firstBindResult).toBe(true);
+        expect(firstBindResult).toBeOkWith((value) => {
+          expect(value).toStrictEqual({
+            destinationName: 'Terminal ("TestTerminal")',
+            destinationType: 'terminal',
+          });
+        });
 
         // Reset status bar message mock to verify second bind doesn't show toast
         (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
@@ -1536,7 +1642,11 @@ describe('PasteDestinationManager', () => {
         const secondBindResult = await manager.bind({ type: 'text-editor' });
 
         // Assert: Bind failed (cancelled)
-        expect(secondBindResult).toBe(false);
+        expect(secondBindResult).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+          message: 'User cancelled binding replacement',
+          functionName: 'PasteDestinationManager.bindTextEditor',
+          details: { reason: 'USER_CANCELLED_REPLACEMENT' },
+        });
 
         // Assert: Still bound to Terminal
         expect(manager.isBound()).toBe(true);
@@ -1578,7 +1688,11 @@ describe('PasteDestinationManager', () => {
         const result = await manager.bind({ type: 'terminal', terminal: testTerminal });
 
         // Assert: Bind failed
-        expect(result).toBe(false);
+        expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+          message: 'Already bound to same destination',
+          functionName: 'PasteDestinationManager.bindTerminal',
+          details: { reason: 'ALREADY_BOUND_TO_SAME' },
+        });
 
         // Assert: Info message shown (not error) with actual terminal name
         expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
@@ -1608,7 +1722,12 @@ describe('PasteDestinationManager', () => {
         const result = await manager.bind({ type: 'terminal', terminal: testTerminal });
 
         // Assert: Bind succeeded
-        expect(result).toBe(true);
+        expect(result).toBeOkWith((value) => {
+          expect(value).toStrictEqual({
+            destinationName: 'Terminal ("TestTerminal")',
+            destinationType: 'terminal',
+          });
+        });
         expect(manager.isBound()).toBe(true);
 
         // Assert: Standard toast shown (no "Unbound..." prefix)
@@ -1660,7 +1779,11 @@ describe('PasteDestinationManager', () => {
         const result = await manager.bind({ type: 'text-editor' });
 
         // Assert: Bind failed (cancelled)
-        expect(result).toBe(false);
+        expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+          message: 'User cancelled binding replacement',
+          functionName: 'PasteDestinationManager.bindTextEditor',
+          details: { reason: 'USER_CANCELLED_REPLACEMENT' },
+        });
 
         // Assert: Still bound to Terminal
         expect(manager.isBound()).toBe(true);
@@ -1672,8 +1795,7 @@ describe('PasteDestinationManager', () => {
     });
   });
 
-  describe('jumpToBoundDestination()', () => {
-    // Mock factory and destinations for unit tests
+  describe('focusBoundDestination()', () => {
     let mockRegistryForJump: ReturnType<typeof createMockDestinationRegistry>;
     let mockEditorDest: PasteDestination;
     let mockEditorDestFocusSpy: jest.SpyInstance;
@@ -1697,117 +1819,56 @@ describe('PasteDestinationManager', () => {
         },
       });
 
-      mockAvailabilityService = createMockDestinationAvailabilityService();
-
-      // Recreate manager with mock factory
       manager = new PasteDestinationManager(
         mockContext,
         mockRegistryForJump,
-        mockAvailabilityService,
         mockAdapter,
         mockLogger,
       );
 
-      // Setup default 2 tab groups (required for text editor binding)
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
     });
 
     describe('when no destination bound', () => {
-      it('shows info message and returns false when no destinations available', async () => {
-        const result = await manager.jumpToBoundDestination();
+      it('returns error result with DESTINATION_NOT_BOUND code', async () => {
+        const result = await manager.focusBoundDestination();
 
-        expect(result).toBe(false);
-        expect(
-          mockAdapter.__getVscodeInstance().window.showInformationMessage,
-        ).toHaveBeenCalledWith(
-          'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind',
-          },
-          'No destination bound, showing quick pick',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind',
-          },
-          'No destinations available',
-        );
-      });
-
-      it('shows quick pick with available destinations', async () => {
-        const mockTerminal = createMockTerminal();
-        mockAvailabilityService.getAvailableDestinationItems.mockResolvedValueOnce([
-          { kind: 'terminal', terminal: mockTerminal, displayName: 'Terminal', isActive: true },
-          { kind: 'destination', destinationType: 'claude-code', displayName: 'Claude Code Chat' },
-        ]);
-        mockAdapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce(undefined);
-
-        await manager.jumpToBoundDestination();
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind',
-          },
-          'No destination bound, showing quick pick',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind',
-            availableCount: 2,
-          },
-          'Showing quick pick with 2 items',
-        );
-      });
-
-      it('returns false when user cancels quick pick', async () => {
-        const mockTerminal = createMockTerminal();
-        mockAvailabilityService.getAvailableDestinationItems.mockResolvedValueOnce([
-          { kind: 'terminal', terminal: mockTerminal, displayName: 'Terminal', isActive: true },
-        ]);
-        mockAdapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce(undefined);
-
-        const result = await manager.jumpToBoundDestination();
-
-        expect(result).toBe(false);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'PasteDestinationManager.showDestinationQuickPickAndJump::showDestinationQuickPickAndBind',
-          },
-          'User cancelled quick pick',
-        );
-      });
-
-      it('binds to selected terminal and focuses it', async () => {
-        const mockTerminal = createMockTerminal();
-        mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-        mockAvailabilityService.getAvailableDestinationItems.mockResolvedValueOnce([
-          { kind: 'terminal', terminal: mockTerminal, displayName: 'Terminal', isActive: true },
-        ]);
-        mockAdapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce({
-          label: '    $(terminal) Terminal',
-          itemKind: 'terminal',
-          terminal: mockTerminal,
+        expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_NOT_BOUND', {
+          message: 'No destination is currently bound',
+          functionName: 'PasteDestinationManager.focusBoundDestination',
         });
+      });
 
-        const result = await manager.jumpToBoundDestination();
+      it('does not call focus on any destination', async () => {
+        await manager.focusBoundDestination();
 
-        expect(result).toBe(true);
-        expect(manager.isBound()).toBe(true);
-        expect(mockTerminalDest.focus).toHaveBeenCalledTimes(1);
+        expect(mockTerminalDest.focus).not.toHaveBeenCalled();
+        expect(mockEditorDestFocusSpy).not.toHaveBeenCalled();
+        expect(mockCursorAIDest.focus).not.toHaveBeenCalled();
+        expect(mockClaudeCodeDest.focus).not.toHaveBeenCalled();
+      });
+
+      it('does not show status bar message', async () => {
+        await manager.focusBoundDestination();
+
+        expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
       });
     });
 
-    it('should focus bound terminal successfully', async () => {
+    it('focuses bound terminal and returns success result', async () => {
       const mockTerminal = createMockTerminal();
 
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       await manager.bind({ type: 'terminal', terminal: mockTerminal });
 
-      const result = await manager.jumpToBoundDestination();
+      const result = await manager.focusBoundDestination();
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Terminal',
+          destinationType: 'terminal',
+        });
+      });
       expect(mockTerminalDest.focus).toHaveBeenCalledTimes(1);
     });
 
@@ -1827,9 +1888,14 @@ describe('PasteDestinationManager', () => {
 
       await manager.bind({ type: 'text-editor' });
 
-      const result = await manager.jumpToBoundDestination();
+      const result = await manager.focusBoundDestination();
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Text Editor ("file.ts")',
+          destinationType: 'text-editor',
+        });
+      });
       expect(mockEditorDestFocusSpy).toHaveBeenCalledTimes(1);
     });
 
@@ -1842,9 +1908,14 @@ describe('PasteDestinationManager', () => {
       // Get the actual bound destination
       const boundDest = cursorManager.getBoundDestination()!;
 
-      const result = await cursorManager.jumpToBoundDestination();
+      const result = await cursorManager.focusBoundDestination();
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Cursor AI Assistant',
+          destinationType: 'cursor-ai',
+        });
+      });
       expect(boundDest.focus).toHaveBeenCalledTimes(1);
 
       cursorManager.dispose();
@@ -1859,9 +1930,14 @@ describe('PasteDestinationManager', () => {
 
       await manager.bind({ type: 'claude-code' });
 
-      const result = await manager.jumpToBoundDestination();
+      const result = await manager.focusBoundDestination();
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Claude Code Chat',
+          destinationType: 'claude-code',
+        });
+      });
       expect(mockClaudeCodeDest.focus).toHaveBeenCalledTimes(1);
     });
 
@@ -1871,9 +1947,14 @@ describe('PasteDestinationManager', () => {
 
       await manager.bind({ type: 'github-copilot-chat' });
 
-      const result = await manager.jumpToBoundDestination();
+      const result = await manager.focusBoundDestination();
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'GitHub Copilot Chat',
+          destinationType: 'github-copilot-chat',
+        });
+      });
       expect(mockDestination.focus).toHaveBeenCalledTimes(1);
     });
 
@@ -1886,9 +1967,13 @@ describe('PasteDestinationManager', () => {
       // Mock focus failure
       mockTerminalDest.focus.mockResolvedValueOnce(false);
 
-      const result = await manager.jumpToBoundDestination();
+      const result = await manager.focusBoundDestination();
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_FOCUS_FAILED', {
+        message: 'Failed to focus destination: Terminal',
+        functionName: 'PasteDestinationManager.focusBoundDestination',
+        details: { destinationType: 'terminal', displayName: 'Terminal' },
+      });
       expect(mockTerminalDest.focus).toHaveBeenCalledTimes(1);
     });
 
@@ -1902,7 +1987,7 @@ describe('PasteDestinationManager', () => {
       // Mock focus failure
       mockTerminalDest.focus.mockResolvedValueOnce(false);
 
-      await manager.jumpToBoundDestination();
+      await manager.focusBoundDestination();
 
       expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
         'RangeLink: Failed to focus Terminal',
@@ -1919,7 +2004,7 @@ describe('PasteDestinationManager', () => {
       // Clear bind's status bar message
       (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
 
-      await manager.jumpToBoundDestination();
+      await manager.focusBoundDestination();
 
       expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ Focused Terminal: "bash"',
@@ -1936,7 +2021,7 @@ describe('PasteDestinationManager', () => {
       // Clear logger calls from bind()
       jest.clearAllMocks();
 
-      await manager.jumpToBoundDestination();
+      await manager.focusBoundDestination();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
@@ -1968,7 +2053,7 @@ describe('PasteDestinationManager', () => {
       // Clear logger calls from bind()
       jest.clearAllMocks();
 
-      await manager.jumpToBoundDestination();
+      await manager.focusBoundDestination();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
@@ -1991,7 +2076,7 @@ describe('PasteDestinationManager', () => {
       // Clear logger calls from bind()
       jest.clearAllMocks();
 
-      await cursorManager.jumpToBoundDestination();
+      await cursorManager.focusBoundDestination();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
@@ -2014,7 +2099,7 @@ describe('PasteDestinationManager', () => {
       // Clear logger calls from bind()
       jest.clearAllMocks();
 
-      await manager.jumpToBoundDestination();
+      await manager.focusBoundDestination();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
@@ -2038,7 +2123,7 @@ describe('PasteDestinationManager', () => {
       // Mock focus failure
       mockTerminalDest.focus.mockResolvedValueOnce(false);
 
-      await manager.jumpToBoundDestination();
+      await manager.focusBoundDestination();
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
@@ -2052,7 +2137,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not call focus when no destination bound', async () => {
-      await manager.jumpToBoundDestination();
+      await manager.focusBoundDestination();
 
       expect(mockTerminalDest.focus).not.toHaveBeenCalled();
       expect(mockEditorDestFocusSpy).not.toHaveBeenCalled();
@@ -2061,7 +2146,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not show success message when no destination bound', async () => {
-      await manager.jumpToBoundDestination();
+      await manager.focusBoundDestination();
 
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
     });
@@ -2079,13 +2164,13 @@ describe('PasteDestinationManager', () => {
       // Mock focus failure
       mockTerminalDest.focus.mockResolvedValueOnce(false);
 
-      await manager.jumpToBoundDestination();
+      await manager.focusBoundDestination();
 
       expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
     });
   });
 
-  describe('bindAndJump()', () => {
+  describe('bindAndFocus()', () => {
     let mockRegistryForBindAndJump: ReturnType<typeof createMockDestinationRegistry>;
     let mockTerminal: vscode.Terminal;
 
@@ -2100,12 +2185,9 @@ describe('PasteDestinationManager', () => {
         },
       });
 
-      mockAvailabilityService = createMockDestinationAvailabilityService();
-
       manager = new PasteDestinationManager(
         mockContext,
         mockRegistryForBindAndJump,
-        mockAvailabilityService,
         mockAdapter,
         mockLogger,
       );
@@ -2114,9 +2196,14 @@ describe('PasteDestinationManager', () => {
     it('binds and jumps to destination when bind succeeds', async () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
 
-      const result = await manager.bindAndJump({ type: 'terminal', terminal: mockTerminal });
+      const result = await manager.bindAndFocus({ type: 'terminal', terminal: mockTerminal });
 
-      expect(result).toBe(true);
+      expect(result).toBeOkWith((value) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Terminal',
+          destinationType: 'terminal',
+        });
+      });
       expect(manager.isBound()).toBe(true);
       expect(mockTerminalDest.focus).toHaveBeenCalled();
     });
@@ -2131,9 +2218,13 @@ describe('PasteDestinationManager', () => {
         label: 'No, keep current binding',
       });
 
-      const result = await manager.bindAndJump({ type: 'terminal', terminal: differentTerminal });
+      const result = await manager.bindAndFocus({ type: 'terminal', terminal: differentTerminal });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'User cancelled binding replacement',
+        functionName: 'PasteDestinationManager.bindTerminal',
+        details: { reason: 'USER_CANCELLED_REPLACEMENT' },
+      });
       expect(mockTerminalDest.focus).not.toHaveBeenCalled();
     });
 
@@ -2141,9 +2232,13 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
       mockTerminalDest.focus.mockResolvedValueOnce(false);
 
-      const result = await manager.bindAndJump({ type: 'terminal', terminal: mockTerminal });
+      const result = await manager.bindAndFocus({ type: 'terminal', terminal: mockTerminal });
 
-      expect(result).toBe(false);
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_FOCUS_FAILED', {
+        message: 'Failed to focus destination: Terminal',
+        functionName: 'PasteDestinationManager.focusBoundDestination',
+        details: { destinationType: 'terminal', displayName: 'Terminal' },
+      });
       expect(manager.isBound()).toBe(true);
     });
   });
@@ -2390,7 +2485,11 @@ describe('PasteDestinationManager', () => {
 
         const result = await manager.bind({ type: 'terminal', terminal: mockTerminal2 });
 
-        expect(result).toBe(false);
+        expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+          message: 'User cancelled binding replacement',
+          functionName: 'PasteDestinationManager.bindTerminal',
+          details: { reason: 'USER_CANCELLED_REPLACEMENT' },
+        });
         expect(manager.getBoundDestination()).toBe(originalDest);
 
         expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
@@ -2438,7 +2537,11 @@ describe('PasteDestinationManager', () => {
 
         const result = await manager.bind({ type: 'terminal', terminal: mockTerminal });
 
-        expect(result).toBe(false);
+        expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+          message: 'Already bound to same destination',
+          functionName: 'PasteDestinationManager.bindTerminal',
+          details: { reason: 'ALREADY_BOUND_TO_SAME' },
+        });
 
         expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
           'RangeLink: Already bound to Terminal ("bash")',
@@ -2490,7 +2593,7 @@ describe('PasteDestinationManager', () => {
 
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'PasteDestinationManager.bindTerminalWithReference',
+            fn: 'bindTerminal',
             displayName: 'Terminal ("bash")',
           },
           'Already bound to Terminal ("bash"), no action taken',
@@ -2519,7 +2622,7 @@ describe('PasteDestinationManager', () => {
               const fileName = doc.uri.fsPath.split('/').pop() || 'Unknown';
               // Use real ComposablePasteDestination for document close listener to work
               mockTextEditorDest = createMockEditorComposablePasteDestination({
-                displayName: `Text Editor (${fileName})`,
+                displayName: `Text Editor ("${fileName}")`,
                 editor: options.editor,
               });
               return mockTextEditorDest;
@@ -2577,7 +2680,7 @@ describe('PasteDestinationManager', () => {
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(2);
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
           1,
-          '✓ RangeLink unbound from Text Editor (file.ts)',
+          '✓ RangeLink unbound from Text Editor ("file.ts")',
           2000,
         );
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
@@ -2609,7 +2712,12 @@ describe('PasteDestinationManager', () => {
         const bindResult = await manager.bind({ type: 'text-editor' });
 
         // Verify binding succeeded
-        expect(bindResult).toBe(true);
+        expect(bindResult).toBeOkWith((value) => {
+          expect(value).toStrictEqual({
+            destinationName: 'Text Editor ("file.ts")',
+            destinationType: 'text-editor',
+          });
+        });
         expect(manager.getBoundDestination()).toBe(mockTextEditorDest);
 
         // Clear bind() messages to isolate close behavior
