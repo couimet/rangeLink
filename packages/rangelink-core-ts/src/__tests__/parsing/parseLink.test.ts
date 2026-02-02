@@ -1,7 +1,6 @@
 import { getLogger } from 'barebone-logger';
 
 import { MAX_LINK_LENGTH } from '../../constants/MAX_LINK_LENGTH';
-import { RangeLinkError } from '../../errors/RangeLinkError';
 import { parseLink } from '../../parsing/parseLink';
 import { ParsedLink } from '../../types/ParsedLink';
 
