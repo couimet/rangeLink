@@ -158,6 +158,10 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     return [
       ...(await this.buildJumpOrDestinationsSection()),
       {
+        label: '',
+        kind: vscode.QuickPickItemKind.Separator,
+      },
+      {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_NAVIGATE_TO_LINK_LABEL),
         command: CMD_GO_TO_RANGELINK,
         itemKind: 'command',
