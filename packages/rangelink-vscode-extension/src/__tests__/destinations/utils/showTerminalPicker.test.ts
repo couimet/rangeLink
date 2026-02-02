@@ -1,8 +1,14 @@
 import { createMockLogger } from 'barebone-logger-testing';
 import type * as vscode from 'vscode';
 
-import { showTerminalPicker, type TerminalPickerOptions } from '../../../destinations/utils';
+import {
+  showTerminalPicker,
+  TERMINAL_PICKER_SHOW_ALL,
+  type TerminalPickerOptions,
+} from '../../../destinations/utils';
 import { createMockTerminal, createMockVscodeAdapter } from '../../helpers';
+
+const identityCallback = (terminal: vscode.Terminal): vscode.Terminal => terminal;
 
 const DEFAULT_OPTIONS: TerminalPickerOptions = {
   maxItemsBeforeMore: 5,
@@ -17,62 +23,42 @@ describe('showTerminalPicker', () => {
   const createTerminals = (count: number): vscode.Terminal[] =>
     Array.from({ length: count }, (_, i) => createMockTerminal({ name: `terminal-${i + 1}` }));
 
-  describe('edge cases', () => {
-    it('returns undefined terminal when no terminals available', async () => {
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals: [] },
-      });
-      const logger = createMockLogger();
-
-      const result = await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
-
-      expect(result).toStrictEqual({
-        terminal: undefined,
-        cancelled: false,
-        returnedToDestinationPicker: false,
-      });
-    });
-
-    it('returns single terminal directly without showing picker', async () => {
-      const terminal = createMockTerminal({ name: 'bash' });
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals: [terminal], activeTerminal: terminal },
-      });
-      const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
-      const logger = createMockLogger();
-
-      const result = await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
-
-      expect(result).toStrictEqual({
-        terminal,
-        cancelled: false,
-        returnedToDestinationPicker: false,
-      });
-      expect(showQuickPickMock).not.toHaveBeenCalled();
-    });
-  });
-
   describe('2-5 terminals (shows all)', () => {
     it('shows QuickPick with all terminals when 2 terminals exist', async () => {
       const terminals = createTerminals(2);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
-      showQuickPickMock.mockResolvedValueOnce({ label: 'terminal-1', terminal: terminals[0] });
+      showQuickPickMock.mockResolvedValueOnce({
+        label: 'terminal-1',
+        terminal: terminals[0],
+        itemKind: 'terminal',
+      });
       const logger = createMockLogger();
 
-      const result = await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      const result = await showTerminalPicker(
+        terminals,
+        undefined,
+        adapter,
+        DEFAULT_OPTIONS,
+        logger,
+        identityCallback,
+      );
 
-      expect(result).toStrictEqual({
-        terminal: terminals[0],
-        cancelled: false,
-        returnedToDestinationPicker: false,
-      });
+      expect(result).toStrictEqual({ outcome: 'selected', result: terminals[0] });
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          { label: 'terminal-1', description: undefined, terminal: terminals[0] },
-          { label: 'terminal-2', description: undefined, terminal: terminals[1] },
+          {
+            label: 'terminal-1',
+            description: undefined,
+            terminal: terminals[0],
+            itemKind: 'terminal',
+          },
+          {
+            label: 'terminal-2',
+            description: undefined,
+            terminal: terminals[1],
+            itemKind: 'terminal',
+          },
         ],
         { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
       );
@@ -80,43 +66,72 @@ describe('showTerminalPicker', () => {
 
     it('shows QuickPick with all terminals when 5 terminals exist', async () => {
       const terminals = createTerminals(5);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
-      showQuickPickMock.mockResolvedValueOnce({ label: 'terminal-3', terminal: terminals[2] });
+      showQuickPickMock.mockResolvedValueOnce({
+        label: 'terminal-3',
+        terminal: terminals[2],
+        itemKind: 'terminal',
+      });
       const logger = createMockLogger();
 
-      const result = await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      const result = await showTerminalPicker(
+        terminals,
+        undefined,
+        adapter,
+        DEFAULT_OPTIONS,
+        logger,
+        identityCallback,
+      );
 
-      expect(result.terminal).toBe(terminals[2]);
-      expect(showQuickPickMock).toHaveBeenCalledTimes(1);
-      const [items] = showQuickPickMock.mock.calls[0] as [{ label: string }[]];
-      expect(items).toHaveLength(5);
-      expect(items.some((item) => item.label === 'More terminals...')).toBe(false);
+      expect(result).toStrictEqual({ outcome: 'selected', result: terminals[2] });
+      expect(showQuickPickMock).toHaveBeenCalledWith(
+        [
+          { label: 'terminal-1', description: undefined, terminal: terminals[0], itemKind: 'terminal' },
+          { label: 'terminal-2', description: undefined, terminal: terminals[1], itemKind: 'terminal' },
+          { label: 'terminal-3', description: undefined, terminal: terminals[2], itemKind: 'terminal' },
+          { label: 'terminal-4', description: undefined, terminal: terminals[3], itemKind: 'terminal' },
+          { label: 'terminal-5', description: undefined, terminal: terminals[4], itemKind: 'terminal' },
+        ],
+        { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
+      );
     });
 
     it('marks active terminal with "(active)" description', async () => {
       const terminals = createTerminals(3);
       const activeTerminal = terminals[1];
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals, activeTerminal },
-      });
+      const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
       showQuickPickMock.mockResolvedValueOnce({
         label: 'terminal-2',
         description: '(active)',
         terminal: activeTerminal,
+        itemKind: 'terminal',
       });
       const logger = createMockLogger();
 
-      await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      await showTerminalPicker(terminals, activeTerminal, adapter, DEFAULT_OPTIONS, logger, identityCallback);
 
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          { label: 'terminal-1', description: undefined, terminal: terminals[0] },
-          { label: 'terminal-2', description: '(active)', terminal: terminals[1] },
-          { label: 'terminal-3', description: undefined, terminal: terminals[2] },
+          {
+            label: 'terminal-1',
+            description: undefined,
+            terminal: terminals[0],
+            itemKind: 'terminal',
+          },
+          {
+            label: 'terminal-2',
+            description: '(active)',
+            terminal: terminals[1],
+            itemKind: 'terminal',
+          },
+          {
+            label: 'terminal-3',
+            description: undefined,
+            terminal: terminals[2],
+            itemKind: 'terminal',
+          },
         ],
         { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
       );
@@ -126,22 +141,50 @@ describe('showTerminalPicker', () => {
   describe('>5 terminals (max-5 rule)', () => {
     it('shows 4 terminals + "More terminals..." when 6 terminals exist', async () => {
       const terminals = createTerminals(6);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
-      showQuickPickMock.mockResolvedValueOnce({ label: 'terminal-2', terminal: terminals[1] });
+      showQuickPickMock.mockResolvedValueOnce({
+        label: 'terminal-2',
+        terminal: terminals[1],
+        itemKind: 'terminal',
+      });
       const logger = createMockLogger();
 
-      await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      await showTerminalPicker(terminals, undefined, adapter, DEFAULT_OPTIONS, logger, identityCallback);
 
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          { label: 'terminal-1', description: undefined, terminal: terminals[0] },
-          { label: 'terminal-2', description: undefined, terminal: terminals[1] },
-          { label: 'terminal-3', description: undefined, terminal: terminals[2] },
-          { label: 'terminal-4', description: undefined, terminal: terminals[3] },
-          { label: 'More terminals...', description: '2 more', isMoreItem: true },
+          {
+            label: 'terminal-1',
+            description: undefined,
+            terminal: terminals[0],
+            itemKind: 'terminal',
+          },
+          {
+            label: 'terminal-2',
+            description: undefined,
+            terminal: terminals[1],
+            itemKind: 'terminal',
+          },
+          {
+            label: 'terminal-3',
+            description: undefined,
+            terminal: terminals[2],
+            itemKind: 'terminal',
+          },
+          {
+            label: 'terminal-4',
+            description: undefined,
+            terminal: terminals[3],
+            itemKind: 'terminal',
+          },
+          {
+            label: 'More terminals...',
+            displayName: 'More terminals...',
+            remainingCount: 2,
+            description: '2 more',
+            itemKind: 'terminal-more',
+          },
         ],
         { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
       );
@@ -149,165 +192,233 @@ describe('showTerminalPicker', () => {
 
     it('shows correct count in "More terminals..." description for many terminals', async () => {
       const terminals = createTerminals(10);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
-      showQuickPickMock.mockResolvedValueOnce({ label: 'terminal-1', terminal: terminals[0] });
+      showQuickPickMock.mockResolvedValueOnce({
+        label: 'terminal-1',
+        terminal: terminals[0],
+        itemKind: 'terminal',
+      });
       const logger = createMockLogger();
 
-      await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      await showTerminalPicker(terminals, undefined, adapter, DEFAULT_OPTIONS, logger, identityCallback);
 
-      const [items] = showQuickPickMock.mock.calls[0] as [
-        { label: string; description?: string }[],
-      ];
-      const moreItem = items.find((item) => item.label === 'More terminals...');
-      expect(moreItem?.description).toBe('6 more');
+      expect(showQuickPickMock).toHaveBeenCalledWith(
+        [
+          { label: 'terminal-1', description: undefined, terminal: terminals[0], itemKind: 'terminal' },
+          { label: 'terminal-2', description: undefined, terminal: terminals[1], itemKind: 'terminal' },
+          { label: 'terminal-3', description: undefined, terminal: terminals[2], itemKind: 'terminal' },
+          { label: 'terminal-4', description: undefined, terminal: terminals[3], itemKind: 'terminal' },
+          {
+            label: 'More terminals...',
+            displayName: 'More terminals...',
+            remainingCount: 6,
+            description: '6 more',
+            itemKind: 'terminal-more',
+          },
+        ],
+        { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
+      );
     });
   });
 
   describe('custom maxItemsBeforeMore option', () => {
     it('uses custom threshold when specified', async () => {
       const terminals = createTerminals(4);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
-      showQuickPickMock.mockResolvedValueOnce({ label: 'terminal-1', terminal: terminals[0] });
+      showQuickPickMock.mockResolvedValueOnce({
+        label: 'terminal-1',
+        terminal: terminals[0],
+        itemKind: 'terminal',
+      });
       const logger = createMockLogger();
 
-      await showTerminalPicker(adapter, { ...DEFAULT_OPTIONS, maxItemsBeforeMore: 3 }, logger);
+      await showTerminalPicker(
+        terminals,
+        undefined,
+        adapter,
+        { ...DEFAULT_OPTIONS, maxItemsBeforeMore: 3 },
+        logger,
+        identityCallback,
+      );
 
-      const [items] = showQuickPickMock.mock.calls[0] as [{ label: string }[]];
-      expect(items).toHaveLength(3);
-      expect(items[2].label).toBe('More terminals...');
+      expect(showQuickPickMock).toHaveBeenCalledWith(
+        [
+          { label: 'terminal-1', description: undefined, terminal: terminals[0], itemKind: 'terminal' },
+          { label: 'terminal-2', description: undefined, terminal: terminals[1], itemKind: 'terminal' },
+          {
+            label: 'More terminals...',
+            displayName: 'More terminals...',
+            remainingCount: 2,
+            description: '2 more',
+            itemKind: 'terminal-more',
+          },
+        ],
+        { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
+      );
     });
 
     it('shows all terminals when count equals threshold', async () => {
       const terminals = createTerminals(3);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
-      showQuickPickMock.mockResolvedValueOnce({ label: 'terminal-1', terminal: terminals[0] });
+      showQuickPickMock.mockResolvedValueOnce({
+        label: 'terminal-1',
+        terminal: terminals[0],
+        itemKind: 'terminal',
+      });
       const logger = createMockLogger();
 
-      await showTerminalPicker(adapter, { ...DEFAULT_OPTIONS, maxItemsBeforeMore: 3 }, logger);
+      await showTerminalPicker(
+        terminals,
+        undefined,
+        adapter,
+        { ...DEFAULT_OPTIONS, maxItemsBeforeMore: 3 },
+        logger,
+        identityCallback,
+      );
 
-      const [items] = showQuickPickMock.mock.calls[0] as [{ label: string }[]];
-      expect(items).toHaveLength(3);
-      expect(items.every((item) => item.label !== 'More terminals...')).toBe(true);
+      expect(showQuickPickMock).toHaveBeenCalledWith(
+        [
+          { label: 'terminal-1', description: undefined, terminal: terminals[0], itemKind: 'terminal' },
+          { label: 'terminal-2', description: undefined, terminal: terminals[1], itemKind: 'terminal' },
+          { label: 'terminal-3', description: undefined, terminal: terminals[2], itemKind: 'terminal' },
+        ],
+        { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
+      );
+    });
+
+    it('TERMINAL_PICKER_SHOW_ALL shows all terminals without "More..." grouping', async () => {
+      const terminals = createTerminals(8);
+      const adapter = createMockVscodeAdapter();
+      const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
+      showQuickPickMock.mockResolvedValueOnce({
+        label: 'terminal-5',
+        terminal: terminals[4],
+        itemKind: 'terminal',
+      });
+      const logger = createMockLogger();
+
+      await showTerminalPicker(
+        terminals,
+        undefined,
+        adapter,
+        { ...DEFAULT_OPTIONS, maxItemsBeforeMore: TERMINAL_PICKER_SHOW_ALL },
+        logger,
+        identityCallback,
+      );
+
+      expect(showQuickPickMock).toHaveBeenCalledWith(
+        [
+          { label: 'terminal-1', description: undefined, terminal: terminals[0], itemKind: 'terminal' },
+          { label: 'terminal-2', description: undefined, terminal: terminals[1], itemKind: 'terminal' },
+          { label: 'terminal-3', description: undefined, terminal: terminals[2], itemKind: 'terminal' },
+          { label: 'terminal-4', description: undefined, terminal: terminals[3], itemKind: 'terminal' },
+          { label: 'terminal-5', description: undefined, terminal: terminals[4], itemKind: 'terminal' },
+          { label: 'terminal-6', description: undefined, terminal: terminals[5], itemKind: 'terminal' },
+          { label: 'terminal-7', description: undefined, terminal: terminals[6], itemKind: 'terminal' },
+          { label: 'terminal-8', description: undefined, terminal: terminals[7], itemKind: 'terminal' },
+        ],
+        { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
+      );
     });
   });
 
   describe('"More terminals..." selection', () => {
     it('opens secondary picker with all terminals when "More terminals..." selected', async () => {
       const terminals = createTerminals(7);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
       showQuickPickMock
-        .mockResolvedValueOnce({ label: 'More terminals...', isMoreItem: true })
-        .mockResolvedValueOnce({ label: 'terminal-6', terminal: terminals[5] });
+        .mockResolvedValueOnce({ label: 'More terminals...', itemKind: 'terminal-more' })
+        .mockResolvedValueOnce({
+          label: 'terminal-6',
+          terminal: terminals[5],
+          itemKind: 'terminal',
+        });
       const logger = createMockLogger();
 
-      const result = await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      const result = await showTerminalPicker(
+        terminals,
+        undefined,
+        adapter,
+        DEFAULT_OPTIONS,
+        logger,
+        identityCallback,
+      );
 
-      expect(result).toStrictEqual({
-        terminal: terminals[5],
-        cancelled: false,
-        returnedToDestinationPicker: false,
-      });
-      expect(showQuickPickMock).toHaveBeenCalledTimes(2);
-      const [secondCallItems] = showQuickPickMock.mock.calls[1] as [{ label: string }[]];
-      expect(secondCallItems).toHaveLength(7);
-      expect(secondCallItems.every((item) => item.label !== 'More terminals...')).toBe(true);
+      expect(result).toStrictEqual({ outcome: 'selected', result: terminals[5] });
+      expect(showQuickPickMock).toHaveBeenNthCalledWith(
+        2,
+        [
+          { label: 'terminal-1', description: undefined, terminal: terminals[0], itemKind: 'terminal' },
+          { label: 'terminal-2', description: undefined, terminal: terminals[1], itemKind: 'terminal' },
+          { label: 'terminal-3', description: undefined, terminal: terminals[2], itemKind: 'terminal' },
+          { label: 'terminal-4', description: undefined, terminal: terminals[3], itemKind: 'terminal' },
+          { label: 'terminal-5', description: undefined, terminal: terminals[4], itemKind: 'terminal' },
+          { label: 'terminal-6', description: undefined, terminal: terminals[5], itemKind: 'terminal' },
+          { label: 'terminal-7', description: undefined, terminal: terminals[6], itemKind: 'terminal' },
+        ],
+        { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
+      );
     });
 
-    it('returns returnedToDestinationPicker when escaping secondary picker', async () => {
+    it('returns returned-to-destination-picker when escaping secondary picker', async () => {
       const terminals = createTerminals(6);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
       showQuickPickMock
-        .mockResolvedValueOnce({ label: 'More terminals...', isMoreItem: true })
+        .mockResolvedValueOnce({ label: 'More terminals...', itemKind: 'terminal-more' })
         .mockResolvedValueOnce(undefined);
       const logger = createMockLogger();
 
-      const result = await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      const result = await showTerminalPicker(
+        terminals,
+        undefined,
+        adapter,
+        DEFAULT_OPTIONS,
+        logger,
+        identityCallback,
+      );
 
-      expect(result).toStrictEqual({
-        terminal: undefined,
-        cancelled: false,
-        returnedToDestinationPicker: true,
-      });
+      expect(result).toStrictEqual({ outcome: 'returned-to-destination-picker' });
     });
   });
 
   describe('cancellation', () => {
     it('returns cancelled when user escapes primary picker', async () => {
       const terminals = createTerminals(3);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
       showQuickPickMock.mockResolvedValueOnce(undefined);
       const logger = createMockLogger();
 
-      const result = await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      const result = await showTerminalPicker(
+        terminals,
+        undefined,
+        adapter,
+        DEFAULT_OPTIONS,
+        logger,
+        identityCallback,
+      );
 
-      expect(result).toStrictEqual({
-        terminal: undefined,
-        cancelled: true,
-        returnedToDestinationPicker: false,
-      });
+      expect(result).toStrictEqual({ outcome: 'cancelled' });
     });
   });
 
   describe('logging', () => {
-    it('logs when no terminals available', async () => {
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals: [] },
-      });
-      const logger = createMockLogger();
-
-      await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
-
-      expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'showTerminalPicker', terminalCount: 0 },
-        'No terminals available',
-      );
-    });
-
-    it('logs when single terminal returned directly', async () => {
-      const terminal = createMockTerminal({ name: 'zsh' });
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals: [terminal] },
-      });
-      const logger = createMockLogger();
-
-      await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
-
-      expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'showTerminalPicker', terminalCount: 1 },
-        'Single terminal available, returning directly',
-      );
-    });
-
     it('logs when showing terminal picker', async () => {
       const terminals = createTerminals(3);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       adapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce({
         label: 'terminal-1',
         terminal: terminals[0],
+        itemKind: 'terminal',
       });
       const logger = createMockLogger();
 
-      await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      await showTerminalPicker(terminals, undefined, adapter, DEFAULT_OPTIONS, logger, identityCallback);
 
       expect(logger.debug).toHaveBeenCalledWith(
         { fn: 'showTerminalPicker', terminalCount: 3, itemCount: 3 },
@@ -317,13 +428,11 @@ describe('showTerminalPicker', () => {
 
     it('logs when user cancels picker', async () => {
       const terminals = createTerminals(2);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       adapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce(undefined);
       const logger = createMockLogger();
 
-      await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      await showTerminalPicker(terminals, undefined, adapter, DEFAULT_OPTIONS, logger, identityCallback);
 
       expect(logger.debug).toHaveBeenCalledWith(
         { fn: 'showTerminalPicker', terminalCount: 2 },
@@ -333,19 +442,25 @@ describe('showTerminalPicker', () => {
 
     it('logs when terminal selected', async () => {
       const terminals = createTerminals(2);
-      const adapter = createMockVscodeAdapter({
-        windowOptions: { terminals },
-      });
+      const adapter = createMockVscodeAdapter();
       adapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce({
         label: 'terminal-2',
         terminal: terminals[1],
+        itemKind: 'terminal',
       });
       const logger = createMockLogger();
 
-      await showTerminalPicker(adapter, DEFAULT_OPTIONS, logger);
+      await showTerminalPicker(terminals, undefined, adapter, DEFAULT_OPTIONS, logger, identityCallback);
 
       expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'showTerminalPicker', terminalCount: 2, selectedTerminal: 'terminal-2' },
+        {
+          fn: 'showTerminalPicker',
+          selected: {
+            label: 'terminal-2',
+            terminal: terminals[1],
+            itemKind: 'terminal',
+          },
+        },
         'Terminal selected',
       );
     });

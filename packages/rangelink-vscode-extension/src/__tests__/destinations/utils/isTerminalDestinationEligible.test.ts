@@ -2,9 +2,9 @@ import { isTerminalDestinationEligible } from '../../../destinations/utils';
 import { createMockTerminal, createMockVscodeAdapter } from '../../helpers';
 
 describe('isTerminalDestinationEligible', () => {
-  describe('eligible scenarios', () => {
-    it('returns eligible with single terminal when one terminal exists', () => {
-      const terminal = createMockTerminal({ name: 'zsh' });
+  describe('live terminals', () => {
+    it('returns true when one live terminal exists', () => {
+      const terminal = createMockTerminal({ name: 'zsh', exitStatus: undefined });
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
           terminals: [terminal],
@@ -12,61 +12,41 @@ describe('isTerminalDestinationEligible', () => {
         },
       });
 
-      expect(isTerminalDestinationEligible(ideAdapter)).toStrictEqual({
-        eligible: true,
-        terminals: [
-          {
-            terminal,
-            name: 'zsh',
-            isActive: true,
-          },
-        ],
-      });
+      expect(isTerminalDestinationEligible(ideAdapter)).toBe(true);
     });
 
-    it('returns all terminals with active status when multiple terminals exist', () => {
-      const terminal1 = createMockTerminal({ name: 'zsh' });
-      const terminal2 = createMockTerminal({ name: 'Node.js Debug Console' });
-      const terminal3 = createMockTerminal({ name: 'bash' });
-      const ideAdapter = createMockVscodeAdapter({
-        windowOptions: {
-          terminals: [terminal1, terminal2, terminal3],
-          activeTerminal: terminal2,
-        },
-      });
-
-      expect(isTerminalDestinationEligible(ideAdapter)).toStrictEqual({
-        eligible: true,
-        terminals: [
-          { terminal: terminal1, name: 'zsh', isActive: false },
-          { terminal: terminal2, name: 'Node.js Debug Console', isActive: true },
-          { terminal: terminal3, name: 'bash', isActive: false },
-        ],
-      });
-    });
-
-    it('marks no terminal as active when activeTerminal is undefined', () => {
-      const terminal1 = createMockTerminal({ name: 'zsh' });
-      const terminal2 = createMockTerminal({ name: 'bash' });
+    it('returns true when multiple live terminals exist', () => {
+      const terminal1 = createMockTerminal({ name: 'zsh', exitStatus: undefined });
+      const terminal2 = createMockTerminal({ name: 'bash', exitStatus: undefined });
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
           terminals: [terminal1, terminal2],
-          activeTerminal: undefined,
+          activeTerminal: terminal1,
         },
       });
 
-      expect(isTerminalDestinationEligible(ideAdapter)).toStrictEqual({
-        eligible: true,
-        terminals: [
-          { terminal: terminal1, name: 'zsh', isActive: false },
-          { terminal: terminal2, name: 'bash', isActive: false },
-        ],
+      expect(isTerminalDestinationEligible(ideAdapter)).toBe(true);
+    });
+
+    it('returns true when at least one terminal is live among dead terminals', () => {
+      const deadTerminal = createMockTerminal({
+        name: 'dead',
+        exitStatus: { code: 0, reason: 1 },
       });
+      const liveTerminal = createMockTerminal({ name: 'live', exitStatus: undefined });
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          terminals: [deadTerminal, liveTerminal],
+          activeTerminal: liveTerminal,
+        },
+      });
+
+      expect(isTerminalDestinationEligible(ideAdapter)).toBe(true);
     });
   });
 
-  describe('ineligible scenarios', () => {
-    it('returns ineligible with empty terminals array when no terminals exist', () => {
+  describe('no eligible terminals', () => {
+    it('returns false when no terminals exist', () => {
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
           terminals: [],
@@ -74,10 +54,26 @@ describe('isTerminalDestinationEligible', () => {
         },
       });
 
-      expect(isTerminalDestinationEligible(ideAdapter)).toStrictEqual({
-        eligible: false,
-        terminals: [],
+      expect(isTerminalDestinationEligible(ideAdapter)).toBe(false);
+    });
+
+    it('returns false when all terminals have terminated processes', () => {
+      const deadTerminal1 = createMockTerminal({
+        name: 'dead1',
+        exitStatus: { code: 0, reason: 1 },
       });
+      const deadTerminal2 = createMockTerminal({
+        name: 'dead2',
+        exitStatus: { code: 1, reason: 1 },
+      });
+      const ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          terminals: [deadTerminal1, deadTerminal2],
+          activeTerminal: undefined,
+        },
+      });
+
+      expect(isTerminalDestinationEligible(ideAdapter)).toBe(false);
     });
   });
 });

@@ -248,7 +248,6 @@ describe('package.json contributions', () => {
           icon: '$(bookmark)',
         });
       });
-
     });
 
     describe('paste file path commands (context menu)', () => {

@@ -21,8 +21,8 @@ describe('assertTerminalFromPicker', () => {
       expect(result).toStrictEqual({ outcome: 'success', terminal });
 
       expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'MyFunction', selected: { label: 'my-terminal', terminal } },
-        'Terminal ready',
+        { fn: 'TestFunction', selected: { label: 'test-terminal', terminal } },
+        'Terminal validated',
       );
     });
   });
