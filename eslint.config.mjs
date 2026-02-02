@@ -12,6 +12,7 @@ export default [
       '**/out/**',
       '**/node_modules/**',
       '**/coverage/**',
+      '**/.history/**',
       '**/*.vsix',
       '**/*.config.js',
       '**/*.config.mjs',
