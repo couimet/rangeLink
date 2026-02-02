@@ -23,6 +23,7 @@ import type { DestinationRegistry } from './DestinationRegistry';
 import {
   type EligibleTerminal,
   getEligibleTerminals,
+  isTerminalDestinationEligible,
   isTextEditorDestinationEligible,
 } from './utils';
 
@@ -133,18 +134,18 @@ export class DestinationAvailabilityService {
         }
 
         case 'terminal': {
+          if (!isTerminalDestinationEligible(this.ideAdapter)) break;
+
           const eligibleTerminals = getEligibleTerminals(this.ideAdapter);
-          if (eligibleTerminals.length > 0) {
-            const { items, moreItem } = this.buildGroupedTerminalItems(
-              eligibleTerminals,
-              terminalThreshold,
-            );
-            if (items.length > 0) {
-              result['terminal'] = items;
-            }
-            if (moreItem) {
-              result['terminal-more'] = moreItem;
-            }
+          const { items, moreItem } = this.buildGroupedTerminalItems(
+            eligibleTerminals,
+            terminalThreshold,
+          );
+          if (items.length > 0) {
+            result['terminal'] = items;
+          }
+          if (moreItem) {
+            result['terminal-more'] = moreItem;
           }
           break;
         }
