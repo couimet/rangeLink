@@ -1,7 +1,6 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import type { BookmarkId } from '../bookmarks';
 import type { BookmarkService } from '../bookmarks';
 import {
   CMD_BOOKMARK_ADD,
@@ -14,22 +13,33 @@ import {
 } from '../constants';
 import type { DestinationAvailabilityService } from '../destinations/DestinationAvailabilityService';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
+import { buildDestinationQuickPickItems } from '../destinations/utils';
+import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { NonTerminalDestinationType, PickerItemKind } from '../types';
-import { MessageCode } from '../types/MessageCode';
+import {
+  type BindableQuickPickItem,
+  type BookmarkCommandQuickPickItem,
+  type CommandQuickPickItem,
+  type InfoQuickPickItem,
+  MessageCode,
+  type TerminalMoreQuickPickItem,
+} from '../types';
 import { formatMessage } from '../utils/formatMessage';
 
+type StatusBarMenuQuickPickItem =
+  | BindableQuickPickItem
+  | TerminalMoreQuickPickItem
+  | CommandQuickPickItem
+  | BookmarkCommandQuickPickItem
+  | InfoQuickPickItem;
+
 /**
- * QuickPick item for status bar menu.
- * Combines destination picker fields with menu-specific fields (command, bookmarkId).
+ * Union of all menu item types (selectable items + VS Code separators).
  */
-interface MenuQuickPickItem extends vscode.QuickPickItem {
-  readonly itemKind?: PickerItemKind;
-  readonly destinationType?: NonTerminalDestinationType;
-  readonly terminal?: vscode.Terminal;
-  readonly command?: string;
-  readonly bookmarkId?: BookmarkId;
-}
+type MenuQuickPickItem =
+  | StatusBarMenuQuickPickItem
+  | (vscode.QuickPickItem & { kind: vscode.QuickPickItemKind.Separator });
 
 /**
  * Status bar priority - higher values appear more to the left.
@@ -87,49 +97,55 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       return;
     }
 
-    if (selected.itemKind === 'terminal' && selected.terminal) {
-      const success = await this.destinationManager.bindAndJump({
-        type: 'terminal',
-        terminal: selected.terminal,
-      });
-      this.logger.debug(
-        {
-          fn: 'RangeLinkStatusBar.openMenu',
-          selectedItem: selected.label,
-          terminalName: selected.terminal.name,
-          bindAndJumpSuccess: success,
-        },
-        'Terminal item selected',
-      );
-    } else if (selected.itemKind === 'terminal-more') {
-      this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected.label },
-        '"More terminals..." selected, delegating to jumpToBoundDestination',
-      );
-      await this.destinationManager.jumpToBoundDestination();
-    } else if (selected.destinationType) {
-      const success = await this.destinationManager.bindAndJump({
-        type: selected.destinationType as NonTerminalDestinationType,
-      });
-      this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected, bindAndJumpSuccess: success },
-        'Destination item selected',
-      );
-    } else if (selected.command) {
-      if (selected.command === CMD_BOOKMARK_NAVIGATE && selected.bookmarkId) {
-        await this.bookmarkService.pasteBookmark(selected.bookmarkId);
-      } else {
-        await this.ideAdapter.executeCommand(selected.command);
+    const selectable = selected as StatusBarMenuQuickPickItem;
+
+    switch (selectable.itemKind) {
+      case 'bindable': {
+        const result = await this.destinationManager.bindAndFocus(selectable.bindOptions);
+        this.logger.debug(
+          { fn: 'RangeLinkStatusBar.openMenu', selectable, result: result.toJSON() },
+          'Bindable item selected, bindAndFocus completed',
+        );
+        break;
       }
-      this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
-        'Menu item selected',
-      );
-    } else {
-      this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
-        'Non-actionable item selected',
-      );
+
+      case 'terminal-more':
+        // TODO(#255): Implement secondary terminal picker flow
+        this.logger.debug(
+          { fn: 'RangeLinkStatusBar.openMenu', selectable },
+          '"More terminals..." selected - secondary picker not yet implemented',
+        );
+        break;
+
+      case 'command': {
+        this.logger.debug(
+          { fn: 'RangeLinkStatusBar.openMenu', selectable },
+          'Command item selected',
+        );
+        if ('bookmarkId' in selectable) {
+          await this.bookmarkService.pasteBookmark(selectable.bookmarkId);
+        } else {
+          await this.ideAdapter.executeCommand(selectable.command);
+        }
+        break;
+      }
+
+      case 'info':
+        this.logger.debug(
+          { fn: 'RangeLinkStatusBar.openMenu', selectable },
+          'Non-actionable info item selected',
+        );
+        break;
+
+      default: {
+        const _exhaustiveCheck: never = selectable;
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
+          message: 'Unhandled item kind in status bar menu',
+          functionName: 'RangeLinkStatusBar.openMenu',
+          details: { selectedItem: _exhaustiveCheck },
+        });
+      }
     }
   }
 
@@ -144,11 +160,13 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_NAVIGATE_TO_LINK_LABEL),
         command: CMD_GO_TO_RANGELINK,
+        itemKind: 'command',
       },
       ...this.buildBookmarksQuickPickItems(),
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
         command: CMD_SHOW_VERSION,
+        itemKind: 'command',
       },
     ];
   }
@@ -164,6 +182,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
           label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL),
           description: `→ ${boundDest.displayName}`,
           command: CMD_JUMP_TO_DESTINATION,
+          itemKind: 'command',
         },
       ];
     }
@@ -172,55 +191,34 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
   /**
    * Build QuickPick items for available destinations when unbound.
+   * Uses grouped API to get pre-built items with displayName and bindOptions.
    */
   private async buildDestinationsQuickPickItems(): Promise<MenuQuickPickItem[]> {
-    const result: MenuQuickPickItem[] = [];
-    const availableItems = await this.availabilityService.getAvailableDestinationItems();
+    const grouped = await this.availabilityService.getGroupedDestinationItems();
 
-    if (availableItems.length === 0) {
-      result.push({
-        label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE),
-      });
-    } else {
-      result.push({
-        label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW),
-      });
+    const hasAnyItems = Object.keys(grouped).length > 0;
 
-      for (const item of availableItems) {
-        switch (item.kind) {
-          case 'destination':
-            result.push({
-              label: `${MENU_ITEM_INDENT}$(arrow-right) ${item.displayName}`,
-              destinationType: item.destinationType,
-              itemKind: 'destination',
-            });
-            break;
-
-          case 'terminal':
-            result.push({
-              label: `${MENU_ITEM_INDENT}$(arrow-right) Terminal "${item.displayName}"`,
-              description: item.isActive
-                ? formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION)
-                : undefined,
-              terminal: item.terminal,
-              itemKind: 'terminal',
-            });
-            break;
-
-          case 'terminal-more':
-            result.push({
-              label: `${MENU_ITEM_INDENT}$(arrow-right) ${item.displayName}`,
-              description: formatMessage(MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION, {
-                count: item.remainingCount,
-              }),
-              itemKind: 'terminal-more',
-            });
-            break;
-        }
-      }
+    if (!hasAnyItems) {
+      return [
+        {
+          label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE),
+          itemKind: 'info',
+        },
+      ];
     }
 
-    return result;
+    const destinationItems = buildDestinationQuickPickItems(
+      grouped,
+      (name) => `${MENU_ITEM_INDENT}$(arrow-right) ${name}`,
+    );
+
+    return [
+      {
+        label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW),
+        itemKind: 'info',
+      },
+      ...destinationItems,
+    ];
   }
 
   private buildBookmarksQuickPickItems(): MenuQuickPickItem[] {
@@ -234,11 +232,13 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
     result.push({
       label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL),
+      itemKind: 'info',
     });
 
     if (bookmarks.length === 0) {
       result.push({
         label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_LIST_EMPTY)}`,
+        itemKind: 'info',
       });
     } else {
       for (const bookmark of bookmarks) {
@@ -246,6 +246,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
           label: `${MENU_ITEM_INDENT}$(bookmark) ${bookmark.label}`,
           command: CMD_BOOKMARK_NAVIGATE,
           bookmarkId: bookmark.id,
+          itemKind: 'command',
         });
       }
     }
@@ -258,11 +259,13 @@ export class RangeLinkStatusBar implements vscode.Disposable {
     result.push({
       label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_ADD)}`,
       command: CMD_BOOKMARK_ADD,
+      itemKind: 'command',
     });
 
     result.push({
       label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_MANAGE)}`,
       command: CMD_BOOKMARK_MANAGE,
+      itemKind: 'command',
     });
 
     result.push({

@@ -1,27 +1,30 @@
 import type { Logger } from 'barebone-logger';
 
 import type { ConfigReader } from '../config';
-import { DEFAULT_TERMINAL_PICKER_MAX_INLINE } from '../constants/settingDefaults';
-import { SETTING_TERMINAL_PICKER_MAX_INLINE } from '../constants/settingKeys';
+import {
+  DEFAULT_TERMINAL_PICKER_MAX_INLINE,
+  SETTING_TERMINAL_PICKER_MAX_INLINE,
+} from '../constants';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { type AnyPickerItem, type DestinationPickerItem, MessageCode } from '../types';
+import {
+  type AIAssistantDestinationType,
+  type BindableQuickPickItem,
+  DESTINATION_TYPES,
+  type DestinationType,
+  type GetAvailableDestinationItemsOptions,
+  type GroupedDestinationItems,
+  MessageCode,
+  type TerminalMoreQuickPickItem,
+} from '../types';
+import { formatMessage } from '../utils';
 
 import type { DestinationRegistry } from './DestinationRegistry';
-import type { AIAssistantDestinationType } from '../types';
 import {
-  buildTerminalItems,
-  isTerminalDestinationEligible,
+  type EligibleTerminal,
+  getEligibleTerminals,
   isTextEditorDestinationEligible,
 } from './utils';
-
-/**
- * All AI assistant destination types to check for availability
- */
-const AI_ASSISTANT_TYPES: readonly AIAssistantDestinationType[] = [
-  'claude-code',
-  'github-copilot-chat',
-  'cursor-ai',
-];
 
 /**
  * MessageCode lookup for AI assistant unavailable
@@ -79,67 +82,165 @@ export class DestinationAvailabilityService {
   }
 
   /**
-   * Get available destinations as discriminated union items.
+   * Get available destinations grouped by type with pre-built QuickPick items.
    *
-   * Returns items suitable for building a QuickPick menu:
-   * - DestinationPickerItem for text-editor and AI assistants
-   * - TerminalPickerItem(s) for terminals
-   * - TerminalMorePickerItem when terminals exceed configured maxInline setting
+   * Returns items ready for QuickPick display:
+   * - BindableQuickPickItem with displayName and bindOptions
+   * - TerminalMoreQuickPickItem for overflow
    *
-   * Note: Separators are not included - they are a UI concern handled
-   * during QuickPickItem conversion.
+   * Items are grouped by DestinationType for easy rendering control.
+   *
+   * @param options - Optional filtering and threshold configuration
+   * @returns Grouped destination items keyed by DestinationType
    */
-  async getAvailableDestinationItems(): Promise<AnyPickerItem[]> {
+  async getGroupedDestinationItems(
+    options?: GetAvailableDestinationItemsOptions,
+  ): Promise<GroupedDestinationItems> {
     const displayNames = this.registry.getDisplayNames();
-    const items: AnyPickerItem[] = [];
+    const result: {
+      -readonly [K in keyof GroupedDestinationItems]: GroupedDestinationItems[K];
+    } = {};
 
-    const textEditorEligibility = isTextEditorDestinationEligible(this.ideAdapter);
-    const terminalEligibility = isTerminalDestinationEligible(this.ideAdapter);
-
-    if (textEditorEligibility.eligible) {
-      items.push({
-        kind: 'destination',
-        destinationType: 'text-editor',
-        displayName: `${displayNames['text-editor']} ("${textEditorEligibility.filename}")`,
-      } satisfies DestinationPickerItem);
-    }
-
-    if (terminalEligibility.eligible) {
-      const maxInline = this.configReader.getWithDefault(
+    const destinationTypes = options?.destinationTypes;
+    const terminalThreshold =
+      options?.terminalThreshold ??
+      this.configReader.getWithDefault(
         SETTING_TERMINAL_PICKER_MAX_INLINE,
         DEFAULT_TERMINAL_PICKER_MAX_INLINE,
       );
-      const terminalItems = buildTerminalItems(terminalEligibility.terminals, maxInline);
-      items.push(...terminalItems);
-    }
 
-    const aiResults = await Promise.all(
-      AI_ASSISTANT_TYPES.map(async (type) => ({
-        type,
-        available: await this.isAIAssistantAvailable(type),
-      })),
-    );
+    const shouldInclude = (type: DestinationType): boolean =>
+      destinationTypes === undefined || destinationTypes.includes(type);
 
-    for (const { type, available: isAvailable } of aiResults) {
-      if (isAvailable) {
-        items.push({
-          kind: 'destination',
-          destinationType: type,
-          displayName: displayNames[type],
-        } satisfies DestinationPickerItem);
+    for (const type of DESTINATION_TYPES) {
+      if (!shouldInclude(type)) continue;
+
+      switch (type) {
+        case 'text-editor': {
+          const textEditorEligibility = isTextEditorDestinationEligible(this.ideAdapter);
+          if (textEditorEligibility.eligible) {
+            const displayName = `${displayNames['text-editor']} ("${textEditorEligibility.filename}")`;
+            result['text-editor'] = [
+              {
+                label: displayName,
+                displayName,
+                bindOptions: { type: 'text-editor' },
+                itemKind: 'bindable',
+              },
+            ];
+          }
+          break;
+        }
+
+        case 'terminal': {
+          const eligibleTerminals = getEligibleTerminals(this.ideAdapter);
+          if (eligibleTerminals.length > 0) {
+            const { items, moreItem } = this.buildGroupedTerminalItems(
+              eligibleTerminals,
+              terminalThreshold,
+            );
+            if (items.length > 0) {
+              result['terminal'] = items;
+            }
+            if (moreItem) {
+              result['terminal-more'] = moreItem;
+            }
+          }
+          break;
+        }
+
+        case 'claude-code':
+        case 'cursor-ai':
+        case 'github-copilot-chat': {
+          const isAvailable = await this.isAIAssistantAvailable(type);
+          if (isAvailable) {
+            const displayName = displayNames[type];
+            result[type] = [
+              {
+                label: displayName,
+                displayName,
+                bindOptions: { type },
+                itemKind: 'bindable',
+              },
+            ];
+          }
+          break;
+        }
+
+        default: {
+          const exhaustiveCheck: never = type;
+          throw new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
+            message: 'Unhandled destination type in getGroupedDestinationItems',
+            functionName: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            details: { destinationType: exhaustiveCheck },
+          });
+        }
       }
     }
 
-    this.logger.debug(
-      {
-        fn: 'DestinationAvailabilityService.getAvailableDestinationItems',
-        isTextEditorEligible: textEditorEligibility.eligible,
-        terminalCount: terminalEligibility.terminals.length,
-        itemCount: items.length,
-      },
-      `Found ${items.length} available destination items`,
+    const countsByType = Object.fromEntries(
+      Object.entries(result).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value.length : 1,
+      ]),
     );
 
-    return items;
+    const totalItems = Object.values(countsByType).reduce((sum, count) => sum + count, 0);
+
+    this.logger.debug(
+      {
+        fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+        destinationTypes: destinationTypes ?? 'all',
+        terminalThreshold,
+        groupCount: Object.keys(result).length,
+        totalItems,
+        countsByType,
+      },
+      `Found ${totalItems} grouped destination items`,
+    );
+
+    return result;
+  }
+
+  /**
+   * Build terminal items for grouped API response.
+   */
+  private buildGroupedTerminalItems(
+    terminals: readonly EligibleTerminal[],
+    terminalThreshold: number,
+  ): { items: BindableQuickPickItem[]; moreItem: TerminalMoreQuickPickItem | undefined } {
+    const items: BindableQuickPickItem[] = [];
+
+    const needsMoreItem = terminals.length > terminalThreshold;
+    const terminalsToShowCount = needsMoreItem ? terminalThreshold - 1 : terminals.length;
+    const terminalsToShow = terminals.slice(0, terminalsToShowCount);
+
+    for (const { terminal, name, isActive } of terminalsToShow) {
+      const displayName = formatMessage(MessageCode.TERMINAL_PICKER_TERMINAL_LABEL_FORMAT, {
+        name,
+      });
+      items.push({
+        label: displayName,
+        displayName,
+        bindOptions: { type: 'terminal', terminal },
+        isActive,
+        itemKind: 'bindable',
+      });
+    }
+
+    let moreItem: TerminalMoreQuickPickItem | undefined;
+    if (needsMoreItem) {
+      const remainingCount = terminals.length - terminalsToShowCount;
+      const displayName = formatMessage(MessageCode.TERMINAL_PICKER_MORE_LABEL);
+      moreItem = {
+        label: displayName,
+        displayName,
+        remainingCount,
+        itemKind: 'terminal-more',
+      };
+    }
+
+    return { items, moreItem };
   }
 }

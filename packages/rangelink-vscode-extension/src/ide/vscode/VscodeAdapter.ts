@@ -5,6 +5,7 @@ import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import {
   BehaviourAfterPaste,
+  type PickerItemKind,
   type SendTextToTerminalOptions,
   TerminalFocusType,
 } from '../../types';
@@ -111,16 +112,21 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
   }
 
   /**
-   * Show quick pick dialog for user selection
+   * Show quick pick dialog for user selection.
+   *
+   * Items must either be:
+   * - Separators (with `kind: vscode.QuickPickItemKind.Separator`)
+   * - Selectable items (with `itemKind: PickerItemKind`)
    *
    * @param items - Array of items to choose from
    * @param options - Optional configuration for the quick pick
    * @returns Promise resolving to the selected item, or undefined if cancelled
    */
-  async showQuickPick<T extends vscode.QuickPickItem>(
-    items: T[],
-    options?: vscode.QuickPickOptions,
-  ): Promise<T | undefined> {
+  async showQuickPick<
+    T extends
+      | (vscode.QuickPickItem & { kind: vscode.QuickPickItemKind.Separator })
+      | (vscode.QuickPickItem & { readonly itemKind: PickerItemKind }),
+  >(items: T[], options?: vscode.QuickPickOptions): Promise<T | undefined> {
     this.logger.debug(
       { fn: 'VscodeAdapter.showQuickPick', itemCount: items.length, options },
       'Showing quick pick',
@@ -372,7 +378,7 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns Array of all extensions
    */
   get extensions(): readonly vscode.Extension<unknown>[] {
-    return this.ideInstance.extensions.all;
+    return this.ideInstance.extensions.all || [];
   }
 
   /**
@@ -446,7 +452,7 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns URI of matching untitled document, or undefined if not found
    */
   findOpenUntitledFile(displayName: string): vscode.Uri | undefined {
-    const openDocuments = this.ideInstance.workspace.textDocuments;
+    const openDocuments = this.ideInstance.workspace.textDocuments || [];
     const untitledDocs = openDocuments.filter((doc) => doc.uri.scheme === 'untitled');
 
     for (const doc of untitledDocs) {
@@ -648,7 +654,7 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns Readonly array of all terminal instances
    */
   get terminals(): readonly vscode.Terminal[] {
-    return this.ideInstance.window.terminals;
+    return this.ideInstance.window.terminals || [];
   }
 
   /**
@@ -682,7 +688,7 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns Array of visible text editors
    */
   get visibleTextEditors(): readonly vscode.TextEditor[] {
-    return this.ideInstance.window.visibleTextEditors;
+    return this.ideInstance.window.visibleTextEditors || [];
   }
 
   /**
@@ -707,7 +713,7 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns The tab group containing the document, or undefined if not found
    */
   findTabGroupForDocument(documentUri: vscode.Uri): vscode.TabGroup | undefined {
-    for (const tabGroup of this.ideInstance.window.tabGroups.all) {
+    for (const tabGroup of this.ideInstance.window.tabGroups.all || []) {
       for (const tab of tabGroup.tabs) {
         const tabUri = this.getTabDocumentUri(tab);
         if (tabUri && tabUri.toString() === documentUri.toString()) {

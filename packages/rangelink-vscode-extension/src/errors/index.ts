@@ -3,6 +3,7 @@ export { DetailedError, type ErrorOptions, type ErrorDetails } from 'rangelink-c
 export { SharedErrorCodes } from 'rangelink-core-ts';
 
 // Extension-specific error infrastructure
+export { BindFailureReason } from './BindFailureReason';
 export { RangeLinkExtensionError } from './RangeLinkExtensionError';
 export {
   RangeLinkExtensionErrorCodes,

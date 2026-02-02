@@ -1,46 +1,14 @@
-import type * as vscode from 'vscode';
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
-/**
- * Information about an eligible terminal.
- */
-export interface EligibleTerminal {
-  readonly terminal: vscode.Terminal;
-  readonly name: string;
-  readonly isActive: boolean;
-}
+import { isTerminalEligible } from './isTerminalEligible';
 
 /**
- * Result of checking terminal destination eligibility.
- */
-export interface TerminalEligibility {
-  readonly eligible: boolean;
-  readonly terminals: readonly EligibleTerminal[];
-}
-
-/**
- * Check which terminals are eligible for binding.
+ * Check if terminal destination binding is eligible.
  *
- * Returns all available terminals with their names and active status.
- * Eligibility requires at least one terminal to exist.
+ * Only considers terminals with live processes (exitStatus undefined).
  *
  * @param ideAdapter - IDE adapter for reading terminal state
- * @returns Eligibility result with array of terminals when eligible
+ * @returns true if at least one live terminal exists, false otherwise
  */
-export const isTerminalDestinationEligible = (ideAdapter: VscodeAdapter): TerminalEligibility => {
-  const allTerminals = ideAdapter.terminals;
-  const activeTerminal = ideAdapter.activeTerminal;
-
-  if (allTerminals.length === 0) {
-    return { eligible: false, terminals: [] };
-  }
-
-  const terminals: EligibleTerminal[] = allTerminals.map((terminal) => ({
-    terminal,
-    name: terminal.name,
-    isActive: terminal === activeTerminal,
-  }));
-
-  return { eligible: true, terminals };
-};
+export const isTerminalDestinationEligible = (ideAdapter: VscodeAdapter): boolean =>
+  ideAdapter.terminals.some(isTerminalEligible);

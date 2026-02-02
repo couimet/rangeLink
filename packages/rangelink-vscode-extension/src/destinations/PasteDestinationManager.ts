@@ -3,18 +3,12 @@ import type { FormattedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { CONTEXT_IS_BOUND } from '../constants';
+import { BindFailureReason } from '../errors/BindFailureReason';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import {
-  type AnyDestinationQuickPickItem,
-  type AnyPickerItem,
-  AutoPasteResult,
-  type BindOptions,
-  MessageCode,
-  type NonTerminalDestinationType,
-  QuickPickBindResult,
-} from '../types';
+import { AutoPasteResult, type BindOptions, ExtensionResult, MessageCode } from '../types';
+import type { AIAssistantDestinationType, DestinationType } from '../types';
 import {
   formatMessage,
   isBinaryFile,
@@ -23,12 +17,24 @@ import {
   type PaddingMode,
 } from '../utils';
 
-import type { AIAssistantDestinationType, DestinationType } from '../types';
-
-import type { DestinationAvailabilityService } from './DestinationAvailabilityService';
 import type { DestinationRegistry } from './DestinationRegistry';
 import type { PasteDestination } from './PasteDestination';
-import { showTerminalPicker, type TerminalPickerOptions } from './utils';
+
+/**
+ * Success information returned when binding to a destination.
+ */
+export interface BindSuccessInfo {
+  readonly destinationName: string;
+  readonly destinationType: DestinationType;
+}
+
+/**
+ * Success information returned when focusing a bound destination.
+ *
+ * Extends BindSuccessInfo since focus operations require a bound destination.
+ * Aliased separately to allow future extension without breaking changes.
+ */
+export interface FocusSuccessInfo extends BindSuccessInfo {}
 
 /**
  * Unified destination manager for RangeLink (Phase 3)
@@ -64,7 +70,6 @@ export class PasteDestinationManager implements vscode.Disposable {
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly registry: DestinationRegistry,
-    private readonly availabilityService: DestinationAvailabilityService,
     private readonly vscodeAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
@@ -77,22 +82,12 @@ export class PasteDestinationManager implements vscode.Disposable {
   /**
    * Bind to a destination type
    *
-   * For terminal: requires active terminal via vscode.window.activeTerminal (or explicit terminal reference)
-   * For text-editor: requires active text editor via vscode.window.activeTextEditor
-   * For AI assistants: checks destination.isAvailable() (e.g., Cursor IDE detection, Claude Code extension)
-   *
-   * **Centralized binding logic:**
-   * 1. Create/validate new destination (resource-specific validation)
-   * 2. Check if already bound to same destination using equals()
-   * 3. If different destination bound, show confirmation
-   * 4. Bind the new destination
-   *
    * @param options - Discriminated union specifying destination type and type-specific options
-   * @returns true if binding succeeded, false otherwise
+   * @returns ExtensionResult with bind success info or error
    */
-  async bind(options: BindOptions): Promise<boolean> {
+  async bind(options: BindOptions): Promise<ExtensionResult<BindSuccessInfo>> {
     if (options.type === 'terminal') {
-      return this.bindTerminalWithReference(options.terminal);
+      return this.bindTerminal(options.terminal);
     }
 
     if (options.type === 'text-editor') {
@@ -143,241 +138,41 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Jump to (focus) the currently bound destination without performing a paste
+   * Bind to a destination type and immediately focus it.
+   *
+   * Convenience method that combines bind() and focusBoundDestination().
+   *
+   * @param options - The destination bind options
+   * @returns ExtensionResult with focus success info or error from either bind or focus
+   */
+  async bindAndFocus(options: BindOptions): Promise<ExtensionResult<FocusSuccessInfo>> {
+    const bindResult = await this.bind(options);
+    if (!bindResult.success) {
+      return ExtensionResult.err(bindResult.error);
+    }
+    return this.focusBoundDestination({ silent: true });
+  }
+
+  /**
+   * Focus the currently bound destination.
    *
    * Brings the bound destination into focus/view for quick navigation.
    *
-   * **Behavior:**
-   * - No destination bound: Shows quick pick of available destinations
-   * - Terminal: Focuses terminal panel
-   * - Text Editor: Focuses editor document (cursor stays at current position)
-   * - AI Assistants: Opens/focuses chat interface
-   *
-   * @returns true if jump succeeded, false if no destination bound/selected or focus failed
-   */
-  async jumpToBoundDestination(): Promise<boolean> {
-    if (!this.boundDestination) {
-      return this.showDestinationQuickPickAndJump();
-    }
-
-    return this.focusBoundDestination();
-  }
-
-  /**
-   * Bind to a destination type and immediately jump to it.
-   *
-   * Convenience method that combines bind() and jumpToBoundDestination().
-   *
-   * @param type - The destination type to bind and jump to
-   * @returns true if bind and jump both succeeded, false otherwise
-   */
-  async bindAndJump(options: BindOptions): Promise<boolean> {
-    const bound = await this.bind(options);
-    if (!bound) {
-      return false;
-    }
-    return this.focusBoundDestination({ silent: true });
-  }
-
-  /**
-   * Show quick pick of available destinations for R-V (Paste to Destination).
-   * Only binds to selected destination - caller handles the actual paste.
-   *
-   * @returns true if binding succeeded, false if cancelled/failed/no destinations
-   */
-  async showDestinationQuickPickForPaste(): Promise<QuickPickBindResult> {
-    return this.showDestinationQuickPickAndBind(
-      MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE,
-      MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
-      { fn: 'PasteDestinationManager.showDestinationQuickPickForPaste' },
-    );
-  }
-
-  /**
-   * Show quick pick of available destinations and bind to selected one.
-   * Common logic shared by jump and paste flows.
-   *
-   * @param noDestinationsMessageCode - Message to show when no destinations available
-   * @param quickPickPlaceholderMessageCode - Placeholder text for quick pick
-   * @param callerContext - Logging context from caller (fn will be extended with ::showDestinationQuickPickAndBind)
-   * @returns Rich result indicating binding outcome
-   */
-  private async showDestinationQuickPickAndBind(
-    noDestinationsMessageCode: MessageCode,
-    quickPickPlaceholderMessageCode: MessageCode,
-    callerContext: LoggingContext,
-  ): Promise<QuickPickBindResult> {
-    const logCtx = { ...callerContext, fn: `${callerContext.fn}::showDestinationQuickPickAndBind` };
-
-    this.logger.debug(logCtx, 'No destination bound, showing quick pick');
-
-    const availableItems = await this.availabilityService.getAvailableDestinationItems();
-
-    if (availableItems.length === 0) {
-      this.logger.debug(logCtx, 'No destinations available');
-      await this.vscodeAdapter.showInformationMessage(formatMessage(noDestinationsMessageCode));
-      return QuickPickBindResult.NoDestinationsAvailable;
-    }
-
-    const quickPickItems = this.buildQuickPickItems(availableItems);
-
-    this.logger.debug(
-      { ...logCtx, availableCount: quickPickItems.length },
-      `Showing quick pick with ${quickPickItems.length} items`,
-    );
-
-    const selected = await this.vscodeAdapter.showQuickPick(
-      quickPickItems as unknown as AnyDestinationQuickPickItem[],
-      {
-        placeHolder: formatMessage(quickPickPlaceholderMessageCode),
-      },
-    );
-
-    if (!selected) {
-      this.logger.debug(logCtx, 'User cancelled quick pick');
-      return QuickPickBindResult.Cancelled;
-    }
-
-    return this.handleQuickPickSelection(selected, logCtx);
-  }
-
-  /**
-   * Build QuickPick items from available destination items.
-   */
-  private buildQuickPickItems(items: AnyPickerItem[]): vscode.QuickPickItem[] {
-    const quickPickItems: vscode.QuickPickItem[] = [];
-
-    for (const item of items) {
-      switch (item.kind) {
-        case 'destination':
-          quickPickItems.push({
-            label: item.displayName,
-            itemKind: 'destination',
-            destinationType: item.destinationType,
-          } as AnyDestinationQuickPickItem);
-          break;
-
-        case 'terminal':
-          quickPickItems.push({
-            label: `Terminal "${item.displayName}"`,
-            description: item.isActive
-              ? formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION)
-              : undefined,
-            itemKind: 'terminal',
-            terminal: item.terminal,
-          } as AnyDestinationQuickPickItem);
-          break;
-
-        case 'terminal-more':
-          quickPickItems.push({
-            label: item.displayName,
-            description: formatMessage(MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION, {
-              count: item.remainingCount,
-            }),
-            itemKind: 'terminal-more',
-          } as AnyDestinationQuickPickItem);
-          break;
-      }
-    }
-
-    return quickPickItems;
-  }
-
-  /**
-   * Handle user selection from the destination quick pick.
-   */
-  private async handleQuickPickSelection(
-    selected: AnyDestinationQuickPickItem,
-    logCtx: LoggingContext,
-  ): Promise<QuickPickBindResult> {
-    switch (selected.itemKind) {
-      case 'destination':
-        this.logger.debug(
-          { ...logCtx, selectedType: selected.destinationType },
-          `User selected ${selected.destinationType}`,
-        );
-        return (await this.bind({ type: selected.destinationType as NonTerminalDestinationType }))
-          ? QuickPickBindResult.Bound
-          : QuickPickBindResult.BindingFailed;
-
-      case 'terminal':
-        this.logger.debug(
-          { ...logCtx, terminalName: selected.terminal?.name },
-          `User selected terminal "${selected.terminal?.name}"`,
-        );
-        return (await this.bindTerminalWithReference(selected.terminal))
-          ? QuickPickBindResult.Bound
-          : QuickPickBindResult.BindingFailed;
-
-      case 'terminal-more':
-        this.logger.debug(logCtx, 'User selected "More terminals...", showing secondary picker');
-        return this.showSecondaryTerminalPicker(logCtx);
-    }
-  }
-
-  /**
-   * Show secondary terminal picker with all terminals.
-   */
-  private async showSecondaryTerminalPicker(logCtx: LoggingContext): Promise<QuickPickBindResult> {
-    const options: TerminalPickerOptions = {
-      maxItemsBeforeMore: 999,
-      title: formatMessage(MessageCode.TERMINAL_PICKER_TITLE),
-      placeholder: formatMessage(MessageCode.TERMINAL_PICKER_PLACEHOLDER),
-      activeDescription: formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION),
-      moreTerminalsLabel: formatMessage(MessageCode.TERMINAL_PICKER_MORE_LABEL),
-      formatMoreDescription: (count) =>
-        formatMessage(MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION, { count }),
-    };
-
-    const result = await showTerminalPicker(this.vscodeAdapter, options, this.logger);
-
-    if (result.cancelled) {
-      this.logger.debug(logCtx, 'User cancelled secondary terminal picker');
-      return QuickPickBindResult.Cancelled;
-    }
-
-    if (result.returnedToDestinationPicker) {
-      this.logger.debug(logCtx, 'User returned to destination picker from secondary');
-      return QuickPickBindResult.Cancelled;
-    }
-
-    if (!result.terminal) {
-      this.logger.debug(logCtx, 'No terminal selected');
-      return QuickPickBindResult.BindingFailed;
-    }
-
-    return (await this.bindTerminalWithReference(result.terminal))
-      ? QuickPickBindResult.Bound
-      : QuickPickBindResult.BindingFailed;
-  }
-
-  /**
-   * Show quick pick of available destinations when no destination is bound.
-   * Binds AND jumps to selected destination in one action.
-   */
-  private async showDestinationQuickPickAndJump(): Promise<boolean> {
-    const result = await this.showDestinationQuickPickAndBind(
-      MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE,
-      MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER,
-      { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump' },
-    );
-
-    if (result !== QuickPickBindResult.Bound) {
-      return false;
-    }
-
-    return this.focusBoundDestination({ silent: true });
-  }
-
-  /**
-   * Focus the currently bound destination
-   *
    * @param options.silent - If true, suppresses the status bar success message.
-   *   Used by bindAndJump() where the binding message is already shown.
+   *   Used by bindAndFocus() where the binding message is already shown.
+   * @returns ExtensionResult with FocusSuccessInfo on success, RangeLinkExtensionError on failure
    */
-  private async focusBoundDestination(options?: { silent?: boolean }): Promise<boolean> {
+  async focusBoundDestination(options?: {
+    silent?: boolean;
+  }): Promise<ExtensionResult<FocusSuccessInfo>> {
     if (!this.boundDestination) {
-      return false;
+      return ExtensionResult.err(
+        new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_BOUND,
+          message: 'No destination is currently bound',
+          functionName: 'PasteDestinationManager.focusBoundDestination',
+        }),
+      );
     }
 
     const destinationType = this.boundDestination.id;
@@ -399,7 +194,14 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.vscodeAdapter.showInformationMessage(
         formatMessage(MessageCode.INFO_JUMP_FOCUS_FAILED, { destinationName: displayName }),
       );
-      return false;
+      return ExtensionResult.err(
+        new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.DESTINATION_FOCUS_FAILED,
+          message: `Failed to focus destination: ${displayName}`,
+          functionName: 'PasteDestinationManager.focusBoundDestination',
+          details: { destinationType, displayName },
+        }),
+      );
     }
 
     if (!options?.silent) {
@@ -409,7 +211,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.logger.info(logCtx, `Successfully focused ${displayName}`);
 
-    return true;
+    return ExtensionResult.ok({ destinationName: displayName, destinationType });
   }
 
   /**
@@ -502,19 +304,18 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Bind to a specific terminal by reference.
-   * Caller must provide the terminal (from activeTerminal lookup or picker selection).
+   * Bind to a terminal.
    *
    * @param terminal - The specific terminal to bind to
-   * @returns true if binding succeeded, false otherwise
+   * @returns ExtensionResult with bind success info or error
    */
-  private async bindTerminalWithReference(terminal: vscode.Terminal): Promise<boolean> {
+  private async bindTerminal(terminal: vscode.Terminal): Promise<ExtensionResult<BindSuccessInfo>> {
     const newDestination = this.registry.create({ type: 'terminal', terminal });
 
     if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
       this.logger.debug(
         {
-          fn: 'PasteDestinationManager.bindTerminalWithReference',
+          fn: 'bindTerminal',
           displayName: newDestination.displayName,
         },
         `Already bound to ${newDestination.displayName}, no action taken`,
@@ -524,7 +325,11 @@ export class PasteDestinationManager implements vscode.Disposable {
           destinationName: newDestination.displayName,
         }),
       );
-      return false;
+      return this.bindFailedResult(
+        'bindTerminal',
+        BindFailureReason.ALREADY_BOUND_TO_SAME,
+        'Already bound to same destination',
+      );
     }
 
     if (this.boundDestination) {
@@ -535,11 +340,12 @@ export class PasteDestinationManager implements vscode.Disposable {
       );
 
       if (!confirmed) {
-        this.logger.debug(
-          { fn: 'PasteDestinationManager.bindTerminalWithReference' },
+        this.logger.debug({ fn: 'bindTerminal' }, 'User cancelled binding replacement');
+        return this.bindFailedResult(
+          'bindTerminal',
+          BindFailureReason.USER_CANCELLED_REPLACEMENT,
           'User cancelled binding replacement',
         );
-        return false;
       }
 
       this.replacedDestinationName = this.boundDestination.displayName;
@@ -550,7 +356,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.logger.info(
       {
-        fn: 'PasteDestinationManager.bindTerminalWithReference',
+        fn: 'bindTerminal',
         displayName: newDestination.displayName,
         ...newDestination.getLoggingDetails(),
       },
@@ -559,7 +365,10 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.showBindSuccessToast(newDestination.displayName);
 
-    return true;
+    return ExtensionResult.ok({
+      destinationName: newDestination.displayName,
+      destinationType: 'terminal',
+    });
   }
 
   /**
@@ -570,9 +379,10 @@ export class PasteDestinationManager implements vscode.Disposable {
    * - Active editor must be text-like file (not binary, not terminal)
    * - Active editor must have focus
    *
-   * @returns true if binding succeeded, false if validation fails
+   * @returns ExtensionResult with bind success info or error
    */
-  private async bindTextEditor(): Promise<boolean> {
+  private async bindTextEditor(): Promise<ExtensionResult<BindSuccessInfo>> {
+    const fnName = 'bindTextEditor';
     const tabGroupCount = this.vscodeAdapter.tabGroups.all.length;
     if (tabGroupCount < 2) {
       this.logger.warn(
@@ -582,14 +392,22 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.vscodeAdapter.showErrorMessage(
         formatMessage(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT),
       );
-      return false;
+      return this.bindFailedResult(
+        fnName,
+        BindFailureReason.REQUIRES_SPLIT_EDITOR,
+        'Requires 2+ tab groups',
+      );
     }
 
     const activeEditor = this.vscodeAdapter.activeTextEditor;
     if (!activeEditor) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
       this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
-      return false;
+      return this.bindFailedResult(
+        fnName,
+        BindFailureReason.NO_ACTIVE_EDITOR,
+        'No active text editor',
+      );
     }
 
     // Extract URI properties for logging and validation
@@ -604,7 +422,11 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.vscodeAdapter.showErrorMessage(
         formatMessage(MessageCode.ERROR_TEXT_EDITOR_READ_ONLY, { scheme }),
       );
-      return false;
+      return this.bindFailedResult(
+        fnName,
+        BindFailureReason.EDITOR_READ_ONLY,
+        `Editor is read-only (scheme: ${scheme})`,
+      );
     }
 
     if (isBinaryFile(scheme, fsPath)) {
@@ -612,7 +434,11 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.vscodeAdapter.showErrorMessage(
         formatMessage(MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE, { fileName }),
       );
-      return false;
+      return this.bindFailedResult(
+        fnName,
+        BindFailureReason.EDITOR_BINARY_FILE,
+        'Editor is a binary file',
+      );
     }
 
     // Create new destination with resource
@@ -632,7 +458,11 @@ export class PasteDestinationManager implements vscode.Disposable {
           destinationName: newDestination.displayName,
         }),
       );
-      return false;
+      return this.bindFailedResult(
+        fnName,
+        BindFailureReason.ALREADY_BOUND_TO_SAME,
+        'Already bound to same destination',
+      );
     }
 
     // If already bound to different destination, show confirmation dialog
@@ -648,7 +478,11 @@ export class PasteDestinationManager implements vscode.Disposable {
           { fn: 'PasteDestinationManager.bindTextEditor' },
           'User cancelled binding replacement',
         );
-        return false;
+        return this.bindFailedResult(
+          fnName,
+          BindFailureReason.USER_CANCELLED_REPLACEMENT,
+          'User cancelled binding replacement',
+        );
       }
 
       // User confirmed - track old destination and unbind
@@ -670,16 +504,22 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.showBindSuccessToast(newDestination.displayName);
 
-    return true;
+    return ExtensionResult.ok({
+      destinationName: newDestination.displayName,
+      destinationType: 'text-editor',
+    });
   }
 
   /**
    * Bind to generic destination (AI assistant destinations, etc.)
    *
    * @param type - The destination type (AI assistants only)
-   * @returns true if binding succeeded, false if destination not available
+   * @returns ExtensionResult with bind success info or error
    */
-  private async bindGenericDestination(type: AIAssistantDestinationType): Promise<boolean> {
+  private async bindGenericDestination(
+    type: AIAssistantDestinationType,
+  ): Promise<ExtensionResult<BindSuccessInfo>> {
+    const fnName = 'bindGenericDestination';
     // Generic destinations don't require resources at construction
     const newDestination = this.registry.create({ type });
 
@@ -705,7 +545,11 @@ export class PasteDestinationManager implements vscode.Disposable {
 
       this.vscodeAdapter.showErrorMessage(formatMessage(messageCode));
 
-      return false;
+      return this.bindFailedResult(
+        fnName,
+        BindFailureReason.DESTINATION_NOT_AVAILABLE,
+        `${newDestination.displayName} not available`,
+      );
     }
 
     // Check if already bound to same destination using equals()
@@ -722,7 +566,11 @@ export class PasteDestinationManager implements vscode.Disposable {
           destinationName: newDestination.displayName,
         }),
       );
-      return false;
+      return this.bindFailedResult(
+        fnName,
+        BindFailureReason.ALREADY_BOUND_TO_SAME,
+        'Already bound to same destination',
+      );
     }
 
     // If already bound to different destination, show confirmation dialog
@@ -738,7 +586,11 @@ export class PasteDestinationManager implements vscode.Disposable {
           { fn: 'PasteDestinationManager.bindGenericDestination' },
           'User cancelled binding replacement',
         );
-        return false;
+        return this.bindFailedResult(
+          fnName,
+          BindFailureReason.USER_CANCELLED_REPLACEMENT,
+          'User cancelled binding replacement',
+        );
       }
 
       // User confirmed - track old destination and unbind
@@ -759,7 +611,10 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.showBindSuccessToast(newDestination.displayName);
 
-    return true;
+    return ExtensionResult.ok({
+      destinationName: newDestination.displayName,
+      destinationType: type,
+    });
   }
 
   /**
@@ -786,6 +641,24 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.boundDestination = undefined;
     this.boundTerminal = undefined;
     void this.vscodeAdapter.executeCommand('setContext', CONTEXT_IS_BOUND, false);
+  }
+
+  /**
+   * Create a bind failure result with consistent error structure.
+   */
+  private bindFailedResult(
+    functionName: string,
+    reason: BindFailureReason,
+    message: string,
+  ): ExtensionResult<BindSuccessInfo> {
+    return ExtensionResult.err(
+      new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+        message,
+        functionName: `PasteDestinationManager.${functionName}`,
+        details: { reason },
+      }),
+    );
   }
 
   /**
@@ -990,16 +863,16 @@ export class PasteDestinationManager implements vscode.Disposable {
       newDestination: newDisplayName,
     };
 
-    const YES_REPLACE_LABEL = formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_REPLACE);
-
-    const items: vscode.QuickPickItem[] = [
+    const items = [
       {
-        label: YES_REPLACE_LABEL,
+        label: formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_REPLACE),
         description: formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_DESCRIPTION, params),
+        itemKind: 'confirm' as const,
       },
       {
         label: formatMessage(MessageCode.SMART_BIND_CONFIRM_NO_KEEP),
         description: formatMessage(MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION, params),
+        itemKind: 'cancel' as const,
       },
     ];
 
@@ -1007,7 +880,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       placeHolder: formatMessage(MessageCode.SMART_BIND_CONFIRM_PLACEHOLDER, params),
     });
 
-    const confirmed = choice?.label === YES_REPLACE_LABEL;
+    const confirmed = choice?.itemKind === 'confirm';
 
     this.logger.debug(
       {

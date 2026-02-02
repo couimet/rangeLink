@@ -1,13 +1,21 @@
 import type { Logger } from 'barebone-logger';
 import type * as vscode from 'vscode';
 
+import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import type { TerminalMoreQuickPickItem, TerminalQuickPickItem } from '../../types';
+
+import { assertTerminalFromPicker } from './assertTerminalFromPicker';
+
+/** Pass to maxItemsBeforeMore to show all terminals without "More..." grouping */
+export const TERMINAL_PICKER_SHOW_ALL = 5000;
 
 /**
  * Options for configuring the terminal picker behavior and display.
  */
 export interface TerminalPickerOptions {
-  /** Maximum terminals to show before adding "More..." item */
+  /** Maximum terminals to show before adding "More..." item. Use TERMINAL_PICKER_SHOW_ALL to show all. */
   readonly maxItemsBeforeMore: number;
   /** QuickPick title */
   readonly title: string;
@@ -24,19 +32,12 @@ export interface TerminalPickerOptions {
 /**
  * Result of showing the terminal picker.
  */
-export interface TerminalPickerResult {
-  /** The selected terminal, or undefined if cancelled/no selection */
-  readonly terminal: vscode.Terminal | undefined;
-  /** True if user cancelled by pressing Escape */
-  readonly cancelled: boolean;
-  /** True if user escaped from "More terminals..." picker to return to destination picker */
-  readonly returnedToDestinationPicker: boolean;
-}
+export type TerminalPickerResult =
+  | { readonly outcome: 'selected'; readonly terminal: vscode.Terminal }
+  | { readonly outcome: 'cancelled' }
+  | { readonly outcome: 'returned-to-destination-picker' };
 
-interface TerminalQuickPickItem extends vscode.QuickPickItem {
-  readonly terminal?: vscode.Terminal;
-  readonly isMoreItem?: boolean;
-}
+type TerminalPickerQuickPickItem = TerminalQuickPickItem | TerminalMoreQuickPickItem;
 
 /**
  * Build QuickPick items for terminal selection.
@@ -46,8 +47,8 @@ const buildTerminalItems = (
   activeTerminal: vscode.Terminal | undefined,
   options: TerminalPickerOptions,
   showAll: boolean,
-): TerminalQuickPickItem[] => {
-  const items: TerminalQuickPickItem[] = [];
+): TerminalPickerQuickPickItem[] => {
+  const items: TerminalPickerQuickPickItem[] = [];
   const maxItems = options.maxItemsBeforeMore;
   const itemsBeforeMore = maxItems - 1;
 
@@ -60,14 +61,18 @@ const buildTerminalItems = (
       label: terminal.name,
       description: isActive ? options.activeDescription : undefined,
       terminal,
+      itemKind: 'terminal',
     });
   }
 
   if (!showAll && terminals.length > maxItems) {
+    const remainingCount = terminals.length - itemsBeforeMore;
     items.push({
       label: options.moreTerminalsLabel,
-      description: options.formatMoreDescription(terminals.length - itemsBeforeMore),
-      isMoreItem: true,
+      displayName: options.moreTerminalsLabel,
+      remainingCount,
+      description: options.formatMoreDescription(remainingCount),
+      itemKind: 'terminal-more',
     });
   }
 
@@ -75,40 +80,33 @@ const buildTerminalItems = (
 };
 
 /**
- * Show a QuickPick to select a terminal from available terminals.
+ * Show a QuickPick to select a terminal from a list of terminals.
+ *
+ * This is a pure UI function - it only shows the picker. The caller is
+ * responsible for deciding when to show the picker (e.g., handling the
+ * 0 terminals or 1 terminal cases externally).
  *
  * Behavior:
- * - 0 terminals: returns undefined terminal (not cancelled)
- * - 1 terminal: returns that terminal directly (no picker shown)
- * - 2-N terminals (N <= maxItemsBeforeMore): shows QuickPick with all terminals
- * - >N terminals: shows (N-1) terminals + "More terminals..." item
+ * - Shows QuickPick with all terminals (up to maxItemsBeforeMore)
+ * - If more terminals than maxItemsBeforeMore, shows "More terminals..." item
+ * - Selecting "More terminals..." opens secondary picker with all terminals
+ * - Escaping secondary picker returns 'returned-to-destination-picker'
  *
- * The "More terminals..." item opens a secondary picker with all terminals.
- * Escaping the secondary picker returns `returnedToDestinationPicker: true`.
- *
- * @param vscodeAdapter - Adapter for VSCode API calls (provides terminals and activeTerminal)
+ * @param terminals - The terminals to show in the picker (must have at least 2)
+ * @param activeTerminal - The currently active terminal (shown with special description)
+ * @param vscodeAdapter - Adapter for VSCode API calls
  * @param options - Configuration for picker behavior and display strings
  * @param logger - Logger instance
- * @returns Result with selected terminal and status flags
+ * @returns Result indicating selection outcome
  */
 export const showTerminalPicker = async (
+  terminals: readonly vscode.Terminal[],
+  activeTerminal: vscode.Terminal | undefined,
   vscodeAdapter: VscodeAdapter,
   options: TerminalPickerOptions,
   logger: Logger,
 ): Promise<TerminalPickerResult> => {
-  const terminals = vscodeAdapter.terminals;
-  const activeTerminal = vscodeAdapter.activeTerminal;
   const logCtx = { fn: 'showTerminalPicker', terminalCount: terminals.length };
-
-  if (terminals.length === 0) {
-    logger.debug(logCtx, 'No terminals available');
-    return { terminal: undefined, cancelled: false, returnedToDestinationPicker: false };
-  }
-
-  if (terminals.length === 1) {
-    logger.debug(logCtx, 'Single terminal available, returning directly');
-    return { terminal: terminals[0], cancelled: false, returnedToDestinationPicker: false };
-  }
 
   const items = buildTerminalItems(terminals, activeTerminal, options, false);
 
@@ -121,16 +119,33 @@ export const showTerminalPicker = async (
 
   if (!selected) {
     logger.debug(logCtx, 'User cancelled terminal picker');
-    return { terminal: undefined, cancelled: true, returnedToDestinationPicker: false };
+    return { outcome: 'cancelled' };
   }
 
-  if (selected.isMoreItem) {
-    logger.debug(logCtx, 'User selected "More terminals...", showing full list');
-    return showSecondaryPicker(terminals, activeTerminal, vscodeAdapter, logger, options);
-  }
+  switch (selected.itemKind) {
+    case 'terminal':
+      return assertTerminalFromPicker(
+        selected,
+        'showTerminalPicker',
+        logger,
+        'Terminal selected',
+        (terminal) => ({ outcome: 'selected', terminal }),
+      );
 
-  logger.debug({ ...logCtx, selectedTerminal: selected.label }, 'Terminal selected');
-  return { terminal: selected.terminal, cancelled: false, returnedToDestinationPicker: false };
+    case 'terminal-more':
+      logger.debug(logCtx, 'User selected "More terminals...", showing full list');
+      return showSecondaryPicker(terminals, activeTerminal, vscodeAdapter, logger, options);
+
+    default: {
+      const _exhaustiveCheck: never = selected;
+      throw new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
+        message: 'Unhandled item kind in terminal picker',
+        functionName: 'showTerminalPicker',
+        details: { selectedItem: _exhaustiveCheck },
+      });
+    }
+  }
 };
 
 /**
@@ -154,9 +169,25 @@ const showSecondaryPicker = async (
 
   if (!selected) {
     logger.debug(logCtx, 'User escaped secondary picker, returning to destination picker');
-    return { terminal: undefined, cancelled: false, returnedToDestinationPicker: true };
+    return { outcome: 'returned-to-destination-picker' };
   }
 
-  logger.debug({ ...logCtx, selectedTerminal: selected.label }, 'Terminal selected from full list');
-  return { terminal: selected.terminal, cancelled: false, returnedToDestinationPicker: false };
+  switch (selected.itemKind) {
+    case 'terminal':
+      return assertTerminalFromPicker(
+        selected,
+        'showTerminalPicker.secondary',
+        logger,
+        'Terminal selected from full list',
+        (terminal) => ({ outcome: 'selected', terminal }),
+      );
+
+    default:
+      throw new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
+        message: 'Unexpected item kind in secondary terminal picker',
+        functionName: 'showTerminalPicker.secondary',
+        details: { selectedItem: selected },
+      });
+  }
 };

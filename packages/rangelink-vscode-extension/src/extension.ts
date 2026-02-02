@@ -3,7 +3,10 @@ import * as vscode from 'vscode';
 
 import { BookmarkService, BookmarksStore } from './bookmarks';
 import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
+import { BindToTerminalCommand } from './commands/BindToTerminalCommand';
+import { DestinationPickerCommand } from './commands/DestinationPickerCommand';
 import { GoToRangeLinkCommand } from './commands/GoToRangeLinkCommand';
+import { JumpToDestinationCommand } from './commands/JumpToDestinationCommand';
 import { ListBookmarksCommand } from './commands/ListBookmarksCommand';
 import { ManageBookmarksCommand } from './commands/ManageBookmarksCommand';
 import { ConfigReader, getDelimitersForExtension } from './config';
@@ -121,21 +124,27 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   // Create unified destination manager
-  const destinationManager = new PasteDestinationManager(
-    context,
-    registry,
-    availabilityService,
+  const destinationManager = new PasteDestinationManager(context, registry, ideAdapter, logger);
+
+  const destinationPickerCommand = new DestinationPickerCommand(
     ideAdapter,
+    availabilityService,
     logger,
   );
 
+  const jumpToDestinationCommand = new JumpToDestinationCommand(
+    destinationManager,
+    destinationPickerCommand,
+    logger,
+  );
+
+  const bindToTerminalCommand = new BindToTerminalCommand(ideAdapter, destinationManager, logger);
   const bindToTerminalHandler = async () => {
-    const terminal = ideAdapter.activeTerminal;
-    if (!terminal) {
+    const result = await bindToTerminalCommand.execute();
+    // TODO(#255 Block 3): Replace error with terminal creation - create terminal, bind, show success
+    if (result.outcome === 'no-terminals') {
       ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
-      return;
     }
-    await destinationManager.bind({ type: 'terminal', terminal });
   };
 
   const bindToTextEditorHandler = async () => {
@@ -154,6 +163,7 @@ export function activate(context: vscode.ExtensionContext): void {
     delimiters,
     ideAdapter,
     destinationManager,
+    destinationPickerCommand,
     configReader,
     logger,
   );
@@ -346,11 +356,8 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  // Register jump to bound destination command
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_JUMP_TO_DESTINATION, async () => {
-      await destinationManager.jumpToBoundDestination();
-    }),
+    ideAdapter.registerCommand(CMD_JUMP_TO_DESTINATION, () => jumpToDestinationCommand.execute()),
   );
 
   // Register document link navigation command

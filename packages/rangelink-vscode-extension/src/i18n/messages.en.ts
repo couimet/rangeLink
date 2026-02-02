@@ -116,9 +116,11 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_MENU_TOOLTIP]: 'RangeLink Menu',
 
   [MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION]: 'active',
+  [MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER]: 'Select terminal to bind to',
   [MessageCode.TERMINAL_PICKER_MORE_LABEL]: 'More terminals...',
   [MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION]: '{count} more',
   [MessageCode.TERMINAL_PICKER_PLACEHOLDER]: 'Select terminal to bind and jump to',
+  [MessageCode.TERMINAL_PICKER_TERMINAL_LABEL_FORMAT]: 'Terminal "{name}"',
   [MessageCode.TERMINAL_PICKER_TITLE]: 'RangeLink',
 
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',

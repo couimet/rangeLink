@@ -27,3 +27,9 @@ export type AIAssistantDestinationType = Extract<
   DestinationType,
   'claude-code' | 'cursor-ai' | 'github-copilot-chat'
 >;
+
+/**
+ * Non-terminal destination types (text-editor and AI assistants).
+ * Terminal destinations use TerminalQuickPickItem which carries the terminal reference.
+ */
+export type NonTerminalDestinationType = Exclude<DestinationType, 'terminal'>;

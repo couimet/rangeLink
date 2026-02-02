@@ -3,11 +3,10 @@ import type * as vscode from 'vscode';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { AIAssistantDestinationType, DestinationType } from '../types';
 
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
 import type { PasteExecutorFactory } from './capabilities/PasteExecutorFactory';
-import type { AIAssistantDestinationType, DestinationType } from '../types';
-
 import type { PasteDestination } from './PasteDestination';
 
 /**

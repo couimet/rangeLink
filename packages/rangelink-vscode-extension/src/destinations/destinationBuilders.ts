@@ -10,6 +10,7 @@ import type * as vscode from 'vscode';
 import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { AutoPasteResult, MessageCode } from '../types';
+import type { DestinationType } from '../types';
 import {
   formatMessage,
   getUntitledDisplayName,
@@ -23,8 +24,6 @@ import { ComposablePasteDestination } from './ComposablePasteDestination';
 import type { DestinationBuilder, DestinationBuilderContext } from './DestinationRegistry';
 import { compareEditorsByUri } from './equality/compareEditorsByUri';
 import { compareTerminalsByProcessId } from './equality/compareTerminalsByProcessId';
-import type { DestinationType } from '../types';
-
 import type { PasteDestination } from './PasteDestination';
 
 /**

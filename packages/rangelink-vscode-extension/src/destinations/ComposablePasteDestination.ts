@@ -3,13 +3,12 @@ import type { FormattedLink } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import { type AutoPasteResult, PasteContentType } from '../types';
+import type { AIAssistantDestinationType, DestinationType } from '../types';
 import { applySmartPadding, type PaddingMode } from '../utils';
 
 import { AlwaysEligibleChecker } from './capabilities/AlwaysEligibleChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
 import type { PasteExecutor } from './capabilities/PasteExecutor';
-import type { AIAssistantDestinationType, DestinationType } from '../types';
-
 import type { PasteDestination } from './PasteDestination';
 
 // ============================================================================
