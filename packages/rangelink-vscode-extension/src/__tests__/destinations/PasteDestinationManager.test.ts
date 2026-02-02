@@ -2,7 +2,6 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
-import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
 import { AutoPasteResult, MessageCode } from '../../types';
@@ -12,7 +11,6 @@ import {
   createBaseMockPasteDestination,
   createMockClaudeCodeDestination,
   createMockCursorAIDestination,
-  createMockDestinationAvailabilityService,
   createMockDestinationRegistry,
   createMockDocument,
   createMockEditor,
@@ -99,7 +97,6 @@ describe('PasteDestinationManager', () => {
   let formatMessageSpy: jest.SpyInstance;
 
   // Shared mocks used by multiple describe blocks
-  let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
   let mockTerminalDest: jest.Mocked<PasteDestination>;
 
   /**
@@ -175,14 +172,7 @@ describe('PasteDestinationManager', () => {
         return undefined;
       },
     });
-    const availabilityService = createMockDestinationAvailabilityService();
-    const mgr = new PasteDestinationManager(
-      mockContext,
-      registry,
-      availabilityService,
-      adapter,
-      mockLogger,
-    );
+    const mgr = new PasteDestinationManager(mockContext, registry, adapter, mockLogger);
 
     // Extract event listeners from mock calls (made by PasteDestinationManager constructor)
     // These are needed for tests that simulate terminal/document closure events
@@ -277,7 +267,6 @@ describe('PasteDestinationManager', () => {
       const controlledManager = new PasteDestinationManager(
         mockContext,
         controlledFactory,
-        createMockDestinationAvailabilityService(),
         mockAdapter,
         mockLogger,
       );
@@ -856,7 +845,6 @@ describe('PasteDestinationManager', () => {
       manager = new PasteDestinationManager(
         mockContext,
         mockRegistryForSend,
-        createMockDestinationAvailabilityService(),
         mockAdapter,
         mockLogger,
       );
@@ -1366,7 +1354,6 @@ describe('PasteDestinationManager', () => {
       const newManager = new PasteDestinationManager(
         mockContext,
         mockRegistry,
-        createMockDestinationAvailabilityService(),
         testAdapter,
         mockLogger,
       );
@@ -1419,7 +1406,6 @@ describe('PasteDestinationManager', () => {
       manager = new PasteDestinationManager(
         mockContext,
         mockRegistryForSmartBind,
-        createMockDestinationAvailabilityService(),
         mockAdapter,
         mockLogger,
       );
@@ -1481,10 +1467,12 @@ describe('PasteDestinationManager', () => {
             {
               label: 'Yes, replace',
               description: 'Switch from Terminal ("TestTerminal") to Text Editor ("file.ts")',
+              itemKind: 'confirm',
             },
             {
               label: 'No, keep current binding',
               description: 'Stay bound to Terminal ("TestTerminal")',
+              itemKind: 'cancel',
             },
           ],
           {
@@ -1693,7 +1681,6 @@ describe('PasteDestinationManager', () => {
     let mockClaudeCodeDest: jest.Mocked<PasteDestination>;
 
     beforeEach(() => {
-      // Use specialized factories with default values (all already have sensible defaults)
       mockTerminalDest = createMockTerminalPasteDestination();
       mockEditorDest = createMockEditorComposablePasteDestination();
       mockEditorDestFocusSpy = jest.spyOn(mockEditorDest, 'focus');
@@ -2181,7 +2168,6 @@ describe('PasteDestinationManager', () => {
         manager = new PasteDestinationManager(
           mockContext,
           mockRegistryForSend,
-          createMockDestinationAvailabilityService(),
           mockAdapter,
           mockLogger,
         );
@@ -2324,7 +2310,6 @@ describe('PasteDestinationManager', () => {
         manager = new PasteDestinationManager(
           mockContext,
           mockRegistryForReplace,
-          createMockDestinationAvailabilityService(),
           mockAdapter,
           mockLogger,
         );
@@ -2342,6 +2327,7 @@ describe('PasteDestinationManager', () => {
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal2;
         (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValueOnce({
           label: 'Yes, replace',
+          itemKind: 'confirm',
         });
 
         await manager.bind({ type: 'terminal', terminal: mockTerminal2 });
@@ -2369,6 +2355,7 @@ describe('PasteDestinationManager', () => {
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal2;
         (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValueOnce({
           label: 'Yes, replace',
+          itemKind: 'confirm',
         });
 
         await manager.bind({ type: 'terminal', terminal: mockTerminal2 });
@@ -2428,7 +2415,6 @@ describe('PasteDestinationManager', () => {
         manager = new PasteDestinationManager(
           mockContext,
           mockRegistryForDuplicate,
-          createMockDestinationAvailabilityService(),
           mockAdapter,
           mockLogger,
         );
@@ -2545,7 +2531,6 @@ describe('PasteDestinationManager', () => {
         manager = new PasteDestinationManager(
           mockContext,
           mockRegistryForDocument,
-          createMockDestinationAvailabilityService(),
           mockAdapter,
           mockLogger,
         );
@@ -2654,115 +2639,6 @@ describe('PasteDestinationManager', () => {
         expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
         expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
       });
-    });
-  });
-
-  describe('showDestinationQuickPickForPaste()', () => {
-    let showQuickPickMock: jest.Mock;
-    let mockWindow: ReturnType<typeof mockAdapter.__getVscodeInstance>['window'];
-
-    beforeEach(() => {
-      mockAvailabilityService = createMockDestinationAvailabilityService();
-      mockWindow = mockAdapter.__getVscodeInstance().window;
-      showQuickPickMock = mockWindow.showQuickPick as jest.Mock;
-
-      manager = new PasteDestinationManager(
-        mockContext,
-        mockRegistry,
-        mockAvailabilityService,
-        mockAdapter,
-        mockLogger,
-      );
-    });
-
-    it('shows quick pick with available destinations and returns Bound on selection', async () => {
-      const mockTerminal = createMockTerminal();
-      mockWindow.activeTerminal = mockTerminal;
-      mockAvailabilityService.getAvailableDestinationItems.mockResolvedValueOnce([
-        { kind: 'terminal', terminal: mockTerminal, displayName: 'Terminal ("bash")', isActive: true },
-        { kind: 'destination', destinationType: 'claude-code', displayName: 'Claude Code Chat' },
-      ]);
-      showQuickPickMock.mockResolvedValueOnce({
-        label: '    $(terminal) Terminal ("bash")',
-        itemKind: 'terminal',
-        terminal: mockTerminal,
-      });
-
-      const result = await manager.showDestinationQuickPickForPaste();
-
-      expect(result).toBe('Bound');
-      expect(manager.isBound()).toBe(true);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',
-        },
-        'No destination bound, showing quick pick',
-      );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',
-          availableCount: 2,
-        },
-        'Showing quick pick with 2 items',
-      );
-    });
-
-    it('returns NoDestinationsAvailable and shows message when no destinations available', async () => {
-      mockAvailabilityService.getAvailableDestinationItems.mockResolvedValueOnce([]);
-
-      const result = await manager.showDestinationQuickPickForPaste();
-
-      expect(result).toBe('NoDestinationsAvailable');
-      expect(showQuickPickMock).not.toHaveBeenCalled();
-      expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
-        'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
-      );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',
-        },
-        'No destinations available',
-      );
-    });
-
-    it('returns Cancelled when user cancels quick pick (Escape)', async () => {
-      const mockTerminal = createMockTerminal();
-      mockAvailabilityService.getAvailableDestinationItems.mockResolvedValueOnce([
-        { kind: 'terminal', terminal: mockTerminal, displayName: 'Terminal', isActive: true },
-      ]);
-      showQuickPickMock.mockResolvedValueOnce(undefined);
-
-      const result = await manager.showDestinationQuickPickForPaste();
-
-      expect(result).toBe('Cancelled');
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',
-        },
-        'User cancelled quick pick',
-      );
-    });
-
-    it('returns BindingFailed when binding fails (registry returns undefined)', async () => {
-      mockAvailabilityService.getAvailableDestinationItems.mockResolvedValueOnce([
-        { kind: 'destination', destinationType: 'cursor-ai', displayName: 'Cursor AI' },
-      ]);
-      showQuickPickMock.mockResolvedValueOnce({
-        label: 'Cursor AI',
-        itemKind: 'destination',
-        destinationType: 'cursor-ai',
-      });
-
-      const result = await manager.showDestinationQuickPickForPaste();
-
-      expect(result).toBe('BindingFailed');
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',
-          selectedType: 'cursor-ai',
-        },
-        'User selected cursor-ai',
-      );
     });
   });
 });
