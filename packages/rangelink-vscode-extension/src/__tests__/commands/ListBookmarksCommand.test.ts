@@ -61,8 +61,12 @@ describe('ListBookmarksCommand', () => {
 
         expect(showQuickPickSpy).toHaveBeenCalledWith(
           [
-            { label: 'No bookmarks saved' },
-            { label: '$(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
+            { label: 'No bookmarks saved', itemKind: 'info' },
+            {
+              label: '$(add) Save Selection as Bookmark',
+              command: 'rangelink.bookmark.add',
+              itemKind: 'command',
+            },
           ],
           {
             title: 'Bookmarks',
@@ -76,6 +80,7 @@ describe('ListBookmarksCommand', () => {
         const addItem = {
           label: '$(add) Save Selection as Bookmark',
           command: 'rangelink.bookmark.add',
+          itemKind: 'command' as const,
         };
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { showQuickPick: jest.fn().mockResolvedValue(addItem) },
@@ -110,15 +115,25 @@ describe('ListBookmarksCommand', () => {
               label: '$(bookmark) Test Bookmark',
               detail: 'src/utils/helper.ts#L10-L20',
               bookmarkId: 'bookmark-1',
+              itemKind: 'bookmark',
             },
             {
               label: '$(bookmark) Another Bookmark',
               detail: '/absolute/path/to/file.ts#L5C1-L10C15',
               bookmarkId: 'bookmark-2',
+              itemKind: 'bookmark',
             },
             { label: '', kind: vscode.QuickPickItemKind.Separator },
-            { label: '$(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
-            { label: '$(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+            {
+              label: '$(add) Save Selection as Bookmark',
+              command: 'rangelink.bookmark.add',
+              itemKind: 'command',
+            },
+            {
+              label: '$(gear) Manage Bookmarks...',
+              command: 'rangelink.bookmark.manage',
+              itemKind: 'command',
+            },
           ],
           {
             title: 'Bookmarks',
@@ -152,6 +167,7 @@ describe('ListBookmarksCommand', () => {
         const selectedItem = {
           label: '$(bookmark) Test Bookmark',
           bookmarkId: 'bookmark-1',
+          itemKind: 'bookmark' as const,
         };
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { showQuickPick: jest.fn().mockResolvedValue(selectedItem) },
@@ -171,7 +187,7 @@ describe('ListBookmarksCommand', () => {
     describe('non-actionable item selection', () => {
       it('logs when selecting informational item with no action', async () => {
         mockBookmarkService.getAllBookmarks.mockReturnValue([]);
-        const emptyStateItem = { label: 'No bookmarks saved' };
+        const emptyStateItem = { label: 'No bookmarks saved', itemKind: 'info' as const };
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { showQuickPick: jest.fn().mockResolvedValue(emptyStateItem) },
         });
@@ -186,7 +202,7 @@ describe('ListBookmarksCommand', () => {
         expect(executeCommandSpy).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'ListBookmarksCommand.execute', selectedItem: emptyStateItem },
-          'Non-actionable item selected',
+          'Non-actionable info item selected',
         );
       });
     });
@@ -197,6 +213,7 @@ describe('ListBookmarksCommand', () => {
         const addItem = {
           label: '$(add) Save Selection as Bookmark',
           command: 'rangelink.bookmark.add',
+          itemKind: 'command' as const,
         };
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { showQuickPick: jest.fn().mockResolvedValue(addItem) },
@@ -214,6 +231,7 @@ describe('ListBookmarksCommand', () => {
         const manageItem = {
           label: '$(gear) Manage Bookmarks...',
           command: 'rangelink.bookmark.manage',
+          itemKind: 'command' as const,
         };
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { showQuickPick: jest.fn().mockResolvedValue(manageItem) },

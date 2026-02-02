@@ -6,7 +6,7 @@
 
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import type { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
-import { QuickPickBindResult } from '../../types/QuickPickBindResult';
+import { ExtensionResult } from '../../types';
 
 /**
  * Options for creating a mock destination manager
@@ -20,8 +20,6 @@ export interface MockDestinationManagerOptions {
   sendLinkToDestinationResult?: boolean;
   /** Mock return value for sendTextToDestination (default: false) */
   sendTextToDestinationResult?: boolean;
-  /** Mock return value for showDestinationQuickPickForPaste (default: Cancelled) */
-  showDestinationQuickPickForPasteResult?: QuickPickBindResult;
 }
 
 /**
@@ -38,7 +36,6 @@ export const createMockDestinationManager = (
     boundDestination = undefined,
     sendLinkToDestinationResult = false,
     sendTextToDestinationResult = false,
-    showDestinationQuickPickForPasteResult = QuickPickBindResult.Cancelled,
   } = options;
 
   if (isBound && boundDestination === undefined) {
@@ -60,13 +57,24 @@ export const createMockDestinationManager = (
     sendLinkToDestination: jest.fn().mockResolvedValue(sendLinkToDestinationResult),
     sendTextToDestination: jest.fn().mockResolvedValue(sendTextToDestinationResult),
     getBoundDestination: jest.fn().mockReturnValue(boundDestination),
-    bind: jest.fn().mockResolvedValue(false),
-    unbind: jest.fn(),
-    jumpToBoundDestination: jest.fn().mockResolvedValue(false),
-    bindAndJump: jest.fn().mockResolvedValue(false),
-    showDestinationQuickPickForPaste: jest
+    bind: jest
       .fn()
-      .mockResolvedValue(showDestinationQuickPickForPasteResult),
+      .mockResolvedValue(
+        ExtensionResult.ok({ destinationName: 'Mock Destination', destinationType: 'terminal' }),
+      ),
+    unbind: jest.fn(),
+    focusBoundDestination: jest.fn().mockResolvedValue(
+      ExtensionResult.ok({
+        destinationName: 'Mock Destination',
+        destinationType: 'terminal',
+      }),
+    ),
+    bindAndFocus: jest.fn().mockResolvedValue(
+      ExtensionResult.ok({
+        destinationName: 'Mock Destination',
+        destinationType: 'terminal',
+      }),
+    ),
     dispose: jest.fn(),
   } as unknown as jest.Mocked<PasteDestinationManager>;
 };

@@ -12,5 +12,5 @@ export const createMockDestinationAvailabilityService =
       getUnavailableMessageCode: jest
         .fn()
         .mockReturnValue(MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE),
-      getAvailableDestinationItems: jest.fn().mockResolvedValue([]),
+      getGroupedDestinationItems: jest.fn().mockResolvedValue({}),
     }) as unknown as jest.Mocked<DestinationAvailabilityService>;

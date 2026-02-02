@@ -291,14 +291,17 @@ describe('VscodeAdapter', () => {
 
   describe('showQuickPick', () => {
     it('should show quick pick with items using VSCode API', async () => {
-      const items = [{ label: 'Item 1' }, { label: 'Item 2' }];
+      const items = [
+        { label: 'Item 1', itemKind: 'command' as const },
+        { label: 'Item 2', itemKind: 'command' as const },
+      ];
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(items[0]);
 
       const result = await adapter.showQuickPick(items);
 
       expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, undefined);
       expect(mockVSCode.window.showQuickPick).toHaveBeenCalledTimes(1);
-      expect(result).toStrictEqual({ label: 'Item 1' });
+      expect(result).toStrictEqual({ label: 'Item 1', itemKind: 'command' });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'VscodeAdapter.showQuickPick', itemCount: 2, options: undefined },
         'Showing quick pick',
@@ -306,14 +309,17 @@ describe('VscodeAdapter', () => {
     });
 
     it('should pass options to VSCode API', async () => {
-      const items = [{ label: 'Option A' }, { label: 'Option B' }];
+      const items = [
+        { label: 'Option A', itemKind: 'command' as const },
+        { label: 'Option B', itemKind: 'command' as const },
+      ];
       const options = { placeHolder: 'Select an option', canPickMany: false };
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(items[1]);
 
       const result = await adapter.showQuickPick(items, options);
 
       expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, options);
-      expect(result).toStrictEqual({ label: 'Option B' });
+      expect(result).toStrictEqual({ label: 'Option B', itemKind: 'command' });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'VscodeAdapter.showQuickPick', itemCount: 2, options },
         'Showing quick pick',
@@ -321,7 +327,7 @@ describe('VscodeAdapter', () => {
     });
 
     it('should return undefined when user cancels', async () => {
-      const items = [{ label: 'Item 1' }];
+      const items = [{ label: 'Item 1', itemKind: 'command' as const }];
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
 
       const result = await adapter.showQuickPick(items);
@@ -330,7 +336,7 @@ describe('VscodeAdapter', () => {
     });
 
     it('should handle empty items array', async () => {
-      const items: { label: string }[] = [];
+      const items: { label: string; itemKind: 'command' }[] = [];
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
 
       const result = await adapter.showQuickPick(items);
