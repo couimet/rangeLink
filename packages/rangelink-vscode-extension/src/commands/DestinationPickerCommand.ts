@@ -162,21 +162,30 @@ export class DestinationPickerCommand {
       this.vscodeAdapter,
       options,
       this.logger,
+      (terminal) => ({
+        outcome: 'selected' as const,
+        bindOptions: { type: 'terminal' as const, terminal },
+      }),
     );
 
-    if (result.outcome === 'cancelled') {
-      this.logger.debug(logCtx, 'User cancelled secondary terminal picker');
-      return { outcome: 'cancelled' };
+    switch (result.outcome) {
+      case 'selected':
+        return result.result;
+      case 'cancelled':
+        this.logger.debug(logCtx, 'User cancelled secondary terminal picker');
+        return { outcome: 'cancelled' };
+      case 'returned-to-destination-picker':
+        this.logger.debug(logCtx, 'User returned to destination picker from secondary');
+        return { outcome: 'cancelled' };
+      default: {
+        const _exhaustiveCheck: never = result;
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+          message: 'Unexpected terminal picker result outcome',
+          functionName: 'DestinationPickerCommand.showSecondaryTerminalPicker',
+          details: { result: _exhaustiveCheck },
+        });
+      }
     }
-
-    if (result.outcome === 'returned-to-destination-picker') {
-      this.logger.debug(logCtx, 'User returned to destination picker from secondary');
-      return { outcome: 'cancelled' };
-    }
-
-    return {
-      outcome: 'selected',
-      bindOptions: { type: 'terminal', terminal: result.terminal },
-    };
   }
 }

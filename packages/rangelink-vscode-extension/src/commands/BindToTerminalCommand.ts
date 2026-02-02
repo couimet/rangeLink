@@ -7,6 +7,8 @@ import {
   TERMINAL_PICKER_SHOW_ALL,
   type TerminalPickerOptions,
 } from '../destinations/utils/showTerminalPicker';
+import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types';
 import { formatMessage } from '../utils';
@@ -83,19 +85,32 @@ export class BindToTerminalCommand {
       this.vscodeAdapter,
       options,
       this.logger,
+      async (terminal) => {
+        this.logger.debug(
+          { ...logCtx, terminalName: terminal.name },
+          `Binding to terminal "${terminal.name}"`,
+        );
+        return this.bindTerminalAndBuildResult(terminal);
+      },
     );
 
-    if (result.outcome === 'cancelled' || result.outcome === 'returned-to-destination-picker') {
-      this.logger.debug(logCtx, 'User cancelled terminal picker');
-      return { outcome: 'cancelled' };
+    switch (result.outcome) {
+      case 'selected':
+        return result.result;
+      case 'cancelled':
+      case 'returned-to-destination-picker':
+        this.logger.debug(logCtx, 'User cancelled terminal picker');
+        return { outcome: 'cancelled' };
+      default: {
+        const _exhaustiveCheck: never = result;
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+          message: 'Unexpected terminal picker result outcome',
+          functionName: 'BindToTerminalCommand.execute',
+          details: { result: _exhaustiveCheck },
+        });
+      }
     }
-
-    this.logger.debug(
-      { ...logCtx, terminalName: result.terminal.name },
-      `Binding to terminal "${result.terminal.name}"`,
-    );
-
-    return this.bindTerminalAndBuildResult(result.terminal);
   }
 
   private async bindTerminalAndBuildResult(

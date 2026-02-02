@@ -32,8 +32,8 @@ export interface TerminalPickerOptions {
 /**
  * Result of showing the terminal picker.
  */
-export type TerminalPickerResult =
-  | { readonly outcome: 'selected'; readonly terminal: vscode.Terminal }
+export type TerminalPickerResult<T> =
+  | { readonly outcome: 'selected'; readonly result: T }
   | { readonly outcome: 'cancelled' }
   | { readonly outcome: 'returned-to-destination-picker' };
 
@@ -97,15 +97,17 @@ const buildTerminalItems = (
  * @param vscodeAdapter - Adapter for VSCode API calls
  * @param options - Configuration for picker behavior and display strings
  * @param logger - Logger instance
+ * @param onSelected - Callback invoked when a terminal is selected
  * @returns Result indicating selection outcome
  */
-export const showTerminalPicker = async (
+export const showTerminalPicker = async <T>(
   terminals: readonly vscode.Terminal[],
   activeTerminal: vscode.Terminal | undefined,
   vscodeAdapter: VscodeAdapter,
   options: TerminalPickerOptions,
   logger: Logger,
-): Promise<TerminalPickerResult> => {
+  onSelected: (terminal: vscode.Terminal) => T | Promise<T>,
+): Promise<TerminalPickerResult<T>> => {
   const logCtx = { fn: 'showTerminalPicker', terminalCount: terminals.length };
 
   const items = buildTerminalItems(terminals, activeTerminal, options, false);
@@ -129,12 +131,12 @@ export const showTerminalPicker = async (
         'showTerminalPicker',
         logger,
         'Terminal selected',
-        (terminal) => ({ outcome: 'selected', terminal }),
+        async (terminal) => ({ outcome: 'selected' as const, result: await onSelected(terminal) }),
       );
 
     case 'terminal-more':
       logger.debug(logCtx, 'User selected "More terminals...", showing full list');
-      return showSecondaryPicker(terminals, activeTerminal, vscodeAdapter, logger, options);
+      return showSecondaryPicker(terminals, activeTerminal, vscodeAdapter, logger, options, onSelected);
 
     default: {
       const _exhaustiveCheck: never = selected;
@@ -151,13 +153,14 @@ export const showTerminalPicker = async (
 /**
  * Show secondary picker with all terminals.
  */
-const showSecondaryPicker = async (
+const showSecondaryPicker = async <T>(
   terminals: readonly vscode.Terminal[],
   activeTerminal: vscode.Terminal | undefined,
   vscodeAdapter: VscodeAdapter,
   logger: Logger,
   options: TerminalPickerOptions,
-): Promise<TerminalPickerResult> => {
+  onSelected: (terminal: vscode.Terminal) => T | Promise<T>,
+): Promise<TerminalPickerResult<T>> => {
   const logCtx = { fn: 'showTerminalPicker.secondary', terminalCount: terminals.length };
 
   const items = buildTerminalItems(terminals, activeTerminal, options, true);
@@ -179,7 +182,7 @@ const showSecondaryPicker = async (
         'showTerminalPicker.secondary',
         logger,
         'Terminal selected from full list',
-        (terminal) => ({ outcome: 'selected', terminal }),
+        async (terminal) => ({ outcome: 'selected' as const, result: await onSelected(terminal) }),
       );
 
     default:
