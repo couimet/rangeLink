@@ -9,7 +9,7 @@ import type { TerminalMoreQuickPickItem, TerminalQuickPickItem } from '../../typ
 import { assertTerminalFromPicker } from './assertTerminalFromPicker';
 
 /** Pass to maxItemsBeforeMore to show all terminals without "More..." grouping */
-export const TERMINAL_PICKER_SHOW_ALL = 5000;
+export const TERMINAL_PICKER_SHOW_ALL = Infinity;
 
 /**
  * Options for configuring the terminal picker behavior and display.
