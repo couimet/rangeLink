@@ -157,13 +157,11 @@ describe('quotePathForShell', () => {
 
   describe('paths containing double quotes (no escaping needed inside single quotes)', () => {
     it('should wrap path with double quote without escaping', () => {
-      expect(quotePathForShell('/workspace/"file".ts')).toBe("'/workspace/\"file\".ts'");
+      expect(quotePathForShell('/workspace/"file".ts')).toBe('\'/workspace/"file".ts\'');
     });
 
     it('should wrap path with multiple double quotes without escaping', () => {
-      expect(quotePathForShell('/workspace/"my" "file".ts')).toBe(
-        "'/workspace/\"my\" \"file\".ts'",
-      );
+      expect(quotePathForShell('/workspace/"my" "file".ts')).toBe('\'/workspace/"my" "file".ts\'');
     });
   });
 
