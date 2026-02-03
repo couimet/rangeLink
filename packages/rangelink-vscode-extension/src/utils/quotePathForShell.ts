@@ -32,7 +32,7 @@ export const isShellSafePath = (path: string): boolean => {
  * Only quotes when necessary to be less intrusive:
  * - Safe paths (A-Z, a-z, 0-9, _, -, ., /, :) are returned unchanged
  * - Paths with spaces, parentheses, etc. are wrapped in single quotes
- * - Existing single quotes within the path are escaped with backslash
+ * - Existing single quotes are escaped using the POSIX `'\''` sequence
  *
  * Uses single quotes to match Cursor's drag-drop-to-terminal behavior.
  *
@@ -44,6 +44,6 @@ export const quotePathForShell = (path: string): string => {
     return path;
   }
 
-  const escapedPath = path.replace(/'/g, "\\'");
+  const escapedPath = path.replace(/'/g, "'\\''");
   return `'${escapedPath}'`;
 };

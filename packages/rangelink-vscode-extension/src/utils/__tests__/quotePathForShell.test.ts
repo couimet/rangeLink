@@ -138,19 +138,19 @@ describe('quotePathForShell', () => {
   });
 
   describe('paths containing single quotes (should escape and quote)', () => {
-    it('should escape single quote', () => {
-      expect(quotePathForShell("/workspace/it's.ts")).toBe("'/workspace/it\\'s.ts'");
+    it('should escape single quote using POSIX sequence', () => {
+      expect(quotePathForShell("/workspace/it's.ts")).toBe("'/workspace/it'\\''s.ts'");
     });
 
-    it('should escape multiple single quotes', () => {
+    it('should escape multiple single quotes using POSIX sequence', () => {
       expect(quotePathForShell("/workspace/it's bob's file.ts")).toBe(
-        "'/workspace/it\\'s bob\\'s file.ts'",
+        "'/workspace/it'\\''s bob'\\''s file.ts'",
       );
     });
 
     it('should escape single quote in path with other special chars', () => {
       expect(quotePathForShell("/workspace/file's name (1).ts")).toBe(
-        "'/workspace/file\\'s name (1).ts'",
+        "'/workspace/file'\\''s name (1).ts'",
       );
     });
   });
