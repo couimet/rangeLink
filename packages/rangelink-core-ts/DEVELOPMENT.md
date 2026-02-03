@@ -115,7 +115,7 @@ pnpm format:fix
 
 - [Root DEVELOPMENT.md](../../DEVELOPMENT.md) - Monorepo-wide development
 - [Architecture](../../docs/ARCHITECTURE.md) - System design
-- [Roadmap](../../docs/ROADMAP.md) - Planned features
+- [Open Issues](https://github.com/couimet/rangelink/issues) - Planned features
 - [Link Formats](../../docs/LINK-FORMATS.md) - Link notation guide
 - [BYOD](../../docs/BYOD.md) - Portable links
 - [Error Handling](../../docs/ERROR-HANDLING.md) - Error codes and validation

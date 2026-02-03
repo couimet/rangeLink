@@ -541,7 +541,7 @@ src/file.ts#L10C5-L20C10~#~L~-~C~
 
 Not currently. Standard links are the default for brevity. Use portable link commands explicitly when needed.
 
-**Future consideration:** Configuration option to always generate portable links (see [ROADMAP.md](./ROADMAP.md#phase-5-enhanced-byod-support)).
+**Future consideration:** Configuration option to always generate portable links may be added if there's user demand.
 
 ### What happens if BYOD parsing fails?
 
@@ -568,7 +568,6 @@ No. The `~` separator is fixed and cannot be configured. This ensures all portab
 - **[LINK-FORMATS.md](./LINK-FORMATS.md)** - Link format specifications and notation
 - **[ERROR-HANDLING.md](./ERROR-HANDLING.md)** - Error codes and validation rules
 - **[LOGGING.md](./LOGGING.md)** - Structured logging approach
-- **[ROADMAP.md](./ROADMAP.md#phase-5-enhanced-byod-support)** - Future BYOD enhancements
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Core library design and parsing logic
 
 ## Examples

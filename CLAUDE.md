@@ -723,16 +723,6 @@
 
 <documentation>
 
-<roadmap-journey>
-  <status>Legacy - GitHub issues are now primary tracking mechanism</status>
-  <migration>See issue #152 for planned migration</migration>
-  <current-guidance>
-    - Do NOT actively maintain ROADMAP.md or JOURNEY.md
-    - Use GitHub issues for new work tracking
-    - These files exist for historical context only
-  </current-guidance>
-</roadmap-journey>
-
 <changelog>
   <rule>Never modify past releases - CHANGELOGs are historical records</rule>
   <do>Add new entries to [Unreleased] section only</do>

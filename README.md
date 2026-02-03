@@ -91,7 +91,7 @@ recipes/baking/chickenpie.ts#L3C14-L314C16
 - **[Development Guide](./DEVELOPMENT.md)** — Setup, building, testing
 - **[Contributing Guide](./CONTRIBUTING.md)** — How to contribute
 - **[Architecture](./docs/ARCHITECTURE.md)** — Design principles and patterns
-- **[Roadmap](./docs/ROADMAP.md)** — What's coming next
+- **[Open Issues](https://github.com/couimet/rangeLink/issues)** — Planned features and enhancement requests
 
 ---
 

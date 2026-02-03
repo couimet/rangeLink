@@ -340,7 +340,7 @@ Invalid configurations will fall back to defaults with a warning in the output c
 
 ## What's Next
 
-RangeLink is under active development. See the [full roadmap](https://github.com/couimet/rangelink/blob/main/docs/ROADMAP.md) for planned features and other editor integrations.
+RangeLink is under active development. See [open issues](https://github.com/couimet/rangeLink/issues) for planned features and enhancement requests.
 
 ## Requirements
 
@@ -389,7 +389,6 @@ Curious about how RangeLink came to be or want to contribute?
 - 🐔 **[About the Logo](https://github.com/couimet/rangelink#about-the-logo)** - Free-range chickens, precision, and Pi (yes, really)
 - 🏗️ **[Architecture & Monorepo](https://github.com/couimet/rangelink#monorepo-structure)** - How it's built and organized
 - 🤝 **[Contributing Guide](https://github.com/couimet/rangelink/blob/main/CONTRIBUTING.md)** - Help make RangeLink even better
-- 🗺️ **[Roadmap](https://github.com/couimet/rangelink/blob/main/docs/ROADMAP.md)** - What's coming next (enhanced navigation, multi-range support, and more!)
 
 ## License
 

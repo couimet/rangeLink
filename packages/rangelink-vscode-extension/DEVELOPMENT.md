@@ -531,7 +531,7 @@ Once you've tested your changes locally, see [PUBLISHING.md](./PUBLISHING.md) fo
 - [Root DEVELOPMENT.md](../../DEVELOPMENT.md) - Monorepo-wide development
 - [PUBLISHING.md](./PUBLISHING.md) - Publishing this extension
 - [Architecture](../../docs/ARCHITECTURE.md) - System design
-- [Roadmap](../../docs/ROADMAP.md) - Planned features
+- [Open Issues](https://github.com/couimet/rangelink/issues) - Planned features
 
 ### VS Code Resources
 

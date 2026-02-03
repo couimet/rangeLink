@@ -220,7 +220,7 @@ RangeLink's format is designed for extensibility while maintaining backward comp
 
 ### Planned Enhancements
 
-**Phase 6 - Multi-Range Links** (see [ROADMAP.md](./ROADMAP.md#phase-6-multi-range-links)):
+**Phase 6 - Multi-Range Links** (potential future feature):
 
 ```
 path#L10-L20|L30-L40|L50-L60
@@ -229,7 +229,7 @@ path#L10-L20|L30-L40|L50-L60
 - Pipe (`|`) separator for multiple ranges
 - Single link references multiple code sections
 
-**Phase 8 - Cross-File Multi-Range** (see [ROADMAP.md](./ROADMAP.md#phase-8-cross-file-multi-range-links)):
+**Phase 8 - Cross-File Multi-Range** (potential future feature):
 
 ```
 file1.ts#L10-L20|file2.ts#L30-L40
@@ -265,7 +265,6 @@ Invalid configurations trigger:
 
 - **[BYOD.md](./BYOD.md)** - Complete guide to portable links with BYOD format
 - **[ERROR-HANDLING.md](./ERROR-HANDLING.md)** - Error codes and handling strategies
-- **[ROADMAP.md](./ROADMAP.md)** - Format evolution plans and future features
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Core library design and parsing implementation
 
 ## Examples
