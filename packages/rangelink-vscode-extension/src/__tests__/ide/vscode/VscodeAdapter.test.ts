@@ -21,9 +21,11 @@ import {
 // Tests
 // ============================================================================
 
+type MockVSCode = ReturnType<typeof createMockVscode>;
+
 describe('VscodeAdapter', () => {
   let adapter: VscodeAdapter;
-  let mockVSCode: any;
+  let mockVSCode: MockVSCode;
   let mockLogger: jest.Mocked<Logger>;
 
   beforeEach(() => {
