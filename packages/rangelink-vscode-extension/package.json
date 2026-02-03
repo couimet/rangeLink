@@ -465,6 +465,11 @@
         "command": "rangelink.goToRangeLink",
         "key": "ctrl+r ctrl+g",
         "mac": "cmd+r cmd+g"
+      },
+      {
+        "command": "rangelink.openStatusBarMenu",
+        "key": "ctrl+r ctrl+m",
+        "mac": "cmd+r cmd+m"
       }
     ],
     "menus": {

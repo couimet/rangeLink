@@ -659,8 +659,16 @@ describe('package.json contributions', () => {
       });
     });
 
+    it('rangelink.openStatusBarMenu keybinding', () => {
+      expect(findKeybinding('rangelink.openStatusBarMenu')).toStrictEqual({
+        command: 'rangelink.openStatusBarMenu',
+        key: 'ctrl+r ctrl+m',
+        mac: 'cmd+r cmd+m',
+      });
+    });
+
     it('has the expected number of keybindings', () => {
-      expect(keybindings).toHaveLength(13);
+      expect(keybindings).toHaveLength(14);
     });
   });
 

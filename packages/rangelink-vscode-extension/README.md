@@ -185,15 +185,15 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 
 ---
 
-### ⚡ Status Bar Menu
+### ⚡ RangeLink Menu
 
-Click the **RangeLink** item in the status bar (bottom right) to access quick actions:
+Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the **RangeLink** item in the status bar to access quick actions:
 
 - **Jump to Bound Destination** — Focus your currently bound paste destination (shows quick pick of available destinations when unbound)
 - **Go to Link** — Paste or type a RangeLink to go directly to that code location
 - **Show Version Info** — Display extension version and build details
 
-The menu provides quick access without memorizing keyboard shortcuts. More actions coming in future releases.
+The menu provides quick access to common actions. More items coming in future releases.
 
 ---
 
@@ -261,6 +261,7 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | Save Selection as Bookmark                 | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
 | List Bookmarks                             | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
 | Go to Link                                 | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`        | Paste/type a RangeLink to go to that code location       |
+| Open Menu                                  | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`        | Open the RangeLink menu                                  |
 | Bind to Claude Code                        | —                   | —                      | Auto-send links to Claude Code chat                      |
 | Bind to Cursor AI                          | —                   | —                      | Auto-send links to Cursor AI chat                        |
 | Bind to GitHub Copilot Chat                | —                   | —                      | Auto-send links to Copilot Chat                          |
