@@ -12,6 +12,6 @@
  * @returns Mock function: (line: number) => { text: string }
  */
 export const createMockLineAt = (text: string): jest.Mock => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return jest.fn(() => ({ text })) as any;
 };
