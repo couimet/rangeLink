@@ -5,12 +5,14 @@ import { isEligibleForPaste } from '../../utils';
 import type { EligibilityChecker } from './EligibilityChecker';
 
 /**
- * Checks eligibility using isEligibleForPaste utility.
+ * Validates content eligibility for paste operations.
  *
- * Used by:
- * - TextEditor, GitHub Copilot: Validates content before paste
+ * Rejects empty or whitespace-only content since pasting such content
+ * provides no value to any destination (terminal, text editor, or AI assistant).
+ *
+ * Used by ALL paste destinations for consistent content validation.
  */
-export class SelfPasteChecker implements EligibilityChecker {
+export class ContentEligibilityChecker implements EligibilityChecker {
   constructor(private readonly logger: Logger) {}
 
   async isEligible(text: string, context: LoggingContext): Promise<boolean> {

@@ -5,7 +5,7 @@ import type * as vscode from 'vscode';
 import { type AutoPasteResult, PasteContentType } from '../types';
 import { applySmartPadding, type PaddingMode } from '../utils';
 
-import { AlwaysEligibleChecker } from './capabilities/AlwaysEligibleChecker';
+import { ContentEligibilityChecker } from './capabilities/ContentEligibilityChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
 import type { PasteExecutor } from './capabilities/PasteExecutor';
 import type {
@@ -265,13 +265,7 @@ export class ComposablePasteDestination implements PasteDestination {
       ...this.loggingDetails,
     };
 
-    return this.performPaste(
-      formattedLink.link,
-      context,
-      () => this.isEligibleForPasteLink(formattedLink),
-      PasteContentType.Link,
-      paddingMode,
-    );
+    return this.performPaste(formattedLink.link, context, PasteContentType.Link, paddingMode);
   }
 
   /**
@@ -289,13 +283,7 @@ export class ComposablePasteDestination implements PasteDestination {
       ...this.loggingDetails,
     };
 
-    return this.performPaste(
-      content,
-      context,
-      () => this.isEligibleForPasteContent(content),
-      PasteContentType.Text,
-      paddingMode,
-    );
+    return this.performPaste(content, context, PasteContentType.Text, paddingMode);
   }
 
   /**
@@ -303,14 +291,14 @@ export class ComposablePasteDestination implements PasteDestination {
    *
    * Coordinates capabilities in order:
    * 1. Check availability
-   * 2. Check eligibility
-   * 3. Apply smart padding based on provided mode
-   * 4. Focus destination
-   * 5. Insert text
+   * 2. Apply smart padding based on provided mode
+   * 3. Focus destination
+   * 4. Insert text
+   *
+   * Eligibility is checked by RangeLinkService before calling this method.
    *
    * @param text - The text to paste
    * @param context - Logging context with operation details
-   * @param eligibilityCheck - Function to check if content is eligible
    * @param contentType - Type of content being pasted (for log messages)
    * @param paddingMode - How to apply smart padding (both, before, after, none)
    * @returns Promise resolving to true if paste succeeded, false otherwise
@@ -318,7 +306,6 @@ export class ComposablePasteDestination implements PasteDestination {
   private async performPaste(
     text: string,
     context: LoggingContext,
-    eligibilityCheck: () => Promise<boolean>,
     contentType: PasteContentType,
     paddingMode: PaddingMode,
   ): Promise<boolean> {
@@ -328,16 +315,6 @@ export class ComposablePasteDestination implements PasteDestination {
     const available = await this.isAvailable();
     if (!available) {
       this.logger.info(context, `Cannot paste ${contentLabel}: ${this.displayName} not available`);
-      return false;
-    }
-
-    // Check eligibility
-    const eligible = await eligibilityCheck();
-    if (!eligible) {
-      this.logger.info(
-        context,
-        `Skipping paste: ${contentLabel} not eligible for ${this.displayName}`,
-      );
       return false;
     }
 
@@ -426,6 +403,21 @@ export class ComposablePasteDestination implements PasteDestination {
   }
 
   /**
+   * Get the URI of the destination resource (for text-editor destinations).
+   *
+   * Used for self-paste detection (source === destination check).
+   *
+   * @returns Document URI for text-editor destinations, undefined for
+   *          non-document destinations (terminals use processId, AI assistants are singletons)
+   */
+  getDestinationUri(): vscode.Uri | undefined {
+    if (this.resource.kind === 'editor') {
+      return this.resource.editor.document.uri;
+    }
+    return undefined;
+  }
+
+  /**
    * Check if this destination equals another destination.
    *
    * Uses custom compareWith function if provided, otherwise falls back to
@@ -455,7 +447,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * Create a terminal destination.
    *
    * Terminal destinations:
-   * - Use AlwaysEligibleChecker (terminals accept all content)
+   * - Use ContentEligibilityChecker (validate non-empty content)
    * - Are always available (terminal exists at construction)
    * - Compare equality by process ID
    *
@@ -468,7 +460,7 @@ export class ComposablePasteDestination implements PasteDestination {
       displayName: params.displayName,
       resource: { kind: 'terminal', terminal: params.terminal },
       pasteExecutor: params.pasteExecutor,
-      eligibilityChecker: new AlwaysEligibleChecker(params.logger),
+      eligibilityChecker: new ContentEligibilityChecker(params.logger),
       isAvailable: async () => true,
       jumpSuccessMessage: params.jumpSuccessMessage,
       loggingDetails: params.loggingDetails,
@@ -482,7 +474,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * Create a text editor destination.
    *
    * Editor destinations:
-   * - Require eligibility checking (prevent self-paste)
+   * - Require eligibility checking (validate non-empty content)
    * - Are always available (editor exists at construction)
    * - Compare equality by document URI
    *
@@ -509,7 +501,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * Create an AI assistant destination (Claude Code, Cursor AI, GitHub Copilot Chat).
    *
    * AI assistant destinations:
-   * - Use AlwaysEligibleChecker (no self-paste possible)
+   * - Use ContentEligibilityChecker (validate non-empty content)
    * - May require availability checking (extension presence)
    * - Singleton equality (compared by reference)
    * - May provide user instructions for manual paste fallback
@@ -523,7 +515,7 @@ export class ComposablePasteDestination implements PasteDestination {
       displayName: params.displayName,
       resource: { kind: 'singleton' },
       pasteExecutor: params.pasteExecutor,
-      eligibilityChecker: new AlwaysEligibleChecker(params.logger),
+      eligibilityChecker: new ContentEligibilityChecker(params.logger),
       isAvailable: params.isAvailable,
       jumpSuccessMessage: params.jumpSuccessMessage,
       loggingDetails: params.loggingDetails,

@@ -463,26 +463,15 @@ export class PasteDestinationManager implements vscode.Disposable {
   /**
    * Bind to text editor (special case requiring active text editor)
    *
-   * **MVP Requirements:**
-   * - Requires 2+ tab groups (split editor)
+   * **Requirements:**
    * - Active editor must be text-like file (not binary, not terminal)
    * - Active editor must have focus
+   *
+   * Self-paste (source === destination) is checked at paste time, not binding time.
    *
    * @returns true if binding succeeded, false if validation fails
    */
   private async bindTextEditor(): Promise<boolean> {
-    const tabGroupCount = this.vscodeAdapter.tabGroups.all.length;
-    if (tabGroupCount < 2) {
-      this.logger.warn(
-        { fn: 'PasteDestinationManager.bindTextEditor', tabGroupCount },
-        'Cannot bind: Requires 2+ tab groups',
-      );
-      this.vscodeAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT),
-      );
-      return false;
-    }
-
     const activeEditor = this.vscodeAdapter.activeTextEditor;
     if (!activeEditor) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
@@ -561,9 +550,8 @@ export class PasteDestinationManager implements vscode.Disposable {
         fn: 'PasteDestinationManager.bindTextEditor',
         displayName: newDestination.displayName,
         ...newDestination.getLoggingDetails(),
-        tabGroupCount,
       },
-      `Successfully bound to "${newDestination.displayName}" (${tabGroupCount} tab groups)`,
+      `Successfully bound to "${newDestination.displayName}"`,
     );
 
     this.showBindSuccessToast(newDestination.displayName);

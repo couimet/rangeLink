@@ -73,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Before:** Error message "No destination bound. Bind a destination first."
   - **After:** Select destination → binds and jumps in one action
   - Dismisses silently when user presses Escape
-  - Edge case: Shows info notification if no destinations exist (e.g., no terminal, single tab group, no AI extensions)
+  - Edge case: Shows info notification if no destinations exist (e.g., no terminal, no AI extensions)
 - **Paste Selected Text UX** - Quick pick when no destination bound (#90)
   - **Before:** Silently copied to clipboard with no indication
   - **After:** Select destination → binds and pastes in one action
@@ -83,6 +83,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Before:** "No text selected. Select text and try again."
   - **After:** "No text selected. Click in the file, select text, and try again."
   - Addresses VSCode behavior where `editor.selections` returns stale data after external modifications
+- **Text editor destination no longer requires split editor** - Bind to any text editor regardless of tab group layout (#279)
+  - **Before:** Required 2+ tab groups (split editor) to bind a text editor destination
+  - **After:** Bind any text editor; if you try to paste to the same file you're selecting from, RangeLink copies to clipboard and shows a helpful message
+  - Self-paste detection prevents the "paste into yourself" problem without restricting valid workflows
+  - **Tip:** When self-paste is detected for R-L, the message suggests R-C (clipboard-only) as an alternative
 
 ### Fixed
 

@@ -98,7 +98,7 @@ describe('DestinationAvailabilityService', () => {
 
   describe('getAvailableDestinations()', () => {
     describe('text-editor availability', () => {
-      it('includes text-editor when hasActiveTextEditor and tabGroupCount >= 2', async () => {
+      it('includes text-editor when hasActiveTextEditor is true', async () => {
         const ideAdapter = createMockVscodeAdapter({
           windowOptions: {
             activeTextEditor: createMockEditor(),
@@ -125,25 +125,6 @@ describe('DestinationAvailabilityService', () => {
             activeTextEditor: undefined,
             activeTerminal: undefined,
             tabGroups: createMockTabGroupsWithCount(2),
-          },
-        });
-        const service = new DestinationAvailabilityService(
-          createMockRegistryWithUnifiedAI(),
-          ideAdapter,
-          mockLogger,
-        );
-
-        const result = await service.getAvailableDestinations();
-
-        expect(result.find((d) => d.type === 'text-editor')).toBeUndefined();
-      });
-
-      it('excludes text-editor when tabGroupCount < 2', async () => {
-        const ideAdapter = createMockVscodeAdapter({
-          windowOptions: {
-            activeTextEditor: createMockEditor(),
-            activeTerminal: undefined,
-            tabGroups: createMockTabGroupsWithCount(1),
           },
         });
         const service = new DestinationAvailabilityService(

@@ -2,10 +2,10 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 jest.mock('../../../utils/isEligibleForPaste');
 
-import { SelfPasteChecker } from '../../../destinations/capabilities/SelfPasteChecker';
+import { ContentEligibilityChecker } from '../../../destinations/capabilities/ContentEligibilityChecker';
 import { isEligibleForPaste } from '../../../utils';
 
-describe('SelfPasteChecker', () => {
+describe('ContentEligibilityChecker', () => {
   const mockLogger = createMockLogger();
   const testContext = { fn: 'test' };
 
@@ -13,7 +13,7 @@ describe('SelfPasteChecker', () => {
     it('should delegate to isEligibleForPaste utility', async () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(true);
 
-      const checker = new SelfPasteChecker(mockLogger);
+      const checker = new ContentEligibilityChecker(mockLogger);
 
       await checker.isEligible('test text', testContext);
 
@@ -24,7 +24,7 @@ describe('SelfPasteChecker', () => {
     it('should return true when utility returns true', async () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(true);
 
-      const checker = new SelfPasteChecker(mockLogger);
+      const checker = new ContentEligibilityChecker(mockLogger);
 
       const result = await checker.isEligible('test text', testContext);
 
@@ -34,7 +34,7 @@ describe('SelfPasteChecker', () => {
     it('should return false when utility returns false', async () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(false);
 
-      const checker = new SelfPasteChecker(mockLogger);
+      const checker = new ContentEligibilityChecker(mockLogger);
 
       const result = await checker.isEligible('', testContext);
 
@@ -44,7 +44,7 @@ describe('SelfPasteChecker', () => {
     it('should not log when content is eligible', async () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(true);
 
-      const checker = new SelfPasteChecker(mockLogger);
+      const checker = new ContentEligibilityChecker(mockLogger);
 
       await checker.isEligible('test text', testContext);
 
@@ -54,7 +54,7 @@ describe('SelfPasteChecker', () => {
     it('should log when content is not eligible', async () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(false);
 
-      const checker = new SelfPasteChecker(mockLogger);
+      const checker = new ContentEligibilityChecker(mockLogger);
 
       await checker.isEligible('', testContext);
 
@@ -67,7 +67,7 @@ describe('SelfPasteChecker', () => {
     it('should include content length in log', async () => {
       (isEligibleForPaste as jest.Mock).mockReturnValue(false);
 
-      const checker = new SelfPasteChecker(mockLogger);
+      const checker = new ContentEligibilityChecker(mockLogger);
 
       await checker.isEligible('   ', testContext);
 

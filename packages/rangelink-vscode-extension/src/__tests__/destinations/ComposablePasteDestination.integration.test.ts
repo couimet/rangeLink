@@ -9,11 +9,9 @@
  */
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { AlwaysEligibleChecker } from '../../destinations/capabilities/AlwaysEligibleChecker';
 import { CommandPasteExecutor } from '../../destinations/capabilities/CommandPasteExecutor';
+import { ContentEligibilityChecker } from '../../destinations/capabilities/ContentEligibilityChecker';
 import { EditorPasteExecutor } from '../../destinations/capabilities/EditorPasteExecutor';
-import type { EligibilityChecker } from '../../destinations/capabilities/EligibilityChecker';
-import { SelfPasteChecker } from '../../destinations/capabilities/SelfPasteChecker';
 import { TerminalPasteExecutor } from '../../destinations/capabilities/TerminalPasteExecutor';
 import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
 import {
@@ -24,15 +22,6 @@ import {
   createMockUri,
   createMockVscodeAdapter,
 } from '../helpers';
-
-/**
- * Mock eligibility checker that rejects content (simulates self-paste rejection).
- */
-class RejectingEligibilityChecker implements EligibilityChecker {
-  async isEligible(): Promise<boolean> {
-    return false;
-  }
-}
 
 describe('ComposablePasteDestination Integration Tests', () => {
   const mockLogger = createMockLogger();
@@ -46,7 +35,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       });
 
       const pasteExecutor = new TerminalPasteExecutor(mockAdapter, mockTerminal, mockLogger);
-      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const pasteTextSpy = jest
         .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
@@ -80,7 +69,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
       const pasteExecutor = new TerminalPasteExecutor(mockAdapter, mockTerminal, mockLogger);
-      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const callOrder: string[] = [];
 
@@ -120,7 +109,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         ['editor.action.clipboardPasteAction'],
         mockLogger,
       );
-      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const executeCommandSpy = jest
         .spyOn(mockAdapter, 'executeCommand')
@@ -161,7 +150,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         ['editor.action.clipboardPasteAction'],
         mockLogger,
       );
-      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const executeCommandSpy = jest
         .spyOn(mockAdapter, 'executeCommand')
@@ -200,7 +189,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         ['editor.action.clipboardPasteAction'],
         mockLogger,
       );
-      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       jest
         .spyOn(mockAdapter, 'executeCommand')
@@ -226,45 +215,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
   });
 
   describe('Text Editor-like destination (real EditorPasteExecutor)', () => {
-    it('should reject paste when eligibility checker returns false', async () => {
-      const mockAdapter = createMockVscodeAdapter();
-      const boundEditorUri = createMockUri('/bound-editor.ts');
-      const boundEditor = createMockEditor({
-        document: createMockDocument({ uri: boundEditorUri }),
-        viewColumn: 1,
-      });
-
-      const pasteExecutor = new EditorPasteExecutor(
-        mockAdapter,
-        boundEditorUri,
-        boundEditor.viewColumn,
-        mockLogger,
-      );
-      const eligibilityChecker = new RejectingEligibilityChecker();
-
-      const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor');
-
-      const destination = ComposablePasteDestination.createForTesting({
-        id: 'text-editor',
-        displayName: 'Text Editor',
-        resource: { kind: 'editor', editor: boundEditor },
-        pasteExecutor,
-        eligibilityChecker,
-        isAvailable: () => Promise.resolve(true),
-        jumpSuccessMessage: 'Focused editor',
-        loggingDetails: { editorPath: '/bound-editor.ts' },
-        logger: mockLogger,
-      });
-
-      const formattedLink = createMockFormattedLink('src/file.ts#L10');
-
-      const result = await destination.pasteLink(formattedLink, 'both');
-
-      expect(result).toBe(false);
-      expect(insertSpy).not.toHaveBeenCalled();
-    });
-
-    it('should allow paste with SelfPasteChecker when content is valid', async () => {
+    it('should allow paste with ContentEligibilityChecker when content is valid', async () => {
       const mockAdapter = createMockVscodeAdapter();
 
       const boundEditorUri = createMockUri('/bound-editor.ts');
@@ -279,7 +230,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         boundEditor.viewColumn,
         mockLogger,
       );
-      const eligibilityChecker = new SelfPasteChecker(mockLogger);
+      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(boundEditor);
       const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
@@ -318,7 +269,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         boundEditor.viewColumn,
         mockLogger,
       );
-      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const showDocSpy = jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(boundEditor);
       jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
@@ -355,7 +306,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         boundEditor.viewColumn,
         mockLogger,
       );
-      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(new Error('Editor closed'));
       const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor');
@@ -385,7 +336,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
       const pasteExecutor = new TerminalPasteExecutor(mockAdapter, mockTerminal, mockLogger);
-      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       const pasteTextSpy = jest.spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard');
 
@@ -415,7 +366,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       mockTerminal: ReturnType<typeof createMockTerminal>,
     ) => {
       const pasteExecutor = new TerminalPasteExecutor(mockAdapter, mockTerminal, mockLogger);
-      const eligibilityChecker = new AlwaysEligibleChecker(mockLogger);
+      const eligibilityChecker = new ContentEligibilityChecker(mockLogger);
 
       return ComposablePasteDestination.createForTesting({
         id: 'terminal',

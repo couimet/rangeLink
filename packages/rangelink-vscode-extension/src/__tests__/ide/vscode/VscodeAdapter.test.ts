@@ -1138,13 +1138,10 @@ describe('VscodeAdapter', () => {
 
       it('should register callback that can be invoked', () => {
         const callback = jest.fn().mockReturnValue('result');
-        mockVSCode.commands.registerCommand.mockImplementation(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (_: any, cb: any) => {
-            cb(); // Simulate VSCode calling the command
-            return { dispose: jest.fn() };
-          },
-        );
+        mockVSCode.commands.registerCommand.mockImplementation((_: any, cb: any) => {
+          cb(); // Simulate VSCode calling the command
+          return { dispose: jest.fn() };
+        });
 
         adapter.registerCommand('test.command', callback);
 

@@ -22,11 +22,11 @@ describe('isTextEditorDestinationEligible', () => {
       });
     });
 
-    it('returns eligible when tabGroupCount > 2', () => {
+    it('returns eligible with single tab group (no split required)', () => {
       const ideAdapter = createMockVscodeAdapter({
         windowOptions: {
           activeTextEditor: createEditorWithScheme('/project/index.js'),
-          tabGroups: createMockTabGroupsWithCount(3),
+          tabGroups: createMockTabGroupsWithCount(1),
         },
       });
 
@@ -81,38 +81,6 @@ describe('isTextEditorDestinationEligible', () => {
         eligible: false,
         filename: undefined,
         ineligibleReason: 'no-editor',
-      });
-    });
-  });
-
-  describe('ineligible: no split editor', () => {
-    it('returns ineligible with reason no-split when tabGroupCount < 2', () => {
-      const ideAdapter = createMockVscodeAdapter({
-        windowOptions: {
-          activeTextEditor: createEditorWithScheme('/test/file.ts'),
-          tabGroups: createMockTabGroupsWithCount(1),
-        },
-      });
-
-      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
-        eligible: false,
-        filename: undefined,
-        ineligibleReason: 'no-split',
-      });
-    });
-
-    it('returns ineligible with reason no-split when tabGroupCount is 0', () => {
-      const ideAdapter = createMockVscodeAdapter({
-        windowOptions: {
-          activeTextEditor: createEditorWithScheme('/test/file.ts'),
-          tabGroups: createMockTabGroupsWithCount(0),
-        },
-      });
-
-      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
-        eligible: false,
-        filename: undefined,
-        ineligibleReason: 'no-split',
       });
     });
   });
@@ -224,21 +192,6 @@ describe('isTextEditorDestinationEligible', () => {
         eligible: false,
         filename: undefined,
         ineligibleReason: 'no-editor',
-      });
-    });
-
-    it('returns no-split before checking read-only when both apply', () => {
-      const ideAdapter = createMockVscodeAdapter({
-        windowOptions: {
-          activeTextEditor: createEditorWithScheme('/repo/file.ts', 'git'),
-          tabGroups: createMockTabGroupsWithCount(1),
-        },
-      });
-
-      expect(isTextEditorDestinationEligible(ideAdapter)).toStrictEqual({
-        eligible: false,
-        filename: undefined,
-        ineligibleReason: 'no-split',
       });
     });
 

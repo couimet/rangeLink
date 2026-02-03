@@ -501,29 +501,10 @@ describe('PasteDestinationManager', () => {
           displayName: 'Text Editor ("file.ts")',
           editorName: 'file.ts',
           editorPath: '/workspace/src/file.ts',
-          tabGroupCount: 2,
         },
-        'Successfully bound to "Text Editor ("file.ts")" (2 tab groups)',
+        'Successfully bound to "Text Editor ("file.ts")"',
       );
       expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
-    });
-
-    it('should fail to bind text editor with less than 2 tab groups', async () => {
-      // Setup: Single tab group (no split editor)
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = {
-        document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
-      } as vscode.TextEditor;
-      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 1);
-
-      const result = await manager.bind('text-editor');
-
-      expect(result).toBe(false);
-      expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT);
-      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
-      );
-      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
     it('should fail to bind text editor when no active editor', async () => {

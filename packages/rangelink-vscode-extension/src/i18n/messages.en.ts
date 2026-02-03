@@ -28,6 +28,11 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONFIG_LOADED]: 'Configuration loaded',
   [MessageCode.CONFIG_USING_DEFAULTS]: 'Using default configuration',
 
+  [MessageCode.CONTENT_NAME_FILE_PATH]: 'File path',
+  [MessageCode.CONTENT_NAME_PORTABLE_RANGELINK]: 'Portable RangeLink',
+  [MessageCode.CONTENT_NAME_RANGELINK]: 'RangeLink',
+  [MessageCode.CONTENT_NAME_SELECTED_TEXT]: 'Selected text',
+
   [MessageCode.ERROR_BOOKMARK_EMPTY_LABEL]: 'RangeLink: Bookmark label cannot be empty',
   [MessageCode.ERROR_BOOKMARK_LINK_GENERATION_FAILED]:
     'RangeLink: Cannot add bookmark - failed to generate link from selection',
@@ -60,8 +65,6 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE]: 'RangeLink: Cannot bind to {fileName} - binary file',
   [MessageCode.ERROR_TEXT_EDITOR_READ_ONLY]:
     'RangeLink: Cannot bind to read-only editor ({scheme})',
-  [MessageCode.ERROR_TEXT_EDITOR_REQUIRES_SPLIT]:
-    'RangeLink: Text editor binding requires split editor (2+ tab groups). Split your editor and try again.',
   [MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE]: 'Version information not available',
 
   [MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE]:
@@ -90,6 +93,10 @@ export const messagesEn: Record<MessageCode, string> = {
     'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
   [MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind and paste:',
+  [MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED]:
+    'Selected text copied to clipboard. Cannot paste to same file.',
+  [MessageCode.INFO_SELF_PASTE_LINK_SKIPPED]:
+    'RangeLink copied to clipboard. Cannot auto-paste to same file. Tip: Use R-C for clipboard-only links.',
   [MessageCode.INFO_VERSION_COPY_COMMIT_HASH_BUTTON]: 'Copy Commit Hash',
   [MessageCode.INFO_VERSION_DIRTY_INDICATOR]: ' (with uncommitted changes)',
   [MessageCode.INFO_VERSION_INFO]:

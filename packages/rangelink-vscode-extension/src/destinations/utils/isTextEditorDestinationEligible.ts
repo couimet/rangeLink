@@ -1,12 +1,10 @@
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import { isBinaryFile, isWritableScheme } from '../../utils';
 
-const MIN_TAB_GROUPS_FOR_SPLIT_EDITOR = 2;
-
 /**
  * Reasons why text-editor destination is not eligible.
  */
-export type TextEditorIneligibleReason = 'no-editor' | 'no-split' | 'read-only' | 'binary-file';
+export type TextEditorIneligibleReason = 'no-editor' | 'read-only' | 'binary-file';
 
 /**
  * Result of checking text-editor destination eligibility.
@@ -22,9 +20,10 @@ export interface TextEditorEligibility {
  *
  * Text-editor destination requires:
  * - An active text editor (file open and focused)
- * - At least 2 tab groups (split editor layout)
  * - Editor has writable scheme (not git, output, etc.)
  * - Editor is not a binary file
+ *
+ * Self-paste (source === destination) is checked at paste time, not binding time.
  *
  * @param ideAdapter - IDE adapter for reading editor state
  * @returns Eligibility result with filename when eligible, or reason when not
@@ -36,11 +35,6 @@ export const isTextEditorDestinationEligible = (
 
   if (activeEditor === undefined) {
     return { eligible: false, filename: undefined, ineligibleReason: 'no-editor' };
-  }
-
-  const hasSplitEditor = ideAdapter.tabGroups.all.length >= MIN_TAB_GROUPS_FOR_SPLIT_EDITOR;
-  if (!hasSplitEditor) {
-    return { eligible: false, filename: undefined, ineligibleReason: 'no-split' };
   }
 
   const editorUri = ideAdapter.getDocumentUri(activeEditor);

@@ -70,6 +70,13 @@ export default [
       'unicorn/prefer-node-protocol': 'error',
     },
   },
+  {
+    // Test files: allow `any` for testing private methods and creating mocks
+    files: ['**/*.test.ts', '**/__tests__/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
   // Keep Prettier as the last extend to disable stylistic conflicts
   eslintConfigPrettier,
 ];
