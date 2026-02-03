@@ -115,61 +115,71 @@ describe('quotePathForShell', () => {
 
   describe('unsafe paths (should return quoted)', () => {
     it('should quote path with spaces', () => {
-      expect(quotePathForShell('/workspace/my file.ts')).toBe('"/workspace/my file.ts"');
+      expect(quotePathForShell('/workspace/my file.ts')).toBe("'/workspace/my file.ts'");
     });
 
     it('should quote path with parentheses', () => {
-      expect(quotePathForShell('/workspace/file(1).ts')).toBe('"/workspace/file(1).ts"');
+      expect(quotePathForShell('/workspace/file(1).ts')).toBe("'/workspace/file(1).ts'");
     });
 
     it('should quote path with multiple special characters', () => {
       expect(quotePathForShell('/my workspace/file (copy).ts')).toBe(
-        '"/my workspace/file (copy).ts"',
+        "'/my workspace/file (copy).ts'",
       );
     });
 
     it('should quote path with ampersand', () => {
-      expect(quotePathForShell('/workspace/foo&bar.ts')).toBe('"/workspace/foo&bar.ts"');
+      expect(quotePathForShell('/workspace/foo&bar.ts')).toBe("'/workspace/foo&bar.ts'");
     });
 
     it('should quote path with semicolon', () => {
-      expect(quotePathForShell('/workspace/foo;bar.ts')).toBe('"/workspace/foo;bar.ts"');
+      expect(quotePathForShell('/workspace/foo;bar.ts')).toBe("'/workspace/foo;bar.ts'");
     });
   });
 
-  describe('paths containing double quotes (should escape and quote)', () => {
-    it('should escape single double quote', () => {
-      expect(quotePathForShell('/workspace/"file".ts')).toBe('"/workspace/\\"file\\".ts"');
+  describe('paths containing single quotes (should escape and quote)', () => {
+    it('should escape single quote using POSIX sequence', () => {
+      expect(quotePathForShell("/workspace/it's.ts")).toBe("'/workspace/it'\\''s.ts'");
     });
 
-    it('should escape multiple double quotes', () => {
-      expect(quotePathForShell('/workspace/"my" "file".ts')).toBe(
-        '"/workspace/\\"my\\" \\"file\\".ts"',
+    it('should escape multiple single quotes using POSIX sequence', () => {
+      expect(quotePathForShell("/workspace/it's bob's file.ts")).toBe(
+        "'/workspace/it'\\''s bob'\\''s file.ts'",
       );
     });
 
-    it('should escape double quote in path with other special chars', () => {
-      expect(quotePathForShell('/workspace/file "name" (1).ts')).toBe(
-        '"/workspace/file \\"name\\" (1).ts"',
+    it('should escape single quote in path with other special chars', () => {
+      expect(quotePathForShell("/workspace/file's name (1).ts")).toBe(
+        "'/workspace/file'\\''s name (1).ts'",
       );
+    });
+  });
+
+  describe('paths containing double quotes (no escaping needed inside single quotes)', () => {
+    it('should wrap path with double quote without escaping', () => {
+      expect(quotePathForShell('/workspace/"file".ts')).toBe('\'/workspace/"file".ts\'');
+    });
+
+    it('should wrap path with multiple double quotes without escaping', () => {
+      expect(quotePathForShell('/workspace/"my" "file".ts')).toBe('\'/workspace/"my" "file".ts\'');
     });
   });
 
   describe('edge cases', () => {
     it('should handle path that is just a space', () => {
-      expect(quotePathForShell(' ')).toBe('" "');
+      expect(quotePathForShell(' ')).toBe("' '");
     });
 
     it('should handle path with leading space', () => {
-      expect(quotePathForShell(' file.ts')).toBe('" file.ts"');
+      expect(quotePathForShell(' file.ts')).toBe("' file.ts'");
     });
 
     it('should handle path with trailing space', () => {
-      expect(quotePathForShell('file.ts ')).toBe('"file.ts "');
+      expect(quotePathForShell('file.ts ')).toBe("'file.ts '");
     });
 
     it('should handle path with only special characters', () => {
-      expect(quotePathForShell('()[]')).toBe('"()[]"');
+      expect(quotePathForShell('()[]')).toBe("'()[]'");
     });
   });
 });

@@ -26,13 +26,15 @@ export const isShellSafePath = (path: string): boolean => {
 };
 
 /**
- * Wraps a file path in double quotes if it contains characters
+ * Wraps a file path in single quotes if it contains characters
  * that need escaping in shell environments.
  *
  * Only quotes when necessary to be less intrusive:
  * - Safe paths (A-Z, a-z, 0-9, _, -, ., /, :) are returned unchanged
- * - Paths with spaces, parentheses, etc. are wrapped in double quotes
- * - Existing double quotes within the path are escaped with backslash
+ * - Paths with spaces, parentheses, etc. are wrapped in single quotes
+ * - Existing single quotes are escaped using the POSIX `'\''` sequence
+ *
+ * Uses single quotes to match Cursor's drag-drop-to-terminal behavior.
  *
  * @param path - The file path to quote if needed
  * @returns The path, quoted if necessary for shell safety
@@ -42,6 +44,6 @@ export const quotePathForShell = (path: string): string => {
     return path;
   }
 
-  const escapedPath = path.replace(/"/g, '\\"');
-  return `"${escapedPath}"`;
+  const escapedPath = path.replace(/'/g, "'\\''");
+  return `'${escapedPath}'`;
 };
