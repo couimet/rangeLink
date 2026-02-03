@@ -733,6 +733,13 @@
   </current-guidance>
 </roadmap-journey>
 
+<changelog>
+  <rule>Never modify past releases - CHANGELOGs are historical records</rule>
+  <do>Add new entries to [Unreleased] section only</do>
+  <never>Edit content under versioned headers like `## [1.0.0]` or `## [0.5.0]`</never>
+  <rationale>Past releases document what shipped; rewriting history misleads users</rationale>
+</changelog>
+
 <cross-references>
   <before-renaming>Search for incoming references: `grep -r "Section Name" docs/`</before-renaming>
   <link-pattern>Use relative links with anchors: `[text](./FILE.md#section-anchor)`</link-pattern>

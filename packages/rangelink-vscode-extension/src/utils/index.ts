@@ -10,6 +10,7 @@ export * from './generateLinkFromSelections';
 export * from './getUntitledDisplayName';
 export * from './isBinaryFile';
 export * from './isEligibleForPaste';
+export * from './isSelfPaste';
 export * from './isTextLikeFile';
 export * from './isWritableScheme';
 export * from './quotePathForShell';

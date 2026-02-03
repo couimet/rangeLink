@@ -9,8 +9,8 @@ import type { PasteDestinationManager } from '../destinations/PasteDestinationMa
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import { messagesEn } from '../i18n/messages.en';
-import { PathFormat, RangeLinkService } from '../RangeLinkService';
-import { MessageCode, QuickPickBindResult } from '../types';
+import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkService';
+import { MessageCode, PasteContentType, QuickPickBindResult } from '../types';
 import * as formatMessageModule from '../utils/formatMessage';
 import * as generateLinkModule from '../utils/generateLinkFromSelections';
 
@@ -61,6 +61,7 @@ const TEST_WORKSPACE_ROOT_WITH_SPACES = '/my workspace';
 const TEST_ABSOLUTE_PATH_WITH_SPACES = `${TEST_WORKSPACE_ROOT_WITH_SPACES}/${TEST_RELATIVE_PATH}`;
 const TEST_QUOTED_PATH_WITH_SPACES = `"${TEST_ABSOLUTE_PATH_WITH_SPACES}"`;
 
+let mockEditor: vscode.TextEditor;
 /**
  * Helper to create a mock selection with simplified syntax.
  * For non-reversed selections, anchor=start and active=end.
@@ -563,17 +564,22 @@ describe('RangeLinkService', () => {
       });
 
       it('should call formatMessage with STATUS_BAR_LINK_COPIED_TO_CLIPBOARD and linkTypeName parameter', async () => {
-        const mockSendFn = jest.fn().mockResolvedValue(true);
-        const mockIsEligibleFn = jest.fn().mockResolvedValue(true);
-
-        await (service as any).copyAndSendToDestination(
-          'src/file.ts#L1',
-          'src/file.ts#L1',
-          mockSendFn,
-          mockIsEligibleFn,
-          'RangeLink',
-          'test',
-        );
+        await (service as any).copyAndSendToDestination({
+          control: {
+            contentType: PasteContentType.Link,
+            destinationBehavior: DestinationBehavior.ClipboardOnly,
+          },
+          content: {
+            clipboard: 'src/file.ts#L1',
+            send: 'src/file.ts#L1',
+          },
+          strategies: {
+            sendFn: jest.fn().mockResolvedValue(true),
+            isEligibleFn: jest.fn().mockResolvedValue(true),
+          },
+          contentName: 'RangeLink',
+          fnName: 'test',
+        });
 
         expect(formatMessageSpy).toHaveBeenCalledWith(
           MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD,
@@ -582,17 +588,22 @@ describe('RangeLinkService', () => {
       });
 
       it('should produce correct status message with "RangeLink" parameter', async () => {
-        const mockSendFn = jest.fn().mockResolvedValue(true);
-        const mockIsEligibleFn = jest.fn().mockResolvedValue(true);
-
-        await (service as any).copyAndSendToDestination(
-          'src/file.ts#L1',
-          'src/file.ts#L1',
-          mockSendFn,
-          mockIsEligibleFn,
-          'RangeLink',
-          'test',
-        );
+        await (service as any).copyAndSendToDestination({
+          control: {
+            contentType: PasteContentType.Link,
+            destinationBehavior: DestinationBehavior.ClipboardOnly,
+          },
+          content: {
+            clipboard: 'src/file.ts#L1',
+            send: 'src/file.ts#L1',
+          },
+          strategies: {
+            sendFn: jest.fn().mockResolvedValue(true),
+            isEligibleFn: jest.fn().mockResolvedValue(true),
+          },
+          contentName: 'RangeLink',
+          fnName: 'test',
+        });
 
         const expectedMessage = messagesEn[MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD].replace(
           '{linkTypeName}',
@@ -602,17 +613,22 @@ describe('RangeLinkService', () => {
       });
 
       it('should produce correct status message with "Portable RangeLink" parameter', async () => {
-        const mockSendFn = jest.fn().mockResolvedValue(true);
-        const mockIsEligibleFn = jest.fn().mockResolvedValue(true);
-
-        await (service as any).copyAndSendToDestination(
-          'src/file.ts#L1',
-          'src/file.ts#L1',
-          mockSendFn,
-          mockIsEligibleFn,
-          'Portable RangeLink',
-          'test',
-        );
+        await (service as any).copyAndSendToDestination({
+          control: {
+            contentType: PasteContentType.Link,
+            destinationBehavior: DestinationBehavior.ClipboardOnly,
+          },
+          content: {
+            clipboard: 'src/file.ts#L1',
+            send: 'src/file.ts#L1',
+          },
+          strategies: {
+            sendFn: jest.fn().mockResolvedValue(true),
+            isEligibleFn: jest.fn().mockResolvedValue(true),
+          },
+          contentName: 'Portable RangeLink',
+          fnName: 'test',
+        });
 
         const expectedMessage = messagesEn[MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD].replace(
           '{linkTypeName}',
@@ -1350,6 +1366,17 @@ describe('RangeLinkService', () => {
     let mockCopyToClipboard: jest.SpyInstance;
 
     beforeEach(() => {
+      mockEditor = createMockEditor();
+      mockVscodeAdapter = createMockVscodeAdapter({
+        envOptions: { clipboard: mockClipboard },
+        windowOptions: {
+          activeTextEditor: mockEditor,
+          setStatusBarMessage: mockSetStatusBarMessage,
+          showWarningMessage: mockShowWarningMessage,
+          showErrorMessage: mockShowErrorMessage,
+          showInformationMessage: mockShowInformationMessage,
+        },
+      });
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
         delimiters,
@@ -1403,8 +1430,12 @@ describe('RangeLinkService', () => {
 
       await service.createLink(PathFormat.WorkspaceRelative);
 
-      expect(mockCopyToClipboard).toHaveBeenCalledWith(mockFormattedLink, 'RangeLink');
       expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+      expect(mockCopyToClipboard).toHaveBeenCalledWith(
+        mockFormattedLink,
+        'RangeLink',
+        mockEditor.document.uri,
+      );
     });
 
     it('should not call copyToClipboardAndDestination when generateLinkFromSelection returns null', async () => {
@@ -1481,6 +1512,17 @@ describe('RangeLinkService', () => {
     let mockCopyToClipboard: jest.SpyInstance;
 
     beforeEach(() => {
+      mockEditor = createMockEditor();
+      mockVscodeAdapter = createMockVscodeAdapter({
+        envOptions: { clipboard: mockClipboard },
+        windowOptions: {
+          activeTextEditor: mockEditor,
+          setStatusBarMessage: mockSetStatusBarMessage,
+          showWarningMessage: mockShowWarningMessage,
+          showErrorMessage: mockShowErrorMessage,
+          showInformationMessage: mockShowInformationMessage,
+        },
+      });
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
         delimiters,
@@ -1536,7 +1578,11 @@ describe('RangeLinkService', () => {
 
       await service.createPortableLink(PathFormat.WorkspaceRelative);
 
-      expect(mockCopyToClipboard).toHaveBeenCalledWith(mockFormattedLink, 'Portable RangeLink');
+      expect(mockCopyToClipboard).toHaveBeenCalledWith(
+        mockFormattedLink,
+        'Portable RangeLink',
+        mockEditor.document.uri,
+      );
       expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
     });
 
@@ -1845,15 +1891,22 @@ describe('RangeLinkService', () => {
 
       await service.createLinkOnly(PathFormat.WorkspaceRelative);
 
-      expect(mockCopyAndSend).toHaveBeenCalledWith(
-        mockFormattedLink.link, // content
-        mockFormattedLink, // formattedLink
-        expect.any(Function), // isEligibleFn (no-op callback)
-        expect.any(Function), // sendFn (no-op callback)
-        'RangeLink', // linkTypeName
-        'createLinkOnly', // functionName
-        'clipboard-only', // DestinationBehavior.ClipboardOnly
-      );
+      expect(mockCopyAndSend).toHaveBeenCalledWith({
+        control: {
+          contentType: 'Link',
+          destinationBehavior: 'clipboard-only',
+        },
+        content: {
+          clipboard: mockFormattedLink.link,
+          send: mockFormattedLink,
+        },
+        strategies: {
+          sendFn: expect.any(Function),
+          isEligibleFn: expect.any(Function),
+        },
+        contentName: 'RangeLink',
+        fnName: 'createLinkOnly',
+      });
       expect(mockCopyAndSend).toHaveBeenCalledTimes(1);
     });
 
@@ -1909,14 +1962,23 @@ describe('RangeLinkService', () => {
         await (service as any).pasteFilePath(mockUri, PathFormat.WorkspaceRelative, 'context-menu');
 
         expect(getRefPathSpy).toHaveBeenCalledWith(mockUri, PathFormat.WorkspaceRelative);
-        expect(copyAndSendSpy).toHaveBeenCalledWith(
-          'mocked/path.ts',
-          'mocked/path.ts',
-          expect.any(Function),
-          expect.any(Function),
-          'File path',
-          'pasteFilePath',
-        );
+        expect(copyAndSendSpy).toHaveBeenCalledWith({
+          control: {
+            contentType: 'Text',
+            destinationBehavior: 'bound-destination',
+          },
+          content: {
+            clipboard: 'mocked/path.ts',
+            send: 'mocked/path.ts',
+            sourceUri: mockUri,
+          },
+          strategies: {
+            sendFn: expect.any(Function),
+            isEligibleFn: expect.any(Function),
+          },
+          contentName: 'File path',
+          fnName: 'pasteFilePath',
+        });
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkService.pasteFilePath',
@@ -1942,17 +2004,16 @@ describe('RangeLinkService', () => {
           'both',
         );
 
-        const sendFn = copyAndSendSpy.mock.calls[0][2];
-        await sendFn('test-text', 'test-message');
+        const options = copyAndSendSpy.mock.calls[0][0];
+        await options.strategies.sendFn('test-text', 'test-message');
         expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
           'test-text',
           'test-message',
           'before',
         );
 
-        const eligibilityFn = copyAndSendSpy.mock.calls[0][3];
         const mockDestination = { isEligibleForPasteContent: jest.fn().mockResolvedValue(true) };
-        await eligibilityFn(mockDestination, 'eligibility-text');
+        await options.strategies.isEligibleFn(mockDestination, 'eligibility-text');
         expect(mockDestination.isEligibleForPasteContent).toHaveBeenCalledWith('eligibility-text');
       });
     });
@@ -2034,14 +2095,23 @@ describe('RangeLinkService', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
-        expect(copyAndSendSpy).toHaveBeenCalledWith(
-          TEST_ABSOLUTE_PATH_WITH_SPACES,
-          TEST_QUOTED_PATH_WITH_SPACES,
-          expect.any(Function),
-          expect.any(Function),
-          'File path',
-          'pasteFilePath',
-        );
+        expect(copyAndSendSpy).toHaveBeenCalledWith({
+          control: {
+            contentType: 'Text',
+            destinationBehavior: 'bound-destination',
+          },
+          content: {
+            clipboard: TEST_ABSOLUTE_PATH_WITH_SPACES,
+            send: TEST_QUOTED_PATH_WITH_SPACES,
+            sourceUri: mockUri,
+          },
+          strategies: {
+            sendFn: expect.any(Function),
+            isEligibleFn: expect.any(Function),
+          },
+          contentName: 'File path',
+          fnName: 'pasteFilePath',
+        });
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkService.pasteFilePath',
@@ -2060,14 +2130,23 @@ describe('RangeLinkService', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
-        expect(copyAndSendSpy).toHaveBeenCalledWith(
-          TEST_ABSOLUTE_PATH_WITH_SPACES,
-          TEST_ABSOLUTE_PATH_WITH_SPACES,
-          expect.any(Function),
-          expect.any(Function),
-          'File path',
-          'pasteFilePath',
-        );
+        expect(copyAndSendSpy).toHaveBeenCalledWith({
+          control: {
+            contentType: 'Text',
+            destinationBehavior: 'bound-destination',
+          },
+          content: {
+            clipboard: TEST_ABSOLUTE_PATH_WITH_SPACES,
+            send: TEST_ABSOLUTE_PATH_WITH_SPACES,
+            sourceUri: mockUri,
+          },
+          strategies: {
+            sendFn: expect.any(Function),
+            isEligibleFn: expect.any(Function),
+          },
+          contentName: 'File path',
+          fnName: 'pasteFilePath',
+        });
       });
 
       it('should not log when terminal path has no special characters', async () => {
@@ -2093,14 +2172,23 @@ describe('RangeLinkService', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
-        expect(copyAndSendSpy).toHaveBeenCalledWith(
-          TEST_ABSOLUTE_PATH,
-          TEST_ABSOLUTE_PATH,
-          expect.any(Function),
-          expect.any(Function),
-          'File path',
-          'pasteFilePath',
-        );
+        expect(copyAndSendSpy).toHaveBeenCalledWith({
+          control: {
+            contentType: 'Text',
+            destinationBehavior: 'bound-destination',
+          },
+          content: {
+            clipboard: TEST_ABSOLUTE_PATH,
+            send: TEST_ABSOLUTE_PATH,
+            sourceUri: mockUri,
+          },
+          strategies: {
+            sendFn: expect.any(Function),
+            isEligibleFn: expect.any(Function),
+          },
+          contentName: 'File path',
+          fnName: 'pasteFilePath',
+        });
         expect(mockLogger.debug).not.toHaveBeenCalledWith(
           expect.objectContaining({ before: expect.any(String), after: expect.any(String) }),
           'Quoted path for terminal destination',

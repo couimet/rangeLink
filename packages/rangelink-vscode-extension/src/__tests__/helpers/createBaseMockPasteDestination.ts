@@ -108,6 +108,7 @@ export const createBaseMockPasteDestination = (
     getLoggingDetails: jest.fn().mockReturnValue({}),
     getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused'),
     equals: jest.fn().mockResolvedValue(false),
+    getDestinationUri: jest.fn().mockReturnValue(undefined),
     ...processedOverrides,
   } as unknown as jest.Mocked<PasteDestination>;
 };

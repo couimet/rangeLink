@@ -121,7 +121,7 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
     editor,
     displayName: `Text Editor ("${resourceName}")`,
     pasteExecutor: context.factories.pasteExecutor.createEditorExecutor(editor),
-    eligibilityChecker: context.factories.eligibilityChecker.createSelfPasteChecker(),
+    eligibilityChecker: context.factories.eligibilityChecker.createContentEligibilityChecker(),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, {
       resourceName,
     }),

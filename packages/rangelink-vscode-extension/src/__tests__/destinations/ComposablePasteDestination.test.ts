@@ -22,12 +22,10 @@ describe('ComposablePasteDestination', () => {
       const isAvailable = jest.fn().mockResolvedValue(true);
       const destination = createMockComposablePasteDestination({ isAvailable, logger: mockLogger });
       const context = { fn: 'test', mock: true };
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
       await destination['performPaste'](
         'text',
         context,
-        eligibilityCheck,
         PasteContentType.Link,
         ARBITRARY_PADDING_MODE,
       );
@@ -35,9 +33,8 @@ describe('ComposablePasteDestination', () => {
       expect(isAvailable).toHaveBeenCalledTimes(1);
     });
 
-    it('should return false when unavailable without checking eligibility', async () => {
+    it('should return false when unavailable without focusing', async () => {
       const isAvailable = jest.fn().mockResolvedValue(false);
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
       const pasteExecutor = createMockPasteExecutor();
       const destination = createMockComposablePasteDestination({
         isAvailable,
@@ -49,46 +46,7 @@ describe('ComposablePasteDestination', () => {
       const result = await destination['performPaste'](
         'text',
         context,
-        eligibilityCheck,
         PasteContentType.Link,
-        UNUSED_PADDING_MODE,
-      );
-
-      expect(result).toBe(false);
-      expect(eligibilityCheck).not.toHaveBeenCalled();
-      expect(pasteExecutor.focus).not.toHaveBeenCalled();
-    });
-
-    it('should call eligibility check after availability', async () => {
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
-      const destination = createMockComposablePasteDestination({ logger: mockLogger });
-      const context = { fn: 'test', mock: true };
-
-      await destination['performPaste'](
-        'text',
-        context,
-        eligibilityCheck,
-        PasteContentType.Link,
-        ARBITRARY_PADDING_MODE,
-      );
-
-      expect(eligibilityCheck).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return false when not eligible without focusing', async () => {
-      const eligibilityCheck = jest.fn().mockResolvedValue(false);
-      const pasteExecutor = createMockPasteExecutor();
-      const destination = createMockComposablePasteDestination({
-        pasteExecutor,
-        logger: mockLogger,
-      });
-      const context = { fn: 'test', mock: true };
-
-      const result = await destination['performPaste'](
-        'text',
-        context,
-        eligibilityCheck,
-        PasteContentType.Text,
         UNUSED_PADDING_MODE,
       );
 
@@ -107,15 +65,8 @@ describe('ComposablePasteDestination', () => {
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
-      await destination['performPaste'](
-        ' already-padded ',
-        context,
-        eligibilityCheck,
-        PasteContentType.Link,
-        'both',
-      );
+      await destination['performPaste'](' already-padded ', context, PasteContentType.Link, 'both');
 
       expect(mockInsert).toHaveBeenCalledWith(' already-padded ', context);
     });
@@ -138,12 +89,10 @@ describe('ComposablePasteDestination', () => {
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
       await destination['performPaste'](
         'text',
         context,
-        eligibilityCheck,
         PasteContentType.Link,
         ARBITRARY_PADDING_MODE,
       );
@@ -163,12 +112,10 @@ describe('ComposablePasteDestination', () => {
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
       const result = await destination['performPaste'](
         'text',
         context,
-        eligibilityCheck,
         PasteContentType.Link,
         ARBITRARY_PADDING_MODE,
       );
@@ -186,12 +133,10 @@ describe('ComposablePasteDestination', () => {
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
       const result = await destination['performPaste'](
         'text',
         context,
-        eligibilityCheck,
         PasteContentType.Link,
         ARBITRARY_PADDING_MODE,
       );
@@ -210,12 +155,10 @@ describe('ComposablePasteDestination', () => {
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
       const result = await destination['performPaste'](
         'text',
         context,
-        eligibilityCheck,
         PasteContentType.Link,
         ARBITRARY_PADDING_MODE,
       );
@@ -230,12 +173,10 @@ describe('ComposablePasteDestination', () => {
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
       await destination['performPaste'](
         'text',
         context,
-        eligibilityCheck,
         PasteContentType.Link,
         UNUSED_PADDING_MODE,
       );
@@ -253,12 +194,10 @@ describe('ComposablePasteDestination', () => {
         logger: mockLogger,
       });
       const context = { fn: 'test', mock: true };
-      const eligibilityCheck = jest.fn().mockResolvedValue(true);
 
       await destination['performPaste'](
         'text',
         context,
-        eligibilityCheck,
         PasteContentType.Text,
         UNUSED_PADDING_MODE,
       );
@@ -286,22 +225,6 @@ describe('ComposablePasteDestination', () => {
         formattedLink,
         linkLength: 9,
         paddingMode: 'both',
-        mock: true,
-      });
-    });
-
-    it('should use isEligibleForPasteLink for eligibility check', async () => {
-      const eligibilityChecker = createMockEligibilityChecker();
-      const destination = createMockComposablePasteDestination({
-        eligibilityChecker,
-        logger: mockLogger,
-      });
-      const formattedLink = createMockFormattedLink('test-link');
-
-      await destination.pasteLink(formattedLink, 'both');
-
-      expect(eligibilityChecker.isEligible).toHaveBeenCalledWith('test-link', {
-        fn: 'ComposablePasteDestination.isEligibleForPasteLink',
         mock: true,
       });
     });
@@ -343,21 +266,6 @@ describe('ComposablePasteDestination', () => {
         fn: 'ComposablePasteDestination.pasteContent',
         contentLength: 12,
         paddingMode: 'none',
-        mock: true,
-      });
-    });
-
-    it('should use isEligibleForPasteContent for eligibility check', async () => {
-      const eligibilityChecker = createMockEligibilityChecker();
-      const destination = createMockComposablePasteDestination({
-        eligibilityChecker,
-        logger: mockLogger,
-      });
-
-      await destination.pasteContent('test content', 'none');
-
-      expect(eligibilityChecker.isEligible).toHaveBeenCalledWith('test content', {
-        fn: 'ComposablePasteDestination.isEligibleForPasteContent',
         mock: true,
       });
     });
@@ -643,6 +551,46 @@ describe('ComposablePasteDestination', () => {
       const result = await destination.isAvailable();
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('getDestinationUri()', () => {
+    it('should return document URI for editor destinations', () => {
+      const mockUri = { toString: () => 'file:///workspace/src/file.ts' };
+      const mockEditor = {
+        document: { uri: mockUri },
+      };
+      const destination = createMockComposablePasteDestination({
+        resource: { kind: 'editor', editor: mockEditor as never },
+        logger: mockLogger,
+      });
+
+      const result = destination.getDestinationUri();
+
+      expect(result).toBe(mockUri);
+    });
+
+    it('should return undefined for terminal destinations', () => {
+      const mockTerminal = { name: 'bash' };
+      const destination = createMockComposablePasteDestination({
+        resource: { kind: 'terminal', terminal: mockTerminal as never },
+        logger: mockLogger,
+      });
+
+      const result = destination.getDestinationUri();
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined for singleton destinations', () => {
+      const destination = createMockComposablePasteDestination({
+        resource: { kind: 'singleton' },
+        logger: mockLogger,
+      });
+
+      const result = destination.getDestinationUri();
+
+      expect(result).toBeUndefined();
     });
   });
 });

@@ -16,8 +16,7 @@
 // ============================================================================
 
 export type { EligibilityChecker } from './EligibilityChecker';
-export { AlwaysEligibleChecker } from './AlwaysEligibleChecker';
-export { SelfPasteChecker } from './SelfPasteChecker';
+export { ContentEligibilityChecker } from './ContentEligibilityChecker';
 export { EligibilityCheckerFactory } from './EligibilityCheckerFactory';
 
 // ============================================================================

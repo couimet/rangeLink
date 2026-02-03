@@ -1,4 +1,5 @@
 import type { FormattedLink } from 'rangelink-core-ts';
+import type * as vscode from 'vscode';
 
 import type { AutoPasteResult } from '../types/AutoPasteResult';
 import type { PaddingMode } from '../utils/applySmartPadding';
@@ -195,6 +196,16 @@ export interface PasteDestination {
    * @returns Record with destination-specific logging details (empty object if none)
    */
   getLoggingDetails(): Record<string, unknown>;
+
+  /**
+   * Get the URI of the destination resource (for text-editor destinations).
+   *
+   * Used for self-paste detection (source === destination check).
+   *
+   * @returns Document URI for text-editor destinations, undefined for
+   *          non-document destinations (terminals use processId, AI assistants are singletons)
+   */
+  getDestinationUri(): vscode.Uri | undefined;
 
   /**
    * Check if this destination equals another destination

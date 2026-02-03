@@ -244,19 +244,21 @@ describe('DestinationRegistry', () => {
     it('should allow mocking EligibilityCheckerFactory methods in builder', () => {
       const factories = createMockFactories();
       const mockChecker = { isEligible: jest.fn() };
-      factories.eligibilityChecker.createAlwaysEligible.mockReturnValue(mockChecker as never);
+      factories.eligibilityChecker.createContentEligibilityChecker.mockReturnValue(
+        mockChecker as never,
+      );
       const registry = createRegistry(factories);
 
       let capturedChecker: unknown;
       const builder: DestinationBuilder = (_options, context) => {
-        capturedChecker = context.factories.eligibilityChecker.createAlwaysEligible();
+        capturedChecker = context.factories.eligibilityChecker.createContentEligibilityChecker();
         return createBaseMockPasteDestination({ id: 'cursor-ai' });
       };
       registry.register('cursor-ai', builder);
       registry.create({ type: 'cursor-ai' });
 
       expect(capturedChecker).toBe(mockChecker);
-      expect(factories.eligibilityChecker.createAlwaysEligible).toHaveBeenCalledTimes(1);
+      expect(factories.eligibilityChecker.createContentEligibilityChecker).toHaveBeenCalledTimes(1);
     });
 
     it('should provide same context to all builder invocations', () => {
@@ -289,7 +291,9 @@ describe('DestinationRegistry', () => {
       const mockChecker = { isEligible: jest.fn() };
 
       factories.pasteExecutor.createCommandExecutor.mockReturnValue(mockExecutor as never);
-      factories.eligibilityChecker.createAlwaysEligible.mockReturnValue(mockChecker as never);
+      factories.eligibilityChecker.createContentEligibilityChecker.mockReturnValue(
+        mockChecker as never,
+      );
 
       const registry = createRegistry(factories);
 
@@ -298,7 +302,7 @@ describe('DestinationRegistry', () => {
           ['focus.cmd'],
           ['paste'],
         );
-        const checker = context.factories.eligibilityChecker.createAlwaysEligible();
+        const checker = context.factories.eligibilityChecker.createContentEligibilityChecker();
 
         expect(executor).toBe(mockExecutor);
         expect(checker).toBe(mockChecker);
@@ -314,7 +318,7 @@ describe('DestinationRegistry', () => {
         ['focus.cmd'],
         ['paste'],
       );
-      expect(factories.eligibilityChecker.createAlwaysEligible).toHaveBeenCalledTimes(1);
+      expect(factories.eligibilityChecker.createContentEligibilityChecker).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -10,6 +10,5 @@ import type { EligibilityCheckerFactory } from '../../destinations/capabilities/
  */
 export const createMockEligibilityCheckerFactory = (): jest.Mocked<EligibilityCheckerFactory> =>
   ({
-    createAlwaysEligible: jest.fn(),
-    createSelfPasteChecker: jest.fn(),
+    createContentEligibilityChecker: jest.fn(),
   }) as unknown as jest.Mocked<EligibilityCheckerFactory>;

@@ -14,10 +14,11 @@ import {
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
-import { ActiveSelections, MessageCode, QuickPickBindResult } from './types';
+import { ActiveSelections, MessageCode, PasteContentType, QuickPickBindResult } from './types';
 import {
   formatMessage,
   generateLinkFromSelections,
+  isSelfPaste,
   isTerminalDestination,
   quotePathForShell,
 } from './utils';
@@ -44,6 +45,41 @@ export enum DestinationBehavior {
 }
 
 /**
+ * No-op send function for clipboard-only operations.
+ * Never invoked because ClipboardOnly behavior exits before reaching send logic.
+ */
+const NOOP_SEND_FN = () => Promise.resolve(false);
+
+/**
+ * No-op eligibility function for clipboard-only operations.
+ * Never invoked because ClipboardOnly behavior exits before eligibility checks.
+ */
+const NOOP_ELIGIBILITY_FN = () => Promise.resolve(false);
+
+/**
+ * Options for copyAndSendToDestination, grouped by concern.
+ */
+interface CopyAndSendOptions<T> {
+  control: {
+    contentType: PasteContentType;
+    destinationBehavior: DestinationBehavior;
+  };
+  content: {
+    clipboard: string;
+    send: T;
+    sourceUri?: vscode.Uri;
+  };
+  strategies: {
+    sendFn: (content: T, basicStatusMessage: string) => Promise<boolean>;
+    isEligibleFn: (destination: PasteDestination, content: T) => Promise<boolean>;
+  };
+  /** User-facing name for status bar messages (e.g., "RangeLink", "Selected text") */
+  contentName: string;
+  /** Function name for internal logging context */
+  fnName: string;
+}
+
+/**
  * RangeLinkService: VSCode-specific orchestration layer
  * Core logic is handled by rangelink-core-ts functions
  */
@@ -62,7 +98,12 @@ export class RangeLinkService {
   async createLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
     const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
     if (formattedLink) {
-      await this.copyToClipboardAndDestination(formattedLink, 'RangeLink');
+      const sourceUri = this.ideAdapter.getActiveTextEditorUri()!;
+      await this.copyToClipboardAndDestination(
+        formattedLink,
+        formatMessage(MessageCode.CONTENT_NAME_RANGELINK),
+        sourceUri,
+      );
     }
   }
 
@@ -77,15 +118,22 @@ export class RangeLinkService {
   async createLinkOnly(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
     const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
     if (formattedLink) {
-      await this.copyAndSendToDestination(
-        formattedLink.link,
-        formattedLink,
-        () => Promise.resolve(false), // No-op (never called due to ClipboardOnly)
-        () => Promise.resolve(false), // No-op (never called)
-        'RangeLink',
-        'createLinkOnly',
-        DestinationBehavior.ClipboardOnly,
-      );
+      await this.copyAndSendToDestination({
+        control: {
+          contentType: PasteContentType.Link,
+          destinationBehavior: DestinationBehavior.ClipboardOnly,
+        },
+        content: {
+          clipboard: formattedLink.link,
+          send: formattedLink,
+        },
+        strategies: {
+          sendFn: NOOP_SEND_FN,
+          isEligibleFn: NOOP_ELIGIBILITY_FN,
+        },
+        contentName: formatMessage(MessageCode.CONTENT_NAME_RANGELINK),
+        fnName: 'createLinkOnly',
+      });
     }
   }
 
@@ -95,7 +143,12 @@ export class RangeLinkService {
   async createPortableLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
     const formattedLink = await this.generateLinkFromSelection(pathFormat, true);
     if (formattedLink) {
-      await this.copyToClipboardAndDestination(formattedLink, 'Portable RangeLink');
+      const sourceUri = this.ideAdapter.getActiveTextEditorUri()!;
+      await this.copyToClipboardAndDestination(
+        formattedLink,
+        formatMessage(MessageCode.CONTENT_NAME_PORTABLE_RANGELINK),
+        sourceUri,
+      );
     }
   }
 
@@ -145,15 +198,24 @@ export class RangeLinkService {
       }
     }
 
-    await this.copyAndSendToDestination(
-      content,
-      content,
-      (text, basicStatusMessage) =>
-        this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
-      (destination, text) => destination.isEligibleForPasteContent(text),
-      'Selected text',
-      'pasteSelectedTextToDestination',
-    );
+    await this.copyAndSendToDestination({
+      control: {
+        contentType: PasteContentType.Text,
+        destinationBehavior: DestinationBehavior.BoundDestination,
+      },
+      content: {
+        clipboard: content,
+        send: content,
+        sourceUri: editor.document.uri,
+      },
+      strategies: {
+        sendFn: (text, basicStatusMessage) =>
+          this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
+        isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
+      },
+      contentName: formatMessage(MessageCode.CONTENT_NAME_SELECTED_TEXT),
+      fnName: 'pasteSelectedTextToDestination',
+    });
   }
 
   /**
@@ -254,15 +316,24 @@ export class RangeLinkService {
       );
     }
 
-    await this.copyAndSendToDestination(
-      filePath,
-      destinationFilePath,
-      (text, basicStatusMessage) =>
-        this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
-      (destination, text) => destination.isEligibleForPasteContent(text),
-      'File path',
-      'pasteFilePath',
-    );
+    await this.copyAndSendToDestination({
+      control: {
+        contentType: PasteContentType.Text,
+        destinationBehavior: DestinationBehavior.BoundDestination,
+      },
+      content: {
+        clipboard: filePath,
+        send: destinationFilePath,
+        sourceUri: uri,
+      },
+      strategies: {
+        sendFn: (text, basicStatusMessage) =>
+          this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
+        isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
+      },
+      contentName: formatMessage(MessageCode.CONTENT_NAME_FILE_PATH),
+      fnName: 'pasteFilePath',
+    });
   }
 
   /**
@@ -324,26 +395,36 @@ export class RangeLinkService {
    *
    * @param formattedLink The formatted RangeLink with metadata
    * @param linkTypeName User-friendly name for status messages (e.g., "RangeLink", "Portable RangeLink")
+   * @param sourceUri URI of the source document (for self-paste detection)
    */
   private async copyToClipboardAndDestination(
     formattedLink: FormattedLink,
     linkTypeName: string,
+    sourceUri: vscode.Uri,
   ): Promise<void> {
     const paddingMode = this.configReader.getPaddingMode(
       SETTING_SMART_PADDING_PASTE_LINK,
       DEFAULT_SMART_PADDING_PASTE_LINK,
     );
 
-    await this.copyAndSendToDestination(
-      formattedLink.link,
-      formattedLink,
-      (link, basicStatusMessage) =>
-        this.destinationManager.sendLinkToDestination(link, basicStatusMessage, paddingMode),
-      (destination, link) => destination.isEligibleForPasteLink(link),
-      linkTypeName,
-      'copyToClipboardAndDestination',
-      DestinationBehavior.BoundDestination,
-    );
+    await this.copyAndSendToDestination({
+      control: {
+        contentType: PasteContentType.Link,
+        destinationBehavior: DestinationBehavior.BoundDestination,
+      },
+      content: {
+        clipboard: formattedLink.link,
+        send: formattedLink,
+        sourceUri,
+      },
+      strategies: {
+        sendFn: (link, basicStatusMessage) =>
+          this.destinationManager.sendLinkToDestination(link, basicStatusMessage, paddingMode),
+        isEligibleFn: (destination, link) => destination.isEligibleForPasteLink(link),
+      },
+      contentName: linkTypeName,
+      fnName: 'copyToClipboardAndDestination',
+    });
   }
 
   /**
@@ -496,26 +577,12 @@ export class RangeLinkService {
    * - Automatic destinations (Terminal, Text Editor): Shows status bar "✓ ${contentName} copied to clipboard and sent to ${displayName}"
    * - Clipboard destinations (Claude Code, Cursor AI): Shows status bar "✓ ${contentName} copied to clipboard" + information popup with getUserInstruction()
    * - No destination bound: Shows "✓ ${contentName} copied to clipboard"
-   *
-   * @param clipboardContent - String content to copy to clipboard
-   * @param sendContent - Content to send to destination (may differ from clipboard)
-   * @param sendFn - Function to send content to destination manager
-   * @param isEligibleFn - Function to check if content is eligible for paste to destination
-   * @param contentName - User-friendly name for the content (e.g., "RangeLink", "Selected text")
-   * @param fnName - Function name for logging
-   * @param destinationBehavior - Controls whether to send to bound destination or clipboard-only
    */
-  private async copyAndSendToDestination<T>(
-    clipboardContent: string,
-    sendContent: T,
-    sendFn: (content: T, basicStatusMessage: string) => Promise<boolean>,
-    isEligibleFn: (destination: PasteDestination, content: T) => Promise<boolean>,
-    contentName: string,
-    fnName: string,
-    destinationBehavior: DestinationBehavior = DestinationBehavior.BoundDestination,
-  ): Promise<void> {
+  private async copyAndSendToDestination<T>(options: CopyAndSendOptions<T>): Promise<void> {
+    const { control, content, strategies, contentName, fnName } = options;
+
     // Copy to clipboard
-    await this.ideAdapter.writeTextToClipboard(clipboardContent);
+    await this.ideAdapter.writeTextToClipboard(content.clipboard);
 
     const basicStatusMessage = formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, {
       linkTypeName: contentName,
@@ -523,12 +590,12 @@ export class RangeLinkService {
 
     // Early return if skipping destination (either forced or not bound)
     const shouldSkipDestination =
-      destinationBehavior === DestinationBehavior.ClipboardOnly ||
+      control.destinationBehavior === DestinationBehavior.ClipboardOnly ||
       !this.destinationManager.isBound();
 
     if (shouldSkipDestination) {
       const reason =
-        destinationBehavior === DestinationBehavior.ClipboardOnly
+        control.destinationBehavior === DestinationBehavior.ClipboardOnly
           ? 'Skipping destination (clipboard-only command)'
           : 'No destination bound - copied to clipboard only';
       this.logger.info({ fn: fnName }, reason);
@@ -541,12 +608,25 @@ export class RangeLinkService {
     const displayName = destination.displayName || 'destination';
 
     // Check eligibility before sending
-    const isEligible = await isEligibleFn(destination, sendContent);
+    const isEligible = await strategies.isEligibleFn(destination, content.send);
     if (!isEligible) {
       this.logger.debug(
         { fn: fnName, boundDestination: displayName },
         'Content not eligible for paste - skipping auto-paste',
       );
+      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
+      return;
+    }
+
+    // Check for self-paste (source and destination are the same file)
+    if (content.sourceUri && isSelfPaste(content.sourceUri, destination)) {
+      this.logger.info({ fn: fnName }, 'Self-paste detected - skipping auto-paste');
+      const selfPasteMessageCodes: Record<PasteContentType, MessageCode> = {
+        [PasteContentType.Link]: MessageCode.INFO_SELF_PASTE_LINK_SKIPPED,
+        [PasteContentType.Text]: MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED,
+      };
+      const selfPasteMessage = formatMessage(selfPasteMessageCodes[control.contentType]);
+      this.ideAdapter.showInformationMessage(selfPasteMessage);
       this.ideAdapter.setStatusBarMessage(basicStatusMessage);
       return;
     }
@@ -557,6 +637,6 @@ export class RangeLinkService {
     );
 
     // Send to bound destination (manager handles all feedback)
-    await sendFn(sendContent, basicStatusMessage);
+    await strategies.sendFn(content.send, basicStatusMessage);
   }
 }
