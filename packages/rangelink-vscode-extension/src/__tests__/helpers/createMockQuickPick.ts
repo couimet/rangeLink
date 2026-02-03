@@ -1,7 +1,6 @@
 import type * as vscode from 'vscode';
 
 export interface MockQuickPickItem extends vscode.QuickPickItem {
-   
   [key: string]: any;
 }
 
@@ -12,13 +11,11 @@ export interface MockQuickPickItem extends vscode.QuickPickItem {
  * Use `__trigger*` methods to simulate user interactions.
  */
 export const createMockQuickPick = () => {
-   
   const handlers: {
     onDidTriggerItemButton?: (event: vscode.QuickPickItemButtonEvent<MockQuickPickItem>) => any;
     onDidAccept?: () => any;
     onDidHide?: () => any;
   } = {};
-   
 
   return {
     items: [] as MockQuickPickItem[],
@@ -28,18 +25,17 @@ export const createMockQuickPick = () => {
     hide: jest.fn(),
     dispose: jest.fn(),
     onDidTriggerItemButton: jest.fn(
-       
       (handler: (event: vscode.QuickPickItemButtonEvent<MockQuickPickItem>) => any) => {
         handlers.onDidTriggerItemButton = handler;
         return { dispose: jest.fn() };
       },
     ),
-     
+
     onDidAccept: jest.fn((handler: () => any) => {
       handlers.onDidAccept = handler;
       return { dispose: jest.fn() };
     }),
-     
+
     onDidHide: jest.fn((handler: () => any) => {
       handlers.onDidHide = handler;
       return { dispose: jest.fn() };

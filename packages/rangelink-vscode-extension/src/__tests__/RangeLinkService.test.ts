@@ -1636,7 +1636,6 @@ describe('RangeLinkService', () => {
       const mockResult = createMockFormattedLink('file.ts#L10');
       mockGenerateLinkFromSelections.mockReturnValue(Result.ok(mockResult));
 
-       
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         false,
@@ -1661,7 +1660,6 @@ describe('RangeLinkService', () => {
       const mockResult = createMockFormattedLink('file.ts#L10~L~C~#~-~');
       mockGenerateLinkFromSelections.mockReturnValue(Result.ok(mockResult));
 
-       
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         true,
@@ -1690,7 +1688,6 @@ describe('RangeLinkService', () => {
       });
       mockGenerateLinkFromSelections.mockReturnValue(Result.err(testError));
 
-       
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         false,
@@ -1712,7 +1709,6 @@ describe('RangeLinkService', () => {
       });
       mockGenerateLinkFromSelections.mockReturnValue(Result.err(testError));
 
-       
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         true,
@@ -1764,7 +1760,6 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-       
       await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
@@ -1802,7 +1797,6 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-       
       await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
@@ -1840,7 +1834,6 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-       
       await (service as any).generateLinkFromSelection(PathFormat.Absolute, false);
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
@@ -1958,7 +1951,6 @@ describe('RangeLinkService', () => {
           .mockReturnValue('mocked/path.ts');
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
-         
         await (service as any).pasteFilePath(mockUri, PathFormat.WorkspaceRelative, 'context-menu');
 
         expect(getRefPathSpy).toHaveBeenCalledWith(mockUri, PathFormat.WorkspaceRelative);
@@ -1996,7 +1988,6 @@ describe('RangeLinkService', () => {
         mockConfigReader.getPaddingMode.mockReturnValue('before');
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
-         
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
         expect(mockConfigReader.getPaddingMode).toHaveBeenCalledWith(
@@ -2022,7 +2013,6 @@ describe('RangeLinkService', () => {
       it('should skip quick pick when destination is already bound', async () => {
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
-         
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
         expect(mockDestinationManager.showDestinationQuickPickForPaste).not.toHaveBeenCalled();
@@ -2047,7 +2037,6 @@ describe('RangeLinkService', () => {
           .mockResolvedValue(undefined);
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
-         
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
         expect(mockDestinationManager.showDestinationQuickPickForPaste).toHaveBeenCalled();
@@ -2092,7 +2081,6 @@ describe('RangeLinkService', () => {
           .mockResolvedValue(undefined);
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH_WITH_SPACES);
 
-         
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
         expect(copyAndSendSpy).toHaveBeenCalledWith({
@@ -2127,7 +2115,6 @@ describe('RangeLinkService', () => {
       it('should not quote path for editor destination', async () => {
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH_WITH_SPACES);
 
-         
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
         expect(copyAndSendSpy).toHaveBeenCalledWith({
@@ -2169,7 +2156,6 @@ describe('RangeLinkService', () => {
           .mockResolvedValue(undefined);
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
-         
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
         expect(copyAndSendSpy).toHaveBeenCalledWith({
@@ -2214,10 +2200,9 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockLogger,
       );
-       
+
       pasteFilePathSpy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
 
-       
       await (service as any).pasteCurrentFilePath(PathFormat.WorkspaceRelative);
 
       expect(pasteFilePathSpy).toHaveBeenCalledWith(
@@ -2238,10 +2223,9 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockLogger,
       );
-       
+
       pasteFilePathSpy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
 
-       
       await (service as any).pasteCurrentFilePath(PathFormat.Absolute);
 
       expect(mockShowErrorMessage).toHaveBeenCalledWith(
@@ -2274,14 +2258,12 @@ describe('RangeLinkService', () => {
       });
 
       it('should return relative path when pathFormat is WorkspaceRelative', () => {
-         
         const result = (service as any).getReferencePath(mockUri, 'workspace-relative');
 
         expect(result).toBe(TEST_RELATIVE_PATH);
       });
 
       it('should return absolute path when pathFormat is Absolute', () => {
-         
         const result = (service as any).getReferencePath(mockUri, 'absolute');
 
         expect(result).toBe(TEST_ABSOLUTE_PATH);
@@ -2301,14 +2283,12 @@ describe('RangeLinkService', () => {
       });
 
       it('should fall back to absolute path when pathFormat is WorkspaceRelative', () => {
-         
         const result = (service as any).getReferencePath(mockUri, 'workspace-relative');
 
         expect(result).toBe(TEST_ABSOLUTE_PATH);
       });
 
       it('should return absolute path when pathFormat is Absolute', () => {
-         
         const result = (service as any).getReferencePath(mockUri, 'absolute');
 
         expect(result).toBe(TEST_ABSOLUTE_PATH);
@@ -2318,7 +2298,6 @@ describe('RangeLinkService', () => {
 
   describe('pasteFilePathToDestination', () => {
     it('should delegate to pasteFilePath with Absolute and context-menu', async () => {
-       
       const spy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
       const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
@@ -2328,7 +2307,6 @@ describe('RangeLinkService', () => {
     });
 
     it('should delegate to pasteFilePath with WorkspaceRelative and context-menu', async () => {
-       
       const spy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
       const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
@@ -2340,7 +2318,6 @@ describe('RangeLinkService', () => {
 
   describe('pasteCurrentFilePathToDestination', () => {
     it('should delegate to pasteCurrentFilePath with Absolute', async () => {
-       
       const spy = jest.spyOn(service as any, 'pasteCurrentFilePath').mockResolvedValue(undefined);
 
       await service.pasteCurrentFilePathToDestination(PathFormat.Absolute);
@@ -2349,7 +2326,6 @@ describe('RangeLinkService', () => {
     });
 
     it('should delegate to pasteCurrentFilePath with WorkspaceRelative', async () => {
-       
       const spy = jest.spyOn(service as any, 'pasteCurrentFilePath').mockResolvedValue(undefined);
 
       await service.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative);

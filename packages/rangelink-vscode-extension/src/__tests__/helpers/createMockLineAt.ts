@@ -12,6 +12,5 @@
  * @returns Mock function: (line: number) => { text: string }
  */
 export const createMockLineAt = (text: string): jest.Mock => {
-   
   return jest.fn(() => ({ text })) as any;
 };
