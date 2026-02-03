@@ -125,6 +125,8 @@ Source: {FULL_PR_COMMENT_URL}
 - `path/to/file2.ts` - {what changes}
 ```
 
+**STOP HERE** - The scratchpad template ends above. Do NOT add commit message sections to scratchpads. Commit messages are created separately in Step 8 (after user approval) using the `.commit-msgs/` workflow.
+
 ## Step 6: Questions (If Needed)
 
 If there are decisions that need user input (not clarification from reviewer), use the `questions` workflow in CLAUDE.md:
