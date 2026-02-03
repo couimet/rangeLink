@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Terminal** (right-click on terminal tabs or inside terminal):
     - "RangeLink: Bind Here" - Bind this terminal as paste destination
     - "RangeLink: Unbind" - Unbind current paste destination (when bound)
-- **Status Bar Menu** - Click the `🔗 RangeLink` status bar item to access ⚡ quick actions
+- **RangeLink Menu (R-M)** - Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the `🔗 RangeLink` status bar item to access ⚡ quick actions
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
   - Go to Link
   - List Bookmarks / Manage Bookmarks
