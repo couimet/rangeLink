@@ -5,6 +5,12 @@ export { BehaviourAfterPaste } from './BehaviourAfterPaste';
 export { ExtensionResult } from './ExtensionResult';
 export { MessageCode } from './MessageCode';
 export { PasteContentType } from './PasteContentType';
+export type {
+  BaseQuickPickItem,
+  PickerItemKind,
+  TerminalMoreQuickPickItem,
+  TerminalQuickPickItem,
+} from './QuickPickTypes';
 export { QuickPickBindResult } from './QuickPickBindResult';
 export type { RangeLinkClickArgs } from './RangeLinkClickArgs';
 export type { RangeLinkTerminalLink } from './RangeLinkTerminalLink';
