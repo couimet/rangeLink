@@ -189,7 +189,7 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md) for complete error handling specifi
 - 🔄 Easy to pause/resume
 - 📝 Clean git history
 
-See [ROADMAP.md](./ROADMAP.md) for detailed iteration planning.
+See [Open Issues](https://github.com/couimet/rangeLink/issues) for planned features.
 
 ---
 
@@ -708,7 +708,6 @@ See [architecture-multi-language.md](./architecture-multi-language.md) for compl
 - **[ERROR-HANDLING.md](./ERROR-HANDLING.md)** - Error codes and validation rules
 - **[BYOD.md](./BYOD.md)** - Portable links specification
 - **[LOGGING.md](./LOGGING.md)** - Structured logging approach
-- **[ROADMAP.md](./ROADMAP.md)** - Development roadmap and iteration planning
 
 ---
 

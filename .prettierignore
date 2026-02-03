@@ -3,4 +3,3 @@ node_modules/
 coverage/
 **/*.map
 pnpm-lock.yaml
-docs/JOURNEY.md

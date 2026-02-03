@@ -209,7 +209,7 @@ If you've already published to the marketplace but forgot to create a git tag, f
 
      ## What's Next
 
-     See [ROADMAP.md](https://github.com/couimet/rangelink/blob/main/docs/ROADMAP.md) for upcoming features.
+     See [Open Issues](https://github.com/couimet/rangeLink/issues) for upcoming features.
      ```
 
    - Check "This is a pre-release" if applicable (NO for 0.1.0)
@@ -262,7 +262,7 @@ If you've already published to the marketplace but forgot to create a git tag, f
 
 ## What's Next
 
-See [ROADMAP.md](https://github.com/couimet/rangelink/blob/main/docs/ROADMAP.md) for upcoming features.
+See [Open Issues](https://github.com/couimet/rangeLink/issues) for upcoming features.
 ```
 
 ### Attaching Assets
@@ -413,7 +413,6 @@ These items are planned but not yet implemented:
 - [packages/rangelink-vscode-extension/PUBLISHING.md](../packages/rangelink-vscode-extension/PUBLISHING.md) - Extension-specific publishing
 - [CHANGELOG.md](../CHANGELOG.md) - Root changelog
 - [packages/rangelink-vscode-extension/CHANGELOG.md](../packages/rangelink-vscode-extension/CHANGELOG.md) - Extension changelog
-- [ROADMAP.md](./ROADMAP.md) - Development roadmap
 
 ---
 

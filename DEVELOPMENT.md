@@ -266,7 +266,6 @@ For publishing instructions:
 ### For Developers
 
 - [Architecture](./docs/ARCHITECTURE.md)
-- [Roadmap](./docs/ROADMAP.md)
 - [Logging](./docs/LOGGING.md)
 - [Multi-Language Vision](./docs/architecture-multi-language.md)
 
@@ -274,4 +273,4 @@ For publishing instructions:
 
 - Open an issue on [GitHub Issues](https://github.com/couimet/rangelink/issues)
 - Review [Architecture docs](./docs/ARCHITECTURE.md) for design decisions
-- Check [Roadmap](./docs/ROADMAP.md) for planned features
+- Check [open issues](https://github.com/couimet/rangelink/issues) for planned features

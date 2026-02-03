@@ -541,7 +541,6 @@ See [ERROR-HANDLING.md](./ERROR-HANDLING.md#error-code-reference) for complete l
 - **[ERROR-HANDLING.md](./ERROR-HANDLING.md)** - Complete error code reference and validation rules
 - **[BYOD.md](./BYOD.md)** - BYOD format specification and parsing logic
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Core library design including logger interface
-- **[ROADMAP.md](./ROADMAP.md)** - Future plans including i18n support
 
 ## Examples
 

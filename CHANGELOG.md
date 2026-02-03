@@ -19,7 +19,7 @@ This monorepo contains multiple independently versioned packages. Each package m
 For architectural decisions and monorepo-level changes, see:
 
 - **[Architecture Decision Records](./docs/ADR/)** _(planned)_ - Why we made certain architectural choices
-- **[Roadmap](./docs/ROADMAP.md)** - Development phases and progress
+- **[Open Issues](https://github.com/couimet/rangeLink/issues)** - Planned features and progress tracking
 
 ## How Versioning Works
 

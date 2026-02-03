@@ -30,7 +30,7 @@ export enum RangeLinkSpecificCodes {
   CONFIG_HASH_NOT_SINGLE_CHAR = 'CONFIG_HASH_NOT_SINGLE_CHAR',
   /**
    * @deprecated Tech debt: Catch-all error code defeats descriptive error handling.
-   * See docs/ROADMAP.md Phase 4.5I for elimination plan.
+   * See #263 for elimination plan.
    * TODO: Replace with specific error codes for each failure scenario.
    */
   CONFIG_UNKNOWN = 'CONFIG_UNKNOWN',
