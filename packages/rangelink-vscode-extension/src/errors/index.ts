@@ -8,3 +8,6 @@ export {
   RangeLinkExtensionErrorCodes,
   RangeLinkExtensionSpecificCodes,
 } from './RangeLinkExtensionErrorCodes';
+
+// Re-export bind reasons from types (centralized location)
+export { BindAbortReason, BindFailureReason } from '../types/BindResultTypes';

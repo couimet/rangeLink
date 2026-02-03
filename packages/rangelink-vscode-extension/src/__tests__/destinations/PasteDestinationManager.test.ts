@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
-import { AutoPasteResult, MessageCode } from '../../types';
+import { AutoPasteResult, BindAbortReason, MessageCode } from '../../types';
 import * as formatMessageModule from '../../utils/formatMessage';
 import {
   configureEmptyTabGroups,
@@ -328,6 +328,121 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to Terminal ("zsh")',
         3000,
       );
+    });
+  });
+
+  describe('bindTerminal()', () => {
+    let mockTerminal: vscode.Terminal;
+
+    beforeEach(() => {
+      mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
+    });
+
+    it('returns bound outcome with terminal name on success', async () => {
+      const result = await manager.bindTerminal(mockTerminal);
+
+      expect(result).toStrictEqual({
+        outcome: 'bound',
+        details: { terminalName: 'Terminal ("bash")' },
+      });
+      expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink bound to Terminal ("bash")',
+        3000,
+      );
+    });
+
+    it('returns aborted with ALREADY_BOUND_TO_SAME when binding same terminal twice', async () => {
+      const terminalDest = createMockTerminalPasteDestination({
+        displayName: 'Terminal ("bash")',
+        resourceName: 'bash',
+      });
+      (terminalDest.equals as jest.Mock).mockImplementation(
+        async (other) => other === terminalDest,
+      );
+
+      const controlledFactory = createMockDestinationRegistry({
+        destinations: {
+          terminal: terminalDest,
+          'text-editor':
+            createMockEditorComposablePasteDestination() as unknown as jest.Mocked<PasteDestination>,
+          'cursor-ai': createMockCursorAIDestination(),
+          'claude-code': createMockClaudeCodeDestination(),
+        },
+      });
+      const controlledManager = new PasteDestinationManager(
+        mockContext,
+        controlledFactory,
+        createMockDestinationAvailabilityService(),
+        mockAdapter,
+        mockLogger,
+      );
+
+      await controlledManager.bindTerminal(mockTerminal);
+
+      const result = await controlledManager.bindTerminal(mockTerminal);
+
+      expect(result).toStrictEqual({
+        outcome: 'aborted',
+        reason: 'ALREADY_BOUND_TO_SAME',
+      });
+      expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
+        'RangeLink: Already bound to Terminal ("bash")',
+      );
+
+      controlledManager.dispose();
+    });
+
+    it('returns aborted with USER_DECLINED_REPLACEMENT when user declines replacement', async () => {
+      const firstTerminal = createMockTerminal({
+        name: 'first',
+        processId: Promise.resolve(11111),
+      });
+      const secondTerminal = createMockTerminal({
+        name: 'second',
+        processId: Promise.resolve(22222),
+      });
+
+      await manager.bindTerminal(firstTerminal);
+
+      (mockAdapter.__getVscodeInstance().window.showQuickPick as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+
+      const result = await manager.bindTerminal(secondTerminal);
+
+      expect(result).toStrictEqual({
+        outcome: 'aborted',
+        reason: 'USER_DECLINED_REPLACEMENT',
+      });
+      expect(manager.isBound()).toBe(true);
+      expect(manager.getBoundDestination()?.displayName).toBe('Terminal ("first")');
+    });
+
+    it('returns bound when user confirms replacement', async () => {
+      const firstTerminal = createMockTerminal({
+        name: 'first',
+        processId: Promise.resolve(11111),
+      });
+      const secondTerminal = createMockTerminal({
+        name: 'second',
+        processId: Promise.resolve(22222),
+      });
+
+      await manager.bindTerminal(firstTerminal);
+
+      (mockAdapter.__getVscodeInstance().window.showQuickPick as jest.Mock).mockResolvedValue({
+        label: 'Yes, replace',
+      });
+
+      const result = await manager.bindTerminal(secondTerminal);
+
+      expect(result).toStrictEqual({
+        outcome: 'bound',
+        details: { terminalName: 'Terminal ("second")' },
+      });
+      expect(manager.isBound()).toBe(true);
+      expect(manager.getBoundDestination()?.displayName).toBe('Terminal ("second")');
     });
   });
 

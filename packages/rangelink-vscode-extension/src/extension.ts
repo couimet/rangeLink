@@ -2,11 +2,14 @@ import { getLogger, setLogger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
 import { BookmarkService, BookmarksStore } from './bookmarks';
-import { AddBookmarkCommand } from './commands/AddBookmarkCommand';
-import { GoToRangeLinkCommand } from './commands/GoToRangeLinkCommand';
-import { ListBookmarksCommand } from './commands/ListBookmarksCommand';
-import { ManageBookmarksCommand } from './commands/ManageBookmarksCommand';
-import { ShowVersionCommand } from './commands/ShowVersionCommand';
+import {
+  AddBookmarkCommand,
+  BindToTerminalCommand,
+  GoToRangeLinkCommand,
+  ListBookmarksCommand,
+  ManageBookmarksCommand,
+  ShowVersionCommand,
+} from './commands';
 import { ConfigReader, getDelimitersForExtension } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
@@ -67,7 +70,7 @@ import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvide
 import { RangeLinkParser } from './RangeLinkParser';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { RangeLinkStatusBar } from './statusBar';
-import type { RangeLinkClickArgs, VersionInfo } from './types';
+import { MessageCode, type RangeLinkClickArgs, type VersionInfo } from './types';
 import { formatMessage, registerWithLogging } from './utils';
 import { VSCodeLogger } from './VSCodeLogger';
 
@@ -148,8 +151,9 @@ export function activate(context: vscode.ExtensionContext): void {
     logger,
   );
 
+  const bindToTerminalCommand = new BindToTerminalCommand(ideAdapter, destinationManager, logger);
   const bindToTerminalHandler = async () => {
-    await destinationManager.bind('terminal');
+    await bindToTerminalCommand.execute();
   };
 
   const bindToTextEditorHandler = async () => {
