@@ -1,3 +1,5 @@
+export { getEligibleTerminals, type EligibleTerminal } from './getEligibleTerminals';
+export { isTerminalEligible } from './isTerminalEligible';
 export {
   isTerminalDestinationEligible,
   type TerminalEligibility,

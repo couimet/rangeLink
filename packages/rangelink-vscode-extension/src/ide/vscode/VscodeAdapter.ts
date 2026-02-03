@@ -643,6 +643,15 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
   }
 
   /**
+   * Get all open terminals.
+   *
+   * @returns Readonly array of all terminal instances
+   */
+  get terminals(): readonly vscode.Terminal[] {
+    return this.ideInstance.window.terminals || [];
+  }
+
+  /**
    * Get the currently active text editor.
    *
    * @returns Active text editor or undefined if none is active

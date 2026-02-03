@@ -21,9 +21,11 @@ import {
 // Tests
 // ============================================================================
 
+type MockVSCode = ReturnType<typeof createMockVscode>;
+
 describe('VscodeAdapter', () => {
   let adapter: VscodeAdapter;
-  let mockVSCode: any;
+  let mockVSCode: MockVSCode;
   let mockLogger: jest.Mocked<Logger>;
 
   beforeEach(() => {
@@ -2077,6 +2079,34 @@ describe('VscodeAdapter', () => {
         const result = adapter.activeTerminal;
 
         expect(result).toBeUndefined();
+      });
+    });
+
+    describe('terminals', () => {
+      it('should return all terminals', () => {
+        const mockTerminal1 = createMockTerminal({ name: 'bash' });
+        const mockTerminal2 = createMockTerminal({ name: 'zsh' });
+        mockVSCode.window.terminals = [mockTerminal1, mockTerminal2];
+
+        const result = adapter.terminals;
+
+        expect(result).toStrictEqual([mockTerminal1, mockTerminal2]);
+      });
+
+      it('should return empty array when no terminals exist', () => {
+        mockVSCode.window.terminals = [];
+
+        const result = adapter.terminals;
+
+        expect(result).toStrictEqual([]);
+      });
+
+      it('should return empty array when terminals is undefined', () => {
+        mockVSCode.window.terminals = undefined;
+
+        const result = adapter.terminals;
+
+        expect(result).toStrictEqual([]);
       });
     });
 
