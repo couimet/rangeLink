@@ -171,7 +171,7 @@ describe('showTerminalPicker', () => {
   });
 
   describe('>5 terminals (max-5 rule)', () => {
-    it('shows 4 terminals + "More terminals..." when 6 terminals exist', async () => {
+    it('shows 5 terminals + "More terminals..." when 6 terminals exist', async () => {
       const terminals = createTerminals(6);
       const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
@@ -218,10 +218,16 @@ describe('showTerminalPicker', () => {
             itemKind: 'terminal',
           },
           {
+            label: 'terminal-5',
+            description: undefined,
+            terminal: terminals[4],
+            itemKind: 'terminal',
+          },
+          {
             label: 'More terminals...',
             displayName: 'More terminals...',
-            remainingCount: 2,
-            description: '2 more',
+            remainingCount: 1,
+            description: '1 more',
             itemKind: 'terminal-more',
           },
         ],
@@ -276,10 +282,16 @@ describe('showTerminalPicker', () => {
             itemKind: 'terminal',
           },
           {
+            label: 'terminal-5',
+            description: undefined,
+            terminal: terminals[4],
+            itemKind: 'terminal',
+          },
+          {
             label: 'More terminals...',
             displayName: 'More terminals...',
-            remainingCount: 6,
-            description: '6 more',
+            remainingCount: 5,
+            description: '5 more',
             itemKind: 'terminal-more',
           },
         ],
@@ -324,10 +336,16 @@ describe('showTerminalPicker', () => {
             itemKind: 'terminal',
           },
           {
+            label: 'terminal-3',
+            description: undefined,
+            terminal: terminals[2],
+            itemKind: 'terminal',
+          },
+          {
             label: 'More terminals...',
             displayName: 'More terminals...',
-            remainingCount: 2,
-            description: '2 more',
+            remainingCount: 1,
+            description: '1 more',
             itemKind: 'terminal-more',
           },
         ],
@@ -527,6 +545,10 @@ describe('showTerminalPicker', () => {
           },
         ],
         { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
+      );
+      expect(logger.debug).toHaveBeenCalledWith(
+        { fn: 'showTerminalPicker', terminalCount: 7 },
+        'User selected "More terminals...", showing full list',
       );
     });
 

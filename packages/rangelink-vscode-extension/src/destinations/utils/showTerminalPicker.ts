@@ -50,10 +50,9 @@ const buildTerminalItems = (
 ): TerminalPickerQuickPickItem[] => {
   const items: TerminalPickerQuickPickItem[] = [];
   const maxItems = options.maxItemsBeforeMore;
-  const itemsBeforeMore = maxItems - 1;
 
   const terminalsToShow =
-    showAll || terminals.length <= maxItems ? terminals : terminals.slice(0, itemsBeforeMore);
+    showAll || terminals.length <= maxItems ? terminals : terminals.slice(0, maxItems);
 
   for (const terminal of terminalsToShow) {
     const isActive = terminal === activeTerminal;
@@ -66,7 +65,7 @@ const buildTerminalItems = (
   }
 
   if (!showAll && terminals.length > maxItems) {
-    const remainingCount = terminals.length - itemsBeforeMore;
+    const remainingCount = terminals.length - maxItems;
     items.push({
       label: options.moreTerminalsLabel,
       displayName: options.moreTerminalsLabel,
