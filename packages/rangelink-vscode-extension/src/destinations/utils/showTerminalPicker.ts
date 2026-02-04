@@ -25,8 +25,6 @@ export interface TerminalPickerOptions {
   readonly activeDescription: string;
   /** Label for the "More terminals..." item */
   readonly moreTerminalsLabel: string;
-  /** Function to format the "More..." item description (receives remaining count) */
-  readonly formatMoreDescription: (remainingCount: number) => string;
 }
 
 /**
@@ -70,7 +68,6 @@ const buildTerminalItems = (
       label: options.moreTerminalsLabel,
       displayName: options.moreTerminalsLabel,
       remainingCount,
-      description: options.formatMoreDescription(remainingCount),
       itemKind: 'terminal-more',
     });
   }

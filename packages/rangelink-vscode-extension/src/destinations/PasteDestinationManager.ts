@@ -6,7 +6,13 @@ import { CONTEXT_IS_BOUND } from '../constants';
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { AutoPasteResult, MessageCode, QuickPickBindResult } from '../types';
+import {
+  AutoPasteResult,
+  BindAbortReason,
+  MessageCode,
+  QuickPickBindResult,
+  type TerminalBindResult,
+} from '../types';
 import {
   formatMessage,
   isBinaryFile,
@@ -85,8 +91,19 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   async bind(type: DestinationType): Promise<boolean> {
     // Special handling for terminal (needs active terminal reference)
+    // TODO: Replace bind(type) signature with bind(options: BindOptions) discriminated union.
+    // Options should include { type: 'terminal', terminal: vscode.Terminal } so callers
+    // pass the terminal directly. This avoids circular dependency with BindToTerminalCommand.
+    // See backup branch issues/255-backup for reference implementation.
     if (type === 'terminal') {
-      return this.bindTerminal();
+      const activeTerminal = this.vscodeAdapter.activeTerminal;
+      if (!activeTerminal) {
+        this.logger.warn({ fn: 'PasteDestinationManager.bind' }, 'No active terminal');
+        this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
+        return false;
+      }
+      const result = await this.bindTerminal(activeTerminal);
+      return result.outcome === 'bound';
     }
 
     // Special handling for text editor (needs active text editor reference)
@@ -393,26 +410,21 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Bind to terminal (special case requiring active terminal)
+   * Bind to a specific terminal.
    *
-   * @returns true if binding succeeded, false if no active terminal
+   * @param terminal - The terminal to bind to
+   * @returns TerminalBindResult with outcome and details
    */
-  private async bindTerminal(): Promise<boolean> {
-    const activeTerminal = this.vscodeAdapter.activeTerminal;
-
-    if (!activeTerminal) {
-      this.logger.warn({ fn: 'PasteDestinationManager.bindTerminal' }, 'No active terminal');
-      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
-      return false;
-    }
+  async bindTerminal(terminal: vscode.Terminal): Promise<TerminalBindResult> {
+    const logCtx = { fn: 'PasteDestinationManager.bindTerminal' };
 
     // Create new destination with resource
-    const newDestination = this.registry.create({ type: 'terminal', terminal: activeTerminal });
+    const newDestination = this.registry.create({ type: 'terminal', terminal });
 
     // Check if already bound to same destination using equals()
     if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
       this.logger.debug(
-        { fn: 'PasteDestinationManager.bindTerminal', displayName: newDestination.displayName },
+        { ...logCtx, displayName: newDestination.displayName },
         `Already bound to ${newDestination.displayName}, no action taken`,
       );
       this.vscodeAdapter.showInformationMessage(
@@ -420,7 +432,10 @@ export class PasteDestinationManager implements vscode.Disposable {
           destinationName: newDestination.displayName,
         }),
       );
-      return false;
+      return {
+        outcome: 'aborted',
+        reason: BindAbortReason.ALREADY_BOUND_TO_SAME,
+      };
     }
 
     // If already bound to different destination, show confirmation dialog
@@ -432,11 +447,11 @@ export class PasteDestinationManager implements vscode.Disposable {
       );
 
       if (!confirmed) {
-        this.logger.debug(
-          { fn: 'PasteDestinationManager.bindTerminal' },
-          'User cancelled binding replacement',
-        );
-        return false;
+        this.logger.debug(logCtx, 'User declined binding replacement');
+        return {
+          outcome: 'aborted',
+          reason: BindAbortReason.USER_DECLINED_REPLACEMENT,
+        };
       }
 
       // User confirmed - track old destination and unbind
@@ -444,11 +459,11 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.unbind();
     }
 
-    await this.setBoundDestination(newDestination, activeTerminal);
+    await this.setBoundDestination(newDestination, terminal);
 
     this.logger.info(
       {
-        fn: 'PasteDestinationManager.bindTerminal',
+        ...logCtx,
         displayName: newDestination.displayName,
         ...newDestination.getLoggingDetails(),
       },
@@ -457,7 +472,10 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.showBindSuccessToast(newDestination.displayName);
 
-    return true;
+    return {
+      outcome: 'bound',
+      details: { terminalName: newDestination.displayName },
+    };
   }
 
   /**
