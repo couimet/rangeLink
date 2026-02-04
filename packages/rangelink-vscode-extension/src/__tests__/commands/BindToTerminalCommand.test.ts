@@ -114,7 +114,7 @@ describe('BindToTerminalCommand', () => {
 
         expect(result).toStrictEqual({
           outcome: 'aborted',
-          reason: BindAbortReason.ALREADY_BOUND_TO_SAME,
+          reason: 'ALREADY_BOUND_TO_SAME',
         });
       });
 
@@ -134,7 +134,7 @@ describe('BindToTerminalCommand', () => {
 
         expect(result).toStrictEqual({
           outcome: 'aborted',
-          reason: BindAbortReason.USER_DECLINED_REPLACEMENT,
+          reason: 'USER_DECLINED_REPLACEMENT',
         });
       });
     });
@@ -244,7 +244,7 @@ describe('BindToTerminalCommand', () => {
 
         expect(result).toStrictEqual({
           outcome: 'aborted',
-          reason: BindAbortReason.USER_DECLINED_REPLACEMENT,
+          reason: 'USER_DECLINED_REPLACEMENT',
         });
       });
 

@@ -17,11 +17,11 @@ import { formatMessage } from '../utils';
  * Command handler for binding to a terminal via picker.
  *
  * Orchestrates the terminal selection flow:
- * - 0 terminals: Shows error message, returns 'no-terminals'
+ * - 0 terminals: Shows error message, returns 'no-resource'
  * - 1 terminal: Auto-binds to it (no picker shown)
  * - 2+ terminals: Shows picker, binds to selected terminal
  *
- * Success feedback is handled by PasteDestinationManager.bindTerminalWithReference().
+ * Success feedback is handled by PasteDestinationManager.bindTerminal().
  */
 export class BindToTerminalCommand {
   constructor(
