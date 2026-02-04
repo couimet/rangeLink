@@ -16,7 +16,6 @@ const DEFAULT_OPTIONS: TerminalPickerOptions = {
   placeholder: 'Choose a terminal to bind to',
   activeDescription: '(active)',
   moreTerminalsLabel: 'More terminals...',
-  formatMoreDescription: (count) => `${count} more`,
 };
 
 describe('showTerminalPicker', () => {
@@ -227,7 +226,6 @@ describe('showTerminalPicker', () => {
             label: 'More terminals...',
             displayName: 'More terminals...',
             remainingCount: 1,
-            description: '1 more',
             itemKind: 'terminal-more',
           },
         ],
@@ -235,7 +233,7 @@ describe('showTerminalPicker', () => {
       );
     });
 
-    it('shows correct count in "More terminals..." description for many terminals', async () => {
+    it('shows "More terminals..." item for many terminals', async () => {
       const terminals = createTerminals(10);
       const adapter = createMockVscodeAdapter();
       const showQuickPickMock = adapter.__getVscodeInstance().window.showQuickPick;
@@ -291,7 +289,6 @@ describe('showTerminalPicker', () => {
             label: 'More terminals...',
             displayName: 'More terminals...',
             remainingCount: 5,
-            description: '5 more',
             itemKind: 'terminal-more',
           },
         ],
@@ -345,7 +342,6 @@ describe('showTerminalPicker', () => {
             label: 'More terminals...',
             displayName: 'More terminals...',
             remainingCount: 1,
-            description: '1 more',
             itemKind: 'terminal-more',
           },
         ],
