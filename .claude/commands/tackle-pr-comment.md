@@ -153,9 +153,34 @@ When the user approves the plan and asks to proceed:
 
 1. **Ask**: "Would you like me to create a commit message file now? (The implementation plan has enough context to draft it.)"
 
-2. **If yes**: Follow the `commits` workflow in CLAUDE.md to create the commit message file. Use the scratchpad's implementation plan and reviewer feedback summary to craft the message. Use `[PR feedback]` as the commit prefix (instead of conventional commit format). Include a `Ref: {PR_COMMENT_URL}` footer to link back to the review comment.
+2. **If yes**: Follow the `commits` workflow in CLAUDE.md to create the commit message file with these specific requirements:
+   - Use `[PR feedback]` as the commit prefix (instead of conventional commit format)
+   - Include a `Ref: {PR_COMMENT_URL}` footer to link back to the review comment
+   - Do NOT include the `Co-Authored-By:` block
 
-3. **Then**: Proceed with implementation.
+3. **If any reviewer feedback was ignored**: Add an `Ignored Feedback:` section after the Benefits section. For each ignored item:
+   - Briefly describe the suggestion that was not implemented
+   - Include reasoning for why it was skipped (prefilled based on your recommendation if the user didn't provide explicit reasoning)
+   - This ensures reviewers know the feedback wasn't missed—it was intentionally declined
+
+4. **Then**: Proceed with implementation.
+
+### Commit Message Format for PR Feedback
+
+```
+[PR feedback] Short summary of what was addressed
+
+Body explaining the change and why.
+
+Benefits:
+- Benefit 1
+- Benefit 2
+
+Ignored Feedback:
+- {Suggestion that was skipped}: {Brief reasoning for why}
+
+Ref: {PR_COMMENT_URL}
+```
 
 This allows the commit message to be drafted early (from the plan) rather than waiting until all changes are complete.
 
@@ -174,3 +199,4 @@ After user approves (Step 8):
 
 - [ ] Asked user if they want a commit message file created
 - [ ] If yes, created commit message with `[PR feedback]` prefix and `Ref:` footer
+- [ ] If any feedback was ignored, added `Ignored Feedback:` section with reasoning
