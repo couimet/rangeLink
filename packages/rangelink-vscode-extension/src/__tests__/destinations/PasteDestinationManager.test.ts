@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
 import type { PasteDestination } from '../../destinations/PasteDestination';
 import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
-import { AutoPasteResult, BindAbortReason, MessageCode } from '../../types';
+import { AutoPasteResult, MessageCode } from '../../types';
 import * as formatMessageModule from '../../utils/formatMessage';
 import {
   configureEmptyTabGroups,

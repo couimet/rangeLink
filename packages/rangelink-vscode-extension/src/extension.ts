@@ -70,7 +70,7 @@ import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvide
 import { RangeLinkParser } from './RangeLinkParser';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { RangeLinkStatusBar } from './statusBar';
-import { MessageCode, type RangeLinkClickArgs, type VersionInfo } from './types';
+import { type RangeLinkClickArgs, type VersionInfo } from './types';
 import { formatMessage, registerWithLogging } from './utils';
 import { VSCodeLogger } from './VSCodeLogger';
 
@@ -93,7 +93,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // Load version info once at startup (static, won't change at runtime)
   let versionInfo: VersionInfo | undefined;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
     versionInfo = require('./version.json') as VersionInfo;
     logger.info(
       {
