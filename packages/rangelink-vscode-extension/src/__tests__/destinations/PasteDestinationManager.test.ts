@@ -350,6 +350,14 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to Terminal ("bash")',
         3000,
       );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindTerminal',
+          displayName: 'Terminal ("bash")',
+          terminalName: 'bash',
+        },
+        'Successfully bound to "Terminal ("bash")"',
+      );
     });
 
     it('returns aborted with ALREADY_BOUND_TO_SAME when binding same terminal twice', async () => {
