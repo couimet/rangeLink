@@ -59,7 +59,7 @@ describe('DestinationRegistry', () => {
 
       registry.register('terminal', firstBuilder);
       registry.register('terminal', secondBuilder);
-      registry.create({ type: 'terminal', terminal: {} as never });
+      registry.create({ kind: 'terminal', terminal: {} as never });
 
       expect(firstBuilder).not.toHaveBeenCalled();
       expect(secondBuilder).toHaveBeenCalledTimes(1);
@@ -73,7 +73,7 @@ describe('DestinationRegistry', () => {
       const builder = jest.fn().mockReturnValue(mockDestination);
       registry.register('terminal', builder);
 
-      registry.create({ type: 'terminal', terminal: {} as never });
+      registry.create({ kind: 'terminal', terminal: {} as never });
 
       expect(builder).toHaveBeenCalledTimes(1);
     });
@@ -84,7 +84,7 @@ describe('DestinationRegistry', () => {
       const mockDestination = createBaseMockPasteDestination({ id: 'terminal' });
       const builder = jest.fn().mockReturnValue(mockDestination);
       registry.register('terminal', builder);
-      const options: CreateOptions = { type: 'terminal', terminal: { name: 'Test' } as never };
+      const options: CreateOptions = { kind: 'terminal', terminal: { name: 'Test' } as never };
 
       registry.create(options);
 
@@ -111,7 +111,7 @@ describe('DestinationRegistry', () => {
       });
       registry.register('cursor-ai', builder);
 
-      registry.create({ type: 'cursor-ai' });
+      registry.create({ kind: 'cursor-ai' });
 
       expect(builder).toHaveBeenCalledTimes(1);
       expect(capturedContext).toBeDefined();
@@ -130,7 +130,7 @@ describe('DestinationRegistry', () => {
       });
       registry.register('text-editor', builder);
 
-      registry.create({ type: 'text-editor', editor: {} as never });
+      registry.create({ kind: 'text-editor', editor: {} as never });
 
       expect(builder).toHaveBeenCalledTimes(1);
       expect(capturedContext).toBeDefined();
@@ -148,7 +148,7 @@ describe('DestinationRegistry', () => {
       });
       registry.register('claude-code', builder);
 
-      registry.create({ type: 'claude-code' });
+      registry.create({ kind: 'claude-code' });
 
       expect(builder).toHaveBeenCalledTimes(1);
       expect(capturedContext).toBeDefined();
@@ -161,7 +161,7 @@ describe('DestinationRegistry', () => {
       const builder = jest.fn().mockReturnValue(mockDestination);
       registry.register('terminal', builder);
 
-      const result = registry.create({ type: 'terminal', terminal: {} as never });
+      const result = registry.create({ kind: 'terminal', terminal: {} as never });
 
       expect(result).toBe(mockDestination);
     });
@@ -170,23 +170,23 @@ describe('DestinationRegistry', () => {
       const registry = createRegistry();
 
       expect(() =>
-        registry.create({ type: 'terminal', terminal: {} as never }),
+        registry.create({ kind: 'terminal', terminal: {} as never }),
       ).toThrowRangeLinkExtensionError('DESTINATION_NOT_IMPLEMENTED', {
-        message: 'No builder registered for destination type: terminal',
+        message: 'No builder registered for destination kind: terminal',
         functionName: 'DestinationRegistry.create',
-        details: { destinationType: 'terminal' },
+        details: { kind: 'terminal' },
       });
     });
 
     it('should include destination type in error message', () => {
       const registry = createRegistry();
 
-      expect(() => registry.create({ type: 'github-copilot-chat' })).toThrowRangeLinkExtensionError(
+      expect(() => registry.create({ kind: 'github-copilot-chat' })).toThrowRangeLinkExtensionError(
         'DESTINATION_NOT_IMPLEMENTED',
         {
-          message: 'No builder registered for destination type: github-copilot-chat',
+          message: 'No builder registered for destination kind: github-copilot-chat',
           functionName: 'DestinationRegistry.create',
-          details: { destinationType: 'github-copilot-chat' },
+          details: { kind: 'github-copilot-chat' },
         },
       );
     });
@@ -232,7 +232,7 @@ describe('DestinationRegistry', () => {
         return createBaseMockPasteDestination({ id: 'terminal' });
       };
       registry.register('terminal', builder);
-      registry.create({ type: 'terminal', terminal: {} as never });
+      registry.create({ kind: 'terminal', terminal: {} as never });
 
       expect(capturedExecutor).toBe(mockExecutor);
       expect(factories.pasteExecutor.createCommandExecutor).toHaveBeenCalledWith(
@@ -255,7 +255,7 @@ describe('DestinationRegistry', () => {
         return createBaseMockPasteDestination({ id: 'cursor-ai' });
       };
       registry.register('cursor-ai', builder);
-      registry.create({ type: 'cursor-ai' });
+      registry.create({ kind: 'cursor-ai' });
 
       expect(capturedChecker).toBe(mockChecker);
       expect(factories.eligibilityChecker.createContentEligibilityChecker).toHaveBeenCalledTimes(1);
@@ -276,8 +276,8 @@ describe('DestinationRegistry', () => {
 
       registry.register('terminal', terminalBuilder);
       registry.register('cursor-ai', cursorBuilder);
-      registry.create({ type: 'terminal', terminal: {} as never });
-      registry.create({ type: 'cursor-ai' });
+      registry.create({ kind: 'terminal', terminal: {} as never });
+      registry.create({ kind: 'cursor-ai' });
 
       expect(contexts).toHaveLength(2);
       expect(contexts[0]).toBe(contexts[1]);
@@ -311,7 +311,7 @@ describe('DestinationRegistry', () => {
       };
 
       registry.register('cursor-ai', builder);
-      const destination = registry.create({ type: 'cursor-ai' });
+      const destination = registry.create({ kind: 'cursor-ai' });
 
       expect(destination).toBeDefined();
       expect(factories.pasteExecutor.createCommandExecutor).toHaveBeenCalledWith(

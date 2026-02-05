@@ -33,6 +33,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONTENT_NAME_RANGELINK]: 'RangeLink',
   [MessageCode.CONTENT_NAME_SELECTED_TEXT]: 'Selected text',
 
+  [MessageCode.DESTINATION_TERMINAL_DISPLAY_FORMAT]: 'Terminal ("{name}")',
+
   [MessageCode.ERROR_BOOKMARK_EMPTY_LABEL]: 'RangeLink: Bookmark label cannot be empty',
   [MessageCode.ERROR_BOOKMARK_LINK_GENERATION_FAILED]:
     'RangeLink: Cannot add bookmark - failed to generate link from selection',
@@ -140,6 +142,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION]: 'active',
   [MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER]: 'Select terminal to bind to',
   [MessageCode.TERMINAL_PICKER_MORE_LABEL]: 'More terminals...',
+  [MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION]: '{count} more',
   [MessageCode.TERMINAL_PICKER_PLACEHOLDER]: 'Select terminal to bind and jump to',
   [MessageCode.TERMINAL_PICKER_TERMINAL_LABEL_FORMAT]: 'Terminal "{name}"',
   [MessageCode.TERMINAL_PICKER_TITLE]: 'RangeLink',

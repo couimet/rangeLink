@@ -99,8 +99,8 @@ describe('RangeLinkStatusBar', () => {
   describe('openMenu - menu content', () => {
     it('shows inline destinations when no destination is bound', async () => {
       mockAvailabilityService.getAvailableDestinations.mockResolvedValue([
-        { type: 'terminal', displayName: 'Terminal' },
-        { type: 'claude-code', displayName: 'Claude Code Chat' },
+        { kind: 'terminal', displayName: 'Terminal' },
+        { kind: 'claude-code', displayName: 'Claude Code Chat' },
       ]);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
@@ -202,7 +202,7 @@ describe('RangeLinkStatusBar', () => {
 
     it('shows bookmark items when bookmarks exist', async () => {
       mockAvailabilityService.getAvailableDestinations.mockResolvedValue([
-        { type: 'terminal', displayName: 'Terminal' },
+        { kind: 'terminal', displayName: 'Terminal' },
       ]);
       mockBookmarkService.getAllBookmarks.mockReturnValue(MOCK_BOOKMARKS);
       const statusBar = new RangeLinkStatusBar(

@@ -1,9 +1,9 @@
-import type { DestinationType } from '../destinations/PasteDestination';
+import type { DestinationType } from './DestinationType';
 
 /**
  * Represents a destination that is currently available for binding
  */
 export interface AvailableDestination {
-  readonly type: DestinationType;
+  readonly kind: DestinationType;
   readonly displayName: string;
 }

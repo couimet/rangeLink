@@ -28,3 +28,9 @@ export const SETTING_SMART_PADDING_PASTE_BOOKMARK = 'smartPadding.pasteBookmark'
 export const SETTING_SMART_PADDING_PASTE_CONTENT = 'smartPadding.pasteContent';
 export const SETTING_SMART_PADDING_PASTE_FILE_PATH = 'smartPadding.pasteFilePath';
 export const SETTING_SMART_PADDING_PASTE_LINK = 'smartPadding.pasteLink';
+
+// =============================================================================
+// Terminal Picker Settings
+// =============================================================================
+
+export const SETTING_TERMINAL_PICKER_MAX_INLINE = 'terminalPicker.maxInline';

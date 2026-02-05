@@ -1,17 +1,52 @@
 import type * as vscode from 'vscode';
 
+import type { BindOptions } from './BindOptions';
+
 /**
  * Discriminator for QuickPick items across all RangeLink menus.
  * Used to identify item type after user selection.
+ *
+ * - `bindable`: Item that binds to a destination (carries BindOptions)
+ * - `terminal-more`: "More terminals..." overflow trigger
  */
-export type PickerItemKind = 'terminal' | 'terminal-more';
+export type PickerItemKind = 'bindable' | 'terminal-more';
 
 /**
  * Base QuickPickItem with RangeLink discriminator.
  * All selectable QuickPick items should extend this.
  */
-export interface BaseQuickPickItem extends vscode.QuickPickItem {
+interface BaseQuickPickItem extends vscode.QuickPickItem {
   readonly itemKind: PickerItemKind;
+}
+
+// ============================================================================
+// Shared Field Interfaces
+// ============================================================================
+
+/**
+ * Shared interface for items with a display name.
+ * The displayName is the raw name (e.g., "Claude Code Chat", "Terminal \"bash\"").
+ * Consumers add indentation/icons as needed.
+ */
+export interface WithDisplayName {
+  readonly displayName: string;
+}
+
+/**
+ * Shared interface for items that track remaining count.
+ * Used by "More terminals..." item to show how many are hidden.
+ */
+export interface WithRemainingCount {
+  readonly remainingCount: number;
+}
+
+/**
+ * Shared interface for items that carry bind options.
+ * Generic parameter allows type narrowing (e.g., WithBindOptions<TerminalBindOptions>).
+ * Used by BindableQuickPickItem to unify terminal and non-terminal destinations.
+ */
+export interface WithBindOptions<T extends BindOptions = BindOptions> {
+  readonly bindOptions: T;
 }
 
 // ============================================================================
@@ -19,18 +54,42 @@ export interface BaseQuickPickItem extends vscode.QuickPickItem {
 // ============================================================================
 
 /**
- * QuickPickItem representing a terminal in the terminal picker.
- */
-export interface TerminalQuickPickItem extends BaseQuickPickItem {
-  readonly itemKind: 'terminal';
-  readonly terminal: vscode.Terminal;
-}
-
-/**
  * QuickPickItem representing the "More terminals..." overflow trigger.
  */
-export interface TerminalMoreQuickPickItem extends BaseQuickPickItem {
+export interface TerminalMoreQuickPickItem
+  extends BaseQuickPickItem,
+    WithDisplayName,
+    WithRemainingCount {
   readonly itemKind: 'terminal-more';
-  readonly displayName: string;
-  readonly remainingCount: number;
 }
+
+// ============================================================================
+// Bindable Destination Types (unified terminal + non-terminal)
+// ============================================================================
+
+/**
+ * QuickPickItem that binds to a destination (terminal or non-terminal).
+ * Unifies terminal and destination items - the bindOptions carry all needed info.
+ * The displayName is pre-formatted (e.g., 'Terminal "bash"', 'Claude Code Chat').
+ *
+ * Generic parameter allows type narrowing for specific bind option types:
+ * - `BindableQuickPickItem` - any destination (default)
+ * - `BindableQuickPickItem<TerminalBindOptions>` - terminal only
+ */
+export interface BindableQuickPickItem<T extends BindOptions = BindOptions>
+  extends BaseQuickPickItem,
+    WithBindOptions<T>,
+    WithDisplayName {
+  readonly itemKind: 'bindable';
+  readonly isActive?: boolean;
+}
+
+// ============================================================================
+// Union Types
+// ============================================================================
+
+/**
+ * Union of all QuickPickItem types used in destination pickers.
+ * Includes bindable destinations and the "More terminals..." overflow item.
+ */
+export type DestinationQuickPickItem = BindableQuickPickItem | TerminalMoreQuickPickItem;

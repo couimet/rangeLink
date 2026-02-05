@@ -3,14 +3,11 @@ import type * as vscode from 'vscode';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { BindOptions, TextEditorBindOptions } from '../types';
 
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
 import type { PasteExecutorFactory } from './capabilities/PasteExecutorFactory';
-import type {
-  AIAssistantDestinationType,
-  DestinationType,
-  PasteDestination,
-} from './PasteDestination';
+import type { DestinationType, PasteDestination } from './PasteDestination';
 
 /**
  * Display names for destination types
@@ -26,15 +23,14 @@ const DISPLAY_NAMES: Record<DestinationType, string> = {
 };
 
 /**
- * Type-safe options for creating destinations
+ * Type-safe options for creating destinations.
  *
- * Terminal and text-editor destinations require resources at construction.
- * AI assistant destinations only need availability checks (no resource required).
+ * Derived from BindOptions with text-editor override to require editor reference.
+ * TODO(#245): When TextEditorBindOptions gains editor field, simplify to just BindOptions.
  */
 export type CreateOptions =
-  | { type: 'terminal'; terminal: vscode.Terminal }
-  | { type: 'text-editor'; editor: vscode.TextEditor }
-  | { type: AIAssistantDestinationType };
+  | Exclude<BindOptions, TextEditorBindOptions>
+  | { kind: 'text-editor'; editor: vscode.TextEditor };
 
 /**
  * Factory bundle passed to destination builders.
@@ -133,26 +129,26 @@ export class DestinationRegistry {
    * Looks up the builder by type and invokes it with options and
    * the factory context. Throws if no builder is registered.
    *
-   * @param options - Type-discriminated creation options
+   * @param options - Kind-discriminated creation options
    * @returns Configured PasteDestination instance
-   * @throws RangeLinkExtensionError with DESTINATION_NOT_IMPLEMENTED if type not registered
+   * @throws RangeLinkExtensionError with DESTINATION_NOT_IMPLEMENTED if kind not registered
    */
   create(options: CreateOptions): PasteDestination {
-    const type = options.type;
-    const builder = this.builders.get(type);
+    const kind = options.kind;
+    const builder = this.builders.get(kind);
 
     if (!builder) {
       throw new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_IMPLEMENTED,
-        message: `No builder registered for destination type: ${type}`,
+        message: `No builder registered for destination kind: ${kind}`,
         functionName: 'DestinationRegistry.create',
-        details: { destinationType: type },
+        details: { kind },
       });
     }
 
     this.context.logger.debug(
-      { fn: 'DestinationRegistry.create', type },
-      `Creating destination: ${type}`,
+      { fn: 'DestinationRegistry.create', kind },
+      `Creating destination: ${kind}`,
     );
     return builder(options, this.context);
   }

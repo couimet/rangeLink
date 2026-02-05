@@ -1,7 +1,7 @@
-import { isTerminalDestinationEligible } from '../../../destinations/utils';
+import { getTerminalDestinationEligibility } from '../../../destinations/utils';
 import { createMockTerminal, createMockVscodeAdapter } from '../../helpers';
 
-describe('isTerminalDestinationEligible', () => {
+describe('getTerminalDestinationEligibility', () => {
   describe('eligible scenarios', () => {
     it('returns eligible with terminalName when activeTerminal exists', () => {
       const ideAdapter = createMockVscodeAdapter({
@@ -10,7 +10,7 @@ describe('isTerminalDestinationEligible', () => {
         },
       });
 
-      expect(isTerminalDestinationEligible(ideAdapter)).toStrictEqual({
+      expect(getTerminalDestinationEligibility(ideAdapter)).toStrictEqual({
         eligible: true,
         terminalName: 'zsh',
       });
@@ -23,7 +23,7 @@ describe('isTerminalDestinationEligible', () => {
         },
       });
 
-      expect(isTerminalDestinationEligible(ideAdapter)).toStrictEqual({
+      expect(getTerminalDestinationEligibility(ideAdapter)).toStrictEqual({
         eligible: true,
         terminalName: 'Node.js Debug Console',
       });
@@ -38,7 +38,7 @@ describe('isTerminalDestinationEligible', () => {
         },
       });
 
-      expect(isTerminalDestinationEligible(ideAdapter)).toStrictEqual({
+      expect(getTerminalDestinationEligibility(ideAdapter)).toStrictEqual({
         eligible: false,
         terminalName: undefined,
       });

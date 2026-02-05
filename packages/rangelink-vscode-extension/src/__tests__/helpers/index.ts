@@ -5,6 +5,7 @@
  */
 
 export * from './createMockAsRelativePath';
+export * from './createMockBindableQuickPickItem';
 export * from './createMockBookmarkService';
 export * from './createMockBookmarksStore';
 export * from './createMockCancellationToken';
