@@ -138,6 +138,10 @@ describe('BindToTerminalCommand', () => {
           outcome: 'aborted',
           reason: 'ALREADY_BOUND_TO_SAME',
         });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'BindToTerminalCommand.execute', terminalName: 'My Terminal' },
+          'Single terminal, auto-binding',
+        );
       });
 
       it('returns aborted when user declines replacement', async () => {
@@ -164,6 +168,10 @@ describe('BindToTerminalCommand', () => {
           outcome: 'aborted',
           reason: 'USER_DECLINED_REPLACEMENT',
         });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'BindToTerminalCommand.execute', terminalName: 'My Terminal' },
+          'Single terminal, auto-binding',
+        );
       });
     });
 

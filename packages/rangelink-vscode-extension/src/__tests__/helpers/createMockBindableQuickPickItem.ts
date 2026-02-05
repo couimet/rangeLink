@@ -84,13 +84,3 @@ export const createMockGroupedTerminals = (
 ): GroupedDestinationItems => ({
   terminal: items,
 });
-
-/**
- * Create a GroupedDestinationItems object with specified groups.
- *
- * @param groups - Partial GroupedDestinationItems to include
- * @returns GroupedDestinationItems with specified groups
- */
-export const createMockGroupedDestinationItems = (
-  groups: Partial<GroupedDestinationItems>,
-): GroupedDestinationItems => groups;

@@ -64,6 +64,22 @@ describe('showTerminalPicker', () => {
         ],
         { title: 'Select Terminal', placeHolder: 'Choose a terminal to bind to' },
       );
+      expect(logger.debug).toHaveBeenCalledWith(
+        { fn: 'showTerminalPicker', terminalCount: 2, itemCount: 2 },
+        'Showing terminal picker',
+      );
+      expect(logger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'showTerminalPicker',
+          selected: {
+            label: 'terminal-1',
+            displayName: 'terminal-1',
+            bindOptions: { kind: 'terminal', terminal: terminals[0] },
+            itemKind: 'bindable',
+          },
+        },
+        'Terminal selected',
+      );
     });
 
     it('shows QuickPick with all terminals when 5 terminals exist', async () => {
@@ -638,81 +654,9 @@ describe('showTerminalPicker', () => {
       );
 
       expect(result).toStrictEqual({ outcome: 'cancelled' });
-    });
-  });
-
-  describe('logging', () => {
-    it('logs when showing terminal picker', async () => {
-      const terminals = createTerminals(3);
-      const adapter = createMockVscodeAdapter();
-      adapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce({
-        label: 'terminal-1',
-        displayName: 'terminal-1',
-        bindOptions: { kind: 'terminal', terminal: terminals[0] },
-        itemKind: 'bindable',
-      });
-      const logger = createMockLogger();
-
-      await showTerminalPicker(
-        terminals,
-        undefined,
-        adapter,
-        DEFAULT_OPTIONS,
-        logger,
-        identityCallback,
-      );
-
       expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'showTerminalPicker', terminalCount: 3, itemCount: 3 },
-        'Showing terminal picker',
-      );
-    });
-
-    it('logs when user cancels picker', async () => {
-      const terminals = createTerminals(2);
-      const adapter = createMockVscodeAdapter();
-      adapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce(undefined);
-      const logger = createMockLogger();
-
-      await showTerminalPicker(
-        terminals,
-        undefined,
-        adapter,
-        DEFAULT_OPTIONS,
-        logger,
-        identityCallback,
-      );
-
-      expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'showTerminalPicker', terminalCount: 2 },
+        { fn: 'showTerminalPicker', terminalCount: 3 },
         'User cancelled terminal picker',
-      );
-    });
-
-    it('logs when terminal selected', async () => {
-      const terminals = createTerminals(2);
-      const adapter = createMockVscodeAdapter();
-      const selectedItem = {
-        label: 'terminal-2',
-        displayName: 'terminal-2',
-        bindOptions: { kind: 'terminal', terminal: terminals[1] },
-        itemKind: 'bindable',
-      };
-      adapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce(selectedItem);
-      const logger = createMockLogger();
-
-      await showTerminalPicker(
-        terminals,
-        undefined,
-        adapter,
-        DEFAULT_OPTIONS,
-        logger,
-        identityCallback,
-      );
-
-      expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'showTerminalPicker', selected: selectedItem },
-        'Terminal selected',
       );
     });
   });

@@ -15,7 +15,7 @@ import { createMockTerminalPasteDestination } from './createMockTerminalPasteDes
 export interface MockDestinationRegistryOptions {
   /**
    * Pre-configured destinations to return from create().
-   * Registry will return the appropriate destination based on type.
+   * Registry will return the appropriate destination based on kind.
    */
   destinations?: {
     terminal?: jest.Mocked<PasteDestination>;
@@ -48,7 +48,7 @@ const DEFAULT_DISPLAY_NAMES: Record<DestinationType, string> = {
  * Create a mock DestinationRegistry for testing.
  *
  * The registry's create() method returns pre-configured mock destinations
- * based on the requested type. This eliminates test coupling to registry's
+ * based on the requested kind. This eliminates test coupling to registry's
  * internal dependencies.
  *
  * @param options - Configuration for mock registry behavior

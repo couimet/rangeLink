@@ -12,7 +12,6 @@ import { MessageCode } from '../../types';
 import {
   createMockAIAssistantQuickPickItem,
   createMockDestinationAvailabilityService,
-  createMockGroupedDestinationItems,
   createMockTerminal,
   createMockTerminalMoreQuickPickItem,
   createMockTerminalQuickPickItem,
@@ -55,9 +54,7 @@ describe('DestinationPickerCommand', () => {
   describe('execute()', () => {
     describe('no destinations available', () => {
       it('shows info message and returns no-resource when no destinations', async () => {
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({}),
-        );
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({});
 
         const result = await command.execute(defaultOptions);
 
@@ -74,16 +71,22 @@ describe('DestinationPickerCommand', () => {
     describe('user cancels picker', () => {
       it('returns cancelled when user dismisses quick pick', async () => {
         const terminal = createMockTerminal({ name: 'bash' });
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({
-            terminal: [createMockTerminalQuickPickItem(terminal)],
-          }),
-        );
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          terminal: [createMockTerminalQuickPickItem(terminal)],
+        });
         showQuickPickMock.mockResolvedValue(undefined);
 
         const result = await command.execute(defaultOptions);
 
         expect(result).toStrictEqual({ outcome: 'cancelled' });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'TestCaller::DestinationPickerCommand.execute' },
+          'Showing destination picker',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'TestCaller::DestinationPickerCommand.execute', availableCount: 1 },
+          'Showing quick pick with 1 items',
+        );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'TestCaller::DestinationPickerCommand.execute' },
           'User cancelled quick pick',
@@ -95,9 +98,9 @@ describe('DestinationPickerCommand', () => {
       it('returns selected with terminal bindOptions when user selects terminal', async () => {
         const terminal = createMockTerminal({ name: 'zsh' });
         const terminalItem = createMockTerminalQuickPickItem(terminal);
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({ terminal: [terminalItem] }),
-        );
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          terminal: [terminalItem],
+        });
         showQuickPickMock.mockResolvedValue(terminalItem);
 
         const result = await command.execute(defaultOptions);
@@ -110,9 +113,9 @@ describe('DestinationPickerCommand', () => {
 
       it('returns selected with AI assistant bindOptions when user selects claude-code', async () => {
         const claudeItem = createMockAIAssistantQuickPickItem('claude-code', 'Claude Code Chat');
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({ 'claude-code': [claudeItem] }),
-        );
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          'claude-code': [claudeItem],
+        });
         showQuickPickMock.mockResolvedValue(claudeItem);
 
         const result = await command.execute(defaultOptions);
@@ -121,13 +124,20 @@ describe('DestinationPickerCommand', () => {
           outcome: 'selected',
           bindOptions: { kind: 'claude-code' },
         });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'TestCaller::DestinationPickerCommand.execute',
+            bindOptions: { kind: 'claude-code' },
+          },
+          'User selected destination with bind options',
+        );
       });
 
       it('returns selected with text-editor bindOptions when user selects text editor', async () => {
         const editorItem = createMockTextEditorQuickPickItem();
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({ 'text-editor': [editorItem] }),
-        );
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          'text-editor': [editorItem],
+        });
         showQuickPickMock.mockResolvedValue(editorItem);
 
         const result = await command.execute(defaultOptions);
@@ -144,12 +154,10 @@ describe('DestinationPickerCommand', () => {
         const terminal1 = createMockTerminal({ name: 'Terminal 1' });
         const terminal2 = createMockTerminal({ name: 'Terminal 2' });
         const moreItem = createMockTerminalMoreQuickPickItem(5);
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({
-            terminal: [createMockTerminalQuickPickItem(terminal1)],
-            'terminal-more': moreItem,
-          }),
-        );
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          terminal: [createMockTerminalQuickPickItem(terminal1)],
+          'terminal-more': moreItem,
+        });
         showQuickPickMock.mockResolvedValue(moreItem);
         mockAdapter.__getVscodeInstance().window.terminals = [terminal1, terminal2];
 
@@ -179,12 +187,10 @@ describe('DestinationPickerCommand', () => {
       it('returns cancelled when user cancels secondary terminal picker', async () => {
         const terminal = createMockTerminal({ name: 'Terminal 1' });
         const moreItem = createMockTerminalMoreQuickPickItem(3);
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({
-            terminal: [createMockTerminalQuickPickItem(terminal)],
-            'terminal-more': moreItem,
-          }),
-        );
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          terminal: [createMockTerminalQuickPickItem(terminal)],
+          'terminal-more': moreItem,
+        });
         showQuickPickMock.mockResolvedValue(moreItem);
 
         showTerminalPickerSpy.mockResolvedValue({ outcome: 'cancelled' });
@@ -202,12 +208,10 @@ describe('DestinationPickerCommand', () => {
         const terminal = createMockTerminal({ name: 'Terminal 1' });
         const terminalItem = createMockTerminalQuickPickItem(terminal);
         const moreItem = createMockTerminalMoreQuickPickItem(3);
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({
-            terminal: [terminalItem],
-            'terminal-more': moreItem,
-          }),
-        );
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          terminal: [terminalItem],
+          'terminal-more': moreItem,
+        });
 
         let callCount = 0;
         showQuickPickMock.mockImplementation(async () => {
@@ -235,62 +239,6 @@ describe('DestinationPickerCommand', () => {
           outcome: 'selected',
           bindOptions: { kind: 'terminal', terminal },
         });
-      });
-    });
-
-    describe('logging', () => {
-      it('logs showing destination picker', async () => {
-        const terminal = createMockTerminal({ name: 'bash' });
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({
-            terminal: [createMockTerminalQuickPickItem(terminal)],
-          }),
-        );
-        showQuickPickMock.mockResolvedValue(undefined);
-
-        await command.execute(defaultOptions);
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'TestCaller::DestinationPickerCommand.execute' },
-          'Showing destination picker',
-        );
-      });
-
-      it('logs item count when showing quick pick', async () => {
-        const terminal = createMockTerminal({ name: 'bash' });
-        const claudeItem = createMockAIAssistantQuickPickItem('claude-code', 'Claude Code Chat');
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({
-            'claude-code': [claudeItem],
-            terminal: [createMockTerminalQuickPickItem(terminal)],
-          }),
-        );
-        showQuickPickMock.mockResolvedValue(undefined);
-
-        await command.execute(defaultOptions);
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'TestCaller::DestinationPickerCommand.execute', availableCount: 2 },
-          'Showing quick pick with 2 items',
-        );
-      });
-
-      it('logs selected bindOptions when user makes selection', async () => {
-        const claudeItem = createMockAIAssistantQuickPickItem('claude-code', 'Claude Code Chat');
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedDestinationItems({ 'claude-code': [claudeItem] }),
-        );
-        showQuickPickMock.mockResolvedValue(claudeItem);
-
-        await command.execute(defaultOptions);
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'TestCaller::DestinationPickerCommand.execute',
-            bindOptions: { kind: 'claude-code' },
-          },
-          'User selected destination with bind options',
-        );
       });
     });
   });

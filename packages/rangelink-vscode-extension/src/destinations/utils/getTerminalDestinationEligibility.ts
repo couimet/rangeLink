@@ -9,14 +9,16 @@ export interface TerminalEligibility {
 }
 
 /**
- * Check if terminal destination is eligible for binding
+ * Get terminal destination eligibility for binding.
  *
  * Terminal destination requires an active terminal.
  *
  * @param ideAdapter - IDE adapter for reading terminal state
  * @returns Eligibility result with terminalName when eligible
  */
-export const isTerminalDestinationEligible = (ideAdapter: VscodeAdapter): TerminalEligibility => {
+export const getTerminalDestinationEligibility = (
+  ideAdapter: VscodeAdapter,
+): TerminalEligibility => {
   const activeTerminal = ideAdapter.activeTerminal;
   const eligible = activeTerminal !== undefined;
 

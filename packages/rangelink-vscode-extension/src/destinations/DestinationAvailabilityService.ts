@@ -25,7 +25,7 @@ import type { DestinationRegistry } from './DestinationRegistry';
 import {
   type EligibleTerminal,
   getEligibleTerminals,
-  isTerminalDestinationEligible,
+  getTerminalDestinationEligibility,
   isTextEditorDestinationEligible,
 } from './utils';
 
@@ -89,7 +89,7 @@ export class DestinationAvailabilityService {
     const available: AvailableDestination[] = [];
 
     const textEditorEligibility = isTextEditorDestinationEligible(this.ideAdapter);
-    const terminalEligibility = isTerminalDestinationEligible(this.ideAdapter);
+    const terminalEligibility = getTerminalDestinationEligibility(this.ideAdapter);
 
     if (textEditorEligibility.eligible) {
       available.push({
@@ -152,12 +152,35 @@ export class DestinationAvailabilityService {
     } = {};
 
     const destinationTypes = options?.destinationTypes ?? DESTINATION_TYPES;
+    if (options?.destinationTypes) {
+      this.logger.debug(
+        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', destinationTypes },
+        'Using provided destinationTypes filter',
+      );
+    } else {
+      this.logger.debug(
+        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems' },
+        'Using default DESTINATION_TYPES',
+      );
+    }
+
     const terminalThreshold =
       options?.terminalThreshold ??
       this.configReader.getWithDefault(
         SETTING_TERMINAL_PICKER_MAX_INLINE,
         DEFAULT_TERMINAL_PICKER_MAX_INLINE,
       );
+    if (options?.terminalThreshold !== undefined) {
+      this.logger.debug(
+        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', terminalThreshold },
+        'Using provided terminalThreshold',
+      );
+    } else {
+      this.logger.debug(
+        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', terminalThreshold },
+        'Using config/default terminalThreshold',
+      );
+    }
 
     for (const kind of destinationTypes) {
       switch (kind) {
@@ -178,7 +201,7 @@ export class DestinationAvailabilityService {
         }
 
         case 'terminal': {
-          if (!isTerminalDestinationEligible(this.ideAdapter)) break;
+          if (!getTerminalDestinationEligibility(this.ideAdapter).eligible) break;
 
           const eligibleTerminals = getEligibleTerminals(this.ideAdapter);
           const { items, moreItem } = this.buildGroupedTerminalItems(

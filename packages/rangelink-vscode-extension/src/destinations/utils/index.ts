@@ -7,9 +7,9 @@ export {
 export { getEligibleTerminals, type EligibleTerminal } from './getEligibleTerminals';
 export { isTerminalEligible } from './isTerminalEligible';
 export {
-  isTerminalDestinationEligible,
+  getTerminalDestinationEligibility,
   type TerminalEligibility,
-} from './isTerminalDestinationEligible';
+} from './getTerminalDestinationEligibility';
 export {
   isTextEditorDestinationEligible,
   type TextEditorEligibility,
