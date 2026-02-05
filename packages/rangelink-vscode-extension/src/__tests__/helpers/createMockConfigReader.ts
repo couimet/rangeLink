@@ -3,6 +3,7 @@ import type { ConfigReader } from '../../config/ConfigReader';
 export interface MockConfigReaderOverrides {
   getPaddingMode?: jest.Mock;
   getWithDefault?: jest.Mock;
+  getBoolean?: jest.Mock;
   get?: jest.Mock;
   inspect?: jest.Mock;
 }
@@ -13,6 +14,7 @@ export const createMockConfigReader = (
   const baseConfigReader = {
     getPaddingMode: jest.fn((_key: string, defaultValue: string) => defaultValue),
     getWithDefault: jest.fn((_key: string, defaultValue: unknown) => defaultValue),
+    getBoolean: jest.fn((_key: string, defaultValue: boolean) => defaultValue),
     get: jest.fn(),
     inspect: jest.fn(),
   };

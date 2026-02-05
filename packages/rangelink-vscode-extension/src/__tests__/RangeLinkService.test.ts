@@ -1725,6 +1725,161 @@ describe('RangeLinkService', () => {
     });
   });
 
+  describe('generateLinkFromSelection() - dirty buffer warning', () => {
+    let mockGenerateLinkFromSelections: jest.SpyInstance;
+    let mockShowWarningMessage: jest.Mock;
+    let mockDocumentSave: jest.Mock;
+
+    beforeEach(() => {
+      mockShowWarningMessage = jest.fn();
+      mockDocumentSave = jest.fn().mockResolvedValue(true);
+
+      mockGenerateLinkFromSelections = jest.spyOn(generateLinkModule, 'generateLinkFromSelections');
+      mockGenerateLinkFromSelections.mockReturnValue(
+        Result.ok(createMockFormattedLink('file.ts#L10')),
+      );
+    });
+
+    const createServiceWithDirtyDocument = (isDirty: boolean, warnOnDirtyBuffer: boolean) => {
+      const mockDocument = createMockDocument({
+        uri: createMockUri('/test/file.ts'),
+        isDirty,
+        save: mockDocumentSave,
+      });
+      const mockEditor = createMockEditor({
+        document: mockDocument,
+        selections: [createMockSelection({ isEmpty: false })],
+      });
+
+      const localMockVscodeAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          activeTextEditor: mockEditor,
+          showWarningMessage: mockShowWarningMessage,
+        },
+        workspaceOptions: {
+          getWorkspaceFolder: jest
+            .fn()
+            .mockReturnValue({ uri: createMockUri('/test'), index: 0, name: 'test' }),
+          asRelativePath: jest.fn().mockReturnValue('file.ts'),
+        },
+      });
+
+      const localMockConfigReader = createMockConfigReader({
+        getBoolean: jest.fn((key: string, defaultValue: boolean) => {
+          if (key === 'warnOnDirtyBuffer') return warnOnDirtyBuffer;
+          return defaultValue;
+        }),
+      });
+
+      const localService = new RangeLinkService(
+        delimiters,
+        localMockVscodeAdapter,
+        createMockDestinationManager({ isBound: false }),
+        localMockConfigReader,
+        mockLogger,
+      );
+
+      return { service: localService, mockDocument };
+    };
+
+    it('should show warning when document is dirty and setting is enabled', async () => {
+      const { service: localService } = createServiceWithDirtyDocument(true, true);
+      mockShowWarningMessage.mockResolvedValue('Generate Anyway');
+
+      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+
+      expect(mockShowWarningMessage).toHaveBeenCalledWith(
+        'File has unsaved changes. Link may point to wrong position after save.',
+        'Save & Generate',
+        'Generate Anyway',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'handleDirtyBufferWarning', documentUri: 'file:///test/file.ts' },
+        'Document has unsaved changes, showing warning',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'handleDirtyBufferWarning' },
+        'User chose to generate anyway',
+      );
+    });
+
+    it('should NOT show warning when document is dirty but setting is disabled', async () => {
+      const { service: localService } = createServiceWithDirtyDocument(true, false);
+
+      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+
+      expect(mockShowWarningMessage).not.toHaveBeenCalled();
+      expect(mockGenerateLinkFromSelections).toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'generateLinkFromSelection', documentUri: 'file:///test/file.ts' },
+        'Document has unsaved changes but warning is disabled by setting',
+      );
+    });
+
+    it('should NOT show warning when document is not dirty', async () => {
+      const { service: localService } = createServiceWithDirtyDocument(false, true);
+
+      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+
+      expect(mockShowWarningMessage).not.toHaveBeenCalled();
+      expect(mockGenerateLinkFromSelections).toHaveBeenCalled();
+    });
+
+    it('should save document and continue when user chooses "Save & Generate"', async () => {
+      const { service: localService, mockDocument } = createServiceWithDirtyDocument(true, true);
+      mockShowWarningMessage.mockResolvedValue('Save & Generate');
+
+      const result = await (localService as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        false,
+      );
+
+      expect(mockDocument.save).toHaveBeenCalled();
+      expect(mockGenerateLinkFromSelections).toHaveBeenCalled();
+      expect(result).toBeDefined();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'handleDirtyBufferWarning' },
+        'User chose to save and generate',
+      );
+    });
+
+    it('should continue without saving when user chooses "Generate Anyway"', async () => {
+      const { service: localService, mockDocument } = createServiceWithDirtyDocument(true, true);
+      mockShowWarningMessage.mockResolvedValue('Generate Anyway');
+
+      const result = await (localService as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        false,
+      );
+
+      expect(mockDocument.save).not.toHaveBeenCalled();
+      expect(mockGenerateLinkFromSelections).toHaveBeenCalled();
+      expect(result).toBeDefined();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'handleDirtyBufferWarning' },
+        'User chose to generate anyway',
+      );
+    });
+
+    it('should abort generation when user dismisses warning', async () => {
+      const { service: localService, mockDocument } = createServiceWithDirtyDocument(true, true);
+      mockShowWarningMessage.mockResolvedValue(undefined);
+
+      const result = await (localService as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        false,
+      );
+
+      expect(mockDocument.save).not.toHaveBeenCalled();
+      expect(mockGenerateLinkFromSelections).not.toHaveBeenCalled();
+      expect(result).toBeUndefined();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'handleDirtyBufferWarning' },
+        'User dismissed warning, aborting',
+      );
+    });
+  });
+
   describe('generateLinkFromSelection() - path resolution', () => {
     let mockGenerateLinkFromSelections: jest.SpyInstance;
 

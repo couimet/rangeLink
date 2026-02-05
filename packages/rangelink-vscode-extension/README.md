@@ -319,16 +319,16 @@ Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 
 ## Configuration
 
-Customize delimiters in VSCode settings (Preferences > Settings > search "rangelink"):
+Customize settings in VSCode (Preferences > Settings > search "rangelink").
 
-```json
-{
-  "rangelink.delimiterLine": "L",
-  "rangelink.delimiterPosition": "C",
-  "rangelink.delimiterHash": "#",
-  "rangelink.delimiterRange": "-"
-}
-```
+### Delimiter Settings
+
+| Setting                      | Default | Description                        |
+| ---------------------------- | ------- | ---------------------------------- |
+| `rangelink.delimiterLine`    | `"L"`   | Line number prefix                 |
+| `rangelink.delimiterPosition`| `"C"`   | Column/character position prefix   |
+| `rangelink.delimiterHash`    | `"#"`   | Separator between path and location|
+| `rangelink.delimiterRange`   | `"-"`   | Range separator (start-end)        |
 
 **Validation Rules:**
 
@@ -338,6 +338,14 @@ Customize delimiters in VSCode settings (Preferences > Settings > search "rangel
 - Reserved characters (`~`, `|`, `/`, `\`, `:`, `,`, `@`) cannot be used
 
 Invalid configurations will fall back to defaults with a warning in the output channel (`Cmd+Shift+U` / `Ctrl+Shift+U`, select "RangeLink"). See [DEVELOPMENT.md](./DEVELOPMENT.md#development-workflow) for details.
+
+### Warning Settings
+
+| Setting                       | Default | Description                                                          |
+| ----------------------------- | ------- | -------------------------------------------------------------------- |
+| `rangelink.warnOnDirtyBuffer` | `true`  | Show warning when generating a link from a file with unsaved changes |
+
+When enabled, a dialog appears with options: "Save & Generate", "Generate Anyway", or dismiss to abort. This helps avoid creating links that may point to incorrect positions after the file is saved.
 
 ## What's Next
 
