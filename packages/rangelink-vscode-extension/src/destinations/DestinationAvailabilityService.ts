@@ -29,6 +29,8 @@ import {
   isTextEditorDestinationEligible,
 } from './utils';
 
+const MIN_TERMINAL_PICKER_THRESHOLD = 1;
+
 /**
  * MessageCode lookup for AI assistant unavailable
  */
@@ -164,12 +166,25 @@ export class DestinationAvailabilityService {
       );
     }
 
-    const terminalThreshold =
+    let terminalThreshold =
       options?.terminalThreshold ??
       this.configReader.getWithDefault(
         SETTING_TERMINAL_PICKER_MAX_INLINE,
         DEFAULT_TERMINAL_PICKER_MAX_INLINE,
       );
+
+    if (terminalThreshold < MIN_TERMINAL_PICKER_THRESHOLD || Number.isNaN(terminalThreshold)) {
+      this.logger.warn(
+        {
+          fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+          invalidValue: terminalThreshold,
+          fallback: DEFAULT_TERMINAL_PICKER_MAX_INLINE,
+        },
+        'Invalid terminalThreshold, using default',
+      );
+      terminalThreshold = DEFAULT_TERMINAL_PICKER_MAX_INLINE;
+    }
+
     if (options?.terminalThreshold !== undefined) {
       this.logger.debug(
         { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', terminalThreshold },

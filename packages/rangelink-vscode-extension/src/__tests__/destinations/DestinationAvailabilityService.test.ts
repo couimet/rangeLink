@@ -252,4 +252,150 @@ describe('DestinationAvailabilityService', () => {
       });
     });
   });
+
+  describe('getGroupedDestinationItems()', () => {
+    describe('terminalThreshold validation', () => {
+      it('logs warning and uses default when config value is 0 (below minimum)', async () => {
+        mockConfigReader.getWithDefault.mockReturnValue(0);
+        const terminal = createMockTerminal();
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            activeTerminal: terminal,
+            terminals: [terminal],
+            activeTextEditor: undefined,
+            tabGroups: createMockTabGroupsWithCount(1),
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems();
+
+        expect(result.terminal).toStrictEqual([
+          {
+            label: 'Terminal ("bash")',
+            displayName: 'Terminal ("bash")',
+            bindOptions: { kind: 'terminal', terminal },
+            itemKind: 'bindable',
+            isActive: true,
+          },
+        ]);
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            invalidValue: 0,
+            fallback: 5,
+          },
+          'Invalid terminalThreshold, using default',
+        );
+      });
+
+      it('logs warning and uses default when config value is NaN', async () => {
+        mockConfigReader.getWithDefault.mockReturnValue(NaN);
+        const terminal = createMockTerminal();
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            activeTerminal: terminal,
+            terminals: [terminal],
+            activeTextEditor: undefined,
+            tabGroups: createMockTabGroupsWithCount(1),
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems();
+
+        expect(result.terminal).toStrictEqual([
+          {
+            label: 'Terminal ("bash")',
+            displayName: 'Terminal ("bash")',
+            bindOptions: { kind: 'terminal', terminal },
+            itemKind: 'bindable',
+            isActive: true,
+          },
+        ]);
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            invalidValue: NaN,
+            fallback: 5,
+          },
+          'Invalid terminalThreshold, using default',
+        );
+      });
+
+      it('does not log warning when config value is 1 (minimum valid)', async () => {
+        mockConfigReader.getWithDefault.mockReturnValue(1);
+        const terminal = createMockTerminal();
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            activeTerminal: terminal,
+            terminals: [terminal],
+            activeTextEditor: undefined,
+            tabGroups: createMockTabGroupsWithCount(1),
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems();
+
+        expect(result.terminal).toStrictEqual([
+          {
+            label: 'Terminal ("bash")',
+            displayName: 'Terminal ("bash")',
+            bindOptions: { kind: 'terminal', terminal },
+            itemKind: 'bindable',
+            isActive: true,
+          },
+        ]);
+        expect(mockLogger.warn).not.toHaveBeenCalled();
+      });
+
+      it('does not log warning when config value is 2 (above minimum)', async () => {
+        mockConfigReader.getWithDefault.mockReturnValue(2);
+        const terminal = createMockTerminal();
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            activeTerminal: terminal,
+            terminals: [terminal],
+            activeTextEditor: undefined,
+            tabGroups: createMockTabGroupsWithCount(1),
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems();
+
+        expect(result.terminal).toStrictEqual([
+          {
+            label: 'Terminal ("bash")',
+            displayName: 'Terminal ("bash")',
+            bindOptions: { kind: 'terminal', terminal },
+            itemKind: 'bindable',
+            isActive: true,
+          },
+        ]);
+        expect(mockLogger.warn).not.toHaveBeenCalled();
+      });
+    });
+  });
 });
