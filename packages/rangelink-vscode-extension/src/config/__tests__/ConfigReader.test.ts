@@ -126,4 +126,26 @@ describe('ConfigReader', () => {
       }
     });
   });
+
+  describe('getBoolean()', () => {
+    it('should return configured boolean value', () => {
+      const factory: ConfigGetterFactory = () =>
+        createMockConfigGetter({ warnOnDirtyBuffer: false });
+      const reader = new (ConfigReader as any)(factory, mockLogger) as ConfigReader;
+
+      const result = reader.getBoolean('warnOnDirtyBuffer', true);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return default boolean when not configured', () => {
+      const result = reader.getBoolean('warnOnDirtyBuffer', true);
+
+      expect(result).toBe(true);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'ConfigReader.getSetting', key: 'warnOnDirtyBuffer', defaultValue: true },
+        'No warnOnDirtyBuffer configured, using default: true',
+      );
+    });
+  });
 });

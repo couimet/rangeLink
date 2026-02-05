@@ -34,3 +34,9 @@ export const SETTING_SMART_PADDING_PASTE_LINK = 'smartPadding.pasteLink';
 // =============================================================================
 
 export const SETTING_TERMINAL_PICKER_MAX_INLINE = 'terminalPicker.maxInline';
+
+// =============================================================================
+// Warning Settings
+// =============================================================================
+
+export const SETTING_WARN_ON_DIRTY_BUFFER = 'warnOnDirtyBuffer';

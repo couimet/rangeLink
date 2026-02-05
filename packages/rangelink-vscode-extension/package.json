@@ -387,6 +387,11 @@
             "No padding (paste bookmark as-is)"
           ],
           "description": "Smart padding for saved bookmarks when pasting to destinations"
+        },
+        "rangelink.warnOnDirtyBuffer": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warning when generating link from file with unsaved changes"
         }
       }
     },
