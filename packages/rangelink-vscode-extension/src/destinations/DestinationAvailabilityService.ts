@@ -31,6 +31,9 @@ import {
 
 const MIN_TERMINAL_PICKER_THRESHOLD = 1;
 
+const isValidThreshold = (value: number): boolean =>
+  value >= MIN_TERMINAL_PICKER_THRESHOLD && !Number.isNaN(value);
+
 /**
  * MessageCode lookup for AI assistant unavailable
  */
@@ -173,7 +176,10 @@ export class DestinationAvailabilityService {
         DEFAULT_TERMINAL_PICKER_MAX_INLINE,
       );
 
-    if (terminalThreshold < MIN_TERMINAL_PICKER_THRESHOLD || Number.isNaN(terminalThreshold)) {
+    const providedWasValid =
+      options?.terminalThreshold !== undefined && isValidThreshold(options.terminalThreshold);
+
+    if (!isValidThreshold(terminalThreshold)) {
       this.logger.warn(
         {
           fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
@@ -185,17 +191,15 @@ export class DestinationAvailabilityService {
       terminalThreshold = DEFAULT_TERMINAL_PICKER_MAX_INLINE;
     }
 
-    if (options?.terminalThreshold !== undefined) {
-      this.logger.debug(
-        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', terminalThreshold },
-        'Using provided terminalThreshold',
-      );
-    } else {
-      this.logger.debug(
-        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', terminalThreshold },
-        'Using config/default terminalThreshold',
-      );
-    }
+    const thresholdSource = providedWasValid ? 'provided' : 'config/default';
+    this.logger.debug(
+      {
+        fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+        terminalThreshold,
+        thresholdSource,
+      },
+      `Using ${thresholdSource} terminalThreshold`,
+    );
 
     for (const kind of destinationTypes) {
       switch (kind) {
