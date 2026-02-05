@@ -32,7 +32,7 @@ import {
 const MIN_TERMINAL_PICKER_THRESHOLD = 1;
 
 const isValidThreshold = (value: number): boolean =>
-  value >= MIN_TERMINAL_PICKER_THRESHOLD && !Number.isNaN(value);
+  Number.isFinite(value) && value >= MIN_TERMINAL_PICKER_THRESHOLD;
 
 /**
  * MessageCode lookup for AI assistant unavailable
@@ -169,37 +169,7 @@ export class DestinationAvailabilityService {
       );
     }
 
-    let terminalThreshold =
-      options?.terminalThreshold ??
-      this.configReader.getWithDefault(
-        SETTING_TERMINAL_PICKER_MAX_INLINE,
-        DEFAULT_TERMINAL_PICKER_MAX_INLINE,
-      );
-
-    const providedWasValid =
-      options?.terminalThreshold !== undefined && isValidThreshold(options.terminalThreshold);
-
-    if (!isValidThreshold(terminalThreshold)) {
-      this.logger.warn(
-        {
-          fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
-          invalidValue: terminalThreshold,
-          fallback: DEFAULT_TERMINAL_PICKER_MAX_INLINE,
-        },
-        'Invalid terminalThreshold, using default',
-      );
-      terminalThreshold = DEFAULT_TERMINAL_PICKER_MAX_INLINE;
-    }
-
-    const thresholdSource = providedWasValid ? 'provided' : 'config/default';
-    this.logger.debug(
-      {
-        fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
-        terminalThreshold,
-        thresholdSource,
-      },
-      `Using ${thresholdSource} terminalThreshold`,
-    );
+    const terminalThreshold = this.resolveTerminalThreshold(options);
 
     for (const kind of destinationTypes) {
       switch (kind) {
@@ -329,5 +299,44 @@ export class DestinationAvailabilityService {
       itemKind: 'bindable',
       isActive,
     };
+  }
+
+  /**
+   * Resolve the terminal threshold to use, handling options, config, validation, and normalization.
+   */
+  private resolveTerminalThreshold(options?: GetAvailableDestinationItemsOptions): number {
+    const providedThreshold = options?.terminalThreshold;
+    const configThreshold = this.configReader.getWithDefault(
+      SETTING_TERMINAL_PICKER_MAX_INLINE,
+      DEFAULT_TERMINAL_PICKER_MAX_INLINE,
+    );
+
+    let effectiveThreshold = providedThreshold ?? configThreshold;
+
+    if (!isValidThreshold(effectiveThreshold)) {
+      this.logger.warn(
+        {
+          fn: 'DestinationAvailabilityService.resolveTerminalThreshold',
+          invalidValue: effectiveThreshold,
+          fallback: DEFAULT_TERMINAL_PICKER_MAX_INLINE,
+        },
+        'Invalid terminalThreshold, using default',
+      );
+      effectiveThreshold = DEFAULT_TERMINAL_PICKER_MAX_INLINE;
+    }
+
+    effectiveThreshold = Math.floor(effectiveThreshold);
+
+    this.logger.debug(
+      {
+        fn: 'DestinationAvailabilityService.resolveTerminalThreshold',
+        providedThreshold,
+        configThreshold,
+        effectiveThreshold,
+      },
+      'Resolved terminalThreshold',
+    );
+
+    return effectiveThreshold;
   }
 }

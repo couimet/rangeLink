@@ -286,7 +286,7 @@ describe('DestinationAvailabilityService', () => {
         ]);
         expect(mockLogger.warn).toHaveBeenCalledWith(
           {
-            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            fn: 'DestinationAvailabilityService.resolveTerminalThreshold',
             invalidValue: 0,
             fallback: 5,
           },
@@ -325,7 +325,7 @@ describe('DestinationAvailabilityService', () => {
         ]);
         expect(mockLogger.warn).toHaveBeenCalledWith(
           {
-            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            fn: 'DestinationAvailabilityService.resolveTerminalThreshold',
             invalidValue: NaN,
             fallback: 5,
           },
@@ -395,6 +395,101 @@ describe('DestinationAvailabilityService', () => {
           },
         ]);
         expect(mockLogger.warn).not.toHaveBeenCalled();
+      });
+
+      it('logs warning and uses default when config value is Infinity', async () => {
+        mockConfigReader.getWithDefault.mockReturnValue(Infinity);
+        const terminal = createMockTerminal();
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            activeTerminal: terminal,
+            terminals: [terminal],
+            activeTextEditor: undefined,
+            tabGroups: createMockTabGroupsWithCount(1),
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems();
+
+        expect(result.terminal).toStrictEqual([
+          {
+            label: 'Terminal ("bash")',
+            displayName: 'Terminal ("bash")',
+            bindOptions: { kind: 'terminal', terminal },
+            itemKind: 'bindable',
+            isActive: true,
+          },
+        ]);
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.resolveTerminalThreshold',
+            invalidValue: Infinity,
+            fallback: 5,
+          },
+          'Invalid terminalThreshold, using default',
+        );
+      });
+
+      it('floors fractional config values to integers', async () => {
+        mockConfigReader.getWithDefault.mockReturnValue(2.9);
+        const terminal1 = createMockTerminal({ name: 'Terminal 1' });
+        const terminal2 = createMockTerminal({ name: 'Terminal 2' });
+        const terminal3 = createMockTerminal({ name: 'Terminal 3' });
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            activeTerminal: terminal1,
+            terminals: [terminal1, terminal2, terminal3],
+            activeTextEditor: undefined,
+            tabGroups: createMockTabGroupsWithCount(1),
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems();
+
+        expect(result.terminal).toStrictEqual([
+          {
+            label: 'Terminal ("Terminal 1")',
+            displayName: 'Terminal ("Terminal 1")',
+            bindOptions: { kind: 'terminal', terminal: terminal1 },
+            itemKind: 'bindable',
+            isActive: true,
+          },
+          {
+            label: 'Terminal ("Terminal 2")',
+            displayName: 'Terminal ("Terminal 2")',
+            bindOptions: { kind: 'terminal', terminal: terminal2 },
+            itemKind: 'bindable',
+            isActive: false,
+          },
+        ]);
+        expect(result['terminal-more']).toStrictEqual({
+          label: 'More terminals...',
+          displayName: 'More terminals...',
+          remainingCount: 1,
+          itemKind: 'terminal-more',
+        });
+        expect(mockLogger.warn).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.resolveTerminalThreshold',
+            providedThreshold: undefined,
+            configThreshold: 2.9,
+            effectiveThreshold: 2,
+          },
+          'Resolved terminalThreshold',
+        );
       });
     });
   });
