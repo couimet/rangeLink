@@ -5,8 +5,8 @@ import {
   DestinationPickerCommand,
   type DestinationPickerOptions,
 } from '../../commands/DestinationPickerCommand';
-import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
-import type { TerminalPickerResult } from '../../destinations/utils/showTerminalPicker';
+import type { DestinationAvailabilityService } from '../../destinations';
+import type { TerminalPickerResult } from '../../destinations/utils';
 import * as showTerminalPickerModule from '../../destinations/utils/showTerminalPicker';
 import { MessageCode } from '../../types';
 import {

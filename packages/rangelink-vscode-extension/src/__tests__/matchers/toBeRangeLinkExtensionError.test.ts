@@ -1,6 +1,5 @@
-import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
-import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
-import { ExtensionResult } from '../../types/ExtensionResult';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
+import { ExtensionResult } from '../../types';
 
 import {
   toBeRangeLinkExtensionError,

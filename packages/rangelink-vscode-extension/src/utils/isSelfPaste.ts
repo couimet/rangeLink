@@ -1,6 +1,6 @@
 import type * as vscode from 'vscode';
 
-import type { PasteDestination } from '../destinations/PasteDestination';
+import type { PasteDestination } from '../destinations';
 
 /**
  * Check if paste would go to the same file as the source.

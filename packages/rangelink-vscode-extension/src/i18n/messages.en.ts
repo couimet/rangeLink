@@ -1,4 +1,4 @@
-import { MessageCode } from '../types/MessageCode';
+import { MessageCode } from '../types';
 
 /**
  * English message templates for VSCode extension.

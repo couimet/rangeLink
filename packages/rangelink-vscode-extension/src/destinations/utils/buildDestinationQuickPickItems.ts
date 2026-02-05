@@ -1,23 +1,23 @@
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import {
   type BindableQuickPickItem,
-  DESTINATION_TYPES,
+  DESTINATION_KINDS,
   type DestinationQuickPickItem,
-  type DestinationType,
+  type DestinationKind,
   type GroupedDestinationItems,
   MessageCode,
   type TerminalMoreQuickPickItem,
 } from '../../types';
 import { formatMessage } from '../../utils';
 
-const isDestinationKind = (key: string): key is DestinationType =>
-  DESTINATION_TYPES.includes(key as DestinationType);
+const isDestinationKind = (key: string): key is DestinationKind =>
+  DESTINATION_KINDS.includes(key as DestinationKind);
 
 /**
- * Sequence defining the order of destination types in QuickPick menus.
+ * Sequence defining the order of destination kinds in QuickPick menus.
  * AI assistants first, then terminals, then text editor.
  */
-export const DESTINATION_PICKER_SEQUENCE: readonly (DestinationType | 'terminal-more')[] = [
+export const DESTINATION_PICKER_SEQUENCE: readonly (DestinationKind | 'terminal-more')[] = [
   'claude-code',
   'cursor-ai',
   'github-copilot-chat',

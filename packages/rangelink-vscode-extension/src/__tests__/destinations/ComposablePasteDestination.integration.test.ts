@@ -9,11 +9,13 @@
  */
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { CommandPasteExecutor } from '../../destinations/capabilities/CommandPasteExecutor';
-import { ContentEligibilityChecker } from '../../destinations/capabilities/ContentEligibilityChecker';
-import { EditorPasteExecutor } from '../../destinations/capabilities/EditorPasteExecutor';
-import { TerminalPasteExecutor } from '../../destinations/capabilities/TerminalPasteExecutor';
-import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
+import {
+  CommandPasteExecutor,
+  ComposablePasteDestination,
+  ContentEligibilityChecker,
+  EditorPasteExecutor,
+  TerminalPasteExecutor,
+} from '../../destinations';
 import {
   createMockDocument,
   createMockEditor,

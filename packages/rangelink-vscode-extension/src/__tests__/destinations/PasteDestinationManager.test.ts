@@ -2,10 +2,8 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
-import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
-import type { PasteDestination } from '../../destinations/PasteDestination';
-import { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
-import { AutoPasteResult, MessageCode } from '../../types';
+import { type PasteDestination, PasteDestinationManager } from '../../destinations';
+import { AutoPasteResult, type DestinationKind, MessageCode } from '../../types';
 import * as formatMessageModule from '../../utils/formatMessage';
 import {
   configureEmptyTabGroups,
@@ -946,8 +944,8 @@ describe('PasteDestinationManager', () => {
 
     // Mock factory and destinations for unit tests
     let mockRegistryForSend: ReturnType<typeof createMockDestinationRegistry>;
-    let mockTerminalDest: jest.Mocked<PasteDestination>;
-    let mockChatDest: jest.Mocked<PasteDestination>;
+    let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
+    let mockChatDest: ReturnType<typeof createMockCursorAIDestination>;
 
     beforeEach(() => {
       mockTerminalDest = createMockTerminalPasteDestination({
@@ -1008,7 +1006,7 @@ describe('PasteDestinationManager', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.sendLinkToDestination',
-          destinationType: 'terminal',
+          destinationKind: 'terminal',
           displayName: 'Terminal ("bash")',
           formattedLink,
           paddingMode: 'both',
@@ -1158,6 +1156,28 @@ describe('PasteDestinationManager', () => {
       cursorManager.dispose();
     });
 
+    it('should log destination details when sending to terminal', async () => {
+      const mockTerminal = createMockTerminal();
+
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await manager.bind('terminal');
+
+      const formattedLink = createMockFormattedLink('src/file.ts#L10');
+      await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE, 'both');
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.sendLinkToDestination',
+          destinationKind: 'terminal',
+          displayName: 'Terminal ("bash")',
+          formattedLink,
+          paddingMode: 'both',
+          terminalName: 'bash',
+        },
+        'Sending link to Terminal ("bash")',
+      );
+    });
+
     it('should show text-editor specific warning when editor paste fails', async () => {
       const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
       const { manager: localManager } = createManager({
@@ -1258,7 +1278,7 @@ describe('PasteDestinationManager', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.sendLinkToDestination',
-          destinationType: 'terminal',
+          destinationKind: 'terminal',
           displayName: 'Terminal ("bash")',
           formattedLink,
           paddingMode: 'both',
@@ -1508,7 +1528,7 @@ describe('PasteDestinationManager', () => {
     ): jest.Mocked<PasteDestination> => {
       // Use createBaseMockPasteDestination with custom equals for instance comparison
       const dest = createBaseMockPasteDestination({
-        id: id as import('../../destinations').DestinationType,
+        id: id as DestinationKind,
         displayName,
         isAvailable: jest.fn().mockResolvedValue(isAvailable),
       });
@@ -1790,12 +1810,12 @@ describe('PasteDestinationManager', () => {
   describe('jumpToBoundDestination()', () => {
     // Mock factory and destinations for unit tests
     let mockRegistryForJump: ReturnType<typeof createMockDestinationRegistry>;
-    let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
-    let mockTerminalDest: jest.Mocked<PasteDestination>;
+    let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
+    let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
     let mockEditorDest: PasteDestination;
     let mockEditorDestFocusSpy: jest.SpyInstance;
-    let mockCursorAIDest: jest.Mocked<PasteDestination>;
-    let mockClaudeCodeDest: jest.Mocked<PasteDestination>;
+    let mockCursorAIDest: ReturnType<typeof createMockCursorAIDestination>;
+    let mockClaudeCodeDest: ReturnType<typeof createMockClaudeCodeDestination>;
 
     beforeEach(() => {
       // Use specialized factories with default values (all already have sensible defaults)
@@ -1865,8 +1885,8 @@ describe('PasteDestinationManager', () => {
 
         expect(mockAdapter.__getVscodeInstance().window.showQuickPick).toHaveBeenCalledWith(
           [
-            { label: 'Terminal', destinationType: 'terminal' },
-            { label: 'Claude Code Chat', destinationType: 'claude-code' },
+            { label: 'Terminal', destinationKind: 'terminal' },
+            { label: 'Claude Code Chat', destinationKind: 'claude-code' },
           ],
           { placeHolder: 'No destination bound. Choose destination to jump to:' },
         );
@@ -1910,7 +1930,7 @@ describe('PasteDestinationManager', () => {
         ]);
         mockAdapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce({
           label: 'Terminal',
-          destinationType: 'terminal',
+          destinationKind: 'terminal',
         });
 
         const result = await manager.jumpToBoundDestination();
@@ -2035,7 +2055,7 @@ describe('PasteDestinationManager', () => {
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.focusBoundDestination',
-          destinationType: 'terminal',
+          destinationKind: 'terminal',
           displayName: 'Terminal',
           terminalName: 'bash',
         },
@@ -2063,7 +2083,7 @@ describe('PasteDestinationManager', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.focusBoundDestination',
-          destinationType: 'terminal',
+          destinationKind: 'terminal',
           displayName: 'Terminal',
           terminalName: 'bash',
         },
@@ -2095,7 +2115,7 @@ describe('PasteDestinationManager', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.focusBoundDestination',
-          destinationType: 'text-editor',
+          destinationKind: 'text-editor',
           displayName: 'Text Editor ("file.ts")',
           editorName: 'file.ts',
           editorPath: '/workspace/src/file.ts',
@@ -2118,7 +2138,7 @@ describe('PasteDestinationManager', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.focusBoundDestination',
-          destinationType: 'cursor-ai',
+          destinationKind: 'cursor-ai',
           displayName: 'Cursor AI Assistant',
         },
         'Successfully focused Cursor AI Assistant',
@@ -2141,10 +2161,35 @@ describe('PasteDestinationManager', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.focusBoundDestination',
-          destinationType: 'github-copilot-chat',
+          destinationKind: 'github-copilot-chat',
           displayName: 'GitHub Copilot Chat',
         },
         'Successfully focused GitHub Copilot Chat',
+      );
+    });
+
+    it('should log warning when focus fails', async () => {
+      const mockTerminal = createMockTerminal();
+
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await manager.bind('terminal');
+
+      // Clear logger calls from bind()
+      jest.clearAllMocks();
+
+      // Mock focus failure
+      mockTerminalDest.focus.mockResolvedValueOnce(false);
+
+      await manager.jumpToBoundDestination();
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.focusBoundDestination',
+          destinationKind: 'terminal',
+          displayName: 'Terminal',
+          terminalName: 'bash',
+        },
+        'Failed to focus Terminal',
       );
     });
 
@@ -2184,8 +2229,8 @@ describe('PasteDestinationManager', () => {
 
   describe('bindAndJump()', () => {
     let mockRegistryForBindAndJump: ReturnType<typeof createMockDestinationRegistry>;
-    let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
-    let mockTerminalDest: jest.Mocked<PasteDestination>;
+    let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
+    let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
     let mockTerminal: vscode.Terminal;
 
     beforeEach(() => {
@@ -2246,7 +2291,7 @@ describe('PasteDestinationManager', () => {
       const TEST_CONTENT = 'Test content to paste';
       const TEST_STATUS = 'Content sent successfully';
 
-      let mockTerminalDest: jest.Mocked<PasteDestination>;
+      let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
       let mockRegistryForSend: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
@@ -2324,7 +2369,7 @@ describe('PasteDestinationManager', () => {
             fn: 'PasteDestinationManager.sendTextToDestination',
             contentLength: TEST_CONTENT.length,
             displayName: 'Terminal ("bash")',
-            destinationType: 'terminal',
+            destinationKind: 'terminal',
             paddingMode: 'none',
             terminalName: 'bash',
           },
@@ -2378,8 +2423,8 @@ describe('PasteDestinationManager', () => {
     });
 
     describe('Replace Binding Confirmation', () => {
-      let mockTerminalDest1: jest.Mocked<PasteDestination>;
-      let mockTerminalDest2: jest.Mocked<PasteDestination>;
+      let mockTerminalDest1: ReturnType<typeof createMockTerminalPasteDestination>;
+      let mockTerminalDest2: ReturnType<typeof createMockTerminalPasteDestination>;
       let mockRegistryForReplace: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
@@ -2494,7 +2539,7 @@ describe('PasteDestinationManager', () => {
     });
 
     describe('Already Bound Check', () => {
-      let mockTerminalDest: jest.Mocked<PasteDestination>;
+      let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
       let mockRegistryForDuplicate: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
@@ -2740,7 +2785,7 @@ describe('PasteDestinationManager', () => {
   });
 
   describe('showDestinationQuickPickForPaste()', () => {
-    let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
+    let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
     let showQuickPickMock: jest.Mock;
     let mockWindow: ReturnType<typeof mockAdapter.__getVscodeInstance>['window'];
 
@@ -2767,7 +2812,7 @@ describe('PasteDestinationManager', () => {
       ]);
       showQuickPickMock.mockResolvedValueOnce({
         label: 'Terminal ("bash")',
-        destinationType: 'terminal',
+        destinationKind: 'terminal',
       });
 
       const result = await manager.showDestinationQuickPickForPaste();
@@ -2776,8 +2821,8 @@ describe('PasteDestinationManager', () => {
       expect(manager.isBound()).toBe(true);
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          { label: 'Terminal ("bash")', destinationType: 'terminal' },
-          { label: 'Claude Code Chat', destinationType: 'claude-code' },
+          { label: 'Terminal ("bash")', destinationKind: 'terminal' },
+          { label: 'Claude Code Chat', destinationKind: 'claude-code' },
         ],
         { placeHolder: 'No bound destination. Choose below to bind and paste:' },
       );
@@ -2838,7 +2883,7 @@ describe('PasteDestinationManager', () => {
       ]);
       showQuickPickMock.mockResolvedValueOnce({
         label: 'Terminal',
-        destinationType: 'terminal',
+        destinationKind: 'terminal',
       });
 
       const result = await manager.showDestinationQuickPickForPaste();

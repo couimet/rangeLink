@@ -1,13 +1,13 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
 
-import type { DestinationAvailabilityService } from '../destinations/DestinationAvailabilityService';
+import type { DestinationAvailabilityService } from '../destinations';
 import {
   buildDestinationQuickPickItems,
   showTerminalPicker,
   TERMINAL_PICKER_SHOW_ALL,
   type TerminalPickerOptions,
 } from '../destinations/utils';
-import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionError } from '../errors';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type BindOptions, type DestinationQuickPickItem, MessageCode } from '../types';

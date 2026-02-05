@@ -1,4 +1,4 @@
-import type { DestinationType } from './DestinationType';
+import type { DestinationKind } from './DestinationKind';
 import type { BindableQuickPickItem, TerminalMoreQuickPickItem } from './QuickPickTypes';
 
 /**
@@ -6,15 +6,15 @@ import type { BindableQuickPickItem, TerminalMoreQuickPickItem } from './QuickPi
  */
 export interface GetAvailableDestinationItemsOptions {
   /**
-   * Filter to specific destination types. Default: all types.
+   * Filter to specific destination kinds. Default: all kinds.
    * Example: ['terminal'] to only get terminal items.
    */
-  readonly destinationTypes?: DestinationType[];
+  readonly destinationKinds?: DestinationKind[];
 
   /**
    * Threshold for showing "More terminals..." item.
    * If terminals > threshold, show threshold items + "More terminals..."
-   * Required when 'terminal' is in destinationTypes.
+   * Required when 'terminal' is in destinationKinds.
    * Caller provides - service does NOT read settings.
    */
   readonly terminalThreshold?: number;
@@ -22,10 +22,10 @@ export interface GetAvailableDestinationItemsOptions {
 
 /**
  * Grouped response from `getGroupedDestinationItems()`.
- * Keys are DestinationType values plus 'terminal-more' for overflow.
+ * Keys are DestinationKind values plus 'terminal-more' for overflow.
  */
 export type GroupedDestinationItems = {
-  readonly [K in DestinationType]?: BindableQuickPickItem[];
+  readonly [K in DestinationKind]?: BindableQuickPickItem[];
 } & {
   readonly 'terminal-more'?: TerminalMoreQuickPickItem;
 };

@@ -7,9 +7,9 @@ import {
   buildGitHubCopilotChatDestination,
   buildTerminalDestination,
   buildTextEditorDestination,
+  type DestinationBuilderContext,
   registerAllDestinationBuilders,
-} from '../../destinations/destinationBuilders';
-import type { DestinationBuilderContext } from '../../destinations/DestinationRegistry';
+} from '../../destinations';
 import {
   createMockDocument,
   createMockEditor,

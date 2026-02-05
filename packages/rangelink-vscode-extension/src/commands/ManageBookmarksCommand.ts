@@ -4,9 +4,8 @@ import * as vscode from 'vscode';
 import type { Bookmark } from '../bookmarks';
 import type { BookmarkService } from '../bookmarks';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { ExtensionResult } from '../types';
-import { MessageCode } from '../types/MessageCode';
-import { formatMessage } from '../utils/formatMessage';
+import { type ExtensionResult, MessageCode } from '../types';
+import { formatMessage } from '../utils';
 
 interface ManageBookmarkItem extends vscode.QuickPickItem {
   bookmark: Bookmark;

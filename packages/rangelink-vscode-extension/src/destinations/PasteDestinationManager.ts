@@ -7,8 +7,10 @@ import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
+  type AIAssistantDestinationKind,
   AutoPasteResult,
   BindAbortReason,
+  type DestinationKind,
   MessageCode,
   QuickPickBindResult,
   type TerminalBindResult,
@@ -23,11 +25,7 @@ import {
 
 import type { DestinationAvailabilityService } from './DestinationAvailabilityService';
 import type { DestinationRegistry } from './DestinationRegistry';
-import type {
-  AIAssistantDestinationType,
-  DestinationType,
-  PasteDestination,
-} from './PasteDestination';
+import type { PasteDestination } from './PasteDestination';
 
 /**
  * Unified destination manager for RangeLink (Phase 3)
@@ -44,10 +42,10 @@ import type {
  */
 export class PasteDestinationManager implements vscode.Disposable {
   /**
-   * Static lookup table mapping AI assistant destination types to unavailable error message codes
+   * Static lookup table mapping AI assistant destination kinds to unavailable error message codes
    */
   private static readonly AI_ASSISTANT_ERROR_CODES: Record<
-    AIAssistantDestinationType,
+    AIAssistantDestinationKind,
     MessageCode
   > = {
     'claude-code': MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE,
@@ -86,16 +84,16 @@ export class PasteDestinationManager implements vscode.Disposable {
    * 3. If different destination bound, show confirmation
    * 4. Bind the new destination
    *
-   * @param type - The destination type to bind (e.g., 'terminal', 'text-editor', 'cursor-ai', 'claude-code')
+   * @param kind - The destination kind to bind (e.g., 'terminal', 'text-editor', 'cursor-ai', 'claude-code')
    * @returns true if binding succeeded, false otherwise
    */
-  async bind(type: DestinationType): Promise<boolean> {
+  async bind(kind: DestinationKind): Promise<boolean> {
     // Special handling for terminal (needs active terminal reference)
-    // TODO: Replace bind(type) signature with bind(options: BindOptions) discriminated union.
+    // TODO: Replace bind(kind) signature with bind(options: BindOptions) discriminated union.
     // Options should include { kind: 'terminal', terminal: vscode.Terminal } so callers
     // pass the terminal directly. This avoids circular dependency with BindToTerminalCommand.
     // See backup branch issues/255-backup for reference implementation.
-    if (type === 'terminal') {
+    if (kind === 'terminal') {
       const activeTerminal = this.vscodeAdapter.activeTerminal;
       if (!activeTerminal) {
         this.logger.warn({ fn: 'PasteDestinationManager.bind' }, 'No active terminal');
@@ -107,12 +105,12 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     // Special handling for text editor (needs active text editor reference)
-    if (type === 'text-editor') {
+    if (kind === 'text-editor') {
       return this.bindTextEditor();
     }
 
     // Generic destination binding (AI assistant destinations, etc.)
-    return this.bindGenericDestination(type);
+    return this.bindGenericDestination(kind);
   }
 
   /**
@@ -177,15 +175,15 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Bind to a destination type and immediately jump to it.
+   * Bind to a destination kind and immediately jump to it.
    *
    * Convenience method that combines bind() and jumpToBoundDestination().
    *
-   * @param type - The destination type to bind and jump to
+   * @param kind - The destination kind to bind and jump to
    * @returns true if bind and jump both succeeded, false otherwise
    */
-  async bindAndJump(type: DestinationType): Promise<boolean> {
-    const bound = await this.bind(type);
+  async bindAndJump(kind: DestinationKind): Promise<boolean> {
+    const bound = await this.bind(kind);
     if (!bound) {
       return false;
     }
@@ -234,7 +232,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     const items = availableDestinations.map((dest) => ({
       label: dest.displayName,
-      destinationType: dest.kind,
+      destinationKind: dest.kind,
     }));
 
     this.logger.debug(
@@ -252,11 +250,11 @@ export class PasteDestinationManager implements vscode.Disposable {
     }
 
     this.logger.debug(
-      { ...logCtx, selectedType: selected.destinationType },
-      `User selected ${selected.destinationType}`,
+      { ...logCtx, selectedType: selected.destinationKind },
+      `User selected ${selected.destinationKind}`,
     );
 
-    const bound = await this.bind(selected.destinationType);
+    const bound = await this.bind(selected.destinationKind);
     if (!bound) {
       this.logger.debug(logCtx, 'Binding failed');
       return QuickPickBindResult.BindingFailed;
@@ -290,12 +288,12 @@ export class PasteDestinationManager implements vscode.Disposable {
       return false;
     }
 
-    const destinationType = this.boundDestination.id;
+    const destinationKind = this.boundDestination.id;
     const displayName = this.boundDestination.displayName;
 
     const logCtx = {
       fn: 'PasteDestinationManager.focusBoundDestination',
-      destinationType,
+      destinationKind,
       displayName,
       ...this.boundDestination.getLoggingDetails(),
     };
@@ -580,10 +578,10 @@ export class PasteDestinationManager implements vscode.Disposable {
   /**
    * Bind to generic destination (AI assistant destinations, etc.)
    *
-   * @param kind - The destination type (AI assistants only)
+   * @param kind - The destination kind (AI assistants only)
    * @returns true if binding succeeded, false if destination not available
    */
-  private async bindGenericDestination(kind: AIAssistantDestinationType): Promise<boolean> {
+  private async bindGenericDestination(kind: AIAssistantDestinationKind): Promise<boolean> {
     // Generic destinations don't require resources at construction
     const newDestination = this.registry.create({ kind });
 
@@ -788,7 +786,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     // Build enhanced log context with destination details
     const enhancedLogContext: LoggingContext = {
       ...options.logContext,
-      destinationType: destination.id,
+      destinationKind: destination.id,
       displayName,
       ...destination.getLoggingDetails(),
     };
@@ -887,13 +885,13 @@ export class PasteDestinationManager implements vscode.Disposable {
    * User can confirm replacement or cancel to keep current binding.
    *
    * @param currentDestination - Currently bound destination
-   * @param newType - Destination type user wants to bind
+   * @param newKind - Destination kind user wants to bind
    * @param newDisplayName - Display name of new destination
    * @returns true if user confirms replacement, false if cancelled
    */
   private async confirmReplaceBinding(
     currentDestination: PasteDestination,
-    newKind: DestinationType,
+    newKind: DestinationKind,
     newDisplayName: string,
   ): Promise<boolean> {
     const params = {

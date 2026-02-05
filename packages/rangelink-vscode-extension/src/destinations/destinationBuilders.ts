@@ -9,6 +9,7 @@ import type * as vscode from 'vscode';
 
 import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import type { DestinationKind } from '../types';
 import { AutoPasteResult, MessageCode } from '../types';
 import {
   formatMessage,
@@ -23,7 +24,7 @@ import { ComposablePasteDestination } from './ComposablePasteDestination';
 import type { DestinationBuilder, DestinationBuilderContext } from './DestinationRegistry';
 import { compareEditorsByUri } from './equality/compareEditorsByUri';
 import { compareTerminalsByProcessId } from './equality/compareTerminalsByProcessId';
-import type { DestinationType, PasteDestination } from './PasteDestination';
+import type { PasteDestination } from './PasteDestination';
 
 /**
  * Build a Terminal destination using ComposablePasteDestination factory method.
@@ -263,12 +264,12 @@ export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, c
 /**
  * Register all destination builders with the registry.
  *
- * Called from extension.ts during activation to set up all destination types.
+ * Called from extension.ts during activation to set up all destination kinds.
  *
  * @param registry - DestinationRegistry to register builders with
  */
 export const registerAllDestinationBuilders = (registry: {
-  register: (type: DestinationType, builder: DestinationBuilder) => void;
+  register: (kind: DestinationKind, builder: DestinationBuilder) => void;
 }): void => {
   registry.register('terminal', buildTerminalDestination);
   registry.register('text-editor', buildTextEditorDestination);

@@ -1,7 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
-import type { AIAssistantDestinationType } from '../../destinations/PasteDestination';
+import { DestinationAvailabilityService } from '../../destinations';
+import type { AIAssistantDestinationKind } from '../../types';
 import {
   createBaseMockPasteDestination,
   createMockConfigReader,
@@ -48,7 +48,7 @@ describe('DestinationAvailabilityService', () => {
   });
 
   describe('isAIAssistantAvailable()', () => {
-    it.each<[AIAssistantDestinationType, boolean]>([
+    it.each<[AIAssistantDestinationKind, boolean]>([
       ['claude-code', true],
       ['claude-code', false],
       ['cursor-ai', true],

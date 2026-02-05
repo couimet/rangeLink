@@ -5,7 +5,7 @@ import {
   DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
   SETTING_SMART_PADDING_PASTE_BOOKMARK,
 } from '../constants';
-import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
+import type { PasteDestinationManager } from '../destinations';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { ExtensionResult } from '../types';
 

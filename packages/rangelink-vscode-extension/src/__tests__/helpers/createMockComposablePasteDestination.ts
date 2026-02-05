@@ -1,14 +1,15 @@
 import { createMockLogger } from 'barebone-logger-testing';
 import { Result } from 'rangelink-core-ts';
 
-import type { EligibilityChecker } from '../../destinations/capabilities/EligibilityChecker';
-import type { FocusSuccess, PasteExecutor } from '../../destinations/capabilities/PasteExecutor';
 import {
   ComposablePasteDestination,
   type ComposablePasteDestinationConfig,
-} from '../../destinations/ComposablePasteDestination';
-import type { PasteDestination } from '../../destinations/PasteDestination';
-import type { AutoPasteResult } from '../../types/AutoPasteResult';
+  type EligibilityChecker,
+  type FocusSuccess,
+  type PasteDestination,
+  type PasteExecutor,
+} from '../../destinations';
+import type { AutoPasteResult } from '../../types';
 
 /**
  * Configuration overrides for creating a mock ComposablePasteDestination.

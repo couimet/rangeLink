@@ -2,7 +2,7 @@ export * from './aiAssistants';
 export * from './applySmartPadding';
 export * from './convertRangeLinkPosition';
 export * from './createIsoTimestamp';
-export * from './destinationTypeGuards';
+export * from './destinationKindGuards';
 export * from './formatLinkPosition';
 export * from './formatLinkTooltip';
 export * from './formatMessage';

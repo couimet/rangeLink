@@ -1,6 +1,6 @@
 import {
   isEditorDestination,
-  isPasteDestinationType,
+  isPasteDestinationKind,
   isSingletonDestination,
   isTerminalDestination,
 } from '..';
@@ -11,22 +11,22 @@ import {
   createMockTerminalComposablePasteDestination,
 } from '../../__tests__/helpers';
 
-describe('destinationTypeGuards', () => {
-  describe('isPasteDestinationType', () => {
+describe('destinationKindGuards', () => {
+  describe('isPasteDestinationKind', () => {
     it('should return false for undefined destination', () => {
-      const result = isPasteDestinationType(undefined, 'terminal');
+      const result = isPasteDestinationKind(undefined, 'terminal');
       expect(result).toBe(false);
     });
 
     it('should return false when destination.id does not match type', () => {
       const destination = createMockTerminalComposablePasteDestination();
-      const result = isPasteDestinationType(destination, 'text-editor');
+      const result = isPasteDestinationKind(destination, 'text-editor');
       expect(result).toBe(false);
     });
 
     it('should return true when destination.id matches type', () => {
       const destination = createMockTerminalComposablePasteDestination();
-      const result = isPasteDestinationType(destination, 'terminal');
+      const result = isPasteDestinationKind(destination, 'terminal');
       expect(result).toBe(true);
     });
 
@@ -35,9 +35,9 @@ describe('destinationTypeGuards', () => {
       const editorDest = createMockEditorComposablePasteDestination();
       const singletonDest = createMockCursorAIComposableDestination();
 
-      expect(isPasteDestinationType(terminalDest, 'terminal')).toBe(true);
-      expect(isPasteDestinationType(editorDest, 'text-editor')).toBe(true);
-      expect(isPasteDestinationType(singletonDest, 'cursor-ai')).toBe(true);
+      expect(isPasteDestinationKind(terminalDest, 'terminal')).toBe(true);
+      expect(isPasteDestinationKind(editorDest, 'text-editor')).toBe(true);
+      expect(isPasteDestinationKind(singletonDest, 'cursor-ai')).toBe(true);
     });
   });
 
