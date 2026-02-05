@@ -323,12 +323,12 @@ Customize settings in VSCode (Preferences > Settings > search "rangelink").
 
 ### Delimiter Settings
 
-| Setting                      | Default | Description                        |
-| ---------------------------- | ------- | ---------------------------------- |
-| `rangelink.delimiterLine`    | `"L"`   | Line number prefix                 |
-| `rangelink.delimiterPosition`| `"C"`   | Column/character position prefix   |
-| `rangelink.delimiterHash`    | `"#"`   | Separator between path and location|
-| `rangelink.delimiterRange`   | `"-"`   | Range separator (start-end)        |
+| Setting                       | Default | Description                         |
+| ----------------------------- | ------- | ----------------------------------- |
+| `rangelink.delimiterLine`     | `"L"`   | Line number prefix                  |
+| `rangelink.delimiterPosition` | `"C"`   | Column/character position prefix    |
+| `rangelink.delimiterHash`     | `"#"`   | Separator between path and location |
+| `rangelink.delimiterRange`    | `"-"`   | Range separator (start-end)         |
 
 **Validation Rules:**
 
