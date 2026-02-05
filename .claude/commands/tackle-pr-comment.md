@@ -91,6 +91,9 @@ Use Glob to find the highest existing NNNN in `.scratchpads/` and increment.
 
 ### Scratchpad Format
 
+**Naming convention**: Use letters (A, B, C) for feedback items, numbers (1, 2, 3) for implementation steps.
+This avoids confusion when referencing "Feedback B" vs "Step 2".
+
 ```markdown
 # PR #{PR_NUMBER} Comment Response
 
@@ -102,7 +105,21 @@ Source: {FULL_PR_COMMENT_URL}
 
 ## Analysis
 
-{Your analysis of the feedback - what needs to change and why}
+### Feedback A: {short title}
+
+{Analysis of first feedback item - what it asks for and your assessment}
+
+Decision: ACCEPT | IGNORE
+Reason: {brief justification}
+
+### Feedback B: {short title}
+
+{Analysis of second feedback item}
+
+Decision: ACCEPT | IGNORE
+Reason: {brief justification}
+
+Note: ACCEPT items flow to Implementation Plan steps. IGNORE items flow to the commit message's "Ignored Feedback" section.
 
 ## Implementation Plan
 
@@ -110,10 +127,16 @@ Source: {FULL_PR_COMMENT_URL}
 
 - Specific file: `path/to/file.ts`
 - What to change: {details}
+- Addresses: Feedback A, C
 
 ### Step 2: {description}
 
-...
+- Specific file: `path/to/file.ts`
+- What to change: {details}
+- Addresses: Feedback B
+
+Note: A single step can address multiple feedback items (as shown in Step 1 above).
+Feedback items marked IGNORE in the Analysis section should not appear in any step.
 
 ## Recommendations
 
@@ -167,7 +190,7 @@ When the user approves the plan and asks to proceed:
 
 ### Commit Message Format for PR Feedback
 
-```
+```text
 [PR feedback] Short summary of what was addressed
 
 Body explaining the change and why.
