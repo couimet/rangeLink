@@ -41,33 +41,19 @@ describe('ConfigReader', () => {
       const result = reader.getWithDefault('myKey', 'default-value');
 
       expect(result).toBe('configured-value');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'ConfigReader.getSetting', key: 'myKey', value: 'configured-value' },
+        'Using configured value',
+      );
     });
 
     it('should return default value when setting not configured', () => {
       const result = reader.getWithDefault('missingKey', 'default-value');
 
       expect(result).toBe('default-value');
-    });
-
-    it('should log debug when using default value', () => {
-      reader.getWithDefault('missingKey', 'default-value');
-
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'ConfigReader.getSetting', key: 'missingKey', defaultValue: 'default-value' },
         'No missingKey configured, using default: default-value',
-      );
-    });
-
-    it('should log debug when using configured value', () => {
-      const factory: ConfigGetterFactory = () =>
-        createMockConfigGetter({ myKey: 'configured-value' });
-      const reader = new (ConfigReader as any)(factory, mockLogger) as ConfigReader;
-
-      reader.getWithDefault('myKey', 'default-value');
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'ConfigReader.getSetting', key: 'myKey', value: 'configured-value' },
-        'Using configured value',
       );
     });
 
@@ -121,6 +107,10 @@ describe('ConfigReader', () => {
       const result = reader.getPaddingMode('smartPadding.pasteLink', 'both');
 
       expect(result).toBe('both');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'ConfigReader.getSetting', key: 'smartPadding.pasteLink', defaultValue: 'both' },
+        'No smartPadding.pasteLink configured, using default: both',
+      );
     });
 
     it('should support all PaddingMode values', () => {
@@ -134,15 +124,6 @@ describe('ConfigReader', () => {
 
         expect(result).toBe(mode);
       }
-    });
-
-    it('should log when using default padding mode', () => {
-      reader.getPaddingMode('smartPadding.pasteContent', 'none');
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'ConfigReader.getSetting', key: 'smartPadding.pasteContent', defaultValue: 'none' },
-        'No smartPadding.pasteContent configured, using default: none',
-      );
     });
   });
 });
