@@ -1005,6 +1005,17 @@ describe('PasteDestinationManager', () => {
       expect(setStatusBarSpy).toHaveBeenCalledWith(
         'RangeLink copied to clipboard & sent to Terminal ("bash")',
       );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.sendLinkToDestination',
+          destinationType: 'terminal',
+          displayName: 'Terminal ("bash")',
+          formattedLink,
+          paddingMode: 'both',
+          terminalName: 'bash',
+        },
+        'Sending link to Terminal ("bash")',
+      );
     });
 
     it('should send to bound chat destination successfully with user instructions', async () => {
@@ -1145,28 +1156,6 @@ describe('PasteDestinationManager', () => {
       expect(mockShowWarningMessage).toHaveBeenCalledWith(failureInstruction);
 
       cursorManager.dispose();
-    });
-
-    it('should log destination details when sending to terminal', async () => {
-      const mockTerminal = createMockTerminal();
-
-      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
-
-      const formattedLink = createMockFormattedLink('src/file.ts#L10');
-      await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE, 'both');
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'PasteDestinationManager.sendLinkToDestination',
-          destinationType: 'terminal',
-          displayName: 'Terminal ("bash")',
-          formattedLink,
-          paddingMode: 'both',
-          terminalName: 'bash',
-        },
-        'Sending link to Terminal ("bash")',
-      );
     });
 
     it('should show text-editor specific warning when editor paste fails', async () => {
@@ -2032,6 +2021,9 @@ describe('PasteDestinationManager', () => {
       mockVscode.window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
 
+      // Clear mocks from bind()
+      (mockLogger.warn as jest.Mock).mockClear();
+
       // Mock focus failure
       mockTerminalDest.focus.mockResolvedValueOnce(false);
 
@@ -2039,6 +2031,15 @@ describe('PasteDestinationManager', () => {
 
       expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
         'RangeLink: Failed to focus Terminal',
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.focusBoundDestination',
+          destinationType: 'terminal',
+          displayName: 'Terminal',
+          terminalName: 'bash',
+        },
+        'Failed to focus Terminal',
       );
     });
 
@@ -2049,8 +2050,9 @@ describe('PasteDestinationManager', () => {
       mockVscode.window.activeTerminal = mockTerminal;
       await manager.bind('terminal');
 
-      // Clear bind's status bar message
+      // Clear mocks from bind()
       (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
+      (mockLogger.info as jest.Mock).mockClear();
 
       await manager.jumpToBoundDestination();
 
@@ -2058,19 +2060,6 @@ describe('PasteDestinationManager', () => {
         '✓ Focused Terminal: "bash"',
         2000,
       );
-    });
-
-    it('should log success with destination details for terminal', async () => {
-      const mockTerminal = createMockTerminal();
-
-      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
-
-      // Clear logger calls from bind()
-      jest.clearAllMocks();
-
-      await manager.jumpToBoundDestination();
-
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.focusBoundDestination',
@@ -2156,31 +2145,6 @@ describe('PasteDestinationManager', () => {
           displayName: 'GitHub Copilot Chat',
         },
         'Successfully focused GitHub Copilot Chat',
-      );
-    });
-
-    it('should log warning when focus fails', async () => {
-      const mockTerminal = createMockTerminal();
-
-      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
-      await manager.bind('terminal');
-
-      // Clear logger calls from bind()
-      jest.clearAllMocks();
-
-      // Mock focus failure
-      mockTerminalDest.focus.mockResolvedValueOnce(false);
-
-      await manager.jumpToBoundDestination();
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          fn: 'PasteDestinationManager.focusBoundDestination',
-          destinationType: 'terminal',
-          displayName: 'Terminal',
-          terminalName: 'bash',
-        },
-        'Failed to focus Terminal',
       );
     });
 
