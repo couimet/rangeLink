@@ -2,41 +2,43 @@ import { createMockLogger } from 'barebone-logger-testing';
 import type * as vscode from 'vscode';
 
 import { BindToTerminalCommand } from '../../commands/BindToTerminalCommand';
+import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
 import type { TerminalPickerResult } from '../../destinations/utils/showTerminalPicker';
 import * as showTerminalPickerModule from '../../destinations/utils/showTerminalPicker';
 import { BindAbortReason, type TerminalBindResult } from '../../types';
-import { createMockDestinationManager, createMockVscodeAdapter } from '../helpers';
+import {
+  createMockDestinationAvailabilityService,
+  createMockDestinationManager,
+  createMockGroupedTerminals,
+  createMockTerminal,
+  createMockTerminalQuickPickItem,
+  createMockVscodeAdapter,
+} from '../helpers';
 
 describe('BindToTerminalCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
+  let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
   let command: BindToTerminalCommand;
   let showTerminalPickerSpy: jest.SpyInstance;
 
-  const createMockTerminal = (name: string): vscode.Terminal =>
-    ({
-      name,
-      processId: Promise.resolve(123),
-      creationOptions: {},
-      exitStatus: undefined,
-      state: { isInteractedWith: true },
-      sendText: jest.fn(),
-      show: jest.fn(),
-      hide: jest.fn(),
-      dispose: jest.fn(),
-    }) as unknown as vscode.Terminal;
-
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockDestinationManager = createMockDestinationManager();
+    mockAvailabilityService = createMockDestinationAvailabilityService();
     showTerminalPickerSpy = jest.spyOn(showTerminalPickerModule, 'showTerminalPicker');
   });
 
   describe('constructor', () => {
     it('logs initialization', () => {
       mockAdapter = createMockVscodeAdapter();
-      new BindToTerminalCommand(mockAdapter, mockDestinationManager, mockLogger);
+      new BindToTerminalCommand(
+        mockAdapter,
+        mockAvailabilityService,
+        mockDestinationManager,
+        mockLogger,
+      );
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'BindToTerminalCommand.constructor' },
@@ -48,14 +50,22 @@ describe('BindToTerminalCommand', () => {
   describe('execute()', () => {
     describe('0 terminals', () => {
       it('returns no-resource outcome when no terminals exist', async () => {
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { terminals: [] },
-        });
-        command = new BindToTerminalCommand(mockAdapter, mockDestinationManager, mockLogger);
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({});
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
 
         const result = await command.execute();
 
         expect(result).toStrictEqual({ outcome: 'no-resource' });
+        expect(mockAvailabilityService.getGroupedDestinationItems).toHaveBeenCalledWith({
+          destinationTypes: ['terminal'],
+          terminalThreshold: Infinity,
+        });
         expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
           'RangeLink: No active terminal. Open a terminal and try again.',
         );
@@ -73,16 +83,22 @@ describe('BindToTerminalCommand', () => {
 
     describe('1 terminal (auto-bind)', () => {
       it('auto-binds to single terminal without showing picker', async () => {
-        const terminal = createMockTerminal('My Terminal');
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { terminals: [terminal] },
-        });
+        const terminal = createMockTerminal({ name: 'My Terminal' });
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
+          createMockGroupedTerminals([createMockTerminalQuickPickItem(terminal)]),
+        );
         const bindResult: TerminalBindResult = {
           outcome: 'bound',
           details: { terminalName: 'My Terminal' },
         };
         mockDestinationManager.bindTerminal.mockResolvedValue(bindResult);
-        command = new BindToTerminalCommand(mockAdapter, mockDestinationManager, mockLogger);
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
 
         const result = await command.execute();
 
@@ -99,16 +115,22 @@ describe('BindToTerminalCommand', () => {
       });
 
       it('returns aborted when already bound to same terminal', async () => {
-        const terminal = createMockTerminal('My Terminal');
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { terminals: [terminal] },
-        });
+        const terminal = createMockTerminal({ name: 'My Terminal' });
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
+          createMockGroupedTerminals([createMockTerminalQuickPickItem(terminal)]),
+        );
         const bindResult: TerminalBindResult = {
           outcome: 'aborted',
           reason: BindAbortReason.ALREADY_BOUND_TO_SAME,
         };
         mockDestinationManager.bindTerminal.mockResolvedValue(bindResult);
-        command = new BindToTerminalCommand(mockAdapter, mockDestinationManager, mockLogger);
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
 
         const result = await command.execute();
 
@@ -119,16 +141,22 @@ describe('BindToTerminalCommand', () => {
       });
 
       it('returns aborted when user declines replacement', async () => {
-        const terminal = createMockTerminal('My Terminal');
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { terminals: [terminal] },
-        });
+        const terminal = createMockTerminal({ name: 'My Terminal' });
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
+          createMockGroupedTerminals([createMockTerminalQuickPickItem(terminal)]),
+        );
         const bindResult: TerminalBindResult = {
           outcome: 'aborted',
           reason: BindAbortReason.USER_DECLINED_REPLACEMENT,
         };
         mockDestinationManager.bindTerminal.mockResolvedValue(bindResult);
-        command = new BindToTerminalCommand(mockAdapter, mockDestinationManager, mockLogger);
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
 
         const result = await command.execute();
 
@@ -141,11 +169,15 @@ describe('BindToTerminalCommand', () => {
 
     describe('2+ terminals (picker)', () => {
       it('shows picker and returns bound on selection', async () => {
-        const terminal1 = createMockTerminal('Terminal 1');
-        const terminal2 = createMockTerminal('Terminal 2');
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { terminals: [terminal1, terminal2], activeTerminal: terminal1 },
-        });
+        const terminal1 = createMockTerminal({ name: 'Terminal 1' });
+        const terminal2 = createMockTerminal({ name: 'Terminal 2' });
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
+          createMockGroupedTerminals([
+            createMockTerminalQuickPickItem(terminal1, true),
+            createMockTerminalQuickPickItem(terminal2),
+          ]),
+        );
         const bindResult: TerminalBindResult = {
           outcome: 'bound',
           details: { terminalName: 'Terminal 2' },
@@ -164,7 +196,12 @@ describe('BindToTerminalCommand', () => {
             return { outcome: 'selected' as const, result: selectedResult };
           },
         );
-        command = new BindToTerminalCommand(mockAdapter, mockDestinationManager, mockLogger);
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
 
         const result = await command.execute();
 
@@ -174,15 +211,24 @@ describe('BindToTerminalCommand', () => {
       });
 
       it('returns cancelled when user cancels picker', async () => {
-        const terminal1 = createMockTerminal('Terminal 1');
-        const terminal2 = createMockTerminal('Terminal 2');
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { terminals: [terminal1, terminal2] },
-        });
+        const terminal1 = createMockTerminal({ name: 'Terminal 1' });
+        const terminal2 = createMockTerminal({ name: 'Terminal 2' });
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
+          createMockGroupedTerminals([
+            createMockTerminalQuickPickItem(terminal1),
+            createMockTerminalQuickPickItem(terminal2),
+          ]),
+        );
         showTerminalPickerSpy.mockResolvedValue({
           outcome: 'cancelled',
         } as TerminalPickerResult<unknown>);
-        command = new BindToTerminalCommand(mockAdapter, mockDestinationManager, mockLogger);
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
 
         const result = await command.execute();
 
@@ -195,15 +241,24 @@ describe('BindToTerminalCommand', () => {
       });
 
       it('returns cancelled when user escapes secondary picker', async () => {
-        const terminal1 = createMockTerminal('Terminal 1');
-        const terminal2 = createMockTerminal('Terminal 2');
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { terminals: [terminal1, terminal2] },
-        });
+        const terminal1 = createMockTerminal({ name: 'Terminal 1' });
+        const terminal2 = createMockTerminal({ name: 'Terminal 2' });
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
+          createMockGroupedTerminals([
+            createMockTerminalQuickPickItem(terminal1),
+            createMockTerminalQuickPickItem(terminal2),
+          ]),
+        );
         showTerminalPickerSpy.mockResolvedValue({
           outcome: 'returned-to-destination-picker',
         } as TerminalPickerResult<unknown>);
-        command = new BindToTerminalCommand(mockAdapter, mockDestinationManager, mockLogger);
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
 
         const result = await command.execute();
 
@@ -215,11 +270,15 @@ describe('BindToTerminalCommand', () => {
       });
 
       it('returns aborted when picker selection results in abort', async () => {
-        const terminal1 = createMockTerminal('Terminal 1');
-        const terminal2 = createMockTerminal('Terminal 2');
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { terminals: [terminal1, terminal2] },
-        });
+        const terminal1 = createMockTerminal({ name: 'Terminal 1' });
+        const terminal2 = createMockTerminal({ name: 'Terminal 2' });
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
+          createMockGroupedTerminals([
+            createMockTerminalQuickPickItem(terminal1),
+            createMockTerminalQuickPickItem(terminal2),
+          ]),
+        );
         const bindResult: TerminalBindResult = {
           outcome: 'aborted',
           reason: BindAbortReason.USER_DECLINED_REPLACEMENT,
@@ -238,7 +297,12 @@ describe('BindToTerminalCommand', () => {
             return { outcome: 'selected' as const, result: selectedResult };
           },
         );
-        command = new BindToTerminalCommand(mockAdapter, mockDestinationManager, mockLogger);
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
 
         const result = await command.execute();
 
@@ -249,15 +313,24 @@ describe('BindToTerminalCommand', () => {
       });
 
       it('passes correct options to terminal picker', async () => {
-        const terminal1 = createMockTerminal('Terminal 1');
-        const terminal2 = createMockTerminal('Terminal 2');
-        mockAdapter = createMockVscodeAdapter({
-          windowOptions: { terminals: [terminal1, terminal2], activeTerminal: terminal1 },
-        });
+        const terminal1 = createMockTerminal({ name: 'Terminal 1' });
+        const terminal2 = createMockTerminal({ name: 'Terminal 2' });
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
+          createMockGroupedTerminals([
+            createMockTerminalQuickPickItem(terminal1, true),
+            createMockTerminalQuickPickItem(terminal2),
+          ]),
+        );
         showTerminalPickerSpy.mockResolvedValue({
           outcome: 'cancelled',
         } as TerminalPickerResult<unknown>);
-        command = new BindToTerminalCommand(mockAdapter, mockDestinationManager, mockLogger);
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
 
         await command.execute();
 

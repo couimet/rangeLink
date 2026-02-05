@@ -2,6 +2,14 @@ export { ActiveSelections } from './ActiveSelections';
 export { AutoPasteResult } from './AutoPasteResult';
 export type { AvailableDestination } from './AvailableDestination';
 export { BehaviourAfterPaste } from './BehaviourAfterPaste';
+export type {
+  BindOptions,
+  ClaudeCodeBindOptions,
+  CopilotChatBindOptions,
+  CursorAIBindOptions,
+  TerminalBindOptions,
+  TextEditorBindOptions,
+} from './BindOptions';
 export { BindAbortReason, BindFailureReason } from './BindResultTypes';
 export type {
   BaseBindResult,
@@ -17,14 +25,28 @@ export type {
   TextEditorBindDetails,
   TextEditorBindResult,
 } from './BindResultTypes';
+export {
+  AI_ASSISTANT_TYPES,
+  DESTINATION_TYPES,
+  type AIAssistantDestinationType,
+  type DestinationType,
+  type NonTerminalDestinationType,
+} from './DestinationType';
 export { ExtensionResult } from './ExtensionResult';
 export { MessageCode } from './MessageCode';
 export { PasteContentType } from './PasteContentType';
 export type {
-  BaseQuickPickItem,
+  GetAvailableDestinationItemsOptions,
+  GroupedDestinationItems,
+} from './GroupedDestinationTypes';
+export type {
+  BindableQuickPickItem,
+  DestinationQuickPickItem,
   PickerItemKind,
   TerminalMoreQuickPickItem,
-  TerminalQuickPickItem,
+  WithBindOptions,
+  WithDisplayName,
+  WithRemainingCount,
 } from './QuickPickTypes';
 export { QuickPickBindResult } from './QuickPickBindResult';
 export type { RangeLinkClickArgs } from './RangeLinkClickArgs';

@@ -39,7 +39,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       const terminal = createMockTerminal({ name: 'zsh' });
 
-      const destination = buildTerminalDestination({ type: 'terminal', terminal }, context);
+      const destination = buildTerminalDestination({ kind: 'terminal', terminal }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'terminal',
@@ -47,15 +47,15 @@ describe('destinationBuilders', () => {
       });
     });
 
-    it('throws RangeLinkExtensionError when called with wrong type', () => {
+    it('throws RangeLinkExtensionError when called with wrong kind', () => {
       const context = createMockContext();
 
       expect(() =>
-        buildTerminalDestination({ type: 'text-editor', editor: {} as vscode.TextEditor }, context),
+        buildTerminalDestination({ kind: 'text-editor', editor: {} as vscode.TextEditor }, context),
       ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_TYPE', {
-        message: 'buildTerminalDestination called with wrong type: text-editor',
+        message: 'buildTerminalDestination called with wrong kind: text-editor',
         functionName: 'buildTerminalDestination',
-        details: { actualType: 'text-editor', expectedType: 'terminal' },
+        details: { actualKind: 'text-editor', expectedKind: 'terminal' },
       });
     });
   });
@@ -70,7 +70,7 @@ describe('destinationBuilders', () => {
       context.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({ uri: mockUri });
       context.ideAdapter.asRelativePath = jest.fn().mockReturnValue('src/auth.ts');
 
-      const destination = buildTextEditorDestination({ type: 'text-editor', editor }, context);
+      const destination = buildTextEditorDestination({ kind: 'text-editor', editor }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'text-editor',
@@ -86,7 +86,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       context.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue(undefined);
 
-      const destination = buildTextEditorDestination({ type: 'text-editor', editor }, context);
+      const destination = buildTextEditorDestination({ kind: 'text-editor', editor }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'text-editor',
@@ -105,7 +105,7 @@ describe('destinationBuilders', () => {
       });
       const context = createMockContext();
 
-      const destination = buildTextEditorDestination({ type: 'text-editor', editor }, context);
+      const destination = buildTextEditorDestination({ kind: 'text-editor', editor }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'text-editor',
@@ -113,15 +113,15 @@ describe('destinationBuilders', () => {
       });
     });
 
-    it('throws RangeLinkExtensionError when called with wrong type', () => {
+    it('throws RangeLinkExtensionError when called with wrong kind', () => {
       const context = createMockContext();
 
       expect(() =>
-        buildTextEditorDestination({ type: 'terminal', terminal: {} as vscode.Terminal }, context),
+        buildTextEditorDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context),
       ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_TYPE', {
-        message: 'buildTextEditorDestination called with wrong type: terminal',
+        message: 'buildTextEditorDestination called with wrong kind: terminal',
         functionName: 'buildTextEditorDestination',
-        details: { actualType: 'terminal', expectedType: 'text-editor' },
+        details: { actualKind: 'terminal', expectedKind: 'text-editor' },
       });
     });
   });
@@ -130,7 +130,7 @@ describe('destinationBuilders', () => {
     it('creates cursor-ai destination with correct id and displayName', () => {
       const context = createMockContext();
 
-      const destination = buildCursorAIDestination({ type: 'cursor-ai' }, context);
+      const destination = buildCursorAIDestination({ kind: 'cursor-ai' }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'cursor-ai',
@@ -138,15 +138,15 @@ describe('destinationBuilders', () => {
       });
     });
 
-    it('throws RangeLinkExtensionError when called with wrong type', () => {
+    it('throws RangeLinkExtensionError when called with wrong kind', () => {
       const context = createMockContext();
 
       expect(() =>
-        buildCursorAIDestination({ type: 'terminal', terminal: {} as vscode.Terminal }, context),
+        buildCursorAIDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context),
       ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_TYPE', {
-        message: 'buildCursorAIDestination called with wrong type: terminal',
+        message: 'buildCursorAIDestination called with wrong kind: terminal',
         functionName: 'buildCursorAIDestination',
-        details: { actualType: 'terminal', expectedType: 'cursor-ai' },
+        details: { actualKind: 'terminal', expectedKind: 'cursor-ai' },
       });
     });
   });
@@ -155,7 +155,7 @@ describe('destinationBuilders', () => {
     it('creates claude-code destination with correct id and displayName', () => {
       const context = createMockContext();
 
-      const destination = buildClaudeCodeDestination({ type: 'claude-code' }, context);
+      const destination = buildClaudeCodeDestination({ kind: 'claude-code' }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'claude-code',
@@ -163,15 +163,15 @@ describe('destinationBuilders', () => {
       });
     });
 
-    it('throws RangeLinkExtensionError when called with wrong type', () => {
+    it('throws RangeLinkExtensionError when called with wrong kind', () => {
       const context = createMockContext();
 
       expect(() =>
-        buildClaudeCodeDestination({ type: 'terminal', terminal: {} as vscode.Terminal }, context),
+        buildClaudeCodeDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context),
       ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_TYPE', {
-        message: 'buildClaudeCodeDestination called with wrong type: terminal',
+        message: 'buildClaudeCodeDestination called with wrong kind: terminal',
         functionName: 'buildClaudeCodeDestination',
-        details: { actualType: 'terminal', expectedType: 'claude-code' },
+        details: { actualKind: 'terminal', expectedKind: 'claude-code' },
       });
     });
   });
@@ -181,7 +181,7 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
 
       const destination = buildGitHubCopilotChatDestination(
-        { type: 'github-copilot-chat' },
+        { kind: 'github-copilot-chat' },
         context,
       );
 
@@ -191,18 +191,18 @@ describe('destinationBuilders', () => {
       });
     });
 
-    it('throws RangeLinkExtensionError when called with wrong type', () => {
+    it('throws RangeLinkExtensionError when called with wrong kind', () => {
       const context = createMockContext();
 
       expect(() =>
         buildGitHubCopilotChatDestination(
-          { type: 'terminal', terminal: {} as vscode.Terminal },
+          { kind: 'terminal', terminal: {} as vscode.Terminal },
           context,
         ),
       ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_TYPE', {
-        message: 'buildGitHubCopilotChatDestination called with wrong type: terminal',
+        message: 'buildGitHubCopilotChatDestination called with wrong kind: terminal',
         functionName: 'buildGitHubCopilotChatDestination',
-        details: { actualType: 'terminal', expectedType: 'github-copilot-chat' },
+        details: { actualKind: 'terminal', expectedKind: 'github-copilot-chat' },
       });
     });
   });

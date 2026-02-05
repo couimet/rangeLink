@@ -140,7 +140,12 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register all destination builders with the registry
   registerAllDestinationBuilders(registry);
 
-  const availabilityService = new DestinationAvailabilityService(registry, ideAdapter, logger);
+  const availabilityService = new DestinationAvailabilityService(
+    registry,
+    ideAdapter,
+    configReader,
+    logger,
+  );
 
   // Create unified destination manager
   const destinationManager = new PasteDestinationManager(
@@ -151,7 +156,12 @@ export function activate(context: vscode.ExtensionContext): void {
     logger,
   );
 
-  const bindToTerminalCommand = new BindToTerminalCommand(ideAdapter, destinationManager, logger);
+  const bindToTerminalCommand = new BindToTerminalCommand(
+    ideAdapter,
+    availabilityService,
+    destinationManager,
+    logger,
+  );
   const bindToTerminalHandler = async () => {
     await bindToTerminalCommand.execute();
   };

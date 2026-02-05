@@ -4,7 +4,7 @@ import type * as vscode from 'vscode';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
-import type { TerminalMoreQuickPickItem, TerminalQuickPickItem } from '../../types';
+import type { DestinationQuickPickItem } from '../../types';
 
 import { assertTerminalFromPicker } from './assertTerminalFromPicker';
 
@@ -35,8 +35,6 @@ export type TerminalPickerResult<T> =
   | { readonly outcome: 'cancelled' }
   | { readonly outcome: 'returned-to-destination-picker' };
 
-type TerminalPickerQuickPickItem = TerminalQuickPickItem | TerminalMoreQuickPickItem;
-
 /**
  * Build QuickPick items for terminal selection.
  */
@@ -45,8 +43,8 @@ const buildTerminalItems = (
   activeTerminal: vscode.Terminal | undefined,
   options: TerminalPickerOptions,
   showAll: boolean,
-): TerminalPickerQuickPickItem[] => {
-  const items: TerminalPickerQuickPickItem[] = [];
+): DestinationQuickPickItem[] => {
+  const items: DestinationQuickPickItem[] = [];
   const maxItems = options.maxItemsBeforeMore;
 
   const terminalsToShow =
@@ -57,8 +55,9 @@ const buildTerminalItems = (
     items.push({
       label: terminal.name,
       description: isActive ? options.activeDescription : undefined,
-      terminal,
-      itemKind: 'terminal',
+      displayName: terminal.name,
+      bindOptions: { kind: 'terminal', terminal },
+      itemKind: 'bindable',
     });
   }
 
@@ -121,7 +120,7 @@ export const showTerminalPicker = async <T>(
   }
 
   switch (selected.itemKind) {
-    case 'terminal':
+    case 'bindable':
       return assertTerminalFromPicker(
         selected,
         'showTerminalPicker',
@@ -179,7 +178,7 @@ const showSecondaryPicker = async <T>(
   }
 
   switch (selected.itemKind) {
-    case 'terminal':
+    case 'bindable':
       return assertTerminalFromPicker(
         selected,
         'showTerminalPicker.secondary',

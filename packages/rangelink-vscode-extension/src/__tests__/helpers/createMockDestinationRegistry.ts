@@ -30,7 +30,7 @@ export interface MockDestinationRegistryOptions {
    * If provided, overrides default destination lookup behavior.
    */
   createImpl?: (options: {
-    type: string;
+    kind: string;
     terminal?: vscode.Terminal;
     editor?: vscode.TextEditor;
   }) => PasteDestination | undefined;
@@ -70,19 +70,19 @@ export const createMockDestinationRegistry = (
   };
 
   const defaultCreateImpl = (createOptions: {
-    type: string;
+    kind: string;
     terminal?: vscode.Terminal;
     editor?: vscode.TextEditor;
   }): PasteDestination | undefined => {
     // For text-editor, create a real ComposablePasteDestination so document close listener works
-    if (createOptions.type === 'text-editor' && createOptions.editor) {
+    if (createOptions.kind === 'text-editor' && createOptions.editor) {
       const fileName = createOptions.editor.document.uri.fsPath.split('/').pop() || 'Unknown';
       return createMockEditorComposablePasteDestination({
         displayName: `Text Editor ("${fileName}")`,
         editor: createOptions.editor,
       });
     }
-    return destinations[createOptions.type as keyof typeof destinations];
+    return destinations[createOptions.kind as keyof typeof destinations];
   };
 
   const createImpl = options?.createImpl ?? defaultCreateImpl;

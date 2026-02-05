@@ -38,12 +38,12 @@ import type { DestinationType, PasteDestination } from './PasteDestination';
  * @returns ComposablePasteDestination configured for terminal paste
  */
 export const buildTerminalDestination: DestinationBuilder = (options, context) => {
-  if (options.type !== 'terminal') {
+  if (options.kind !== 'terminal') {
     throw new RangeLinkExtensionError({
       code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
-      message: `buildTerminalDestination called with wrong type: ${options.type}`,
+      message: `buildTerminalDestination called with wrong kind: ${options.kind}`,
       functionName: 'buildTerminalDestination',
-      details: { actualType: options.type, expectedType: 'terminal' },
+      details: { actualKind: options.kind, expectedKind: 'terminal' },
     });
   }
 
@@ -104,12 +104,12 @@ const getEditorResourceName = (
  * @returns ComposablePasteDestination configured for editor paste
  */
 export const buildTextEditorDestination: DestinationBuilder = (options, context) => {
-  if (options.type !== 'text-editor') {
+  if (options.kind !== 'text-editor') {
     throw new RangeLinkExtensionError({
       code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
-      message: `buildTextEditorDestination called with wrong type: ${options.type}`,
+      message: `buildTextEditorDestination called with wrong kind: ${options.kind}`,
       functionName: 'buildTextEditorDestination',
-      details: { actualType: options.type, expectedType: 'text-editor' },
+      details: { actualKind: options.kind, expectedKind: 'text-editor' },
     });
   }
 
@@ -141,12 +141,12 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
  * @returns ComposablePasteDestination configured for Cursor AI
  */
 export const buildCursorAIDestination: DestinationBuilder = (options, context) => {
-  if (options.type !== 'cursor-ai') {
+  if (options.kind !== 'cursor-ai') {
     throw new RangeLinkExtensionError({
       code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
-      message: `buildCursorAIDestination called with wrong type: ${options.type}`,
+      message: `buildCursorAIDestination called with wrong kind: ${options.kind}`,
       functionName: 'buildCursorAIDestination',
-      details: { actualType: options.type, expectedType: 'cursor-ai' },
+      details: { actualKind: options.kind, expectedKind: 'cursor-ai' },
     });
   }
 
@@ -177,12 +177,12 @@ export const buildCursorAIDestination: DestinationBuilder = (options, context) =
  * @returns ComposablePasteDestination configured for Claude Code
  */
 export const buildClaudeCodeDestination: DestinationBuilder = (options, context) => {
-  if (options.type !== 'claude-code') {
+  if (options.kind !== 'claude-code') {
     throw new RangeLinkExtensionError({
       code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
-      message: `buildClaudeCodeDestination called with wrong type: ${options.type}`,
+      message: `buildClaudeCodeDestination called with wrong kind: ${options.kind}`,
       functionName: 'buildClaudeCodeDestination',
-      details: { actualType: options.type, expectedType: 'claude-code' },
+      details: { actualKind: options.kind, expectedKind: 'claude-code' },
     });
   }
 
@@ -233,12 +233,12 @@ const CLAUDE_CODE_FOCUS_COMMANDS = [
  * @returns ComposablePasteDestination configured for GitHub Copilot Chat
  */
 export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, context) => {
-  if (options.type !== 'github-copilot-chat') {
+  if (options.kind !== 'github-copilot-chat') {
     throw new RangeLinkExtensionError({
       code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
-      message: `buildGitHubCopilotChatDestination called with wrong type: ${options.type}`,
+      message: `buildGitHubCopilotChatDestination called with wrong kind: ${options.kind}`,
       functionName: 'buildGitHubCopilotChatDestination',
-      details: { actualType: options.type, expectedType: 'github-copilot-chat' },
+      details: { actualKind: options.kind, expectedKind: 'github-copilot-chat' },
     });
   }
 

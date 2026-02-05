@@ -1,7 +1,7 @@
 import type { Logger } from 'barebone-logger';
 
+import type { DestinationAvailabilityService } from '../destinations/DestinationAvailabilityService';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
-import { getEligibleTerminals } from '../destinations/utils/getEligibleTerminals';
 import {
   showTerminalPicker,
   TERMINAL_PICKER_SHOW_ALL,
@@ -10,7 +10,12 @@ import {
 import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { MessageCode, type TerminalBindResult } from '../types';
+import {
+  type BindableQuickPickItem,
+  MessageCode,
+  type TerminalBindOptions,
+  type TerminalBindResult,
+} from '../types';
 import { formatMessage } from '../utils';
 
 /**
@@ -26,6 +31,7 @@ import { formatMessage } from '../utils';
 export class BindToTerminalCommand {
   constructor(
     private readonly vscodeAdapter: VscodeAdapter,
+    private readonly availabilityService: DestinationAvailabilityService,
     private readonly destinationManager: PasteDestinationManager,
     private readonly logger: Logger,
   ) {
@@ -38,29 +44,35 @@ export class BindToTerminalCommand {
   async execute(): Promise<TerminalBindResult> {
     const logCtx = { fn: 'BindToTerminalCommand.execute' };
 
-    const eligibleTerminals = getEligibleTerminals(this.vscodeAdapter);
+    const grouped = await this.availabilityService.getGroupedDestinationItems({
+      destinationTypes: ['terminal'],
+      terminalThreshold: Infinity,
+    });
+    const terminalItems = (grouped['terminal'] ??
+      []) as BindableQuickPickItem<TerminalBindOptions>[];
 
     this.logger.debug(
-      { ...logCtx, terminalCount: eligibleTerminals.length },
+      { ...logCtx, terminalCount: terminalItems.length },
       'Starting bind to terminal command',
     );
 
-    if (eligibleTerminals.length === 0) {
+    if (terminalItems.length === 0) {
       this.logger.debug(logCtx, 'No terminals available');
       this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
       return { outcome: 'no-resource' };
     }
 
-    if (eligibleTerminals.length === 1) {
+    if (terminalItems.length === 1) {
+      const terminal = terminalItems[0].bindOptions.terminal;
       this.logger.debug(
-        { ...logCtx, terminalName: eligibleTerminals[0].name },
+        { ...logCtx, terminalName: terminal.name },
         'Single terminal, auto-binding',
       );
-      return this.destinationManager.bindTerminal(eligibleTerminals[0].terminal);
+      return this.destinationManager.bindTerminal(terminal);
     }
 
-    const terminals = eligibleTerminals.map((et) => et.terminal);
-    const activeTerminal = eligibleTerminals.find((et) => et.isActive)?.terminal;
+    const terminals = terminalItems.map((item) => item.bindOptions.terminal);
+    const activeTerminal = terminalItems.find((item) => item.isActive)?.bindOptions.terminal;
 
     const options: TerminalPickerOptions = {
       maxItemsBeforeMore: TERMINAL_PICKER_SHOW_ALL,

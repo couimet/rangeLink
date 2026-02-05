@@ -163,7 +163,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       for (const dest of availableDestinations) {
         result.push({
           label: `${MENU_ITEM_INDENT}$(arrow-right) ${dest.displayName}`,
-          destinationType: dest.type,
+          destinationType: dest.kind,
         });
       }
     }

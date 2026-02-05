@@ -117,7 +117,7 @@ describe('PasteDestinationManager', () => {
     // Create registry that generates mock destinations on demand with correct context
     const registry = createMockDestinationRegistry({
       createImpl: (options) => {
-        if (options.type === 'terminal' && options.terminal) {
+        if (options.kind === 'terminal' && options.terminal) {
           const terminalName = options.terminal.name;
           const cacheKey = `terminal:${terminalName}`;
           if (!destinationCache.has(cacheKey)) {
@@ -137,7 +137,7 @@ describe('PasteDestinationManager', () => {
           }
           return destinationCache.get(cacheKey);
         }
-        if (options.type === 'text-editor' && options.editor) {
+        if (options.kind === 'text-editor' && options.editor) {
           const cacheKey = `text-editor:${options.editor.document.uri.fsPath}`;
           if (!destinationCache.has(cacheKey)) {
             destinationCache.set(
@@ -147,7 +147,7 @@ describe('PasteDestinationManager', () => {
           }
           return destinationCache.get(cacheKey);
         }
-        if (options.type === 'cursor-ai') {
+        if (options.kind === 'cursor-ai') {
           if (!destinationCache.has('cursor-ai')) {
             const dest = createMockCursorAIDestination();
             // Override isAvailable to check actual environment
@@ -162,7 +162,7 @@ describe('PasteDestinationManager', () => {
           }
           return destinationCache.get('cursor-ai');
         }
-        if (options.type === 'claude-code') {
+        if (options.kind === 'claude-code') {
           if (!destinationCache.has('claude-code')) {
             destinationCache.set('claude-code', createMockClaudeCodeDestination());
           }
@@ -781,8 +781,8 @@ describe('PasteDestinationManager', () => {
 
       // Configure factory to return appropriate destination based on type
       jest.spyOn(mockRegistry, 'create').mockImplementation((options) => {
-        if (options.type === 'github-copilot-chat') return mockCopilotDest;
-        if (options.type === 'terminal') return mockTerminalDest;
+        if (options.kind === 'github-copilot-chat') return mockCopilotDest;
+        if (options.kind === 'terminal') return mockTerminalDest;
         return undefined as any;
       });
 
@@ -963,9 +963,9 @@ describe('PasteDestinationManager', () => {
 
       mockRegistryForSend = createMockDestinationRegistry({
         createImpl: (options) => {
-          if (options.type === 'terminal') return mockTerminalDest;
-          if (options.type === 'cursor-ai') return mockChatDest;
-          throw new Error(`Unexpected type: ${options.type}`);
+          if (options.kind === 'terminal') return mockTerminalDest;
+          if (options.kind === 'cursor-ai') return mockChatDest;
+          throw new Error(`Unexpected type: ${options.kind}`);
         },
       });
 
@@ -1558,9 +1558,9 @@ describe('PasteDestinationManager', () => {
 
         // Mock factory to return destinations
         (mockRegistryForSmartBind.create as jest.Mock).mockImplementation((options) => {
-          if (options.type === 'terminal') return terminalDest;
-          if (options.type === 'text-editor') return textEditorDest;
-          throw new Error(`Unexpected type: ${options.type}`);
+          if (options.kind === 'terminal') return terminalDest;
+          if (options.kind === 'text-editor') return textEditorDest;
+          throw new Error(`Unexpected type: ${options.kind}`);
         });
 
         // Mock QuickPick to confirm replacement
@@ -1634,9 +1634,9 @@ describe('PasteDestinationManager', () => {
         );
 
         (mockRegistryForSmartBind.create as jest.Mock).mockImplementation((options) => {
-          if (options.type === 'terminal') return terminalDest;
-          if (options.type === 'text-editor') return textEditorDest;
-          throw new Error(`Unexpected type: ${options.type}`);
+          if (options.kind === 'terminal') return terminalDest;
+          if (options.kind === 'text-editor') return textEditorDest;
+          throw new Error(`Unexpected type: ${options.kind}`);
         });
 
         // Mock QuickPick to cancel (user selects "No, keep current binding")
@@ -1759,9 +1759,9 @@ describe('PasteDestinationManager', () => {
         );
 
         (mockRegistryForSmartBind.create as jest.Mock).mockImplementation((options) => {
-          if (options.type === 'terminal') return terminalDest;
-          if (options.type === 'text-editor') return textEditorDest;
-          throw new Error(`Unexpected type: ${options.type}`);
+          if (options.kind === 'terminal') return terminalDest;
+          if (options.kind === 'text-editor') return textEditorDest;
+          throw new Error(`Unexpected type: ${options.kind}`);
         });
 
         // Mock QuickPick to return undefined (Esc key pressed)
@@ -1818,11 +1818,11 @@ describe('PasteDestinationManager', () => {
 
       mockRegistryForJump = createMockDestinationRegistry({
         createImpl: (options) => {
-          if (options.type === 'terminal') return mockTerminalDest;
-          if (options.type === 'text-editor') return mockEditorDest;
-          if (options.type === 'cursor-ai') return mockCursorAIDest;
-          if (options.type === 'claude-code') return mockClaudeCodeDest;
-          throw new Error(`Unexpected type: ${options.type}`);
+          if (options.kind === 'terminal') return mockTerminalDest;
+          if (options.kind === 'text-editor') return mockEditorDest;
+          if (options.kind === 'cursor-ai') return mockCursorAIDest;
+          if (options.kind === 'claude-code') return mockClaudeCodeDest;
+          throw new Error(`Unexpected type: ${options.kind}`);
         },
       });
 
@@ -1867,8 +1867,8 @@ describe('PasteDestinationManager', () => {
 
       it('shows quick pick with available destinations', async () => {
         mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
-          { type: 'terminal', displayName: 'Terminal' },
-          { type: 'claude-code', displayName: 'Claude Code Chat' },
+          { kind: 'terminal', displayName: 'Terminal' },
+          { kind: 'claude-code', displayName: 'Claude Code Chat' },
         ]);
         mockAdapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce(undefined);
 
@@ -1898,7 +1898,7 @@ describe('PasteDestinationManager', () => {
 
       it('returns false when user cancels quick pick', async () => {
         mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
-          { type: 'terminal', displayName: 'Terminal' },
+          { kind: 'terminal', displayName: 'Terminal' },
         ]);
         mockAdapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce(undefined);
 
@@ -1917,7 +1917,7 @@ describe('PasteDestinationManager', () => {
         const mockTerminal = createMockTerminal();
         mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
         mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
-          { type: 'terminal', displayName: 'Terminal' },
+          { kind: 'terminal', displayName: 'Terminal' },
         ]);
         mockAdapter.__getVscodeInstance().window.showQuickPick.mockResolvedValueOnce({
           label: 'Terminal',
@@ -2230,8 +2230,8 @@ describe('PasteDestinationManager', () => {
 
       mockRegistryForBindAndJump = createMockDestinationRegistry({
         createImpl: (options) => {
-          if (options.type === 'terminal') return mockTerminalDest;
-          throw new Error(`Unexpected type: ${options.type}`);
+          if (options.kind === 'terminal') return mockTerminalDest;
+          throw new Error(`Unexpected type: ${options.kind}`);
         },
       });
 
@@ -2646,7 +2646,7 @@ describe('PasteDestinationManager', () => {
       beforeEach(() => {
         mockRegistryForDocument = createMockDestinationRegistry({
           createImpl: (options) => {
-            if (options.type === 'text-editor' && options.editor) {
+            if (options.kind === 'text-editor' && options.editor) {
               const doc = options.editor.document;
               const fileName = doc.uri.fsPath.split('/').pop() || 'Unknown';
               // Use real ComposablePasteDestination for document close listener to work
@@ -2798,8 +2798,8 @@ describe('PasteDestinationManager', () => {
       const mockTerminal = createMockTerminal();
       mockWindow.activeTerminal = mockTerminal;
       mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
-        { type: 'terminal', displayName: 'Terminal ("bash")' },
-        { type: 'claude-code', displayName: 'Claude Code Chat' },
+        { kind: 'terminal', displayName: 'Terminal ("bash")' },
+        { kind: 'claude-code', displayName: 'Claude Code Chat' },
       ]);
       showQuickPickMock.mockResolvedValueOnce({
         label: 'Terminal ("bash")',
@@ -2852,7 +2852,7 @@ describe('PasteDestinationManager', () => {
 
     it('returns Cancelled when user cancels quick pick (Escape)', async () => {
       mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
-        { type: 'terminal', displayName: 'Terminal' },
+        { kind: 'terminal', displayName: 'Terminal' },
       ]);
       showQuickPickMock.mockResolvedValueOnce(undefined);
 
@@ -2870,7 +2870,7 @@ describe('PasteDestinationManager', () => {
     it('returns BindingFailed when binding fails', async () => {
       mockWindow.activeTerminal = undefined;
       mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
-        { type: 'terminal', displayName: 'Terminal' },
+        { kind: 'terminal', displayName: 'Terminal' },
       ]);
       showQuickPickMock.mockResolvedValueOnce({
         label: 'Terminal',
