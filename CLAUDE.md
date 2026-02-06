@@ -460,6 +460,24 @@
     - Commit messages → .commit-msgs/
     - Permanent documentation → docs/ or package READMEs
   </when-NOT-to-use>
+
+  <code-references>
+    <do>Use RangeLink-format links for all code references so they are clickable from within the scratchpad</do>
+    <do>Use workspace-relative paths (from project root)</do>
+    <never>Use plain text line references like "(lines 26-37)" or "Line 539"</never>
+    <never>Wrap RangeLink links in backticks — backticks become part of the parsed path and break navigation</never>
+    <format>path/to/file.ts#L10-L20 for ranges, path/to/file.ts#L10 for single lines</format>
+    <bad-examples>
+      - file.ts (lines 26-37)
+      - Line 539 mentions "TextInserter"
+      - `packages/rangelink-vscode-extension/src/file.ts#L26-L37` (backticks break the link)
+    </bad-examples>
+    <good-examples>
+      - packages/rangelink-vscode-extension/src/file.ts#L26-L37
+      - packages/rangelink-vscode-extension/src/file.ts#L539 mentions "TextInserter"
+      - Remove the standalone logging tests at packages/.../file.test.ts#L54-L85
+    </good-examples>
+  </code-references>
 </workflow>
 
 <workflow id="creating-github-issues">
