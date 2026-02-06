@@ -25,7 +25,7 @@ export class AIAssistantInsertFactory implements InsertFactory<void> {
       await this.ideAdapter.writeTextToClipboard(text);
       this.logger.debug({ fn, textLength: text.length }, 'Copied text to clipboard');
 
-      await new Promise<void>((resolve) => global.setTimeout(resolve, FOCUS_TO_PASTE_DELAY_MS));
+      await new Promise<void>((resolve) => setTimeout(resolve, FOCUS_TO_PASTE_DELAY_MS));
 
       for (const command of this.pasteCommands) {
         try {
