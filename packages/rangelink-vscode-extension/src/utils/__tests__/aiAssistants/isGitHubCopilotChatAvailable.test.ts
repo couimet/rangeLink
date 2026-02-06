@@ -8,11 +8,11 @@ import {
   createMockVscodeAdapter,
   type VscodeAdapterWithTestHooks,
 } from '../../../__tests__/helpers';
+import { GITHUB_COPILOT_CHAT_FOCUS_COMMANDS } from '../../../destinations/aiAssistantFocusCommands';
 import {
   isGitHubCopilotChatAvailable,
   GITHUB_COPILOT_CHAT_COMMAND,
   GITHUB_COPILOT_CHAT_EXTENSION_ID,
-  GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
 } from '../../aiAssistants/isGitHubCopilotChatAvailable';
 
 describe('isGitHubCopilotChatAvailable', () => {

@@ -7,15 +7,6 @@ export const GITHUB_COPILOT_CHAT_COMMAND = 'workbench.action.chat.open';
 
 export const GITHUB_COPILOT_CHAT_EXTENSION_ID = 'GitHub.copilot-chat';
 
-/**
- * Focus commands for GitHub Copilot Chat.
- * Used by CommandFocusManager to focus the chat before clipboard paste.
- */
-export const GITHUB_COPILOT_CHAT_FOCUS_COMMANDS = [
-  'workbench.action.chat.open', // Primary: Opens/focuses the chat view
-  'workbench.panel.chat.view.copilot.focus', // Fallback: Direct panel focus
-];
-
 export const isGitHubCopilotChatAvailable = async (
   ideAdapter: VscodeAdapter,
   logger: Logger,

@@ -13,11 +13,13 @@ export const FocusErrorReason = {
 export type FocusErrorReason = (typeof FocusErrorReason)[keyof typeof FocusErrorReason];
 
 /**
- * Successful focus result containing the insert capability.
- * The insert function captures the fresh editor/terminal in its closure.
+ * Handle to a focused destination with insert capability.
+ *
+ * The insert function captures the target (editor/terminal) in its closure,
+ * eliminating stale reference issues.
  */
-export interface FocusSuccess {
-  insert: (text: string, context: LoggingContext) => Promise<boolean>;
+export interface FocusedDestination {
+  insert: (text: string) => Promise<boolean>;
 }
 
 /**
@@ -30,17 +32,17 @@ export interface FocusError {
 
 /**
  * Result of focusing a paste destination.
- * On success, contains an insert function that captures the fresh target.
+ * On success, contains a FocusedDestination with insert capability.
  * On failure, contains a typed error with reason.
  */
-export type FocusResult = Result<FocusSuccess, FocusError>;
+export type FocusResult = Result<FocusedDestination, FocusError>;
 
 /**
- * Unified capability for paste destinations that handles both focus and insert.
+ * Capability for focusing paste destinations and obtaining insert handles.
  *
- * The focus() method returns a Result containing an insert closure that captures
- * the fresh editor/terminal reference, eliminating stale reference issues.
+ * The focus() method returns a Result containing a FocusedDestination
+ * whose insert function captures the fresh target reference.
  */
-export interface PasteExecutor {
+export interface FocusCapability {
   focus(context: LoggingContext): Promise<FocusResult>;
 }

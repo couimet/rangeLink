@@ -17,9 +17,13 @@ import {
   isClaudeCodeAvailable,
   isCursorIDEDetected,
   isGitHubCopilotChatAvailable,
-  GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
 } from '../utils';
 
+import {
+  CLAUDE_CODE_FOCUS_COMMANDS,
+  CURSOR_AI_FOCUS_COMMANDS,
+  GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
+} from './aiAssistantFocusCommands';
 import { ComposablePasteDestination } from './ComposablePasteDestination';
 import type { DestinationBuilder, DestinationBuilderContext } from './DestinationRegistry';
 import { compareEditorsByUri } from './equality/compareEditorsByUri';
@@ -54,7 +58,7 @@ export const buildTerminalDestination: DestinationBuilder = (options, context) =
   return ComposablePasteDestination.createTerminal({
     terminal,
     displayName: `Terminal ("${terminalName}")`,
-    pasteExecutor: context.factories.pasteExecutor.createTerminalExecutor(terminal),
+    focusCapability: context.factories.focusCapability.createTerminalCapability(terminal),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL, {
       resourceName: terminalName,
     }),
@@ -121,7 +125,7 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
   return ComposablePasteDestination.createEditor({
     editor,
     displayName: `Text Editor ("${resourceName}")`,
-    pasteExecutor: context.factories.pasteExecutor.createEditorExecutor(editor),
+    focusCapability: context.factories.focusCapability.createEditorCapability(editor),
     eligibilityChecker: context.factories.eligibilityChecker.createContentEligibilityChecker(),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, {
       resourceName,
@@ -154,9 +158,10 @@ export const buildCursorAIDestination: DestinationBuilder = (options, context) =
   return ComposablePasteDestination.createAiAssistant({
     id: 'cursor-ai',
     displayName: 'Cursor AI Assistant',
-    pasteExecutor: context.factories.pasteExecutor.createCommandExecutor(CURSOR_AI_FOCUS_COMMANDS, [
-      ...CHAT_PASTE_COMMANDS,
-    ]),
+    focusCapability: context.factories.focusCapability.createAIAssistantCapability(
+      CURSOR_AI_FOCUS_COMMANDS,
+      [...CHAT_PASTE_COMMANDS],
+    ),
     isAvailable: async () => isCursorIDEDetected(context.ideAdapter, context.logger),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI),
     loggingDetails: {},
@@ -190,7 +195,7 @@ export const buildClaudeCodeDestination: DestinationBuilder = (options, context)
   return ComposablePasteDestination.createAiAssistant({
     id: 'claude-code',
     displayName: 'Claude Code Chat',
-    pasteExecutor: context.factories.pasteExecutor.createCommandExecutor(
+    focusCapability: context.factories.focusCapability.createAIAssistantCapability(
       CLAUDE_CODE_FOCUS_COMMANDS,
       [...CHAT_PASTE_COMMANDS],
     ),
@@ -204,21 +209,6 @@ export const buildClaudeCodeDestination: DestinationBuilder = (options, context)
         : formatMessage(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS),
   });
 };
-
-// ============================================================================
-// AI Assistant Constants
-// ============================================================================
-
-const CURSOR_AI_FOCUS_COMMANDS = [
-  'aichat.newchataction', // Primary: Cursor-specific command (Cmd+L / Ctrl+L)
-  'workbench.action.toggleAuxiliaryBar', // Fallback: Toggle secondary sidebar
-];
-
-const CLAUDE_CODE_FOCUS_COMMANDS = [
-  'claude-vscode.focus', // Primary: Direct input focus (Cmd+Escape)
-  'claude-vscode.sidebar.open', // Fallback: Open sidebar
-  'claude-vscode.editor.open', // Fallback: Open in new tab
-];
 
 // ============================================================================
 // AI Assistant Builders
@@ -246,7 +236,7 @@ export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, c
   return ComposablePasteDestination.createAiAssistant({
     id: 'github-copilot-chat',
     displayName: 'GitHub Copilot Chat',
-    pasteExecutor: context.factories.pasteExecutor.createCommandExecutor(
+    focusCapability: context.factories.focusCapability.createAIAssistantCapability(
       GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
       [...CHAT_PASTE_COMMANDS],
     ),
