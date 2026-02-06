@@ -52,7 +52,7 @@ describe('destinationBuilders', () => {
 
       expect(() =>
         buildTerminalDestination({ kind: 'text-editor', editor: {} as vscode.TextEditor }, context),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_TYPE', {
+      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
         message: 'buildTerminalDestination called with wrong kind: text-editor',
         functionName: 'buildTerminalDestination',
         details: { actualKind: 'text-editor', expectedKind: 'terminal' },
@@ -118,7 +118,7 @@ describe('destinationBuilders', () => {
 
       expect(() =>
         buildTextEditorDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_TYPE', {
+      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
         message: 'buildTextEditorDestination called with wrong kind: terminal',
         functionName: 'buildTextEditorDestination',
         details: { actualKind: 'terminal', expectedKind: 'text-editor' },
@@ -143,7 +143,7 @@ describe('destinationBuilders', () => {
 
       expect(() =>
         buildCursorAIDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_TYPE', {
+      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
         message: 'buildCursorAIDestination called with wrong kind: terminal',
         functionName: 'buildCursorAIDestination',
         details: { actualKind: 'terminal', expectedKind: 'cursor-ai' },
@@ -168,7 +168,7 @@ describe('destinationBuilders', () => {
 
       expect(() =>
         buildClaudeCodeDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_TYPE', {
+      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
         message: 'buildClaudeCodeDestination called with wrong kind: terminal',
         functionName: 'buildClaudeCodeDestination',
         details: { actualKind: 'terminal', expectedKind: 'claude-code' },
@@ -199,7 +199,7 @@ describe('destinationBuilders', () => {
           { kind: 'terminal', terminal: {} as vscode.Terminal },
           context,
         ),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_TYPE', {
+      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
         message: 'buildGitHubCopilotChatDestination called with wrong kind: terminal',
         functionName: 'buildGitHubCopilotChatDestination',
         details: { actualKind: 'terminal', expectedKind: 'github-copilot-chat' },
@@ -208,7 +208,7 @@ describe('destinationBuilders', () => {
   });
 
   describe('registerAllDestinationBuilders', () => {
-    it('registers all five destination types', () => {
+    it('registers all five destination kinds', () => {
       const mockRegister = jest.fn();
       const mockRegistry = { register: mockRegister };
 

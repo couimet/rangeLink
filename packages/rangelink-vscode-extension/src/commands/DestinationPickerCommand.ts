@@ -7,8 +7,7 @@ import {
   TERMINAL_PICKER_SHOW_ALL,
   type TerminalPickerOptions,
 } from '../destinations/utils';
-import { RangeLinkExtensionError } from '../errors';
-import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type BindOptions, type DestinationQuickPickItem, MessageCode } from '../types';
 import { formatMessage } from '../utils';

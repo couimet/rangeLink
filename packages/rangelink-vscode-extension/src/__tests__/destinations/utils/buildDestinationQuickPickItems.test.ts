@@ -8,7 +8,7 @@ import type { GroupedDestinationItems } from '../../../types';
 
 describe('buildDestinationQuickPickItems', () => {
   describe('DESTINATION_PICKER_SEQUENCE', () => {
-    it('defines the correct order of destination types', () => {
+    it('defines the correct order of destination kinds', () => {
       expect(DESTINATION_PICKER_SEQUENCE).toStrictEqual([
         'claude-code',
         'cursor-ai',
@@ -168,7 +168,7 @@ describe('buildDestinationQuickPickItems', () => {
       });
     });
 
-    it('skips destination types not present in grouped', () => {
+    it('skips destination kinds not present in grouped', () => {
       const grouped: GroupedDestinationItems = {
         'cursor-ai': [
           {

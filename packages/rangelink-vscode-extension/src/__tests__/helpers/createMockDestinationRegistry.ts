@@ -90,7 +90,7 @@ export const createMockDestinationRegistry = (
   return {
     register: jest.fn(),
     create: jest.fn().mockImplementation(createImpl),
-    getSupportedTypes: jest.fn().mockReturnValue([]),
+    getSupportedKinds: jest.fn().mockReturnValue([]),
     getDisplayNames: jest.fn().mockReturnValue(DEFAULT_DISPLAY_NAMES),
   } as unknown as jest.Mocked<DestinationRegistry>;
 };

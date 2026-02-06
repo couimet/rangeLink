@@ -67,8 +67,8 @@ export const buildDestinationQuickPickItems = (
 
     if (!isDestinationKind(key)) {
       throw new RangeLinkExtensionError({
-        code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
-        message: `Invalid destination type in picker sequence: ${key}`,
+        code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
+        message: `Invalid destination kind in picker sequence: ${key}`,
         functionName: 'buildDestinationQuickPickItems',
         details: { key },
       });
@@ -77,8 +77,8 @@ export const buildDestinationQuickPickItems = (
     for (const item of groupItems as BindableQuickPickItem[]) {
       if (!isDestinationKind(item?.bindOptions?.kind)) {
         throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
-          message: `Invalid destination type in bindOptions`,
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
+          message: `Invalid destination kind in bindOptions`,
           functionName: 'buildDestinationQuickPickItems',
           details: { item, key },
         });

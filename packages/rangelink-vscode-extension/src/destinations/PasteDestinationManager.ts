@@ -72,7 +72,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Bind to a destination type
+   * Bind to a destination kind
    *
    * For terminal: requires active terminal via vscode.window.activeTerminal
    * For text-editor: requires active text editor via vscode.window.activeTextEditor
@@ -599,7 +599,7 @@ export class PasteDestinationManager implements vscode.Disposable {
           // Exhaustiveness check - should never happen due to compile-time Record type checking
           throw new RangeLinkExtensionError({
             code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
-            message: `Unhandled AI assistant destination type: ${kind}`,
+            message: `Unhandled AI assistant destination kind: ${kind}`,
             functionName: 'PasteDestinationManager.bindGenericDestination',
             details: { kind },
           });
@@ -839,7 +839,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * @param destination - The destination that failed to receive the paste
    * @param basicStatusMessage - Base message to prepend to error
    * @returns User-friendly error message with destination-specific guidance
-   * @throws RangeLinkExtensionError if called with unknown destination type
+   * @throws RangeLinkExtensionError if called with unknown destination kind
    */
   private buildPasteFailureMessage(
     destination: PasteDestination,
@@ -868,10 +868,10 @@ export class PasteDestinationManager implements vscode.Disposable {
         });
 
       default:
-        // Unknown destination type - indicates missing switch case for new destination
+        // Unknown destination kind - indicates missing switch case for new destination
         throw new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_IMPLEMENTED,
-          message: `Unknown destination type '${destination.id}' - missing case in buildPasteFailureMessage()`,
+          message: `Unknown destination kind '${destination.id}' - missing case in buildPasteFailureMessage()`,
           functionName: 'PasteDestinationManager.buildPasteFailureMessage',
           details: { destinationId: destination.id, displayName: destination.displayName },
         });
@@ -921,7 +921,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.logger.debug(
       {
         fn: 'PasteDestinationManager.confirmReplaceBinding',
-        currentType: currentDestination.id,
+        currentKind: currentDestination.id,
         newKind,
         confirmed,
       },

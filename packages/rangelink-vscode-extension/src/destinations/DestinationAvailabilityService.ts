@@ -227,7 +227,7 @@ export class DestinationAvailabilityService {
         default: {
           const _exhaustiveCheck: never = kind;
           throw new RangeLinkExtensionError({
-            code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
+            code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
             message: `Unhandled destination kind in getGroupedDestinationItems`,
             functionName: 'DestinationAvailabilityService.getGroupedDestinationItems',
             details: { kind: _exhaustiveCheck },

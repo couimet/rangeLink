@@ -82,7 +82,7 @@ export type DestinationBuilder = (
  * - Pluggable destination implementations
  *
  * Design pattern: Registry + Builder
- * - Registry stores builders by destination type
+ * - Registry stores builders by destination kind
  * - Builders receive factories and options to create destinations
  * - IoC container provides dependencies at registration time
  */

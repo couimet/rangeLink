@@ -1236,7 +1236,7 @@ describe('PasteDestinationManager', () => {
       });
     });
 
-    it('should throw DESTINATION_NOT_IMPLEMENTED for unknown destination type', async () => {
+    it('should throw DESTINATION_NOT_IMPLEMENTED for unknown destination kind', async () => {
       // Create a mock destination with an unknown ID
       const mockUnknownDest = createMockTerminalPasteDestination({
         id: 'unknown-destination-type' as any,
@@ -1248,7 +1248,7 @@ describe('PasteDestinationManager', () => {
       // Manually set the bound destination
       (manager as any).boundDestination = mockUnknownDest;
 
-      // This should throw DESTINATION_NOT_IMPLEMENTED error for unknown destination types
+      // This should throw DESTINATION_NOT_IMPLEMENTED error for unknown destination kinds
       await expect(async () =>
         manager.sendLinkToDestination(
           createMockFormattedLink('src/file.ts#L10'),
@@ -1257,7 +1257,7 @@ describe('PasteDestinationManager', () => {
         ),
       ).toThrowRangeLinkExtensionErrorAsync('DESTINATION_NOT_IMPLEMENTED', {
         message:
-          "Unknown destination type 'unknown-destination-type' - missing case in buildPasteFailureMessage()",
+          "Unknown destination kind 'unknown-destination-type' - missing case in buildPasteFailureMessage()",
         functionName: 'PasteDestinationManager.buildPasteFailureMessage',
         details: { destinationId: 'unknown-destination-type', displayName: 'Unknown Destination' },
       });

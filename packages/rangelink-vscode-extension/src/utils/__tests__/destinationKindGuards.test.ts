@@ -18,19 +18,19 @@ describe('destinationKindGuards', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false when destination.id does not match type', () => {
+    it('should return false when destination.id does not match kind', () => {
       const destination = createMockTerminalComposablePasteDestination();
       const result = isPasteDestinationKind(destination, 'text-editor');
       expect(result).toBe(false);
     });
 
-    it('should return true when destination.id matches type', () => {
+    it('should return true when destination.id matches kind', () => {
       const destination = createMockTerminalComposablePasteDestination();
       const result = isPasteDestinationKind(destination, 'terminal');
       expect(result).toBe(true);
     });
 
-    it('should work with all destination types', () => {
+    it('should work with all destination kinds', () => {
       const terminalDest = createMockTerminalComposablePasteDestination();
       const editorDest = createMockEditorComposablePasteDestination();
       const singletonDest = createMockCursorAIComposableDestination();

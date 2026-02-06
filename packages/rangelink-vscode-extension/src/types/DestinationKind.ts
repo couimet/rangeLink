@@ -24,7 +24,11 @@ export type DestinationKind = (typeof DESTINATION_KINDS)[number];
  * These destinations require extension availability checks rather than
  * resource binding (like terminal or text-editor).
  */
-export const AI_ASSISTANT_KINDS = ['claude-code', 'cursor-ai', 'github-copilot-chat'] as const;
+export const AI_ASSISTANT_KINDS = [
+  'claude-code',
+  'cursor-ai',
+  'github-copilot-chat',
+] as const satisfies readonly DestinationKind[];
 
 /**
  * AI assistant destination kinds (derived from AI_ASSISTANT_KINDS array)

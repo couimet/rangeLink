@@ -5,7 +5,6 @@ import {
   DestinationPickerCommand,
   type DestinationPickerOptions,
 } from '../../commands/DestinationPickerCommand';
-import type { DestinationAvailabilityService } from '../../destinations';
 import type { TerminalPickerResult } from '../../destinations/utils';
 import * as showTerminalPickerModule from '../../destinations/utils/showTerminalPicker';
 import { MessageCode } from '../../types';
@@ -21,7 +20,7 @@ import {
 
 describe('DestinationPickerCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
-  let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
+  let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
   let showQuickPickMock: jest.Mock;
   let command: DestinationPickerCommand;

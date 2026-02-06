@@ -1,8 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import type { Bookmark } from '../bookmarks';
-import type { BookmarkService } from '../bookmarks';
+import type { Bookmark, BookmarkService } from '../bookmarks';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode } from '../types';
 import { formatMessage } from '../utils';

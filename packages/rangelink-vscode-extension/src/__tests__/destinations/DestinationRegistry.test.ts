@@ -40,7 +40,7 @@ describe('DestinationRegistry', () => {
       expect(registry.getSupportedKinds()).toStrictEqual(['terminal']);
     });
 
-    it('should allow registering multiple destination types', () => {
+    it('should allow registering multiple destination kinds', () => {
       const registry = createRegistry();
 
       registry.register('terminal', jest.fn());
@@ -50,7 +50,7 @@ describe('DestinationRegistry', () => {
       expect(registry.getSupportedKinds()).toStrictEqual(['terminal', 'cursor-ai', 'text-editor']);
     });
 
-    it('should overwrite previous builder when registering same type', () => {
+    it('should overwrite previous builder when registering same kind', () => {
       const registry = createRegistry();
       const firstBuilder = jest.fn();
       const secondBuilder = jest
@@ -166,7 +166,7 @@ describe('DestinationRegistry', () => {
       expect(result).toBe(mockDestination);
     });
 
-    it('should throw DESTINATION_NOT_IMPLEMENTED for unregistered type', () => {
+    it('should throw DESTINATION_NOT_IMPLEMENTED for unregistered kind', () => {
       const registry = createRegistry();
 
       expect(() =>
@@ -178,7 +178,7 @@ describe('DestinationRegistry', () => {
       });
     });
 
-    it('should include destination type in error message', () => {
+    it('should include destination kind in error message', () => {
       const registry = createRegistry();
 
       expect(() => registry.create({ kind: 'github-copilot-chat' })).toThrowRangeLinkExtensionError(
@@ -199,14 +199,14 @@ describe('DestinationRegistry', () => {
       expect(registry.getSupportedKinds()).toStrictEqual([]);
     });
 
-    it('should return registered types', () => {
+    it('should return registered kinds', () => {
       const registry = createRegistry();
       registry.register('terminal', jest.fn());
 
       expect(registry.getSupportedKinds()).toStrictEqual(['terminal']);
     });
 
-    it('should return multiple registered types in registration order', () => {
+    it('should return multiple registered kinds in registration order', () => {
       const registry = createRegistry();
       registry.register('cursor-ai', jest.fn());
       registry.register('terminal', jest.fn());
