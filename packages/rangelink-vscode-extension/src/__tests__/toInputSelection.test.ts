@@ -110,7 +110,7 @@ describe('toInputSelection', () => {
           expect(value.selections[0].coverage).toBe('FullLine');
           // Verify normalized coordinates: end line adjusted from 2 to 1
           expect(value.selections[0].start).toStrictEqual({ line: 0, character: 0 });
-          expect(value.selections[0].end).toStrictEqual({ line: 1, character: 0 });
+          expect(value.selections[0].end).toStrictEqual({ line: 1, character: 8 });
         });
       });
 
@@ -126,7 +126,7 @@ describe('toInputSelection', () => {
         expect(result).toBeOkWith((value: InputSelection) => {
           expect(value.selections[0].coverage).toBe('FullLine');
           expect(value.selections[0].start).toStrictEqual({ line: 0, character: 0 });
-          expect(value.selections[0].end).toStrictEqual({ line: 0, character: 0 }); // Normalized to line 0, not 1
+          expect(value.selections[0].end).toStrictEqual({ line: 0, character: 17 });
         });
       });
 
@@ -142,7 +142,7 @@ describe('toInputSelection', () => {
         expect(result).toBeOkWith((value: InputSelection) => {
           expect(value.selections[0].coverage).toBe('FullLine');
           expect(value.selections[0].start).toStrictEqual({ line: 0, character: 0 });
-          expect(value.selections[0].end).toStrictEqual({ line: 2, character: 0 }); // Normalized to line 2, not 3
+          expect(value.selections[0].end).toStrictEqual({ line: 2, character: 8 });
         });
       });
     });
@@ -214,7 +214,7 @@ describe('toInputSelection', () => {
         expect(result).toBeOkWith((value: InputSelection) => {
           expect(value.selections[0].coverage).toBe('PartialLine'); // NOT FullLine (start != 0)
           expect(value.selections[0].start).toStrictEqual({ line: 0, character: 5 });
-          expect(value.selections[0].end).toStrictEqual({ line: 0, character: 0 }); // Normalized to line 0
+          expect(value.selections[0].end).toStrictEqual({ line: 0, character: 17 });
         });
       });
     });

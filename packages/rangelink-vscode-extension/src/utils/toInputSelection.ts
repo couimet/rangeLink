@@ -96,10 +96,13 @@ export const toInputSelection = (
     // Normalize end line when selection includes trailing newline
     // VSCode reports (21, 0) for "line 20 + newline" - adjust to point to actual content line
     const adjustedEndLine = includesTrailingNewline ? sel.end.line - 1 : sel.end.line;
+    const adjustedEndCharacter = includesTrailingNewline
+      ? document.lineAt(adjustedEndLine).text.length
+      : sel.end.character;
 
     selections.push({
       start: { line: sel.start.line, character: sel.start.character },
-      end: { line: adjustedEndLine, character: sel.end.character },
+      end: { line: adjustedEndLine, character: adjustedEndCharacter },
       coverage,
     });
   }
