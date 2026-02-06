@@ -8,7 +8,7 @@ describe('TerminalInsertFactory', () => {
 
   it('creates an insert function that pastes text to terminal via clipboard', async () => {
     const mockAdapter = createMockVscodeAdapter();
-    const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
+    const mockTerminal = createMockTerminal({ name: 'My Terminal' });
     const pasteTextSpy = jest
       .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
       .mockResolvedValue(undefined);
@@ -21,53 +21,13 @@ describe('TerminalInsertFactory', () => {
     expect(result).toBe(true);
     expect(pasteTextSpy).toHaveBeenCalledTimes(1);
     expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, 'test content');
-  });
-
-  it('returns true on successful paste', async () => {
-    const mockAdapter = createMockVscodeAdapter();
-    const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
-    jest.spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard').mockResolvedValue(undefined);
-
-    const factory = new TerminalInsertFactory(mockAdapter, mockLogger);
-    const insertFn = factory.forTarget(mockTerminal);
-
-    const result = await insertFn('content');
-
-    expect(result).toBe(true);
-  });
-
-  it('returns false when paste throws an error', async () => {
-    const mockAdapter = createMockVscodeAdapter();
-    const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
-    jest
-      .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
-      .mockRejectedValue(new Error('Paste failed'));
-
-    const factory = new TerminalInsertFactory(mockAdapter, mockLogger);
-    const insertFn = factory.forTarget(mockTerminal);
-
-    const result = await insertFn('content');
-
-    expect(result).toBe(false);
-  });
-
-  it('logs success on successful paste', async () => {
-    const mockAdapter = createMockVscodeAdapter();
-    const mockTerminal = createMockTerminal({ name: 'My Terminal' });
-    jest.spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard').mockResolvedValue(undefined);
-
-    const factory = new TerminalInsertFactory(mockAdapter, mockLogger);
-    const insertFn = factory.forTarget(mockTerminal);
-
-    await insertFn('content');
-
     expect(mockLogger.info).toHaveBeenCalledWith(
       { fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal' },
       'Terminal paste succeeded',
     );
   });
 
-  it('logs warning on paste failure', async () => {
+  it('returns false when paste throws an error', async () => {
     const mockAdapter = createMockVscodeAdapter();
     const mockTerminal = createMockTerminal({ name: 'My Terminal' });
     const testError = new Error('Paste failed');
@@ -76,8 +36,9 @@ describe('TerminalInsertFactory', () => {
     const factory = new TerminalInsertFactory(mockAdapter, mockLogger);
     const insertFn = factory.forTarget(mockTerminal);
 
-    await insertFn('content');
+    const result = await insertFn('content');
 
+    expect(result).toBe(false);
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal', error: testError },
       'Terminal paste failed',

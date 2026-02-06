@@ -17,9 +17,13 @@ import {
   isClaudeCodeAvailable,
   isCursorIDEDetected,
   isGitHubCopilotChatAvailable,
-  GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
 } from '../utils';
 
+import {
+  CLAUDE_CODE_FOCUS_COMMANDS,
+  CURSOR_AI_FOCUS_COMMANDS,
+  GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
+} from './aiAssistantFocusCommands';
 import { ComposablePasteDestination } from './ComposablePasteDestination';
 import type { DestinationBuilder, DestinationBuilderContext } from './DestinationRegistry';
 import { compareEditorsByUri } from './equality/compareEditorsByUri';
@@ -205,21 +209,6 @@ export const buildClaudeCodeDestination: DestinationBuilder = (options, context)
         : formatMessage(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS),
   });
 };
-
-// ============================================================================
-// AI Assistant Constants
-// ============================================================================
-
-const CURSOR_AI_FOCUS_COMMANDS = [
-  'aichat.newchataction', // Primary: Cursor-specific command (Cmd+L / Ctrl+L)
-  'workbench.action.toggleAuxiliaryBar', // Fallback: Toggle secondary sidebar
-];
-
-const CLAUDE_CODE_FOCUS_COMMANDS = [
-  'claude-vscode.focus', // Primary: Direct input focus (Cmd+Escape)
-  'claude-vscode.sidebar.open', // Fallback: Open sidebar
-  'claude-vscode.editor.open', // Fallback: Open in new tab
-];
 
 // ============================================================================
 // AI Assistant Builders

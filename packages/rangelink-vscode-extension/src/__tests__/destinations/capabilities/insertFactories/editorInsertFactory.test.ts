@@ -31,19 +31,10 @@ describe('EditorInsertFactory', () => {
     expect(result).toBe(true);
     expect(insertSpy).toHaveBeenCalledTimes(1);
     expect(insertSpy).toHaveBeenCalledWith(mockEditor, 'test content');
-  });
-
-  it('returns true when insertTextAtCursor succeeds', async () => {
-    const mockAdapter = createMockVscodeAdapter();
-    const mockEditor = createTestEditor('/path/to/file.ts');
-    jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
-
-    const factory = new EditorInsertFactory(mockAdapter, mockLogger);
-    const insertFn = factory.forTarget(mockEditor);
-
-    const result = await insertFn('content');
-
-    expect(result).toBe(true);
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      { fn: 'EditorInsertFactory.insert', editorUri: 'file:///path/to/file.ts' },
+      'Editor insert succeeded',
+    );
   });
 
   it('returns false when insertTextAtCursor returns false', async () => {
@@ -57,54 +48,13 @@ describe('EditorInsertFactory', () => {
     const result = await insertFn('content');
 
     expect(result).toBe(false);
-  });
-
-  it('returns false when insertTextAtCursor throws an error', async () => {
-    const mockAdapter = createMockVscodeAdapter();
-    const mockEditor = createTestEditor('/path/to/file.ts');
-    jest.spyOn(mockAdapter, 'insertTextAtCursor').mockRejectedValue(new Error('Insert failed'));
-
-    const factory = new EditorInsertFactory(mockAdapter, mockLogger);
-    const insertFn = factory.forTarget(mockEditor);
-
-    const result = await insertFn('content');
-
-    expect(result).toBe(false);
-  });
-
-  it('logs success message on successful insert', async () => {
-    const mockAdapter = createMockVscodeAdapter();
-    const mockEditor = createTestEditor('/path/to/file.ts');
-    jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
-
-    const factory = new EditorInsertFactory(mockAdapter, mockLogger);
-    const insertFn = factory.forTarget(mockEditor);
-
-    await insertFn('content');
-
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'EditorInsertFactory.insert', editorUri: 'file:///path/to/file.ts' },
-      'Editor insert succeeded',
-    );
-  });
-
-  it('logs failure message when insert returns false', async () => {
-    const mockAdapter = createMockVscodeAdapter();
-    const mockEditor = createTestEditor('/path/to/file.ts');
-    jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(false);
-
-    const factory = new EditorInsertFactory(mockAdapter, mockLogger);
-    const insertFn = factory.forTarget(mockEditor);
-
-    await insertFn('content');
-
     expect(mockLogger.info).toHaveBeenCalledWith(
       { fn: 'EditorInsertFactory.insert', editorUri: 'file:///path/to/file.ts' },
       'Editor insert failed',
     );
   });
 
-  it('logs warning on exception', async () => {
+  it('returns false when insertTextAtCursor throws an error', async () => {
     const mockAdapter = createMockVscodeAdapter();
     const mockEditor = createTestEditor('/path/to/file.ts');
     const testError = new Error('Insert threw');
@@ -113,8 +63,9 @@ describe('EditorInsertFactory', () => {
     const factory = new EditorInsertFactory(mockAdapter, mockLogger);
     const insertFn = factory.forTarget(mockEditor);
 
-    await insertFn('content');
+    const result = await insertFn('content');
 
+    expect(result).toBe(false);
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { fn: 'EditorInsertFactory.insert', editorUri: 'file:///path/to/file.ts', error: testError },
       'Editor insert threw exception',

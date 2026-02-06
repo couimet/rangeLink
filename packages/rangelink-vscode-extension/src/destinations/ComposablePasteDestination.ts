@@ -537,7 +537,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * - `createAiAssistant()` - for AI assistant destinations
    *
    * This method is exposed for unit tests that need to:
-   * - Inject mocked capabilities (TextInserter, EligibilityChecker, etc.)
+   * - Inject mocked capabilities (FocusCapability, InsertFactory, EligibilityChecker, etc.)
    * - Test specific orchestration scenarios
    * - Create destinations with non-standard configurations
    *

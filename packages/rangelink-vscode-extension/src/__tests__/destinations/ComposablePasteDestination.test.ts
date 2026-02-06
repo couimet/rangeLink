@@ -57,7 +57,6 @@ describe('ComposablePasteDestination', () => {
     it('should not double-pad already padded text', async () => {
       const mockInsert = jest.fn().mockResolvedValue(true);
       const focusCapability = createMockFocusCapability();
-      (focusCapability as unknown as { _mockInsert: jest.Mock })._mockInsert = mockInsert;
       focusCapability.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
 
       const destination = createMockComposablePasteDestination({

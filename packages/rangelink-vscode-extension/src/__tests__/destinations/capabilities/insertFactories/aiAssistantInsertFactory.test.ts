@@ -38,6 +38,14 @@ describe('AIAssistantInsertFactory', () => {
     expect(result).toBe(true);
     expect(clipboardSpy).toHaveBeenCalledWith('test content');
     expect(executeCommandSpy).toHaveBeenCalledWith('editor.action.clipboardPasteAction');
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      { fn: 'AIAssistantInsertFactory.insert', textLength: 12 },
+      'Copied text to clipboard',
+    );
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      { fn: 'AIAssistantInsertFactory.insert', command: 'editor.action.clipboardPasteAction' },
+      'Clipboard paste succeeded',
+    );
   });
 
   it('waits for focus-to-paste delay before executing paste command', async () => {
@@ -109,87 +117,32 @@ describe('AIAssistantInsertFactory', () => {
     const result = await resultPromise;
 
     expect(result).toBe(false);
-  });
-
-  it('logs debug message when text is copied to clipboard', async () => {
-    const mockAdapter = createMockVscodeAdapter();
-    jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-    jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
-
-    const factory = new AIAssistantInsertFactory(
-      mockAdapter,
-      ['editor.action.clipboardPasteAction'],
-      mockLogger,
-    );
-    const insertFn = factory.forTarget();
-
-    const resultPromise = insertFn('test content');
-    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
-    await resultPromise;
-
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'AIAssistantInsertFactory.insert', textLength: 12 },
-      'Copied text to clipboard',
-    );
-  });
-
-  it('logs info message on successful paste', async () => {
-    const mockAdapter = createMockVscodeAdapter();
-    jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-    jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
-
-    const factory = new AIAssistantInsertFactory(
-      mockAdapter,
-      ['editor.action.clipboardPasteAction'],
-      mockLogger,
-    );
-    const insertFn = factory.forTarget();
-
-    const resultPromise = insertFn('content');
-    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
-    await resultPromise;
-
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'AIAssistantInsertFactory.insert', command: 'editor.action.clipboardPasteAction' },
-      'Clipboard paste succeeded',
-    );
-  });
-
-  it('logs info message when all commands fail', async () => {
-    const mockAdapter = createMockVscodeAdapter();
-    jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-    jest.spyOn(mockAdapter, 'executeCommand').mockRejectedValue(new Error('Failed'));
-
-    const factory = new AIAssistantInsertFactory(mockAdapter, ['command.only'], mockLogger);
-    const insertFn = factory.forTarget();
-
-    const resultPromise = insertFn('content');
-    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
-    await resultPromise;
-
     expect(mockLogger.info).toHaveBeenCalledWith(
       { fn: 'AIAssistantInsertFactory.insert', allCommandsFailed: true },
       'All clipboard paste commands failed',
     );
   });
 
-  it('does not need a runtime target (void parameter)', async () => {
+  it('returns false when clipboard write fails', async () => {
     const mockAdapter = createMockVscodeAdapter();
-    jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
-    jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+    const clipboardError = new Error('Clipboard access denied');
+    jest.spyOn(mockAdapter, 'writeTextToClipboard').mockRejectedValue(clipboardError);
+    const executeCommandSpy = jest.spyOn(mockAdapter, 'executeCommand');
 
     const factory = new AIAssistantInsertFactory(
       mockAdapter,
       ['editor.action.clipboardPasteAction'],
       mockLogger,
     );
-
     const insertFn = factory.forTarget();
 
-    const resultPromise = insertFn('content');
-    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
-    const result = await resultPromise;
+    const result = await insertFn('content');
 
-    expect(result).toBe(true);
+    expect(result).toBe(false);
+    expect(executeCommandSpy).not.toHaveBeenCalled();
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      { fn: 'AIAssistantInsertFactory.insert', error: clipboardError },
+      'Failed to write to clipboard',
+    );
   });
 });
