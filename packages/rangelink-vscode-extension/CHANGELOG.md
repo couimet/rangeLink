@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Dirty Buffer Warning** - Warning when generating a link from a file with unsaved changes (#298)
+  - Shows a dialog with options: "Save & Generate", "Generate Anyway", or dismiss to abort
+  - Controlled by `rangelink.warnOnDirtyBuffer` setting (default: `true`)
+  - Helps avoid creating links that may point to incorrect positions after the file is saved
 - **Paste File Path Commands** - Send file paths directly to bound destinations (#243)
   - **Context menu commands** - See "Context Menu Integrations" section below for full details
   - **Command palette commands** - For the currently active editor

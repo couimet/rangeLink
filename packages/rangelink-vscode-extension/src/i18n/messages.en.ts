@@ -147,6 +147,12 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.TERMINAL_PICKER_TERMINAL_LABEL_FORMAT]: 'Terminal "{name}"',
   [MessageCode.TERMINAL_PICKER_TITLE]: 'RangeLink',
 
+  [MessageCode.WARN_LINK_DIRTY_BUFFER]:
+    'File has unsaved changes. Link may point to wrong position after save.',
+  [MessageCode.WARN_LINK_DIRTY_BUFFER_CONTINUE]: 'Generate Anyway',
+  [MessageCode.WARN_LINK_DIRTY_BUFFER_SAVE]: 'Save & Generate',
+  [MessageCode.WARN_LINK_DIRTY_BUFFER_SAVE_FAILED]:
+    'File could not be saved. Link generation aborted.',
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
   [MessageCode.WARN_NAVIGATION_UNTITLED_FILE]:
     'RangeLink: Cannot navigate to unsaved file ({path}). Save the file first, then try again.',

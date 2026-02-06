@@ -62,4 +62,11 @@ export class ConfigReader implements ConfigGetter {
   getPaddingMode(key: string, defaultValue: PaddingMode): PaddingMode {
     return this.getWithDefault<PaddingMode>(key, defaultValue);
   }
+
+  /**
+   * Read a boolean setting with fallback to default.
+   */
+  getBoolean(key: string, defaultValue: boolean): boolean {
+    return this.getWithDefault<boolean>(key, defaultValue);
+  }
 }

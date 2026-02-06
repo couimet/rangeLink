@@ -11,6 +11,7 @@ export type {
   TextEditorBindOptions,
 } from './BindOptions';
 export { BindAbortReason, BindFailureReason } from './BindResultTypes';
+export { DirtyBufferWarningResult } from './DirtyBufferWarningResult';
 export type {
   BaseBindResult,
   BindAbortedResult,

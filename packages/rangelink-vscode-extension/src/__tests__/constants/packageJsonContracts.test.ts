@@ -10,7 +10,7 @@ interface CommandContribution {
 
 interface ConfigurationProperty {
   type: string;
-  default: string;
+  default: string | boolean;
   description: string;
   pattern?: string;
   enum?: string[];
@@ -534,8 +534,18 @@ describe('package.json contributions', () => {
       });
     });
 
+    describe('warning settings', () => {
+      it('rangelink.warnOnDirtyBuffer', () => {
+        expect(properties['rangelink.warnOnDirtyBuffer']).toStrictEqual({
+          type: 'boolean',
+          default: true,
+          description: 'Show warning when generating link from file with unsaved changes',
+        });
+      });
+    });
+
     it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(8);
+      expect(Object.keys(properties)).toHaveLength(9);
     });
   });
 
