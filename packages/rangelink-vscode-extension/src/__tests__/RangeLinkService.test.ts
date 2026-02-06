@@ -1779,7 +1779,7 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      return { service: localService, mockDocument };
+      return { service: localService, mockDocument, mockVscodeAdapter: localMockVscodeAdapter };
     };
 
     it('should show warning when document is dirty and setting is enabled', async () => {
@@ -1876,6 +1876,28 @@ describe('RangeLinkService', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'handleDirtyBufferWarning' },
         'User dismissed warning, aborting',
+      );
+    });
+
+    it('should abort generation and show warning when save fails', async () => {
+      mockDocumentSave.mockResolvedValue(false);
+      const { service: localService, mockDocument } = createServiceWithDirtyDocument(true, true);
+      mockShowWarningMessage.mockResolvedValue('Save & Generate');
+
+      const result = await (localService as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        false,
+      );
+
+      expect(mockDocument.save).toHaveBeenCalled();
+      expect(mockGenerateLinkFromSelections).not.toHaveBeenCalled();
+      expect(result).toBeUndefined();
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'handleDirtyBufferWarning' },
+        'Save operation failed or was cancelled',
+      );
+      expect(mockShowWarningMessage).toHaveBeenCalledWith(
+        'File could not be saved. Link generation aborted.',
       );
     });
   });

@@ -13,9 +13,9 @@ import {
   SETTING_WARN_ON_DIRTY_BUFFER,
 } from './constants';
 import type { PasteDestination } from './destinations/PasteDestination';
+import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { RangeLinkExtensionError } from './errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from './errors/RangeLinkExtensionErrorCodes';
-import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import {
   ActiveSelections,
@@ -367,7 +367,10 @@ export class RangeLinkService {
       const shouldWarnOnDirty = this.configReader.getBoolean(SETTING_WARN_ON_DIRTY_BUFFER, true);
       if (shouldWarnOnDirty) {
         const warningResult = await this.handleDirtyBufferWarning(document);
-        if (warningResult === DirtyBufferWarningResult.Dismissed) {
+        if (
+          warningResult === DirtyBufferWarningResult.Dismissed ||
+          warningResult === DirtyBufferWarningResult.SaveFailed
+        ) {
           return undefined;
         }
       } else {
@@ -443,10 +446,22 @@ export class RangeLinkService {
           : DirtyBufferWarningResult.Dismissed;
 
     switch (result) {
-      case DirtyBufferWarningResult.SaveAndGenerate:
+      case DirtyBufferWarningResult.SaveAndGenerate: {
         this.logger.debug({ fn: 'handleDirtyBufferWarning' }, 'User chose to save and generate');
-        await document.save();
+        const saved = await document.save();
+        if (!saved) {
+          this.logger.warn(
+            { fn: 'handleDirtyBufferWarning' },
+            'Save operation failed or was cancelled',
+          );
+          this.ideAdapter.showWarningMessage(
+            formatMessage(MessageCode.WARN_LINK_DIRTY_BUFFER_SAVE_FAILED),
+          );
+          return DirtyBufferWarningResult.SaveFailed;
+        }
+        this.logger.debug({ fn: 'handleDirtyBufferWarning' }, 'Document saved successfully');
         return result;
+      }
       case DirtyBufferWarningResult.GenerateAnyway:
         this.logger.debug({ fn: 'handleDirtyBufferWarning' }, 'User chose to generate anyway');
         return result;

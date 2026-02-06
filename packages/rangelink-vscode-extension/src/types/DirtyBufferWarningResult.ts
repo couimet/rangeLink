@@ -22,4 +22,10 @@ export enum DirtyBufferWarningResult {
    * Link generation should be aborted.
    */
   Dismissed = 'Dismissed',
+
+  /**
+   * User chose "Save & Generate" but the save operation failed.
+   * Link generation should be aborted.
+   */
+  SaveFailed = 'SaveFailed',
 }
