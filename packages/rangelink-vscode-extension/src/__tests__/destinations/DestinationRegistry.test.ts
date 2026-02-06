@@ -1,11 +1,11 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import {
-  DestinationRegistry,
   type CreateOptions,
   type DestinationBuilder,
   type DestinationBuilderContext,
-} from '../../destinations/DestinationRegistry';
+  DestinationRegistry,
+} from '../../destinations';
 import {
   createBaseMockPasteDestination,
   createMockEligibilityCheckerFactory,
@@ -37,20 +37,20 @@ describe('DestinationRegistry', () => {
 
       registry.register('terminal', builder);
 
-      expect(registry.getSupportedTypes()).toStrictEqual(['terminal']);
+      expect(registry.getSupportedKinds()).toStrictEqual(['terminal']);
     });
 
-    it('should allow registering multiple destination types', () => {
+    it('should allow registering multiple destination kinds', () => {
       const registry = createRegistry();
 
       registry.register('terminal', jest.fn());
       registry.register('cursor-ai', jest.fn());
       registry.register('text-editor', jest.fn());
 
-      expect(registry.getSupportedTypes()).toStrictEqual(['terminal', 'cursor-ai', 'text-editor']);
+      expect(registry.getSupportedKinds()).toStrictEqual(['terminal', 'cursor-ai', 'text-editor']);
     });
 
-    it('should overwrite previous builder when registering same type', () => {
+    it('should overwrite previous builder when registering same kind', () => {
       const registry = createRegistry();
       const firstBuilder = jest.fn();
       const secondBuilder = jest
@@ -166,7 +166,7 @@ describe('DestinationRegistry', () => {
       expect(result).toBe(mockDestination);
     });
 
-    it('should throw DESTINATION_NOT_IMPLEMENTED for unregistered type', () => {
+    it('should throw DESTINATION_NOT_IMPLEMENTED for unregistered kind', () => {
       const registry = createRegistry();
 
       expect(() =>
@@ -178,7 +178,7 @@ describe('DestinationRegistry', () => {
       });
     });
 
-    it('should include destination type in error message', () => {
+    it('should include destination kind in error message', () => {
       const registry = createRegistry();
 
       expect(() => registry.create({ kind: 'github-copilot-chat' })).toThrowRangeLinkExtensionError(
@@ -192,27 +192,27 @@ describe('DestinationRegistry', () => {
     });
   });
 
-  describe('getSupportedTypes()', () => {
+  describe('getSupportedKinds()', () => {
     it('should return empty array initially', () => {
       const registry = createRegistry();
 
-      expect(registry.getSupportedTypes()).toStrictEqual([]);
+      expect(registry.getSupportedKinds()).toStrictEqual([]);
     });
 
-    it('should return registered types', () => {
+    it('should return registered kinds', () => {
       const registry = createRegistry();
       registry.register('terminal', jest.fn());
 
-      expect(registry.getSupportedTypes()).toStrictEqual(['terminal']);
+      expect(registry.getSupportedKinds()).toStrictEqual(['terminal']);
     });
 
-    it('should return multiple registered types in registration order', () => {
+    it('should return multiple registered kinds in registration order', () => {
       const registry = createRegistry();
       registry.register('cursor-ai', jest.fn());
       registry.register('terminal', jest.fn());
       registry.register('text-editor', jest.fn());
 
-      expect(registry.getSupportedTypes()).toStrictEqual(['cursor-ai', 'terminal', 'text-editor']);
+      expect(registry.getSupportedKinds()).toStrictEqual(['cursor-ai', 'terminal', 'text-editor']);
     });
   });
 

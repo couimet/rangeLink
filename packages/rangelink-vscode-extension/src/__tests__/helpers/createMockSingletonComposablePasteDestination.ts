@@ -1,4 +1,4 @@
-import type { DestinationType } from '../../destinations';
+import type { DestinationKind } from '../../types';
 
 import {
   createMockComposablePasteDestination,
@@ -13,8 +13,8 @@ import {
  */
 export interface MockSingletonComposablePasteDestinationConfig
   extends Omit<MockComposablePasteDestinationConfig, 'resource' | 'id'> {
-  /** Required: The destination type being mocked */
-  id: DestinationType;
+  /** Required: The destination kind being mocked */
+  id: DestinationKind;
 }
 
 /**

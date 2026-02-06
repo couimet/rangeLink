@@ -4,17 +4,18 @@ import type * as vscode from 'vscode';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { BindOptions, TextEditorBindOptions } from '../types';
+import type { DestinationKind } from '../types';
 
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
 import type { PasteExecutorFactory } from './capabilities/PasteExecutorFactory';
-import type { DestinationType, PasteDestination } from './PasteDestination';
+import type { PasteDestination } from './PasteDestination';
 
 /**
- * Display names for destination types
+ * Display names for destination kinds
  *
  * Used for UI components (command palette, status bar, QuickPick menus, error messages).
  */
-const DISPLAY_NAMES: Record<DestinationType, string> = {
+const DISPLAY_NAMES: Record<DestinationKind, string> = {
   terminal: 'Terminal',
   'text-editor': 'Text Editor',
   'cursor-ai': 'Cursor AI Assistant',
@@ -81,12 +82,12 @@ export type DestinationBuilder = (
  * - Pluggable destination implementations
  *
  * Design pattern: Registry + Builder
- * - Registry stores builders by destination type
+ * - Registry stores builders by destination kind
  * - Builders receive factories and options to create destinations
  * - IoC container provides dependencies at registration time
  */
 export class DestinationRegistry {
-  private readonly builders = new Map<DestinationType, DestinationBuilder>();
+  private readonly builders = new Map<DestinationKind, DestinationBuilder>();
   private readonly context: DestinationBuilderContext;
 
   constructor(
@@ -106,21 +107,21 @@ export class DestinationRegistry {
   }
 
   /**
-   * Register a builder for a destination type.
+   * Register a builder for a destination kind.
    *
    * The builder receives options and context (factories + dependencies)
    * when invoked via create(). Multiple registrations for the same
-   * type will overwrite the previous builder.
+   * kind will overwrite the previous builder.
    *
-   * @param type - Destination type identifier
+   * @param kind - Destination kind identifier
    * @param builder - Function that creates PasteDestination instances
    */
-  register(type: DestinationType, builder: DestinationBuilder): void {
+  register(kind: DestinationKind, builder: DestinationBuilder): void {
     this.context.logger.debug(
-      { fn: 'DestinationRegistry.register', type },
-      `Registering builder for destination: ${type}`,
+      { fn: 'DestinationRegistry.register', kind },
+      `Registering builder for destination: ${kind}`,
     );
-    this.builders.set(type, builder);
+    this.builders.set(kind, builder);
   }
 
   /**
@@ -154,19 +155,19 @@ export class DestinationRegistry {
   }
 
   /**
-   * Get all registered destination types.
+   * Get all registered destination kinds.
    *
-   * Returns types in registration order (Map iteration order).
+   * Returns kinds in registration order (Map iteration order).
    * Empty array if no builders registered.
    *
-   * @returns Array of registered destination type identifiers
+   * @returns Array of registered destination kind identifiers
    */
-  getSupportedTypes(): DestinationType[] {
+  getSupportedKinds(): DestinationKind[] {
     return Array.from(this.builders.keys());
   }
 
   /**
-   * Get display names for all destination types.
+   * Get display names for all destination kinds.
    *
    * Maps destination identifiers to user-friendly names shown in:
    * - Command palette
@@ -174,9 +175,9 @@ export class DestinationRegistry {
    * - QuickPick menus
    * - Error messages
    *
-   * @returns Record mapping destination types to display names
+   * @returns Record mapping destination kinds to display names
    */
-  getDisplayNames(): Record<DestinationType, string> {
+  getDisplayNames(): Record<DestinationKind, string> {
     return DISPLAY_NAMES;
   }
 }

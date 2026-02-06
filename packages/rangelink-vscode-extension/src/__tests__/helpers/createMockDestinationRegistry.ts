@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 
-import type { DestinationRegistry } from '../../destinations/DestinationRegistry';
-import type { DestinationType, PasteDestination } from '../../destinations/PasteDestination';
+import type { DestinationRegistry, PasteDestination } from '../../destinations';
+import type { DestinationKind } from '../../types';
 
 import { createMockClaudeCodeComposableDestination } from './createMockClaudeCodeComposableDestination';
 import { createMockCursorAIComposableDestination } from './createMockCursorAIComposableDestination';
@@ -36,7 +36,7 @@ export interface MockDestinationRegistryOptions {
   }) => PasteDestination | undefined;
 }
 
-const DEFAULT_DISPLAY_NAMES: Record<DestinationType, string> = {
+const DEFAULT_DISPLAY_NAMES: Record<DestinationKind, string> = {
   terminal: 'Terminal',
   'text-editor': 'Text Editor',
   'cursor-ai': 'Cursor AI Assistant',
@@ -90,7 +90,7 @@ export const createMockDestinationRegistry = (
   return {
     register: jest.fn(),
     create: jest.fn().mockImplementation(createImpl),
-    getSupportedTypes: jest.fn().mockReturnValue([]),
+    getSupportedKinds: jest.fn().mockReturnValue([]),
     getDisplayNames: jest.fn().mockReturnValue(DEFAULT_DISPLAY_NAMES),
   } as unknown as jest.Mocked<DestinationRegistry>;
 };

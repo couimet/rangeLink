@@ -2,17 +2,18 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import type { FormattedLink } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
-import { type AutoPasteResult, PasteContentType } from '../types';
+import {
+  type AIAssistantDestinationKind,
+  type AutoPasteResult,
+  type DestinationKind,
+  PasteContentType,
+} from '../types';
 import { applySmartPadding, type PaddingMode } from '../utils';
 
 import { ContentEligibilityChecker } from './capabilities/ContentEligibilityChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
 import type { PasteExecutor } from './capabilities/PasteExecutor';
-import type {
-  AIAssistantDestinationType,
-  DestinationType,
-  PasteDestination,
-} from './PasteDestination';
+import type { PasteDestination } from './PasteDestination';
 
 // ============================================================================
 // Factory Method Parameter Types
@@ -65,7 +66,7 @@ export interface EditorDestinationParams {
  * - May provide user instructions for manual paste fallback
  */
 export interface AiAssistantDestinationParams {
-  readonly id: AIAssistantDestinationType;
+  readonly id: AIAssistantDestinationKind;
   readonly displayName: string;
   readonly pasteExecutor: PasteExecutor;
   readonly isAvailable: () => Promise<boolean>;
@@ -98,8 +99,8 @@ export type DestinationResource =
  * readability and make construction explicit about what's required vs optional.
  */
 export interface ComposablePasteDestinationConfig {
-  /** Unique identifier for this destination type */
-  readonly id: DestinationType;
+  /** Unique identifier for this destination kind */
+  readonly id: DestinationKind;
 
   /** User-friendly display name shown in status messages and UI */
   readonly displayName: string;
@@ -172,7 +173,7 @@ export interface ComposablePasteDestinationConfig {
  * - Orchestration logic stable, implementation details varied
  */
 export class ComposablePasteDestination implements PasteDestination {
-  readonly id: DestinationType;
+  readonly id: DestinationKind;
   readonly displayName: string;
 
   /**

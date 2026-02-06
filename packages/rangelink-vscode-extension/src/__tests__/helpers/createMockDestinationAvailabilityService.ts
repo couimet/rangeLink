@@ -1,5 +1,5 @@
-import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
-import { MessageCode } from '../../types/MessageCode';
+import type { DestinationAvailabilityService } from '../../destinations';
+import { MessageCode } from '../../types';
 
 /**
  * Create a mock DestinationAvailabilityService for testing.

@@ -1,30 +1,30 @@
 /**
- * Type guards for PasteDestination types.
+ * Type guards for PasteDestination kinds.
  *
- * Provides null-safe, type-narrowing utilities for checking destination types.
+ * Provides null-safe, type-narrowing utilities for checking destination kinds.
  * These guards eliminate the need for `instanceof` checks and direct resource
  * access scattered throughout the codebase.
  */
 import type * as vscode from 'vscode';
 
-import { ComposablePasteDestination } from '../destinations/ComposablePasteDestination';
-import type { DestinationType, PasteDestination } from '../destinations/PasteDestination';
+import { ComposablePasteDestination, type PasteDestination } from '../destinations';
+import type { DestinationKind } from '../types';
 
 /**
- * Generic null-safe type check for any destination type.
+ * Generic null-safe type check for any destination kind.
  *
- * Use this when you only need to check the logical destination type
+ * Use this when you only need to check the logical destination kind
  * without accessing resource-specific data.
  *
  * @param destination - The destination to check (may be undefined)
- * @param type - The expected destination type
- * @returns True if destination exists and matches the type
+ * @param kind - The expected destination kind
+ * @returns True if destination exists and matches the kind
  */
-export const isPasteDestinationType = (
+export const isPasteDestinationKind = (
   destination: PasteDestination | undefined,
-  type: DestinationType,
+  kind: DestinationKind,
 ): destination is PasteDestination => {
-  return destination?.id === type;
+  return destination?.id === kind;
 };
 
 /**

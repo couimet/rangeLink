@@ -27,26 +27,27 @@ export type {
   TextEditorBindResult,
 } from './BindResultTypes';
 export {
-  AI_ASSISTANT_TYPES,
-  DESTINATION_TYPES,
-  type AIAssistantDestinationType,
-  type DestinationType,
-  type NonTerminalDestinationType,
-} from './DestinationType';
+  AI_ASSISTANT_KINDS,
+  DESTINATION_KINDS,
+  type AIAssistantDestinationKind,
+  type DestinationKind,
+  type NonTerminalDestinationKind,
+} from './DestinationKind';
 export { ExtensionResult } from './ExtensionResult';
+export type { WithDestinationKind } from './WithDestinationKind';
+export type { WithDisplayName } from './WithDisplayName';
 export { MessageCode } from './MessageCode';
 export { PasteContentType } from './PasteContentType';
 export type {
   GetAvailableDestinationItemsOptions,
   GroupedDestinationItems,
-} from './GroupedDestinationTypes';
+} from './GroupedDestinationKinds';
 export type {
   BindableQuickPickItem,
   DestinationQuickPickItem,
   PickerItemKind,
   TerminalMoreQuickPickItem,
   WithBindOptions,
-  WithDisplayName,
   WithRemainingCount,
 } from './QuickPickTypes';
 export { QuickPickBindResult } from './QuickPickBindResult';

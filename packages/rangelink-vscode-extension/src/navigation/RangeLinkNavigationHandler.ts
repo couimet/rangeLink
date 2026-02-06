@@ -6,7 +6,7 @@ import { TextEditorRevealType } from 'vscode';
 
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { RangeLinkParser } from '../RangeLinkParser';
-import { MessageCode } from '../types/MessageCode';
+import { MessageCode } from '../types';
 import { convertRangeLinkPosition, formatLinkPosition, formatMessage } from '../utils';
 
 /**

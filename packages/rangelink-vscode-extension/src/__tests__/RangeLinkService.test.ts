@@ -4,11 +4,10 @@ import type { DelimiterConfig } from 'rangelink-core-ts';
 import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import type { ConfigReader } from '../config/ConfigReader';
-import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
-import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
-import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
-import { messagesEn } from '../i18n/messages.en';
+import type { ConfigReader } from '../config';
+import type { PasteDestinationManager } from '../destinations';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { messagesEn } from '../i18n';
 import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode, PasteContentType, QuickPickBindResult } from '../types';
 import * as formatMessageModule from '../utils/formatMessage';

@@ -4,8 +4,7 @@
  * Provides factory function to create mock destination managers with sensible defaults.
  */
 
-import type { PasteDestination } from '../../destinations/PasteDestination';
-import type { PasteDestinationManager } from '../../destinations/PasteDestinationManager';
+import type { PasteDestination, PasteDestinationManager } from '../../destinations';
 import { BindAbortReason, QuickPickBindResult, type TerminalBindResult } from '../../types';
 
 /**

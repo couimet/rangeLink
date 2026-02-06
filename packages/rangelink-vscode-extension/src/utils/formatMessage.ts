@@ -1,10 +1,14 @@
 import { getLogger } from 'barebone-logger';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import { getCurrentLocale, getMessages } from '../i18n/LocaleManager';
-import { messagesEn } from '../i18n/messages.en';
-import { supportedLocales, type LocaleCode } from '../i18n/supportedLocales';
-import { MessageCode } from '../types/MessageCode';
+import {
+  getCurrentLocale,
+  getMessages,
+  messagesEn,
+  supportedLocales,
+  type LocaleCode,
+} from '../i18n';
+import { MessageCode } from '../types';
 
 const logger = getLogger();
 

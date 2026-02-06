@@ -13,7 +13,8 @@
  * - createMock*ComposableDestination() - AI assistants
  */
 
-import type { DestinationType, PasteDestination } from '../../destinations';
+import type { PasteDestination } from '../../destinations';
+import type { DestinationKind } from '../../types';
 
 /**
  * Options for mock destination creation (used by specialized helpers).
@@ -34,8 +35,8 @@ export interface MockDestinationOptions {
  * Requires explicit `id` to ensure tests are self-documenting.
  */
 export interface BaseMockDestinationOptions extends MockDestinationOptions {
-  /** Required: The destination type being mocked */
-  id: DestinationType;
+  /** Required: The destination kind being mocked */
+  id: DestinationKind;
 }
 
 /**

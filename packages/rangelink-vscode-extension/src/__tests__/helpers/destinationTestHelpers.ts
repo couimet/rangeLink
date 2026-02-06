@@ -7,7 +7,7 @@
 
 import type { Logger } from 'barebone-logger';
 
-import type { PasteDestination } from '../../destinations/PasteDestination';
+import type { PasteDestination } from '../../destinations';
 import type { PaddingMode } from '../../utils/applySmartPadding';
 
 import { createMockFormattedLink } from './createMockFormattedLink';

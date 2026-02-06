@@ -1,23 +1,23 @@
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import {
   type BindableQuickPickItem,
-  DESTINATION_TYPES,
+  DESTINATION_KINDS,
   type DestinationQuickPickItem,
-  type DestinationType,
+  type DestinationKind,
   type GroupedDestinationItems,
   MessageCode,
   type TerminalMoreQuickPickItem,
 } from '../../types';
 import { formatMessage } from '../../utils';
 
-const isDestinationKind = (key: string): key is DestinationType =>
-  DESTINATION_TYPES.includes(key as DestinationType);
+const isDestinationKind = (key: string): key is DestinationKind =>
+  DESTINATION_KINDS.includes(key as DestinationKind);
 
 /**
- * Sequence defining the order of destination types in QuickPick menus.
+ * Sequence defining the order of destination kinds in QuickPick menus.
  * AI assistants first, then terminals, then text editor.
  */
-export const DESTINATION_PICKER_SEQUENCE: readonly (DestinationType | 'terminal-more')[] = [
+export const DESTINATION_PICKER_SEQUENCE: readonly (DestinationKind | 'terminal-more')[] = [
   'claude-code',
   'cursor-ai',
   'github-copilot-chat',
@@ -67,8 +67,8 @@ export const buildDestinationQuickPickItems = (
 
     if (!isDestinationKind(key)) {
       throw new RangeLinkExtensionError({
-        code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
-        message: `Invalid destination type in picker sequence: ${key}`,
+        code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
+        message: `Invalid destination kind in picker sequence: ${key}`,
         functionName: 'buildDestinationQuickPickItems',
         details: { key },
       });
@@ -77,8 +77,8 @@ export const buildDestinationQuickPickItems = (
     for (const item of groupItems as BindableQuickPickItem[]) {
       if (!isDestinationKind(item?.bindOptions?.kind)) {
         throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
-          message: `Invalid destination type in bindOptions`,
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
+          message: `Invalid destination kind in bindOptions`,
           functionName: 'buildDestinationQuickPickItems',
           details: { item, key },
         });

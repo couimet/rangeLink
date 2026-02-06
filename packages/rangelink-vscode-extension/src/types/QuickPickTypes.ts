@@ -1,6 +1,7 @@
 import type * as vscode from 'vscode';
 
 import type { BindOptions } from './BindOptions';
+import type { WithDisplayName } from './WithDisplayName';
 
 /**
  * Discriminator for QuickPick items across all RangeLink menus.
@@ -17,19 +18,6 @@ export type PickerItemKind = 'bindable' | 'terminal-more';
  */
 interface BaseQuickPickItem extends vscode.QuickPickItem {
   readonly itemKind: PickerItemKind;
-}
-
-// ============================================================================
-// Shared Field Interfaces
-// ============================================================================
-
-/**
- * Shared interface for items with a display name.
- * The displayName is the raw name (e.g., "Claude Code Chat", "Terminal \"bash\"").
- * Consumers add indentation/icons as needed.
- */
-export interface WithDisplayName {
-  readonly displayName: string;
 }
 
 /**

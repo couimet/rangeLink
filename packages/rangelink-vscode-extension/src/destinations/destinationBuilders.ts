@@ -9,6 +9,7 @@ import type * as vscode from 'vscode';
 
 import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import type { DestinationKind } from '../types';
 import { AutoPasteResult, MessageCode } from '../types';
 import {
   formatMessage,
@@ -23,7 +24,7 @@ import { ComposablePasteDestination } from './ComposablePasteDestination';
 import type { DestinationBuilder, DestinationBuilderContext } from './DestinationRegistry';
 import { compareEditorsByUri } from './equality/compareEditorsByUri';
 import { compareTerminalsByProcessId } from './equality/compareTerminalsByProcessId';
-import type { DestinationType, PasteDestination } from './PasteDestination';
+import type { PasteDestination } from './PasteDestination';
 
 /**
  * Build a Terminal destination using ComposablePasteDestination factory method.
@@ -40,7 +41,7 @@ import type { DestinationType, PasteDestination } from './PasteDestination';
 export const buildTerminalDestination: DestinationBuilder = (options, context) => {
   if (options.kind !== 'terminal') {
     throw new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
+      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
       message: `buildTerminalDestination called with wrong kind: ${options.kind}`,
       functionName: 'buildTerminalDestination',
       details: { actualKind: options.kind, expectedKind: 'terminal' },
@@ -106,7 +107,7 @@ const getEditorResourceName = (
 export const buildTextEditorDestination: DestinationBuilder = (options, context) => {
   if (options.kind !== 'text-editor') {
     throw new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
+      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
       message: `buildTextEditorDestination called with wrong kind: ${options.kind}`,
       functionName: 'buildTextEditorDestination',
       details: { actualKind: options.kind, expectedKind: 'text-editor' },
@@ -143,7 +144,7 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
 export const buildCursorAIDestination: DestinationBuilder = (options, context) => {
   if (options.kind !== 'cursor-ai') {
     throw new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
+      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
       message: `buildCursorAIDestination called with wrong kind: ${options.kind}`,
       functionName: 'buildCursorAIDestination',
       details: { actualKind: options.kind, expectedKind: 'cursor-ai' },
@@ -179,7 +180,7 @@ export const buildCursorAIDestination: DestinationBuilder = (options, context) =
 export const buildClaudeCodeDestination: DestinationBuilder = (options, context) => {
   if (options.kind !== 'claude-code') {
     throw new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
+      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
       message: `buildClaudeCodeDestination called with wrong kind: ${options.kind}`,
       functionName: 'buildClaudeCodeDestination',
       details: { actualKind: options.kind, expectedKind: 'claude-code' },
@@ -235,7 +236,7 @@ const CLAUDE_CODE_FOCUS_COMMANDS = [
 export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, context) => {
   if (options.kind !== 'github-copilot-chat') {
     throw new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
+      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
       message: `buildGitHubCopilotChatDestination called with wrong kind: ${options.kind}`,
       functionName: 'buildGitHubCopilotChatDestination',
       details: { actualKind: options.kind, expectedKind: 'github-copilot-chat' },
@@ -263,12 +264,12 @@ export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, c
 /**
  * Register all destination builders with the registry.
  *
- * Called from extension.ts during activation to set up all destination types.
+ * Called from extension.ts during activation to set up all destination kinds.
  *
  * @param registry - DestinationRegistry to register builders with
  */
 export const registerAllDestinationBuilders = (registry: {
-  register: (type: DestinationType, builder: DestinationBuilder) => void;
+  register: (kind: DestinationKind, builder: DestinationBuilder) => void;
 }): void => {
   registry.register('terminal', buildTerminalDestination);
   registry.register('text-editor', buildTextEditorDestination);

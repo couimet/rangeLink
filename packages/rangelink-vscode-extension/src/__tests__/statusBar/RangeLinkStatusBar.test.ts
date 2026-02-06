@@ -2,7 +2,6 @@ import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
 import type { Bookmark } from '../../bookmarks';
-import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
 import {
   createMockBookmarkService,
@@ -46,7 +45,7 @@ describe('RangeLinkStatusBar', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
-  let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
+  let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
   let mockBookmarkService: ReturnType<typeof createMockBookmarkService>;
 
   beforeEach(() => {
@@ -116,8 +115,8 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
           { label: 'No bound destination. Choose below to bind:' },
-          { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
-          { label: '    $(arrow-right) Claude Code Chat', destinationType: 'claude-code' },
+          { label: '    $(arrow-right) Terminal', destinationKind: 'terminal' },
+          { label: '    $(arrow-right) Claude Code Chat', destinationKind: 'claude-code' },
           { label: '$(link-external) Go to Link', command: 'rangelink.goToRangeLink' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: 'Bookmarks' },
@@ -218,7 +217,7 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
           { label: 'No bound destination. Choose below to bind:' },
-          { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
+          { label: '    $(arrow-right) Terminal', destinationKind: 'terminal' },
           { label: '$(link-external) Go to Link', command: 'rangelink.goToRangeLink' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
           { label: 'Bookmarks' },
@@ -275,11 +274,11 @@ describe('RangeLinkStatusBar', () => {
       );
     });
 
-    it('binds and jumps when item with destinationType is selected', async () => {
+    it('binds and jumps when item with destinationKind is selected', async () => {
       mockDestinationManager.bindAndJump.mockResolvedValue(true);
       showQuickPickMock.mockResolvedValue({
         label: '    $(arrow-right) Terminal',
-        destinationType: 'terminal',
+        destinationKind: 'terminal',
       });
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
@@ -295,7 +294,7 @@ describe('RangeLinkStatusBar', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
-          selectedItem: { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
+          selectedItem: { label: '    $(arrow-right) Terminal', destinationKind: 'terminal' },
           bindAndJumpSuccess: true,
         },
         'Destination item selected',
@@ -306,7 +305,7 @@ describe('RangeLinkStatusBar', () => {
       mockDestinationManager.bindAndJump.mockResolvedValue(false);
       showQuickPickMock.mockResolvedValue({
         label: '    $(arrow-right) Terminal',
-        destinationType: 'terminal',
+        destinationKind: 'terminal',
       });
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
@@ -322,7 +321,7 @@ describe('RangeLinkStatusBar', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
-          selectedItem: { label: '    $(arrow-right) Terminal', destinationType: 'terminal' },
+          selectedItem: { label: '    $(arrow-right) Terminal', destinationKind: 'terminal' },
           bindAndJumpSuccess: false,
         },
         'Destination item selected',

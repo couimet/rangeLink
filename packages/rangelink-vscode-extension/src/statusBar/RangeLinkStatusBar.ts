@@ -12,20 +12,18 @@ import {
   CMD_OPEN_STATUS_BAR_MENU,
   CMD_SHOW_VERSION,
 } from '../constants';
-import type { DestinationAvailabilityService } from '../destinations/DestinationAvailabilityService';
-import type { DestinationType } from '../destinations/PasteDestination';
-import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
+import type { DestinationAvailabilityService, PasteDestinationManager } from '../destinations';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { MessageCode } from '../types/MessageCode';
-import { formatMessage } from '../utils/formatMessage';
+import { type DestinationKind, MessageCode } from '../types';
+import { formatMessage } from '../utils';
 
 /**
- * QuickPick item with optional command or destinationType to execute on selection.
+ * QuickPick item with optional command or destinationKind to execute on selection.
  */
 interface MenuQuickPickItem extends vscode.QuickPickItem {
   command?: string;
   bookmarkId?: BookmarkId;
-  destinationType?: DestinationType;
+  destinationKind?: DestinationKind;
 }
 
 /**
@@ -84,8 +82,8 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       return;
     }
 
-    if (selected.destinationType) {
-      const success = await this.destinationManager.bindAndJump(selected.destinationType);
+    if (selected.destinationKind) {
+      const success = await this.destinationManager.bindAndJump(selected.destinationKind);
       this.logger.debug(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected, bindAndJumpSuccess: success },
         'Destination item selected',
@@ -111,7 +109,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   /**
    * Build QuickPick items with context-aware enabled/disabled states.
    *
-   * Items without a `command` or `destinationType` property are disabled.
+   * Items without a `command` or `destinationKind` property are disabled.
    */
   private async buildQuickPickItems(): Promise<MenuQuickPickItem[]> {
     return [
@@ -163,7 +161,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       for (const dest of availableDestinations) {
         result.push({
           label: `${MENU_ITEM_INDENT}$(arrow-right) ${dest.displayName}`,
-          destinationType: dest.kind,
+          destinationKind: dest.kind,
         });
       }
     }

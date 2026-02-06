@@ -9,11 +9,11 @@ import {
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
-  AI_ASSISTANT_TYPES,
-  type AIAssistantDestinationType,
+  AI_ASSISTANT_KINDS,
+  type AIAssistantDestinationKind,
   type AvailableDestination,
   type BindableQuickPickItem,
-  DESTINATION_TYPES,
+  DESTINATION_KINDS,
   type GetAvailableDestinationItemsOptions,
   type GroupedDestinationItems,
   MessageCode,
@@ -37,7 +37,7 @@ const isValidThreshold = (value: number): boolean =>
 /**
  * MessageCode lookup for AI assistant unavailable
  */
-const AI_ASSISTANT_UNAVAILABLE_MESSAGE_CODES: Record<AIAssistantDestinationType, MessageCode> = {
+const AI_ASSISTANT_UNAVAILABLE_MESSAGE_CODES: Record<AIAssistantDestinationKind, MessageCode> = {
   'claude-code': MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE,
   'cursor-ai': MessageCode.INFO_CURSOR_AI_NOT_AVAILABLE,
   'github-copilot-chat': MessageCode.INFO_GITHUB_COPILOT_CHAT_NOT_AVAILABLE,
@@ -70,10 +70,10 @@ export class DestinationAvailabilityService {
    * Creates a temporary destination instance and checks its availability.
    * Used by bind commands to verify extension is installed/active.
    *
-   * @param type - AI assistant destination type
+   * @param kind - AI assistant destination kind
    * @returns Promise<true> if available, Promise<false> otherwise
    */
-  async isAIAssistantAvailable(kind: AIAssistantDestinationType): Promise<boolean> {
+  async isAIAssistantAvailable(kind: AIAssistantDestinationKind): Promise<boolean> {
     const destination = this.registry.create({ kind });
     const available = await destination.isAvailable();
 
@@ -85,8 +85,8 @@ export class DestinationAvailabilityService {
     return available;
   }
 
-  getUnavailableMessageCode(type: AIAssistantDestinationType): MessageCode {
-    return AI_ASSISTANT_UNAVAILABLE_MESSAGE_CODES[type];
+  getUnavailableMessageCode(kind: AIAssistantDestinationKind): MessageCode {
+    return AI_ASSISTANT_UNAVAILABLE_MESSAGE_CODES[kind];
   }
 
   async getAvailableDestinations(): Promise<AvailableDestination[]> {
@@ -111,7 +111,7 @@ export class DestinationAvailabilityService {
     }
 
     const aiResults = await Promise.all(
-      AI_ASSISTANT_TYPES.map(async (kind) => ({
+      AI_ASSISTANT_KINDS.map(async (kind) => ({
         kind,
         available: await this.isAIAssistantAvailable(kind),
       })),
@@ -141,12 +141,12 @@ export class DestinationAvailabilityService {
   }
 
   /**
-   * Get available destinations grouped by type with pre-built QuickPick items.
+   * Get available destinations grouped by kind with pre-built QuickPick items.
    *
-   * Items are grouped by DestinationType for easy rendering control.
+   * Items are grouped by DestinationKind for easy rendering control.
    *
    * @param options - Optional filtering and threshold configuration
-   * @returns Grouped destination items keyed by DestinationType
+   * @returns Grouped destination items keyed by DestinationKind
    */
   async getGroupedDestinationItems(
     options?: GetAvailableDestinationItemsOptions,
@@ -156,22 +156,22 @@ export class DestinationAvailabilityService {
       -readonly [K in keyof GroupedDestinationItems]: GroupedDestinationItems[K];
     } = {};
 
-    const destinationTypes = options?.destinationTypes ?? DESTINATION_TYPES;
-    if (options?.destinationTypes) {
+    const destinationKinds = options?.destinationKinds ?? DESTINATION_KINDS;
+    if (options?.destinationKinds) {
       this.logger.debug(
-        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', destinationTypes },
-        'Using provided destinationTypes filter',
+        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', destinationKinds },
+        'Using provided destinationKinds filter',
       );
     } else {
       this.logger.debug(
         { fn: 'DestinationAvailabilityService.getGroupedDestinationItems' },
-        'Using default DESTINATION_TYPES',
+        'Using default DESTINATION_KINDS',
       );
     }
 
     const terminalThreshold = this.resolveTerminalThreshold(options);
 
-    for (const kind of destinationTypes) {
+    for (const kind of destinationKinds) {
       switch (kind) {
         case 'text-editor': {
           const textEditorEligibility = isTextEditorDestinationEligible(this.ideAdapter);
@@ -227,7 +227,7 @@ export class DestinationAvailabilityService {
         default: {
           const _exhaustiveCheck: never = kind;
           throw new RangeLinkExtensionError({
-            code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_TYPE,
+            code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
             message: `Unhandled destination kind in getGroupedDestinationItems`,
             functionName: 'DestinationAvailabilityService.getGroupedDestinationItems',
             details: { kind: _exhaustiveCheck },

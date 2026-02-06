@@ -1,13 +1,12 @@
 import type { Logger } from 'barebone-logger';
 
-import type { DestinationAvailabilityService } from '../destinations/DestinationAvailabilityService';
-import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
+import type { DestinationAvailabilityService, PasteDestinationManager } from '../destinations';
 import {
   showTerminalPicker,
   TERMINAL_PICKER_SHOW_ALL,
   type TerminalPickerOptions,
-} from '../destinations/utils/showTerminalPicker';
-import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+} from '../destinations/utils';
+import { RangeLinkExtensionError } from '../errors';
 import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
@@ -45,7 +44,7 @@ export class BindToTerminalCommand {
     const logCtx = { fn: 'BindToTerminalCommand.execute' };
 
     const grouped = await this.availabilityService.getGroupedDestinationItems({
-      destinationTypes: ['terminal'],
+      destinationKinds: ['terminal'],
       terminalThreshold: Infinity,
     });
     const terminalItems = (grouped['terminal'] ??

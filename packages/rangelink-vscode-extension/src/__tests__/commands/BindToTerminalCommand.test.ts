@@ -2,7 +2,6 @@ import { createMockLogger } from 'barebone-logger-testing';
 import type * as vscode from 'vscode';
 
 import { BindToTerminalCommand } from '../../commands/BindToTerminalCommand';
-import type { DestinationAvailabilityService } from '../../destinations/DestinationAvailabilityService';
 import type { TerminalPickerResult } from '../../destinations/utils/showTerminalPicker';
 import * as showTerminalPickerModule from '../../destinations/utils/showTerminalPicker';
 import { BindAbortReason, type TerminalBindResult } from '../../types';
@@ -18,7 +17,7 @@ import {
 describe('BindToTerminalCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
-  let mockAvailabilityService: jest.Mocked<DestinationAvailabilityService>;
+  let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
   let command: BindToTerminalCommand;
   let showTerminalPickerSpy: jest.SpyInstance;
@@ -63,7 +62,7 @@ describe('BindToTerminalCommand', () => {
 
         expect(result).toStrictEqual({ outcome: 'no-resource' });
         expect(mockAvailabilityService.getGroupedDestinationItems).toHaveBeenCalledWith({
-          destinationTypes: ['terminal'],
+          destinationKinds: ['terminal'],
           terminalThreshold: Infinity,
         });
         expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(

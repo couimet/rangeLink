@@ -1,5 +1,5 @@
-import { MessageCode } from '../../types/MessageCode';
-import { supportedLocales } from '../supportedLocales';
+import { supportedLocales } from '..';
+import { MessageCode } from '../../types';
 
 /**
  * Automated validation of locale completeness.
