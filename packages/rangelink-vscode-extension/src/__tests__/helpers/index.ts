@@ -1,9 +1,3 @@
-/**
- * Test helpers and utilities
- *
- * Re-exports all test helper modules for convenient importing.
- */
-
 export * from './createMockAsRelativePath';
 export * from './createMockBindableQuickPickItem';
 export * from './createMockBookmarkService';
@@ -34,7 +28,7 @@ export * from './createMockErrorFeedbackProvider';
 export * from './createMockExtension';
 export * from './createMockExtensions';
 export * from './createMockFormattedLink';
-export * from './createMockPasteExecutorFactory';
+export * from './createMockFocusCapabilityFactory';
 export * from './createMockGetWorkspaceFolder';
 export * from './createMockGitHubCopilotChatComposableDestination';
 export * from './createMockGitHubCopilotChatDestination';

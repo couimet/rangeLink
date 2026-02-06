@@ -3,19 +3,21 @@ import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
-
 import { TerminalFocusType } from '../../types/TerminalFocusType';
-import { FocusErrorReason, type FocusResult, type PasteExecutor } from './PasteExecutor';
+
+import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
+import type { InsertFactory } from './insertFactories';
 
 /**
- * PasteExecutor for terminal destinations.
+ * FocusCapability for terminal destinations.
  *
- * Uses clipboard-based paste (pasteTextToTerminalViaClipboard) to insert text.
+ * Uses InsertFactory injection for decoupled insert logic.
  */
-export class TerminalPasteExecutor implements PasteExecutor {
+export class TerminalFocusCapability implements FocusCapability {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
     private readonly terminal: vscode.Terminal,
+    private readonly insertFactory: InsertFactory<vscode.Terminal>,
     private readonly logger: Logger,
   ) {}
 
@@ -29,7 +31,7 @@ export class TerminalPasteExecutor implements PasteExecutor {
       );
 
       return Result.ok({
-        insert: this.createInsertFunction(),
+        insert: this.insertFactory.forTarget(this.terminal),
       });
     } catch (error) {
       this.logger.warn(
@@ -41,24 +43,5 @@ export class TerminalPasteExecutor implements PasteExecutor {
         cause: error,
       });
     }
-  }
-
-  private createInsertFunction(): (text: string, context: LoggingContext) => Promise<boolean> {
-    return async (text: string, context: LoggingContext): Promise<boolean> => {
-      try {
-        await this.ideAdapter.pasteTextToTerminalViaClipboard(this.terminal, text);
-        this.logger.info(
-          { ...context, terminalName: this.terminal.name },
-          'Terminal clipboard paste succeeded',
-        );
-        return true;
-      } catch (error) {
-        this.logger.warn(
-          { ...context, terminalName: this.terminal.name, error },
-          'Terminal clipboard paste threw exception',
-        );
-        return false;
-      }
-    };
   }
 }

@@ -7,7 +7,7 @@ import type { BindOptions, TextEditorBindOptions } from '../types';
 import type { DestinationKind } from '../types';
 
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
-import type { PasteExecutorFactory } from './capabilities/PasteExecutorFactory';
+import type { FocusCapabilityFactory } from './capabilities/FocusCapabilityFactory';
 import type { PasteDestination } from './PasteDestination';
 
 /**
@@ -41,7 +41,7 @@ export type CreateOptions =
  * with proper dependency injection.
  */
 export interface DestinationBuilderFactories {
-  readonly pasteExecutor: PasteExecutorFactory;
+  readonly focusCapability: FocusCapabilityFactory;
   readonly eligibilityChecker: EligibilityCheckerFactory;
 }
 
@@ -91,14 +91,14 @@ export class DestinationRegistry {
   private readonly context: DestinationBuilderContext;
 
   constructor(
-    pasteExecutorFactory: PasteExecutorFactory,
+    focusCapabilityFactory: FocusCapabilityFactory,
     eligibilityCheckerFactory: EligibilityCheckerFactory,
     ideAdapter: VscodeAdapter,
     logger: Logger,
   ) {
     this.context = {
       factories: {
-        pasteExecutor: pasteExecutorFactory,
+        focusCapability: focusCapabilityFactory,
         eligibilityChecker: eligibilityCheckerFactory,
       },
       ideAdapter,

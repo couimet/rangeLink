@@ -15,12 +15,12 @@ import {
   createMockDocument,
   createMockEditor,
   createMockEditorComposablePasteDestination,
+  createMockFocusCapability,
   createMockFormattedLink,
   createMockGitHubCopilotChatDestination,
   createMockTerminal,
   createMockTerminalPasteDestination,
   createMockText,
-  createMockPasteExecutor,
   createMockUri,
   createMockVscodeAdapter,
   type MockVscodeOptions,
@@ -1184,10 +1184,10 @@ describe('PasteDestinationManager', () => {
         windowOptions: { showWarningMessage: mockShowWarningMessage },
       });
 
-      const mockFailingExecutor = createMockPasteExecutor(false);
+      const mockFailingFocusCapability = createMockFocusCapability(false);
       const mockTextEditorDest = createMockEditorComposablePasteDestination({
         displayName: 'Text Editor',
-        pasteExecutor: mockFailingExecutor,
+        focusCapability: mockFailingFocusCapability,
       });
 
       const pasteLinkSpy = jest.spyOn(mockTextEditorDest, 'pasteLink');

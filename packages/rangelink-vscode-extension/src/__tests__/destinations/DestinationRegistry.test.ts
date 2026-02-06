@@ -9,7 +9,7 @@ import {
 import {
   createBaseMockPasteDestination,
   createMockEligibilityCheckerFactory,
-  createMockPasteExecutorFactory,
+  createMockFocusCapabilityFactory,
   createMockVscodeAdapter,
 } from '../helpers';
 
@@ -18,13 +18,13 @@ describe('DestinationRegistry', () => {
   const mockAdapter = createMockVscodeAdapter();
 
   const createMockFactories = () => ({
-    pasteExecutor: createMockPasteExecutorFactory(),
+    focusCapability: createMockFocusCapabilityFactory(),
     eligibilityChecker: createMockEligibilityCheckerFactory(),
   });
 
   const createRegistry = (factories = createMockFactories()) =>
     new DestinationRegistry(
-      factories.pasteExecutor,
+      factories.focusCapability,
       factories.eligibilityChecker,
       mockAdapter,
       mockLogger,
@@ -91,7 +91,7 @@ describe('DestinationRegistry', () => {
       expect(builder).toHaveBeenCalledTimes(1);
       expect(builder).toHaveBeenCalledWith(options, {
         factories: {
-          pasteExecutor: factories.pasteExecutor,
+          focusCapability: factories.focusCapability,
           eligibilityChecker: factories.eligibilityChecker,
         },
         ideAdapter: mockAdapter,
@@ -115,7 +115,7 @@ describe('DestinationRegistry', () => {
 
       expect(builder).toHaveBeenCalledTimes(1);
       expect(capturedContext).toBeDefined();
-      expect(capturedContext!.factories.pasteExecutor).toBe(factories.pasteExecutor);
+      expect(capturedContext!.factories.focusCapability).toBe(factories.focusCapability);
       expect(capturedContext!.factories.eligibilityChecker).toBe(factories.eligibilityChecker);
     });
 
@@ -217,15 +217,17 @@ describe('DestinationRegistry', () => {
   });
 
   describe('factory injection', () => {
-    it('should allow mocking PasteExecutorFactory methods in builder', () => {
+    it('should allow mocking FocusCapabilityFactory methods in builder', () => {
       const factories = createMockFactories();
-      const mockExecutor = { focus: jest.fn() };
-      factories.pasteExecutor.createCommandExecutor.mockReturnValue(mockExecutor as never);
+      const mockCapability = { focus: jest.fn() };
+      factories.focusCapability.createAIAssistantCapability.mockReturnValue(
+        mockCapability as never,
+      );
       const registry = createRegistry(factories);
 
-      let capturedExecutor: unknown;
+      let capturedCapability: unknown;
       const builder: DestinationBuilder = (_options, context) => {
-        capturedExecutor = context.factories.pasteExecutor.createCommandExecutor(
+        capturedCapability = context.factories.focusCapability.createAIAssistantCapability(
           ['focus'],
           ['paste'],
         );
@@ -234,8 +236,8 @@ describe('DestinationRegistry', () => {
       registry.register('terminal', builder);
       registry.create({ kind: 'terminal', terminal: {} as never });
 
-      expect(capturedExecutor).toBe(mockExecutor);
-      expect(factories.pasteExecutor.createCommandExecutor).toHaveBeenCalledWith(
+      expect(capturedCapability).toBe(mockCapability);
+      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(
         ['focus'],
         ['paste'],
       );
@@ -287,10 +289,12 @@ describe('DestinationRegistry', () => {
   describe('real-world usage pattern', () => {
     it('should support building ComposablePasteDestination with injected capabilities', () => {
       const factories = createMockFactories();
-      const mockExecutor = { focus: jest.fn() };
+      const mockCapability = { focus: jest.fn() };
       const mockChecker = { isEligible: jest.fn() };
 
-      factories.pasteExecutor.createCommandExecutor.mockReturnValue(mockExecutor as never);
+      factories.focusCapability.createAIAssistantCapability.mockReturnValue(
+        mockCapability as never,
+      );
       factories.eligibilityChecker.createContentEligibilityChecker.mockReturnValue(
         mockChecker as never,
       );
@@ -298,13 +302,13 @@ describe('DestinationRegistry', () => {
       const registry = createRegistry(factories);
 
       const builder: DestinationBuilder = (_options, context) => {
-        const executor = context.factories.pasteExecutor.createCommandExecutor(
+        const capability = context.factories.focusCapability.createAIAssistantCapability(
           ['focus.cmd'],
           ['paste'],
         );
         const checker = context.factories.eligibilityChecker.createContentEligibilityChecker();
 
-        expect(executor).toBe(mockExecutor);
+        expect(capability).toBe(mockCapability);
         expect(checker).toBe(mockChecker);
 
         return createBaseMockPasteDestination({ id: 'cursor-ai' });
@@ -314,7 +318,7 @@ describe('DestinationRegistry', () => {
       const destination = registry.create({ kind: 'cursor-ai' });
 
       expect(destination).toBeDefined();
-      expect(factories.pasteExecutor.createCommandExecutor).toHaveBeenCalledWith(
+      expect(factories.focusCapability.createAIAssistantCapability).toHaveBeenCalledWith(
         ['focus.cmd'],
         ['paste'],
       );

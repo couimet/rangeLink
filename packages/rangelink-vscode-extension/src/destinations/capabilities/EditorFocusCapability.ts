@@ -4,20 +4,22 @@ import type * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
-import { FocusErrorReason, type FocusResult, type PasteExecutor } from './PasteExecutor';
+import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
+import type { InsertFactory } from './insertFactories';
 
 /**
- * PasteExecutor for text editor destinations.
+ * FocusCapability for text editor destinations.
  *
  * Stores the document URI and view column (immutable) rather than the editor
  * reference (mutable). On focus(), retrieves a fresh editor via showTextDocument()
- * and captures it in the insert closure.
+ * and passes it to InsertFactory.
  */
-export class EditorPasteExecutor implements PasteExecutor {
+export class EditorFocusCapability implements FocusCapability {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
     private readonly documentUri: vscode.Uri,
     private readonly viewColumn: vscode.ViewColumn | undefined,
+    private readonly insertFactory: InsertFactory<vscode.TextEditor>,
     private readonly logger: Logger,
   ) {}
 
@@ -33,7 +35,7 @@ export class EditorPasteExecutor implements PasteExecutor {
       );
 
       return Result.ok({
-        insert: this.createInsertFunction(freshEditor),
+        insert: this.insertFactory.forTarget(freshEditor),
       });
     } catch (error) {
       this.logger.warn(
@@ -45,26 +47,5 @@ export class EditorPasteExecutor implements PasteExecutor {
         cause: error,
       });
     }
-  }
-
-  private createInsertFunction(
-    editor: vscode.TextEditor,
-  ): (text: string, context: LoggingContext) => Promise<boolean> {
-    return async (text: string, context: LoggingContext): Promise<boolean> => {
-      const editorUri = editor.document.uri.toString();
-
-      try {
-        const success = await this.ideAdapter.insertTextAtCursor(editor, text);
-        if (success) {
-          this.logger.info({ ...context, editorUri }, 'Cursor insert succeeded');
-        } else {
-          this.logger.info({ ...context, editorUri }, 'Cursor insert failed');
-        }
-        return success;
-      } catch (error) {
-        this.logger.warn({ ...context, editorUri, error }, 'Cursor insert threw exception');
-        return false;
-      }
-    };
   }
 }

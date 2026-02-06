@@ -12,7 +12,7 @@ import { applySmartPadding, type PaddingMode } from '../utils';
 
 import { ContentEligibilityChecker } from './capabilities/ContentEligibilityChecker';
 import type { EligibilityChecker } from './capabilities/EligibilityChecker';
-import type { PasteExecutor } from './capabilities/PasteExecutor';
+import type { FocusCapability } from './capabilities/FocusCapability';
 import type { PasteDestination } from './PasteDestination';
 
 // ============================================================================
@@ -30,7 +30,7 @@ import type { PasteDestination } from './PasteDestination';
 export interface TerminalDestinationParams {
   readonly terminal: vscode.Terminal;
   readonly displayName: string;
-  readonly pasteExecutor: PasteExecutor;
+  readonly focusCapability: FocusCapability;
   readonly jumpSuccessMessage: string;
   readonly loggingDetails: Record<string, unknown>;
   readonly logger: Logger;
@@ -48,7 +48,7 @@ export interface TerminalDestinationParams {
 export interface EditorDestinationParams {
   readonly editor: vscode.TextEditor;
   readonly displayName: string;
-  readonly pasteExecutor: PasteExecutor;
+  readonly focusCapability: FocusCapability;
   readonly eligibilityChecker: EligibilityChecker;
   readonly jumpSuccessMessage: string;
   readonly loggingDetails: Record<string, unknown>;
@@ -68,7 +68,7 @@ export interface EditorDestinationParams {
 export interface AiAssistantDestinationParams {
   readonly id: AIAssistantDestinationKind;
   readonly displayName: string;
-  readonly pasteExecutor: PasteExecutor;
+  readonly focusCapability: FocusCapability;
   readonly isAvailable: () => Promise<boolean>;
   readonly jumpSuccessMessage: string;
   readonly loggingDetails: Record<string, unknown>;
@@ -113,7 +113,7 @@ export interface ComposablePasteDestinationConfig {
   readonly resource: DestinationResource;
 
   /** Capability for focusing and inserting text into the destination */
-  readonly pasteExecutor: PasteExecutor;
+  readonly focusCapability: FocusCapability;
 
   /** Capability for checking eligibility of content */
   readonly eligibilityChecker: EligibilityChecker;
@@ -158,7 +158,7 @@ export interface ComposablePasteDestinationConfig {
  *
  * Provides a composition-based alternative to inheritance for implementing PasteDestination.
  * Instead of subclassing and overriding methods, clients inject capability implementations
- * (PasteExecutor, EligibilityChecker) and configuration.
+ * (FocusCapability, EligibilityChecker) and configuration.
  *
  * Benefits:
  * - **Eliminates duplication**: Shared orchestration logic in one place, not duplicated
@@ -184,7 +184,7 @@ export class ComposablePasteDestination implements PasteDestination {
    */
   readonly resource: DestinationResource;
 
-  private readonly pasteExecutor: PasteExecutor;
+  private readonly focusCapability: FocusCapability;
   private readonly eligibilityChecker: EligibilityChecker;
   private readonly isAvailableFn: () => Promise<boolean>;
   private readonly jumpSuccessMessage: string;
@@ -197,7 +197,7 @@ export class ComposablePasteDestination implements PasteDestination {
     this.id = config.id;
     this.displayName = config.displayName;
     this.resource = config.resource;
-    this.pasteExecutor = config.pasteExecutor;
+    this.focusCapability = config.focusCapability;
     this.eligibilityChecker = config.eligibilityChecker;
     this.isAvailableFn = config.isAvailable;
     this.jumpSuccessMessage = config.jumpSuccessMessage;
@@ -321,7 +321,7 @@ export class ComposablePasteDestination implements PasteDestination {
 
     const paddedText = applySmartPadding(text, paddingMode);
 
-    const focusResult = await this.pasteExecutor.focus(context);
+    const focusResult = await this.focusCapability.focus(context);
 
     if (!focusResult.success) {
       this.logger.warn(
@@ -331,7 +331,7 @@ export class ComposablePasteDestination implements PasteDestination {
       return false;
     }
 
-    const success = await focusResult.value.insert(paddedText, context);
+    const success = await focusResult.value.insert(paddedText);
 
     if (success) {
       this.logger.info(context, `Pasted ${contentLabel} to ${this.displayName}`);
@@ -377,7 +377,7 @@ export class ComposablePasteDestination implements PasteDestination {
       return false;
     }
 
-    const result = await this.pasteExecutor.focus(context);
+    const result = await this.focusCapability.focus(context);
     return result.success;
   }
 
@@ -460,7 +460,7 @@ export class ComposablePasteDestination implements PasteDestination {
       id: 'terminal',
       displayName: params.displayName,
       resource: { kind: 'terminal', terminal: params.terminal },
-      pasteExecutor: params.pasteExecutor,
+      focusCapability: params.focusCapability,
       eligibilityChecker: new ContentEligibilityChecker(params.logger),
       isAvailable: async () => true,
       jumpSuccessMessage: params.jumpSuccessMessage,
@@ -487,7 +487,7 @@ export class ComposablePasteDestination implements PasteDestination {
       id: 'text-editor',
       displayName: params.displayName,
       resource: { kind: 'editor', editor: params.editor },
-      pasteExecutor: params.pasteExecutor,
+      focusCapability: params.focusCapability,
       eligibilityChecker: params.eligibilityChecker,
       isAvailable: async () => true,
       jumpSuccessMessage: params.jumpSuccessMessage,
@@ -515,7 +515,7 @@ export class ComposablePasteDestination implements PasteDestination {
       id: params.id,
       displayName: params.displayName,
       resource: { kind: 'singleton' },
-      pasteExecutor: params.pasteExecutor,
+      focusCapability: params.focusCapability,
       eligibilityChecker: new ContentEligibilityChecker(params.logger),
       isAvailable: params.isAvailable,
       jumpSuccessMessage: params.jumpSuccessMessage,
