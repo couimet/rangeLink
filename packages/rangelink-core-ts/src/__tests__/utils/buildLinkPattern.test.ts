@@ -557,4 +557,202 @@ describe('buildLinkPattern', () => {
       expect(matches[0][1]).toBe(longPath);
     });
   });
+
+  describe('wrapper character handling', () => {
+    const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+    describe('backtick wrapping', () => {
+      it('should match link wrapped in backticks without capturing backticks', () => {
+        const line = '`file.ts#L10`';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+
+      it('should match range link wrapped in backticks', () => {
+        const line = '`path/to/file.ts#L10-L20`';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('path/to/file.ts#L10-L20');
+        expect(matches[0][1]).toBe('path/to/file.ts');
+      });
+
+      it('should match inline code in prose', () => {
+        const line = 'Check `file.ts#L10` for details';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+
+      it('should match multiple backtick-wrapped links', () => {
+        const line = 'Compare `file1.ts#L10` with `file2.ts#L20`';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(2);
+        expect(matches[0][0]).toBe('file1.ts#L10');
+        expect(matches[1][0]).toBe('file2.ts#L20');
+      });
+
+      it('should exclude leading backtick when only on one side', () => {
+        const line = '`file.ts#L10 is broken';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+
+      it('should exclude trailing backtick when only on one side', () => {
+        const line = 'see file.ts#L10`';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+
+      it('should match link inside triple backtick fencing', () => {
+        const line = '```file.ts#L10```';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+
+      it('should match backtick-wrapped link with columns', () => {
+        const line = '`src/auth.ts#L10C5-L20C10`';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('src/auth.ts#L10C5-L20C10');
+        expect(matches[0][1]).toBe('src/auth.ts');
+      });
+
+      it('should match backtick-wrapped link with multi-char hash delimiter', () => {
+        const delimiters: DelimiterConfig = {
+          hash: '>>',
+          line: 'L',
+          position: 'C',
+          range: '-',
+        };
+        const multiCharPattern = buildLinkPattern(delimiters);
+        const line = '`file.ts>>L10`';
+        const matches = [...line.matchAll(multiCharPattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts>>L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+    });
+
+    describe('single quote wrapping', () => {
+      it('should match link wrapped in single quotes', () => {
+        const line = "'file.ts#L10'";
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+
+      it('should match single-quoted link in prose', () => {
+        const line = "Check 'file.ts#L10' for details";
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+    });
+
+    describe('double quote wrapping', () => {
+      it('should match link wrapped in double quotes', () => {
+        const line = '"file.ts#L10"';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+
+      it('should match double-quoted link in prose', () => {
+        const line = 'Check "file.ts#L10" for details';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+    });
+
+    describe('angle bracket wrapping', () => {
+      it('should match link wrapped in angle brackets', () => {
+        const line = '<file.ts#L10>';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+
+      it('should match angle-bracketed link in prose', () => {
+        const line = 'See <file.ts#L10> for the implementation';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+    });
+
+    describe('parentheses and brackets are NOT excluded (appear in real paths)', () => {
+      it('should capture leading parenthesis as part of path', () => {
+        const line = '(file.ts#L10)';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][1]).toBe('(file.ts');
+      });
+
+      it('should capture leading bracket as part of path', () => {
+        const line = '[file.ts#L10]';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][1]).toBe('[file.ts');
+      });
+    });
+
+    describe('mixed wrapper scenarios', () => {
+      it('should handle different wrapper types in same line', () => {
+        const line = 'Compare `file1.ts#L10` with "file2.ts#L20"';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(2);
+        expect(matches[0][0]).toBe('file1.ts#L10');
+        expect(matches[1][0]).toBe('file2.ts#L20');
+      });
+
+      it('should handle all excluded wrapper types in one line', () => {
+        const line = "`a.ts#L1` 'b.ts#L2' \"c.ts#L3\" <d.ts#L4>";
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(4);
+        expect(matches[0][0]).toBe('a.ts#L1');
+        expect(matches[0][1]).toBe('a.ts');
+        expect(matches[1][0]).toBe('b.ts#L2');
+        expect(matches[1][1]).toBe('b.ts');
+        expect(matches[2][0]).toBe('c.ts#L3');
+        expect(matches[2][1]).toBe('c.ts');
+        expect(matches[3][0]).toBe('d.ts#L4');
+        expect(matches[3][1]).toBe('d.ts');
+      });
+    });
+  });
 });
