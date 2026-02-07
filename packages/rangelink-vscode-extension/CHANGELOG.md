@@ -102,6 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Smart padding preserves whitespace-only text** - Fixed `applySmartPadding()` incorrectly trimming whitespace-only strings to empty. Now whitespace-only content is preserved when using paste destinations.
 - **Web URLs no longer hijacked as RangeLinks** - Fixed clickable links incorrectly capturing URLs like `https://example.com/path/file.ts#L10`, which caused "file not found" errors when clicked. HTTP, HTTPS, and FTP URLs are now properly ignored while local file paths continue to work. (#288)
 - **Full-line selection validation error** - Fixed `SELECTION_ZERO_WIDTH` error when using Ctrl+L or triple-click to select full lines. The selection normalization now correctly sets the end character to the line length instead of 0. (#306)
+- **Wrapped link navigation** - Fixed navigation failing when RangeLinks are wrapped in backticks, quotes, or angle brackets. Wrapper characters (`` ` ``, `'`, `"`, `<`, `>`) were captured as part of the path, producing unresolvable paths like `` `file.ts ``. The link detection pattern now excludes these characters from path matching. (#310)
 
 ## [1.0.0]
 
