@@ -15,7 +15,7 @@ import {
   type DestinationKind,
   ExtensionResult,
   MessageCode,
-  QuickPickBindResult,
+  type QuickPickBindResult,
   type TerminalBindResult,
 } from '../types';
 import {
@@ -315,7 +315,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     if (availableDestinations.length === 0) {
       this.logger.debug(logCtx, 'No destinations available');
       await this.vscodeAdapter.showInformationMessage(formatMessage(noDestinationsMessageCode));
-      return QuickPickBindResult.NoDestinationsAvailable;
+      return { outcome: 'no-resource' };
     }
 
     const items = availableDestinations.map((dest) => ({
@@ -334,7 +334,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     if (!selected) {
       this.logger.debug(logCtx, 'User cancelled quick pick');
-      return QuickPickBindResult.Cancelled;
+      return { outcome: 'cancelled' };
     }
 
     this.logger.debug(
@@ -342,12 +342,21 @@ export class PasteDestinationManager implements vscode.Disposable {
       `User selected ${selected.destinationKind}`,
     );
 
+    // TODO: Remove in Block 5 — this legacy path uses bind() which returns boolean.
+    // Block 5 replaces this entire method; the bind-failed error is a placeholder.
     const bound = await this.bind(selected.destinationKind);
     if (!bound) {
       this.logger.debug(logCtx, 'Binding failed');
-      return QuickPickBindResult.BindingFailed;
+      return {
+        outcome: 'bind-failed',
+        error: new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+          message: 'Binding failed via legacy bind()',
+          functionName: 'PasteDestinationManager.showDestinationQuickPickAndBind',
+        }),
+      };
     }
-    return QuickPickBindResult.Bound;
+    return { outcome: 'bound' };
   }
 
   /**
@@ -362,7 +371,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       { fn: 'PasteDestinationManager.showDestinationQuickPickAndJump' },
     );
 
-    if (result !== QuickPickBindResult.Bound) {
+    if (result.outcome !== 'bound') {
       return false;
     }
 

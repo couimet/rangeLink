@@ -22,7 +22,6 @@ import {
   DirtyBufferWarningResult,
   MessageCode,
   PasteContentType,
-  QuickPickBindResult,
 } from './types';
 import {
   formatMessage,
@@ -201,7 +200,7 @@ export class RangeLinkService {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
       const result = await this.destinationManager.showDestinationQuickPickForPaste();
-      if (result !== QuickPickBindResult.Bound) {
+      if (result.outcome !== 'bound') {
         this.logger.info(logCtx, 'User cancelled quick pick or binding failed - no action taken');
         return;
       }
@@ -307,7 +306,7 @@ export class RangeLinkService {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
       const result = await this.destinationManager.showDestinationQuickPickForPaste();
-      if (result !== QuickPickBindResult.Bound) {
+      if (result.outcome !== 'bound') {
         this.logger.info(logCtx, 'User cancelled quick pick or binding failed - no action taken');
         return;
       }

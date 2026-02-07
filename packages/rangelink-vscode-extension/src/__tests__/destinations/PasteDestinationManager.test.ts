@@ -2829,7 +2829,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.showDestinationQuickPickForPaste();
 
-      expect(result).toBe('Bound');
+      expect(result).toStrictEqual({ outcome: 'bound' });
       expect(manager.isBound()).toBe(true);
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
@@ -2858,7 +2858,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.showDestinationQuickPickForPaste();
 
-      expect(result).toBe('NoDestinationsAvailable');
+      expect(result).toStrictEqual({ outcome: 'no-resource' });
       expect(showQuickPickMock).not.toHaveBeenCalled();
       expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
         'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
@@ -2879,7 +2879,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.showDestinationQuickPickForPaste();
 
-      expect(result).toBe('Cancelled');
+      expect(result).toStrictEqual({ outcome: 'cancelled' });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',
@@ -2888,7 +2888,9 @@ describe('PasteDestinationManager', () => {
       );
     });
 
-    it('returns BindingFailed when binding fails', async () => {
+    // TODO: Strengthen in Block 5 when showDestinationQuickPickAndBind is replaced.
+    // Current test verifies outcome shape only — the legacy bind() path produces a placeholder error.
+    it('returns bind-failed when binding fails', async () => {
       mockWindow.activeTerminal = undefined;
       mockAvailabilityService.getAvailableDestinations.mockResolvedValueOnce([
         { kind: 'terminal', displayName: 'Terminal' },
@@ -2900,7 +2902,7 @@ describe('PasteDestinationManager', () => {
 
       const result = await manager.showDestinationQuickPickForPaste();
 
-      expect(result).toBe('BindingFailed');
+      expect(result.outcome).toBe('bind-failed');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.showDestinationQuickPickForPaste::showDestinationQuickPickAndBind',

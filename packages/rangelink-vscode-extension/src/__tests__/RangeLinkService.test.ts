@@ -9,7 +9,7 @@ import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { messagesEn } from '../i18n';
 import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkService';
-import { MessageCode, PasteContentType, QuickPickBindResult } from '../types';
+import { MessageCode, PasteContentType, type QuickPickBindResult } from '../types';
 import * as formatMessageModule from '../utils/formatMessage';
 import * as generateLinkModule from '../utils/generateLinkFromSelections';
 
@@ -917,7 +917,7 @@ describe('RangeLinkService', () => {
           });
           mockDestinationManager = createMockDestinationManager({
             isBound: false,
-            showDestinationQuickPickForPasteResult: QuickPickBindResult.Bound,
+            showDestinationQuickPickForPasteResult: { outcome: 'bound' } as QuickPickBindResult,
           });
           (mockDestinationManager.isBound as jest.Mock)
             .mockReturnValueOnce(false)
@@ -2198,7 +2198,7 @@ describe('RangeLinkService', () => {
       it('should show quick pick when not bound and abort when user cancels', async () => {
         mockDestinationManager = createMockDestinationManager({
           isBound: false,
-          showDestinationQuickPickForPasteResult: QuickPickBindResult.Cancelled,
+          showDestinationQuickPickForPasteResult: { outcome: 'cancelled' } as QuickPickBindResult,
         });
         service = new RangeLinkService(
           delimiters,

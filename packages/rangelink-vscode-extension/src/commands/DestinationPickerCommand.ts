@@ -9,22 +9,9 @@ import {
 } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { type BindOptions, type DestinationQuickPickItem, MessageCode } from '../types';
+import { type DestinationQuickPickItem, MessageCode } from '../types';
+import type { DestinationPickerResult } from '../types/DestinationPickerResult';
 import { formatMessage } from '../utils';
-
-/**
- * Result of the destination picker command.
- * Returns the user's selection without performing any binding.
- *
- * Outcome values align with BindResultOutcome where applicable:
- * - 'cancelled' - user dismissed the picker
- * - 'no-resource' - no destinations available (aligns with BindResultOutcome)
- * - 'selected' - user made a selection (picker-specific, differs from 'bound')
- */
-export type DestinationPickerResult =
-  | { readonly outcome: 'selected'; readonly bindOptions: BindOptions }
-  | { readonly outcome: 'cancelled' }
-  | { readonly outcome: 'no-resource' };
 
 /**
  * Internal result type that includes 'returned-to-main-picker' for loop control.

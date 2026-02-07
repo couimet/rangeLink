@@ -15,6 +15,7 @@ export * from './createMockCursorAIComposableDestination';
 export * from './createMockCursorAIDestination';
 export * from './createMockDestinationAvailabilityService';
 export * from './createMockDestinationManager';
+export * from './createMockDestinationPickerCommand';
 export * from './createMockDestinationRegistry';
 export * from './createMockDocument';
 export * from './createMockDocumentLink';

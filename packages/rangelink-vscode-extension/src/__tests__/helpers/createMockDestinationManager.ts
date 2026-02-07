@@ -5,7 +5,7 @@
  */
 
 import type { PasteDestination, PasteDestinationManager } from '../../destinations';
-import { BindAbortReason, QuickPickBindResult, type TerminalBindResult } from '../../types';
+import { BindAbortReason, type QuickPickBindResult, type TerminalBindResult } from '../../types';
 
 /**
  * Options for creating a mock destination manager
@@ -39,7 +39,7 @@ export const createMockDestinationManager = (
     boundDestination = undefined,
     sendLinkToDestinationResult = false,
     sendTextToDestinationResult = false,
-    showDestinationQuickPickForPasteResult = QuickPickBindResult.Cancelled,
+    showDestinationQuickPickForPasteResult = { outcome: 'cancelled' } as QuickPickBindResult,
     bindTerminalResult = {
       outcome: 'aborted',
       reason: BindAbortReason.USER_DECLINED_REPLACEMENT,
@@ -68,6 +68,8 @@ export const createMockDestinationManager = (
     bind: jest.fn().mockResolvedValue(false),
     bindTerminal: jest.fn().mockResolvedValue(bindTerminalResult),
     unbind: jest.fn(),
+    focusBoundDestination: jest.fn(),
+    bindAndFocus: jest.fn(),
     jumpToBoundDestination: jest.fn().mockResolvedValue(false),
     bindAndJump: jest.fn().mockResolvedValue(false),
     showDestinationQuickPickForPaste: jest
