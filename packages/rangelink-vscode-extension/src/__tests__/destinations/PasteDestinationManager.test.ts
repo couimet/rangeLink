@@ -2,8 +2,21 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
-import { type PasteDestination, PasteDestinationManager } from '../../destinations';
-import { AutoPasteResult, type DestinationKind, MessageCode } from '../../types';
+import {
+  type BindSuccessInfo,
+  type FocusSuccessInfo,
+  type PasteDestination,
+  PasteDestinationManager,
+} from '../../destinations';
+import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
+import {
+  AutoPasteResult,
+  type BindOptions,
+  type DestinationKind,
+  ExtensionResult,
+  MessageCode,
+} from '../../types';
 import * as formatMessageModule from '../../utils/formatMessage';
 import {
   configureEmptyTabGroups,
@@ -92,6 +105,9 @@ describe('PasteDestinationManager', () => {
   let mockRegistry: ReturnType<typeof createMockDestinationRegistry>;
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockLogger: Logger;
+  let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
+  let mockTerminal: vscode.Terminal;
+  let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
   let terminalCloseListener: (terminal: vscode.Terminal) => void;
   let documentCloseListener: (document: vscode.TextDocument) => void;
   let formatMessageSpy: jest.SpyInstance;
@@ -218,9 +234,8 @@ describe('PasteDestinationManager', () => {
     manager.dispose();
   });
 
+  // TODO: Remove in Block 5 — bind() replaced by bindWithOptions (renamed to bind).
   describe('bind() - terminal', () => {
-    let mockTerminal: vscode.Terminal;
-
     beforeEach(() => {
       mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
     });
@@ -234,7 +249,7 @@ describe('PasteDestinationManager', () => {
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Terminal ("bash")',
-        3000,
+        2000,
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
@@ -324,14 +339,13 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Terminal ("zsh")',
-        3000,
+        2000,
       );
     });
   });
 
+  // TODO: Make private in Block 5 — only called via bindWithOptions (renamed to bind).
   describe('bindTerminal()', () => {
-    let mockTerminal: vscode.Terminal;
-
     beforeEach(() => {
       mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
     });
@@ -346,7 +360,7 @@ describe('PasteDestinationManager', () => {
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Terminal ("bash")',
-        3000,
+        2000,
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
@@ -452,6 +466,7 @@ describe('PasteDestinationManager', () => {
     });
   });
 
+  // TODO: Remove in Block 5 — bind() replaced by bindWithOptions (renamed to bind).
   describe('bind() - chat destinations', () => {
     it('should bind to cursor-ai when available', async () => {
       const { manager: localManager, adapter: localAdapter } = createManager({
@@ -464,7 +479,7 @@ describe('PasteDestinationManager', () => {
       expect(localManager.isBound()).toBe(true);
       expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Cursor AI Assistant',
-        3000,
+        2000,
       );
       expectContextKeys(localAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
 
@@ -511,7 +526,7 @@ describe('PasteDestinationManager', () => {
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Claude Code Chat',
-        3000,
+        2000,
       );
       expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
     });
@@ -526,7 +541,7 @@ describe('PasteDestinationManager', () => {
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to GitHub Copilot Chat',
-        3000,
+        2000,
       );
       expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
       expect(mockLogger.info).toHaveBeenCalledWith(
@@ -596,6 +611,7 @@ describe('PasteDestinationManager', () => {
     });
   });
 
+  // TODO: Remove in Block 5 — bind() replaced by bindWithOptions (renamed to bind).
   describe('bind() - text-editor', () => {
     it('should bind to active text editor successfully', async () => {
       const mockUri = createMockUri('/workspace/src/file.ts');
@@ -614,7 +630,7 @@ describe('PasteDestinationManager', () => {
       expect(manager.isBound()).toBe(true);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         '✓ RangeLink bound to Text Editor ("file.ts")',
-        3000,
+        2000,
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
@@ -688,6 +704,7 @@ describe('PasteDestinationManager', () => {
     });
   });
 
+  // TODO: Remove in Block 5 — bind() replaced by bindWithOptions (renamed to bind).
   describe('bind() - cross-destination conflicts', () => {
     it('should show confirmation when binding chat while terminal already bound', async () => {
       const { manager: localManager, adapter: localAdapter } = createManager({
@@ -944,7 +961,6 @@ describe('PasteDestinationManager', () => {
 
     // Mock factory and destinations for unit tests
     let mockRegistryForSend: ReturnType<typeof createMockDestinationRegistry>;
-    let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
     let mockChatDest: ReturnType<typeof createMockCursorAIDestination>;
 
     beforeEach(() => {
@@ -1302,7 +1318,7 @@ describe('PasteDestinationManager', () => {
       expect(manager.isBound()).toBe(false);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
         'Destination binding removed (terminal closed)',
-        3000,
+        2000,
       );
     });
 
@@ -1516,6 +1532,7 @@ describe('PasteDestinationManager', () => {
    *
    * Tests the confirmation flow when replacing existing destination bindings.
    */
+  // TODO: Remove in Block 5 — Smart Bind uses bind() and showDestinationQuickPickAndBind(), both removed.
   describe('Smart Bind Feature', () => {
     // Mock factory for smart bind tests
     let mockRegistryForSmartBind: ReturnType<typeof createMockDestinationRegistry>;
@@ -1591,7 +1608,7 @@ describe('PasteDestinationManager', () => {
         // Verify first bind toast (no replacement)
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink bound to Terminal ("TestTerminal")',
-          3000,
+          2000,
         );
 
         // Mock active text editor for second bind
@@ -1628,7 +1645,7 @@ describe('PasteDestinationManager', () => {
         // Assert: Toast shows replacement info
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
           'Unbound Terminal ("TestTerminal"), now bound to Text Editor ("file.ts")',
-          3000,
+          2000,
         );
       });
     });
@@ -1750,7 +1767,7 @@ describe('PasteDestinationManager', () => {
         // Assert: Standard toast shown (no "Unbound..." prefix)
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
           '✓ RangeLink bound to Terminal ("TestTerminal")',
-          3000,
+          2000,
         );
 
         // Assert: QuickPick NOT shown (no existing binding)
@@ -1807,11 +1824,10 @@ describe('PasteDestinationManager', () => {
     });
   });
 
+  // TODO: Remove in Block 5 — replaced by JumpToDestinationCommand.
   describe('jumpToBoundDestination()', () => {
     // Mock factory and destinations for unit tests
     let mockRegistryForJump: ReturnType<typeof createMockDestinationRegistry>;
-    let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
-    let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
     let mockEditorDest: PasteDestination;
     let mockEditorDestFocusSpy: jest.SpyInstance;
     let mockCursorAIDest: ReturnType<typeof createMockCursorAIDestination>;
@@ -2227,11 +2243,9 @@ describe('PasteDestinationManager', () => {
     });
   });
 
+  // TODO: Remove in Block 5 — replaced by bindAndFocus with BindOptions.
   describe('bindAndJump()', () => {
     let mockRegistryForBindAndJump: ReturnType<typeof createMockDestinationRegistry>;
-    let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
-    let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
-    let mockTerminal: vscode.Terminal;
 
     beforeEach(() => {
       mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
@@ -2291,7 +2305,6 @@ describe('PasteDestinationManager', () => {
       const TEST_CONTENT = 'Test content to paste';
       const TEST_STATUS = 'Content sent successfully';
 
-      let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
       let mockRegistryForSend: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
@@ -2474,7 +2487,7 @@ describe('PasteDestinationManager', () => {
 
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
           'Unbound Terminal ("bash"), now bound to Terminal ("zsh")',
-          3000,
+          2000,
         );
 
         expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
@@ -2503,7 +2516,7 @@ describe('PasteDestinationManager', () => {
 
         expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
           'Unbound Terminal ("bash"), now bound to Terminal ("zsh")',
-          3000,
+          2000,
         );
 
         expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
@@ -2539,7 +2552,6 @@ describe('PasteDestinationManager', () => {
     });
 
     describe('Already Bound Check', () => {
-      let mockTerminalDest: ReturnType<typeof createMockTerminalPasteDestination>;
       let mockRegistryForDuplicate: ReturnType<typeof createMockDestinationRegistry>;
       let mockVscode: ReturnType<typeof mockAdapter.__getVscodeInstance>;
 
@@ -2784,8 +2796,8 @@ describe('PasteDestinationManager', () => {
     });
   });
 
+  // TODO: Remove in Block 5 — replaced by RangeLinkService.showPickerAndBindForPaste.
   describe('showDestinationQuickPickForPaste()', () => {
-    let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
     let showQuickPickMock: jest.Mock;
     let mockWindow: ReturnType<typeof mockAdapter.__getVscodeInstance>['window'];
 
@@ -2895,6 +2907,290 @@ describe('PasteDestinationManager', () => {
         },
         'Binding failed',
       );
+    });
+  });
+
+  describe('focusBoundDestination()', () => {
+    let mockRegistryForFocus: ReturnType<typeof createMockDestinationRegistry>;
+
+    beforeEach(() => {
+      mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
+      mockTerminalDest = createMockTerminalPasteDestination();
+
+      mockRegistryForFocus = createMockDestinationRegistry({
+        createImpl: (options) => {
+          if (options.kind === 'terminal') return mockTerminalDest;
+          throw new Error(`Unexpected kind: ${options.kind}`);
+        },
+      });
+
+      mockAvailabilityService = createMockDestinationAvailabilityService();
+
+      manager = new PasteDestinationManager(
+        mockContext,
+        mockRegistryForFocus,
+        mockAvailabilityService,
+        mockAdapter,
+        mockLogger,
+      );
+    });
+
+    it('returns err with DESTINATION_NOT_BOUND when no destination bound', async () => {
+      const result = await manager.focusBoundDestination();
+
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_NOT_BOUND', {
+        message: 'No destination is currently bound',
+        functionName: 'PasteDestinationManager.focusBoundDestination',
+      });
+    });
+
+    it('returns ok with FocusSuccessInfo on successful focus', async () => {
+      await manager.bindWithOptions({ kind: 'terminal', terminal: mockTerminal });
+
+      const result = await manager.focusBoundDestination();
+
+      expect(result).toBeOkWith((value: FocusSuccessInfo) => {
+        expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
+      });
+      expect(mockTerminalDest.focus).toHaveBeenCalled();
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.focusBoundDestination', destinationKind: 'terminal', displayName: 'Terminal', terminalName: 'bash' },
+        'Successfully focused Terminal',
+      );
+    });
+
+    it('shows status bar message by default on success', async () => {
+      const bindResult = await manager.bindWithOptions({ kind: 'terminal', terminal: mockTerminal });
+
+      expect(bindResult).toBeOkWith((value: BindSuccessInfo) => {
+        expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
+      });
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.bindTerminal', displayName: 'Terminal', terminalName: 'bash' },
+        'Successfully bound to "Terminal"',
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink bound to Terminal',
+        2000,
+      );
+
+      const focusResult = await manager.focusBoundDestination();
+
+      expect(focusResult).toBeOkWith((value: FocusSuccessInfo) => {
+        expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
+      });
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.focusBoundDestination', destinationKind: 'terminal', displayName: 'Terminal', terminalName: 'bash' },
+        'Successfully focused Terminal',
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ Focused Terminal: "bash"',
+        2000,
+      );
+    });
+
+    it('suppresses status bar message when silent=true', async () => {
+      const bindResult = await manager.bindWithOptions({ kind: 'terminal', terminal: mockTerminal });
+
+      expect(bindResult).toBeOkWith((value: BindSuccessInfo) => {
+        expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
+      });
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.bindTerminal', displayName: 'Terminal', terminalName: 'bash' },
+        'Successfully bound to "Terminal"',
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+        '✓ RangeLink bound to Terminal',
+        2000,
+      );
+
+      const focusResult = await manager.focusBoundDestination({ silent: true });
+
+      expect(focusResult).toBeOkWith((value: FocusSuccessInfo) => {
+        expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
+      });
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.focusBoundDestination', destinationKind: 'terminal', displayName: 'Terminal', terminalName: 'bash' },
+        'Successfully focused Terminal',
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns err with DESTINATION_FOCUS_FAILED when focus fails', async () => {
+      await manager.bindWithOptions({ kind: 'terminal', terminal: mockTerminal });
+      mockTerminalDest.focus.mockResolvedValueOnce(false);
+
+      const result = await manager.focusBoundDestination();
+
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_FOCUS_FAILED', {
+        message: 'Failed to focus destination: Terminal',
+        functionName: 'PasteDestinationManager.focusBoundDestination',
+        details: { destinationKind: 'terminal', displayName: 'Terminal' },
+      });
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.focusBoundDestination', destinationKind: 'terminal', displayName: 'Terminal', terminalName: 'bash' },
+        'Failed to focus Terminal',
+      );
+    });
+  });
+
+  describe('bindWithOptions()', () => {
+    let mockRegistryForOptions: ReturnType<typeof createMockDestinationRegistry>;
+    let mockEditorDest: PasteDestination;
+    let mockClaudeCodeDest: ReturnType<typeof createMockClaudeCodeDestination>;
+
+    beforeEach(() => {
+      mockTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
+      mockTerminalDest = createMockTerminalPasteDestination();
+      mockEditorDest = createMockEditorComposablePasteDestination();
+      mockClaudeCodeDest = createMockClaudeCodeDestination();
+
+      mockRegistryForOptions = createMockDestinationRegistry({
+        createImpl: (options) => {
+          if (options.kind === 'terminal') return mockTerminalDest;
+          if (options.kind === 'text-editor') return mockEditorDest;
+          if (options.kind === 'claude-code') return mockClaudeCodeDest;
+          throw new Error(`Unexpected kind: ${options.kind}`);
+        },
+      });
+
+      mockAvailabilityService = createMockDestinationAvailabilityService();
+
+      manager = new PasteDestinationManager(
+        mockContext,
+        mockRegistryForOptions,
+        mockAvailabilityService,
+        mockAdapter,
+        mockLogger,
+      );
+    });
+
+    it('delegates terminal binding with provided terminal reference', async () => {
+      const options: BindOptions = { kind: 'terminal', terminal: mockTerminal };
+
+      const result = await manager.bindWithOptions(options);
+
+      expect(result).toBeOkWith((value: BindSuccessInfo) => {
+        expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
+      });
+      expect(manager.isBound()).toBe(true);
+    });
+
+    it('delegates text-editor binding', async () => {
+      const mockEditor = createMockEditor();
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      const options: BindOptions = { kind: 'text-editor' };
+
+      const result = await manager.bindWithOptions(options);
+
+      expect(result).toBeOkWith((value: BindSuccessInfo) => {
+        expect(value).toStrictEqual({ destinationName: 'Text Editor ("file.ts")', destinationKind: 'text-editor' });
+      });
+    });
+
+    it('delegates claude-code binding', async () => {
+      const options: BindOptions = { kind: 'claude-code' };
+
+      const result = await manager.bindWithOptions(options);
+
+      expect(result).toBeOkWith((value: BindSuccessInfo) => {
+        expect(value).toStrictEqual({ destinationName: 'Claude Code Chat', destinationKind: 'claude-code' });
+      });
+    });
+
+    it('returns err when terminal bind is aborted (already bound to same)', async () => {
+      mockTerminalDest.equals.mockResolvedValue(true);
+      const options: BindOptions = { kind: 'terminal', terminal: mockTerminal };
+      await manager.bindWithOptions(options);
+
+      const result = await manager.bindWithOptions(options);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Terminal bind failed',
+        functionName: 'PasteDestinationManager.bindWithOptions',
+        details: {
+          failedBindDetails: {
+            outcome: 'aborted',
+            reason: 'ALREADY_BOUND_TO_SAME',
+          },
+        },
+      });
+    });
+
+    it('throws UNEXPECTED_DESTINATION_KIND for unhandled options kind', async () => {
+      const bogusOptions = { kind: 'unknown-kind' } as unknown as BindOptions;
+
+      await expect(() => manager.bindWithOptions(bogusOptions)).toThrowRangeLinkExtensionErrorAsync(
+        'UNEXPECTED_DESTINATION_KIND',
+        {
+          message: 'Unhandled bind options kind: unknown-kind',
+          functionName: 'PasteDestinationManager.bindWithOptions',
+          details: { options: bogusOptions },
+        },
+      );
+    });
+  });
+
+  describe('bindAndFocus()', () => {
+    const options: BindOptions = { kind: 'terminal', terminal: mockTerminal };
+
+    it('delegates to bindWithOptions then focusBoundDestination({ silent: true }), forwards focus result', async () => {
+      const mockBindOk = ExtensionResult.ok<BindSuccessInfo>({
+        destinationName: 'Terminal',
+        destinationKind: 'terminal',
+      });
+      const mockFocusOk = ExtensionResult.ok<FocusSuccessInfo>({
+        destinationName: 'Terminal',
+        destinationKind: 'terminal',
+      });
+      const bindSpy = jest.spyOn(manager, 'bindWithOptions').mockResolvedValue(mockBindOk);
+      const focusSpy = jest.spyOn(manager, 'focusBoundDestination').mockResolvedValue(mockFocusOk);
+
+      const result = await manager.bindAndFocus(options);
+
+      expect(bindSpy).toHaveBeenCalledWith(options);
+      expect(focusSpy).toHaveBeenCalledWith({ silent: true });
+      expect(result).toBe(mockFocusOk);
+    });
+
+    it('forwards bindWithOptions error without calling focusBoundDestination', async () => {
+      const bindError = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+        message: 'Terminal bind failed',
+        functionName: 'PasteDestinationManager.bindWithOptions',
+      });
+      const mockBindErr = ExtensionResult.err<BindSuccessInfo>(bindError);
+      const bindSpy = jest.spyOn(manager, 'bindWithOptions').mockResolvedValue(mockBindErr);
+      const focusSpy = jest.spyOn(manager, 'focusBoundDestination');
+
+      const result = await manager.bindAndFocus(options);
+
+      expect(bindSpy).toHaveBeenCalledWith(options);
+      expect(focusSpy).not.toHaveBeenCalled();
+      expect(result).toBeErrWith((error: RangeLinkExtensionError) => {
+        expect(error).toBe(bindError);
+      });
+    });
+
+    it('forwards focusBoundDestination error when focus fails after successful bind', async () => {
+      const focusError = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.DESTINATION_FOCUS_FAILED,
+        message: 'Failed to focus destination: Terminal',
+        functionName: 'PasteDestinationManager.focusBoundDestination',
+      });
+      const mockBindOk = ExtensionResult.ok<BindSuccessInfo>({
+        destinationName: 'Terminal',
+        destinationKind: 'terminal',
+      });
+      const mockFocusErr = ExtensionResult.err<FocusSuccessInfo>(focusError);
+      const bindSpy = jest.spyOn(manager, 'bindWithOptions').mockResolvedValue(mockBindOk);
+      const focusSpy = jest.spyOn(manager, 'focusBoundDestination').mockResolvedValue(mockFocusErr);
+
+      const result = await manager.bindAndFocus(options);
+
+      expect(bindSpy).toHaveBeenCalledWith(options);
+      expect(focusSpy).toHaveBeenCalledWith({ silent: true });
+      expect(result).toBe(mockFocusErr);
     });
   });
 });
