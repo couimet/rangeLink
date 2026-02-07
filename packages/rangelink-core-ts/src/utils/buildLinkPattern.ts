@@ -13,6 +13,19 @@ const NOT_AFTER_URL_CHAR = '(?<![a-zA-Z0-9:/._?&=%~-])';
 const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
 
 /**
+ * Path character class for RangeLink detection.
+ *
+ * Matches any non-whitespace character EXCEPT common text wrapper characters.
+ * These are excluded because they frequently surround links in prose and markdown
+ * but are never (or practically never) part of real file paths.
+ *
+ * Excluded: \x60 (backtick), \x27 (single quote), \x22 (double quote), < >
+ *
+ * NOT excluded: ( ) [ ] { } — these appear in real directory/file names.
+ */
+const PATH_CHAR = '[^\\s\\x60\\x27\\x22<>]';
+
+/**
  * Builds a RegExp pattern for detecting RangeLinks in terminal output.
  *
  * The pattern detects links in the format supported by parseLink(), using
@@ -67,13 +80,13 @@ export const buildLinkPattern = (delimiters: DelimiterConfig): RegExp => {
   // Allowed: file://, domain-like paths (github.com/...), Windows paths (C:\...)
   const pathPattern =
     delimiters.hash.length === 1
-      ? `(${NOT_AFTER_URL_CHAR}${NO_WEB_URL_SCHEME}\\S+?)` // Single-char: URL exclusion + non-greedy
-      : `(${NOT_AFTER_URL_CHAR}${NO_WEB_URL_SCHEME}(?:(?!${escapedHash})\\S)+)`; // Multi-char: URL exclusion + no hash
+      ? `(${NOT_AFTER_URL_CHAR}${NO_WEB_URL_SCHEME}${PATH_CHAR}+?)` // Single-char: URL exclusion + non-greedy
+      : `(${NOT_AFTER_URL_CHAR}${NO_WEB_URL_SCHEME}(?:(?!${escapedHash})${PATH_CHAR})+)`; // Multi-char: URL exclusion + no hash
 
   // Build complete pattern
   // Pattern: (path)(hash{1,2})(line)(digits)(optional: position)(optional: range)
   //
-  // Note: Using \\S+ (non-whitespace) for path instead of .+ because:
+  // Note: Using PATH_CHAR+ (non-whitespace, non-backtick) for path instead of .+ because:
   // - Terminal lines may have multiple links separated by spaces
   // - We want to match individual links, not everything between them
   // - Example: "file1.ts#L10 file2.ts#L20" should match 2 links, not 1
