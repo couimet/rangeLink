@@ -740,7 +740,7 @@ describe('buildLinkPattern', () => {
       });
 
       it('should handle all excluded wrapper types in one line', () => {
-        const line = "`a.ts#L1` 'b.ts#L2' \"c.ts#L3\" <d.ts#L4>";
+        const line = '`a.ts#L1` \'b.ts#L2\' "c.ts#L3" <d.ts#L4>';
         const matches = [...line.matchAll(pattern)];
 
         expect(matches).toHaveLength(4);
