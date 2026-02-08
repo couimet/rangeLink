@@ -19,6 +19,9 @@ export type DestinationPickerOutcome = 'selected' | 'cancelled' | 'no-resource';
  * - 'selected' - user made a selection (picker-specific, differs from 'bound')
  */
 export type DestinationPickerResult =
-  | { readonly outcome: Extract<DestinationPickerOutcome, 'selected'>; readonly bindOptions: BindOptions }
+  | {
+      readonly outcome: Extract<DestinationPickerOutcome, 'selected'>;
+      readonly bindOptions: BindOptions;
+    }
   | { readonly outcome: Extract<DestinationPickerOutcome, 'cancelled'> }
   | { readonly outcome: Extract<DestinationPickerOutcome, 'no-resource'> };

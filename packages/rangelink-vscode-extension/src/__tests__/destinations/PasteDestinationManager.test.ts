@@ -182,12 +182,7 @@ describe('PasteDestinationManager', () => {
         return undefined;
       },
     });
-    const mgr = new PasteDestinationManager(
-      mockContext,
-      registry,
-      adapter,
-      mockLogger,
-    );
+    const mgr = new PasteDestinationManager(mockContext, registry, adapter, mockLogger);
 
     // Extract event listeners from mock calls (made by PasteDestinationManager constructor)
     // These are needed for tests that simulate terminal/document closure events
@@ -1952,7 +1947,6 @@ describe('PasteDestinationManager', () => {
         expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
       });
     });
-
   });
 
   describe('focusBoundDestination()', () => {
@@ -1996,7 +1990,12 @@ describe('PasteDestinationManager', () => {
       });
       expect(mockTerminalDest.focus).toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.focusBoundDestination', destinationKind: 'terminal', displayName: 'Terminal', terminalName: 'bash' },
+        {
+          fn: 'PasteDestinationManager.focusBoundDestination',
+          destinationKind: 'terminal',
+          displayName: 'Terminal',
+          terminalName: 'bash',
+        },
         'Successfully focused Terminal',
       );
     });
@@ -2008,7 +2007,11 @@ describe('PasteDestinationManager', () => {
         expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
       });
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.bindTerminal', displayName: 'Terminal', terminalName: 'bash' },
+        {
+          fn: 'PasteDestinationManager.bindTerminal',
+          displayName: 'Terminal',
+          terminalName: 'bash',
+        },
         'Successfully bound to "Terminal"',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
@@ -2022,7 +2025,12 @@ describe('PasteDestinationManager', () => {
         expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
       });
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.focusBoundDestination', destinationKind: 'terminal', displayName: 'Terminal', terminalName: 'bash' },
+        {
+          fn: 'PasteDestinationManager.focusBoundDestination',
+          destinationKind: 'terminal',
+          displayName: 'Terminal',
+          terminalName: 'bash',
+        },
         'Successfully focused Terminal',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
@@ -2038,7 +2046,11 @@ describe('PasteDestinationManager', () => {
         expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
       });
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.bindTerminal', displayName: 'Terminal', terminalName: 'bash' },
+        {
+          fn: 'PasteDestinationManager.bindTerminal',
+          displayName: 'Terminal',
+          terminalName: 'bash',
+        },
         'Successfully bound to "Terminal"',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
@@ -2052,7 +2064,12 @@ describe('PasteDestinationManager', () => {
         expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
       });
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.focusBoundDestination', destinationKind: 'terminal', displayName: 'Terminal', terminalName: 'bash' },
+        {
+          fn: 'PasteDestinationManager.focusBoundDestination',
+          destinationKind: 'terminal',
+          displayName: 'Terminal',
+          terminalName: 'bash',
+        },
         'Successfully focused Terminal',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
@@ -2070,7 +2087,12 @@ describe('PasteDestinationManager', () => {
         details: { destinationKind: 'terminal', displayName: 'Terminal' },
       });
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.focusBoundDestination', destinationKind: 'terminal', displayName: 'Terminal', terminalName: 'bash' },
+        {
+          fn: 'PasteDestinationManager.focusBoundDestination',
+          destinationKind: 'terminal',
+          displayName: 'Terminal',
+          terminalName: 'bash',
+        },
         'Failed to focus Terminal',
       );
     });

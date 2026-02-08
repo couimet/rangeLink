@@ -149,15 +149,13 @@ export function activate(context: vscode.ExtensionContext): void {
     logger,
   );
 
-  const destinationPickerCommand = new DestinationPickerCommand(ideAdapter, availabilityService, logger);
-
-  // Create unified destination manager
-  const destinationManager = new PasteDestinationManager(
-    context,
-    registry,
+  const destinationPickerCommand = new DestinationPickerCommand(
     ideAdapter,
+    availabilityService,
     logger,
   );
+
+  const destinationManager = new PasteDestinationManager(context, registry, ideAdapter, logger);
 
   const bindToTerminalCommand = new BindToTerminalCommand(
     ideAdapter,

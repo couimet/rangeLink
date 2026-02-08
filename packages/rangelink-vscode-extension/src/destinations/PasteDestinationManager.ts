@@ -103,11 +103,7 @@ export class PasteDestinationManager implements vscode.Disposable {
             destinationKind: 'terminal',
           });
         }
-        return this.bindFailedResult(
-          'bind',
-          'Terminal bind failed',
-          terminalResult,
-        );
+        return this.bindFailedResult('bind', 'Terminal bind failed', terminalResult);
       }
       case 'text-editor':
         return this.bindTextEditor();
@@ -439,7 +435,11 @@ export class PasteDestinationManager implements vscode.Disposable {
     if (!activeEditor) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
       this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
-      return this.bindFailedResult(fnName, 'No active text editor', BindFailureReason.NO_ACTIVE_EDITOR);
+      return this.bindFailedResult(
+        fnName,
+        'No active text editor',
+        BindFailureReason.NO_ACTIVE_EDITOR,
+      );
     }
 
     // Extract URI properties for logging and validation
@@ -454,7 +454,11 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.vscodeAdapter.showErrorMessage(
         formatMessage(MessageCode.ERROR_TEXT_EDITOR_READ_ONLY, { scheme }),
       );
-      return this.bindFailedResult(fnName, `Editor is read-only (scheme: ${scheme})`, BindFailureReason.EDITOR_READ_ONLY);
+      return this.bindFailedResult(
+        fnName,
+        `Editor is read-only (scheme: ${scheme})`,
+        BindFailureReason.EDITOR_READ_ONLY,
+      );
     }
 
     if (isBinaryFile(scheme, fsPath)) {
@@ -462,7 +466,11 @@ export class PasteDestinationManager implements vscode.Disposable {
       this.vscodeAdapter.showErrorMessage(
         formatMessage(MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE, { fileName }),
       );
-      return this.bindFailedResult(fnName, 'Editor is a binary file', BindFailureReason.EDITOR_BINARY_FILE);
+      return this.bindFailedResult(
+        fnName,
+        'Editor is a binary file',
+        BindFailureReason.EDITOR_BINARY_FILE,
+      );
     }
 
     // Create new destination with resource
@@ -482,7 +490,11 @@ export class PasteDestinationManager implements vscode.Disposable {
           destinationName: newDestination.displayName,
         }),
       );
-      return this.bindFailedResult(fnName, 'Already bound to same destination', BindFailureReason.ALREADY_BOUND_TO_SAME);
+      return this.bindFailedResult(
+        fnName,
+        'Already bound to same destination',
+        BindFailureReason.ALREADY_BOUND_TO_SAME,
+      );
     }
 
     // If already bound to different destination, show confirmation dialog
@@ -498,7 +510,11 @@ export class PasteDestinationManager implements vscode.Disposable {
           { fn: 'PasteDestinationManager.bindTextEditor' },
           'User cancelled binding replacement',
         );
-        return this.bindFailedResult(fnName, 'User cancelled binding replacement', BindFailureReason.USER_CANCELLED_REPLACEMENT);
+        return this.bindFailedResult(
+          fnName,
+          'User cancelled binding replacement',
+          BindFailureReason.USER_CANCELLED_REPLACEMENT,
+        );
       }
 
       // User confirmed - track old destination and unbind
@@ -561,7 +577,11 @@ export class PasteDestinationManager implements vscode.Disposable {
 
       this.vscodeAdapter.showErrorMessage(formatMessage(messageCode));
 
-      return this.bindFailedResult(fnName, `${newDestination.displayName} not available`, BindFailureReason.DESTINATION_NOT_AVAILABLE);
+      return this.bindFailedResult(
+        fnName,
+        `${newDestination.displayName} not available`,
+        BindFailureReason.DESTINATION_NOT_AVAILABLE,
+      );
     }
 
     // Check if already bound to same destination using equals()
@@ -578,7 +598,11 @@ export class PasteDestinationManager implements vscode.Disposable {
           destinationName: newDestination.displayName,
         }),
       );
-      return this.bindFailedResult(fnName, 'Already bound to same destination', BindFailureReason.ALREADY_BOUND_TO_SAME);
+      return this.bindFailedResult(
+        fnName,
+        'Already bound to same destination',
+        BindFailureReason.ALREADY_BOUND_TO_SAME,
+      );
     }
 
     // If already bound to different destination, show confirmation dialog
@@ -594,7 +618,11 @@ export class PasteDestinationManager implements vscode.Disposable {
           { fn: 'PasteDestinationManager.bindGenericDestination' },
           'User cancelled binding replacement',
         );
-        return this.bindFailedResult(fnName, 'User cancelled binding replacement', BindFailureReason.USER_CANCELLED_REPLACEMENT);
+        return this.bindFailedResult(
+          fnName,
+          'User cancelled binding replacement',
+          BindFailureReason.USER_CANCELLED_REPLACEMENT,
+        );
       }
 
       // User confirmed - track old destination and unbind

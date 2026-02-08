@@ -1,6 +1,10 @@
 import type { Logger } from 'barebone-logger';
 
-import type { BindSuccessInfo, DestinationAvailabilityService, PasteDestinationManager } from '../destinations';
+import type {
+  BindSuccessInfo,
+  DestinationAvailabilityService,
+  PasteDestinationManager,
+} from '../destinations';
 import {
   showTerminalPicker,
   TERMINAL_PICKER_SHOW_ALL,
@@ -67,9 +71,7 @@ export class BindToTerminalCommand {
         { ...logCtx, terminalName: terminal.name },
         'Single terminal, auto-binding',
       );
-      return this.mapBindResult(
-        await this.destinationManager.bind({ kind: 'terminal', terminal }),
-      );
+      return this.mapBindResult(await this.destinationManager.bind({ kind: 'terminal', terminal }));
     }
 
     const terminals = terminalItems.map((item) => item.bindOptions.terminal);
@@ -120,9 +122,7 @@ export class BindToTerminalCommand {
     }
   }
 
-  private mapBindResult(
-    bindResult: ExtensionResult<BindSuccessInfo>,
-  ): QuickPickBindResult {
+  private mapBindResult(bindResult: ExtensionResult<BindSuccessInfo>): QuickPickBindResult {
     if (bindResult.success) {
       return { outcome: 'bound', destinationName: bindResult.value.destinationName };
     }

@@ -13,7 +13,13 @@ export type JumpToDestinationOutcome = 'focused' | 'no-resource' | 'cancelled' |
  * Result of the jump-to-destination command.
  */
 export type JumpToDestinationResult =
-  | { readonly outcome: Extract<JumpToDestinationOutcome, 'focused'>; readonly destinationName: string }
+  | {
+      readonly outcome: Extract<JumpToDestinationOutcome, 'focused'>;
+      readonly destinationName: string;
+    }
   | { readonly outcome: Extract<JumpToDestinationOutcome, 'no-resource'> }
   | { readonly outcome: Extract<JumpToDestinationOutcome, 'cancelled'> }
-  | { readonly outcome: Extract<JumpToDestinationOutcome, 'focus-failed'>; readonly error: RangeLinkExtensionError };
+  | {
+      readonly outcome: Extract<JumpToDestinationOutcome, 'focus-failed'>;
+      readonly error: RangeLinkExtensionError;
+    };

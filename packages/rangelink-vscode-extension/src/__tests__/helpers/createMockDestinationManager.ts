@@ -4,7 +4,11 @@
  * Provides factory function to create mock destination managers with sensible defaults.
  */
 
-import type { BindSuccessInfo, PasteDestination, PasteDestinationManager } from '../../destinations';
+import type {
+  BindSuccessInfo,
+  PasteDestination,
+  PasteDestinationManager,
+} from '../../destinations';
 import type { ExtensionResult } from '../../types';
 
 /**
@@ -70,9 +74,7 @@ export const createMockDestinationManager = (
 
   const getBoundDestinationMock = jest.fn().mockReturnValue(boundDestination);
 
-  const bindMock = bindResult !== undefined
-    ? jest.fn().mockResolvedValue(bindResult)
-    : jest.fn();
+  const bindMock = bindResult !== undefined ? jest.fn().mockResolvedValue(bindResult) : jest.fn();
 
   return {
     isBound: isBoundMock,
