@@ -152,7 +152,7 @@ describe('JumpToDestinationCommand', () => {
       const bindError = new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
         message: 'Terminal bind failed',
-        functionName: 'PasteDestinationManager.bindWithOptions',
+        functionName: 'PasteDestinationManager.bind',
       });
       const bindOptions: BindOptions = { kind: 'cursor-ai' };
       mockPickerCommand.execute.mockResolvedValue({

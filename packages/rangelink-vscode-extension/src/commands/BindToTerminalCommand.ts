@@ -1,19 +1,19 @@
 import type { Logger } from 'barebone-logger';
 
-import type { DestinationAvailabilityService, PasteDestinationManager } from '../destinations';
+import type { BindSuccessInfo, DestinationAvailabilityService, PasteDestinationManager } from '../destinations';
 import {
   showTerminalPicker,
   TERMINAL_PICKER_SHOW_ALL,
   type TerminalPickerOptions,
 } from '../destinations/utils';
-import { RangeLinkExtensionError } from '../errors';
-import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
   type BindableQuickPickItem,
+  type ExtensionResult,
   MessageCode,
+  type QuickPickBindResult,
   type TerminalBindOptions,
-  type TerminalBindResult,
 } from '../types';
 import { formatMessage } from '../utils';
 
@@ -25,7 +25,7 @@ import { formatMessage } from '../utils';
  * - 1 terminal: Auto-binds to it (no picker shown)
  * - 2+ terminals: Shows picker, binds to selected terminal
  *
- * Success feedback is handled by PasteDestinationManager.bindTerminal().
+ * Success feedback is handled by PasteDestinationManager.bind().
  */
 export class BindToTerminalCommand {
   constructor(
@@ -40,7 +40,7 @@ export class BindToTerminalCommand {
     );
   }
 
-  async execute(): Promise<TerminalBindResult> {
+  async execute(): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'BindToTerminalCommand.execute' };
 
     const grouped = await this.availabilityService.getGroupedDestinationItems({
@@ -67,7 +67,9 @@ export class BindToTerminalCommand {
         { ...logCtx, terminalName: terminal.name },
         'Single terminal, auto-binding',
       );
-      return this.destinationManager.bindTerminal(terminal);
+      return this.mapBindResult(
+        await this.destinationManager.bind({ kind: 'terminal', terminal }),
+      );
     }
 
     const terminals = terminalItems.map((item) => item.bindOptions.terminal);
@@ -92,13 +94,13 @@ export class BindToTerminalCommand {
           { ...logCtx, terminalName: terminal.name },
           `Binding to terminal "${terminal.name}"`,
         );
-        return this.destinationManager.bindTerminal(terminal);
+        return this.destinationManager.bind({ kind: 'terminal', terminal });
       },
     );
 
     switch (result.outcome) {
       case 'selected':
-        return result.result;
+        return this.mapBindResult(result.result);
       case 'cancelled':
       case 'returned-to-destination-picker':
         this.logger.debug(
@@ -116,5 +118,14 @@ export class BindToTerminalCommand {
         });
       }
     }
+  }
+
+  private mapBindResult(
+    bindResult: ExtensionResult<BindSuccessInfo>,
+  ): QuickPickBindResult {
+    if (bindResult.success) {
+      return { outcome: 'bound', destinationName: bindResult.value.destinationName };
+    }
+    return { outcome: 'bind-failed', error: bindResult.error };
   }
 }

@@ -4,8 +4,8 @@
  * Provides factory function to create mock destination managers with sensible defaults.
  */
 
-import type { PasteDestination, PasteDestinationManager } from '../../destinations';
-import { BindAbortReason, type QuickPickBindResult, type TerminalBindResult } from '../../types';
+import type { BindSuccessInfo, PasteDestination, PasteDestinationManager } from '../../destinations';
+import type { ExtensionResult } from '../../types';
 
 /**
  * Options for creating a mock destination manager
@@ -19,10 +19,15 @@ export interface MockDestinationManagerOptions {
   sendLinkToDestinationResult?: boolean;
   /** Mock return value for sendTextToDestination (default: false) */
   sendTextToDestinationResult?: boolean;
-  /** Mock return value for showDestinationQuickPickForPaste (default: Cancelled) */
-  showDestinationQuickPickForPasteResult?: QuickPickBindResult;
-  /** Mock return value for bindTerminal (default: aborted with USER_DECLINED_REPLACEMENT) */
-  bindTerminalResult?: TerminalBindResult;
+  /**
+   * Mock return value for bind().
+   *
+   * When provided with isBound:false and boundDestination, simulates the
+   * "starts unbound → bind succeeds → becomes bound" transition:
+   * isBound returns false on first call then true, and getBoundDestination
+   * returns undefined on first call then boundDestination.
+   */
+  bindResult?: ExtensionResult<BindSuccessInfo>;
 }
 
 /**
@@ -39,11 +44,7 @@ export const createMockDestinationManager = (
     boundDestination = undefined,
     sendLinkToDestinationResult = false,
     sendTextToDestinationResult = false,
-    showDestinationQuickPickForPasteResult = { outcome: 'cancelled' } as QuickPickBindResult,
-    bindTerminalResult = {
-      outcome: 'aborted',
-      reason: BindAbortReason.USER_DECLINED_REPLACEMENT,
-    },
+    bindResult,
   } = options;
 
   if (isBound && boundDestination === undefined) {
@@ -53,28 +54,36 @@ export const createMockDestinationManager = (
     );
   }
 
-  if (!isBound && boundDestination !== undefined) {
+  // boundDestination without isBound is only valid for bind transitions
+  if (!isBound && boundDestination !== undefined && bindResult === undefined) {
     throw new Error(
       'createMockDestinationManager: isBound is false but boundDestination is defined. ' +
-        'Remove boundDestination or set isBound to true.',
+        'Remove boundDestination, set isBound to true, or provide bindResult for a transition scenario.',
     );
   }
 
+  const isBindTransition = !isBound && boundDestination !== undefined && bindResult !== undefined;
+
+  const isBoundMock = isBindTransition
+    ? jest.fn().mockReturnValueOnce(false).mockReturnValue(true)
+    : jest.fn().mockReturnValue(isBound);
+
+  const getBoundDestinationMock = jest.fn().mockReturnValue(boundDestination);
+
+  const bindMock = bindResult !== undefined
+    ? jest.fn().mockResolvedValue(bindResult)
+    : jest.fn();
+
   return {
-    isBound: jest.fn().mockReturnValue(isBound),
+    isBound: isBoundMock,
     sendLinkToDestination: jest.fn().mockResolvedValue(sendLinkToDestinationResult),
     sendTextToDestination: jest.fn().mockResolvedValue(sendTextToDestinationResult),
-    getBoundDestination: jest.fn().mockReturnValue(boundDestination),
-    bind: jest.fn().mockResolvedValue(false),
-    bindTerminal: jest.fn().mockResolvedValue(bindTerminalResult),
+    getBoundDestination: getBoundDestinationMock,
+    bind: bindMock,
     unbind: jest.fn(),
     focusBoundDestination: jest.fn(),
     bindAndFocus: jest.fn(),
-    jumpToBoundDestination: jest.fn().mockResolvedValue(false),
     bindAndJump: jest.fn().mockResolvedValue(false),
-    showDestinationQuickPickForPaste: jest
-      .fn()
-      .mockResolvedValue(showDestinationQuickPickForPasteResult),
     dispose: jest.fn(),
   } as unknown as jest.Mocked<PasteDestinationManager>;
 };

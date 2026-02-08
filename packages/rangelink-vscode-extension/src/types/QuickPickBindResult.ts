@@ -16,7 +16,7 @@ export type QuickPickBindOutcome = 'bound' | 'no-resource' | 'cancelled' | 'bind
  * a destination to bind to (used by both Jump and Paste flows).
  */
 export type QuickPickBindResult =
-  | { readonly outcome: Extract<QuickPickBindOutcome, 'bound'> }
+  | { readonly outcome: Extract<QuickPickBindOutcome, 'bound'>; readonly destinationName: string }
   | { readonly outcome: Extract<QuickPickBindOutcome, 'no-resource'> }
   | { readonly outcome: Extract<QuickPickBindOutcome, 'cancelled'> }
   | { readonly outcome: Extract<QuickPickBindOutcome, 'bind-failed'>; readonly error: RangeLinkExtensionError };
