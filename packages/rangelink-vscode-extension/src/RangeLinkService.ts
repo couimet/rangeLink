@@ -1,7 +1,8 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import { DelimiterConfig, type FormattedLink, LinkType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { DestinationPickerCommand } from './commands/DestinationPickerCommand';
 import type { ConfigReader } from './config/ConfigReader';
 import {
   DEFAULT_SMART_PADDING_PASTE_CONTENT,
@@ -14,15 +15,14 @@ import {
 } from './constants';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
-import { RangeLinkExtensionError } from './errors/RangeLinkExtensionError';
-import { RangeLinkExtensionErrorCodes } from './errors/RangeLinkExtensionErrorCodes';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from './errors';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import {
   ActiveSelections,
   DirtyBufferWarningResult,
   MessageCode,
   PasteContentType,
-  QuickPickBindResult,
+  type QuickPickBindResult,
 } from './types';
 import {
   formatMessage,
@@ -97,6 +97,7 @@ export class RangeLinkService {
     private readonly delimiters: DelimiterConfig,
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
+    private readonly destinationPickerCommand: DestinationPickerCommand,
     private readonly configReader: ConfigReader,
     private readonly logger: Logger,
   ) {}
@@ -200,9 +201,12 @@ export class RangeLinkService {
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
-      const result = await this.destinationManager.showDestinationQuickPickForPaste();
-      if (result !== QuickPickBindResult.Bound) {
-        this.logger.info(logCtx, 'User cancelled quick pick or binding failed - no action taken');
+      const pickerResult = await this.showPickerAndBindForPaste(logCtx);
+      if (pickerResult.outcome !== 'bound') {
+        this.logger.debug(
+          { ...logCtx, outcome: pickerResult.outcome },
+          'Picker did not bind, aborting',
+        );
         return;
       }
     }
@@ -306,9 +310,12 @@ export class RangeLinkService {
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
-      const result = await this.destinationManager.showDestinationQuickPickForPaste();
-      if (result !== QuickPickBindResult.Bound) {
-        this.logger.info(logCtx, 'User cancelled quick pick or binding failed - no action taken');
+      const pickerResult = await this.showPickerAndBindForPaste(logCtx);
+      if (pickerResult.outcome !== 'bound') {
+        this.logger.debug(
+          { ...logCtx, outcome: pickerResult.outcome },
+          'Picker did not bind, aborting',
+        );
         return;
       }
     }
@@ -732,5 +739,52 @@ export class RangeLinkService {
 
     // Send to bound destination (manager handles all feedback)
     await strategies.sendFn(content.send, basicStatusMessage);
+  }
+
+  /**
+   * Orchestrates: picker command → user selection → manager.bind()
+   *
+   * @param callerContext - Logging context from the calling method
+   * @returns QuickPickBindResult with outcome and error details if binding failed
+   */
+  private async showPickerAndBindForPaste(
+    callerContext: LoggingContext,
+  ): Promise<QuickPickBindResult> {
+    const logCtx = { ...callerContext, fn: `${callerContext.fn}::showPickerAndBindForPaste` };
+
+    const result = await this.destinationPickerCommand.execute({
+      noDestinationsMessageCode: MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE,
+      placeholderMessageCode: MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
+      callerContext: logCtx,
+    });
+
+    switch (result.outcome) {
+      case 'no-resource':
+        this.logger.info(logCtx, 'No destinations available - no action taken');
+        return { outcome: 'no-resource' };
+
+      case 'cancelled':
+        this.logger.info(logCtx, 'User cancelled quick pick - no action taken');
+        return { outcome: 'cancelled' };
+
+      case 'selected': {
+        const bindResult = await this.destinationManager.bind(result.bindOptions);
+        if (!bindResult.success) {
+          this.logger.info(logCtx, 'Binding failed - no action taken');
+          return { outcome: 'bind-failed', error: bindResult.error };
+        }
+        return { outcome: 'bound', destinationName: bindResult.value.destinationName };
+      }
+
+      default: {
+        const _exhaustiveCheck: never = result;
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+          message: 'Unexpected picker result outcome',
+          functionName: 'RangeLinkService.showPickerAndBindForPaste',
+          details: { result: _exhaustiveCheck },
+        });
+      }
+    }
   }
 }
