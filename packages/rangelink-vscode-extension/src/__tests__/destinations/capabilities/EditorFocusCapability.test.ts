@@ -186,5 +186,4 @@ describe('EditorFocusCapability', () => {
       );
     });
   });
-
 });
