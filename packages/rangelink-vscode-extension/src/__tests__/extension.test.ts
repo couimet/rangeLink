@@ -104,6 +104,15 @@ jest.mock('vscode', () => ({
       public color?: any,
     ) {}
   },
+  DocumentLink: class {
+    range: any;
+    tooltip: string | undefined = undefined;
+    target: any = undefined;
+    constructor(range: any, target?: any) {
+      this.range = range;
+      this.target = target;
+    }
+  },
 }));
 
 describe('Configuration loading and validation', () => {

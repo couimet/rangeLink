@@ -221,7 +221,7 @@ describe('RangeLinkDocumentProvider', () => {
       expect(links).toHaveLength(0); // Should stop processing
     });
 
-    it('should create command URI with encoded arguments', () => {
+    it('should not set target on links (deferred to resolveDocumentLink)', () => {
       const mockParsed: ParsedLink = {
         path: 'src/file.ts',
         start: { line: 10 },
@@ -240,8 +240,47 @@ describe('RangeLinkDocumentProvider', () => {
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
-      expect(links[0].target).toBeDefined();
-      expect(links[0].target!.toString()).toContain('command:rangelink.handleDocumentLinkClick');
+      expect(links[0].target).toBeUndefined();
+      expect(links[0].tooltip).toBe('Navigate to src/file.ts');
+    });
+  });
+
+  describe('resolveDocumentLink', () => {
+    it('should set command URI target from link data', () => {
+      const mockParsed: ParsedLink = {
+        path: 'src/utils/parser.ts',
+        start: { line: 42, character: 8 },
+        end: { line: 67, character: 35 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Rectangular,
+      };
+      mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
+      mockHandler.formatTooltip.mockReturnValue('Navigate to src/utils/parser.ts');
+
+      const document = createMockDocument({
+        getText: createMockText('src/utils/parser.ts##L42C8-L67C35'),
+        uri: createMockUri('/test/file.ts'),
+        positionAt: createMockPositionAt(),
+      });
+      const token = createMockCancellationToken();
+      const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
+
+      const resolved = provider.resolveDocumentLink(links[0]);
+
+      const expectedArgs = JSON.stringify({
+        linkText: 'src/utils/parser.ts##L42C8-L67C35',
+        parsed: mockParsed,
+      });
+      expect(resolved.target!.toString()).toBe(
+        `command:rangelink.handleDocumentLinkClick?${encodeURIComponent(expectedArgs)}`,
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkDocumentProvider.resolveDocumentLink',
+          linkText: 'src/utils/parser.ts##L42C8-L67C35',
+        },
+        'Resolved document link target',
+      );
     });
   });
 

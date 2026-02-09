@@ -142,11 +142,16 @@ const mockPosition = jest.fn((line, char) => ({ line, character: char }));
 
 const mockSelection = jest.fn((start, end) => ({ start, end, anchor: start, active: end }));
 
-const mockDocumentLink = jest.fn(function (this: any, range: any) {
-  this.range = range;
-  this.tooltip = undefined;
-  this.target = undefined;
-});
+class MockDocumentLink {
+  range: any;
+  tooltip: string | undefined = undefined;
+  target: any = undefined;
+
+  constructor(range: any, target?: any) {
+    this.range = range;
+    this.target = target;
+  }
+}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Mocking enums values to match the real vscode enums -- BEGIN
@@ -191,7 +196,7 @@ module.exports = {
   Range: mockRange,
   Position: mockPosition,
   Selection: mockSelection,
-  DocumentLink: mockDocumentLink,
+  DocumentLink: MockDocumentLink,
   TextEditorRevealType: mockTextEditorRevealType,
   StatusBarAlignment: mockStatusBarAlignment,
   QuickPickItemKind: mockQuickPickItemKind,
