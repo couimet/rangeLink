@@ -29,7 +29,7 @@ export interface MockDestinationManagerOptions {
    * When provided with isBound:false and boundDestination, simulates the
    * "starts unbound → bind succeeds → becomes bound" transition:
    * isBound returns false on first call then true, and getBoundDestination
-   * returns undefined on first call then boundDestination.
+   * always returns boundDestination (callers check isBound() first).
    */
   bindResult?: ExtensionResult<BindSuccessInfo>;
 }
