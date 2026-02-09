@@ -1,13 +1,10 @@
 import * as vscode from 'vscode';
 
-// Mock VSCode API for testing
-import { Event } from 'vscode';
-
 // Simple Event implementation for mocks
 function createMockEvent<T>(): vscode.Event<T> & { fire(data: T): void } {
   const handlers: Array<(e: T) => void> = [];
 
-  function event(listener: (e: T) => any, thisArgs?: any, disposables?: any) {
+  function event(listener: (e: T) => any, _thisArgs?: any, _disposables?: any) {
     handlers.push(listener);
     return { dispose: () => {} };
   }
@@ -50,7 +47,7 @@ class MockMemento implements vscode.Memento {
     return (this.storage.get(key) as T | undefined) ?? defaultValue;
   }
 
-  update(key: string, value: any): Thenable<void> {
+  update(key: string, value: any): Promise<void> {
     this.storage.set(key, value);
     return Promise.resolve();
   }
@@ -59,7 +56,7 @@ class MockMemento implements vscode.Memento {
     return Array.from(this.storage.keys());
   }
 
-  setKeysForSync(keys: readonly string[]): void {
+  setKeysForSync(_keys: readonly string[]): void {
     // Mock implementation
   }
 }
@@ -180,7 +177,7 @@ class MockThemeIcon {
 // Mocking enums values to match the real vscode enums -- END
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-// Export mocked module
+// eslint-disable-next-line no-undef
 module.exports = {
   ...vscode,
   createMockEvent,
