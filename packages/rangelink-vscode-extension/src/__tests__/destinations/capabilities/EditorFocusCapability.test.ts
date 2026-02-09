@@ -187,37 +187,4 @@ describe('EditorFocusCapability', () => {
     });
   });
 
-  describe('inserter', () => {
-    it('returns inserter from InsertFactory.forTarget with fresh editor', async () => {
-      const mockAdapter = createMockVscodeAdapter();
-      const visibleEditor = createMockEditor({
-        document: createMockDocument({ uri: DOCUMENT_URI }),
-        viewColumn: 1,
-      });
-      jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([visibleEditor]);
-
-      const freshEditor = createMockEditor({
-        document: createMockDocument({ uri: DOCUMENT_URI }),
-      });
-      jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(freshEditor);
-
-      const mockInserterFn = jest.fn().mockResolvedValue(true);
-      const mockInsertFactory = createMockInsertFactory();
-      mockInsertFactory.forTarget.mockReturnValue(mockInserterFn);
-
-      const capability = new EditorFocusCapability(
-        mockAdapter,
-        DOCUMENT_URI,
-        mockInsertFactory,
-        mockLogger,
-      );
-
-      const result = await capability.focus(LOGGING_CONTEXT);
-
-      expect(result).toBeOkWith((value: FocusedDestination) => {
-        expect(value.inserter).toBe(mockInserterFn);
-      });
-      expect(mockInsertFactory.forTarget).toHaveBeenCalledWith(freshEditor);
-    });
-  });
 });

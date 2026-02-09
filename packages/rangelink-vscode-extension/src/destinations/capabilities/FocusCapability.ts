@@ -17,7 +17,7 @@ export const FocusErrorReason = {
 export type FocusErrorReason = (typeof FocusErrorReason)[keyof typeof FocusErrorReason];
 
 /**
- * Handle to a focused destination with insert capability.
+ * Handle to a focused destination with inserter capability.
  *
  * The inserter function captures the target (editor/terminal) in its closure,
  * eliminating stale reference issues.
@@ -36,13 +36,13 @@ export interface FocusError {
 
 /**
  * Result of focusing a paste destination.
- * On success, contains a FocusedDestination with insert capability.
+ * On success, contains a FocusedDestination with inserter capability.
  * On failure, contains a typed error with reason.
  */
 export type FocusResult = Result<FocusedDestination, FocusError>;
 
 /**
- * Capability for focusing paste destinations and obtaining insert handles.
+ * Capability for focusing paste destinations and obtaining inserter handles.
  *
  * The focus() method returns a Result containing a FocusedDestination
  * whose inserter function captures the fresh target reference.
