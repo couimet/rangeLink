@@ -6,10 +6,7 @@ import type { FocusSuccessInfo, PasteDestinationManager } from '../../destinatio
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import type { BindOptions, DestinationPickerResult } from '../../types';
 import { ExtensionResult } from '../../types';
-import {
-  createMockDestinationManager,
-  createMockDestinationPickerCommand,
-} from '../helpers';
+import { createMockDestinationManager, createMockDestinationPickerCommand } from '../helpers';
 
 describe('JumpToDestinationCommand', () => {
   let mockDestinationManager: jest.Mocked<PasteDestinationManager>;
