@@ -72,6 +72,7 @@ export default [
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'unicorn/prefer-node-protocol': 'error',
     },
   },

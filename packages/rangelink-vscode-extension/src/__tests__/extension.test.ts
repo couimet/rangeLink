@@ -104,6 +104,15 @@ jest.mock('vscode', () => ({
       public color?: any,
     ) {}
   },
+  DocumentLink: class {
+    range: any;
+    tooltip: string | undefined = undefined;
+    target: any = undefined;
+    constructor(range: any, target?: any) {
+      this.range = range;
+      this.target = target;
+    }
+  },
 }));
 
 describe('Configuration loading and validation', () => {
@@ -202,7 +211,7 @@ describe('Configuration loading and validation', () => {
       ],
     ])('should prioritize %s settings over others', (source, inspectResult, expectedValue) => {
       const mockConfig = {
-        get: jest.fn((key: string, defaultValue: string) => expectedValue),
+        get: jest.fn(() => expectedValue),
         inspect: jest.fn(() => ({ ...inspectResult, defaultValue: 'Default' })),
       };
       mockWorkspace.getConfiguration = jest.fn(() => mockConfig);
@@ -221,8 +230,7 @@ describe('Configuration loading and validation', () => {
   describe('Duplicate delimiter values', () => {
     it('should use defaults when all delimiters are the same', async () => {
       const mockConfig = {
-        get: jest.fn((key: string) => {
-          // All delimiters set to same value 'X'
+        get: jest.fn(() => {
           return 'X';
         }),
         inspect: jest.fn((key: string) => {

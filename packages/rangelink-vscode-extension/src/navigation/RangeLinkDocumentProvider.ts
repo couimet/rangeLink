@@ -1,10 +1,28 @@
 import type { Logger } from 'barebone-logger';
+import type { ParsedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { RangeLinkClickArgs } from '../types';
 
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
+
+/**
+ * DocumentLink subclass that carries parsed RangeLink data.
+ *
+ * VSCode guarantees the same object reference is passed from
+ * provideDocumentLinks to resolveDocumentLink, so attaching
+ * data directly on the link is the standard pattern.
+ */
+class RangeLinkDocumentLink extends vscode.DocumentLink {
+  constructor(
+    range: vscode.Range,
+    readonly linkText: string,
+    readonly parsed: ParsedLink,
+  ) {
+    super(range);
+  }
+}
 
 /**
  * Document link provider for RangeLink format detection in editor files.
@@ -115,16 +133,8 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
 
       const parsed = parseResult.value;
 
-      // Create document link with custom command
-      const docLink = this.ideAdapter.createDocumentLink(range);
-
-      // Reuse formatLinkTooltip utility (DRY - same as terminal provider)
+      const docLink = new RangeLinkDocumentLink(range, linkText, parsed);
       docLink.tooltip = this.handler.formatTooltip(parsed);
-
-      // Create command URI that will trigger navigation
-      docLink.target = this.ideAdapter.parseUri(
-        `command:rangelink.handleDocumentLinkClick?${encodeURIComponent(JSON.stringify({ linkText, parsed }))}`,
-      );
 
       links.push(docLink);
     }
@@ -139,6 +149,37 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
     );
 
     return links;
+  }
+
+  /**
+   * Resolve a document link by setting its command URI target.
+   *
+   * Called by VSCode when the user clicks a link. Setting the target here
+   * (instead of in provideDocumentLinks) keeps the hover tooltip clean —
+   * VSCode composes tooltip + target into raw markdown when both are present.
+   *
+   * @param link - The RangeLink document link to resolve
+   * @returns The link with target set
+   */
+  resolveDocumentLink(link: vscode.DocumentLink): vscode.DocumentLink {
+    if (!(link instanceof RangeLinkDocumentLink)) {
+      this.logger.warn(
+        { fn: 'RangeLinkDocumentProvider.resolveDocumentLink' },
+        'Unexpected link type - not a RangeLinkDocumentLink',
+      );
+      return link;
+    }
+
+    link.target = this.ideAdapter.parseUri(
+      `command:rangelink.handleDocumentLinkClick?${encodeURIComponent(JSON.stringify({ linkText: link.linkText, parsed: link.parsed }))}`,
+    );
+
+    this.logger.debug(
+      { fn: 'RangeLinkDocumentProvider.resolveDocumentLink', linkText: link.linkText },
+      'Resolved document link target',
+    );
+
+    return link;
   }
 
   /**

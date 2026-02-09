@@ -594,17 +594,6 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
     return this.ideInstance.Uri.parse(value);
   }
 
-  /**
-   * Create a document link.
-   *
-   * @param range - The range where the link appears in the document
-   * @param target - Optional target URI for the link
-   * @returns New DocumentLink instance
-   */
-  createDocumentLink(range: vscode.Range, target?: vscode.Uri): vscode.DocumentLink {
-    return new this.ideInstance.DocumentLink(range, target);
-  }
-
   // ============================================================================
   // Event Listeners
   // ============================================================================
