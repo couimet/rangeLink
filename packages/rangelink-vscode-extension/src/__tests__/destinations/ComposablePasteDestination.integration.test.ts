@@ -255,6 +255,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         document: createMockDocument({ uri: mockUri }),
       });
 
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor];
       jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
       const insertSpy = jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(true);
 
@@ -262,7 +263,6 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const focusCapability = new EditorFocusCapability(
         mockAdapter,
         mockUri,
-        undefined,
         insertFactory,
         mockLogger,
       );
@@ -296,13 +296,13 @@ describe('ComposablePasteDestination Integration Tests', () => {
         document: createMockDocument({ uri: mockUri }),
       });
 
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor];
       jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(new Error('Editor not found'));
 
       const insertFactory = new EditorInsertFactory(mockAdapter, mockLogger);
       const focusCapability = new EditorFocusCapability(
         mockAdapter,
         mockUri,
-        undefined,
         insertFactory,
         mockLogger,
       );
@@ -332,6 +332,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
         document: createMockDocument({ uri: mockUri }),
       });
 
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor];
       jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
       jest.spyOn(mockAdapter, 'insertTextAtCursor').mockResolvedValue(false);
 
@@ -339,7 +340,6 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const focusCapability = new EditorFocusCapability(
         mockAdapter,
         mockUri,
-        undefined,
         insertFactory,
         mockLogger,
       );

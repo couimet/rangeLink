@@ -331,7 +331,7 @@ export class ComposablePasteDestination implements PasteDestination {
       return false;
     }
 
-    const success = await focusResult.value.insert(paddedText);
+    const success = await focusResult.value.inserter(paddedText);
 
     if (success) {
       this.logger.info(context, `Pasted ${contentLabel} to ${this.displayName}`);

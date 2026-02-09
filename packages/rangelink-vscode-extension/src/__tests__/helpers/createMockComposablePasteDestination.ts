@@ -27,14 +27,14 @@ export interface MockComposablePasteDestinationConfig
 /**
  * Create a mock jest.Mocked<FocusCapability> for testing.
  *
- * @param insertReturns - What insert() should return (default: true)
- * @returns Mocked FocusCapability with focus() returning Result.ok({ insert: ... })
+ * @param insertReturns - What inserter() should return (default: true)
+ * @returns Mocked FocusCapability with focus() returning Result.ok({ inserter: ... })
  */
 export const createMockFocusCapability = (
   insertReturns: boolean = true,
 ): jest.Mocked<FocusCapability> => {
   const mockInsert = jest.fn().mockResolvedValue(insertReturns);
-  const focusedDestination: FocusedDestination = { insert: mockInsert };
+  const focusedDestination: FocusedDestination = { inserter: mockInsert };
 
   return {
     focus: jest.fn().mockResolvedValue(Result.ok(focusedDestination)),
@@ -56,7 +56,7 @@ export const createMockEligibilityChecker = (): jest.Mocked<EligibilityChecker> 
  * Create a mock ComposablePasteDestination for testing.
  *
  * Provides default mocks for all capabilities with sensible behaviors:
- * - FocusCapability: Returns Result.ok({ insert: ... }) that returns true
+ * - FocusCapability: Returns Result.ok({ inserter: ... }) that returns true
  * - EligibilityChecker: Returns true (always eligible)
  * - isAvailable: Returns true (always available)
  * - All other config: Sensible defaults

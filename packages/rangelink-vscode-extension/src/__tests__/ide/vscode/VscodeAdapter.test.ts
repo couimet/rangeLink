@@ -2244,6 +2244,61 @@ describe('VscodeAdapter', () => {
         expect(result).toStrictEqual([]);
       });
     });
+
+    describe('findVisibleEditorsByUri', () => {
+      const TARGET_URI = createMockUri('/workspace/src/target.ts');
+
+      it('returns matching editors when document is visible in one tab group', () => {
+        const matchingEditor = createMockEditor({
+          document: createMockDocument({ uri: TARGET_URI }),
+          viewColumn: 1,
+        });
+        const otherEditor = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/src/other.ts') }),
+          viewColumn: 2,
+        });
+        mockVSCode.window.visibleTextEditors = [matchingEditor, otherEditor];
+
+        const result = adapter.findVisibleEditorsByUri(TARGET_URI);
+
+        expect(result).toStrictEqual([matchingEditor]);
+      });
+
+      it('returns multiple editors when document is visible in multiple tab groups', () => {
+        const editor1 = createMockEditor({
+          document: createMockDocument({ uri: TARGET_URI }),
+          viewColumn: 1,
+        });
+        const editor2 = createMockEditor({
+          document: createMockDocument({ uri: TARGET_URI }),
+          viewColumn: 2,
+        });
+        mockVSCode.window.visibleTextEditors = [editor1, editor2];
+
+        const result = adapter.findVisibleEditorsByUri(TARGET_URI);
+
+        expect(result).toStrictEqual([editor1, editor2]);
+      });
+
+      it('returns empty array when document is not visible', () => {
+        const otherEditor = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/src/other.ts') }),
+        });
+        mockVSCode.window.visibleTextEditors = [otherEditor];
+
+        const result = adapter.findVisibleEditorsByUri(TARGET_URI);
+
+        expect(result).toStrictEqual([]);
+      });
+
+      it('returns empty array when no editors are visible', () => {
+        mockVSCode.window.visibleTextEditors = [];
+
+        const result = adapter.findVisibleEditorsByUri(TARGET_URI);
+
+        expect(result).toStrictEqual([]);
+      });
+    });
   });
 
   describe('Tab Group Operations', () => {

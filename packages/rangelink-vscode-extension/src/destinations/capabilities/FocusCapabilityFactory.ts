@@ -29,7 +29,6 @@ export class FocusCapabilityFactory {
     return new EditorFocusCapability(
       this.ideAdapter,
       editor.document.uri,
-      editor.viewColumn,
       new EditorInsertFactory(this.ideAdapter, this.logger),
       this.logger,
     );
