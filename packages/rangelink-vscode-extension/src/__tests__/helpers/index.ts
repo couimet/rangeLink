@@ -33,6 +33,7 @@ export * from './createMockFocusCapabilityFactory';
 export * from './createMockGetWorkspaceFolder';
 export * from './createMockGitHubCopilotChatComposableDestination';
 export * from './createMockGitHubCopilotChatDestination';
+export * from './createMockInsertFactory';
 export * from './createMockInputSelection';
 export * from './createMockLanguages';
 export * from './createMockLineAt';

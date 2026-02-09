@@ -31,7 +31,7 @@ export class TerminalFocusCapability implements FocusCapability {
       );
 
       return Result.ok({
-        insert: this.insertFactory.forTarget(this.terminal),
+        inserter: this.insertFactory.forTarget(this.terminal),
       });
     } catch (error) {
       this.logger.warn(

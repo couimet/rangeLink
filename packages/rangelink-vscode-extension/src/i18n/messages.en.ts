@@ -62,6 +62,12 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: No text selected. Click in the file, select text, and try again.',
   [MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE]:
     'RangeLink: No active file. Open a file and try again.',
+  [MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS]:
+    'RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
+  [MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE]:
+    'RangeLink: Bound editor is no longer visible. Re-open the file and bind again.',
+  [MessageCode.ERROR_TEXT_EDITOR_VIEWCOLUMN_UNDEFINED]:
+    'RangeLink: Could not determine editor position. Try closing and reopening the file.',
   [MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT]:
     'RangeLink: Cannot navigate - invalid link format: {linkText}',
   [MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE]: 'RangeLink: Cannot bind to {fileName} - binary file',

@@ -686,6 +686,17 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
   }
 
   /**
+   * Find visible text editors whose document matches the given URI.
+   *
+   * @param uri - Document URI to match against
+   * @returns Array of matching visible editors (0, 1, or more)
+   */
+  findVisibleEditorsByUri(uri: vscode.Uri): readonly vscode.TextEditor[] {
+    const uriString = uri.toString();
+    return this.visibleTextEditors.filter((editor) => editor.document.uri.toString() === uriString);
+  }
+
+  /**
    * Get tab groups API for managing editor tab groups.
    *
    * @returns Tab groups API

@@ -57,7 +57,7 @@ describe('ComposablePasteDestination', () => {
     it('should not double-pad already padded text', async () => {
       const mockInsert = jest.fn().mockResolvedValue(true);
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
+      focusCapability.focus.mockResolvedValue(Result.ok({ inserter: mockInsert }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -80,7 +80,7 @@ describe('ComposablePasteDestination', () => {
       const focusCapability = createMockFocusCapability();
       focusCapability.focus.mockImplementation(async () => {
         callOrder.push('focus');
-        return Result.ok({ insert: mockInsert });
+        return Result.ok({ inserter: mockInsert });
       });
 
       const destination = createMockComposablePasteDestination({
@@ -104,7 +104,7 @@ describe('ComposablePasteDestination', () => {
     it('should return true when insertion succeeds', async () => {
       const mockInsert = jest.fn().mockResolvedValue(true);
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
+      focusCapability.focus.mockResolvedValue(Result.ok({ inserter: mockInsert }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -125,7 +125,7 @@ describe('ComposablePasteDestination', () => {
     it('should return false when insertion fails', async () => {
       const mockInsert = jest.fn().mockResolvedValue(false);
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
+      focusCapability.focus.mockResolvedValue(Result.ok({ inserter: mockInsert }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -231,7 +231,7 @@ describe('ComposablePasteDestination', () => {
     it('should pass link text to insert function with paddingMode applied', async () => {
       const mockInsert = jest.fn().mockResolvedValue(true);
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
+      focusCapability.focus.mockResolvedValue(Result.ok({ inserter: mockInsert }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,
@@ -266,7 +266,7 @@ describe('ComposablePasteDestination', () => {
     it('should pass content text to insert function with paddingMode applied', async () => {
       const mockInsert = jest.fn().mockResolvedValue(true);
       const focusCapability = createMockFocusCapability();
-      focusCapability.focus.mockResolvedValue(Result.ok({ insert: mockInsert }));
+      focusCapability.focus.mockResolvedValue(Result.ok({ inserter: mockInsert }));
 
       const destination = createMockComposablePasteDestination({
         focusCapability,

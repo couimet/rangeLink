@@ -34,7 +34,7 @@ export const createMockFocusCapability = (
   insertReturns: boolean = true,
 ): jest.Mocked<FocusCapability> => {
   const mockInsert = jest.fn().mockResolvedValue(insertReturns);
-  const focusedDestination: FocusedDestination = { insert: mockInsert };
+  const focusedDestination: FocusedDestination = { inserter: mockInsert };
 
   return {
     focus: jest.fn().mockResolvedValue(Result.ok(focusedDestination)),

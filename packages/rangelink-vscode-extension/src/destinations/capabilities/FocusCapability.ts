@@ -5,9 +5,13 @@ import type { Result } from 'rangelink-core-ts';
  * Reasons why focusing a paste destination can fail.
  */
 export const FocusErrorReason = {
+  COMMAND_FOCUS_FAILED: 'COMMAND_FOCUS_FAILED',
+  EDITOR_AMBIGUOUS_COLUMNS: 'EDITOR_AMBIGUOUS_COLUMNS',
+  EDITOR_NOT_VISIBLE: 'EDITOR_NOT_VISIBLE',
+  EDITOR_VIEWCOLUMN_UNDEFINED: 'EDITOR_VIEWCOLUMN_UNDEFINED',
   SHOW_DOCUMENT_FAILED: 'SHOW_DOCUMENT_FAILED',
   TERMINAL_FOCUS_FAILED: 'TERMINAL_FOCUS_FAILED',
-  COMMAND_FOCUS_FAILED: 'COMMAND_FOCUS_FAILED',
+  // Use alphabetical order to make it easier to maintain
 } as const;
 
 export type FocusErrorReason = (typeof FocusErrorReason)[keyof typeof FocusErrorReason];
@@ -15,11 +19,11 @@ export type FocusErrorReason = (typeof FocusErrorReason)[keyof typeof FocusError
 /**
  * Handle to a focused destination with insert capability.
  *
- * The insert function captures the target (editor/terminal) in its closure,
+ * The inserter function captures the target (editor/terminal) in its closure,
  * eliminating stale reference issues.
  */
 export interface FocusedDestination {
-  insert: (text: string) => Promise<boolean>;
+  inserter: (text: string) => Promise<boolean>;
 }
 
 /**
@@ -41,7 +45,7 @@ export type FocusResult = Result<FocusedDestination, FocusError>;
  * Capability for focusing paste destinations and obtaining insert handles.
  *
  * The focus() method returns a Result containing a FocusedDestination
- * whose insert function captures the fresh target reference.
+ * whose inserter function captures the fresh target reference.
  */
 export interface FocusCapability {
   focus(context: LoggingContext): Promise<FocusResult>;
