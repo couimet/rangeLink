@@ -4,12 +4,13 @@ import type { DelimiterConfig } from 'rangelink-core-ts';
 import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { DestinationPickerCommand } from '../commands';
 import type { ConfigReader } from '../config';
 import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { messagesEn } from '../i18n';
 import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkService';
-import { MessageCode, PasteContentType, QuickPickBindResult } from '../types';
+import { MessageCode, PasteContentType } from '../types';
 import * as formatMessageModule from '../utils/formatMessage';
 import * as generateLinkModule from '../utils/generateLinkFromSelections';
 
@@ -17,6 +18,7 @@ import {
   createMockClipboard,
   createMockConfigReader,
   createMockDestinationManager,
+  createMockDestinationPickerCommand,
   createMockDocument,
   createMockEditor,
   createMockEditorComposablePasteDestination,
@@ -24,6 +26,7 @@ import {
   createMockFormattedLink,
   createMockPosition,
   createMockSelection,
+  createMockTerminal,
   createMockTerminalComposablePasteDestination,
   createMockTerminalPasteDestination,
   createMockText,
@@ -38,6 +41,7 @@ import {
 let service: RangeLinkService;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
 let mockDestinationManager: PasteDestinationManager;
+let mockPickerCommand: jest.Mocked<DestinationPickerCommand>;
 let mockConfigReader: jest.Mocked<ConfigReader>;
 let mockLogger: Logger;
 let mockClipboard: MockClipboard;
@@ -87,6 +91,7 @@ const mockSelection = (
 describe('RangeLinkService', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
+    mockPickerCommand = createMockDestinationPickerCommand();
     mockClipboard = createMockClipboard();
     mockConfigReader = createMockConfigReader();
     mockSetStatusBarMessage = jest.fn().mockReturnValue({ dispose: jest.fn() });
@@ -117,6 +122,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -239,6 +245,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -319,6 +326,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -394,6 +402,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -649,6 +658,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -667,6 +677,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -737,6 +748,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -807,6 +819,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -885,19 +898,26 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
       });
 
       describe('when no destination bound', () => {
-        it('should show quick pick to select destination', async () => {
+        it('should invoke picker command to select destination', async () => {
+          mockPickerCommand.execute.mockResolvedValue({ outcome: 'cancelled' });
+
           await service.pasteSelectedTextToDestination();
 
-          expect(mockDestinationManager.showDestinationQuickPickForPaste).toHaveBeenCalledTimes(1);
+          expect(mockPickerCommand.execute).toHaveBeenCalledTimes(1);
         });
 
         describe('when user cancels quick pick', () => {
+          beforeEach(() => {
+            mockPickerCommand.execute.mockResolvedValue({ outcome: 'cancelled' });
+          });
+
           it('should NOT copy to clipboard', async () => {
             await service.pasteSelectedTextToDestination();
 
@@ -912,23 +932,25 @@ describe('RangeLinkService', () => {
         });
 
         it('should copy to clipboard and send to destination after binding via quick pick', async () => {
+          const mockTerminal = createMockTerminal();
           const mockDestination = createMockTerminalPasteDestination({
             displayName: 'Terminal',
           });
+          mockPickerCommand.execute.mockResolvedValue({
+            outcome: 'selected',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+          });
           mockDestinationManager = createMockDestinationManager({
             isBound: false,
-            showDestinationQuickPickForPasteResult: QuickPickBindResult.Bound,
+            boundDestination: mockDestination,
+            sendTextToDestinationResult: true,
+            bindResult: Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
           });
-          (mockDestinationManager.isBound as jest.Mock)
-            .mockReturnValueOnce(false)
-            .mockReturnValue(true);
-          (mockDestinationManager.getBoundDestination as jest.Mock).mockReturnValue(
-            mockDestination,
-          );
           service = new RangeLinkService(
             delimiters,
             mockVscodeAdapter,
             mockDestinationManager,
+            mockPickerCommand,
             mockConfigReader,
             mockLogger,
           );
@@ -960,6 +982,7 @@ describe('RangeLinkService', () => {
             delimiters,
             mockVscodeAdapter,
             mockDestinationManager,
+            mockPickerCommand,
             mockConfigReader,
             mockLogger,
           );
@@ -998,6 +1021,7 @@ describe('RangeLinkService', () => {
             delimiters,
             mockVscodeAdapter,
             mockDestinationManager,
+            mockPickerCommand,
             mockConfigReader,
             mockLogger,
           );
@@ -1152,6 +1176,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -1176,6 +1201,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -1233,6 +1259,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -1257,6 +1284,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -1290,6 +1318,7 @@ describe('RangeLinkService', () => {
           delimiters,
           adapter,
           boundDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -1322,6 +1351,7 @@ describe('RangeLinkService', () => {
           delimiters,
           adapter,
           boundDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -1349,6 +1379,7 @@ describe('RangeLinkService', () => {
           delimiters,
           adapter,
           boundDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -1381,6 +1412,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -1459,6 +1491,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -1527,6 +1560,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -1624,6 +1658,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -1774,6 +1809,7 @@ describe('RangeLinkService', () => {
         delimiters,
         localMockVscodeAdapter,
         createMockDestinationManager({ isBound: false }),
+        mockPickerCommand,
         localMockConfigReader,
         mockLogger,
       );
@@ -1932,6 +1968,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -1969,6 +2006,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -2006,6 +2044,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -2033,6 +2072,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -2111,6 +2151,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -2186,24 +2227,25 @@ describe('RangeLinkService', () => {
     });
 
     describe('destination binding', () => {
-      it('should skip quick pick when destination is already bound', async () => {
+      it('should skip picker when destination is already bound', async () => {
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
-        expect(mockDestinationManager.showDestinationQuickPickForPaste).not.toHaveBeenCalled();
+        expect(mockPickerCommand.execute).not.toHaveBeenCalled();
         expect(copyAndSendSpy).toHaveBeenCalled();
       });
 
-      it('should show quick pick when not bound and abort when user cancels', async () => {
+      it('should show picker when not bound and abort when user cancels', async () => {
         mockDestinationManager = createMockDestinationManager({
           isBound: false,
-          showDestinationQuickPickForPasteResult: QuickPickBindResult.Cancelled,
         });
+        mockPickerCommand.execute.mockResolvedValue({ outcome: 'cancelled' });
         service = new RangeLinkService(
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -2215,7 +2257,7 @@ describe('RangeLinkService', () => {
 
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
-        expect(mockDestinationManager.showDestinationQuickPickForPaste).toHaveBeenCalled();
+        expect(mockPickerCommand.execute).toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkService.pasteFilePath',
@@ -2225,13 +2267,14 @@ describe('RangeLinkService', () => {
           'No destination bound, showing quick pick',
         );
         expect(copyAndSendSpy).not.toHaveBeenCalled();
-        expect(mockLogger.info).toHaveBeenCalledWith(
+        expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkService.pasteFilePath',
             pathFormat: 'absolute',
             uriSource: 'context-menu',
+            outcome: 'cancelled',
           },
-          'User cancelled quick pick or binding failed - no action taken',
+          'Picker did not bind, aborting',
         );
       });
     });
@@ -2248,6 +2291,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -2323,6 +2367,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -2373,6 +2418,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -2396,6 +2442,7 @@ describe('RangeLinkService', () => {
         delimiters,
         mockVscodeAdapter,
         mockDestinationManager,
+        mockPickerCommand,
         mockConfigReader,
         mockLogger,
       );
@@ -2428,6 +2475,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );
@@ -2453,6 +2501,7 @@ describe('RangeLinkService', () => {
           delimiters,
           mockVscodeAdapter,
           mockDestinationManager,
+          mockPickerCommand,
           mockConfigReader,
           mockLogger,
         );

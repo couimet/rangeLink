@@ -1685,6 +1685,36 @@ describe('VscodeAdapter', () => {
     });
   });
 
+  describe('getCommands', () => {
+    it('should return commands from VSCode API', async () => {
+      const commands = ['workbench.action.files.save', 'editor.action.formatDocument'];
+      mockVSCode.commands.getCommands.mockResolvedValue(commands);
+
+      const result = await adapter.getCommands();
+
+      expect(mockVSCode.commands.getCommands).toHaveBeenCalledWith(false);
+      expect(result).toStrictEqual(commands);
+    });
+
+    it('should pass filterInternal parameter', async () => {
+      const commands = ['workbench.action.files.save'];
+      mockVSCode.commands.getCommands.mockResolvedValue(commands);
+
+      const result = await adapter.getCommands(true);
+
+      expect(mockVSCode.commands.getCommands).toHaveBeenCalledWith(true);
+      expect(result).toStrictEqual(commands);
+    });
+
+    it('should return empty array when getCommands returns undefined', async () => {
+      mockVSCode.commands.getCommands.mockResolvedValue(undefined);
+
+      const result = await adapter.getCommands();
+
+      expect(result).toStrictEqual([]);
+    });
+  });
+
   describe('parseUri', () => {
     it('should parse file:// URI using VSCode API', () => {
       const uriString = 'file:///workspace/file.ts';
@@ -2118,6 +2148,69 @@ describe('VscodeAdapter', () => {
         expect(result).toStrictEqual(mockEditors);
         expect(result).toHaveLength(3);
       });
+
+      it('should return empty array when visibleTextEditors is undefined', () => {
+        mockVSCode.window.visibleTextEditors = undefined;
+
+        const result = adapter.visibleTextEditors;
+
+        expect(result).toStrictEqual([]);
+      });
+    });
+
+    describe('findVisibleEditorsByUri', () => {
+      const TARGET_URI = createMockUri('/workspace/src/target.ts');
+
+      it('returns matching editors when document is visible in one tab group', () => {
+        const matchingEditor = createMockEditor({
+          document: createMockDocument({ uri: TARGET_URI }),
+          viewColumn: 1,
+        });
+        const otherEditor = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/src/other.ts') }),
+          viewColumn: 2,
+        });
+        mockVSCode.window.visibleTextEditors = [matchingEditor, otherEditor];
+
+        const result = adapter.findVisibleEditorsByUri(TARGET_URI);
+
+        expect(result).toStrictEqual([matchingEditor]);
+      });
+
+      it('returns multiple editors when document is visible in multiple tab groups', () => {
+        const editor1 = createMockEditor({
+          document: createMockDocument({ uri: TARGET_URI }),
+          viewColumn: 1,
+        });
+        const editor2 = createMockEditor({
+          document: createMockDocument({ uri: TARGET_URI }),
+          viewColumn: 2,
+        });
+        mockVSCode.window.visibleTextEditors = [editor1, editor2];
+
+        const result = adapter.findVisibleEditorsByUri(TARGET_URI);
+
+        expect(result).toStrictEqual([editor1, editor2]);
+      });
+
+      it('returns empty array when document is not visible', () => {
+        const otherEditor = createMockEditor({
+          document: createMockDocument({ uri: createMockUri('/workspace/src/other.ts') }),
+        });
+        mockVSCode.window.visibleTextEditors = [otherEditor];
+
+        const result = adapter.findVisibleEditorsByUri(TARGET_URI);
+
+        expect(result).toStrictEqual([]);
+      });
+
+      it('returns empty array when no editors are visible', () => {
+        mockVSCode.window.visibleTextEditors = [];
+
+        const result = adapter.findVisibleEditorsByUri(TARGET_URI);
+
+        expect(result).toStrictEqual([]);
+      });
     });
   });
 
@@ -2380,6 +2473,14 @@ describe('VscodeAdapter', () => {
 
         expect(result).toStrictEqual([]);
         expect(result).toHaveLength(0);
+      });
+
+      it('should return empty array when extensions.all is undefined', () => {
+        mockVSCode.extensions.all = undefined;
+
+        const result = adapter.extensions;
+
+        expect(result).toStrictEqual([]);
       });
     });
   });

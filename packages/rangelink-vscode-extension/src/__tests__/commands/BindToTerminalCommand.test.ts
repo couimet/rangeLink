@@ -1,10 +1,13 @@
 import { createMockLogger } from 'barebone-logger-testing';
+import { Result } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import { BindToTerminalCommand } from '../../commands/BindToTerminalCommand';
+import type { BindSuccessInfo } from '../../destinations';
 import type { TerminalPickerResult } from '../../destinations/utils/showTerminalPicker';
 import * as showTerminalPickerModule from '../../destinations/utils/showTerminalPicker';
-import { BindAbortReason, type TerminalBindResult } from '../../types';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
+import type { ExtensionResult } from '../../types';
 import {
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
@@ -87,11 +90,9 @@ describe('BindToTerminalCommand', () => {
         mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
           createMockGroupedTerminals([createMockTerminalQuickPickItem(terminal)]),
         );
-        const bindResult: TerminalBindResult = {
-          outcome: 'bound',
-          details: { terminalName: 'My Terminal' },
-        };
-        mockDestinationManager.bindTerminal.mockResolvedValue(bindResult);
+        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(
+          Result.ok({ destinationName: 'My Terminal', destinationKind: 'terminal' }),
+        );
         command = new BindToTerminalCommand(
           mockAdapter,
           mockAvailabilityService,
@@ -103,39 +104,12 @@ describe('BindToTerminalCommand', () => {
 
         expect(result).toStrictEqual({
           outcome: 'bound',
-          details: { terminalName: 'My Terminal' },
+          destinationName: 'My Terminal',
         });
         expect(showTerminalPickerSpy).not.toHaveBeenCalled();
-        expect(mockDestinationManager.bindTerminal).toHaveBeenCalledWith(terminal);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'BindToTerminalCommand.execute', terminalName: 'My Terminal' },
-          'Single terminal, auto-binding',
-        );
-      });
-
-      it('returns aborted when already bound to same terminal', async () => {
-        const terminal = createMockTerminal({ name: 'My Terminal' });
-        mockAdapter = createMockVscodeAdapter();
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
-          createMockGroupedTerminals([createMockTerminalQuickPickItem(terminal)]),
-        );
-        const bindResult: TerminalBindResult = {
-          outcome: 'aborted',
-          reason: BindAbortReason.ALREADY_BOUND_TO_SAME,
-        };
-        mockDestinationManager.bindTerminal.mockResolvedValue(bindResult);
-        command = new BindToTerminalCommand(
-          mockAdapter,
-          mockAvailabilityService,
-          mockDestinationManager,
-          mockLogger,
-        );
-
-        const result = await command.execute();
-
-        expect(result).toStrictEqual({
-          outcome: 'aborted',
-          reason: 'ALREADY_BOUND_TO_SAME',
+        expect(mockDestinationManager.bind).toHaveBeenCalledWith({
+          kind: 'terminal',
+          terminal,
         });
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'BindToTerminalCommand.execute', terminalName: 'My Terminal' },
@@ -143,17 +117,18 @@ describe('BindToTerminalCommand', () => {
         );
       });
 
-      it('returns aborted when user declines replacement', async () => {
+      it('returns bind-failed when bind fails', async () => {
         const terminal = createMockTerminal({ name: 'My Terminal' });
         mockAdapter = createMockVscodeAdapter();
         mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue(
           createMockGroupedTerminals([createMockTerminalQuickPickItem(terminal)]),
         );
-        const bindResult: TerminalBindResult = {
-          outcome: 'aborted',
-          reason: BindAbortReason.USER_DECLINED_REPLACEMENT,
-        };
-        mockDestinationManager.bindTerminal.mockResolvedValue(bindResult);
+        const bindError = new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+          message: 'Terminal bind failed',
+          functionName: 'PasteDestinationManager.bind',
+        });
+        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(Result.err(bindError));
         command = new BindToTerminalCommand(
           mockAdapter,
           mockAvailabilityService,
@@ -164,8 +139,8 @@ describe('BindToTerminalCommand', () => {
         const result = await command.execute();
 
         expect(result).toStrictEqual({
-          outcome: 'aborted',
-          reason: 'USER_DECLINED_REPLACEMENT',
+          outcome: 'bind-failed',
+          error: bindError,
         });
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'BindToTerminalCommand.execute', terminalName: 'My Terminal' },
@@ -185,19 +160,16 @@ describe('BindToTerminalCommand', () => {
             createMockTerminalQuickPickItem(terminal2),
           ]),
         );
-        const bindResult: TerminalBindResult = {
-          outcome: 'bound',
-          details: { terminalName: 'Terminal 2' },
-        };
-        mockDestinationManager.bindTerminal.mockResolvedValue(bindResult);
+        const bindOk = Result.ok({ destinationName: 'Terminal 2', destinationKind: 'terminal' });
+        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(bindOk);
         showTerminalPickerSpy.mockImplementation(
           async (
-            _terminals,
-            _activeTerminal,
-            _adapter,
-            _options,
-            _logger,
-            onSelected: (terminal: vscode.Terminal) => Promise<TerminalBindResult>,
+            _terminals: readonly vscode.Terminal[],
+            _activeTerminal: vscode.Terminal | undefined,
+            _adapter: unknown,
+            _options: unknown,
+            _logger: unknown,
+            onSelected: (terminal: vscode.Terminal) => Promise<ExtensionResult<BindSuccessInfo>>,
           ) => {
             const selectedResult = await onSelected(terminal2);
             return { outcome: 'selected' as const, result: selectedResult };
@@ -212,9 +184,12 @@ describe('BindToTerminalCommand', () => {
 
         const result = await command.execute();
 
-        expect(result).toStrictEqual({ outcome: 'bound', details: { terminalName: 'Terminal 2' } });
+        expect(result).toStrictEqual({ outcome: 'bound', destinationName: 'Terminal 2' });
         expect(showTerminalPickerSpy).toHaveBeenCalledTimes(1);
-        expect(mockDestinationManager.bindTerminal).toHaveBeenCalledWith(terminal2);
+        expect(mockDestinationManager.bind).toHaveBeenCalledWith({
+          kind: 'terminal',
+          terminal: terminal2,
+        });
       });
 
       it('returns cancelled when user cancels picker', async () => {
@@ -244,7 +219,7 @@ describe('BindToTerminalCommand', () => {
           { fn: 'BindToTerminalCommand.execute', pickerOutcome: 'cancelled' },
           'User cancelled terminal picker',
         );
-        expect(mockDestinationManager.bindTerminal).not.toHaveBeenCalled();
+        expect(mockDestinationManager.bind).not.toHaveBeenCalled();
       });
 
       it('returns cancelled when user escapes secondary picker', async () => {
@@ -276,7 +251,7 @@ describe('BindToTerminalCommand', () => {
         );
       });
 
-      it('returns aborted when picker selection results in abort', async () => {
+      it('returns bind-failed when picker selection results in bind failure', async () => {
         const terminal1 = createMockTerminal({ name: 'Terminal 1' });
         const terminal2 = createMockTerminal({ name: 'Terminal 2' });
         mockAdapter = createMockVscodeAdapter();
@@ -286,19 +261,20 @@ describe('BindToTerminalCommand', () => {
             createMockTerminalQuickPickItem(terminal2),
           ]),
         );
-        const bindResult: TerminalBindResult = {
-          outcome: 'aborted',
-          reason: BindAbortReason.USER_DECLINED_REPLACEMENT,
-        };
-        mockDestinationManager.bindTerminal.mockResolvedValue(bindResult);
+        const bindError = new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+          message: 'Terminal bind failed',
+          functionName: 'PasteDestinationManager.bind',
+        });
+        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(Result.err(bindError));
         showTerminalPickerSpy.mockImplementation(
           async (
-            _terminals,
-            _activeTerminal,
-            _adapter,
-            _options,
-            _logger,
-            onSelected: (terminal: vscode.Terminal) => Promise<TerminalBindResult>,
+            _terminals: readonly vscode.Terminal[],
+            _activeTerminal: vscode.Terminal | undefined,
+            _adapter: unknown,
+            _options: unknown,
+            _logger: unknown,
+            onSelected: (terminal: vscode.Terminal) => Promise<ExtensionResult<BindSuccessInfo>>,
           ) => {
             const selectedResult = await onSelected(terminal2);
             return { outcome: 'selected' as const, result: selectedResult };
@@ -314,8 +290,8 @@ describe('BindToTerminalCommand', () => {
         const result = await command.execute();
 
         expect(result).toStrictEqual({
-          outcome: 'aborted',
-          reason: 'USER_DECLINED_REPLACEMENT',
+          outcome: 'bind-failed',
+          error: bindError,
         });
       });
 

@@ -29,7 +29,7 @@ export class AIAssistantFocusCapability implements FocusCapability {
         this.logger.debug({ ...context, command }, 'Focus command succeeded');
 
         return Result.ok({
-          insert: this.insertFactory.forTarget(),
+          inserter: this.insertFactory.forTarget(),
         });
       } catch (error) {
         this.logger.debug({ ...context, command, error }, 'Focus command failed, trying next');

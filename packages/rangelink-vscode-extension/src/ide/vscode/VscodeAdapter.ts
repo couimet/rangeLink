@@ -372,7 +372,7 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns Array of all extensions
    */
   get extensions(): readonly vscode.Extension<unknown>[] {
-    return this.ideInstance.extensions.all;
+    return this.ideInstance.extensions.all || [];
   }
 
   /**
@@ -414,7 +414,7 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns Promise resolving to array of command identifiers
    */
   async getCommands(filterInternal = false): Promise<string[]> {
-    return this.ideInstance.commands.getCommands(filterInternal);
+    return (await this.ideInstance.commands.getCommands(filterInternal)) || [];
   }
 
   // ============================================================================
@@ -671,7 +671,18 @@ export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvid
    * @returns Array of visible text editors
    */
   get visibleTextEditors(): readonly vscode.TextEditor[] {
-    return this.ideInstance.window.visibleTextEditors;
+    return this.ideInstance.window.visibleTextEditors || [];
+  }
+
+  /**
+   * Find visible text editors whose document matches the given URI.
+   *
+   * @param uri - Document URI to match against
+   * @returns Array of matching visible editors (0, 1, or more)
+   */
+  findVisibleEditorsByUri(uri: vscode.Uri): readonly vscode.TextEditor[] {
+    const uriString = uri.toString();
+    return this.visibleTextEditors.filter((editor) => editor.document.uri.toString() === uriString);
   }
 
   /**

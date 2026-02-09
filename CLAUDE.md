@@ -171,6 +171,44 @@
   </good-example>
 </rule>
 
+<rule id="T008" priority="critical">
+  <title>Use custom matchers for Result and error assertions</title>
+  <do>Use `toBeRangeLinkExtensionErrorErr(code, { message, functionName, details? })` for error Result assertions</do>
+  <do>Use `toBeOkWith((value) => { expect(value).toStrictEqual({...}) })` for success Result assertions</do>
+  <do>Use `toStrictEqual()` on the full value object inside `toBeOkWith` callbacks — never pick individual properties</do>
+  <never>Use `result.success` + `if` guard patterns to manually unwrap Result types</never>
+  <available-matchers>
+    - `toBeOk()` / `toBeErr()` - simple success/error check
+    - `toBeOkWith(callback)` - success with value assertion
+    - `toBeErrWith(callback)` - error with assertion
+    - `toBeRangeLinkExtensionErrorErr(code, expected)` - error Result with full RangeLinkExtensionError validation
+    - `toThrowRangeLinkExtensionError(code, expected)` - sync throw
+    - `toThrowRangeLinkExtensionErrorAsync(code, expected)` - async throw
+  </available-matchers>
+  <bad-example>
+    ```typescript
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.code).toBe('DESTINATION_NOT_BOUND');
+      expect(result.error.message).toBe('No destination is currently bound');
+    }
+    ```
+  </bad-example>
+  <good-example>
+    ```typescript
+    expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_NOT_BOUND', {
+      message: 'No destination is currently bound',
+      functionName: 'PasteDestinationManager.focusBoundDestination',
+    });
+
+    expect(result).toBeOkWith((value: BindSuccessInfo) => {
+      expect(value).toStrictEqual({ destinationName: 'Terminal', destinationKind: 'terminal' });
+    });
+    ```
+
+  </good-example>
+</rule>
+
 <rule id="E001" priority="critical">
   <title>Shell environment setup</title>
   <when>Before running pnpm, npm, node, or any JS tooling commands</when>

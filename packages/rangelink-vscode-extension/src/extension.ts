@@ -5,7 +5,9 @@ import { BookmarkService, BookmarksStore } from './bookmarks';
 import {
   AddBookmarkCommand,
   BindToTerminalCommand,
+  DestinationPickerCommand,
   GoToRangeLinkCommand,
+  JumpToDestinationCommand,
   ListBookmarksCommand,
   ManageBookmarksCommand,
   ShowVersionCommand,
@@ -147,14 +149,13 @@ export function activate(context: vscode.ExtensionContext): void {
     logger,
   );
 
-  // Create unified destination manager
-  const destinationManager = new PasteDestinationManager(
-    context,
-    registry,
-    availabilityService,
+  const destinationPickerCommand = new DestinationPickerCommand(
     ideAdapter,
+    availabilityService,
     logger,
   );
+
+  const destinationManager = new PasteDestinationManager(context, registry, ideAdapter, logger);
 
   const bindToTerminalCommand = new BindToTerminalCommand(
     ideAdapter,
@@ -167,7 +168,7 @@ export function activate(context: vscode.ExtensionContext): void {
   };
 
   const bindToTextEditorHandler = async () => {
-    await destinationManager.bind('text-editor');
+    await destinationManager.bind({ kind: 'text-editor' });
   };
 
   const bookmarkService = new BookmarkService(
@@ -182,6 +183,7 @@ export function activate(context: vscode.ExtensionContext): void {
     delimiters,
     ideAdapter,
     destinationManager,
+    destinationPickerCommand,
     configReader,
     logger,
   );
@@ -316,7 +318,7 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         return;
       }
-      await destinationManager.bind('cursor-ai');
+      await destinationManager.bind({ kind: 'cursor-ai' });
     }),
   );
 
@@ -328,7 +330,7 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         return;
       }
-      await destinationManager.bind('claude-code');
+      await destinationManager.bind({ kind: 'claude-code' });
     }),
   );
 
@@ -340,7 +342,7 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         return;
       }
-      await destinationManager.bind('github-copilot-chat');
+      await destinationManager.bind({ kind: 'github-copilot-chat' });
     }),
   );
 
@@ -350,10 +352,14 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  // Register jump to bound destination command
+  const jumpToDestinationCommand = new JumpToDestinationCommand(
+    destinationManager,
+    destinationPickerCommand,
+    logger,
+  );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_JUMP_TO_DESTINATION, async () => {
-      await destinationManager.jumpToBoundDestination();
+      await jumpToDestinationCommand.execute();
     }),
   );
 

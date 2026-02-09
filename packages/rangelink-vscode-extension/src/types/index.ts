@@ -26,6 +26,7 @@ export type {
   TextEditorBindDetails,
   TextEditorBindResult,
 } from './BindResultTypes';
+export type { DestinationPickerOutcome, DestinationPickerResult } from './DestinationPickerResult';
 export {
   AI_ASSISTANT_KINDS,
   DESTINATION_KINDS,
@@ -34,6 +35,7 @@ export {
   type NonTerminalDestinationKind,
 } from './DestinationKind';
 export { ExtensionResult } from './ExtensionResult';
+export type { JumpToDestinationOutcome, JumpToDestinationResult } from './JumpToDestinationResult';
 export type { WithDestinationKind } from './WithDestinationKind';
 export type { WithDisplayName } from './WithDisplayName';
 export { MessageCode } from './MessageCode';
@@ -50,7 +52,7 @@ export type {
   WithBindOptions,
   WithRemainingCount,
 } from './QuickPickTypes';
-export { QuickPickBindResult } from './QuickPickBindResult';
+export type { QuickPickBindOutcome, QuickPickBindResult } from './QuickPickBindResult';
 export type { RangeLinkClickArgs } from './RangeLinkClickArgs';
 export type { RangeLinkTerminalLink } from './RangeLinkTerminalLink';
 export type { SendTextToTerminalOptions } from './SendTextToTerminalOptions';
