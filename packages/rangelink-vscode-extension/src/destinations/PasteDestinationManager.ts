@@ -744,7 +744,7 @@ export class PasteDestinationManager implements vscode.Disposable {
   private bindFailedResult(
     functionName: string,
     message: string,
-    failedBindDetails?: BindFailureReason,
+    failedBindDetails: BindFailureReason,
   ): ExtensionResult<BindSuccessInfo> {
     return ExtensionResult.err(
       new RangeLinkExtensionError({
