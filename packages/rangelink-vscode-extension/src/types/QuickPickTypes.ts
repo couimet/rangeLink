@@ -81,3 +81,15 @@ export interface BindableQuickPickItem<T extends BindOptions = BindOptions>
  * Includes bindable destinations and the "More terminals..." overflow item.
  */
 export type DestinationQuickPickItem = BindableQuickPickItem | TerminalMoreQuickPickItem;
+// ============================================================================
+// Confirmation Dialog Types
+// ============================================================================
+
+/**
+ * QuickPickItem for binary confirmation dialogs (e.g., "Replace binding?").
+ * Uses a typed boolean instead of label string comparison.
+ */
+export interface ConfirmationQuickPickItem extends vscode.QuickPickItem {
+  readonly confirmed: boolean;
+}
+

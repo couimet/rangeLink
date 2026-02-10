@@ -11,6 +11,7 @@ import {
   AutoPasteResult,
   BindFailureReason,
   type BindOptions,
+  type ConfirmationQuickPickItem,
   type DestinationKind,
   ExtensionResult,
   MessageCode,
@@ -749,7 +750,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       newDestination: newDisplayName,
     };
 
-    const items: (vscode.QuickPickItem & { confirmed: boolean })[] = [
+    const items: ConfirmationQuickPickItem[] = [
       {
         label: formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_REPLACE),
         description: formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_DESCRIPTION, params),
