@@ -749,16 +749,16 @@ export class PasteDestinationManager implements vscode.Disposable {
       newDestination: newDisplayName,
     };
 
-    const YES_REPLACE_LABEL = formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_REPLACE);
-
-    const items: vscode.QuickPickItem[] = [
+    const items: (vscode.QuickPickItem & { confirmed: boolean })[] = [
       {
-        label: YES_REPLACE_LABEL,
+        label: formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_REPLACE),
         description: formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_DESCRIPTION, params),
+        confirmed: true,
       },
       {
         label: formatMessage(MessageCode.SMART_BIND_CONFIRM_NO_KEEP),
         description: formatMessage(MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION, params),
+        confirmed: false,
       },
     ];
 
@@ -766,7 +766,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       placeHolder: formatMessage(MessageCode.SMART_BIND_CONFIRM_PLACEHOLDER, params),
     });
 
-    const confirmed = choice?.label === YES_REPLACE_LABEL;
+    const confirmed = choice?.confirmed ?? false;
 
     this.logger.debug(
       {
