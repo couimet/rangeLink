@@ -71,7 +71,6 @@ export class PasteDestinationManager implements vscode.Disposable {
 
   private boundDestination: PasteDestination | undefined;
   private disposables: vscode.Disposable[] = [];
-  private replacedDestinationName: string | undefined; // Track for toast notifications
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -490,6 +489,8 @@ export class PasteDestinationManager implements vscode.Disposable {
       );
     }
 
+    let replacedName: string | undefined;
+
     if (this.boundDestination) {
       const confirmed = await this.confirmReplaceBinding(
         this.boundDestination,
@@ -506,8 +507,12 @@ export class PasteDestinationManager implements vscode.Disposable {
         );
       }
 
-      this.replacedDestinationName = this.boundDestination.displayName;
-      this.unbind();
+      replacedName = this.boundDestination.displayName;
+      this.logger.info(
+        { ...logCtx, displayName: replacedName },
+        `Unbinding "${replacedName}" for replacement`,
+      );
+      this.clearBoundDestination();
     }
 
     await this.setBoundDestination(newDestination);
@@ -521,7 +526,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       `Successfully bound to "${newDestination.displayName}"`,
     );
 
-    this.showBindSuccessToast(newDestination.displayName);
+    this.showBindSuccessToast(newDestination.displayName, replacedName);
 
     return ExtensionResult.ok({
       destinationName: newDestination.displayName,
@@ -595,11 +600,12 @@ export class PasteDestinationManager implements vscode.Disposable {
    * or standard success message for normal binding.
    *
    * @param newDestinationName - Display name of newly bound destination
+   * @param replacedName - Display name of the destination that was replaced, if any
    */
-  private showBindSuccessToast(newDestinationName: string): void {
-    const toastMessage = this.replacedDestinationName
+  private showBindSuccessToast(newDestinationName: string, replacedName?: string): void {
+    const toastMessage = replacedName
       ? formatMessage(MessageCode.STATUS_BAR_DESTINATION_REBOUND, {
-          previousDestination: this.replacedDestinationName,
+          previousDestination: replacedName,
           newDestination: newDestinationName,
         })
       : formatMessage(MessageCode.STATUS_BAR_DESTINATION_BOUND, {
@@ -607,9 +613,6 @@ export class PasteDestinationManager implements vscode.Disposable {
         });
 
     this.vscodeAdapter.setStatusBarMessage(toastMessage);
-
-    // Clear replacement tracking after use
-    this.replacedDestinationName = undefined;
   }
 
   /**

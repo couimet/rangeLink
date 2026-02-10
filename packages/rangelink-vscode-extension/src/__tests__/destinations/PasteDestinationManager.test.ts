@@ -1542,12 +1542,6 @@ describe('PasteDestinationManager', () => {
         expect(manager.isBound()).toBe(true);
         expect(manager.getBoundDestination()?.id).toBe('terminal');
 
-        // Verify first bind toast (no replacement)
-        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink bound to Terminal ("TestTerminal")',
-          2000,
-        );
-
         // Mock active text editor for second bind
         mockVscode.window.activeTextEditor = {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
@@ -1584,8 +1578,15 @@ describe('PasteDestinationManager', () => {
         expect(manager.isBound()).toBe(true);
         expect(manager.getBoundDestination()?.id).toBe('text-editor');
 
-        // Assert: Toast shows replacement info
-        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        // Assert: Exactly 2 toasts across both binds — first bind + rebound
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
+          '✓ RangeLink bound to Terminal ("TestTerminal")',
+          2000,
+        );
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          2,
           'Unbound Terminal ("TestTerminal"), now bound to Text Editor ("file.ts")',
           2000,
         );
