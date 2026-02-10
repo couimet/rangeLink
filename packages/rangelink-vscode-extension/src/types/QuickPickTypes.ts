@@ -48,7 +48,7 @@ export interface TerminalMoreQuickPickItem
   extends BaseQuickPickItem,
     WithDisplayName,
     WithRemainingCount {
-  readonly itemKind: 'terminal-more';
+  readonly itemKind: Extract<PickerItemKind, 'terminal-more'>;
 }
 
 // ============================================================================
@@ -68,7 +68,7 @@ export interface BindableQuickPickItem<T extends BindOptions = BindOptions>
   extends BaseQuickPickItem,
     WithBindOptions<T>,
     WithDisplayName {
-  readonly itemKind: 'bindable';
+  readonly itemKind: Extract<PickerItemKind, 'bindable'>;
   readonly isActive?: boolean;
 }
 
