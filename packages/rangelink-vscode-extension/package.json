@@ -633,11 +633,11 @@
       "explorer/context": [
         {
           "command": "rangelink.explorer.pasteFilePath",
-          "group": "6_copypath@100"
+          "group": "6_copypath@1"
         },
         {
           "command": "rangelink.explorer.pasteRelativeFilePath",
-          "group": "6_copypath@101"
+          "group": "6_copypath@2"
         }
       ],
       "terminal/title/context": [
