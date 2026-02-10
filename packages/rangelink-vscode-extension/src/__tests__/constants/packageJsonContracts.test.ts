@@ -823,14 +823,14 @@ describe('package.json contributions', () => {
       it('explorer.pasteFilePath in explorer context menu', () => {
         expect(explorerContextMenu[0]).toStrictEqual({
           command: 'rangelink.explorer.pasteFilePath',
-          group: '6_copypath@100',
+          group: '6_copypath@1',
         });
       });
 
       it('explorer.pasteRelativeFilePath in explorer context menu', () => {
         expect(explorerContextMenu[1]).toStrictEqual({
           command: 'rangelink.explorer.pasteRelativeFilePath',
-          group: '6_copypath@101',
+          group: '6_copypath@2',
         });
       });
     });
