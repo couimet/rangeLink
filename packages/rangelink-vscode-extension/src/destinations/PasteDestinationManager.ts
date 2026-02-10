@@ -717,6 +717,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
       case 'claude-code':
       case 'cursor-ai':
+      case 'github-copilot-chat':
         // Chat assistants should provide getUserInstruction(AutoPasteResult.Failure)
         // and never reach this fallback method
         throw new RangeLinkExtensionError({

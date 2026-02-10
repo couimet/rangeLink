@@ -1164,6 +1164,28 @@ describe('PasteDestinationManager', () => {
       });
     });
 
+    it('should throw UNEXPECTED_CODE_PATH when github-copilot-chat reaches buildPasteFailureMessage', async () => {
+      const mockBrokenCopilotDest = createMockGitHubCopilotChatDestination({
+        getUserInstruction: jest.fn().mockReturnValue(undefined),
+        pasteLink: jest.fn().mockResolvedValue(false),
+      });
+
+      (manager as any).boundDestination = mockBrokenCopilotDest;
+
+      await expect(async () =>
+        manager.sendLinkToDestination(
+          createMockFormattedLink('src/file.ts#L10'),
+          TEST_STATUS_MESSAGE,
+          'both',
+        ),
+      ).toThrowRangeLinkExtensionErrorAsync('UNEXPECTED_CODE_PATH', {
+        message:
+          "Chat assistant destination 'github-copilot-chat' should provide getUserInstruction() and never reach buildPasteFailureMessage()",
+        functionName: 'PasteDestinationManager.buildPasteFailureMessage',
+        details: { destinationId: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
+      });
+    });
+
     it('should throw DESTINATION_NOT_IMPLEMENTED for unknown destination kind', async () => {
       // Create a mock destination with an unknown ID
       const mockUnknownDest = createMockTerminalPasteDestination({
