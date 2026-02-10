@@ -27,13 +27,16 @@ export interface TerminalPickerOptions {
   readonly moreTerminalsLabel: string;
 }
 
+/** Discriminator for all terminal picker outcomes */
+export type TerminalPickerOutcome = 'selected' | 'cancelled' | 'returned-to-destination-picker';
+
 /**
  * Result of showing the terminal picker.
  */
 export type TerminalPickerResult<T> =
-  | { readonly outcome: 'selected'; readonly result: T }
-  | { readonly outcome: 'cancelled' }
-  | { readonly outcome: 'returned-to-destination-picker' };
+  | { readonly outcome: Extract<TerminalPickerOutcome, 'selected'>; readonly result: T }
+  | { readonly outcome: Extract<TerminalPickerOutcome, 'cancelled'> }
+  | { readonly outcome: Extract<TerminalPickerOutcome, 'returned-to-destination-picker'> };
 
 /**
  * Build QuickPick items for terminal selection.

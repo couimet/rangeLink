@@ -10,22 +10,8 @@ export type {
   TerminalBindOptions,
   TextEditorBindOptions,
 } from './BindOptions';
-export { BindAbortReason, BindFailureReason } from './BindResultTypes';
+export { BindFailureReason } from './BindFailureReason';
 export { DirtyBufferWarningResult } from './DirtyBufferWarningResult';
-export type {
-  BaseBindResult,
-  BindAbortedResult,
-  BindCancelledResult,
-  BindFailedResult,
-  BindNoResourceResult,
-  BindResult,
-  BindResultOutcome,
-  BindSuccessResult,
-  TerminalBindDetails,
-  TerminalBindResult,
-  TextEditorBindDetails,
-  TextEditorBindResult,
-} from './BindResultTypes';
 export type { DestinationPickerOutcome, DestinationPickerResult } from './DestinationPickerResult';
 export {
   AI_ASSISTANT_KINDS,

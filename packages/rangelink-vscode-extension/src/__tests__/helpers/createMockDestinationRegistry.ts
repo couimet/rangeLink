@@ -7,6 +7,7 @@ import { createMockClaudeCodeComposableDestination } from './createMockClaudeCod
 import { createMockCursorAIComposableDestination } from './createMockCursorAIComposableDestination';
 import { createMockEditorComposablePasteDestination } from './createMockEditorComposablePasteDestination';
 import { createMockGitHubCopilotChatComposableDestination } from './createMockGitHubCopilotChatComposableDestination';
+import { createMockTerminalComposablePasteDestination } from './createMockTerminalComposablePasteDestination';
 import { createMockTerminalPasteDestination } from './createMockTerminalPasteDestination';
 
 /**
@@ -74,7 +75,13 @@ export const createMockDestinationRegistry = (
     terminal?: vscode.Terminal;
     editor?: vscode.TextEditor;
   }): PasteDestination | undefined => {
-    // For text-editor, create a real ComposablePasteDestination so document close listener works
+    // Create real ComposablePasteDestination with actual resource reference so close listeners work
+    if (createOptions.kind === 'terminal' && createOptions.terminal) {
+      return createMockTerminalComposablePasteDestination({
+        displayName: `Terminal ("${createOptions.terminal.name}")`,
+        terminal: createOptions.terminal,
+      });
+    }
     if (createOptions.kind === 'text-editor' && createOptions.editor) {
       const fileName = createOptions.editor.document.uri.fsPath.split('/').pop() || 'Unknown';
       return createMockEditorComposablePasteDestination({
