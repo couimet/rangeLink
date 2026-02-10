@@ -132,34 +132,6 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
-   * Bind to a destination kind and immediately focus it.
-   *
-   * Convenience wrapper for status bar callers that pass DestinationKind.
-   * Terminal case resolves activeTerminal from the IDE adapter.
-   *
-   * @param kind - The destination kind to bind and focus
-   * @returns true if bind and focus both succeeded, false otherwise
-   */
-  async bindAndJump(kind: DestinationKind): Promise<boolean> {
-    let options: BindOptions;
-
-    if (kind === 'terminal') {
-      const activeTerminal = this.vscodeAdapter.activeTerminal;
-      if (!activeTerminal) {
-        this.logger.warn({ fn: 'PasteDestinationManager.bindAndJump' }, 'No active terminal');
-        this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
-        return false;
-      }
-      options = { kind: 'terminal', terminal: activeTerminal };
-    } else {
-      options = { kind } as BindOptions;
-    }
-
-    const result = await this.bindAndFocus(options);
-    return result.success;
-  }
-
-  /**
    * Unbind current destination
    */
   unbind(): void {
