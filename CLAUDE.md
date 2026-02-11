@@ -11,6 +11,8 @@
 <critical-rules>
 <!-- These rules are checked on EVERY response. Violations are unacceptable. -->
 
+<!-- TODO(#332 Phase 3): Replace this rule with a reference to the /question skill.
+     The skill will own the file format, location, and naming conventions. -->
 <rule id="Q001" priority="critical">
   <title>Questions go to file, not terminal</title>
   <do>Save questions to `.claude-questions/NNNN-description.txt`</do>
@@ -23,6 +25,8 @@
   </checklist>
 </rule>
 
+<!-- TODO(#332 Phase 3): Replace this rule with a reference to the /commit-msg skill.
+     The skill will own the file format, location, and naming conventions. -->
 <rule id="C001" priority="critical">
   <title>Commit messages go to file</title>
   <do>Save commit messages to `.commit-msgs/NNNN-description.txt`</do>
@@ -49,6 +53,8 @@
   </good-examples>
 </rule>
 
+<!-- TODO(#332 Phase 3): Replace this rule with a reference to the /scratchpad skill.
+     The skill will own the file format, location, and naming conventions. -->
 <rule id="S001" priority="critical">
   <title>Scratchpads for working documents</title>
   <do>Save working documents to `.scratchpads/NNNN-description.txt`</do>
@@ -379,6 +385,8 @@
 
 <workflows>
 
+<!-- TODO(#332 Phase 3): Remove this workflow entirely — superseded by /question skill.
+     Update rule Q001 above to reference the skill instead. -->
 <workflow id="questions">
   <title>Questions and Design Decisions</title>
   <location>.claude-questions/NNNN-description.txt</location>
@@ -409,6 +417,8 @@
   </file-format>
 </workflow>
 
+<!-- TODO(#332 Phase 3): Remove this workflow entirely — superseded by /commit-msg skill.
+     Update rule C001 above to reference the skill instead. -->
 <workflow id="commits">
   <title>Commit Messages</title>
   <location>.commit-msgs/NNNN-description.txt</location>
@@ -455,6 +465,10 @@
   </good-example>
 </workflow>
 
+<!-- TODO(#332 Phase 3): Remove this workflow entirely — superseded by /scratchpad skill.
+     The <code-references> section is superseded by /code-ref skill.
+     The <naming-pattern> issue-aware logic is superseded by /issue-context skill.
+     Update rule S001 above to reference the skill instead. -->
 <workflow id="scratchpads">
   <title>Working Documents</title>
   <location>.scratchpads/NNNN-description.txt</location>
@@ -815,6 +829,8 @@
 
 ---
 
+<!-- TODO(#332 Phase 3): Remove this section entirely — superseded by /file-placement skill.
+     The skill will own the decision tree and be auto-consulted by Claude. -->
 <file-placement-decision-tree>
 ```
 Is it a question needing user answer? → .claude-questions/NNNN-description.txt
