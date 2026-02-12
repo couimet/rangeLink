@@ -1,30 +1,35 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import type { BookmarkId } from '../bookmarks';
 import type { BookmarkService } from '../bookmarks';
 import {
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_MANAGE,
-  CMD_BOOKMARK_NAVIGATE,
   CMD_JUMP_TO_DESTINATION,
   CMD_GO_TO_RANGELINK,
   CMD_OPEN_STATUS_BAR_MENU,
   CMD_SHOW_VERSION,
 } from '../constants';
-import type { DestinationAvailabilityService, PasteDestinationManager } from '../destinations';
+import {
+  buildDestinationQuickPickItems,
+  type DestinationAvailabilityService,
+  type PasteDestinationManager,
+} from '../destinations';
+import {
+  showTerminalPicker,
+  TERMINAL_PICKER_SHOW_ALL,
+  type TerminalPickerOptions,
+} from '../destinations/utils';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { type DestinationKind, MessageCode } from '../types';
-import { formatMessage } from '../utils';
-
-/**
- * QuickPick item with optional command or destinationKind to execute on selection.
- */
-interface MenuQuickPickItem extends vscode.QuickPickItem {
-  command?: string;
-  bookmarkId?: BookmarkId;
-  destinationKind?: DestinationKind;
-}
+import {
+  type BookmarkQuickPickItem,
+  type CommandQuickPickItem,
+  type DestinationQuickPickItem,
+  type InfoQuickPickItem,
+  MessageCode,
+  type StatusBarMenuQuickPickItem,
+} from '../types';
 import { formatMessage, isSelectableQuickPickItem } from '../utils';
 
 /**
@@ -83,17 +88,47 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       return;
     }
 
-    if (selected.destinationKind) {
-      const success = await this.destinationManager.bindAndJump(selected.destinationKind);
-      this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected, bindAndJumpSuccess: success },
-        'Destination item selected',
-      );
-    } else if (selected.command) {
-      if (selected.command === CMD_BOOKMARK_NAVIGATE && selected.bookmarkId) {
-        await this.bookmarkService.pasteBookmark(selected.bookmarkId);
-      } else {
+    await this.handleSelection(selected);
+  }
+
+  private async handleSelection(selected: StatusBarMenuQuickPickItem): Promise<void> {
+    const logCtx = { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected };
+
+    switch (selected.itemKind) {
+      case 'bindable': {
+        const result = await this.destinationManager.bindAndFocus(selected.bindOptions);
+        this.logger.debug(
+          { ...logCtx, bindAndFocusSuccess: result.success },
+          'Destination item selected',
+        );
+        break;
+      }
+      case 'terminal-more':
+        this.logger.debug(logCtx, 'Terminal overflow item selected');
+        await this.showSecondaryTerminalPicker(logCtx);
+        break;
+      case 'command':
         await this.ideAdapter.executeCommand(selected.command);
+        this.logger.debug(logCtx, 'Command item selected');
+        break;
+      case 'bookmark':
+        await this.bookmarkService.pasteBookmark(selected.bookmarkId);
+        this.logger.debug(logCtx, 'Bookmark item selected');
+        break;
+      case 'info':
+        this.logger.debug(logCtx, 'Non-actionable item selected');
+        break;
+      default: {
+        const _exhaustiveCheck: never = selected;
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
+          message: 'Unhandled item kind in status bar menu',
+          functionName: 'RangeLinkStatusBar.handleSelection',
+          details: { selectedItem: _exhaustiveCheck },
+        });
+      }
+    }
+  }
       }
       this.logger.debug(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
@@ -109,19 +144,21 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
   /**
    * Build QuickPick items with context-aware enabled/disabled states.
-   *
-   * Items without a `command` or `destinationKind` property are disabled.
    */
-  private async buildQuickPickItems(): Promise<MenuQuickPickItem[]> {
+  private async buildQuickPickItems(): Promise<
+    (StatusBarMenuQuickPickItem | vscode.QuickPickItem)[]
+  > {
     return [
       ...(await this.buildJumpOrDestinationsSection()),
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_NAVIGATE_TO_LINK_LABEL),
+        itemKind: 'command' as const,
         command: CMD_GO_TO_RANGELINK,
       },
       ...this.buildBookmarksQuickPickItems(),
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
+        itemKind: 'command' as const,
         command: CMD_SHOW_VERSION,
       },
     ];
@@ -130,13 +167,16 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   /**
    * Build the jump item (when bound) or inline destinations (when unbound).
    */
-  private async buildJumpOrDestinationsSection(): Promise<MenuQuickPickItem[]> {
+  private async buildJumpOrDestinationsSection(): Promise<
+    (StatusBarMenuQuickPickItem | vscode.QuickPickItem)[]
+  > {
     const boundDest = this.destinationManager.getBoundDestination();
     if (boundDest) {
       return [
         {
           label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL),
           description: `→ ${boundDest.displayName}`,
+          itemKind: 'command' as const,
           command: CMD_JUMP_TO_DESTINATION,
         },
       ];

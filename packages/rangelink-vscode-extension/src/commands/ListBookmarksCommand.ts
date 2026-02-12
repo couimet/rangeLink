@@ -46,17 +46,36 @@ export class ListBookmarksCommand {
       return;
     }
 
-    if (selected.bookmarkId) {
-      await this.bookmarkService.pasteBookmark(selected.bookmarkId);
-      this.logger.debug(
-        { ...logCtx, bookmarkId: selected.bookmarkId },
-        'Bookmark selected and pasted',
-      );
-    } else if (selected.command) {
-      await this.ideAdapter.executeCommand(selected.command);
-      this.logger.debug({ ...logCtx, command: selected.command }, 'Command executed from menu');
-    } else {
-      this.logger.debug({ ...logCtx, selectedItem: selected }, 'Non-actionable item selected');
+    await this.handleSelection(selected);
+  }
+
+  private async handleSelection(selected: ListBookmarksQuickPickItem): Promise<void> {
+    const logCtx = { fn: 'ListBookmarksCommand.execute' };
+
+    switch (selected.itemKind) {
+      case 'bookmark':
+        await this.bookmarkService.pasteBookmark(selected.bookmarkId);
+        this.logger.debug(
+          { ...logCtx, bookmarkId: selected.bookmarkId },
+          'Bookmark selected and pasted',
+        );
+        break;
+      case 'command':
+        await this.ideAdapter.executeCommand(selected.command);
+        this.logger.debug({ ...logCtx, command: selected.command }, 'Command executed from menu');
+        break;
+      case 'info':
+        this.logger.debug({ ...logCtx, selectedItem: selected }, 'Non-actionable item selected');
+        break;
+      default: {
+        const _exhaustiveCheck: never = selected;
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
+          message: 'Unhandled item kind in bookmark list',
+          functionName: 'ListBookmarksCommand.handleSelection',
+          details: { selectedItem: _exhaustiveCheck },
+        });
+      }
     }
   }
 
