@@ -11,7 +11,7 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type DestinationQuickPickItem, MessageCode } from '../types';
 import type { DestinationPickerResult } from '../types/DestinationPickerResult';
-import { formatMessage } from '../utils';
+import { formatMessage, isSelectableQuickPickItem } from '../utils';
 
 /**
  * Internal result type that includes 'returned-to-main-picker' for loop control.
@@ -82,7 +82,7 @@ export class DestinationPickerCommand {
         placeHolder: formatMessage(placeholderMessageCode),
       });
 
-      if (!selected) {
+      if (!isSelectableQuickPickItem<DestinationQuickPickItem>(selected)) {
         this.logger.debug(logCtx, 'User cancelled quick pick');
         return { outcome: 'cancelled' };
       }

@@ -6,7 +6,7 @@ import type { BookmarkService } from '../bookmarks';
 import { CMD_BOOKMARK_ADD, CMD_BOOKMARK_MANAGE } from '../constants';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types';
-import { formatMessage } from '../utils';
+import { formatMessage, isSelectableQuickPickItem } from '../utils';
 
 interface BookmarkQuickPickItem extends vscode.QuickPickItem {
   bookmarkId?: BookmarkId;
@@ -42,7 +42,7 @@ export class ListBookmarksCommand {
       placeHolder: formatMessage(MessageCode.BOOKMARK_LIST_PLACEHOLDER),
     });
 
-    if (!selected) {
+    if (!isSelectableQuickPickItem<ListBookmarksQuickPickItem>(selected)) {
       this.logger.debug(logCtx, 'User dismissed bookmark list');
       return;
     }

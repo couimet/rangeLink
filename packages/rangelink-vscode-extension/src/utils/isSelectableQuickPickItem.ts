@@ -13,6 +13,8 @@ import type { PickerItemKind } from '../types/QuickPickTypes';
  * @param item - The QuickPickItem returned from showQuickPick, or undefined if cancelled
  * @returns True if the item exists and has an `itemKind` discriminator
  */
-export const isSelectableQuickPickItem = <T extends vscode.QuickPickItem & { itemKind: PickerItemKind }>(
+export const isSelectableQuickPickItem = <
+  T extends vscode.QuickPickItem & { itemKind: PickerItemKind },
+>(
   item: vscode.QuickPickItem | undefined,
 ): item is T => !!item && 'itemKind' in item;

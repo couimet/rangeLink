@@ -25,6 +25,7 @@ interface MenuQuickPickItem extends vscode.QuickPickItem {
   bookmarkId?: BookmarkId;
   destinationKind?: DestinationKind;
 }
+import { formatMessage, isSelectableQuickPickItem } from '../utils';
 
 /**
  * Status bar priority - higher values appear more to the left.
@@ -77,7 +78,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       placeHolder: formatMessage(MessageCode.STATUS_BAR_MENU_PLACEHOLDER),
     });
 
-    if (!selected) {
+    if (!isSelectableQuickPickItem<StatusBarMenuQuickPickItem>(selected)) {
       this.logger.debug({ fn: 'RangeLinkStatusBar.openMenu' }, 'User dismissed menu');
       return;
     }
