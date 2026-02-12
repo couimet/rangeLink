@@ -72,6 +72,15 @@ export interface BindableQuickPickItem<T extends BindOptions = BindOptions>
   readonly isActive?: boolean;
 }
 
+/**
+ * Terminal-specific BindableQuickPickItem that carries EligibleTerminal domain info.
+ * Extends BindableQuickPickItem<TerminalBindOptions> with terminal metadata,
+ * so callers get both UI item and domain object from a single source.
+ */
+export interface TerminalBindableQuickPickItem extends BindableQuickPickItem<TerminalBindOptions> {
+  readonly terminalInfo: EligibleTerminal;
+}
+
 // ============================================================================
 // Union Types
 // ============================================================================

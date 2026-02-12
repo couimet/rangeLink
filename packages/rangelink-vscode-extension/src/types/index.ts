@@ -34,6 +34,7 @@ export type {
   BindableQuickPickItem,
   DestinationQuickPickItem,
   PickerItemKind,
+  TerminalBindableQuickPickItem,
   TerminalMoreQuickPickItem,
   WithBindOptions,
   WithRemainingCount,

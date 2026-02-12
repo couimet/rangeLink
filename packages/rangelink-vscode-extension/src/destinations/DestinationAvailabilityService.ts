@@ -17,6 +17,7 @@ import {
   type GetAvailableDestinationItemsOptions,
   type GroupedDestinationItems,
   MessageCode,
+  type TerminalBindableQuickPickItem,
   type TerminalMoreQuickPickItem,
 } from '../types';
 import { formatMessage } from '../utils';
