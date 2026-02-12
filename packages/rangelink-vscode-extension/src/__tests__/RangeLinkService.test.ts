@@ -4,7 +4,7 @@ import type { DelimiterConfig, DelimiterConfigGetter } from 'rangelink-core-ts';
 import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import type { DestinationPickerCommand } from '../commands';
+import type { DestinationPicker } from '../destinations';
 import type { ConfigReader } from '../config';
 import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
@@ -18,7 +18,7 @@ import {
   createMockClipboard,
   createMockConfigReader,
   createMockDestinationManager,
-  createMockDestinationPickerCommand,
+  createMockDestinationPicker,
   createMockDocument,
   createMockEditor,
   createMockEditorComposablePasteDestination,
@@ -40,7 +40,7 @@ import {
 let service: RangeLinkService;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
 let mockDestinationManager: PasteDestinationManager;
-let mockPickerCommand: jest.Mocked<DestinationPickerCommand>;
+let mockPickerCommand: jest.Mocked<DestinationPicker>;
 let mockConfigReader: jest.Mocked<ConfigReader>;
 let mockLogger: Logger;
 let mockClipboard: MockClipboard;
@@ -92,7 +92,7 @@ const mockSelection = (
 describe('RangeLinkService', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
-    mockPickerCommand = createMockDestinationPickerCommand();
+    mockPickerCommand = createMockDestinationPicker();
     mockClipboard = createMockClipboard();
     mockConfigReader = createMockConfigReader();
     mockSetStatusBarMessage = jest.fn().mockReturnValue({ dispose: jest.fn() });

@@ -7,7 +7,6 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import type { DestinationPickerCommand } from './commands/DestinationPickerCommand';
 import type { ConfigReader } from './config/ConfigReader';
 import {
   DEFAULT_SMART_PADDING_PASTE_CONTENT,
@@ -18,6 +17,7 @@ import {
   SETTING_SMART_PADDING_PASTE_LINK,
   SETTING_WARN_ON_DIRTY_BUFFER,
 } from './constants';
+import type { DestinationPicker } from './destinations/DestinationPicker';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from './errors';
@@ -96,7 +96,7 @@ export class RangeLinkService {
     private readonly getDelimiters: DelimiterConfigGetter,
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
-    private readonly destinationPickerCommand: DestinationPickerCommand,
+    private readonly destinationPickerCommand: DestinationPicker,
     private readonly configReader: ConfigReader,
     private readonly logger: Logger,
   ) {}

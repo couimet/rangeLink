@@ -1,22 +1,22 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import type { DestinationPickerCommand } from '../../commands';
 import { JumpToDestinationCommand } from '../../commands';
+import type { DestinationPicker } from '../../destinations';
 import type { FocusSuccessInfo, PasteDestinationManager } from '../../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import type { BindOptions, DestinationPickerResult } from '../../types';
 import { ExtensionResult } from '../../types';
-import { createMockDestinationManager, createMockDestinationPickerCommand } from '../helpers';
+import { createMockDestinationManager, createMockDestinationPicker } from '../helpers';
 
 describe('JumpToDestinationCommand', () => {
   let mockDestinationManager: jest.Mocked<PasteDestinationManager>;
-  let mockPickerCommand: jest.Mocked<DestinationPickerCommand>;
+  let mockPickerCommand: jest.Mocked<DestinationPicker>;
   let mockLogger: ReturnType<typeof createMockLogger>;
   let command: JumpToDestinationCommand;
 
   beforeEach(() => {
     mockDestinationManager = createMockDestinationManager();
-    mockPickerCommand = createMockDestinationPickerCommand();
+    mockPickerCommand = createMockDestinationPicker();
     mockLogger = createMockLogger();
     command = new JumpToDestinationCommand(mockDestinationManager, mockPickerCommand, mockLogger);
   });

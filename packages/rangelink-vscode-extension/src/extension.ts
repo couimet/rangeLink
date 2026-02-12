@@ -6,7 +6,6 @@ import { BookmarkService, BookmarksStore } from './bookmarks';
 import {
   AddBookmarkCommand,
   BindToTerminalCommand,
-  DestinationPickerCommand,
   GoToRangeLinkCommand,
   JumpToDestinationCommand,
   ListBookmarksCommand,
@@ -63,6 +62,7 @@ import { EligibilityCheckerFactory } from './destinations/capabilities/Eligibili
 import { FocusCapabilityFactory } from './destinations/capabilities/FocusCapabilityFactory';
 import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
 import { registerAllDestinationBuilders } from './destinations/destinationBuilders';
+import { DestinationPicker } from './destinations/DestinationPicker';
 import { DestinationRegistry } from './destinations/DestinationRegistry';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { setLocale } from './i18n/LocaleManager';
@@ -152,7 +152,7 @@ export function activate(context: vscode.ExtensionContext): void {
     logger,
   );
 
-  const destinationPickerCommand = new DestinationPickerCommand(
+  const destinationPicker = new DestinationPicker(
     ideAdapter,
     availabilityService,
     logger,
@@ -186,7 +186,7 @@ export function activate(context: vscode.ExtensionContext): void {
     getDelimiters,
     ideAdapter,
     destinationManager,
-    destinationPickerCommand,
+    destinationPicker,
     configReader,
     logger,
   );
@@ -365,7 +365,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const jumpToDestinationCommand = new JumpToDestinationCommand(
     destinationManager,
-    destinationPickerCommand,
+    destinationPicker,
     logger,
   );
   context.subscriptions.push(

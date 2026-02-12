@@ -1,12 +1,12 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
 
-import type { DestinationAvailabilityService } from '../destinations';
+import type { DestinationAvailabilityService } from './DestinationAvailabilityService';
 import {
   buildDestinationQuickPickItems,
   showTerminalPicker,
   TERMINAL_PICKER_SHOW_ALL,
   type TerminalPickerOptions,
-} from '../destinations/utils';
+} from './utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type DestinationQuickPickItem, MessageCode } from '../types';
@@ -40,15 +40,15 @@ export interface DestinationPickerOptions {
  * This separation of concerns eliminates the circular dependency between
  * picker and manager, enabling clean constructor injection.
  */
-export class DestinationPickerCommand {
+export class DestinationPicker {
   constructor(
     private readonly vscodeAdapter: VscodeAdapter,
     private readonly availabilityService: DestinationAvailabilityService,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
-      { fn: 'DestinationPickerCommand.constructor' },
-      'DestinationPickerCommand initialized',
+      { fn: 'DestinationPicker.constructor' },
+      'DestinationPicker initialized',
     );
   }
 
@@ -56,7 +56,7 @@ export class DestinationPickerCommand {
     const { noDestinationsMessageCode, placeholderMessageCode, callerContext } = options;
     const logCtx = {
       ...callerContext,
-      fn: `${callerContext.fn}::DestinationPickerCommand.execute`,
+      fn: `${callerContext.fn}::DestinationPicker.execute`,
     };
 
     this.logger.debug(logCtx, 'Showing destination picker');
@@ -121,7 +121,7 @@ export class DestinationPickerCommand {
         throw new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
           message: 'Unhandled item kind in destination picker',
-          functionName: 'DestinationPickerCommand.handleQuickPickSelection',
+          functionName: 'DestinationPicker.handleQuickPickSelection',
           details: { selectedItem: _exhaustiveCheck },
         });
       }
@@ -162,7 +162,7 @@ export class DestinationPickerCommand {
         throw new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
           message: 'Unexpected terminal picker result outcome',
-          functionName: 'DestinationPickerCommand.showSecondaryTerminalPicker',
+          functionName: 'DestinationPicker.showSecondaryTerminalPicker',
           details: { result: _exhaustiveCheck },
         });
       }

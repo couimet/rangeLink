@@ -1,11 +1,10 @@
 import type { Logger } from 'barebone-logger';
 
+import type { DestinationPicker } from '../destinations/DestinationPicker';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { type BindOptions, MessageCode } from '../types';
 import type { JumpToDestinationResult } from '../types/JumpToDestinationResult';
-
-import type { DestinationPickerCommand } from './DestinationPickerCommand';
 
 /**
  * Command handler for jumping to the bound destination.
@@ -19,7 +18,7 @@ import type { DestinationPickerCommand } from './DestinationPickerCommand';
 export class JumpToDestinationCommand {
   constructor(
     private readonly destinationManager: PasteDestinationManager,
-    private readonly destinationPickerCommand: DestinationPickerCommand,
+    private readonly destinationPickerCommand: DestinationPicker,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
