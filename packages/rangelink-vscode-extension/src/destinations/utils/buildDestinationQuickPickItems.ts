@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import {
   type BindableQuickPickItem,
@@ -26,6 +28,23 @@ export const DESTINATION_PICKER_SEQUENCE: readonly (DestinationKind | 'terminal-
   'text-editor',
 ] as const;
 
+type DestinationGroup = 'ai' | 'terminal' | 'file';
+
+const DESTINATION_GROUP_MAP: Record<string, DestinationGroup> = {
+  'claude-code': 'ai',
+  'cursor-ai': 'ai',
+  'github-copilot-chat': 'ai',
+  terminal: 'terminal',
+  'terminal-more': 'terminal',
+  'text-editor': 'file',
+};
+
+const DESTINATION_GROUP_LABELS: Record<DestinationGroup, MessageCode> = {
+  ai: MessageCode.DESTINATION_GROUP_AI_ASSISTANTS,
+  terminal: MessageCode.DESTINATION_GROUP_TERMINALS,
+  file: MessageCode.DESTINATION_GROUP_FILES,
+};
+
 /**
  * Callback for customizing the label displayed for each destination item.
  * @param displayName - The destination's display name
@@ -36,22 +55,32 @@ export type LabelBuilder = (displayName: string) => string;
 /**
  * Build QuickPick items from grouped destinations.
  *
- * Items are ordered by DESTINATION_PICKER_SEQUENCE and include
- * appropriate description.
+ * Items are ordered by DESTINATION_PICKER_SEQUENCE with visual separators
+ * between logical groups (AI assistants, terminals, files).
  *
  * @param grouped - Grouped destination items from DestinationAvailabilityService
  * @param buildLabel - Callback to customize item labels
- * @returns Array of QuickPick items ready for display
+ * @returns Array of QuickPick items with separators between groups
  */
 export const buildDestinationQuickPickItems = (
   grouped: GroupedDestinationItems,
   buildLabel: LabelBuilder,
-): DestinationQuickPickItem[] => {
-  const items: DestinationQuickPickItem[] = [];
+): (DestinationQuickPickItem | vscode.QuickPickItem)[] => {
+  const items: (DestinationQuickPickItem | vscode.QuickPickItem)[] = [];
+  let currentGroup: DestinationGroup | undefined;
 
   for (const key of DESTINATION_PICKER_SEQUENCE) {
     const groupItems = grouped[key];
     if (!groupItems) continue;
+
+    const nextGroup = DESTINATION_GROUP_MAP[key];
+    if (nextGroup !== currentGroup) {
+      items.push({
+        label: formatMessage(DESTINATION_GROUP_LABELS[nextGroup]),
+        kind: vscode.QuickPickItemKind.Separator,
+      });
+      currentGroup = nextGroup;
+    }
 
     if (key === 'terminal-more') {
       const item = groupItems as TerminalMoreQuickPickItem;

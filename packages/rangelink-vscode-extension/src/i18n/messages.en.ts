@@ -33,6 +33,9 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONTENT_NAME_RANGELINK]: 'RangeLink',
   [MessageCode.CONTENT_NAME_SELECTED_TEXT]: 'Selected text',
 
+  [MessageCode.DESTINATION_GROUP_AI_ASSISTANTS]: 'AI Assistants',
+  [MessageCode.DESTINATION_GROUP_FILES]: 'Files',
+  [MessageCode.DESTINATION_GROUP_TERMINALS]: 'Terminals',
   [MessageCode.DESTINATION_TERMINAL_DISPLAY_FORMAT]: 'Terminal ("{name}")',
 
   [MessageCode.ERROR_BOOKMARK_EMPTY_LABEL]: 'RangeLink: Bookmark label cannot be empty',
