@@ -1,4 +1,5 @@
 import { getLogger, setLogger } from 'barebone-logger';
+import type { DelimiterConfigGetter } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { BookmarkService, BookmarksStore } from './bookmarks';
@@ -12,7 +13,7 @@ import {
   ManageBookmarksCommand,
   ShowVersionCommand,
 } from './commands';
-import { ConfigReader, getDelimitersForExtension } from './config';
+import { ConfigReader, getDelimitersForExtension, loadDelimiterConfig } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_CURSOR_AI,
@@ -125,7 +126,10 @@ export function activate(context: vscode.ExtensionContext): void {
   const bookmarksStore = new BookmarksStore(context.globalState, logger);
   logger.debug({ fn: 'activate' }, 'Bookmarks store initialized');
 
-  const delimiters = getDelimitersForExtension(configReader, ideAdapter, logger);
+  getDelimitersForExtension(configReader, ideAdapter, logger);
+
+  const getDelimiters: DelimiterConfigGetter = () =>
+    loadDelimiterConfig(configReader, logger).delimiters;
 
   // Create capability factories for composition-based destinations
   const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, logger);
@@ -180,7 +184,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   const service = new RangeLinkService(
-    delimiters,
+    getDelimiters,
     ideAdapter,
     destinationManager,
     destinationPickerCommand,
@@ -204,13 +208,13 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(destinationManager);
 
   // Create parser and navigation handler (used by both terminal and document providers)
-  const parser = new RangeLinkParser(delimiters, logger);
+  const parser = new RangeLinkParser(getDelimiters, logger);
   const navigationHandler = new RangeLinkNavigationHandler(parser, ideAdapter, logger);
   logger.debug({ fn: 'activate' }, 'Parser and navigation handler created');
 
   const addBookmarkCommand = new AddBookmarkCommand(
     parser,
-    delimiters,
+    getDelimiters,
     ideAdapter,
     bookmarkService,
     logger,

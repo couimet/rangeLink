@@ -33,7 +33,7 @@ describe('AddBookmarkCommand', () => {
 
       new AddBookmarkCommand(
         mockParser,
-        DEFAULT_DELIMITERS,
+        () => DEFAULT_DELIMITERS,
         mockAdapter,
         mockBookmarkService,
         mockLogger,
@@ -58,7 +58,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -92,7 +92,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -126,7 +126,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -157,7 +157,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -197,7 +197,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -276,7 +276,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -323,7 +323,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -368,7 +368,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -394,7 +394,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -423,7 +423,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -461,7 +461,7 @@ describe('AddBookmarkCommand', () => {
         mockBookmarkService.addBookmark.mockResolvedValue(ExtensionResult.err(storageError));
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -490,7 +490,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -518,7 +518,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -550,7 +550,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -575,7 +575,7 @@ describe('AddBookmarkCommand', () => {
         });
         command = new AddBookmarkCommand(
           mockParser,
-          DEFAULT_DELIMITERS,
+          () => DEFAULT_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,

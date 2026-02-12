@@ -2,7 +2,7 @@ export { Result } from './Result';
 export { CoreResult } from './CoreResult';
 export { Selection } from './Selection';
 export { InputSelection } from './InputSelection';
-export { DelimiterConfig } from './DelimiterConfig';
+export { DelimiterConfig, DelimiterConfigGetter } from './DelimiterConfig';
 export { RangeFormat } from './RangeFormat';
 export { PathFormat } from './PathFormat';
 export { LinkType } from './LinkType';

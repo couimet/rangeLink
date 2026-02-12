@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 
 import type { Logger } from 'barebone-logger';
-import { DelimiterConfig, LinkType, ParsedLink } from 'rangelink-core-ts';
+import { type DelimiterConfigGetter, LinkType, type ParsedLink } from 'rangelink-core-ts';
 
 import type { BookmarkService } from '../bookmarks';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
@@ -21,7 +21,7 @@ import { formatMessage, generateLinkFromSelections } from '../utils';
 export class AddBookmarkCommand {
   constructor(
     private readonly parser: RangeLinkParser,
-    private readonly delimiters: DelimiterConfig,
+    private readonly getDelimiters: DelimiterConfigGetter,
     private readonly ideAdapter: VscodeAdapter,
     private readonly bookmarkService: BookmarkService,
     private readonly logger: Logger,
@@ -73,7 +73,7 @@ export class AddBookmarkCommand {
         referencePath: editor.document.uri.fsPath,
         document: editor.document,
         selections,
-        delimiters: this.delimiters,
+        delimiters: this.getDelimiters(),
         linkType: LinkType.Regular,
         logger: this.logger,
       });

@@ -1,5 +1,5 @@
 import type { Logger } from 'barebone-logger';
-import type { CoreResult, DelimiterConfig, ParsedLink } from 'rangelink-core-ts';
+import type { CoreResult, DelimiterConfigGetter, ParsedLink } from 'rangelink-core-ts';
 import { buildLinkPattern, parseLink } from 'rangelink-core-ts';
 
 import { formatLinkTooltip } from './utils';
@@ -13,24 +13,18 @@ import { formatLinkTooltip } from './utils';
  * - Tooltip formatting
  */
 export class RangeLinkParser {
-  private readonly pattern: RegExp;
-
   constructor(
-    private readonly delimiters: DelimiterConfig,
+    private readonly getDelimiters: DelimiterConfigGetter,
     private readonly logger: Logger,
   ) {
-    this.pattern = buildLinkPattern(delimiters);
-    this.logger.debug(
-      { fn: 'RangeLinkParser.constructor', delimiters },
-      'RangeLinkParser initialized',
-    );
+    this.logger.debug({ fn: 'RangeLinkParser.constructor' }, 'RangeLinkParser initialized');
   }
 
   /**
    * Get the compiled RegExp pattern for link detection.
    */
   getPattern(): RegExp {
-    return this.pattern;
+    return buildLinkPattern(this.getDelimiters());
   }
 
   /**
@@ -39,7 +33,7 @@ export class RangeLinkParser {
    * @param linkText - Raw link text to parse
    */
   parseLink(linkText: string): CoreResult<ParsedLink> {
-    return parseLink(linkText, this.delimiters);
+    return parseLink(linkText, this.getDelimiters());
   }
 
   /**

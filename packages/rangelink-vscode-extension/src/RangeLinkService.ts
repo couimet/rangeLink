@@ -1,5 +1,5 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
-import { DelimiterConfig, type FormattedLink, LinkType } from 'rangelink-core-ts';
+import { type DelimiterConfigGetter, type FormattedLink, LinkType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { DestinationPickerCommand } from './commands/DestinationPickerCommand';
@@ -94,7 +94,7 @@ interface CopyAndSendOptions<T> {
  */
 export class RangeLinkService {
   constructor(
-    private readonly delimiters: DelimiterConfig,
+    private readonly getDelimiters: DelimiterConfigGetter,
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
     private readonly destinationPickerCommand: DestinationPickerCommand,
@@ -395,7 +395,7 @@ export class RangeLinkService {
       referencePath,
       document,
       selections,
-      delimiters: this.delimiters,
+      delimiters: this.getDelimiters(),
       linkType,
       logger: this.logger,
     });

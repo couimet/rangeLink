@@ -11,13 +11,13 @@ describe('RangeLinkParser', () => {
 
   beforeEach(() => {
     mockLogger = createMockLogger();
-    parser = new RangeLinkParser(DEFAULT_DELIMITERS, mockLogger);
+    parser = new RangeLinkParser(() => DEFAULT_DELIMITERS, mockLogger);
   });
 
   describe('constructor', () => {
     it('logs initialization with delimiter config', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkParser.constructor', delimiters: DEFAULT_DELIMITERS },
+        { fn: 'RangeLinkParser.constructor' },
         'RangeLinkParser initialized',
       );
     });
@@ -40,11 +40,11 @@ describe('RangeLinkParser', () => {
       expect('file.ts##L10C5-L20C10').toMatch(pattern);
     });
 
-    it('returns same pattern instance on repeated calls', () => {
+    it('returns equivalent pattern on repeated calls', () => {
       const pattern1 = parser.getPattern();
       const pattern2 = parser.getPattern();
 
-      expect(pattern1).toBe(pattern2);
+      expect(pattern1).toStrictEqual(pattern2);
     });
   });
 

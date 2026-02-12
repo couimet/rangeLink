@@ -1,6 +1,6 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
-import type { DelimiterConfig } from 'rangelink-core-ts';
+import type { DelimiterConfig, DelimiterConfigGetter } from 'rangelink-core-ts';
 import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -50,12 +50,14 @@ let mockShowWarningMessage: jest.Mock;
 let mockShowErrorMessage: jest.Mock;
 let mockShowInformationMessage: jest.Mock;
 
-const delimiters: DelimiterConfig = {
+const DELIMITERS: DelimiterConfig = {
   line: 'L',
   position: 'C',
   hash: '#',
   range: '-',
 };
+
+const getDelimiters: DelimiterConfigGetter = () => DELIMITERS;
 
 const TEST_WORKSPACE_ROOT = '/workspace';
 const TEST_RELATIVE_PATH = 'src/file.ts';
@@ -119,7 +121,7 @@ describe('RangeLinkService', () => {
       });
 
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -242,7 +244,7 @@ describe('RangeLinkService', () => {
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -323,7 +325,7 @@ describe('RangeLinkService', () => {
           boundDestination: terminalDest,
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -399,7 +401,7 @@ describe('RangeLinkService', () => {
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -655,7 +657,7 @@ describe('RangeLinkService', () => {
       });
 
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -674,7 +676,7 @@ describe('RangeLinkService', () => {
           },
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -745,7 +747,7 @@ describe('RangeLinkService', () => {
           },
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -816,7 +818,7 @@ describe('RangeLinkService', () => {
           },
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -895,7 +897,7 @@ describe('RangeLinkService', () => {
         });
         mockVscodeAdapter = adapter;
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -947,7 +949,7 @@ describe('RangeLinkService', () => {
             bindResult: Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
           });
           service = new RangeLinkService(
-            delimiters,
+            getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockPickerCommand,
@@ -979,7 +981,7 @@ describe('RangeLinkService', () => {
             boundDestination: mockDestination,
           });
           service = new RangeLinkService(
-            delimiters,
+            getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockPickerCommand,
@@ -1018,7 +1020,7 @@ describe('RangeLinkService', () => {
             boundDestination: mockDestination,
           });
           service = new RangeLinkService(
-            delimiters,
+            getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockPickerCommand,
@@ -1173,7 +1175,7 @@ describe('RangeLinkService', () => {
         });
 
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -1198,7 +1200,7 @@ describe('RangeLinkService', () => {
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -1256,7 +1258,7 @@ describe('RangeLinkService', () => {
         });
 
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -1281,7 +1283,7 @@ describe('RangeLinkService', () => {
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -1315,7 +1317,7 @@ describe('RangeLinkService', () => {
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           adapter,
           boundDestinationManager,
           mockPickerCommand,
@@ -1348,7 +1350,7 @@ describe('RangeLinkService', () => {
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           adapter,
           boundDestinationManager,
           mockPickerCommand,
@@ -1376,7 +1378,7 @@ describe('RangeLinkService', () => {
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           adapter,
           boundDestinationManager,
           mockPickerCommand,
@@ -1409,7 +1411,7 @@ describe('RangeLinkService', () => {
       });
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -1488,7 +1490,7 @@ describe('RangeLinkService', () => {
           },
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -1557,7 +1559,7 @@ describe('RangeLinkService', () => {
       });
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -1655,7 +1657,7 @@ describe('RangeLinkService', () => {
 
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -1679,7 +1681,7 @@ describe('RangeLinkService', () => {
         referencePath: 'file.ts',
         document: mockVscodeAdapter.activeTextEditor!.document,
         selections: mockVscodeAdapter.activeTextEditor!.selections,
-        delimiters,
+        delimiters: DELIMITERS,
         linkType: 'regular',
         logger: mockLogger,
       });
@@ -1703,7 +1705,7 @@ describe('RangeLinkService', () => {
         referencePath: 'file.ts',
         document: mockVscodeAdapter.activeTextEditor!.document,
         selections: mockVscodeAdapter.activeTextEditor!.selections,
-        delimiters,
+        delimiters: DELIMITERS,
         linkType: 'portable',
         logger: mockLogger,
       });
@@ -1806,7 +1808,7 @@ describe('RangeLinkService', () => {
       });
 
       const localService = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         localMockVscodeAdapter,
         createMockDestinationManager({ isBound: false }),
         mockPickerCommand,
@@ -1965,7 +1967,7 @@ describe('RangeLinkService', () => {
 
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -1979,7 +1981,7 @@ describe('RangeLinkService', () => {
         referencePath: 'src/file.ts',
         document: mockDocument,
         selections: mockSelections,
-        delimiters,
+        delimiters: DELIMITERS,
         linkType: 'regular',
         logger: mockLogger,
       });
@@ -2003,7 +2005,7 @@ describe('RangeLinkService', () => {
 
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -2017,7 +2019,7 @@ describe('RangeLinkService', () => {
         referencePath: '/standalone/file.ts',
         document: mockDocument,
         selections: mockSelections,
-        delimiters,
+        delimiters: DELIMITERS,
         linkType: 'regular',
         logger: mockLogger,
       });
@@ -2041,7 +2043,7 @@ describe('RangeLinkService', () => {
 
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -2055,7 +2057,7 @@ describe('RangeLinkService', () => {
         referencePath: '/workspace/src/file.ts',
         document: mockDocument,
         selections: mockSelections,
-        delimiters,
+        delimiters: DELIMITERS,
         linkType: 'regular',
         logger: mockLogger,
       });
@@ -2069,7 +2071,7 @@ describe('RangeLinkService', () => {
     beforeEach(() => {
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -2148,7 +2150,7 @@ describe('RangeLinkService', () => {
         boundDestination: createMockEditorComposablePasteDestination({ displayName: 'Editor' }),
       });
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -2242,7 +2244,7 @@ describe('RangeLinkService', () => {
         });
         mockPickerCommand.execute.mockResolvedValue({ outcome: 'cancelled' });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -2288,7 +2290,7 @@ describe('RangeLinkService', () => {
           }),
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -2364,7 +2366,7 @@ describe('RangeLinkService', () => {
           }),
         });
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -2415,7 +2417,7 @@ describe('RangeLinkService', () => {
         windowOptions: { activeTextEditor: mockEditor, showErrorMessage: mockShowErrorMessage },
       });
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -2439,7 +2441,7 @@ describe('RangeLinkService', () => {
         windowOptions: { activeTextEditor: undefined, showErrorMessage: mockShowErrorMessage },
       });
       service = new RangeLinkService(
-        delimiters,
+        getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockPickerCommand,
@@ -2472,7 +2474,7 @@ describe('RangeLinkService', () => {
           .mockReturnValue({ uri: { fsPath: TEST_WORKSPACE_ROOT } });
         mockVscodeAdapter.asRelativePath = jest.fn().mockReturnValue(TEST_RELATIVE_PATH);
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
@@ -2498,7 +2500,7 @@ describe('RangeLinkService', () => {
       beforeEach(() => {
         mockVscodeAdapter.getWorkspaceFolder = jest.fn().mockReturnValue(undefined);
         service = new RangeLinkService(
-          delimiters,
+          getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockPickerCommand,
