@@ -129,16 +129,53 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       }
     }
   }
+
+  /**
+   * Show the full terminal list after user selects "More terminals...".
+   * Re-opens the status bar menu if the user escapes.
+   */
+  private async showSecondaryTerminalPicker(logCtx: LoggingContext): Promise<void> {
+    const terminalItems = await this.availabilityService.getTerminalItems(Infinity);
+
+    const options: TerminalPickerOptions = {
+      maxItemsBeforeMore: TERMINAL_PICKER_SHOW_ALL,
+      title: formatMessage(MessageCode.TERMINAL_PICKER_TITLE),
+      placeholder: formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
+      activeDescription: formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION),
+      moreTerminalsLabel: formatMessage(MessageCode.TERMINAL_PICKER_MORE_LABEL),
+    };
+
+    const result = await showTerminalPicker(
+      terminalItems,
+      this.ideAdapter,
+      options,
+      this.logger,
+      (eligible) => ({ kind: 'terminal' as const, terminal: eligible.terminal }),
+    );
+
+    switch (result.outcome) {
+      case 'selected': {
+        const bindResult = await this.destinationManager.bindAndFocus(result.result);
+        this.logger.debug(
+          { ...logCtx, bindAndFocusSuccess: bindResult.success },
+          'Terminal selected from overflow picker',
+        );
+        break;
       }
-      this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
-        'Menu item selected',
-      );
-    } else {
-      this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
-        'Non-actionable item selected',
-      );
+      case 'cancelled':
+      case 'returned-to-destination-picker':
+        this.logger.debug(logCtx, 'User returned from terminal picker, re-opening menu');
+        await this.openMenu();
+        break;
+      default: {
+        const _exhaustiveCheck: never = result;
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+          message: 'Unexpected terminal picker result outcome',
+          functionName: 'RangeLinkStatusBar.showSecondaryTerminalPicker',
+          details: { result: _exhaustiveCheck },
+        });
+      }
     }
   }
 
