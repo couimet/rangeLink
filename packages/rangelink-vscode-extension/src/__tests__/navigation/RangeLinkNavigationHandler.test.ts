@@ -4,8 +4,6 @@ import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
-
-const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 import {
   createMockDocument,
   createMockEditor,
@@ -19,6 +17,8 @@ import {
   createWindowOptionsForEditor,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 
 describe('RangeLinkNavigationHandler', () => {
   let handler: RangeLinkNavigationHandler;
@@ -533,6 +533,16 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
+
+        const mockVsStart = createMockPosition({ line: 9, character: 0 });
+        const mockVsEnd = createMockPosition({ line: 9, character: 17 });
+        const mockRange = createMockRange({ start: mockVsStart, end: mockVsEnd });
+        jest
+          .spyOn(mockAdapter, 'createPosition')
+          .mockReturnValueOnce(mockVsStart)
+          .mockReturnValueOnce(mockVsEnd);
+        jest.spyOn(mockAdapter, 'createRange').mockReturnValue(mockRange);
+
         handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         // Act
@@ -545,10 +555,7 @@ describe('RangeLinkNavigationHandler', () => {
         );
 
         expect(mockEditor.revealRange).toHaveBeenCalledTimes(1);
-        expect(mockEditor.revealRange).toHaveBeenCalledWith(
-          expect.objectContaining({ start: expect.any(Object), end: expect.any(Object) }),
-          2,
-        );
+        expect(mockEditor.revealRange).toHaveBeenCalledWith(mockRange, 2);
       });
     });
 

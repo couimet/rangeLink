@@ -59,6 +59,14 @@ describe('RangeLinkDocumentProvider', () => {
         mockLogger,
         token,
       );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
+          documentUri: 'file:///test/file.ts',
+          linksFound: 1,
+        },
+        'Found 1 RangeLinks in document',
+      );
     });
 
     it('should create command URI with encoded arguments', () => {
@@ -139,26 +147,6 @@ describe('RangeLinkDocumentProvider', () => {
       );
     });
 
-    it('should log document scan results', () => {
-      mockFindLinksInText.mockReturnValue([createMockDetectedLink()]);
-
-      const document = createMockDocument({
-        getText: createMockText('Check src/file.ts#L10'),
-        uri: createMockUri('/test/file.ts'),
-        positionAt: createMockPositionAt(),
-      });
-      const token = createMockCancellationToken();
-      provider.provideDocumentLinks(document, token);
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
-          documentUri: 'file:///test/file.ts',
-          linksFound: 1,
-        },
-        'Found 1 RangeLinks in document',
-      );
-    });
   });
 
   describe('handleLinkClick', () => {

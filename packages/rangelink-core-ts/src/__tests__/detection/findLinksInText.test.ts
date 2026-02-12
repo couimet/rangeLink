@@ -244,9 +244,7 @@ describe('findLinksInText', () => {
     it('should not log when no links and no failures', () => {
       findLinksInText('No links here', DEFAULT_DELIMITERS, logger);
 
-      const debugCalls = (logger.debug as jest.Mock).mock.calls;
-      const detectionCalls = debugCalls.filter((call) => call[1] === 'Link detection complete');
-      expect(detectionCalls).toHaveLength(0);
+      expect(logger.debug).not.toHaveBeenCalled();
     });
 
     it('should log summary when only quoted candidates examined (no detected links)', () => {

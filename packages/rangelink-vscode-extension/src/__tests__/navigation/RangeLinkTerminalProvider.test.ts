@@ -67,13 +67,21 @@ describe('RangeLinkTerminalProvider', () => {
         length: 15,
         tooltip: 'Open src/file.ts:10 \u2022 RangeLink',
         data: 'src/file.ts#L10',
-        parsed: createMockDetectedLink().parsed,
+        parsed: detected.parsed,
       });
       expect(mockFindLinksInText).toHaveBeenCalledWith(
         'Check src/file.ts#L10',
         DEFAULT_DELIMITERS,
         mockLogger,
         token,
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
+          lineLength: 21,
+          linksFound: 1,
+        },
+        'Scanned terminal line for RangeLinks',
       );
     });
 
@@ -115,6 +123,14 @@ describe('RangeLinkTerminalProvider', () => {
       const links = provider.provideTerminalLinks(context, token) as RangeLinkTerminalLink[];
 
       expect(links).toHaveLength(0);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
+          lineLength: 13,
+          linksFound: 0,
+        },
+        'Scanned terminal line for RangeLinks',
+      );
     });
 
     it('should pass cancellation token to findLinksInText', () => {
@@ -132,39 +148,6 @@ describe('RangeLinkTerminalProvider', () => {
       );
     });
 
-    it('should log scan results with link count', () => {
-      mockFindLinksInText.mockReturnValue([createMockDetectedLink()]);
-
-      const context = createMockTerminalContext('Check src/file.ts#L10');
-      const token = createMockCancellationToken();
-      provider.provideTerminalLinks(context, token);
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
-          lineLength: 21,
-          linksFound: 1,
-        },
-        'Scanned terminal line for RangeLinks',
-      );
-    });
-
-    it('should log scan results even when no links are found', () => {
-      mockFindLinksInText.mockReturnValue([]);
-
-      const context = createMockTerminalContext('No links here');
-      const token = createMockCancellationToken();
-      provider.provideTerminalLinks(context, token);
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'RangeLinkTerminalProvider.provideTerminalLinks',
-          lineLength: 13,
-          linksFound: 0,
-        },
-        'Scanned terminal line for RangeLinks',
-      );
-    });
   });
 
   describe('handleTerminalLink - Safety Net Validation', () => {

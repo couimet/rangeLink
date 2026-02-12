@@ -3,9 +3,9 @@ import { needsQuoting } from './needsQuoting';
 /**
  * Wrap an entire RangeLink in single quotes when its path has unsafe characters.
  *
- * Extracts the path portion (everything before the first `#`), checks if it needs
- * quoting, and wraps the complete link in quotes. Embedded single quotes in the
- * path are escaped using the POSIX `'\''` sequence.
+ * Uses the provided path to decide whether quoting is needed, then wraps the
+ * complete link in quotes. Embedded single quotes are escaped using the
+ * POSIX `'\''` sequence.
  *
  * Safe-path links are returned unchanged.
  *

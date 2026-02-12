@@ -160,7 +160,7 @@ export class AddBookmarkCommand {
 
   /**
    * Generate a default label based on the link path.
-   * Extracts the filename from the path using the parser.
+   * Extracts the filename from the path.
    */
   private generateDefaultLabel(link: string): string {
     const parsedLink = this.tryParseAsExistingLink(link);
