@@ -1,5 +1,4 @@
 import type { Logger } from 'barebone-logger';
-import type * as vscode from 'vscode';
 
 import type { ConfigReader } from '../config';
 import {
@@ -11,9 +10,8 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
   AI_ASSISTANT_KINDS,
   type AIAssistantDestinationKind,
-  type AvailableDestination,
-  type BindableQuickPickItem,
   DESTINATION_KINDS,
+  type EligibleTerminal,
   type GetAvailableDestinationItemsOptions,
   type GroupedDestinationItems,
   MessageCode,
@@ -23,12 +21,7 @@ import {
 import { formatMessage } from '../utils';
 
 import type { DestinationRegistry } from './DestinationRegistry';
-import {
-  type EligibleTerminal,
-  getEligibleTerminals,
-  getTerminalDestinationEligibility,
-  isTextEditorDestinationEligible,
-} from './utils';
+import { getEligibleTerminals, isTextEditorDestinationEligible } from './utils';
 
 const MIN_TERMINAL_PICKER_THRESHOLD = 1;
 
@@ -90,55 +83,18 @@ export class DestinationAvailabilityService {
     return AI_ASSISTANT_UNAVAILABLE_MESSAGE_CODES[kind];
   }
 
-  async getAvailableDestinations(): Promise<AvailableDestination[]> {
-    const displayNames = this.registry.getDisplayNames();
-    const available: AvailableDestination[] = [];
-
-    const textEditorEligibility = isTextEditorDestinationEligible(this.ideAdapter);
-    const terminalEligibility = getTerminalDestinationEligibility(this.ideAdapter);
-
-    if (textEditorEligibility.eligible) {
-      available.push({
-        kind: 'text-editor',
-        displayName: `${displayNames['text-editor']} ("${textEditorEligibility.filename}")`,
-      });
-    }
-
-    if (terminalEligibility.eligible) {
-      available.push({
-        kind: 'terminal',
-        displayName: `${displayNames.terminal} ("${terminalEligibility.terminalName}")`,
-      });
-    }
-
-    const aiResults = await Promise.all(
-      AI_ASSISTANT_KINDS.map(async (kind) => ({
-        kind,
-        available: await this.isAIAssistantAvailable(kind),
-      })),
-    );
-
-    for (const { kind, available: isAvailable } of aiResults) {
-      if (isAvailable) {
-        available.push({
-          kind,
-          displayName: displayNames[kind],
-        });
-      }
-    }
-
-    this.logger.debug(
-      {
-        fn: 'DestinationAvailabilityService.getAvailableDestinations',
-        isTextEditorEligible: textEditorEligibility.eligible,
-        isTerminalEligible: terminalEligibility.eligible,
-        availableCount: available.length,
-        availableKinds: available.map((d) => d.kind),
-      },
-      `Found ${available.length} available destinations`,
-    );
-
-    return available;
+  /**
+   * Get terminal items with threshold-based overflow handling.
+   * Convenience passthrough to `getGroupedDestinationItems()` for terminal-only callers.
+   *
+   * @param terminalThreshold - Max terminals to show inline (use Infinity for all)
+   */
+  async getTerminalItems(terminalThreshold: number): Promise<TerminalBindableQuickPickItem[]> {
+    const grouped = await this.getGroupedDestinationItems({
+      destinationKinds: ['terminal'],
+      terminalThreshold,
+    });
+    return grouped['terminal'] ?? [];
   }
 
   /**
@@ -191,9 +147,9 @@ export class DestinationAvailabilityService {
         }
 
         case 'terminal': {
-          if (!getTerminalDestinationEligibility(this.ideAdapter).eligible) break;
-
           const eligibleTerminals = getEligibleTerminals(this.ideAdapter);
+          if (eligibleTerminals.length === 0) break;
+
           const { items, moreItem } = this.buildGroupedTerminalItems(
             eligibleTerminals,
             terminalThreshold,
@@ -255,14 +211,12 @@ export class DestinationAvailabilityService {
     eligibleTerminals: EligibleTerminal[],
     threshold: number,
   ): {
-    items: BindableQuickPickItem[];
+    items: TerminalBindableQuickPickItem[];
     moreItem: TerminalMoreQuickPickItem | undefined;
   } {
-    const activeTerminal = this.ideAdapter.activeTerminal;
-
     if (eligibleTerminals.length <= threshold) {
       return {
-        items: eligibleTerminals.map((t) => this.buildTerminalItem(t, activeTerminal)),
+        items: eligibleTerminals.map((t) => this.buildTerminalItem(t)),
         moreItem: undefined,
       };
     }
@@ -271,7 +225,7 @@ export class DestinationAvailabilityService {
     const remainingCount = eligibleTerminals.length - threshold;
 
     return {
-      items: inlineTerminals.map((t) => this.buildTerminalItem(t, activeTerminal)),
+      items: inlineTerminals.map((t) => this.buildTerminalItem(t)),
       moreItem: {
         label: formatMessage(MessageCode.TERMINAL_PICKER_MORE_LABEL),
         displayName: formatMessage(MessageCode.TERMINAL_PICKER_MORE_LABEL),
@@ -281,24 +235,18 @@ export class DestinationAvailabilityService {
     };
   }
 
-  /**
-   * Build a single terminal QuickPick item.
-   */
-  private buildTerminalItem(
-    eligibleTerminal: EligibleTerminal,
-    activeTerminal: vscode.Terminal | undefined,
-  ): BindableQuickPickItem {
+  private buildTerminalItem(eligibleTerminal: EligibleTerminal): TerminalBindableQuickPickItem {
     const displayName = formatMessage(MessageCode.DESTINATION_TERMINAL_DISPLAY_FORMAT, {
       name: eligibleTerminal.terminal.name,
     });
-    const isActive = eligibleTerminal.terminal === activeTerminal;
 
     return {
       label: displayName,
       displayName,
       bindOptions: { kind: 'terminal', terminal: eligibleTerminal.terminal },
       itemKind: 'bindable',
-      isActive,
+      isActive: eligibleTerminal.isActive,
+      terminalInfo: eligibleTerminal,
     };
   }
 

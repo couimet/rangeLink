@@ -1,17 +1,7 @@
-import type * as vscode from 'vscode';
-
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
+import type { EligibleTerminal } from '../../types';
 
 import { isTerminalEligible } from './isTerminalEligible';
-
-/**
- * Information about an eligible terminal.
- */
-export interface EligibleTerminal {
-  readonly terminal: vscode.Terminal;
-  readonly name: string;
-  readonly isActive: boolean;
-}
 
 /**
  * Get all terminals eligible for binding with their metadata.

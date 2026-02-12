@@ -1,15 +1,10 @@
-export { assertTerminalFromPicker } from './assertTerminalFromPicker';
 export {
   buildDestinationQuickPickItems,
   DESTINATION_PICKER_SEQUENCE,
   type LabelBuilder,
 } from './buildDestinationQuickPickItems';
-export { getEligibleTerminals, type EligibleTerminal } from './getEligibleTerminals';
+export { getEligibleTerminals } from './getEligibleTerminals';
 export { isTerminalEligible } from './isTerminalEligible';
-export {
-  getTerminalDestinationEligibility,
-  type TerminalEligibility,
-} from './getTerminalDestinationEligibility';
 export {
   isTextEditorDestinationEligible,
   type TextEditorEligibility,

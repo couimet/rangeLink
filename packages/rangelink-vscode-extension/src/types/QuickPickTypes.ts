@@ -1,16 +1,14 @@
 import type * as vscode from 'vscode';
 
-import type { BindOptions } from './BindOptions';
+import type { BindOptions, TerminalBindOptions } from './BindOptions';
+import type { EligibleTerminal } from './EligibleTerminal';
 import type { WithDisplayName } from './WithDisplayName';
 
 /**
  * Discriminator for QuickPick items across all RangeLink menus.
  * Used to identify item type after user selection.
- *
- * - `bindable`: Item that binds to a destination (carries BindOptions)
- * - `terminal-more`: "More terminals..." overflow trigger
  */
-export type PickerItemKind = 'bindable' | 'terminal-more';
+export type PickerItemKind = 'bindable' | 'terminal-more' | 'command' | 'bookmark' | 'info';
 
 /**
  * Base QuickPickItem with RangeLink discriminator.
@@ -90,6 +88,34 @@ export interface TerminalBindableQuickPickItem extends BindableQuickPickItem<Ter
  * Includes bindable destinations and the "More terminals..." overflow item.
  */
 export type DestinationQuickPickItem = BindableQuickPickItem | TerminalMoreQuickPickItem;
+
+// ============================================================================
+// Menu Item Types (StatusBar, ListBookmarks, etc.)
+// ============================================================================
+
+/**
+ * QuickPickItem that executes a VSCode command on selection.
+ */
+export interface CommandQuickPickItem extends BaseQuickPickItem {
+  readonly itemKind: Extract<PickerItemKind, 'command'>;
+  readonly command: string;
+}
+
+/**
+ * QuickPickItem that pastes a bookmark on selection.
+ */
+export interface BookmarkQuickPickItem extends BaseQuickPickItem {
+  readonly itemKind: Extract<PickerItemKind, 'bookmark'>;
+  readonly bookmarkId: string;
+}
+
+/**
+ * Non-actionable QuickPickItem (section headers, empty state messages).
+ */
+export interface InfoQuickPickItem extends BaseQuickPickItem {
+  readonly itemKind: Extract<PickerItemKind, 'info'>;
+}
+
 // ============================================================================
 // Confirmation Dialog Types
 // ============================================================================
@@ -102,3 +128,13 @@ export interface ConfirmationQuickPickItem extends vscode.QuickPickItem {
   readonly confirmed: boolean;
 }
 
+/**
+ * Union of all selectable QuickPickItem types used in the StatusBar menu.
+ * Separators (QuickPickItemKind.Separator) are not selectable and use plain vscode.QuickPickItem.
+ */
+export type StatusBarMenuQuickPickItem =
+  | BindableQuickPickItem
+  | TerminalMoreQuickPickItem
+  | CommandQuickPickItem
+  | BookmarkQuickPickItem
+  | InfoQuickPickItem;

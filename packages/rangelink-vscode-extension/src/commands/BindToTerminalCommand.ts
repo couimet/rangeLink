@@ -12,13 +12,7 @@ import {
 } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import {
-  type BindableQuickPickItem,
-  type ExtensionResult,
-  MessageCode,
-  type QuickPickBindResult,
-  type TerminalBindOptions,
-} from '../types';
+import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../types';
 import { formatMessage } from '../utils';
 
 /**
@@ -47,12 +41,7 @@ export class BindToTerminalCommand {
   async execute(): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'BindToTerminalCommand.execute' };
 
-    const grouped = await this.availabilityService.getGroupedDestinationItems({
-      destinationKinds: ['terminal'],
-      terminalThreshold: Infinity,
-    });
-    const terminalItems = (grouped['terminal'] ??
-      []) as BindableQuickPickItem<TerminalBindOptions>[];
+    const terminalItems = await this.availabilityService.getTerminalItems(Infinity);
 
     this.logger.debug(
       { ...logCtx, terminalCount: terminalItems.length },
@@ -66,16 +55,13 @@ export class BindToTerminalCommand {
     }
 
     if (terminalItems.length === 1) {
-      const terminal = terminalItems[0].bindOptions.terminal;
+      const { terminal } = terminalItems[0].terminalInfo;
       this.logger.debug(
         { ...logCtx, terminalName: terminal.name },
         'Single terminal, auto-binding',
       );
       return this.mapBindResult(await this.destinationManager.bind({ kind: 'terminal', terminal }));
     }
-
-    const terminals = terminalItems.map((item) => item.bindOptions.terminal);
-    const activeTerminal = terminalItems.find((item) => item.isActive)?.bindOptions.terminal;
 
     const options: TerminalPickerOptions = {
       maxItemsBeforeMore: TERMINAL_PICKER_SHOW_ALL,
@@ -86,17 +72,16 @@ export class BindToTerminalCommand {
     };
 
     const result = await showTerminalPicker(
-      terminals,
-      activeTerminal,
+      terminalItems,
       this.vscodeAdapter,
       options,
       this.logger,
-      async (terminal) => {
+      async (eligible) => {
         this.logger.debug(
-          { ...logCtx, terminalName: terminal.name },
-          `Binding to terminal "${terminal.name}"`,
+          { ...logCtx, terminalName: eligible.name },
+          `Binding to terminal "${eligible.name}"`,
         );
-        return this.destinationManager.bind({ kind: 'terminal', terminal });
+        return this.destinationManager.bind({ kind: 'terminal', terminal: eligible.terminal });
       },
     );
 

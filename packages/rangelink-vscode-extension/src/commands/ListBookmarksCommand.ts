@@ -1,17 +1,16 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import type { Bookmark, BookmarkId } from '../bookmarks';
+import type { Bookmark } from '../bookmarks';
 import type { BookmarkService } from '../bookmarks';
 import { CMD_BOOKMARK_ADD, CMD_BOOKMARK_MANAGE } from '../constants';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { BookmarkQuickPickItem, CommandQuickPickItem, InfoQuickPickItem } from '../types';
 import { MessageCode } from '../types';
 import { formatMessage, isSelectableQuickPickItem } from '../utils';
 
-interface BookmarkQuickPickItem extends vscode.QuickPickItem {
-  bookmarkId?: BookmarkId;
-  command?: string;
-}
+type ListBookmarksQuickPickItem = BookmarkQuickPickItem | CommandQuickPickItem | InfoQuickPickItem;
 
 /**
  * Command handler for displaying bookmarks.
@@ -61,7 +60,7 @@ export class ListBookmarksCommand {
     }
   }
 
-  private buildQuickPickItems(): BookmarkQuickPickItem[] {
+  private buildQuickPickItems(): (ListBookmarksQuickPickItem | vscode.QuickPickItem)[] {
     const bookmarks = this.bookmarkService.getAllBookmarks();
 
     if (bookmarks.length === 0) {
@@ -71,10 +70,11 @@ export class ListBookmarksCommand {
     return [...this.buildBookmarkItems(bookmarks), ...this.buildFooterItems()];
   }
 
-  private buildEmptyStateItems(): BookmarkQuickPickItem[] {
+  private buildEmptyStateItems(): (InfoQuickPickItem | CommandQuickPickItem)[] {
     return [
       {
         label: formatMessage(MessageCode.BOOKMARK_LIST_EMPTY),
+        itemKind: 'info' as const,
       },
       this.buildAddBookmarkItem(),
     ];
@@ -84,11 +84,12 @@ export class ListBookmarksCommand {
     return bookmarks.map((bookmark) => ({
       label: `$(bookmark) ${bookmark.label}`,
       detail: bookmark.link,
+      itemKind: 'bookmark' as const,
       bookmarkId: bookmark.id,
     }));
   }
 
-  private buildFooterItems(): BookmarkQuickPickItem[] {
+  private buildFooterItems(): (CommandQuickPickItem | vscode.QuickPickItem)[] {
     return [
       {
         label: '',
@@ -97,14 +98,16 @@ export class ListBookmarksCommand {
       this.buildAddBookmarkItem(),
       {
         label: formatMessage(MessageCode.BOOKMARK_ACTION_MANAGE),
+        itemKind: 'command' as const,
         command: CMD_BOOKMARK_MANAGE,
       },
     ];
   }
 
-  private buildAddBookmarkItem(): BookmarkQuickPickItem {
+  private buildAddBookmarkItem(): CommandQuickPickItem {
     return {
       label: formatMessage(MessageCode.BOOKMARK_ACTION_ADD),
+      itemKind: 'command' as const,
       command: CMD_BOOKMARK_ADD,
     };
   }

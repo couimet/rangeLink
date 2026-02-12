@@ -129,8 +129,7 @@ export class DestinationPickerCommand {
   }
 
   private async showSecondaryTerminalPicker(logCtx: LoggingContext): Promise<InternalPickerResult> {
-    const terminals = this.vscodeAdapter.terminals;
-    const activeTerminal = this.vscodeAdapter.activeTerminal;
+    const terminalItems = await this.availabilityService.getTerminalItems(Infinity);
 
     const options: TerminalPickerOptions = {
       maxItemsBeforeMore: TERMINAL_PICKER_SHOW_ALL,
@@ -141,14 +140,13 @@ export class DestinationPickerCommand {
     };
 
     const result = await showTerminalPicker(
-      terminals,
-      activeTerminal,
+      terminalItems,
       this.vscodeAdapter,
       options,
       this.logger,
-      (terminal) => ({
+      (eligible) => ({
         outcome: 'selected' as const,
-        bindOptions: { kind: 'terminal' as const, terminal },
+        bindOptions: { kind: 'terminal' as const, terminal: eligible.terminal },
       }),
     );
 
@@ -156,10 +154,8 @@ export class DestinationPickerCommand {
       case 'selected':
         return result.result;
       case 'cancelled':
-        this.logger.debug(logCtx, 'User cancelled secondary terminal picker');
-        return { outcome: 'cancelled' };
       case 'returned-to-destination-picker':
-        this.logger.debug(logCtx, 'User returned to destination picker from secondary');
+        this.logger.debug(logCtx, 'User returned from secondary terminal picker');
         return { outcome: 'returned-to-main-picker' };
       default: {
         const _exhaustiveCheck: never = result;

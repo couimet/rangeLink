@@ -1,12 +1,13 @@
 import type { Logger } from 'barebone-logger';
-import type * as vscode from 'vscode';
 
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
-import type { DestinationQuickPickItem } from '../../types';
-
-import { assertTerminalFromPicker } from './assertTerminalFromPicker';
+import type {
+  EligibleTerminal,
+  TerminalBindableQuickPickItem,
+  TerminalMoreQuickPickItem,
+} from '../../types';
 
 /** Pass to maxItemsBeforeMore to show all terminals without "More..." grouping */
 export const TERMINAL_PICKER_SHOW_ALL = Infinity;
@@ -38,34 +39,40 @@ export type TerminalPickerResult<T> =
   | { readonly outcome: Extract<TerminalPickerOutcome, 'cancelled'> }
   | { readonly outcome: Extract<TerminalPickerOutcome, 'returned-to-destination-picker'> };
 
+type TerminalPickerItem = TerminalBindableQuickPickItem | TerminalMoreQuickPickItem;
+
 /**
  * Build QuickPick items for terminal selection.
+ *
+ * Reformats TerminalBindableQuickPickItem labels for the picker display
+ * (plain names instead of icon-prefixed menu labels) while preserving
+ * the rich terminalInfo for downstream use.
  */
 const buildTerminalItems = (
-  terminals: readonly vscode.Terminal[],
-  activeTerminal: vscode.Terminal | undefined,
+  terminalItems: readonly TerminalBindableQuickPickItem[],
   options: TerminalPickerOptions,
   showAll: boolean,
-): DestinationQuickPickItem[] => {
-  const items: DestinationQuickPickItem[] = [];
+): TerminalPickerItem[] => {
+  const items: TerminalPickerItem[] = [];
   const maxItems = options.maxItemsBeforeMore;
 
-  const terminalsToShow =
-    showAll || terminals.length <= maxItems ? terminals : terminals.slice(0, maxItems);
+  const itemsToShow =
+    showAll || terminalItems.length <= maxItems ? terminalItems : terminalItems.slice(0, maxItems);
 
-  for (const terminal of terminalsToShow) {
-    const isActive = terminal === activeTerminal;
+  for (const item of itemsToShow) {
     items.push({
-      label: terminal.name,
-      description: isActive ? options.activeDescription : undefined,
-      displayName: terminal.name,
-      bindOptions: { kind: 'terminal', terminal },
+      label: item.terminalInfo.name,
+      description: item.terminalInfo.isActive ? options.activeDescription : undefined,
+      displayName: item.terminalInfo.name,
+      bindOptions: item.bindOptions,
       itemKind: 'bindable',
+      isActive: item.isActive,
+      terminalInfo: item.terminalInfo,
     });
   }
 
-  if (!showAll && terminals.length > maxItems) {
-    const remainingCount = terminals.length - maxItems;
+  if (!showAll && terminalItems.length > maxItems) {
+    const remainingCount = terminalItems.length - maxItems;
     items.push({
       label: options.moreTerminalsLabel,
       displayName: options.moreTerminalsLabel,
@@ -78,7 +85,7 @@ const buildTerminalItems = (
 };
 
 /**
- * Show a QuickPick to select a terminal from a list of terminals.
+ * Show a QuickPick to select a terminal from a list of eligible terminals.
  *
  * This is a pure UI function - it only shows the picker. The caller is
  * responsible for deciding when to show the picker (e.g., handling the
@@ -90,8 +97,7 @@ const buildTerminalItems = (
  * - Selecting "More terminals..." opens secondary picker with all terminals
  * - Escaping secondary picker returns 'returned-to-destination-picker'
  *
- * @param terminals - The terminals to show in the picker (must have at least 2)
- * @param activeTerminal - The currently active terminal (shown with special description)
+ * @param terminalItems - Terminal items to show (must have at least 2)
  * @param vscodeAdapter - Adapter for VSCode API calls
  * @param options - Configuration for picker behavior and display strings
  * @param logger - Logger instance
@@ -99,16 +105,15 @@ const buildTerminalItems = (
  * @returns Result indicating selection outcome
  */
 export const showTerminalPicker = async <T>(
-  terminals: readonly vscode.Terminal[],
-  activeTerminal: vscode.Terminal | undefined,
+  terminalItems: readonly TerminalBindableQuickPickItem[],
   vscodeAdapter: VscodeAdapter,
   options: TerminalPickerOptions,
   logger: Logger,
-  onSelected: (terminal: vscode.Terminal) => T | Promise<T>,
+  onSelected: (terminal: EligibleTerminal) => T | Promise<T>,
 ): Promise<TerminalPickerResult<T>> => {
-  const logCtx = { fn: 'showTerminalPicker', terminalCount: terminals.length };
+  const logCtx = { fn: 'showTerminalPicker', terminalCount: terminalItems.length };
 
-  const items = buildTerminalItems(terminals, activeTerminal, options, false);
+  const items = buildTerminalItems(terminalItems, options, false);
 
   logger.debug({ ...logCtx, itemCount: items.length }, 'Showing terminal picker');
 
@@ -124,24 +129,15 @@ export const showTerminalPicker = async <T>(
 
   switch (selected.itemKind) {
     case 'bindable':
-      return assertTerminalFromPicker(
-        selected,
-        'showTerminalPicker',
-        logger,
-        'Terminal selected',
-        async (terminal) => ({ outcome: 'selected' as const, result: await onSelected(terminal) }),
-      );
+      logger.debug({ fn: 'showTerminalPicker', selected }, 'Terminal selected');
+      return {
+        outcome: 'selected',
+        result: await onSelected(selected.terminalInfo),
+      };
 
     case 'terminal-more':
       logger.debug(logCtx, 'User selected "More terminals...", showing full list');
-      return showSecondaryPicker(
-        terminals,
-        activeTerminal,
-        vscodeAdapter,
-        logger,
-        options,
-        onSelected,
-      );
+      return showSecondaryPicker(terminalItems, vscodeAdapter, logger, options, onSelected);
 
     default: {
       const _exhaustiveCheck: never = selected;
@@ -159,16 +155,15 @@ export const showTerminalPicker = async <T>(
  * Show secondary picker with all terminals.
  */
 const showSecondaryPicker = async <T>(
-  terminals: readonly vscode.Terminal[],
-  activeTerminal: vscode.Terminal | undefined,
+  terminalItems: readonly TerminalBindableQuickPickItem[],
   vscodeAdapter: VscodeAdapter,
   logger: Logger,
   options: TerminalPickerOptions,
-  onSelected: (terminal: vscode.Terminal) => T | Promise<T>,
+  onSelected: (terminal: EligibleTerminal) => T | Promise<T>,
 ): Promise<TerminalPickerResult<T>> => {
-  const logCtx = { fn: 'showTerminalPicker.secondary', terminalCount: terminals.length };
+  const logCtx = { fn: 'showTerminalPicker.secondary', terminalCount: terminalItems.length };
 
-  const items = buildTerminalItems(terminals, activeTerminal, options, true);
+  const items = buildTerminalItems(terminalItems, options, true);
 
   const selected = await vscodeAdapter.showQuickPick(items, {
     title: options.title,
@@ -182,13 +177,14 @@ const showSecondaryPicker = async <T>(
 
   switch (selected.itemKind) {
     case 'bindable':
-      return assertTerminalFromPicker(
-        selected,
-        'showTerminalPicker.secondary',
-        logger,
+      logger.debug(
+        { fn: 'showTerminalPicker.secondary', selected },
         'Terminal selected from full list',
-        async (terminal) => ({ outcome: 'selected' as const, result: await onSelected(terminal) }),
       );
+      return {
+        outcome: 'selected',
+        result: await onSelected(selected.terminalInfo),
+      };
 
     default:
       throw new RangeLinkExtensionError({
