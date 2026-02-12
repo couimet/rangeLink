@@ -70,7 +70,8 @@ describe('RangeLinkDocumentProvider', () => {
     });
 
     it('should create command URI with encoded arguments', () => {
-      mockFindLinksInText.mockReturnValue([createMockDetectedLink()]);
+      const detected = createMockDetectedLink();
+      mockFindLinksInText.mockReturnValue([detected]);
 
       const document = createMockDocument({
         getText: createMockText('Check src/file.ts#L10'),
@@ -80,8 +81,13 @@ describe('RangeLinkDocumentProvider', () => {
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
+      const expectedArgs = encodeURIComponent(
+        JSON.stringify({ linkText: detected.linkText, parsed: detected.parsed }),
+      );
       expect(links[0].target).toBeDefined();
-      expect(links[0].target!.toString()).toContain('command:rangelink.handleDocumentLinkClick');
+      expect(links[0].target!.toString()).toBe(
+        `command:rangelink.handleDocumentLinkClick?${expectedArgs}`,
+      );
     });
 
     it('should map multiple detected links', () => {
@@ -112,6 +118,14 @@ describe('RangeLinkDocumentProvider', () => {
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
       expect(links).toHaveLength(2);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
+          documentUri: 'file:///test/file.ts',
+          linksFound: 2,
+        },
+        'Found 2 RangeLinks in document',
+      );
     });
 
     it('should return empty array when no links detected', () => {
@@ -126,6 +140,14 @@ describe('RangeLinkDocumentProvider', () => {
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
       expect(links).toHaveLength(0);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
+          documentUri: 'file:///test/file.ts',
+          linksFound: 0,
+        },
+        'Found 0 RangeLinks in document',
+      );
     });
 
     it('should pass cancellation token to findLinksInText', () => {
@@ -144,6 +166,14 @@ describe('RangeLinkDocumentProvider', () => {
         DEFAULT_DELIMITERS,
         mockLogger,
         token,
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
+          documentUri: 'file:///test/file.ts',
+          linksFound: 0,
+        },
+        'Found 0 RangeLinks in document',
       );
     });
   });
