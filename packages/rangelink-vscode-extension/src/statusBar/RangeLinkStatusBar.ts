@@ -187,77 +187,75 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   /**
    * Build QuickPick items for available destinations when unbound.
    */
-  private async buildDestinationsQuickPickItems(): Promise<MenuQuickPickItem[]> {
-    const result: MenuQuickPickItem[] = [];
-    const availableDestinations = await this.availabilityService.getAvailableDestinations();
+  private async buildDestinationsQuickPickItems(): Promise<
+    (DestinationQuickPickItem | InfoQuickPickItem | vscode.QuickPickItem)[]
+  > {
+    const grouped = await this.availabilityService.getGroupedDestinationItems();
+    const destinationItems = buildDestinationQuickPickItems(
+      grouped,
+      (displayName) => `${MENU_ITEM_INDENT}$(arrow-right) ${displayName}`,
+    );
 
-    if (availableDestinations.length === 0) {
-      result.push({
-        label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE),
-      });
-    } else {
-      result.push({
-        label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW),
-      });
-      for (const dest of availableDestinations) {
-        result.push({
-          label: `${MENU_ITEM_INDENT}$(arrow-right) ${dest.displayName}`,
-          destinationKind: dest.kind,
-        });
-      }
+    if (destinationItems.length === 0) {
+      return [
+        {
+          label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE),
+          itemKind: 'info' as const,
+        },
+      ];
     }
 
-    return result;
+    return [
+      {
+        label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW),
+        itemKind: 'info' as const,
+      },
+      ...destinationItems,
+    ];
   }
 
-  private buildBookmarksQuickPickItems(): MenuQuickPickItem[] {
-    const result: MenuQuickPickItem[] = [];
+  private buildBookmarksQuickPickItems(): (
+    | BookmarkQuickPickItem
+    | CommandQuickPickItem
+    | InfoQuickPickItem
+    | vscode.QuickPickItem
+  )[] {
     const bookmarks = this.bookmarkService.getAllBookmarks();
 
-    result.push({
-      label: '',
-      kind: vscode.QuickPickItemKind.Separator,
-    });
+    const bookmarkItems: (BookmarkQuickPickItem | InfoQuickPickItem)[] =
+      bookmarks.length === 0
+        ? [
+            {
+              label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_LIST_EMPTY)}`,
+              itemKind: 'info' as const,
+            },
+          ]
+        : bookmarks.map((bookmark) => ({
+            label: `${MENU_ITEM_INDENT}$(bookmark) ${bookmark.label}`,
+            itemKind: 'bookmark' as const,
+            bookmarkId: bookmark.id,
+          }));
 
-    result.push({
-      label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL),
-    });
-
-    if (bookmarks.length === 0) {
-      result.push({
-        label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_LIST_EMPTY)}`,
-      });
-    } else {
-      for (const bookmark of bookmarks) {
-        result.push({
-          label: `${MENU_ITEM_INDENT}$(bookmark) ${bookmark.label}`,
-          command: CMD_BOOKMARK_NAVIGATE,
-          bookmarkId: bookmark.id,
-        });
-      }
-    }
-
-    result.push({
-      label: '',
-      kind: vscode.QuickPickItemKind.Separator,
-    });
-
-    result.push({
-      label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_ADD)}`,
-      command: CMD_BOOKMARK_ADD,
-    });
-
-    result.push({
-      label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_MANAGE)}`,
-      command: CMD_BOOKMARK_MANAGE,
-    });
-
-    result.push({
-      label: '',
-      kind: vscode.QuickPickItemKind.Separator,
-    });
-
-    return result;
+    return [
+      { label: '', kind: vscode.QuickPickItemKind.Separator },
+      {
+        label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL),
+        itemKind: 'info' as const,
+      },
+      ...bookmarkItems,
+      { label: '', kind: vscode.QuickPickItemKind.Separator },
+      {
+        label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_ADD)}`,
+        itemKind: 'command' as const,
+        command: CMD_BOOKMARK_ADD,
+      },
+      {
+        label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_MANAGE)}`,
+        itemKind: 'command' as const,
+        command: CMD_BOOKMARK_MANAGE,
+      },
+      { label: '', kind: vscode.QuickPickItemKind.Separator },
+    ];
   }
 
   dispose(): void {
