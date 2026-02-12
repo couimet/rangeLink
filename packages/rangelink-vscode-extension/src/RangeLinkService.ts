@@ -1,5 +1,10 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
-import { type DelimiterConfigGetter, type FormattedLink, LinkType } from 'rangelink-core-ts';
+import {
+  type DelimiterConfigGetter,
+  type FormattedLink,
+  LinkType,
+  quotePath,
+} from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { DestinationPickerCommand } from './commands/DestinationPickerCommand';
@@ -24,13 +29,7 @@ import {
   PasteContentType,
   type QuickPickBindResult,
 } from './types';
-import {
-  formatMessage,
-  generateLinkFromSelections,
-  isSelfPaste,
-  isTerminalDestination,
-  quotePathForShell,
-} from './utils';
+import { formatMessage, generateLinkFromSelections, isSelfPaste } from './utils';
 
 export enum PathFormat {
   WorkspaceRelative = 'workspace-relative',
@@ -320,15 +319,12 @@ export class RangeLinkService {
       }
     }
 
-    const boundDestination = this.destinationManager.getBoundDestination();
-    const destinationFilePath = isTerminalDestination(boundDestination)
-      ? quotePathForShell(filePath)
-      : filePath;
+    const destinationFilePath = quotePath(filePath);
 
     if (destinationFilePath !== filePath) {
       this.logger.debug(
         { ...logCtx, before: filePath, after: destinationFilePath },
-        'Quoted path for terminal destination',
+        'Quoted path for unsafe characters',
       );
     }
 
@@ -503,9 +499,15 @@ export class RangeLinkService {
     linkTypeName: string,
     sourceUri: vscode.Uri,
   ): Promise<void> {
+    const logCtx = { fn: 'RangeLinkService.copyToClipboardAndDestination' };
     const paddingMode = this.configReader.getPaddingMode(
       SETTING_SMART_PADDING_PASTE_LINK,
       DEFAULT_SMART_PADDING_PASTE_LINK,
+    );
+
+    this.logger.debug(
+      { ...logCtx, link: formattedLink.link, rawLink: formattedLink.rawLink },
+      'Sending link to destination',
     );
 
     await this.copyAndSendToDestination({

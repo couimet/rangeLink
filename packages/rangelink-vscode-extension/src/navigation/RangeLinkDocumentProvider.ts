@@ -1,28 +1,13 @@
 import type { Logger } from 'barebone-logger';
-import type { ParsedLink } from 'rangelink-core-ts';
+import type { DelimiterConfigGetter } from 'rangelink-core-ts';
+import { findLinksInText } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { RangeLinkClickArgs } from '../types';
+import { formatLinkTooltip } from '../utils';
 
 import { RangeLinkNavigationHandler } from './RangeLinkNavigationHandler';
-
-/**
- * DocumentLink subclass that carries parsed RangeLink data.
- *
- * VSCode guarantees the same object reference is passed from
- * provideDocumentLinks to resolveDocumentLink, so attaching
- * data directly on the link is the standard pattern.
- */
-class RangeLinkDocumentLink extends vscode.DocumentLink {
-  constructor(
-    range: vscode.Range,
-    readonly linkText: string,
-    readonly parsed: ParsedLink,
-  ) {
-    super(range);
-  }
-}
 
 /**
  * Document link provider for RangeLink format detection in editor files.
@@ -40,32 +25,19 @@ class RangeLinkDocumentLink extends vscode.DocumentLink {
  * **Important:** Do NOT register for all schemes (`{ scheme: '*' }`). This causes infinite
  * recursion when the provider scans output channels containing its own logs. Explicitly
  * register only for desired schemes: `file`, `untitled`.
- *
- * **Usage:**
- * ```typescript
- * const handler = new RangeLinkNavigationHandler(delimiters, logger);
- * const provider = new RangeLinkDocumentProvider(handler, logger);
- * context.subscriptions.push(
- *   vscode.languages.registerDocumentLinkProvider(
- *     [
- *       { scheme: 'file' },
- *       { scheme: 'untitled' }
- *     ],
- *     provider
- *   )
- * );
- * ```
  */
 export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
   /**
    * Create a new document link provider.
    *
-   * @param handler - Navigation handler for link detection and navigation
+   * @param handler - Navigation handler for link navigation
+   * @param getDelimiters - Factory function for fresh delimiter configuration
    * @param ideAdapter - VSCode adapter for IDE operations
    * @param logger - Logger instance for structured logging
    */
   constructor(
     private readonly handler: RangeLinkNavigationHandler,
+    private readonly getDelimiters: DelimiterConfigGetter,
     private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
@@ -89,97 +61,31 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
     document: vscode.TextDocument,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.DocumentLink[]> {
-    const links: vscode.DocumentLink[] = [];
     const text = document.getText();
-
-    // Get pattern from handler
-    const pattern = this.handler.getPattern();
-
-    // Reset regex lastIndex for global flag
-    pattern.lastIndex = 0;
-
-    // Find all matches in the document
-    const matches = [...text.matchAll(pattern)];
-
-    for (const match of matches) {
-      if (token.isCancellationRequested) {
-        break;
-      }
-
-      const linkText = match[0];
-      const startIndex = match.index!;
-      const endIndex = startIndex + linkText.length;
-
-      // Convert string indices to document positions
-      const startPos = document.positionAt(startIndex);
-      const endPos = document.positionAt(endIndex);
-      const range = this.ideAdapter.createRange(startPos, endPos);
-
-      // Parse the link
-      const parseResult = this.handler.parseLink(linkText);
-
-      if (!parseResult.success) {
-        // Skip invalid links
-        this.logger.debug(
-          {
-            fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
-            linkText,
-            error: parseResult.error,
-          },
-          'Skipping invalid link',
-        );
-        continue;
-      }
-
-      const parsed = parseResult.value;
-
-      const docLink = new RangeLinkDocumentLink(range, linkText, parsed);
-      docLink.tooltip = this.handler.formatTooltip(parsed);
-
-      links.push(docLink);
-    }
+    const detectedLinks = findLinksInText(text, this.getDelimiters(), this.logger, token);
 
     this.logger.debug(
       {
         fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
         documentUri: document.uri.toString(),
-        linksFound: links.length,
+        linksFound: detectedLinks.length,
       },
-      `Found ${links.length} RangeLinks in document`,
+      `Found ${detectedLinks.length} RangeLinks in document`,
     );
 
-    return links;
-  }
+    return detectedLinks.map(({ linkText, startIndex, length, parsed }) => {
+      const startPos = document.positionAt(startIndex);
+      const endPos = document.positionAt(startIndex + length);
+      const range = this.ideAdapter.createRange(startPos, endPos);
 
-  /**
-   * Resolve a document link by setting its command URI target.
-   *
-   * Called by VSCode when the user clicks a link. Setting the target here
-   * (instead of in provideDocumentLinks) keeps the hover tooltip clean —
-   * VSCode composes tooltip + target into raw markdown when both are present.
-   *
-   * @param link - The RangeLink document link to resolve
-   * @returns The link with target set
-   */
-  resolveDocumentLink(link: vscode.DocumentLink): vscode.DocumentLink {
-    if (!(link instanceof RangeLinkDocumentLink)) {
-      this.logger.warn(
-        { fn: 'RangeLinkDocumentProvider.resolveDocumentLink' },
-        'Unexpected link type - not a RangeLinkDocumentLink',
+      const docLink = new vscode.DocumentLink(range);
+      docLink.tooltip = formatLinkTooltip(parsed);
+      docLink.target = this.ideAdapter.parseUri(
+        `command:rangelink.handleDocumentLinkClick?${encodeURIComponent(JSON.stringify({ linkText, parsed }))}`,
       );
-      return link;
-    }
 
-    link.target = this.ideAdapter.parseUri(
-      `command:rangelink.handleDocumentLinkClick?${encodeURIComponent(JSON.stringify({ linkText: link.linkText, parsed: link.parsed }))}`,
-    );
-
-    this.logger.debug(
-      { fn: 'RangeLinkDocumentProvider.resolveDocumentLink', linkText: link.linkText },
-      'Resolved document link target',
-    );
-
-    return link;
+      return docLink;
+    });
   }
 
   /**
@@ -197,11 +103,8 @@ export class RangeLinkDocumentProvider implements vscode.DocumentLinkProvider {
     this.logger.debug({ ...logCtx, parsed }, 'Document link clicked - delegating to handler');
 
     try {
-      // Delegate navigation to handler (shows success toast)
       await this.handler.navigateToLink(parsed, linkText);
     } catch (error) {
-      // Handler already logged error and showed error message
-      // Just log that document link handling failed
       this.logger.debug(
         { ...logCtx, error },
         'Document link handling completed with error (already handled by navigation handler)',

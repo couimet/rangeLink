@@ -11,6 +11,7 @@ import { LinkType } from '../types/LinkType';
 import { ParsedLink } from '../types/ParsedLink';
 import { SelectionType } from '../types/SelectionType';
 import { escapeRegex } from '../utils/escapeRegex';
+import { quotePath } from '../utils/quotePath';
 
 /**
  * Parse a RangeLink string into structured components.
@@ -35,7 +36,18 @@ import { escapeRegex } from '../utils/escapeRegex';
  * @param link - The RangeLink string to parse (e.g., "src/auth.ts#L42C10-L58C25")
  * @param delimiters - Optional delimiter configuration. If not provided, falls back to DEFAULT_DELIMITERS
  */
-export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResult<ParsedLink> => {
+export const parseLink = (
+  linkInput: string,
+  delimiters?: DelimiterConfig,
+): CoreResult<ParsedLink> => {
+  // Strip surrounding quotes (single or double) so quoted links round-trip correctly
+  const firstChar = linkInput[0];
+  const lastChar = linkInput[linkInput.length - 1];
+  const isQuoted =
+    linkInput.length > 2 &&
+    ((firstChar === "'" && lastChar === "'") || (firstChar === '"' && lastChar === '"'));
+  const link = isQuoted ? linkInput.slice(1, -1) : linkInput;
+
   // Check link length for safety
   if (link.length > MAX_LINK_LENGTH) {
     return CoreResult.err(
@@ -265,6 +277,7 @@ export const parseLink = (link: string, delimiters?: DelimiterConfig): CoreResul
 
   return CoreResult.ok({
     path,
+    quotedPath: quotePath(path),
     start,
     end,
     linkType,

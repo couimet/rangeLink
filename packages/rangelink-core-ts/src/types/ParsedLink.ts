@@ -10,10 +10,22 @@ import { SelectionType } from './SelectionType';
  */
 export interface ParsedLink {
   /**
-   * File path extracted from the link.
+   * File path extracted from the link (always raw/unquoted).
    * May be relative (e.g., "src/file.ts") or absolute (e.g., "/Users/name/project/file.ts").
+   *
+   * Use for filesystem operations — this is the semantic path.
    */
   path: string;
+
+  /**
+   * The path wrapped in single quotes when it contains unsafe characters.
+   *
+   * When safe: `quotedPath === path` (e.g., `"src/file.ts"`)
+   * When unsafe: path is quoted (e.g., `"'My Folder/file.ts'"`)
+   *
+   * Provides API symmetry with FormattedLink's `link`/`rawLink` duality.
+   */
+  quotedPath: string;
 
   /**
    * Start position within the file.

@@ -8,6 +8,7 @@ describe('formatLinkTooltip', () => {
     it('should format tooltip with path, line, and character', () => {
       const parsed: ParsedLink = {
         path: 'src/auth.ts',
+        quotedPath: 'src/auth.ts',
         start: { line: 42, character: 10 },
         end: { line: 42, character: 10 },
         linkType: LinkType.Regular,
@@ -20,6 +21,7 @@ describe('formatLinkTooltip', () => {
     it('should format tooltip with different path and position', () => {
       const parsed: ParsedLink = {
         path: 'src/validation.ts',
+        quotedPath: 'src/validation.ts',
         start: { line: 10, character: 5 },
         end: { line: 10, character: 5 },
         linkType: LinkType.Regular,
@@ -34,6 +36,7 @@ describe('formatLinkTooltip', () => {
     it('should format tooltip with path and line range', () => {
       const parsed: ParsedLink = {
         path: 'src/file.ts',
+        quotedPath: 'src/file.ts',
         start: { line: 10 },
         end: { line: 20 },
         linkType: LinkType.Regular,
@@ -46,6 +49,7 @@ describe('formatLinkTooltip', () => {
     it('should format tooltip with path and single line', () => {
       const parsed: ParsedLink = {
         path: 'README.md',
+        quotedPath: 'README.md',
         start: { line: 1 },
         end: { line: 1 },
         linkType: LinkType.Regular,
@@ -60,6 +64,7 @@ describe('formatLinkTooltip', () => {
     it('should show full range to highlight RangeLink value prop', () => {
       const parsed: ParsedLink = {
         path: 'src/auth.ts',
+        quotedPath: 'src/auth.ts',
         start: { line: 10, character: 5 },
         end: { line: 25, character: 30 },
         linkType: LinkType.Regular,
@@ -75,6 +80,7 @@ describe('formatLinkTooltip', () => {
     it('should format tooltip for rectangular selection showing full range', () => {
       const parsed: ParsedLink = {
         path: 'data.csv',
+        quotedPath: 'data.csv',
         start: { line: 10, character: 5 },
         end: { line: 20, character: 10 },
         linkType: LinkType.Regular,
@@ -89,6 +95,7 @@ describe('formatLinkTooltip', () => {
     it('should handle Windows-style path', () => {
       const parsed: ParsedLink = {
         path: 'C:\\Users\\dev\\project\\src\\file.ts',
+        quotedPath: 'C:\\Users\\dev\\project\\src\\file.ts',
         start: { line: 42, character: 10 },
         end: { line: 42, character: 10 },
         linkType: LinkType.Regular,
@@ -103,6 +110,7 @@ describe('formatLinkTooltip', () => {
     it('should handle path with hash in filename', () => {
       const parsed: ParsedLink = {
         path: 'issue#123/auth.ts',
+        quotedPath: 'issue#123/auth.ts',
         start: { line: 42 },
         end: { line: 42 },
         linkType: LinkType.Regular,
@@ -115,6 +123,7 @@ describe('formatLinkTooltip', () => {
     it('should handle relative path', () => {
       const parsed: ParsedLink = {
         path: './src/utils/helper.ts',
+        quotedPath: './src/utils/helper.ts',
         start: { line: 5, character: 0 },
         end: { line: 5, character: 0 },
         linkType: LinkType.Regular,
@@ -127,6 +136,7 @@ describe('formatLinkTooltip', () => {
     it('should handle absolute Unix path', () => {
       const parsed: ParsedLink = {
         path: '/home/user/project/src/file.ts',
+        quotedPath: '/home/user/project/src/file.ts',
         start: { line: 100, character: 25 },
         end: { line: 100, character: 25 },
         linkType: LinkType.Regular,
@@ -143,6 +153,7 @@ describe('formatLinkTooltip', () => {
     it('should handle line 1 column 1', () => {
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 1, character: 1 },
         end: { line: 1, character: 1 },
         linkType: LinkType.Regular,
@@ -155,6 +166,7 @@ describe('formatLinkTooltip', () => {
     it('should handle large line numbers with range', () => {
       const parsed: ParsedLink = {
         path: 'bigfile.ts',
+        quotedPath: 'bigfile.ts',
         start: { line: 9999, character: 99 },
         end: { line: 10000, character: 1 },
         linkType: LinkType.Regular,
@@ -169,6 +181,7 @@ describe('formatLinkTooltip', () => {
     it('should handle character position 0', () => {
       const parsed: ParsedLink = {
         path: 'src/index.ts',
+        quotedPath: 'src/index.ts',
         start: { line: 10, character: 0 },
         end: { line: 10, character: 0 },
         linkType: LinkType.Regular,
@@ -202,6 +215,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for empty path', () => {
       const parsed: ParsedLink = {
         path: '',
+        quotedPath: '',
         start: { line: 10 },
         end: { line: 10 },
         linkType: LinkType.Regular,
@@ -214,6 +228,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for whitespace-only path', () => {
       const parsed: ParsedLink = {
         path: '   ',
+        quotedPath: '   ',
         start: { line: 10 },
         end: { line: 10 },
         linkType: LinkType.Regular,
@@ -238,6 +253,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for missing start position', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         end: { line: 10 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
@@ -249,6 +265,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for missing start.line', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { character: 5 },
         end: { line: 10 },
         linkType: LinkType.Regular,
@@ -261,6 +278,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for invalid start.line (zero)', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 0 },
         end: { line: 10 },
         linkType: LinkType.Regular,
@@ -273,6 +291,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for invalid start.line (negative)', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: -5 },
         end: { line: 10 },
         linkType: LinkType.Regular,
@@ -285,6 +304,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for non-numeric start.line', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 'ten' },
         end: { line: 10 },
         linkType: LinkType.Regular,
@@ -297,6 +317,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for missing end position', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
@@ -308,6 +329,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for missing end.line', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10 },
         end: { character: 5 },
         linkType: LinkType.Regular,
@@ -320,6 +342,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for invalid end.line (zero)', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10 },
         end: { line: 0 },
         linkType: LinkType.Regular,
@@ -332,6 +355,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for invalid end.line (negative)', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10 },
         end: { line: -5 },
         linkType: LinkType.Regular,
@@ -344,6 +368,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for non-numeric end.line', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10 },
         end: { line: 'twenty' },
         linkType: LinkType.Regular,
@@ -356,6 +381,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for negative start.character', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10, character: -5 },
         end: { line: 10 },
         linkType: LinkType.Regular,
@@ -368,6 +394,7 @@ describe('formatLinkTooltip', () => {
     it('should return undefined for negative end.character', () => {
       const parsed = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10 },
         end: { line: 10, character: -3 },
         linkType: LinkType.Regular,

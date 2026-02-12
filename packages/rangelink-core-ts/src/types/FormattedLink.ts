@@ -11,9 +11,24 @@ import { SelectionType } from './SelectionType';
  */
 export interface FormattedLink {
   /**
-   * The generated RangeLink string.
+   * The generated RangeLink string, quoted when the path contains unsafe characters.
+   *
+   * Safe path: `src/file.ts#L10` (no quotes)
+   * Unsafe path: `'My Folder/file.ts#L10'` (single-quoted)
+   *
+   * Safe to use in any context: clipboard, terminal paste, editor paste, chat.
    */
   readonly link: string;
+
+  /**
+   * The raw unquoted RangeLink string, always without surrounding quotes.
+   *
+   * When the path is safe: `rawLink === link`
+   * When the path is unsafe: `rawLink` has no quotes while `link` is quoted.
+   *
+   * Use for display, logging, bookmarks, or internal comparison.
+   */
+  readonly rawLink: string;
 
   /**
    * The link type that was generated.

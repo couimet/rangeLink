@@ -13,6 +13,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'src/file.ts',
+            quotedPath: 'src/file.ts',
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -27,6 +28,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'src/auth.ts',
+            quotedPath: 'src/auth.ts',
             start: { line: 42, character: 10 },
             end: { line: 42, character: 10 },
             linkType: 'regular',
@@ -41,6 +43,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 1 },
             end: { line: 1 },
             linkType: 'regular',
@@ -55,6 +58,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 999999 },
             end: { line: 999999 },
             linkType: 'regular',
@@ -71,6 +75,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10 },
             end: { line: 20 },
             linkType: 'regular',
@@ -85,6 +90,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10, character: 5 },
             end: { line: 20 },
             linkType: 'regular',
@@ -99,6 +105,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10 },
             end: { line: 20, character: 15 },
             linkType: 'regular',
@@ -113,6 +120,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'src/auth.ts',
+            quotedPath: 'src/auth.ts',
             start: { line: 42, character: 10 },
             end: { line: 58, character: 25 },
             linkType: 'regular',
@@ -129,6 +137,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10, character: 5 },
             end: { line: 10, character: 5 },
             linkType: 'regular',
@@ -143,6 +152,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10, character: 5 },
             end: { line: 20, character: 10 },
             linkType: 'regular',
@@ -160,6 +170,7 @@ describe('parseLink', () => {
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
           path: 'file#1.ts',
+          quotedPath: "'file#1.ts'",
           start: { line: 10 },
           end: { line: 10 },
           linkType: 'regular',
@@ -174,6 +185,7 @@ describe('parseLink', () => {
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
           path: 'issue#123#fix.ts',
+          quotedPath: "'issue#123#fix.ts'",
           start: { line: 42, character: 5 },
           end: { line: 42, character: 5 },
           linkType: 'regular',
@@ -188,6 +200,7 @@ describe('parseLink', () => {
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
           path: 'issue#123/auth.ts',
+          quotedPath: "'issue#123/auth.ts'",
           start: { line: 42 },
           end: { line: 42 },
           linkType: 'regular',
@@ -202,6 +215,7 @@ describe('parseLink', () => {
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
           path: 'file#1.ts',
+          quotedPath: "'file#1.ts'",
           start: { line: 10 },
           end: { line: 20 },
           linkType: 'regular',
@@ -216,6 +230,7 @@ describe('parseLink', () => {
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
           path: 'file#1.ts',
+          quotedPath: "'file#1.ts'",
           start: { line: 10, character: 5 },
           end: { line: 20, character: 10 },
           linkType: 'regular',
@@ -230,6 +245,7 @@ describe('parseLink', () => {
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
           path: '/home/user/project#1/src/file.ts',
+          quotedPath: "'/home/user/project#1/src/file.ts'",
           start: { line: 10 },
           end: { line: 10 },
           linkType: 'regular',
@@ -254,6 +270,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10, character: 5 },
             end: { line: 10, character: 5 },
             linkType: 'regular',
@@ -275,6 +292,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10 },
             end: { line: 20 },
             linkType: 'regular',
@@ -296,6 +314,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10, character: 5 },
             end: { line: 10, character: 5 },
             linkType: 'regular',
@@ -319,6 +338,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10, character: 5 },
             end: { line: 10, character: 5 },
             linkType: 'regular',
@@ -340,6 +360,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10, character: 5 },
             end: { line: 20, character: 10 },
             linkType: 'regular',
@@ -361,6 +382,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10, character: 5 },
             end: { line: 10, character: 5 },
             linkType: 'regular',
@@ -384,6 +406,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.txt',
+            quotedPath: 'file.txt',
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -405,6 +428,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -426,6 +450,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file.ts',
+            quotedPath: 'file.ts',
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -449,6 +474,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'user@host.ts',
+            quotedPath: "'user@host.ts'",
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -602,6 +628,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'file:///Users/name/file.ts',
+            quotedPath: 'file:///Users/name/file.ts',
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -640,6 +667,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'C:\\Users\\name\\file.ts',
+            quotedPath: "'C:\\Users\\name\\file.ts'",
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -654,6 +682,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'github.com/org/repo/file.ts',
+            quotedPath: 'github.com/org/repo/file.ts',
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -668,6 +697,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: './relative/path.ts',
+            quotedPath: './relative/path.ts',
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -682,6 +712,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: '/github.com/local/file.ts',
+            quotedPath: '/github.com/local/file.ts',
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -696,6 +727,7 @@ describe('parseLink', () => {
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
             path: 'my.config.ts',
+            quotedPath: 'my.config.ts',
             start: { line: 10 },
             end: { line: 10 },
             linkType: 'regular',
@@ -849,6 +881,122 @@ describe('parseLink', () => {
           expect(value.start).toStrictEqual({ line: 10, character: 20 });
           expect(value.end).toStrictEqual({ line: 11, character: 5 });
         });
+      });
+    });
+  });
+
+  describe('Quote stripping', () => {
+    it('should strip surrounding single quotes from quoted link', () => {
+      const result = parseLink("'My Folder/file.ts#L10'");
+
+      expect(result).toBeOkWith((value: ParsedLink) => {
+        expect(value).toStrictEqual({
+          path: 'My Folder/file.ts',
+          quotedPath: "'My Folder/file.ts'",
+          start: { line: 10 },
+          end: { line: 10 },
+          linkType: 'regular',
+          selectionType: 'Normal',
+        });
+      });
+    });
+
+    it('should strip quotes from link with range', () => {
+      const result = parseLink("'src/(group)/file.ts#L10-L20'");
+
+      expect(result).toBeOkWith((value: ParsedLink) => {
+        expect(value).toStrictEqual({
+          path: 'src/(group)/file.ts',
+          quotedPath: "'src/(group)/file.ts'",
+          start: { line: 10 },
+          end: { line: 20 },
+          linkType: 'regular',
+          selectionType: 'Normal',
+        });
+      });
+    });
+
+    it('should strip quotes from link with positions', () => {
+      const result = parseLink("'My Folder/file.ts#L10C5-L20C15'");
+
+      expect(result).toBeOkWith((value: ParsedLink) => {
+        expect(value).toStrictEqual({
+          path: 'My Folder/file.ts',
+          quotedPath: "'My Folder/file.ts'",
+          start: { line: 10, character: 5 },
+          end: { line: 20, character: 15 },
+          linkType: 'regular',
+          selectionType: 'Normal',
+        });
+      });
+    });
+
+    it('should parse link with only opening quote as part of path', () => {
+      const result = parseLink("'file.ts#L10");
+
+      expect(result).toBeOkWith((value: ParsedLink) => {
+        expect(value.path).toBe("'file.ts");
+      });
+    });
+
+    it('should reject two quotes as missing hash separator', () => {
+      const result = parseLink("''");
+
+      expect(result).toBeRangeLinkErrorErr('PARSE_NO_HASH_SEPARATOR', {
+        message: 'Link must contain # separator',
+        functionName: 'parseLink',
+        details: { hash: '#' },
+      });
+    });
+
+    it('should not strip quotes from unquoted link', () => {
+      const result = parseLink('src/file.ts#L10');
+
+      expect(result).toBeOkWith((value: ParsedLink) => {
+        expect(value.path).toBe('src/file.ts');
+      });
+    });
+
+    it('should strip surrounding double quotes from quoted link', () => {
+      const result = parseLink('"My Folder/file.ts#L10"');
+
+      expect(result).toBeOkWith((value: ParsedLink) => {
+        expect(value).toStrictEqual({
+          path: 'My Folder/file.ts',
+          quotedPath: "'My Folder/file.ts'",
+          start: { line: 10 },
+          end: { line: 10 },
+          linkType: 'regular',
+          selectionType: 'Normal',
+        });
+      });
+    });
+
+    it('should strip double quotes from link with range', () => {
+      const result = parseLink('"src/(group)/file.ts#L10-L20"');
+
+      expect(result).toBeOkWith((value: ParsedLink) => {
+        expect(value).toStrictEqual({
+          path: 'src/(group)/file.ts',
+          quotedPath: "'src/(group)/file.ts'",
+          start: { line: 10 },
+          end: { line: 20 },
+          linkType: 'regular',
+          selectionType: 'Normal',
+        });
+      });
+    });
+
+    it('should not strip mismatched quotes', () => {
+      const result = parseLink('\'file.ts#L10"');
+
+      expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
+        message: 'Invalid range format',
+        functionName: 'parseLink',
+        details: {
+          link: '\'file.ts#L10"',
+          delimiters: { line: 'L', position: 'C', hash: '#', range: '-' },
+        },
       });
     });
   });

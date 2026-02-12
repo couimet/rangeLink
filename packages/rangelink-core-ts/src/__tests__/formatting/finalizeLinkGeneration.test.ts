@@ -49,13 +49,20 @@ describe('finalizeLinkGeneration', () => {
       inputSelection,
       LinkType.Regular,
       defaultDelimiters,
+      'src/file.ts',
     );
 
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.value.link).toBe('src/file.ts#L10-L20');
-      expect(result.value.linkType).toBe('regular');
-    }
+    expect(result).toBeOkWith((value) => {
+      expect(value).toStrictEqual({
+        link: 'src/file.ts#L10-L20',
+        rawLink: 'src/file.ts#L10-L20',
+        linkType: 'regular',
+        delimiters: defaultDelimiters,
+        computedSelection: spec,
+        rangeFormat: 'LineOnly',
+        selectionType: 'Normal',
+      });
+    });
   });
 
   it('should append portable metadata for portable linkType', () => {
@@ -87,13 +94,20 @@ describe('finalizeLinkGeneration', () => {
       inputSelection,
       LinkType.Portable,
       defaultDelimiters,
+      'src/file.ts',
     );
 
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.value.link).toBe('src/file.ts#L10-L20~#~L~-~');
-      expect(result.value.linkType).toBe('portable');
-    }
+    expect(result).toBeOkWith((value) => {
+      expect(value).toStrictEqual({
+        link: 'src/file.ts#L10-L20~#~L~-~',
+        rawLink: 'src/file.ts#L10-L20~#~L~-~',
+        linkType: 'portable',
+        delimiters: defaultDelimiters,
+        computedSelection: spec,
+        rangeFormat: 'LineOnly',
+        selectionType: 'Normal',
+      });
+    });
   });
 
   it('should protect core attributes from logContext collisions', () => {
@@ -137,16 +151,17 @@ describe('finalizeLinkGeneration', () => {
       inputSelection,
       LinkType.Regular,
       defaultDelimiters,
+      'src/test.ts',
     );
 
-    // Verify function succeeded
-    expect(result.success).toBe(true);
+    expect(result).toBeOk();
 
     // CRITICAL ASSERTIONS: Our attributes must win over malicious logContext
     expect(mockDebug).toHaveBeenCalledWith(
       {
         fn: 'formatLink', // NOT 'EVIL_FUNCTION'
         link: 'src/test.ts#L10', // NOT 'EVIL_LINK'
+        rawLink: 'src/test.ts#L10',
         linkLength: 15, // NOT 9999
         extraAttribute: 'should-be-preserved', // Extra attributes preserved
       },
@@ -187,11 +202,13 @@ describe('finalizeLinkGeneration', () => {
       inputSelection,
       LinkType.Regular,
       defaultDelimiters,
+      'src/file.ts',
     );
 
     expect(result).toBeOkWith((value) => {
       expect(value).toStrictEqual({
         link: 'src/file.ts#L5C10-L15C20',
+        rawLink: 'src/file.ts#L5C10-L15C20',
         linkType: 'regular',
         delimiters: defaultDelimiters,
         computedSelection: spec,

@@ -15,3 +15,4 @@ export { FormattedLink } from './FormattedLink';
 export { EditorPosition } from './EditorPosition';
 export { LinkPosition } from './LinkPosition';
 export { ParsedLink } from './ParsedLink';
+export { DetectedLink } from './DetectedLink';

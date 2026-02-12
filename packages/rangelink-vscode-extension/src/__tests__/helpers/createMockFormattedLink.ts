@@ -42,6 +42,7 @@ export const createMockFormattedLink = (
 
   return {
     link,
+    rawLink: link,
     linkType: LinkType.Regular,
     delimiters: defaultDelimiters,
     computedSelection: defaultSelection,

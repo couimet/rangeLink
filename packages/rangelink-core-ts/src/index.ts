@@ -24,5 +24,8 @@ export * from './parsing';
 // Formatting
 export * from './formatting';
 
+// Detection
+export * from './detection';
+
 // Utilities
 export * from './utils';

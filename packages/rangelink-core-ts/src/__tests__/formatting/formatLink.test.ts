@@ -34,6 +34,7 @@ describe('formatLink', () => {
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
         link: 'src/file.ts#L11C6-L21C16',
+        rawLink: 'src/file.ts#L11C6-L21C16',
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
@@ -66,6 +67,7 @@ describe('formatLink', () => {
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
         link: 'src/file.ts#L11C6-L11C16',
+        rawLink: 'src/file.ts#L11C6-L11C16',
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
@@ -98,6 +100,7 @@ describe('formatLink', () => {
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
         link: 'src/file.ts#L11-L21',
+        rawLink: 'src/file.ts#L11-L21',
         linkType: 'regular',
         rangeFormat: 'LineOnly',
         selectionType: 'Normal',
@@ -128,6 +131,7 @@ describe('formatLink', () => {
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
         link: 'src/file.ts#L42',
+        rawLink: 'src/file.ts#L42',
         linkType: 'regular',
         rangeFormat: 'LineOnly',
         selectionType: 'Normal',
@@ -160,6 +164,7 @@ describe('formatLink', () => {
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
         link: 'src/file.ts#L11',
+        rawLink: 'src/file.ts#L11',
         linkType: 'regular',
         rangeFormat: 'LineOnly',
         selectionType: 'Normal',
@@ -210,6 +215,7 @@ describe('formatLink', () => {
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
         link: 'path/to/file.ts>>LINE10COL5thruLINE20COL15',
+        rawLink: 'path/to/file.ts>>LINE10COL5thruLINE20COL15',
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
@@ -254,6 +260,7 @@ describe('formatLink', () => {
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
         link: 'src/file.ts##L6C11-L8C21',
+        rawLink: 'src/file.ts##L6C11-L8C21',
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Rectangular',
@@ -301,6 +308,7 @@ describe('formatLink', () => {
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
         link: 'src/file.ts@@X6Y4..X8Y9',
+        rawLink: 'src/file.ts@@X6Y4..X8Y9',
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Rectangular',
@@ -348,6 +356,7 @@ describe('formatLink', () => {
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
         link: 'src/file.ts####LINE21COL11TOLINE23COL16',
+        rawLink: 'src/file.ts####LINE21COL11TOLINE23COL16',
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Rectangular',
@@ -382,6 +391,7 @@ describe('formatLink', () => {
     expect(result).toBeOkWith((value: FormattedLink) => {
       expect(value).toStrictEqual({
         link: 'src/file.ts#L11C1-L21C1',
+        rawLink: 'src/file.ts#L11C1-L21C1',
         linkType: 'regular',
         rangeFormat: 'WithPositions',
         selectionType: 'Normal',
@@ -416,6 +426,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'src/file.ts#L42~#~L~-~',
+          rawLink: 'src/file.ts#L42~#~L~-~',
           linkType: 'portable',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
@@ -447,6 +458,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'src/file.ts#L11-L21~#~L~-~',
+          rawLink: 'src/file.ts#L11-L21~#~L~-~',
           linkType: 'portable',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
@@ -478,6 +490,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'src/file.ts#L11C6-L21C16~#~L~-~C~',
+          rawLink: 'src/file.ts#L11C6-L21C16~#~L~-~C~',
           linkType: 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Normal',
@@ -521,6 +534,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'src/file.ts##L6C11-L8C21~#~L~-~C~',
+          rawLink: 'src/file.ts##L6C11-L8C21~#~L~-~C~',
           linkType: 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Rectangular',
@@ -570,6 +584,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'src/file.ts##LINE10COL5TOLINE12COL10~#~LINE~TO~COL~',
+          rawLink: 'src/file.ts##LINE10COL5TOLINE12COL10~#~LINE~TO~COL~',
           linkType: 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Rectangular',
@@ -609,6 +624,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'path/to/file.ts>>LINE10thruLINE20~>>~LINE~thru~',
+          rawLink: 'path/to/file.ts>>LINE10thruLINE20~>>~LINE~thru~',
           linkType: 'portable',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
@@ -646,6 +662,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'path/to/file.ts>>LINE10COL5thruLINE20COL15~>>~LINE~thru~COL~',
+          rawLink: 'path/to/file.ts>>LINE10COL5thruLINE20COL15~>>~LINE~thru~COL~',
           linkType: 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Normal',
@@ -680,6 +697,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'src/file.ts#L11~#~L~-~',
+          rawLink: 'src/file.ts#L11~#~L~-~',
           linkType: 'portable',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
@@ -712,6 +730,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'src/file.ts#L11C1-L21C1~#~L~-~C~',
+          rawLink: 'src/file.ts#L11C1-L21C1~#~L~-~C~',
           linkType: 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Normal',
@@ -753,6 +772,7 @@ describe('formatLink', () => {
         expect(result).toBeOkWith((value: FormattedLink) => {
           expect(value).toStrictEqual({
             link: `src/file.ts#L11C6-L21C16${suffix}`,
+            rawLink: `src/file.ts#L11C6-L21C16${suffix}`,
             linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
             rangeFormat: 'WithPositions',
             selectionType: 'Normal',
@@ -796,6 +816,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: `src/file.ts##L6C11-L7C21${suffix}`,
+          rawLink: `src/file.ts##L6C11-L7C21${suffix}`,
           linkType: linkType === LinkType.Regular ? 'regular' : 'portable',
           rangeFormat: 'WithPositions',
           selectionType: 'Rectangular',
@@ -832,6 +853,92 @@ describe('formatLink', () => {
     );
   });
 
+  describe('quoting', () => {
+    it('should quote link when path contains spaces', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 9, character: 0 },
+            end: { line: 9, character: 50 },
+            coverage: SelectionCoverage.FullLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+
+      const result = formatLink('My Folder/file.ts', inputSelection, defaultDelimiters);
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: "'My Folder/file.ts#L10'",
+          rawLink: 'My Folder/file.ts#L10',
+          linkType: 'regular',
+          rangeFormat: 'LineOnly',
+          selectionType: 'Normal',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 10,
+            endLine: 10,
+            rangeFormat: 'LineOnly',
+          },
+        });
+      });
+    });
+
+    it('should quote link when path contains parentheses', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 4, character: 3 },
+            end: { line: 14, character: 10 },
+            coverage: SelectionCoverage.PartialLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+
+      const result = formatLink('src/(group)/file.ts', inputSelection, defaultDelimiters);
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value).toStrictEqual({
+          link: "'src/(group)/file.ts#L5C4-L15C11'",
+          rawLink: 'src/(group)/file.ts#L5C4-L15C11',
+          linkType: 'regular',
+          rangeFormat: 'WithPositions',
+          selectionType: 'Normal',
+          delimiters: defaultDelimiters,
+          computedSelection: {
+            startLine: 5,
+            endLine: 15,
+            startPosition: 4,
+            endPosition: 11,
+            rangeFormat: 'WithPositions',
+          },
+        });
+      });
+    });
+
+    it('should not quote link when path is safe', () => {
+      const inputSelection: InputSelection = {
+        selections: [
+          {
+            start: { line: 9, character: 0 },
+            end: { line: 9, character: 50 },
+            coverage: SelectionCoverage.FullLine,
+          },
+        ],
+        selectionType: SelectionType.Normal,
+      };
+
+      const result = formatLink('src/file.ts', inputSelection, defaultDelimiters);
+
+      expect(result).toBeOkWith((value: FormattedLink) => {
+        expect(value.link).toBe('src/file.ts#L10');
+        expect(value.rawLink).toBe('src/file.ts#L10');
+      });
+    });
+  });
+
   describe('logging integration', () => {
     it('should log with correct attributes through standard anchor path', () => {
       // Integration test: Verifies formatLink → finalizeLinkGeneration → logger flow
@@ -857,6 +964,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'src/file.ts#L11C6-L21C16',
+          rawLink: 'src/file.ts#L11C6-L21C16',
           linkType: 'regular',
           rangeFormat: 'WithPositions',
           selectionType: 'Normal',
@@ -875,6 +983,7 @@ describe('formatLink', () => {
         {
           fn: 'formatLink',
           link: 'src/file.ts#L11C6-L21C16',
+          rawLink: 'src/file.ts#L11C6-L21C16',
           linkLength: 24,
           selectionType: 'Normal',
           rangeFormat: 'WithPositions',
@@ -909,6 +1018,7 @@ describe('formatLink', () => {
       expect(result).toBeOkWith((value: FormattedLink) => {
         expect(value).toStrictEqual({
           link: 'src/file.ts#L42~#~L~-~',
+          rawLink: 'src/file.ts#L42~#~L~-~',
           linkType: 'portable',
           rangeFormat: 'LineOnly',
           selectionType: 'Normal',
@@ -925,6 +1035,7 @@ describe('formatLink', () => {
         {
           fn: 'formatLink',
           link: 'src/file.ts#L42~#~L~-~',
+          rawLink: 'src/file.ts#L42~#~L~-~',
           linkLength: 22,
           format: 'simple',
         },
