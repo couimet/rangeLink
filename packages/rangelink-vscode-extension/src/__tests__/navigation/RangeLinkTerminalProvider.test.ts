@@ -147,7 +147,6 @@ describe('RangeLinkTerminalProvider', () => {
         token,
       );
     });
-
   });
 
   describe('handleTerminalLink - Safety Net Validation', () => {

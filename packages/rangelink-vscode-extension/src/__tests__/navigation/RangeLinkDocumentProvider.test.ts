@@ -146,7 +146,6 @@ describe('RangeLinkDocumentProvider', () => {
         token,
       );
     });
-
   });
 
   describe('handleLinkClick', () => {
