@@ -11,6 +11,8 @@ import {
 import { getUntitledDisplayName, resolveWorkspacePath } from '../../utils';
 import type { ConfigurationProvider } from '../ConfigurationProvider';
 import type { ErrorFeedbackProvider } from '../ErrorFeedbackProvider';
+import type { MessageProvider } from '../MessageProvider';
+import type { QuickPickProvider } from '../QuickPickProvider';
 
 /**
  * Default timeout for status bar messages in milliseconds.
@@ -39,7 +41,9 @@ const UNKNOWN_FILENAME = 'Unknown';
  * Enables testing by abstracting VSCode API calls and avoiding direct
  * vscode module imports in business logic classes.
  */
-export class VscodeAdapter implements ConfigurationProvider, ErrorFeedbackProvider {
+export class VscodeAdapter
+  implements ConfigurationProvider, ErrorFeedbackProvider, QuickPickProvider, MessageProvider
+{
   /**
    * Create a new VSCode adapter.
    *
