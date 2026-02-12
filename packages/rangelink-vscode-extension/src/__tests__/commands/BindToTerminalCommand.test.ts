@@ -5,7 +5,6 @@ import type * as vscode from 'vscode';
 import { BindToTerminalCommand } from '../../commands/BindToTerminalCommand';
 import type { BindSuccessInfo } from '../../destinations';
 import type { TerminalPickerResult } from '../../destinations/utils/showTerminalPicker';
-import * as showTerminalPickerModule from '../../destinations/utils/showTerminalPicker';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import type { ExtensionResult } from '../../types';
 import {
@@ -15,6 +14,7 @@ import {
   createMockTerminal,
   createMockTerminalQuickPickItem,
   createMockVscodeAdapter,
+  spyOnShowTerminalPicker,
 } from '../helpers';
 
 describe('BindToTerminalCommand', () => {
@@ -29,7 +29,7 @@ describe('BindToTerminalCommand', () => {
     mockLogger = createMockLogger();
     mockDestinationManager = createMockDestinationManager();
     mockAvailabilityService = createMockDestinationAvailabilityService();
-    showTerminalPickerSpy = jest.spyOn(showTerminalPickerModule, 'showTerminalPicker');
+    showTerminalPickerSpy = spyOnShowTerminalPicker();
   });
 
   describe('constructor', () => {

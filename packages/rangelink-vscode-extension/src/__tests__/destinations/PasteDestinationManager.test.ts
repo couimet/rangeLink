@@ -17,7 +17,6 @@ import {
   ExtensionResult,
   MessageCode,
 } from '../../types';
-import * as formatMessageModule from '../../utils/formatMessage';
 import {
   configureEmptyTabGroups,
   createBaseMockPasteDestination,
@@ -36,6 +35,7 @@ import {
   createMockUri,
   createMockVscodeAdapter,
   type MockVscodeOptions,
+  spyOnFormatMessage,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
 
@@ -194,7 +194,7 @@ describe('PasteDestinationManager', () => {
 
   beforeEach(() => {
     // Spy on formatMessage to verify MessageCode usage
-    formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+    formatMessageSpy = spyOnFormatMessage();
 
     // Create mock logger
     mockLogger = createMockLogger();

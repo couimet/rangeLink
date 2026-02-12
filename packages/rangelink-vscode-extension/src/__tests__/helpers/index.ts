@@ -62,6 +62,13 @@ export * from './createMockWindow';
 export * from './createMockWorkspace';
 export * from './createMockWorkspaceFolder';
 
+export * from './spyOnFormatLinkTooltip';
+export * from './spyOnFormatMessage';
+export * from './spyOnGenerateLinkFromSelections';
+export * from './spyOnResolveWorkspacePath';
+export * from './spyOnShowTerminalPicker';
+export * from './spyOnToInputSelection';
+
 export * from './tabTestHelpers';
 
 export * from './configureWorkspaceMocks';

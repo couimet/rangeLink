@@ -4,7 +4,6 @@ import { createMockLogger } from 'barebone-logger-testing';
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { BehaviourAfterPaste } from '../../../types/BehaviourAfterPaste';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
-import * as resolveWorkspacePathModule from '../../../utils/resolveWorkspacePath';
 import {
   createMockDocument,
   createMockEditor,
@@ -15,6 +14,7 @@ import {
   createMockUntitledUri,
   createMockUri,
   createMockVscode,
+  spyOnResolveWorkspacePath,
 } from '../../helpers';
 
 // ============================================================================
@@ -373,9 +373,9 @@ describe('VscodeAdapter', () => {
     it('should delegate to resolveWorkspacePath utility with ideInstance', async () => {
       const linkPath = 'src/auth.ts';
       const mockUri = { fsPath: '/workspace/src/auth.ts' };
-      const spy = jest
-        .spyOn(resolveWorkspacePathModule, 'resolveWorkspacePath')
-        .mockResolvedValue(mockUri as any);
+      const spy = spyOnResolveWorkspacePath().mockResolvedValue(
+        mockUri as any,
+      );
 
       const result = await adapter.resolveWorkspacePath(linkPath);
 

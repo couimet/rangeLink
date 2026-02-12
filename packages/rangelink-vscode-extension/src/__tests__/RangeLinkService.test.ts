@@ -11,9 +11,6 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors
 import { messagesEn } from '../i18n';
 import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode, PasteContentType } from '../types';
-import * as formatMessageModule from '../utils/formatMessage';
-import * as generateLinkModule from '../utils/generateLinkFromSelections';
-
 import {
   createMockClipboard,
   createMockConfigReader,
@@ -33,6 +30,8 @@ import {
   createMockVscodeAdapter,
   createMockWorkspaceFolder,
   createWindowOptionsForEditor,
+  spyOnFormatMessage,
+  spyOnGenerateLinkFromSelections,
   type MockClipboard,
   type VscodeAdapterWithTestHooks,
 } from './helpers';
@@ -569,7 +568,7 @@ describe('RangeLinkService', () => {
       let formatMessageSpy: jest.SpyInstance;
 
       beforeEach(() => {
-        formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+        formatMessageSpy = spyOnFormatMessage();
       });
 
       it('should call formatMessage with STATUS_BAR_LINK_COPIED_TO_CLIPBOARD and linkTypeName parameter', async () => {
@@ -1664,7 +1663,7 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      mockGenerateLinkFromSelections = jest.spyOn(generateLinkModule, 'generateLinkFromSelections');
+      mockGenerateLinkFromSelections = spyOnGenerateLinkFromSelections();
     });
 
     it('should delegate to utility with Regular linkType and return FormattedLink', async () => {
@@ -1769,7 +1768,7 @@ describe('RangeLinkService', () => {
       mockShowWarningMessage = jest.fn();
       mockDocumentSave = jest.fn().mockResolvedValue(true);
 
-      mockGenerateLinkFromSelections = jest.spyOn(generateLinkModule, 'generateLinkFromSelections');
+      mockGenerateLinkFromSelections = spyOnGenerateLinkFromSelections();
       mockGenerateLinkFromSelections.mockReturnValue(
         Result.ok(createMockFormattedLink('file.ts#L10')),
       );
@@ -1942,7 +1941,7 @@ describe('RangeLinkService', () => {
     let mockGenerateLinkFromSelections: jest.SpyInstance;
 
     beforeEach(() => {
-      mockGenerateLinkFromSelections = jest.spyOn(generateLinkModule, 'generateLinkFromSelections');
+      mockGenerateLinkFromSelections = spyOnGenerateLinkFromSelections();
       mockGenerateLinkFromSelections.mockReturnValue(
         Result.ok(createMockFormattedLink('file.ts#L10')),
       );

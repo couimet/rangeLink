@@ -16,6 +16,7 @@ import {
   createMockTerminalQuickPickItem,
   createMockTextEditorQuickPickItem,
   createMockVscodeAdapter,
+  spyOnShowTerminalPicker,
 } from '../helpers';
 
 describe('DestinationPickerCommand', () => {
