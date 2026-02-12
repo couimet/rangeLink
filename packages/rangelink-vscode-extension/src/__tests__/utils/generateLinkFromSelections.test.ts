@@ -390,6 +390,7 @@ describe('generateLinkFromSelections', () => {
 
       const expectedFormattedLink = {
         link: 'src/file.ts#L5',
+        rawLink: 'src/file.ts#L5',
         linkType: 'regular',
         delimiters: DELIMITERS,
         computedSelection: {
@@ -436,6 +437,7 @@ describe('generateLinkFromSelections', () => {
 
       const expectedFormattedLink = {
         link: 'src/file.ts#L5-L7',
+        rawLink: 'src/file.ts#L5-L7',
         linkType: 'regular',
         delimiters: DELIMITERS,
         computedSelection: {
@@ -473,6 +475,7 @@ describe('generateLinkFromSelections', () => {
 
       const expectedFormattedLink = {
         link: 'src/file.ts#L5C9-L5C19',
+        rawLink: 'src/file.ts#L5C9-L5C19',
         linkType: 'regular',
         delimiters: DELIMITERS,
         computedSelection: {

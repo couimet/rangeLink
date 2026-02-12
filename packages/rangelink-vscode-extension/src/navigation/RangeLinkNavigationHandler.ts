@@ -1,18 +1,17 @@
 import type { Logger } from 'barebone-logger';
-import type { CoreResult, ParsedLink } from 'rangelink-core-ts';
-import { SelectionType } from 'rangelink-core-ts';
+import type { CoreResult, DelimiterConfigGetter, ParsedLink } from 'rangelink-core-ts';
+import { SelectionType, parseLink } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 import { TextEditorRevealType } from 'vscode';
 
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { RangeLinkParser } from '../RangeLinkParser';
 import { MessageCode } from '../types';
 import { convertRangeLinkPosition, formatLinkPosition, formatMessage } from '../utils';
 
 /**
  * Navigation handler for RangeLink file navigation.
  *
- * Delegates parsing to RangeLinkParser and handles VSCode-specific navigation:
+ * Handles VSCode-specific navigation:
  * - File resolution and opening
  * - Selection positioning (single, range, rectangular)
  * - User feedback (messages, reveal in editor)
@@ -21,12 +20,12 @@ export class RangeLinkNavigationHandler {
   /**
    * Create a new navigation handler.
    *
-   * @param parser - RangeLinkParser for link detection and parsing
+   * @param getDelimiters - Factory function for fresh delimiter configuration
    * @param ideAdapter - VSCode adapter providing complete VSCode API facade
    * @param logger - Logger instance for structured logging
    */
   constructor(
-    private readonly parser: RangeLinkParser,
+    private readonly getDelimiters: DelimiterConfigGetter,
     private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
@@ -37,31 +36,12 @@ export class RangeLinkNavigationHandler {
   }
 
   /**
-   * Get the compiled RegExp pattern for link detection.
-   *
-   * @returns RegExp pattern for matching RangeLinks
-   */
-  getPattern(): RegExp {
-    return this.parser.getPattern();
-  }
-
-  /**
    * Parse a RangeLink string into structured data.
    *
    * @param linkText - Raw link text to parse
    */
   parseLink(linkText: string): CoreResult<ParsedLink> {
-    return this.parser.parseLink(linkText);
-  }
-
-  /**
-   * Format tooltip text for a parsed link.
-   *
-   * @param parsed - Parsed link data
-   * @returns Formatted tooltip string or undefined
-   */
-  formatTooltip(parsed: ParsedLink): string | undefined {
-    return this.parser.formatTooltip(parsed);
+    return parseLink(linkText, this.getDelimiters());
   }
 
   /**

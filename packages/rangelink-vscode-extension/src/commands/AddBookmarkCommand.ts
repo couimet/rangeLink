@@ -1,11 +1,15 @@
 import * as path from 'node:path';
 
 import type { Logger } from 'barebone-logger';
-import { type DelimiterConfigGetter, LinkType, type ParsedLink } from 'rangelink-core-ts';
+import {
+  type DelimiterConfigGetter,
+  LinkType,
+  type ParsedLink,
+  parseLink,
+} from 'rangelink-core-ts';
 
 import type { BookmarkService } from '../bookmarks';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { RangeLinkParser } from '../RangeLinkParser';
 import { MessageCode } from '../types';
 import { formatMessage, generateLinkFromSelections } from '../utils';
 
@@ -20,7 +24,6 @@ import { formatMessage, generateLinkFromSelections } from '../utils';
  */
 export class AddBookmarkCommand {
   constructor(
-    private readonly parser: RangeLinkParser,
     private readonly getDelimiters: DelimiterConfigGetter,
     private readonly ideAdapter: VscodeAdapter,
     private readonly bookmarkService: BookmarkService,
@@ -148,7 +151,7 @@ export class AddBookmarkCommand {
    * @returns The parsed link if valid, undefined if not
    */
   private tryParseAsExistingLink(text: string): ParsedLink | undefined {
-    const result = this.parser.parseLink(text);
+    const result = parseLink(text, this.getDelimiters());
     if (result.success) {
       return result.value;
     }
@@ -157,7 +160,7 @@ export class AddBookmarkCommand {
 
   /**
    * Generate a default label based on the link path.
-   * Extracts the filename from the path using the parser.
+   * Extracts the filename from the path.
    */
   private generateDefaultLabel(link: string): string {
     const parsedLink = this.tryParseAsExistingLink(link);

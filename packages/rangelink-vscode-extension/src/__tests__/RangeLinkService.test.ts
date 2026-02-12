@@ -27,7 +27,6 @@ import {
   createMockPosition,
   createMockSelection,
   createMockTerminal,
-  createMockTerminalComposablePasteDestination,
   createMockTerminalPasteDestination,
   createMockText,
   createMockUri,
@@ -2281,26 +2280,8 @@ describe('RangeLinkService', () => {
       });
     });
 
-    describe('terminal path quoting', () => {
-      it('should quote path for terminal destination and log the change', async () => {
-        mockDestinationManager = createMockDestinationManager({
-          isBound: true,
-          boundDestination: createMockTerminalComposablePasteDestination({
-            displayName: 'Terminal',
-          }),
-        });
-        service = new RangeLinkService(
-          getDelimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockPickerCommand,
-          mockConfigReader,
-          mockLogger,
-        );
-
-        copyAndSendSpy = jest
-          .spyOn(service as any, 'copyAndSendToDestination')
-          .mockResolvedValue(undefined);
+    describe('path quoting', () => {
+      it('should quote path with unsafe characters and log the change', async () => {
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH_WITH_SPACES);
 
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
@@ -2330,53 +2311,11 @@ describe('RangeLinkService', () => {
             before: TEST_ABSOLUTE_PATH_WITH_SPACES,
             after: TEST_QUOTED_PATH_WITH_SPACES,
           },
-          'Quoted path for terminal destination',
+          'Quoted path for unsafe characters',
         );
       });
 
-      it('should not quote path for editor destination', async () => {
-        const mockUri = createMockUri(TEST_ABSOLUTE_PATH_WITH_SPACES);
-
-        await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
-
-        expect(copyAndSendSpy).toHaveBeenCalledWith({
-          control: {
-            contentType: 'Text',
-            destinationBehavior: 'bound-destination',
-          },
-          content: {
-            clipboard: TEST_ABSOLUTE_PATH_WITH_SPACES,
-            send: TEST_ABSOLUTE_PATH_WITH_SPACES,
-            sourceUri: mockUri,
-          },
-          strategies: {
-            sendFn: expect.any(Function),
-            isEligibleFn: expect.any(Function),
-          },
-          contentName: 'File path',
-          fnName: 'pasteFilePath',
-        });
-      });
-
-      it('should not log when terminal path has no special characters', async () => {
-        mockDestinationManager = createMockDestinationManager({
-          isBound: true,
-          boundDestination: createMockTerminalComposablePasteDestination({
-            displayName: 'Terminal',
-          }),
-        });
-        service = new RangeLinkService(
-          getDelimiters,
-          mockVscodeAdapter,
-          mockDestinationManager,
-          mockPickerCommand,
-          mockConfigReader,
-          mockLogger,
-        );
-
-        copyAndSendSpy = jest
-          .spyOn(service as any, 'copyAndSendToDestination')
-          .mockResolvedValue(undefined);
+      it('should not quote path when no special characters', async () => {
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
@@ -2398,10 +2337,6 @@ describe('RangeLinkService', () => {
           contentName: 'File path',
           fnName: 'pasteFilePath',
         });
-        expect(mockLogger.debug).not.toHaveBeenCalledWith(
-          expect.objectContaining({ before: expect.any(String), after: expect.any(String) }),
-          'Quoted path for terminal destination',
-        );
       });
     });
   });

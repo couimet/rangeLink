@@ -70,7 +70,6 @@ import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
-import { RangeLinkParser } from './RangeLinkParser';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { RangeLinkStatusBar } from './statusBar';
 import { type RangeLinkClickArgs, type VersionInfo } from './types';
@@ -207,13 +206,11 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register destinationManager for automatic disposal on deactivation
   context.subscriptions.push(destinationManager);
 
-  // Create parser and navigation handler (used by both terminal and document providers)
-  const parser = new RangeLinkParser(getDelimiters, logger);
-  const navigationHandler = new RangeLinkNavigationHandler(parser, ideAdapter, logger);
-  logger.debug({ fn: 'activate' }, 'Parser and navigation handler created');
+  // Create navigation handler (used by both terminal and document providers)
+  const navigationHandler = new RangeLinkNavigationHandler(getDelimiters, ideAdapter, logger);
+  logger.debug({ fn: 'activate' }, 'Navigation handler created');
 
   const addBookmarkCommand = new AddBookmarkCommand(
-    parser,
     getDelimiters,
     ideAdapter,
     bookmarkService,
@@ -221,7 +218,12 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   // Register terminal link provider for clickable links
-  const terminalLinkProvider = new RangeLinkTerminalProvider(navigationHandler, ideAdapter, logger);
+  const terminalLinkProvider = new RangeLinkTerminalProvider(
+    navigationHandler,
+    getDelimiters,
+    ideAdapter,
+    logger,
+  );
   context.subscriptions.push(
     registerWithLogging(
       ideAdapter.registerTerminalLinkProvider(terminalLinkProvider),
@@ -231,7 +233,12 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register document link provider for clickable links in editor files
   // Only register for specific schemes to prevent infinite recursion when scanning output channels
-  const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, ideAdapter, logger);
+  const documentLinkProvider = new RangeLinkDocumentProvider(
+    navigationHandler,
+    getDelimiters,
+    ideAdapter,
+    logger,
+  );
   context.subscriptions.push(
     registerWithLogging(
       ideAdapter.registerDocumentLinkProvider(

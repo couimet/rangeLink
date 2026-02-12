@@ -1,6 +1,6 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
-import { LinkType, SelectionType } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
@@ -10,29 +10,27 @@ import {
   createMockLineAt,
   createMockPosition,
   createMockRange,
-  createMockRangeLinkParser,
   createMockText,
   createMockUntitledUri,
   createMockUri,
   createMockVscodeAdapter,
   createWindowOptionsForEditor,
-  type MockRangeLinkParser,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
+
+const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 
 describe('RangeLinkNavigationHandler', () => {
   let handler: RangeLinkNavigationHandler;
   let mockLogger: Logger;
-  let mockParser: MockRangeLinkParser;
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockDocument: ReturnType<typeof createMockDocument>;
   let mockEditor: ReturnType<typeof createMockEditor>;
 
   beforeEach(() => {
     mockLogger = createMockLogger();
-    mockParser = createMockRangeLinkParser();
     mockAdapter = createMockVscodeAdapter();
-    handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+    handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
   });
 
   describe('Single Position Selection Extension', () => {
@@ -60,13 +58,14 @@ describe('RangeLinkNavigationHandler', () => {
       });
 
       createSelectionSpy = jest.spyOn(mockAdapter, 'createSelection');
-      handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
     });
 
     it('should extend single-position selection by 1 character (normal case)', async () => {
       // Arrange: Single position at line 32, char 1
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 32, character: 1 },
         end: { line: 32, character: 1 }, // Same position
         linkType: LinkType.Regular,
@@ -102,6 +101,7 @@ describe('RangeLinkNavigationHandler', () => {
 
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10, character: 6 }, // After "short" (position 6 = after all chars)
         end: { line: 10, character: 6 },
         linkType: LinkType.Regular,
@@ -137,6 +137,7 @@ describe('RangeLinkNavigationHandler', () => {
 
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 5, character: 1 },
         end: { line: 5, character: 1 },
         linkType: LinkType.Regular,
@@ -164,6 +165,7 @@ describe('RangeLinkNavigationHandler', () => {
       // Arrange: Single line position - this is full-line selection, not single-position
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 20 }, // No char specified = full line
         end: { line: 20 },
         linkType: LinkType.Regular,
@@ -199,6 +201,7 @@ describe('RangeLinkNavigationHandler', () => {
       // Arrange: Multi-line range with no chars specified = full-line selection
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10 },
         end: { line: 20 }, // Different line, no char = full lines
         linkType: LinkType.Regular,
@@ -239,6 +242,7 @@ describe('RangeLinkNavigationHandler', () => {
       // Arrange: Explicit start char means NOT full-line selection
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10, character: 5 }, // Explicit char
         end: { line: 15 }, // No char
         linkType: LinkType.Regular,
@@ -266,6 +270,7 @@ describe('RangeLinkNavigationHandler', () => {
       // Arrange: Explicit end char means NOT full-line selection
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10 }, // No char
         end: { line: 15, character: 10 }, // Explicit char
         linkType: LinkType.Regular,
@@ -295,6 +300,7 @@ describe('RangeLinkNavigationHandler', () => {
 
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 5 },
         end: { line: 5 },
         linkType: LinkType.Regular,
@@ -335,6 +341,7 @@ describe('RangeLinkNavigationHandler', () => {
 
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: startLine, character: startChar },
         end: { line: endLine, character: endChar },
         linkType: LinkType.Regular,
@@ -382,6 +389,7 @@ describe('RangeLinkNavigationHandler', () => {
         // Arrange: Path looks like untitled file and resolveWorkspacePath returns undefined
         const parsed: ParsedLink = {
           path: 'Untitled-1',
+          quotedPath: 'Untitled-1',
           start: { line: 10, character: 5 },
           end: { line: 10, character: 10 },
           linkType: LinkType.Regular,
@@ -395,7 +403,7 @@ describe('RangeLinkNavigationHandler', () => {
           workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         // Act
         await handler.navigateToLink(parsed, linkText);
@@ -420,6 +428,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should show untitled-specific warning for "Untitled-2"', async () => {
         const parsed: ParsedLink = {
           path: 'Untitled-2',
+          quotedPath: 'Untitled-2',
           start: { line: 5 },
           end: { line: 5 },
           linkType: LinkType.Regular,
@@ -432,7 +441,7 @@ describe('RangeLinkNavigationHandler', () => {
           workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'Untitled-2#L5');
 
@@ -444,6 +453,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should show untitled-specific warning for "untitled-1" (case-insensitive)', async () => {
         const parsed: ParsedLink = {
           path: 'untitled-1',
+          quotedPath: 'untitled-1',
           start: { line: 1 },
           end: { line: 1 },
           linkType: LinkType.Regular,
@@ -456,7 +466,7 @@ describe('RangeLinkNavigationHandler', () => {
           workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'untitled-1#L1');
 
@@ -468,6 +478,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should show untitled-specific warning for "Untitled" (no number)', async () => {
         const parsed: ParsedLink = {
           path: 'Untitled',
+          quotedPath: 'Untitled',
           start: { line: 1 },
           end: { line: 1 },
           linkType: LinkType.Regular,
@@ -480,7 +491,7 @@ describe('RangeLinkNavigationHandler', () => {
           workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'Untitled#L1');
 
@@ -495,6 +506,7 @@ describe('RangeLinkNavigationHandler', () => {
         // Arrange: Path looks like untitled but resolveWorkspacePath finds it
         const parsed: ParsedLink = {
           path: 'Untitled-1',
+          quotedPath: 'Untitled-1',
           start: { line: 10 },
           end: { line: 10 },
           linkType: LinkType.Regular,
@@ -521,7 +533,17 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+
+        const mockVsStart = createMockPosition({ line: 9, character: 0 });
+        const mockVsEnd = createMockPosition({ line: 9, character: 17 });
+        const mockRange = createMockRange({ start: mockVsStart, end: mockVsEnd });
+        jest
+          .spyOn(mockAdapter, 'createPosition')
+          .mockReturnValueOnce(mockVsStart)
+          .mockReturnValueOnce(mockVsEnd);
+        jest.spyOn(mockAdapter, 'createRange').mockReturnValue(mockRange);
+
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         // Act
         await handler.navigateToLink(parsed, linkText);
@@ -533,10 +555,7 @@ describe('RangeLinkNavigationHandler', () => {
         );
 
         expect(mockEditor.revealRange).toHaveBeenCalledTimes(1);
-        expect(mockEditor.revealRange).toHaveBeenCalledWith(
-          expect.objectContaining({ start: expect.any(Object), end: expect.any(Object) }),
-          2,
-        );
+        expect(mockEditor.revealRange).toHaveBeenCalledWith(mockRange, 2);
       });
     });
 
@@ -544,6 +563,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should show generic "file not found" warning for "src/missing.ts"', async () => {
         const parsed: ParsedLink = {
           path: 'src/missing.ts',
+          quotedPath: 'src/missing.ts',
           start: { line: 10 },
           end: { line: 10 },
           linkType: LinkType.Regular,
@@ -556,7 +576,7 @@ describe('RangeLinkNavigationHandler', () => {
           workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'src/missing.ts#L10');
 
@@ -570,6 +590,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should show generic error for absolute path "/tmp/missing.ts"', async () => {
         const parsed: ParsedLink = {
           path: '/tmp/missing.ts',
+          quotedPath: '/tmp/missing.ts',
           start: { line: 1 },
           end: { line: 1 },
           linkType: LinkType.Regular,
@@ -582,7 +603,7 @@ describe('RangeLinkNavigationHandler', () => {
           workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, '/tmp/missing.ts#L1');
 
@@ -594,6 +615,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should show generic error for "MyUntitledFile.ts" (not untitled pattern)', async () => {
         const parsed: ParsedLink = {
           path: 'MyUntitledFile.ts',
+          quotedPath: 'MyUntitledFile.ts',
           start: { line: 1 },
           end: { line: 1 },
           linkType: LinkType.Regular,
@@ -606,7 +628,7 @@ describe('RangeLinkNavigationHandler', () => {
           workspaceOptions: { openTextDocument: jest.fn().mockResolvedValue(undefined) },
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'MyUntitledFile.ts#L1');
 
@@ -621,6 +643,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should find and navigate to open untitled file "Untitled-1"', async () => {
         const parsed: ParsedLink = {
           path: 'Untitled-1',
+          quotedPath: 'Untitled-1',
           start: { line: 10 },
           end: { line: 10 },
           linkType: LinkType.Regular,
@@ -650,7 +673,7 @@ describe('RangeLinkNavigationHandler', () => {
         // But file is open (findOpenUntitledFile succeeds)
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(untitledUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         // Act
         await handler.navigateToLink(parsed, linkText);
@@ -675,6 +698,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should find and navigate to open untitled file "Untitled-2"', async () => {
         const parsed: ParsedLink = {
           path: 'Untitled-2',
+          quotedPath: 'Untitled-2',
           start: { line: 5 },
           end: { line: 5 },
           linkType: LinkType.Regular,
@@ -697,7 +721,7 @@ describe('RangeLinkNavigationHandler', () => {
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(untitledUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'Untitled-2#L5');
 
@@ -708,6 +732,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should show error when untitled file not found in open documents', async () => {
         const parsed: ParsedLink = {
           path: 'Untitled-3',
+          quotedPath: 'Untitled-3',
           start: { line: 1 },
           end: { line: 1 },
           linkType: LinkType.Regular,
@@ -722,7 +747,7 @@ describe('RangeLinkNavigationHandler', () => {
         // File not saved AND not open
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(undefined);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         await handler.navigateToLink(parsed, 'Untitled-3#L1');
 
@@ -744,25 +769,7 @@ describe('RangeLinkNavigationHandler', () => {
     });
   });
 
-  describe('Wrapper Methods and Error Handling', () => {
-    describe('getPattern', () => {
-      it('should return compiled RegExp pattern', () => {
-        const pattern = handler.getPattern();
-
-        expect(pattern).toBeInstanceOf(RegExp);
-        expect(pattern.global).toBe(true); // Should be global for matchAll
-      });
-
-      it('should return pattern that matches RangeLink formats', () => {
-        const pattern = handler.getPattern();
-
-        expect('file.ts#L10').toMatch(pattern);
-        expect('file.ts#L10-L20').toMatch(pattern);
-        expect('file.ts#L10C5-L20C10').toMatch(pattern);
-        expect('file.ts##L10C5-L20C10').toMatch(pattern);
-      });
-    });
-
+  describe('parseLink and Error Handling', () => {
     describe('parseLink', () => {
       it('should parse valid link and return success result', () => {
         const result = handler.parseLink('file.ts#L10');
@@ -784,44 +791,11 @@ describe('RangeLinkNavigationHandler', () => {
       });
     });
 
-    describe('formatTooltip', () => {
-      it('should delegate to parser and return result exactly', () => {
-        const parsed: ParsedLink = {
-          path: 'file.ts',
-          start: { line: 10 },
-          end: { line: 10 },
-          linkType: LinkType.Regular,
-          selectionType: SelectionType.Normal,
-        };
-        const expectedTooltip = 'Open file.ts:10 • RangeLink';
-        mockParser.formatTooltip.mockReturnValue(expectedTooltip);
-
-        const result = handler.formatTooltip(parsed);
-
-        expect(mockParser.formatTooltip).toHaveBeenCalledTimes(1);
-        expect(mockParser.formatTooltip).toHaveBeenCalledWith(parsed);
-        expect(result).toBe(expectedTooltip);
-      });
-
-      it('should pass through undefined return value from parser', () => {
-        const invalidParsed = {
-          path: '',
-          start: { line: 10 },
-          end: { line: 10 },
-        } as ParsedLink;
-        mockParser.formatTooltip.mockReturnValue(undefined);
-
-        const result = handler.formatTooltip(invalidParsed);
-
-        expect(mockParser.formatTooltip).toHaveBeenCalledWith(invalidParsed);
-        expect(result).toBeUndefined();
-      });
-    });
-
     describe('Error Handling', () => {
       it('should re-throw showTextDocument errors and show error message', async () => {
         const parsed: ParsedLink = {
           path: 'file.ts',
+          quotedPath: 'file.ts',
           start: { line: 10 },
           end: { line: 10 },
           linkType: LinkType.Regular,
@@ -839,7 +813,7 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(showTextDocumentError);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         // Should re-throw the exact same error object (reference equality)
         await expect(handler.navigateToLink(parsed, linkText)).rejects.toBe(showTextDocumentError);
@@ -863,6 +837,7 @@ describe('RangeLinkNavigationHandler', () => {
       it('should re-throw non-Error exceptions and show error message', async () => {
         const parsed: ParsedLink = {
           path: 'file.ts',
+          quotedPath: 'file.ts',
           start: { line: 10 },
           end: { line: 10 },
           linkType: LinkType.Regular,
@@ -879,7 +854,7 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(nonErrorException);
-        handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
 
         // Should re-throw the exact same exception value (reference equality)
         await expect(handler.navigateToLink(parsed, 'file.ts#L10')).rejects.toBe(nonErrorException);
@@ -912,12 +887,13 @@ describe('RangeLinkNavigationHandler', () => {
         },
       });
 
-      handler = new RangeLinkNavigationHandler(mockParser, mockAdapter, mockLogger);
+      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
     });
 
     it('should create multi-cursor selections for rectangular mode', async () => {
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 10, character: 5 },
         end: { line: 12, character: 10 }, // 3 lines: 10, 11, 12
         linkType: LinkType.Regular,
@@ -945,6 +921,7 @@ describe('RangeLinkNavigationHandler', () => {
     it('should create selections for each line in rectangular range', async () => {
       const parsed: ParsedLink = {
         path: 'file.ts',
+        quotedPath: 'file.ts',
         start: { line: 5, character: 1 },
         end: { line: 7, character: 8 }, // 3 lines
         linkType: LinkType.Regular,

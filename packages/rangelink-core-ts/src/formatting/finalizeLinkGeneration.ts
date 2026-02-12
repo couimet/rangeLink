@@ -6,6 +6,7 @@ import { DelimiterConfig } from '../types/DelimiterConfig';
 import { FormattedLink } from '../types/FormattedLink';
 import { InputSelection } from '../types/InputSelection';
 import { LinkType } from '../types/LinkType';
+import { quoteLink } from '../utils/quoteLink';
 
 import { composePortableMetadata } from './composePortableMetadata';
 
@@ -18,13 +19,18 @@ export type LinkGenerationResult = {
 };
 
 /**
- * Helper to finalize link generation with portable metadata and logging.
+ * Helper to finalize link generation with portable metadata, quoting, and logging.
+ *
+ * When the path contains unsafe characters (spaces, parentheses, shell metacharacters),
+ * the link is automatically wrapped in single quotes. The raw unquoted version is
+ * preserved in `rawLink` for display and comparison.
  *
  * @param generateLink Function that produces the base link and logging context
  * @param spec Computed selection specification
  * @param inputSelection Original input selection
  * @param linkType Regular or Portable
  * @param delimiters Delimiter configuration
+ * @param path File path used to determine if quoting is needed
  */
 export const finalizeLinkGeneration = (
   generateLink: () => LinkGenerationResult,
@@ -32,14 +38,17 @@ export const finalizeLinkGeneration = (
   inputSelection: InputSelection,
   linkType: LinkType,
   delimiters: DelimiterConfig,
+  path: string,
 ): CoreResult<FormattedLink> => {
   const { link: baseLink, logContext } = generateLink();
 
   // Append BYOD metadata for portable links (creates new string, doesn't mutate)
-  const link =
+  const rawLink =
     linkType === LinkType.Portable
       ? baseLink + composePortableMetadata(delimiters, spec.rangeFormat)
       : baseLink;
+
+  const link = quoteLink(rawLink, path);
 
   const logger = getLogger();
   logger.debug(
@@ -47,6 +56,7 @@ export const finalizeLinkGeneration = (
       ...logContext, // Spread FIRST - might contain colliding keys
       fn: 'formatLink', // Our attributes LAST - override any collisions
       link,
+      rawLink,
       linkLength: link.length,
     },
     'Generated link',
@@ -54,6 +64,7 @@ export const finalizeLinkGeneration = (
 
   return CoreResult.ok({
     link,
+    rawLink,
     linkType,
     delimiters,
     computedSelection: spec,

@@ -66,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Links with unsafe paths auto-quoted** - RangeLinks containing spaces, parentheses, or other shell-unsafe characters are automatically single-quoted at generation time, enabling round-trip navigation. Both single-quoted (`'My Folder/file.ts#L10'`) and double-quoted (`"My Folder/file.ts#L10"`) formats are detected by the clickable link scanner in terminal and document providers. Clipboard always receives the raw unquoted link. Quoting is handled in the core library so all consumers benefit automatically. (#320)
 - **Cleaner command titles** - Removed redundant "RangeLink" from command palette titles (#243)
   - **Before:** "RangeLink: Bind RangeLink to Terminal Destination"
   - **After:** "RangeLink: Bind to Terminal"

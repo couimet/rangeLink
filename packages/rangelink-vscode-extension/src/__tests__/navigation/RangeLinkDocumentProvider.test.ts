@@ -1,19 +1,18 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
-import {
-  LinkType,
-  RangeLinkError,
-  RangeLinkErrorCodes,
-  Result,
-  SelectionType,
-} from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
+// Namespace import enables jest.spyOn for findLinksInText without jest.mock() hoisting.
+// With CommonJS transform (ts-jest), the production code's named import resolves through
+// the same module object, so spying here intercepts calls in the provider under test.
+import * as rangelinkCore from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { RangeLinkDocumentProvider } from '../../navigation/RangeLinkDocumentProvider';
 import type { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import {
   createMockCancellationToken,
+  createMockDetectedLink,
   createMockDocument,
   createMockNavigationHandler,
   createMockPositionAt,
@@ -23,38 +22,29 @@ import {
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
 
+const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
+
 describe('RangeLinkDocumentProvider', () => {
   let provider: RangeLinkDocumentProvider;
   let mockAdapter: VscodeAdapterWithTestHooks;
   let mockLogger: Logger;
   let mockHandler: jest.Mocked<RangeLinkNavigationHandler>;
+  let mockFindLinksInText: jest.SpyInstance;
 
   beforeEach(() => {
-    // Create mock logger using barebone-logger-testing
     mockLogger = createMockLogger();
-
-    // Create mock adapter
     mockAdapter = createMockVscodeAdapter();
-
     mockHandler = createMockNavigationHandler();
-    provider = new RangeLinkDocumentProvider(mockHandler, mockAdapter, mockLogger);
+    mockFindLinksInText = jest.spyOn(rangelinkCore, 'findLinksInText').mockReturnValue([]);
+    provider = new RangeLinkDocumentProvider(mockHandler, GET_DELIMITERS, mockAdapter, mockLogger);
   });
 
   describe('provideDocumentLinks', () => {
-    it('should detect single-line link', () => {
-      // Mock handler responses
-      const mockParsed: ParsedLink = {
-        path: 'src/auth.ts',
-        start: { line: 10 },
-        end: { line: 10 },
-        linkType: LinkType.Regular,
-        selectionType: SelectionType.Normal,
-      };
-      mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
-      mockHandler.formatTooltip.mockReturnValue('Navigate to src/auth.ts at line 11');
+    it('should map detected link to document link', () => {
+      mockFindLinksInText.mockReturnValue([createMockDetectedLink()]);
 
       const document = createMockDocument({
-        getText: createMockText('Check src/auth.ts#L10'),
+        getText: createMockText('Check src/file.ts#L10'),
         uri: createMockUri('/test/file.ts'),
         positionAt: createMockPositionAt(),
       });
@@ -62,104 +52,65 @@ describe('RangeLinkDocumentProvider', () => {
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
       expect(links).toHaveLength(1);
-      expect(links[0].tooltip).toContain('Navigate to src/auth.ts at line 11');
-      expect(mockHandler.parseLink).toHaveBeenCalledWith('src/auth.ts#L10');
-      expect(mockHandler.formatTooltip).toHaveBeenCalledWith(mockParsed);
+      expect(links[0].tooltip).toBe('Open src/file.ts:10 \u2022 RangeLink');
+      expect(mockFindLinksInText).toHaveBeenCalledWith(
+        'Check src/file.ts#L10',
+        DEFAULT_DELIMITERS,
+        mockLogger,
+        token,
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
+          documentUri: 'file:///test/file.ts',
+          linksFound: 1,
+        },
+        'Found 1 RangeLinks in document',
+      );
     });
 
-    it('should detect multi-line range link', () => {
-      const mockParsed: ParsedLink = {
-        path: 'src/auth.ts',
-        start: { line: 10 },
-        end: { line: 20 },
-        linkType: LinkType.Regular,
-        selectionType: SelectionType.Normal,
-      };
-      mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
-      mockHandler.formatTooltip.mockReturnValue('Navigate to src/auth.ts: line 11 to line 21');
+    it('should create command URI with encoded arguments', () => {
+      const detected = createMockDetectedLink();
+      mockFindLinksInText.mockReturnValue([detected]);
 
       const document = createMockDocument({
-        getText: createMockText('See src/auth.ts#L10-L20 for details'),
+        getText: createMockText('Check src/file.ts#L10'),
         uri: createMockUri('/test/file.ts'),
         positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken();
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
-      expect(links).toHaveLength(1);
-      expect(links[0].tooltip).toContain('Navigate to src/auth.ts');
-      expect(mockHandler.parseLink).toHaveBeenCalledWith('src/auth.ts#L10-L20');
-    });
-    it('should detect link with columns', () => {
-      const mockParsed: ParsedLink = {
-        path: 'src/file.ts',
-        start: { line: 5, character: 10 },
-        end: { line: 10, character: 20 },
-        linkType: LinkType.Regular,
-        selectionType: SelectionType.Normal,
-      };
-      mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
-      mockHandler.formatTooltip.mockReturnValue('Navigate to src/file.ts: line 6, col 11');
-
-      const document = createMockDocument({
-        getText: createMockText('src/file.ts#L5C10-L10C20'),
-        uri: createMockUri('/test/file.ts'),
-        positionAt: createMockPositionAt(),
-      });
-      const token = createMockCancellationToken();
-      const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
-
-      expect(links).toHaveLength(1);
-      expect(links[0].tooltip).toContain('line 6, col 11');
+      const expectedArgs = encodeURIComponent(
+        JSON.stringify({ linkText: detected.linkText, parsed: detected.parsed }),
+      );
+      expect(links[0].target).toBeDefined();
+      expect(links[0].target!.toString()).toBe(
+        `command:rangelink.handleDocumentLinkClick?${expectedArgs}`,
+      );
     });
 
-    it('should detect rectangular mode link', () => {
-      const mockParsed: ParsedLink = {
-        path: 'src/file.ts',
-        start: { line: 5, character: 10 },
-        end: { line: 10, character: 20 },
-        linkType: LinkType.Regular,
-        selectionType: SelectionType.Rectangular,
-      };
-      mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
-      mockHandler.formatTooltip.mockReturnValue('Navigate to src/file.ts (rectangular selection)');
-
-      const document = createMockDocument({
-        getText: createMockText('src/file.ts##L5C10-L10C20'),
-        uri: createMockUri('/test/file.ts'),
-        positionAt: createMockPositionAt(),
-      });
-      const token = createMockCancellationToken();
-      const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
-
-      expect(links).toHaveLength(1);
-      expect(links[0].tooltip).toContain('rectangular selection');
-    });
-
-    it('should detect multiple links in same document', () => {
-      const mockParsed1: ParsedLink = {
-        path: 'src/a.ts',
-        start: { line: 1 },
-        end: { line: 1 },
-        linkType: LinkType.Regular,
-        selectionType: SelectionType.Normal,
-      };
-      const mockParsed2: ParsedLink = {
+    it('should map multiple detected links', () => {
+      const parsed2: ParsedLink = {
         path: 'src/b.ts',
+        quotedPath: 'src/b.ts',
         start: { line: 2 },
         end: { line: 3 },
         linkType: LinkType.Regular,
         selectionType: SelectionType.Normal,
       };
-      mockHandler.parseLink
-        .mockReturnValueOnce(Result.ok(mockParsed1))
-        .mockReturnValueOnce(Result.ok(mockParsed2));
-      mockHandler.formatTooltip
-        .mockReturnValueOnce('Navigate to src/a.ts')
-        .mockReturnValueOnce('Navigate to src/b.ts');
+      mockFindLinksInText.mockReturnValue([
+        createMockDetectedLink(),
+        createMockDetectedLink({
+          linkText: 'src/b.ts#L2-L3',
+          startIndex: 30,
+          length: 14,
+          parsed: parsed2,
+        }),
+      ]);
 
       const document = createMockDocument({
-        getText: createMockText('First: src/a.ts#L1 and second: src/b.ts#L2-L3'),
+        getText: createMockText('First: src/file.ts#L10 and second: src/b.ts#L2-L3'),
         uri: createMockUri('/test/file.ts'),
         positionAt: createMockPositionAt(),
       });
@@ -167,19 +118,21 @@ describe('RangeLinkDocumentProvider', () => {
       const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
 
       expect(links).toHaveLength(2);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
+          documentUri: 'file:///test/file.ts',
+          linksFound: 2,
+        },
+        'Found 2 RangeLinks in document',
+      );
     });
 
-    it('should skip invalid links', () => {
-      const mockError = new RangeLinkError({
-        code: RangeLinkErrorCodes.PARSE_INVALID_RANGE_FORMAT,
-        message: 'Invalid link format',
-        functionName: 'parseLink',
-      });
-      mockHandler.parseLink.mockReturnValue(Result.err(mockError));
+    it('should return empty array when no links detected', () => {
+      mockFindLinksInText.mockReturnValue([]);
 
-      // Use a link that matches the pattern but fails parsing
       const document = createMockDocument({
-        getText: createMockText('Invalid: src/file.ts#L999999'),
+        getText: createMockText(''),
         uri: createMockUri('/test/file.ts'),
         positionAt: createMockPositionAt(),
       });
@@ -190,96 +143,37 @@ describe('RangeLinkDocumentProvider', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
-          linkText: 'src/file.ts#L999999',
-          error: mockError,
+          documentUri: 'file:///test/file.ts',
+          linksFound: 0,
         },
-        'Skipping invalid link',
+        'Found 0 RangeLinks in document',
       );
     });
 
-    it('should handle empty document', () => {
-      const document = createMockDocument({
-        getText: createMockText(''),
-        uri: createMockUri('/test/file.ts'),
-        positionAt: createMockPositionAt(),
-      });
-      const token = createMockCancellationToken();
-      const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
+    it('should pass cancellation token to findLinksInText', () => {
+      mockFindLinksInText.mockReturnValue([]);
 
-      expect(links).toHaveLength(0);
-    });
-
-    it('should handle cancellation', () => {
       const document = createMockDocument({
-        getText: createMockText('src/a.ts#L1 src/b.ts#L2 src/c.ts#L3'),
+        getText: createMockText('src/a.ts#L1'),
         uri: createMockUri('/test/file.ts'),
         positionAt: createMockPositionAt(),
       });
       const token = createMockCancellationToken(true);
-      const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
+      provider.provideDocumentLinks(document, token);
 
-      expect(links).toHaveLength(0); // Should stop processing
-    });
-
-    it('should not set target on links (deferred to resolveDocumentLink)', () => {
-      const mockParsed: ParsedLink = {
-        path: 'src/file.ts',
-        start: { line: 10 },
-        end: { line: 10 },
-        linkType: LinkType.Regular,
-        selectionType: SelectionType.Normal,
-      };
-      mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
-      mockHandler.formatTooltip.mockReturnValue('Navigate to src/file.ts');
-
-      const document = createMockDocument({
-        getText: createMockText('src/file.ts#L10'),
-        uri: createMockUri('/test/file.ts'),
-        positionAt: createMockPositionAt(),
-      });
-      const token = createMockCancellationToken();
-      const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
-
-      expect(links[0].target).toBeUndefined();
-      expect(links[0].tooltip).toBe('Navigate to src/file.ts');
-    });
-  });
-
-  describe('resolveDocumentLink', () => {
-    it('should set command URI target from link data', () => {
-      const mockParsed: ParsedLink = {
-        path: 'src/utils/parser.ts',
-        start: { line: 42, character: 8 },
-        end: { line: 67, character: 35 },
-        linkType: LinkType.Regular,
-        selectionType: SelectionType.Rectangular,
-      };
-      mockHandler.parseLink.mockReturnValue(Result.ok(mockParsed));
-      mockHandler.formatTooltip.mockReturnValue('Navigate to src/utils/parser.ts');
-
-      const document = createMockDocument({
-        getText: createMockText('src/utils/parser.ts##L42C8-L67C35'),
-        uri: createMockUri('/test/file.ts'),
-        positionAt: createMockPositionAt(),
-      });
-      const token = createMockCancellationToken();
-      const links = provider.provideDocumentLinks(document, token) as vscode.DocumentLink[];
-
-      const resolved = provider.resolveDocumentLink(links[0]);
-
-      const expectedArgs = JSON.stringify({
-        linkText: 'src/utils/parser.ts##L42C8-L67C35',
-        parsed: mockParsed,
-      });
-      expect(resolved.target!.toString()).toBe(
-        `command:rangelink.handleDocumentLinkClick?${encodeURIComponent(expectedArgs)}`,
+      expect(mockFindLinksInText).toHaveBeenCalledWith(
+        'src/a.ts#L1',
+        DEFAULT_DELIMITERS,
+        mockLogger,
+        token,
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
-          fn: 'RangeLinkDocumentProvider.resolveDocumentLink',
-          linkText: 'src/utils/parser.ts##L42C8-L67C35',
+          fn: 'RangeLinkDocumentProvider.provideDocumentLinks',
+          documentUri: 'file:///test/file.ts',
+          linksFound: 0,
         },
-        'Resolved document link target',
+        'Found 0 RangeLinks in document',
       );
     });
   });
@@ -288,6 +182,7 @@ describe('RangeLinkDocumentProvider', () => {
     it('should delegate to handler.navigateToLink', async () => {
       const mockParsed: ParsedLink = {
         path: 'src/file.ts',
+        quotedPath: 'src/file.ts',
         start: { line: 10 },
         end: { line: 10 },
         linkType: LinkType.Regular,
@@ -305,6 +200,7 @@ describe('RangeLinkDocumentProvider', () => {
     it('should handle navigation errors gracefully', async () => {
       const mockParsed: ParsedLink = {
         path: 'src/file.ts',
+        quotedPath: 'src/file.ts',
         start: { line: 10 },
         end: { line: 10 },
         linkType: LinkType.Regular,
@@ -330,6 +226,7 @@ describe('RangeLinkDocumentProvider', () => {
     it('should not re-throw handler errors', async () => {
       const mockParsed: ParsedLink = {
         path: 'src/file.ts',
+        quotedPath: 'src/file.ts',
         start: { line: 10 },
         end: { line: 10 },
         linkType: LinkType.Regular,
@@ -337,7 +234,6 @@ describe('RangeLinkDocumentProvider', () => {
       };
       mockHandler.navigateToLink.mockRejectedValue(new Error('Failed'));
 
-      // Should not throw
       await expect(
         provider.handleLinkClick({ linkText: 'src/file.ts#L10', parsed: mockParsed }),
       ).resolves.toBeUndefined();

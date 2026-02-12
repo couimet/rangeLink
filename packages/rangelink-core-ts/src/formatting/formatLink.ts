@@ -52,6 +52,7 @@ export function formatLink(
       inputSelection,
       linkType,
       delimiters,
+      path,
     );
   }
 
@@ -77,5 +78,6 @@ export function formatLink(
     inputSelection,
     linkType,
     delimiters,
+    path,
   );
 }

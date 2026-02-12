@@ -1,20 +1,15 @@
 import { createMockLogger } from 'barebone-logger-testing';
-import { DEFAULT_DELIMITERS, RangeLinkErrorCodes, Result } from 'rangelink-core-ts';
-import type { ParsedLink, RangeLinkError } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
 import { AddBookmarkCommand } from '../../commands/AddBookmarkCommand';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { ExtensionResult } from '../../types';
-import {
-  createMockBookmarkService,
-  createMockEditor,
-  createMockRangeLinkParser,
-  createMockVscodeAdapter,
-} from '../helpers';
+import { createMockBookmarkService, createMockEditor, createMockVscodeAdapter } from '../helpers';
+
+const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 
 describe('AddBookmarkCommand', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
-  let mockParser: ReturnType<typeof createMockRangeLinkParser>;
   let mockBookmarkService: ReturnType<typeof createMockBookmarkService>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
   let command: AddBookmarkCommand;
@@ -23,7 +18,6 @@ describe('AddBookmarkCommand', () => {
 
   beforeEach(() => {
     mockLogger = createMockLogger();
-    mockParser = createMockRangeLinkParser();
     mockBookmarkService = createMockBookmarkService();
   });
 
@@ -31,13 +25,7 @@ describe('AddBookmarkCommand', () => {
     it('logs initialization', () => {
       mockAdapter = createMockVscodeAdapter();
 
-      new AddBookmarkCommand(
-        mockParser,
-        () => DEFAULT_DELIMITERS,
-        mockAdapter,
-        mockBookmarkService,
-        mockLogger,
-      );
+      new AddBookmarkCommand(GET_DELIMITERS, mockAdapter, mockBookmarkService, mockLogger);
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'AddBookmarkCommand.constructor' },
@@ -57,8 +45,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -91,8 +78,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -125,8 +111,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -156,8 +141,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -181,14 +165,6 @@ describe('AddBookmarkCommand', () => {
           selectionStart: { line: 9, character: 0 },
           selectionEnd: { line: 19, character: 0 },
         });
-        mockParser.parseLink.mockReturnValueOnce(
-          Result.err({
-            name: 'RangeLinkError',
-            code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
-            message: 'Link must contain # separator',
-            functionName: 'parseLink',
-          }) as Result<ParsedLink, RangeLinkError>,
-        );
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
             activeTextEditor: editor,
@@ -196,8 +172,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -260,14 +235,6 @@ describe('AddBookmarkCommand', () => {
             },
           ],
         };
-        mockParser.parseLink.mockReturnValueOnce(
-          Result.err({
-            name: 'RangeLinkError',
-            code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
-            message: 'Not a link',
-            functionName: 'parseLink',
-          }) as Result<ParsedLink, RangeLinkError>,
-        );
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
             activeTextEditor: editor,
@@ -275,8 +242,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -306,14 +272,6 @@ describe('AddBookmarkCommand', () => {
           text: 'const foo = "bar";',
           isUntitled: true,
         });
-        mockParser.parseLink.mockReturnValueOnce(
-          Result.err({
-            name: 'RangeLinkError',
-            code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
-            message: 'Link must contain # separator',
-            functionName: 'parseLink',
-          }) as Result<ParsedLink, RangeLinkError>,
-        );
         const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
@@ -322,8 +280,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -351,14 +308,6 @@ describe('AddBookmarkCommand', () => {
           selectionEnd: { line: 0, character: 5 },
           isEmpty: true,
         });
-        mockParser.parseLink.mockReturnValueOnce(
-          Result.err({
-            name: 'RangeLinkError',
-            code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
-            message: 'Not a link',
-            functionName: 'parseLink',
-          }) as Result<ParsedLink, RangeLinkError>,
-        );
         const mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
         mockAdapter = createMockVscodeAdapter({
           windowOptions: {
@@ -367,8 +316,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -393,8 +341,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -422,8 +369,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -460,8 +406,7 @@ describe('AddBookmarkCommand', () => {
         });
         mockBookmarkService.addBookmark.mockResolvedValue(ExtensionResult.err(storageError));
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -489,8 +434,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -517,8 +461,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -549,8 +492,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
@@ -574,8 +516,7 @@ describe('AddBookmarkCommand', () => {
           },
         });
         command = new AddBookmarkCommand(
-          mockParser,
-          () => DEFAULT_DELIMITERS,
+          GET_DELIMITERS,
           mockAdapter,
           mockBookmarkService,
           mockLogger,
