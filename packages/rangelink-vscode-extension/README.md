@@ -70,7 +70,7 @@ recipes/baking/chickenpie.ts#L3C14-L15C9
 
 ## Features
 
-### 🎯 Paste Destinations
+### 🎯 Destinations
 
 **The killer feature for AI-assisted workflows:** Auto-send generated links to your preferred destination.
 
@@ -85,7 +85,7 @@ No destination bound? A quick pick menu appears so you can choose and bind in on
 
 **Pro tip:** Power users rebind destinations on the fly. Working with Claude Code? Bind there. Switching to debug in terminal? Rebind with a right-click. Your workflow, your rules.
 
-#### Terminal Paste Destination
+#### Terminal
 
 Bind a terminal to RangeLink, and all generated links auto-paste directly there — even if you switch to other terminals for work.
 
@@ -102,7 +102,7 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 **Terminal Picker:** When binding via Command Palette or RangeLink Menu, a QuickPick shows your eligible terminals. The currently bound terminal is marked "bound" and sorted first, followed by the active terminal marked "active". When a terminal is both bound and active, it shows "bound · active". With many terminals, extras collapse into "More terminals..." (configurable via `rangelink.terminalPicker.maxInline`) — the bound terminal is always visible, never hidden behind the overflow.
 
-#### Text Editor Destination
+#### Text Editor
 
 **Build AI prompts in any text document before sending to your AI assistant?** Bind any text editor as your paste destination—works with untitled files, markdown, code files, notes, anything text-based.
 
@@ -131,7 +131,7 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 
 **Pro tip:** Split your editor into two panes (side-by-side or vertical) for the smoothest workflow — browse code on one side, build your prompt on the other. No tab switching needed.
 
-#### AI Chat Integrations (Claude Code, Cursor AI & GitHub Copilot)
+#### AI Assistants (Claude Code, Cursor AI & GitHub Copilot)
 
 **One keybinding to rule them all.** AI assistants have their own ways to share code — different shortcuts, different formats, and only work with _their_ AI. RangeLink unifies it all: **one keybinding** (`Cmd+R Cmd+L`), **character-level precision** (not just lines), and works with **any AI assistant**.
 
