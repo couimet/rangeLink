@@ -96,8 +96,9 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         if (!result.success) {
           this.logger.error({ ...logCtx, error: result.error }, 'Bind failed from status bar menu');
           this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
+          return;
         }
-        this.logger.debug({ ...logCtx, bindSuccess: result.success }, 'Destination item selected');
+        this.logger.debug(logCtx, 'Destination bound from status bar menu');
         break;
       }
       case 'terminal-more':
@@ -154,11 +155,9 @@ export class RangeLinkStatusBar implements vscode.Disposable {
               'Bind failed from overflow terminal picker',
             );
             this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
+            return;
           }
-          this.logger.debug(
-            { ...logCtx, bindSuccess: bindResult.success },
-            'Terminal selected from overflow picker',
-          );
+          this.logger.debug(logCtx, 'Terminal bound from overflow picker');
         },
         onDismissed: async () => {
           this.logger.debug(logCtx, 'User returned from terminal picker, re-opening menu');

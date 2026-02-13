@@ -96,7 +96,7 @@ export class RangeLinkService {
     private readonly getDelimiters: DelimiterConfigGetter,
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
-    private readonly destinationPickerCommand: DestinationPicker,
+    private readonly destinationPicker: DestinationPicker,
     private readonly configReader: ConfigReader,
     private readonly logger: Logger,
   ) {}
@@ -751,7 +751,7 @@ export class RangeLinkService {
   private async showPickerAndBindForPaste(): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'RangeLinkService.showPickerAndBindForPaste' };
 
-    const result = await this.destinationPickerCommand.pick({
+    const result = await this.destinationPicker.pick({
       noDestinationsMessageCode: MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE,
       placeholderMessageCode: MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
     });

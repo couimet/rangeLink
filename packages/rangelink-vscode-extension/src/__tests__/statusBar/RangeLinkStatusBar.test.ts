@@ -434,9 +434,8 @@ describe('RangeLinkStatusBar', () => {
             bindOptions,
             displayName: 'Terminal',
           },
-          bindSuccess: true,
         },
-        'Destination item selected',
+        'Destination bound from status bar menu',
       );
     });
 
@@ -479,14 +478,6 @@ describe('RangeLinkStatusBar', () => {
       const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
         .showErrorMessage as jest.Mock;
       expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'RangeLinkStatusBar.openMenu',
-          selectedItem,
-          bindSuccess: false,
-        },
-        'Destination item selected',
-      );
     });
 
     it('logs when info item is selected', async () => {
@@ -583,9 +574,8 @@ describe('RangeLinkStatusBar', () => {
         {
           fn: 'RangeLinkStatusBar.openMenu',
           selectedItem: terminalMoreItem,
-          bindSuccess: true,
         },
-        'Terminal selected from overflow picker',
+        'Terminal bound from overflow picker',
       );
     });
 
@@ -641,55 +631,9 @@ describe('RangeLinkStatusBar', () => {
       const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
         .showErrorMessage as jest.Mock;
       expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'RangeLinkStatusBar.openMenu',
-          selectedItem: terminalMoreItem,
-          bindSuccess: false,
-        },
-        'Terminal selected from overflow picker',
-      );
     });
 
     it('re-opens status bar menu when user cancels secondary terminal picker', async () => {
-      mockAvailabilityService.getTerminalItems.mockResolvedValue([
-        createMockTerminalQuickPickItem(createMockTerminal()),
-      ]);
-
-      showQuickPickMock
-        .mockResolvedValueOnce(terminalMoreItem)
-        .mockResolvedValueOnce(QUICK_PICK_DISMISSED);
-
-      showTerminalPickerSpy.mockImplementation(
-        async (
-          _terminals: readonly TerminalBindableQuickPickItem[],
-          _provider: unknown,
-          handlers: TerminalPickerHandlers<void>,
-          _logger: unknown,
-        ): Promise<void | undefined> => {
-          await handlers.onDismissed?.();
-        },
-      );
-
-      const statusBar = new RangeLinkStatusBar(
-        mockAdapter,
-        mockDestinationManager,
-        mockAvailabilityService,
-        mockBookmarkService,
-        mockLogger,
-      );
-
-      await statusBar.openMenu();
-
-      expect(showTerminalPickerSpy).toHaveBeenCalled();
-      expect(showQuickPickMock).toHaveBeenCalledTimes(2);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: terminalMoreItem },
-        'User returned from terminal picker, re-opening menu',
-      );
-    });
-
-    it('re-opens status bar menu when user returns from secondary picker', async () => {
       mockAvailabilityService.getTerminalItems.mockResolvedValue([
         createMockTerminalQuickPickItem(createMockTerminal()),
       ]);

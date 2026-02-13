@@ -1,7 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import type { TerminalPickerHandlers } from '../../../destinations/types';
-import { buildTerminalPickerItems, showTerminalPicker } from '../../../destinations/utils';
+import { showTerminalPicker } from '../../../destinations/utils';
 import type { EligibleTerminal, TerminalBindableQuickPickItem } from '../../../types';
 import {
   createMockQuickPickProvider,
@@ -216,72 +216,5 @@ describe('showTerminalPicker', () => {
 
       expect(result).toBe('async-dismissed');
     });
-  });
-});
-
-describe('buildTerminalPickerItems', () => {
-  const createTerminalItems = (count: number): TerminalBindableQuickPickItem[] =>
-    Array.from({ length: count }, (_, i) => {
-      const terminal = createMockTerminal({ name: `terminal-${i + 1}` });
-      return createMockTerminalQuickPickItem(terminal, false);
-    });
-
-  it('reformats labels using the provided label builder', () => {
-    const items = createTerminalItems(2);
-
-    const result = buildTerminalPickerItems(items, (terminal) => `Custom: ${terminal.name}`);
-
-    expect(result).toStrictEqual([
-      {
-        label: 'Custom: terminal-1',
-        description: undefined,
-        displayName: 'terminal-1',
-        bindOptions: items[0].bindOptions,
-        itemKind: 'bindable',
-        isActive: false,
-        boundState: undefined,
-        terminalInfo: items[0].terminalInfo,
-      },
-      {
-        label: 'Custom: terminal-2',
-        description: undefined,
-        displayName: 'terminal-2',
-        bindOptions: items[1].bindOptions,
-        itemKind: 'bindable',
-        isActive: false,
-        boundState: undefined,
-        terminalInfo: items[1].terminalInfo,
-      },
-    ]);
-  });
-
-  it('marks active terminal with active description', () => {
-    const items = createTerminalItems(3);
-    const activeTerminal = items[1].terminalInfo.terminal;
-    items[1] = createMockTerminalQuickPickItem(activeTerminal, true);
-
-    const result = buildTerminalPickerItems(items, (terminal) => terminal.name);
-
-    expect(result[0].description).toBeUndefined();
-    expect(result[1].description).toBe('active');
-    expect(result[2].description).toBeUndefined();
-  });
-
-  it('uses plain terminal name as displayName regardless of label builder', () => {
-    const items = createTerminalItems(2);
-
-    const result = buildTerminalPickerItems(items, () => 'prefixed-label');
-
-    expect(result[0].displayName).toBe('terminal-1');
-    expect(result[1].displayName).toBe('terminal-2');
-  });
-
-  it('preserves bindOptions and terminalInfo from source items', () => {
-    const items = createTerminalItems(1);
-
-    const result = buildTerminalPickerItems(items, (terminal) => terminal.name);
-
-    expect(result[0].bindOptions).toStrictEqual(items[0].bindOptions);
-    expect(result[0].terminalInfo).toStrictEqual(items[0].terminalInfo);
   });
 });
