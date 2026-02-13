@@ -400,10 +400,10 @@ describe('RangeLinkStatusBar', () => {
       );
     });
 
-    it('binds and focuses when bindable item is selected', async () => {
+    it('binds without focusing when bindable item is selected', async () => {
       const mockTerminal = createMockTerminal();
       const bindOptions = { kind: 'terminal' as const, terminal: mockTerminal };
-      mockDestinationManager.bindAndFocus.mockResolvedValue(
+      mockDestinationManager.bind.mockResolvedValue(
         ExtensionResult.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
       );
       showQuickPickMock.mockResolvedValue({
@@ -422,7 +422,8 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
-      expect(mockDestinationManager.bindAndFocus).toHaveBeenCalledWith(bindOptions);
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith(bindOptions);
+      expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
@@ -432,21 +433,21 @@ describe('RangeLinkStatusBar', () => {
             bindOptions,
             displayName: 'Terminal',
           },
-          bindAndFocusSuccess: true,
+          bindSuccess: true,
         },
         'Destination item selected',
       );
     });
 
-    it('logs failure when bindAndFocus fails', async () => {
+    it('logs failure when bind fails', async () => {
       const mockTerminal = createMockTerminal();
       const bindOptions = { kind: 'terminal' as const, terminal: mockTerminal };
       const bindError = new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
         message: 'bind failed',
-        functionName: 'PasteDestinationManager.bindAndFocus',
+        functionName: 'PasteDestinationManager.bind',
       });
-      mockDestinationManager.bindAndFocus.mockResolvedValue(ExtensionResult.err(bindError));
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.err(bindError));
       showQuickPickMock.mockResolvedValue({
         label: '    $(arrow-right) Terminal',
         itemKind: 'bindable',
@@ -463,7 +464,8 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
-      expect(mockDestinationManager.bindAndFocus).toHaveBeenCalledWith(bindOptions);
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith(bindOptions);
+      expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
@@ -473,7 +475,7 @@ describe('RangeLinkStatusBar', () => {
             bindOptions,
             displayName: 'Terminal',
           },
-          bindAndFocusSuccess: false,
+          bindSuccess: false,
         },
         'Destination item selected',
       );
@@ -540,7 +542,7 @@ describe('RangeLinkStatusBar', () => {
       mockAvailabilityService.getTerminalItems.mockResolvedValue([
         createMockTerminalQuickPickItem(mockTerminal),
       ]);
-      mockDestinationManager.bindAndFocus.mockResolvedValue(
+      mockDestinationManager.bind.mockResolvedValue(
         ExtensionResult.ok({ destinationName: 'bash', destinationKind: 'terminal' }),
       );
 
@@ -568,15 +570,16 @@ describe('RangeLinkStatusBar', () => {
       await statusBar.openMenu();
 
       expect(showTerminalPickerSpy).toHaveBeenCalled();
-      expect(mockDestinationManager.bindAndFocus).toHaveBeenCalledWith({
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith({
         kind: 'terminal',
         terminal: mockTerminal,
       });
+      expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
           selectedItem: terminalMoreItem,
-          bindAndFocusSuccess: true,
+          bindSuccess: true,
         },
         'Terminal selected from overflow picker',
       );

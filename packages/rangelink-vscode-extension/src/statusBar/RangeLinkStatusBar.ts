@@ -92,11 +92,8 @@ export class RangeLinkStatusBar implements vscode.Disposable {
 
     switch (selected.itemKind) {
       case 'bindable': {
-        const result = await this.destinationManager.bindAndFocus(selected.bindOptions);
-        this.logger.debug(
-          { ...logCtx, bindAndFocusSuccess: result.success },
-          'Destination item selected',
-        );
+        const result = await this.destinationManager.bind(selected.bindOptions);
+        this.logger.debug({ ...logCtx, bindSuccess: result.success }, 'Destination item selected');
         break;
       }
       case 'terminal-more':
@@ -139,12 +136,12 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       {
         getPlaceholder: () => formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
         onSelected: async (eligible) => {
-          const bindResult = await this.destinationManager.bindAndFocus({
+          const bindResult = await this.destinationManager.bind({
             kind: 'terminal',
             terminal: eligible.terminal,
           });
           this.logger.debug(
-            { ...logCtx, bindAndFocusSuccess: bindResult.success },
+            { ...logCtx, bindSuccess: bindResult.success },
             'Terminal selected from overflow picker',
           );
         },
