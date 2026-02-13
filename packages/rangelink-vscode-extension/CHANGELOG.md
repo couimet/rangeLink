@@ -43,8 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Editor Tab** (right-click on tabs):
     - "RangeLink: Paste File Path" - Send absolute path to bound destination
     - "RangeLink: Paste Relative File Path" - Send relative path to bound destination
-    - "RangeLink: Bind Here" - Bind this editor as paste destination (file/untitled only)
-    - "RangeLink: Unbind" - Unbind current paste destination (when bound)
+    - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
+    - "RangeLink: Unbind" - Unbind current destination (when bound)
   - **Editor Content** (right-click inside editor):
     - "RangeLink: Copy Range Link" - Create relative path link (has selection)
     - "RangeLink: Copy Range Link (Absolute)" - Create absolute path link (has selection)
@@ -55,11 +55,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - ─── _visual separator_ ───
     - "RangeLink: Paste This File's Path" - Send absolute path to bound destination
     - "RangeLink: Paste This File's Relative Path" - Send relative path to bound destination
-    - "RangeLink: Bind Here" - Bind this editor as paste destination (file/untitled only)
-    - "RangeLink: Unbind" - Unbind current paste destination (when bound)
+    - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
+    - "RangeLink: Unbind" - Unbind current destination (when bound)
   - **Terminal** (right-click on terminal tabs or inside terminal):
-    - "RangeLink: Bind Here" - Bind this terminal as paste destination
-    - "RangeLink: Unbind" - Unbind current paste destination (when bound)
+    - "RangeLink: Bind Here" - Bind this terminal as destination
+    - "RangeLink: Unbind" - Unbind current destination (when bound)
 - **RangeLink Menu (R-M)** - Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the `🔗 RangeLink` status bar item to access ⚡ quick actions
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
   - Go to Link
@@ -109,7 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Text editor binding validation** - Prevents binding to read-only editors (git diff views, output panels, settings UI) that would cause paste operations to fail with confusing errors. Now shows clear error messages: "Cannot bind to read-only editor (git)" or "Cannot bind to file.png - binary file".
 - **Full-line navigation selection** - Fixed `#L10` selecting only first character instead of entire line. Full-line links (`#L10`, `#L10-L15`) now correctly select from start of first line to end of last line.
 - **Full-line link generation with newline** - Fixed link generation when selection includes trailing newline. Selecting "line 20 + newline" now correctly generates `#L20` instead of `#L20-L21`.
-- **Smart padding preserves whitespace-only text** - Fixed `applySmartPadding()` incorrectly trimming whitespace-only strings to empty. Now whitespace-only content is preserved when using paste destinations.
+- **Smart padding preserves whitespace-only text** - Fixed `applySmartPadding()` incorrectly trimming whitespace-only strings to empty. Now whitespace-only content is preserved when using destinations.
 - **Web URLs no longer hijacked as RangeLinks** - Fixed clickable links incorrectly capturing URLs like `https://example.com/path/file.ts#L10`, which caused "file not found" errors when clicked. HTTP, HTTPS, and FTP URLs are now properly ignored while local file paths continue to work. (#288)
 - **Full-line selection validation error** - Fixed `SELECTION_ZERO_WIDTH` error when using Ctrl+L or triple-click to select full lines. The selection normalization now correctly sets the end character to the line length instead of 0. (#306)
 - # **Document link tooltip shows raw JSON** - Fixed hover tooltip displaying raw markdown with command URIs and JSON payloads instead of clean human-readable text. Defers the command URI target to `resolveDocumentLink()` so the hover shows only the tooltip string (e.g., "Open path/to/file.ts:10-20 • RangeLink"). (#311)
