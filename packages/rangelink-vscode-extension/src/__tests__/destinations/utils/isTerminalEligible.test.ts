@@ -1,4 +1,5 @@
 import { Terminal } from 'vscode';
+
 import { isTerminalEligible } from '../../../destinations/utils';
 import { createMockTerminal } from '../../helpers';
 

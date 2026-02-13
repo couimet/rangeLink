@@ -28,4 +28,4 @@ const isHiddenFromUser = (terminal: vscode.Terminal): boolean =>
  * @returns true if terminal is live and user-visible, false otherwise
  */
 export const isTerminalEligible = (terminal: vscode.Terminal): boolean =>
-  terminal.exitStatus === undefined && !isHiddenFromUser(terminal);
+  terminal != null && terminal.exitStatus === undefined && !isHiddenFromUser(terminal);
