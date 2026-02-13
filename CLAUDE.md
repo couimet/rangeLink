@@ -808,7 +808,7 @@
   <tech-features>
     - Multiple editors (VSCode, Cursor)
     - Multiple selection types (Normal, Rectangular)
-    - Paste destinations (auto-send to AI tools)
+    - Destinations (auto-send to AI tools)
     - Clickable navigation (jump to code from links)
   </tech-features>
 </project-context>
