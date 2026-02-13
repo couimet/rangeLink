@@ -768,7 +768,11 @@ export class RangeLinkService {
       case 'selected': {
         const bindResult = await this.destinationManager.bind(result.bindOptions);
         if (!bindResult.success) {
-          this.logger.info(logCtx, 'Binding failed - no action taken');
+          this.logger.error(
+            { ...logCtx, error: bindResult.error },
+            'Binding failed - no action taken',
+          );
+          this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
           return { outcome: 'bind-failed', error: bindResult.error };
         }
         return { outcome: 'bound', bindInfo: bindResult.value };

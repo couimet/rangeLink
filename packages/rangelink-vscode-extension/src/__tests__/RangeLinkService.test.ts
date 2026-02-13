@@ -965,6 +965,47 @@ describe('RangeLinkService', () => {
             'none',
           );
         });
+
+        it('should show error toast and not copy when bind fails via quick pick', async () => {
+          const mockTerminal = createMockTerminal();
+          const bindError = new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+            message: 'bind failed',
+            functionName: 'PasteDestinationManager.bind',
+          });
+          mockPickerCommand.pick.mockResolvedValue({
+            outcome: 'selected',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+          });
+          mockDestinationManager = createMockDestinationManager({
+            bindResult: Result.err(bindError),
+          });
+          service = new RangeLinkService(
+            getDelimiters,
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockPickerCommand,
+            mockConfigReader,
+            mockLogger,
+          );
+
+          await service.pasteSelectedTextToDestination();
+
+          const showErrorMock = mockVscodeAdapter.__getVscodeInstance().window
+            .showErrorMessage as jest.Mock;
+          expect(showErrorMock).toHaveBeenCalledWith(
+            'RangeLink: Failed to bind destination',
+          );
+          expect(mockLogger.error).toHaveBeenCalledWith(
+            {
+              fn: 'RangeLinkService.showPickerAndBindForPaste',
+              error: bindError,
+            },
+            'Binding failed - no action taken',
+          );
+          expect(mockClipboard.writeText).not.toHaveBeenCalled();
+          expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
+        });
       });
 
       describe('when destination is bound', () => {
