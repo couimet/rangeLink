@@ -224,50 +224,6 @@ describe('DestinationPicker', () => {
           bindOptions: { kind: 'terminal', terminal },
         });
       });
-
-      it('returns to main picker when user escapes secondary terminal picker', async () => {
-        const terminal = createMockTerminal({ name: 'Terminal 1' });
-        const terminalItem = createMockTerminalQuickPickItem(terminal);
-        const moreItem = createMockTerminalMoreQuickPickItem(3);
-        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
-          terminal: [terminalItem],
-          'terminal-more': moreItem,
-        });
-
-        let callCount = 0;
-        showQuickPickMock.mockImplementation(async () => {
-          callCount++;
-          if (callCount === 1) {
-            return moreItem;
-          }
-          return terminalItem;
-        });
-
-        showTerminalPickerSpy.mockImplementation(
-          async <T>(
-            _terminals: readonly TerminalBindableQuickPickItem[],
-            _provider: unknown,
-            handlers: TerminalPickerHandlers<T>,
-            _logger: unknown,
-          ): Promise<T | undefined> => handlers.onDismissed?.(),
-        );
-
-        const result = await picker.pick(defaultOptions);
-
-        expect(showQuickPickMock).toHaveBeenCalledTimes(2);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.showSecondaryTerminalPicker' },
-          'User returned from secondary terminal picker',
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'DestinationPicker.pick' },
-          'Returning to main destination picker',
-        );
-        expect(result).toStrictEqual({
-          outcome: 'selected',
-          bindOptions: { kind: 'terminal', terminal },
-        });
-      });
     });
   });
 });

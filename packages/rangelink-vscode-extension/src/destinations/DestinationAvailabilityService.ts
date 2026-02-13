@@ -267,10 +267,11 @@ export class DestinationAvailabilityService {
    * Resolve the terminal threshold to use, handling options, config, validation, and normalization.
    */
   private resolveTerminalThreshold(options?: GetAvailableDestinationItemsOptions): number {
+    const fallback = DEFAULT_TERMINAL_PICKER_MAX_INLINE;
     const providedThreshold = options?.terminalThreshold;
     const configThreshold = this.configReader.getWithDefault(
       SETTING_TERMINAL_PICKER_MAX_INLINE,
-      DEFAULT_TERMINAL_PICKER_MAX_INLINE,
+      fallback,
     );
 
     let effectiveThreshold = providedThreshold ?? configThreshold;
@@ -280,13 +281,14 @@ export class DestinationAvailabilityService {
         {
           fn: 'DestinationAvailabilityService.resolveTerminalThreshold',
           invalidValue: effectiveThreshold,
-          fallback: DEFAULT_TERMINAL_PICKER_MAX_INLINE,
+          fallback,
         },
         'Invalid terminalThreshold, using default',
       );
-      effectiveThreshold = DEFAULT_TERMINAL_PICKER_MAX_INLINE;
+      effectiveThreshold = fallback;
     }
 
+    // Safe for Infinity: Math.floor(Infinity) === Infinity (shows all terminals inline)
     effectiveThreshold = Math.floor(effectiveThreshold);
 
     this.logger.debug(

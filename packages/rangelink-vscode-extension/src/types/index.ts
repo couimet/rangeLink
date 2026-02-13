@@ -30,6 +30,7 @@ export type {
   GetAvailableDestinationItemsOptions,
   GroupedDestinationItems,
 } from './GroupedDestinationKinds';
+export { PICKER_ITEM_KINDS } from './QuickPickTypes';
 export type {
   BindableQuickPickItem,
   BookmarkQuickPickItem,

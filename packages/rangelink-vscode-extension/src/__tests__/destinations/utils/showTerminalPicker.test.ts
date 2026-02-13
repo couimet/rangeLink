@@ -34,6 +34,7 @@ describe('showTerminalPicker', () => {
     bindOptions: item.bindOptions,
     itemKind: 'bindable',
     isActive: item.isActive,
+    boundState: item.boundState,
     terminalInfo: item.terminalInfo,
   });
 

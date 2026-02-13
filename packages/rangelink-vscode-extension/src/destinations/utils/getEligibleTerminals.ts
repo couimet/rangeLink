@@ -30,7 +30,10 @@ export const getEligibleTerminals = async (
       terminal,
       name: terminal.name,
       isActive: terminal === activeTerminal,
-      processId: (await terminal.processId) ?? undefined,
+      processId: await terminal.processId.then(
+        (pid) => pid ?? undefined,
+        () => undefined,
+      ),
     })),
   );
 };

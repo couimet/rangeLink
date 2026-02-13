@@ -5,10 +5,22 @@ import type { EligibleTerminal, TerminalBoundState } from './EligibleTerminal';
 import type { WithDisplayName } from './WithDisplayName';
 
 /**
+ * Discriminator values for QuickPick items across all RangeLink menus.
+ * Used for runtime validation in type guards.
+ */
+export const PICKER_ITEM_KINDS = [
+  'bindable',
+  'terminal-more',
+  'command',
+  'bookmark',
+  'info',
+] as const;
+
+/**
  * Discriminator for QuickPick items across all RangeLink menus.
  * Used to identify item type after user selection.
  */
-export type PickerItemKind = 'bindable' | 'terminal-more' | 'command' | 'bookmark' | 'info';
+export type PickerItemKind = (typeof PICKER_ITEM_KINDS)[number];
 
 /**
  * Base QuickPickItem with RangeLink discriminator.

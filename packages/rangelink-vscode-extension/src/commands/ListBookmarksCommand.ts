@@ -50,7 +50,7 @@ export class ListBookmarksCommand {
   }
 
   private async handleSelection(selected: ListBookmarksQuickPickItem): Promise<void> {
-    const logCtx = { fn: 'ListBookmarksCommand.execute' };
+    const logCtx = { fn: 'ListBookmarksCommand.handleSelection' };
 
     switch (selected.itemKind) {
       case 'bookmark':

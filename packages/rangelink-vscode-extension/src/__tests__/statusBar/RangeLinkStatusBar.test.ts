@@ -440,7 +440,7 @@ describe('RangeLinkStatusBar', () => {
       );
     });
 
-    it('logs failure when bind fails', async () => {
+    it('logs error and shows toast when bind fails', async () => {
       const mockTerminal = createMockTerminal();
       const bindOptions = { kind: 'terminal' as const, terminal: mockTerminal };
       const bindError = new RangeLinkExtensionError({
@@ -449,12 +449,13 @@ describe('RangeLinkStatusBar', () => {
         functionName: 'PasteDestinationManager.bind',
       });
       mockDestinationManager.bind.mockResolvedValue(ExtensionResult.err(bindError));
-      showQuickPickMock.mockResolvedValue({
+      const selectedItem = {
         label: '    $(arrow-right) Terminal',
-        itemKind: 'bindable',
+        itemKind: 'bindable' as const,
         bindOptions,
         displayName: 'Terminal',
-      });
+      };
+      showQuickPickMock.mockResolvedValue(selectedItem);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
@@ -467,15 +468,23 @@ describe('RangeLinkStatusBar', () => {
 
       expect(mockDestinationManager.bind).toHaveBeenCalledWith(bindOptions);
       expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.openMenu',
+          selectedItem,
+          error: bindError,
+        },
+        'Bind failed from status bar menu',
+      );
+      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
+        .showErrorMessage as jest.Mock;
+      expect(showErrorMessageMock).toHaveBeenCalledWith(
+        'RangeLink: Failed to bind destination',
+      );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
-          selectedItem: {
-            label: '    $(arrow-right) Terminal',
-            itemKind: 'bindable',
-            bindOptions,
-            displayName: 'Terminal',
-          },
+          selectedItem,
           bindSuccess: false,
         },
         'Destination item selected',
@@ -577,6 +586,70 @@ describe('RangeLinkStatusBar', () => {
           fn: 'RangeLinkStatusBar.openMenu',
           selectedItem: terminalMoreItem,
           bindSuccess: true,
+        },
+        'Terminal selected from overflow picker',
+      );
+    });
+
+    it('logs error and shows toast when bind fails from overflow terminal picker', async () => {
+      const mockTerminal = createMockTerminal({ name: 'bash' });
+      const eligibleTerminal = createMockEligibleTerminal({ terminal: mockTerminal });
+      const bindError = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+        message: 'bind failed',
+        functionName: 'PasteDestinationManager.bind',
+      });
+
+      mockAvailabilityService.getTerminalItems.mockResolvedValue([
+        createMockTerminalQuickPickItem(mockTerminal),
+      ]);
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.err(bindError));
+
+      showQuickPickMock.mockResolvedValueOnce(terminalMoreItem);
+
+      showTerminalPickerSpy.mockImplementation(
+        async (
+          _terminals: readonly TerminalBindableQuickPickItem[],
+          _provider: unknown,
+          handlers: TerminalPickerHandlers<void>,
+          _logger: unknown,
+        ): Promise<void | undefined> => {
+          await handlers.onSelected(eligibleTerminal);
+        },
+      );
+
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith({
+        kind: 'terminal',
+        terminal: mockTerminal,
+      });
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.openMenu',
+          selectedItem: terminalMoreItem,
+          error: bindError,
+        },
+        'Bind failed from overflow terminal picker',
+      );
+      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
+        .showErrorMessage as jest.Mock;
+      expect(showErrorMessageMock).toHaveBeenCalledWith(
+        'RangeLink: Failed to bind destination',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.openMenu',
+          selectedItem: terminalMoreItem,
+          bindSuccess: false,
         },
         'Terminal selected from overflow picker',
       );

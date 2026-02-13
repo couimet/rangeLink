@@ -21,11 +21,13 @@ const isDestinationKind = (key: string): key is DestinationKind =>
 const isTerminalItem = (item: BindableQuickPickItem): item is TerminalBindableQuickPickItem =>
   'terminalInfo' in item;
 
+type PickerSequenceKey = DestinationKind | 'terminal-more';
+
 /**
  * Sequence defining the order of destination kinds in QuickPick menus.
  * AI assistants first, then terminals, then text editor.
  */
-export const DESTINATION_PICKER_SEQUENCE: readonly (DestinationKind | 'terminal-more')[] = [
+export const DESTINATION_PICKER_SEQUENCE: readonly PickerSequenceKey[] = [
   'claude-code',
   'cursor-ai',
   'github-copilot-chat',
@@ -36,7 +38,7 @@ export const DESTINATION_PICKER_SEQUENCE: readonly (DestinationKind | 'terminal-
 
 type DestinationGroup = 'ai' | 'terminal' | 'file';
 
-const DESTINATION_GROUP_MAP: Record<string, DestinationGroup> = {
+const DESTINATION_GROUP_MAP: Record<PickerSequenceKey, DestinationGroup> = {
   'claude-code': 'ai',
   'cursor-ai': 'ai',
   'github-copilot-chat': 'ai',

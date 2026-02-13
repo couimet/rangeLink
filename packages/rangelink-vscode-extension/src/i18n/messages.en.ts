@@ -46,6 +46,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_BOOKMARK_SAVE_FAILED]: 'RangeLink: Failed to save bookmark',
   [MessageCode.ERROR_BOOKMARK_UNTITLED_FILE]:
     'RangeLink: Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
+  [MessageCode.ERROR_BIND_FAILED]: 'RangeLink: Failed to bind destination',
   [MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE]:
     'RangeLink: Cannot bind Claude Code - extension not installed or not active',
   [MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE]:

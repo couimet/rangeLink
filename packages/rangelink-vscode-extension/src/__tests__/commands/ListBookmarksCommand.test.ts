@@ -92,7 +92,7 @@ describe('ListBookmarksCommand', () => {
 
         expect(mockAdapter.executeCommand).toHaveBeenCalledWith('rangelink.bookmark.add');
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ListBookmarksCommand.execute', command: 'rangelink.bookmark.add' },
+          { fn: 'ListBookmarksCommand.handleSelection', command: 'rangelink.bookmark.add' },
           'Command executed from menu',
         );
       });
@@ -178,7 +178,7 @@ describe('ListBookmarksCommand', () => {
 
         expect(mockBookmarkService.pasteBookmark).toHaveBeenCalledWith('bookmark-1');
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ListBookmarksCommand.execute', bookmarkId: 'bookmark-1' },
+          { fn: 'ListBookmarksCommand.handleSelection', bookmarkId: 'bookmark-1' },
           'Bookmark selected and pasted',
         );
       });
@@ -201,7 +201,7 @@ describe('ListBookmarksCommand', () => {
         expect(mockBookmarkService.pasteBookmark).not.toHaveBeenCalled();
         expect(executeCommandSpy).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ListBookmarksCommand.execute', selectedItem: emptyStateItem },
+          { fn: 'ListBookmarksCommand.handleSelection', selectedItem: emptyStateItem },
           'Non-actionable item selected',
         );
       });

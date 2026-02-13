@@ -18,7 +18,7 @@ import type { JumpToDestinationResult } from '../types/JumpToDestinationResult';
 export class JumpToDestinationCommand {
   constructor(
     private readonly destinationManager: PasteDestinationManager,
-    private readonly destinationPickerCommand: DestinationPicker,
+    private readonly destinationPicker: DestinationPicker,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
@@ -36,7 +36,7 @@ export class JumpToDestinationCommand {
 
     this.logger.debug(logCtx, 'No destination bound, showing picker');
 
-    const pickerResult = await this.destinationPickerCommand.pick({
+    const pickerResult = await this.destinationPicker.pick({
       noDestinationsMessageCode: MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE,
       placeholderMessageCode: MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER,
     });
