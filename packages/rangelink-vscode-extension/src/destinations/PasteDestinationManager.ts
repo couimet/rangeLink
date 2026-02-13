@@ -11,6 +11,7 @@ import {
   AutoPasteResult,
   BindFailureReason,
   type BindOptions,
+  type ConfirmationQuickPickItem,
   type DestinationKind,
   ExtensionResult,
   MessageCode,
@@ -129,34 +130,6 @@ export class PasteDestinationManager implements vscode.Disposable {
       return ExtensionResult.err(bindResult.error);
     }
     return this.focusBoundDestination({ silent: true });
-  }
-
-  /**
-   * Bind to a destination kind and immediately focus it.
-   *
-   * Convenience wrapper for status bar callers that pass DestinationKind.
-   * Terminal case resolves activeTerminal from the IDE adapter.
-   *
-   * @param kind - The destination kind to bind and focus
-   * @returns true if bind and focus both succeeded, false otherwise
-   */
-  async bindAndJump(kind: DestinationKind): Promise<boolean> {
-    let options: BindOptions;
-
-    if (kind === 'terminal') {
-      const activeTerminal = this.vscodeAdapter.activeTerminal;
-      if (!activeTerminal) {
-        this.logger.warn({ fn: 'PasteDestinationManager.bindAndJump' }, 'No active terminal');
-        this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
-        return false;
-      }
-      options = { kind: 'terminal', terminal: activeTerminal };
-    } else {
-      options = { kind } as BindOptions;
-    }
-
-    const result = await this.bindAndFocus(options);
-    return result.success;
   }
 
   /**
@@ -777,16 +750,16 @@ export class PasteDestinationManager implements vscode.Disposable {
       newDestination: newDisplayName,
     };
 
-    const YES_REPLACE_LABEL = formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_REPLACE);
-
-    const items: vscode.QuickPickItem[] = [
+    const items: ConfirmationQuickPickItem[] = [
       {
-        label: YES_REPLACE_LABEL,
+        label: formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_REPLACE),
         description: formatMessage(MessageCode.SMART_BIND_CONFIRM_YES_DESCRIPTION, params),
+        confirmed: true,
       },
       {
         label: formatMessage(MessageCode.SMART_BIND_CONFIRM_NO_KEEP),
         description: formatMessage(MessageCode.SMART_BIND_CONFIRM_NO_DESCRIPTION, params),
+        confirmed: false,
       },
     ];
 
@@ -794,7 +767,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       placeHolder: formatMessage(MessageCode.SMART_BIND_CONFIRM_PLACEHOLDER, params),
     });
 
-    const confirmed = choice?.label === YES_REPLACE_LABEL;
+    const confirmed = choice?.confirmed ?? false;
 
     this.logger.debug(
       {

@@ -10,11 +10,12 @@ interface CommandContribution {
 
 interface ConfigurationProperty {
   type: string;
-  default: string | boolean;
+  default: string | boolean | number;
   description: string;
   pattern?: string;
   enum?: string[];
   enumDescriptions?: string[];
+  minimum?: number;
 }
 
 interface KeybindingContribution {
@@ -544,8 +545,20 @@ describe('package.json contributions', () => {
       });
     });
 
+    describe('terminal picker settings', () => {
+      it('rangelink.terminalPicker.maxInline', () => {
+        expect(properties['rangelink.terminalPicker.maxInline']).toStrictEqual({
+          type: 'number',
+          default: 5,
+          minimum: 1,
+          description:
+            "Maximum terminals shown inline in destination picker (extras collapsed into 'More terminals...')",
+        });
+      });
+    });
+
     it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(9);
+      expect(Object.keys(properties)).toHaveLength(10);
     });
   });
 

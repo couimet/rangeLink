@@ -4,21 +4,19 @@ import type { DelimiterConfig, DelimiterConfigGetter } from 'rangelink-core-ts';
 import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import type { DestinationPickerCommand } from '../commands';
 import type { ConfigReader } from '../config';
+import type { DestinationPicker } from '../destinations';
 import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { messagesEn } from '../i18n';
 import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode, PasteContentType } from '../types';
-import * as formatMessageModule from '../utils/formatMessage';
-import * as generateLinkModule from '../utils/generateLinkFromSelections';
 
 import {
   createMockClipboard,
   createMockConfigReader,
   createMockDestinationManager,
-  createMockDestinationPickerCommand,
+  createMockDestinationPicker,
   createMockDocument,
   createMockEditor,
   createMockEditorComposablePasteDestination,
@@ -33,6 +31,8 @@ import {
   createMockVscodeAdapter,
   createMockWorkspaceFolder,
   createWindowOptionsForEditor,
+  spyOnFormatMessage,
+  spyOnGenerateLinkFromSelections,
   type MockClipboard,
   type VscodeAdapterWithTestHooks,
 } from './helpers';
@@ -40,7 +40,7 @@ import {
 let service: RangeLinkService;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
 let mockDestinationManager: PasteDestinationManager;
-let mockPickerCommand: jest.Mocked<DestinationPickerCommand>;
+let mockPickerCommand: jest.Mocked<DestinationPicker>;
 let mockConfigReader: jest.Mocked<ConfigReader>;
 let mockLogger: Logger;
 let mockClipboard: MockClipboard;
@@ -92,7 +92,7 @@ const mockSelection = (
 describe('RangeLinkService', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
-    mockPickerCommand = createMockDestinationPickerCommand();
+    mockPickerCommand = createMockDestinationPicker();
     mockClipboard = createMockClipboard();
     mockConfigReader = createMockConfigReader();
     mockSetStatusBarMessage = jest.fn().mockReturnValue({ dispose: jest.fn() });
@@ -569,7 +569,7 @@ describe('RangeLinkService', () => {
       let formatMessageSpy: jest.SpyInstance;
 
       beforeEach(() => {
-        formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+        formatMessageSpy = spyOnFormatMessage();
       });
 
       it('should call formatMessage with STATUS_BAR_LINK_COPIED_TO_CLIPBOARD and linkTypeName parameter', async () => {
@@ -907,16 +907,16 @@ describe('RangeLinkService', () => {
 
       describe('when no destination bound', () => {
         it('should invoke picker command to select destination', async () => {
-          mockPickerCommand.execute.mockResolvedValue({ outcome: 'cancelled' });
+          mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
 
           await service.pasteSelectedTextToDestination();
 
-          expect(mockPickerCommand.execute).toHaveBeenCalledTimes(1);
+          expect(mockPickerCommand.pick).toHaveBeenCalledTimes(1);
         });
 
         describe('when user cancels quick pick', () => {
           beforeEach(() => {
-            mockPickerCommand.execute.mockResolvedValue({ outcome: 'cancelled' });
+            mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
           });
 
           it('should NOT copy to clipboard', async () => {
@@ -937,7 +937,7 @@ describe('RangeLinkService', () => {
           const mockDestination = createMockTerminalPasteDestination({
             displayName: 'Terminal',
           });
-          mockPickerCommand.execute.mockResolvedValue({
+          mockPickerCommand.pick.mockResolvedValue({
             outcome: 'selected',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
           });
@@ -964,6 +964,45 @@ describe('RangeLinkService', () => {
             '✓ Selected text copied to clipboard',
             'none',
           );
+        });
+
+        it('should show error toast and not copy when bind fails via quick pick', async () => {
+          const mockTerminal = createMockTerminal();
+          const bindError = new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+            message: 'bind failed',
+            functionName: 'PasteDestinationManager.bind',
+          });
+          mockPickerCommand.pick.mockResolvedValue({
+            outcome: 'selected',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+          });
+          mockDestinationManager = createMockDestinationManager({
+            bindResult: Result.err(bindError),
+          });
+          service = new RangeLinkService(
+            getDelimiters,
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockPickerCommand,
+            mockConfigReader,
+            mockLogger,
+          );
+
+          await service.pasteSelectedTextToDestination();
+
+          const showErrorMock = mockVscodeAdapter.__getVscodeInstance().window
+            .showErrorMessage as jest.Mock;
+          expect(showErrorMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
+          expect(mockLogger.error).toHaveBeenCalledWith(
+            {
+              fn: 'RangeLinkService.showPickerAndBindForPaste',
+              error: bindError,
+            },
+            'Binding failed - no action taken',
+          );
+          expect(mockClipboard.writeText).not.toHaveBeenCalled();
+          expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
         });
       });
 
@@ -1664,7 +1703,7 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      mockGenerateLinkFromSelections = jest.spyOn(generateLinkModule, 'generateLinkFromSelections');
+      mockGenerateLinkFromSelections = spyOnGenerateLinkFromSelections();
     });
 
     it('should delegate to utility with Regular linkType and return FormattedLink', async () => {
@@ -1769,7 +1808,7 @@ describe('RangeLinkService', () => {
       mockShowWarningMessage = jest.fn();
       mockDocumentSave = jest.fn().mockResolvedValue(true);
 
-      mockGenerateLinkFromSelections = jest.spyOn(generateLinkModule, 'generateLinkFromSelections');
+      mockGenerateLinkFromSelections = spyOnGenerateLinkFromSelections();
       mockGenerateLinkFromSelections.mockReturnValue(
         Result.ok(createMockFormattedLink('file.ts#L10')),
       );
@@ -1942,7 +1981,7 @@ describe('RangeLinkService', () => {
     let mockGenerateLinkFromSelections: jest.SpyInstance;
 
     beforeEach(() => {
-      mockGenerateLinkFromSelections = jest.spyOn(generateLinkModule, 'generateLinkFromSelections');
+      mockGenerateLinkFromSelections = spyOnGenerateLinkFromSelections();
       mockGenerateLinkFromSelections.mockReturnValue(
         Result.ok(createMockFormattedLink('file.ts#L10')),
       );
@@ -2233,7 +2272,7 @@ describe('RangeLinkService', () => {
 
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
-        expect(mockPickerCommand.execute).not.toHaveBeenCalled();
+        expect(mockPickerCommand.pick).not.toHaveBeenCalled();
         expect(copyAndSendSpy).toHaveBeenCalled();
       });
 
@@ -2241,7 +2280,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager = createMockDestinationManager({
           isBound: false,
         });
-        mockPickerCommand.execute.mockResolvedValue({ outcome: 'cancelled' });
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -2258,7 +2297,7 @@ describe('RangeLinkService', () => {
 
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
-        expect(mockPickerCommand.execute).toHaveBeenCalled();
+        expect(mockPickerCommand.pick).toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkService.pasteFilePath',

@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Terminal Picker** - Choose which terminal to bind to instead of auto-binding the active one (#255)
+  - Command Palette "Bind to Terminal" shows a QuickPick list of eligible terminals
+  - Active terminal marked with "active" badge, bound terminal marked with "bound" badge (dual badge "bound · active" when same terminal)
+  - Terminals sorted: bound first, active second, rest in natural order — bound terminal never hidden behind "More terminals..."
+  - Hidden IDE terminals (e.g., Cursor's background terminal) are automatically filtered out
+  - Configurable inline threshold: `rangelink.terminalPicker.maxInline` (default: `5`)
+  - When more terminals than the threshold exist, extras collapse into "More terminals..." which opens a secondary picker
+  - Escaping the secondary picker returns to the destination picker
+  - Terminal picker also appears inline in the **RangeLink Menu** (`R-M`) and destination picker when unbound
 - **Dirty Buffer Warning** - Warning when generating a link from a file with unsaved changes (#298)
   - Shows a dialog with options: "Save & Generate", "Generate Anyway", or dismiss to abort
   - Controlled by `rangelink.warnOnDirtyBuffer` setting (default: `true`)

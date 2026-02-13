@@ -17,7 +17,6 @@ import {
   ExtensionResult,
   MessageCode,
 } from '../../types';
-import * as formatMessageModule from '../../utils/formatMessage';
 import {
   configureEmptyTabGroups,
   createBaseMockPasteDestination,
@@ -36,6 +35,7 @@ import {
   createMockUri,
   createMockVscodeAdapter,
   type MockVscodeOptions,
+  spyOnFormatMessage,
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
 
@@ -194,7 +194,7 @@ describe('PasteDestinationManager', () => {
 
   beforeEach(() => {
     // Spy on formatMessage to verify MessageCode usage
-    formatMessageSpy = jest.spyOn(formatMessageModule, 'formatMessage');
+    formatMessageSpy = spyOnFormatMessage();
 
     // Create mock logger
     mockLogger = createMockLogger();
@@ -1525,6 +1525,7 @@ describe('PasteDestinationManager', () => {
         (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValue({
           label: 'Yes, replace',
           description: 'Switch from Terminal to Text Editor',
+          confirmed: true,
         });
 
         // Mock active terminal for first bind
@@ -1556,10 +1557,12 @@ describe('PasteDestinationManager', () => {
             {
               label: 'Yes, replace',
               description: 'Switch from Terminal ("TestTerminal") to Text Editor ("file.ts")',
+              confirmed: true,
             },
             {
               label: 'No, keep current binding',
               description: 'Stay bound to Terminal ("TestTerminal")',
+              confirmed: false,
             },
           ],
           {
@@ -1613,6 +1616,7 @@ describe('PasteDestinationManager', () => {
         (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValue({
           label: 'No, keep current binding',
           description: 'Stay bound to Terminal',
+          confirmed: false,
         });
 
         // Mock active terminal for first bind

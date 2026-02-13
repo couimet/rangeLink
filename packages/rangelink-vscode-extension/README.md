@@ -95,9 +95,12 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 1. Open integrated terminal
 2. Bind using either:
-   - **Command Palette** → "Bind to Terminal"
+   - **Command Palette** → "Bind to Terminal" → **pick from your open terminals**
    - **Right-click terminal tab** or **right-click inside terminal** → "RangeLink: Bind Here"
+   - **RangeLink Menu** (`Cmd+R Cmd+M`) → select a terminal from the inline list
 3. Select code → Generate link → Link pastes **at insertion point** + **terminal focuses automatically**
+
+**Terminal Picker:** When binding via Command Palette or RangeLink Menu, a QuickPick shows your eligible terminals. The currently bound terminal is marked "bound" and sorted first, followed by the active terminal marked "active". When a terminal is both bound and active, it shows "bound · active". With many terminals, extras collapse into "More terminals..." (configurable via `rangelink.terminalPicker.maxInline`) — the bound terminal is always visible, never hidden behind the overflow.
 
 #### Text Editor Destination
 
@@ -189,11 +192,11 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 
 Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the **RangeLink** item in the status bar to access quick actions:
 
-- **Jump to Bound Destination** — Focus your currently bound paste destination (shows quick pick of available destinations when unbound)
+- **Jump to Bound Destination** — Focus your currently bound paste destination
+- **Bind to a destination** — When unbound, the menu shows available destinations inline (AI assistants, terminals, text editors) so you can bind directly from the menu
 - **Go to Link** — Paste or type a RangeLink to go directly to that code location
+- **Bookmarks** — Quick access to saved bookmarks, plus add/manage actions
 - **Show Version Info** — Display extension version and build details
-
-The menu provides quick access to common actions. More items coming in future releases.
 
 ---
 
@@ -346,6 +349,14 @@ Invalid configurations will fall back to defaults with a warning in the output c
 | `rangelink.warnOnDirtyBuffer` | `true`  | Show warning when generating a link from a file with unsaved changes |
 
 When enabled, a dialog appears with options: "Save & Generate", "Generate Anyway", or dismiss to abort. This helps avoid creating links that may point to incorrect positions after the file is saved.
+
+### Terminal Picker Settings
+
+| Setting                              | Default | Description                                                              |
+| ------------------------------------ | ------- | ------------------------------------------------------------------------ |
+| `rangelink.terminalPicker.maxInline` | `5`     | Maximum terminals shown inline in picker (extras in "More terminals...") |
+
+When you have more terminals than this threshold, the destination picker shows a "More terminals..." option instead of listing all terminals individually.
 
 ## What's Next
 

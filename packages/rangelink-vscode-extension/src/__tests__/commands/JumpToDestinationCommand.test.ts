@@ -1,22 +1,22 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import type { DestinationPickerCommand } from '../../commands';
 import { JumpToDestinationCommand } from '../../commands';
+import type { DestinationPicker } from '../../destinations';
 import type { FocusSuccessInfo, PasteDestinationManager } from '../../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import type { BindOptions, DestinationPickerResult } from '../../types';
 import { ExtensionResult } from '../../types';
-import { createMockDestinationManager, createMockDestinationPickerCommand } from '../helpers';
+import { createMockDestinationManager, createMockDestinationPicker } from '../helpers';
 
 describe('JumpToDestinationCommand', () => {
   let mockDestinationManager: jest.Mocked<PasteDestinationManager>;
-  let mockPickerCommand: jest.Mocked<DestinationPickerCommand>;
+  let mockPickerCommand: jest.Mocked<DestinationPicker>;
   let mockLogger: ReturnType<typeof createMockLogger>;
   let command: JumpToDestinationCommand;
 
   beforeEach(() => {
     mockDestinationManager = createMockDestinationManager();
-    mockPickerCommand = createMockDestinationPickerCommand();
+    mockPickerCommand = createMockDestinationPicker();
     mockLogger = createMockLogger();
     command = new JumpToDestinationCommand(mockDestinationManager, mockPickerCommand, mockLogger);
   });
@@ -47,7 +47,7 @@ describe('JumpToDestinationCommand', () => {
         outcome: 'focused',
         destinationName: 'Terminal ("bash")',
       });
-      expect(mockPickerCommand.execute).not.toHaveBeenCalled();
+      expect(mockPickerCommand.pick).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'JumpToDestinationCommand.execute' },
         'Destination already bound, focusing',
@@ -67,7 +67,7 @@ describe('JumpToDestinationCommand', () => {
       const result = await command.execute();
 
       expect(result).toStrictEqual({ outcome: 'focus-failed', error: focusError });
-      expect(mockPickerCommand.execute).not.toHaveBeenCalled();
+      expect(mockPickerCommand.pick).not.toHaveBeenCalled();
     });
   });
 
@@ -78,7 +78,7 @@ describe('JumpToDestinationCommand', () => {
 
     it('shows picker, binds, focuses, and returns focused result', async () => {
       const bindOptions: BindOptions = { kind: 'claude-code' };
-      mockPickerCommand.execute.mockResolvedValue({
+      mockPickerCommand.pick.mockResolvedValue({
         outcome: 'selected',
         bindOptions,
       });
@@ -95,10 +95,9 @@ describe('JumpToDestinationCommand', () => {
         outcome: 'focused',
         destinationName: 'Claude Code Chat',
       });
-      expect(mockPickerCommand.execute).toHaveBeenCalledWith({
+      expect(mockPickerCommand.pick).toHaveBeenCalledWith({
         noDestinationsMessageCode: 'INFO_JUMP_NO_DESTINATIONS_AVAILABLE',
         placeholderMessageCode: 'INFO_JUMP_QUICK_PICK_PLACEHOLDER',
-        callerContext: { fn: 'JumpToDestinationCommand.execute' },
       });
       expect(mockDestinationManager.bindAndFocus).toHaveBeenCalledWith(bindOptions);
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -112,7 +111,7 @@ describe('JumpToDestinationCommand', () => {
     });
 
     it('returns no-resource when picker reports no destinations available', async () => {
-      mockPickerCommand.execute.mockResolvedValue({
+      mockPickerCommand.pick.mockResolvedValue({
         outcome: 'no-resource',
       } as DestinationPickerResult);
 
@@ -131,7 +130,7 @@ describe('JumpToDestinationCommand', () => {
     });
 
     it('returns cancelled when user cancels picker', async () => {
-      mockPickerCommand.execute.mockResolvedValue({
+      mockPickerCommand.pick.mockResolvedValue({
         outcome: 'cancelled',
       } as DestinationPickerResult);
 
@@ -152,7 +151,7 @@ describe('JumpToDestinationCommand', () => {
         functionName: 'PasteDestinationManager.bind',
       });
       const bindOptions: BindOptions = { kind: 'cursor-ai' };
-      mockPickerCommand.execute.mockResolvedValue({
+      mockPickerCommand.pick.mockResolvedValue({
         outcome: 'selected',
         bindOptions,
       });

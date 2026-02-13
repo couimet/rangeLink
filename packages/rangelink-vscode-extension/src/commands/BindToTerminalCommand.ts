@@ -5,20 +5,10 @@ import type {
   DestinationAvailabilityService,
   PasteDestinationManager,
 } from '../destinations';
-import {
-  showTerminalPicker,
-  TERMINAL_PICKER_SHOW_ALL,
-  type TerminalPickerOptions,
-} from '../destinations/utils';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
+import { resolveBoundTerminalProcessId, showTerminalPicker } from '../destinations/utils';
+import type { QuickPickProvider } from '../ide/QuickPickProvider';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import {
-  type BindableQuickPickItem,
-  type ExtensionResult,
-  MessageCode,
-  type QuickPickBindResult,
-  type TerminalBindOptions,
-} from '../types';
+import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../types';
 import { formatMessage } from '../utils';
 
 /**
@@ -34,6 +24,7 @@ import { formatMessage } from '../utils';
 export class BindToTerminalCommand {
   constructor(
     private readonly vscodeAdapter: VscodeAdapter,
+    private readonly quickPickProvider: QuickPickProvider,
     private readonly availabilityService: DestinationAvailabilityService,
     private readonly destinationManager: PasteDestinationManager,
     private readonly logger: Logger,
@@ -47,12 +38,11 @@ export class BindToTerminalCommand {
   async execute(): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'BindToTerminalCommand.execute' };
 
-    const grouped = await this.availabilityService.getGroupedDestinationItems({
-      destinationKinds: ['terminal'],
-      terminalThreshold: Infinity,
-    });
-    const terminalItems = (grouped['terminal'] ??
-      []) as BindableQuickPickItem<TerminalBindOptions>[];
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    const terminalItems = await this.availabilityService.getTerminalItems(
+      Infinity,
+      boundTerminalProcessId,
+    );
 
     this.logger.debug(
       { ...logCtx, terminalCount: terminalItems.length },
@@ -66,7 +56,7 @@ export class BindToTerminalCommand {
     }
 
     if (terminalItems.length === 1) {
-      const terminal = terminalItems[0].bindOptions.terminal;
+      const { terminal } = terminalItems[0].terminalInfo;
       this.logger.debug(
         { ...logCtx, terminalName: terminal.name },
         'Single terminal, auto-binding',
@@ -74,57 +64,33 @@ export class BindToTerminalCommand {
       return this.mapBindResult(await this.destinationManager.bind({ kind: 'terminal', terminal }));
     }
 
-    const terminals = terminalItems.map((item) => item.bindOptions.terminal);
-    const activeTerminal = terminalItems.find((item) => item.isActive)?.bindOptions.terminal;
-
-    const options: TerminalPickerOptions = {
-      maxItemsBeforeMore: TERMINAL_PICKER_SHOW_ALL,
-      title: formatMessage(MessageCode.TERMINAL_PICKER_TITLE),
-      placeholder: formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
-      activeDescription: formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION),
-      moreTerminalsLabel: formatMessage(MessageCode.TERMINAL_PICKER_MORE_LABEL),
-    };
-
-    const result = await showTerminalPicker(
-      terminals,
-      activeTerminal,
-      this.vscodeAdapter,
-      options,
-      this.logger,
-      async (terminal) => {
-        this.logger.debug(
-          { ...logCtx, terminalName: terminal.name },
-          `Binding to terminal "${terminal.name}"`,
-        );
-        return this.destinationManager.bind({ kind: 'terminal', terminal });
+    const bindResult = await showTerminalPicker(
+      terminalItems,
+      this.quickPickProvider,
+      {
+        getPlaceholder: () => formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
+        onSelected: async (eligible) => {
+          this.logger.debug(
+            { ...logCtx, terminalName: eligible.name },
+            `Binding to terminal "${eligible.name}"`,
+          );
+          return this.destinationManager.bind({ kind: 'terminal', terminal: eligible.terminal });
+        },
       },
+      this.logger,
     );
 
-    switch (result.outcome) {
-      case 'selected':
-        return this.mapBindResult(result.result);
-      case 'cancelled':
-      case 'returned-to-destination-picker':
-        this.logger.debug(
-          { ...logCtx, pickerOutcome: result.outcome },
-          'User cancelled terminal picker',
-        );
-        return { outcome: 'cancelled' };
-      default: {
-        const _exhaustiveCheck: never = result;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
-          message: 'Unexpected terminal picker result outcome',
-          functionName: 'BindToTerminalCommand.execute',
-          details: { result: _exhaustiveCheck },
-        });
-      }
+    if (!bindResult) {
+      this.logger.debug(logCtx, 'User cancelled terminal picker');
+      return { outcome: 'cancelled' };
     }
+
+    return this.mapBindResult(bindResult);
   }
 
   private mapBindResult(bindResult: ExtensionResult<BindSuccessInfo>): QuickPickBindResult {
     if (bindResult.success) {
-      return { outcome: 'bound', destinationName: bindResult.value.destinationName };
+      return { outcome: 'bound', bindInfo: bindResult.value };
     }
     return { outcome: 'bind-failed', error: bindResult.error };
   }

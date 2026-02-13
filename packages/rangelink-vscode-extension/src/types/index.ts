@@ -1,6 +1,6 @@
 export { ActiveSelections } from './ActiveSelections';
 export { AutoPasteResult } from './AutoPasteResult';
-export type { AvailableDestination } from './AvailableDestination';
+export type { EligibleTerminal, TerminalBoundState } from './EligibleTerminal';
 export { BehaviourAfterPaste } from './BehaviourAfterPaste';
 export type {
   BindOptions,
@@ -30,10 +30,17 @@ export type {
   GetAvailableDestinationItemsOptions,
   GroupedDestinationItems,
 } from './GroupedDestinationKinds';
+export { PICKER_ITEM_KINDS } from './QuickPickTypes';
 export type {
   BindableQuickPickItem,
+  BookmarkQuickPickItem,
+  CommandQuickPickItem,
+  ConfirmationQuickPickItem,
   DestinationQuickPickItem,
+  InfoQuickPickItem,
   PickerItemKind,
+  StatusBarMenuQuickPickItem,
+  TerminalBindableQuickPickItem,
   TerminalMoreQuickPickItem,
   WithBindOptions,
   WithRemainingCount,

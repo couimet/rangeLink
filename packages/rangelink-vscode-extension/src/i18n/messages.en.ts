@@ -33,6 +33,9 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONTENT_NAME_RANGELINK]: 'RangeLink',
   [MessageCode.CONTENT_NAME_SELECTED_TEXT]: 'Selected text',
 
+  [MessageCode.DESTINATION_GROUP_AI_ASSISTANTS]: 'AI Assistants',
+  [MessageCode.DESTINATION_GROUP_FILES]: 'Files',
+  [MessageCode.DESTINATION_GROUP_TERMINALS]: 'Terminals',
   [MessageCode.DESTINATION_TERMINAL_DISPLAY_FORMAT]: 'Terminal ("{name}")',
 
   [MessageCode.ERROR_BOOKMARK_EMPTY_LABEL]: 'RangeLink: Bookmark label cannot be empty',
@@ -43,6 +46,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_BOOKMARK_SAVE_FAILED]: 'RangeLink: Failed to save bookmark',
   [MessageCode.ERROR_BOOKMARK_UNTITLED_FILE]:
     'RangeLink: Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
+  [MessageCode.ERROR_BIND_FAILED]: 'RangeLink: Failed to bind destination',
   [MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE]:
     'RangeLink: Cannot bind Claude Code - extension not installed or not active',
   [MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE]:
@@ -147,6 +151,7 @@ export const messagesEn: Record<MessageCode, string> = {
 
   [MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION]: 'active',
   [MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER]: 'Select terminal to bind to',
+  [MessageCode.TERMINAL_PICKER_BOUND_DESCRIPTION]: 'bound',
   [MessageCode.TERMINAL_PICKER_MORE_LABEL]: 'More terminals...',
   [MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION]: '{count} more',
   [MessageCode.TERMINAL_PICKER_PLACEHOLDER]: 'Select terminal to bind and jump to',

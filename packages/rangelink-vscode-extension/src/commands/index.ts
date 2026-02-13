@@ -1,9 +1,5 @@
 export { AddBookmarkCommand } from './AddBookmarkCommand';
 export { BindToTerminalCommand } from './BindToTerminalCommand';
-export {
-  DestinationPickerCommand,
-  type DestinationPickerOptions,
-} from './DestinationPickerCommand';
 export { GoToRangeLinkCommand } from './GoToRangeLinkCommand';
 export { JumpToDestinationCommand } from './JumpToDestinationCommand';
 export { ListBookmarksCommand } from './ListBookmarksCommand';

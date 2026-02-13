@@ -61,8 +61,12 @@ describe('ListBookmarksCommand', () => {
 
         expect(showQuickPickSpy).toHaveBeenCalledWith(
           [
-            { label: 'No bookmarks saved' },
-            { label: '$(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
+            { label: 'No bookmarks saved', itemKind: 'info' },
+            {
+              label: '$(add) Save Selection as Bookmark',
+              itemKind: 'command',
+              command: 'rangelink.bookmark.add',
+            },
           ],
           {
             title: 'Bookmarks',
@@ -75,6 +79,7 @@ describe('ListBookmarksCommand', () => {
         mockBookmarkService.getAllBookmarks.mockReturnValue([]);
         const addItem = {
           label: '$(add) Save Selection as Bookmark',
+          itemKind: 'command' as const,
           command: 'rangelink.bookmark.add',
         };
         mockAdapter = createMockVscodeAdapter({
@@ -87,7 +92,7 @@ describe('ListBookmarksCommand', () => {
 
         expect(mockAdapter.executeCommand).toHaveBeenCalledWith('rangelink.bookmark.add');
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ListBookmarksCommand.execute', command: 'rangelink.bookmark.add' },
+          { fn: 'ListBookmarksCommand.handleSelection', command: 'rangelink.bookmark.add' },
           'Command executed from menu',
         );
       });
@@ -109,16 +114,26 @@ describe('ListBookmarksCommand', () => {
             {
               label: '$(bookmark) Test Bookmark',
               detail: 'src/utils/helper.ts#L10-L20',
+              itemKind: 'bookmark',
               bookmarkId: 'bookmark-1',
             },
             {
               label: '$(bookmark) Another Bookmark',
               detail: '/absolute/path/to/file.ts#L5C1-L10C15',
+              itemKind: 'bookmark',
               bookmarkId: 'bookmark-2',
             },
             { label: '', kind: vscode.QuickPickItemKind.Separator },
-            { label: '$(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
-            { label: '$(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+            {
+              label: '$(add) Save Selection as Bookmark',
+              itemKind: 'command',
+              command: 'rangelink.bookmark.add',
+            },
+            {
+              label: '$(gear) Manage Bookmarks...',
+              itemKind: 'command',
+              command: 'rangelink.bookmark.manage',
+            },
           ],
           {
             title: 'Bookmarks',
@@ -151,6 +166,7 @@ describe('ListBookmarksCommand', () => {
         mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK]);
         const selectedItem = {
           label: '$(bookmark) Test Bookmark',
+          itemKind: 'bookmark' as const,
           bookmarkId: 'bookmark-1',
         };
         mockAdapter = createMockVscodeAdapter({
@@ -162,7 +178,7 @@ describe('ListBookmarksCommand', () => {
 
         expect(mockBookmarkService.pasteBookmark).toHaveBeenCalledWith('bookmark-1');
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ListBookmarksCommand.execute', bookmarkId: 'bookmark-1' },
+          { fn: 'ListBookmarksCommand.handleSelection', bookmarkId: 'bookmark-1' },
           'Bookmark selected and pasted',
         );
       });
@@ -171,7 +187,7 @@ describe('ListBookmarksCommand', () => {
     describe('non-actionable item selection', () => {
       it('logs when selecting informational item with no action', async () => {
         mockBookmarkService.getAllBookmarks.mockReturnValue([]);
-        const emptyStateItem = { label: 'No bookmarks saved' };
+        const emptyStateItem = { label: 'No bookmarks saved', itemKind: 'info' as const };
         mockAdapter = createMockVscodeAdapter({
           windowOptions: { showQuickPick: jest.fn().mockResolvedValue(emptyStateItem) },
         });
@@ -185,7 +201,7 @@ describe('ListBookmarksCommand', () => {
         expect(mockBookmarkService.pasteBookmark).not.toHaveBeenCalled();
         expect(executeCommandSpy).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'ListBookmarksCommand.execute', selectedItem: emptyStateItem },
+          { fn: 'ListBookmarksCommand.handleSelection', selectedItem: emptyStateItem },
           'Non-actionable item selected',
         );
       });
@@ -196,6 +212,7 @@ describe('ListBookmarksCommand', () => {
         mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK]);
         const addItem = {
           label: '$(add) Save Selection as Bookmark',
+          itemKind: 'command' as const,
           command: 'rangelink.bookmark.add',
         };
         mockAdapter = createMockVscodeAdapter({
@@ -213,6 +230,7 @@ describe('ListBookmarksCommand', () => {
         mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK]);
         const manageItem = {
           label: '$(gear) Manage Bookmarks...',
+          itemKind: 'command' as const,
           command: 'rangelink.bookmark.manage',
         };
         mockAdapter = createMockVscodeAdapter({

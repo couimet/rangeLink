@@ -18,12 +18,12 @@ import {
   generateLinkFromSelections,
   GenerateLinkFromSelectionsOptions,
 } from '../../utils/generateLinkFromSelections';
-import * as toInputSelectionModule from '../../utils/toInputSelection';
 import {
   createMockDocument,
   createMockFormattedLink,
   createMockPosition,
   createMockSelection,
+  spyOnToInputSelection,
 } from '../helpers';
 
 const DELIMITERS: DelimiterConfig = {
@@ -133,7 +133,7 @@ describe('generateLinkFromSelections', () => {
       const selection = mockSelection(0, 0, 0, 10);
       const expectedLink = createMockFormattedLink('src/utils/test.ts#L1C1-C11');
 
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue(
+      spyOnToInputSelection().mockReturnValue(
         ExtensionResult.ok({
           selections: [
             {
@@ -175,7 +175,7 @@ describe('generateLinkFromSelections', () => {
         linkType: LinkType.Portable,
       });
 
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue(
+      spyOnToInputSelection().mockReturnValue(
         ExtensionResult.ok({
           selections: [
             {
@@ -231,9 +231,7 @@ describe('generateLinkFromSelections', () => {
         functionName: 'toInputSelection',
       });
 
-      jest
-        .spyOn(toInputSelectionModule, 'toInputSelection')
-        .mockReturnValue(ExtensionResult.err(conversionError));
+      spyOnToInputSelection().mockReturnValue(ExtensionResult.err(conversionError));
 
       const options: GenerateLinkFromSelectionsOptions = {
         referencePath: REFERENCE_PATH,
@@ -260,7 +258,7 @@ describe('generateLinkFromSelections', () => {
     it('returns error when formatLink fails', () => {
       const selection = mockSelection(0, 0, 0, 10);
 
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue(
+      spyOnToInputSelection().mockReturnValue(
         ExtensionResult.ok({
           selections: [
             {
@@ -305,7 +303,7 @@ describe('generateLinkFromSelections', () => {
     it('returns error with portable link type name when portable link fails', () => {
       const selection = mockSelection(0, 0, 0, 10);
 
-      jest.spyOn(toInputSelectionModule, 'toInputSelection').mockReturnValue(
+      spyOnToInputSelection().mockReturnValue(
         ExtensionResult.ok({
           selections: [
             {

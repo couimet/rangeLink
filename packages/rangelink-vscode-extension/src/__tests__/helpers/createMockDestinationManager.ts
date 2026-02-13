@@ -85,7 +85,6 @@ export const createMockDestinationManager = (
     unbind: jest.fn(),
     focusBoundDestination: jest.fn(),
     bindAndFocus: jest.fn(),
-    bindAndJump: jest.fn().mockResolvedValue(false),
     dispose: jest.fn(),
   } as unknown as jest.Mocked<PasteDestinationManager>;
 };

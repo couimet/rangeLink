@@ -16,10 +16,11 @@ export * from './createMockCursorAIDestination';
 export * from './createMockDetectedLink';
 export * from './createMockDestinationAvailabilityService';
 export * from './createMockDestinationManager';
-export * from './createMockDestinationPickerCommand';
+export * from './createMockDestinationPicker';
 export * from './createMockDestinationRegistry';
 export * from './createMockDocument';
 export * from './createMockDocumentLink';
+export * from './createMockEligibleTerminal';
 export * from './createMockEditor';
 export * from './createMockEditorComposablePasteDestination';
 export * from './createEditorWithScheme';
@@ -45,6 +46,7 @@ export * from './createBaseMockPasteDestination';
 export * from './createMockPosition';
 export * from './createMockPositionAt';
 export * from './createMockQuickPick';
+export * from './createMockQuickPickProvider';
 export * from './createMockRange';
 export * from './createMockSelection';
 export * from './createMockSingletonComposablePasteDestination';
@@ -61,6 +63,15 @@ export * from './createMockUri';
 export * from './createMockWindow';
 export * from './createMockWorkspace';
 export * from './createMockWorkspaceFolder';
+export * from './createMockVscode';
+export * from './createMockVscodeAdapter';
+
+export * from './spyOnFormatLinkTooltip';
+export * from './spyOnFormatMessage';
+export * from './spyOnGenerateLinkFromSelections';
+export * from './spyOnResolveWorkspacePath';
+export * from './spyOnShowTerminalPicker';
+export * from './spyOnToInputSelection';
 
 export * from './tabTestHelpers';
 
@@ -69,6 +80,3 @@ export * from './createWindowOptionsForEditor';
 export * from './configureEmptyTabGroups';
 export * from './simulateClosedEditor';
 export * from './simulateFileOutsideWorkspace';
-
-export * from './createMockVscode';
-export * from './createMockVscodeAdapter';

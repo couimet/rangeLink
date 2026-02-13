@@ -6,7 +6,6 @@ import {
   createBaseMockPasteDestination,
   createMockConfigReader,
   createMockDestinationRegistry,
-  createMockEditor,
   createMockTabGroupsWithCount,
   createMockTerminal,
   createMockVscodeAdapter,
@@ -96,159 +95,75 @@ describe('DestinationAvailabilityService', () => {
     });
   });
 
-  describe('getAvailableDestinations()', () => {
-    describe('text-editor availability', () => {
-      it('includes text-editor when hasActiveTextEditor is true', async () => {
-        ideAdapter = createMockVscodeAdapter({
-          windowOptions: {
-            activeTextEditor: createMockEditor(),
-            activeTerminal: undefined,
-            tabGroups: createMockTabGroupsWithCount(2),
-          },
-        });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
+  describe('getTerminalItems()', () => {
+    it('returns empty array when no terminals exist', async () => {
+      const result = await service.getTerminalItems(Infinity);
 
-        const result = await service.getAvailableDestinations();
-
-        expect(result).toStrictEqual([
-          { kind: 'text-editor', displayName: 'Text Editor ("file.ts")' },
-        ]);
-      });
-
-      it('excludes text-editor when hasActiveTextEditor is false', async () => {
-        const result = await service.getAvailableDestinations();
-
-        expect(result.find((d) => d.kind === 'text-editor')).toBeUndefined();
-      });
+      expect(result).toStrictEqual([]);
     });
 
-    describe('terminal availability', () => {
-      it('includes terminal when hasActiveTerminal is true', async () => {
-        ideAdapter = createMockVscodeAdapter({
-          windowOptions: {
-            activeTerminal: createMockTerminal(),
-            activeTextEditor: undefined,
-            tabGroups: createMockTabGroupsWithCount(1),
+    it('returns terminal items with terminalInfo including processId and boundState', async () => {
+      const terminal1 = createMockTerminal({ name: 'bash' });
+      const terminal2 = createMockTerminal({ name: 'zsh' });
+      ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          terminals: [terminal1, terminal2],
+          activeTerminal: terminal2,
+          tabGroups: createMockTabGroupsWithCount(1),
+        },
+      });
+      service = new DestinationAvailabilityService(
+        mockRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = await service.getTerminalItems(Infinity);
+
+      expect(result).toStrictEqual([
+        {
+          label: 'Terminal ("zsh")',
+          displayName: 'Terminal ("zsh")',
+          bindOptions: { kind: 'terminal', terminal: terminal2 },
+          itemKind: 'bindable',
+          isActive: true,
+          boundState: 'not-bound',
+          terminalInfo: {
+            terminal: terminal2,
+            name: 'zsh',
+            isActive: true,
+            processId: undefined,
+            boundState: 'not-bound',
           },
-        });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
-
-        const result = await service.getAvailableDestinations();
-
-        expect(result).toStrictEqual([{ kind: 'terminal', displayName: 'Terminal ("bash")' }]);
-      });
-
-      it('excludes terminal when hasActiveTerminal is false', async () => {
-        const result = await service.getAvailableDestinations();
-
-        expect(result.find((d) => d.kind === 'terminal')).toBeUndefined();
-      });
+        },
+        {
+          label: 'Terminal ("bash")',
+          displayName: 'Terminal ("bash")',
+          bindOptions: { kind: 'terminal', terminal: terminal1 },
+          itemKind: 'bindable',
+          isActive: false,
+          boundState: 'not-bound',
+          terminalInfo: {
+            terminal: terminal1,
+            name: 'bash',
+            isActive: false,
+            processId: undefined,
+            boundState: 'not-bound',
+          },
+        },
+      ]);
     });
 
-    describe('AI assistant availability', () => {
-      it('includes all AI assistants when available', async () => {
-        const mockDestination = createBaseMockPasteDestination({ id: 'claude-code' });
-        mockDestination.isAvailable.mockResolvedValue(true);
-        mockRegistry.create.mockReturnValue(mockDestination);
+    it('delegates to getGroupedDestinationItems with terminal filter and boundTerminalProcessId', async () => {
+      const spy = jest.spyOn(service, 'getGroupedDestinationItems');
 
-        const result = await service.getAvailableDestinations();
+      await service.getTerminalItems(3, 42);
 
-        expect(result).toStrictEqual([
-          { kind: 'claude-code', displayName: 'Claude Code Chat' },
-          { kind: 'cursor-ai', displayName: 'Cursor AI Assistant' },
-          { kind: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
-        ]);
-      });
-
-      it('excludes AI assistants when not available', async () => {
-        const result = await service.getAvailableDestinations();
-
-        expect(result.find((d) => d.kind === 'claude-code')).toBeUndefined();
-        expect(result.find((d) => d.kind === 'cursor-ai')).toBeUndefined();
-        expect(result.find((d) => d.kind === 'github-copilot-chat')).toBeUndefined();
-      });
-    });
-
-    describe('combined availability', () => {
-      it('returns all available destinations when everything is available', async () => {
-        const mockDestination = createBaseMockPasteDestination({ id: 'claude-code' });
-        mockDestination.isAvailable.mockResolvedValue(true);
-        mockRegistry.create.mockReturnValue(mockDestination);
-        ideAdapter = createMockVscodeAdapter({
-          windowOptions: {
-            activeTerminal: createMockTerminal(),
-            activeTextEditor: createMockEditor(),
-            tabGroups: createMockTabGroupsWithCount(2),
-          },
-        });
-        service = new DestinationAvailabilityService(
-          mockRegistry,
-          ideAdapter,
-          mockConfigReader,
-          mockLogger,
-        );
-
-        const result = await service.getAvailableDestinations();
-
-        expect(result).toStrictEqual([
-          { kind: 'text-editor', displayName: 'Text Editor ("file.ts")' },
-          { kind: 'terminal', displayName: 'Terminal ("bash")' },
-          { kind: 'claude-code', displayName: 'Claude Code Chat' },
-          { kind: 'cursor-ai', displayName: 'Cursor AI Assistant' },
-          { kind: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
-        ]);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'DestinationAvailabilityService.getAvailableDestinations',
-            isTextEditorEligible: true,
-            isTerminalEligible: true,
-            availableCount: 5,
-            availableKinds: [
-              'text-editor',
-              'terminal',
-              'claude-code',
-              'cursor-ai',
-              'github-copilot-chat',
-            ],
-          },
-          'Found 5 available destinations',
-        );
-      });
-
-      it('returns empty array when nothing is available', async () => {
-        const result = await service.getAvailableDestinations();
-
-        expect(result).toStrictEqual([]);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'DestinationAvailabilityService.getAvailableDestinations',
-            isTextEditorEligible: false,
-            isTerminalEligible: false,
-            availableCount: 0,
-            availableKinds: [],
-          },
-          'Found 0 available destinations',
-        );
-      });
-    });
-
-    describe('checks AI assistants in parallel', () => {
-      it('calls registry.create for each AI assistant type', async () => {
-        await service.getAvailableDestinations();
-
-        expect(mockRegistry.create).toHaveBeenCalledWith({ kind: 'claude-code' });
-        expect(mockRegistry.create).toHaveBeenCalledWith({ kind: 'cursor-ai' });
-        expect(mockRegistry.create).toHaveBeenCalledWith({ kind: 'github-copilot-chat' });
+      expect(spy).toHaveBeenCalledWith({
+        destinationKinds: ['terminal'],
+        terminalThreshold: 3,
+        boundTerminalProcessId: 42,
       });
     });
   });
@@ -282,6 +197,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
             isActive: true,
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal,
+              name: 'bash',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -321,6 +244,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
             isActive: true,
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal,
+              name: 'bash',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -360,6 +291,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
             isActive: true,
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal,
+              name: 'bash',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(mockLogger.warn).not.toHaveBeenCalled();
@@ -392,12 +331,20 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
             isActive: true,
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal,
+              name: 'bash',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(mockLogger.warn).not.toHaveBeenCalled();
       });
 
-      it('logs warning and uses default when config value is Infinity', async () => {
+      it('accepts Infinity as a valid threshold (shows all terminals)', async () => {
         mockConfigReader.getWithDefault.mockReturnValue(Infinity);
         const terminal = createMockTerminal();
         ideAdapter = createMockVscodeAdapter({
@@ -424,16 +371,17 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
             isActive: true,
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal,
+              name: 'bash',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-          {
-            fn: 'DestinationAvailabilityService.resolveTerminalThreshold',
-            invalidValue: Infinity,
-            fallback: 5,
-          },
-          'Invalid terminalThreshold, using default',
-        );
+        expect(mockLogger.warn).not.toHaveBeenCalled();
       });
 
       it('floors fractional config values to integers', async () => {
@@ -465,6 +413,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal: terminal1 },
             itemKind: 'bindable',
             isActive: true,
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal: terminal1,
+              name: 'Terminal 1',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
           {
             label: 'Terminal ("Terminal 2")',
@@ -472,6 +428,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal: terminal2 },
             itemKind: 'bindable',
             isActive: false,
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal: terminal2,
+              name: 'Terminal 2',
+              isActive: false,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(result['terminal-more']).toStrictEqual({

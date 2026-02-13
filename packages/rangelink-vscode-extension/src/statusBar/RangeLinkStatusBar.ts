@@ -1,30 +1,32 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import * as vscode from 'vscode';
 
-import type { BookmarkId } from '../bookmarks';
 import type { BookmarkService } from '../bookmarks';
 import {
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_MANAGE,
-  CMD_BOOKMARK_NAVIGATE,
   CMD_JUMP_TO_DESTINATION,
   CMD_GO_TO_RANGELINK,
   CMD_OPEN_STATUS_BAR_MENU,
   CMD_SHOW_VERSION,
 } from '../constants';
-import type { DestinationAvailabilityService, PasteDestinationManager } from '../destinations';
+import {
+  buildDestinationQuickPickItems,
+  type DestinationAvailabilityService,
+  type PasteDestinationManager,
+} from '../destinations';
+import { resolveBoundTerminalProcessId, showTerminalPicker } from '../destinations/utils';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { type DestinationKind, MessageCode } from '../types';
-import { formatMessage } from '../utils';
-
-/**
- * QuickPick item with optional command or destinationKind to execute on selection.
- */
-interface MenuQuickPickItem extends vscode.QuickPickItem {
-  command?: string;
-  bookmarkId?: BookmarkId;
-  destinationKind?: DestinationKind;
-}
+import {
+  type BookmarkQuickPickItem,
+  type CommandQuickPickItem,
+  type DestinationQuickPickItem,
+  type InfoQuickPickItem,
+  MessageCode,
+  type StatusBarMenuQuickPickItem,
+} from '../types';
+import { formatMessage, isSelectableQuickPickItem } from '../utils';
 
 /**
  * Status bar priority - higher values appear more to the left.
@@ -77,50 +79,112 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       placeHolder: formatMessage(MessageCode.STATUS_BAR_MENU_PLACEHOLDER),
     });
 
-    if (!selected) {
+    if (!isSelectableQuickPickItem<StatusBarMenuQuickPickItem>(selected)) {
       this.logger.debug({ fn: 'RangeLinkStatusBar.openMenu' }, 'User dismissed menu');
       return;
     }
 
-    if (selected.destinationKind) {
-      const success = await this.destinationManager.bindAndJump(selected.destinationKind);
-      this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected, bindAndJumpSuccess: success },
-        'Destination item selected',
-      );
-    } else if (selected.command) {
-      if (selected.command === CMD_BOOKMARK_NAVIGATE && selected.bookmarkId) {
-        await this.bookmarkService.pasteBookmark(selected.bookmarkId);
-      } else {
-        await this.ideAdapter.executeCommand(selected.command);
+    await this.handleSelection(selected);
+  }
+
+  private async handleSelection(selected: StatusBarMenuQuickPickItem): Promise<void> {
+    const logCtx = { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected };
+
+    switch (selected.itemKind) {
+      case 'bindable': {
+        const result = await this.destinationManager.bind(selected.bindOptions);
+        if (!result.success) {
+          this.logger.error({ ...logCtx, error: result.error }, 'Bind failed from status bar menu');
+          this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
+          return;
+        }
+        this.logger.debug(logCtx, 'Destination bound from status bar menu');
+        break;
       }
-      this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
-        'Menu item selected',
-      );
-    } else {
-      this.logger.debug(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: selected },
-        'Non-actionable item selected',
-      );
+      case 'terminal-more':
+        this.logger.debug(logCtx, 'Terminal overflow item selected');
+        await this.showSecondaryTerminalPicker(logCtx);
+        break;
+      case 'command':
+        await this.ideAdapter.executeCommand(selected.command);
+        this.logger.debug(logCtx, 'Command item selected');
+        break;
+      case 'bookmark':
+        await this.bookmarkService.pasteBookmark(selected.bookmarkId);
+        this.logger.debug(logCtx, 'Bookmark item selected');
+        break;
+      case 'info':
+        this.logger.debug(logCtx, 'Non-actionable item selected');
+        break;
+      default: {
+        const _exhaustiveCheck: never = selected;
+        throw new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_ITEM_KIND,
+          message: 'Unhandled item kind in status bar menu',
+          functionName: 'RangeLinkStatusBar.handleSelection',
+          details: { selectedItem: _exhaustiveCheck },
+        });
+      }
     }
   }
 
   /**
-   * Build QuickPick items with context-aware enabled/disabled states.
-   *
-   * Items without a `command` or `destinationKind` property are disabled.
+   * Show the full terminal list after user selects "More terminals...".
+   * Re-opens the status bar menu if the user escapes.
    */
-  private async buildQuickPickItems(): Promise<MenuQuickPickItem[]> {
+  private async showSecondaryTerminalPicker(logCtx: LoggingContext): Promise<void> {
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    const terminalItems = await this.availabilityService.getTerminalItems(
+      Infinity,
+      boundTerminalProcessId,
+    );
+
+    await showTerminalPicker(
+      terminalItems,
+      this.ideAdapter,
+      {
+        getPlaceholder: () => formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
+        onSelected: async (eligible) => {
+          const bindResult = await this.destinationManager.bind({
+            kind: 'terminal',
+            terminal: eligible.terminal,
+          });
+          if (!bindResult.success) {
+            this.logger.error(
+              { ...logCtx, error: bindResult.error },
+              'Bind failed from overflow terminal picker',
+            );
+            this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
+            return;
+          }
+          this.logger.debug(logCtx, 'Terminal bound from overflow picker');
+        },
+        onDismissed: async () => {
+          this.logger.debug(logCtx, 'User returned from terminal picker, re-opening menu');
+          await this.openMenu();
+        },
+      },
+      this.logger,
+    );
+  }
+
+  /**
+   * Build QuickPick items with context-aware enabled/disabled states.
+   */
+  private async buildQuickPickItems(): Promise<
+    (StatusBarMenuQuickPickItem | vscode.QuickPickItem)[]
+  > {
     return [
       ...(await this.buildJumpOrDestinationsSection()),
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_NAVIGATE_TO_LINK_LABEL),
+        itemKind: 'command' as const,
         command: CMD_GO_TO_RANGELINK,
       },
       ...this.buildBookmarksQuickPickItems(),
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
+        itemKind: 'command' as const,
         command: CMD_SHOW_VERSION,
       },
     ];
@@ -129,13 +193,16 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   /**
    * Build the jump item (when bound) or inline destinations (when unbound).
    */
-  private async buildJumpOrDestinationsSection(): Promise<MenuQuickPickItem[]> {
+  private async buildJumpOrDestinationsSection(): Promise<
+    (StatusBarMenuQuickPickItem | vscode.QuickPickItem)[]
+  > {
     const boundDest = this.destinationManager.getBoundDestination();
     if (boundDest) {
       return [
         {
           label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL),
           description: `→ ${boundDest.displayName}`,
+          itemKind: 'command' as const,
           command: CMD_JUMP_TO_DESTINATION,
         },
       ];
@@ -146,77 +213,78 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   /**
    * Build QuickPick items for available destinations when unbound.
    */
-  private async buildDestinationsQuickPickItems(): Promise<MenuQuickPickItem[]> {
-    const result: MenuQuickPickItem[] = [];
-    const availableDestinations = await this.availabilityService.getAvailableDestinations();
+  private async buildDestinationsQuickPickItems(): Promise<
+    (DestinationQuickPickItem | InfoQuickPickItem | vscode.QuickPickItem)[]
+  > {
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    const grouped = await this.availabilityService.getGroupedDestinationItems({
+      boundTerminalProcessId,
+    });
+    const destinationItems = buildDestinationQuickPickItems(
+      grouped,
+      (displayName) => `${MENU_ITEM_INDENT}$(arrow-right) ${displayName}`,
+    );
 
-    if (availableDestinations.length === 0) {
-      result.push({
-        label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE),
-      });
-    } else {
-      result.push({
-        label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW),
-      });
-      for (const dest of availableDestinations) {
-        result.push({
-          label: `${MENU_ITEM_INDENT}$(arrow-right) ${dest.displayName}`,
-          destinationKind: dest.kind,
-        });
-      }
+    if (destinationItems.length === 0) {
+      return [
+        {
+          label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_NONE_AVAILABLE),
+          itemKind: 'info' as const,
+        },
+      ];
     }
 
-    return result;
+    return [
+      {
+        label: formatMessage(MessageCode.STATUS_BAR_MENU_DESTINATIONS_CHOOSE_BELOW),
+        itemKind: 'info' as const,
+      },
+      ...destinationItems,
+    ];
   }
 
-  private buildBookmarksQuickPickItems(): MenuQuickPickItem[] {
-    const result: MenuQuickPickItem[] = [];
+  private buildBookmarksQuickPickItems(): (
+    | BookmarkQuickPickItem
+    | CommandQuickPickItem
+    | InfoQuickPickItem
+    | vscode.QuickPickItem
+  )[] {
     const bookmarks = this.bookmarkService.getAllBookmarks();
 
-    result.push({
-      label: '',
-      kind: vscode.QuickPickItemKind.Separator,
-    });
+    const bookmarkItems: (BookmarkQuickPickItem | InfoQuickPickItem)[] =
+      bookmarks.length === 0
+        ? [
+            {
+              label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_LIST_EMPTY)}`,
+              itemKind: 'info' as const,
+            },
+          ]
+        : bookmarks.map((bookmark) => ({
+            label: `${MENU_ITEM_INDENT}$(bookmark) ${bookmark.label}`,
+            itemKind: 'bookmark' as const,
+            bookmarkId: bookmark.id,
+          }));
 
-    result.push({
-      label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL),
-    });
-
-    if (bookmarks.length === 0) {
-      result.push({
-        label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_LIST_EMPTY)}`,
-      });
-    } else {
-      for (const bookmark of bookmarks) {
-        result.push({
-          label: `${MENU_ITEM_INDENT}$(bookmark) ${bookmark.label}`,
-          command: CMD_BOOKMARK_NAVIGATE,
-          bookmarkId: bookmark.id,
-        });
-      }
-    }
-
-    result.push({
-      label: '',
-      kind: vscode.QuickPickItemKind.Separator,
-    });
-
-    result.push({
-      label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_ADD)}`,
-      command: CMD_BOOKMARK_ADD,
-    });
-
-    result.push({
-      label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_MANAGE)}`,
-      command: CMD_BOOKMARK_MANAGE,
-    });
-
-    result.push({
-      label: '',
-      kind: vscode.QuickPickItemKind.Separator,
-    });
-
-    return result;
+    return [
+      { label: '', kind: vscode.QuickPickItemKind.Separator },
+      {
+        label: formatMessage(MessageCode.STATUS_BAR_MENU_BOOKMARKS_SECTION_LABEL),
+        itemKind: 'info' as const,
+      },
+      ...bookmarkItems,
+      { label: '', kind: vscode.QuickPickItemKind.Separator },
+      {
+        label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_ADD)}`,
+        itemKind: 'command' as const,
+        command: CMD_BOOKMARK_ADD,
+      },
+      {
+        label: `${MENU_ITEM_INDENT}${formatMessage(MessageCode.BOOKMARK_ACTION_MANAGE)}`,
+        itemKind: 'command' as const,
+        command: CMD_BOOKMARK_MANAGE,
+      },
+      { label: '', kind: vscode.QuickPickItemKind.Separator },
+    ];
   }
 
   dispose(): void {

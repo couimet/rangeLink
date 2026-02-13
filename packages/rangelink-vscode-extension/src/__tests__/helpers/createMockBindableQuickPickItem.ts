@@ -2,26 +2,34 @@ import type * as vscode from 'vscode';
 
 import type {
   BindableQuickPickItem,
+  EligibleTerminal,
   GroupedDestinationItems,
+  TerminalBindableQuickPickItem,
   TerminalMoreQuickPickItem,
 } from '../../types';
 
+import { createMockEligibleTerminal } from './createMockEligibleTerminal';
+
 /**
- * Create a mock BindableQuickPickItem for a terminal.
+ * Create a mock TerminalBindableQuickPickItem for a terminal.
  *
  * @param terminal - The terminal to create the item for
  * @param isActive - Whether this is the active terminal (default: false)
- * @returns A BindableQuickPickItem for the terminal
+ * @param boundState - The bound state of the terminal (default: undefined)
+ * @returns A TerminalBindableQuickPickItem with terminalInfo
  */
 export const createMockTerminalQuickPickItem = (
   terminal: vscode.Terminal,
   isActive = false,
-): BindableQuickPickItem => ({
+  boundState?: EligibleTerminal['boundState'],
+): TerminalBindableQuickPickItem => ({
   label: `Terminal ("${terminal.name}")`,
   displayName: `Terminal ("${terminal.name}")`,
   bindOptions: { kind: 'terminal', terminal },
   itemKind: 'bindable',
   isActive,
+  ...(boundState !== undefined && { boundState }),
+  terminalInfo: createMockEligibleTerminal({ terminal, name: terminal.name, isActive, boundState }),
 });
 
 /**
@@ -76,11 +84,11 @@ export const createMockTerminalMoreQuickPickItem = (
 /**
  * Create a GroupedDestinationItems object with only terminal items.
  *
- * @param items - Array of BindableQuickPickItem for terminals
+ * @param items - Array of TerminalBindableQuickPickItem for terminals
  * @returns GroupedDestinationItems with terminal group
  */
 export const createMockGroupedTerminals = (
-  items: BindableQuickPickItem[],
+  items: TerminalBindableQuickPickItem[],
 ): GroupedDestinationItems => ({
   terminal: items,
 });

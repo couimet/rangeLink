@@ -1,4 +1,4 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
+import type { Logger } from 'barebone-logger';
 import {
   type DelimiterConfigGetter,
   type FormattedLink,
@@ -7,7 +7,6 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import type { DestinationPickerCommand } from './commands/DestinationPickerCommand';
 import type { ConfigReader } from './config/ConfigReader';
 import {
   DEFAULT_SMART_PADDING_PASTE_CONTENT,
@@ -18,6 +17,7 @@ import {
   SETTING_SMART_PADDING_PASTE_LINK,
   SETTING_WARN_ON_DIRTY_BUFFER,
 } from './constants';
+import type { DestinationPicker } from './destinations/DestinationPicker';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from './errors';
@@ -96,7 +96,7 @@ export class RangeLinkService {
     private readonly getDelimiters: DelimiterConfigGetter,
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
-    private readonly destinationPickerCommand: DestinationPickerCommand,
+    private readonly destinationPicker: DestinationPicker,
     private readonly configReader: ConfigReader,
     private readonly logger: Logger,
   ) {}
@@ -200,7 +200,7 @@ export class RangeLinkService {
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
-      const pickerResult = await this.showPickerAndBindForPaste(logCtx);
+      const pickerResult = await this.showPickerAndBindForPaste();
       if (pickerResult.outcome !== 'bound') {
         this.logger.debug(
           { ...logCtx, outcome: pickerResult.outcome },
@@ -309,7 +309,7 @@ export class RangeLinkService {
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
-      const pickerResult = await this.showPickerAndBindForPaste(logCtx);
+      const pickerResult = await this.showPickerAndBindForPaste();
       if (pickerResult.outcome !== 'bound') {
         this.logger.debug(
           { ...logCtx, outcome: pickerResult.outcome },
@@ -746,18 +746,14 @@ export class RangeLinkService {
   /**
    * Orchestrates: picker command → user selection → manager.bind()
    *
-   * @param callerContext - Logging context from the calling method
    * @returns QuickPickBindResult with outcome and error details if binding failed
    */
-  private async showPickerAndBindForPaste(
-    callerContext: LoggingContext,
-  ): Promise<QuickPickBindResult> {
-    const logCtx = { ...callerContext, fn: `${callerContext.fn}::showPickerAndBindForPaste` };
+  private async showPickerAndBindForPaste(): Promise<QuickPickBindResult> {
+    const logCtx = { fn: 'RangeLinkService.showPickerAndBindForPaste' };
 
-    const result = await this.destinationPickerCommand.execute({
+    const result = await this.destinationPicker.pick({
       noDestinationsMessageCode: MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE,
       placeholderMessageCode: MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
-      callerContext: logCtx,
     });
 
     switch (result.outcome) {
@@ -772,10 +768,14 @@ export class RangeLinkService {
       case 'selected': {
         const bindResult = await this.destinationManager.bind(result.bindOptions);
         if (!bindResult.success) {
-          this.logger.info(logCtx, 'Binding failed - no action taken');
+          this.logger.error(
+            { ...logCtx, error: bindResult.error },
+            'Binding failed - no action taken',
+          );
+          this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
           return { outcome: 'bind-failed', error: bindResult.error };
         }
-        return { outcome: 'bound', destinationName: bindResult.value.destinationName };
+        return { outcome: 'bound', bindInfo: bindResult.value };
       }
 
       default: {
