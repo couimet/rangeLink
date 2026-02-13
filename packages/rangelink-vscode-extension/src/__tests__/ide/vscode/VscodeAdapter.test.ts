@@ -373,9 +373,7 @@ describe('VscodeAdapter', () => {
     it('should delegate to resolveWorkspacePath utility with ideInstance', async () => {
       const linkPath = 'src/auth.ts';
       const mockUri = { fsPath: '/workspace/src/auth.ts' };
-      const spy = spyOnResolveWorkspacePath().mockResolvedValue(
-        mockUri as any,
-      );
+      const spy = spyOnResolveWorkspacePath().mockResolvedValue(mockUri as any);
 
       const result = await adapter.resolveWorkspacePath(linkPath);
 

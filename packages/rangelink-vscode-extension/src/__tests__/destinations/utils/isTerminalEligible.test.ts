@@ -69,4 +69,8 @@ describe('isTerminalEligible', () => {
       expect(isTerminalEligible(terminal)).toBe(true);
     });
   });
+
+  it('returns false for undefined terminal', () => {
+    expect(isTerminalEligible(undefined)).toBe(false);
+  });
 });

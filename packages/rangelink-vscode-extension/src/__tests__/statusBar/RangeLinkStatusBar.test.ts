@@ -2,14 +2,21 @@ import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
 import type { Bookmark } from '../../bookmarks';
+import type { TerminalPickerHandlers } from '../../destinations/types';
+import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
+import type { EligibleTerminal, TerminalBindableQuickPickItem } from '../../types';
+import { ExtensionResult } from '../../types';
 import {
   createMockBookmarkService,
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
   createMockStatusBarItem,
+  createMockTerminal,
   createMockTerminalPasteDestination,
+  createMockTerminalQuickPickItem,
   createMockVscodeAdapter,
+  spyOnShowTerminalPicker,
 } from '../helpers';
 
 /**
@@ -47,6 +54,7 @@ describe('RangeLinkStatusBar', () => {
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
   let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
   let mockBookmarkService: ReturnType<typeof createMockBookmarkService>;
+  let showTerminalPickerSpy: jest.SpyInstance;
 
   beforeEach(() => {
     mockStatusBarItem = createMockStatusBarItem();
@@ -66,6 +74,7 @@ describe('RangeLinkStatusBar', () => {
     });
     mockDestinationManager = createMockDestinationManager();
     mockBookmarkService = createMockBookmarkService();
+    showTerminalPickerSpy = spyOnShowTerminalPicker();
   });
 
   describe('constructor', () => {
@@ -97,10 +106,26 @@ describe('RangeLinkStatusBar', () => {
    */
   describe('openMenu - menu content', () => {
     it('shows inline destinations when no destination is bound', async () => {
-      mockAvailabilityService.getAvailableDestinations.mockResolvedValue([
-        { kind: 'terminal', displayName: 'Terminal' },
-        { kind: 'claude-code', displayName: 'Claude Code Chat' },
-      ]);
+      const mockTerminal = createMockTerminal();
+      mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+        terminal: [
+          {
+            label: 'Terminal',
+            displayName: 'Terminal',
+            itemKind: 'bindable',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+            terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
+          },
+        ],
+        'claude-code': [
+          {
+            label: 'Claude Code Chat',
+            displayName: 'Claude Code Chat',
+            itemKind: 'bindable',
+            bindOptions: { kind: 'claude-code' },
+          },
+        ],
+      });
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
@@ -114,25 +139,55 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledTimes(1);
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          { label: 'No bound destination. Choose below to bind:' },
-          { label: '    $(arrow-right) Terminal', destinationKind: 'terminal' },
-          { label: '    $(arrow-right) Claude Code Chat', destinationKind: 'claude-code' },
-          { label: '$(link-external) Go to Link', command: 'rangelink.goToRangeLink' },
+          { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
+          { label: 'AI Assistants', kind: vscode.QuickPickItemKind.Separator },
+          {
+            label: '    $(arrow-right) Claude Code Chat',
+            displayName: 'Claude Code Chat',
+            itemKind: 'bindable',
+            bindOptions: { kind: 'claude-code' },
+            description: undefined,
+          },
+          { label: 'Terminals', kind: vscode.QuickPickItemKind.Separator },
+          {
+            label: '    $(arrow-right) Terminal',
+            displayName: 'Terminal',
+            itemKind: 'bindable',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+            description: undefined,
+            terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
+          },
+          {
+            label: '$(link-external) Go to Link',
+            itemKind: 'command',
+            command: 'rangelink.goToRangeLink',
+          },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: 'Bookmarks' },
-          { label: '    No bookmarks saved' },
+          { label: 'Bookmarks', itemKind: 'info' },
+          { label: '    No bookmarks saved', itemKind: 'info' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: '    $(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
-          { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+          {
+            label: '    $(add) Save Selection as Bookmark',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.add',
+          },
+          {
+            label: '    $(gear) Manage Bookmarks...',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.manage',
+          },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: '$(info) Show Version Info', command: 'rangelink.showVersion' },
+          {
+            label: '$(info) Show Version Info',
+            itemKind: 'command',
+            command: 'rangelink.showVersion',
+          },
         ],
         { title: 'RangeLink', placeHolder: 'Select an action' },
       );
     });
 
     it('shows "no destinations available" when unbound and no destinations exist', async () => {
-      mockAvailabilityService.getAvailableDestinations.mockResolvedValue([]);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
@@ -145,16 +200,32 @@ describe('RangeLinkStatusBar', () => {
 
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          { label: 'No destinations available' },
-          { label: '$(link-external) Go to Link', command: 'rangelink.goToRangeLink' },
+          { label: 'No destinations available', itemKind: 'info' },
+          {
+            label: '$(link-external) Go to Link',
+            itemKind: 'command',
+            command: 'rangelink.goToRangeLink',
+          },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: 'Bookmarks' },
-          { label: '    No bookmarks saved' },
+          { label: 'Bookmarks', itemKind: 'info' },
+          { label: '    No bookmarks saved', itemKind: 'info' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: '    $(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
-          { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+          {
+            label: '    $(add) Save Selection as Bookmark',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.add',
+          },
+          {
+            label: '    $(gear) Manage Bookmarks...',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.manage',
+          },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: '$(info) Show Version Info', command: 'rangelink.showVersion' },
+          {
+            label: '$(info) Show Version Info',
+            itemKind: 'command',
+            command: 'rangelink.showVersion',
+          },
         ],
         { title: 'RangeLink', placeHolder: 'Select an action' },
       );
@@ -183,26 +254,52 @@ describe('RangeLinkStatusBar', () => {
           {
             label: '$(arrow-right) Jump to Bound Destination',
             description: '→ Terminal ("zsh")',
+            itemKind: 'command',
             command: 'rangelink.jumpToBoundDestination',
           },
-          { label: '$(link-external) Go to Link', command: 'rangelink.goToRangeLink' },
+          {
+            label: '$(link-external) Go to Link',
+            itemKind: 'command',
+            command: 'rangelink.goToRangeLink',
+          },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: 'Bookmarks' },
-          { label: '    No bookmarks saved' },
+          { label: 'Bookmarks', itemKind: 'info' },
+          { label: '    No bookmarks saved', itemKind: 'info' },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: '    $(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
-          { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+          {
+            label: '    $(add) Save Selection as Bookmark',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.add',
+          },
+          {
+            label: '    $(gear) Manage Bookmarks...',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.manage',
+          },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: '$(info) Show Version Info', command: 'rangelink.showVersion' },
+          {
+            label: '$(info) Show Version Info',
+            itemKind: 'command',
+            command: 'rangelink.showVersion',
+          },
         ],
         { title: 'RangeLink', placeHolder: 'Select an action' },
       );
     });
 
     it('shows bookmark items when bookmarks exist', async () => {
-      mockAvailabilityService.getAvailableDestinations.mockResolvedValue([
-        { kind: 'terminal', displayName: 'Terminal' },
-      ]);
+      const mockTerminal = createMockTerminal();
+      mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+        terminal: [
+          {
+            label: 'Terminal',
+            displayName: 'Terminal',
+            itemKind: 'bindable',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+            terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
+          },
+        ],
+      });
       mockBookmarkService.getAllBookmarks.mockReturnValue(MOCK_BOOKMARKS);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
@@ -216,26 +313,50 @@ describe('RangeLinkStatusBar', () => {
 
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
-          { label: 'No bound destination. Choose below to bind:' },
-          { label: '    $(arrow-right) Terminal', destinationKind: 'terminal' },
-          { label: '$(link-external) Go to Link', command: 'rangelink.goToRangeLink' },
+          { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
+          { label: 'Terminals', kind: vscode.QuickPickItemKind.Separator },
+          {
+            label: '    $(arrow-right) Terminal',
+            displayName: 'Terminal',
+            itemKind: 'bindable',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+            description: undefined,
+            terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
+          },
+          {
+            label: '$(link-external) Go to Link',
+            itemKind: 'command',
+            command: 'rangelink.goToRangeLink',
+          },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: 'Bookmarks' },
+          { label: 'Bookmarks', itemKind: 'info' },
           {
             label: '    $(bookmark) CLAUDE.md Instructions',
-            command: 'rangelink.bookmark.navigate',
+            itemKind: 'bookmark',
             bookmarkId: 'bookmark-1',
           },
           {
             label: '    $(bookmark) API Error Codes',
-            command: 'rangelink.bookmark.navigate',
+            itemKind: 'bookmark',
             bookmarkId: 'bookmark-2',
           },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: '    $(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
-          { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+          {
+            label: '    $(add) Save Selection as Bookmark',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.add',
+          },
+          {
+            label: '    $(gear) Manage Bookmarks...',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.manage',
+          },
           { label: '', kind: vscode.QuickPickItemKind.Separator },
-          { label: '$(info) Show Version Info', command: 'rangelink.showVersion' },
+          {
+            label: '$(info) Show Version Info',
+            itemKind: 'command',
+            command: 'rangelink.showVersion',
+          },
         ],
         { title: 'RangeLink', placeHolder: 'Select an action' },
       );
@@ -248,9 +369,10 @@ describe('RangeLinkStatusBar', () => {
    * independently of actual menu content.
    */
   describe('openMenu - selection behavior', () => {
-    it('executes command and logs when item with command is selected', async () => {
+    it('executes command and logs when command item is selected', async () => {
       showQuickPickMock.mockResolvedValue({
         label: 'Synthetic Item',
+        itemKind: 'command',
         command: 'synthetic.testCommand',
       });
       const statusBar = new RangeLinkStatusBar(
@@ -268,17 +390,27 @@ describe('RangeLinkStatusBar', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
-          selectedItem: { label: 'Synthetic Item', command: 'synthetic.testCommand' },
+          selectedItem: {
+            label: 'Synthetic Item',
+            itemKind: 'command',
+            command: 'synthetic.testCommand',
+          },
         },
-        'Menu item selected',
+        'Command item selected',
       );
     });
 
-    it('binds and jumps when item with destinationKind is selected', async () => {
-      mockDestinationManager.bindAndJump.mockResolvedValue(true);
+    it('binds and focuses when bindable item is selected', async () => {
+      const mockTerminal = createMockTerminal();
+      const bindOptions = { kind: 'terminal' as const, terminal: mockTerminal };
+      mockDestinationManager.bindAndFocus.mockResolvedValue(
+        ExtensionResult.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
+      );
       showQuickPickMock.mockResolvedValue({
         label: '    $(arrow-right) Terminal',
-        destinationKind: 'terminal',
+        itemKind: 'bindable',
+        bindOptions,
+        displayName: 'Terminal',
       });
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
@@ -290,22 +422,36 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
-      expect(mockDestinationManager.bindAndJump).toHaveBeenCalledWith('terminal');
+      expect(mockDestinationManager.bindAndFocus).toHaveBeenCalledWith(bindOptions);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
-          selectedItem: { label: '    $(arrow-right) Terminal', destinationKind: 'terminal' },
-          bindAndJumpSuccess: true,
+          selectedItem: {
+            label: '    $(arrow-right) Terminal',
+            itemKind: 'bindable',
+            bindOptions,
+            displayName: 'Terminal',
+          },
+          bindAndFocusSuccess: true,
         },
         'Destination item selected',
       );
     });
 
-    it('logs failure when bindAndJump fails', async () => {
-      mockDestinationManager.bindAndJump.mockResolvedValue(false);
+    it('logs failure when bindAndFocus fails', async () => {
+      const mockTerminal = createMockTerminal();
+      const bindOptions = { kind: 'terminal' as const, terminal: mockTerminal };
+      const bindError = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+        message: 'bind failed',
+        functionName: 'PasteDestinationManager.bindAndFocus',
+      });
+      mockDestinationManager.bindAndFocus.mockResolvedValue(ExtensionResult.err(bindError));
       showQuickPickMock.mockResolvedValue({
         label: '    $(arrow-right) Terminal',
-        destinationKind: 'terminal',
+        itemKind: 'bindable',
+        bindOptions,
+        displayName: 'Terminal',
       });
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
@@ -317,20 +463,25 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
-      expect(mockDestinationManager.bindAndJump).toHaveBeenCalledWith('terminal');
+      expect(mockDestinationManager.bindAndFocus).toHaveBeenCalledWith(bindOptions);
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
-          selectedItem: { label: '    $(arrow-right) Terminal', destinationKind: 'terminal' },
-          bindAndJumpSuccess: false,
+          selectedItem: {
+            label: '    $(arrow-right) Terminal',
+            itemKind: 'bindable',
+            bindOptions,
+            displayName: 'Terminal',
+          },
+          bindAndFocusSuccess: false,
         },
         'Destination item selected',
       );
     });
 
-    it('logs when non-actionable item without command is selected', async () => {
-      const nonActionableItem = { label: 'Synthetic Disabled Item' };
-      showQuickPickMock.mockResolvedValue(nonActionableItem);
+    it('logs when info item is selected', async () => {
+      const infoItem = { label: 'Synthetic Info Item', itemKind: 'info' as const };
+      showQuickPickMock.mockResolvedValue(infoItem);
       const statusBar = new RangeLinkStatusBar(
         mockAdapter,
         mockDestinationManager,
@@ -342,9 +493,9 @@ describe('RangeLinkStatusBar', () => {
       await statusBar.openMenu();
 
       expect(executeCommandMock).not.toHaveBeenCalled();
-      expect(mockDestinationManager.bindAndJump).not.toHaveBeenCalled();
+      expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: nonActionableItem },
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: infoItem },
         'Non-actionable item selected',
       );
     });
@@ -362,10 +513,148 @@ describe('RangeLinkStatusBar', () => {
       await statusBar.openMenu();
 
       expect(executeCommandMock).not.toHaveBeenCalled();
-      expect(mockDestinationManager.bindAndJump).not.toHaveBeenCalled();
+      expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'RangeLinkStatusBar.openMenu' },
         'User dismissed menu',
+      );
+    });
+  });
+
+  describe('openMenu - terminal-more selection', () => {
+    const terminalMoreItem = {
+      label: 'More terminals...',
+      displayName: 'More terminals...',
+      itemKind: 'terminal-more' as const,
+      remainingCount: 3,
+    };
+
+    it('shows secondary terminal picker and binds when terminal is selected', async () => {
+      const mockTerminal = createMockTerminal({ name: 'bash' });
+      const eligibleTerminal: EligibleTerminal = {
+        terminal: mockTerminal,
+        name: 'bash',
+        isActive: false,
+      };
+
+      mockAvailabilityService.getTerminalItems.mockResolvedValue([
+        createMockTerminalQuickPickItem(mockTerminal),
+      ]);
+      mockDestinationManager.bindAndFocus.mockResolvedValue(
+        ExtensionResult.ok({ destinationName: 'bash', destinationKind: 'terminal' }),
+      );
+
+      showQuickPickMock.mockResolvedValueOnce(terminalMoreItem);
+
+      showTerminalPickerSpy.mockImplementation(
+        async (
+          _terminals: readonly TerminalBindableQuickPickItem[],
+          _provider: unknown,
+          handlers: TerminalPickerHandlers<void>,
+          _logger: unknown,
+        ): Promise<void | undefined> => {
+          await handlers.onSelected(eligibleTerminal);
+        },
+      );
+
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showTerminalPickerSpy).toHaveBeenCalled();
+      expect(mockDestinationManager.bindAndFocus).toHaveBeenCalledWith({
+        kind: 'terminal',
+        terminal: mockTerminal,
+      });
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.openMenu',
+          selectedItem: terminalMoreItem,
+          bindAndFocusSuccess: true,
+        },
+        'Terminal selected from overflow picker',
+      );
+    });
+
+    it('re-opens status bar menu when user cancels secondary terminal picker', async () => {
+      mockAvailabilityService.getTerminalItems.mockResolvedValue([
+        createMockTerminalQuickPickItem(createMockTerminal()),
+      ]);
+
+      showQuickPickMock
+        .mockResolvedValueOnce(terminalMoreItem)
+        .mockResolvedValueOnce(QUICK_PICK_DISMISSED);
+
+      showTerminalPickerSpy.mockImplementation(
+        async (
+          _terminals: readonly TerminalBindableQuickPickItem[],
+          _provider: unknown,
+          handlers: TerminalPickerHandlers<void>,
+          _logger: unknown,
+        ): Promise<void | undefined> => {
+          await handlers.onDismissed?.();
+        },
+      );
+
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showTerminalPickerSpy).toHaveBeenCalled();
+      expect(showQuickPickMock).toHaveBeenCalledTimes(2);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: terminalMoreItem },
+        'User returned from terminal picker, re-opening menu',
+      );
+    });
+
+    it('re-opens status bar menu when user returns from secondary picker', async () => {
+      mockAvailabilityService.getTerminalItems.mockResolvedValue([
+        createMockTerminalQuickPickItem(createMockTerminal()),
+      ]);
+
+      showQuickPickMock
+        .mockResolvedValueOnce(terminalMoreItem)
+        .mockResolvedValueOnce(QUICK_PICK_DISMISSED);
+
+      showTerminalPickerSpy.mockImplementation(
+        async (
+          _terminals: readonly TerminalBindableQuickPickItem[],
+          _provider: unknown,
+          handlers: TerminalPickerHandlers<void>,
+          _logger: unknown,
+        ): Promise<void | undefined> => {
+          await handlers.onDismissed?.();
+        },
+      );
+
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showTerminalPickerSpy).toHaveBeenCalled();
+      expect(showQuickPickMock).toHaveBeenCalledTimes(2);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: terminalMoreItem },
+        'User returned from terminal picker, re-opening menu',
       );
     });
   });
@@ -374,7 +663,7 @@ describe('RangeLinkStatusBar', () => {
     it('delegates to BookmarkService.pasteBookmark when bookmark item is selected', async () => {
       showQuickPickMock.mockResolvedValue({
         label: '    $(bookmark) Test Bookmark',
-        command: 'rangelink.bookmark.navigate',
+        itemKind: 'bookmark',
         bookmarkId: 'bookmark-1',
       });
       const statusBar = new RangeLinkStatusBar(
@@ -388,18 +677,18 @@ describe('RangeLinkStatusBar', () => {
       await statusBar.openMenu();
 
       expect(executeCommandMock).not.toHaveBeenCalled();
-      expect(mockDestinationManager.bindAndJump).not.toHaveBeenCalled();
+      expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
       expect(mockBookmarkService.pasteBookmark).toHaveBeenCalledWith('bookmark-1');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
           selectedItem: {
             label: '    $(bookmark) Test Bookmark',
-            command: 'rangelink.bookmark.navigate',
+            itemKind: 'bookmark',
             bookmarkId: 'bookmark-1',
           },
         },
-        'Menu item selected',
+        'Bookmark item selected',
       );
     });
   });
@@ -440,11 +729,19 @@ describe('RangeLinkStatusBar', () => {
 
       expect(items).toStrictEqual([
         { label: '', kind: vscode.QuickPickItemKind.Separator },
-        { label: 'Bookmarks' },
-        { label: '    No bookmarks saved' },
+        { label: 'Bookmarks', itemKind: 'info' },
+        { label: '    No bookmarks saved', itemKind: 'info' },
         { label: '', kind: vscode.QuickPickItemKind.Separator },
-        { label: '    $(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
-        { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+        {
+          label: '    $(add) Save Selection as Bookmark',
+          itemKind: 'command',
+          command: 'rangelink.bookmark.add',
+        },
+        {
+          label: '    $(gear) Manage Bookmarks...',
+          itemKind: 'command',
+          command: 'rangelink.bookmark.manage',
+        },
         { label: '', kind: vscode.QuickPickItemKind.Separator },
       ]);
     });
@@ -465,20 +762,28 @@ describe('RangeLinkStatusBar', () => {
 
       expect(items).toStrictEqual([
         { label: '', kind: vscode.QuickPickItemKind.Separator },
-        { label: 'Bookmarks' },
+        { label: 'Bookmarks', itemKind: 'info' },
         {
           label: '    $(bookmark) CLAUDE.md Instructions',
-          command: 'rangelink.bookmark.navigate',
+          itemKind: 'bookmark',
           bookmarkId: 'bookmark-1',
         },
         {
           label: '    $(bookmark) API Error Codes',
-          command: 'rangelink.bookmark.navigate',
+          itemKind: 'bookmark',
           bookmarkId: 'bookmark-2',
         },
         { label: '', kind: vscode.QuickPickItemKind.Separator },
-        { label: '    $(add) Save Selection as Bookmark', command: 'rangelink.bookmark.add' },
-        { label: '    $(gear) Manage Bookmarks...', command: 'rangelink.bookmark.manage' },
+        {
+          label: '    $(add) Save Selection as Bookmark',
+          itemKind: 'command',
+          command: 'rangelink.bookmark.add',
+        },
+        {
+          label: '    $(gear) Manage Bookmarks...',
+          itemKind: 'command',
+          command: 'rangelink.bookmark.manage',
+        },
         { label: '', kind: vscode.QuickPickItemKind.Separator },
       ]);
     });

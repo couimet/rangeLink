@@ -4,13 +4,14 @@ import type { DelimiterConfig, DelimiterConfigGetter } from 'rangelink-core-ts';
 import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import type { DestinationPicker } from '../destinations';
 import type { ConfigReader } from '../config';
+import type { DestinationPicker } from '../destinations';
 import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { messagesEn } from '../i18n';
 import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkService';
 import { MessageCode, PasteContentType } from '../types';
+
 import {
   createMockClipboard,
   createMockConfigReader,
@@ -906,16 +907,16 @@ describe('RangeLinkService', () => {
 
       describe('when no destination bound', () => {
         it('should invoke picker command to select destination', async () => {
-          mockPickerCommand.execute.mockResolvedValue({ outcome: 'cancelled' });
+          mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
 
           await service.pasteSelectedTextToDestination();
 
-          expect(mockPickerCommand.execute).toHaveBeenCalledTimes(1);
+          expect(mockPickerCommand.pick).toHaveBeenCalledTimes(1);
         });
 
         describe('when user cancels quick pick', () => {
           beforeEach(() => {
-            mockPickerCommand.execute.mockResolvedValue({ outcome: 'cancelled' });
+            mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
           });
 
           it('should NOT copy to clipboard', async () => {
@@ -936,7 +937,7 @@ describe('RangeLinkService', () => {
           const mockDestination = createMockTerminalPasteDestination({
             displayName: 'Terminal',
           });
-          mockPickerCommand.execute.mockResolvedValue({
+          mockPickerCommand.pick.mockResolvedValue({
             outcome: 'selected',
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
           });
@@ -2232,7 +2233,7 @@ describe('RangeLinkService', () => {
 
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
-        expect(mockPickerCommand.execute).not.toHaveBeenCalled();
+        expect(mockPickerCommand.pick).not.toHaveBeenCalled();
         expect(copyAndSendSpy).toHaveBeenCalled();
       });
 
@@ -2240,7 +2241,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager = createMockDestinationManager({
           isBound: false,
         });
-        mockPickerCommand.execute.mockResolvedValue({ outcome: 'cancelled' });
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -2257,7 +2258,7 @@ describe('RangeLinkService', () => {
 
         await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
 
-        expect(mockPickerCommand.execute).toHaveBeenCalled();
+        expect(mockPickerCommand.pick).toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkService.pasteFilePath',

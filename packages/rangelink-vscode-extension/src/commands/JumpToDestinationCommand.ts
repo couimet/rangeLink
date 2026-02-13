@@ -36,10 +36,9 @@ export class JumpToDestinationCommand {
 
     this.logger.debug(logCtx, 'No destination bound, showing picker');
 
-    const pickerResult = await this.destinationPickerCommand.execute({
+    const pickerResult = await this.destinationPickerCommand.pick({
       noDestinationsMessageCode: MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE,
       placeholderMessageCode: MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER,
-      callerContext: logCtx,
     });
 
     switch (pickerResult.outcome) {

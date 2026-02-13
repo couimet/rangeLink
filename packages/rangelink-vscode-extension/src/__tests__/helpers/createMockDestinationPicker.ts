@@ -4,6 +4,6 @@ export const createMockDestinationPicker = (
   overrides: Partial<jest.Mocked<DestinationPicker>> = {},
 ): jest.Mocked<DestinationPicker> =>
   ({
-    execute: jest.fn(),
+    pick: jest.fn(),
     ...overrides,
   }) as unknown as jest.Mocked<DestinationPicker>;

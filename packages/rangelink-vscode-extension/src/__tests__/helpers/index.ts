@@ -45,6 +45,7 @@ export * from './createBaseMockPasteDestination';
 export * from './createMockPosition';
 export * from './createMockPositionAt';
 export * from './createMockQuickPick';
+export * from './createMockQuickPickProvider';
 export * from './createMockRange';
 export * from './createMockSelection';
 export * from './createMockSingletonComposablePasteDestination';
@@ -61,6 +62,8 @@ export * from './createMockUri';
 export * from './createMockWindow';
 export * from './createMockWorkspace';
 export * from './createMockWorkspaceFolder';
+export * from './createMockVscode';
+export * from './createMockVscodeAdapter';
 
 export * from './spyOnFormatLinkTooltip';
 export * from './spyOnFormatMessage';
@@ -76,6 +79,3 @@ export * from './createWindowOptionsForEditor';
 export * from './configureEmptyTabGroups';
 export * from './simulateClosedEditor';
 export * from './simulateFileOutsideWorkspace';
-
-export * from './createMockVscode';
-export * from './createMockVscodeAdapter';

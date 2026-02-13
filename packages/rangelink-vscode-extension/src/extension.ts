@@ -152,15 +152,12 @@ export function activate(context: vscode.ExtensionContext): void {
     logger,
   );
 
-  const destinationPicker = new DestinationPicker(
-    ideAdapter,
-    availabilityService,
-    logger,
-  );
+  const destinationPicker = new DestinationPicker(ideAdapter, availabilityService, logger);
 
   const destinationManager = new PasteDestinationManager(context, registry, ideAdapter, logger);
 
   const bindToTerminalCommand = new BindToTerminalCommand(
+    ideAdapter,
     ideAdapter,
     availabilityService,
     destinationManager,

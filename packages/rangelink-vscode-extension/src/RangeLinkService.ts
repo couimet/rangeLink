@@ -1,4 +1,4 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
+import type { Logger } from 'barebone-logger';
 import {
   type DelimiterConfigGetter,
   type FormattedLink,
@@ -200,7 +200,7 @@ export class RangeLinkService {
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
-      const pickerResult = await this.showPickerAndBindForPaste(logCtx);
+      const pickerResult = await this.showPickerAndBindForPaste();
       if (pickerResult.outcome !== 'bound') {
         this.logger.debug(
           { ...logCtx, outcome: pickerResult.outcome },
@@ -309,7 +309,7 @@ export class RangeLinkService {
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
-      const pickerResult = await this.showPickerAndBindForPaste(logCtx);
+      const pickerResult = await this.showPickerAndBindForPaste();
       if (pickerResult.outcome !== 'bound') {
         this.logger.debug(
           { ...logCtx, outcome: pickerResult.outcome },
@@ -746,18 +746,14 @@ export class RangeLinkService {
   /**
    * Orchestrates: picker command → user selection → manager.bind()
    *
-   * @param callerContext - Logging context from the calling method
    * @returns QuickPickBindResult with outcome and error details if binding failed
    */
-  private async showPickerAndBindForPaste(
-    callerContext: LoggingContext,
-  ): Promise<QuickPickBindResult> {
-    const logCtx = { ...callerContext, fn: `${callerContext.fn}::showPickerAndBindForPaste` };
+  private async showPickerAndBindForPaste(): Promise<QuickPickBindResult> {
+    const logCtx = { fn: 'RangeLinkService.showPickerAndBindForPaste' };
 
-    const result = await this.destinationPickerCommand.execute({
+    const result = await this.destinationPickerCommand.pick({
       noDestinationsMessageCode: MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE,
       placeholderMessageCode: MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
-      callerContext: logCtx,
     });
 
     switch (result.outcome) {
@@ -775,7 +771,7 @@ export class RangeLinkService {
           this.logger.info(logCtx, 'Binding failed - no action taken');
           return { outcome: 'bind-failed', error: bindResult.error };
         }
-        return { outcome: 'bound', destinationName: bindResult.value.destinationName };
+        return { outcome: 'bound', bindInfo: bindResult.value };
       }
 
       default: {

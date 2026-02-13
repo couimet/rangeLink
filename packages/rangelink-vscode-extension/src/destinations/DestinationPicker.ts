@@ -1,63 +1,51 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
+import type { Logger } from 'barebone-logger';
 
-import type { DestinationAvailabilityService } from './DestinationAvailabilityService';
-import {
-  buildDestinationQuickPickItems,
-  showTerminalPicker,
-  TERMINAL_PICKER_SHOW_ALL,
-  type TerminalPickerOptions,
-} from './utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
+import type { MessageProvider } from '../ide/MessageProvider';
+import type { QuickPickProvider } from '../ide/QuickPickProvider';
 import { type DestinationQuickPickItem, MessageCode } from '../types';
 import type { DestinationPickerResult } from '../types/DestinationPickerResult';
 import { formatMessage, isSelectableQuickPickItem } from '../utils';
 
+import type { DestinationAvailabilityService } from './DestinationAvailabilityService';
+import { buildDestinationQuickPickItems, showTerminalPicker } from './utils';
+
 /**
  * Internal result type that includes 'returned-to-main-picker' for loop control.
- * Not exposed publicly - execute() converts this to DestinationPickerResult.
+ * Not exposed publicly - pick() converts this to DestinationPickerResult.
  */
 type InternalPickerResult =
   | DestinationPickerResult
   | { readonly outcome: 'returned-to-main-picker' };
 
 /**
- * Context-specific options for executing the destination picker.
+ * Context-specific options for the destination picker.
  * These vary based on the calling flow (paste vs jump).
  */
 export interface DestinationPickerOptions {
   readonly noDestinationsMessageCode: MessageCode;
   readonly placeholderMessageCode: MessageCode;
-  readonly callerContext: LoggingContext;
 }
 
 /**
- * Command handler for showing the destination picker.
- *
  * Shows a QuickPick with available destinations and returns the user's selection.
- * Does NOT perform binding - callers are responsible for calling bind() with the result.
+ * Does NOT perform binding — callers are responsible for calling bind() with the result.
  *
  * This separation of concerns eliminates the circular dependency between
  * picker and manager, enabling clean constructor injection.
  */
 export class DestinationPicker {
   constructor(
-    private readonly vscodeAdapter: VscodeAdapter,
+    private readonly uiProvider: QuickPickProvider & MessageProvider,
     private readonly availabilityService: DestinationAvailabilityService,
     private readonly logger: Logger,
   ) {
-    this.logger.debug(
-      { fn: 'DestinationPicker.constructor' },
-      'DestinationPicker initialized',
-    );
+    this.logger.debug({ fn: 'DestinationPicker.constructor' }, 'DestinationPicker initialized');
   }
 
-  async execute(options: DestinationPickerOptions): Promise<DestinationPickerResult> {
-    const { noDestinationsMessageCode, placeholderMessageCode, callerContext } = options;
-    const logCtx = {
-      ...callerContext,
-      fn: `${callerContext.fn}::DestinationPicker.execute`,
-    };
+  async pick(options: DestinationPickerOptions): Promise<DestinationPickerResult> {
+    const { noDestinationsMessageCode, placeholderMessageCode } = options;
+    const logCtx = { fn: 'DestinationPicker.pick' };
 
     this.logger.debug(logCtx, 'Showing destination picker');
 
@@ -67,18 +55,17 @@ export class DestinationPicker {
 
     if (quickPickItems.length === 0) {
       this.logger.debug(logCtx, 'No destinations available');
-      await this.vscodeAdapter.showInformationMessage(formatMessage(noDestinationsMessageCode));
+      await this.uiProvider.showInformationMessage(formatMessage(noDestinationsMessageCode));
       return { outcome: 'no-resource' };
     }
 
-    // Loop to support returning from secondary picker to main picker
     while (true) {
       this.logger.debug(
         { ...logCtx, availableCount: quickPickItems.length },
         `Showing quick pick with ${quickPickItems.length} items`,
       );
 
-      const selected = await this.vscodeAdapter.showQuickPick(quickPickItems, {
+      const selected = await this.uiProvider.showQuickPick(quickPickItems, {
         placeHolder: formatMessage(placeholderMessageCode),
       });
 
@@ -87,7 +74,7 @@ export class DestinationPicker {
         return { outcome: 'cancelled' };
       }
 
-      const result = await this.handleQuickPickSelection(selected, logCtx);
+      const result = await this.handleQuickPickSelection(selected, placeholderMessageCode);
 
       if (result.outcome !== 'returned-to-main-picker') {
         return result;
@@ -99,8 +86,10 @@ export class DestinationPicker {
 
   private async handleQuickPickSelection(
     selected: DestinationQuickPickItem,
-    logCtx: LoggingContext,
+    placeholderMessageCode: MessageCode,
   ): Promise<InternalPickerResult> {
+    const logCtx = { fn: 'DestinationPicker.handleQuickPickSelection' };
+
     switch (selected.itemKind) {
       case 'bindable':
         this.logger.debug(
@@ -114,7 +103,7 @@ export class DestinationPicker {
 
       case 'terminal-more':
         this.logger.debug(logCtx, 'User selected "More terminals...", showing secondary picker');
-        return this.showSecondaryTerminalPicker(logCtx);
+        return this.showSecondaryTerminalPicker(placeholderMessageCode);
 
       default: {
         const _exhaustiveCheck: never = selected;
@@ -128,44 +117,29 @@ export class DestinationPicker {
     }
   }
 
-  private async showSecondaryTerminalPicker(logCtx: LoggingContext): Promise<InternalPickerResult> {
+  private async showSecondaryTerminalPicker(
+    placeholderMessageCode: MessageCode,
+  ): Promise<InternalPickerResult> {
+    const logCtx = { fn: 'DestinationPicker.showSecondaryTerminalPicker' };
     const terminalItems = await this.availabilityService.getTerminalItems(Infinity);
 
-    const options: TerminalPickerOptions = {
-      maxItemsBeforeMore: TERMINAL_PICKER_SHOW_ALL,
-      title: formatMessage(MessageCode.TERMINAL_PICKER_TITLE),
-      placeholder: formatMessage(MessageCode.TERMINAL_PICKER_PLACEHOLDER),
-      activeDescription: formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION),
-      moreTerminalsLabel: formatMessage(MessageCode.TERMINAL_PICKER_MORE_LABEL),
-    };
-
-    const result = await showTerminalPicker(
+    const result = await showTerminalPicker<InternalPickerResult>(
       terminalItems,
-      this.vscodeAdapter,
-      options,
+      this.uiProvider,
+      {
+        getPlaceholder: () => formatMessage(placeholderMessageCode),
+        onSelected: (eligible) => ({
+          outcome: 'selected' as const,
+          bindOptions: { kind: 'terminal' as const, terminal: eligible.terminal },
+        }),
+        onDismissed: () => {
+          this.logger.debug(logCtx, 'User returned from secondary terminal picker');
+          return { outcome: 'returned-to-main-picker' as const };
+        },
+      },
       this.logger,
-      (eligible) => ({
-        outcome: 'selected' as const,
-        bindOptions: { kind: 'terminal' as const, terminal: eligible.terminal },
-      }),
     );
 
-    switch (result.outcome) {
-      case 'selected':
-        return result.result;
-      case 'cancelled':
-      case 'returned-to-destination-picker':
-        this.logger.debug(logCtx, 'User returned from secondary terminal picker');
-        return { outcome: 'returned-to-main-picker' };
-      default: {
-        const _exhaustiveCheck: never = result;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
-          message: 'Unexpected terminal picker result outcome',
-          functionName: 'DestinationPicker.showSecondaryTerminalPicker',
-          details: { result: _exhaustiveCheck },
-        });
-      }
-    }
+    return result ?? { outcome: 'returned-to-main-picker' };
   }
 }

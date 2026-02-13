@@ -15,11 +15,7 @@ import {
   type DestinationAvailabilityService,
   type PasteDestinationManager,
 } from '../destinations';
-import {
-  showTerminalPicker,
-  TERMINAL_PICKER_SHOW_ALL,
-  type TerminalPickerOptions,
-} from '../destinations/utils';
+import { showTerminalPicker } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
@@ -137,46 +133,28 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   private async showSecondaryTerminalPicker(logCtx: LoggingContext): Promise<void> {
     const terminalItems = await this.availabilityService.getTerminalItems(Infinity);
 
-    const options: TerminalPickerOptions = {
-      maxItemsBeforeMore: TERMINAL_PICKER_SHOW_ALL,
-      title: formatMessage(MessageCode.TERMINAL_PICKER_TITLE),
-      placeholder: formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
-      activeDescription: formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION),
-      moreTerminalsLabel: formatMessage(MessageCode.TERMINAL_PICKER_MORE_LABEL),
-    };
-
-    const result = await showTerminalPicker(
+    await showTerminalPicker(
       terminalItems,
       this.ideAdapter,
-      options,
+      {
+        getPlaceholder: () => formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
+        onSelected: async (eligible) => {
+          const bindResult = await this.destinationManager.bindAndFocus({
+            kind: 'terminal',
+            terminal: eligible.terminal,
+          });
+          this.logger.debug(
+            { ...logCtx, bindAndFocusSuccess: bindResult.success },
+            'Terminal selected from overflow picker',
+          );
+        },
+        onDismissed: async () => {
+          this.logger.debug(logCtx, 'User returned from terminal picker, re-opening menu');
+          await this.openMenu();
+        },
+      },
       this.logger,
-      (eligible) => ({ kind: 'terminal' as const, terminal: eligible.terminal }),
     );
-
-    switch (result.outcome) {
-      case 'selected': {
-        const bindResult = await this.destinationManager.bindAndFocus(result.result);
-        this.logger.debug(
-          { ...logCtx, bindAndFocusSuccess: bindResult.success },
-          'Terminal selected from overflow picker',
-        );
-        break;
-      }
-      case 'cancelled':
-      case 'returned-to-destination-picker':
-        this.logger.debug(logCtx, 'User returned from terminal picker, re-opening menu');
-        await this.openMenu();
-        break;
-      default: {
-        const _exhaustiveCheck: never = result;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
-          message: 'Unexpected terminal picker result outcome',
-          functionName: 'RangeLinkStatusBar.showSecondaryTerminalPicker',
-          details: { result: _exhaustiveCheck },
-        });
-      }
-    }
   }
 
   /**
