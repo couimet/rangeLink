@@ -993,9 +993,7 @@ describe('RangeLinkService', () => {
 
           const showErrorMock = mockVscodeAdapter.__getVscodeInstance().window
             .showErrorMessage as jest.Mock;
-          expect(showErrorMock).toHaveBeenCalledWith(
-            'RangeLink: Failed to bind destination',
-          );
+          expect(showErrorMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
           expect(mockLogger.error).toHaveBeenCalledWith(
             {
               fn: 'RangeLinkService.showPickerAndBindForPaste',

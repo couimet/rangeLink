@@ -478,9 +478,7 @@ describe('RangeLinkStatusBar', () => {
       );
       const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
         .showErrorMessage as jest.Mock;
-      expect(showErrorMessageMock).toHaveBeenCalledWith(
-        'RangeLink: Failed to bind destination',
-      );
+      expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
@@ -642,9 +640,7 @@ describe('RangeLinkStatusBar', () => {
       );
       const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
         .showErrorMessage as jest.Mock;
-      expect(showErrorMessageMock).toHaveBeenCalledWith(
-        'RangeLink: Failed to bind destination',
-      );
+      expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
