@@ -7,6 +7,7 @@ import type {
   TerminalBindableQuickPickItem,
   TerminalMoreQuickPickItem,
 } from '../../types';
+
 import { createMockEligibleTerminal } from './createMockEligibleTerminal';
 
 /**

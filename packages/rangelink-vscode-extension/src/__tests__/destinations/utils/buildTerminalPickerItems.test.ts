@@ -5,7 +5,9 @@ describe('buildTerminalPickerItems', () => {
   const identityLabel = (info: { name: string }): string => info.name;
 
   it('sets description to "bound \u00b7 active" when terminal is bound and active', () => {
-    const items = [createMockTerminalQuickPickItem(createMockTerminal({ name: 'zsh' }), true, 'bound')];
+    const items = [
+      createMockTerminalQuickPickItem(createMockTerminal({ name: 'zsh' }), true, 'bound'),
+    ];
 
     const result = buildTerminalPickerItems(items, identityLabel);
 
@@ -13,7 +15,9 @@ describe('buildTerminalPickerItems', () => {
   });
 
   it('sets description to "bound" when terminal is bound but not active', () => {
-    const items = [createMockTerminalQuickPickItem(createMockTerminal({ name: 'zsh' }), false, 'bound')];
+    const items = [
+      createMockTerminalQuickPickItem(createMockTerminal({ name: 'zsh' }), false, 'bound'),
+    ];
 
     const result = buildTerminalPickerItems(items, identityLabel);
 
@@ -21,7 +25,9 @@ describe('buildTerminalPickerItems', () => {
   });
 
   it('sets description to "active" when terminal is active but not bound', () => {
-    const items = [createMockTerminalQuickPickItem(createMockTerminal({ name: 'zsh' }), true, 'not-bound')];
+    const items = [
+      createMockTerminalQuickPickItem(createMockTerminal({ name: 'zsh' }), true, 'not-bound'),
+    ];
 
     const result = buildTerminalPickerItems(items, identityLabel);
 
@@ -29,7 +35,9 @@ describe('buildTerminalPickerItems', () => {
   });
 
   it('sets description to undefined when terminal is neither bound nor active', () => {
-    const items = [createMockTerminalQuickPickItem(createMockTerminal({ name: 'zsh' }), false, 'not-bound')];
+    const items = [
+      createMockTerminalQuickPickItem(createMockTerminal({ name: 'zsh' }), false, 'not-bound'),
+    ];
 
     const result = buildTerminalPickerItems(items, identityLabel);
 
