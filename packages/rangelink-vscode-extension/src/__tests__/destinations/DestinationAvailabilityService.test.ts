@@ -302,7 +302,7 @@ describe('DestinationAvailabilityService', () => {
         expect(mockLogger.warn).not.toHaveBeenCalled();
       });
 
-      it('logs warning and uses default when config value is Infinity', async () => {
+      it('accepts Infinity as a valid threshold (shows all terminals)', async () => {
         mockConfigReader.getWithDefault.mockReturnValue(Infinity);
         const terminal = createMockTerminal();
         ideAdapter = createMockVscodeAdapter({
@@ -332,14 +332,7 @@ describe('DestinationAvailabilityService', () => {
             terminalInfo: { terminal, name: 'bash', isActive: true },
           },
         ]);
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-          {
-            fn: 'DestinationAvailabilityService.resolveTerminalThreshold',
-            invalidValue: Infinity,
-            fallback: 5,
-          },
-          'Invalid terminalThreshold, using default',
-        );
+        expect(mockLogger.warn).not.toHaveBeenCalled();
       });
 
       it('floors fractional config values to integers', async () => {

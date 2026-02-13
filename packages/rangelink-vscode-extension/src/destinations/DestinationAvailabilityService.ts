@@ -26,7 +26,7 @@ import { getEligibleTerminals, isTextEditorDestinationEligible } from './utils';
 const MIN_TERMINAL_PICKER_THRESHOLD = 1;
 
 const isValidThreshold = (value: number): boolean =>
-  Number.isFinite(value) && value >= MIN_TERMINAL_PICKER_THRESHOLD;
+  value === Infinity || (Number.isFinite(value) && value >= MIN_TERMINAL_PICKER_THRESHOLD);
 
 /**
  * MessageCode lookup for AI assistant unavailable
