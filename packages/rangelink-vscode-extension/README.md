@@ -195,9 +195,8 @@ Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the **RangeLink
 - **Jump to Bound Destination** — Focus your currently bound paste destination
 - **Bind to a destination** — When unbound, the menu shows available destinations inline (AI assistants, terminals, text editors) so you can bind directly from the menu
 - **Go to Link** — Paste or type a RangeLink to go directly to that code location
+- **Bookmarks** — Quick access to saved bookmarks, plus add/manage actions
 - **Show Version Info** — Display extension version and build details
-
-The menu provides quick access to common actions. More items coming in future releases.
 
 ---
 
