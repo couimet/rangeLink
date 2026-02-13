@@ -260,7 +260,7 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | Paste Selected Text to Destination         | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`        | Send selected text directly to bound destination         |
 | Paste Current File Path                    | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`        | Send active editor's path to bound destination           |
 | Paste Current File Path (Absolute)         | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F`  | Send active editor's absolute path to bound destination  |
-| Jump to Bound Destination                  | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound destination             |
+| Jump to Bound Destination                  | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound destination                   |
 | Save Selection as Bookmark                 | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
 | List Bookmarks                             | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
 | Go to Link                                 | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`        | Paste/type a RangeLink to go to that code location       |
