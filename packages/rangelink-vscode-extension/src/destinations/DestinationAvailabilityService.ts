@@ -8,7 +8,6 @@ import {
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
-  AI_ASSISTANT_KINDS,
   type AIAssistantDestinationKind,
   DESTINATION_KINDS,
   type EligibleTerminal,

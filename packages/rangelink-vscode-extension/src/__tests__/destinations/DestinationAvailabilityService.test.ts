@@ -6,7 +6,6 @@ import {
   createBaseMockPasteDestination,
   createMockConfigReader,
   createMockDestinationRegistry,
-  createMockEditor,
   createMockTabGroupsWithCount,
   createMockTerminal,
   createMockVscodeAdapter,
