@@ -20,6 +20,7 @@ export * from './createMockDestinationPicker';
 export * from './createMockDestinationRegistry';
 export * from './createMockDocument';
 export * from './createMockDocumentLink';
+export * from './createMockEligibleTerminal';
 export * from './createMockEditor';
 export * from './createMockEditorComposablePasteDestination';
 export * from './createEditorWithScheme';

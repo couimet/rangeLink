@@ -5,11 +5,12 @@ import { BindToTerminalCommand } from '../../commands/BindToTerminalCommand';
 import type { BindSuccessInfo } from '../../destinations';
 import type { TerminalPickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
-import type { EligibleTerminal, TerminalBindableQuickPickItem } from '../../types';
+import type { TerminalBindableQuickPickItem } from '../../types';
 import type { ExtensionResult } from '../../types';
 import {
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
+  createMockEligibleTerminal,
   createMockQuickPickProvider,
   createMockTerminal,
   createMockTerminalQuickPickItem,
@@ -67,7 +68,7 @@ describe('BindToTerminalCommand', () => {
         const result = await command.execute();
 
         expect(result).toStrictEqual({ outcome: 'no-resource' });
-        expect(mockAvailabilityService.getTerminalItems).toHaveBeenCalledWith(Infinity);
+        expect(mockAvailabilityService.getTerminalItems).toHaveBeenCalledWith(Infinity, undefined);
         expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
           'RangeLink: No active terminal. Open a terminal and try again.',
         );
@@ -169,12 +170,9 @@ describe('BindToTerminalCommand', () => {
             handlers: TerminalPickerHandlers<ExtensionResult<BindSuccessInfo>>,
             _logger: unknown,
           ) => {
-            const eligible: EligibleTerminal = {
-              terminal: terminal2,
-              name: 'Terminal 2',
-              isActive: false,
-            };
-            return handlers.onSelected(eligible);
+            return handlers.onSelected(
+              createMockEligibleTerminal({ terminal: terminal2, name: 'Terminal 2' }),
+            );
           },
         );
         command = new BindToTerminalCommand(
@@ -246,12 +244,9 @@ describe('BindToTerminalCommand', () => {
             handlers: TerminalPickerHandlers<ExtensionResult<BindSuccessInfo>>,
             _logger: unknown,
           ) => {
-            const eligible: EligibleTerminal = {
-              terminal: terminal2,
-              name: 'Terminal 2',
-              isActive: false,
-            };
-            return handlers.onSelected(eligible);
+            return handlers.onSelected(
+              createMockEligibleTerminal({ terminal: terminal2, name: 'Terminal 2' }),
+            );
           },
         );
         command = new BindToTerminalCommand(

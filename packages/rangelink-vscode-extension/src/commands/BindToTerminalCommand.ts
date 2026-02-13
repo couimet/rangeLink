@@ -5,7 +5,7 @@ import type {
   DestinationAvailabilityService,
   PasteDestinationManager,
 } from '../destinations';
-import { showTerminalPicker } from '../destinations/utils';
+import { resolveBoundTerminalProcessId, showTerminalPicker } from '../destinations/utils';
 import type { QuickPickProvider } from '../ide/QuickPickProvider';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../types';
@@ -38,7 +38,11 @@ export class BindToTerminalCommand {
   async execute(): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'BindToTerminalCommand.execute' };
 
-    const terminalItems = await this.availabilityService.getTerminalItems(Infinity);
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    const terminalItems = await this.availabilityService.getTerminalItems(
+      Infinity,
+      boundTerminalProcessId,
+    );
 
     this.logger.debug(
       { ...logCtx, terminalCount: terminalItems.length },

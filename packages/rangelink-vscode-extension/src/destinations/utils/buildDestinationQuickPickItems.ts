@@ -8,12 +8,18 @@ import {
   type DestinationKind,
   type GroupedDestinationItems,
   MessageCode,
+  type TerminalBindableQuickPickItem,
   type TerminalMoreQuickPickItem,
 } from '../../types';
 import { formatMessage } from '../../utils';
 
+import { buildTerminalDescription } from './buildTerminalDescription';
+
 const isDestinationKind = (key: string): key is DestinationKind =>
   DESTINATION_KINDS.includes(key as DestinationKind);
+
+const isTerminalItem = (item: BindableQuickPickItem): item is TerminalBindableQuickPickItem =>
+  'terminalInfo' in item;
 
 /**
  * Sequence defining the order of destination kinds in QuickPick menus.
@@ -113,12 +119,14 @@ export const buildDestinationQuickPickItems = (
         });
       }
 
+      const description = isTerminalItem(item)
+        ? buildTerminalDescription(item.terminalInfo)
+        : undefined;
+
       items.push({
         ...item,
         label: buildLabel(item.displayName),
-        description: item.isActive
-          ? formatMessage(MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION)
-          : undefined,
+        description,
       });
     }
   }

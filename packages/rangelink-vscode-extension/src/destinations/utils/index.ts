@@ -1,3 +1,4 @@
+export { buildTerminalDescription } from './buildTerminalDescription';
 export {
   buildDestinationQuickPickItems,
   DESTINATION_PICKER_SEQUENCE,
@@ -10,4 +11,7 @@ export {
   isTextEditorDestinationEligible,
   type TextEditorEligibility,
 } from './isTextEditorDestinationEligible';
+export { markBoundTerminal } from './markBoundTerminal';
+export { resolveBoundTerminalProcessId } from './resolveBoundTerminalProcessId';
 export { showTerminalPicker } from './showTerminalPicker';
+export { sortEligibleTerminals } from './sortEligibleTerminals';

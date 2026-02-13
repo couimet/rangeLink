@@ -25,6 +25,7 @@ type InternalPickerResult =
 export interface DestinationPickerOptions {
   readonly noDestinationsMessageCode: MessageCode;
   readonly placeholderMessageCode: MessageCode;
+  readonly boundTerminalProcessId?: number;
 }
 
 /**
@@ -44,12 +45,14 @@ export class DestinationPicker {
   }
 
   async pick(options: DestinationPickerOptions): Promise<DestinationPickerResult> {
-    const { noDestinationsMessageCode, placeholderMessageCode } = options;
+    const { noDestinationsMessageCode, placeholderMessageCode, boundTerminalProcessId } = options;
     const logCtx = { fn: 'DestinationPicker.pick' };
 
     this.logger.debug(logCtx, 'Showing destination picker');
 
-    const grouped = await this.availabilityService.getGroupedDestinationItems();
+    const grouped = await this.availabilityService.getGroupedDestinationItems({
+      boundTerminalProcessId,
+    });
 
     const quickPickItems = buildDestinationQuickPickItems(grouped, (name) => name);
 
@@ -74,7 +77,11 @@ export class DestinationPicker {
         return { outcome: 'cancelled' };
       }
 
-      const result = await this.handleQuickPickSelection(selected, placeholderMessageCode);
+      const result = await this.handleQuickPickSelection(
+        selected,
+        placeholderMessageCode,
+        boundTerminalProcessId,
+      );
 
       if (result.outcome !== 'returned-to-main-picker') {
         return result;
@@ -87,6 +94,7 @@ export class DestinationPicker {
   private async handleQuickPickSelection(
     selected: DestinationQuickPickItem,
     placeholderMessageCode: MessageCode,
+    boundTerminalProcessId?: number,
   ): Promise<InternalPickerResult> {
     const logCtx = { fn: 'DestinationPicker.handleQuickPickSelection' };
 
@@ -103,7 +111,7 @@ export class DestinationPicker {
 
       case 'terminal-more':
         this.logger.debug(logCtx, 'User selected "More terminals...", showing secondary picker');
-        return this.showSecondaryTerminalPicker(placeholderMessageCode);
+        return this.showSecondaryTerminalPicker(placeholderMessageCode, boundTerminalProcessId);
 
       default: {
         const _exhaustiveCheck: never = selected;
@@ -119,9 +127,13 @@ export class DestinationPicker {
 
   private async showSecondaryTerminalPicker(
     placeholderMessageCode: MessageCode,
+    boundTerminalProcessId?: number,
   ): Promise<InternalPickerResult> {
     const logCtx = { fn: 'DestinationPicker.showSecondaryTerminalPicker' };
-    const terminalItems = await this.availabilityService.getTerminalItems(Infinity);
+    const terminalItems = await this.availabilityService.getTerminalItems(
+      Infinity,
+      boundTerminalProcessId,
+    );
 
     const result = await showTerminalPicker<InternalPickerResult>(
       terminalItems,

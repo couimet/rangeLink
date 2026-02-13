@@ -217,7 +217,7 @@ describe('buildDestinationQuickPickItems', () => {
       expect(result[1].label).toBe('    $(arrow-right) Claude Code Chat');
     });
 
-    it('sets active description for active terminals', () => {
+    it('sets "bound \u00b7 active" description for bound and active terminals', () => {
       const mockTerminal = { name: 'zsh' } as vscode.Terminal;
       const grouped: GroupedDestinationItems = {
         terminal: [
@@ -227,7 +227,65 @@ describe('buildDestinationQuickPickItems', () => {
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
             isActive: true,
             itemKind: 'bindable',
-            terminalInfo: { terminal: mockTerminal, name: 'zsh', isActive: true },
+            boundState: 'bound',
+            terminalInfo: {
+              terminal: mockTerminal,
+              name: 'zsh',
+              isActive: true,
+              boundState: 'bound',
+            },
+          },
+        ],
+      };
+
+      const result = buildDestinationQuickPickItems(grouped, identityLabelBuilder);
+
+      expect(result[1].description).toBe('bound \u00b7 active');
+    });
+
+    it('sets "bound" description for bound but inactive terminals', () => {
+      const mockTerminal = { name: 'zsh' } as vscode.Terminal;
+      const grouped: GroupedDestinationItems = {
+        terminal: [
+          {
+            label: 'Terminal "zsh"',
+            displayName: 'Terminal "zsh"',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+            isActive: false,
+            itemKind: 'bindable',
+            boundState: 'bound',
+            terminalInfo: {
+              terminal: mockTerminal,
+              name: 'zsh',
+              isActive: false,
+              boundState: 'bound',
+            },
+          },
+        ],
+      };
+
+      const result = buildDestinationQuickPickItems(grouped, identityLabelBuilder);
+
+      expect(result[1].description).toBe('bound');
+    });
+
+    it('sets "active" description for active but not-bound terminals', () => {
+      const mockTerminal = { name: 'zsh' } as vscode.Terminal;
+      const grouped: GroupedDestinationItems = {
+        terminal: [
+          {
+            label: 'Terminal "zsh"',
+            displayName: 'Terminal "zsh"',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+            isActive: true,
+            itemKind: 'bindable',
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal: mockTerminal,
+              name: 'zsh',
+              isActive: true,
+              boundState: 'not-bound',
+            },
           },
         ],
       };
@@ -237,7 +295,7 @@ describe('buildDestinationQuickPickItems', () => {
       expect(result[1].description).toBe('active');
     });
 
-    it('sets undefined description for inactive terminals', () => {
+    it('sets undefined description for inactive and not-bound terminals', () => {
       const mockTerminal = { name: 'node' } as vscode.Terminal;
       const grouped: GroupedDestinationItems = {
         terminal: [
@@ -247,7 +305,13 @@ describe('buildDestinationQuickPickItems', () => {
             bindOptions: { kind: 'terminal', terminal: mockTerminal },
             isActive: false,
             itemKind: 'bindable',
-            terminalInfo: { terminal: mockTerminal, name: 'node', isActive: false },
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal: mockTerminal,
+              name: 'node',
+              isActive: false,
+              boundState: 'not-bound',
+            },
           },
         ],
       };

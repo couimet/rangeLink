@@ -103,7 +103,7 @@ describe('DestinationAvailabilityService', () => {
       expect(result).toStrictEqual([]);
     });
 
-    it('returns terminal items with terminalInfo', async () => {
+    it('returns terminal items with terminalInfo including processId and boundState', async () => {
       const terminal1 = createMockTerminal({ name: 'bash' });
       const terminal2 = createMockTerminal({ name: 'zsh' });
       ideAdapter = createMockVscodeAdapter({
@@ -129,7 +129,14 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'terminal', terminal: terminal2 },
           itemKind: 'bindable',
           isActive: true,
-          terminalInfo: { terminal: terminal2, name: 'zsh', isActive: true },
+          boundState: 'not-bound',
+          terminalInfo: {
+            terminal: terminal2,
+            name: 'zsh',
+            isActive: true,
+            processId: undefined,
+            boundState: 'not-bound',
+          },
         },
         {
           label: 'Terminal ("bash")',
@@ -137,19 +144,27 @@ describe('DestinationAvailabilityService', () => {
           bindOptions: { kind: 'terminal', terminal: terminal1 },
           itemKind: 'bindable',
           isActive: false,
-          terminalInfo: { terminal: terminal1, name: 'bash', isActive: false },
+          boundState: 'not-bound',
+          terminalInfo: {
+            terminal: terminal1,
+            name: 'bash',
+            isActive: false,
+            processId: undefined,
+            boundState: 'not-bound',
+          },
         },
       ]);
     });
 
-    it('delegates to getGroupedDestinationItems with terminal filter', async () => {
+    it('delegates to getGroupedDestinationItems with terminal filter and boundTerminalProcessId', async () => {
       const spy = jest.spyOn(service, 'getGroupedDestinationItems');
 
-      await service.getTerminalItems(3);
+      await service.getTerminalItems(3, 42);
 
       expect(spy).toHaveBeenCalledWith({
         destinationKinds: ['terminal'],
         terminalThreshold: 3,
+        boundTerminalProcessId: 42,
       });
     });
   });
@@ -183,7 +198,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
             isActive: true,
-            terminalInfo: { terminal, name: 'bash', isActive: true },
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal,
+              name: 'bash',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -223,7 +245,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
             isActive: true,
-            terminalInfo: { terminal, name: 'bash', isActive: true },
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal,
+              name: 'bash',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -263,7 +292,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
             isActive: true,
-            terminalInfo: { terminal, name: 'bash', isActive: true },
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal,
+              name: 'bash',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(mockLogger.warn).not.toHaveBeenCalled();
@@ -296,7 +332,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
             isActive: true,
-            terminalInfo: { terminal, name: 'bash', isActive: true },
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal,
+              name: 'bash',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(mockLogger.warn).not.toHaveBeenCalled();
@@ -329,7 +372,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal },
             itemKind: 'bindable',
             isActive: true,
-            terminalInfo: { terminal, name: 'bash', isActive: true },
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal,
+              name: 'bash',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(mockLogger.warn).not.toHaveBeenCalled();
@@ -364,7 +414,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal: terminal1 },
             itemKind: 'bindable',
             isActive: true,
-            terminalInfo: { terminal: terminal1, name: 'Terminal 1', isActive: true },
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal: terminal1,
+              name: 'Terminal 1',
+              isActive: true,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
           {
             label: 'Terminal ("Terminal 2")',
@@ -372,7 +429,14 @@ describe('DestinationAvailabilityService', () => {
             bindOptions: { kind: 'terminal', terminal: terminal2 },
             itemKind: 'bindable',
             isActive: false,
-            terminalInfo: { terminal: terminal2, name: 'Terminal 2', isActive: false },
+            boundState: 'not-bound',
+            terminalInfo: {
+              terminal: terminal2,
+              name: 'Terminal 2',
+              isActive: false,
+              processId: undefined,
+              boundState: 'not-bound',
+            },
           },
         ]);
         expect(result['terminal-more']).toStrictEqual({

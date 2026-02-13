@@ -150,6 +150,7 @@ export const messagesEn: Record<MessageCode, string> = {
 
   [MessageCode.TERMINAL_PICKER_ACTIVE_DESCRIPTION]: 'active',
   [MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER]: 'Select terminal to bind to',
+  [MessageCode.TERMINAL_PICKER_BOUND_DESCRIPTION]: 'bound',
   [MessageCode.TERMINAL_PICKER_MORE_LABEL]: 'More terminals...',
   [MessageCode.TERMINAL_PICKER_MORE_TERMINALS_DESCRIPTION]: '{count} more',
   [MessageCode.TERMINAL_PICKER_PLACEHOLDER]: 'Select terminal to bind and jump to',

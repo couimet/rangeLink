@@ -5,12 +5,13 @@ import type { Bookmark } from '../../bookmarks';
 import type { TerminalPickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
-import type { EligibleTerminal, TerminalBindableQuickPickItem } from '../../types';
+import type { TerminalBindableQuickPickItem } from '../../types';
 import { ExtensionResult } from '../../types';
 import {
   createMockBookmarkService,
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
+  createMockEligibleTerminal,
   createMockStatusBarItem,
   createMockTerminal,
   createMockTerminalPasteDestination,
@@ -533,11 +534,7 @@ describe('RangeLinkStatusBar', () => {
 
     it('shows secondary terminal picker and binds when terminal is selected', async () => {
       const mockTerminal = createMockTerminal({ name: 'bash' });
-      const eligibleTerminal: EligibleTerminal = {
-        terminal: mockTerminal,
-        name: 'bash',
-        isActive: false,
-      };
+      const eligibleTerminal = createMockEligibleTerminal({ terminal: mockTerminal });
 
       mockAvailabilityService.getTerminalItems.mockResolvedValue([
         createMockTerminalQuickPickItem(mockTerminal),

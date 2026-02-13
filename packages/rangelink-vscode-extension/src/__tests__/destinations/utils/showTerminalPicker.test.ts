@@ -238,6 +238,7 @@ describe('buildTerminalPickerItems', () => {
         bindOptions: items[0].bindOptions,
         itemKind: 'bindable',
         isActive: false,
+        boundState: undefined,
         terminalInfo: items[0].terminalInfo,
       },
       {
@@ -247,6 +248,7 @@ describe('buildTerminalPickerItems', () => {
         bindOptions: items[1].bindOptions,
         itemKind: 'bindable',
         isActive: false,
+        boundState: undefined,
         terminalInfo: items[1].terminalInfo,
       },
     ]);

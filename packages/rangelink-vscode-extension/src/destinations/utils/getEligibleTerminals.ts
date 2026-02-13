@@ -7,13 +7,15 @@ import { isTerminalEligible } from './isTerminalEligible';
  * Get all terminals eligible for binding with their metadata.
  *
  * Filters out terminals with terminated processes (exitStatus defined).
- * Returns terminals sorted with the active terminal first, preserving
- * VS Code's order for the remaining terminals.
+ * Resolves processId for each terminal (used by bound-terminal enrichment).
+ * Returns terminals in VS Code's natural order — sorting is a separate concern.
  *
  * @param ideAdapter - IDE adapter for reading terminal state
- * @returns Array of eligible terminals (empty if none are live), active first
+ * @returns Array of eligible terminals (empty if none are live)
  */
-export const getEligibleTerminals = (ideAdapter: VscodeAdapter): EligibleTerminal[] => {
+export const getEligibleTerminals = async (
+  ideAdapter: VscodeAdapter,
+): Promise<EligibleTerminal[]> => {
   const allTerminals = ideAdapter.terminals;
 
   const liveTerminals = allTerminals.filter(isTerminalEligible);
@@ -23,11 +25,12 @@ export const getEligibleTerminals = (ideAdapter: VscodeAdapter): EligibleTermina
   }
   const activeTerminal = ideAdapter.activeTerminal;
 
-  return liveTerminals
-    .map((terminal) => ({
+  return Promise.all(
+    liveTerminals.map(async (terminal) => ({
       terminal,
       name: terminal.name,
       isActive: terminal === activeTerminal,
-    }))
-    .sort((a, b) => (b.isActive ? 1 : 0) - (a.isActive ? 1 : 0));
+      processId: (await terminal.processId) ?? undefined,
+    })),
+  );
 };

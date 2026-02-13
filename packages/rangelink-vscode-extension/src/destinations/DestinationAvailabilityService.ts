@@ -21,7 +21,12 @@ import {
 import { formatMessage } from '../utils';
 
 import type { DestinationRegistry } from './DestinationRegistry';
-import { getEligibleTerminals, isTextEditorDestinationEligible } from './utils';
+import {
+  getEligibleTerminals,
+  isTextEditorDestinationEligible,
+  markBoundTerminal,
+  sortEligibleTerminals,
+} from './utils';
 
 const MIN_TERMINAL_PICKER_THRESHOLD = 1;
 
@@ -88,11 +93,16 @@ export class DestinationAvailabilityService {
    * Convenience passthrough to `getGroupedDestinationItems()` for terminal-only callers.
    *
    * @param terminalThreshold - Max terminals to show inline (use Infinity for all)
+   * @param boundTerminalProcessId - processId of the currently bound terminal for badge display
    */
-  async getTerminalItems(terminalThreshold: number): Promise<TerminalBindableQuickPickItem[]> {
+  async getTerminalItems(
+    terminalThreshold: number,
+    boundTerminalProcessId?: number,
+  ): Promise<TerminalBindableQuickPickItem[]> {
     const grouped = await this.getGroupedDestinationItems({
       destinationKinds: ['terminal'],
       terminalThreshold,
+      boundTerminalProcessId,
     });
     return grouped['terminal'] ?? [];
   }
@@ -147,8 +157,11 @@ export class DestinationAvailabilityService {
         }
 
         case 'terminal': {
-          const eligibleTerminals = getEligibleTerminals(this.ideAdapter);
-          if (eligibleTerminals.length === 0) break;
+          const rawTerminals = await getEligibleTerminals(this.ideAdapter);
+          if (rawTerminals.length === 0) break;
+
+          const enriched = markBoundTerminal(rawTerminals, options?.boundTerminalProcessId);
+          const eligibleTerminals = sortEligibleTerminals(enriched);
 
           const { items, moreItem } = this.buildGroupedTerminalItems(
             eligibleTerminals,
@@ -246,6 +259,7 @@ export class DestinationAvailabilityService {
       bindOptions: { kind: 'terminal', terminal: eligibleTerminal.terminal },
       itemKind: 'bindable',
       isActive: eligibleTerminal.isActive,
+      boundState: eligibleTerminal.boundState,
       terminalInfo: eligibleTerminal,
     };
   }

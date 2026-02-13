@@ -15,7 +15,7 @@ import {
   type DestinationAvailabilityService,
   type PasteDestinationManager,
 } from '../destinations';
-import { showTerminalPicker } from '../destinations/utils';
+import { resolveBoundTerminalProcessId, showTerminalPicker } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
@@ -128,7 +128,11 @@ export class RangeLinkStatusBar implements vscode.Disposable {
    * Re-opens the status bar menu if the user escapes.
    */
   private async showSecondaryTerminalPicker(logCtx: LoggingContext): Promise<void> {
-    const terminalItems = await this.availabilityService.getTerminalItems(Infinity);
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    const terminalItems = await this.availabilityService.getTerminalItems(
+      Infinity,
+      boundTerminalProcessId,
+    );
 
     await showTerminalPicker(
       terminalItems,
@@ -202,7 +206,10 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   private async buildDestinationsQuickPickItems(): Promise<
     (DestinationQuickPickItem | InfoQuickPickItem | vscode.QuickPickItem)[]
   > {
-    const grouped = await this.availabilityService.getGroupedDestinationItems();
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+    const grouped = await this.availabilityService.getGroupedDestinationItems({
+      boundTerminalProcessId,
+    });
     const destinationItems = buildDestinationQuickPickItems(
       grouped,
       (displayName) => `${MENU_ITEM_INDENT}$(arrow-right) ${displayName}`,

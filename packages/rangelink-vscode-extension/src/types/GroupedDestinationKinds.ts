@@ -22,6 +22,13 @@ export interface GetAvailableDestinationItemsOptions {
    * Caller provides - service does NOT read settings.
    */
   readonly terminalThreshold?: number;
+
+  /**
+   * processId of the currently bound terminal, for bound-state badge display.
+   * When provided, the matching terminal gets `boundState: 'bound'` and is
+   * sorted to the top of the terminal list.
+   */
+  readonly boundTerminalProcessId?: number;
 }
 
 /**
