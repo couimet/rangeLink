@@ -392,6 +392,12 @@
           "type": "boolean",
           "default": true,
           "description": "Show warning when generating link from file with unsaved changes"
+        },
+        "rangelink.terminalPicker.maxInline": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "description": "Maximum terminals shown inline in destination picker (extras collapsed into 'More terminals...')"
         }
       }
     },

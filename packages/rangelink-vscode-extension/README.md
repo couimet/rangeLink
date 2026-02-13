@@ -347,6 +347,14 @@ Invalid configurations will fall back to defaults with a warning in the output c
 
 When enabled, a dialog appears with options: "Save & Generate", "Generate Anyway", or dismiss to abort. This helps avoid creating links that may point to incorrect positions after the file is saved.
 
+### Terminal Picker Settings
+
+| Setting                              | Default | Description                                                              |
+| ------------------------------------ | ------- | ------------------------------------------------------------------------ |
+| `rangelink.terminalPicker.maxInline` | `5`     | Maximum terminals shown inline in picker (extras in "More terminals...") |
+
+When you have more terminals than this threshold, the destination picker shows a "More terminals..." option instead of listing all terminals individually.
+
 ## What's Next
 
 RangeLink is under active development. See [open issues](https://github.com/couimet/rangeLink/issues) for planned features and enhancement requests.
