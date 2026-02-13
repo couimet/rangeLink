@@ -1,3 +1,4 @@
+import { Terminal } from 'vscode';
 import { isTerminalEligible } from '../../../destinations/utils';
 import { createMockTerminal } from '../../helpers';
 
@@ -70,7 +71,11 @@ describe('isTerminalEligible', () => {
     });
   });
 
+  it('returns false for null terminal', () => {
+    expect(isTerminalEligible(null as unknown as Terminal)).toBe(false);
+  });
+
   it('returns false for undefined terminal', () => {
-    expect(isTerminalEligible(undefined)).toBe(false);
+    expect(isTerminalEligible(undefined as unknown as Terminal)).toBe(false);
   });
 });
