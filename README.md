@@ -59,7 +59,7 @@ recipes/baking/chickenpie.ts#L3C14-L314C16
 
 | Feature                   | Description                                                                       |
 | ------------------------- | --------------------------------------------------------------------------------- |
-| **Paste Destinations**    | Auto-send links to Claude Code, Cursor AI, Copilot Chat, Terminal, or Text Editor |
+| **Destinations**          | Auto-send links to Claude Code, Cursor AI, Copilot Chat, Terminal, or Text Editor |
 | **Link Navigation**       | Cmd+Click any RangeLink in terminal or editor to jump directly to code            |
 | **Character Precision**   | `#L3C14-L314C16` — not just lines, exact character ranges                         |
 | **Portable Links (BYOD)** | Links work regardless of recipient's delimiter configuration                      |
@@ -115,7 +115,7 @@ That was the lightbulb moment: **precise code references should be universal**. 
 
 I built the VS Code extension first, then extracted a platform-agnostic core library. The goal: make this work _everywhere_, for _everyone_.
 
-Today, with **paste destinations**, RangeLink sends links directly where you need them — Claude Code, Cursor AI, GitHub Copilot Chat, terminals, or text editors. No more copy-paste friction. It helps developers share code with precision across any AI assistant, VSCode, Cursor, GitHub, Slack, and more. One format, zero friction.
+Today, with **destinations**, RangeLink sends links directly where you need them — Claude Code, Cursor AI, GitHub Copilot Chat, terminals, or text editors. No more copy-paste friction. It helps developers share code with precision across any AI assistant, VSCode, Cursor, GitHub, Slack, and more. One format, zero friction.
 
 **The best part?** Your teammates don't even need RangeLink installed to understand your links. The notation is GitHub-inspired — developers already know it.
 
