@@ -286,6 +286,22 @@ describe('DestinationRegistry', () => {
     });
   });
 
+  describe('getDisplayNames()', () => {
+    it('should return display names for all destination kinds', () => {
+      const registry = createRegistry();
+
+      const displayNames = registry.getDisplayNames();
+
+      expect(displayNames).toStrictEqual({
+        terminal: 'Terminal',
+        'text-editor': 'Text Editor',
+        'cursor-ai': 'Cursor AI Assistant',
+        'github-copilot-chat': 'GitHub Copilot Chat',
+        'claude-code': 'Claude Code Chat',
+      });
+    });
+  });
+
   describe('real-world usage pattern', () => {
     it('should support building ComposablePasteDestination with injected capabilities', () => {
       const factories = createMockFactories();
