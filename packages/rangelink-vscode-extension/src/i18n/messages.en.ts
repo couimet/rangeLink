@@ -1,5 +1,8 @@
 import { MessageCode } from '../types';
 
+const NO_DESTINATIONS_AVAILABLE =
+  'No destinations available. Open a terminal, a file, or install an AI assistant extension.';
+
 /**
  * English message templates for VSCode extension.
  * Uses {paramName} syntax for dynamic values.
@@ -91,9 +94,10 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink can seamlessly integrate with GitHub Copilot Chat for faster context sharing of precise code ranges.\n\nInstall and activate the GitHub Copilot Chat extension to use it as a paste destination.',
   [MessageCode.INFO_GITHUB_COPILOT_CHAT_USER_INSTRUCTIONS]:
     'Paste (Cmd/Ctrl+V) in GitHub Copilot chat to use.',
+  [MessageCode.INFO_BIND_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
+  [MessageCode.INFO_BIND_QUICK_PICK_PLACEHOLDER]: 'Choose a destination to bind to:',
   [MessageCode.INFO_JUMP_FOCUS_FAILED]: 'RangeLink: Failed to focus {destinationName}',
-  [MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE]:
-    'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
+  [MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
     'No destination bound. Choose destination to jump to:',
   [MessageCode.INFO_NAVIGATION_EMPTY_INPUT]: 'RangeLink: Please enter a link to navigate',
@@ -101,8 +105,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_NAVIGATION_INPUT_BOX_PROMPT]: 'Enter RangeLink to navigate',
   [MessageCode.INFO_NAVIGATION_INVALID_LINK]: "RangeLink: Invalid link format: '{input}'",
   [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
-  [MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE]:
-    'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
+  [MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW]:
     'No bound destination. Choose below to bind and paste:',
   [MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED]:
