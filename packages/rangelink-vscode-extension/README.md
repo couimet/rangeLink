@@ -283,12 +283,12 @@ RangeLink integrates directly into VSCode's right-click menus for fast, keyboard
 
 Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 
-| Menu Item                           | Visibility  | Action                                  |
-| ----------------------------------- | ----------- | --------------------------------------- |
-| RangeLink: Paste File Path          | Always      | Send absolute path to bound destination |
-| RangeLink: Paste Relative File Path | Always      | Send relative path to bound destination |
-| RangeLink: Bind Here                | Files only  | Open file and bind as destination       |
-| RangeLink: Unbind                   | When bound  | Unbind current destination              |
+| Menu Item                           | Visibility | Action                                  |
+| ----------------------------------- | ---------- | --------------------------------------- |
+| RangeLink: Paste File Path          | Always     | Send absolute path to bound destination |
+| RangeLink: Paste Relative File Path | Always     | Send relative path to bound destination |
+| RangeLink: Bind Here                | Files only | Open file and bind as destination       |
+| RangeLink: Unbind                   | When bound | Unbind current destination              |
 
 #### Editor Tab (right-click on tabs)
 
