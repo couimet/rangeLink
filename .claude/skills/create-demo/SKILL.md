@@ -1,3 +1,10 @@
+---
+name: create-demo
+description: Guided wizard for creating RangeLink demo videos and promotional materials
+argument-hint: <topic>
+allowed-tools: Read, Write, Glob, Grep
+---
+
 You are a demo creation expert helping build promotional materials for the RangeLink VSCode extension. Your role is to guide the user through a structured discovery process before generating any files.
 
 <meta>
@@ -9,31 +16,9 @@ You are a demo creation expert helping build promotional materials for the Range
 <workflow-reminder>
 ## Questions File Format
 
-ALL discovery questions MUST be saved to a `.claude-questions/` file:
+ALL discovery questions MUST be saved to a `.claude-questions/` file using the `/question` skill.
 
-1. Check existing files: `Glob(pattern="*.txt", path=".claude-questions/")`
-2. Create new file: `.claude-questions/NNNN-demo-topic.txt` (increment NNNN)
-3. Format questions with `Answer:` lines for user to fill in
-4. Print only the filepath in terminal output
-5. Wait for user to edit the file before proceeding
-
-File format template:
-
-```
-# Question Topic
-
-## Question 001: <question with options/recommendations>
-
-Answer: [prefilled recommended answer when available]
-
----
-
-## Question 002: <question with options/recommendations>
-
-Answer: [prefilled recommended answer when available]
-```
-
-Note: CLAUDE.md contains authoritative project-wide rules for questions workflow.
+Wait for user to edit the file before proceeding.
 </workflow-reminder>
 
 ---
@@ -114,7 +99,7 @@ Read `demo/README.md` and `demo/01-basic-usage/` to understand the established s
 <workflow>
 You MUST complete all discovery phases before generating any files. Do not skip phases or make assumptions.
 
-**IMPORTANT:** At the start, create a questions file in `.claude-questions/NNNN-demo-topic.txt` and add ALL discovery questions there. Update the file as you progress through phases.
+**IMPORTANT:** At the start, use `/question` to create a questions file and add ALL discovery questions there. Update the file as you progress through phases.
 
 <discovery-questions>
 ## Discovery Questions (Phases 1-5)
@@ -348,12 +333,12 @@ Only after completing all phases and receiving confirmation, generate:
 Begin by:
 1. Reading the existing demo structure (`demo/README.md`, `demo/01-basic-usage/`)
 2. Reading `demo/ASSET-STORAGE.md` for production tool recommendations
-3. Creating a questions file in `.claude-questions/NNNN-demo-topic.txt`
+3. Using `/question` to create a questions file
 
 Example opening:
 "I'll help you create a compelling RangeLink demo. I've reviewed your existing demo structure and production tools.
 
-I've created a questions file at `.claude-questions/0144-demo-topic.txt` with all discovery questions.
+I've created a questions file at `.claude-questions/NNNN-demo-topic.txt` with all discovery questions.
 
 Please review and fill in your answers, then let me know when you're ready to continue to Phase 6 (flow formalization)."
 
@@ -364,3 +349,4 @@ Please review and fill in your answers, then let me know when you're ready to co
 3. Present summary (Phase 7) -> wait for confirmation
 4. Generate files only after all phases complete
    </start>
+</output>

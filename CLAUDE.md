@@ -257,44 +257,12 @@
 
 <rule id="G001" priority="critical">
   <title>Native GitHub sub-issues</title>
-  <when>Creating GitHub issues with parent-child relationships</when>
-  <do>Use GraphQL `addSubIssue` mutation for native relationships</do>
-  <never>Rely only on text links in descriptions (e.g., "Parent: #47")</never>
+  <do>Follow the local `github-issues` skill for sub-issue linking conventions</do>
 </rule>
 
 <rule id="G002" priority="critical">
   <title>Required issue labels</title>
-  <do>ALL issues MUST have one `type:*` label AND one `priority:*` label</do>
-  <do>Optionally add `scope:*` labels for affected packages</do>
-
-  <type-labels description="required - pick ONE">
-    - type:bug - Bug or defect in existing functionality
-    - type:enhancement - New feature or enhancement
-    - type:debt - Technical debt that needs addressing
-    - type:docs - Documentation improvements
-    - type:refactor - Code refactoring without behavior change
-    - type:test - Test coverage improvements
-  </type-labels>
-
-  <priority-labels description="required - pick ONE">
-    - priority:critical - Must be fixed ASAP
-    - priority:high - High priority
-    - priority:medium - Medium priority
-    - priority:low - Nice to have
-  </priority-labels>
-
-  <scope-labels description="optional - pick any that apply">
-    - scope:core - rangelink-core-ts package
-    - scope:vscode-ext - rangelink-vscode-extension package
-    - scope:test-utils - rangelink-test-utils package
-    - scope:tooling - Build tools, scripts, CI/CD
-    - scope:docs - Documentation files
-  </scope-labels>
-
-  <avoid description="GitHub defaults - do not use">
-    - bug, enhancement, duplicate, invalid, wontfix, question
-    - good first issue, help wanted
-  </avoid>
+  <do>Follow the local `github-issues` skill for label requirements and allowed values</do>
 </rule>
 
 <rule id="P001" priority="critical">
@@ -357,49 +325,6 @@
 </default-behavior>
 
 </autonomous-operations>
-
----
-
-<workflows>
-
-<workflow id="creating-github-issues">
-  <title>Creating GitHub Issues</title>
-  <see-also>Rule G002 for required labels</see-also>
-
-  <critical-rule>
-    <title>No references to ephemeral files</title>
-    <never>Reference .scratchpads/ or .claude-questions/ files in GitHub issue content</never>
-    <rationale>These files are local/ephemeral and not accessible from GitHub</rationale>
-    <do>Capture ALL relevant information directly in the issue body</do>
-    <do>If scratchpad references a questions file, inline the decisions in the issue</do>
-    <bad-example>`(from .claude-questions/0062)`</bad-example>
-    <good-example>Inline the actual decisions with context</good-example>
-  </critical-rule>
-
-  <parent-child-issues>
-    <do>Use GraphQL `addSubIssue` mutation for native relationships</do>
-    <never>Rely only on text links in descriptions</never>
-    <example>
-      ```bash
-      # Get node IDs
-      PARENT_ID=$(gh api repos/:owner/:repo/issues/$PARENT_NUM --jq '.node_id')
-      CHILD_ID=$(gh api repos/:owner/:repo/issues/$CHILD_NUM --jq '.node_id')
-
-      # Link using native API
-      gh api graphql -H "GraphQL-Features: sub_issues" -f query="
-        mutation {
-          addSubIssue(input: {issueId: \"$PARENT_ID\", subIssueId: \"$CHILD_ID\"}) {
-            clientMutationId
-          }
-        }
-      "
-      ```
-    </example>
-
-  </parent-child-issues>
-</workflow>
-
-</workflows>
 
 ---
 
