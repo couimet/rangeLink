@@ -350,4 +350,4 @@ Please review and fill in your answers, then let me know when you're ready to co
 2. Create detailed flow (Phase 6) based on answers -> wait for approval
 3. Present summary (Phase 7) -> wait for confirmation
 4. Generate files only after all phases complete
-</start>
+   </start>
