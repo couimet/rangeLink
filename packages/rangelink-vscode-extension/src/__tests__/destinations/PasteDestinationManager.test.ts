@@ -236,7 +236,9 @@ describe('PasteDestinationManager', () => {
         });
       });
       expect(manager.isBound()).toBe(true);
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
         '✓ RangeLink bound to Terminal ("bash")',
         2000,
       );
@@ -308,7 +310,9 @@ describe('PasteDestinationManager', () => {
           destinationKind: 'terminal',
         });
       });
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
         '✓ RangeLink bound to Terminal ("zsh")',
         2000,
       );
@@ -330,7 +334,11 @@ describe('PasteDestinationManager', () => {
         });
       });
       expect(localManager.isBound()).toBe(true);
-      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
         '✓ RangeLink bound to Cursor AI Assistant',
         2000,
       );
@@ -355,6 +363,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
       );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
       expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
@@ -374,6 +383,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind Claude Code - extension not installed or not active',
       );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
       expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
@@ -390,7 +400,9 @@ describe('PasteDestinationManager', () => {
         });
       });
       expect(manager.isBound()).toBe(true);
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
         '✓ RangeLink bound to Claude Code Chat',
         2000,
       );
@@ -410,7 +422,9 @@ describe('PasteDestinationManager', () => {
         });
       });
       expect(manager.isBound()).toBe(true);
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
         '✓ RangeLink bound to GitHub Copilot Chat',
         2000,
       );
@@ -441,6 +455,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
       );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
       expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
@@ -462,6 +477,14 @@ describe('PasteDestinationManager', () => {
       expect(localAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
         'RangeLink: Already bound to Cursor AI Assistant',
       );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Cursor AI Assistant',
+        2000,
+      );
 
       localManager.dispose();
     });
@@ -476,11 +499,6 @@ describe('PasteDestinationManager', () => {
       // Bind first time
       await manager.bind({ kind: 'github-copilot-chat' });
 
-      // Clear adapter calls to isolate second bind attempt (but keep factory mock intact)
-      const mockVscode = mockAdapter.__getVscodeInstance();
-      (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
-      (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
-
       // Try binding again to same destination
       const result = await manager.bind({ kind: 'github-copilot-chat' });
 
@@ -489,8 +507,14 @@ describe('PasteDestinationManager', () => {
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'ALREADY_BOUND_TO_SAME' },
       });
-      expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
         'RangeLink: Already bound to GitHub Copilot Chat',
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to GitHub Copilot Chat',
+        2000,
       );
     });
   });
@@ -516,7 +540,9 @@ describe('PasteDestinationManager', () => {
         });
       });
       expect(manager.isBound()).toBe(true);
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
         '✓ RangeLink bound to Text Editor ("file.ts")',
         2000,
       );
@@ -550,6 +576,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: No active text editor. Open a file and try again.',
       );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
       expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
@@ -575,6 +602,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Cannot bind to read-only editor (git)',
       );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
       expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
@@ -601,6 +629,7 @@ describe('PasteDestinationManager', () => {
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         `RangeLink: Cannot bind to ${testFileName} - binary file`,
       );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
       expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
   });
@@ -631,6 +660,14 @@ describe('PasteDestinationManager', () => {
         currentDestination: 'Terminal ("bash")',
         newDestination: 'Cursor AI Assistant',
       });
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
 
       localManager.dispose();
     });
@@ -659,6 +696,14 @@ describe('PasteDestinationManager', () => {
         currentDestination: 'Cursor AI Assistant',
         newDestination: 'Terminal ("bash")',
       });
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Cursor AI Assistant',
+        2000,
+      );
 
       localManager.dispose();
     });
@@ -689,6 +734,12 @@ describe('PasteDestinationManager', () => {
         currentDestination: 'Terminal ("bash")',
         newDestination: 'GitHub Copilot Chat',
       });
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
     });
 
     it('should show confirmation when binding terminal while github-copilot-chat already bound', async () => {
@@ -731,6 +782,12 @@ describe('PasteDestinationManager', () => {
         currentDestination: 'GitHub Copilot Chat',
         newDestination: 'Terminal ("bash")',
       });
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to GitHub Copilot Chat',
+        2000,
+      );
     });
 
     it('should show confirmation when replacing cursor-ai with github-copilot-chat', async () => {
@@ -764,6 +821,14 @@ describe('PasteDestinationManager', () => {
         currentDestination: 'Cursor AI Assistant',
         newDestination: 'GitHub Copilot Chat',
       });
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Cursor AI Assistant',
+        2000,
+      );
 
       localManager.dispose();
     });
@@ -779,7 +844,14 @@ describe('PasteDestinationManager', () => {
       manager.unbind();
 
       expect(manager.isBound()).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
         '✓ RangeLink unbound from Terminal ("bash")',
         2000,
       );
@@ -795,7 +867,16 @@ describe('PasteDestinationManager', () => {
       localManager.unbind();
 
       expect(localManager.isBound()).toBe(false);
-      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(
+        2,
+      );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Cursor AI Assistant',
+        2000,
+      );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
         '✓ RangeLink unbound from Cursor AI Assistant',
         2000,
       );
@@ -814,7 +895,14 @@ describe('PasteDestinationManager', () => {
 
       expect(manager.isBound()).toBe(false);
       expect(manager.getBoundDestination()).toBeUndefined();
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to GitHub Copilot Chat',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
         '✓ RangeLink unbound from GitHub Copilot Chat',
         2000,
       );
@@ -831,7 +919,14 @@ describe('PasteDestinationManager', () => {
 
       expect(manager.isBound()).toBe(false);
       expect(manager.getBoundDestination()).toBeUndefined();
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Claude Code Chat',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
         '✓ RangeLink unbound from Claude Code Chat',
         2000,
       );
@@ -855,7 +950,14 @@ describe('PasteDestinationManager', () => {
 
       expect(manager.isBound()).toBe(false);
       expect(manager.getBoundDestination()).toBeUndefined();
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Text Editor ("file.ts")',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
         '✓ RangeLink unbound from Text Editor ("file.ts")',
         2000,
       );
@@ -866,7 +968,9 @@ describe('PasteDestinationManager', () => {
       manager.unbind();
 
       expect(manager.isBound()).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
         'RangeLink: No destination bound',
         2000,
       );
@@ -917,8 +1021,6 @@ describe('PasteDestinationManager', () => {
 
       await manager.bind({ kind: 'terminal', terminal: mockTerminal });
 
-      const setStatusBarSpy = jest.spyOn(mockAdapter, 'setStatusBarMessage');
-
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
       const result = await manager.sendLinkToDestination(
         formattedLink,
@@ -930,8 +1032,16 @@ describe('PasteDestinationManager', () => {
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledTimes(1);
       expect(mockTerminalDest.pasteLink).toHaveBeenCalledWith(formattedLink, 'both');
 
-      expect(setStatusBarSpy).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
         'RangeLink copied to clipboard & sent to Terminal ("bash")',
+        2000,
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
@@ -958,7 +1068,6 @@ describe('PasteDestinationManager', () => {
       });
 
       await cursorManager.bind({ kind: 'cursor-ai' });
-      mockSetStatusBarMessage.mockClear();
 
       const boundDest = cursorManager.getBoundDestination()!;
       const successInstruction = 'Paste the link in Cursor AI chat';
@@ -979,7 +1088,13 @@ describe('PasteDestinationManager', () => {
       expect(boundDest.pasteLink).toHaveBeenCalledTimes(1);
       expect(boundDest.pasteLink).toHaveBeenCalledWith(formattedLink, 'both');
 
-      expect(mockSetStatusBarMessage).toHaveBeenCalledWith(TEST_STATUS_MESSAGE, 2000);
+      expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockSetStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Cursor AI Assistant',
+        2000,
+      );
+      expect(mockSetStatusBarMessage).toHaveBeenNthCalledWith(2, TEST_STATUS_MESSAGE, 2000);
       expect(mockShowInformationMessage).toHaveBeenCalledWith(successInstruction);
 
       cursorManager.dispose();
@@ -1001,6 +1116,17 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(true);
       expect(mockDestination.pasteLink).toHaveBeenCalledTimes(1);
       expect(mockDestination.pasteLink).toHaveBeenCalledWith(formattedLink, 'both');
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to GitHub Copilot Chat',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
+        'RangeLink copied to clipboard & sent to GitHub Copilot Chat',
+        2000,
+      );
     });
 
     it('should return false when no destination bound', async () => {
@@ -1013,11 +1139,12 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(false);
       expect(mockTerminalDest.pasteLink).not.toHaveBeenCalled();
       expect(mockChatDest.pasteLink).not.toHaveBeenCalled();
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
     });
 
     it('should show warning message when terminal paste fails', async () => {
       const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
-      const { manager: localManager } = createManager({
+      const { manager: localManager, adapter: localAdapter } = createManager({
         windowOptions: { showWarningMessage: mockShowWarningMessage },
       });
 
@@ -1041,6 +1168,14 @@ describe('PasteDestinationManager', () => {
       expect(mockShowWarningMessage).toHaveBeenCalledWith(
         'RangeLink copied to clipboard. Could not send to terminal. Terminal may be closed or not accepting input.',
       );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
 
       localManager.dispose();
     });
@@ -1057,7 +1192,6 @@ describe('PasteDestinationManager', () => {
       });
 
       await cursorManager.bind({ kind: 'cursor-ai' });
-      mockSetStatusBarMessage.mockClear();
 
       const boundDest = cursorManager.getBoundDestination()!;
       const failureInstruction = 'Manual paste: Open Cursor AI and paste the link';
@@ -1078,7 +1212,13 @@ describe('PasteDestinationManager', () => {
       expect(result).toBe(false);
       expect(boundDest.pasteLink).toHaveBeenCalledTimes(1);
 
-      expect(mockSetStatusBarMessage).toHaveBeenCalledWith(TEST_STATUS_MESSAGE, 2000);
+      expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockSetStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Cursor AI Assistant',
+        2000,
+      );
+      expect(mockSetStatusBarMessage).toHaveBeenNthCalledWith(2, TEST_STATUS_MESSAGE, 2000);
       expect(mockShowWarningMessage).toHaveBeenCalledWith(failureInstruction);
 
       cursorManager.dispose();
@@ -1093,6 +1233,17 @@ describe('PasteDestinationManager', () => {
       const formattedLink = createMockFormattedLink('src/file.ts#L10');
       await manager.sendLinkToDestination(formattedLink, TEST_STATUS_MESSAGE, 'both');
 
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
+        'RangeLink copied to clipboard',
+        2000,
+      );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.sendLinkToDestination',
@@ -1108,7 +1259,7 @@ describe('PasteDestinationManager', () => {
 
     it('should show text-editor specific warning when editor paste fails', async () => {
       const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
-      const { manager: localManager } = createManager({
+      const { manager: localManager, adapter: localAdapter } = createManager({
         windowOptions: { showWarningMessage: mockShowWarningMessage },
       });
 
@@ -1135,6 +1286,7 @@ describe('PasteDestinationManager', () => {
       expect(mockShowWarningMessage).toHaveBeenCalledWith(
         'RangeLink copied to clipboard. Could not send to editor. Bound editor is hidden behind other tabs.',
       );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
 
       localManager.dispose();
     });
@@ -1162,6 +1314,7 @@ describe('PasteDestinationManager', () => {
         functionName: 'PasteDestinationManager.buildPasteFailureMessage',
         details: { destinationId: 'cursor-ai', displayName: 'Cursor AI Assistant' },
       });
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
     });
 
     it('should throw UNEXPECTED_CODE_PATH when github-copilot-chat reaches buildPasteFailureMessage', async () => {
@@ -1184,6 +1337,7 @@ describe('PasteDestinationManager', () => {
         functionName: 'PasteDestinationManager.buildPasteFailureMessage',
         details: { destinationId: 'github-copilot-chat', displayName: 'GitHub Copilot Chat' },
       });
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
     });
 
     it('should throw DESTINATION_NOT_IMPLEMENTED for unknown destination kind', async () => {
@@ -1211,6 +1365,7 @@ describe('PasteDestinationManager', () => {
         functionName: 'PasteDestinationManager.buildPasteFailureMessage',
         details: { destinationId: 'unknown-destination-type', displayName: 'Unknown Destination' },
       });
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
     });
 
     it('should log error when paste fails', async () => {
@@ -1236,6 +1391,17 @@ describe('PasteDestinationManager', () => {
         },
         'Paste link failed to Terminal ("bash")',
       );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
+        'RangeLink copied to clipboard',
+        2000,
+      );
     });
   });
 
@@ -1250,7 +1416,19 @@ describe('PasteDestinationManager', () => {
       terminalCloseListener(mockTerminal);
 
       expect(manager.isBound()).toBe(false);
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(3);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
+        '✓ RangeLink unbound from Terminal ("bash")',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        3,
         'Destination binding removed (terminal closed)',
         2000,
       );
@@ -1268,10 +1446,18 @@ describe('PasteDestinationManager', () => {
       terminalCloseListener(otherTerminal);
 
       expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
     });
 
     it('should not auto-unbind for chat destinations', async () => {
-      const { manager: localManager } = createManager({ envOptions: { appName: 'Cursor' } });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
       await localManager.bind({ kind: 'cursor-ai' });
 
       const mockTerminal = createMockTerminal();
@@ -1280,6 +1466,14 @@ describe('PasteDestinationManager', () => {
       terminalCloseListener(mockTerminal);
 
       expect(localManager.isBound()).toBe(true);
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Cursor AI Assistant',
+        2000,
+      );
 
       localManager.dispose();
     });
@@ -1301,28 +1495,24 @@ describe('PasteDestinationManager', () => {
       await manager.bind({ kind: 'text-editor' });
       expect(manager.isBound()).toBe(true);
 
-      // Clear mocks to isolate document close behavior
-      formatMessageSpy.mockClear();
-      (mockAdapter.__getVscodeInstance().window.setStatusBarMessage as jest.Mock).mockClear();
-      (mockAdapter.__getVscodeInstance().window.showInformationMessage as jest.Mock).mockClear();
-
       // Simulate document close
       documentCloseListener(mockDocument);
 
       expect(manager.isBound()).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND);
-      expect(
-        mockAdapter.__getVscodeInstance().window.showInformationMessage,
-      ).not.toHaveBeenCalled();
-      // Two calls: 1) unbind() message, 2) document close message
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(3);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
         1,
-        '✓ RangeLink unbound from Text Editor ("file.ts")',
+        '✓ RangeLink bound to Text Editor ("file.ts")',
         2000,
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
         2,
+        '✓ RangeLink unbound from Text Editor ("file.ts")',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        3,
         'RangeLink: Bound editor closed. Unbound.',
         2000,
       );
@@ -1355,6 +1545,12 @@ describe('PasteDestinationManager', () => {
       documentCloseListener(otherDocument);
 
       expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Text Editor ("file.ts")',
+        2000,
+      );
     });
 
     it('should not auto-unbind for non-text-editor destinations', async () => {
@@ -1371,6 +1567,12 @@ describe('PasteDestinationManager', () => {
       documentCloseListener(mockDocument);
 
       expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
     });
   });
 
@@ -1386,12 +1588,19 @@ describe('PasteDestinationManager', () => {
       expect(destination).toBeDefined();
       expect(destination?.id).toBe('terminal');
       expect(destination?.displayName).toBe('Terminal ("bash")');
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
     });
 
     it('should return undefined when nothing bound', () => {
       const destination = manager.getBoundDestination();
 
       expect(destination).toBeUndefined();
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
     });
   });
 
@@ -1403,19 +1612,36 @@ describe('PasteDestinationManager', () => {
       await manager.bind({ kind: 'terminal', terminal: mockTerminal });
 
       expect(manager.isBound()).toBe(true);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
     });
 
     it('should return true when chat destination bound', async () => {
-      const { manager: localManager } = createManager({ envOptions: { appName: 'Cursor' } });
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
       await localManager.bind({ kind: 'cursor-ai' });
 
       expect(localManager.isBound()).toBe(true);
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(localAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Cursor AI Assistant',
+        2000,
+      );
 
       localManager.dispose();
     });
 
     it('should return false when nothing bound', () => {
       expect(manager.isBound()).toBe(false);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
     });
 
     it('should return false after unbind', async () => {
@@ -1426,6 +1652,17 @@ describe('PasteDestinationManager', () => {
       manager.unbind();
 
       expect(manager.isBound()).toBe(false);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal ("bash")',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
+        '✓ RangeLink unbound from Terminal ("bash")',
+        2000,
+      );
     });
   });
 
@@ -1616,7 +1853,6 @@ describe('PasteDestinationManager', () => {
         (mockVscode.window.showQuickPick as jest.Mock).mockResolvedValue({
           label: 'No, keep current binding',
           description: 'Stay bound to Terminal',
-          confirmed: false,
         });
 
         // Mock active terminal for first bind
@@ -1631,9 +1867,6 @@ describe('PasteDestinationManager', () => {
             destinationKind: 'terminal',
           });
         });
-
-        // Reset status bar message mock to verify second bind doesn't show toast
-        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
 
         // Mock active text editor for second bind
         mockVscode.window.activeTextEditor = {
@@ -1654,8 +1887,13 @@ describe('PasteDestinationManager', () => {
         expect(manager.isBound()).toBe(true);
         expect(manager.getBoundDestination()?.id).toBe('terminal');
 
-        // Assert: No toast shown (no replacement happened)
-        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+        // Assert: Only first bind toast, no replacement toast
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
+          '✓ RangeLink bound to Terminal ("TestTerminal")',
+          2000,
+        );
       });
     });
 
@@ -1682,10 +1920,6 @@ describe('PasteDestinationManager', () => {
         await manager.bind({ kind: 'terminal', terminal: testTerminal });
         expect(manager.isBound()).toBe(true);
 
-        // Clear mocks to verify second bind behavior
-        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
-        (mockVscode.window.showQuickPick as jest.Mock).mockClear();
-
         // Second bind: Try to bind to Terminal again
         const result = await manager.bind({ kind: 'terminal', terminal: testTerminal });
 
@@ -1701,7 +1935,15 @@ describe('PasteDestinationManager', () => {
         );
 
         // Assert: QuickPick NOT shown (no confirmation needed)
-        expect(mockVscode.window.showQuickPick).not.toHaveBeenCalled();
+        expect(mockVscode.window.showQuickPick).toHaveBeenCalledTimes(0);
+
+        // Assert: Only first bind toast, no second toast
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
+          '✓ RangeLink bound to Terminal ("TestTerminal")',
+          2000,
+        );
 
         // Assert: Still bound to Terminal
         expect(manager.getBoundDestination()?.id).toBe('terminal');
@@ -1731,7 +1973,9 @@ describe('PasteDestinationManager', () => {
         expect(manager.isBound()).toBe(true);
 
         // Assert: Standard toast shown (no "Unbound..." prefix)
-        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
           '✓ RangeLink bound to Terminal ("TestTerminal")',
           2000,
         );
@@ -1772,9 +2016,6 @@ describe('PasteDestinationManager', () => {
           document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
         } as vscode.TextEditor;
 
-        // Clear mocks
-        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
-
         // Second bind: Try to bind to Text Editor (user presses Esc)
         const result = await manager.bind({ kind: 'text-editor' });
 
@@ -1788,8 +2029,13 @@ describe('PasteDestinationManager', () => {
         expect(manager.isBound()).toBe(true);
         expect(manager.getBoundDestination()?.id).toBe('terminal');
 
-        // Assert: No toast shown
-        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+        // Assert: Only first bind toast, no replacement toast
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
+          '✓ RangeLink bound to Terminal ("TestTerminal")',
+          2000,
+        );
       });
     });
   });
@@ -1830,7 +2076,14 @@ describe('PasteDestinationManager', () => {
 
         expect(result).toBe(true);
         expect(mockTerminalDest.pasteContent).toHaveBeenCalledWith(TEST_CONTENT, 'none');
-        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
+          '✓ RangeLink bound to Terminal ("bash")',
+          2000,
+        );
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          2,
           'Content sent successfully & sent to Terminal ("bash")',
           2000,
         );
@@ -1850,14 +2103,22 @@ describe('PasteDestinationManager', () => {
 
         expect(result).toBe(true);
         expect(mockDestination.pasteContent).toHaveBeenCalledWith(TEST_CONTENT, 'none');
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
+          '✓ RangeLink bound to GitHub Copilot Chat',
+          2000,
+        );
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          2,
+          'Content sent successfully & sent to GitHub Copilot Chat',
+          2000,
+        );
       });
 
       it('should handle destination.pasteContent returning false', async () => {
         const mockTerminal = createMockTerminal();
         await manager.bind({ kind: 'terminal', terminal: mockTerminal });
-
-        // Clear bind() messages to isolate sendTextToDestination behavior
-        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
 
         mockTerminalDest.pasteContent.mockResolvedValueOnce(false);
 
@@ -1878,7 +2139,12 @@ describe('PasteDestinationManager', () => {
           'Paste content failed to Terminal ("bash")',
         );
 
-        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
+          '✓ RangeLink bound to Terminal ("bash")',
+          2000,
+        );
         expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
         expect(mockVscode.window.showInformationMessage).not.toHaveBeenCalled();
       });
@@ -1894,7 +2160,14 @@ describe('PasteDestinationManager', () => {
         expect(result).toBe(true);
         expect(mockTerminalDest.pasteContent).toHaveBeenCalledWith(largeContent, 'none');
 
-        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledWith(
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
+          '✓ RangeLink bound to Terminal ("bash")',
+          2000,
+        );
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          2,
           'Content sent successfully & sent to Terminal ("bash")',
           2000,
         );
@@ -1932,10 +2205,6 @@ describe('PasteDestinationManager', () => {
         await manager.bind({ kind: 'terminal', terminal: mockTerminal });
         const firstDest = manager.getBoundDestination();
 
-        (mockVscode.window.setStatusBarMessage as jest.Mock).mockClear();
-        (mockVscode.window.showInformationMessage as jest.Mock).mockClear();
-        (mockVscode.window.showErrorMessage as jest.Mock).mockClear();
-
         mockTerminalDest.equals.mockResolvedValueOnce(true);
 
         const result = await manager.bind({ kind: 'terminal', terminal: mockTerminal });
@@ -1949,7 +2218,6 @@ describe('PasteDestinationManager', () => {
         expect(mockVscode.window.showInformationMessage).toHaveBeenCalledWith(
           'RangeLink: Already bound to Terminal ("bash")',
         );
-        expect(mockVscode.window.showInformationMessage).toHaveBeenCalledTimes(1);
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'PasteDestinationManager.commitBind',
@@ -1958,8 +2226,12 @@ describe('PasteDestinationManager', () => {
           },
           'Already bound to Terminal ("bash"), no action taken',
         );
-        expect(mockVscode.window.showErrorMessage).not.toHaveBeenCalled();
-        expect(mockVscode.window.setStatusBarMessage).not.toHaveBeenCalled();
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+        expect(mockVscode.window.setStatusBarMessage).toHaveBeenNthCalledWith(
+          1,
+          '✓ RangeLink bound to Terminal ("bash")',
+          2000,
+        );
       });
     });
   });
@@ -1993,6 +2265,7 @@ describe('PasteDestinationManager', () => {
         message: 'No destination is currently bound',
         functionName: 'PasteDestinationManager.focusBoundDestination',
       });
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
     });
 
     it('returns ok with FocusSuccessInfo on successful focus', async () => {
@@ -2013,6 +2286,17 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully focused Terminal',
       );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
+        '✓ Focused Terminal: "bash"',
+        2000,
+      );
     });
 
     it('shows status bar message by default on success', async () => {
@@ -2030,10 +2314,6 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully bound to "Terminal"',
       );
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
-        '✓ RangeLink bound to Terminal',
-        2000,
-      );
 
       const focusResult = await manager.focusBoundDestination();
 
@@ -2049,7 +2329,14 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully focused Terminal',
       );
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(2);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal',
+        2000,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        2,
         '✓ Focused Terminal: "bash"',
         2000,
       );
@@ -2070,11 +2357,6 @@ describe('PasteDestinationManager', () => {
         },
         'Successfully bound to "Terminal"',
       );
-      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledWith(
-        '✓ RangeLink bound to Terminal',
-        2000,
-      );
-
       const focusResult = await manager.focusBoundDestination({ silent: true });
 
       expect(focusResult).toBeOkWith((value: FocusSuccessInfo) => {
@@ -2090,6 +2372,11 @@ describe('PasteDestinationManager', () => {
         'Successfully focused Terminal',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal',
+        2000,
+      );
     });
 
     it('returns err with DESTINATION_FOCUS_FAILED when focus fails', async () => {
@@ -2112,6 +2399,12 @@ describe('PasteDestinationManager', () => {
         },
         'Failed to focus Terminal',
       );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Terminal',
+        2000,
+      );
     });
   });
 
@@ -2127,6 +2420,7 @@ describe('PasteDestinationManager', () => {
           details: { options: bogusOptions },
         },
       );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
     });
   });
 

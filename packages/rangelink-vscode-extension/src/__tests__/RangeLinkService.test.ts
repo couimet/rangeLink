@@ -4,6 +4,7 @@ import type { DelimiterConfig, DelimiterConfigGetter } from 'rangelink-core-ts';
 import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { JumpToDestinationCommand } from '../commands/JumpToDestinationCommand';
 import type { ConfigReader } from '../config';
 import type { DestinationPicker } from '../destinations';
 import type { PasteDestinationManager } from '../destinations';
@@ -912,6 +913,7 @@ describe('RangeLinkService', () => {
           await service.pasteSelectedTextToDestination();
 
           expect(mockPickerCommand.pick).toHaveBeenCalledTimes(1);
+          expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
         });
 
         describe('when user cancels quick pick', () => {
@@ -923,12 +925,14 @@ describe('RangeLinkService', () => {
             await service.pasteSelectedTextToDestination();
 
             expect(mockClipboard.writeText).not.toHaveBeenCalled();
+            expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
           });
 
           it('should NOT attempt to send to destination', async () => {
             await service.pasteSelectedTextToDestination();
 
             expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
+            expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
           });
         });
 
@@ -964,6 +968,7 @@ describe('RangeLinkService', () => {
             '✓ Selected text copied to clipboard',
             'none',
           );
+          expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
         });
 
         it('should show error toast and not copy when bind fails via quick pick', async () => {
@@ -1003,6 +1008,7 @@ describe('RangeLinkService', () => {
           );
           expect(mockClipboard.writeText).not.toHaveBeenCalled();
           expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
+          expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
         });
       });
 
@@ -1032,6 +1038,7 @@ describe('RangeLinkService', () => {
           await service.pasteSelectedTextToDestination();
 
           expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
+          expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
         });
 
         it('should send selected text to bound destination with basicStatusMessage', async () => {
@@ -1042,6 +1049,7 @@ describe('RangeLinkService', () => {
             '✓ Selected text copied to clipboard',
             'none',
           );
+          expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
         });
       });
 
@@ -1178,7 +1186,7 @@ describe('RangeLinkService', () => {
     describe('with multi-selection', () => {
       beforeEach(() => {
         mockClipboard = createMockClipboard();
-        const mockSetStatusBarMessage = jest.fn().mockReturnValue({ dispose: jest.fn() });
+        mockSetStatusBarMessage = jest.fn().mockReturnValue({ dispose: jest.fn() });
         const { adapter, document } = createMockEditorWithSelection({
           content: 'first line\nsecond line\nthird line',
           selections: [
@@ -1226,6 +1234,7 @@ describe('RangeLinkService', () => {
         await service.pasteSelectedTextToDestination();
 
         expect(mockClipboard.writeText).toHaveBeenCalledWith('first line\nsecond line\nthird line');
+        expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
       });
 
       it('should send concatenated text to destination', async () => {
@@ -1253,6 +1262,7 @@ describe('RangeLinkService', () => {
           '✓ Selected text copied to clipboard',
           'none',
         );
+        expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
       });
 
       it('should pass basicStatusMessage to destination manager for status display', async () => {
@@ -1263,12 +1273,14 @@ describe('RangeLinkService', () => {
           '✓ Selected text copied to clipboard',
           'none',
         );
+        expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
       });
     });
 
     describe('with mixed empty and non-empty selections', () => {
       beforeEach(() => {
         mockClipboard = createMockClipboard();
+        mockSetStatusBarMessage = jest.fn().mockReturnValue({ dispose: jest.fn() });
         const { adapter, document } = createMockEditorWithSelection({
           content: 'valid text',
           selections: [
@@ -1276,7 +1288,10 @@ describe('RangeLinkService', () => {
             [1, 0, 1, 10],
             [2, 0, 2, 0], // empty (collapsed)
           ],
-          adapterOptions: { envOptions: { clipboard: mockClipboard } },
+          adapterOptions: {
+            envOptions: { clipboard: mockClipboard },
+            windowOptions: { setStatusBarMessage: mockSetStatusBarMessage },
+          },
         });
 
         // Override getText to return text only for second selection (test requirement)
@@ -1309,6 +1324,7 @@ describe('RangeLinkService', () => {
         await service.pasteSelectedTextToDestination();
 
         expect(mockClipboard.writeText).toHaveBeenCalledWith('valid text');
+        expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
       });
 
       it('should send only non-empty selections to destination', async () => {
@@ -1336,6 +1352,7 @@ describe('RangeLinkService', () => {
           '✓ Selected text copied to clipboard',
           'none',
         );
+        expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
       });
     });
 
@@ -2532,6 +2549,203 @@ describe('RangeLinkService', () => {
       await service.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative);
 
       expect(spy).toHaveBeenCalledWith(PathFormat.WorkspaceRelative);
+    });
+  });
+
+  describe('user feedback accumulation across bind/unbind lifecycle', () => {
+    const STATUS_BAR_TIMEOUT = 2000;
+
+    it('tracks cumulative setStatusBarMessage and toast counts through R-L, R-V, R-F, R-J operations', async () => {
+      const statusBar = jest.fn().mockReturnValue({ dispose: jest.fn() });
+      const infoMsg = jest.fn().mockResolvedValue(undefined);
+      const errorMsg = jest.fn().mockResolvedValue(undefined);
+      const warningMsg = jest.fn().mockResolvedValue(undefined);
+      const clipboard = createMockClipboard();
+
+      const { adapter } = createMockEditorWithSelection({
+        content: 'const hello = "world";',
+        uri: '/workspace/src/file.ts',
+        selections: [[0, 0, 0, 22]],
+        adapterOptions: {
+          envOptions: { clipboard },
+          windowOptions: {
+            setStatusBarMessage: statusBar,
+            showInformationMessage: infoMsg,
+            showErrorMessage: errorMsg,
+            showWarningMessage: warningMsg,
+          },
+          workspaceOptions: {
+            getWorkspaceFolder: jest.fn().mockReturnValue(createMockWorkspaceFolder('/workspace')),
+            asRelativePath: jest.fn().mockReturnValue('src/file.ts'),
+          },
+        },
+      });
+
+      let bound = false;
+      const terminalDest = createMockTerminalPasteDestination({ displayName: 'Terminal' });
+      const dm = {
+        isBound: jest.fn(() => bound),
+        getBoundDestination: jest.fn(() => (bound ? terminalDest : undefined)),
+        sendLinkToDestination: jest.fn().mockResolvedValue(true),
+        sendTextToDestination: jest.fn().mockResolvedValue(true),
+        bind: jest
+          .fn()
+          .mockResolvedValue(
+            Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
+          ),
+        unbind: jest.fn(),
+        focusBoundDestination: jest
+          .fn()
+          .mockResolvedValue(Result.ok({ destinationName: 'Terminal' })),
+        bindAndFocus: jest.fn().mockResolvedValue(Result.ok({ destinationName: 'Terminal' })),
+        dispose: jest.fn(),
+      } as unknown as jest.Mocked<PasteDestinationManager>;
+
+      const picker = createMockDestinationPicker();
+      const logger = createMockLogger();
+      const config = createMockConfigReader();
+
+      const mockGenLink = spyOnGenerateLinkFromSelections();
+      mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1C1-L1C22')));
+
+      const svc = new RangeLinkService(getDelimiters, adapter, dm, picker, config, logger);
+      const jumpCmd = new JumpToDestinationCommand(dm, picker, logger);
+
+      // ===== PHASE 1: ALL OPERATIONS WHILE UNBOUND =====
+
+      // R-L: createLink — unbound → clipboard only toast
+      await svc.createLink();
+      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(statusBar).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink copied to clipboard',
+        STATUS_BAR_TIMEOUT,
+      );
+      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+
+      // R-V: pasteSelectedTextToDestination — unbound → picker cancelled → no action
+      picker.pick.mockResolvedValue({ outcome: 'cancelled' });
+      await svc.pasteSelectedTextToDestination();
+      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+
+      // R-F: pasteCurrentFilePathToDestination — unbound → picker cancelled → no action
+      picker.pick.mockResolvedValue({ outcome: 'cancelled' });
+      await svc.pasteCurrentFilePathToDestination(PathFormat.Absolute);
+      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+
+      // R-J: jump — unbound → picker cancelled → no action
+      picker.pick.mockResolvedValue({ outcome: 'cancelled' });
+      await jumpCmd.execute();
+      expect(statusBar).toHaveBeenCalledTimes(1);
+
+      // Unbound phase tally
+      expect(infoMsg).not.toHaveBeenCalled();
+      expect(errorMsg).not.toHaveBeenCalled();
+      expect(warningMsg).not.toHaveBeenCalled();
+
+      // ===== PHASE 2: BIND TO TERMINAL — ALL OPERATIONS WHILE BOUND =====
+      bound = true;
+
+      // R-L: createLink — bound → mock manager handles feedback → no statusBar from service
+      await svc.createLink();
+      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(2);
+
+      // R-V: pasteSelectedTextToDestination — bound → mock manager handles
+      await svc.pasteSelectedTextToDestination();
+      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(3);
+
+      // R-F: pasteCurrentFilePathToDestination — bound → mock manager handles
+      await svc.pasteCurrentFilePathToDestination(PathFormat.Absolute);
+      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(4);
+
+      // R-J: jump — bound → focusBoundDestination (manager handles internally)
+      const jumpResult = await jumpCmd.execute();
+      expect(jumpResult).toStrictEqual({ outcome: 'focused', destinationName: 'Terminal' });
+      expect(statusBar).toHaveBeenCalledTimes(1);
+
+      // Bound phase tally: still no toasts from RangeLinkService
+      expect(infoMsg).not.toHaveBeenCalled();
+      expect(errorMsg).not.toHaveBeenCalled();
+      expect(warningMsg).not.toHaveBeenCalled();
+
+      // ===== PHASE 3: UNBIND — BACK TO CLIPBOARD-ONLY =====
+      bound = false;
+
+      // R-L: createLink — unbound again → clipboard-only toast
+      await svc.createLink();
+      expect(statusBar).toHaveBeenCalledTimes(2);
+      expect(statusBar).toHaveBeenNthCalledWith(
+        2,
+        '✓ RangeLink copied to clipboard',
+        STATUS_BAR_TIMEOUT,
+      );
+      expect(clipboard.writeText).toHaveBeenCalledTimes(5);
+
+      // R-V: pasteSelectedTextToDestination — unbound → picker cancelled
+      picker.pick.mockResolvedValue({ outcome: 'cancelled' });
+      await svc.pasteSelectedTextToDestination();
+      expect(statusBar).toHaveBeenCalledTimes(2);
+
+      // ===== PHASE 4: REBIND + INELIGIBLE CONTENT =====
+      bound = true;
+      terminalDest.isEligibleForPasteContent.mockResolvedValue(false);
+
+      // R-V: bound but ineligible → clipboard-only fallback toast
+      await svc.pasteSelectedTextToDestination();
+      expect(statusBar).toHaveBeenCalledTimes(3);
+      expect(statusBar).toHaveBeenNthCalledWith(
+        3,
+        '✓ Selected text copied to clipboard',
+        STATUS_BAR_TIMEOUT,
+      );
+      expect(clipboard.writeText).toHaveBeenCalledTimes(6);
+
+      // R-F: bound but ineligible → clipboard-only fallback toast
+      await svc.pasteCurrentFilePathToDestination(PathFormat.Absolute);
+      expect(statusBar).toHaveBeenCalledTimes(4);
+      expect(statusBar).toHaveBeenNthCalledWith(
+        4,
+        '✓ File path copied to clipboard',
+        STATUS_BAR_TIMEOUT,
+      );
+      expect(clipboard.writeText).toHaveBeenCalledTimes(7);
+
+      // R-L: bound but ineligible link → clipboard-only fallback toast
+      terminalDest.isEligibleForPasteLink.mockResolvedValue(false);
+      await svc.createLink();
+      expect(statusBar).toHaveBeenCalledTimes(5);
+      expect(statusBar).toHaveBeenNthCalledWith(
+        5,
+        '✓ RangeLink copied to clipboard',
+        STATUS_BAR_TIMEOUT,
+      );
+      expect(clipboard.writeText).toHaveBeenCalledTimes(8);
+
+      // Reset eligibility, verify normal bound path resumes
+      terminalDest.isEligibleForPasteContent.mockResolvedValue(true);
+      terminalDest.isEligibleForPasteLink.mockResolvedValue(true);
+
+      // R-V: bound + eligible again → mock manager handles
+      await svc.pasteSelectedTextToDestination();
+      expect(statusBar).toHaveBeenCalledTimes(5);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(9);
+
+      // ===== FINAL TALLY =====
+      // 5 statusBar calls total:
+      //   #1: R-L unbound (Phase 1)
+      //   #2: R-L unbound (Phase 3)
+      //   #3: R-V bound+ineligible (Phase 4)
+      //   #4: R-F bound+ineligible (Phase 4)
+      //   #5: R-L bound+ineligible (Phase 4)
+      expect(statusBar).toHaveBeenCalledTimes(5);
+      expect(infoMsg).not.toHaveBeenCalled();
+      expect(errorMsg).not.toHaveBeenCalled();
+      expect(warningMsg).not.toHaveBeenCalled();
     });
   });
 });
