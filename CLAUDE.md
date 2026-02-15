@@ -11,31 +11,15 @@
 <critical-rules>
 <!-- These rules are checked on EVERY response. Violations are unacceptable. -->
 
-<!-- TODO(#332 Phase 3): Replace this rule with a reference to the /question skill.
-     The skill will own the file format, location, and naming conventions. -->
 <rule id="Q001" priority="critical">
   <title>Questions go to file, not terminal</title>
-  <do>Save questions to `.claude-questions/NNNN-description.txt`</do>
+  <do>Follow the `/question` skill for file format, location, and naming conventions</do>
   <never>Print questions directly in terminal output</never>
-  <checklist>
-    - Use `Glob(pattern="*.txt", path=".claude-questions/")` to find next NNNN
-    - Use `.txt` extension (NOT `.md`)
-    - Print only the filepath in terminal
-    - User edits file - it's the single source of truth
-  </checklist>
 </rule>
 
-<!-- TODO(#332 Phase 3): Replace this rule with a reference to the /commit-msg skill.
-     The skill will own the file format, location, and naming conventions. -->
 <rule id="C001" priority="critical">
   <title>Commit messages go to file</title>
-  <do>Save commit messages to `.commit-msgs/NNNN-description.txt`</do>
-  <checklist>
-    - Use `Glob(pattern="*.txt", path=".commit-msgs/")` to find next NNNN
-    - Use `.txt` extension (NOT `.md`)
-    - Focus on "why", not "what" (git diff shows "what")
-    - Keep concise (< 15 lines)
-  </checklist>
+  <do>Follow the `/commit-msg` skill for file format, location, and naming conventions</do>
 </rule>
 
 <rule id="C002" priority="critical">
@@ -53,16 +37,9 @@
   </good-examples>
 </rule>
 
-<!-- TODO(#332 Phase 3): Replace this rule with a reference to the /scratchpad skill.
-     The skill will own the file format, location, and naming conventions. -->
 <rule id="S001" priority="critical">
   <title>Scratchpads for working documents</title>
-  <do>Save working documents to `.scratchpads/NNNN-description.txt`</do>
-  <when>PR drafts, implementation plans, analysis notes, any temporary working doc</when>
-  <checklist>
-    - Use `Glob(pattern="*.txt", path=".scratchpads/")` to find next NNNN
-    - Use `.txt` extension for consistency
-  </checklist>
+  <do>Follow the `/scratchpad` skill for file format, location, and naming conventions</do>
 </rule>
 
 <rule id="T001" priority="critical">
