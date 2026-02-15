@@ -102,6 +102,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **After:** Bind any text editor; if you try to paste to the same file you're selecting from, RangeLink copies to clipboard and shows a helpful message
   - Self-paste detection prevents the "paste into yourself" problem without restricting valid workflows
   - **Tip:** When self-paste is detected for R-L, the message suggests R-C (clipboard-only) as an alternative
+- **Vocabulary alignment: "Paste Destination" → "Destination"** - Docs now use "destination" and "bind/bound" consistently (#339)
+  - The "Paste" prefix was coined in v0.3.0 when destinations only pasted links — the feature now supports bind, unbind, jump, focus, and pick
+  - Section headers, body text, and context menu descriptions updated across README and CHANGELOG
 
 ### Fixed
 
