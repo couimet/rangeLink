@@ -548,4 +548,3 @@
     - Clickable navigation (jump to code from links)
   </tech-features>
 </project-context>
-

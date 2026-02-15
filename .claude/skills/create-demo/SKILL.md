@@ -349,4 +349,4 @@ Please review and fill in your answers, then let me know when you're ready to co
 3. Present summary (Phase 7) -> wait for confirmation
 4. Generate files only after all phases complete
    </start>
-</output>
+   </output>
