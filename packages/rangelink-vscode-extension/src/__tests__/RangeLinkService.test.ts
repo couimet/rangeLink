@@ -4,8 +4,8 @@ import type { DelimiterConfig, DelimiterConfigGetter } from 'rangelink-core-ts';
 import { Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import type { ConfigReader } from '../config';
 import { JumpToDestinationCommand } from '../commands/JumpToDestinationCommand';
+import type { ConfigReader } from '../config';
 import type { DestinationPicker } from '../destinations';
 import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
@@ -2575,9 +2575,7 @@ describe('RangeLinkService', () => {
             showWarningMessage: warningMsg,
           },
           workspaceOptions: {
-            getWorkspaceFolder: jest
-              .fn()
-              .mockReturnValue(createMockWorkspaceFolder('/workspace')),
+            getWorkspaceFolder: jest.fn().mockReturnValue(createMockWorkspaceFolder('/workspace')),
             asRelativePath: jest.fn().mockReturnValue('src/file.ts'),
           },
         },
@@ -2590,16 +2588,16 @@ describe('RangeLinkService', () => {
         getBoundDestination: jest.fn(() => (bound ? terminalDest : undefined)),
         sendLinkToDestination: jest.fn().mockResolvedValue(true),
         sendTextToDestination: jest.fn().mockResolvedValue(true),
-        bind: jest.fn().mockResolvedValue(
-          Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
-        ),
+        bind: jest
+          .fn()
+          .mockResolvedValue(
+            Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
+          ),
         unbind: jest.fn(),
         focusBoundDestination: jest
           .fn()
           .mockResolvedValue(Result.ok({ destinationName: 'Terminal' })),
-        bindAndFocus: jest
-          .fn()
-          .mockResolvedValue(Result.ok({ destinationName: 'Terminal' })),
+        bindAndFocus: jest.fn().mockResolvedValue(Result.ok({ destinationName: 'Terminal' })),
         dispose: jest.fn(),
       } as unknown as jest.Mocked<PasteDestinationManager>;
 
@@ -2608,9 +2606,7 @@ describe('RangeLinkService', () => {
       const config = createMockConfigReader();
 
       const mockGenLink = spyOnGenerateLinkFromSelections();
-      mockGenLink.mockReturnValue(
-        Result.ok(createMockFormattedLink('src/file.ts#L1C1-L1C22')),
-      );
+      mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1C1-L1C22')));
 
       const svc = new RangeLinkService(getDelimiters, adapter, dm, picker, config, logger);
       const jumpCmd = new JumpToDestinationCommand(dm, picker, logger);
