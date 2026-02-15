@@ -58,7 +58,7 @@ export class BindToDestinationCommand {
       default: {
         const _exhaustiveCheck: never = pickerResult;
         throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
           message: 'Unhandled picker outcome in BindToDestinationCommand',
           functionName: 'BindToDestinationCommand.execute',
           details: { pickerResult: _exhaustiveCheck },

@@ -781,7 +781,7 @@ export class RangeLinkService {
       default: {
         const _exhaustiveCheck: never = result;
         throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
           message: 'Unexpected picker result outcome',
           functionName: 'RangeLinkService.showPickerAndBindForPaste',
           details: { result: _exhaustiveCheck },
