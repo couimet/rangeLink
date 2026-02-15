@@ -255,16 +255,6 @@
   <rationale>User always reviews and commits on their own</rationale>
 </rule>
 
-<rule id="G001" priority="critical">
-  <title>Native GitHub sub-issues</title>
-  <do>Follow the local `github-issues` skill for sub-issue linking conventions</do>
-</rule>
-
-<rule id="G002" priority="critical">
-  <title>Required issue labels</title>
-  <do>Follow the local `github-issues` skill for label requirements and allowed values</do>
-</rule>
-
 <rule id="P001" priority="critical">
   <title>Arrow functions</title>
   <do>Use arrow functions for all new code: `const fn = (param: T): R => { ... }`</do>
