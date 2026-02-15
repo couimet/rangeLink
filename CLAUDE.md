@@ -332,6 +332,16 @@
   <do>Use SCREAMING_SNAKE_CASE for constant names</do>
 </rule>
 
+<rule id="P004" priority="critical">
+  <title>No direct vscode.* behavior calls — use ideAdapter</title>
+  <do>Call behavior methods through `ideAdapter`: `ideAdapter.showTextDocument()`, `ideAdapter.sendText()`</do>
+  <do>Import constants/enums directly: `vscode.TextEditorRevealType.InCenterIfOutsideViewport`</do>
+  <never>Call `vscode.window.*` or `vscode.workspace.*` behavior methods directly when an adapter method exists</never>
+  <exception>Bootstrap code that runs before the adapter is created (e.g., `vscode.window.createOutputChannel`)</exception>
+  <principle>Facades wrap behaviors, not types/constants</principle>
+  <rationale>Direct calls bypass the adapter abstraction, making code harder to test and inconsistent with the rest of the codebase</rationale>
+</rule>
+
 </critical-rules>
 
 ---
@@ -638,12 +648,6 @@
     - /src/ root - feature-specific
   </locations>
   <do>Apply SOLID principles; use arrow function exports with JSDoc</do>
-</pattern>
-
-<pattern name="facade-for-external-deps">
-  <do>Wrap behaviors through adapter: `ideAdapter.showTextDocument()`</do>
-  <do>Import constants/enums directly: `vscode.TextEditorRevealType.InCenterIfOutsideViewport`</do>
-  <principle>Facades wrap behaviors, not types/constants</principle>
 </pattern>
 
 <pattern name="logging-optional-params">

@@ -207,6 +207,11 @@
         "enablement": "editorIsOpen"
       },
       {
+        "command": "rangelink.explorer.bind",
+        "title": "RangeLink: Bind Here",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.explorer.pasteFilePath",
         "title": "RangeLink: Paste File Path",
         "icon": "$(file-symlink-file)"
@@ -215,6 +220,11 @@
         "command": "rangelink.explorer.pasteRelativeFilePath",
         "title": "RangeLink: Paste Relative File Path",
         "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "rangelink.explorer.unbind",
+        "title": "RangeLink: Unbind",
+        "icon": "$(close)"
       },
       {
         "command": "rangelink.editorTab.pasteFilePath",
@@ -502,11 +512,19 @@
           "when": "false"
         },
         {
+          "command": "rangelink.explorer.bind",
+          "when": "false"
+        },
+        {
           "command": "rangelink.explorer.pasteFilePath",
           "when": "false"
         },
         {
           "command": "rangelink.explorer.pasteRelativeFilePath",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.explorer.unbind",
           "when": "false"
         },
         {
@@ -644,6 +662,16 @@
         {
           "command": "rangelink.explorer.pasteRelativeFilePath",
           "group": "6_copypath@2"
+        },
+        {
+          "command": "rangelink.explorer.bind",
+          "group": "8_rangelink@1",
+          "when": "explorerResourceIsFolder == false"
+        },
+        {
+          "when": "rangelink.isBound && explorerResourceIsFolder == false",
+          "command": "rangelink.explorer.unbind",
+          "group": "8_rangelink@2"
         }
       ],
       "terminal/title/context": [

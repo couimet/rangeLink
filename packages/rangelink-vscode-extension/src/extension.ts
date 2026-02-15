@@ -36,8 +36,10 @@ import {
   CMD_CONTEXT_EDITOR_SAVE_BOOKMARK,
   CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH,
   CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH,
+  CMD_CONTEXT_EXPLORER_BIND,
   CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH,
   CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH,
+  CMD_CONTEXT_EXPLORER_UNBIND,
   CMD_CONTEXT_TERMINAL_BIND,
   CMD_CONTEXT_TERMINAL_UNBIND,
   CMD_GO_TO_RANGELINK,
@@ -430,6 +432,18 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH, (uri) =>
       service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
     ),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_BIND, async (uri) => {
+      await ideAdapter.showTextDocument(uri as vscode.Uri);
+      await destinationManager.bind({ kind: 'text-editor' });
+    }),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_UNBIND, () => {
+      destinationManager.unbind();
+    }),
   );
 
   context.subscriptions.push(

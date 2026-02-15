@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Explorer** (right-click on files):
     - "RangeLink: Paste File Path" - Send absolute path to bound destination
     - "RangeLink: Paste Relative File Path" - Send relative path to bound destination
+    - "RangeLink: Bind Here" - Open file and bind it as text editor destination (#247)
+    - "RangeLink: Unbind" - Unbind current destination (when bound, files only)
   - **Editor Tab** (right-click on tabs):
     - "RangeLink: Paste File Path" - Send absolute path to bound destination
     - "RangeLink: Paste Relative File Path" - Send relative path to bound destination
