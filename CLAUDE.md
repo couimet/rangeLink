@@ -13,25 +13,13 @@
 
 <rule id="Q001" priority="critical">
   <title>Questions go to file, not terminal</title>
-  <do>Save questions to `.claude-questions/NNNN-description.txt`</do>
+  <do>Follow the `/question` skill for file format, location, and naming conventions</do>
   <never>Print questions directly in terminal output</never>
-  <checklist>
-    - Use `Glob(pattern="*.txt", path=".claude-questions/")` to find next NNNN
-    - Use `.txt` extension (NOT `.md`)
-    - Print only the filepath in terminal
-    - User edits file - it's the single source of truth
-  </checklist>
 </rule>
 
 <rule id="C001" priority="critical">
   <title>Commit messages go to file</title>
-  <do>Save commit messages to `.commit-msgs/NNNN-description.txt`</do>
-  <checklist>
-    - Use `Glob(pattern="*.txt", path=".commit-msgs/")` to find next NNNN
-    - Use `.txt` extension (NOT `.md`)
-    - Focus on "why", not "what" (git diff shows "what")
-    - Keep concise (< 15 lines)
-  </checklist>
+  <do>Follow the `/commit-msg` skill for file format, location, and naming conventions</do>
 </rule>
 
 <rule id="C002" priority="critical">
@@ -51,12 +39,7 @@
 
 <rule id="S001" priority="critical">
   <title>Scratchpads for working documents</title>
-  <do>Save working documents to `.scratchpads/NNNN-description.txt`</do>
-  <when>PR drafts, implementation plans, analysis notes, any temporary working doc</when>
-  <checklist>
-    - Use `Glob(pattern="*.txt", path=".scratchpads/")` to find next NNNN
-    - Use `.txt` extension for consistency
-  </checklist>
+  <do>Follow the `/scratchpad` skill for file format, location, and naming conventions</do>
 </rule>
 
 <rule id="T001" priority="critical">
@@ -272,48 +255,6 @@
   <rationale>User always reviews and commits on their own</rationale>
 </rule>
 
-<rule id="G001" priority="critical">
-  <title>Native GitHub sub-issues</title>
-  <when>Creating GitHub issues with parent-child relationships</when>
-  <do>Use GraphQL `addSubIssue` mutation for native relationships</do>
-  <never>Rely only on text links in descriptions (e.g., "Parent: #47")</never>
-</rule>
-
-<rule id="G002" priority="critical">
-  <title>Required issue labels</title>
-  <do>ALL issues MUST have one `type:*` label AND one `priority:*` label</do>
-  <do>Optionally add `scope:*` labels for affected packages</do>
-
-  <type-labels description="required - pick ONE">
-    - type:bug - Bug or defect in existing functionality
-    - type:enhancement - New feature or enhancement
-    - type:debt - Technical debt that needs addressing
-    - type:docs - Documentation improvements
-    - type:refactor - Code refactoring without behavior change
-    - type:test - Test coverage improvements
-  </type-labels>
-
-  <priority-labels description="required - pick ONE">
-    - priority:critical - Must be fixed ASAP
-    - priority:high - High priority
-    - priority:medium - Medium priority
-    - priority:low - Nice to have
-  </priority-labels>
-
-  <scope-labels description="optional - pick any that apply">
-    - scope:core - rangelink-core-ts package
-    - scope:vscode-ext - rangelink-vscode-extension package
-    - scope:test-utils - rangelink-test-utils package
-    - scope:tooling - Build tools, scripts, CI/CD
-    - scope:docs - Documentation files
-  </scope-labels>
-
-  <avoid description="GitHub defaults - do not use">
-    - bug, enhancement, duplicate, invalid, wontfix, question
-    - good first issue, help wanted
-  </avoid>
-</rule>
-
 <rule id="P001" priority="critical">
   <title>Arrow functions</title>
   <do>Use arrow functions for all new code: `const fn = (param: T): R => { ... }`</do>
@@ -384,221 +325,6 @@
 </default-behavior>
 
 </autonomous-operations>
-
----
-
-<workflows>
-
-<workflow id="questions">
-  <title>Questions and Design Decisions</title>
-  <location>.claude-questions/NNNN-description.txt</location>
-  <extension>.txt (NOT .md)</extension>
-
-  <process>
-    1. Use Glob to find highest NNNN, increment by 1
-    2. Create file with format below
-    3. Print ONLY the filepath in terminal
-    4. User edits answers in file
-  </process>
-
-  <file-format>
-    ```
-    # Question Topic
-
-    ## Question 001: <question with options/recommendations>
-
-    Answer: [prefilled recommended answer when available]
-
-    ---
-
-    ## Question 002: <question with options/recommendations>
-
-    Answer: [prefilled recommended answer when available]
-    ```
-
-  </file-format>
-</workflow>
-
-<workflow id="commits">
-  <title>Commit Messages</title>
-  <location>.commit-msgs/NNNN-description.txt</location>
-  <extension>.txt (NOT .md)</extension>
-
-  <process>
-    1. Use Glob to find highest NNNN, increment by 1
-    2. Write commit message focusing on WHY, not WHAT
-  </process>
-
-  <format>
-    ```
-    <type>(scope): <short summary>
-
-    <Body: Why this change? What problem does it solve?>
-
-    Benefits:
-    - Key benefit 1
-    - Key benefit 2
-    ```
-
-  </format>
-
-  <principles>
-    - Keep concise (< 15 lines)
-    - First line: conventional commit format
-    - Body: 1-3 sentences of context
-    - Omit file lists (redundant with diff)
-    - NO line wrapping at 80 columns - use natural line breaks only
-  </principles>
-
-  <good-example>
-    ```
-    refactor(vscode-ext): separate dist/ and out/ to follow VSCode conventions
-
-    Prevents "Cannot find module" errors by separating development and production builds.
-    Following official conventions eliminates conflicts where tsc could overwrite esbuild's bundle.
-
-    Benefits:
-    - Impossible for tsc --watch to interfere with packaging
-    - Standard convention matching VSCode templates
-    ```
-
-  </good-example>
-</workflow>
-
-<workflow id="scratchpads">
-  <title>Working Documents</title>
-  <location>.scratchpads/NNNN-description.txt</location>
-  <extension>.txt</extension>
-
-  <questions-trigger>
-    <mandatory>If design questions arise, FIRST use workflow:questions to gather answers</mandatory>
-    <sequence>
-      1. Identify questions that need user input
-      2. Create .claude-questions/ file using workflow:questions
-      3. Wait for user answers
-      4. Create/update scratchpad with resolved decisions inlined
-    </sequence>
-    <rationale>Questions workflow lets user edit answers in-file; scratchpad captures resolved state</rationale>
-  </questions-trigger>
-
-  <naming-pattern>
-    Base pattern: `NNNN-description.txt`
-
-    When working on a GitHub issue (branch matches `issues/<NUMBER>`):
-    - Extract issue number from branch name
-    - Use: `NNNN-issue-NUMBER-description.txt`
-    - Example: `0008-issue-223-char-to-character.txt`
-
-    When no issue context:
-    - Use base pattern: `NNNN-description.txt`
-    - Example: `0002-misplaced-tests-analysis.txt`
-
-  </naming-pattern>
-
-  <when-to-use>
-    - PR descriptions being drafted
-    - Implementation plans and analysis
-    - Architecture decision exploration
-    - GitHub issue drafts
-    - Any temporary working document
-  </when-to-use>
-
-  <when-NOT-to-use>
-    - Questions needing user answers → .claude-questions/
-    - Commit messages → .commit-msgs/
-    - Permanent documentation → docs/ or package READMEs
-  </when-NOT-to-use>
-
-  <code-references>
-    <do>Use RangeLink-format links for all code references so they are clickable from within the scratchpad</do>
-    <do>Use workspace-relative paths (from project root)</do>
-    <never>Use plain text line references like "(lines 26-37)" or "Line 539"</never>
-    <never>Wrap RangeLink links in backticks — backticks become part of the parsed path and break navigation</never>
-    <format>path/to/file.ts#L10-L20 for ranges, path/to/file.ts#L10 for single lines</format>
-    <bad-examples>
-      - file.ts (lines 26-37)
-      - Line 539 mentions "TextInserter"
-      - `packages/rangelink-vscode-extension/src/file.ts#L26-L37` (backticks break the link)
-    </bad-examples>
-    <good-examples>
-      - packages/rangelink-vscode-extension/src/file.ts#L26-L37
-      - packages/rangelink-vscode-extension/src/file.ts#L539 mentions "TextInserter"
-      - Remove the standalone logging tests at packages/.../file.test.ts#L54-L85
-    </good-examples>
-  </code-references>
-</workflow>
-
-<workflow id="creating-github-issues">
-  <title>Creating GitHub Issues</title>
-  <see-also>Rule G002 for required labels</see-also>
-
-  <critical-rule>
-    <title>No references to ephemeral files</title>
-    <never>Reference .scratchpads/ or .claude-questions/ files in GitHub issue content</never>
-    <rationale>These files are local/ephemeral and not accessible from GitHub</rationale>
-    <do>Capture ALL relevant information directly in the issue body</do>
-    <do>If scratchpad references a questions file, inline the decisions in the issue</do>
-    <bad-example>`(from .claude-questions/0062)`</bad-example>
-    <good-example>Inline the actual decisions with context</good-example>
-  </critical-rule>
-
-  <parent-child-issues>
-    <do>Use GraphQL `addSubIssue` mutation for native relationships</do>
-    <never>Rely only on text links in descriptions</never>
-    <example>
-      ```bash
-      # Get node IDs
-      PARENT_ID=$(gh api repos/:owner/:repo/issues/$PARENT_NUM --jq '.node_id')
-      CHILD_ID=$(gh api repos/:owner/:repo/issues/$CHILD_NUM --jq '.node_id')
-
-      # Link using native API
-      gh api graphql -H "GraphQL-Features: sub_issues" -f query="
-        mutation {
-          addSubIssue(input: {issueId: \"$PARENT_ID\", subIssueId: \"$CHILD_ID\"}) {
-            clientMutationId
-          }
-        }
-      "
-      ```
-    </example>
-
-  </parent-child-issues>
-</workflow>
-
-<workflow id="pr-review-comments">
-  <title>Retrieving PR Review Comments</title>
-
-  <when-to-use>
-    - User shares a PR review URL like `https://github.com/owner/repo/pull/123#pullrequestreview-123456789`
-    - Need to analyze reviewer feedback
-  </when-to-use>
-
-  <process>
-    1. Extract the review ID from the URL (the number after `pullrequestreview-`)
-    2. Use gh API to fetch the review:
-       ```bash
-       gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews/{review_id}
-       ```
-    3. Parse the JSON response - the `body` field contains the review content (text or markdown)
-    4. Create a scratchpad with action plan based on feedback
-  </process>
-
-  <example>
-    ```bash
-    # URL: https://github.com/couimet/rangeLink/pull/215#pullrequestreview-3637523002
-    gh api repos/couimet/rangeLink/pulls/215/reviews/3637523002
-    ```
-  </example>
-
-  <response-fields>
-    - `body`: Full review content (text or markdown - format varies by reviewer)
-    - `state`: APPROVED, CHANGES_REQUESTED, COMMENTED
-    - `user.login`: Reviewer username
-    - `submitted_at`: Timestamp
-  </response-fields>
-</workflow>
-
-</workflows>
 
 ---
 
@@ -816,15 +542,3 @@
     - Clickable navigation (jump to code from links)
   </tech-features>
 </project-context>
-
----
-
-<file-placement-decision-tree>
-```
-Is it a question needing user answer? → .claude-questions/NNNN-description.txt
-Is it a commit message draft?        → .commit-msgs/NNNN-description.txt
-Is it a temporary working document?  → .scratchpads/NNNN-description.txt
-Is it a note during issue work?      → /breadcrumb command (creates .breadcrumbs/<ISSUE>.md)
-Is it permanent documentation?       → docs/ or package README
-```
-</file-placement-decision-tree>
