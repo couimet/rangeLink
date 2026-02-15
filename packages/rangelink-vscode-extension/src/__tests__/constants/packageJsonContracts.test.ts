@@ -358,6 +358,22 @@ describe('package.json contributions', () => {
         });
       });
 
+      it('rangelink.explorer.bind', () => {
+        expect(findCommand('rangelink.explorer.bind')).toStrictEqual({
+          command: 'rangelink.explorer.bind',
+          title: 'RangeLink: Bind Here',
+          icon: '$(link)',
+        });
+      });
+
+      it('rangelink.explorer.unbind', () => {
+        expect(findCommand('rangelink.explorer.unbind')).toStrictEqual({
+          command: 'rangelink.explorer.unbind',
+          title: 'RangeLink: Unbind',
+          icon: '$(close)',
+        });
+      });
+
       it('rangelink.terminal.bind', () => {
         expect(findCommand('rangelink.terminal.bind')).toStrictEqual({
           command: 'rangelink.terminal.bind',
@@ -424,7 +440,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(41);
+      expect(commands).toHaveLength(43);
     });
   });
 
@@ -830,7 +846,7 @@ describe('package.json contributions', () => {
       ] as MenuContribution[];
 
       it('has the expected number of explorer context menu items', () => {
-        expect(explorerContextMenu).toHaveLength(2);
+        expect(explorerContextMenu).toHaveLength(4);
       });
 
       it('explorer.pasteFilePath in explorer context menu', () => {
@@ -846,13 +862,29 @@ describe('package.json contributions', () => {
           group: '6_copypath@2',
         });
       });
+
+      it('explorer.bind for files only', () => {
+        expect(explorerContextMenu[2]).toStrictEqual({
+          command: 'rangelink.explorer.bind',
+          group: '8_rangelink@1',
+          when: 'explorerResourceIsFolder == false',
+        });
+      });
+
+      it('explorer.unbind shows when bound and file selected', () => {
+        expect(explorerContextMenu[3]).toStrictEqual({
+          when: 'rangelink.isBound && explorerResourceIsFolder == false',
+          command: 'rangelink.explorer.unbind',
+          group: '8_rangelink@2',
+        });
+      });
     });
 
     describe('commandPalette', () => {
       const commandPalette = packageJson.contributes.menus['commandPalette'] as MenuContribution[];
 
       it('has the expected number of commandPalette entries', () => {
-        expect(commandPalette).toHaveLength(20);
+        expect(commandPalette).toHaveLength(22);
       });
 
       it('bindToTerminalHere is hidden from command palette', () => {
@@ -883,113 +915,127 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('explorer.pasteFilePath is hidden from command palette', () => {
+      it('explorer.bind is hidden from command palette', () => {
         expect(commandPalette[4]).toStrictEqual({
+          command: 'rangelink.explorer.bind',
+          when: 'false',
+        });
+      });
+
+      it('explorer.pasteFilePath is hidden from command palette', () => {
+        expect(commandPalette[5]).toStrictEqual({
           command: 'rangelink.explorer.pasteFilePath',
           when: 'false',
         });
       });
 
       it('explorer.pasteRelativeFilePath is hidden from command palette', () => {
-        expect(commandPalette[5]).toStrictEqual({
+        expect(commandPalette[6]).toStrictEqual({
           command: 'rangelink.explorer.pasteRelativeFilePath',
           when: 'false',
         });
       });
 
+      it('explorer.unbind is hidden from command palette', () => {
+        expect(commandPalette[7]).toStrictEqual({
+          command: 'rangelink.explorer.unbind',
+          when: 'false',
+        });
+      });
+
       it('editorTab.pasteFilePath is hidden from command palette', () => {
-        expect(commandPalette[6]).toStrictEqual({
+        expect(commandPalette[8]).toStrictEqual({
           command: 'rangelink.editorTab.pasteFilePath',
           when: 'false',
         });
       });
 
       it('editorTab.pasteRelativeFilePath is hidden from command palette', () => {
-        expect(commandPalette[7]).toStrictEqual({
+        expect(commandPalette[9]).toStrictEqual({
           command: 'rangelink.editorTab.pasteRelativeFilePath',
           when: 'false',
         });
       });
 
       it('editorContent.pasteFilePath is hidden from command palette', () => {
-        expect(commandPalette[8]).toStrictEqual({
+        expect(commandPalette[10]).toStrictEqual({
           command: 'rangelink.editorContent.pasteFilePath',
           when: 'false',
         });
       });
 
       it('editorContent.pasteRelativeFilePath is hidden from command palette', () => {
-        expect(commandPalette[9]).toStrictEqual({
+        expect(commandPalette[11]).toStrictEqual({
           command: 'rangelink.editorContent.pasteRelativeFilePath',
           when: 'false',
         });
       });
 
       it('editorContent.bind is hidden from command palette', () => {
-        expect(commandPalette[10]).toStrictEqual({
+        expect(commandPalette[12]).toStrictEqual({
           command: 'rangelink.editorContent.bind',
           when: 'false',
         });
       });
 
       it('editorContent.unbind is hidden from command palette', () => {
-        expect(commandPalette[11]).toStrictEqual({
+        expect(commandPalette[13]).toStrictEqual({
           command: 'rangelink.editorContent.unbind',
           when: 'false',
         });
       });
 
       it('editorContext.copyLink is hidden from command palette', () => {
-        expect(commandPalette[12]).toStrictEqual({
+        expect(commandPalette[14]).toStrictEqual({
           command: 'rangelink.editorContext.copyLink',
           when: 'false',
         });
       });
 
       it('editorContext.copyLinkAbsolute is hidden from command palette', () => {
-        expect(commandPalette[13]).toStrictEqual({
+        expect(commandPalette[15]).toStrictEqual({
           command: 'rangelink.editorContext.copyLinkAbsolute',
           when: 'false',
         });
       });
 
       it('editorContext.copyPortableLink is hidden from command palette', () => {
-        expect(commandPalette[14]).toStrictEqual({
+        expect(commandPalette[16]).toStrictEqual({
           command: 'rangelink.editorContext.copyPortableLink',
           when: 'false',
         });
       });
 
       it('editorContext.copyPortableLinkAbsolute is hidden from command palette', () => {
-        expect(commandPalette[15]).toStrictEqual({
+        expect(commandPalette[17]).toStrictEqual({
           command: 'rangelink.editorContext.copyPortableLinkAbsolute',
           when: 'false',
         });
       });
 
       it('editorContext.pasteSelectedText is hidden from command palette', () => {
-        expect(commandPalette[16]).toStrictEqual({
+        expect(commandPalette[18]).toStrictEqual({
           command: 'rangelink.editorContext.pasteSelectedText',
           when: 'false',
         });
       });
 
       it('editorContext.saveBookmark is hidden from command palette', () => {
-        expect(commandPalette[17]).toStrictEqual({
+        expect(commandPalette[19]).toStrictEqual({
           command: 'rangelink.editorContext.saveBookmark',
           when: 'false',
         });
       });
 
       it('terminal.bind is hidden from command palette', () => {
-        expect(commandPalette[18]).toStrictEqual({
+        expect(commandPalette[20]).toStrictEqual({
           command: 'rangelink.terminal.bind',
           when: 'false',
         });
       });
 
       it('terminal.unbind is hidden from command palette', () => {
-        expect(commandPalette[19]).toStrictEqual({
+        expect(commandPalette[21]).toStrictEqual({
           command: 'rangelink.terminal.unbind',
           when: 'false',
         });
