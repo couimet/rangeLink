@@ -338,7 +338,9 @@ Begin by:
 Example opening:
 "I'll help you create a compelling RangeLink demo. I've reviewed your existing demo structure and production tools.
 
-I've created a questions file at `.claude-questions/NNNN-demo-topic.txt` with all discovery questions.
+I've saved all discovery questions to:
+
+`.claude-questions/NNNN-demo-topic.txt`
 
 Please review and fill in your answers, then let me know when you're ready to continue to Phase 6 (flow formalization)."
 
@@ -348,5 +350,4 @@ Please review and fill in your answers, then let me know when you're ready to co
 2. Create detailed flow (Phase 6) based on answers -> wait for approval
 3. Present summary (Phase 7) -> wait for confirmation
 4. Generate files only after all phases complete
-   </start>
-   </output>
+</start>
