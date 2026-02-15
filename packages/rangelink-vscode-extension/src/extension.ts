@@ -436,7 +436,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_BIND, async (uri) => {
-      await vscode.window.showTextDocument(uri as vscode.Uri);
+      await ideAdapter.showTextDocument(uri as vscode.Uri);
       await destinationManager.bind({ kind: 'text-editor' });
     }),
   );

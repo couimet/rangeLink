@@ -647,6 +647,46 @@ describe('Extension lifecycle', () => {
     expect(mockContext.subscriptions.length).toBe(EXPECTED_SUBSCRIPTION_COUNT);
   });
 
+  it('explorer bind handler should use ideAdapter (not direct vscode call)', async () => {
+    const mockContext = {
+      subscriptions: [] as vscode.Disposable[],
+      globalState: createMockMemento(),
+    };
+
+    const mockConfig = {
+      get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
+      inspect: jest.fn((key: string) => ({
+        key,
+        defaultValue: 'L',
+        globalValue: undefined,
+        workspaceValue: undefined,
+        workspaceFolderValue: undefined,
+      })),
+    };
+
+    (vscode.workspace.getConfiguration as jest.Mock).mockReturnValue(mockConfig);
+
+    let capturedBindHandler: ((...args: unknown[]) => Promise<void>) | undefined;
+    (vscode.commands.registerCommand as jest.Mock).mockImplementation(
+      (id: string, handler: (...args: unknown[]) => Promise<void>) => {
+        if (id === 'rangelink.explorer.bind') {
+          capturedBindHandler = handler;
+        }
+        return { dispose: jest.fn() };
+      },
+    );
+
+    extension.activate(mockContext as any);
+
+    const mockUri = { fsPath: '/test/file.ts', path: '/test/file.ts' };
+    await capturedBindHandler!(mockUri);
+
+    expect(vscode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+      '[WARNING] {"fn":"PasteDestinationManager.bindTextEditor"} No active text editor',
+    );
+  });
+
   it('should clean up on deactivate', () => {
     const mockContext = {
       subscriptions: [] as vscode.Disposable[],
