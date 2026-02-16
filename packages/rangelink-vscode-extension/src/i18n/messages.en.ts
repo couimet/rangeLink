@@ -87,6 +87,16 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: Could not determine editor position. Try closing and reopening the file.',
   [MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE]: 'Version information not available',
 
+  [MessageCode.FILE_PICKER_ACTIVE_BADGE]: 'active',
+  [MessageCode.FILE_PICKER_BIND_ONLY_PLACEHOLDER]: 'Select file to bind to',
+  [MessageCode.FILE_PICKER_BOUND_BADGE]: 'bound',
+  [MessageCode.FILE_PICKER_GROUP_ACTIVE_FILES]: 'Active Files',
+  [MessageCode.FILE_PICKER_GROUP_FORMAT]: 'Tab Group {index}',
+  [MessageCode.FILE_PICKER_MORE_FILES_DESCRIPTION]: '{count} more',
+  [MessageCode.FILE_PICKER_MORE_LABEL]: 'More files...',
+  [MessageCode.FILE_PICKER_PLACEHOLDER]: 'Select file to bind and jump to',
+  [MessageCode.FILE_PICKER_TITLE]: 'RangeLink',
+
   [MessageCode.INFO_BIND_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_BIND_QUICK_PICK_PLACEHOLDER]: 'RangeLink: Choose a destination to bind to',
   [MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE]:
