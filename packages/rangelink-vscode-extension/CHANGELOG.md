@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Bind to Destination (R-D)** - Direct keybinding to open the destination picker and bind (#330)
+  - **Keyboard shortcut:** `Cmd+R Cmd+D` (Mac) / `Ctrl+R Ctrl+D` (Win/Linux)
+  - Shows all available destinations (terminals, text editors, AI assistants) in a single picker
+  - Smart bind handles the already-bound case with a confirmation dialog
+  - Also available via Command Palette as "RangeLink: Bind to Destination"
 - **Terminal Picker** - Choose which terminal to bind to instead of auto-binding the active one (#255)
   - Command Palette "Bind to Terminal" shows a QuickPick list of eligible terminals
   - Active terminal marked with "active" badge, bound terminal marked with "bound" badge (dual badge "bound · active" when same terminal)
