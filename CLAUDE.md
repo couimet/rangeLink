@@ -516,6 +516,15 @@
   <rationale>Past releases document what shipped; rewriting history misleads users</rationale>
 </changelog>
 
+<unreleased-markers>
+  <rule>When documenting unreleased features in README, add `<sup>Unreleased</sup>` markers</rule>
+  <mark>New section headers (features, settings)</mark>
+  <mark>New rows in command/setting tables</mark>
+  <mark>A `> [!IMPORTANT]` banner at the top of the README if one doesn't exist yet</mark>
+  <skip>Cosmetic renames or rewording of existing features — only mark genuinely new functionality</skip>
+  <see>docs/RELEASE-STRATEGY.md § Trunk-Based Documentation</see>
+</unreleased-markers>
+
 <cross-references>
   <before-renaming>Search for incoming references: `grep -r "Section Name" docs/`</before-renaming>
   <link-pattern>Use relative links with anchors: `[text](./FILE.md#section-anchor)`</link-pattern>

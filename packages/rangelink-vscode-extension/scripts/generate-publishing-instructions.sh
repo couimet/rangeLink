@@ -219,6 +219,42 @@ The CHANGELOG documents all changes for each release. Marketplace listings and G
 releases reference this file. Complete changelogs help users understand what changed
 and decide whether to upgrade.
 EOF
+  elif [ "$error_type" = "unreleased_markers" ]; then
+    cat >> "$OUTPUT_FILE" <<EOF
+1. **Strip unreleased markers from README.md:**
+
+   \`\`\`bash
+   # Remove the top-of-README banner (the > [!IMPORTANT] admonition)
+   # Then remove all <sup>Unreleased</sup> markers
+   # See: docs/RELEASE-STRATEGY.md § Trunk-Based Documentation
+   \`\`\`
+
+2. **Verify no markers remain:**
+
+   \`\`\`bash
+   grep -n '<sup>Unreleased</sup>' packages/rangelink-vscode-extension/README.md
+   grep -n '> \[!IMPORTANT\]' packages/rangelink-vscode-extension/README.md
+   \`\`\`
+
+3. **Commit the cleaned README:**
+
+   \`\`\`bash
+   git add packages/rangelink-vscode-extension/README.md
+   git commit -m "chore(vscode-ext): strip unreleased markers for v${VERSION}"
+   \`\`\`
+
+4. **Rebuild and regenerate instructions:**
+
+   \`\`\`bash
+   pnpm package:vscode-extension
+   \`\`\`
+
+### Why This Matters
+
+Published README files (VS Code Marketplace, Open VSX) should not contain unreleased
+markers. These markers are for GitHub viewers of \`main\` only. Stripping them ensures
+marketplace documentation accurately reflects the published version.
+EOF
   elif [ "$error_type" = "vsix_missing" ]; then
     cat >> "$OUTPUT_FILE" <<EOF
 1. **Build the VSIX package:**
@@ -298,6 +334,21 @@ else
   fi
 fi
 
+# Check for unreleased markers in README.md
+README_PATH="README.md"
+HAS_UNRELEASED_MARKERS=false
+UNRELEASED_MARKER_ERROR=""
+
+if [ -f "$README_PATH" ]; then
+  MARKER_COUNT=$(grep -c '<sup>Unreleased</sup>' "$README_PATH" 2>/dev/null || true)
+  HAS_BANNER=$(grep -c '> \[!IMPORTANT\]' "$README_PATH" 2>/dev/null || true)
+
+  if [ "$MARKER_COUNT" -gt 0 ] || [ "$HAS_BANNER" -gt 0 ]; then
+    HAS_UNRELEASED_MARKERS=true
+    UNRELEASED_MARKER_ERROR="README.md contains unreleased markers ($MARKER_COUNT \`<sup>Unreleased</sup>\` markers, $HAS_BANNER banner lines). Strip them before publishing."
+  fi
+fi
+
 # Check for errors and generate appropriate output
 if [ "$IS_DIRTY" = "true" ] && [ "$ALLOW_DIRTY" = "false" ]; then
   echo -e "${RED}Error: Cannot publish from dirty working tree${NC}" >&2
@@ -329,6 +380,21 @@ if [ "$CHANGELOG_VALID" = "false" ]; then
   generate_error_markdown "changelog" "$CHANGELOG_ERROR"
   echo -e "${BLUE}Error details written to: $OUTPUT_FILE${NC}" >&2
   exit 1
+fi
+
+if [ "$HAS_UNRELEASED_MARKERS" = "true" ] && [ "$ALLOW_DIRTY" = "false" ]; then
+  echo -e "${RED}Error: README.md contains unreleased markers${NC}" >&2
+  echo -e "${YELLOW}$UNRELEASED_MARKER_ERROR${NC}" >&2
+  echo -e "" >&2
+  echo -e "${YELLOW}See: docs/RELEASE-STRATEGY.md § Stripping Markers at Release Time${NC}" >&2
+  generate_error_markdown "unreleased_markers" "$UNRELEASED_MARKER_ERROR"
+  echo -e "${BLUE}Error details written to: $OUTPUT_FILE${NC}" >&2
+  exit 1
+fi
+
+if [ "$HAS_UNRELEASED_MARKERS" = "true" ] && [ "$ALLOW_DIRTY" = "true" ]; then
+  echo -e "${YELLOW}⚠️  Warning: README.md contains unreleased markers, but --allow-dirty flag is set${NC}"
+  echo -e "${YELLOW}   Strip markers before publishing to production!${NC}"
 fi
 
 # Generate successful publishing instructions
@@ -363,6 +429,7 @@ The following were validated when generating this file:
 - ✓ CHANGELOG.md has version section: \`## [${VERSION}]\`
 - ✓ CHANGELOG.md has reference link: \`[${VERSION}]: ...\`
 - ✓ Git tag does not exist: \`${GIT_TAG}\`
+- ✓ No unreleased markers in README (or \`--allow-dirty\` used for testing)
 - ✓ Working tree is clean (or \`--allow-dirty\` used for testing)
 
 ---
