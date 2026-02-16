@@ -33,6 +33,11 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.CONTENT_NAME_RANGELINK]: 'RangeLink',
   [MessageCode.CONTENT_NAME_SELECTED_TEXT]: 'Selected text',
 
+  [MessageCode.DESTINATION_DISPLAY_NAME_CLAUDE_CODE]: 'Claude Code Chat',
+  [MessageCode.DESTINATION_DISPLAY_NAME_CURSOR_AI]: 'Cursor AI Assistant',
+  [MessageCode.DESTINATION_DISPLAY_NAME_GITHUB_COPILOT_CHAT]: 'GitHub Copilot Chat',
+  [MessageCode.DESTINATION_DISPLAY_NAME_TERMINAL]: 'Terminal',
+  [MessageCode.DESTINATION_DISPLAY_NAME_TEXT_EDITOR]: 'Text Editor',
   [MessageCode.DESTINATION_GROUP_AI_ASSISTANTS]: 'AI Assistants',
   [MessageCode.DESTINATION_GROUP_FILES]: 'Files',
   [MessageCode.DESTINATION_GROUP_TERMINALS]: 'Terminals',

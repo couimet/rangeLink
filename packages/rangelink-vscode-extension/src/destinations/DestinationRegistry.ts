@@ -3,24 +3,25 @@ import type * as vscode from 'vscode';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import type { BindOptions, TextEditorBindOptions } from '../types';
-import type { DestinationKind } from '../types';
+import { MessageCode } from '../types';
+import type { BindOptions, DestinationKind, TextEditorBindOptions } from '../types';
+import { formatMessage } from '../utils/formatMessage';
 
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
 import type { FocusCapabilityFactory } from './capabilities/FocusCapabilityFactory';
 import type { PasteDestination } from './PasteDestination';
 
 /**
- * Display names for destination kinds
+ * Maps destination kinds to their i18n MessageCode for display names.
  *
- * Used for UI components (command palette, status bar, QuickPick menus, error messages).
+ * Used by getDisplayNames() to resolve localized strings via formatMessage().
  */
-const DISPLAY_NAMES: Record<DestinationKind, string> = {
-  terminal: 'Terminal',
-  'text-editor': 'Text Editor',
-  'cursor-ai': 'Cursor AI Assistant',
-  'github-copilot-chat': 'GitHub Copilot Chat',
-  'claude-code': 'Claude Code Chat',
+const DISPLAY_NAME_CODES: Record<DestinationKind, MessageCode> = {
+  terminal: MessageCode.DESTINATION_DISPLAY_NAME_TERMINAL,
+  'text-editor': MessageCode.DESTINATION_DISPLAY_NAME_TEXT_EDITOR,
+  'cursor-ai': MessageCode.DESTINATION_DISPLAY_NAME_CURSOR_AI,
+  'github-copilot-chat': MessageCode.DESTINATION_DISPLAY_NAME_GITHUB_COPILOT_CHAT,
+  'claude-code': MessageCode.DESTINATION_DISPLAY_NAME_CLAUDE_CODE,
 };
 
 /**
@@ -178,6 +179,8 @@ export class DestinationRegistry {
    * @returns Record mapping destination kinds to display names
    */
   getDisplayNames(): Record<DestinationKind, string> {
-    return DISPLAY_NAMES;
+    return Object.fromEntries(
+      Object.entries(DISPLAY_NAME_CODES).map(([kind, code]) => [kind, formatMessage(code)]),
+    ) as Record<DestinationKind, string>;
   }
 }
