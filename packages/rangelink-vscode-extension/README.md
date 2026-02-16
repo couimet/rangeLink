@@ -271,7 +271,7 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | Bind to GitHub Copilot Chat                | —                   | —                      | Auto-send links to Copilot Chat                          |
 | Bind to Terminal                           | —                   | —                      | Auto-send links to integrated terminal for AI workflows  |
 | Bind to Text Editor                        | —                   | —                      | Auto-paste links at insertion point in bound text editor |
-| Unbind                                     | —                   | —                      | Stop auto-sending links to bound destination             |
+| Unbind <sup>Unreleased</sup>               | `Cmd+R Cmd+U`       | `Ctrl+R Ctrl+U`        | Stop auto-sending links to bound destination             |
 | Show Version Info                          | —                   | —                      | Display version and build info                           |
 
 **Customizing Shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) to open Keyboard Shortcuts, then search for "RangeLink".

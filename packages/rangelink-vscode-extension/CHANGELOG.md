@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Unbind (R-U)** - Keybinding to unbind the current destination (#348)
+  - **Keyboard shortcut:** `Cmd+R Cmd+U` (Mac) / `Ctrl+R Ctrl+U` (Win/Linux)
+  - Previously only accessible via Command Palette and context menus
 - **Bind to Destination (R-D)** - Direct keybinding to open the destination picker and bind (#330)
   - **Keyboard shortcut:** `Cmd+R Cmd+D` (Mac) / `Ctrl+R Ctrl+D` (Win/Linux)
   - Shows all available destinations (terminals, text editors, AI assistants) in a single picker

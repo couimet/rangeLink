@@ -502,6 +502,11 @@
         "command": "rangelink.openStatusBarMenu",
         "key": "ctrl+r ctrl+m",
         "mac": "cmd+r cmd+m"
+      },
+      {
+        "command": "rangelink.unbindDestination",
+        "key": "ctrl+r ctrl+u",
+        "mac": "cmd+r cmd+u"
       }
     ],
     "menus": {
