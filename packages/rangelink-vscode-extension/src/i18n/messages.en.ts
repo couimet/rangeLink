@@ -95,7 +95,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_GITHUB_COPILOT_CHAT_USER_INSTRUCTIONS]:
     'Paste (Cmd/Ctrl+V) in GitHub Copilot chat to use.',
   [MessageCode.INFO_BIND_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
-  [MessageCode.INFO_BIND_QUICK_PICK_PLACEHOLDER]: 'Choose a destination to bind to:',
+  [MessageCode.INFO_BIND_QUICK_PICK_PLACEHOLDER]: 'RangeLink: Choose a destination to bind to',
   [MessageCode.INFO_JUMP_FOCUS_FAILED]: 'RangeLink: Failed to focus {destinationName}',
   [MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
