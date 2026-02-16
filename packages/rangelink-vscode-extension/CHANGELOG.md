@@ -64,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "RangeLink: Unbind" - Unbind current destination (when bound)
 - **RangeLink Menu (R-M)** - Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the `🔗 RangeLink` status bar item to access ⚡ quick actions
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
+  - Unbind Destination (when bound)
   - Go to Link
   - List Bookmarks / Manage Bookmarks
   - Show Version Info

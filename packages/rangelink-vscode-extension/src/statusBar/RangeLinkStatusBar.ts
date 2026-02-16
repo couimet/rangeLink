@@ -9,6 +9,7 @@ import {
   CMD_GO_TO_RANGELINK,
   CMD_OPEN_STATUS_BAR_MENU,
   CMD_SHOW_VERSION,
+  CMD_UNBIND_DESTINATION,
 } from '../constants';
 import {
   buildDestinationQuickPickItems,
@@ -204,6 +205,11 @@ export class RangeLinkStatusBar implements vscode.Disposable {
           description: `→ ${boundDest.displayName}`,
           itemKind: 'command' as const,
           command: CMD_JUMP_TO_DESTINATION,
+        },
+        {
+          label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_UNBIND_LABEL),
+          itemKind: 'command' as const,
+          command: CMD_UNBIND_DESTINATION,
         },
       ];
     }
