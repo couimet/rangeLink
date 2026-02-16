@@ -99,7 +99,7 @@ describe('RangeLinkService paste picker message contracts', () => {
 
   it('no-destinations message explains how to resolve the situation', () => {
     expect(messagesEn[MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE]).toBe(
-      'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
+      'No destinations available. Open a terminal, a file, or install an AI assistant extension.',
     );
   });
 });
