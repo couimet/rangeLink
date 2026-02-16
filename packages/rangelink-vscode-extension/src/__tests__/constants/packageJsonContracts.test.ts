@@ -723,8 +723,16 @@ describe('package.json contributions', () => {
       });
     });
 
+    it('rangelink.unbindDestination keybinding', () => {
+      expect(findKeybinding('rangelink.unbindDestination')).toStrictEqual({
+        command: 'rangelink.unbindDestination',
+        key: 'ctrl+r ctrl+u',
+        mac: 'cmd+r cmd+u',
+      });
+    });
+
     it('has the expected number of keybindings', () => {
-      expect(keybindings).toHaveLength(15);
+      expect(keybindings).toHaveLength(16);
     });
   });
 
