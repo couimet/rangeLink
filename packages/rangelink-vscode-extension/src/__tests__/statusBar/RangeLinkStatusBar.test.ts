@@ -259,6 +259,11 @@ describe('RangeLinkStatusBar', () => {
             command: 'rangelink.jumpToBoundDestination',
           },
           {
+            label: '$(close) Unbind Destination',
+            itemKind: 'command',
+            command: 'rangelink.unbindDestination',
+          },
+          {
             label: '$(link-external) Go to Link',
             itemKind: 'command',
             command: 'rangelink.goToRangeLink',
