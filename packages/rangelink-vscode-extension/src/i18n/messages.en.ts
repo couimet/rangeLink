@@ -104,7 +104,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_JUMP_FOCUS_FAILED]: 'RangeLink: Failed to focus {destinationName}',
   [MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]:
-    'No destination bound. Choose destination to jump to:',
+    'RangeLink: No destination bound. Choose destination to jump to',
   [MessageCode.INFO_NAVIGATION_EMPTY_INPUT]: 'RangeLink: Please enter a link to navigate',
   [MessageCode.INFO_NAVIGATION_INPUT_BOX_PLACEHOLDER]: 'recipes/baking/chickenpie.ts#L3C14-L15C9',
   [MessageCode.INFO_NAVIGATION_INPUT_BOX_PROMPT]: 'Enter RangeLink to navigate',
@@ -112,7 +112,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
   [MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW]:
-    'No bound destination. Choose below to bind and paste:',
+    'RangeLink: No bound destination. Choose below to bind and paste',
   [MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED]:
     'Selected text copied to clipboard. Cannot paste to same file.',
   [MessageCode.INFO_SELF_PASTE_LINK_SKIPPED]:
