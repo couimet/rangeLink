@@ -59,7 +59,7 @@ describe('DestinationPicker', () => {
         const showInfoMock = mockAdapter.__getVscodeInstance().window
           .showInformationMessage as jest.Mock;
         expect(showInfoMock).toHaveBeenCalledWith(
-          'No destinations available. Open a terminal, split editor, or install an AI assistant extension.',
+          'No destinations available. Open a terminal, a file, or install an AI assistant extension.',
         );
         expect(showQuickPickMock).not.toHaveBeenCalled();
       });

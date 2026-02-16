@@ -56,7 +56,7 @@ export class JumpToDestinationCommand {
       default: {
         const _exhaustiveCheck: never = pickerResult;
         throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+          code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
           message: 'Unhandled picker outcome in JumpToDestinationCommand',
           functionName: 'JumpToDestinationCommand.execute',
           details: { pickerResult: _exhaustiveCheck },

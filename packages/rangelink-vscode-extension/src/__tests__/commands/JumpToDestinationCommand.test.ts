@@ -4,9 +4,24 @@ import { JumpToDestinationCommand } from '../../commands';
 import type { DestinationPicker } from '../../destinations';
 import type { FocusSuccessInfo, PasteDestinationManager } from '../../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
+import { messagesEn } from '../../i18n';
 import type { BindOptions, DestinationPickerResult } from '../../types';
-import { ExtensionResult } from '../../types';
+import { ExtensionResult, MessageCode } from '../../types';
 import { createMockDestinationManager, createMockDestinationPicker } from '../helpers';
+
+describe('JumpToDestinationCommand message contracts', () => {
+  it('placeholder message identifies RangeLink and describes the action', () => {
+    expect(messagesEn[MessageCode.INFO_JUMP_QUICK_PICK_PLACEHOLDER]).toBe(
+      'RangeLink: No destination bound. Choose destination to jump to',
+    );
+  });
+
+  it('no-destinations message explains how to resolve the situation', () => {
+    expect(messagesEn[MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE]).toBe(
+      'No destinations available. Open a terminal, a file, or install an AI assistant extension.',
+    );
+  });
+});
 
 describe('JumpToDestinationCommand', () => {
   let mockDestinationManager: jest.Mocked<PasteDestinationManager>;
@@ -118,6 +133,10 @@ describe('JumpToDestinationCommand', () => {
       const result = await command.execute();
 
       expect(result).toStrictEqual({ outcome: 'no-resource' });
+      expect(mockPickerCommand.pick).toHaveBeenCalledWith({
+        noDestinationsMessageCode: 'INFO_JUMP_NO_DESTINATIONS_AVAILABLE',
+        placeholderMessageCode: 'INFO_JUMP_QUICK_PICK_PLACEHOLDER',
+      });
       expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'JumpToDestinationCommand.execute' },
@@ -137,6 +156,10 @@ describe('JumpToDestinationCommand', () => {
       const result = await command.execute();
 
       expect(result).toStrictEqual({ outcome: 'cancelled' });
+      expect(mockPickerCommand.pick).toHaveBeenCalledWith({
+        noDestinationsMessageCode: 'INFO_JUMP_NO_DESTINATIONS_AVAILABLE',
+        placeholderMessageCode: 'INFO_JUMP_QUICK_PICK_PLACEHOLDER',
+      });
       expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'JumpToDestinationCommand.execute' },
@@ -162,6 +185,10 @@ describe('JumpToDestinationCommand', () => {
       const result = await command.execute();
 
       expect(result).toStrictEqual({ outcome: 'focus-failed', error: bindError });
+      expect(mockPickerCommand.pick).toHaveBeenCalledWith({
+        noDestinationsMessageCode: 'INFO_JUMP_NO_DESTINATIONS_AVAILABLE',
+        placeholderMessageCode: 'INFO_JUMP_QUICK_PICK_PLACEHOLDER',
+      });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'JumpToDestinationCommand.execute' },
         'Bind and focus failed',

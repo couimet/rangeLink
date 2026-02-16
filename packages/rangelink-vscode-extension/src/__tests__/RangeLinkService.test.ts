@@ -90,6 +90,20 @@ const mockSelection = (
   });
 };
 
+describe('RangeLinkService paste picker message contracts', () => {
+  it('placeholder message identifies RangeLink and describes the action', () => {
+    expect(messagesEn[MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW]).toBe(
+      'RangeLink: No bound destination. Choose below to bind and paste',
+    );
+  });
+
+  it('no-destinations message explains how to resolve the situation', () => {
+    expect(messagesEn[MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE]).toBe(
+      'No destinations available. Open a terminal, a file, or install an AI assistant extension.',
+    );
+  });
+});
+
 describe('RangeLinkService', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
@@ -912,7 +926,10 @@ describe('RangeLinkService', () => {
 
           await service.pasteSelectedTextToDestination();
 
-          expect(mockPickerCommand.pick).toHaveBeenCalledTimes(1);
+          expect(mockPickerCommand.pick).toHaveBeenCalledWith({
+            noDestinationsMessageCode: 'INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE',
+            placeholderMessageCode: 'INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW',
+          });
           expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
         });
 

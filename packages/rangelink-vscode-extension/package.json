@@ -108,6 +108,12 @@
         "icon": "$(info)"
       },
       {
+        "command": "rangelink.bindToDestination",
+        "title": "Bind to Destination",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.bindToTerminal",
         "title": "Bind to Terminal",
         "category": "RangeLink",
@@ -472,6 +478,11 @@
         "mac": "cmd+r cmd+j"
       },
       {
+        "command": "rangelink.bindToDestination",
+        "key": "ctrl+r ctrl+d",
+        "mac": "cmd+r cmd+d"
+      },
+      {
         "command": "rangelink.bookmark.add",
         "key": "ctrl+r ctrl+b ctrl+s",
         "mac": "cmd+r cmd+b cmd+s",
@@ -491,6 +502,11 @@
         "command": "rangelink.openStatusBarMenu",
         "key": "ctrl+r ctrl+m",
         "mac": "cmd+r cmd+m"
+      },
+      {
+        "command": "rangelink.unbindDestination",
+        "key": "ctrl+r ctrl+u",
+        "mac": "cmd+r cmd+u"
       }
     ],
     "menus": {

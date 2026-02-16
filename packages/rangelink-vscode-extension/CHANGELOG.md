@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Unbind (R-U)** - Keybinding to unbind the current destination (#348)
+  - **Keyboard shortcut:** `Cmd+R Cmd+U` (Mac) / `Ctrl+R Ctrl+U` (Win/Linux)
+  - Previously only accessible via Command Palette and context menus
+- **Bind to Destination (R-D)** - Direct keybinding to open the destination picker and bind (#330)
+  - **Keyboard shortcut:** `Cmd+R Cmd+D` (Mac) / `Ctrl+R Ctrl+D` (Win/Linux)
+  - Shows all available destinations (terminals, text editors, AI assistants) in a single picker
+  - Smart bind handles the already-bound case with a confirmation dialog
+  - Also available via Command Palette as "RangeLink: Bind to Destination"
 - **Terminal Picker** - Choose which terminal to bind to instead of auto-binding the active one (#255)
   - Command Palette "Bind to Terminal" shows a QuickPick list of eligible terminals
   - Active terminal marked with "active" badge, bound terminal marked with "bound" badge (dual badge "bound · active" when same terminal)
@@ -64,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "RangeLink: Unbind" - Unbind current destination (when bound)
 - **RangeLink Menu (R-M)** - Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the `🔗 RangeLink` status bar item to access ⚡ quick actions
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
+  - Unbind Destination (when bound)
   - Go to Link
   - List Bookmarks / Manage Bookmarks
   - Show Version Info

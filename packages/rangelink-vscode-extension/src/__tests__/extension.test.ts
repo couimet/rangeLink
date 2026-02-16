@@ -562,6 +562,7 @@ describe('Extension lifecycle', () => {
     const expectedCommands = [
       'rangelink.bindToClaudeCode',
       'rangelink.bindToCursorAI',
+      'rangelink.bindToDestination',
       'rangelink.bindToGitHubCopilotChat',
       'rangelink.bindToTerminal',
       'rangelink.bindToTerminalHere',
@@ -639,7 +640,7 @@ describe('Extension lifecycle', () => {
 
     const INFRASTRUCTURE_COUNT = 2;
     const PROVIDER_COUNT = 2;
-    const COMMAND_COUNT = 45;
+    const COMMAND_COUNT = 46;
     const DESTINATION_MANAGER_LISTENERS = 2;
     const EXPECTED_SUBSCRIPTION_COUNT =
       INFRASTRUCTURE_COUNT + PROVIDER_COUNT + COMMAND_COUNT + DESTINATION_MANAGER_LISTENERS;

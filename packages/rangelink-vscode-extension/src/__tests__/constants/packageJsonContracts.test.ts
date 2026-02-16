@@ -119,6 +119,15 @@ describe('package.json contributions', () => {
     });
 
     describe('destination binding commands', () => {
+      it('rangelink.bindToDestination', () => {
+        expect(findCommand('rangelink.bindToDestination')).toStrictEqual({
+          command: 'rangelink.bindToDestination',
+          title: 'Bind to Destination',
+          category: 'RangeLink',
+          icon: '$(link)',
+        });
+      });
+
       it('rangelink.bindToTerminal', () => {
         expect(findCommand('rangelink.bindToTerminal')).toStrictEqual({
           command: 'rangelink.bindToTerminal',
@@ -440,7 +449,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(43);
+      expect(commands).toHaveLength(44);
     });
   });
 
@@ -673,6 +682,14 @@ describe('package.json contributions', () => {
       });
     });
 
+    it('rangelink.bindToDestination keybinding', () => {
+      expect(findKeybinding('rangelink.bindToDestination')).toStrictEqual({
+        command: 'rangelink.bindToDestination',
+        key: 'ctrl+r ctrl+d',
+        mac: 'cmd+r cmd+d',
+      });
+    });
+
     it('rangelink.bookmark.add keybinding', () => {
       expect(findKeybinding('rangelink.bookmark.add')).toStrictEqual({
         command: 'rangelink.bookmark.add',
@@ -706,8 +723,16 @@ describe('package.json contributions', () => {
       });
     });
 
+    it('rangelink.unbindDestination keybinding', () => {
+      expect(findKeybinding('rangelink.unbindDestination')).toStrictEqual({
+        command: 'rangelink.unbindDestination',
+        key: 'ctrl+r ctrl+u',
+        mac: 'cmd+r cmd+u',
+      });
+    });
+
     it('has the expected number of keybindings', () => {
-      expect(keybindings).toHaveLength(14);
+      expect(keybindings).toHaveLength(16);
     });
   });
 

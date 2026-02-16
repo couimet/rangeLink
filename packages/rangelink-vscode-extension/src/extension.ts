@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { BookmarkService, BookmarksStore } from './bookmarks';
 import {
   AddBookmarkCommand,
+  BindToDestinationCommand,
   BindToTerminalCommand,
   GoToRangeLinkCommand,
   JumpToDestinationCommand,
@@ -16,6 +17,7 @@ import { ConfigReader, getDelimitersForExtension, loadDelimiterConfig } from './
 import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_CURSOR_AI,
+  CMD_BIND_TO_DESTINATION,
   CMD_BIND_TO_GITHUB_COPILOT_CHAT,
   CMD_BIND_TO_TERMINAL,
   CMD_BIND_TO_TERMINAL_HERE,
@@ -359,6 +361,17 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_UNBIND_DESTINATION, () => {
       destinationManager.unbind();
+    }),
+  );
+
+  const bindToDestinationCommand = new BindToDestinationCommand(
+    destinationManager,
+    destinationPicker,
+    logger,
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_BIND_TO_DESTINATION, async () => {
+      await bindToDestinationCommand.execute();
     }),
   );
 
