@@ -298,6 +298,21 @@
         "icon": "$(link)"
       },
       {
+        "command": "rangelink.terminal.copyLinkGuard",
+        "title": "RangeLink: Copy Link (Terminal)",
+        "icon": "$(error)"
+      },
+      {
+        "command": "rangelink.terminal.linkBridge",
+        "title": "RangeLink: Copy Link to Destination (Terminal)",
+        "icon": "$(link)"
+      },
+      {
+        "command": "rangelink.terminal.pasteSelectedTextToDestination",
+        "title": "RangeLink: Paste Selection to Destination",
+        "icon": "$(symbol-snippet)"
+      },
+      {
         "command": "rangelink.terminal.unbind",
         "title": "RangeLink: Unbind",
         "icon": "$(close)"
@@ -507,6 +522,24 @@
         "command": "rangelink.unbindDestination",
         "key": "ctrl+r ctrl+u",
         "mac": "cmd+r cmd+u"
+      },
+      {
+        "command": "rangelink.terminal.copyLinkGuard",
+        "key": "ctrl+r ctrl+c",
+        "mac": "cmd+r cmd+c",
+        "when": "terminalFocus && terminalTextSelected"
+      },
+      {
+        "command": "rangelink.terminal.linkBridge",
+        "key": "ctrl+r ctrl+l",
+        "mac": "cmd+r cmd+l",
+        "when": "terminalFocus && terminalTextSelected"
+      },
+      {
+        "command": "rangelink.terminal.pasteSelectedTextToDestination",
+        "key": "ctrl+r ctrl+v",
+        "mac": "cmd+r cmd+v",
+        "when": "terminalFocus && terminalTextSelected"
       }
     ],
     "menus": {
@@ -593,6 +626,18 @@
         },
         {
           "command": "rangelink.terminal.bind",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.terminal.copyLinkGuard",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.terminal.linkBridge",
+          "when": "false"
+        },
+        {
+          "command": "rangelink.terminal.pasteSelectedTextToDestination",
           "when": "false"
         },
         {
@@ -702,6 +747,11 @@
         }
       ],
       "terminal/context": [
+        {
+          "when": "terminalTextSelected && rangelink.isBound",
+          "command": "rangelink.terminal.pasteSelectedTextToDestination",
+          "group": "2_edit@10"
+        },
         {
           "command": "rangelink.terminal.bind",
           "group": "rangelink@1"

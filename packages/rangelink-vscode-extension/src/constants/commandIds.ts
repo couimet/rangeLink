@@ -54,6 +54,9 @@ export const CMD_PASTE_FILE_PATH_ABSOLUTE = 'rangelink.pasteFileAbsolutePath';
 export const CMD_PASTE_FILE_PATH_RELATIVE = 'rangelink.pasteFileRelativePath';
 export const CMD_PASTE_TO_DESTINATION = 'rangelink.pasteSelectedTextToDestination';
 export const CMD_SHOW_VERSION = 'rangelink.showVersion';
+export const CMD_TERMINAL_COPY_LINK_GUARD = 'rangelink.terminal.copyLinkGuard';
+export const CMD_TERMINAL_LINK_BRIDGE = 'rangelink.terminal.linkBridge';
+export const CMD_TERMINAL_PASTE_SELECTED_TEXT = 'rangelink.terminal.pasteSelectedTextToDestination';
 export const CMD_UNBIND_DESTINATION = 'rangelink.unbindDestination';
 
 // Keep entries sorted alphabetically by constant name.
