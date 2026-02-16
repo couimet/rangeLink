@@ -12,7 +12,6 @@ export * from './isBinaryFile';
 export * from './isEligibleForPaste';
 export * from './isSelectableQuickPickItem';
 export * from './isSelfPaste';
-export * from './isTextLikeFile';
 export * from './isWritableScheme';
 export * from './registerWithLogging';
 export * from './resolveWorkspacePath';

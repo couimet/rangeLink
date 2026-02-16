@@ -6,6 +6,7 @@ export {
 } from './buildDestinationQuickPickItems';
 export { buildTerminalPickerItems } from './buildTerminalPickerItems';
 export { getEligibleTerminals } from './getEligibleTerminals';
+export { isFileEligible } from './isFileEligible';
 export { isTerminalEligible } from './isTerminalEligible';
 export {
   isTextEditorDestinationEligible,
