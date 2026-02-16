@@ -108,6 +108,12 @@
         "icon": "$(info)"
       },
       {
+        "command": "rangelink.bindToDestination",
+        "title": "Bind to Destination",
+        "category": "RangeLink",
+        "icon": "$(link)"
+      },
+      {
         "command": "rangelink.bindToTerminal",
         "title": "Bind to Terminal",
         "category": "RangeLink",
@@ -470,6 +476,11 @@
         "command": "rangelink.jumpToBoundDestination",
         "key": "ctrl+r ctrl+j",
         "mac": "cmd+r cmd+j"
+      },
+      {
+        "command": "rangelink.bindToDestination",
+        "key": "ctrl+r ctrl+d",
+        "mac": "cmd+r cmd+d"
       },
       {
         "command": "rangelink.bookmark.add",

@@ -265,6 +265,7 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | List Bookmarks                             | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
 | Go to Link                                 | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`        | Paste/type a RangeLink to go to that code location       |
 | Open Menu                                  | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`        | Open the RangeLink menu                                  |
+| Bind to Destination                        | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`        | Open destination picker and bind to chosen destination   |
 | Bind to Claude Code                        | —                   | —                      | Auto-send links to Claude Code chat                      |
 | Bind to Cursor AI                          | —                   | —                      | Auto-send links to Cursor AI chat                        |
 | Bind to GitHub Copilot Chat                | —                   | —                      | Auto-send links to Copilot Chat                          |
