@@ -34,6 +34,42 @@ describe('VscodeAdapter', () => {
     adapter = new VscodeAdapter(mockVSCode, mockLogger);
   });
 
+  describe('readTextFromClipboard', () => {
+    it('should read text from clipboard using VSCode API', async () => {
+      mockVSCode.env.clipboard.readText.mockResolvedValue('clipboard content');
+
+      const result = await adapter.readTextFromClipboard();
+
+      expect(result).toBe('clipboard content');
+      expect(mockVSCode.env.clipboard.readText).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return empty string when clipboard is empty', async () => {
+      mockVSCode.env.clipboard.readText.mockResolvedValue('');
+
+      const result = await adapter.readTextFromClipboard();
+
+      expect(result).toBe('');
+    });
+
+    it('should handle multi-line clipboard content', async () => {
+      const multiLineText = 'line1\nline2\nline3';
+      mockVSCode.env.clipboard.readText.mockResolvedValue(multiLineText);
+
+      const result = await adapter.readTextFromClipboard();
+
+      expect(result).toBe(multiLineText);
+    });
+
+    it('should return undefined when VSCode API returns undefined', async () => {
+      mockVSCode.env.clipboard.readText.mockResolvedValue(undefined);
+
+      const result = await adapter.readTextFromClipboard();
+
+      expect(result).toBeUndefined();
+    });
+  });
+
   describe('writeTextToClipboard', () => {
     it('should write text to clipboard using VSCode API', async () => {
       const text = 'test text';

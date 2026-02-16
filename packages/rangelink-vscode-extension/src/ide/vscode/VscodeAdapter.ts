@@ -56,6 +56,13 @@ export class VscodeAdapter
   ) {}
 
   /**
+   * Read text from clipboard using VSCode API.
+   */
+  async readTextFromClipboard(): Promise<string> {
+    return this.ideInstance.env.clipboard.readText();
+  }
+
+  /**
    * Write text to clipboard using VSCode API
    */
   async writeTextToClipboard(text: string): Promise<void> {
