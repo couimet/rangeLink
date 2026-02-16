@@ -105,13 +105,45 @@ vscode-extension-v0.2.0-rc.1
 
 ---
 
+## Trunk-Based Documentation
+
+Because we develop on `main`, documentation (README, feature guides) often includes unreleased features. We use markers so GitHub visitors can distinguish released from unreleased content.
+
+### Marker Convention
+
+- **Section headers:** `### Feature Name <sup>Unreleased</sup>`
+- **Table rows:** `| Command Name <sup>Unreleased</sup> | ... |`
+- **Top-of-README banner:** GitHub admonition explaining docs may include unreleased features
+
+### Adding Markers
+
+When documenting a feature that hasn't been released yet, add `<sup>Unreleased</sup>` to:
+
+1. New section headers (features, settings)
+2. New rows in command/setting tables
+3. A banner at the top of the README if one doesn't exist yet
+
+Skip marking cosmetic renames or rewording of existing features — only mark genuinely new functionality.
+
+### Stripping Markers at Release Time
+
+During the **Prepare** phase of a release:
+
+1. Remove the top-of-README banner (the `> [!IMPORTANT]` admonition about unreleased features)
+2. Strip all `<sup>Unreleased</sup>` markers from the README
+3. Verify no markers remain: `grep -r '<sup>Unreleased</sup>' packages/`
+
+The publishing script (`generate-publishing-instructions.sh`) also checks for leftover markers and blocks publishing if any are found. This serves as a safety net in case manual stripping is forgotten.
+
+---
+
 ## Release Workflow
 
 ### High-Level Process
 
 Releasing a package involves these phases:
 
-1. **Prepare** - Bump version, update CHANGELOG, commit changes
+1. **Prepare** - Bump version, update CHANGELOG, strip unreleased markers, commit changes
 2. **Build & Test** - Package and validate locally
 3. **Publish** - Deploy to marketplace(s) and create GitHub release
 4. **Tag** - Create annotated git tag following [tagging convention](#tagging-convention)

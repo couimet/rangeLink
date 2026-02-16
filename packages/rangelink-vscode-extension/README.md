@@ -11,6 +11,10 @@
 > **"Claude Code today. Cursor AI tomorrow. Different shortcuts, different muscle memory."**<br />
 > **RangeLink ends it.** One keybinding. Any AI, any tool. Character-level precision. `recipes/baking/chickenpie.ts#L3C14-L314C16`
 
+> [!IMPORTANT]
+> This documentation is for the `main` branch and may include unreleased features marked with <sup>Unreleased</sup>.
+> Install the latest published version from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=couimet.rangelink-vscode-extension) or [Open VSX Registry](https://open-vsx.org/extension/couimet/rangelink-vscode-extension) (Cursor) for currently available features.
+
 ## Why RangeLink?
 
 Every AI coding assistant has its own way to share code — different shortcuts, different formats, different muscle memory. If you use multiple AI tools, you're constantly context-switching.
@@ -176,7 +180,7 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 - **Cmd+Click** to jump to code
 - **Perfect for scratchpads** - Validate links before sending to claude-code
 
-#### Go to Link
+#### Go to Link <sup>Unreleased</sup>
 
 **Have a RangeLink but no clickable context?** Paste or type it directly:
 
@@ -188,7 +192,7 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 
 ---
 
-### ⚡ RangeLink Menu
+### ⚡ RangeLink Menu <sup>Unreleased</sup>
 
 Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the **RangeLink** item in the status bar to access quick actions:
 
@@ -200,7 +204,7 @@ Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the **RangeLink
 
 ---
 
-### 🔖 Bookmarks
+### 🔖 Bookmarks <sup>Unreleased</sup>
 
 **Save code locations for quick access later.** Bookmark commonly-referenced code (config files, error definitions, key functions) and paste them to your AI assistant whenever needed — no navigating back to those files.
 
@@ -249,34 +253,33 @@ The `~` separator marks embedded delimiters that override recipient's local sett
 
 Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "RangeLink".
 
-| Command                                    | Shortcut (Mac)      | Shortcut (Win/Linux)   | Description                                              |
-| ------------------------------------------ | ------------------- | ---------------------- | -------------------------------------------------------- |
-| Copy Range Link                            | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`        | Create relative path link                                |
-| Copy Range Link (Absolute)                 | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L`  | Create absolute path link                                |
-| Copy Portable Link                         | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`        | Create BYOD portable link (relative path)                |
-| Copy Portable Link (Absolute)              | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P`  | Create BYOD portable link (absolute path)                |
-| Copy Range Link (Clipboard Only)           | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`        | Copy link to clipboard only (skip bound destination)     |
-| Copy Range Link (Clipboard Only, Absolute) | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C`  | Copy absolute path link to clipboard only                |
-| Paste Selected Text to Destination         | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`        | Send selected text directly to bound destination         |
-| Paste Current File Path                    | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`        | Send active editor's path to bound destination           |
-| Paste Current File Path (Absolute)         | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F`  | Send active editor's absolute path to bound destination  |
-| Jump to Bound Destination                  | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound destination                   |
-| Save Selection as Bookmark                 | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
-| List Bookmarks                             | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
-| Go to Link                                 | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`        | Paste/type a RangeLink to go to that code location       |
-| Open Menu                                  | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`        | Open the RangeLink menu                                  |
-| Bind to Destination                        | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`        | Open destination picker and bind to chosen destination   |
-| Bind to Claude Code                        | —                   | —                      | Auto-send links to Claude Code chat                      |
-| Bind to Cursor AI                          | —                   | —                      | Auto-send links to Cursor AI chat                        |
-| Bind to GitHub Copilot Chat                | —                   | —                      | Auto-send links to Copilot Chat                          |
-| Bind to Terminal                           | —                   | —                      | Auto-send links to integrated terminal for AI workflows  |
-| Bind to Text Editor                        | —                   | —                      | Auto-paste links at insertion point in bound text editor |
-| Unbind <sup>Unreleased</sup>               | `Cmd+R Cmd+U`       | `Ctrl+R Ctrl+U`        | Stop auto-sending links to bound destination             |
-| Show Version Info                          | —                   | —                      | Display version and build info                           |
+| Command                                                  | Shortcut (Mac)      | Shortcut (Win/Linux)   | Description                                              |
+| -------------------------------------------------------- | ------------------- | ---------------------- | -------------------------------------------------------- |
+| Copy Range Link                                          | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`        | Create relative path link                                |
+| Copy Range Link (Absolute)                               | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L`  | Create absolute path link                                |
+| Copy Portable Link                                       | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`        | Create BYOD portable link (relative path)                |
+| Copy Portable Link (Absolute)                            | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P`  | Create BYOD portable link (absolute path)                |
+| Copy Range Link (Clipboard Only)                         | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`        | Copy link to clipboard only (skip bound destination)     |
+| Copy Range Link (Clipboard Only, Absolute)               | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C`  | Copy absolute path link to clipboard only                |
+| Paste Selected Text to Destination                       | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`        | Send selected text directly to bound destination         |
+| Paste Current File Path <sup>Unreleased</sup>            | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`        | Send active editor's path to bound destination           |
+| Paste Current File Path (Absolute) <sup>Unreleased</sup> | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F`  | Send active editor's absolute path to bound destination  |
+| Jump to Bound Destination                                | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound destination                   |
+| Save Selection as Bookmark <sup>Unreleased</sup>         | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
+| List Bookmarks <sup>Unreleased</sup>                     | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
+| Go to Link <sup>Unreleased</sup>                         | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`        | Paste/type a RangeLink to go to that code location       |
+| Open Menu <sup>Unreleased</sup>                          | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`        | Open the RangeLink menu                                  |
+| Bind to Claude Code                                      | —                   | —                      | Auto-send links to Claude Code chat                      |
+| Bind to Cursor AI                                        | —                   | —                      | Auto-send links to Cursor AI chat                        |
+| Bind to GitHub Copilot Chat                              | —                   | —                      | Auto-send links to Copilot Chat                          |
+| Bind to Terminal                                         | —                   | —                      | Auto-send links to integrated terminal for AI workflows  |
+| Bind to Text Editor                                      | —                   | —                      | Auto-paste links at insertion point in bound text editor |
+| Unbind <sup>Unreleased</sup>                             | —                   | —                      | Stop auto-sending links to bound destination             |
+| Show Version Info                                        | —                   | —                      | Display version and build info                           |
 
 **Customizing Shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) to open Keyboard Shortcuts, then search for "RangeLink".
 
-### Context Menus
+### Context Menus <sup>Unreleased</sup>
 
 RangeLink integrates directly into VSCode's right-click menus for fast, keyboard-free workflows. Items are positioned near related VSCode commands for discoverability.
 
@@ -345,7 +348,7 @@ Customize settings in VSCode (Preferences > Settings > search "rangelink").
 
 Invalid configurations will fall back to defaults with a warning in the output channel (`Cmd+Shift+U` / `Ctrl+Shift+U`, select "RangeLink"). See [DEVELOPMENT.md](./DEVELOPMENT.md#development-workflow) for details.
 
-### Warning Settings
+### Warning Settings <sup>Unreleased</sup>
 
 | Setting                       | Default | Description                                                          |
 | ----------------------------- | ------- | -------------------------------------------------------------------- |
@@ -353,7 +356,7 @@ Invalid configurations will fall back to defaults with a warning in the output c
 
 When enabled, a dialog appears with options: "Save & Generate", "Generate Anyway", or dismiss to abort. This helps avoid creating links that may point to incorrect positions after the file is saved.
 
-### Terminal Picker Settings
+### Terminal Picker Settings <sup>Unreleased</sup>
 
 | Setting                              | Default | Description                                                              |
 | ------------------------------------ | ------- | ------------------------------------------------------------------------ |
