@@ -17,7 +17,11 @@ describe('BindToDestinationCommand', () => {
     mockDestinationManager = createMockDestinationManager();
     mockDestinationPicker = createMockDestinationPicker();
     mockLogger = createMockLogger();
-    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockLogger);
+    command = new BindToDestinationCommand(
+      mockDestinationManager,
+      mockDestinationPicker,
+      mockLogger,
+    );
   });
 
   it('logs initialization in constructor', () => {
@@ -37,7 +41,11 @@ describe('BindToDestinationCommand', () => {
       pick: jest.fn().mockResolvedValue({ outcome: 'selected', bindOptions }),
     });
     mockDestinationManager = createMockDestinationManager({ bindResult });
-    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockLogger);
+    command = new BindToDestinationCommand(
+      mockDestinationManager,
+      mockDestinationPicker,
+      mockLogger,
+    );
 
     const result = await command.execute();
 
@@ -64,7 +72,11 @@ describe('BindToDestinationCommand', () => {
     mockDestinationPicker = createMockDestinationPicker({
       pick: jest.fn().mockResolvedValue({ outcome: 'no-resource' }),
     });
-    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockLogger);
+    command = new BindToDestinationCommand(
+      mockDestinationManager,
+      mockDestinationPicker,
+      mockLogger,
+    );
 
     const result = await command.execute();
 
@@ -84,7 +96,11 @@ describe('BindToDestinationCommand', () => {
     mockDestinationPicker = createMockDestinationPicker({
       pick: jest.fn().mockResolvedValue({ outcome: 'cancelled' }),
     });
-    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockLogger);
+    command = new BindToDestinationCommand(
+      mockDestinationManager,
+      mockDestinationPicker,
+      mockLogger,
+    );
 
     const result = await command.execute();
 
@@ -109,7 +125,11 @@ describe('BindToDestinationCommand', () => {
     mockDestinationManager = createMockDestinationManager({
       bindResult: ExtensionResult.err<BindSuccessInfo>(bindError),
     });
-    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockLogger);
+    command = new BindToDestinationCommand(
+      mockDestinationManager,
+      mockDestinationPicker,
+      mockLogger,
+    );
 
     const result = await command.execute();
 
