@@ -23,8 +23,14 @@ export type TerminalPasteOutcome =
 export type TerminalPasteResult =
   | { readonly outcome: Extract<TerminalPasteOutcome, 'success'> }
   | { readonly outcome: Extract<TerminalPasteOutcome, 'no-active-terminal'> }
-  | { readonly outcome: Extract<TerminalPasteOutcome, 'copy-command-failed'>; readonly error: unknown }
-  | { readonly outcome: Extract<TerminalPasteOutcome, 'clipboard-read-failed'>; readonly error: unknown }
+  | {
+      readonly outcome: Extract<TerminalPasteOutcome, 'copy-command-failed'>;
+      readonly error: unknown;
+    }
+  | {
+      readonly outcome: Extract<TerminalPasteOutcome, 'clipboard-read-failed'>;
+      readonly error: unknown;
+    }
   | { readonly outcome: Extract<TerminalPasteOutcome, 'no-text-selected'> }
   | { readonly outcome: Extract<TerminalPasteOutcome, 'picker-cancelled'> }
   | { readonly outcome: Extract<TerminalPasteOutcome, 'self-paste'> };
