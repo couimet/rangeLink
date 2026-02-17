@@ -50,4 +50,5 @@ export type { RangeLinkClickArgs } from './RangeLinkClickArgs';
 export type { RangeLinkTerminalLink } from './RangeLinkTerminalLink';
 export type { SendTextToTerminalOptions } from './SendTextToTerminalOptions';
 export { TerminalFocusType } from './TerminalFocusType';
+export type { TerminalPasteOutcome, TerminalPasteResult } from './TerminalPasteOutcome';
 export type { VersionInfo } from './VersionInfo';

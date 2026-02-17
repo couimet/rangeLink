@@ -1503,8 +1503,9 @@ describe('RangeLinkService', () => {
     });
 
     it('copies terminal selection via clipboard roundtrip and sends to destination', async () => {
-      await service.pasteTerminalSelectionToDestination();
+      const result = await service.pasteTerminalSelectionToDestination();
 
+      expect(result).toStrictEqual({ outcome: 'success' });
       expect(mockExecuteCommand).toHaveBeenCalledWith(VSCODE_CMD_TERMINAL_COPY_SELECTION);
       expect(mockClipboard.readText).toHaveBeenCalledTimes(1);
       expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
@@ -1545,9 +1546,10 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('shows error message and returns early without executing copy or sending', async () => {
-        await service.pasteTerminalSelectionToDestination();
+      it('shows error message and returns no-active-terminal without executing copy or sending', async () => {
+        const result = await service.pasteTerminalSelectionToDestination();
 
+        expect(result).toStrictEqual({ outcome: 'no-active-terminal' });
         expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
         expect(mockShowErrorMessage).toHaveBeenNthCalledWith(
           1,
@@ -1586,9 +1588,10 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('shows error message and returns early without sending', async () => {
-        await service.pasteTerminalSelectionToDestination();
+      it('shows error message and returns no-text-selected without sending', async () => {
+        const result = await service.pasteTerminalSelectionToDestination();
 
+        expect(result).toStrictEqual({ outcome: 'no-text-selected' });
         expect(mockExecuteCommand).toHaveBeenCalledWith(VSCODE_CMD_TERMINAL_COPY_SELECTION);
         expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
         expect(mockShowErrorMessage).toHaveBeenNthCalledWith(
@@ -1604,7 +1607,7 @@ describe('RangeLinkService', () => {
     });
 
     describe('when executeCommand throws', () => {
-      it('logs the error and shows user-facing message', async () => {
+      it('logs the error, shows user-facing message, and returns copy-command-failed', async () => {
         const executeError = new Error('command not found');
         mockExecuteCommand.mockRejectedValue(executeError);
         mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
@@ -1625,8 +1628,9 @@ describe('RangeLinkService', () => {
           mockLogger,
         );
 
-        await service.pasteTerminalSelectionToDestination();
+        const result = await service.pasteTerminalSelectionToDestination();
 
+        expect(result).toStrictEqual({ outcome: 'copy-command-failed', error: executeError });
         expect(mockLogger.error).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkService.pasteTerminalSelectionToDestination',
@@ -1646,7 +1650,7 @@ describe('RangeLinkService', () => {
     });
 
     describe('when readTextFromClipboard throws', () => {
-      it('logs the error and shows user-facing message', async () => {
+      it('logs the error, shows user-facing message, and returns clipboard-read-failed', async () => {
         const clipboardError = new Error('clipboard access denied');
         mockClipboard = createMockClipboard({
           readText: jest.fn().mockRejectedValue(clipboardError),
@@ -1669,8 +1673,9 @@ describe('RangeLinkService', () => {
           mockLogger,
         );
 
-        await service.pasteTerminalSelectionToDestination();
+        const result = await service.pasteTerminalSelectionToDestination();
 
+        expect(result).toStrictEqual({ outcome: 'clipboard-read-failed', error: clipboardError });
         expect(mockExecuteCommand).toHaveBeenCalledWith(VSCODE_CMD_TERMINAL_COPY_SELECTION);
         expect(mockLogger.error).toHaveBeenCalledWith(
           {
@@ -1740,11 +1745,12 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('aborts when user cancels picker', async () => {
+      it('returns picker-cancelled when user cancels picker', async () => {
         mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
 
-        await service.pasteTerminalSelectionToDestination();
+        const result = await service.pasteTerminalSelectionToDestination();
 
+        expect(result).toStrictEqual({ outcome: 'picker-cancelled' });
         expect(mockPickerCommand.pick).toHaveBeenCalled();
         expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -1755,7 +1761,7 @@ describe('RangeLinkService', () => {
     });
 
     describe('terminal self-paste detection', () => {
-      it('skips send when bound destination is the same terminal', async () => {
+      it('returns self-paste when bound destination is the same terminal', async () => {
         const SHARED_PID = 99999;
         const sharedTerminal = createMockTerminal({
           processId: Promise.resolve(SHARED_PID),
@@ -1779,8 +1785,9 @@ describe('RangeLinkService', () => {
           mockLogger,
         );
 
-        await service.pasteTerminalSelectionToDestination();
+        const result = await service.pasteTerminalSelectionToDestination();
 
+        expect(result).toStrictEqual({ outcome: 'self-paste' });
         expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
         expect(mockShowInformationMessage).toHaveBeenCalledTimes(1);
         expect(mockShowInformationMessage).toHaveBeenNthCalledWith(
@@ -1846,6 +1853,129 @@ describe('RangeLinkService', () => {
           'none',
         );
       });
+    });
+  });
+
+  describe('terminalLinkBridge', () => {
+    beforeEach(() => {
+      mockActiveTerminal = createMockTerminal({ processId: Promise.resolve(12345) });
+      mockClipboard = createMockClipboard({
+        readText: jest.fn().mockResolvedValue('terminal selected text'),
+      });
+      mockExecuteCommand = jest.fn().mockResolvedValue(undefined);
+      mockSetStatusBarMessage = jest.fn().mockReturnValue({ dispose: jest.fn() });
+      mockShowInformationMessage = jest.fn().mockResolvedValue(undefined);
+      mockVscodeAdapter = createMockVscodeAdapter({
+        envOptions: { clipboard: mockClipboard },
+        windowOptions: {
+          activeTerminal: mockActiveTerminal,
+          setStatusBarMessage: mockSetStatusBarMessage,
+          showInformationMessage: mockShowInformationMessage,
+        },
+        commandsOptions: { executeCommand: mockExecuteCommand },
+      });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        sendTextToDestinationResult: true,
+        boundDestination: createMockTerminalPasteDestination({ displayName: 'Terminal' }),
+      });
+      service = new RangeLinkService(
+        getDelimiters,
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockPickerCommand,
+        mockConfigReader,
+        mockLogger,
+      );
+    });
+
+    it('delegates to pasteTerminalSelectionToDestination and shows tip toast on success', async () => {
+      await service.terminalLinkBridge();
+
+      expect(mockExecuteCommand).toHaveBeenCalledWith(VSCODE_CMD_TERMINAL_COPY_SELECTION);
+      expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
+        'terminal selected text',
+        '✓ Selected text copied to clipboard',
+        'none',
+      );
+      expect(mockShowInformationMessage).toHaveBeenCalledTimes(1);
+      expect(mockShowInformationMessage).toHaveBeenNthCalledWith(
+        1,
+        'Terminal text pasted to destination. Tip: Use R-V directly for terminal selections.',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.terminalLinkBridge' },
+        'Bridging R-L to pasteTerminalSelectionToDestination',
+      );
+    });
+
+    it('does not show tip toast when paste fails', async () => {
+      mockClipboard = createMockClipboard({
+        readText: jest.fn().mockResolvedValue(''),
+      });
+      mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
+      mockVscodeAdapter = createMockVscodeAdapter({
+        envOptions: { clipboard: mockClipboard },
+        windowOptions: {
+          activeTerminal: mockActiveTerminal,
+          showErrorMessage: mockShowErrorMessage,
+          showInformationMessage: mockShowInformationMessage,
+        },
+        commandsOptions: { executeCommand: mockExecuteCommand },
+      });
+      service = new RangeLinkService(
+        getDelimiters,
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockPickerCommand,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      await service.terminalLinkBridge();
+
+      expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
+      expect(mockShowErrorMessage).toHaveBeenNthCalledWith(
+        1,
+        'RangeLink: No text selected in the terminal. Select text and try again.',
+      );
+      expect(mockShowInformationMessage).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('terminalCopyLinkGuard', () => {
+    beforeEach(() => {
+      mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
+      mockVscodeAdapter = createMockVscodeAdapter({
+        windowOptions: { showErrorMessage: mockShowErrorMessage },
+      });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: createMockTerminalPasteDestination({ displayName: 'Terminal' }),
+      });
+      service = new RangeLinkService(
+        getDelimiters,
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockPickerCommand,
+        mockConfigReader,
+        mockLogger,
+      );
+    });
+
+    it('shows error toast and does not call any destination methods', () => {
+      service.terminalCopyLinkGuard();
+
+      expect(mockShowErrorMessage).toHaveBeenCalledTimes(1);
+      expect(mockShowErrorMessage).toHaveBeenNthCalledWith(
+        1,
+        'RangeLink: R-C generates code location links and requires an editor selection. Use R-V to paste terminal text.',
+      );
+      expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.terminalCopyLinkGuard' },
+        'R-C pressed in terminal context',
+      );
     });
   });
 

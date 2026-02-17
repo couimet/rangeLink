@@ -30,6 +30,7 @@ import {
   MessageCode,
   PasteContentType,
   type QuickPickBindResult,
+  type TerminalPasteResult,
 } from './types';
 import { formatMessage, generateLinkFromSelections, isSelfPaste } from './utils';
 
@@ -241,17 +242,19 @@ export class RangeLinkService {
    * Flow: copy terminal selection to clipboard → read clipboard → send to destination.
    * The clipboard overwrite is consistent with existing RangeLink behavior;
    * clipboard preservation is tracked in #353.
+   *
+   * @returns TerminalPasteResult with the outcome and optional error for catch-originated failures
    */
   // Clipboard roundtrip can be revisited if microsoft/vscode#188173 ships a Terminal.selection API,
   // but adopting it would raise our minimum VSCode engine version.
-  async pasteTerminalSelectionToDestination(): Promise<void> {
+  async pasteTerminalSelectionToDestination(): Promise<TerminalPasteResult> {
     const logCtx = { fn: 'RangeLinkService.pasteTerminalSelectionToDestination' };
 
     const activeTerminal = this.ideAdapter.activeTerminal;
     if (!activeTerminal) {
       this.logger.debug(logCtx, 'No active terminal');
       this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
-      return;
+      return { outcome: 'no-active-terminal' };
     }
 
     // The VSCode API for this command does NOT return a value — no result to compare against for success/failure.
@@ -265,7 +268,7 @@ export class RangeLinkService {
       this.ideAdapter.showErrorMessage(
         formatMessage(MessageCode.ERROR_TERMINAL_COPY_COMMAND_FAILED),
       );
-      return;
+      return { outcome: 'copy-command-failed', error };
     }
 
     let terminalText: string;
@@ -279,13 +282,13 @@ export class RangeLinkService {
       this.ideAdapter.showErrorMessage(
         formatMessage(MessageCode.ERROR_TERMINAL_CLIPBOARD_READ_FAILED),
       );
-      return;
+      return { outcome: 'clipboard-read-failed', error };
     }
 
     if (!terminalText) {
       this.logger.debug(logCtx, 'No terminal text after clipboard roundtrip');
       this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_TERMINAL_TEXT_SELECTED));
-      return;
+      return { outcome: 'no-text-selected' };
     }
 
     this.logger.debug(
@@ -302,7 +305,7 @@ export class RangeLinkService {
           { ...logCtx, outcome: pickerResult.outcome },
           'Picker did not bind, aborting',
         );
-        return;
+        return { outcome: 'picker-cancelled' };
       }
     }
 
@@ -317,7 +320,7 @@ export class RangeLinkService {
       this.ideAdapter.showInformationMessage(
         formatMessage(MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED),
       );
-      return;
+      return { outcome: 'self-paste' };
     }
 
     const paddingMode = this.configReader.getPaddingMode(
@@ -342,6 +345,42 @@ export class RangeLinkService {
       contentName: formatMessage(MessageCode.CONTENT_NAME_SELECTED_TEXT),
       fnName: 'pasteTerminalSelectionToDestination',
     });
+
+    return { outcome: 'success' };
+  }
+
+  /**
+   * Bridge for R-L keybinding in terminal context.
+   *
+   * Delegates to pasteTerminalSelectionToDestination() (same as R-V),
+   * then shows an informational tip nudging the user toward R-V directly.
+   */
+  async terminalLinkBridge(): Promise<void> {
+    const logCtx = { fn: 'RangeLinkService.terminalLinkBridge' };
+    this.logger.debug(logCtx, 'Bridging R-L to pasteTerminalSelectionToDestination');
+
+    const result = await this.pasteTerminalSelectionToDestination();
+
+    if (result.outcome === 'success') {
+      this.ideAdapter.showInformationMessage(
+        formatMessage(MessageCode.INFO_TERMINAL_LINK_BRIDGE_TIP),
+      );
+    }
+  }
+
+  /**
+   * Guard for R-C keybinding in terminal context.
+   *
+   * R-C generates code location links, which require an editor selection.
+   * In terminal context, show an error explaining this and suggest R-V instead.
+   */
+  terminalCopyLinkGuard(): void {
+    const logCtx = { fn: 'RangeLinkService.terminalCopyLinkGuard' };
+    this.logger.debug(logCtx, 'R-C pressed in terminal context');
+
+    this.ideAdapter.showErrorMessage(
+      formatMessage(MessageCode.ERROR_TERMINAL_COPY_LINK_NOT_SUPPORTED),
+    );
   }
 
   /**
