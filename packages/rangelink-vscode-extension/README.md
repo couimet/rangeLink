@@ -274,6 +274,14 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | Unbind <sup>Unreleased</sup>               | `Cmd+R Cmd+U`       | `Ctrl+R Ctrl+U`        | Stop auto-sending links to bound destination             |
 | Show Version Info                          | —                   | —                      | Display version and build info                           |
 
+#### Terminal-Aware Keybindings <sup>Unreleased</sup>
+
+When the terminal has focus with text selected, R-V sends the terminal selection to your bound destination. Other R-keybindings (R-L, R-C) gracefully guide you back to R-V instead of silently doing nothing.
+
+| Keybinding                     | Shortcut (Mac) | Shortcut (Win/Linux) | Description                                           |
+| ------------------------------ | -------------- | -------------------- | ----------------------------------------------------- |
+| Paste Terminal Selection (R-V) | `Cmd+R Cmd+V`  | `Ctrl+R Ctrl+V`      | Copy terminal selection and send to bound destination |
+
 **Customizing Shortcuts:** Press `Cmd+K Cmd+S` (Mac) or `Ctrl+K Ctrl+S` (Win/Linux) to open Keyboard Shortcuts, then search for "RangeLink".
 
 ### Context Menus
@@ -318,10 +326,11 @@ Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 
 #### Terminal (right-click on tab or inside terminal)
 
-| Menu Item            | Visibility | Action                            |
-| -------------------- | ---------- | --------------------------------- |
-| RangeLink: Bind Here | Always     | Bind this terminal as destination |
-| RangeLink: Unbind    | When bound | Unbind current destination        |
+| Menu Item                                 | Visibility              | Action                                          |
+| ----------------------------------------- | ----------------------- | ----------------------------------------------- |
+| RangeLink: Paste Selection to Destination | Text selected and bound | Copy terminal selection and send to destination |
+| RangeLink: Bind Here                      | Always                  | Bind this terminal as destination               |
+| RangeLink: Unbind                         | When bound              | Unbind current destination                      |
 
 ## Configuration
 
