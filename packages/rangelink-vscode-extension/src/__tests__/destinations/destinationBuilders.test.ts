@@ -124,6 +124,17 @@ describe('destinationBuilders', () => {
         details: { actualKind: 'terminal', expectedKind: 'text-editor' },
       });
     });
+
+    it('throws RangeLinkExtensionError when editor is missing from options', () => {
+      const context = createMockContext();
+
+      expect(() =>
+        buildTextEditorDestination({ kind: 'text-editor' }, context),
+      ).toThrowRangeLinkExtensionError('TEXT_EDITOR_MISSING_EDITOR', {
+        message: 'buildTextEditorDestination requires editor in options',
+        functionName: 'buildTextEditorDestination',
+      });
+    });
   });
 
   describe('buildCursorAIDestination', () => {

@@ -1,11 +1,11 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import {
-  type CreateOptions,
   type DestinationBuilder,
   type DestinationBuilderContext,
   DestinationRegistry,
 } from '../../destinations';
+import type { BindOptions } from '../../types';
 import {
   createBaseMockPasteDestination,
   createMockEligibilityCheckerFactory,
@@ -84,7 +84,7 @@ describe('DestinationRegistry', () => {
       const mockDestination = createBaseMockPasteDestination({ id: 'terminal' });
       const builder = jest.fn().mockReturnValue(mockDestination);
       registry.register('terminal', builder);
-      const options: CreateOptions = { kind: 'terminal', terminal: { name: 'Test' } as never };
+      const options: BindOptions = { kind: 'terminal', terminal: { name: 'Test' } as never };
 
       registry.create(options);
 

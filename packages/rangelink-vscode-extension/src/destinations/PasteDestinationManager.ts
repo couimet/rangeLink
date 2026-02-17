@@ -12,6 +12,7 @@ import {
   BindFailureReason,
   type BindOptions,
   type ConfirmationQuickPickItem,
+  type TextEditorBindOptions,
   type DestinationKind,
   ExtensionResult,
   MessageCode,
@@ -101,7 +102,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         return this.commitBind(newDestination, 'terminal');
       }
       case 'text-editor':
-        return this.bindTextEditor();
+        return this.bindTextEditor(options);
       case 'cursor-ai':
       case 'github-copilot-chat':
       case 'claude-code':
@@ -336,10 +337,12 @@ export class PasteDestinationManager implements vscode.Disposable {
    *
    * @returns ExtensionResult with bind success info or error
    */
-  private async bindTextEditor(): Promise<ExtensionResult<BindSuccessInfo>> {
+  private async bindTextEditor(
+    options: TextEditorBindOptions,
+  ): Promise<ExtensionResult<BindSuccessInfo>> {
     const fnName = 'bindTextEditor';
 
-    const activeEditor = this.vscodeAdapter.activeTextEditor;
+    const activeEditor = options.editor ?? this.vscodeAdapter.activeTextEditor;
     if (!activeEditor) {
       this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
       this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));

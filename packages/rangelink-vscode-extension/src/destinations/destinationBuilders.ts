@@ -118,6 +118,14 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
     });
   }
 
+  if (!options.editor) {
+    throw new RangeLinkExtensionError({
+      code: RangeLinkExtensionErrorCodes.TEXT_EDITOR_MISSING_EDITOR,
+      message: 'buildTextEditorDestination requires editor in options',
+      functionName: 'buildTextEditorDestination',
+    });
+  }
+
   const editor = options.editor;
   const resourceName = getEditorResourceName(context, editor);
   const editorPath = context.ideAdapter.getDocumentUri(editor).toString();

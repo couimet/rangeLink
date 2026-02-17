@@ -14,10 +14,12 @@ export interface TerminalBindOptions extends WithDestinationKind {
 
 /**
  * Bind to text editor.
- * Future: may include editor reference for specific editor targeting.
+ * When editor is provided (e.g., from file picker), it's used directly.
+ * When omitted (e.g., from keybinding command), bindTextEditor() resolves from activeTextEditor.
  */
 export interface TextEditorBindOptions extends WithDestinationKind {
   readonly kind: Extract<DestinationKind, 'text-editor'>;
+  readonly editor?: vscode.TextEditor;
 }
 
 /**
