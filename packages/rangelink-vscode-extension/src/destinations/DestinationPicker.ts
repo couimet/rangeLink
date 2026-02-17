@@ -109,6 +109,11 @@ export class DestinationPicker {
           bindOptions: selected.bindOptions,
         };
 
+      case 'file-more':
+        // TODO(#356): Show secondary file picker
+        this.logger.debug(logCtx, 'User selected "More files...", showing secondary picker');
+        return { outcome: 'cancelled' };
+
       case 'terminal-more':
         this.logger.debug(logCtx, 'User selected "More terminals...", showing secondary picker');
         return this.showSecondaryTerminalPicker(placeholderMessageCode, boundTerminalProcessId);

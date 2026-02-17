@@ -1,6 +1,8 @@
 import type { DestinationKind } from './DestinationKind';
 import type {
   BindableQuickPickItem,
+  FileBindableQuickPickItem,
+  FileMoreQuickPickItem,
   TerminalBindableQuickPickItem,
   TerminalMoreQuickPickItem,
 } from './QuickPickTypes';
@@ -34,15 +36,16 @@ export interface GetAvailableDestinationItemsOptions {
 /**
  * Grouped response from `getGroupedDestinationItems()`.
  *
- * Terminal bucket uses `TerminalBindableQuickPickItem[]` which extends
- * `BindableQuickPickItem<TerminalBindOptions>` with `terminalInfo: EligibleTerminal`,
- * providing both UI item and domain object from a single source.
+ * File and terminal buckets use domain-specific QuickPickItem types that carry
+ * EligibleFile/EligibleTerminal domain info alongside UI properties.
  *
- * Non-terminal buckets use generic `BindableQuickPickItem[]`.
+ * Non-terminal/non-file buckets use generic `BindableQuickPickItem[]`.
  */
 export type GroupedDestinationItems = {
-  readonly [K in Exclude<DestinationKind, 'terminal'>]?: BindableQuickPickItem[];
+  readonly [K in Exclude<DestinationKind, 'terminal' | 'text-editor'>]?: BindableQuickPickItem[];
 } & {
+  readonly 'text-editor'?: FileBindableQuickPickItem[];
+  readonly 'file-more'?: FileMoreQuickPickItem;
   readonly terminal?: TerminalBindableQuickPickItem[];
   readonly 'terminal-more'?: TerminalMoreQuickPickItem;
 };

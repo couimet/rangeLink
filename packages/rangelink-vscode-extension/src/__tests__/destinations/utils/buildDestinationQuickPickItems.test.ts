@@ -4,7 +4,7 @@ import {
   buildDestinationQuickPickItems,
   DESTINATION_PICKER_SEQUENCE,
 } from '../../../destinations/utils/buildDestinationQuickPickItems';
-import type { GroupedDestinationItems } from '../../../types';
+import type { FileBindableQuickPickItem, GroupedDestinationItems } from '../../../types';
 
 const separator = (label: string): vscode.QuickPickItem => ({
   label,
@@ -40,6 +40,7 @@ describe('buildDestinationQuickPickItems', () => {
     it('builds items in DESTINATION_PICKER_SEQUENCE order with labeled group separators', () => {
       const mockTerminal = { name: 'bash' } as vscode.Terminal;
       const grouped: GroupedDestinationItems = {
+        // TODO(#355/S005): Replace with proper FileBindableQuickPickItem fixtures
         'text-editor': [
           {
             label: 'Text Editor',
@@ -47,7 +48,7 @@ describe('buildDestinationQuickPickItems', () => {
             bindOptions: { kind: 'text-editor' },
             itemKind: 'bindable',
           },
-        ],
+        ] as unknown as FileBindableQuickPickItem[],
         'claude-code': [
           {
             label: 'Claude Code Chat',
@@ -159,6 +160,7 @@ describe('buildDestinationQuickPickItems', () => {
           remainingCount: 3,
           itemKind: 'terminal-more',
         },
+        // TODO(#355/S005): Replace with proper FileBindableQuickPickItem fixtures
         'text-editor': [
           {
             label: 'Text Editor',
@@ -166,7 +168,7 @@ describe('buildDestinationQuickPickItems', () => {
             bindOptions: { kind: 'text-editor' },
             itemKind: 'bindable',
           },
-        ],
+        ] as unknown as FileBindableQuickPickItem[],
       };
 
       const result = buildDestinationQuickPickItems(grouped, identityLabelBuilder);

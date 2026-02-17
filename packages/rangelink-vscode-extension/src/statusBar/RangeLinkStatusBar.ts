@@ -117,6 +117,10 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       case 'info':
         this.logger.debug(logCtx, 'Non-actionable item selected');
         break;
+      case 'file-more':
+        // TODO(#356): Show secondary file picker from status bar
+        this.logger.debug(logCtx, 'File more item selected');
+        break;
       default: {
         const _exhaustiveCheck: never = selected;
         throw new RangeLinkExtensionError({

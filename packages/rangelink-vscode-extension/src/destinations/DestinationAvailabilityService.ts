@@ -11,6 +11,7 @@ import {
   type AIAssistantDestinationKind,
   DESTINATION_KINDS,
   type EligibleTerminal,
+  type FileBindableQuickPickItem,
   type GetAvailableDestinationItemsOptions,
   type GroupedDestinationItems,
   MessageCode,
@@ -144,6 +145,7 @@ export class DestinationAvailabilityService {
           if (!textEditorEligibility.eligible) break;
 
           const displayName = `${displayNames['text-editor']} ("${textEditorEligibility.filename}")`;
+          // TODO(#355/S004): Replace with file discovery pipeline
           result['text-editor'] = [
             {
               label: displayName,
@@ -151,7 +153,7 @@ export class DestinationAvailabilityService {
               bindOptions: { kind: 'text-editor' },
               itemKind: 'bindable',
             },
-          ];
+          ] as unknown as FileBindableQuickPickItem[];
           break;
         }
 

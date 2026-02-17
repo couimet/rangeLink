@@ -3,10 +3,12 @@ import type * as vscode from 'vscode';
 import type {
   BindableQuickPickItem,
   EligibleTerminal,
+  FileBindableQuickPickItem,
   GroupedDestinationItems,
   TerminalBindableQuickPickItem,
   TerminalMoreQuickPickItem,
 } from '../../types';
+import { createMockEligibleFile } from './createMockEligibleFile';
 
 import { createMockEligibleTerminal } from './createMockEligibleTerminal';
 
@@ -58,12 +60,13 @@ export const createMockAIAssistantQuickPickItem = (
  */
 export const createMockTextEditorQuickPickItem = (
   displayName = 'Text Editor ("file.ts")',
-): BindableQuickPickItem => ({
+): FileBindableQuickPickItem => ({
   label: displayName,
   displayName,
   bindOptions: { kind: 'text-editor' },
   itemKind: 'bindable',
   isActive: false,
+  fileInfo: createMockEligibleFile(),
 });
 
 /**
