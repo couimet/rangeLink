@@ -68,6 +68,15 @@ describe('disambiguateFilenames', () => {
     expect(result).toStrictEqual(['src', 'src']);
   });
 
+  it('uses ./ for all-root collision group', () => {
+    const result = disambiguateFilenames([
+      { filename: 'README.md', relativePath: 'README.md' },
+      { filename: 'README.md', relativePath: 'README.md' },
+    ]);
+
+    expect(result).toStrictEqual(['./', './']);
+  });
+
   it('only disambiguates colliding filenames, leaving unique ones empty', () => {
     const result = disambiguateFilenames([
       { filename: 'README.md', relativePath: 'packages/rangelink-vscode-extension/README.md' },

@@ -45,7 +45,7 @@ export const disambiguateFilenames = (files: readonly FileEntry[]): string[] => 
     });
 
     let depth = 1;
-    const maxDepth = Math.max(...parentSegments.map((s) => s.length));
+    const maxDepth = Math.max(1, ...parentSegments.map((s) => s.length));
 
     while (depth <= maxDepth) {
       for (let j = 0; j < indices.length; j++) {
