@@ -5,6 +5,7 @@ export {
   type LabelBuilder,
 } from './buildDestinationQuickPickItems';
 export { buildTerminalPickerItems } from './buildTerminalPickerItems';
+export { getEligibleFiles } from './getEligibleFiles';
 export { getEligibleTerminals } from './getEligibleTerminals';
 export { isFileEligible } from './isFileEligible';
 export { isTerminalEligible } from './isTerminalEligible';
