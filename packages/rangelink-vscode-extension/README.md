@@ -373,6 +373,19 @@ When enabled, a dialog appears with options: "Save & Generate", "Generate Anyway
 
 When you have more terminals than this threshold, the destination picker shows a "More terminals..." option instead of listing all terminals individually.
 
+### Smart Padding Settings <sup>Unreleased</sup>
+
+| Setting                                | Default  | Description                               |
+| -------------------------------------- | -------- | ----------------------------------------- |
+| `rangelink.smartPadding.pasteLink`     | `"both"` | Padding around generated RangeLinks (R-L) |
+| `rangelink.smartPadding.pasteContent`  | `"none"` | Padding around selected text (R-V)        |
+| `rangelink.smartPadding.pasteFilePath` | `"both"` | Padding around file paths (R-F)           |
+| `rangelink.smartPadding.pasteBookmark` | `"both"` | Padding around saved bookmarks            |
+
+**Available values:** `"both"` (space before and after), `"before"` (space before only), `"after"` (space after only), `"none"` (no padding).
+
+Most paste commands default to `"both"` to prevent the pasted text from concatenating with surrounding content. The exception is `pasteContent` which defaults to `"none"` — selected text is pasted exactly as-is since it typically represents raw code or prose where extra whitespace would be unwanted.
+
 ## What's Next
 
 RangeLink is under active development. See [open issues](https://github.com/couimet/rangeLink/issues) for planned features and enhancement requests.
