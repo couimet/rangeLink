@@ -41,10 +41,6 @@ export default [
         clearTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
-        // Node/browser globals
-        process: 'readonly',
-        fetch: 'readonly',
-        console: 'readonly',
       },
       parserOptions: {
         // Not enabling full type-checking to keep lint fast; can be enabled later
@@ -88,6 +84,24 @@ export default [
     files: ['**/*.test.ts', '**/__tests__/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+  {
+    // VSCode extension: process is used for terminal process IDs and platform detection
+    files: ['packages/rangelink-vscode-extension/src/**/*.ts'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+      },
+    },
+  },
+  {
+    // Demo files: fetch is a browser/Node 18+ global used in example code
+    files: ['demo/**/*.ts'],
+    languageOptions: {
+      globals: {
+        fetch: 'readonly',
+      },
     },
   },
   // Keep Prettier as the last extend to disable stylistic conflicts
