@@ -4,7 +4,11 @@ import { createMockEligibleFile } from '../../helpers';
 
 describe('sortEligibleFiles', () => {
   it('places bound file before current-in-group file', () => {
-    const current = createMockEligibleFile({ filename: 'current.ts', isCurrentInGroup: true, boundState: 'not-bound' });
+    const current = createMockEligibleFile({
+      filename: 'current.ts',
+      isCurrentInGroup: true,
+      boundState: 'not-bound',
+    });
     const bound = createMockEligibleFile({ filename: 'bound.ts', boundState: 'bound' });
 
     const result = sortEligibleFiles([current, bound]);
@@ -14,7 +18,11 @@ describe('sortEligibleFiles', () => {
 
   it('places current-in-group file before alphabetically earlier file', () => {
     const aaa = createMockEligibleFile({ filename: 'aaa.ts', boundState: 'not-bound' });
-    const zzz = createMockEligibleFile({ filename: 'zzz.ts', isCurrentInGroup: true, boundState: 'not-bound' });
+    const zzz = createMockEligibleFile({
+      filename: 'zzz.ts',
+      isCurrentInGroup: true,
+      boundState: 'not-bound',
+    });
 
     const result = sortEligibleFiles([aaa, zzz]);
 
@@ -32,8 +40,16 @@ describe('sortEligibleFiles', () => {
   });
 
   it('keeps already sorted input in same order', () => {
-    const bound = createMockEligibleFile({ filename: 'bound.ts', boundState: 'bound', isCurrentInGroup: true });
-    const current = createMockEligibleFile({ filename: 'current.ts', isCurrentInGroup: true, boundState: 'not-bound' });
+    const bound = createMockEligibleFile({
+      filename: 'bound.ts',
+      boundState: 'bound',
+      isCurrentInGroup: true,
+    });
+    const current = createMockEligibleFile({
+      filename: 'current.ts',
+      isCurrentInGroup: true,
+      boundState: 'not-bound',
+    });
     const alpha = createMockEligibleFile({ filename: 'alpha.ts', boundState: 'not-bound' });
     const beta = createMockEligibleFile({ filename: 'beta.ts', boundState: 'not-bound' });
 

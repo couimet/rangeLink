@@ -8,8 +8,7 @@ import {
   createMockVscodeAdapter,
 } from '../../helpers';
 
-const createNonTextTab = (): vscode.Tab =>
-  ({ input: { uri: undefined } }) as unknown as vscode.Tab;
+const createNonTextTab = (): vscode.Tab => ({ input: { uri: undefined } }) as unknown as vscode.Tab;
 
 describe('getEligibleFiles', () => {
   let uri: vscode.Uri;

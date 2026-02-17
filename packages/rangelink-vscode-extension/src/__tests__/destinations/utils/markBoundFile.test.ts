@@ -1,5 +1,5 @@
-import type { EligibleFile } from '../../../types';
 import { markBoundFile } from '../../../destinations/utils';
+import type { EligibleFile } from '../../../types';
 import { createMockUri } from '../../helpers';
 
 describe('markBoundFile', () => {

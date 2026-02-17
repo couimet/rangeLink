@@ -55,8 +55,7 @@ export const disambiguateFilenames = (files: readonly FileEntry[]): string[] => 
         } else if (depth >= segments.length) {
           disambiguators[indices[j]] = segments.join('/');
         } else {
-          disambiguators[indices[j]] =
-            '…/' + segments.slice(segments.length - depth).join('/');
+          disambiguators[indices[j]] = '…/' + segments.slice(segments.length - depth).join('/');
         }
       }
 

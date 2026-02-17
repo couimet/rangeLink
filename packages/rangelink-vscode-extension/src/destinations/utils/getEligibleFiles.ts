@@ -36,7 +36,8 @@ export const getEligibleFiles = (ideAdapter: VscodeAdapter): EligibleFile[] => {
         filename: ideAdapter.getFilenameFromUri(uri),
         tabGroupIndex: index + 1,
         isCurrentInGroup: tab === group.activeTab,
-        isActiveEditor: activeEditorUriString !== undefined && uri.toString() === activeEditorUriString,
+        isActiveEditor:
+          activeEditorUriString !== undefined && uri.toString() === activeEditorUriString,
       });
     }
   }

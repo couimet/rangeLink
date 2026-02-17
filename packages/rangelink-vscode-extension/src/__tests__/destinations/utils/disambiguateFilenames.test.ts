@@ -6,9 +6,7 @@ describe('disambiguateFilenames', () => {
   });
 
   it('returns empty disambiguator for single file', () => {
-    const result = disambiguateFilenames([
-      { filename: 'app.ts', relativePath: 'src/app.ts' },
-    ]);
+    const result = disambiguateFilenames([{ filename: 'app.ts', relativePath: 'src/app.ts' }]);
 
     expect(result).toStrictEqual(['']);
   });
@@ -29,10 +27,7 @@ describe('disambiguateFilenames', () => {
       { filename: 'README.md', relativePath: 'docs/tutorials/01-basic-usage/README.md' },
     ]);
 
-    expect(result).toStrictEqual([
-      '…/rangelink-vscode-extension',
-      '…/01-basic-usage',
-    ]);
+    expect(result).toStrictEqual(['…/rangelink-vscode-extension', '…/01-basic-usage']);
   });
 
   it('uses ./ for workspace root file colliding with nested files', () => {
@@ -42,11 +37,7 @@ describe('disambiguateFilenames', () => {
       { filename: 'README.md', relativePath: 'docs/tutorials/01-basic-usage/README.md' },
     ]);
 
-    expect(result).toStrictEqual([
-      './',
-      '…/rangelink-vscode-extension',
-      '…/01-basic-usage',
-    ]);
+    expect(result).toStrictEqual(['./', '…/rangelink-vscode-extension', '…/01-basic-usage']);
   });
 
   it('adds more parent segments when one is not enough', () => {
@@ -56,11 +47,7 @@ describe('disambiguateFilenames', () => {
       { filename: 'index.ts', relativePath: 'src/utils/billing/index.ts' },
     ]);
 
-    expect(result).toStrictEqual([
-      '…/features/auth',
-      '…/features/billing',
-      '…/utils/billing',
-    ]);
+    expect(result).toStrictEqual(['…/features/auth', '…/features/billing', '…/utils/billing']);
   });
 
   it('drops ellipsis when all parent segments are shown', () => {
@@ -69,10 +56,7 @@ describe('disambiguateFilenames', () => {
       { filename: 'index.ts', relativePath: 'lib/index.ts' },
     ]);
 
-    expect(result).toStrictEqual([
-      'src',
-      'lib',
-    ]);
+    expect(result).toStrictEqual(['src', 'lib']);
   });
 
   it('keeps identical relativePaths as-is since they cannot be further disambiguated', () => {
@@ -81,10 +65,7 @@ describe('disambiguateFilenames', () => {
       { filename: 'index.ts', relativePath: 'src/index.ts' },
     ]);
 
-    expect(result).toStrictEqual([
-      'src',
-      'src',
-    ]);
+    expect(result).toStrictEqual(['src', 'src']);
   });
 
   it('only disambiguates colliding filenames, leaving unique ones empty', () => {
@@ -94,10 +75,6 @@ describe('disambiguateFilenames', () => {
       { filename: 'README.md', relativePath: 'docs/tutorials/01-basic-usage/README.md' },
     ]);
 
-    expect(result).toStrictEqual([
-      '…/rangelink-vscode-extension',
-      '',
-      '…/01-basic-usage',
-    ]);
+    expect(result).toStrictEqual(['…/rangelink-vscode-extension', '', '…/01-basic-usage']);
   });
 });
