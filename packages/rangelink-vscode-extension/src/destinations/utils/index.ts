@@ -13,6 +13,7 @@ export {
   isTextEditorDestinationEligible,
   type TextEditorEligibility,
 } from './isTextEditorDestinationEligible';
+export { markBoundFile } from './markBoundFile';
 export { markBoundTerminal } from './markBoundTerminal';
 export { resolveBoundTerminalProcessId } from './resolveBoundTerminalProcessId';
 export { showTerminalPicker } from './showTerminalPicker';
