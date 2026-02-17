@@ -41,6 +41,10 @@ export default [
         clearTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        // Node/browser globals
+        process: 'readonly',
+        fetch: 'readonly',
+        console: 'readonly',
       },
       parserOptions: {
         // Not enabling full type-checking to keep lint fast; can be enabled later
@@ -72,7 +76,10 @@ export default [
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
       'unicorn/prefer-node-protocol': 'error',
     },
   },

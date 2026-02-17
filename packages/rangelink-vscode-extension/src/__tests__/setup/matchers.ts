@@ -1,5 +1,3 @@
-import type { Result } from 'rangelink-core-ts';
-
 import {
   toBeRangeLinkError,
   toBeRangeLinkErrorErr,
@@ -16,6 +14,7 @@ import {
 import { toBeErr, toBeErrWith, toBeOk, toBeOkWith } from '../matchers/toBeResult';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- Jest matcher type augmentation requires namespace
   namespace jest {
     interface Matchers<R> {
       // Result matchers

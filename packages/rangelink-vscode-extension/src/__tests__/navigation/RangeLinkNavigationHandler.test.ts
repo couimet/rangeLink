@@ -787,6 +787,7 @@ describe('RangeLinkNavigationHandler', () => {
         expect(result).toBeRangeLinkErrorErr('PARSE_NO_HASH_SEPARATOR', {
           message: 'Link must contain # separator',
           functionName: 'parseLink',
+          details: { hash: '#' },
         });
       });
     });

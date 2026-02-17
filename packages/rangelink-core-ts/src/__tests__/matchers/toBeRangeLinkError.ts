@@ -1,6 +1,5 @@
 import type { ErrorDetails } from '../../errors/detailedError';
 import { RangeLinkError } from '../../errors/RangeLinkError';
-import type { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
 import type { Result } from '../../types/Result';
 
 /**
@@ -78,8 +77,9 @@ export const toBeRangeLinkError = (
     try {
       expect(error.details).toStrictEqual(expected.details);
     } catch (e) {
+      const jestDiff = e instanceof Error ? e.message : String(e);
       failures.push(
-        `  Details (toStrictEqual):\n    expected: ${JSON.stringify(expected.details, null, 2)}\n    received: ${JSON.stringify(error.details, null, 2)}`,
+        `  Details (toStrictEqual):\n    expected: ${JSON.stringify(expected.details, null, 2)}\n    received: ${JSON.stringify(error.details, null, 2)}\n    diff: ${jestDiff}`,
       );
     }
   } else if (error.details !== undefined) {
@@ -177,6 +177,7 @@ export const toBeRangeLinkErrorErr = (
  * TypeScript declaration for Jest matchers
  */
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- Jest matcher type augmentation requires namespace
   namespace jest {
     interface Matchers<R> {
       toBeRangeLinkError(code: string, expected: ExpectedRangeLinkError): R;
