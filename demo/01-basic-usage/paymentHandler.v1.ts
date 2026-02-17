@@ -11,7 +11,8 @@ interface PaymentRequest {
 interface PaymentResult {
   success: boolean;
   transactionId?: string;
-  error?: string;
+  error?: unknown;
+  errorMsg?: string;
 }
 
 export const processPayment = async (request: PaymentRequest): Promise<PaymentResult> => {
@@ -24,7 +25,7 @@ export const processPayment = async (request: PaymentRequest): Promise<PaymentRe
     const data = await response.json();
     return { success: true, transactionId: data.id };
   } catch (error) {
-    return { success: false, error: 'Payment failed' };
+    return { success: false, error, errorMsg: 'Payment failed' };
   }
 };
 
@@ -36,6 +37,6 @@ export const refundPayment = async (transactionId: string): Promise<PaymentResul
     const data = await response.json();
     return { success: true, transactionId: data.id };
   } catch (error) {
-    return { success: false, error: 'Refund failed' };
+    return { success: false, error, errorMsg: 'Refund failed' };
   }
 };

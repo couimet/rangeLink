@@ -7,6 +7,7 @@ import {
 } from '../matchers/toBeRangeLinkError';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- Jest matcher type augmentation requires namespace
   namespace jest {
     interface Matchers<R> {
       toBeOk(): R;

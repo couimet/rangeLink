@@ -76,10 +76,13 @@ export const toBeRangeLinkError = (
     try {
       expect(error.details).toStrictEqual(expected.details);
     } catch (e) {
+      const jestDiff = e instanceof Error ? e.message : String(e);
       failures.push(
-        `  Details (toStrictEqual):\n    expected: ${JSON.stringify(expected.details, null, 2)}\n    received: ${JSON.stringify(error.details, null, 2)}`,
+        `  Details (toStrictEqual):\n    expected: ${JSON.stringify(expected.details, null, 2)}\n    received: ${JSON.stringify(error.details, null, 2)}\n    diff: ${jestDiff}`,
       );
     }
+  } else if (error.details !== undefined) {
+    failures.push(`  Details: expected undefined, received ${JSON.stringify(error.details)}`);
   }
 
   // Validate optional property: cause
@@ -91,6 +94,10 @@ export const toBeRangeLinkError = (
         error.cause instanceof Error ? (error.cause as Error).message : 'undefined';
       failures.push(`  Cause: expected ${expectedCauseMsg}, received ${receivedCauseMsg}`);
     }
+  } else if (error.cause !== undefined) {
+    const causeMsg =
+      error.cause instanceof Error ? (error.cause as Error).message : String(error.cause);
+    failures.push(`  Cause: expected undefined, received error with message "${causeMsg}"`);
   }
 
   const pass = failures.length === 0;

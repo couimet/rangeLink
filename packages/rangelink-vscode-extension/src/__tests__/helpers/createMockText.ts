@@ -14,7 +14,7 @@ import * as vscode from 'vscode';
  * @returns Mock function that returns the text (ignores selection/range parameter)
  */
 export const createMockText = (text: string): jest.Mock => {
-  return jest.fn((selection?: vscode.Selection | vscode.Range) => {
+  return jest.fn((_selection?: vscode.Selection | vscode.Range) => {
     // For now, ignore selection/range parameter and return full text
     // Future enhancement: parse text by lines and return substring based on range
     return text;

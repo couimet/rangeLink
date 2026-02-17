@@ -1,6 +1,4 @@
-import { RangeLinkError } from '../../errors/RangeLinkError';
-import { RangeLinkErrorCodes } from '../../errors/RangeLinkErrorCodes';
-import { Result } from '../../types/Result';
+import { RangeLinkError, RangeLinkErrorCodes, Result } from 'rangelink-core-ts';
 
 import {
   toBeRangeLinkError,
@@ -29,19 +27,6 @@ describe('toBeRangeLinkError matcher', () => {
       );
     });
 
-    it('passes when both error and expected have undefined details', () => {
-      const error = new RangeLinkError({
-        code: RangeLinkErrorCodes.VALIDATION,
-        message: 'Test error',
-        functionName: 'testFn',
-      });
-
-      expect(error).toBeRangeLinkError('VALIDATION', {
-        message: 'Test error',
-        functionName: 'testFn',
-      });
-    });
-
     it('fails with diff when expected specifies details that do not match', () => {
       const error = new RangeLinkError({
         code: RangeLinkErrorCodes.VALIDATION,
@@ -62,6 +47,19 @@ describe('toBeRangeLinkError matcher', () => {
       expect(msg).toContain('"key": "expected"');
       expect(msg).toContain('"key": "actual"');
       expect(msg).toContain('diff:');
+    });
+
+    it('passes when both error and expected have undefined details', () => {
+      const error = new RangeLinkError({
+        code: RangeLinkErrorCodes.VALIDATION,
+        message: 'Test error',
+        functionName: 'testFn',
+      });
+
+      expect(error).toBeRangeLinkError('VALIDATION', {
+        message: 'Test error',
+        functionName: 'testFn',
+      });
     });
 
     it('passes when expected specifies details and error has matching details', () => {
