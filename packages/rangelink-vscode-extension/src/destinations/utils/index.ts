@@ -5,7 +5,7 @@ export {
   type LabelBuilder,
 } from './buildDestinationQuickPickItems';
 export { buildTerminalPickerItems } from './buildTerminalPickerItems';
-export { disambiguateFilenames } from './disambiguateFilenames';
+export { disambiguateFilenames, type FileEntry } from './disambiguateFilenames';
 export { getEligibleFiles } from './getEligibleFiles';
 export { getEligibleTerminals } from './getEligibleTerminals';
 export { isFileEligible } from './isFileEligible';

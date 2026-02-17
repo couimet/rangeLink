@@ -1,4 +1,4 @@
-interface FileEntry {
+export interface FileEntry {
   readonly filename: string;
   readonly relativePath: string;
 }

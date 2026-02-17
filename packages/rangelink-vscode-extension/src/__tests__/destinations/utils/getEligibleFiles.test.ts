@@ -28,14 +28,15 @@ describe('getEligibleFiles', () => {
 
     const result = getEligibleFiles(adapter);
 
-    expect(result).toHaveLength(1);
-    expect(result[0]).toStrictEqual({
-      uri,
-      filename: 'app.ts',
-      tabGroupIndex: 1,
-      isCurrentInGroup: true,
-      isActiveEditor: false,
-    });
+    expect(result).toStrictEqual([
+      {
+        uri,
+        filename: 'app.ts',
+        tabGroupIndex: 1,
+        isCurrentInGroup: true,
+        isActiveEditor: false,
+      },
+    ]);
   });
 
   it('returns files from multiple tab groups with correct 1-based indices', () => {
