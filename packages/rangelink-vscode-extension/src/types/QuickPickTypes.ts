@@ -1,7 +1,8 @@
 import type * as vscode from 'vscode';
 
 import type { BindOptions, TerminalBindOptions } from './BindOptions';
-import type { EligibleTerminal, TerminalBoundState } from './EligibleTerminal';
+import type { BoundState } from './BoundState';
+import type { EligibleTerminal } from './EligibleTerminal';
 import type { WithDisplayName } from './WithDisplayName';
 
 /**
@@ -89,7 +90,7 @@ export interface BindableQuickPickItem<T extends BindOptions = BindOptions>
  */
 export interface TerminalBindableQuickPickItem extends BindableQuickPickItem<TerminalBindOptions> {
   readonly terminalInfo: EligibleTerminal;
-  readonly boundState?: TerminalBoundState;
+  readonly boundState?: BoundState;
 }
 
 // ============================================================================

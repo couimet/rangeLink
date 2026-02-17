@@ -1,6 +1,8 @@
 export { ActiveSelections } from './ActiveSelections';
 export { AutoPasteResult } from './AutoPasteResult';
-export type { EligibleTerminal, TerminalBoundState } from './EligibleTerminal';
+export type { BoundState } from './BoundState';
+export type { EligibleFile } from './EligibleFile';
+export type { EligibleTerminal } from './EligibleTerminal';
 export { BehaviourAfterPaste } from './BehaviourAfterPaste';
 export type {
   BindOptions,

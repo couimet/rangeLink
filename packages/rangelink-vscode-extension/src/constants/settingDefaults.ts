@@ -28,6 +28,12 @@ export const DEFAULT_SMART_PADDING_PASTE_FILE_PATH: PaddingMode = 'both';
 export const DEFAULT_SMART_PADDING_PASTE_LINK: PaddingMode = 'both';
 
 // =============================================================================
+// File Picker Defaults
+// =============================================================================
+
+export const DEFAULT_FILE_PICKER_MAX_TAB_GROUPS = 5;
+
+// =============================================================================
 // Terminal Picker Defaults
 // =============================================================================
 
