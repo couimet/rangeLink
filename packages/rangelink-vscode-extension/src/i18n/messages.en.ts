@@ -70,10 +70,18 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: No active terminal. Open a terminal and try again.',
   [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]:
     'RangeLink: No active text editor. Open a file and try again.',
+  [MessageCode.ERROR_NO_TERMINAL_TEXT_SELECTED]:
+    'RangeLink: No text selected in the terminal. Select text and try again.',
   [MessageCode.ERROR_NO_TEXT_SELECTED]:
     'RangeLink: No text selected. Click in the file, select text, and try again.',
   [MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE]:
     'RangeLink: No active file. Open a file and try again.',
+  [MessageCode.ERROR_TERMINAL_CLIPBOARD_READ_FAILED]:
+    'RangeLink: Could not read terminal selection. Please try again.',
+  [MessageCode.ERROR_TERMINAL_COPY_COMMAND_FAILED]:
+    'RangeLink: Could not read terminal selection. Please try again.',
+  [MessageCode.ERROR_TERMINAL_COPY_LINK_NOT_SUPPORTED]:
+    'RangeLink: R-C generates code location links and requires an editor selection. Use R-V to paste terminal text.',
   [MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT]:
     'RangeLink: Cannot navigate - invalid link format: {linkText}',
   [MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS]:
@@ -127,6 +135,8 @@ export const messagesEn: Record<MessageCode, string> = {
     'Selected text copied to clipboard. Cannot paste to same file.',
   [MessageCode.INFO_SELF_PASTE_LINK_SKIPPED]:
     'RangeLink copied to clipboard. Cannot auto-paste to same file. Tip: Use R-C for clipboard-only links.',
+  [MessageCode.INFO_TERMINAL_LINK_BRIDGE_TIP]:
+    'Terminal text pasted to destination. Tip: Use R-V directly for terminal selections.',
   [MessageCode.INFO_VERSION_COPY_COMMIT_HASH_BUTTON]: 'Copy Commit Hash',
   [MessageCode.INFO_VERSION_DIRTY_INDICATOR]: ' (with uncommitted changes)',
   [MessageCode.INFO_VERSION_INFO]:

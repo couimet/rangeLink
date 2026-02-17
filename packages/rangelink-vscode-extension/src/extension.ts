@@ -60,6 +60,9 @@ import {
   CMD_PASTE_FILE_PATH_RELATIVE,
   CMD_PASTE_TO_DESTINATION,
   CMD_SHOW_VERSION,
+  CMD_TERMINAL_COPY_LINK_GUARD,
+  CMD_TERMINAL_LINK_BRIDGE,
+  CMD_TERMINAL_PASTE_SELECTED_TEXT,
   CMD_UNBIND_DESTINATION,
 } from './constants';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
@@ -500,6 +503,18 @@ export function activate(context: vscode.ExtensionContext): void {
     ideAdapter.registerCommand(CMD_CONTEXT_TERMINAL_UNBIND, () => {
       destinationManager.unbind();
     }),
+  );
+
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_TERMINAL_PASTE_SELECTED_TEXT, () =>
+      service.pasteTerminalSelectionToDestination(),
+    ),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_TERMINAL_LINK_BRIDGE, () => service.terminalLinkBridge()),
+  );
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_TERMINAL_COPY_LINK_GUARD, () => service.terminalCopyLinkGuard()),
   );
 
   context.subscriptions.push(

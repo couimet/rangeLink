@@ -604,6 +604,9 @@ describe('Extension lifecycle', () => {
       'rangelink.pasteSelectedTextToDestination',
       'rangelink.showVersion',
       'rangelink.terminal.bind',
+      'rangelink.terminal.copyLinkGuard',
+      'rangelink.terminal.linkBridge',
+      'rangelink.terminal.pasteSelectedTextToDestination',
       'rangelink.terminal.unbind',
       'rangelink.unbindDestination',
     ];
@@ -640,7 +643,7 @@ describe('Extension lifecycle', () => {
 
     const INFRASTRUCTURE_COUNT = 2;
     const PROVIDER_COUNT = 2;
-    const COMMAND_COUNT = 46;
+    const COMMAND_COUNT = 49;
     const DESTINATION_MANAGER_LISTENERS = 2;
     const EXPECTED_SUBSCRIPTION_COUNT =
       INFRASTRUCTURE_COUNT + PROVIDER_COUNT + COMMAND_COUNT + DESTINATION_MANAGER_LISTENERS;

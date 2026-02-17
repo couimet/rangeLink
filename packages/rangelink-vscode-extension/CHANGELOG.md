@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Paste Terminal Selection (R-V)** - Send terminal text to your bound destination (#331)
+  - **Keyboard shortcut:** `Cmd+R Cmd+V` (Mac) / `Ctrl+R Ctrl+V` (Win/Linux) when terminal has focus
+  - Terminal context menu "Paste Selection to Destination" entry when text is selected and a destination is bound
+  - R-L and R-C gracefully guide users who press editor keybindings while in the terminal
+  - Terminal self-paste detection prevents pasting back into the same terminal
 - **Unbind (R-U)** - Keybinding to unbind the current destination (#348)
   - **Keyboard shortcut:** `Cmd+R Cmd+U` (Mac) / `Ctrl+R Ctrl+U` (Win/Linux)
   - Previously only accessible via Command Palette and context menus

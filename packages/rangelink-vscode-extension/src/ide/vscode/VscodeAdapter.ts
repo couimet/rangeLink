@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
+import { VSCODE_CMD_TERMINAL_PASTE } from '../../constants';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import {
@@ -54,6 +55,13 @@ export class VscodeAdapter
     private readonly ideInstance: typeof vscode,
     private readonly logger: Logger,
   ) {}
+
+  /**
+   * Read text from clipboard using VSCode API.
+   */
+  async readTextFromClipboard(): Promise<string> {
+    return this.ideInstance.env.clipboard.readText();
+  }
 
   /**
    * Write text to clipboard using VSCode API
@@ -256,7 +264,7 @@ export class VscodeAdapter
     terminal.show();
 
     // Execute paste command (simulates Cmd+V / Ctrl+V)
-    await this.executeCommand('workbench.action.terminal.paste');
+    await this.executeCommand(VSCODE_CMD_TERMINAL_PASTE);
 
     // Handle execution behavior if requested
     const behaviour = options?.behaviour ?? BehaviourAfterPaste.NOTHING;

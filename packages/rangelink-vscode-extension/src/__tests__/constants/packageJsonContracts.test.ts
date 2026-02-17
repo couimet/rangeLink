@@ -448,8 +448,34 @@ describe('package.json contributions', () => {
       });
     });
 
+    describe('terminal keybinding commands (no category - hidden from palette)', () => {
+      it('rangelink.terminal.pasteSelectedTextToDestination', () => {
+        expect(findCommand('rangelink.terminal.pasteSelectedTextToDestination')).toStrictEqual({
+          command: 'rangelink.terminal.pasteSelectedTextToDestination',
+          title: 'RangeLink: Paste Selection to Destination',
+          icon: '$(symbol-snippet)',
+        });
+      });
+
+      it('rangelink.terminal.copyLinkGuard', () => {
+        expect(findCommand('rangelink.terminal.copyLinkGuard')).toStrictEqual({
+          command: 'rangelink.terminal.copyLinkGuard',
+          title: 'RangeLink: Copy Link (Terminal)',
+          icon: '$(error)',
+        });
+      });
+
+      it('rangelink.terminal.linkBridge', () => {
+        expect(findCommand('rangelink.terminal.linkBridge')).toStrictEqual({
+          command: 'rangelink.terminal.linkBridge',
+          title: 'RangeLink: Copy Link to Destination (Terminal)',
+          icon: '$(link)',
+        });
+      });
+    });
+
     it('has the expected number of commands', () => {
-      expect(commands).toHaveLength(44);
+      expect(commands).toHaveLength(47);
     });
   });
 
@@ -743,8 +769,35 @@ describe('package.json contributions', () => {
       });
     });
 
+    it('rangelink.terminal.pasteSelectedTextToDestination keybinding', () => {
+      expect(findKeybinding('rangelink.terminal.pasteSelectedTextToDestination')).toStrictEqual({
+        command: 'rangelink.terminal.pasteSelectedTextToDestination',
+        key: 'ctrl+r ctrl+v',
+        mac: 'cmd+r cmd+v',
+        when: 'terminalFocus && terminalTextSelected',
+      });
+    });
+
+    it('rangelink.terminal.linkBridge keybinding', () => {
+      expect(findKeybinding('rangelink.terminal.linkBridge')).toStrictEqual({
+        command: 'rangelink.terminal.linkBridge',
+        key: 'ctrl+r ctrl+l',
+        mac: 'cmd+r cmd+l',
+        when: 'terminalFocus && terminalTextSelected',
+      });
+    });
+
+    it('rangelink.terminal.copyLinkGuard keybinding', () => {
+      expect(findKeybinding('rangelink.terminal.copyLinkGuard')).toStrictEqual({
+        command: 'rangelink.terminal.copyLinkGuard',
+        key: 'ctrl+r ctrl+c',
+        mac: 'cmd+r cmd+c',
+        when: 'terminalFocus && terminalTextSelected',
+      });
+    });
+
     it('has the expected number of keybindings', () => {
-      expect(keybindings).toHaveLength(16);
+      expect(keybindings).toHaveLength(19);
     });
   });
 
@@ -921,7 +974,7 @@ describe('package.json contributions', () => {
       const commandPalette = packageJson.contributes.menus['commandPalette'] as MenuContribution[];
 
       it('has the expected number of commandPalette entries', () => {
-        expect(commandPalette).toHaveLength(22);
+        expect(commandPalette).toHaveLength(25);
       });
 
       it('bindToTerminalHere is hidden from command palette', () => {
@@ -1071,8 +1124,29 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('terminal.unbind is hidden from command palette', () => {
+      it('terminal.copyLinkGuard is hidden from command palette', () => {
         expect(commandPalette[21]).toStrictEqual({
+          command: 'rangelink.terminal.copyLinkGuard',
+          when: 'false',
+        });
+      });
+
+      it('terminal.linkBridge is hidden from command palette', () => {
+        expect(commandPalette[22]).toStrictEqual({
+          command: 'rangelink.terminal.linkBridge',
+          when: 'false',
+        });
+      });
+
+      it('terminal.pasteSelectedTextToDestination is hidden from command palette', () => {
+        expect(commandPalette[23]).toStrictEqual({
+          command: 'rangelink.terminal.pasteSelectedTextToDestination',
+          when: 'false',
+        });
+      });
+
+      it('terminal.unbind is hidden from command palette', () => {
+        expect(commandPalette[24]).toStrictEqual({
           command: 'rangelink.terminal.unbind',
           when: 'false',
         });
@@ -1110,18 +1184,26 @@ describe('package.json contributions', () => {
       ] as MenuContribution[];
 
       it('has the expected number of terminal context menu items', () => {
-        expect(terminalContextMenu).toHaveLength(2);
+        expect(terminalContextMenu).toHaveLength(3);
+      });
+
+      it('pasteSelectedTextToDestination in edit group when text selected and bound', () => {
+        expect(terminalContextMenu[0]).toStrictEqual({
+          when: 'terminalTextSelected && rangelink.isBound',
+          command: 'rangelink.terminal.pasteSelectedTextToDestination',
+          group: '2_edit@10',
+        });
       });
 
       it('terminal.bind is always visible', () => {
-        expect(terminalContextMenu[0]).toStrictEqual({
+        expect(terminalContextMenu[1]).toStrictEqual({
           command: 'rangelink.terminal.bind',
           group: 'rangelink@1',
         });
       });
 
       it('terminal.unbind shows when any destination bound', () => {
-        expect(terminalContextMenu[1]).toStrictEqual({
+        expect(terminalContextMenu[2]).toStrictEqual({
           when: 'rangelink.isBound',
           command: 'rangelink.terminal.unbind',
           group: 'rangelink@2',
