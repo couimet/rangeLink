@@ -16,8 +16,10 @@ import {
   SETTING_SMART_PADDING_PASTE_FILE_PATH,
   SETTING_SMART_PADDING_PASTE_LINK,
   SETTING_WARN_ON_DIRTY_BUFFER,
+  VSCODE_CMD_TERMINAL_COPY_SELECTION,
 } from './constants';
 import type { DestinationPicker } from './destinations/DestinationPicker';
+import { compareTerminalsByProcessId } from './destinations/equality';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from './errors';
@@ -227,6 +229,118 @@ export class RangeLinkService {
       },
       contentName: formatMessage(MessageCode.CONTENT_NAME_SELECTED_TEXT),
       fnName: 'pasteSelectedTextToDestination',
+    });
+  }
+
+  /**
+   * Pastes the terminal selection to the bound destination (R-V from terminal).
+   *
+   * Uses a clipboard roundtrip to read terminal selection text because VSCode
+   * does not expose Terminal.selection as a string (microsoft/vscode#188173).
+   *
+   * Flow: copy terminal selection to clipboard → read clipboard → send to destination.
+   * The clipboard overwrite is consistent with existing RangeLink behavior;
+   * clipboard preservation is tracked in #353.
+   */
+  // Clipboard roundtrip can be revisited if microsoft/vscode#188173 ships a Terminal.selection API,
+  // but adopting it would raise our minimum VSCode engine version.
+  async pasteTerminalSelectionToDestination(): Promise<void> {
+    const logCtx = { fn: 'RangeLinkService.pasteTerminalSelectionToDestination' };
+
+    const activeTerminal = this.ideAdapter.activeTerminal;
+    if (!activeTerminal) {
+      this.logger.debug(logCtx, 'No active terminal');
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
+      return;
+    }
+
+    // The VSCode API for this command does NOT return a value — no result to compare against for success/failure.
+    try {
+      await this.ideAdapter.executeCommand(VSCODE_CMD_TERMINAL_COPY_SELECTION);
+    } catch (error) {
+      this.logger.error(
+        { ...logCtx, terminalName: activeTerminal.name, error },
+        'executeCommand(terminal.copySelection) threw',
+      );
+      this.ideAdapter.showErrorMessage(
+        formatMessage(MessageCode.ERROR_TERMINAL_COPY_COMMAND_FAILED),
+      );
+      return;
+    }
+
+    let terminalText: string;
+    try {
+      terminalText = await this.ideAdapter.readTextFromClipboard();
+    } catch (error) {
+      this.logger.error(
+        { ...logCtx, terminalName: activeTerminal.name, error },
+        'readTextFromClipboard() threw',
+      );
+      this.ideAdapter.showErrorMessage(
+        formatMessage(MessageCode.ERROR_TERMINAL_CLIPBOARD_READ_FAILED),
+      );
+      return;
+    }
+
+    if (!terminalText) {
+      this.logger.debug(logCtx, 'No terminal text after clipboard roundtrip');
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_TERMINAL_TEXT_SELECTED));
+      return;
+    }
+
+    this.logger.debug(
+      { ...logCtx, contentLength: terminalText.length },
+      `Read ${terminalText.length} chars from terminal selection`,
+    );
+
+    if (!this.destinationManager.isBound()) {
+      this.logger.debug(logCtx, 'No destination bound, showing quick pick');
+
+      const pickerResult = await this.showPickerAndBindForPaste();
+      if (pickerResult.outcome !== 'bound') {
+        this.logger.debug(
+          { ...logCtx, outcome: pickerResult.outcome },
+          'Picker did not bind, aborting',
+        );
+        return;
+      }
+    }
+
+    const destination = this.destinationManager.getBoundDestination()!;
+
+    // Self-paste only applies to terminal destinations — editor/AI destinations can't be
+    // the source terminal. We use compareTerminalsByProcessId directly because the source
+    // is a raw vscode.Terminal, not a PasteDestination, so destination.equals() can't be used.
+    const isSameTerminal = await compareTerminalsByProcessId(activeTerminal, destination);
+    if (isSameTerminal) {
+      this.logger.info(logCtx, 'Terminal self-paste detected - skipping send');
+      this.ideAdapter.showInformationMessage(
+        formatMessage(MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED),
+      );
+      return;
+    }
+
+    const paddingMode = this.configReader.getPaddingMode(
+      SETTING_SMART_PADDING_PASTE_CONTENT,
+      DEFAULT_SMART_PADDING_PASTE_CONTENT,
+    );
+
+    await this.copyAndSendToDestination({
+      control: {
+        contentType: PasteContentType.Text,
+        destinationBehavior: DestinationBehavior.BoundDestination,
+      },
+      content: {
+        clipboard: terminalText,
+        send: terminalText,
+      },
+      strategies: {
+        sendFn: (text, basicStatusMessage) =>
+          this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
+        isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
+      },
+      contentName: formatMessage(MessageCode.CONTENT_NAME_SELECTED_TEXT),
+      fnName: 'pasteTerminalSelectionToDestination',
     });
   }
 

@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import * as vscode from 'vscode';
 
+import { VSCODE_CMD_TERMINAL_PASTE } from '../../constants';
 import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import {
@@ -263,7 +264,7 @@ export class VscodeAdapter
     terminal.show();
 
     // Execute paste command (simulates Cmd+V / Ctrl+V)
-    await this.executeCommand('workbench.action.terminal.paste');
+    await this.executeCommand(VSCODE_CMD_TERMINAL_PASTE);
 
     // Handle execution behavior if requested
     const behaviour = options?.behaviour ?? BehaviourAfterPaste.NOTHING;

@@ -70,10 +70,16 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: No active terminal. Open a terminal and try again.',
   [MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR]:
     'RangeLink: No active text editor. Open a file and try again.',
+  [MessageCode.ERROR_NO_TERMINAL_TEXT_SELECTED]:
+    'RangeLink: No text selected in the terminal. Select text and try again.',
   [MessageCode.ERROR_NO_TEXT_SELECTED]:
     'RangeLink: No text selected. Click in the file, select text, and try again.',
   [MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE]:
     'RangeLink: No active file. Open a file and try again.',
+  [MessageCode.ERROR_TERMINAL_CLIPBOARD_READ_FAILED]:
+    'RangeLink: Could not read terminal selection. Please try again.',
+  [MessageCode.ERROR_TERMINAL_COPY_COMMAND_FAILED]:
+    'RangeLink: Could not read terminal selection. Please try again.',
   [MessageCode.ERROR_TERMINAL_COPY_LINK_NOT_SUPPORTED]:
     'RangeLink: R-C generates code location links and requires an editor selection. Use R-V to paste terminal text.',
   [MessageCode.ERROR_TERMINAL_LINK_INVALID_FORMAT]:
