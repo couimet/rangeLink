@@ -81,7 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Show Version Info
 - **Smart Padding settings documented** - All 4 `smartPadding.*` settings now in README Configuration section (#270)
 
-<!-- TODO: #366 unhide when bookmarks graduates from beta — re-add these entries to the sections above
+<!-- TODO: #366 unhide when bookmarks graduate from beta — re-add these entries to the sections above
 - R-M menu: add "List Bookmarks / Manage Bookmarks" bullet
 - Editor Content context menu: add "RangeLink: Save Selection as Bookmark" row
 - **Bookmarks System** - Save code locations for quick access later
