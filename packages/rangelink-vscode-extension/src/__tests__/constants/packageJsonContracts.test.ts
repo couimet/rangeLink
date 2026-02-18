@@ -744,7 +744,7 @@ describe('package.json contributions', () => {
         command: 'rangelink.bookmark.add',
         key: 'ctrl+r ctrl+b ctrl+s',
         mac: 'cmd+r cmd+b cmd+s',
-        when: 'editorHasSelection',
+        when: 'config.rangelink.features.bookmarks.enabled && editorHasSelection',
       });
     });
 
@@ -753,6 +753,7 @@ describe('package.json contributions', () => {
         command: 'rangelink.bookmark.list',
         key: 'ctrl+r ctrl+b ctrl+l',
         mac: 'cmd+r cmd+b cmd+l',
+        when: 'config.rangelink.features.bookmarks.enabled',
       });
     });
 
@@ -864,7 +865,7 @@ describe('package.json contributions', () => {
 
       it('editorContext.saveBookmark in context menu', () => {
         expect(editorContextMenu[5]).toStrictEqual({
-          when: 'editorHasSelection',
+          when: 'config.rangelink.features.bookmarks.enabled && editorHasSelection',
           command: 'rangelink.editorContext.saveBookmark',
           group: '8_rangelink@5',
         });
@@ -985,7 +986,7 @@ describe('package.json contributions', () => {
       const commandPalette = packageJson.contributes.menus['commandPalette'] as MenuContribution[];
 
       it('has the expected number of commandPalette entries', () => {
-        expect(commandPalette).toHaveLength(25);
+        expect(commandPalette).toHaveLength(27);
       });
 
       it('bindToTerminalHere is hidden from command palette', () => {
@@ -1128,36 +1129,50 @@ describe('package.json contributions', () => {
         });
       });
 
-      it('terminal.bind is hidden from command palette', () => {
+      it('bookmark.add is gated by bookmarks feature flag in command palette', () => {
         expect(commandPalette[20]).toStrictEqual({
+          command: 'rangelink.bookmark.add',
+          when: 'config.rangelink.features.bookmarks.enabled && editorHasSelection',
+        });
+      });
+
+      it('bookmark.list is gated by bookmarks feature flag in command palette', () => {
+        expect(commandPalette[21]).toStrictEqual({
+          command: 'rangelink.bookmark.list',
+          when: 'config.rangelink.features.bookmarks.enabled',
+        });
+      });
+
+      it('terminal.bind is hidden from command palette', () => {
+        expect(commandPalette[22]).toStrictEqual({
           command: 'rangelink.terminal.bind',
           when: 'false',
         });
       });
 
       it('terminal.copyLinkGuard is hidden from command palette', () => {
-        expect(commandPalette[21]).toStrictEqual({
+        expect(commandPalette[23]).toStrictEqual({
           command: 'rangelink.terminal.copyLinkGuard',
           when: 'false',
         });
       });
 
       it('terminal.linkBridge is hidden from command palette', () => {
-        expect(commandPalette[22]).toStrictEqual({
+        expect(commandPalette[24]).toStrictEqual({
           command: 'rangelink.terminal.linkBridge',
           when: 'false',
         });
       });
 
       it('terminal.pasteSelectedTextToDestination is hidden from command palette', () => {
-        expect(commandPalette[23]).toStrictEqual({
+        expect(commandPalette[25]).toStrictEqual({
           command: 'rangelink.terminal.pasteSelectedTextToDestination',
           when: 'false',
         });
       });
 
       it('terminal.unbind is hidden from command palette', () => {
-        expect(commandPalette[24]).toStrictEqual({
+        expect(commandPalette[26]).toStrictEqual({
           command: 'rangelink.terminal.unbind',
           when: 'false',
         });
