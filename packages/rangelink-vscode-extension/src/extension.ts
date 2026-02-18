@@ -128,6 +128,10 @@ export function activate(context: vscode.ExtensionContext): void {
   // Initialize i18n locale from VSCode environment
   setLocale(ideAdapter.language);
 
+  // Create bookmarks store for cross-workspace bookmark persistence
+  const bookmarksStore = new BookmarksStore(context.globalState, logger);
+  logger.debug({ fn: 'activate' }, 'Bookmarks store initialized');
+
   getDelimitersForExtension(configReader, ideAdapter, logger);
 
   const getDelimiters: DelimiterConfigGetter = () =>
@@ -174,7 +178,6 @@ export function activate(context: vscode.ExtensionContext): void {
     await destinationManager.bind({ kind: 'text-editor' });
   };
 
-  const bookmarksStore = new BookmarksStore(context.globalState, logger);
   const bookmarkService = new BookmarkService(
     bookmarksStore,
     ideAdapter,
