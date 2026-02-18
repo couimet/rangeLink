@@ -10,6 +10,12 @@ import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import type { PaddingMode } from '../utils/applySmartPadding';
 
 // =============================================================================
+// Feature Flag Defaults
+// =============================================================================
+
+export const DEFAULT_FEATURES_BOOKMARKS_ENABLED = false;
+
+// =============================================================================
 // Delimiter Defaults (re-exported from core for extension use)
 // =============================================================================
 

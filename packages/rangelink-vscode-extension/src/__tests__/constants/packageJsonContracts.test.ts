@@ -485,6 +485,17 @@ describe('package.json contributions', () => {
       ConfigurationProperty
     >;
 
+    describe('feature flag settings', () => {
+      it('rangelink.features.bookmarks.enabled', () => {
+        expect(properties['rangelink.features.bookmarks.enabled']).toStrictEqual({
+          type: 'boolean',
+          default: false,
+          description:
+            'Enable Bookmarks feature (beta). Save code locations for quick access later.',
+        });
+      });
+    });
+
     describe('delimiter settings', () => {
       it('rangelink.delimiterLine', () => {
         expect(properties['rangelink.delimiterLine']).toStrictEqual({
@@ -621,7 +632,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(11);
+      expect(Object.keys(properties)).toHaveLength(12);
     });
   });
 

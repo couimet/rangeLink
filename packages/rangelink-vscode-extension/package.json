@@ -419,6 +419,11 @@
           ],
           "description": "Smart padding for saved bookmarks when pasting to destinations"
         },
+        "rangelink.features.bookmarks.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Bookmarks feature (beta). Save code locations for quick access later."
+        },
         "rangelink.warnOnDirtyBuffer": {
           "type": "boolean",
           "default": true,
