@@ -60,15 +60,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "RangeLink: Paste Relative File Path" - Send relative path to bound destination
     - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
     - "RangeLink: Unbind" - Unbind current destination (when bound)
-  - **Editor Content** (right-click inside editor): - "RangeLink: Copy Range Link" - Create relative path link (has selection) - "RangeLink: Copy Range Link (Absolute)" - Create absolute path link (has selection) - "RangeLink: Copy Portable Link" - Create BYOD portable link (has selection) - "RangeLink: Copy Portable Link (Absolute)" - Create BYOD portable link (has selection) - "RangeLink: Paste Selected Text" - Send selected text to bound destination (has selection)
-    <!-- TODO: #366 unhide when bookmarks graduates from beta
-        - "RangeLink: Save Selection as Bookmark" - Save selection for quick access (has selection)
-    -->
-        - ─── _visual separator_ ───
-        - "RangeLink: Paste This File's Path" - Send absolute path to bound destination
-        - "RangeLink: Paste This File's Relative Path" - Send relative path to bound destination
-        - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
-        - "RangeLink: Unbind" - Unbind current destination (when bound)
+  - **Editor Content** (right-click inside editor):
+    - "RangeLink: Copy Range Link" - Create relative path link (has selection)
+    - "RangeLink: Copy Range Link (Absolute)" - Create absolute path link (has selection)
+    - "RangeLink: Copy Portable Link" - Create BYOD portable link (has selection)
+    - "RangeLink: Copy Portable Link (Absolute)" - Create BYOD portable link (has selection)
+    - "RangeLink: Paste Selected Text" - Send selected text to bound destination (has selection)
+      <!-- TODO: #366 unhide when bookmarks graduates from beta
+          - "RangeLink: Save Selection as Bookmark" - Save selection for quick access (has selection)
+      -->
+          - ─── _visual separator_ ───
+          - "RangeLink: Paste This File's Path" - Send absolute path to bound destination
+          - "RangeLink: Paste This File's Relative Path" - Send relative path to bound destination
+          - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
+          - "RangeLink: Unbind" - Unbind current destination (when bound)
   - **Terminal** (right-click on terminal tabs or inside terminal):
     - "RangeLink: Bind Here" - Bind this terminal as destination
     - "RangeLink: Unbind" - Unbind current destination (when bound)

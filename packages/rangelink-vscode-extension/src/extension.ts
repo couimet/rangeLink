@@ -26,8 +26,6 @@ import {
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_LIST,
   CMD_BOOKMARK_MANAGE,
-  DEFAULT_FEATURES_BOOKMARKS_ENABLED,
-  SETTING_FEATURES_BOOKMARKS_ENABLED,
   CMD_CONTEXT_EDITOR_CONTENT_BIND,
   CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH,
   CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH,
@@ -130,13 +128,6 @@ export function activate(context: vscode.ExtensionContext): void {
   // Initialize i18n locale from VSCode environment
   setLocale(ideAdapter.language);
 
-  // TODO: #366 remove feature flag when bookmarks graduates from beta
-  const bookmarksEnabled = configReader.getBoolean(
-    SETTING_FEATURES_BOOKMARKS_ENABLED,
-    DEFAULT_FEATURES_BOOKMARKS_ENABLED,
-  );
-  logger.debug({ fn: 'activate', bookmarksEnabled }, 'Bookmarks feature flag read');
-
   getDelimitersForExtension(configReader, ideAdapter, logger);
 
   const getDelimiters: DelimiterConfigGetter = () =>
@@ -190,7 +181,6 @@ export function activate(context: vscode.ExtensionContext): void {
     configReader,
     destinationManager,
     logger,
-    bookmarksEnabled,
   );
 
   const service = new RangeLinkService(

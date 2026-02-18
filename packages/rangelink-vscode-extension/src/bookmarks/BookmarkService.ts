@@ -2,7 +2,9 @@ import type { Logger } from 'barebone-logger';
 
 import type { ConfigReader } from '../config/ConfigReader';
 import {
+  DEFAULT_FEATURES_BOOKMARKS_ENABLED,
   DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
+  SETTING_FEATURES_BOOKMARKS_ENABLED,
   SETTING_SMART_PADDING_PASTE_BOOKMARK,
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations';
@@ -25,12 +27,8 @@ export class BookmarkService {
     private readonly configReader: ConfigReader,
     private readonly destinationManager: PasteDestinationManager,
     private readonly logger: Logger,
-    private readonly visible: boolean = true, // TODO: #366 remove when bookmarks graduates from beta
   ) {
-    this.logger.debug(
-      { fn: 'BookmarkService.constructor', visible },
-      'BookmarkService initialized',
-    );
+    this.logger.debug({ fn: 'BookmarkService.constructor' }, 'BookmarkService initialized');
   }
 
   /**
@@ -38,7 +36,11 @@ export class BookmarkService {
    * TODO: #366 remove when bookmarks graduates from beta
    */
   isVisible(): boolean {
-    return this.visible;
+    // TODO: #366 remove when bookmarks graduates from beta
+    return this.configReader.getBoolean(
+      SETTING_FEATURES_BOOKMARKS_ENABLED,
+      DEFAULT_FEATURES_BOOKMARKS_ENABLED,
+    );
   }
 
   /**
