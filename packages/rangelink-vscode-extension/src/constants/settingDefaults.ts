@@ -10,7 +10,7 @@ import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import type { PaddingMode } from '../utils/applySmartPadding';
 
 // =============================================================================
-// Feature Flag Defaults
+// Feature Flag Defaults — TODO: #366 remove when bookmarks graduates from beta
 // =============================================================================
 
 export const DEFAULT_FEATURES_BOOKMARKS_ENABLED = false;

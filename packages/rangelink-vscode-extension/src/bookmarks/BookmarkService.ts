@@ -25,8 +25,20 @@ export class BookmarkService {
     private readonly configReader: ConfigReader,
     private readonly destinationManager: PasteDestinationManager,
     private readonly logger: Logger,
+    private readonly visible: boolean = true, // TODO: #366 remove when bookmarks graduates from beta
   ) {
-    this.logger.debug({ fn: 'BookmarkService.constructor' }, 'BookmarkService initialized');
+    this.logger.debug(
+      { fn: 'BookmarkService.constructor', visible },
+      'BookmarkService initialized',
+    );
+  }
+
+  /**
+   * Whether bookmarks UI should be displayed (feature flag gate).
+   * TODO: #366 remove when bookmarks graduates from beta
+   */
+  isVisible(): boolean {
+    return this.visible;
   }
 
   /**

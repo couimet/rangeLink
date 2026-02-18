@@ -182,7 +182,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         itemKind: 'command' as const,
         command: CMD_GO_TO_RANGELINK,
       },
-      ...this.buildBookmarksQuickPickItems(),
+      ...(this.bookmarkService.isVisible() ? this.buildBookmarksQuickPickItems() : []), // TODO: #366 remove isVisible() gate
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_VERSION_INFO_LABEL),
         itemKind: 'command' as const,

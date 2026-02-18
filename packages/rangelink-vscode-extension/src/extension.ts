@@ -26,6 +26,8 @@ import {
   CMD_BOOKMARK_ADD,
   CMD_BOOKMARK_LIST,
   CMD_BOOKMARK_MANAGE,
+  DEFAULT_FEATURES_BOOKMARKS_ENABLED,
+  SETTING_FEATURES_BOOKMARKS_ENABLED,
   CMD_CONTEXT_EDITOR_CONTENT_BIND,
   CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH,
   CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH,
@@ -128,9 +130,12 @@ export function activate(context: vscode.ExtensionContext): void {
   // Initialize i18n locale from VSCode environment
   setLocale(ideAdapter.language);
 
-  // Create bookmarks store for cross-workspace bookmark persistence
-  const bookmarksStore = new BookmarksStore(context.globalState, logger);
-  logger.debug({ fn: 'activate' }, 'Bookmarks store initialized');
+  // TODO: #366 remove feature flag when bookmarks graduates from beta
+  const bookmarksEnabled = configReader.getBoolean(
+    SETTING_FEATURES_BOOKMARKS_ENABLED,
+    DEFAULT_FEATURES_BOOKMARKS_ENABLED,
+  );
+  logger.debug({ fn: 'activate', bookmarksEnabled }, 'Bookmarks feature flag read');
 
   getDelimitersForExtension(configReader, ideAdapter, logger);
 
@@ -178,12 +183,14 @@ export function activate(context: vscode.ExtensionContext): void {
     await destinationManager.bind({ kind: 'text-editor' });
   };
 
+  const bookmarksStore = new BookmarksStore(context.globalState, logger);
   const bookmarkService = new BookmarkService(
     bookmarksStore,
     ideAdapter,
     configReader,
     destinationManager,
     logger,
+    bookmarksEnabled,
   );
 
   const service = new RangeLinkService(
