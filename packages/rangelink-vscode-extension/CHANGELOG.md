@@ -60,18 +60,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "RangeLink: Paste Relative File Path" - Send relative path to bound destination
     - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
     - "RangeLink: Unbind" - Unbind current destination (when bound)
-  - **Editor Content** (right-click inside editor):
-    - "RangeLink: Copy Range Link" - Create relative path link (has selection)
-    - "RangeLink: Copy Range Link (Absolute)" - Create absolute path link (has selection)
-    - "RangeLink: Copy Portable Link" - Create BYOD portable link (has selection)
-    - "RangeLink: Copy Portable Link (Absolute)" - Create BYOD portable link (has selection)
-    - "RangeLink: Paste Selected Text" - Send selected text to bound destination (has selection)
-    - "RangeLink: Save Selection as Bookmark" - Save selection for quick access (has selection)
-    - ─── _visual separator_ ───
-    - "RangeLink: Paste This File's Path" - Send absolute path to bound destination
-    - "RangeLink: Paste This File's Relative Path" - Send relative path to bound destination
-    - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
-    - "RangeLink: Unbind" - Unbind current destination (when bound)
+  - **Editor Content** (right-click inside editor): - "RangeLink: Copy Range Link" - Create relative path link (has selection) - "RangeLink: Copy Range Link (Absolute)" - Create absolute path link (has selection) - "RangeLink: Copy Portable Link" - Create BYOD portable link (has selection) - "RangeLink: Copy Portable Link (Absolute)" - Create BYOD portable link (has selection) - "RangeLink: Paste Selected Text" - Send selected text to bound destination (has selection)
+    <!-- TODO: #366 unhide when bookmarks graduates from beta
+        - "RangeLink: Save Selection as Bookmark" - Save selection for quick access (has selection)
+    -->
+        - ─── _visual separator_ ───
+        - "RangeLink: Paste This File's Path" - Send absolute path to bound destination
+        - "RangeLink: Paste This File's Relative Path" - Send relative path to bound destination
+        - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
+        - "RangeLink: Unbind" - Unbind current destination (when bound)
   - **Terminal** (right-click on terminal tabs or inside terminal):
     - "RangeLink: Bind Here" - Bind this terminal as destination
     - "RangeLink: Unbind" - Unbind current destination (when bound)
@@ -79,15 +76,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
   - Unbind Destination (when bound)
   - Go to Link
+  <!-- TODO: #366 unhide when bookmarks graduates from beta
   - List Bookmarks / Manage Bookmarks
+    -->
   - Show Version Info
+  <!-- TODO: #366 unhide when bookmarks graduates from beta
 - **Bookmarks System** - Save code locations for quick access later
   - **Save Selection as Bookmark (R-B-S)** - `Cmd+R Cmd+B Cmd+S` (Mac) / `Ctrl+R Ctrl+B Ctrl+S` (Win/Linux)
     - Save current selection as a reusable bookmark with custom label
     - Also available via Command Palette and editor context menu (right-click)
-  - **List Bookmarks (R-B-L)** - `Cmd+R Cmd+B Cmd+L` (Mac) / `Ctrl+R Ctrl+B Ctrl+L` (Win/Linux)
-    - Select a bookmark to paste its link to bound destination (or clipboard if unbound)
-    - Manage bookmarks via the gear icon action in the bookmark list
+  - **List Bookmarks (R-B-L)** - `Cmd+R Cmd+B Cmd+L` (Mac) / `Ctrl+R Ctrl+B Ctrl+L` (Win/Linux) - Select a bookmark to paste its link to bound destination (or clipboard if unbound) - Manage bookmarks via the gear icon action in the bookmark list
+    -->
 - **Smart Padding settings documented** - All 4 `smartPadding.*` settings now in README Configuration section (#270)
 
 ### Changed
