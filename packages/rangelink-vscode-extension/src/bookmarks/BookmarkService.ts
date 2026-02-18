@@ -2,7 +2,9 @@ import type { Logger } from 'barebone-logger';
 
 import type { ConfigReader } from '../config/ConfigReader';
 import {
+  DEFAULT_FEATURES_BOOKMARKS_ENABLED,
   DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
+  SETTING_FEATURES_BOOKMARKS_ENABLED,
   SETTING_SMART_PADDING_PASTE_BOOKMARK,
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations';
@@ -27,6 +29,18 @@ export class BookmarkService {
     private readonly logger: Logger,
   ) {
     this.logger.debug({ fn: 'BookmarkService.constructor' }, 'BookmarkService initialized');
+  }
+
+  /**
+   * Whether bookmarks UI should be displayed (feature flag gate).
+   * TODO: #366 remove when bookmarks graduates from beta
+   */
+  isVisible(): boolean {
+    // TODO: #366 remove when bookmarks graduates from beta
+    return this.configReader.getBoolean(
+      SETTING_FEATURES_BOOKMARKS_ENABLED,
+      DEFAULT_FEATURES_BOOKMARKS_ENABLED,
+    );
   }
 
   /**

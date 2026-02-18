@@ -12,6 +12,12 @@
 export const SETTING_NAMESPACE = 'rangelink';
 
 // =============================================================================
+// Feature Flags — TODO: #366 remove when bookmarks graduates from beta
+// =============================================================================
+
+export const SETTING_FEATURES_BOOKMARKS_ENABLED = 'features.bookmarks.enabled';
+
+// =============================================================================
 // Delimiter Settings
 // =============================================================================
 

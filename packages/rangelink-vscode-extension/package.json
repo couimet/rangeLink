@@ -419,6 +419,11 @@
           ],
           "description": "Smart padding for saved bookmarks when pasting to destinations"
         },
+        "rangelink.features.bookmarks.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Bookmarks feature (beta). Save code locations for quick access later."
+        },
         "rangelink.warnOnDirtyBuffer": {
           "type": "boolean",
           "default": true,
@@ -507,12 +512,13 @@
         "command": "rangelink.bookmark.add",
         "key": "ctrl+r ctrl+b ctrl+s",
         "mac": "cmd+r cmd+b cmd+s",
-        "when": "editorHasSelection"
+        "when": "config.rangelink.features.bookmarks.enabled && editorHasSelection"
       },
       {
         "command": "rangelink.bookmark.list",
         "key": "ctrl+r ctrl+b ctrl+l",
-        "mac": "cmd+r cmd+b cmd+l"
+        "mac": "cmd+r cmd+b cmd+l",
+        "when": "config.rangelink.features.bookmarks.enabled"
       },
       {
         "command": "rangelink.goToRangeLink",
@@ -631,6 +637,14 @@
           "when": "false"
         },
         {
+          "command": "rangelink.bookmark.add",
+          "when": "config.rangelink.features.bookmarks.enabled && editorHasSelection"
+        },
+        {
+          "command": "rangelink.bookmark.list",
+          "when": "config.rangelink.features.bookmarks.enabled"
+        },
+        {
           "command": "rangelink.terminal.bind",
           "when": "false"
         },
@@ -678,7 +692,7 @@
           "group": "8_rangelink@4"
         },
         {
-          "when": "editorHasSelection",
+          "when": "config.rangelink.features.bookmarks.enabled && editorHasSelection",
           "command": "rangelink.editorContext.saveBookmark",
           "group": "8_rangelink@5"
         },

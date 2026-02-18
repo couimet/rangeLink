@@ -66,7 +66,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "RangeLink: Copy Portable Link" - Create BYOD portable link (has selection)
     - "RangeLink: Copy Portable Link (Absolute)" - Create BYOD portable link (has selection)
     - "RangeLink: Paste Selected Text" - Send selected text to bound destination (has selection)
-    - "RangeLink: Save Selection as Bookmark" - Save selection for quick access (has selection)
     - ─── _visual separator_ ───
     - "RangeLink: Paste This File's Path" - Send absolute path to bound destination
     - "RangeLink: Paste This File's Relative Path" - Send relative path to bound destination
@@ -79,8 +78,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Jump to Bound Destination (shows quick pick of available destinations when unbound)
   - Unbind Destination (when bound)
   - Go to Link
-  - List Bookmarks / Manage Bookmarks
   - Show Version Info
+- **Smart Padding settings documented** - All 4 `smartPadding.*` settings now in README Configuration section (#270)
+
+<!-- TODO: #366 unhide when bookmarks graduate from beta — re-add these entries to the sections above
+- R-M menu: add "List Bookmarks / Manage Bookmarks" bullet
+- Editor Content context menu: add "RangeLink: Save Selection as Bookmark" row
 - **Bookmarks System** - Save code locations for quick access later
   - **Save Selection as Bookmark (R-B-S)** - `Cmd+R Cmd+B Cmd+S` (Mac) / `Ctrl+R Ctrl+B Ctrl+S` (Win/Linux)
     - Save current selection as a reusable bookmark with custom label
@@ -88,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **List Bookmarks (R-B-L)** - `Cmd+R Cmd+B Cmd+L` (Mac) / `Ctrl+R Ctrl+B Ctrl+L` (Win/Linux)
     - Select a bookmark to paste its link to bound destination (or clipboard if unbound)
     - Manage bookmarks via the gear icon action in the bookmark list
-- **Smart Padding settings documented** - All 4 `smartPadding.*` settings now in README Configuration section (#270)
+-->
 
 ### Changed
 
