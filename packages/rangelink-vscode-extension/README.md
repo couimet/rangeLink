@@ -199,11 +199,14 @@ Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the **RangeLink
 - **Jump to Bound Destination** — Focus your currently bound destination
 - **Bind to a destination** — When unbound, the menu shows available destinations inline (AI assistants, terminals, text editors) so you can bind directly from the menu
 - **Go to Link** — Paste or type a RangeLink to go directly to that code location
+<!-- TODO: #366 unhide when bookmarks graduates from beta
 - **Bookmarks** — Quick access to saved bookmarks, plus add/manage actions
+-->
 - **Show Version Info** — Display extension version and build details
 
 ---
 
+<!-- TODO: #366 unhide when bookmarks graduates from beta
 ### 🔖 Bookmarks <sup>Unreleased</sup>
 
 **Save code locations for quick access later.** Bookmark commonly-referenced code (config files, error definitions, key functions) and paste them to your AI assistant whenever needed — no navigating back to those files.
@@ -227,6 +230,7 @@ Also available via Command Palette → "Save Selection as Bookmark" or right-cli
 - **Manage bookmarks** via the gear icon action in the bookmark list
 
 ---
+-->
 
 ### 🔗 Flexible Link Formats
 
@@ -265,8 +269,10 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | Paste Current File Path <sup>Unreleased</sup>            | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`        | Send active editor's path to bound destination           |
 | Paste Current File Path (Absolute) <sup>Unreleased</sup> | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F`  | Send active editor's absolute path to bound destination  |
 | Jump to Bound Destination                                | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`        | Focus your currently bound destination                   |
+<!-- TODO: #366 unhide when bookmarks graduates from beta
 | Save Selection as Bookmark <sup>Unreleased</sup>         | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
 | List Bookmarks <sup>Unreleased</sup>                     | `Cmd+R Cmd+B Cmd+L` | `Ctrl+R Ctrl+B Ctrl+L` | Show bookmarks, paste to destination, or manage          |
+-->
 | Go to Link <sup>Unreleased</sup>                         | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`        | Paste/type a RangeLink to go to that code location       |
 | Open Menu <sup>Unreleased</sup>                          | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`        | Open the RangeLink menu                                  |
 | Bind to Claude Code                                      | —                   | —                      | Auto-send links to Claude Code chat                      |
@@ -320,7 +326,9 @@ Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 | RangeLink: Copy Portable Link              | Has selection    | Create BYOD portable link               |
 | RangeLink: Copy Portable Link (Absolute)   | Has selection    | Create BYOD portable link (absolute)    |
 | RangeLink: Paste Selected Text             | Has selection    | Send selected text to bound destination |
+<!-- TODO: #366 unhide when bookmarks graduates from beta
 | RangeLink: Save Selection as Bookmark      | Has selection    | Save selection for quick access later   |
+-->
 | ─── _separator_ ───                        |                  |                                         |
 | RangeLink: Paste This File's Path          | Always           | Send absolute path to bound destination |
 | RangeLink: Paste This File's Relative Path | Always           | Send relative path to bound destination |
@@ -380,7 +388,9 @@ When you have more terminals than this threshold, the destination picker shows a
 | `rangelink.smartPadding.pasteLink`     | `"both"` | Padding around generated RangeLinks (R-L) |
 | `rangelink.smartPadding.pasteContent`  | `"none"` | Padding around selected text (R-V)        |
 | `rangelink.smartPadding.pasteFilePath` | `"both"` | Padding around file paths (R-F)           |
+<!-- TODO: #366 unhide when bookmarks graduates from beta
 | `rangelink.smartPadding.pasteBookmark` | `"both"` | Padding around saved bookmarks            |
+-->
 
 **Available values:** `"both"` (space before and after), `"before"` (space before only), `"after"` (space after only), `"none"` (no padding).
 
