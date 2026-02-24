@@ -483,7 +483,11 @@ describe('DestinationAvailabilityService', () => {
 
         expect(result['text-editor']).toHaveLength(1);
         expect(result['text-editor']![0].label).toBe('app.ts');
-        expect(result['text-editor']![0].bindOptions).toStrictEqual({ kind: 'text-editor', uri, viewColumn: 1 });
+        expect(result['text-editor']![0].bindOptions).toStrictEqual({
+          kind: 'text-editor',
+          uri,
+          viewColumn: 1,
+        });
         expect(result['text-editor']![0].itemKind).toBe('bindable');
         expect(result['text-editor']![0].fileInfo.filename).toBe('app.ts');
       });

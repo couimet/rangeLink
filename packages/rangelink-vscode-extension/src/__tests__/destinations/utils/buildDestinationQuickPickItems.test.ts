@@ -4,7 +4,11 @@ import {
   buildDestinationQuickPickItems,
   DESTINATION_PICKER_SEQUENCE,
 } from '../../../destinations/utils/buildDestinationQuickPickItems';
-import type { FileBindableQuickPickItem, FileMoreQuickPickItem, GroupedDestinationItems } from '../../../types';
+import type {
+  FileBindableQuickPickItem,
+  FileMoreQuickPickItem,
+  GroupedDestinationItems,
+} from '../../../types';
 import { createMockEligibleFile } from '../../helpers/createMockEligibleFile';
 
 const separator = (label: string): vscode.QuickPickItem => ({

@@ -117,10 +117,7 @@ export class BindToTextEditorCommand {
 
     if (fileItems.length === 1) {
       const { fileInfo } = fileItems[0];
-      this.logger.debug(
-        { ...logCtx, filename: fileInfo.filename },
-        'Single file, auto-binding',
-      );
+      this.logger.debug({ ...logCtx, filename: fileInfo.filename }, 'Single file, auto-binding');
       return this.mapBindResult(
         await this.destinationManager.bind({
           kind: 'text-editor',

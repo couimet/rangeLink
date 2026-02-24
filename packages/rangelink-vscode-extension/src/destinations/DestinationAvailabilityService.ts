@@ -119,9 +119,7 @@ export class DestinationAvailabilityService {
    *
    * @param boundFileUriString - URI string of the currently bound file for badge display
    */
-  async getFileItems(
-    boundFileUriString?: string,
-  ): Promise<FileBindableQuickPickItem[]> {
+  async getFileItems(boundFileUriString?: string): Promise<FileBindableQuickPickItem[]> {
     const grouped = await this.getGroupedDestinationItems({
       destinationKinds: ['text-editor'],
       boundFileUriString,
@@ -285,7 +283,11 @@ export class DestinationAvailabilityService {
       label: eligibleFile.filename,
       displayName: eligibleFile.filename,
       description: buildFileDescription(eligibleFile, disambiguator),
-      bindOptions: { kind: 'text-editor', uri: eligibleFile.uri, viewColumn: eligibleFile.viewColumn },
+      bindOptions: {
+        kind: 'text-editor',
+        uri: eligibleFile.uri,
+        viewColumn: eligibleFile.viewColumn,
+      },
       itemKind: 'bindable',
       fileInfo: eligibleFile,
       boundState: eligibleFile.boundState,

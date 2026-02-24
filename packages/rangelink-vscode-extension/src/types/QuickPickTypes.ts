@@ -59,8 +59,7 @@ export interface WithBindOptions<T extends BindOptions = BindOptions> {
  * Extends BindableQuickPickItem<TextEditorBindOptions> with file metadata,
  * so callers get both UI item and domain object from a single source.
  */
-export interface FileBindableQuickPickItem
-  extends BindableQuickPickItem<TextEditorBindOptions> {
+export interface FileBindableQuickPickItem extends BindableQuickPickItem<TextEditorBindOptions> {
   readonly fileInfo: EligibleFile;
   readonly boundState?: BoundState;
 }

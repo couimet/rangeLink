@@ -351,9 +351,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         },
         'No visible editor at URI + viewColumn',
       );
-      this.vscodeAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE),
-      );
+      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE));
       return this.bindFailedResult(
         fnName,
         `No visible editor for ${options.uri.toString()} at viewColumn ${options.viewColumn}`,

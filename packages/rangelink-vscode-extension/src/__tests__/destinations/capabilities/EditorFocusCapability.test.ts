@@ -47,10 +47,16 @@ describe('EditorFocusCapability', () => {
         expect(value.inserter).toBe(mockInserterFn);
       });
       expect(mockAdapter.hasVisibleEditorAt).toHaveBeenCalledWith(DOCUMENT_URI, BOUND_VIEW_COLUMN);
-      expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, { viewColumn: BOUND_VIEW_COLUMN });
+      expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, {
+        viewColumn: BOUND_VIEW_COLUMN,
+      });
       expect(mockInsertFactory.forTarget).toHaveBeenCalledWith(freshEditor);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'EditorFocusCapability.resolveViewColumn', editorUri: DOCUMENT_URI_STRING, viewColumn: BOUND_VIEW_COLUMN },
+        {
+          fn: 'EditorFocusCapability.resolveViewColumn',
+          editorUri: DOCUMENT_URI_STRING,
+          viewColumn: BOUND_VIEW_COLUMN,
+        },
         'Editor at bound viewColumn',
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -167,7 +173,11 @@ describe('EditorFocusCapability', () => {
         'RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        { fn: 'EditorFocusCapability.resolveViewColumn', editorUri: DOCUMENT_URI_STRING, matchCount: 2 },
+        {
+          fn: 'EditorFocusCapability.resolveViewColumn',
+          editorUri: DOCUMENT_URI_STRING,
+          matchCount: 2,
+        },
         'Bound editor moved but found in multiple tab groups — ambiguous target',
       );
     });
@@ -196,7 +206,12 @@ describe('EditorFocusCapability', () => {
         expect(error).toStrictEqual({ reason: 'SHOW_DOCUMENT_FAILED', cause: showDocError });
       });
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        { ...LOGGING_CONTEXT, editorUri: DOCUMENT_URI_STRING, viewColumn: BOUND_VIEW_COLUMN, error: showDocError },
+        {
+          ...LOGGING_CONTEXT,
+          editorUri: DOCUMENT_URI_STRING,
+          viewColumn: BOUND_VIEW_COLUMN,
+          error: showDocError,
+        },
         'Failed to focus editor',
       );
     });

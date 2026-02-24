@@ -75,10 +75,7 @@ export const buildTerminalDestination: DestinationBuilder = (options, context) =
  * @param uri - The document URI
  * @returns Resource name for display (e.g., "src/file.ts" or "Untitled-1")
  */
-const getResourceName = (
-  context: DestinationBuilderContext,
-  uri: vscode.Uri,
-): string => {
+const getResourceName = (context: DestinationBuilderContext, uri: vscode.Uri): string => {
   if (uri.scheme === 'untitled') {
     return getUntitledDisplayName(uri);
   }

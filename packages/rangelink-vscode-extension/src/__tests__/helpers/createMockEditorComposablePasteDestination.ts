@@ -25,9 +25,7 @@ export interface MockEditorComposablePasteDestinationConfig
  * @param uri - The URI
  * @returns Object with editorName (filename) and editorPath (full path)
  */
-const getUriMetadata = (
-  uri: vscode.Uri,
-): { editorName: string; editorPath: string } => {
+const getUriMetadata = (uri: vscode.Uri): { editorName: string; editorPath: string } => {
   const editorPath = uri.fsPath;
   const editorName = editorPath.split('/').pop() || 'Unknown';
   return { editorName, editorPath };

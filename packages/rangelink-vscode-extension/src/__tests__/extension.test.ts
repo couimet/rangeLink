@@ -686,7 +686,12 @@ describe('Extension lifecycle', () => {
 
     extension.activate(mockContext as any);
 
-    const mockUri = { fsPath: '/test/file.ts', path: '/test/file.ts', scheme: 'file', toString: () => 'file:///test/file.ts' };
+    const mockUri = {
+      fsPath: '/test/file.ts',
+      path: '/test/file.ts',
+      scheme: 'file',
+      toString: () => 'file:///test/file.ts',
+    };
     await capturedBindHandler!(mockUri);
 
     expect(vscode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
