@@ -15,7 +15,6 @@ import {
   type BindOptions,
   type DestinationKind,
   ExtensionResult,
-  MessageCode,
 } from '../../types';
 import {
   configureEmptyTabGroups,
@@ -290,7 +289,7 @@ describe('PasteDestinationManager', () => {
         functionName: 'PasteDestinationManager.commitBind',
         details: { failedBindDetails: 'ALREADY_BOUND_TO_SAME' },
       });
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ALREADY_BOUND_TO_DESTINATION, {
+      expect(formatMessageSpy).toHaveBeenCalledWith('ALREADY_BOUND_TO_DESTINATION', {
         destinationName: 'Terminal ("bash")',
       });
       expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
@@ -579,7 +578,15 @@ describe('PasteDestinationManager', () => {
         details: { failedBindDetails: 'NO_ACTIVE_EDITOR' },
       });
       expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindTextEditor',
+          uri: 'file:///workspace/src/gone.ts',
+          viewColumn: 1,
+        },
+        'No visible editor at URI + viewColumn',
+      );
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_TEXT_EDITOR_NOT_VISIBLE');
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
         'RangeLink: Bound editor is no longer visible. Re-open the file and bind again.',
       );
@@ -606,7 +613,11 @@ describe('PasteDestinationManager', () => {
         details: { failedBindDetails: 'EDITOR_READ_ONLY' },
       });
       expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_READ_ONLY, {
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.bindTextEditor', scheme: 'git', fileName: 'file.ts' },
+        'Cannot bind: Editor is read-only (scheme: git)',
+      );
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_TEXT_EDITOR_READ_ONLY', {
         scheme: 'git',
       });
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
@@ -636,7 +647,11 @@ describe('PasteDestinationManager', () => {
         details: { failedBindDetails: 'EDITOR_BINARY_FILE' },
       });
       expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_BINARY_FILE, {
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.bindTextEditor', scheme: 'file', fileName: testFileName },
+        'Cannot bind: Editor is a binary file',
+      );
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_TEXT_EDITOR_BINARY_FILE', {
         fileName: testFileName,
       });
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
@@ -1513,7 +1528,7 @@ describe('PasteDestinationManager', () => {
       documentCloseListener(mockDocument);
 
       expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND);
+      expect(formatMessageSpy).toHaveBeenCalledWith('BOUND_EDITOR_CLOSED_AUTO_UNBOUND');
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(3);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
         1,
