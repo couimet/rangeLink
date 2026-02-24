@@ -111,7 +111,10 @@ export class DestinationPicker {
 
       case 'file-more':
         // TODO(#356): Show secondary file picker
-        this.logger.debug(logCtx, 'User selected "More files...", showing secondary picker');
+        this.logger.debug(
+          logCtx,
+          'User selected "More files...", returning cancelled (secondary picker not yet implemented)',
+        );
         return { outcome: 'cancelled' };
 
       case 'terminal-more':

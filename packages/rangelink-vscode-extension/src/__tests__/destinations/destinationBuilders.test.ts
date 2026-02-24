@@ -106,12 +106,10 @@ describe('destinationBuilders', () => {
     });
 
     it('uses untitled display name for untitled files', () => {
-      const mockUri = {
+      const mockUri = createMockUri('Untitled-1', {
         scheme: 'untitled',
-        fsPath: 'Untitled-1',
-        path: 'Untitled-1',
         toString: () => 'untitled:Untitled-1',
-      } as vscode.Uri;
+      });
       const editor = createMockEditor({
         document: createMockDocument({ uri: mockUri }),
         viewColumn: 1,

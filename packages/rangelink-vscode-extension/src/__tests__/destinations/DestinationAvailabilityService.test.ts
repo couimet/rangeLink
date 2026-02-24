@@ -481,15 +481,39 @@ describe('DestinationAvailabilityService', () => {
           destinationKinds: ['text-editor'],
         });
 
-        expect(result['text-editor']).toHaveLength(1);
-        expect(result['text-editor']![0].label).toBe('app.ts');
-        expect(result['text-editor']![0].bindOptions).toStrictEqual({
-          kind: 'text-editor',
-          uri,
-          viewColumn: 1,
-        });
-        expect(result['text-editor']![0].itemKind).toBe('bindable');
-        expect(result['text-editor']![0].fileInfo.filename).toBe('app.ts');
+        expect(result['text-editor']).toStrictEqual([
+          {
+            label: 'app.ts',
+            displayName: 'app.ts',
+            description: undefined,
+            bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
+            itemKind: 'bindable',
+            fileInfo: {
+              uri,
+              filename: 'app.ts',
+              displayPath: 'src/app.ts',
+              viewColumn: 1,
+              isCurrentInGroup: true,
+              isActiveEditor: false,
+              boundState: 'not-bound',
+            },
+            boundState: 'not-bound',
+          },
+        ]);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            destinationKinds: ['text-editor'],
+          },
+          'Using provided destinationKinds filter',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            groupKeys: ['text-editor'],
+          },
+          'Built grouped destination items',
+        );
       });
 
       it('returns empty when no eligible files', async () => {
@@ -510,6 +534,20 @@ describe('DestinationAvailabilityService', () => {
         });
 
         expect(result['text-editor']).toBeUndefined();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            destinationKinds: ['text-editor'],
+          },
+          'Using provided destinationKinds filter',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            groupKeys: [],
+          },
+          'Built grouped destination items',
+        );
       });
 
       it('applies bound state when boundFileUriString matches', async () => {
@@ -533,7 +571,32 @@ describe('DestinationAvailabilityService', () => {
           boundFileUriString: uri.toString(),
         });
 
-        expect(result['text-editor']![0].boundState).toBe('bound');
+        expect(result['text-editor']).toStrictEqual([
+          {
+            label: 'app.ts',
+            displayName: 'app.ts',
+            description: 'bound',
+            bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
+            itemKind: 'bindable',
+            fileInfo: {
+              uri,
+              filename: 'app.ts',
+              displayPath: 'src/app.ts',
+              viewColumn: 1,
+              isCurrentInGroup: true,
+              isActiveEditor: false,
+              boundState: 'bound',
+            },
+            boundState: 'bound',
+          },
+        ]);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            destinationKinds: ['text-editor'],
+          },
+          'Using provided destinationKinds filter',
+        );
       });
 
       it('shows file-more item for non-current-in-group files', async () => {
@@ -560,14 +623,38 @@ describe('DestinationAvailabilityService', () => {
           destinationKinds: ['text-editor'],
         });
 
-        expect(result['text-editor']).toHaveLength(1);
-        expect(result['text-editor']![0].label).toBe('a.ts');
+        expect(result['text-editor']).toStrictEqual([
+          {
+            label: 'a.ts',
+            displayName: 'a.ts',
+            description: undefined,
+            bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
+            itemKind: 'bindable',
+            fileInfo: {
+              uri: uri1,
+              filename: 'a.ts',
+              displayPath: 'src/a.ts',
+              viewColumn: 1,
+              isCurrentInGroup: true,
+              isActiveEditor: false,
+              boundState: 'not-bound',
+            },
+            boundState: 'not-bound',
+          },
+        ]);
         expect(result['file-more']).toStrictEqual({
           label: 'More files...',
           displayName: 'More files...',
           remainingCount: 2,
           itemKind: 'file-more',
         });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            groupKeys: ['text-editor', 'file-more'],
+          },
+          'Built grouped destination items',
+        );
       });
 
       it('shows no file-more when all files are current-in-group', async () => {
@@ -576,7 +663,7 @@ describe('DestinationAvailabilityService', () => {
         const tab1 = createMockTab(uri1);
         const tab2 = createMockTab(uri2);
         const group1 = createMockTabGroup([tab1]);
-        const group2 = createMockTabGroup([tab2]);
+        const group2 = createMockTabGroup([tab2], { viewColumn: 2 });
         ideAdapter = createMockVscodeAdapter({
           windowOptions: {
             tabGroups: { all: [group1, group2] },
@@ -595,6 +682,13 @@ describe('DestinationAvailabilityService', () => {
 
         expect(result['text-editor']).toHaveLength(2);
         expect(result['file-more']).toBeUndefined();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            groupKeys: ['text-editor'],
+          },
+          'Built grouped destination items',
+        );
       });
     });
   });

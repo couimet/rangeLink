@@ -588,7 +588,7 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should fail to bind text editor to read-only scheme', async () => {
-      const readOnlyUri = { scheme: 'git', fsPath: '/repo/file.ts' } as vscode.Uri;
+      const readOnlyUri = createMockUri('/repo/file.ts', { scheme: 'git' });
       const readOnlyEditor = {
         document: { uri: readOnlyUri },
         viewColumn: 1,
@@ -618,7 +618,7 @@ describe('PasteDestinationManager', () => {
 
     it('should fail to bind text editor to binary file', async () => {
       const testFileName = 'binary.dat';
-      const binaryUri = { scheme: 'file', fsPath: `/test/${testFileName}` } as vscode.Uri;
+      const binaryUri = createMockUri(`/test/${testFileName}`);
       const binaryEditor = {
         document: { uri: binaryUri },
         viewColumn: 1,
