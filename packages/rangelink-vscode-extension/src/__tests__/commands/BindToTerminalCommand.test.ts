@@ -11,7 +11,6 @@ import {
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
   createMockEligibleTerminal,
-  createMockQuickPickProvider,
   createMockTerminal,
   createMockTerminalQuickPickItem,
   createMockVscodeAdapter,
@@ -23,7 +22,6 @@ describe('BindToTerminalCommand', () => {
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
   let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
   let mockAdapter: ReturnType<typeof createMockVscodeAdapter>;
-  let mockQuickPickProvider: ReturnType<typeof createMockQuickPickProvider>;
   let command: BindToTerminalCommand;
   let showTerminalPickerSpy: jest.SpyInstance;
 
@@ -31,7 +29,6 @@ describe('BindToTerminalCommand', () => {
     mockLogger = createMockLogger();
     mockDestinationManager = createMockDestinationManager();
     mockAvailabilityService = createMockDestinationAvailabilityService();
-    mockQuickPickProvider = createMockQuickPickProvider();
     showTerminalPickerSpy = spyOnShowTerminalPicker();
   });
 

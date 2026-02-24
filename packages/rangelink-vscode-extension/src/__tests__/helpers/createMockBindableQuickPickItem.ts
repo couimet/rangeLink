@@ -8,8 +8,8 @@ import type {
   TerminalBindableQuickPickItem,
   TerminalMoreQuickPickItem,
 } from '../../types';
-import { createMockEligibleFile } from './createMockEligibleFile';
 
+import { createMockEligibleFile } from './createMockEligibleFile';
 import { createMockEligibleTerminal } from './createMockEligibleTerminal';
 
 /**
