@@ -20,7 +20,7 @@ export const getEligibleFiles = (ideAdapter: VscodeAdapter): EligibleFile[] => {
   const activeEditorUriString = ideAdapter.getActiveTextEditorUri()?.toString();
   const eligibleFiles: EligibleFile[] = [];
 
-  for (const [index, group] of ideAdapter.tabGroups.all.entries()) {
+  for (const group of ideAdapter.tabGroups.all) {
     for (const tab of group.tabs) {
       const uri = ideAdapter.getTabDocumentUri(tab);
       if (uri === undefined) {
@@ -34,7 +34,8 @@ export const getEligibleFiles = (ideAdapter: VscodeAdapter): EligibleFile[] => {
       eligibleFiles.push({
         uri,
         filename: ideAdapter.getFilenameFromUri(uri),
-        tabGroupIndex: index + 1,
+        displayPath: ideAdapter.asRelativePath(uri, false),
+        viewColumn: group.viewColumn,
         isCurrentInGroup: tab === group.activeTab,
         isActiveEditor:
           activeEditorUriString !== undefined && uri.toString() === activeEditorUriString,

@@ -4,8 +4,6 @@ import {
   createMockComposablePasteDestination,
   type MockComposablePasteDestinationConfig,
 } from './createMockComposablePasteDestination';
-import { createMockDocument } from './createMockDocument';
-import { createMockEditor } from './createMockEditor';
 import { createMockUri } from './createMockUri';
 
 /**
@@ -15,20 +13,22 @@ import { createMockUri } from './createMockUri';
  */
 export interface MockEditorComposablePasteDestinationConfig
   extends Omit<MockComposablePasteDestinationConfig, 'resource'> {
-  /** Editor to use. If not provided, creates a mock editor. */
-  editor?: vscode.TextEditor;
+  /** URI to use. If not provided, creates a mock URI. */
+  uri?: vscode.Uri;
+  /** View column to use. Defaults to 1. */
+  viewColumn?: number;
 }
 
 /**
- * Extract editor metadata from a TextEditor for building mock defaults.
+ * Extract file metadata from a URI for building mock defaults.
  *
- * @param editor - The text editor
+ * @param uri - The URI
  * @returns Object with editorName (filename) and editorPath (full path)
  */
-const getEditorMetadata = (
-  editor: vscode.TextEditor,
+const getUriMetadata = (
+  uri: vscode.Uri,
 ): { editorName: string; editorPath: string } => {
-  const editorPath = editor.document.uri.fsPath;
+  const editorPath = uri.fsPath;
   const editorName = editorPath.split('/').pop() || 'Unknown';
   return { editorName, editorPath };
 };
@@ -36,13 +36,13 @@ const getEditorMetadata = (
 /**
  * Create a mock ComposablePasteDestination configured for text editor usage.
  *
- * Provides sensible editor defaults derived from the editor:
+ * Provides sensible editor defaults derived from the URI:
  * - id: 'text-editor'
- * - resource: { kind: 'editor', editor }
- * - displayName: Derived from editor path (e.g., 'Text Editor ("file.ts")')
- * - loggingDetails: { editorName, editorPath } derived from editor
+ * - resource: { kind: 'editor', uri, viewColumn }
+ * - displayName: Derived from URI path (e.g., 'Text Editor ("file.ts")')
+ * - loggingDetails: { editorName, editorPath } derived from URI
  *
- * If no editor is provided, creates a default mock editor at '/workspace/src/file.ts'.
+ * If no URI is provided, creates a default mock URI at '/workspace/src/file.ts'.
  *
  * @param overrides - Optional config overrides
  * @returns ComposablePasteDestination instance configured as editor
@@ -50,20 +50,17 @@ const getEditorMetadata = (
 export const createMockEditorComposablePasteDestination = (
   overrides: MockEditorComposablePasteDestinationConfig = {},
 ): ReturnType<typeof createMockComposablePasteDestination> => {
-  const { editor, ...rest } = overrides;
+  const { uri, viewColumn, ...rest } = overrides;
 
-  const mockEditor =
-    editor ??
-    createMockEditor({
-      document: createMockDocument({ uri: createMockUri('/workspace/src/file.ts') }),
-    });
+  const mockUri = uri ?? createMockUri('/workspace/src/file.ts');
+  const mockViewColumn = viewColumn ?? 1;
 
-  const { editorName, editorPath } = getEditorMetadata(mockEditor);
+  const { editorName, editorPath } = getUriMetadata(mockUri);
 
   return createMockComposablePasteDestination({
     id: 'text-editor',
     displayName: overrides.displayName ?? `Text Editor ("${editorName}")`,
-    resource: { kind: 'editor', editor: mockEditor },
+    resource: { kind: 'editor', uri: mockUri, viewColumn: mockViewColumn },
     jumpSuccessMessage: `Jumped to editor: ${editorName}`,
     loggingDetails: { editorName, editorPath },
     ...rest,

@@ -698,6 +698,16 @@ export class VscodeAdapter
   }
 
   /**
+   * Check if a visible editor exists at the given URI and viewColumn.
+   */
+  hasVisibleEditorAt(uri: vscode.Uri, viewColumn: number): boolean {
+    const uriString = uri.toString();
+    return this.visibleTextEditors.some(
+      (editor) => editor.document.uri.toString() === uriString && editor.viewColumn === viewColumn,
+    );
+  }
+
+  /**
    * Get tab groups API for managing editor tab groups.
    *
    * @returns Tab groups API

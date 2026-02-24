@@ -25,10 +25,11 @@ export class FocusCapabilityFactory {
     private readonly logger: Logger,
   ) {}
 
-  createEditorCapability(editor: vscode.TextEditor): FocusCapability {
+  createEditorCapability(uri: vscode.Uri, viewColumn: number): FocusCapability {
     return new EditorFocusCapability(
       this.ideAdapter,
-      editor.document.uri,
+      uri,
+      viewColumn,
       new EditorInsertFactory(this.ideAdapter, this.logger),
       this.logger,
     );

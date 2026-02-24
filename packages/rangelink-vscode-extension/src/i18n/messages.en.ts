@@ -91,8 +91,6 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: Bound editor is no longer visible. Re-open the file and bind again.',
   [MessageCode.ERROR_TEXT_EDITOR_READ_ONLY]:
     'RangeLink: Cannot bind to read-only editor ({scheme})',
-  [MessageCode.ERROR_TEXT_EDITOR_VIEWCOLUMN_UNDEFINED]:
-    'RangeLink: Could not determine editor position. Try closing and reopening the file.',
   [MessageCode.ERROR_VERSION_INFO_NOT_AVAILABLE]: 'Version information not available',
 
   [MessageCode.FILE_PICKER_ACTIVE_BADGE]: 'active',

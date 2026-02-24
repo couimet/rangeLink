@@ -40,7 +40,6 @@ describe('BindToTerminalCommand', () => {
       mockAdapter = createMockVscodeAdapter();
       new BindToTerminalCommand(
         mockAdapter,
-        mockQuickPickProvider,
         mockAvailabilityService,
         mockDestinationManager,
         mockLogger,
@@ -59,7 +58,6 @@ describe('BindToTerminalCommand', () => {
         mockAdapter = createMockVscodeAdapter();
         command = new BindToTerminalCommand(
           mockAdapter,
-          mockQuickPickProvider,
           mockAvailabilityService,
           mockDestinationManager,
           mockLogger,
@@ -96,7 +94,6 @@ describe('BindToTerminalCommand', () => {
         );
         command = new BindToTerminalCommand(
           mockAdapter,
-          mockQuickPickProvider,
           mockAvailabilityService,
           mockDestinationManager,
           mockLogger,
@@ -133,7 +130,6 @@ describe('BindToTerminalCommand', () => {
         (mockDestinationManager.bind as jest.Mock).mockResolvedValue(Result.err(bindError));
         command = new BindToTerminalCommand(
           mockAdapter,
-          mockQuickPickProvider,
           mockAvailabilityService,
           mockDestinationManager,
           mockLogger,
@@ -177,7 +173,6 @@ describe('BindToTerminalCommand', () => {
         );
         command = new BindToTerminalCommand(
           mockAdapter,
-          mockQuickPickProvider,
           mockAvailabilityService,
           mockDestinationManager,
           mockLogger,
@@ -207,7 +202,6 @@ describe('BindToTerminalCommand', () => {
         showTerminalPickerSpy.mockResolvedValue(undefined);
         command = new BindToTerminalCommand(
           mockAdapter,
-          mockQuickPickProvider,
           mockAvailabilityService,
           mockDestinationManager,
           mockLogger,
@@ -251,7 +245,6 @@ describe('BindToTerminalCommand', () => {
         );
         command = new BindToTerminalCommand(
           mockAdapter,
-          mockQuickPickProvider,
           mockAvailabilityService,
           mockDestinationManager,
           mockLogger,
@@ -276,7 +269,6 @@ describe('BindToTerminalCommand', () => {
         showTerminalPickerSpy.mockResolvedValue(undefined);
         command = new BindToTerminalCommand(
           mockAdapter,
-          mockQuickPickProvider,
           mockAvailabilityService,
           mockDestinationManager,
           mockLogger,
@@ -289,7 +281,7 @@ describe('BindToTerminalCommand', () => {
             createMockTerminalQuickPickItem(terminal1, true),
             createMockTerminalQuickPickItem(terminal2),
           ],
-          mockQuickPickProvider,
+          mockAdapter,
           {
             getPlaceholder: expect.any(Function),
             onSelected: expect.any(Function),

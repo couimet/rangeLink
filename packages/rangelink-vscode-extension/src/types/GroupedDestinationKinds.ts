@@ -31,6 +31,13 @@ export interface GetAvailableDestinationItemsOptions {
    * sorted to the top of the terminal list.
    */
   readonly boundTerminalProcessId?: number;
+
+  /**
+   * URI string of the currently bound file, for bound-state badge display.
+   * When provided, the matching file gets `boundState: 'bound'` and is
+   * sorted to the top of the file list.
+   */
+  readonly boundFileUriString?: string;
 }
 
 /**

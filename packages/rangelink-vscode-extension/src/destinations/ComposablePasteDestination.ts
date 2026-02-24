@@ -46,7 +46,8 @@ export interface TerminalDestinationParams {
  * - Compare equality by document URI
  */
 export interface EditorDestinationParams {
-  readonly editor: vscode.TextEditor;
+  readonly uri: vscode.Uri;
+  readonly viewColumn: number;
   readonly displayName: string;
   readonly focusCapability: FocusCapability;
   readonly eligibilityChecker: EligibilityChecker;
@@ -89,7 +90,7 @@ export interface AiAssistantDestinationParams {
  */
 export type DestinationResource =
   | { readonly kind: 'terminal'; readonly terminal: vscode.Terminal }
-  | { readonly kind: 'editor'; readonly editor: vscode.TextEditor }
+  | { readonly kind: 'editor'; readonly uri: vscode.Uri; readonly viewColumn: number }
   | { readonly kind: 'singleton' };
 
 /**
@@ -413,7 +414,7 @@ export class ComposablePasteDestination implements PasteDestination {
    */
   getDestinationUri(): vscode.Uri | undefined {
     if (this.resource.kind === 'editor') {
-      return this.resource.editor.document.uri;
+      return this.resource.uri;
     }
     return undefined;
   }
@@ -486,7 +487,7 @@ export class ComposablePasteDestination implements PasteDestination {
     return new ComposablePasteDestination({
       id: 'text-editor',
       displayName: params.displayName,
-      resource: { kind: 'editor', editor: params.editor },
+      resource: { kind: 'editor', uri: params.uri, viewColumn: params.viewColumn },
       focusCapability: params.focusCapability,
       eligibilityChecker: params.eligibilityChecker,
       isAvailable: async () => true,

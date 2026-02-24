@@ -607,18 +607,6 @@ describe('package.json contributions', () => {
       });
     });
 
-    describe('file picker settings', () => {
-      it('rangelink.filePicker.maxTabGroups', () => {
-        expect(properties['rangelink.filePicker.maxTabGroups']).toStrictEqual({
-          type: 'number',
-          default: 5,
-          minimum: 1,
-          description:
-            "Maximum tab groups shown inline in destination picker (extras collapsed into 'More files...')",
-        });
-      });
-    });
-
     describe('terminal picker settings', () => {
       it('rangelink.terminalPicker.maxInline', () => {
         expect(properties['rangelink.terminalPicker.maxInline']).toStrictEqual({
@@ -632,7 +620,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(12);
+      expect(Object.keys(properties)).toHaveLength(11);
     });
   });
 

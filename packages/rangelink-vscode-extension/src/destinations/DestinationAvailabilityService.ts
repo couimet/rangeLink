@@ -10,8 +10,10 @@ import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
   type AIAssistantDestinationKind,
   DESTINATION_KINDS,
+  type EligibleFile,
   type EligibleTerminal,
   type FileBindableQuickPickItem,
+  type FileMoreQuickPickItem,
   type GetAvailableDestinationItemsOptions,
   type GroupedDestinationItems,
   MessageCode,
@@ -22,16 +24,20 @@ import { formatMessage } from '../utils';
 
 import type { DestinationRegistry } from './DestinationRegistry';
 import {
+  buildFileDescription,
+  disambiguateFilenames,
+  getEligibleFiles,
   getEligibleTerminals,
-  isTextEditorDestinationEligible,
+  markBoundFile,
   markBoundTerminal,
+  sortEligibleFiles,
   sortEligibleTerminals,
 } from './utils';
 
-const MIN_TERMINAL_PICKER_THRESHOLD = 1;
+const MIN_THRESHOLD = 1;
 
 const isValidThreshold = (value: number): boolean =>
-  value === Infinity || (Number.isFinite(value) && value >= MIN_TERMINAL_PICKER_THRESHOLD);
+  value === Infinity || (Number.isFinite(value) && value >= MIN_THRESHOLD);
 
 /**
  * MessageCode lookup for AI assistant unavailable
@@ -108,6 +114,22 @@ export class DestinationAvailabilityService {
   }
 
   /**
+   * Get file items split by current-in-group status.
+   * Convenience passthrough to `getGroupedDestinationItems()` for file-only callers.
+   *
+   * @param boundFileUriString - URI string of the currently bound file for badge display
+   */
+  async getFileItems(
+    boundFileUriString?: string,
+  ): Promise<FileBindableQuickPickItem[]> {
+    const grouped = await this.getGroupedDestinationItems({
+      destinationKinds: ['text-editor'],
+      boundFileUriString,
+    });
+    return grouped['text-editor'] ?? [];
+  }
+
+  /**
    * Get available destinations grouped by kind with pre-built QuickPick items.
    *
    * Items are grouped by DestinationKind for easy rendering control.
@@ -118,7 +140,6 @@ export class DestinationAvailabilityService {
   async getGroupedDestinationItems(
     options?: GetAvailableDestinationItemsOptions,
   ): Promise<GroupedDestinationItems> {
-    const displayNames = this.registry.getDisplayNames();
     const result: {
       -readonly [K in keyof GroupedDestinationItems]: GroupedDestinationItems[K];
     } = {};
@@ -141,19 +162,20 @@ export class DestinationAvailabilityService {
     for (const kind of destinationKinds) {
       switch (kind) {
         case 'text-editor': {
-          const textEditorEligibility = isTextEditorDestinationEligible(this.ideAdapter);
-          if (!textEditorEligibility.eligible) break;
+          const rawFiles = getEligibleFiles(this.ideAdapter);
+          if (rawFiles.length === 0) break;
 
-          const displayName = `${displayNames['text-editor']} ("${textEditorEligibility.filename}")`;
-          // TODO(#355/S004): Replace with file discovery pipeline
-          result['text-editor'] = [
-            {
-              label: displayName,
-              displayName,
-              bindOptions: { kind: 'text-editor' },
-              itemKind: 'bindable',
-            },
-          ] as unknown as FileBindableQuickPickItem[];
+          const enriched = markBoundFile(rawFiles, options?.boundFileUriString);
+          const sorted = sortEligibleFiles(enriched);
+          const disambiguators = disambiguateFilenames(sorted);
+
+          const { items, moreItem } = this.buildGroupedFileItems(sorted, disambiguators);
+          if (items.length > 0) {
+            result['text-editor'] = items;
+          }
+          if (moreItem) {
+            result['file-more'] = moreItem;
+          }
           break;
         }
 
@@ -180,6 +202,7 @@ export class DestinationAvailabilityService {
         case 'claude-code':
         case 'cursor-ai':
         case 'github-copilot-chat': {
+          const displayNames = this.registry.getDisplayNames();
           const available = await this.isAIAssistantAvailable(kind);
           if (!available) break;
 
@@ -218,9 +241,61 @@ export class DestinationAvailabilityService {
     return result;
   }
 
-  /**
-   * Build terminal items with overflow handling.
-   */
+  // ===========================================================================
+  // File item builders
+  // ===========================================================================
+
+  private buildGroupedFileItems(
+    eligibleFiles: EligibleFile[],
+    disambiguators: string[],
+  ): {
+    items: FileBindableQuickPickItem[];
+    moreItem: FileMoreQuickPickItem | undefined;
+  } {
+    const inlineItems: FileBindableQuickPickItem[] = [];
+    let remainingCount = 0;
+
+    for (let i = 0; i < eligibleFiles.length; i++) {
+      if (eligibleFiles[i].isCurrentInGroup) {
+        inlineItems.push(this.buildFileItem(eligibleFiles[i], disambiguators[i]));
+      } else {
+        remainingCount++;
+      }
+    }
+
+    return {
+      items: inlineItems,
+      moreItem:
+        remainingCount > 0
+          ? {
+              label: formatMessage(MessageCode.FILE_PICKER_MORE_LABEL),
+              displayName: formatMessage(MessageCode.FILE_PICKER_MORE_LABEL),
+              remainingCount,
+              itemKind: 'file-more',
+            }
+          : undefined,
+    };
+  }
+
+  private buildFileItem(
+    eligibleFile: EligibleFile,
+    disambiguator: string,
+  ): FileBindableQuickPickItem {
+    return {
+      label: eligibleFile.filename,
+      displayName: eligibleFile.filename,
+      description: buildFileDescription(eligibleFile, disambiguator),
+      bindOptions: { kind: 'text-editor', uri: eligibleFile.uri, viewColumn: eligibleFile.viewColumn },
+      itemKind: 'bindable',
+      fileInfo: eligibleFile,
+      boundState: eligibleFile.boundState,
+    };
+  }
+
+  // ===========================================================================
+  // Terminal item builders
+  // ===========================================================================
+
   private buildGroupedTerminalItems(
     eligibleTerminals: EligibleTerminal[],
     threshold: number,

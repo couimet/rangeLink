@@ -32,7 +32,8 @@ describe('getEligibleFiles', () => {
       {
         uri,
         filename: 'app.ts',
-        tabGroupIndex: 1,
+        displayPath: 'src/app.ts',
+        viewColumn: 1,
         isCurrentInGroup: true,
         isActiveEditor: false,
       },
@@ -42,7 +43,7 @@ describe('getEligibleFiles', () => {
   it('returns files from multiple tab groups with correct 1-based indices', () => {
     const uri2 = createMockUri('/workspace/src/utils.ts');
     const tab2 = createMockTab(uri2);
-    const group2 = createMockTabGroup([tab2]);
+    const group2 = createMockTabGroup([tab2], { viewColumn: 2 });
     const adapter = createMockVscodeAdapter({
       windowOptions: { tabGroups: { all: [group, group2] } },
     });
@@ -53,14 +54,16 @@ describe('getEligibleFiles', () => {
       {
         uri,
         filename: 'app.ts',
-        tabGroupIndex: 1,
+        displayPath: 'src/app.ts',
+        viewColumn: 1,
         isCurrentInGroup: true,
         isActiveEditor: false,
       },
       {
         uri: uri2,
         filename: 'utils.ts',
-        tabGroupIndex: 2,
+        displayPath: 'src/utils.ts',
+        viewColumn: 2,
         isCurrentInGroup: true,
         isActiveEditor: false,
       },
@@ -80,7 +83,8 @@ describe('getEligibleFiles', () => {
       {
         uri,
         filename: 'app.ts',
-        tabGroupIndex: 1,
+        displayPath: 'src/app.ts',
+        viewColumn: 1,
         isCurrentInGroup: true,
         isActiveEditor: false,
       },
@@ -101,7 +105,8 @@ describe('getEligibleFiles', () => {
       {
         uri,
         filename: 'app.ts',
-        tabGroupIndex: 1,
+        displayPath: 'src/app.ts',
+        viewColumn: 1,
         isCurrentInGroup: true,
         isActiveEditor: false,
       },
@@ -122,7 +127,8 @@ describe('getEligibleFiles', () => {
       {
         uri,
         filename: 'app.ts',
-        tabGroupIndex: 1,
+        displayPath: 'src/app.ts',
+        viewColumn: 1,
         isCurrentInGroup: true,
         isActiveEditor: false,
       },
@@ -143,14 +149,16 @@ describe('getEligibleFiles', () => {
       {
         uri,
         filename: 'app.ts',
-        tabGroupIndex: 1,
+        displayPath: 'src/app.ts',
+        viewColumn: 1,
         isCurrentInGroup: false,
         isActiveEditor: false,
       },
       {
         uri: uri2,
         filename: 'utils.ts',
-        tabGroupIndex: 1,
+        displayPath: 'src/utils.ts',
+        viewColumn: 1,
         isCurrentInGroup: true,
         isActiveEditor: false,
       },
@@ -172,7 +180,8 @@ describe('getEligibleFiles', () => {
       {
         uri,
         filename: 'app.ts',
-        tabGroupIndex: 1,
+        displayPath: 'src/app.ts',
+        viewColumn: 1,
         isCurrentInGroup: true,
         isActiveEditor: true,
       },
@@ -195,7 +204,8 @@ describe('getEligibleFiles', () => {
       {
         uri,
         filename: 'app.ts',
-        tabGroupIndex: 1,
+        displayPath: 'src/app.ts',
+        viewColumn: 1,
         isCurrentInGroup: true,
         isActiveEditor: false,
       },
@@ -213,7 +223,8 @@ describe('getEligibleFiles', () => {
       {
         uri,
         filename: 'app.ts',
-        tabGroupIndex: 1,
+        displayPath: 'src/app.ts',
+        viewColumn: 1,
         isCurrentInGroup: true,
         isActiveEditor: false,
       },
@@ -258,7 +269,8 @@ describe('getEligibleFiles', () => {
       {
         uri,
         filename: 'app.ts',
-        tabGroupIndex: 2,
+        displayPath: 'src/app.ts',
+        viewColumn: 1,
         isCurrentInGroup: true,
         isActiveEditor: false,
       },

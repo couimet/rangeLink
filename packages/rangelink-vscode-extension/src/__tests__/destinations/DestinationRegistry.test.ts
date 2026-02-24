@@ -10,6 +10,7 @@ import {
   createBaseMockPasteDestination,
   createMockEligibilityCheckerFactory,
   createMockFocusCapabilityFactory,
+  createMockUri,
   createMockVscodeAdapter,
 } from '../helpers';
 
@@ -130,7 +131,7 @@ describe('DestinationRegistry', () => {
       });
       registry.register('text-editor', builder);
 
-      registry.create({ kind: 'text-editor', editor: {} as never });
+      registry.create({ kind: 'text-editor', uri: createMockUri('/test.ts'), viewColumn: 1 });
 
       expect(builder).toHaveBeenCalledTimes(1);
       expect(capturedContext).toBeDefined();

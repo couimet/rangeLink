@@ -544,12 +544,9 @@ describe('ComposablePasteDestination', () => {
 
   describe('getDestinationUri()', () => {
     it('should return document URI for editor destinations', () => {
-      const mockUri = { toString: () => 'file:///workspace/src/file.ts' };
-      const mockEditor = {
-        document: { uri: mockUri },
-      };
+      const mockUri = { toString: () => 'file:///workspace/src/file.ts' } as never;
       const destination = createMockComposablePasteDestination({
-        resource: { kind: 'editor', editor: mockEditor as never },
+        resource: { kind: 'editor', uri: mockUri, viewColumn: 1 },
         logger: mockLogger,
       });
 

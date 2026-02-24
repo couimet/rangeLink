@@ -60,14 +60,17 @@ export const createMockAIAssistantQuickPickItem = (
  */
 export const createMockTextEditorQuickPickItem = (
   displayName = 'Text Editor ("file.ts")',
-): FileBindableQuickPickItem => ({
-  label: displayName,
-  displayName,
-  bindOptions: { kind: 'text-editor' },
-  itemKind: 'bindable',
-  isActive: false,
-  fileInfo: createMockEligibleFile(),
-});
+): FileBindableQuickPickItem => {
+  const fileInfo = createMockEligibleFile();
+  return {
+    label: displayName,
+    displayName,
+    bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: fileInfo.viewColumn },
+    itemKind: 'bindable',
+    isActive: false,
+    fileInfo,
+  };
+};
 
 /**
  * Create a mock TerminalMoreQuickPickItem.

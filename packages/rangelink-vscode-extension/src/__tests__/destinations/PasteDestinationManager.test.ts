@@ -143,12 +143,13 @@ describe('PasteDestinationManager', () => {
           }
           return destinationCache.get(cacheKey);
         }
-        if (options.kind === 'text-editor' && options.editor) {
-          const cacheKey = `text-editor:${options.editor.document.uri.fsPath}`;
+        if (options.kind === 'text-editor' && options.uri) {
+          const fsPath = options.uri.fsPath;
+          const cacheKey = `text-editor:${fsPath}`;
           if (!destinationCache.has(cacheKey)) {
             destinationCache.set(
               cacheKey,
-              createMockEditorComposablePasteDestination({ editor: options.editor }),
+              createMockEditorComposablePasteDestination({ uri: options.uri, viewColumn: options.viewColumn }),
             );
           }
           return destinationCache.get(cacheKey);
@@ -531,7 +532,9 @@ describe('PasteDestinationManager', () => {
       mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      const result = await manager.bind({ kind: 'text-editor' });
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor];
+
+      const result = await manager.bind({ kind: 'text-editor', uri: mockUri, viewColumn: 1 });
 
       expect(result).toBeOkWith((value: BindSuccessInfo) => {
         expect(value).toStrictEqual({
@@ -559,36 +562,40 @@ describe('PasteDestinationManager', () => {
       expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
     });
 
-    it('should fail to bind text editor when no active editor', async () => {
-      // Setup: No active text editor
+    it('should fail to bind text editor when no visible editor matches', async () => {
       mockAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [];
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+      const missingUri = createMockUri('/workspace/src/gone.ts');
 
-      const result = await manager.bind({ kind: 'text-editor' });
+      const result = await manager.bind({ kind: 'text-editor', uri: missingUri, viewColumn: 1 });
 
       expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
-        message: 'No active text editor',
+        message: 'No visible editor for file:///workspace/src/gone.ts at viewColumn 1',
         functionName: 'PasteDestinationManager.bindTextEditor',
         details: { failedBindDetails: 'NO_ACTIVE_EDITOR' },
       });
       expect(manager.isBound()).toBe(false);
-      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR);
+      expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE);
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        'RangeLink: No active text editor. Open a file and try again.',
+        'RangeLink: Bound editor is no longer visible. Re-open the file and bind again.',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
       expectContextKeys(mockAdapter.__getVscodeInstance(), {});
     });
 
     it('should fail to bind text editor to read-only scheme', async () => {
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = {
-        document: {
-          uri: { scheme: 'git', fsPath: '/repo/file.ts' },
-        },
+      const readOnlyUri = { scheme: 'git', fsPath: '/repo/file.ts' } as vscode.Uri;
+      const readOnlyEditor = {
+        document: { uri: readOnlyUri },
+        viewColumn: 1,
       } as vscode.TextEditor;
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = readOnlyEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      const result = await manager.bind({ kind: 'text-editor' });
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [readOnlyEditor];
+
+      const result = await manager.bind({ kind: 'text-editor', uri: readOnlyUri, viewColumn: 1 });
 
       expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
         message: 'Editor is read-only (scheme: git)',
@@ -608,14 +615,17 @@ describe('PasteDestinationManager', () => {
 
     it('should fail to bind text editor to binary file', async () => {
       const testFileName = 'binary.dat';
-      mockAdapter.__getVscodeInstance().window.activeTextEditor = {
-        document: {
-          uri: { scheme: 'file', fsPath: `/test/${testFileName}` },
-        },
+      const binaryUri = { scheme: 'file', fsPath: `/test/${testFileName}` } as vscode.Uri;
+      const binaryEditor = {
+        document: { uri: binaryUri },
+        viewColumn: 1,
       } as vscode.TextEditor;
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = binaryEditor;
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      const result = await manager.bind({ kind: 'text-editor' });
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [binaryEditor];
+
+      const result = await manager.bind({ kind: 'text-editor', uri: binaryUri, viewColumn: 1 });
 
       expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
         message: 'Editor is a binary file',
@@ -942,9 +952,10 @@ describe('PasteDestinationManager', () => {
       });
 
       mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor];
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      await manager.bind({ kind: 'text-editor' });
+      await manager.bind({ kind: 'text-editor', uri: mockUri, viewColumn: 1 });
 
       manager.unbind();
 
@@ -1481,21 +1492,17 @@ describe('PasteDestinationManager', () => {
 
   describe('Text editor closure auto-unbind', () => {
     it('should auto-unbind when bound text editor document closes', async () => {
-      const mockDocument = {
-        uri: { scheme: 'file', fsPath: '/test/file.ts', toString: () => 'file:///test/file.ts' },
-      } as vscode.TextDocument;
-
-      const mockEditor = {
-        document: mockDocument,
-      } as vscode.TextEditor;
+      const mockUri = { scheme: 'file', fsPath: '/test/file.ts', toString: () => 'file:///test/file.ts' } as vscode.Uri;
+      const mockDocument = { uri: mockUri } as vscode.TextDocument;
+      const mockEditor = { document: mockDocument, viewColumn: 1 } as vscode.TextEditor;
 
       mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor];
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      await manager.bind({ kind: 'text-editor' });
+      await manager.bind({ kind: 'text-editor', uri: mockUri, viewColumn: 1 });
       expect(manager.isBound()).toBe(true);
 
-      // Simulate document close
       documentCloseListener(mockDocument);
 
       expect(manager.isBound()).toBe(false);
@@ -1519,29 +1526,20 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not unbind when different document closes', async () => {
-      const boundDocument = {
-        uri: { scheme: 'file', fsPath: '/test/file.ts', toString: () => 'file:///test/file.ts' },
-      } as vscode.TextDocument;
-
+      const boundUri = { scheme: 'file', fsPath: '/test/file.ts', toString: () => 'file:///test/file.ts' } as vscode.Uri;
+      const boundDocument = { uri: boundUri } as vscode.TextDocument;
       const otherDocument = {
-        uri: {
-          scheme: 'file',
-          fsPath: '/test/other.ts',
-          toString: () => 'file:///test/other.ts',
-        },
+        uri: { scheme: 'file', fsPath: '/test/other.ts', toString: () => 'file:///test/other.ts' },
       } as vscode.TextDocument;
-
-      const mockEditor = {
-        document: boundDocument,
-      } as vscode.TextEditor;
+      const mockEditor = { document: boundDocument, viewColumn: 1 } as vscode.TextEditor;
 
       mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor];
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
 
-      await manager.bind({ kind: 'text-editor' });
+      await manager.bind({ kind: 'text-editor', uri: boundUri, viewColumn: 1 });
       expect(manager.isBound()).toBe(true);
 
-      // Simulate different document close
       documentCloseListener(otherDocument);
 
       expect(manager.isBound()).toBe(true);
@@ -1781,12 +1779,16 @@ describe('PasteDestinationManager', () => {
         expect(manager.getBoundDestination()?.id).toBe('terminal');
 
         // Mock active text editor for second bind
-        mockVscode.window.activeTextEditor = {
-          document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
+        const textEditorUri = createMockUri('/test/file.ts');
+        const textEditor = {
+          document: { uri: textEditorUri },
+          viewColumn: 1,
         } as vscode.TextEditor;
+        mockVscode.window.activeTextEditor = textEditor;
+        mockVscode.window.visibleTextEditors = [textEditor];
 
         // Second bind: Bind to Text Editor (should show confirmation)
-        const secondBindResult = await manager.bind({ kind: 'text-editor' });
+        const secondBindResult = await manager.bind({ kind: 'text-editor', uri: textEditorUri, viewColumn: 1 });
 
         // Assert: QuickPick was shown
         expect(mockVscode.window.showQuickPick).toHaveBeenCalledWith(
@@ -1869,12 +1871,16 @@ describe('PasteDestinationManager', () => {
         });
 
         // Mock active text editor for second bind
-        mockVscode.window.activeTextEditor = {
-          document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
+        const textEditorUri = createMockUri('/test/file.ts');
+        const textEditor = {
+          document: { uri: textEditorUri },
+          viewColumn: 1,
         } as vscode.TextEditor;
+        mockVscode.window.activeTextEditor = textEditor;
+        mockVscode.window.visibleTextEditors = [textEditor];
 
         // Second bind: Try to bind to Text Editor (user cancels)
-        const secondBindResult = await manager.bind({ kind: 'text-editor' });
+        const secondBindResult = await manager.bind({ kind: 'text-editor', uri: textEditorUri, viewColumn: 1 });
 
         // Assert: Bind failed (cancelled)
         expect(secondBindResult).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
@@ -2012,12 +2018,16 @@ describe('PasteDestinationManager', () => {
         await manager.bind({ kind: 'terminal', terminal: testTerminal });
 
         // Mock active text editor for second bind
-        mockVscode.window.activeTextEditor = {
-          document: { uri: { scheme: 'file', fsPath: '/test/file.ts' } },
+        const textEditorUri = createMockUri('/test/file.ts');
+        const textEditor = {
+          document: { uri: textEditorUri },
+          viewColumn: 1,
         } as vscode.TextEditor;
+        mockVscode.window.activeTextEditor = textEditor;
+        mockVscode.window.visibleTextEditors = [textEditor];
 
         // Second bind: Try to bind to Text Editor (user presses Esc)
-        const result = await manager.bind({ kind: 'text-editor' });
+        const result = await manager.bind({ kind: 'text-editor', uri: textEditorUri, viewColumn: 1 });
 
         expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
           message: 'User cancelled binding replacement',

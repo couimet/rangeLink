@@ -4,7 +4,8 @@ import { createMockUri } from './createMockUri';
 
 export interface MockEligibleFileOptions {
   readonly filename?: string;
-  readonly tabGroupIndex?: number;
+  readonly displayPath?: string;
+  readonly viewColumn?: number;
   readonly isCurrentInGroup?: boolean;
   readonly isActiveEditor?: boolean;
   readonly boundState?: EligibleFile['boundState'];
@@ -14,7 +15,8 @@ export interface MockEligibleFileOptions {
 export const createMockEligibleFile = (options: MockEligibleFileOptions = {}): EligibleFile => {
   const {
     filename = 'file.ts',
-    tabGroupIndex = 1,
+    displayPath,
+    viewColumn = 1,
     isCurrentInGroup = false,
     isActiveEditor = false,
     boundState,
@@ -23,7 +25,8 @@ export const createMockEligibleFile = (options: MockEligibleFileOptions = {}): E
   return {
     uri: uri ?? createMockUri(`/workspace/${filename}`),
     filename,
-    tabGroupIndex,
+    displayPath: displayPath ?? `src/${filename}`,
+    viewColumn,
     isCurrentInGroup,
     isActiveEditor,
     ...(boundState !== undefined && { boundState }),

@@ -1,8 +1,3 @@
-export interface FileEntry {
-  readonly filename: string;
-  readonly relativePath: string;
-}
-
 /**
  * Produce VSCode-style disambiguators for files with duplicate filenames.
  *
@@ -13,13 +8,15 @@ export interface FileEntry {
  * - `'…/grandparent/parentDir'` if one parent segment isn't enough
  * - `'full/path/to'` when all parent segments are shown (no ellipsis)
  *
- * Progressively adds parent directory segments from `relativePath` until
+ * Progressively adds parent directory segments from `displayPath` until
  * all disambiguators within each collision group are unique.
  *
- * @param files - Array of objects with `filename` and `relativePath` (forward-slash separated)
+ * @param files - Array of objects with `filename` and `displayPath` (forward-slash separated)
  * @returns Array of disambiguator strings, same length and order as input
  */
-export const disambiguateFilenames = (files: readonly FileEntry[]): string[] => {
+export const disambiguateFilenames = (
+  files: readonly { readonly filename: string; readonly displayPath: string }[],
+): string[] => {
   const disambiguators: string[] = files.map(() => '');
 
   const groupsByFilename = new Map<string, number[]>();
@@ -39,7 +36,7 @@ export const disambiguateFilenames = (files: readonly FileEntry[]): string[] => 
     }
 
     const parentSegments = indices.map((i) => {
-      const parts = files[i].relativePath.split('/');
+      const parts = files[i].displayPath.split('/');
       parts.pop();
       return parts.filter((p) => p !== '');
     });

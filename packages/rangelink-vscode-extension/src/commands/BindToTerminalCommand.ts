@@ -6,7 +6,6 @@ import type {
   PasteDestinationManager,
 } from '../destinations';
 import { resolveBoundTerminalProcessId, showTerminalPicker } from '../destinations/utils';
-import type { QuickPickProvider } from '../ide/QuickPickProvider';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../types';
 import { formatMessage } from '../utils';
@@ -23,8 +22,7 @@ import { formatMessage } from '../utils';
  */
 export class BindToTerminalCommand {
   constructor(
-    private readonly vscodeAdapter: VscodeAdapter,
-    private readonly quickPickProvider: QuickPickProvider,
+    private readonly ideAdapter: VscodeAdapter,
     private readonly availabilityService: DestinationAvailabilityService,
     private readonly destinationManager: PasteDestinationManager,
     private readonly logger: Logger,
@@ -51,7 +49,7 @@ export class BindToTerminalCommand {
 
     if (terminalItems.length === 0) {
       this.logger.debug(logCtx, 'No terminals available');
-      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
+      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
       return { outcome: 'no-resource' };
     }
 
@@ -66,7 +64,7 @@ export class BindToTerminalCommand {
 
     const bindResult = await showTerminalPicker(
       terminalItems,
-      this.quickPickProvider,
+      this.ideAdapter,
       {
         getPlaceholder: () => formatMessage(MessageCode.TERMINAL_PICKER_BIND_ONLY_PLACEHOLDER),
         onSelected: async (eligible) => {

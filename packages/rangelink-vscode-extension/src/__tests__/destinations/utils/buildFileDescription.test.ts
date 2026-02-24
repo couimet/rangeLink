@@ -3,32 +3,32 @@ import { createMockEligibleFile } from '../../helpers';
 
 describe('buildFileDescription', () => {
   it('returns undefined when no disambiguator and no badges', () => {
-    const file = createMockEligibleFile({ tabGroupIndex: 1 });
+    const file = createMockEligibleFile({ viewColumn: 1 });
 
     expect(buildFileDescription(file, '')).toBeUndefined();
   });
 
   it('returns disambiguator only when no badges', () => {
-    const file = createMockEligibleFile({ tabGroupIndex: 2 });
+    const file = createMockEligibleFile({ viewColumn: 2 });
 
     expect(buildFileDescription(file, '…/components')).toBe('…/components');
   });
 
   it('returns bound badge only', () => {
-    const file = createMockEligibleFile({ tabGroupIndex: 1, boundState: 'bound' });
+    const file = createMockEligibleFile({ viewColumn: 1, boundState: 'bound' });
 
     expect(buildFileDescription(file, '')).toBe('bound');
   });
 
   it('returns active badge only', () => {
-    const file = createMockEligibleFile({ tabGroupIndex: 1, isActiveEditor: true });
+    const file = createMockEligibleFile({ viewColumn: 1, isActiveEditor: true });
 
     expect(buildFileDescription(file, '')).toBe('active');
   });
 
   it('combines both bound and active badges', () => {
     const file = createMockEligibleFile({
-      tabGroupIndex: 1,
+      viewColumn: 1,
       boundState: 'bound',
       isActiveEditor: true,
     });
@@ -38,7 +38,7 @@ describe('buildFileDescription', () => {
 
   it('combines disambiguator with both badges', () => {
     const file = createMockEligibleFile({
-      tabGroupIndex: 3,
+      viewColumn: 3,
       boundState: 'bound',
       isActiveEditor: true,
     });
@@ -48,7 +48,7 @@ describe('buildFileDescription', () => {
 
   it('returns undefined when boundState is not-bound and not active and no disambiguator', () => {
     const file = createMockEligibleFile({
-      tabGroupIndex: 2,
+      viewColumn: 2,
       boundState: 'not-bound',
       isActiveEditor: false,
     });
@@ -57,13 +57,13 @@ describe('buildFileDescription', () => {
   });
 
   it('returns disambiguator with bound badge', () => {
-    const file = createMockEligibleFile({ tabGroupIndex: 1, boundState: 'bound' });
+    const file = createMockEligibleFile({ viewColumn: 1, boundState: 'bound' });
 
     expect(buildFileDescription(file, '…/utils')).toBe('…/utils · bound');
   });
 
   it('returns disambiguator with active badge', () => {
-    const file = createMockEligibleFile({ tabGroupIndex: 1, isActiveEditor: true });
+    const file = createMockEligibleFile({ viewColumn: 1, isActiveEditor: true });
 
     expect(buildFileDescription(file, '…/src')).toBe('…/src · active');
   });

@@ -6,6 +6,7 @@ import { BookmarkService, BookmarksStore } from './bookmarks';
 import {
   AddBookmarkCommand,
   BindToDestinationCommand,
+  BindToTextEditorCommand,
   BindToTerminalCommand,
   GoToRangeLinkCommand,
   JumpToDestinationCommand,
@@ -165,7 +166,6 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const bindToTerminalCommand = new BindToTerminalCommand(
     ideAdapter,
-    ideAdapter,
     availabilityService,
     destinationManager,
     logger,
@@ -174,8 +174,14 @@ export function activate(context: vscode.ExtensionContext): void {
     await bindToTerminalCommand.execute();
   };
 
-  const bindToTextEditorHandler = async () => {
-    await destinationManager.bind({ kind: 'text-editor' });
+  const bindToTextEditorCommand = new BindToTextEditorCommand(
+    ideAdapter,
+    availabilityService,
+    destinationManager,
+    logger,
+  );
+  const bindToTextEditorHandler = async (uri?: unknown) => {
+    await bindToTextEditorCommand.execute(uri as vscode.Uri | undefined);
   };
 
   const bookmarkService = new BookmarkService(
@@ -451,10 +457,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_BIND, async (uri) => {
-      await ideAdapter.showTextDocument(uri as vscode.Uri);
-      await destinationManager.bind({ kind: 'text-editor' });
-    }),
+    ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_BIND, bindToTextEditorHandler),
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_UNBIND, () => {

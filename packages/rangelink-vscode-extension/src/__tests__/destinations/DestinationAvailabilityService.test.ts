@@ -6,8 +6,11 @@ import {
   createBaseMockPasteDestination,
   createMockConfigReader,
   createMockDestinationRegistry,
+  createMockTab,
+  createMockTabGroup,
   createMockTabGroupsWithCount,
   createMockTerminal,
+  createMockUri,
   createMockVscodeAdapter,
 } from '../helpers';
 
@@ -454,6 +457,171 @@ describe('DestinationAvailabilityService', () => {
           },
           'Resolved terminalThreshold',
         );
+      });
+    });
+
+    describe('file items via text-editor kind', () => {
+      it('returns file items when eligible files exist', async () => {
+        const uri = createMockUri('/workspace/src/app.ts');
+        const tab = createMockTab(uri);
+        const group = createMockTabGroup([tab]);
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            tabGroups: { all: [group] },
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems({
+          destinationKinds: ['text-editor'],
+        });
+
+        expect(result['text-editor']).toHaveLength(1);
+        expect(result['text-editor']![0].label).toBe('app.ts');
+        expect(result['text-editor']![0].bindOptions).toStrictEqual({ kind: 'text-editor', uri, viewColumn: 1 });
+        expect(result['text-editor']![0].itemKind).toBe('bindable');
+        expect(result['text-editor']![0].fileInfo.filename).toBe('app.ts');
+      });
+
+      it('returns empty when no eligible files', async () => {
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            tabGroups: { all: [] },
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems({
+          destinationKinds: ['text-editor'],
+        });
+
+        expect(result['text-editor']).toBeUndefined();
+      });
+
+      it('applies bound state when boundFileUriString matches', async () => {
+        const uri = createMockUri('/workspace/src/app.ts');
+        const tab = createMockTab(uri);
+        const group = createMockTabGroup([tab]);
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            tabGroups: { all: [group] },
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems({
+          destinationKinds: ['text-editor'],
+          boundFileUriString: uri.toString(),
+        });
+
+        expect(result['text-editor']![0].boundState).toBe('bound');
+      });
+
+      it('shows file-more item for non-current-in-group files', async () => {
+        const uri1 = createMockUri('/workspace/src/a.ts');
+        const uri2 = createMockUri('/workspace/src/b.ts');
+        const uri3 = createMockUri('/workspace/src/c.ts');
+        const tab1 = createMockTab(uri1);
+        const tab2 = createMockTab(uri2);
+        const tab3 = createMockTab(uri3);
+        const group = createMockTabGroup([tab1, tab2, tab3], { activeTab: tab1 });
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            tabGroups: { all: [group] },
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems({
+          destinationKinds: ['text-editor'],
+        });
+
+        expect(result['text-editor']).toHaveLength(1);
+        expect(result['text-editor']![0].label).toBe('a.ts');
+        expect(result['file-more']).toStrictEqual({
+          label: 'More files...',
+          displayName: 'More files...',
+          remainingCount: 2,
+          itemKind: 'file-more',
+        });
+      });
+
+      it('shows no file-more when all files are current-in-group', async () => {
+        const uri1 = createMockUri('/workspace/src/a.ts');
+        const uri2 = createMockUri('/workspace/src/b.ts');
+        const tab1 = createMockTab(uri1);
+        const tab2 = createMockTab(uri2);
+        const group1 = createMockTabGroup([tab1]);
+        const group2 = createMockTabGroup([tab2]);
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            tabGroups: { all: [group1, group2] },
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems({
+          destinationKinds: ['text-editor'],
+        });
+
+        expect(result['text-editor']).toHaveLength(2);
+        expect(result['file-more']).toBeUndefined();
+      });
+    });
+  });
+
+  describe('getFileItems()', () => {
+    it('returns empty array when no files exist', async () => {
+      ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          tabGroups: { all: [] },
+        },
+      });
+      service = new DestinationAvailabilityService(
+        mockRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = await service.getFileItems();
+
+      expect(result).toStrictEqual([]);
+    });
+
+    it('delegates to getGroupedDestinationItems with text-editor filter and boundFileUriString', async () => {
+      const spy = jest.spyOn(service, 'getGroupedDestinationItems');
+
+      await service.getFileItems('file:///workspace/src/app.ts');
+
+      expect(spy).toHaveBeenCalledWith({
+        destinationKinds: ['text-editor'],
+        boundFileUriString: 'file:///workspace/src/app.ts',
       });
     });
   });

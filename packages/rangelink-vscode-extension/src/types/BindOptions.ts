@@ -14,12 +14,14 @@ export interface TerminalBindOptions extends WithDestinationKind {
 
 /**
  * Bind to text editor.
- * When editor is provided (e.g., from file picker), it's used directly.
- * When omitted (e.g., from keybinding command), bindTextEditor() resolves from activeTextEditor.
+ *
+ * Every caller must specify the target file via uri + viewColumn.
+ * The editor is resolved at bind time via findVisibleEditorsByUri + viewColumn match.
  */
 export interface TextEditorBindOptions extends WithDestinationKind {
   readonly kind: Extract<DestinationKind, 'text-editor'>;
-  readonly editor?: vscode.TextEditor;
+  readonly uri: vscode.Uri;
+  readonly viewColumn: number;
 }
 
 /**
