@@ -54,7 +54,8 @@ export const isTerminalDestination = (
  * After this guard passes, TypeScript knows:
  * - destination is a ComposablePasteDestination
  * - destination.resource.kind === 'editor'
- * - destination.resource.editor is vscode.TextEditor
+ * - destination.resource.uri is vscode.Uri
+ * - destination.resource.viewColumn is number
  *
  * @param destination - The destination to check (may be undefined)
  * @returns True if destination is an editor ComposablePasteDestination
@@ -62,7 +63,7 @@ export const isTerminalDestination = (
 export const isEditorDestination = (
   destination: PasteDestination | undefined,
 ): destination is ComposablePasteDestination & {
-  resource: { kind: 'editor'; editor: vscode.TextEditor };
+  resource: { kind: 'editor'; uri: vscode.Uri; viewColumn: number };
 } => {
   return (
     destination instanceof ComposablePasteDestination && destination.resource.kind === 'editor'

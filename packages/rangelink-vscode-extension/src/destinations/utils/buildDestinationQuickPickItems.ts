@@ -6,6 +6,8 @@ import {
   DESTINATION_KINDS,
   type DestinationQuickPickItem,
   type DestinationKind,
+  type FileBindableQuickPickItem,
+  type FileMoreQuickPickItem,
   type GroupedDestinationItems,
   MessageCode,
   type TerminalBindableQuickPickItem,
@@ -21,7 +23,10 @@ const isDestinationKind = (key: string): key is DestinationKind =>
 const isTerminalItem = (item: BindableQuickPickItem): item is TerminalBindableQuickPickItem =>
   'terminalInfo' in item;
 
-type PickerSequenceKey = DestinationKind | 'terminal-more';
+const isFileItem = (item: BindableQuickPickItem): item is FileBindableQuickPickItem =>
+  'fileInfo' in item;
+
+type PickerSequenceKey = DestinationKind | 'file-more' | 'terminal-more';
 
 /**
  * Sequence defining the order of destination kinds in QuickPick menus.
@@ -34,6 +39,7 @@ export const DESTINATION_PICKER_SEQUENCE: readonly PickerSequenceKey[] = [
   'terminal',
   'terminal-more',
   'text-editor',
+  'file-more',
 ] as const;
 
 type DestinationGroup = 'ai' | 'terminal' | 'file';
@@ -45,6 +51,7 @@ const DESTINATION_GROUP_MAP: Record<PickerSequenceKey, DestinationGroup> = {
   terminal: 'terminal',
   'terminal-more': 'terminal',
   'text-editor': 'file',
+  'file-more': 'file',
 };
 
 const DESTINATION_GROUP_LABELS: Record<DestinationGroup, MessageCode> = {
@@ -102,6 +109,18 @@ export const buildDestinationQuickPickItems = (
       continue;
     }
 
+    if (key === 'file-more') {
+      const item = groupItems as FileMoreQuickPickItem;
+      items.push({
+        ...item,
+        label: buildLabel(item.displayName),
+        description: formatMessage(MessageCode.FILE_PICKER_MORE_FILES_DESCRIPTION, {
+          count: item.remainingCount,
+        }),
+      });
+      continue;
+    }
+
     if (!isDestinationKind(key)) {
       throw new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
@@ -123,7 +142,9 @@ export const buildDestinationQuickPickItems = (
 
       const description = isTerminalItem(item)
         ? buildTerminalDescription(item.terminalInfo)
-        : undefined;
+        : isFileItem(item)
+          ? item.description
+          : undefined;
 
       items.push({
         ...item,

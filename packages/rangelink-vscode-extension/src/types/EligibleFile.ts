@@ -11,7 +11,8 @@ import type { BoundState } from './BoundState';
 export interface EligibleFile {
   readonly uri: vscode.Uri;
   readonly filename: string;
-  readonly tabGroupIndex: number;
+  readonly displayPath: string;
+  readonly viewColumn: number;
   readonly isCurrentInGroup: boolean;
   readonly isActiveEditor: boolean;
   readonly boundState?: BoundState;

@@ -12,6 +12,7 @@ import {
   BindFailureReason,
   type BindOptions,
   type ConfirmationQuickPickItem,
+  type TextEditorBindOptions,
   type DestinationKind,
   ExtensionResult,
   MessageCode,
@@ -98,10 +99,10 @@ export class PasteDestinationManager implements vscode.Disposable {
           kind: 'terminal',
           terminal: options.terminal,
         });
-        return this.commitBind(newDestination, 'terminal');
+        return this.commitBind(newDestination);
       }
       case 'text-editor':
-        return this.bindTextEditor();
+        return this.bindTextEditor(options);
       case 'cursor-ai':
       case 'github-copilot-chat':
       case 'claude-code':
@@ -336,24 +337,31 @@ export class PasteDestinationManager implements vscode.Disposable {
    *
    * @returns ExtensionResult with bind success info or error
    */
-  private async bindTextEditor(): Promise<ExtensionResult<BindSuccessInfo>> {
+  private async bindTextEditor(
+    options: TextEditorBindOptions,
+  ): Promise<ExtensionResult<BindSuccessInfo>> {
     const fnName = 'bindTextEditor';
 
-    const activeEditor = this.vscodeAdapter.activeTextEditor;
-    if (!activeEditor) {
-      this.logger.warn({ fn: 'PasteDestinationManager.bindTextEditor' }, 'No active text editor');
-      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
+    if (!this.vscodeAdapter.hasVisibleEditorAt(options.uri, options.viewColumn)) {
+      this.logger.warn(
+        {
+          fn: 'PasteDestinationManager.bindTextEditor',
+          uri: options.uri.toString(),
+          viewColumn: options.viewColumn,
+        },
+        'No visible editor at URI + viewColumn',
+      );
+      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE));
       return this.bindFailedResult(
         fnName,
-        'No active text editor',
+        `No visible editor for ${options.uri.toString()} at viewColumn ${options.viewColumn}`,
         BindFailureReason.NO_ACTIVE_EDITOR,
       );
     }
 
-    const editorUri = this.vscodeAdapter.getDocumentUri(activeEditor);
-    const scheme = editorUri.scheme;
-    const fsPath = editorUri.fsPath;
-    const fileName = this.vscodeAdapter.getFilenameFromUri(editorUri);
+    const scheme = options.uri.scheme;
+    const fsPath = options.uri.fsPath;
+    const fileName = this.vscodeAdapter.getFilenameFromUri(options.uri);
     const logCtx = { fn: 'PasteDestinationManager.bindTextEditor', scheme, fileName };
 
     if (!isWritableScheme(scheme)) {
@@ -380,12 +388,9 @@ export class PasteDestinationManager implements vscode.Disposable {
       );
     }
 
-    const newDestination = this.registry.create({
-      kind: 'text-editor',
-      editor: activeEditor,
-    });
+    const newDestination = this.registry.create(options);
 
-    return this.commitBind(newDestination, 'text-editor');
+    return this.commitBind(newDestination);
   }
 
   /**
@@ -427,7 +432,7 @@ export class PasteDestinationManager implements vscode.Disposable {
       );
     }
 
-    return this.commitBind(newDestination, kind);
+    return this.commitBind(newDestination);
   }
 
   /**
@@ -441,8 +446,8 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   private async commitBind(
     newDestination: PasteDestination,
-    kind: DestinationKind,
   ): Promise<ExtensionResult<BindSuccessInfo>> {
+    const kind = newDestination.id;
     const logCtx = { fn: 'PasteDestinationManager.commitBind', kind };
 
     if (this.boundDestination && (await this.boundDestination.equals(newDestination))) {
@@ -541,7 +546,7 @@ export class PasteDestinationManager implements vscode.Disposable {
         return;
       }
 
-      const boundDocumentUri = this.boundDestination.resource.editor.document.uri;
+      const boundDocumentUri = this.boundDestination.resource.uri;
 
       // Check if the closed document matches the bound document
       if (closedDocument.uri.toString() === boundDocumentUri.toString()) {

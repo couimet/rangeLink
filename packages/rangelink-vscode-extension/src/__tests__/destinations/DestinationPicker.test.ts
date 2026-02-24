@@ -141,7 +141,7 @@ describe('DestinationPicker', () => {
 
         expect(result).toStrictEqual({
           outcome: 'selected',
-          bindOptions: { kind: 'text-editor' },
+          bindOptions: editorItem.bindOptions,
         });
       });
     });

@@ -429,12 +429,6 @@
           "default": true,
           "description": "Show warning when generating link from file with unsaved changes"
         },
-        "rangelink.filePicker.maxTabGroups": {
-          "type": "number",
-          "default": 5,
-          "minimum": 1,
-          "description": "Maximum tab groups shown inline in destination picker (extras collapsed into 'More files...')"
-        },
         "rangelink.terminalPicker.maxInline": {
           "type": "number",
           "default": 5,

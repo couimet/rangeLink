@@ -33,7 +33,8 @@ export interface MockDestinationRegistryOptions {
   createImpl?: (options: {
     kind: string;
     terminal?: vscode.Terminal;
-    editor?: vscode.TextEditor;
+    uri?: vscode.Uri;
+    viewColumn?: number;
   }) => PasteDestination | undefined;
 }
 
@@ -73,20 +74,19 @@ export const createMockDestinationRegistry = (
   const defaultCreateImpl = (createOptions: {
     kind: string;
     terminal?: vscode.Terminal;
-    editor?: vscode.TextEditor;
+    uri?: vscode.Uri;
+    viewColumn?: number;
   }): PasteDestination | undefined => {
-    // Create real ComposablePasteDestination with actual resource reference so close listeners work
     if (createOptions.kind === 'terminal' && createOptions.terminal) {
       return createMockTerminalComposablePasteDestination({
         displayName: `Terminal ("${createOptions.terminal.name}")`,
         terminal: createOptions.terminal,
       });
     }
-    if (createOptions.kind === 'text-editor' && createOptions.editor) {
-      const fileName = createOptions.editor.document.uri.fsPath.split('/').pop() || 'Unknown';
+    if (createOptions.kind === 'text-editor' && createOptions.uri) {
+      const fileName = createOptions.uri.fsPath.split('/').pop() || 'Unknown';
       return createMockEditorComposablePasteDestination({
         displayName: `Text Editor ("${fileName}")`,
-        editor: createOptions.editor,
       });
     }
     return destinations[createOptions.kind as keyof typeof destinations];

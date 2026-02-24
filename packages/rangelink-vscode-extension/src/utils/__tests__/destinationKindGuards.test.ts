@@ -98,10 +98,10 @@ describe('destinationKindGuards', () => {
       expect(result).toBe(true);
     });
 
-    it('should narrow type correctly to access editor property', () => {
+    it('should narrow type correctly to access uri property', () => {
       const dest = createMockEditorComposablePasteDestination();
       if (isEditorDestination(dest)) {
-        expect(dest.resource.editor).toBeDefined();
+        expect(dest.resource.uri).toBeDefined();
         expect(dest.resource.kind).toBe('editor');
       }
     });

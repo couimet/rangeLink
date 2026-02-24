@@ -39,6 +39,8 @@ export type {
   CommandQuickPickItem,
   ConfirmationQuickPickItem,
   DestinationQuickPickItem,
+  FileBindableQuickPickItem,
+  FileMoreQuickPickItem,
   InfoQuickPickItem,
   PickerItemKind,
   StatusBarMenuQuickPickItem,

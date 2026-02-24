@@ -20,7 +20,8 @@ export const createMockTabGroup = (
 ): vscode.TabGroup => {
   return {
     tabs,
-    activeTab: tabs[0], // First tab is active by default
+    activeTab: tabs[0],
+    viewColumn: 1,
     ...overrides,
   } as unknown as vscode.TabGroup;
 };

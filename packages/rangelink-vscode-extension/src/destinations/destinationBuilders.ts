@@ -69,30 +69,22 @@ export const buildTerminalDestination: DestinationBuilder = (options, context) =
 };
 
 /**
- * Get resource name for an editor (workspace-relative path or untitled name).
+ * Get resource name from a URI (workspace-relative path or untitled name).
  *
  * @param context - Builder context with ideAdapter
- * @param editor - The text editor
+ * @param uri - The document URI
  * @returns Resource name for display (e.g., "src/file.ts" or "Untitled-1")
  */
-const getEditorResourceName = (
-  context: DestinationBuilderContext,
-  editor: vscode.TextEditor,
-): string => {
-  const uri = context.ideAdapter.getDocumentUri(editor);
-
-  // Handle untitled files
+const getResourceName = (context: DestinationBuilderContext, uri: vscode.Uri): string => {
   if (uri.scheme === 'untitled') {
     return getUntitledDisplayName(uri);
   }
 
-  // Get workspace-relative path for file:// scheme
   const workspaceFolder = context.ideAdapter.getWorkspaceFolder(uri);
   if (workspaceFolder) {
     return context.ideAdapter.asRelativePath(uri, false);
   }
 
-  // Fallback to filename if not in workspace
   return context.ideAdapter.getFilenameFromUri(uri);
 };
 
@@ -118,21 +110,22 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
     });
   }
 
-  const editor = options.editor;
-  const resourceName = getEditorResourceName(context, editor);
-  const editorPath = context.ideAdapter.getDocumentUri(editor).toString();
+  const { uri, viewColumn } = options;
+  const resourceName = getResourceName(context, uri);
+  const editorPath = uri.toString();
 
   return ComposablePasteDestination.createEditor({
-    editor,
+    uri,
+    viewColumn,
     displayName: `Text Editor ("${resourceName}")`,
-    focusCapability: context.factories.focusCapability.createEditorCapability(editor),
+    focusCapability: context.factories.focusCapability.createEditorCapability(uri, viewColumn),
     eligibilityChecker: context.factories.eligibilityChecker.createContentEligibilityChecker(),
     jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR, {
       resourceName,
     }),
     loggingDetails: { editorName: resourceName, editorPath },
     logger: context.logger,
-    compareWith: (other: PasteDestination) => compareEditorsByUri(editor, other),
+    compareWith: (other: PasteDestination) => compareEditorsByUri(uri, other),
   });
 };
 

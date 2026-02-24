@@ -1,15 +1,16 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import {
-  type CreateOptions,
   type DestinationBuilder,
   type DestinationBuilderContext,
   DestinationRegistry,
 } from '../../destinations';
+import type { BindOptions } from '../../types';
 import {
   createBaseMockPasteDestination,
   createMockEligibilityCheckerFactory,
   createMockFocusCapabilityFactory,
+  createMockUri,
   createMockVscodeAdapter,
 } from '../helpers';
 
@@ -84,7 +85,7 @@ describe('DestinationRegistry', () => {
       const mockDestination = createBaseMockPasteDestination({ id: 'terminal' });
       const builder = jest.fn().mockReturnValue(mockDestination);
       registry.register('terminal', builder);
-      const options: CreateOptions = { kind: 'terminal', terminal: { name: 'Test' } as never };
+      const options: BindOptions = { kind: 'terminal', terminal: { name: 'Test' } as never };
 
       registry.create(options);
 
@@ -130,7 +131,7 @@ describe('DestinationRegistry', () => {
       });
       registry.register('text-editor', builder);
 
-      registry.create({ kind: 'text-editor', editor: {} as never });
+      registry.create({ kind: 'text-editor', uri: createMockUri('/test.ts'), viewColumn: 1 });
 
       expect(builder).toHaveBeenCalledTimes(1);
       expect(capturedContext).toBeDefined();

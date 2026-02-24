@@ -38,7 +38,11 @@ export const createMockWorkspace = (
     textDocuments: [],
     openTextDocument: jest.fn(),
     getWorkspaceFolder: jest.fn(),
-    asRelativePath: jest.fn(),
+    asRelativePath: jest.fn((pathOrUri: string | vscode.Uri) => {
+      const fsPath = typeof pathOrUri === 'string' ? pathOrUri : pathOrUri.fsPath;
+      const prefix = '/workspace/';
+      return fsPath.startsWith(prefix) ? fsPath.slice(prefix.length) : fsPath;
+    }),
     getConfiguration: jest.fn(),
     onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
     fs: {

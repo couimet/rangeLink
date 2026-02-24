@@ -36,12 +36,6 @@ export const SETTING_SMART_PADDING_PASTE_FILE_PATH = 'smartPadding.pasteFilePath
 export const SETTING_SMART_PADDING_PASTE_LINK = 'smartPadding.pasteLink';
 
 // =============================================================================
-// File Picker Settings
-// =============================================================================
-
-export const SETTING_FILE_PICKER_MAX_TAB_GROUPS = 'filePicker.maxTabGroups';
-
-// =============================================================================
 // Terminal Picker Settings
 // =============================================================================
 

@@ -1,8 +1,6 @@
 import { compareEditorsByUri } from '../../../destinations/equality/compareEditorsByUri';
 import {
   createMockCursorAIComposableDestination,
-  createMockDocument,
-  createMockEditor,
   createMockEditorComposablePasteDestination,
   createMockUri,
 } from '../../helpers';
@@ -11,12 +9,11 @@ describe('compareEditorsByUri', () => {
   describe('when editors have matching URIs', () => {
     it('should return true', async () => {
       const uri = createMockUri('/path/to/file.ts');
-      const thisEditor = createMockEditor({ document: createMockDocument({ uri }) });
       const otherDestination = createMockEditorComposablePasteDestination({
-        editor: createMockEditor({ document: createMockDocument({ uri }) }),
+        uri,
       });
 
-      const result = await compareEditorsByUri(thisEditor, otherDestination);
+      const result = await compareEditorsByUri(uri, otherDestination);
 
       expect(result).toBe(true);
     });
@@ -24,16 +21,12 @@ describe('compareEditorsByUri', () => {
 
   describe('when editors have different URIs', () => {
     it('should return false', async () => {
-      const thisEditor = createMockEditor({
-        document: createMockDocument({ uri: createMockUri('/path/to/file1.ts') }),
-      });
+      const thisUri = createMockUri('/path/to/file1.ts');
       const otherDestination = createMockEditorComposablePasteDestination({
-        editor: createMockEditor({
-          document: createMockDocument({ uri: createMockUri('/path/to/file2.ts') }),
-        }),
+        uri: createMockUri('/path/to/file2.ts'),
       });
 
-      const result = await compareEditorsByUri(thisEditor, otherDestination);
+      const result = await compareEditorsByUri(thisUri, otherDestination);
 
       expect(result).toBe(false);
     });
@@ -41,12 +34,10 @@ describe('compareEditorsByUri', () => {
 
   describe('when other destination is not an editor', () => {
     it('should return false for singleton resource', async () => {
-      const thisEditor = createMockEditor({
-        document: createMockDocument({ uri: createMockUri('/path/to/file.ts') }),
-      });
+      const thisUri = createMockUri('/path/to/file.ts');
       const otherDestination = createMockCursorAIComposableDestination();
 
-      const result = await compareEditorsByUri(thisEditor, otherDestination);
+      const result = await compareEditorsByUri(thisUri, otherDestination);
 
       expect(result).toBe(false);
     });
@@ -55,27 +46,22 @@ describe('compareEditorsByUri', () => {
   describe('file:// URI handling', () => {
     it('should correctly compare file:// URIs', async () => {
       const uri = createMockUri('/Users/user/project/src/index.ts');
-      const thisEditor = createMockEditor({ document: createMockDocument({ uri }) });
       const otherDestination = createMockEditorComposablePasteDestination({
-        editor: createMockEditor({ document: createMockDocument({ uri }) }),
+        uri,
       });
 
-      const result = await compareEditorsByUri(thisEditor, otherDestination);
+      const result = await compareEditorsByUri(uri, otherDestination);
 
       expect(result).toBe(true);
     });
 
     it('should return false for different file paths', async () => {
-      const thisEditor = createMockEditor({
-        document: createMockDocument({ uri: createMockUri('/Users/user/project/src/index.ts') }),
-      });
+      const thisUri = createMockUri('/Users/user/project/src/index.ts');
       const otherDestination = createMockEditorComposablePasteDestination({
-        editor: createMockEditor({
-          document: createMockDocument({ uri: createMockUri('/Users/user/project/src/other.ts') }),
-        }),
+        uri: createMockUri('/Users/user/project/src/other.ts'),
       });
 
-      const result = await compareEditorsByUri(thisEditor, otherDestination);
+      const result = await compareEditorsByUri(thisUri, otherDestination);
 
       expect(result).toBe(false);
     });
@@ -84,48 +70,33 @@ describe('compareEditorsByUri', () => {
   describe('untitled URI handling', () => {
     it('should correctly compare untitled URIs', async () => {
       const uri = createMockUri('untitled:Untitled-1', { scheme: 'untitled' });
-      const thisEditor = createMockEditor({ document: createMockDocument({ uri }) });
       const otherDestination = createMockEditorComposablePasteDestination({
-        editor: createMockEditor({ document: createMockDocument({ uri }) }),
+        uri,
       });
 
-      const result = await compareEditorsByUri(thisEditor, otherDestination);
+      const result = await compareEditorsByUri(uri, otherDestination);
 
       expect(result).toBe(true);
     });
 
     it('should return false for different untitled documents', async () => {
-      const thisEditor = createMockEditor({
-        document: createMockDocument({
-          uri: createMockUri('untitled:Untitled-1', { scheme: 'untitled' }),
-        }),
-      });
+      const thisUri = createMockUri('untitled:Untitled-1', { scheme: 'untitled' });
       const otherDestination = createMockEditorComposablePasteDestination({
-        editor: createMockEditor({
-          document: createMockDocument({
-            uri: createMockUri('untitled:Untitled-2', { scheme: 'untitled' }),
-          }),
-        }),
+        uri: createMockUri('untitled:Untitled-2', { scheme: 'untitled' }),
       });
 
-      const result = await compareEditorsByUri(thisEditor, otherDestination);
+      const result = await compareEditorsByUri(thisUri, otherDestination);
 
       expect(result).toBe(false);
     });
 
     it('should return false when comparing file to untitled', async () => {
-      const thisEditor = createMockEditor({
-        document: createMockDocument({ uri: createMockUri('/path/to/file.ts') }),
-      });
+      const thisUri = createMockUri('/path/to/file.ts');
       const otherDestination = createMockEditorComposablePasteDestination({
-        editor: createMockEditor({
-          document: createMockDocument({
-            uri: createMockUri('untitled:Untitled-1', { scheme: 'untitled' }),
-          }),
-        }),
+        uri: createMockUri('untitled:Untitled-1', { scheme: 'untitled' }),
       });
 
-      const result = await compareEditorsByUri(thisEditor, otherDestination);
+      const result = await compareEditorsByUri(thisUri, otherDestination);
 
       expect(result).toBe(false);
     });

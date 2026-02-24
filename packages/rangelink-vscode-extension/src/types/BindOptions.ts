@@ -14,10 +14,14 @@ export interface TerminalBindOptions extends WithDestinationKind {
 
 /**
  * Bind to text editor.
- * Future: may include editor reference for specific editor targeting.
+ *
+ * Every caller must specify the target file via uri + viewColumn.
+ * The editor is resolved at bind time via findVisibleEditorsByUri + viewColumn match.
  */
 export interface TextEditorBindOptions extends WithDestinationKind {
   readonly kind: Extract<DestinationKind, 'text-editor'>;
+  readonly uri: vscode.Uri;
+  readonly viewColumn: number;
 }
 
 /**

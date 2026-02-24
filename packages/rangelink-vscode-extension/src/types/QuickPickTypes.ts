@@ -1,7 +1,8 @@
 import type * as vscode from 'vscode';
 
-import type { BindOptions, TerminalBindOptions } from './BindOptions';
+import type { BindOptions, TerminalBindOptions, TextEditorBindOptions } from './BindOptions';
 import type { BoundState } from './BoundState';
+import type { EligibleFile } from './EligibleFile';
 import type { EligibleTerminal } from './EligibleTerminal';
 import type { WithDisplayName } from './WithDisplayName';
 
@@ -11,6 +12,7 @@ import type { WithDisplayName } from './WithDisplayName';
  */
 export const PICKER_ITEM_KINDS = [
   'bindable',
+  'file-more',
   'terminal-more',
   'command',
   'bookmark',
@@ -46,6 +48,30 @@ export interface WithRemainingCount {
  */
 export interface WithBindOptions<T extends BindOptions = BindOptions> {
   readonly bindOptions: T;
+}
+
+// ============================================================================
+// File Picker Types
+// ============================================================================
+
+/**
+ * File-specific BindableQuickPickItem that carries EligibleFile domain info.
+ * Extends BindableQuickPickItem<TextEditorBindOptions> with file metadata,
+ * so callers get both UI item and domain object from a single source.
+ */
+export interface FileBindableQuickPickItem extends BindableQuickPickItem<TextEditorBindOptions> {
+  readonly fileInfo: EligibleFile;
+  readonly boundState?: BoundState;
+}
+
+/**
+ * QuickPickItem representing the "More files..." overflow trigger.
+ */
+export interface FileMoreQuickPickItem
+  extends BaseQuickPickItem,
+    WithDisplayName,
+    WithRemainingCount {
+  readonly itemKind: Extract<PickerItemKind, 'file-more'>;
 }
 
 // ============================================================================
@@ -99,9 +125,12 @@ export interface TerminalBindableQuickPickItem extends BindableQuickPickItem<Ter
 
 /**
  * Union of all QuickPickItem types used in destination pickers.
- * Includes bindable destinations and the "More terminals..." overflow item.
+ * Includes bindable destinations and overflow items for files and terminals.
  */
-export type DestinationQuickPickItem = BindableQuickPickItem | TerminalMoreQuickPickItem;
+export type DestinationQuickPickItem =
+  | BindableQuickPickItem
+  | FileMoreQuickPickItem
+  | TerminalMoreQuickPickItem;
 
 // ============================================================================
 // Menu Item Types (StatusBar, ListBookmarks, etc.)
@@ -148,6 +177,7 @@ export interface ConfirmationQuickPickItem extends vscode.QuickPickItem {
  */
 export type StatusBarMenuQuickPickItem =
   | BindableQuickPickItem
+  | FileMoreQuickPickItem
   | TerminalMoreQuickPickItem
   | CommandQuickPickItem
   | BookmarkQuickPickItem

@@ -680,14 +680,23 @@ describe('Extension lifecycle', () => {
       },
     );
 
+    const mockEditor = { viewColumn: 1 } as vscode.TextEditor;
+    (vscode.window.showTextDocument as jest.Mock).mockResolvedValue(mockEditor);
+    (vscode.window as any).tabGroups = { all: [] };
+
     extension.activate(mockContext as any);
 
-    const mockUri = { fsPath: '/test/file.ts', path: '/test/file.ts' };
+    const mockUri = {
+      fsPath: '/test/file.ts',
+      path: '/test/file.ts',
+      scheme: 'file',
+      toString: () => 'file:///test/file.ts',
+    };
     await capturedBindHandler!(mockUri);
 
     expect(vscode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
     expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      '[WARNING] {"fn":"PasteDestinationManager.bindTextEditor"} No active text editor',
+      '[WARNING] {"fn":"PasteDestinationManager.bindTextEditor","uri":"file:///test/file.ts","viewColumn":1} No visible editor at URI + viewColumn',
     );
   });
 

@@ -11,21 +11,24 @@ describe('markBoundFile', () => {
     fileA = {
       uri: createMockUri('/workspace/src/app.ts'),
       filename: 'app.ts',
-      tabGroupIndex: 1,
+      displayPath: 'src/app.ts',
+      viewColumn: 1,
       isCurrentInGroup: true,
       isActiveEditor: true,
     };
     fileB = {
       uri: createMockUri('/workspace/src/utils.ts'),
       filename: 'utils.ts',
-      tabGroupIndex: 1,
+      displayPath: 'src/utils.ts',
+      viewColumn: 1,
       isCurrentInGroup: false,
       isActiveEditor: false,
     };
     fileC = {
       uri: createMockUri('/workspace/src/index.ts'),
       filename: 'index.ts',
-      tabGroupIndex: 2,
+      displayPath: 'src/index.ts',
+      viewColumn: 2,
       isCurrentInGroup: true,
       isActiveEditor: false,
     };
@@ -65,7 +68,8 @@ describe('markBoundFile', () => {
     expect(result[0]).toStrictEqual({
       uri: fileA.uri,
       filename: 'app.ts',
-      tabGroupIndex: 1,
+      displayPath: 'src/app.ts',
+      viewColumn: 1,
       isCurrentInGroup: true,
       isActiveEditor: true,
       boundState: 'bound',

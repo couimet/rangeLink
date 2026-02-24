@@ -263,6 +263,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const focusCapability = new EditorFocusCapability(
         mockAdapter,
         mockUri,
+        1,
         insertFactory,
         mockLogger,
       );
@@ -271,7 +272,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const destination = ComposablePasteDestination.createForTesting({
         id: 'text-editor',
         displayName: 'Text Editor',
-        resource: { kind: 'editor', editor: mockEditor },
+        resource: { kind: 'editor', uri: mockUri, viewColumn: 1 },
         focusCapability,
         eligibilityChecker,
         isAvailable: () => Promise.resolve(true),
@@ -303,6 +304,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const focusCapability = new EditorFocusCapability(
         mockAdapter,
         mockUri,
+        1,
         insertFactory,
         mockLogger,
       );
@@ -311,7 +313,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const destination = ComposablePasteDestination.createForTesting({
         id: 'text-editor',
         displayName: 'Text Editor',
-        resource: { kind: 'editor', editor: mockEditor },
+        resource: { kind: 'editor', uri: mockUri, viewColumn: 1 },
         focusCapability,
         eligibilityChecker,
         isAvailable: () => Promise.resolve(true),
@@ -340,6 +342,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const focusCapability = new EditorFocusCapability(
         mockAdapter,
         mockUri,
+        1,
         insertFactory,
         mockLogger,
       );
@@ -348,7 +351,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const destination = ComposablePasteDestination.createForTesting({
         id: 'text-editor',
         displayName: 'Text Editor',
-        resource: { kind: 'editor', editor: mockEditor },
+        resource: { kind: 'editor', uri: mockUri, viewColumn: 1 },
         focusCapability,
         eligibilityChecker,
         isAvailable: () => Promise.resolve(true),

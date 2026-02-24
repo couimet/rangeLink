@@ -51,7 +51,10 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
 
       expect(() =>
-        buildTerminalDestination({ kind: 'text-editor', editor: {} as vscode.TextEditor }, context),
+        buildTerminalDestination(
+          { kind: 'text-editor', uri: createMockUri('/test.ts'), viewColumn: 1 },
+          context,
+        ),
       ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
         message: 'buildTerminalDestination called with wrong kind: text-editor',
         functionName: 'buildTerminalDestination',
@@ -65,12 +68,16 @@ describe('destinationBuilders', () => {
       const mockUri = createMockUri('/workspace/src/auth.ts');
       const editor = createMockEditor({
         document: createMockDocument({ uri: mockUri }),
+        viewColumn: 1,
       });
-      const context = createMockContext();
+      const context = createMockContext({ windowOptions: { visibleTextEditors: [editor] } });
       context.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({ uri: mockUri });
       context.ideAdapter.asRelativePath = jest.fn().mockReturnValue('src/auth.ts');
 
-      const destination = buildTextEditorDestination({ kind: 'text-editor', editor }, context);
+      const destination = buildTextEditorDestination(
+        { kind: 'text-editor', uri: mockUri, viewColumn: 1 },
+        context,
+      );
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'text-editor',
@@ -82,11 +89,15 @@ describe('destinationBuilders', () => {
       const mockUri = createMockUri('/external/standalone.ts');
       const editor = createMockEditor({
         document: createMockDocument({ uri: mockUri }),
+        viewColumn: 1,
       });
-      const context = createMockContext();
+      const context = createMockContext({ windowOptions: { visibleTextEditors: [editor] } });
       context.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue(undefined);
 
-      const destination = buildTextEditorDestination({ kind: 'text-editor', editor }, context);
+      const destination = buildTextEditorDestination(
+        { kind: 'text-editor', uri: mockUri, viewColumn: 1 },
+        context,
+      );
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'text-editor',
@@ -95,17 +106,20 @@ describe('destinationBuilders', () => {
     });
 
     it('uses untitled display name for untitled files', () => {
-      const mockUri = {
+      const mockUri = createMockUri('Untitled-1', {
         scheme: 'untitled',
-        fsPath: 'Untitled-1',
-        path: 'Untitled-1',
-      } as vscode.Uri;
+        toString: () => 'untitled:Untitled-1',
+      });
       const editor = createMockEditor({
         document: createMockDocument({ uri: mockUri }),
+        viewColumn: 1,
       });
-      const context = createMockContext();
+      const context = createMockContext({ windowOptions: { visibleTextEditors: [editor] } });
 
-      const destination = buildTextEditorDestination({ kind: 'text-editor', editor }, context);
+      const destination = buildTextEditorDestination(
+        { kind: 'text-editor', uri: mockUri, viewColumn: 1 },
+        context,
+      );
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'text-editor',

@@ -1,5 +1,6 @@
 export { AddBookmarkCommand } from './AddBookmarkCommand';
 export { BindToDestinationCommand } from './BindToDestinationCommand';
+export { BindToTextEditorCommand } from './BindToTextEditorCommand';
 export { BindToTerminalCommand } from './BindToTerminalCommand';
 export { GoToRangeLinkCommand } from './GoToRangeLinkCommand';
 export { JumpToDestinationCommand } from './JumpToDestinationCommand';

@@ -1,10 +1,9 @@
 import type { Logger } from 'barebone-logger';
-import type * as vscode from 'vscode';
 
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types';
-import type { BindOptions, DestinationKind, TextEditorBindOptions } from '../types';
+import type { BindOptions, DestinationKind } from '../types';
 import { formatMessage } from '../utils/formatMessage';
 
 import type { EligibilityCheckerFactory } from './capabilities/EligibilityCheckerFactory';
@@ -23,16 +22,6 @@ const DISPLAY_NAME_CODES: Record<DestinationKind, MessageCode> = {
   'github-copilot-chat': MessageCode.DESTINATION_DISPLAY_NAME_GITHUB_COPILOT_CHAT,
   'claude-code': MessageCode.DESTINATION_DISPLAY_NAME_CLAUDE_CODE,
 };
-
-/**
- * Type-safe options for creating destinations.
- *
- * Derived from BindOptions with text-editor override to require editor reference.
- * TODO(#245): When TextEditorBindOptions gains editor field, simplify to just BindOptions.
- */
-export type CreateOptions =
-  | Exclude<BindOptions, TextEditorBindOptions>
-  | { kind: 'text-editor'; editor: vscode.TextEditor };
 
 /**
  * Factory bundle passed to destination builders.
@@ -69,7 +58,7 @@ export interface DestinationBuilderContext {
  * @returns Configured PasteDestination instance
  */
 export type DestinationBuilder = (
-  options: CreateOptions,
+  options: BindOptions,
   context: DestinationBuilderContext,
 ) => PasteDestination;
 
@@ -135,7 +124,7 @@ export class DestinationRegistry {
    * @returns Configured PasteDestination instance
    * @throws RangeLinkExtensionError with DESTINATION_NOT_IMPLEMENTED if kind not registered
    */
-  create(options: CreateOptions): PasteDestination {
+  create(options: BindOptions): PasteDestination {
     const kind = options.kind;
     const builder = this.builders.get(kind);
 
