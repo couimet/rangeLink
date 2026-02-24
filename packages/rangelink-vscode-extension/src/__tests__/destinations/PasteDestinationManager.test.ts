@@ -1510,11 +1510,7 @@ describe('PasteDestinationManager', () => {
 
   describe('Text editor closure auto-unbind', () => {
     it('should auto-unbind when bound text editor document closes', async () => {
-      const mockUri = {
-        scheme: 'file',
-        fsPath: '/test/file.ts',
-        toString: () => 'file:///test/file.ts',
-      } as vscode.Uri;
+      const mockUri = createMockUri('/test/file.ts');
       const mockDocument = { uri: mockUri } as vscode.TextDocument;
       const mockEditor = { document: mockDocument, viewColumn: 1 } as vscode.TextEditor;
 
@@ -1548,14 +1544,10 @@ describe('PasteDestinationManager', () => {
     });
 
     it('should not unbind when different document closes', async () => {
-      const boundUri = {
-        scheme: 'file',
-        fsPath: '/test/file.ts',
-        toString: () => 'file:///test/file.ts',
-      } as vscode.Uri;
+      const boundUri = createMockUri('/test/file.ts');
       const boundDocument = { uri: boundUri } as vscode.TextDocument;
       const otherDocument = {
-        uri: { scheme: 'file', fsPath: '/test/other.ts', toString: () => 'file:///test/other.ts' },
+        uri: createMockUri('/test/other.ts'),
       } as vscode.TextDocument;
       const mockEditor = { document: boundDocument, viewColumn: 1 } as vscode.TextEditor;
 

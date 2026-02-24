@@ -658,6 +658,13 @@ describe('DestinationAvailabilityService', () => {
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            destinationKinds: ['text-editor'],
+          },
+          'Using provided destinationKinds filter',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
             groupKeys: ['text-editor', 'file-more'],
           },
           'Built grouped destination items',
@@ -724,6 +731,13 @@ describe('DestinationAvailabilityService', () => {
           },
         ]);
         expect(result['file-more']).toBeUndefined();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            destinationKinds: ['text-editor'],
+          },
+          'Using provided destinationKinds filter',
+        );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
             fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
