@@ -158,6 +158,7 @@ describe('RangeLinkStatusBar', () => {
             description: undefined,
             terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
           },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '$(link-external) Go to Link',
             itemKind: 'command',
@@ -202,6 +203,7 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
           { label: 'No destinations available', itemKind: 'info' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '$(link-external) Go to Link',
             itemKind: 'command',
@@ -263,6 +265,7 @@ describe('RangeLinkStatusBar', () => {
             itemKind: 'command',
             command: 'rangelink.unbindDestination',
           },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '$(link-external) Go to Link',
             itemKind: 'command',
@@ -329,6 +332,7 @@ describe('RangeLinkStatusBar', () => {
             description: undefined,
             terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
           },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '$(link-external) Go to Link',
             itemKind: 'command',
