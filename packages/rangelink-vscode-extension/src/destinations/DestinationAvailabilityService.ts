@@ -142,7 +142,10 @@ export class DestinationAvailabilityService {
    * @param boundFileUriString - URI string of the currently bound file for badge display
    * @param boundFileViewColumn - viewColumn of the bound editor for precise matching
    */
-  getAllFileItems(boundFileUriString?: string, boundFileViewColumn?: number): FileBindableQuickPickItem[] {
+  getAllFileItems(
+    boundFileUriString?: string,
+    boundFileViewColumn?: number,
+  ): FileBindableQuickPickItem[] {
     const rawFiles = getEligibleFiles(this.ideAdapter);
     if (rawFiles.length === 0) {
       return [];
@@ -196,7 +199,11 @@ export class DestinationAvailabilityService {
           const rawFiles = getEligibleFiles(this.ideAdapter);
           if (rawFiles.length === 0) break;
 
-          const enriched = markBoundFile(rawFiles, options?.boundFileUriString, options?.boundFileViewColumn);
+          const enriched = markBoundFile(
+            rawFiles,
+            options?.boundFileUriString,
+            options?.boundFileViewColumn,
+          );
           const sorted = sortEligibleFiles(enriched);
           const disambiguators = disambiguateFilenames(sorted);
 

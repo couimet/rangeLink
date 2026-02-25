@@ -71,6 +71,7 @@ export * from './spyOnFormatLinkTooltip';
 export * from './spyOnFormatMessage';
 export * from './spyOnGenerateLinkFromSelections';
 export * from './spyOnResolveWorkspacePath';
+export * from './spyOnShowFilePicker';
 export * from './spyOnShowTerminalPicker';
 export * from './spyOnToInputSelection';
 

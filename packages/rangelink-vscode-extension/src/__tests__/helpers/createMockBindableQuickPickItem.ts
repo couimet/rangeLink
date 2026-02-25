@@ -4,6 +4,7 @@ import type {
   BindableQuickPickItem,
   EligibleTerminal,
   FileBindableQuickPickItem,
+  FileMoreQuickPickItem,
   GroupedDestinationItems,
   TerminalBindableQuickPickItem,
   TerminalMoreQuickPickItem,
@@ -71,6 +72,19 @@ export const createMockTextEditorQuickPickItem = (
     fileInfo,
   };
 };
+
+/**
+ * Create a mock FileMoreQuickPickItem.
+ *
+ * @param remainingCount - Number of remaining files not shown
+ * @returns A FileMoreQuickPickItem
+ */
+export const createMockFileMoreQuickPickItem = (remainingCount: number): FileMoreQuickPickItem => ({
+  label: 'More files...',
+  displayName: 'More files...',
+  itemKind: 'file-more',
+  remainingCount,
+});
 
 /**
  * Create a mock TerminalMoreQuickPickItem.

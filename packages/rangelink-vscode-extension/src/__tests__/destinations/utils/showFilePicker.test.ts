@@ -1,11 +1,11 @@
-import * as vscode from 'vscode';
 import { createMockLogger } from 'barebone-logger-testing';
+import * as vscode from 'vscode';
 
 import type { FilePickerHandlers } from '../../../destinations/types';
 import { showFilePicker } from '../../../destinations/utils';
 import type { EligibleFile, FileBindableQuickPickItem } from '../../../types';
-import { createMockEligibleFile } from '../../helpers/createMockEligibleFile';
 import { createMockQuickPickProvider } from '../../helpers';
+import { createMockEligibleFile } from '../../helpers/createMockEligibleFile';
 
 const separator = (label: string): vscode.QuickPickItem => ({
   label,
@@ -14,7 +14,10 @@ const separator = (label: string): vscode.QuickPickItem => ({
 
 const createFileItems = (count: number): FileBindableQuickPickItem[] =>
   Array.from({ length: count }, (_, i) => {
-    const fileInfo = createMockEligibleFile({ filename: `file-${i + 1}.ts`, isCurrentInGroup: true });
+    const fileInfo = createMockEligibleFile({
+      filename: `file-${i + 1}.ts`,
+      isCurrentInGroup: true,
+    });
     return {
       label: fileInfo.filename,
       displayName: fileInfo.filename,
