@@ -128,6 +128,33 @@ export class DestinationAvailabilityService {
   }
 
   /**
+   * Get ALL eligible file items — both current-in-group and non-current.
+   * Used by the secondary file picker which shows all files across all tab groups.
+   *
+   * Runs the full pipeline: getEligibleFiles → markBoundFile → sortEligibleFiles →
+   * disambiguateFilenames → buildFileItem for every file.
+   *
+   * @param boundFileUriString - URI string of the currently bound file for badge display
+   */
+  getAllFileItems(boundFileUriString?: string): FileBindableQuickPickItem[] {
+    const rawFiles = getEligibleFiles(this.ideAdapter);
+    if (rawFiles.length === 0) {
+      return [];
+    }
+
+    const enriched = markBoundFile(rawFiles, boundFileUriString);
+    const sorted = sortEligibleFiles(enriched);
+    const disambiguators = disambiguateFilenames(sorted);
+
+    this.logger.debug(
+      { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: sorted.length },
+      'Built all file items',
+    );
+
+    return sorted.map((file, i) => this.buildFileItem(file, disambiguators[i]));
+  }
+
+  /**
    * Get available destinations grouped by kind with pre-built QuickPick items.
    *
    * Items are grouped by DestinationKind for easy rendering control.
