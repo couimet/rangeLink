@@ -16,7 +16,11 @@ import {
   type DestinationAvailabilityService,
   type PasteDestinationManager,
 } from '../destinations';
-import { resolveBoundTerminalProcessId, showFilePicker, showTerminalPicker } from '../destinations/utils';
+import {
+  resolveBoundTerminalProcessId,
+  showFilePicker,
+  showTerminalPicker,
+} from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
