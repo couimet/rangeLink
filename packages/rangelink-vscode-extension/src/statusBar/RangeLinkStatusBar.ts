@@ -16,7 +16,7 @@ import {
   type DestinationAvailabilityService,
   type PasteDestinationManager,
 } from '../destinations';
-import { resolveBoundTerminalProcessId, showTerminalPicker } from '../destinations/utils';
+import { resolveBoundTerminalProcessId, showFilePicker, showTerminalPicker } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
@@ -27,7 +27,7 @@ import {
   MessageCode,
   type StatusBarMenuQuickPickItem,
 } from '../types';
-import { formatMessage, isSelectableQuickPickItem } from '../utils';
+import { formatMessage, isEditorDestination, isSelectableQuickPickItem } from '../utils';
 
 /**
  * Status bar priority - higher values appear more to the left.
@@ -118,8 +118,8 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         this.logger.debug(logCtx, 'Non-actionable item selected');
         break;
       case 'file-more':
-        // TODO(#356): Show secondary file picker from status bar
-        this.logger.debug(logCtx, 'File more item selected');
+        this.logger.debug(logCtx, 'File overflow item selected');
+        await this.showSecondaryFilePicker(logCtx);
         break;
       default: {
         const _exhaustiveCheck: never = selected;
@@ -166,6 +166,48 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         },
         onDismissed: async () => {
           this.logger.debug(logCtx, 'User returned from terminal picker, re-opening menu');
+          await this.openMenu();
+        },
+      },
+      this.logger,
+    );
+  }
+
+  /**
+   * Show the full file list after user selects "More files...".
+   * Re-opens the status bar menu if the user escapes.
+   */
+  private async showSecondaryFilePicker(logCtx: LoggingContext): Promise<void> {
+    const boundDest = this.destinationManager.getBoundDestination();
+    const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
+    const fileItems = this.availabilityService.getAllFileItems(
+      boundEditorDest?.resource.uri.toString(),
+      boundEditorDest?.resource.viewColumn,
+    );
+
+    await showFilePicker(
+      fileItems,
+      this.ideAdapter,
+      {
+        getPlaceholder: () => formatMessage(MessageCode.FILE_PICKER_BIND_ONLY_PLACEHOLDER),
+        onSelected: async (file) => {
+          const bindResult = await this.destinationManager.bind({
+            kind: 'text-editor',
+            uri: file.uri,
+            viewColumn: file.viewColumn,
+          });
+          if (!bindResult.success) {
+            this.logger.error(
+              { ...logCtx, error: bindResult.error },
+              'Bind failed from overflow file picker',
+            );
+            this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
+            return;
+          }
+          this.logger.debug(logCtx, 'File bound from overflow picker');
+        },
+        onDismissed: async () => {
+          this.logger.debug(logCtx, 'User returned from file picker, re-opening menu');
           await this.openMenu();
         },
       },
