@@ -31,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - When more terminals than the threshold exist, extras collapse into "More terminals..." which opens a secondary picker
   - Escaping the secondary picker returns to the destination picker
   - Terminal picker also appears inline in the **RangeLink Menu** (`R-M`) and destination picker when unbound
+- **File Picker** - Choose a specific open file as text editor destination (#355, #356)
+  - Open files appear as individual items inline in the destination picker; active file (frontmost tab) per tab group shown first
+  - Bound file marked with "bound" badge and sorted to the top
+  - Files with duplicate names show path disambiguation
+  - When more open files exist beyond the inline list, extras collapse into "More files..." which opens a secondary picker
+  - Secondary picker organizes all open files into "Active Files" section + per-"Tab Group N" sections
+  - Escaping the secondary picker returns to the destination picker
 - **Dirty Buffer Warning** - Warning when generating a link from a file with unsaved changes (#298)
   - Shows a dialog with options: "Save & Generate", "Generate Anyway", or dismiss to abort
   - Controlled by `rangelink.warnOnDirtyBuffer` setting (default: `true`)
