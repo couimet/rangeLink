@@ -3,6 +3,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { BehaviourAfterPaste } from '../../../types/BehaviourAfterPaste';
+import { RelativePathFormat } from '../../../types/RelativePathFormat';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
 import {
   createMockDocument,
@@ -1945,9 +1946,9 @@ describe('VscodeAdapter', () => {
 
       mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
 
-      const result = adapter.asRelativePath(absolutePath);
+      const result = adapter.asRelativePath(absolutePath, RelativePathFormat.PathOnly);
 
-      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, undefined);
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, false);
       expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledTimes(1);
       expect(result).toBe(relativePath);
     });
@@ -1958,19 +1959,19 @@ describe('VscodeAdapter', () => {
 
       mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
 
-      const result = adapter.asRelativePath(absolutePath, true);
+      const result = adapter.asRelativePath(absolutePath, RelativePathFormat.WithWorkspaceFolder);
 
       expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, true);
       expect(result).toBe(relativePath);
     });
 
-    it('should convert absolute path to relative with includeWorkspaceFolder false', () => {
+    it('should convert absolute path to relative with PathOnly format', () => {
       const absolutePath = '/workspace/src/file.ts';
       const relativePath = 'src/file.ts';
 
       mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
 
-      const result = adapter.asRelativePath(absolutePath, false);
+      const result = adapter.asRelativePath(absolutePath, RelativePathFormat.PathOnly);
 
       expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, false);
       expect(result).toBe(relativePath);
@@ -1982,9 +1983,9 @@ describe('VscodeAdapter', () => {
 
       mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
 
-      const result = adapter.asRelativePath(mockUri);
+      const result = adapter.asRelativePath(mockUri, RelativePathFormat.PathOnly);
 
-      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(mockUri, undefined);
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(mockUri, false);
       expect(result).toBe(relativePath);
     });
 
@@ -1994,7 +1995,7 @@ describe('VscodeAdapter', () => {
 
       mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
 
-      const result = adapter.asRelativePath(mockUri, true);
+      const result = adapter.asRelativePath(mockUri, RelativePathFormat.WithWorkspaceFolder);
 
       expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(mockUri, true);
       expect(result).toBe(relativePath);
@@ -2005,9 +2006,9 @@ describe('VscodeAdapter', () => {
 
       mockVSCode.workspace.asRelativePath.mockReturnValue(absolutePath);
 
-      const result = adapter.asRelativePath(absolutePath);
+      const result = adapter.asRelativePath(absolutePath, RelativePathFormat.PathOnly);
 
-      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, undefined);
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, false);
       expect(result).toBe(absolutePath);
     });
 
@@ -2017,7 +2018,7 @@ describe('VscodeAdapter', () => {
 
       mockVSCode.workspace.asRelativePath.mockReturnValue(relativePath);
 
-      const result = adapter.asRelativePath(absolutePath, true);
+      const result = adapter.asRelativePath(absolutePath, RelativePathFormat.WithWorkspaceFolder);
 
       expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(absolutePath, true);
       expect(result).toBe(relativePath);
@@ -2025,16 +2026,13 @@ describe('VscodeAdapter', () => {
 
     it('should delegate to vscode.workspace.asRelativePath with all parameters', () => {
       const pathOrUri = '/workspace/test.ts';
-      const includeWorkspaceFolder = true;
+      const format = RelativePathFormat.WithWorkspaceFolder;
 
       mockVSCode.workspace.asRelativePath.mockReturnValue('workspace/test.ts');
 
-      adapter.asRelativePath(pathOrUri, includeWorkspaceFolder);
+      adapter.asRelativePath(pathOrUri, format);
 
-      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(
-        pathOrUri,
-        includeWorkspaceFolder,
-      );
+      expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledWith(pathOrUri, true);
       expect(mockVSCode.workspace.asRelativePath).toHaveBeenCalledTimes(1);
     });
   });

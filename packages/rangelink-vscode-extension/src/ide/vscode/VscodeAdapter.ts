@@ -6,6 +6,7 @@ import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import {
   BehaviourAfterPaste,
+  RelativePathFormat,
   type SendTextToTerminalOptions,
   TerminalFocusType,
 } from '../../types';
@@ -789,10 +790,13 @@ export class VscodeAdapter
    * Convert a path or URI to a workspace-relative path.
    *
    * @param pathOrUri - Absolute path or URI to convert
-   * @param includeWorkspaceFolder - Whether to include workspace folder name
+   * @param format - RelativePathFormat.PathOnly omits the workspace folder name; RelativePathFormat.WithWorkspaceFolder includes it.
    * @returns Workspace-relative path
    */
-  asRelativePath(pathOrUri: string | vscode.Uri, includeWorkspaceFolder?: boolean): string {
-    return this.ideInstance.workspace.asRelativePath(pathOrUri, includeWorkspaceFolder);
+  asRelativePath(pathOrUri: string | vscode.Uri, format: RelativePathFormat): string {
+    return this.ideInstance.workspace.asRelativePath(
+      pathOrUri,
+      format === RelativePathFormat.WithWorkspaceFolder,
+    );
   }
 }
