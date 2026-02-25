@@ -1,4 +1,5 @@
 export { buildFileDescription } from './buildFileDescription';
+export { buildFilePickerItems } from './buildFilePickerItems';
 export { buildTerminalDescription } from './buildTerminalDescription';
 export {
   buildDestinationQuickPickItems,
