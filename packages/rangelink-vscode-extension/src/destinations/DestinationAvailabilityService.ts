@@ -118,11 +118,16 @@ export class DestinationAvailabilityService {
    * Convenience passthrough to `getGroupedDestinationItems()` for file-only callers.
    *
    * @param boundFileUriString - URI string of the currently bound file for badge display
+   * @param boundFileViewColumn - viewColumn of the bound editor for precise matching
    */
-  async getFileItems(boundFileUriString?: string): Promise<FileBindableQuickPickItem[]> {
+  async getFileItems(
+    boundFileUriString?: string,
+    boundFileViewColumn?: number,
+  ): Promise<FileBindableQuickPickItem[]> {
     const grouped = await this.getGroupedDestinationItems({
       destinationKinds: ['text-editor'],
       boundFileUriString,
+      boundFileViewColumn,
     });
     return grouped['text-editor'] ?? [];
   }
@@ -135,14 +140,15 @@ export class DestinationAvailabilityService {
    * disambiguateFilenames → buildFileItem for every file.
    *
    * @param boundFileUriString - URI string of the currently bound file for badge display
+   * @param boundFileViewColumn - viewColumn of the bound editor for precise matching
    */
-  getAllFileItems(boundFileUriString?: string): FileBindableQuickPickItem[] {
+  getAllFileItems(boundFileUriString?: string, boundFileViewColumn?: number): FileBindableQuickPickItem[] {
     const rawFiles = getEligibleFiles(this.ideAdapter);
     if (rawFiles.length === 0) {
       return [];
     }
 
-    const enriched = markBoundFile(rawFiles, boundFileUriString);
+    const enriched = markBoundFile(rawFiles, boundFileUriString, boundFileViewColumn);
     const sorted = sortEligibleFiles(enriched);
     const disambiguators = disambiguateFilenames(sorted);
 
@@ -190,7 +196,7 @@ export class DestinationAvailabilityService {
           const rawFiles = getEligibleFiles(this.ideAdapter);
           if (rawFiles.length === 0) break;
 
-          const enriched = markBoundFile(rawFiles, options?.boundFileUriString);
+          const enriched = markBoundFile(rawFiles, options?.boundFileUriString, options?.boundFileViewColumn);
           const sorted = sortEligibleFiles(enriched);
           const disambiguators = disambiguateFilenames(sorted);
 

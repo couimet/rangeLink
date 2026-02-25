@@ -671,6 +671,68 @@ describe('DestinationAvailabilityService', () => {
         );
       });
 
+      it('marks only the file in the matching viewColumn as bound when same URI appears in two tab groups', async () => {
+        const uri = createMockUri('/workspace/src/app.ts');
+        const tab1 = createMockTab(uri);
+        const tab2 = createMockTab(uri);
+        const group1 = createMockTabGroup([tab1]);
+        const group2 = createMockTabGroup([tab2], { viewColumn: 2 });
+        ideAdapter = createMockVscodeAdapter({
+          windowOptions: {
+            tabGroups: { all: [group1, group2] },
+          },
+        });
+        service = new DestinationAvailabilityService(
+          mockRegistry,
+          ideAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        const result = await service.getGroupedDestinationItems({
+          destinationKinds: ['text-editor'],
+          boundFileUriString: uri.toString(),
+          boundFileViewColumn: 1,
+        });
+
+        expect(result['text-editor']).toStrictEqual([
+          {
+            label: 'app.ts',
+            displayName: 'app.ts',
+            description: 'src · bound',
+            bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
+            itemKind: 'bindable',
+            fileInfo: {
+              uri,
+              filename: 'app.ts',
+              displayPath: 'src/app.ts',
+              viewColumn: 1,
+              isCurrentInGroup: true,
+              isActiveEditor: false,
+              boundState: 'bound',
+            },
+            boundState: 'bound',
+          },
+          {
+            label: 'app.ts',
+            displayName: 'app.ts',
+            description: 'src',
+            bindOptions: { kind: 'text-editor', uri, viewColumn: 2 },
+            itemKind: 'bindable',
+            fileInfo: {
+              uri,
+              filename: 'app.ts',
+              displayPath: 'src/app.ts',
+              viewColumn: 2,
+              isCurrentInGroup: true,
+              isActiveEditor: false,
+              boundState: 'not-bound',
+            },
+            boundState: 'not-bound',
+          },
+        ]);
+      });
+
       it('shows no file-more when all files are current-in-group', async () => {
         const uri1 = createMockUri('/workspace/src/a.ts');
         const uri2 = createMockUri('/workspace/src/b.ts');
@@ -777,6 +839,221 @@ describe('DestinationAvailabilityService', () => {
         destinationKinds: ['text-editor'],
         boundFileUriString: 'file:///workspace/src/app.ts',
       });
+    });
+
+    it('delegates to getGroupedDestinationItems with boundFileViewColumn when provided', async () => {
+      const spy = jest.spyOn(service, 'getGroupedDestinationItems');
+
+      await service.getFileItems('file:///workspace/src/app.ts', 2);
+
+      expect(spy).toHaveBeenCalledWith({
+        destinationKinds: ['text-editor'],
+        boundFileUriString: 'file:///workspace/src/app.ts',
+        boundFileViewColumn: 2,
+      });
+    });
+  });
+
+  describe('getAllFileItems()', () => {
+    it('returns empty array when no files exist', () => {
+      ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          tabGroups: { all: [] },
+        },
+      });
+      service = new DestinationAvailabilityService(
+        mockRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = service.getAllFileItems();
+
+      expect(result).toStrictEqual([]);
+    });
+
+    it('returns items for all files including non-current-in-group', () => {
+      const uri1 = createMockUri('/workspace/src/a.ts');
+      const uri2 = createMockUri('/workspace/src/b.ts');
+      const tab1 = createMockTab(uri1);
+      const tab2 = createMockTab(uri2);
+      const group = createMockTabGroup([tab1, tab2], { activeTab: tab1 });
+      ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          tabGroups: { all: [group] },
+        },
+      });
+      service = new DestinationAvailabilityService(
+        mockRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = service.getAllFileItems();
+
+      expect(result).toStrictEqual([
+        {
+          label: 'a.ts',
+          displayName: 'a.ts',
+          description: undefined,
+          bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
+          itemKind: 'bindable',
+          fileInfo: {
+            uri: uri1,
+            filename: 'a.ts',
+            displayPath: 'src/a.ts',
+            viewColumn: 1,
+            isCurrentInGroup: true,
+            isActiveEditor: false,
+            boundState: 'not-bound',
+          },
+          boundState: 'not-bound',
+        },
+        {
+          label: 'b.ts',
+          displayName: 'b.ts',
+          description: undefined,
+          bindOptions: { kind: 'text-editor', uri: uri2, viewColumn: 1 },
+          itemKind: 'bindable',
+          fileInfo: {
+            uri: uri2,
+            filename: 'b.ts',
+            displayPath: 'src/b.ts',
+            viewColumn: 1,
+            isCurrentInGroup: false,
+            isActiveEditor: false,
+            boundState: 'not-bound',
+          },
+          boundState: 'not-bound',
+        },
+      ]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 },
+        'Built all file items',
+      );
+    });
+
+    it('marks bound file with bound state', () => {
+      const uri = createMockUri('/workspace/src/app.ts');
+      const tab = createMockTab(uri);
+      const group = createMockTabGroup([tab]);
+      ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          tabGroups: { all: [group] },
+        },
+      });
+      service = new DestinationAvailabilityService(
+        mockRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = service.getAllFileItems(uri.toString());
+
+      expect(result).toStrictEqual([
+        {
+          label: 'app.ts',
+          displayName: 'app.ts',
+          description: 'bound',
+          bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
+          itemKind: 'bindable',
+          fileInfo: {
+            uri,
+            filename: 'app.ts',
+            displayPath: 'src/app.ts',
+            viewColumn: 1,
+            isCurrentInGroup: true,
+            isActiveEditor: false,
+            boundState: 'bound',
+          },
+          boundState: 'bound',
+        },
+      ]);
+    });
+
+    it('marks only the file in the matching viewColumn as bound when same URI appears in two tab groups', () => {
+      const uri = createMockUri('/workspace/src/app.ts');
+      const tab1 = createMockTab(uri);
+      const tab2 = createMockTab(uri);
+      const group1 = createMockTabGroup([tab1]);
+      const group2 = createMockTabGroup([tab2], { viewColumn: 2 });
+      ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          tabGroups: { all: [group1, group2] },
+        },
+      });
+      service = new DestinationAvailabilityService(
+        mockRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = service.getAllFileItems(uri.toString(), 1);
+
+      expect(result).toStrictEqual([
+        {
+          label: 'app.ts',
+          displayName: 'app.ts',
+          description: 'src · bound',
+          bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
+          itemKind: 'bindable',
+          fileInfo: {
+            uri,
+            filename: 'app.ts',
+            displayPath: 'src/app.ts',
+            viewColumn: 1,
+            isCurrentInGroup: true,
+            isActiveEditor: false,
+            boundState: 'bound',
+          },
+          boundState: 'bound',
+        },
+        {
+          label: 'app.ts',
+          displayName: 'app.ts',
+          description: 'src',
+          bindOptions: { kind: 'text-editor', uri, viewColumn: 2 },
+          itemKind: 'bindable',
+          fileInfo: {
+            uri,
+            filename: 'app.ts',
+            displayPath: 'src/app.ts',
+            viewColumn: 2,
+            isCurrentInGroup: true,
+            isActiveEditor: false,
+            boundState: 'not-bound',
+          },
+          boundState: 'not-bound',
+        },
+      ]);
+    });
+
+    it('applies disambiguators for duplicate filenames', () => {
+      const uri1 = createMockUri('/workspace/src/a/util.ts');
+      const uri2 = createMockUri('/workspace/src/b/util.ts');
+      const tab1 = createMockTab(uri1);
+      const tab2 = createMockTab(uri2);
+      const group = createMockTabGroup([tab1, tab2], { activeTab: tab1 });
+      ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          tabGroups: { all: [group] },
+        },
+      });
+      service = new DestinationAvailabilityService(
+        mockRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = service.getAllFileItems();
+
+      expect(result[0].description).toBe('…/a');
+      expect(result[1].description).toBe('…/b');
     });
   });
 });
