@@ -28,6 +28,7 @@ export type { WithDestinationKind } from './WithDestinationKind';
 export type { WithDisplayName } from './WithDisplayName';
 export { MessageCode } from './MessageCode';
 export { PasteContentType } from './PasteContentType';
+export { RelativePathFormat } from './RelativePathFormat';
 export type {
   GetAvailableDestinationItemsOptions,
   GroupedDestinationItems,
