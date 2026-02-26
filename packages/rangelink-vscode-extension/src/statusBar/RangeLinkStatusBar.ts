@@ -250,10 +250,13 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   > {
     const boundDest = this.destinationManager.getBoundDestination();
     if (boundDest) {
+      const jumpDescription = isEditorDestination(boundDest)
+        ? `→ ${boundDest.displayName} · ${formatMessage(MessageCode.FILE_PICKER_GROUP_FORMAT, { index: boundDest.resource.viewColumn })}`
+        : `→ ${boundDest.displayName}`;
       return [
         {
           label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL),
-          description: `→ ${boundDest.displayName}`,
+          description: jumpDescription,
           itemKind: 'command' as const,
           command: CMD_JUMP_TO_DESTINATION,
         },

@@ -11,6 +11,7 @@ import {
   createMockBookmarkService,
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
+  createMockEditorComposablePasteDestination,
   createMockEligibleFile,
   createMockEligibleTerminal,
   createMockFileMoreQuickPickItem,
@@ -262,6 +263,69 @@ describe('RangeLinkStatusBar', () => {
           {
             label: '$(arrow-right) Jump to Bound Destination',
             description: '→ Terminal ("zsh")',
+            itemKind: 'command',
+            command: 'rangelink.jumpToBoundDestination',
+          },
+          {
+            label: '$(close) Unbind Destination',
+            itemKind: 'command',
+            command: 'rangelink.unbindDestination',
+          },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          {
+            label: '$(link-external) Go to Link',
+            itemKind: 'command',
+            command: 'rangelink.goToRangeLink',
+          },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: 'Bookmarks', itemKind: 'info' },
+          { label: '    No bookmarks saved', itemKind: 'info' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          {
+            label: '    $(add) Save Selection as Bookmark',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.add',
+          },
+          {
+            label: '    $(gear) Manage Bookmarks...',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.manage',
+          },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          {
+            label: '$(info) Show Version Info',
+            itemKind: 'command',
+            command: 'rangelink.showVersion',
+          },
+        ],
+        { title: 'RangeLink', placeHolder: 'Select an action' },
+      );
+    });
+
+    it('shows Tab Group context in Jump description when bound to a text editor', async () => {
+      const mockBoundDestination = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("Untitled-2")',
+        viewColumn: 2,
+      });
+      const boundDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: mockBoundDestination,
+      });
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        boundDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showQuickPickMock).toHaveBeenCalledWith(
+        [
+          {
+            label: '$(arrow-right) Jump to Bound Destination',
+            description: '→ Text Editor ("Untitled-2") · Tab Group 2',
             itemKind: 'command',
             command: 'rangelink.jumpToBoundDestination',
           },

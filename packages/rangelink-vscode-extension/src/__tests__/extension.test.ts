@@ -69,6 +69,7 @@ jest.mock('vscode', () => ({
   },
   commands: {
     registerCommand: jest.fn(),
+    executeCommand: jest.fn().mockResolvedValue(undefined),
   },
   StatusBarAlignment: { Right: 1 },
   Uri: {
@@ -696,7 +697,7 @@ describe('Extension lifecycle', () => {
 
     expect(vscode.workspace.openTextDocument).toHaveBeenCalledWith(mockUri);
     expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-      '[WARNING] {"fn":"PasteDestinationManager.bindTextEditor","uri":"file:///test/file.ts","viewColumn":1} No visible editor at URI + viewColumn',
+      '[DEBUG] {"fn":"PasteDestinationManager.bindTextEditor","uri":"file:///test/file.ts","viewColumn":1,"fileName":"file.ts"} Editor not visible, bringing background tab to foreground',
     );
   });
 

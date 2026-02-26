@@ -564,11 +564,14 @@ describe('PasteDestinationManager', () => {
       expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': true });
     });
 
-    it('should fail to bind text editor when no visible editor matches', async () => {
+    it('should fail to bind text editor when file is closed', async () => {
       mockAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
       mockAdapter.__getVscodeInstance().window.visibleTextEditors = [];
       configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
       const missingUri = createMockUri('/workspace/src/gone.ts');
+      mockAdapter
+        .__getVscodeInstance()
+        .workspace.openTextDocument.mockRejectedValueOnce(new Error('File not found'));
 
       const result = await manager.bind({ kind: 'text-editor', uri: missingUri, viewColumn: 1 });
 
@@ -578,17 +581,125 @@ describe('PasteDestinationManager', () => {
         details: { failedBindDetails: 'NO_ACTIVE_EDITOR' },
       });
       expect(manager.isBound()).toBe(false);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindTextEditor',
+          uri: 'file:///workspace/src/gone.ts',
+          viewColumn: 1,
+          fileName: 'gone.ts',
+        },
+        'Editor not visible, bringing background tab to foreground',
+      );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
           fn: 'PasteDestinationManager.bindTextEditor',
           uri: 'file:///workspace/src/gone.ts',
           viewColumn: 1,
+          fileName: 'gone.ts',
         },
-        'No visible editor at URI + viewColumn',
+        'showTextDocument threw for background tab',
       );
-      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_TEXT_EDITOR_NOT_VISIBLE');
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_BACKGROUND_TAB_OPEN_FAILED', {
+        fileName: 'gone.ts',
+      });
       expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
-        'RangeLink: Bound editor is no longer visible. Re-open the file and bind again.',
+        'RangeLink: Could not open "gone.ts". Try again or choose another file.',
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
+      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
+    });
+
+    it('should bind to background tab by bringing it to foreground', async () => {
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [];
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+      const backgroundUri = createMockUri('/workspace/src/file.ts');
+
+      mockAdapter.__getVscodeInstance().window.showTextDocument.mockImplementationOnce(async () => {
+        mockAdapter.__getVscodeInstance().window.visibleTextEditors = [
+          { document: { uri: backgroundUri }, viewColumn: 1 } as unknown as vscode.TextEditor,
+        ];
+        return undefined;
+      });
+
+      const result = await manager.bind({
+        kind: 'text-editor',
+        uri: backgroundUri,
+        viewColumn: 1,
+      });
+
+      expect(result).toBeOkWith((value: BindSuccessInfo) => {
+        expect(value).toStrictEqual({
+          destinationName: 'Text Editor ("file.ts")',
+          destinationKind: 'text-editor',
+          suppressAutoPaste: true,
+        });
+      });
+      expect(manager.isBound()).toBe(true);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindTextEditor',
+          uri: 'file:///workspace/src/file.ts',
+          viewColumn: 1,
+          fileName: 'file.ts',
+        },
+        'Editor not visible, bringing background tab to foreground',
+      );
+      expect(mockAdapter.__getVscodeInstance().workspace.openTextDocument).toHaveBeenCalledWith(
+        backgroundUri,
+      );
+      expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
+        'RangeLink: "file.ts" opened at last cursor position',
+      );
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
+      expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
+        1,
+        '✓ RangeLink bound to Text Editor ("file.ts")',
+        2000,
+      );
+    });
+
+    it('should fail when showTextDocument resolves but editor not at expected viewColumn', async () => {
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = undefined;
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [];
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+      const backgroundUri = createMockUri('/workspace/src/file.ts');
+
+      const result = await manager.bind({
+        kind: 'text-editor',
+        uri: backgroundUri,
+        viewColumn: 1,
+      });
+
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Editor opened but not visible at expected viewColumn 1',
+        functionName: 'PasteDestinationManager.bindTextEditor',
+        details: { failedBindDetails: 'NO_ACTIVE_EDITOR' },
+      });
+      expect(manager.isBound()).toBe(false);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindTextEditor',
+          uri: 'file:///workspace/src/file.ts',
+          viewColumn: 1,
+          fileName: 'file.ts',
+        },
+        'Editor not visible, bringing background tab to foreground',
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.bindTextEditor',
+          uri: 'file:///workspace/src/file.ts',
+          viewColumn: 1,
+          fileName: 'file.ts',
+        },
+        'showTextDocument resolved but editor not at expected viewColumn',
+      );
+      expect(formatMessageSpy).toHaveBeenCalledWith('ERROR_BACKGROUND_TAB_WRONG_VIEW_COLUMN', {
+        fileName: 'file.ts',
+      });
+      expect(mockAdapter.__getVscodeInstance().window.showErrorMessage).toHaveBeenCalledWith(
+        'RangeLink: "file.ts" opened in a different editor group. Try again or choose another file.',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
       expectContextKeys(mockAdapter.__getVscodeInstance(), {});
