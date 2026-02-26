@@ -107,7 +107,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.FILE_PICKER_PLACEHOLDER]: 'Select file to bind and jump to',
   [MessageCode.FILE_PICKER_TITLE]: 'RangeLink',
 
-  [MessageCode.INFO_BACKGROUND_TAB_OPENED]: 'RangeLink: "{fileName}" opened at last cursor position',
+  [MessageCode.INFO_BACKGROUND_TAB_OPENED]: 'RangeLink: "{fileName}" opened at last cursor position. Adjust cursor before pasting.',
   [MessageCode.INFO_BIND_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_BIND_QUICK_PICK_PLACEHOLDER]: 'RangeLink: Choose a destination to bind to',
   [MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE]:

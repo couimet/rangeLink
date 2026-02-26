@@ -649,7 +649,7 @@ describe('PasteDestinationManager', () => {
         backgroundUri,
       );
       expect(mockAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
-        'RangeLink: "file.ts" opened at last cursor position',
+        'RangeLink: "file.ts" opened at last cursor position. Adjust cursor before pasting.',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(1);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
