@@ -140,10 +140,15 @@ export const buildDestinationQuickPickItems = (
         });
       }
 
+      const groupLabel = isFileItem(item)
+        ? formatMessage(MessageCode.FILE_PICKER_GROUP_FORMAT, { index: item.fileInfo.viewColumn })
+        : undefined;
       const description = isTerminalItem(item)
         ? buildTerminalDescription(item.terminalInfo)
         : isFileItem(item)
-          ? item.description
+          ? item.description !== undefined
+            ? `${item.description} · ${groupLabel}`
+            : groupLabel
           : undefined;
 
       items.push({
