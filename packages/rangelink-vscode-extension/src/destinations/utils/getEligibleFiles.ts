@@ -1,5 +1,6 @@
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 import type { EligibleFile } from '../../types';
+import { RelativePathFormat } from '../../types';
 
 import { isFileEligible } from './isFileEligible';
 
@@ -34,7 +35,7 @@ export const getEligibleFiles = (ideAdapter: VscodeAdapter): EligibleFile[] => {
       eligibleFiles.push({
         uri,
         filename: ideAdapter.getFilenameFromUri(uri),
-        displayPath: ideAdapter.asRelativePath(uri, false),
+        displayPath: ideAdapter.asRelativePath(uri, RelativePathFormat.PathOnly),
         viewColumn: group.viewColumn,
         isCurrentInGroup: tab === group.activeTab,
         isActiveEditor:
