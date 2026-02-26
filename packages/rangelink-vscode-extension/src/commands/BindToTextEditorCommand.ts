@@ -6,9 +6,10 @@ import type {
   DestinationAvailabilityService,
   PasteDestinationManager,
 } from '../destinations';
+import { showFilePicker } from '../destinations/utils';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../types';
-import { formatMessage } from '../utils';
+import { formatMessage, isEditorDestination } from '../utils';
 
 /**
  * Command handler for binding to a text editor file.
@@ -23,7 +24,7 @@ import { formatMessage } from '../utils';
  * Without URI (keybinding / editor context menu):
  * - 0 files: shows error, returns 'no-resource'
  * - 1 file: auto-binds (no picker)
- * - 2+ files: shows file picker, binds to selected
+ * - 2+ files: shows sectioned file picker (Active Files + Tab Group N), binds to selected
  *
  * Success feedback is handled by PasteDestinationManager.bind().
  */
@@ -102,7 +103,12 @@ export class BindToTextEditorCommand {
   private async executeWithPicker(): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'BindToTextEditorCommand.executeWithPicker' };
 
-    const fileItems = await this.availabilityService.getFileItems();
+    const boundDest = this.destinationManager.getBoundDestination();
+    const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
+    const fileItems = this.availabilityService.getAllFileItems(
+      boundEditorDest?.resource.uri.toString(),
+      boundEditorDest?.resource.viewColumn,
+    );
 
     this.logger.debug(
       { ...logCtx, fileCount: fileItems.length },
@@ -127,22 +133,28 @@ export class BindToTextEditorCommand {
       );
     }
 
-    const selected = await this.ideAdapter.showQuickPick(fileItems, {
-      placeHolder: formatMessage(MessageCode.FILE_PICKER_BIND_ONLY_PLACEHOLDER),
-    });
+    const result = await showFilePicker(
+      fileItems,
+      this.ideAdapter,
+      {
+        getPlaceholder: () => formatMessage(MessageCode.FILE_PICKER_BIND_ONLY_PLACEHOLDER),
+        onSelected: async (file) =>
+          this.mapBindResult(
+            await this.destinationManager.bind({
+              kind: 'text-editor',
+              uri: file.uri,
+              viewColumn: file.viewColumn,
+            }),
+          ),
+      },
+      this.logger,
+    );
 
-    if (!selected) {
-      this.logger.debug(logCtx, 'User cancelled file picker');
+    if (result === undefined) {
       return { outcome: 'cancelled' };
     }
 
-    return this.mapBindResult(
-      await this.destinationManager.bind({
-        kind: 'text-editor',
-        uri: selected.fileInfo.uri,
-        viewColumn: selected.fileInfo.viewColumn,
-      }),
-    );
+    return result;
   }
 
   private mapBindResult(bindResult: ExtensionResult<BindSuccessInfo>): QuickPickBindResult {

@@ -811,49 +811,6 @@ describe('DestinationAvailabilityService', () => {
     });
   });
 
-  describe('getFileItems()', () => {
-    it('returns empty array when no files exist', async () => {
-      ideAdapter = createMockVscodeAdapter({
-        windowOptions: {
-          tabGroups: { all: [] },
-        },
-      });
-      service = new DestinationAvailabilityService(
-        mockRegistry,
-        ideAdapter,
-        mockConfigReader,
-        mockLogger,
-      );
-
-      const result = await service.getFileItems();
-
-      expect(result).toStrictEqual([]);
-    });
-
-    it('delegates to getGroupedDestinationItems with text-editor filter and boundFileUriString', async () => {
-      const spy = jest.spyOn(service, 'getGroupedDestinationItems');
-
-      await service.getFileItems('file:///workspace/src/app.ts');
-
-      expect(spy).toHaveBeenCalledWith({
-        destinationKinds: ['text-editor'],
-        boundFileUriString: 'file:///workspace/src/app.ts',
-      });
-    });
-
-    it('delegates to getGroupedDestinationItems with boundFileViewColumn when provided', async () => {
-      const spy = jest.spyOn(service, 'getGroupedDestinationItems');
-
-      await service.getFileItems('file:///workspace/src/app.ts', 2);
-
-      expect(spy).toHaveBeenCalledWith({
-        destinationKinds: ['text-editor'],
-        boundFileUriString: 'file:///workspace/src/app.ts',
-        boundFileViewColumn: 2,
-      });
-    });
-  });
-
   describe('getAllFileItems()', () => {
     it('returns empty array when no files exist', () => {
       ideAdapter = createMockVscodeAdapter({
