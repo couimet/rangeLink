@@ -937,6 +937,60 @@ describe('RangeLinkService', () => {
           expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
         });
 
+        it('passes bound editor uri and viewColumn to pick() when an editor is currently bound', async () => {
+          const mockUri = createMockUri('/workspace/src/app.ts');
+          const boundEditorDest = createMockEditorComposablePasteDestination({ uri: mockUri, viewColumn: 3 });
+          mockDestinationManager = createMockDestinationManager({
+            isBound: false,
+            boundDestination: boundEditorDest,
+            bindResult: Result.ok({ destinationName: 'app.ts', destinationKind: 'text-editor' }),
+          });
+          service = new RangeLinkService(
+            getDelimiters,
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockPickerCommand,
+            mockConfigReader,
+            mockLogger,
+          );
+          mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
+
+          await service.pasteSelectedTextToDestination();
+
+          expect(mockPickerCommand.pick).toHaveBeenCalledWith({
+            noDestinationsMessageCode: 'INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE',
+            placeholderMessageCode: 'INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW',
+            boundFileUriString: 'file:///workspace/src/app.ts',
+            boundFileViewColumn: 3,
+          });
+        });
+
+        it('passes bound terminal processId to pick() when a terminal is currently bound', async () => {
+          const boundTerminalDest = createMockTerminalComposablePasteDestination({ processId: 42 });
+          mockDestinationManager = createMockDestinationManager({
+            isBound: false,
+            boundDestination: boundTerminalDest,
+            bindResult: Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
+          });
+          service = new RangeLinkService(
+            getDelimiters,
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockPickerCommand,
+            mockConfigReader,
+            mockLogger,
+          );
+          mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
+
+          await service.pasteSelectedTextToDestination();
+
+          expect(mockPickerCommand.pick).toHaveBeenCalledWith({
+            noDestinationsMessageCode: 'INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE',
+            placeholderMessageCode: 'INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW',
+            boundTerminalProcessId: 42,
+          });
+        });
+
         describe('when user cancels quick pick', () => {
           beforeEach(() => {
             mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });

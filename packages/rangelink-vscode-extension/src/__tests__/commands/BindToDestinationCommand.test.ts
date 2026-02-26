@@ -6,7 +6,13 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../err
 import { messagesEn } from '../../i18n';
 import type { BindOptions } from '../../types';
 import { ExtensionResult, MessageCode } from '../../types';
-import { createMockDestinationManager, createMockDestinationPicker } from '../helpers';
+import {
+  createMockDestinationManager,
+  createMockDestinationPicker,
+  createMockEditorComposablePasteDestination,
+  createMockTerminalComposablePasteDestination,
+  createMockUri,
+} from '../helpers';
 
 describe('BindToDestinationCommand message contracts', () => {
   it('placeholder message identifies RangeLink and describes the action', () => {
@@ -166,5 +172,47 @@ describe('BindToDestinationCommand', () => {
       { fn: 'BindToDestinationCommand.execute' },
       'Bind failed',
     );
+  });
+
+  it('passes bound editor uri and viewColumn to pick() when an editor is currently bound', async () => {
+    const mockUri = createMockUri('/workspace/src/main.ts');
+    const boundEditorDest = createMockEditorComposablePasteDestination({ uri: mockUri, viewColumn: 2 });
+    mockDestinationManager = createMockDestinationManager({
+      isBound: true,
+      boundDestination: boundEditorDest,
+    });
+    mockDestinationPicker = createMockDestinationPicker({
+      pick: jest.fn().mockResolvedValue({ outcome: 'cancelled' }),
+    });
+    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockLogger);
+
+    await command.execute();
+
+    expect(mockDestinationPicker.pick).toHaveBeenCalledWith({
+      noDestinationsMessageCode: 'INFO_BIND_NO_DESTINATIONS_AVAILABLE',
+      placeholderMessageCode: 'INFO_BIND_QUICK_PICK_PLACEHOLDER',
+      boundFileUriString: 'file:///workspace/src/main.ts',
+      boundFileViewColumn: 2,
+    });
+  });
+
+  it('passes bound terminal processId to pick() when a terminal is currently bound', async () => {
+    const boundTerminalDest = createMockTerminalComposablePasteDestination({ processId: 99 });
+    mockDestinationManager = createMockDestinationManager({
+      isBound: true,
+      boundDestination: boundTerminalDest,
+    });
+    mockDestinationPicker = createMockDestinationPicker({
+      pick: jest.fn().mockResolvedValue({ outcome: 'cancelled' }),
+    });
+    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockLogger);
+
+    await command.execute();
+
+    expect(mockDestinationPicker.pick).toHaveBeenCalledWith({
+      noDestinationsMessageCode: 'INFO_BIND_NO_DESTINATIONS_AVAILABLE',
+      placeholderMessageCode: 'INFO_BIND_QUICK_PICK_PLACEHOLDER',
+      boundTerminalProcessId: 99,
+    });
   });
 });

@@ -2,9 +2,11 @@ import type { Logger } from 'barebone-logger';
 
 import type { DestinationPicker } from '../destinations/DestinationPicker';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
+import { resolveBoundTerminalProcessId } from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { MessageCode } from '../types';
 import type { QuickPickBindResult } from '../types/QuickPickBindResult';
+import { isEditorDestination } from '../utils';
 
 /**
  * Command handler for binding to a destination via picker.
@@ -29,9 +31,18 @@ export class BindToDestinationCommand {
 
     this.logger.debug(logCtx, 'Showing destination picker for binding');
 
+    const boundDest = this.destinationManager.getBoundDestination();
+    const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+
     const pickerResult = await this.destinationPicker.pick({
       noDestinationsMessageCode: MessageCode.INFO_BIND_NO_DESTINATIONS_AVAILABLE,
       placeholderMessageCode: MessageCode.INFO_BIND_QUICK_PICK_PLACEHOLDER,
+      ...(boundEditorDest && {
+        boundFileUriString: boundEditorDest.resource.uri.toString(),
+        boundFileViewColumn: boundEditorDest.resource.viewColumn,
+      }),
+      ...(boundTerminalProcessId !== undefined && { boundTerminalProcessId }),
     });
 
     switch (pickerResult.outcome) {

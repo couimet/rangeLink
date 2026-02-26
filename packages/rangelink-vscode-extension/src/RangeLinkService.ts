@@ -20,6 +20,7 @@ import {
 } from './constants';
 import type { DestinationPicker } from './destinations/DestinationPicker';
 import { compareTerminalsByProcessId } from './destinations/equality';
+import { resolveBoundTerminalProcessId } from './destinations/utils';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from './errors';
@@ -32,7 +33,7 @@ import {
   type QuickPickBindResult,
   type TerminalPasteResult,
 } from './types';
-import { formatMessage, generateLinkFromSelections, isSelfPaste } from './utils';
+import { formatMessage, generateLinkFromSelections, isEditorDestination, isSelfPaste } from './utils';
 
 export enum PathFormat {
   WorkspaceRelative = 'workspace-relative',
@@ -904,9 +905,18 @@ export class RangeLinkService {
   private async showPickerAndBindForPaste(): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'RangeLinkService.showPickerAndBindForPaste' };
 
+    const boundDest = this.destinationManager.getBoundDestination();
+    const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+
     const result = await this.destinationPicker.pick({
       noDestinationsMessageCode: MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE,
       placeholderMessageCode: MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
+      ...(boundEditorDest && {
+        boundFileUriString: boundEditorDest.resource.uri.toString(),
+        boundFileViewColumn: boundEditorDest.resource.viewColumn,
+      }),
+      ...(boundTerminalProcessId !== undefined && { boundTerminalProcessId }),
     });
 
     switch (result.outcome) {
