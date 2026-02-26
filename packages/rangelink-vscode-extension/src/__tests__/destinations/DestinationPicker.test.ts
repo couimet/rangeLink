@@ -163,7 +163,7 @@ describe('DestinationPicker', () => {
           'file-more': moreItem,
         });
         showQuickPickMock.mockResolvedValue(moreItem);
-        mockAvailabilityService.getAllFileItems.mockReturnValue([]);
+        mockAvailabilityService.getAllFileItems.mockReturnValue([createMockTextEditorQuickPickItem()]);
 
         showFilePickerSpy.mockImplementation(
           async <T>(
@@ -190,7 +190,7 @@ describe('DestinationPicker', () => {
           'text-editor': [editorItem],
           'file-more': moreItem,
         });
-        mockAvailabilityService.getAllFileItems.mockReturnValue([]);
+        mockAvailabilityService.getAllFileItems.mockReturnValue([createMockTextEditorQuickPickItem()]);
 
         let callCount = 0;
         showQuickPickMock.mockImplementation(async () => {
@@ -225,6 +225,31 @@ describe('DestinationPicker', () => {
           outcome: 'selected',
           bindOptions: editorItem.bindOptions,
         });
+      });
+
+      it('returns returned-to-main-picker when no file items are available in secondary picker', async () => {
+        const editorItem = createMockTextEditorQuickPickItem();
+        const moreItem = createMockFileMoreQuickPickItem(3);
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          'text-editor': [editorItem],
+          'file-more': moreItem,
+        });
+        mockAvailabilityService.getAllFileItems.mockReturnValue([]);
+
+        showQuickPickMock.mockResolvedValueOnce(moreItem).mockResolvedValueOnce(undefined);
+
+        const result = await picker.pick(defaultOptions);
+
+        expect(showFilePickerSpy).not.toHaveBeenCalled();
+        expect(result).toStrictEqual({ outcome: 'cancelled' });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.showSecondaryFilePicker' },
+          'No files available in secondary picker',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.pick' },
+          'Returning to main destination picker',
+        );
       });
 
       it('passes boundFileUriString and boundFileViewColumn to getAllFileItems', async () => {

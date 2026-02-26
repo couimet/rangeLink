@@ -57,7 +57,8 @@ export const showFilePicker = async <T>(
   }
 
   if (!('fileInfo' in selected)) {
-    logger.debug(logCtx, 'User cancelled file picker');
+    // Unreachable at runtime — VSCode never returns separators as selections.
+    // Required for TypeScript narrowing: buildFilePickerItems returns a union type.
     return undefined;
   }
 

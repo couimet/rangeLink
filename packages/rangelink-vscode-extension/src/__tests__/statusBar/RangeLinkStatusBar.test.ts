@@ -19,6 +19,7 @@ import {
   createMockTerminal,
   createMockTerminalPasteDestination,
   createMockTerminalQuickPickItem,
+  createMockTextEditorQuickPickItem,
   createMockVscodeAdapter,
   spyOnShowFilePicker,
   spyOnShowTerminalPicker,
@@ -755,19 +756,7 @@ describe('RangeLinkStatusBar', () => {
 
     it('shows secondary file picker and binds when file is selected', async () => {
       const eligibleFile = createMockEligibleFile({ filename: 'app.ts' });
-      const fileItem: FileBindableQuickPickItem = {
-        label: eligibleFile.filename,
-        displayName: eligibleFile.filename,
-        description: undefined,
-        bindOptions: {
-          kind: 'text-editor',
-          uri: eligibleFile.uri,
-          viewColumn: eligibleFile.viewColumn,
-        },
-        itemKind: 'bindable',
-        fileInfo: eligibleFile,
-        boundState: eligibleFile.boundState,
-      };
+      const fileItem = createMockTextEditorQuickPickItem(eligibleFile);
 
       mockAvailabilityService.getAllFileItems.mockReturnValue([fileItem]);
       mockDestinationManager.bind.mockResolvedValue(
@@ -815,19 +804,7 @@ describe('RangeLinkStatusBar', () => {
 
     it('logs error and shows toast when bind fails from overflow file picker', async () => {
       const eligibleFile = createMockEligibleFile({ filename: 'app.ts' });
-      const fileItem: FileBindableQuickPickItem = {
-        label: eligibleFile.filename,
-        displayName: eligibleFile.filename,
-        description: undefined,
-        bindOptions: {
-          kind: 'text-editor',
-          uri: eligibleFile.uri,
-          viewColumn: eligibleFile.viewColumn,
-        },
-        itemKind: 'bindable',
-        fileInfo: eligibleFile,
-        boundState: eligibleFile.boundState,
-      };
+      const fileItem = createMockTextEditorQuickPickItem(eligibleFile);
       const bindError = new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
         message: 'bind failed',
@@ -878,21 +855,36 @@ describe('RangeLinkStatusBar', () => {
       expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
     });
 
+    it('returns early and shows toast when no file items are available in secondary picker', async () => {
+      mockAvailabilityService.getAllFileItems.mockReturnValue([]);
+
+      showQuickPickMock.mockResolvedValueOnce(fileMoreItem);
+
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showFilePickerSpy).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: fileMoreItem },
+        'No files available in secondary picker',
+      );
+      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
+        .showErrorMessage as jest.Mock;
+      expect(showErrorMessageMock).toHaveBeenCalledWith(
+        'RangeLink: No active text editor. Open a file and try again.',
+      );
+    });
+
     it('re-opens status bar menu when user cancels secondary file picker', async () => {
       const eligibleFile = createMockEligibleFile({ filename: 'app.ts' });
-      const fileItem: FileBindableQuickPickItem = {
-        label: eligibleFile.filename,
-        displayName: eligibleFile.filename,
-        description: undefined,
-        bindOptions: {
-          kind: 'text-editor',
-          uri: eligibleFile.uri,
-          viewColumn: eligibleFile.viewColumn,
-        },
-        itemKind: 'bindable',
-        fileInfo: eligibleFile,
-        boundState: eligibleFile.boundState,
-      };
+      const fileItem = createMockTextEditorQuickPickItem(eligibleFile);
 
       mockAvailabilityService.getAllFileItems.mockReturnValue([fileItem]);
 

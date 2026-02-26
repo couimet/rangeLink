@@ -4,12 +4,8 @@ import {
   buildDestinationQuickPickItems,
   DESTINATION_PICKER_SEQUENCE,
 } from '../../../destinations/utils/buildDestinationQuickPickItems';
-import type {
-  FileBindableQuickPickItem,
-  FileMoreQuickPickItem,
-  GroupedDestinationItems,
-} from '../../../types';
-import { createMockEligibleFile } from '../../helpers/createMockEligibleFile';
+import type { FileMoreQuickPickItem, GroupedDestinationItems } from '../../../types';
+import { createMockEligibleFile, createMockTextEditorQuickPickItem } from '../../helpers';
 
 const separator = (label: string): vscode.QuickPickItem => ({
   label,
@@ -46,13 +42,7 @@ describe('buildDestinationQuickPickItems', () => {
     it('builds items in DESTINATION_PICKER_SEQUENCE order with labeled group separators', () => {
       const mockTerminal = { name: 'bash' } as vscode.Terminal;
       const fileInfo = createMockEligibleFile({ filename: 'app.ts', viewColumn: 1 });
-      const fileItem: FileBindableQuickPickItem = {
-        label: 'app.ts',
-        displayName: 'app.ts',
-        bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: 1 },
-        itemKind: 'bindable',
-        fileInfo,
-      };
+      const fileItem = createMockTextEditorQuickPickItem(fileInfo);
       const grouped: GroupedDestinationItems = {
         'text-editor': [fileItem],
         'claude-code': [
@@ -152,13 +142,7 @@ describe('buildDestinationQuickPickItems', () => {
     it('keeps terminal-more in same group as terminals without extra separator', () => {
       const mockTerminal = { name: 'bash' } as vscode.Terminal;
       const fileInfo = createMockEligibleFile({ filename: 'index.ts', viewColumn: 1 });
-      const fileItem: FileBindableQuickPickItem = {
-        label: 'index.ts',
-        displayName: 'index.ts',
-        bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: 1 },
-        itemKind: 'bindable',
-        fileInfo,
-      };
+      const fileItem = createMockTextEditorQuickPickItem(fileInfo);
       const grouped: GroupedDestinationItems = {
         terminal: [
           {
@@ -416,15 +400,7 @@ describe('buildDestinationQuickPickItems', () => {
         isActiveEditor: true,
         boundState: 'bound',
       });
-      const fileItem: FileBindableQuickPickItem = {
-        label: 'app.ts',
-        displayName: 'app.ts',
-        description: 'bound · active',
-        bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: 1 },
-        itemKind: 'bindable',
-        fileInfo,
-        boundState: 'bound',
-      };
+      const fileItem = createMockTextEditorQuickPickItem(fileInfo, 'bound · active');
       const grouped: GroupedDestinationItems = {
         'text-editor': [fileItem],
       };
@@ -469,13 +445,7 @@ describe('buildDestinationQuickPickItems', () => {
 
     it('keeps file-more in same group as files without extra separator', () => {
       const fileInfo = createMockEligibleFile({ filename: 'app.ts', viewColumn: 1 });
-      const fileItem: FileBindableQuickPickItem = {
-        label: 'app.ts',
-        displayName: 'app.ts',
-        bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: 1 },
-        itemKind: 'bindable',
-        fileInfo,
-      };
+      const fileItem = createMockTextEditorQuickPickItem(fileInfo);
       const moreItem: FileMoreQuickPickItem = {
         label: 'More files...',
         displayName: 'More files...',

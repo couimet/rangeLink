@@ -158,6 +158,11 @@ export class DestinationPicker {
       boundFileViewColumn,
     );
 
+    if (fileItems.length === 0) {
+      this.logger.debug(logCtx, 'No files available in secondary picker');
+      return { outcome: 'returned-to-main-picker' };
+    }
+
     const result = await showFilePicker<InternalPickerResult>(
       fileItems,
       this.uiProvider,

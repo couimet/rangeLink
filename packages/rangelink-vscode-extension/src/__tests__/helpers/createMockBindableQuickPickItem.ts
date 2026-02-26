@@ -2,6 +2,7 @@ import type * as vscode from 'vscode';
 
 import type {
   BindableQuickPickItem,
+  EligibleFile,
   EligibleTerminal,
   FileBindableQuickPickItem,
   FileMoreQuickPickItem,
@@ -54,24 +55,47 @@ export const createMockAIAssistantQuickPickItem = (
 });
 
 /**
- * Create a mock BindableQuickPickItem for a text editor.
+ * Create a mock FileBindableQuickPickItem for a text editor.
  *
- * @param displayName - The display name for the item (default: 'Text Editor ("file.ts")')
- * @returns A BindableQuickPickItem for the text editor
+ * @param fileInfo - The eligible file to create the item for (default: createMockEligibleFile())
+ * @param description - Optional description for the item
+ * @returns A FileBindableQuickPickItem for the text editor
  */
 export const createMockTextEditorQuickPickItem = (
-  displayName = 'Text Editor ("file.ts")',
+  fileInfo?: EligibleFile,
+  description?: string,
 ): FileBindableQuickPickItem => {
-  const fileInfo = createMockEligibleFile();
+  const resolvedFileInfo = fileInfo ?? createMockEligibleFile();
   return {
-    label: displayName,
-    displayName,
-    bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: fileInfo.viewColumn },
+    label: resolvedFileInfo.filename,
+    displayName: resolvedFileInfo.filename,
+    description,
+    bindOptions: {
+      kind: 'text-editor',
+      uri: resolvedFileInfo.uri,
+      viewColumn: resolvedFileInfo.viewColumn,
+    },
     itemKind: 'bindable',
-    isActive: false,
-    fileInfo,
+    fileInfo: resolvedFileInfo,
+    ...(resolvedFileInfo.boundState !== undefined && { boundState: resolvedFileInfo.boundState }),
   };
 };
+
+/**
+ * Create an array of mock FileBindableQuickPickItem objects for a text editor.
+ *
+ * Items are named `file-1.ts`, `file-2.ts`, … and are all current-in-group (active).
+ * Useful for showFilePicker tests that need a realistic multi-file setup.
+ *
+ * @param count - Number of items to create
+ * @returns Array of FileBindableQuickPickItem for the text editor
+ */
+export const createMockTextEditorQuickPickItems = (count: number): FileBindableQuickPickItem[] =>
+  Array.from({ length: count }, (_, i) =>
+    createMockTextEditorQuickPickItem(
+      createMockEligibleFile({ filename: `file-${i + 1}.ts`, isCurrentInGroup: true }),
+    ),
+  );
 
 /**
  * Create a mock FileMoreQuickPickItem.

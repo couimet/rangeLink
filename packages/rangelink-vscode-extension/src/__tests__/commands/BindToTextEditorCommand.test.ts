@@ -10,6 +10,7 @@ import {
   createMockDestinationManager,
   createMockEditorComposablePasteDestination,
   createMockEligibleFile,
+  createMockTextEditorQuickPickItem,
   createMockUri,
   createMockVscodeAdapter,
   spyOnShowFilePicker,
@@ -65,15 +66,7 @@ describe('BindToTextEditorCommand', () => {
 
     it('auto-binds without showing a picker when only 1 file is available', async () => {
       const eligibleFile = createMockEligibleFile({ filename: 'app.ts', viewColumn: 1 });
-      const fileItem: FileBindableQuickPickItem = {
-        label: 'app.ts',
-        displayName: 'app.ts',
-        description: undefined,
-        bindOptions: { kind: 'text-editor', uri: eligibleFile.uri, viewColumn: 1 },
-        itemKind: 'bindable',
-        fileInfo: eligibleFile,
-        boundState: eligibleFile.boundState,
-      };
+      const fileItem = createMockTextEditorQuickPickItem(eligibleFile);
       mockAvailabilityService.getAllFileItems.mockReturnValue([fileItem]);
       mockDestinationManager.bind.mockResolvedValue(
         ExtensionResult.ok({ destinationName: 'app.ts', destinationKind: 'text-editor' }),
@@ -100,18 +93,9 @@ describe('BindToTextEditorCommand', () => {
     it('returns cancelled when user dismisses the file picker', async () => {
       const eligibleFile1 = createMockEligibleFile({ filename: 'index.ts', viewColumn: 1 });
       const eligibleFile2 = createMockEligibleFile({ filename: 'app.ts', viewColumn: 2 });
-      const makeItem = (f: typeof eligibleFile1): FileBindableQuickPickItem => ({
-        label: f.filename,
-        displayName: f.filename,
-        description: undefined,
-        bindOptions: { kind: 'text-editor', uri: f.uri, viewColumn: f.viewColumn },
-        itemKind: 'bindable',
-        fileInfo: f,
-        boundState: f.boundState,
-      });
       mockAvailabilityService.getAllFileItems.mockReturnValue([
-        makeItem(eligibleFile1),
-        makeItem(eligibleFile2),
+        createMockTextEditorQuickPickItem(eligibleFile1),
+        createMockTextEditorQuickPickItem(eligibleFile2),
       ]);
       showFilePickerSpy.mockResolvedValue(undefined);
 
@@ -124,18 +108,9 @@ describe('BindToTextEditorCommand', () => {
     it('returns bound when user selects a file from the picker and bind succeeds', async () => {
       const eligibleFile1 = createMockEligibleFile({ filename: 'main.ts', viewColumn: 1 });
       const eligibleFile2 = createMockEligibleFile({ filename: 'utils.ts', viewColumn: 2 });
-      const makeItem = (f: typeof eligibleFile1): FileBindableQuickPickItem => ({
-        label: f.filename,
-        displayName: f.filename,
-        description: undefined,
-        bindOptions: { kind: 'text-editor', uri: f.uri, viewColumn: f.viewColumn },
-        itemKind: 'bindable',
-        fileInfo: f,
-        boundState: f.boundState,
-      });
       mockAvailabilityService.getAllFileItems.mockReturnValue([
-        makeItem(eligibleFile1),
-        makeItem(eligibleFile2),
+        createMockTextEditorQuickPickItem(eligibleFile1),
+        createMockTextEditorQuickPickItem(eligibleFile2),
       ]);
       mockDestinationManager.bind.mockResolvedValue(
         ExtensionResult.ok({ destinationName: 'utils.ts', destinationKind: 'text-editor' }),
@@ -169,18 +144,9 @@ describe('BindToTextEditorCommand', () => {
     it('returns bind-failed when bind fails after selection from the picker', async () => {
       const eligibleFile1 = createMockEligibleFile({ filename: 'a.ts', viewColumn: 1 });
       const eligibleFile2 = createMockEligibleFile({ filename: 'b.ts', viewColumn: 2 });
-      const makeItem = (f: typeof eligibleFile1): FileBindableQuickPickItem => ({
-        label: f.filename,
-        displayName: f.filename,
-        description: undefined,
-        bindOptions: { kind: 'text-editor', uri: f.uri, viewColumn: f.viewColumn },
-        itemKind: 'bindable',
-        fileInfo: f,
-        boundState: f.boundState,
-      });
       mockAvailabilityService.getAllFileItems.mockReturnValue([
-        makeItem(eligibleFile1),
-        makeItem(eligibleFile2),
+        createMockTextEditorQuickPickItem(eligibleFile1),
+        createMockTextEditorQuickPickItem(eligibleFile2),
       ]);
       const bindError = new RangeLinkExtensionError({
         code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,

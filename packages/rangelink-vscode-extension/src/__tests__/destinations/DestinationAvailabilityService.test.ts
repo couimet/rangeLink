@@ -731,6 +731,20 @@ describe('DestinationAvailabilityService', () => {
             boundState: 'not-bound',
           },
         ]);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            destinationKinds: ['text-editor'],
+          },
+          'Using provided destinationKinds filter',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+            groupKeys: ['text-editor'],
+          },
+          'Built grouped destination items',
+        );
       });
 
       it('shows no file-more when all files are current-in-group', async () => {
@@ -929,6 +943,10 @@ describe('DestinationAvailabilityService', () => {
           boundState: 'bound',
         },
       ]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 1 },
+        'Built all file items',
+      );
     });
 
     it('marks only the file in the matching viewColumn as bound when same URI appears in two tab groups', () => {
@@ -987,6 +1005,10 @@ describe('DestinationAvailabilityService', () => {
           boundState: 'not-bound',
         },
       ]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 },
+        'Built all file items',
+      );
     });
 
     it('applies disambiguators for duplicate filenames', () => {
@@ -1009,8 +1031,46 @@ describe('DestinationAvailabilityService', () => {
 
       const result = service.getAllFileItems();
 
-      expect(result[0].description).toBe('…/a');
-      expect(result[1].description).toBe('…/b');
+      expect(result).toStrictEqual([
+        {
+          label: 'util.ts',
+          displayName: 'util.ts',
+          description: '…/a',
+          bindOptions: { kind: 'text-editor', uri: uri1, viewColumn: 1 },
+          itemKind: 'bindable',
+          fileInfo: {
+            uri: uri1,
+            filename: 'util.ts',
+            displayPath: 'src/a/util.ts',
+            viewColumn: 1,
+            isCurrentInGroup: true,
+            isActiveEditor: false,
+            boundState: 'not-bound',
+          },
+          boundState: 'not-bound',
+        },
+        {
+          label: 'util.ts',
+          displayName: 'util.ts',
+          description: '…/b',
+          bindOptions: { kind: 'text-editor', uri: uri2, viewColumn: 1 },
+          itemKind: 'bindable',
+          fileInfo: {
+            uri: uri2,
+            filename: 'util.ts',
+            displayPath: 'src/b/util.ts',
+            viewColumn: 1,
+            isCurrentInGroup: false,
+            isActiveEditor: false,
+            boundState: 'not-bound',
+          },
+          boundState: 'not-bound',
+        },
+      ]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 },
+        'Built all file items',
+      );
     });
   });
 });

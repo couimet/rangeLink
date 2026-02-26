@@ -189,6 +189,12 @@ export class RangeLinkStatusBar implements vscode.Disposable {
       boundEditorDest?.resource.viewColumn,
     );
 
+    if (fileItems.length === 0) {
+      this.logger.debug(logCtx, 'No files available in secondary picker');
+      void this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
+      return;
+    }
+
     await showFilePicker(
       fileItems,
       this.ideAdapter,

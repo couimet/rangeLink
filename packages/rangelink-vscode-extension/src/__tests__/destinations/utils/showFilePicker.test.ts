@@ -4,30 +4,12 @@ import * as vscode from 'vscode';
 import type { FilePickerHandlers } from '../../../destinations/types';
 import { showFilePicker } from '../../../destinations/utils';
 import type { EligibleFile, FileBindableQuickPickItem } from '../../../types';
-import { createMockQuickPickProvider } from '../../helpers';
-import { createMockEligibleFile } from '../../helpers/createMockEligibleFile';
+import { createMockQuickPickProvider, createMockTextEditorQuickPickItems } from '../../helpers';
 
 const separator = (label: string): vscode.QuickPickItem => ({
   label,
   kind: vscode.QuickPickItemKind.Separator,
 });
-
-const createFileItems = (count: number): FileBindableQuickPickItem[] =>
-  Array.from({ length: count }, (_, i) => {
-    const fileInfo = createMockEligibleFile({
-      filename: `file-${i + 1}.ts`,
-      isCurrentInGroup: true,
-    });
-    return {
-      label: fileInfo.filename,
-      displayName: fileInfo.filename,
-      description: undefined,
-      bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: fileInfo.viewColumn },
-      itemKind: 'bindable',
-      fileInfo,
-      boundState: fileInfo.boundState,
-    };
-  });
 
 const withActiveSeparator = (
   items: FileBindableQuickPickItem[],
@@ -62,7 +44,7 @@ describe('showFilePicker', () => {
 
   describe('file selection', () => {
     it('shows QuickPick with sectioned items and calls onSelected handler', async () => {
-      const items = createFileItems(3);
+      const items = createMockTextEditorQuickPickItems(3);
       const quickPickProvider = createMockQuickPickProvider();
       quickPickProvider.showQuickPick.mockResolvedValueOnce(items[1]);
       const logger = createMockLogger();
@@ -90,7 +72,7 @@ describe('showFilePicker', () => {
     });
 
     it('passes handler return value through as result', async () => {
-      const items = createFileItems(2);
+      const items = createMockTextEditorQuickPickItems(2);
       const quickPickProvider = createMockQuickPickProvider();
       quickPickProvider.showQuickPick.mockResolvedValueOnce(items[0]);
       const logger = createMockLogger();
@@ -103,10 +85,18 @@ describe('showFilePicker', () => {
       );
 
       expect(result).toStrictEqual({ kind: 'text-editor', name: 'file-1.ts' });
+      expect(logger.debug).toHaveBeenCalledWith(
+        { fn: 'showFilePicker', fileCount: 2, itemCount: 3 },
+        'Showing file picker',
+      );
+      expect(logger.debug).toHaveBeenCalledWith(
+        { fn: 'showFilePicker', selected: items[0] },
+        'File selected',
+      );
     });
 
     it('supports async onSelected handler', async () => {
-      const items = createFileItems(2);
+      const items = createMockTextEditorQuickPickItems(2);
       const quickPickProvider = createMockQuickPickProvider();
       quickPickProvider.showQuickPick.mockResolvedValueOnce(items[0]);
       const logger = createMockLogger();
@@ -119,10 +109,18 @@ describe('showFilePicker', () => {
       );
 
       expect(result).toBe('bound-file-1.ts');
+      expect(logger.debug).toHaveBeenCalledWith(
+        { fn: 'showFilePicker', fileCount: 2, itemCount: 3 },
+        'Showing file picker',
+      );
+      expect(logger.debug).toHaveBeenCalledWith(
+        { fn: 'showFilePicker', selected: items[0] },
+        'File selected',
+      );
     });
 
     it('uses placeholder from getPlaceholder handler', async () => {
-      const items = createFileItems(2);
+      const items = createMockTextEditorQuickPickItems(2);
       const quickPickProvider = createMockQuickPickProvider();
       quickPickProvider.showQuickPick.mockResolvedValueOnce(items[0]);
       const logger = createMockLogger();
@@ -140,10 +138,18 @@ describe('showFilePicker', () => {
         title: 'RangeLink',
         placeHolder: 'Custom file placeholder',
       });
+      expect(logger.debug).toHaveBeenCalledWith(
+        { fn: 'showFilePicker', fileCount: 2, itemCount: 3 },
+        'Showing file picker',
+      );
+      expect(logger.debug).toHaveBeenCalledWith(
+        { fn: 'showFilePicker', selected: items[0] },
+        'File selected',
+      );
     });
 
     it('returns undefined when a non-file item is selected', async () => {
-      const items = createFileItems(2);
+      const items = createMockTextEditorQuickPickItems(2);
       const quickPickProvider = createMockQuickPickProvider();
       quickPickProvider.showQuickPick.mockResolvedValueOnce(
         separator('Active Files') as unknown as FileBindableQuickPickItem,
@@ -158,16 +164,12 @@ describe('showFilePicker', () => {
       );
 
       expect(result).toBeUndefined();
-      expect(logger.debug).toHaveBeenCalledWith(
-        { fn: 'showFilePicker', fileCount: 2 },
-        'User cancelled file picker',
-      );
     });
   });
 
   describe('dismiss handling', () => {
     it('returns undefined when user dismisses and no onDismissed handler', async () => {
-      const items = createFileItems(3);
+      const items = createMockTextEditorQuickPickItems(3);
       const quickPickProvider = createMockQuickPickProvider();
       quickPickProvider.showQuickPick.mockResolvedValueOnce(undefined);
       const logger = createMockLogger();
@@ -187,7 +189,7 @@ describe('showFilePicker', () => {
     });
 
     it('calls onDismissed handler when provided and user dismisses', async () => {
-      const items = createFileItems(2);
+      const items = createMockTextEditorQuickPickItems(2);
       const quickPickProvider = createMockQuickPickProvider();
       quickPickProvider.showQuickPick.mockResolvedValueOnce(undefined);
       const logger = createMockLogger();
@@ -209,7 +211,7 @@ describe('showFilePicker', () => {
     });
 
     it('supports async onDismissed handler', async () => {
-      const items = createFileItems(2);
+      const items = createMockTextEditorQuickPickItems(2);
       const quickPickProvider = createMockQuickPickProvider();
       quickPickProvider.showQuickPick.mockResolvedValueOnce(undefined);
       const logger = createMockLogger();
