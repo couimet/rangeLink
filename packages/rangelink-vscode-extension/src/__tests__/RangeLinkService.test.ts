@@ -1031,6 +1031,38 @@ describe('RangeLinkService', () => {
           expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
           expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
         });
+
+        it('should bind but not paste when background tab was opened via quick pick', async () => {
+          const mockTerminal = createMockTerminal();
+          mockPickerCommand.pick.mockResolvedValue({
+            outcome: 'selected',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+          });
+          mockDestinationManager = createMockDestinationManager({
+            bindResult: Result.ok({
+              destinationName: 'Terminal',
+              destinationKind: 'terminal',
+              suppressAutoPaste: true,
+            }),
+          });
+          service = new RangeLinkService(
+            getDelimiters,
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockPickerCommand,
+            mockConfigReader,
+            mockLogger,
+          );
+
+          await service.pasteSelectedTextToDestination();
+
+          expect(mockLogger.debug).toHaveBeenCalledWith(
+            { fn: 'RangeLinkService.showPickerAndBindForPaste' },
+            'Bind requested auto-paste suppression — returning bound-no-paste',
+          );
+          expect(mockClipboard.writeText).not.toHaveBeenCalled();
+          expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
+        });
       });
 
       describe('when destination is bound', () => {

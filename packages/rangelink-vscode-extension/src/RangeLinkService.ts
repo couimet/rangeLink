@@ -928,6 +928,10 @@ export class RangeLinkService {
           this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
           return { outcome: 'bind-failed', error: bindResult.error };
         }
+        if (bindResult.value.suppressAutoPaste) {
+          this.logger.debug(logCtx, 'Bind requested auto-paste suppression — returning bound-no-paste');
+          return { outcome: 'bound-no-paste', bindInfo: bindResult.value };
+        }
         return { outcome: 'bound', bindInfo: bindResult.value };
       }
 
