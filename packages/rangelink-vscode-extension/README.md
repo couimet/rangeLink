@@ -273,6 +273,7 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | Jump to Bound Destination                                | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound destination                   |
 | Go to Link <sup>Unreleased</sup>                         | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`       | Paste/type a RangeLink to go to that code location       |
 | Open Menu <sup>Unreleased</sup>                          | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`       | Open the RangeLink menu                                  |
+| Bind to Destination <sup>Unreleased</sup>                | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`       | Open destination picker to select and bind a target      |
 | Bind to Claude Code                                      | —                   | —                     | Auto-send links to Claude Code chat                      |
 | Bind to Cursor AI                                        | —                   | —                     | Auto-send links to Cursor AI chat                        |
 | Bind to GitHub Copilot Chat                              | —                   | —                     | Auto-send links to Copilot Chat                          |
