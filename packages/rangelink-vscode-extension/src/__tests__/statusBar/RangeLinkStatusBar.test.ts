@@ -2,21 +2,26 @@ import { createMockLogger } from 'barebone-logger-testing';
 import * as vscode from 'vscode';
 
 import type { Bookmark } from '../../bookmarks';
-import type { TerminalPickerHandlers } from '../../destinations/types';
+import type { FilePickerHandlers, TerminalPickerHandlers } from '../../destinations/types';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
 import { RangeLinkStatusBar } from '../../statusBar/RangeLinkStatusBar';
-import type { TerminalBindableQuickPickItem } from '../../types';
+import type { FileBindableQuickPickItem, TerminalBindableQuickPickItem } from '../../types';
 import { ExtensionResult } from '../../types';
 import {
   createMockBookmarkService,
   createMockDestinationAvailabilityService,
   createMockDestinationManager,
+  createMockEditorComposablePasteDestination,
+  createMockEligibleFile,
   createMockEligibleTerminal,
+  createMockFileMoreQuickPickItem,
   createMockStatusBarItem,
   createMockTerminal,
   createMockTerminalPasteDestination,
   createMockTerminalQuickPickItem,
+  createMockTextEditorQuickPickItem,
   createMockVscodeAdapter,
+  spyOnShowFilePicker,
   spyOnShowTerminalPicker,
 } from '../helpers';
 
@@ -55,6 +60,7 @@ describe('RangeLinkStatusBar', () => {
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
   let mockAvailabilityService: ReturnType<typeof createMockDestinationAvailabilityService>;
   let mockBookmarkService: ReturnType<typeof createMockBookmarkService>;
+  let showFilePickerSpy: jest.SpyInstance;
   let showTerminalPickerSpy: jest.SpyInstance;
 
   beforeEach(() => {
@@ -75,6 +81,7 @@ describe('RangeLinkStatusBar', () => {
     });
     mockDestinationManager = createMockDestinationManager();
     mockBookmarkService = createMockBookmarkService();
+    showFilePickerSpy = spyOnShowFilePicker();
     showTerminalPickerSpy = spyOnShowTerminalPicker();
   });
 
@@ -158,6 +165,7 @@ describe('RangeLinkStatusBar', () => {
             description: undefined,
             terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
           },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '$(link-external) Go to Link',
             itemKind: 'command',
@@ -202,6 +210,7 @@ describe('RangeLinkStatusBar', () => {
       expect(showQuickPickMock).toHaveBeenCalledWith(
         [
           { label: 'No destinations available', itemKind: 'info' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '$(link-external) Go to Link',
             itemKind: 'command',
@@ -263,6 +272,70 @@ describe('RangeLinkStatusBar', () => {
             itemKind: 'command',
             command: 'rangelink.unbindDestination',
           },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          {
+            label: '$(link-external) Go to Link',
+            itemKind: 'command',
+            command: 'rangelink.goToRangeLink',
+          },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          { label: 'Bookmarks', itemKind: 'info' },
+          { label: '    No bookmarks saved', itemKind: 'info' },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          {
+            label: '    $(add) Save Selection as Bookmark',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.add',
+          },
+          {
+            label: '    $(gear) Manage Bookmarks...',
+            itemKind: 'command',
+            command: 'rangelink.bookmark.manage',
+          },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
+          {
+            label: '$(info) Show Version Info',
+            itemKind: 'command',
+            command: 'rangelink.showVersion',
+          },
+        ],
+        { title: 'RangeLink', placeHolder: 'Select an action' },
+      );
+    });
+
+    it('shows Tab Group context in Jump description when bound to a text editor', async () => {
+      const mockBoundDestination = createMockEditorComposablePasteDestination({
+        displayName: 'Text Editor ("Untitled-2")',
+        viewColumn: 2,
+      });
+      const boundDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: mockBoundDestination,
+      });
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        boundDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showQuickPickMock).toHaveBeenCalledWith(
+        [
+          {
+            label: '$(arrow-right) Jump to Bound Destination',
+            description: '→ Text Editor ("Untitled-2") · Tab Group 2',
+            itemKind: 'command',
+            command: 'rangelink.jumpToBoundDestination',
+          },
+          {
+            label: '$(close) Unbind Destination',
+            itemKind: 'command',
+            command: 'rangelink.unbindDestination',
+          },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '$(link-external) Go to Link',
             itemKind: 'command',
@@ -329,6 +402,7 @@ describe('RangeLinkStatusBar', () => {
             description: undefined,
             terminalInfo: { terminal: mockTerminal, name: mockTerminal.name, isActive: false },
           },
+          { label: '', kind: vscode.QuickPickItemKind.Separator },
           {
             label: '$(link-external) Go to Link',
             itemKind: 'command',
@@ -673,6 +747,177 @@ describe('RangeLinkStatusBar', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: terminalMoreItem },
         'User returned from terminal picker, re-opening menu',
+      );
+    });
+  });
+
+  describe('openMenu - file-more selection', () => {
+    const fileMoreItem = createMockFileMoreQuickPickItem(2);
+
+    it('shows secondary file picker and binds when file is selected', async () => {
+      const eligibleFile = createMockEligibleFile({ filename: 'app.ts' });
+      const fileItem = createMockTextEditorQuickPickItem(eligibleFile);
+
+      mockAvailabilityService.getAllFileItems.mockReturnValue([fileItem]);
+      mockDestinationManager.bind.mockResolvedValue(
+        ExtensionResult.ok({ destinationName: 'app.ts', destinationKind: 'text-editor' }),
+      );
+
+      showQuickPickMock.mockResolvedValueOnce(fileMoreItem);
+
+      showFilePickerSpy.mockImplementation(
+        async (
+          _files: readonly FileBindableQuickPickItem[],
+          _provider: unknown,
+          handlers: FilePickerHandlers<void>,
+          _logger: unknown,
+        ): Promise<void | undefined> => {
+          await handlers.onSelected(eligibleFile);
+        },
+      );
+
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showFilePickerSpy).toHaveBeenCalled();
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith({
+        kind: 'text-editor',
+        uri: eligibleFile.uri,
+        viewColumn: eligibleFile.viewColumn,
+      });
+      expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.openMenu',
+          selectedItem: fileMoreItem,
+        },
+        'File bound from overflow picker',
+      );
+    });
+
+    it('logs error and shows toast when bind fails from overflow file picker', async () => {
+      const eligibleFile = createMockEligibleFile({ filename: 'app.ts' });
+      const fileItem = createMockTextEditorQuickPickItem(eligibleFile);
+      const bindError = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+        message: 'bind failed',
+        functionName: 'PasteDestinationManager.bind',
+      });
+
+      mockAvailabilityService.getAllFileItems.mockReturnValue([fileItem]);
+      mockDestinationManager.bind.mockResolvedValue(ExtensionResult.err(bindError));
+
+      showQuickPickMock.mockResolvedValueOnce(fileMoreItem);
+
+      showFilePickerSpy.mockImplementation(
+        async (
+          _files: readonly FileBindableQuickPickItem[],
+          _provider: unknown,
+          handlers: FilePickerHandlers<void>,
+          _logger: unknown,
+        ): Promise<void | undefined> => {
+          await handlers.onSelected(eligibleFile);
+        },
+      );
+
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(mockDestinationManager.bind).toHaveBeenCalledWith({
+        kind: 'text-editor',
+        uri: eligibleFile.uri,
+        viewColumn: eligibleFile.viewColumn,
+      });
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkStatusBar.openMenu',
+          selectedItem: fileMoreItem,
+          error: bindError,
+        },
+        'Bind failed from overflow file picker',
+      );
+      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
+        .showErrorMessage as jest.Mock;
+      expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
+    });
+
+    it('returns early and shows toast when no file items are available in secondary picker', async () => {
+      mockAvailabilityService.getAllFileItems.mockReturnValue([]);
+
+      showQuickPickMock.mockResolvedValueOnce(fileMoreItem);
+
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showFilePickerSpy).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: fileMoreItem },
+        'No files available in secondary picker',
+      );
+      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
+        .showErrorMessage as jest.Mock;
+      expect(showErrorMessageMock).toHaveBeenCalledWith(
+        'RangeLink: No active text editor. Open a file and try again.',
+      );
+    });
+
+    it('re-opens status bar menu when user cancels secondary file picker', async () => {
+      const eligibleFile = createMockEligibleFile({ filename: 'app.ts' });
+      const fileItem = createMockTextEditorQuickPickItem(eligibleFile);
+
+      mockAvailabilityService.getAllFileItems.mockReturnValue([fileItem]);
+
+      showQuickPickMock
+        .mockResolvedValueOnce(fileMoreItem)
+        .mockResolvedValueOnce(QUICK_PICK_DISMISSED);
+
+      showFilePickerSpy.mockImplementation(
+        async (
+          _files: readonly FileBindableQuickPickItem[],
+          _provider: unknown,
+          handlers: FilePickerHandlers<void>,
+          _logger: unknown,
+        ): Promise<void | undefined> => {
+          await handlers.onDismissed?.();
+        },
+      );
+
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      expect(showFilePickerSpy).toHaveBeenCalled();
+      expect(showQuickPickMock).toHaveBeenCalledTimes(2);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem: fileMoreItem },
+        'User returned from file picker, re-opening menu',
       );
     });
   });

@@ -4,16 +4,23 @@ import {
   DestinationPicker,
   type DestinationPickerOptions,
 } from '../../destinations/DestinationPicker';
-import type { TerminalPickerHandlers } from '../../destinations/types';
-import { MessageCode, type TerminalBindableQuickPickItem } from '../../types';
+import type { FilePickerHandlers, TerminalPickerHandlers } from '../../destinations/types';
+import {
+  MessageCode,
+  type FileBindableQuickPickItem,
+  type TerminalBindableQuickPickItem,
+} from '../../types';
 import {
   createMockAIAssistantQuickPickItem,
   createMockDestinationAvailabilityService,
+  createMockEligibleFile,
+  createMockFileMoreQuickPickItem,
   createMockTerminal,
   createMockTerminalMoreQuickPickItem,
   createMockTerminalQuickPickItem,
   createMockTextEditorQuickPickItem,
   createMockVscodeAdapter,
+  spyOnShowFilePicker,
   spyOnShowTerminalPicker,
 } from '../helpers';
 
@@ -24,6 +31,7 @@ describe('DestinationPicker', () => {
   let showQuickPickMock: jest.Mock;
   let picker: DestinationPicker;
   let showTerminalPickerSpy: jest.SpyInstance;
+  let showFilePickerSpy: jest.SpyInstance;
 
   const defaultOptions: DestinationPickerOptions = {
     noDestinationsMessageCode: MessageCode.INFO_JUMP_NO_DESTINATIONS_AVAILABLE,
@@ -36,6 +44,7 @@ describe('DestinationPicker', () => {
     mockAdapter = createMockVscodeAdapter();
     showQuickPickMock = mockAdapter.__getVscodeInstance().window.showQuickPick as jest.Mock;
     showTerminalPickerSpy = spyOnShowTerminalPicker();
+    showFilePickerSpy = spyOnShowFilePicker();
     picker = new DestinationPicker(mockAdapter, mockAvailabilityService, mockLogger);
   });
 
@@ -143,6 +152,141 @@ describe('DestinationPicker', () => {
           outcome: 'selected',
           bindOptions: editorItem.bindOptions,
         });
+      });
+    });
+
+    describe('file-more item selection', () => {
+      it('shows secondary file picker when user selects "More files..."', async () => {
+        const moreItem = createMockFileMoreQuickPickItem(5);
+        const fileInfo = createMockEligibleFile({ filename: 'app.ts', viewColumn: 1 });
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          'file-more': moreItem,
+        });
+        showQuickPickMock.mockResolvedValue(moreItem);
+        mockAvailabilityService.getAllFileItems.mockReturnValue([
+          createMockTextEditorQuickPickItem(),
+        ]);
+
+        showFilePickerSpy.mockImplementation(
+          async <T>(
+            _files: readonly FileBindableQuickPickItem[],
+            _provider: unknown,
+            handlers: FilePickerHandlers<T>,
+            _logger: unknown,
+          ): Promise<T | undefined> => handlers.onSelected(fileInfo),
+        );
+
+        const result = await picker.pick(defaultOptions);
+
+        expect(showFilePickerSpy).toHaveBeenCalled();
+        expect(result).toStrictEqual({
+          outcome: 'selected',
+          bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: fileInfo.viewColumn },
+        });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.handleQuickPickSelection' },
+          'User selected "More files...", showing secondary picker',
+        );
+      });
+
+      it('returns to main picker when user cancels secondary file picker', async () => {
+        const editorItem = createMockTextEditorQuickPickItem();
+        const moreItem = createMockFileMoreQuickPickItem(3);
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          'text-editor': [editorItem],
+          'file-more': moreItem,
+        });
+        mockAvailabilityService.getAllFileItems.mockReturnValue([
+          createMockTextEditorQuickPickItem(),
+        ]);
+
+        let callCount = 0;
+        showQuickPickMock.mockImplementation(async () => {
+          callCount++;
+          if (callCount === 1) {
+            return moreItem;
+          }
+          return editorItem;
+        });
+
+        showFilePickerSpy.mockImplementation(
+          async <T>(
+            _files: readonly FileBindableQuickPickItem[],
+            _provider: unknown,
+            handlers: FilePickerHandlers<T>,
+            _logger: unknown,
+          ): Promise<T | undefined> => handlers.onDismissed?.(),
+        );
+
+        const result = await picker.pick(defaultOptions);
+
+        expect(showQuickPickMock).toHaveBeenCalledTimes(2);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.showSecondaryFilePicker' },
+          'User returned from secondary file picker',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.pick' },
+          'Returning to main destination picker',
+        );
+        expect(result).toStrictEqual({
+          outcome: 'selected',
+          bindOptions: editorItem.bindOptions,
+        });
+      });
+
+      it('returns cancelled when no file items are available in secondary picker', async () => {
+        const editorItem = createMockTextEditorQuickPickItem();
+        const moreItem = createMockFileMoreQuickPickItem(3);
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          'text-editor': [editorItem],
+          'file-more': moreItem,
+        });
+        mockAvailabilityService.getAllFileItems.mockReturnValue([]);
+
+        showQuickPickMock.mockResolvedValueOnce(moreItem).mockResolvedValueOnce(undefined);
+
+        const result = await picker.pick(defaultOptions);
+
+        expect(showFilePickerSpy).not.toHaveBeenCalled();
+        expect(result).toStrictEqual({ outcome: 'cancelled' });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.showSecondaryFilePicker' },
+          'No files available in secondary picker',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.pick' },
+          'Returning to main destination picker',
+        );
+      });
+
+      it('passes boundFileUriString and boundFileViewColumn to getAllFileItems', async () => {
+        const moreItem = createMockFileMoreQuickPickItem(3);
+        mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
+          'file-more': moreItem,
+        });
+        showQuickPickMock.mockResolvedValueOnce(moreItem).mockResolvedValueOnce(undefined);
+        mockAvailabilityService.getAllFileItems.mockReturnValue([]);
+        showFilePickerSpy.mockResolvedValue(undefined);
+
+        await picker.pick({
+          ...defaultOptions,
+          boundFileUriString: 'file:///workspace/app.ts',
+          boundFileViewColumn: 2,
+        });
+
+        expect(mockAvailabilityService.getAllFileItems).toHaveBeenCalledWith(
+          'file:///workspace/app.ts',
+          2,
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.handleQuickPickSelection' },
+          'User selected "More files...", showing secondary picker',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.showSecondaryFilePicker' },
+          'No files available in secondary picker',
+        );
       });
     });
 

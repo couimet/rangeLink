@@ -133,6 +133,8 @@ Bind a terminal to RangeLink, and all generated links auto-paste directly there 
 
 When you close the bound file, RangeLink auto-unbinds with a notification. If the bound file is hidden behind other tabs, RangeLink automatically brings it to the foreground during paste.
 
+**File Picker** <sup>Unreleased</sup>: In the destination picker and RangeLink Menu, open text editor files appear as individual items. The active (frontmost) file per tab group is shown inline; if you have more open files, they collapse into "More files..." which opens a secondary picker organized into "Active Files" and per-"Tab Group N" sections. The currently bound file is marked "bound" and sorted to the top.
+
 **Pro tip:** Split your editor into two panes (side-by-side or vertical) for the smoothest workflow — browse code on one side, build your prompt on the other. No tab switching needed.
 
 #### AI Assistants (Claude Code, Cursor AI & GitHub Copilot)

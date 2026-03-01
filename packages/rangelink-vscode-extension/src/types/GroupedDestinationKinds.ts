@@ -17,6 +17,8 @@ export interface GetAvailableDestinationItemsOptions {
    */
   readonly destinationKinds?: DestinationKind[];
 
+  // ── Terminal ──────────────────────────────────────────────────────────────
+
   /**
    * Threshold for showing "More terminals..." item.
    * If terminals > threshold, show threshold items + "More terminals..."
@@ -32,12 +34,22 @@ export interface GetAvailableDestinationItemsOptions {
    */
   readonly boundTerminalProcessId?: number;
 
+  // ── File / text-editor ────────────────────────────────────────────────────
+
   /**
    * URI string of the currently bound file, for bound-state badge display.
    * When provided, the matching file gets `boundState: 'bound'` and is
    * sorted to the top of the file list.
    */
   readonly boundFileUriString?: string;
+
+  /**
+   * viewColumn of the currently bound file's editor, for precise bound-state matching.
+   * The same URI can be open in multiple tab groups (view columns); without this,
+   * all copies of the file would be marked bound.
+   * When omitted, matching falls back to URI alone.
+   */
+  readonly boundFileViewColumn?: number;
 }
 
 /**

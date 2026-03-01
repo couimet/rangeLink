@@ -8,7 +8,7 @@ import type { DestinationPickerResult } from '../types/DestinationPickerResult';
 import { formatMessage, isSelectableQuickPickItem } from '../utils';
 
 import type { DestinationAvailabilityService } from './DestinationAvailabilityService';
-import { buildDestinationQuickPickItems, showTerminalPicker } from './utils';
+import { buildDestinationQuickPickItems, showFilePicker, showTerminalPicker } from './utils';
 
 /**
  * Internal result type that includes 'returned-to-main-picker' for loop control.
@@ -26,6 +26,8 @@ export interface DestinationPickerOptions {
   readonly noDestinationsMessageCode: MessageCode;
   readonly placeholderMessageCode: MessageCode;
   readonly boundTerminalProcessId?: number;
+  readonly boundFileUriString?: string;
+  readonly boundFileViewColumn?: number;
 }
 
 /**
@@ -45,13 +47,21 @@ export class DestinationPicker {
   }
 
   async pick(options: DestinationPickerOptions): Promise<DestinationPickerResult> {
-    const { noDestinationsMessageCode, placeholderMessageCode, boundTerminalProcessId } = options;
+    const {
+      noDestinationsMessageCode,
+      placeholderMessageCode,
+      boundTerminalProcessId,
+      boundFileUriString,
+      boundFileViewColumn,
+    } = options;
     const logCtx = { fn: 'DestinationPicker.pick' };
 
     this.logger.debug(logCtx, 'Showing destination picker');
 
     const grouped = await this.availabilityService.getGroupedDestinationItems({
       boundTerminalProcessId,
+      boundFileUriString,
+      boundFileViewColumn,
     });
 
     const quickPickItems = buildDestinationQuickPickItems(grouped, (name) => name);
@@ -81,6 +91,8 @@ export class DestinationPicker {
         selected,
         placeholderMessageCode,
         boundTerminalProcessId,
+        boundFileUriString,
+        boundFileViewColumn,
       );
 
       if (result.outcome !== 'returned-to-main-picker') {
@@ -95,6 +107,8 @@ export class DestinationPicker {
     selected: DestinationQuickPickItem,
     placeholderMessageCode: MessageCode,
     boundTerminalProcessId?: number,
+    boundFileUriString?: string,
+    boundFileViewColumn?: number,
   ): Promise<InternalPickerResult> {
     const logCtx = { fn: 'DestinationPicker.handleQuickPickSelection' };
 
@@ -110,12 +124,12 @@ export class DestinationPicker {
         };
 
       case 'file-more':
-        // TODO(#356): Show secondary file picker
-        this.logger.debug(
-          logCtx,
-          'User selected "More files...", returning cancelled (secondary picker not yet implemented)',
+        this.logger.debug(logCtx, 'User selected "More files...", showing secondary picker');
+        return this.showSecondaryFilePicker(
+          placeholderMessageCode,
+          boundFileUriString,
+          boundFileViewColumn,
         );
-        return { outcome: 'cancelled' };
 
       case 'terminal-more':
         this.logger.debug(logCtx, 'User selected "More terminals...", showing secondary picker');
@@ -131,6 +145,42 @@ export class DestinationPicker {
         });
       }
     }
+  }
+
+  private async showSecondaryFilePicker(
+    placeholderMessageCode: MessageCode,
+    boundFileUriString?: string,
+    boundFileViewColumn?: number,
+  ): Promise<InternalPickerResult> {
+    const logCtx = { fn: 'DestinationPicker.showSecondaryFilePicker' };
+    const fileItems = this.availabilityService.getAllFileItems(
+      boundFileUriString,
+      boundFileViewColumn,
+    );
+
+    if (fileItems.length === 0) {
+      this.logger.debug(logCtx, 'No files available in secondary picker');
+      return { outcome: 'returned-to-main-picker' };
+    }
+
+    const result = await showFilePicker<InternalPickerResult>(
+      fileItems,
+      this.uiProvider,
+      {
+        getPlaceholder: () => formatMessage(placeholderMessageCode),
+        onSelected: (file) => ({
+          outcome: 'selected' as const,
+          bindOptions: { kind: 'text-editor' as const, uri: file.uri, viewColumn: file.viewColumn },
+        }),
+        onDismissed: () => {
+          this.logger.debug(logCtx, 'User returned from secondary file picker');
+          return { outcome: 'returned-to-main-picker' as const };
+        },
+      },
+      this.logger,
+    );
+
+    return result ?? { outcome: 'returned-to-main-picker' };
   }
 
   private async showSecondaryTerminalPicker(

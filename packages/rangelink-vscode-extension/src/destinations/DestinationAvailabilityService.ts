@@ -114,17 +114,34 @@ export class DestinationAvailabilityService {
   }
 
   /**
-   * Get file items split by current-in-group status.
-   * Convenience passthrough to `getGroupedDestinationItems()` for file-only callers.
+   * Get ALL eligible file items — both current-in-group and non-current.
+   * Used by the secondary file picker which shows all files across all tab groups.
+   *
+   * Runs the full pipeline: getEligibleFiles → markBoundFile → sortEligibleFiles →
+   * disambiguateFilenames → buildFileItem for every file.
    *
    * @param boundFileUriString - URI string of the currently bound file for badge display
+   * @param boundFileViewColumn - viewColumn of the bound editor for precise matching
    */
-  async getFileItems(boundFileUriString?: string): Promise<FileBindableQuickPickItem[]> {
-    const grouped = await this.getGroupedDestinationItems({
-      destinationKinds: ['text-editor'],
-      boundFileUriString,
-    });
-    return grouped['text-editor'] ?? [];
+  getAllFileItems(
+    boundFileUriString?: string,
+    boundFileViewColumn?: number,
+  ): FileBindableQuickPickItem[] {
+    const rawFiles = getEligibleFiles(this.ideAdapter);
+    if (rawFiles.length === 0) {
+      return [];
+    }
+
+    const enriched = markBoundFile(rawFiles, boundFileUriString, boundFileViewColumn);
+    const sorted = sortEligibleFiles(enriched);
+    const disambiguators = disambiguateFilenames(sorted);
+
+    this.logger.debug(
+      { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: sorted.length },
+      'Built all file items',
+    );
+
+    return sorted.map((file, i) => this.buildFileItem(file, disambiguators[i]));
   }
 
   /**
@@ -163,7 +180,11 @@ export class DestinationAvailabilityService {
           const rawFiles = getEligibleFiles(this.ideAdapter);
           if (rawFiles.length === 0) break;
 
-          const enriched = markBoundFile(rawFiles, options?.boundFileUriString);
+          const enriched = markBoundFile(
+            rawFiles,
+            options?.boundFileUriString,
+            options?.boundFileViewColumn,
+          );
           const sorted = sortEligibleFiles(enriched);
           const disambiguators = disambiguateFilenames(sorted);
 

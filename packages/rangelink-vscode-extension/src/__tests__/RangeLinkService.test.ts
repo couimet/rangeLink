@@ -937,6 +937,87 @@ describe('RangeLinkService', () => {
           expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
         });
 
+        it('passes bound editor uri and viewColumn to pick() when an editor is currently bound', async () => {
+          const mockUri = createMockUri('/workspace/src/app.ts');
+          const boundEditorDest = createMockEditorComposablePasteDestination({
+            uri: mockUri,
+            viewColumn: 3,
+          });
+          mockDestinationManager = createMockDestinationManager({
+            isBound: false,
+            boundDestination: boundEditorDest,
+            bindResult: Result.ok({ destinationName: 'app.ts', destinationKind: 'text-editor' }),
+          });
+          service = new RangeLinkService(
+            getDelimiters,
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockPickerCommand,
+            mockConfigReader,
+            mockLogger,
+          );
+          mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
+
+          await service.pasteSelectedTextToDestination();
+
+          expect(mockPickerCommand.pick).toHaveBeenCalledWith({
+            noDestinationsMessageCode: 'INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE',
+            placeholderMessageCode: 'INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW',
+            boundFileUriString: 'file:///workspace/src/app.ts',
+            boundFileViewColumn: 3,
+          });
+          expect(mockLogger.debug).toHaveBeenCalledWith(
+            { fn: 'RangeLinkService.pasteSelectedTextToDestination' },
+            'No destination bound, showing quick pick',
+          );
+          expect(mockLogger.info).toHaveBeenCalledWith(
+            { fn: 'RangeLinkService.showPickerAndBindForPaste' },
+            'User cancelled quick pick - no action taken',
+          );
+          expect(mockLogger.debug).toHaveBeenCalledWith(
+            { fn: 'RangeLinkService.pasteSelectedTextToDestination', outcome: 'cancelled' },
+            'Picker did not bind, aborting',
+          );
+        });
+
+        it('passes bound terminal processId to pick() when a terminal is currently bound', async () => {
+          const boundTerminalDest = createMockTerminalComposablePasteDestination({ processId: 42 });
+          mockDestinationManager = createMockDestinationManager({
+            isBound: false,
+            boundDestination: boundTerminalDest,
+            bindResult: Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
+          });
+          service = new RangeLinkService(
+            getDelimiters,
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockPickerCommand,
+            mockConfigReader,
+            mockLogger,
+          );
+          mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
+
+          await service.pasteSelectedTextToDestination();
+
+          expect(mockPickerCommand.pick).toHaveBeenCalledWith({
+            noDestinationsMessageCode: 'INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE',
+            placeholderMessageCode: 'INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW',
+            boundTerminalProcessId: 42,
+          });
+          expect(mockLogger.debug).toHaveBeenCalledWith(
+            { fn: 'RangeLinkService.pasteSelectedTextToDestination' },
+            'No destination bound, showing quick pick',
+          );
+          expect(mockLogger.info).toHaveBeenCalledWith(
+            { fn: 'RangeLinkService.showPickerAndBindForPaste' },
+            'User cancelled quick pick - no action taken',
+          );
+          expect(mockLogger.debug).toHaveBeenCalledWith(
+            { fn: 'RangeLinkService.pasteSelectedTextToDestination', outcome: 'cancelled' },
+            'Picker did not bind, aborting',
+          );
+        });
+
         describe('when user cancels quick pick', () => {
           beforeEach(() => {
             mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
@@ -1030,6 +1111,38 @@ describe('RangeLinkService', () => {
           expect(mockClipboard.writeText).not.toHaveBeenCalled();
           expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
           expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
+        });
+
+        it('should bind but not paste when background tab was opened via quick pick', async () => {
+          const mockTerminal = createMockTerminal();
+          mockPickerCommand.pick.mockResolvedValue({
+            outcome: 'selected',
+            bindOptions: { kind: 'terminal', terminal: mockTerminal },
+          });
+          mockDestinationManager = createMockDestinationManager({
+            bindResult: Result.ok({
+              destinationName: 'Terminal',
+              destinationKind: 'terminal',
+              suppressAutoPaste: true,
+            }),
+          });
+          service = new RangeLinkService(
+            getDelimiters,
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockPickerCommand,
+            mockConfigReader,
+            mockLogger,
+          );
+
+          await service.pasteSelectedTextToDestination();
+
+          expect(mockLogger.debug).toHaveBeenCalledWith(
+            { fn: 'RangeLinkService.showPickerAndBindForPaste' },
+            'Bind requested auto-paste suppression — returning bound-no-paste',
+          );
+          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
+          expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
         });
       });
 

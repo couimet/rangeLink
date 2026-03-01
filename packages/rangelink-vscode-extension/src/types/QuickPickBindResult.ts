@@ -8,7 +8,12 @@ import type { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError'
  * Variants use Extract<QuickPickBindOutcome, 'x'> to ensure compile-time
  * failure if a literal is removed from this union.
  */
-export type QuickPickBindOutcome = 'bound' | 'no-resource' | 'cancelled' | 'bind-failed';
+export type QuickPickBindOutcome =
+  | 'bound'
+  | 'bound-no-paste'
+  | 'no-resource'
+  | 'cancelled'
+  | 'bind-failed';
 
 /**
  * Result of showing quick pick for destination binding.
@@ -18,6 +23,10 @@ export type QuickPickBindOutcome = 'bound' | 'no-resource' | 'cancelled' | 'bind
  */
 export type QuickPickBindResult =
   | { readonly outcome: Extract<QuickPickBindOutcome, 'bound'>; readonly bindInfo: BindSuccessInfo }
+  | {
+      readonly outcome: Extract<QuickPickBindOutcome, 'bound-no-paste'>;
+      readonly bindInfo: BindSuccessInfo;
+    }
   | { readonly outcome: Extract<QuickPickBindOutcome, 'no-resource'> }
   | { readonly outcome: Extract<QuickPickBindOutcome, 'cancelled'> }
   | {

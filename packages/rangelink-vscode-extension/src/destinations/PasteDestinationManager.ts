@@ -35,6 +35,8 @@ import type { PasteDestination } from './PasteDestination';
 export interface BindSuccessInfo {
   readonly destinationName: string;
   readonly destinationKind: DestinationKind;
+  /** Set when a background tab was brought to foreground — cursor position is unknown, auto-paste should be suppressed. */
+  readonly suppressAutoPaste?: true;
 }
 
 /**
@@ -342,26 +344,49 @@ export class PasteDestinationManager implements vscode.Disposable {
   ): Promise<ExtensionResult<BindSuccessInfo>> {
     const fnName = 'bindTextEditor';
 
+    const fileName = this.vscodeAdapter.getFilenameFromUri(options.uri);
+    let wasBackgroundTab = false;
+
     if (!this.vscodeAdapter.hasVisibleEditorAt(options.uri, options.viewColumn)) {
-      this.logger.warn(
-        {
-          fn: 'PasteDestinationManager.bindTextEditor',
-          uri: options.uri.toString(),
-          viewColumn: options.viewColumn,
-        },
-        'No visible editor at URI + viewColumn',
+      const logCtx = {
+        fn: 'PasteDestinationManager.bindTextEditor',
+        uri: options.uri.toString(),
+        viewColumn: options.viewColumn,
+        fileName,
+      };
+      this.logger.debug(logCtx, 'Editor not visible, bringing background tab to foreground');
+      try {
+        await this.vscodeAdapter.showTextDocument(options.uri, { viewColumn: options.viewColumn });
+      } catch {
+        this.logger.warn(logCtx, 'showTextDocument threw for background tab');
+        this.vscodeAdapter.showErrorMessage(
+          formatMessage(MessageCode.ERROR_BACKGROUND_TAB_OPEN_FAILED, { fileName }),
+        );
+        return this.bindFailedResult(
+          fnName,
+          `No visible editor for ${options.uri.toString()} at viewColumn ${options.viewColumn}`,
+          BindFailureReason.NO_ACTIVE_EDITOR,
+        );
+      }
+      if (!this.vscodeAdapter.hasVisibleEditorAt(options.uri, options.viewColumn)) {
+        this.logger.warn(logCtx, 'showTextDocument resolved but editor not at expected viewColumn');
+        this.vscodeAdapter.showErrorMessage(
+          formatMessage(MessageCode.ERROR_BACKGROUND_TAB_WRONG_VIEW_COLUMN, { fileName }),
+        );
+        return this.bindFailedResult(
+          fnName,
+          `Editor opened but not visible at expected viewColumn ${options.viewColumn}`,
+          BindFailureReason.NO_ACTIVE_EDITOR,
+        );
+      }
+      void this.vscodeAdapter.showInformationMessage(
+        formatMessage(MessageCode.INFO_BACKGROUND_TAB_OPENED, { fileName }),
       );
-      this.vscodeAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_TEXT_EDITOR_NOT_VISIBLE));
-      return this.bindFailedResult(
-        fnName,
-        `No visible editor for ${options.uri.toString()} at viewColumn ${options.viewColumn}`,
-        BindFailureReason.NO_ACTIVE_EDITOR,
-      );
+      wasBackgroundTab = true;
     }
 
     const scheme = options.uri.scheme;
     const fsPath = options.uri.fsPath;
-    const fileName = this.vscodeAdapter.getFilenameFromUri(options.uri);
     const logCtx = { fn: 'PasteDestinationManager.bindTextEditor', scheme, fileName };
 
     if (!isWritableScheme(scheme)) {
@@ -390,7 +415,10 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     const newDestination = this.registry.create(options);
 
-    return this.commitBind(newDestination);
+    return this.commitBind(
+      newDestination,
+      wasBackgroundTab ? { suppressAutoPaste: true } : undefined,
+    );
   }
 
   /**
@@ -442,10 +470,11 @@ export class PasteDestinationManager implements vscode.Disposable {
    * then delegate the common bind flow here.
    *
    * @param newDestination - The destination to bind
-   * @param kind - The destination kind for result metadata and confirmation dialog
+   * @param options - Optional bind metadata (e.g., suppressAutoPaste for background-tab binds)
    */
   private async commitBind(
     newDestination: PasteDestination,
+    options?: { suppressAutoPaste?: true },
   ): Promise<ExtensionResult<BindSuccessInfo>> {
     const kind = newDestination.id;
     const logCtx = { fn: 'PasteDestinationManager.commitBind', kind };
@@ -509,6 +538,7 @@ export class PasteDestinationManager implements vscode.Disposable {
     return ExtensionResult.ok({
       destinationName: newDestination.displayName,
       destinationKind: kind,
+      ...(options?.suppressAutoPaste && { suppressAutoPaste: true as const }),
     });
   }
 

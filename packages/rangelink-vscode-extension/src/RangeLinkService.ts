@@ -22,6 +22,7 @@ import type { DestinationPicker } from './destinations/DestinationPicker';
 import { compareTerminalsByProcessId } from './destinations/equality';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
+import { resolveBoundTerminalProcessId } from './destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from './errors';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import {
@@ -33,7 +34,12 @@ import {
   RelativePathFormat,
   type TerminalPasteResult,
 } from './types';
-import { formatMessage, generateLinkFromSelections, isSelfPaste } from './utils';
+import {
+  formatMessage,
+  generateLinkFromSelections,
+  isEditorDestination,
+  isSelfPaste,
+} from './utils';
 
 export enum PathFormat {
   WorkspaceRelative = 'workspace-relative',
@@ -201,23 +207,28 @@ export class RangeLinkService {
       DEFAULT_SMART_PADDING_PASTE_CONTENT,
     );
 
+    let destinationBehavior = DestinationBehavior.BoundDestination;
+
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
       const pickerResult = await this.showPickerAndBindForPaste();
-      if (pickerResult.outcome !== 'bound') {
+      if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
         this.logger.debug(
           { ...logCtx, outcome: pickerResult.outcome },
           'Picker did not bind, aborting',
         );
         return;
       }
+      if (pickerResult.outcome === 'bound-no-paste') {
+        destinationBehavior = DestinationBehavior.ClipboardOnly;
+      }
     }
 
     await this.copyAndSendToDestination({
       control: {
         contentType: PasteContentType.Text,
-        destinationBehavior: DestinationBehavior.BoundDestination,
+        destinationBehavior,
       },
       content: {
         clipboard: content,
@@ -297,16 +308,21 @@ export class RangeLinkService {
       `Read ${terminalText.length} chars from terminal selection`,
     );
 
+    let destinationBehavior = DestinationBehavior.BoundDestination;
+
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
       const pickerResult = await this.showPickerAndBindForPaste();
-      if (pickerResult.outcome !== 'bound') {
+      if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
         this.logger.debug(
           { ...logCtx, outcome: pickerResult.outcome },
           'Picker did not bind, aborting',
         );
         return { outcome: 'picker-cancelled' };
+      }
+      if (pickerResult.outcome === 'bound-no-paste') {
+        destinationBehavior = DestinationBehavior.ClipboardOnly;
       }
     }
 
@@ -332,7 +348,7 @@ export class RangeLinkService {
     await this.copyAndSendToDestination({
       control: {
         contentType: PasteContentType.Text,
-        destinationBehavior: DestinationBehavior.BoundDestination,
+        destinationBehavior,
       },
       content: {
         clipboard: terminalText,
@@ -460,16 +476,21 @@ export class RangeLinkService {
       DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
     );
 
+    let destinationBehavior = DestinationBehavior.BoundDestination;
+
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
       const pickerResult = await this.showPickerAndBindForPaste();
-      if (pickerResult.outcome !== 'bound') {
+      if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
         this.logger.debug(
           { ...logCtx, outcome: pickerResult.outcome },
           'Picker did not bind, aborting',
         );
         return;
+      }
+      if (pickerResult.outcome === 'bound-no-paste') {
+        destinationBehavior = DestinationBehavior.ClipboardOnly;
       }
     }
 
@@ -485,7 +506,7 @@ export class RangeLinkService {
     await this.copyAndSendToDestination({
       control: {
         contentType: PasteContentType.Text,
-        destinationBehavior: DestinationBehavior.BoundDestination,
+        destinationBehavior,
       },
       content: {
         clipboard: filePath,
@@ -905,9 +926,18 @@ export class RangeLinkService {
   private async showPickerAndBindForPaste(): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'RangeLinkService.showPickerAndBindForPaste' };
 
+    const boundDest = this.destinationManager.getBoundDestination();
+    const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
+    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
+
     const result = await this.destinationPicker.pick({
       noDestinationsMessageCode: MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE,
       placeholderMessageCode: MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
+      ...(boundEditorDest && {
+        boundFileUriString: boundEditorDest.resource.uri.toString(),
+        boundFileViewColumn: boundEditorDest.resource.viewColumn,
+      }),
+      ...(boundTerminalProcessId !== undefined && { boundTerminalProcessId }),
     });
 
     switch (result.outcome) {
@@ -928,6 +958,13 @@ export class RangeLinkService {
           );
           this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
           return { outcome: 'bind-failed', error: bindResult.error };
+        }
+        if (bindResult.value.suppressAutoPaste) {
+          this.logger.debug(
+            logCtx,
+            'Bind requested auto-paste suppression — returning bound-no-paste',
+          );
+          return { outcome: 'bound-no-paste', bindInfo: bindResult.value };
         }
         return { outcome: 'bound', bindInfo: bindResult.value };
       }

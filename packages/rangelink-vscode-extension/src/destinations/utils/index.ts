@@ -1,4 +1,5 @@
 export { buildFileDescription } from './buildFileDescription';
+export { buildFilePickerItems } from './buildFilePickerItems';
 export { buildTerminalDescription } from './buildTerminalDescription';
 export {
   buildDestinationQuickPickItems,
@@ -14,6 +15,7 @@ export { isTerminalEligible } from './isTerminalEligible';
 export { markBoundFile } from './markBoundFile';
 export { markBoundTerminal } from './markBoundTerminal';
 export { resolveBoundTerminalProcessId } from './resolveBoundTerminalProcessId';
+export { showFilePicker } from './showFilePicker';
 export { showTerminalPicker } from './showTerminalPicker';
 export { sortEligibleFiles } from './sortEligibleFiles';
 export { sortEligibleTerminals } from './sortEligibleTerminals';

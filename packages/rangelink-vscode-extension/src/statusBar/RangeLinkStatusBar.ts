@@ -16,7 +16,11 @@ import {
   type DestinationAvailabilityService,
   type PasteDestinationManager,
 } from '../destinations';
-import { resolveBoundTerminalProcessId, showTerminalPicker } from '../destinations/utils';
+import {
+  resolveBoundTerminalProcessId,
+  showFilePicker,
+  showTerminalPicker,
+} from '../destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
@@ -27,7 +31,7 @@ import {
   MessageCode,
   type StatusBarMenuQuickPickItem,
 } from '../types';
-import { formatMessage, isSelectableQuickPickItem } from '../utils';
+import { formatMessage, isEditorDestination, isSelectableQuickPickItem } from '../utils';
 
 /**
  * Status bar priority - higher values appear more to the left.
@@ -118,8 +122,8 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         this.logger.debug(logCtx, 'Non-actionable item selected');
         break;
       case 'file-more':
-        // TODO(#356): Show secondary file picker from status bar
-        this.logger.debug(logCtx, 'File more item selected');
+        this.logger.debug(logCtx, 'File overflow item selected');
+        await this.showSecondaryFilePicker(logCtx);
         break;
       default: {
         const _exhaustiveCheck: never = selected;
@@ -174,6 +178,54 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   }
 
   /**
+   * Show the full file list after user selects "More files...".
+   * Re-opens the status bar menu if the user escapes.
+   */
+  private async showSecondaryFilePicker(logCtx: LoggingContext): Promise<void> {
+    const boundDest = this.destinationManager.getBoundDestination();
+    const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
+    const fileItems = this.availabilityService.getAllFileItems(
+      boundEditorDest?.resource.uri.toString(),
+      boundEditorDest?.resource.viewColumn,
+    );
+
+    if (fileItems.length === 0) {
+      this.logger.debug(logCtx, 'No files available in secondary picker');
+      void this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TEXT_EDITOR));
+      return;
+    }
+
+    await showFilePicker(
+      fileItems,
+      this.ideAdapter,
+      {
+        getPlaceholder: () => formatMessage(MessageCode.FILE_PICKER_BIND_ONLY_PLACEHOLDER),
+        onSelected: async (file) => {
+          const bindResult = await this.destinationManager.bind({
+            kind: 'text-editor',
+            uri: file.uri,
+            viewColumn: file.viewColumn,
+          });
+          if (!bindResult.success) {
+            this.logger.error(
+              { ...logCtx, error: bindResult.error },
+              'Bind failed from overflow file picker',
+            );
+            this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
+            return;
+          }
+          this.logger.debug(logCtx, 'File bound from overflow picker');
+        },
+        onDismissed: async () => {
+          this.logger.debug(logCtx, 'User returned from file picker, re-opening menu');
+          await this.openMenu();
+        },
+      },
+      this.logger,
+    );
+  }
+
+  /**
    * Build QuickPick items with context-aware enabled/disabled states.
    */
   private async buildQuickPickItems(): Promise<
@@ -181,6 +233,7 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   > {
     return [
       ...(await this.buildJumpOrDestinationsSection()),
+      { label: '', kind: vscode.QuickPickItemKind.Separator },
       {
         label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_NAVIGATE_TO_LINK_LABEL),
         itemKind: 'command' as const,
@@ -203,10 +256,13 @@ export class RangeLinkStatusBar implements vscode.Disposable {
   > {
     const boundDest = this.destinationManager.getBoundDestination();
     if (boundDest) {
+      const jumpDescription = isEditorDestination(boundDest)
+        ? `→ ${boundDest.displayName} · ${formatMessage(MessageCode.FILE_PICKER_GROUP_FORMAT, { index: boundDest.resource.viewColumn })}`
+        : `→ ${boundDest.displayName}`;
       return [
         {
           label: formatMessage(MessageCode.STATUS_BAR_MENU_ITEM_JUMP_ENABLED_LABEL),
-          description: `→ ${boundDest.displayName}`,
+          description: jumpDescription,
           itemKind: 'command' as const,
           command: CMD_JUMP_TO_DESTINATION,
         },

@@ -85,4 +85,26 @@ describe('markBoundFile', () => {
   it('returns empty array for empty input', () => {
     expect(markBoundFile([], 'file:///workspace/src/app.ts')).toStrictEqual([]);
   });
+
+  it('marks file as bound when URI and viewColumn both match', () => {
+    const fileAInColumn2: EligibleFile = { ...fileA, viewColumn: 2 };
+
+    const result = markBoundFile([fileA, fileAInColumn2], fileA.uri.toString(), 1);
+
+    expect(result).toStrictEqual([
+      { ...fileA, boundState: 'bound' },
+      { ...fileAInColumn2, boundState: 'not-bound' },
+    ]);
+  });
+
+  it('does not mark file as bound when URI matches but viewColumn differs', () => {
+    const fileAInColumn2: EligibleFile = { ...fileA, viewColumn: 2 };
+
+    const result = markBoundFile([fileA, fileAInColumn2], fileA.uri.toString(), 2);
+
+    expect(result).toStrictEqual([
+      { ...fileA, boundState: 'not-bound' },
+      { ...fileAInColumn2, boundState: 'bound' },
+    ]);
+  });
 });
