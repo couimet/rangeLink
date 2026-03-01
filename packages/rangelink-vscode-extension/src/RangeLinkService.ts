@@ -31,6 +31,7 @@ import {
   MessageCode,
   PasteContentType,
   type QuickPickBindResult,
+  RelativePathFormat,
   type TerminalPasteResult,
 } from './types';
 import {
@@ -839,7 +840,7 @@ export class RangeLinkService {
   private getReferencePath(uri: vscode.Uri, pathFormat: PathFormat): string {
     const workspaceFolder = this.ideAdapter.getWorkspaceFolder(uri);
     if (workspaceFolder && pathFormat === PathFormat.WorkspaceRelative) {
-      return this.ideAdapter.asRelativePath(uri);
+      return this.ideAdapter.asRelativePath(uri, RelativePathFormat.PathOnly);
     }
     return uri.fsPath;
   }

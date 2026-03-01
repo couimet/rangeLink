@@ -10,7 +10,7 @@ import type * as vscode from 'vscode';
 import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { DestinationKind } from '../types';
-import { AutoPasteResult, MessageCode } from '../types';
+import { AutoPasteResult, MessageCode, RelativePathFormat } from '../types';
 import {
   formatMessage,
   getUntitledDisplayName,
@@ -82,7 +82,7 @@ const getResourceName = (context: DestinationBuilderContext, uri: vscode.Uri): s
 
   const workspaceFolder = context.ideAdapter.getWorkspaceFolder(uri);
   if (workspaceFolder) {
-    return context.ideAdapter.asRelativePath(uri, false);
+    return context.ideAdapter.asRelativePath(uri, RelativePathFormat.PathOnly);
   }
 
   return context.ideAdapter.getFilenameFromUri(uri);
