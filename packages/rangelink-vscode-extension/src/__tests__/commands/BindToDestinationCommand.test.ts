@@ -176,7 +176,10 @@ describe('BindToDestinationCommand', () => {
 
   it('passes bound editor uri and viewColumn to pick() when an editor is currently bound', async () => {
     const mockUri = createMockUri('/workspace/src/main.ts');
-    const boundEditorDest = createMockEditorComposablePasteDestination({ uri: mockUri, viewColumn: 2 });
+    const boundEditorDest = createMockEditorComposablePasteDestination({
+      uri: mockUri,
+      viewColumn: 2,
+    });
     mockDestinationManager = createMockDestinationManager({
       isBound: true,
       boundDestination: boundEditorDest,
@@ -184,7 +187,11 @@ describe('BindToDestinationCommand', () => {
     mockDestinationPicker = createMockDestinationPicker({
       pick: jest.fn().mockResolvedValue({ outcome: 'cancelled' }),
     });
-    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockLogger);
+    command = new BindToDestinationCommand(
+      mockDestinationManager,
+      mockDestinationPicker,
+      mockLogger,
+    );
 
     await command.execute();
 
@@ -194,6 +201,14 @@ describe('BindToDestinationCommand', () => {
       boundFileUriString: 'file:///workspace/src/main.ts',
       boundFileViewColumn: 2,
     });
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      { fn: 'BindToDestinationCommand.execute' },
+      'Showing destination picker for binding',
+    );
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      { fn: 'BindToDestinationCommand.execute' },
+      'User cancelled picker',
+    );
   });
 
   it('passes bound terminal processId to pick() when a terminal is currently bound', async () => {
@@ -205,7 +220,11 @@ describe('BindToDestinationCommand', () => {
     mockDestinationPicker = createMockDestinationPicker({
       pick: jest.fn().mockResolvedValue({ outcome: 'cancelled' }),
     });
-    command = new BindToDestinationCommand(mockDestinationManager, mockDestinationPicker, mockLogger);
+    command = new BindToDestinationCommand(
+      mockDestinationManager,
+      mockDestinationPicker,
+      mockLogger,
+    );
 
     await command.execute();
 
@@ -214,5 +233,13 @@ describe('BindToDestinationCommand', () => {
       placeholderMessageCode: 'INFO_BIND_QUICK_PICK_PLACEHOLDER',
       boundTerminalProcessId: 99,
     });
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      { fn: 'BindToDestinationCommand.execute' },
+      'Showing destination picker for binding',
+    );
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      { fn: 'BindToDestinationCommand.execute' },
+      'User cancelled picker',
+    );
   });
 });

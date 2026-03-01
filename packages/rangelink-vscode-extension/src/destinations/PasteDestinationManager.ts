@@ -415,7 +415,10 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     const newDestination = this.registry.create(options);
 
-    return this.commitBind(newDestination, wasBackgroundTab ? { suppressAutoPaste: true } : undefined);
+    return this.commitBind(
+      newDestination,
+      wasBackgroundTab ? { suppressAutoPaste: true } : undefined,
+    );
   }
 
   /**
@@ -467,7 +470,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    * then delegate the common bind flow here.
    *
    * @param newDestination - The destination to bind
-   * @param kind - The destination kind for result metadata and confirmation dialog
+   * @param options - Optional bind metadata (e.g., suppressAutoPaste for background-tab binds)
    */
   private async commitBind(
     newDestination: PasteDestination,

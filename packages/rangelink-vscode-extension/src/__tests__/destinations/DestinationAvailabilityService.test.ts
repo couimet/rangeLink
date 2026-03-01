@@ -1011,6 +1011,68 @@ describe('DestinationAvailabilityService', () => {
       );
     });
 
+    it('marks both entries as bound when same URI appears in two tab groups and no viewColumn is given', () => {
+      const uri = createMockUri('/workspace/src/app.ts');
+      const tab1 = createMockTab(uri);
+      const tab2 = createMockTab(uri);
+      const group1 = createMockTabGroup([tab1]);
+      const group2 = createMockTabGroup([tab2], { viewColumn: 2 });
+      ideAdapter = createMockVscodeAdapter({
+        windowOptions: {
+          tabGroups: { all: [group1, group2] },
+        },
+      });
+      service = new DestinationAvailabilityService(
+        mockRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = service.getAllFileItems(uri.toString());
+
+      expect(result).toStrictEqual([
+        {
+          label: 'app.ts',
+          displayName: 'app.ts',
+          description: 'src · bound',
+          bindOptions: { kind: 'text-editor', uri, viewColumn: 1 },
+          itemKind: 'bindable',
+          fileInfo: {
+            uri,
+            filename: 'app.ts',
+            displayPath: 'src/app.ts',
+            viewColumn: 1,
+            isCurrentInGroup: true,
+            isActiveEditor: false,
+            boundState: 'bound',
+          },
+          boundState: 'bound',
+        },
+        {
+          label: 'app.ts',
+          displayName: 'app.ts',
+          description: 'src · bound',
+          bindOptions: { kind: 'text-editor', uri, viewColumn: 2 },
+          itemKind: 'bindable',
+          fileInfo: {
+            uri,
+            filename: 'app.ts',
+            displayPath: 'src/app.ts',
+            viewColumn: 2,
+            isCurrentInGroup: true,
+            isActiveEditor: false,
+            boundState: 'bound',
+          },
+          boundState: 'bound',
+        },
+      ]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'DestinationAvailabilityService.getAllFileItems', fileCount: 2 },
+        'Built all file items',
+      );
+    });
+
     it('applies disambiguators for duplicate filenames', () => {
       const uri1 = createMockUri('/workspace/src/a/util.ts');
       const uri2 = createMockUri('/workspace/src/b/util.ts');

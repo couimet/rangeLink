@@ -163,7 +163,9 @@ describe('DestinationPicker', () => {
           'file-more': moreItem,
         });
         showQuickPickMock.mockResolvedValue(moreItem);
-        mockAvailabilityService.getAllFileItems.mockReturnValue([createMockTextEditorQuickPickItem()]);
+        mockAvailabilityService.getAllFileItems.mockReturnValue([
+          createMockTextEditorQuickPickItem(),
+        ]);
 
         showFilePickerSpy.mockImplementation(
           async <T>(
@@ -181,6 +183,10 @@ describe('DestinationPicker', () => {
           outcome: 'selected',
           bindOptions: { kind: 'text-editor', uri: fileInfo.uri, viewColumn: fileInfo.viewColumn },
         });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.handleQuickPickSelection' },
+          'User selected "More files...", showing secondary picker',
+        );
       });
 
       it('returns to main picker when user cancels secondary file picker', async () => {
@@ -190,7 +196,9 @@ describe('DestinationPicker', () => {
           'text-editor': [editorItem],
           'file-more': moreItem,
         });
-        mockAvailabilityService.getAllFileItems.mockReturnValue([createMockTextEditorQuickPickItem()]);
+        mockAvailabilityService.getAllFileItems.mockReturnValue([
+          createMockTextEditorQuickPickItem(),
+        ]);
 
         let callCount = 0;
         showQuickPickMock.mockImplementation(async () => {
@@ -227,7 +235,7 @@ describe('DestinationPicker', () => {
         });
       });
 
-      it('returns returned-to-main-picker when no file items are available in secondary picker', async () => {
+      it('returns cancelled when no file items are available in secondary picker', async () => {
         const editorItem = createMockTextEditorQuickPickItem();
         const moreItem = createMockFileMoreQuickPickItem(3);
         mockAvailabilityService.getGroupedDestinationItems.mockResolvedValue({
@@ -270,6 +278,14 @@ describe('DestinationPicker', () => {
         expect(mockAvailabilityService.getAllFileItems).toHaveBeenCalledWith(
           'file:///workspace/app.ts',
           2,
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.handleQuickPickSelection' },
+          'User selected "More files...", showing secondary picker',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'DestinationPicker.showSecondaryFilePicker' },
+          'No files available in secondary picker',
         );
       });
     });

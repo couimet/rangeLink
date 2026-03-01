@@ -46,6 +46,10 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.DESTINATION_GROUP_TERMINALS]: 'Terminals',
   [MessageCode.DESTINATION_TERMINAL_DISPLAY_FORMAT]: 'Terminal ("{name}")',
 
+  [MessageCode.ERROR_BACKGROUND_TAB_OPEN_FAILED]:
+    'RangeLink: Could not open "{fileName}". Try again or choose another file.',
+  [MessageCode.ERROR_BACKGROUND_TAB_WRONG_VIEW_COLUMN]:
+    'RangeLink: "{fileName}" opened in a different editor group. Try again or choose another file.',
   [MessageCode.ERROR_BOOKMARK_EMPTY_LABEL]: 'RangeLink: Bookmark label cannot be empty',
   [MessageCode.ERROR_BOOKMARK_LINK_GENERATION_FAILED]:
     'RangeLink: Cannot add bookmark - failed to generate link from selection',
@@ -54,10 +58,6 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_BOOKMARK_SAVE_FAILED]: 'RangeLink: Failed to save bookmark',
   [MessageCode.ERROR_BOOKMARK_UNTITLED_FILE]:
     'RangeLink: Cannot bookmark unsaved file. Save the file first, or select an existing RangeLink to bookmark.',
-  [MessageCode.ERROR_BACKGROUND_TAB_OPEN_FAILED]:
-    'RangeLink: Could not open "{fileName}". Try again or choose another file.',
-  [MessageCode.ERROR_BACKGROUND_TAB_WRONG_VIEW_COLUMN]:
-    'RangeLink: "{fileName}" opened in a different editor group. Try again or choose another file.',
   [MessageCode.ERROR_BIND_FAILED]: 'RangeLink: Failed to bind destination',
   [MessageCode.ERROR_CLAUDE_CODE_NOT_AVAILABLE]:
     'RangeLink: Cannot bind Claude Code - extension not installed or not active',
@@ -107,7 +107,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.FILE_PICKER_PLACEHOLDER]: 'Select file to bind and jump to',
   [MessageCode.FILE_PICKER_TITLE]: 'RangeLink',
 
-  [MessageCode.INFO_BACKGROUND_TAB_OPENED]: 'RangeLink: "{fileName}" opened at last cursor position. Adjust cursor before pasting.',
+  [MessageCode.INFO_BACKGROUND_TAB_OPENED]:
+    'RangeLink: "{fileName}" opened at last cursor position. Adjust cursor before pasting.',
   [MessageCode.INFO_BIND_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_BIND_QUICK_PICK_PLACEHOLDER]: 'RangeLink: Choose a destination to bind to',
   [MessageCode.INFO_CLAUDE_CODE_NOT_AVAILABLE]:

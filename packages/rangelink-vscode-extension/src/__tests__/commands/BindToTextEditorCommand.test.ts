@@ -192,6 +192,14 @@ describe('BindToTextEditorCommand', () => {
         'file:///workspace/src/bound.ts',
         3,
       );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'BindToTextEditorCommand.executeWithPicker', fileCount: 0 },
+        'Starting bind to text editor command',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'BindToTextEditorCommand.executeWithPicker' },
+        'No files available',
+      );
     });
 
     it('passes no bound state to getAllFileItems when nothing is bound', async () => {
@@ -200,6 +208,14 @@ describe('BindToTextEditorCommand', () => {
       await command.execute();
 
       expect(mockAvailabilityService.getAllFileItems).toHaveBeenCalledWith(undefined, undefined);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'BindToTextEditorCommand.executeWithPicker', fileCount: 0 },
+        'Starting bind to text editor command',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'BindToTextEditorCommand.executeWithPicker' },
+        'No files available',
+      );
     });
   });
 });

@@ -137,7 +137,12 @@ describe('buildFilePickerItems', () => {
 
   it('passes through bound file description unchanged', () => {
     const boundFile = createMockTextEditorQuickPickItem(
-      createMockEligibleFile({ filename: 'app.ts', viewColumn: 1, isCurrentInGroup: true, boundState: 'bound' }),
+      createMockEligibleFile({
+        filename: 'app.ts',
+        viewColumn: 1,
+        isCurrentInGroup: true,
+        boundState: 'bound',
+      }),
       'bound',
     );
 
