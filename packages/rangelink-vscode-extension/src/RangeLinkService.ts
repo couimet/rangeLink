@@ -21,8 +21,8 @@ import {
 import type { DestinationPicker } from './destinations/DestinationPicker';
 import { compareTerminalsByProcessId } from './destinations/equality';
 import type { PasteDestination } from './destinations/PasteDestination';
-import { resolveBoundTerminalProcessId } from './destinations/utils';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
+import { resolveBoundTerminalProcessId } from './destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from './errors';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import {
