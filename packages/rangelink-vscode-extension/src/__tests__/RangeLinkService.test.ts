@@ -2095,6 +2095,7 @@ describe('RangeLinkService', () => {
   describe('createLink()', () => {
     let mockGenerateLink: jest.SpyInstance;
     let mockCopyToClipboard: jest.SpyInstance;
+    let mockResolveDestinationBehavior: jest.SpyInstance;
 
     beforeEach(() => {
       mockEditor = createMockEditor();
@@ -2124,6 +2125,7 @@ describe('RangeLinkService', () => {
       // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
       mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
       mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+      mockResolveDestinationBehavior = jest.spyOn(service as any, 'resolveDestinationBehavior');
     });
 
     it('should call generateLinkFromSelection with WorkspaceRelative and Regular linkType', async () => {
@@ -2181,6 +2183,151 @@ describe('RangeLinkService', () => {
       await service.createLink(PathFormat.WorkspaceRelative);
 
       expect(mockCopyToClipboard).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.createLinkCore', linkType: 'regular' },
+        'generateLinkFromSelection returned undefined, aborting',
+      );
+    });
+
+    it('should not call resolveDestinationBehavior when generateLinkFromSelection returns null', async () => {
+      mockGenerateLink.mockResolvedValue(null);
+
+      await service.createLink(PathFormat.WorkspaceRelative);
+
+      expect(mockResolveDestinationBehavior).not.toHaveBeenCalled();
+    });
+
+    it('should not show picker when already bound', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
+
+      await service.createLink(PathFormat.WorkspaceRelative);
+
+      expect(mockPickerCommand.pick).not.toHaveBeenCalled();
+    });
+
+    describe('when no destination bound', () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10');
+
+      beforeEach(() => {
+        mockDestinationManager = createMockDestinationManager({ isBound: false });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+      });
+
+      it('should abort without clipboard write when picker is cancelled', async () => {
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
+
+        await service.createLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'regular' },
+          'No destination bound, showing quick pick',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'regular', outcome: 'cancelled' },
+          'Picker did not bind, aborting',
+        );
+      });
+
+      it('should abort without clipboard write when no destinations available', async () => {
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'no-resource' });
+
+        await service.createLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'regular', outcome: 'no-resource' },
+          'Picker did not bind, aborting',
+        );
+      });
+
+      it('should call copyToClipboardAndDestination with BoundDestination when picker binds', async () => {
+        const mockTerminal = createMockTerminal();
+        mockPickerCommand.pick.mockResolvedValue({
+          outcome: 'selected',
+          bindOptions: { kind: 'terminal', terminal: mockTerminal },
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: false,
+          boundDestination: createMockTerminalPasteDestination(),
+          bindResult: Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
+        });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+
+        await service.createLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).toHaveBeenCalledWith(
+          mockFormattedLink,
+          'RangeLink',
+          mockEditor.document.uri,
+          'bound-destination',
+        );
+        expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+      });
+
+      it('should call copyToClipboardAndDestination with ClipboardOnly when background tab opened via picker', async () => {
+        const mockTerminal = createMockTerminal();
+        mockPickerCommand.pick.mockResolvedValue({
+          outcome: 'selected',
+          bindOptions: { kind: 'terminal', terminal: mockTerminal },
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: false,
+          bindResult: Result.ok({
+            destinationName: 'Terminal',
+            destinationKind: 'terminal',
+            suppressAutoPaste: true,
+          }),
+        });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+
+        await service.createLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).toHaveBeenCalledWith(
+          mockFormattedLink,
+          'RangeLink',
+          mockEditor.document.uri,
+          'clipboard-only',
+        );
+        expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+      });
     });
 
     describe('when no active editor', () => {
@@ -2247,6 +2394,7 @@ describe('RangeLinkService', () => {
   describe('createPortableLink()', () => {
     let mockGenerateLink: jest.SpyInstance;
     let mockCopyToClipboard: jest.SpyInstance;
+    let mockResolveDestinationBehavior: jest.SpyInstance;
 
     beforeEach(() => {
       mockEditor = createMockEditor();
@@ -2276,6 +2424,7 @@ describe('RangeLinkService', () => {
       // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
       mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
       mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+      mockResolveDestinationBehavior = jest.spyOn(service as any, 'resolveDestinationBehavior');
     });
 
     it('should call generateLinkFromSelection with WorkspaceRelative and Portable linkType', async () => {
@@ -2335,6 +2484,151 @@ describe('RangeLinkService', () => {
       await service.createPortableLink(PathFormat.WorkspaceRelative);
 
       expect(mockCopyToClipboard).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.createLinkCore', linkType: 'portable' },
+        'generateLinkFromSelection returned undefined, aborting',
+      );
+    });
+
+    it('should not call resolveDestinationBehavior when generateLinkFromSelection returns null', async () => {
+      mockGenerateLink.mockResolvedValue(null);
+
+      await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+      expect(mockResolveDestinationBehavior).not.toHaveBeenCalled();
+    });
+
+    it('should not show picker when already bound', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10{L:LINE,C:COL}');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
+
+      await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+      expect(mockPickerCommand.pick).not.toHaveBeenCalled();
+    });
+
+    describe('when no destination bound', () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10{L:LINE,C:COL}');
+
+      beforeEach(() => {
+        mockDestinationManager = createMockDestinationManager({ isBound: false });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+      });
+
+      it('should abort without clipboard write when picker is cancelled', async () => {
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
+
+        await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'portable' },
+          'No destination bound, showing quick pick',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'portable', outcome: 'cancelled' },
+          'Picker did not bind, aborting',
+        );
+      });
+
+      it('should abort without clipboard write when no destinations available', async () => {
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'no-resource' });
+
+        await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'portable', outcome: 'no-resource' },
+          'Picker did not bind, aborting',
+        );
+      });
+
+      it('should call copyToClipboardAndDestination with BoundDestination when picker binds', async () => {
+        const mockTerminal = createMockTerminal();
+        mockPickerCommand.pick.mockResolvedValue({
+          outcome: 'selected',
+          bindOptions: { kind: 'terminal', terminal: mockTerminal },
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: false,
+          boundDestination: createMockTerminalPasteDestination(),
+          bindResult: Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
+        });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+
+        await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).toHaveBeenCalledWith(
+          mockFormattedLink,
+          'Portable RangeLink',
+          mockEditor.document.uri,
+          'bound-destination',
+        );
+        expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+      });
+
+      it('should call copyToClipboardAndDestination with ClipboardOnly when background tab opened via picker', async () => {
+        const mockTerminal = createMockTerminal();
+        mockPickerCommand.pick.mockResolvedValue({
+          outcome: 'selected',
+          bindOptions: { kind: 'terminal', terminal: mockTerminal },
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: false,
+          bindResult: Result.ok({
+            destinationName: 'Terminal',
+            destinationKind: 'terminal',
+            suppressAutoPaste: true,
+          }),
+        });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+
+        await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).toHaveBeenCalledWith(
+          mockFormattedLink,
+          'Portable RangeLink',
+          mockEditor.document.uri,
+          'clipboard-only',
+        );
+        expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
