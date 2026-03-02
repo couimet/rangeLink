@@ -892,7 +892,9 @@ export class RangeLinkService {
    * Resolves the destination behavior for a Send command, showing the picker if no destination is bound.
    * Returns undefined when the picker did not produce a usable destination — caller should abort.
    */
-  private async resolveDestinationBehavior(logCtx: LoggingContext): Promise<DestinationBehavior | undefined> {
+  private async resolveDestinationBehavior(
+    logCtx: LoggingContext,
+  ): Promise<DestinationBehavior | undefined> {
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
       const pickerResult = await this.showPickerAndBind();

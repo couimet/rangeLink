@@ -2824,7 +2824,10 @@ describe('RangeLinkService', () => {
       const { service: localService } = createServiceWithDirtyDocument(true, true);
       mockShowWarningMessage.mockResolvedValue('Generate Anyway');
 
-      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, LinkType.Regular);
+      await (localService as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        LinkType.Regular,
+      );
 
       expect(mockShowWarningMessage).toHaveBeenCalledWith(
         'File has unsaved changes. Link may point to wrong position after save.',
@@ -2844,7 +2847,10 @@ describe('RangeLinkService', () => {
     it('should NOT show warning when document is dirty but setting is disabled', async () => {
       const { service: localService } = createServiceWithDirtyDocument(true, false);
 
-      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, LinkType.Regular);
+      await (localService as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        LinkType.Regular,
+      );
 
       expect(mockShowWarningMessage).not.toHaveBeenCalled();
       expect(mockGenerateLinkFromSelections).toHaveBeenCalled();
@@ -2857,7 +2863,10 @@ describe('RangeLinkService', () => {
     it('should NOT show warning when document is not dirty', async () => {
       const { service: localService } = createServiceWithDirtyDocument(false, true);
 
-      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, LinkType.Regular);
+      await (localService as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        LinkType.Regular,
+      );
 
       expect(mockShowWarningMessage).not.toHaveBeenCalled();
       expect(mockGenerateLinkFromSelections).toHaveBeenCalled();
@@ -2976,7 +2985,10 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, LinkType.Regular);
+      await (service as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        LinkType.Regular,
+      );
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
         referencePath: 'src/file.ts',
@@ -3014,7 +3026,10 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, LinkType.Regular);
+      await (service as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        LinkType.Regular,
+      );
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
         referencePath: '/standalone/file.ts',

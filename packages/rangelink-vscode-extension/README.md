@@ -259,28 +259,28 @@ The `~` separator marks embedded delimiters that override recipient's local sett
 
 Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "RangeLink".
 
-| Command                                                  | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                                              |
-| -------------------------------------------------------- | ------------------- | --------------------- | -------------------------------------------------------- |
-| Open Menu <sup>Unreleased</sup>                          | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`       | Open the RangeLink menu                                  |
-| Send RangeLink <sup>Unreleased</sup>                     | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Send link to bound destination                           |
-| Send RangeLink (Absolute) <sup>Unreleased</sup>          | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Send absolute path link to bound destination             |
-| Send Portable Link <sup>Unreleased</sup>                 | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Send BYOD portable link to bound destination             |
-| Send Portable Link (Absolute) <sup>Unreleased</sup>      | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Send BYOD portable link (absolute path) to bound destination |
-| Copy RangeLink                                           | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`       | Copy link to clipboard (skip destination)                |
-| Copy RangeLink (Absolute)                                | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C` | Copy absolute path link to clipboard (skip destination)  |
-| Send Selected Text                                       | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination         |
-| Send Current File Path <sup>Unreleased</sup>             | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`       | Send active editor's path to bound destination           |
-| Send Current File Path (Absolute) <sup>Unreleased</sup>  | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F` | Send active editor's absolute path to bound destination  |
-| Bind to Destination <sup>Unreleased</sup>                | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`       | Open destination picker to select and bind a target      |
-| Bind to Claude Code                                      | —                   | —                     | Auto-send links to Claude Code chat                      |
-| Bind to Cursor AI                                        | —                   | —                     | Auto-send links to Cursor AI chat                        |
-| Bind to GitHub Copilot Chat                              | —                   | —                     | Auto-send links to Copilot Chat                          |
-| Bind to Terminal                                         | —                   | —                     | Auto-send links to integrated terminal for AI workflows  |
-| Bind to Text Editor                                      | —                   | —                     | Auto-paste links at insertion point in bound text editor |
-| Jump to Bound Destination                                | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound destination                   |
-| Go to Link <sup>Unreleased</sup>                         | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`       | Paste/type a RangeLink to go to that code location       |
-| Unbind <sup>Unreleased</sup>                             | `Cmd+R Cmd+U`       | `Ctrl+R Ctrl+U`       | Stop auto-sending links to bound destination             |
-| Show Version Info                                        | —                   | —                     | Display version and build info                           |
+| Command                                                 | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                                                  |
+| ------------------------------------------------------- | ------------------- | --------------------- | ------------------------------------------------------------ |
+| Open Menu <sup>Unreleased</sup>                         | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`       | Open the RangeLink menu                                      |
+| Send RangeLink <sup>Unreleased</sup>                    | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Send link to bound destination                               |
+| Send RangeLink (Absolute) <sup>Unreleased</sup>         | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Send absolute path link to bound destination                 |
+| Send Portable Link <sup>Unreleased</sup>                | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Send BYOD portable link to bound destination                 |
+| Send Portable Link (Absolute) <sup>Unreleased</sup>     | `Cmd+R Cmd+Shift+P` | `Ctrl+R Ctrl+Shift+P` | Send BYOD portable link (absolute path) to bound destination |
+| Copy RangeLink                                          | `Cmd+R Cmd+C`       | `Ctrl+R Ctrl+C`       | Copy link to clipboard (skip destination)                    |
+| Copy RangeLink (Absolute)                               | `Cmd+R Cmd+Shift+C` | `Ctrl+R Ctrl+Shift+C` | Copy absolute path link to clipboard (skip destination)      |
+| Send Selected Text                                      | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination             |
+| Send Current File Path <sup>Unreleased</sup>            | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`       | Send active editor's path to bound destination               |
+| Send Current File Path (Absolute) <sup>Unreleased</sup> | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F` | Send active editor's absolute path to bound destination      |
+| Bind to Destination <sup>Unreleased</sup>               | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`       | Open destination picker to select and bind a target          |
+| Bind to Claude Code                                     | —                   | —                     | Auto-send links to Claude Code chat                          |
+| Bind to Cursor AI                                       | —                   | —                     | Auto-send links to Cursor AI chat                            |
+| Bind to GitHub Copilot Chat                             | —                   | —                     | Auto-send links to Copilot Chat                              |
+| Bind to Terminal                                        | —                   | —                     | Auto-send links to integrated terminal for AI workflows      |
+| Bind to Text Editor                                     | —                   | —                     | Auto-paste links at insertion point in bound text editor     |
+| Jump to Bound Destination                               | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound destination                       |
+| Go to Link <sup>Unreleased</sup>                        | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`       | Paste/type a RangeLink to go to that code location           |
+| Unbind <sup>Unreleased</sup>                            | `Cmd+R Cmd+U`       | `Ctrl+R Ctrl+U`       | Stop auto-sending links to bound destination                 |
+| Show Version Info                                       | —                   | —                     | Display version and build info                               |
 
 <!-- TODO: #366 unhide when bookmarks graduates from beta — re-add these rows to the Commands table above
 | Save Selection as Bookmark <sup>Unreleased</sup>         | `Cmd+R Cmd+B Cmd+S` | `Ctrl+R Ctrl+B Ctrl+S` | Save current selection as a reusable bookmark            |
@@ -305,26 +305,26 @@ RangeLink integrates directly into VSCode's right-click menus for fast, keyboard
 
 Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 
-| Menu Item                           | Visibility | Action                                  |
-| ----------------------------------- | ---------- | --------------------------------------- |
+| Menu Item                          | Visibility | Action                                  |
+| ---------------------------------- | ---------- | --------------------------------------- |
 | RangeLink: Send File Path          | Always     | Send absolute path to bound destination |
 | RangeLink: Send Relative File Path | Always     | Send relative path to bound destination |
 | RangeLink: Bind Here               | Files only | Open file and bind as destination       |
-| RangeLink: Unbind                   | When bound | Unbind current destination              |
+| RangeLink: Unbind                  | When bound | Unbind current destination              |
 
 #### Editor Tab (right-click on tabs)
 
-| Menu Item                           | Visibility       | Action                                  |
-| ----------------------------------- | ---------------- | --------------------------------------- |
+| Menu Item                          | Visibility       | Action                                  |
+| ---------------------------------- | ---------------- | --------------------------------------- |
 | RangeLink: Send File Path          | Always           | Send absolute path to bound destination |
 | RangeLink: Send Relative File Path | Always           | Send relative path to bound destination |
 | RangeLink: Bind Here               | File or untitled | Bind this editor as destination         |
-| RangeLink: Unbind                   | When bound       | Unbind current destination              |
+| RangeLink: Unbind                  | When bound       | Unbind current destination              |
 
 #### Editor Content (right-click inside editor)
 
-| Menu Item                                  | Visibility       | Action                                  |
-| ------------------------------------------ | ---------------- | --------------------------------------- |
+| Menu Item                                 | Visibility       | Action                                  |
+| ----------------------------------------- | ---------------- | --------------------------------------- |
 | RangeLink: Send RangeLink                 | Has selection    | Send link to bound destination          |
 | RangeLink: Send RangeLink (Absolute)      | Has selection    | Send absolute path link to destination  |
 | RangeLink: Send Portable Link             | Has selection    | Send BYOD portable link to destination  |
@@ -333,8 +333,8 @@ Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 | ─── _separator_ ───                       |                  |                                         |
 | RangeLink: Send This File's Path          | Always           | Send absolute path to bound destination |
 | RangeLink: Send This File's Relative Path | Always           | Send relative path to bound destination |
-| RangeLink: Bind Here                       | File or untitled | Bind this editor as destination         |
-| RangeLink: Unbind                          | When bound       | Unbind current destination              |
+| RangeLink: Bind Here                      | File or untitled | Bind this editor as destination         |
+| RangeLink: Unbind                         | When bound       | Unbind current destination              |
 
 <!-- TODO: #366 unhide when bookmarks graduates from beta — re-add this row to the Editor Content table above (after Paste Selected Text)
 | RangeLink: Save Selection as Bookmark      | Has selection    | Save selection for quick access later   |
@@ -342,11 +342,11 @@ Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 
 #### Terminal (right-click on tab or inside terminal)
 
-| Menu Item                                                       | Visibility              | Action                                          |
-| --------------------------------------------------------------- | ----------------------- | ----------------------------------------------- |
-| RangeLink: Send Selection to Destination <sup>Unreleased</sup>  | Text selected and bound | Copy terminal selection and send to destination |
-| RangeLink: Bind Here                                            | Always                  | Bind this terminal as destination               |
-| RangeLink: Unbind                                               | When bound              | Unbind current destination                      |
+| Menu Item                                                      | Visibility              | Action                                          |
+| -------------------------------------------------------------- | ----------------------- | ----------------------------------------------- |
+| RangeLink: Send Selection to Destination <sup>Unreleased</sup> | Text selected and bound | Copy terminal selection and send to destination |
+| RangeLink: Bind Here                                           | Always                  | Bind this terminal as destination               |
+| RangeLink: Unbind                                              | When bound              | Unbind current destination                      |
 
 ## Configuration
 
