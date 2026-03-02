@@ -1,7 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import type { DelimiterConfig, DelimiterConfigGetter } from 'rangelink-core-ts';
-import { Result } from 'rangelink-core-ts';
+import { LinkType, Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { JumpToDestinationCommand } from '../commands/JumpToDestinationCommand';
@@ -2126,25 +2126,25 @@ describe('RangeLinkService', () => {
       mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
     });
 
-    it('should call generateLinkFromSelection with WorkspaceRelative and portable=false', async () => {
+    it('should call generateLinkFromSelection with WorkspaceRelative and Regular linkType', async () => {
       const mockFormattedLink = createMockFormattedLink('src/file.ts#L10-L20');
       mockGenerateLink.mockResolvedValue(mockFormattedLink);
       mockCopyToClipboard.mockResolvedValue(undefined);
 
       await service.createLink(PathFormat.WorkspaceRelative);
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'regular');
       expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
-    it('should call generateLinkFromSelection with Absolute and portable=false', async () => {
+    it('should call generateLinkFromSelection with Absolute and Regular linkType', async () => {
       const mockFormattedLink = createMockFormattedLink('/workspace/src/file.ts#L10-L20');
       mockGenerateLink.mockResolvedValue(mockFormattedLink);
       mockCopyToClipboard.mockResolvedValue(undefined);
 
       await service.createLink(PathFormat.Absolute);
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.Absolute, false);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.Absolute, 'regular');
       expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
@@ -2155,7 +2155,7 @@ describe('RangeLinkService', () => {
 
       await service.createLink(); // No argument
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'regular');
     });
 
     it('should call copyToClipboardAndDestination when link generated', async () => {
@@ -2278,18 +2278,18 @@ describe('RangeLinkService', () => {
       mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
     });
 
-    it('should call generateLinkFromSelection with WorkspaceRelative and portable=true', async () => {
+    it('should call generateLinkFromSelection with WorkspaceRelative and Portable linkType', async () => {
       const mockFormattedLink = createMockFormattedLink('src/file.ts#L10-L20{L:LINE,C:COL}');
       mockGenerateLink.mockResolvedValue(mockFormattedLink);
       mockCopyToClipboard.mockResolvedValue(undefined);
 
       await service.createPortableLink(PathFormat.WorkspaceRelative);
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, true);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'portable');
       expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
-    it('should call generateLinkFromSelection with Absolute and portable=true', async () => {
+    it('should call generateLinkFromSelection with Absolute and Portable linkType', async () => {
       const mockFormattedLink = createMockFormattedLink(
         '/workspace/src/file.ts#L10-L20{L:LINE,C:COL}',
       );
@@ -2298,7 +2298,7 @@ describe('RangeLinkService', () => {
 
       await service.createPortableLink(PathFormat.Absolute);
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.Absolute, true);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.Absolute, 'portable');
       expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
@@ -2309,7 +2309,7 @@ describe('RangeLinkService', () => {
 
       await service.createPortableLink(); // No argument
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, true);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'portable');
     });
 
     it('should call copyToClipboardAndDestination with Portable RangeLink label', async () => {
@@ -2381,7 +2381,7 @@ describe('RangeLinkService', () => {
 
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        LinkType.Regular,
       );
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
@@ -2405,7 +2405,7 @@ describe('RangeLinkService', () => {
 
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        true,
+        LinkType.Portable,
       );
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
@@ -2433,7 +2433,7 @@ describe('RangeLinkService', () => {
 
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        LinkType.Regular,
       );
 
       expect(result).toBeUndefined();
@@ -2454,7 +2454,7 @@ describe('RangeLinkService', () => {
 
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        true,
+        LinkType.Portable,
       );
 
       expect(result).toBeUndefined();
@@ -2530,7 +2530,7 @@ describe('RangeLinkService', () => {
       const { service: localService } = createServiceWithDirtyDocument(true, true);
       mockShowWarningMessage.mockResolvedValue('Generate Anyway');
 
-      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, LinkType.Regular);
 
       expect(mockShowWarningMessage).toHaveBeenCalledWith(
         'File has unsaved changes. Link may point to wrong position after save.',
@@ -2550,7 +2550,7 @@ describe('RangeLinkService', () => {
     it('should NOT show warning when document is dirty but setting is disabled', async () => {
       const { service: localService } = createServiceWithDirtyDocument(true, false);
 
-      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, LinkType.Regular);
 
       expect(mockShowWarningMessage).not.toHaveBeenCalled();
       expect(mockGenerateLinkFromSelections).toHaveBeenCalled();
@@ -2563,7 +2563,7 @@ describe('RangeLinkService', () => {
     it('should NOT show warning when document is not dirty', async () => {
       const { service: localService } = createServiceWithDirtyDocument(false, true);
 
-      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, LinkType.Regular);
 
       expect(mockShowWarningMessage).not.toHaveBeenCalled();
       expect(mockGenerateLinkFromSelections).toHaveBeenCalled();
@@ -2575,7 +2575,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        'Regular',
       );
 
       expect(mockDocument.save).toHaveBeenCalled();
@@ -2593,7 +2593,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        'Regular',
       );
 
       expect(mockDocument.save).not.toHaveBeenCalled();
@@ -2611,7 +2611,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        'Regular',
       );
 
       expect(mockDocument.save).not.toHaveBeenCalled();
@@ -2630,7 +2630,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        'Regular',
       );
 
       expect(mockDocument.save).toHaveBeenCalled();
@@ -2682,7 +2682,7 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+      await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, LinkType.Regular);
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
         referencePath: 'src/file.ts',
@@ -2720,7 +2720,7 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+      await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, LinkType.Regular);
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
         referencePath: '/standalone/file.ts',
@@ -2758,7 +2758,7 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      await (service as any).generateLinkFromSelection(PathFormat.Absolute, false);
+      await (service as any).generateLinkFromSelection(PathFormat.Absolute, LinkType.Regular);
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
         referencePath: '/workspace/src/file.ts',
@@ -2798,7 +2798,7 @@ describe('RangeLinkService', () => {
 
       await service.createLinkOnly(PathFormat.WorkspaceRelative);
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'regular');
       expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
@@ -2844,7 +2844,7 @@ describe('RangeLinkService', () => {
 
       await service.createLinkOnly(); // No argument
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'regular');
     });
   });
 

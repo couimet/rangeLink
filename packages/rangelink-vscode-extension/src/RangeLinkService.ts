@@ -116,7 +116,7 @@ export class RangeLinkService {
    */
   async createLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
     const logCtx = { fn: 'RangeLinkService.createLink' };
-    const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
+    const formattedLink = await this.generateLinkFromSelection(pathFormat, LinkType.Regular);
     if (formattedLink) {
       let destinationBehavior = DestinationBehavior.BoundDestination;
 
@@ -155,7 +155,7 @@ export class RangeLinkService {
    * @param pathFormat Whether to use relative or absolute paths
    */
   async createLinkOnly(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
+    const formattedLink = await this.generateLinkFromSelection(pathFormat, LinkType.Regular);
     if (formattedLink) {
       await this.copyAndSendToDestination({
         control: {
@@ -181,7 +181,7 @@ export class RangeLinkService {
    */
   async createPortableLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
     const logCtx = { fn: 'RangeLinkService.createPortableLink' };
-    const formattedLink = await this.generateLinkFromSelection(pathFormat, true);
+    const formattedLink = await this.generateLinkFromSelection(pathFormat, LinkType.Portable);
     if (formattedLink) {
       let destinationBehavior = DestinationBehavior.BoundDestination;
 
@@ -566,12 +566,12 @@ export class RangeLinkService {
   /**
    * Generates a link from the current editor selection
    * @param pathFormat Whether to use relative or absolute paths
-   * @param isPortable Whether to generate a portable link with embedded delimiters
+   * @param linkType Whether to generate a regular or portable link
    * @returns The generated FormattedLink with metadata, or undefined if generation failed
    */
   private async generateLinkFromSelection(
     pathFormat: PathFormat,
-    isPortable: boolean,
+    linkType: LinkType,
   ): Promise<FormattedLink | undefined> {
     const validated = this.validateSelectionsAndShowError();
     if (!validated) {
@@ -600,7 +600,6 @@ export class RangeLinkService {
     }
 
     const referencePath = this.getReferencePath(document.uri, pathFormat);
-    const linkType = isPortable ? LinkType.Portable : LinkType.Regular;
 
     const result = generateLinkFromSelections({
       referencePath,
@@ -612,7 +611,7 @@ export class RangeLinkService {
     });
 
     if (!result.success) {
-      const linkTypeName = isPortable ? 'portable link' : 'link';
+      const linkTypeName = linkType === LinkType.Portable ? 'portable link' : 'link';
       this.logger.error(
         { fn: 'generateLinkFromSelection', error: result.error, linkType },
         `Failed to generate ${linkTypeName}`,
