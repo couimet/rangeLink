@@ -132,6 +132,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Vocabulary alignment: "Paste Destination" → "Destination"** - Docs now use "destination" and "bind/bound" consistently (#339)
   - The "Paste" prefix was coined in v0.3.0 when destinations only pasted links — the feature now supports bind, unbind, jump, focus, and pick
   - Section headers, body text, and context menu descriptions updated across README and CHANGELOG
+- **Two-verb command vocabulary** — Commands now use **Send** (deliver to destination, picker if unbound) or **Copy** (clipboard only) instead of the previous mix of "Copy" and "Paste" verbs (#373)
+  - "Copy Range Link" → **Send RangeLink** (now delivers to destination; see picker-when-unbound behavior below)
+  - "Copy Range Link (Absolute)" → **Send RangeLink (Absolute)**
+  - "Copy Portable Link" → **Send Portable Link**
+  - "Copy Portable Link (Absolute)" → **Send Portable Link (Absolute)**
+  - "Copy Range Link (Clipboard Only)" → **Copy RangeLink** (always clipboard; verb is now unambiguous)
+  - "Copy Range Link (Clipboard Only, Absolute)" → **Copy RangeLink (Absolute)**
+  - "Paste Selected Text to Bound Destination" → **Send Selected Text**
+  - "Paste Current File Path" → **Send Current File Path**; "Paste Current File Path (Absolute)" → **Send Current File Path (Absolute)**
+  - "Paste File Path" → **Send File Path**; "Paste File Path (Absolute)" → **Send File Path (Absolute)**
+  - Context menu entries updated to match (e.g., "RangeLink: Paste Selected Text" → "RangeLink: Send Selected Text")
+- **Send RangeLink and Send Portable Link show picker when unbound** — These commands now open the destination picker when no destination is bound, consistent with Send Selected Text and Send File Path (#373)
+  - **Before:** Fell back silently to clipboard when unbound
+  - **After:** Opens destination picker; binds and sends in one action; dismisses silently on Escape
+  - Use Copy RangeLink or Copy RangeLink (Absolute) for clipboard-only behavior
 
 ### Fixed
 
