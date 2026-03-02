@@ -971,7 +971,7 @@ describe('RangeLinkService', () => {
             'No destination bound, showing quick pick',
           );
           expect(mockLogger.info).toHaveBeenCalledWith(
-            { fn: 'RangeLinkService.showPickerAndBindForPaste' },
+            { fn: 'RangeLinkService.showPickerAndBind' },
             'User cancelled quick pick - no action taken',
           );
           expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -1009,7 +1009,7 @@ describe('RangeLinkService', () => {
             'No destination bound, showing quick pick',
           );
           expect(mockLogger.info).toHaveBeenCalledWith(
-            { fn: 'RangeLinkService.showPickerAndBindForPaste' },
+            { fn: 'RangeLinkService.showPickerAndBind' },
             'User cancelled quick pick - no action taken',
           );
           expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -1103,7 +1103,7 @@ describe('RangeLinkService', () => {
           expect(showErrorMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
           expect(mockLogger.error).toHaveBeenCalledWith(
             {
-              fn: 'RangeLinkService.showPickerAndBindForPaste',
+              fn: 'RangeLinkService.showPickerAndBind',
               error: bindError,
             },
             'Binding failed - no action taken',
@@ -1138,7 +1138,7 @@ describe('RangeLinkService', () => {
           await service.pasteSelectedTextToDestination();
 
           expect(mockLogger.debug).toHaveBeenCalledWith(
-            { fn: 'RangeLinkService.showPickerAndBindForPaste' },
+            { fn: 'RangeLinkService.showPickerAndBind' },
             'Bind requested auto-paste suppression — returning bound-no-paste',
           );
           expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');

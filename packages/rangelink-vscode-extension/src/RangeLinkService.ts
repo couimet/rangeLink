@@ -212,7 +212,7 @@ export class RangeLinkService {
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
-      const pickerResult = await this.showPickerAndBindForPaste();
+      const pickerResult = await this.showPickerAndBind();
       if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
         this.logger.debug(
           { ...logCtx, outcome: pickerResult.outcome },
@@ -313,7 +313,7 @@ export class RangeLinkService {
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
-      const pickerResult = await this.showPickerAndBindForPaste();
+      const pickerResult = await this.showPickerAndBind();
       if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
         this.logger.debug(
           { ...logCtx, outcome: pickerResult.outcome },
@@ -481,7 +481,7 @@ export class RangeLinkService {
     if (!this.destinationManager.isBound()) {
       this.logger.debug(logCtx, 'No destination bound, showing quick pick');
 
-      const pickerResult = await this.showPickerAndBindForPaste();
+      const pickerResult = await this.showPickerAndBind();
       if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
         this.logger.debug(
           { ...logCtx, outcome: pickerResult.outcome },
@@ -923,8 +923,8 @@ export class RangeLinkService {
    *
    * @returns QuickPickBindResult with outcome and error details if binding failed
    */
-  private async showPickerAndBindForPaste(): Promise<QuickPickBindResult> {
-    const logCtx = { fn: 'RangeLinkService.showPickerAndBindForPaste' };
+  private async showPickerAndBind(): Promise<QuickPickBindResult> {
+    const logCtx = { fn: 'RangeLinkService.showPickerAndBind' };
 
     const boundDest = this.destinationManager.getBoundDestination();
     const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
@@ -974,7 +974,7 @@ export class RangeLinkService {
         throw new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
           message: 'Unexpected picker result outcome',
-          functionName: 'RangeLinkService.showPickerAndBindForPaste',
+          functionName: 'RangeLinkService.showPickerAndBind',
           details: { result: _exhaustiveCheck },
         });
       }
