@@ -48,7 +48,7 @@ describe('package.json contributions', () => {
       it('rangelink.copyLinkWithRelativePath', () => {
         expect(findCommand('rangelink.copyLinkWithRelativePath')).toStrictEqual({
           command: 'rangelink.copyLinkWithRelativePath',
-          title: 'Copy Range Link',
+          title: 'Send RangeLink',
           category: 'RangeLink',
           icon: '$(link)',
           enablement: 'editorHasSelection',
@@ -58,7 +58,7 @@ describe('package.json contributions', () => {
       it('rangelink.copyLinkWithAbsolutePath', () => {
         expect(findCommand('rangelink.copyLinkWithAbsolutePath')).toStrictEqual({
           command: 'rangelink.copyLinkWithAbsolutePath',
-          title: 'Copy Range Link (Absolute)',
+          title: 'Send RangeLink (Absolute)',
           category: 'RangeLink',
           icon: '$(link-external)',
           enablement: 'editorHasSelection',
@@ -68,7 +68,7 @@ describe('package.json contributions', () => {
       it('rangelink.copyPortableLinkWithRelativePath', () => {
         expect(findCommand('rangelink.copyPortableLinkWithRelativePath')).toStrictEqual({
           command: 'rangelink.copyPortableLinkWithRelativePath',
-          title: 'Copy Portable Link',
+          title: 'Send Portable Link',
           category: 'RangeLink',
           icon: '$(link-external)',
           enablement: 'editorHasSelection',
@@ -78,7 +78,7 @@ describe('package.json contributions', () => {
       it('rangelink.copyPortableLinkWithAbsolutePath', () => {
         expect(findCommand('rangelink.copyPortableLinkWithAbsolutePath')).toStrictEqual({
           command: 'rangelink.copyPortableLinkWithAbsolutePath',
-          title: 'Copy Portable Link (Absolute)',
+          title: 'Send Portable Link (Absolute)',
           category: 'RangeLink',
           icon: '$(link-external)',
           enablement: 'editorHasSelection',
@@ -88,7 +88,7 @@ describe('package.json contributions', () => {
       it('rangelink.copyLinkOnlyWithRelativePath', () => {
         expect(findCommand('rangelink.copyLinkOnlyWithRelativePath')).toStrictEqual({
           command: 'rangelink.copyLinkOnlyWithRelativePath',
-          title: 'Copy Range Link (Clipboard Only)',
+          title: 'Copy RangeLink',
           category: 'RangeLink',
           icon: '$(clippy)',
           enablement: 'editorHasSelection',
@@ -98,7 +98,7 @@ describe('package.json contributions', () => {
       it('rangelink.copyLinkOnlyWithAbsolutePath', () => {
         expect(findCommand('rangelink.copyLinkOnlyWithAbsolutePath')).toStrictEqual({
           command: 'rangelink.copyLinkOnlyWithAbsolutePath',
-          title: 'Copy Range Link (Clipboard Only, Absolute)',
+          title: 'Copy RangeLink (Absolute)',
           category: 'RangeLink',
           icon: '$(clippy)',
           enablement: 'editorHasSelection',
@@ -110,7 +110,7 @@ describe('package.json contributions', () => {
       it('rangelink.pasteSelectedTextToDestination', () => {
         expect(findCommand('rangelink.pasteSelectedTextToDestination')).toStrictEqual({
           command: 'rangelink.pasteSelectedTextToDestination',
-          title: 'Paste Selected Text to Bound Destination',
+          title: 'Send Selected Text',
           category: 'RangeLink',
           icon: '$(symbol-snippet)',
           enablement: 'editorHasSelection',
@@ -264,7 +264,7 @@ describe('package.json contributions', () => {
       it('rangelink.pasteFileAbsolutePath', () => {
         expect(findCommand('rangelink.pasteFileAbsolutePath')).toStrictEqual({
           command: 'rangelink.pasteFileAbsolutePath',
-          title: 'Paste File Path (Absolute)',
+          title: 'Send File Path (Absolute)',
           category: 'RangeLink',
           icon: '$(file-symlink-file)',
         });
@@ -273,7 +273,7 @@ describe('package.json contributions', () => {
       it('rangelink.pasteFileRelativePath', () => {
         expect(findCommand('rangelink.pasteFileRelativePath')).toStrictEqual({
           command: 'rangelink.pasteFileRelativePath',
-          title: 'Paste File Path',
+          title: 'Send File Path',
           category: 'RangeLink',
           icon: '$(file-symlink-file)',
         });
@@ -284,7 +284,7 @@ describe('package.json contributions', () => {
       it('rangelink.pasteCurrentFileAbsolutePath', () => {
         expect(findCommand('rangelink.pasteCurrentFileAbsolutePath')).toStrictEqual({
           command: 'rangelink.pasteCurrentFileAbsolutePath',
-          title: 'Paste Current File Path (Absolute)',
+          title: 'Send Current File Path (Absolute)',
           category: 'RangeLink',
           icon: '$(file-symlink-file)',
           enablement: 'editorIsOpen',
@@ -294,7 +294,7 @@ describe('package.json contributions', () => {
       it('rangelink.pasteCurrentFileRelativePath', () => {
         expect(findCommand('rangelink.pasteCurrentFileRelativePath')).toStrictEqual({
           command: 'rangelink.pasteCurrentFileRelativePath',
-          title: 'Paste Current File Path',
+          title: 'Send Current File Path',
           category: 'RangeLink',
           icon: '$(file-symlink-file)',
           enablement: 'editorIsOpen',
@@ -306,7 +306,7 @@ describe('package.json contributions', () => {
       it('rangelink.explorer.pasteFilePath', () => {
         expect(findCommand('rangelink.explorer.pasteFilePath')).toStrictEqual({
           command: 'rangelink.explorer.pasteFilePath',
-          title: 'RangeLink: Paste File Path',
+          title: 'RangeLink: Send File Path',
           icon: '$(file-symlink-file)',
         });
       });
@@ -314,7 +314,7 @@ describe('package.json contributions', () => {
       it('rangelink.explorer.pasteRelativeFilePath', () => {
         expect(findCommand('rangelink.explorer.pasteRelativeFilePath')).toStrictEqual({
           command: 'rangelink.explorer.pasteRelativeFilePath',
-          title: 'RangeLink: Paste Relative File Path',
+          title: 'RangeLink: Send Relative File Path',
           icon: '$(file-symlink-file)',
         });
       });
@@ -322,7 +322,7 @@ describe('package.json contributions', () => {
       it('rangelink.editorTab.pasteFilePath', () => {
         expect(findCommand('rangelink.editorTab.pasteFilePath')).toStrictEqual({
           command: 'rangelink.editorTab.pasteFilePath',
-          title: 'RangeLink: Paste File Path',
+          title: 'RangeLink: Send File Path',
           icon: '$(file-symlink-file)',
         });
       });
@@ -330,7 +330,7 @@ describe('package.json contributions', () => {
       it('rangelink.editorTab.pasteRelativeFilePath', () => {
         expect(findCommand('rangelink.editorTab.pasteRelativeFilePath')).toStrictEqual({
           command: 'rangelink.editorTab.pasteRelativeFilePath',
-          title: 'RangeLink: Paste Relative File Path',
+          title: 'RangeLink: Send Relative File Path',
           icon: '$(file-symlink-file)',
         });
       });
@@ -338,7 +338,7 @@ describe('package.json contributions', () => {
       it('rangelink.editorContent.pasteFilePath', () => {
         expect(findCommand('rangelink.editorContent.pasteFilePath')).toStrictEqual({
           command: 'rangelink.editorContent.pasteFilePath',
-          title: "RangeLink: Paste This File's Path",
+          title: "RangeLink: Send This File's Path",
           icon: '$(file-symlink-file)',
         });
       });
@@ -346,7 +346,7 @@ describe('package.json contributions', () => {
       it('rangelink.editorContent.pasteRelativeFilePath', () => {
         expect(findCommand('rangelink.editorContent.pasteRelativeFilePath')).toStrictEqual({
           command: 'rangelink.editorContent.pasteRelativeFilePath',
-          title: "RangeLink: Paste This File's Relative Path",
+          title: "RangeLink: Send This File's Relative Path",
           icon: '$(file-symlink-file)',
         });
       });
@@ -402,7 +402,7 @@ describe('package.json contributions', () => {
       it('rangelink.editorContext.copyLink', () => {
         expect(findCommand('rangelink.editorContext.copyLink')).toStrictEqual({
           command: 'rangelink.editorContext.copyLink',
-          title: 'RangeLink: Copy Range Link',
+          title: 'RangeLink: Send RangeLink',
           icon: '$(link)',
         });
       });
@@ -410,7 +410,7 @@ describe('package.json contributions', () => {
       it('rangelink.editorContext.copyLinkAbsolute', () => {
         expect(findCommand('rangelink.editorContext.copyLinkAbsolute')).toStrictEqual({
           command: 'rangelink.editorContext.copyLinkAbsolute',
-          title: 'RangeLink: Copy Range Link (Absolute)',
+          title: 'RangeLink: Send RangeLink (Absolute)',
           icon: '$(link)',
         });
       });
@@ -418,7 +418,7 @@ describe('package.json contributions', () => {
       it('rangelink.editorContext.copyPortableLink', () => {
         expect(findCommand('rangelink.editorContext.copyPortableLink')).toStrictEqual({
           command: 'rangelink.editorContext.copyPortableLink',
-          title: 'RangeLink: Copy Portable Link',
+          title: 'RangeLink: Send Portable Link',
           icon: '$(link)',
         });
       });
@@ -426,7 +426,7 @@ describe('package.json contributions', () => {
       it('rangelink.editorContext.copyPortableLinkAbsolute', () => {
         expect(findCommand('rangelink.editorContext.copyPortableLinkAbsolute')).toStrictEqual({
           command: 'rangelink.editorContext.copyPortableLinkAbsolute',
-          title: 'RangeLink: Copy Portable Link (Absolute)',
+          title: 'RangeLink: Send Portable Link (Absolute)',
           icon: '$(link)',
         });
       });
@@ -434,7 +434,7 @@ describe('package.json contributions', () => {
       it('rangelink.editorContext.pasteSelectedText', () => {
         expect(findCommand('rangelink.editorContext.pasteSelectedText')).toStrictEqual({
           command: 'rangelink.editorContext.pasteSelectedText',
-          title: 'RangeLink: Paste Selected Text',
+          title: 'RangeLink: Send Selected Text',
           icon: '$(clippy)',
         });
       });
@@ -452,7 +452,7 @@ describe('package.json contributions', () => {
       it('rangelink.terminal.pasteSelectedTextToDestination', () => {
         expect(findCommand('rangelink.terminal.pasteSelectedTextToDestination')).toStrictEqual({
           command: 'rangelink.terminal.pasteSelectedTextToDestination',
-          title: 'RangeLink: Paste Selection to Destination',
+          title: 'RangeLink: Send Selection to Destination',
           icon: '$(symbol-snippet)',
         });
       });
