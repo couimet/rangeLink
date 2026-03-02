@@ -478,9 +478,13 @@ export class RangeLinkService {
     const logCtx = { fn: 'RangeLinkService.createLinkCore', linkType };
     const formattedLink = await this.generateLinkFromSelection(pathFormat, linkType);
     if (formattedLink) {
+      const sourceUri = this.ideAdapter.getActiveTextEditorUri();
+      if (!sourceUri) {
+        this.logger.debug(logCtx, 'Active editor URI unavailable, aborting');
+        return;
+      }
       const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
       if (destinationBehavior === undefined) return;
-      const sourceUri = this.ideAdapter.getActiveTextEditorUri()!;
       await this.copyToClipboardAndDestination(
         formattedLink,
         contentName,

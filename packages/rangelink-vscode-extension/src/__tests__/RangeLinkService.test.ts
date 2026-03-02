@@ -2207,6 +2207,20 @@ describe('RangeLinkService', () => {
       expect(mockPickerCommand.pick).not.toHaveBeenCalled();
     });
 
+    it('should abort and log when active editor URI is unavailable after link generation', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      jest.spyOn(mockVscodeAdapter, 'getActiveTextEditorUri').mockReturnValue(undefined);
+
+      await service.createLink(PathFormat.WorkspaceRelative);
+
+      expect(mockCopyToClipboard).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.createLinkCore', linkType: 'regular' },
+        'Active editor URI unavailable, aborting',
+      );
+    });
+
     describe('when no destination bound', () => {
       const mockFormattedLink = createMockFormattedLink('src/file.ts#L10');
 
@@ -2506,6 +2520,20 @@ describe('RangeLinkService', () => {
       await service.createPortableLink(PathFormat.WorkspaceRelative);
 
       expect(mockPickerCommand.pick).not.toHaveBeenCalled();
+    });
+
+    it('should abort and log when active editor URI is unavailable after link generation', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10{L:LINE,C:COL}');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      jest.spyOn(mockVscodeAdapter, 'getActiveTextEditorUri').mockReturnValue(undefined);
+
+      await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+      expect(mockCopyToClipboard).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.createLinkCore', linkType: 'portable' },
+        'Active editor URI unavailable, aborting',
+      );
     });
 
     describe('when no destination bound', () => {
