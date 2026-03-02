@@ -2108,7 +2108,10 @@ describe('RangeLinkService', () => {
           showInformationMessage: mockShowInformationMessage,
         },
       });
-      mockDestinationManager = createMockDestinationManager({ isBound: false });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: createMockTerminalPasteDestination(),
+      });
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -2167,6 +2170,7 @@ describe('RangeLinkService', () => {
         mockFormattedLink,
         'RangeLink',
         mockEditor.document.uri,
+        'bound-destination',
       );
     });
 
@@ -2256,7 +2260,10 @@ describe('RangeLinkService', () => {
           showInformationMessage: mockShowInformationMessage,
         },
       });
-      mockDestinationManager = createMockDestinationManager({ isBound: false });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: createMockTerminalPasteDestination(),
+      });
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -2316,6 +2323,7 @@ describe('RangeLinkService', () => {
         mockFormattedLink,
         'Portable RangeLink',
         mockEditor.document.uri,
+        'bound-destination',
       );
       expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
     });
@@ -3257,32 +3265,28 @@ describe('RangeLinkService', () => {
 
       // ===== PHASE 1: ALL OPERATIONS WHILE UNBOUND =====
 
-      // R-L: createLink — unbound → clipboard only toast
+      // R-L: createLink — unbound → picker cancelled → no action
+      picker.pick.mockResolvedValueOnce({ outcome: 'cancelled' });
       await svc.createLink();
-      expect(statusBar).toHaveBeenCalledTimes(1);
-      expect(statusBar).toHaveBeenNthCalledWith(
-        1,
-        '✓ RangeLink copied to clipboard',
-        STATUS_BAR_TIMEOUT,
-      );
-      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).not.toHaveBeenCalled();
 
       // R-V: pasteSelectedTextToDestination — unbound → picker cancelled → no action
       picker.pick.mockResolvedValue({ outcome: 'cancelled' });
       await svc.pasteSelectedTextToDestination();
-      expect(statusBar).toHaveBeenCalledTimes(1);
-      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).not.toHaveBeenCalled();
 
       // R-F: pasteCurrentFilePathToDestination — unbound → picker cancelled → no action
       picker.pick.mockResolvedValue({ outcome: 'cancelled' });
       await svc.pasteCurrentFilePathToDestination(PathFormat.Absolute);
-      expect(statusBar).toHaveBeenCalledTimes(1);
-      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).not.toHaveBeenCalled();
 
       // R-J: jump — unbound → picker cancelled → no action
       picker.pick.mockResolvedValue({ outcome: 'cancelled' });
       await jumpCmd.execute();
-      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
 
       // Unbound phase tally
       expect(infoMsg).not.toHaveBeenCalled();
@@ -3294,46 +3298,42 @@ describe('RangeLinkService', () => {
 
       // R-L: createLink — bound → mock manager handles feedback → no statusBar from service
       await svc.createLink();
-      expect(statusBar).toHaveBeenCalledTimes(1);
-      expect(clipboard.writeText).toHaveBeenCalledTimes(2);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
 
       // R-V: pasteSelectedTextToDestination — bound → mock manager handles
       await svc.pasteSelectedTextToDestination();
-      expect(statusBar).toHaveBeenCalledTimes(1);
-      expect(clipboard.writeText).toHaveBeenCalledTimes(3);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).toHaveBeenCalledTimes(2);
 
       // R-F: pasteCurrentFilePathToDestination — bound → mock manager handles
       await svc.pasteCurrentFilePathToDestination(PathFormat.Absolute);
-      expect(statusBar).toHaveBeenCalledTimes(1);
-      expect(clipboard.writeText).toHaveBeenCalledTimes(4);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).toHaveBeenCalledTimes(3);
 
       // R-J: jump — bound → focusBoundDestination (manager handles internally)
       const jumpResult = await jumpCmd.execute();
       expect(jumpResult).toStrictEqual({ outcome: 'focused', destinationName: 'Terminal' });
-      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
 
       // Bound phase tally: still no toasts from RangeLinkService
       expect(infoMsg).not.toHaveBeenCalled();
       expect(errorMsg).not.toHaveBeenCalled();
       expect(warningMsg).not.toHaveBeenCalled();
 
-      // ===== PHASE 3: UNBIND — BACK TO CLIPBOARD-ONLY =====
+      // ===== PHASE 3: UNBIND — BACK TO PICKER-WHEN-UNBOUND =====
       bound = false;
 
-      // R-L: createLink — unbound again → clipboard-only toast
+      // R-L: createLink — unbound again → picker cancelled → no action
+      picker.pick.mockResolvedValueOnce({ outcome: 'cancelled' });
       await svc.createLink();
-      expect(statusBar).toHaveBeenCalledTimes(2);
-      expect(statusBar).toHaveBeenNthCalledWith(
-        2,
-        '✓ RangeLink copied to clipboard',
-        STATUS_BAR_TIMEOUT,
-      );
-      expect(clipboard.writeText).toHaveBeenCalledTimes(5);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).toHaveBeenCalledTimes(3);
 
       // R-V: pasteSelectedTextToDestination — unbound → picker cancelled
       picker.pick.mockResolvedValue({ outcome: 'cancelled' });
       await svc.pasteSelectedTextToDestination();
-      expect(statusBar).toHaveBeenCalledTimes(2);
+      expect(statusBar).not.toHaveBeenCalled();
 
       // ===== PHASE 4: REBIND + INELIGIBLE CONTENT =====
       bound = true;
@@ -3341,34 +3341,34 @@ describe('RangeLinkService', () => {
 
       // R-V: bound but ineligible → clipboard-only fallback toast
       await svc.pasteSelectedTextToDestination();
-      expect(statusBar).toHaveBeenCalledTimes(3);
+      expect(statusBar).toHaveBeenCalledTimes(1);
       expect(statusBar).toHaveBeenNthCalledWith(
-        3,
+        1,
         '✓ Selected text copied to clipboard',
         STATUS_BAR_TIMEOUT,
       );
-      expect(clipboard.writeText).toHaveBeenCalledTimes(6);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(4);
 
       // R-F: bound but ineligible → clipboard-only fallback toast
       await svc.pasteCurrentFilePathToDestination(PathFormat.Absolute);
-      expect(statusBar).toHaveBeenCalledTimes(4);
+      expect(statusBar).toHaveBeenCalledTimes(2);
       expect(statusBar).toHaveBeenNthCalledWith(
-        4,
+        2,
         '✓ File path copied to clipboard',
         STATUS_BAR_TIMEOUT,
       );
-      expect(clipboard.writeText).toHaveBeenCalledTimes(7);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(5);
 
       // R-L: bound but ineligible link → clipboard-only fallback toast
       terminalDest.isEligibleForPasteLink.mockResolvedValue(false);
       await svc.createLink();
-      expect(statusBar).toHaveBeenCalledTimes(5);
+      expect(statusBar).toHaveBeenCalledTimes(3);
       expect(statusBar).toHaveBeenNthCalledWith(
-        5,
+        3,
         '✓ RangeLink copied to clipboard',
         STATUS_BAR_TIMEOUT,
       );
-      expect(clipboard.writeText).toHaveBeenCalledTimes(8);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(6);
 
       // Reset eligibility, verify normal bound path resumes
       terminalDest.isEligibleForPasteContent.mockResolvedValue(true);
@@ -3376,17 +3376,15 @@ describe('RangeLinkService', () => {
 
       // R-V: bound + eligible again → mock manager handles
       await svc.pasteSelectedTextToDestination();
-      expect(statusBar).toHaveBeenCalledTimes(5);
-      expect(clipboard.writeText).toHaveBeenCalledTimes(9);
+      expect(statusBar).toHaveBeenCalledTimes(3);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(7);
 
       // ===== FINAL TALLY =====
-      // 5 statusBar calls total:
-      //   #1: R-L unbound (Phase 1)
-      //   #2: R-L unbound (Phase 3)
-      //   #3: R-V bound+ineligible (Phase 4)
-      //   #4: R-F bound+ineligible (Phase 4)
-      //   #5: R-L bound+ineligible (Phase 4)
-      expect(statusBar).toHaveBeenCalledTimes(5);
+      // 3 statusBar calls total:
+      //   #1: R-V bound+ineligible (Phase 4)
+      //   #2: R-F bound+ineligible (Phase 4)
+      //   #3: R-L bound+ineligible (Phase 4)
+      expect(statusBar).toHaveBeenCalledTimes(3);
       expect(infoMsg).not.toHaveBeenCalled();
       expect(errorMsg).not.toHaveBeenCalled();
       expect(warningMsg).not.toHaveBeenCalled();
