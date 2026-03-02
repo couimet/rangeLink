@@ -261,6 +261,7 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 
 | Command                                                  | Shortcut (Mac)      | Shortcut (Win/Linux)  | Description                                              |
 | -------------------------------------------------------- | ------------------- | --------------------- | -------------------------------------------------------- |
+| Open Menu <sup>Unreleased</sup>                          | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`       | Open the RangeLink menu                                  |
 | Send RangeLink <sup>Unreleased</sup>                     | `Cmd+R Cmd+L`       | `Ctrl+R Ctrl+L`       | Send link to bound destination                           |
 | Send RangeLink (Absolute) <sup>Unreleased</sup>          | `Cmd+R Cmd+Shift+L` | `Ctrl+R Ctrl+Shift+L` | Send absolute path link to bound destination             |
 | Send Portable Link <sup>Unreleased</sup>                 | `Cmd+R Cmd+P`       | `Ctrl+R Ctrl+P`       | Send BYOD portable link to bound destination             |
@@ -270,16 +271,15 @@ Access via `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Ran
 | Send Selected Text                                       | `Cmd+R Cmd+V`       | `Ctrl+R Ctrl+V`       | Send selected text directly to bound destination         |
 | Send Current File Path <sup>Unreleased</sup>             | `Cmd+R Cmd+F`       | `Ctrl+R Ctrl+F`       | Send active editor's path to bound destination           |
 | Send Current File Path (Absolute) <sup>Unreleased</sup>  | `Cmd+R Cmd+Shift+F` | `Ctrl+R Ctrl+Shift+F` | Send active editor's absolute path to bound destination  |
-| Jump to Bound Destination                                | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound destination                   |
-| Go to Link <sup>Unreleased</sup>                         | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`       | Paste/type a RangeLink to go to that code location       |
-| Open Menu <sup>Unreleased</sup>                          | `Cmd+R Cmd+M`       | `Ctrl+R Ctrl+M`       | Open the RangeLink menu                                  |
 | Bind to Destination <sup>Unreleased</sup>                | `Cmd+R Cmd+D`       | `Ctrl+R Ctrl+D`       | Open destination picker to select and bind a target      |
 | Bind to Claude Code                                      | —                   | —                     | Auto-send links to Claude Code chat                      |
 | Bind to Cursor AI                                        | —                   | —                     | Auto-send links to Cursor AI chat                        |
 | Bind to GitHub Copilot Chat                              | —                   | —                     | Auto-send links to Copilot Chat                          |
 | Bind to Terminal                                         | —                   | —                     | Auto-send links to integrated terminal for AI workflows  |
 | Bind to Text Editor                                      | —                   | —                     | Auto-paste links at insertion point in bound text editor |
-| Unbind <sup>Unreleased</sup>                             | —                   | —                     | Stop auto-sending links to bound destination             |
+| Jump to Bound Destination                                | `Cmd+R Cmd+J`       | `Ctrl+R Ctrl+J`       | Focus your currently bound destination                   |
+| Go to Link <sup>Unreleased</sup>                         | `Cmd+R Cmd+G`       | `Ctrl+R Ctrl+G`       | Paste/type a RangeLink to go to that code location       |
+| Unbind <sup>Unreleased</sup>                             | `Cmd+R Cmd+U`       | `Ctrl+R Ctrl+U`       | Stop auto-sending links to bound destination             |
 | Show Version Info                                        | —                   | —                     | Display version and build info                           |
 
 <!-- TODO: #366 unhide when bookmarks graduates from beta — re-add these rows to the Commands table above
