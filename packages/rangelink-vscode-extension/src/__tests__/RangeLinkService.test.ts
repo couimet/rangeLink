@@ -2906,7 +2906,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        'Regular',
+        LinkType.Regular,
       );
 
       expect(mockDocument.save).toHaveBeenCalled();
@@ -2924,7 +2924,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        'Regular',
+        LinkType.Regular,
       );
 
       expect(mockDocument.save).not.toHaveBeenCalled();
@@ -2942,7 +2942,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        'Regular',
+        LinkType.Regular,
       );
 
       expect(mockDocument.save).not.toHaveBeenCalled();
@@ -2961,7 +2961,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        'Regular',
+        LinkType.Regular,
       );
 
       expect(mockDocument.save).toHaveBeenCalled();
