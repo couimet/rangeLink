@@ -1913,6 +1913,64 @@ describe('RangeLinkService', () => {
         );
       });
 
+      it('skips self-paste check and sends clipboard-only when bound-no-paste fires for same terminal', async () => {
+        const SHARED_PID = 99999;
+        const sharedTerminal = createMockTerminal({
+          processId: Promise.resolve(SHARED_PID),
+        });
+        const destination = createMockTerminalComposablePasteDestination({
+          processId: SHARED_PID,
+          terminal: sharedTerminal,
+        });
+
+        mockVscodeAdapter.__getVscodeInstance().window.activeTerminal = sharedTerminal;
+        mockPickerCommand.pick.mockResolvedValue({
+          outcome: 'selected',
+          bindOptions: { kind: 'terminal', terminal: sharedTerminal },
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: false,
+          boundDestination: destination,
+          bindResult: Result.ok({
+            destinationName: 'Terminal',
+            destinationKind: 'terminal',
+            suppressAutoPaste: true,
+          }),
+        });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        const mockCopyAndSend = jest
+          .spyOn(service as any, 'copyAndSendToDestination')
+          .mockResolvedValue(undefined);
+
+        const result = await service.pasteTerminalSelectionToDestination();
+
+        expect(result).not.toStrictEqual({ outcome: 'self-paste' });
+        expect(mockShowInformationMessage).not.toHaveBeenCalled();
+        expect(mockCopyAndSend).toHaveBeenCalledWith({
+          control: {
+            contentType: 'Text',
+            destinationBehavior: 'clipboard-only',
+          },
+          content: {
+            clipboard: 'terminal selected text',
+            send: 'terminal selected text',
+          },
+          strategies: {
+            sendFn: expect.any(Function),
+            isEligibleFn: expect.any(Function),
+          },
+          contentName: 'Selected text',
+          fnName: 'pasteTerminalSelectionToDestination',
+        });
+      });
+
       it('sends when bound destination is a different terminal', async () => {
         const destination = createMockTerminalComposablePasteDestination({
           processId: 99999,

@@ -288,18 +288,20 @@ export class RangeLinkService {
     const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
     if (destinationBehavior === undefined) return { outcome: 'picker-cancelled' };
 
-    const destination = this.destinationManager.getBoundDestination()!;
+    if (destinationBehavior === DestinationBehavior.BoundDestination) {
+      const destination = this.destinationManager.getBoundDestination()!;
 
-    // Self-paste only applies to terminal destinations — editor/AI destinations can't be
-    // the source terminal. We use compareTerminalsByProcessId directly because the source
-    // is a raw vscode.Terminal, not a PasteDestination, so destination.equals() can't be used.
-    const isSameTerminal = await compareTerminalsByProcessId(activeTerminal, destination);
-    if (isSameTerminal) {
-      this.logger.info(logCtx, 'Terminal self-paste detected - skipping send');
-      this.ideAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED),
-      );
-      return { outcome: 'self-paste' };
+      // Self-paste only applies to terminal destinations — editor/AI destinations can't be
+      // the source terminal. We use compareTerminalsByProcessId directly because the source
+      // is a raw vscode.Terminal, not a PasteDestination, so destination.equals() can't be used.
+      const isSameTerminal = await compareTerminalsByProcessId(activeTerminal, destination);
+      if (isSameTerminal) {
+        this.logger.info(logCtx, 'Terminal self-paste detected - skipping send');
+        this.ideAdapter.showInformationMessage(
+          formatMessage(MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED),
+        );
+        return { outcome: 'self-paste' };
+      }
     }
 
     const paddingMode = this.configReader.getPaddingMode(
