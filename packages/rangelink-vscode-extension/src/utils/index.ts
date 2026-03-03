@@ -11,7 +11,7 @@ export * from './getUntitledDisplayName';
 export * from './isBinaryFile';
 export * from './isEligibleForPaste';
 export * from './isSelectableQuickPickItem';
-export * from './isSelfPaste';
+export * from './isSameFileDestination';
 export * from './isWritableScheme';
 export * from './registerWithLogging';
 export * from './resolveWorkspacePath';

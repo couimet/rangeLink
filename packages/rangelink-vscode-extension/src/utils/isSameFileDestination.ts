@@ -9,7 +9,7 @@ import type { PasteDestination } from '../destinations';
  * @param destination - The bound paste destination
  * @returns true if source and destination are the same file
  */
-export const isSelfPaste = (
+export const isSameFileDestination = (
   sourceUri: vscode.Uri,
   destination: PasteDestination | undefined,
 ): boolean => {

@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 
 import type { PasteDestination } from '../../destinations';
-import { isSelfPaste } from '../../utils';
+import { isSameFileDestination } from '../../utils';
 
 const createMockUri = (path: string): vscode.Uri =>
   ({
@@ -13,12 +13,12 @@ const createMockDestination = (uri: vscode.Uri | undefined): PasteDestination =>
     getDestinationUri: () => uri,
   }) as PasteDestination;
 
-describe('isSelfPaste', () => {
+describe('isSameFileDestination', () => {
   describe('when destination is undefined', () => {
     it('should return false', () => {
       const sourceUri = createMockUri('/workspace/src/file.ts');
 
-      const result = isSelfPaste(sourceUri, undefined);
+      const result = isSameFileDestination(sourceUri, undefined);
 
       expect(result).toBe(false);
     });
@@ -29,7 +29,7 @@ describe('isSelfPaste', () => {
       const sourceUri = createMockUri('/workspace/src/file.ts');
       const destination = createMockDestination(undefined);
 
-      const result = isSelfPaste(sourceUri, destination);
+      const result = isSameFileDestination(sourceUri, destination);
 
       expect(result).toBe(false);
     });
@@ -41,7 +41,7 @@ describe('isSelfPaste', () => {
       const destUri = createMockUri('/workspace/src/file.ts');
       const destination = createMockDestination(destUri);
 
-      const result = isSelfPaste(sourceUri, destination);
+      const result = isSameFileDestination(sourceUri, destination);
 
       expect(result).toBe(true);
     });
@@ -51,7 +51,7 @@ describe('isSelfPaste', () => {
       const destUri = createMockUri('/workspace/src/other.ts');
       const destination = createMockDestination(destUri);
 
-      const result = isSelfPaste(sourceUri, destination);
+      const result = isSameFileDestination(sourceUri, destination);
 
       expect(result).toBe(false);
     });
@@ -61,7 +61,7 @@ describe('isSelfPaste', () => {
       const destUri = createMockUri('/workspace/test/file.ts');
       const destination = createMockDestination(destUri);
 
-      const result = isSelfPaste(sourceUri, destination);
+      const result = isSameFileDestination(sourceUri, destination);
 
       expect(result).toBe(false);
     });

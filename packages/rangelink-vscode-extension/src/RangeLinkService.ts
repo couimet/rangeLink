@@ -37,7 +37,7 @@ import {
   formatMessage,
   generateLinkFromSelections,
   isEditorDestination,
-  isSelfPaste,
+  isSameFileDestination,
 } from './utils';
 
 export enum PathFormat {
@@ -856,7 +856,7 @@ export class RangeLinkService {
     }
 
     // Check for self-paste (source and destination are the same file)
-    if (content.sourceUri && isSelfPaste(content.sourceUri, destination)) {
+    if (content.sourceUri && isSameFileDestination(content.sourceUri, destination)) {
       this.logger.info({ fn: fnName }, 'Self-paste detected - skipping auto-paste');
       const selfPasteMessageCodes: Record<PasteContentType, MessageCode> = {
         [PasteContentType.Link]: MessageCode.INFO_SELF_PASTE_LINK_SKIPPED,
