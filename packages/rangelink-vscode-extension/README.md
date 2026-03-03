@@ -342,11 +342,11 @@ Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 
 #### Terminal (right-click on tab or inside terminal)
 
-| Menu Item                                                      | Visibility              | Action                                          |
-| -------------------------------------------------------------- | ----------------------- | ----------------------------------------------- |
-| RangeLink: Send Selection to Destination                       | Text selected and bound | Copy terminal selection and send to destination |
-| RangeLink: Bind Here                                           | Always                  | Bind this terminal as destination               |
-| RangeLink: Unbind                                              | When bound              | Unbind current destination                      |
+| Menu Item                                | Visibility              | Action                                          |
+| ---------------------------------------- | ----------------------- | ----------------------------------------------- |
+| RangeLink: Send Selection to Destination | Text selected and bound | Copy terminal selection and send to destination |
+| RangeLink: Bind Here                     | Always                  | Bind this terminal as destination               |
+| RangeLink: Unbind                        | When bound              | Unbind current destination                      |
 
 ## Configuration
 
