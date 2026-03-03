@@ -1874,13 +1874,9 @@ describe('RangeLinkService', () => {
     });
 
     describe('terminal self-paste detection', () => {
-      it('returns self-paste when bound destination is the same terminal', async () => {
-        const SHARED_PID = 99999;
-        const sharedTerminal = createMockTerminal({
-          processId: Promise.resolve(SHARED_PID),
-        });
+      it('sends to same terminal when bound destination is the same terminal', async () => {
+        const sharedTerminal = createMockTerminal();
         const destination = createMockTerminalComposablePasteDestination({
-          processId: SHARED_PID,
           terminal: sharedTerminal,
         });
 
@@ -1888,6 +1884,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager = createMockDestinationManager({
           isBound: true,
           boundDestination: destination,
+          sendTextToDestinationResult: true,
         });
         service = new RangeLinkService(
           getDelimiters,
@@ -1900,26 +1897,22 @@ describe('RangeLinkService', () => {
 
         const result = await service.pasteTerminalSelectionToDestination();
 
-        expect(result).toStrictEqual({ outcome: 'self-paste' });
-        expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
-        expect(mockShowInformationMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowInformationMessage).toHaveBeenNthCalledWith(
-          1,
-          'Selected text copied to clipboard. Cannot paste to same file.',
+        expect(result).toStrictEqual({ outcome: 'success' });
+        expect(mockDestinationManager.sendTextToDestination).toHaveBeenCalledWith(
+          'terminal selected text',
+          '✓ Selected text copied to clipboard',
+          'none',
         );
-        expect(mockLogger.info).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.pasteTerminalSelectionToDestination' },
-          'Terminal self-paste detected - skipping send',
+        expect(mockShowInformationMessage).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.pasteTerminalSelectionToDestination', contentLength: 22 },
+          'Read 22 chars from terminal selection',
         );
       });
 
-      it('skips self-paste check and sends clipboard-only when bound-no-paste fires for same terminal', async () => {
-        const SHARED_PID = 99999;
-        const sharedTerminal = createMockTerminal({
-          processId: Promise.resolve(SHARED_PID),
-        });
+      it('sends clipboard-only when bound-no-paste fires for same terminal', async () => {
+        const sharedTerminal = createMockTerminal();
         const destination = createMockTerminalComposablePasteDestination({
-          processId: SHARED_PID,
           terminal: sharedTerminal,
         });
 
@@ -1952,10 +1945,6 @@ describe('RangeLinkService', () => {
         const result = await service.pasteTerminalSelectionToDestination();
 
         expect(result).toStrictEqual({ outcome: 'success' });
-        expect(mockLogger.info).not.toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.pasteTerminalSelectionToDestination' },
-          'Terminal self-paste detected - skipping send',
-        );
         expect(mockShowInformationMessage).not.toHaveBeenCalled();
         expect(mockCopyAndSend).toHaveBeenCalledWith({
           control: {
