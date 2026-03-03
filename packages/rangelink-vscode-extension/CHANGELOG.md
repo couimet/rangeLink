@@ -78,7 +78,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Keyboard shortcut:** `Cmd+R Cmd+V` (Mac) / `Ctrl+R Ctrl+V` (Win/Linux) when terminal has focus
   - Terminal context menu "Send Selection to Destination" entry when text is selected and a destination is bound
   - R-L and R-C gracefully guide users who press editor keybindings while in the terminal
-  - Terminal self-paste detection prevents pasting back into the same terminal
 - **Go to Link Command (R-G)** - Paste or type a RangeLink to go directly to that code location
   - **Keyboard shortcut:** `Cmd+R Cmd+G` (Mac) / `Ctrl+R Ctrl+G` (Win/Linux)
   - Supports all link formats: full paths, ranges, columns (e.g., `recipes/baking/chickenpie.ts#L3C14-L15C9`)

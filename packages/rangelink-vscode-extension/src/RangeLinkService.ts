@@ -19,7 +19,6 @@ import {
   VSCODE_CMD_TERMINAL_COPY_SELECTION,
 } from './constants';
 import type { DestinationPicker } from './destinations/DestinationPicker';
-import { compareTerminalsByProcessId } from './destinations/equality';
 import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { resolveBoundTerminalProcessId } from './destinations/utils';
@@ -38,7 +37,7 @@ import {
   formatMessage,
   generateLinkFromSelections,
   isEditorDestination,
-  isSelfPaste,
+  isSameFileDestination,
 } from './utils';
 
 export enum PathFormat {
@@ -287,22 +286,6 @@ export class RangeLinkService {
 
     const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
     if (destinationBehavior === undefined) return { outcome: 'picker-cancelled' };
-
-    if (destinationBehavior === DestinationBehavior.BoundDestination) {
-      const destination = this.destinationManager.getBoundDestination()!;
-
-      // Self-paste only applies to terminal destinations — editor/AI destinations can't be
-      // the source terminal. We use compareTerminalsByProcessId directly because the source
-      // is a raw vscode.Terminal, not a PasteDestination, so destination.equals() can't be used.
-      const isSameTerminal = await compareTerminalsByProcessId(activeTerminal, destination);
-      if (isSameTerminal) {
-        this.logger.info(logCtx, 'Terminal self-paste detected - skipping send');
-        this.ideAdapter.showInformationMessage(
-          formatMessage(MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED),
-        );
-        return { outcome: 'self-paste' };
-      }
-    }
 
     const paddingMode = this.configReader.getPaddingMode(
       SETTING_SMART_PADDING_PASTE_CONTENT,
@@ -873,7 +856,7 @@ export class RangeLinkService {
     }
 
     // Check for self-paste (source and destination are the same file)
-    if (content.sourceUri && isSelfPaste(content.sourceUri, destination)) {
+    if (content.sourceUri && isSameFileDestination(content.sourceUri, destination)) {
       this.logger.info({ fn: fnName }, 'Self-paste detected - skipping auto-paste');
       const selfPasteMessageCodes: Record<PasteContentType, MessageCode> = {
         [PasteContentType.Link]: MessageCode.INFO_SELF_PASTE_LINK_SKIPPED,
