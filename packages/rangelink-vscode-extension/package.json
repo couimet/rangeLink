@@ -54,49 +54,49 @@
     "commands": [
       {
         "command": "rangelink.copyLinkWithRelativePath",
-        "title": "Copy Range Link",
+        "title": "Send RangeLink",
         "category": "RangeLink",
         "icon": "$(link)",
         "enablement": "editorHasSelection"
       },
       {
         "command": "rangelink.copyLinkWithAbsolutePath",
-        "title": "Copy Range Link (Absolute)",
+        "title": "Send RangeLink (Absolute)",
         "category": "RangeLink",
         "icon": "$(link-external)",
         "enablement": "editorHasSelection"
       },
       {
         "command": "rangelink.copyPortableLinkWithRelativePath",
-        "title": "Copy Portable Link",
+        "title": "Send Portable Link",
         "category": "RangeLink",
         "icon": "$(link-external)",
         "enablement": "editorHasSelection"
       },
       {
         "command": "rangelink.copyPortableLinkWithAbsolutePath",
-        "title": "Copy Portable Link (Absolute)",
+        "title": "Send Portable Link (Absolute)",
         "category": "RangeLink",
         "icon": "$(link-external)",
         "enablement": "editorHasSelection"
       },
       {
         "command": "rangelink.copyLinkOnlyWithRelativePath",
-        "title": "Copy Range Link (Clipboard Only)",
+        "title": "Copy RangeLink",
         "category": "RangeLink",
         "icon": "$(clippy)",
         "enablement": "editorHasSelection"
       },
       {
         "command": "rangelink.copyLinkOnlyWithAbsolutePath",
-        "title": "Copy Range Link (Clipboard Only, Absolute)",
+        "title": "Copy RangeLink (Absolute)",
         "category": "RangeLink",
         "icon": "$(clippy)",
         "enablement": "editorHasSelection"
       },
       {
         "command": "rangelink.pasteSelectedTextToDestination",
-        "title": "Paste Selected Text to Bound Destination",
+        "title": "Send Selected Text",
         "category": "RangeLink",
         "icon": "$(symbol-snippet)",
         "enablement": "editorHasSelection"
@@ -188,26 +188,26 @@
       },
       {
         "command": "rangelink.pasteFileAbsolutePath",
-        "title": "Paste File Path (Absolute)",
+        "title": "Send File Path (Absolute)",
         "category": "RangeLink",
         "icon": "$(file-symlink-file)"
       },
       {
         "command": "rangelink.pasteFileRelativePath",
-        "title": "Paste File Path",
+        "title": "Send File Path",
         "category": "RangeLink",
         "icon": "$(file-symlink-file)"
       },
       {
         "command": "rangelink.pasteCurrentFileAbsolutePath",
-        "title": "Paste Current File Path (Absolute)",
+        "title": "Send Current File Path (Absolute)",
         "category": "RangeLink",
         "icon": "$(file-symlink-file)",
         "enablement": "editorIsOpen"
       },
       {
         "command": "rangelink.pasteCurrentFileRelativePath",
-        "title": "Paste Current File Path",
+        "title": "Send Current File Path",
         "category": "RangeLink",
         "icon": "$(file-symlink-file)",
         "enablement": "editorIsOpen"
@@ -219,12 +219,12 @@
       },
       {
         "command": "rangelink.explorer.pasteFilePath",
-        "title": "RangeLink: Paste File Path",
+        "title": "RangeLink: Send File Path",
         "icon": "$(file-symlink-file)"
       },
       {
         "command": "rangelink.explorer.pasteRelativeFilePath",
-        "title": "RangeLink: Paste Relative File Path",
+        "title": "RangeLink: Send Relative File Path",
         "icon": "$(file-symlink-file)"
       },
       {
@@ -234,22 +234,22 @@
       },
       {
         "command": "rangelink.editorTab.pasteFilePath",
-        "title": "RangeLink: Paste File Path",
+        "title": "RangeLink: Send File Path",
         "icon": "$(file-symlink-file)"
       },
       {
         "command": "rangelink.editorTab.pasteRelativeFilePath",
-        "title": "RangeLink: Paste Relative File Path",
+        "title": "RangeLink: Send Relative File Path",
         "icon": "$(file-symlink-file)"
       },
       {
         "command": "rangelink.editorContent.pasteFilePath",
-        "title": "RangeLink: Paste This File's Path",
+        "title": "RangeLink: Send This File's Path",
         "icon": "$(file-symlink-file)"
       },
       {
         "command": "rangelink.editorContent.pasteRelativeFilePath",
-        "title": "RangeLink: Paste This File's Relative Path",
+        "title": "RangeLink: Send This File's Relative Path",
         "icon": "$(file-symlink-file)"
       },
       {
@@ -264,27 +264,27 @@
       },
       {
         "command": "rangelink.editorContext.copyLink",
-        "title": "RangeLink: Copy Range Link",
+        "title": "RangeLink: Send RangeLink",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.editorContext.copyLinkAbsolute",
-        "title": "RangeLink: Copy Range Link (Absolute)",
+        "title": "RangeLink: Send RangeLink (Absolute)",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.editorContext.copyPortableLink",
-        "title": "RangeLink: Copy Portable Link",
+        "title": "RangeLink: Send Portable Link",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.editorContext.copyPortableLinkAbsolute",
-        "title": "RangeLink: Copy Portable Link (Absolute)",
+        "title": "RangeLink: Send Portable Link (Absolute)",
         "icon": "$(link)"
       },
       {
         "command": "rangelink.editorContext.pasteSelectedText",
-        "title": "RangeLink: Paste Selected Text",
+        "title": "RangeLink: Send Selected Text",
         "icon": "$(clippy)"
       },
       {
@@ -309,7 +309,7 @@
       },
       {
         "command": "rangelink.terminal.pasteSelectedTextToDestination",
-        "title": "RangeLink: Paste Selection to Destination",
+        "title": "RangeLink: Send Selection to Destination",
         "icon": "$(symbol-snippet)"
       },
       {

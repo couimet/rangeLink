@@ -1,4 +1,4 @@
-import type { Logger } from 'barebone-logger';
+import type { Logger, LoggingContext } from 'barebone-logger';
 import {
   type DelimiterConfigGetter,
   type FormattedLink,
@@ -115,15 +115,11 @@ export class RangeLinkService {
    * Creates a standard RangeLink from the current editor selection
    */
   async createLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
-    if (formattedLink) {
-      const sourceUri = this.ideAdapter.getActiveTextEditorUri()!;
-      await this.copyToClipboardAndDestination(
-        formattedLink,
-        formatMessage(MessageCode.CONTENT_NAME_RANGELINK),
-        sourceUri,
-      );
-    }
+    await this.createLinkCore(
+      pathFormat,
+      LinkType.Regular,
+      formatMessage(MessageCode.CONTENT_NAME_RANGELINK),
+    );
   }
 
   /**
@@ -135,7 +131,7 @@ export class RangeLinkService {
    * @param pathFormat Whether to use relative or absolute paths
    */
   async createLinkOnly(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const formattedLink = await this.generateLinkFromSelection(pathFormat, false);
+    const formattedLink = await this.generateLinkFromSelection(pathFormat, LinkType.Regular);
     if (formattedLink) {
       await this.copyAndSendToDestination({
         control: {
@@ -160,15 +156,11 @@ export class RangeLinkService {
    * Creates a portable RangeLink with embedded delimiter metadata
    */
   async createPortableLink(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
-    const formattedLink = await this.generateLinkFromSelection(pathFormat, true);
-    if (formattedLink) {
-      const sourceUri = this.ideAdapter.getActiveTextEditorUri()!;
-      await this.copyToClipboardAndDestination(
-        formattedLink,
-        formatMessage(MessageCode.CONTENT_NAME_PORTABLE_RANGELINK),
-        sourceUri,
-      );
-    }
+    await this.createLinkCore(
+      pathFormat,
+      LinkType.Portable,
+      formatMessage(MessageCode.CONTENT_NAME_PORTABLE_RANGELINK),
+    );
   }
 
   /**
@@ -207,23 +199,8 @@ export class RangeLinkService {
       DEFAULT_SMART_PADDING_PASTE_CONTENT,
     );
 
-    let destinationBehavior = DestinationBehavior.BoundDestination;
-
-    if (!this.destinationManager.isBound()) {
-      this.logger.debug(logCtx, 'No destination bound, showing quick pick');
-
-      const pickerResult = await this.showPickerAndBindForPaste();
-      if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
-        this.logger.debug(
-          { ...logCtx, outcome: pickerResult.outcome },
-          'Picker did not bind, aborting',
-        );
-        return;
-      }
-      if (pickerResult.outcome === 'bound-no-paste') {
-        destinationBehavior = DestinationBehavior.ClipboardOnly;
-      }
-    }
+    const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
+    if (destinationBehavior === undefined) return;
 
     await this.copyAndSendToDestination({
       control: {
@@ -308,36 +285,23 @@ export class RangeLinkService {
       `Read ${terminalText.length} chars from terminal selection`,
     );
 
-    let destinationBehavior = DestinationBehavior.BoundDestination;
+    const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
+    if (destinationBehavior === undefined) return { outcome: 'picker-cancelled' };
 
-    if (!this.destinationManager.isBound()) {
-      this.logger.debug(logCtx, 'No destination bound, showing quick pick');
+    if (destinationBehavior === DestinationBehavior.BoundDestination) {
+      const destination = this.destinationManager.getBoundDestination()!;
 
-      const pickerResult = await this.showPickerAndBindForPaste();
-      if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
-        this.logger.debug(
-          { ...logCtx, outcome: pickerResult.outcome },
-          'Picker did not bind, aborting',
+      // Self-paste only applies to terminal destinations — editor/AI destinations can't be
+      // the source terminal. We use compareTerminalsByProcessId directly because the source
+      // is a raw vscode.Terminal, not a PasteDestination, so destination.equals() can't be used.
+      const isSameTerminal = await compareTerminalsByProcessId(activeTerminal, destination);
+      if (isSameTerminal) {
+        this.logger.info(logCtx, 'Terminal self-paste detected - skipping send');
+        this.ideAdapter.showInformationMessage(
+          formatMessage(MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED),
         );
-        return { outcome: 'picker-cancelled' };
+        return { outcome: 'self-paste' };
       }
-      if (pickerResult.outcome === 'bound-no-paste') {
-        destinationBehavior = DestinationBehavior.ClipboardOnly;
-      }
-    }
-
-    const destination = this.destinationManager.getBoundDestination()!;
-
-    // Self-paste only applies to terminal destinations — editor/AI destinations can't be
-    // the source terminal. We use compareTerminalsByProcessId directly because the source
-    // is a raw vscode.Terminal, not a PasteDestination, so destination.equals() can't be used.
-    const isSameTerminal = await compareTerminalsByProcessId(activeTerminal, destination);
-    if (isSameTerminal) {
-      this.logger.info(logCtx, 'Terminal self-paste detected - skipping send');
-      this.ideAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED),
-      );
-      return { outcome: 'self-paste' };
     }
 
     const paddingMode = this.configReader.getPaddingMode(
@@ -476,23 +440,8 @@ export class RangeLinkService {
       DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
     );
 
-    let destinationBehavior = DestinationBehavior.BoundDestination;
-
-    if (!this.destinationManager.isBound()) {
-      this.logger.debug(logCtx, 'No destination bound, showing quick pick');
-
-      const pickerResult = await this.showPickerAndBindForPaste();
-      if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
-        this.logger.debug(
-          { ...logCtx, outcome: pickerResult.outcome },
-          'Picker did not bind, aborting',
-        );
-        return;
-      }
-      if (pickerResult.outcome === 'bound-no-paste') {
-        destinationBehavior = DestinationBehavior.ClipboardOnly;
-      }
-    }
+    const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
+    if (destinationBehavior === undefined) return;
 
     const destinationFilePath = quotePath(filePath);
 
@@ -523,15 +472,41 @@ export class RangeLinkService {
     });
   }
 
+  private async createLinkCore(
+    pathFormat: PathFormat,
+    linkType: LinkType,
+    contentName: string,
+  ): Promise<void> {
+    const logCtx = { fn: 'RangeLinkService.createLinkCore', linkType };
+    const formattedLink = await this.generateLinkFromSelection(pathFormat, linkType);
+    if (formattedLink) {
+      const sourceUri = this.ideAdapter.getActiveTextEditorUri();
+      if (!sourceUri) {
+        this.logger.debug(logCtx, 'Active editor URI unavailable, aborting');
+        return;
+      }
+      const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
+      if (destinationBehavior === undefined) return;
+      await this.copyToClipboardAndDestination(
+        formattedLink,
+        contentName,
+        sourceUri,
+        destinationBehavior,
+      );
+    } else {
+      this.logger.debug(logCtx, 'generateLinkFromSelection returned undefined, aborting');
+    }
+  }
+
   /**
    * Generates a link from the current editor selection
    * @param pathFormat Whether to use relative or absolute paths
-   * @param isPortable Whether to generate a portable link with embedded delimiters
+   * @param linkType Whether to generate a regular or portable link
    * @returns The generated FormattedLink with metadata, or undefined if generation failed
    */
   private async generateLinkFromSelection(
     pathFormat: PathFormat,
-    isPortable: boolean,
+    linkType: LinkType,
   ): Promise<FormattedLink | undefined> {
     const validated = this.validateSelectionsAndShowError();
     if (!validated) {
@@ -560,7 +535,6 @@ export class RangeLinkService {
     }
 
     const referencePath = this.getReferencePath(document.uri, pathFormat);
-    const linkType = isPortable ? LinkType.Portable : LinkType.Regular;
 
     const result = generateLinkFromSelections({
       referencePath,
@@ -572,7 +546,7 @@ export class RangeLinkService {
     });
 
     if (!result.success) {
-      const linkTypeName = isPortable ? 'portable link' : 'link';
+      const linkTypeName = linkType === LinkType.Portable ? 'portable link' : 'link';
       this.logger.error(
         { fn: 'generateLinkFromSelection', error: result.error, linkType },
         `Failed to generate ${linkTypeName}`,
@@ -668,11 +642,13 @@ export class RangeLinkService {
    * @param formattedLink The formatted RangeLink with metadata
    * @param linkTypeName User-friendly name for status messages (e.g., "RangeLink", "Portable RangeLink")
    * @param sourceUri URI of the source document (for self-paste detection)
+   * @param destinationBehavior Whether to send to bound destination or clipboard only
    */
   private async copyToClipboardAndDestination(
     formattedLink: FormattedLink,
     linkTypeName: string,
     sourceUri: vscode.Uri,
+    destinationBehavior: DestinationBehavior,
   ): Promise<void> {
     const logCtx = { fn: 'RangeLinkService.copyToClipboardAndDestination' };
     const paddingMode = this.configReader.getPaddingMode(
@@ -688,7 +664,7 @@ export class RangeLinkService {
     await this.copyAndSendToDestination({
       control: {
         contentType: PasteContentType.Link,
-        destinationBehavior: DestinationBehavior.BoundDestination,
+        destinationBehavior,
       },
       content: {
         clipboard: formattedLink.link,
@@ -919,12 +895,36 @@ export class RangeLinkService {
   }
 
   /**
+   * Resolves the destination behavior for a Send command, showing the picker if no destination is bound.
+   * Returns undefined when the picker did not produce a usable destination — caller should abort.
+   */
+  private async resolveDestinationBehavior(
+    logCtx: LoggingContext,
+  ): Promise<DestinationBehavior | undefined> {
+    if (!this.destinationManager.isBound()) {
+      this.logger.debug(logCtx, 'No destination bound, showing quick pick');
+      const pickerResult = await this.showPickerAndBind();
+      if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
+        this.logger.debug(
+          { ...logCtx, outcome: pickerResult.outcome },
+          'Picker did not bind, aborting',
+        );
+        return undefined;
+      }
+      if (pickerResult.outcome === 'bound-no-paste') {
+        return DestinationBehavior.ClipboardOnly;
+      }
+    }
+    return DestinationBehavior.BoundDestination;
+  }
+
+  /**
    * Orchestrates: picker command → user selection → manager.bind()
    *
    * @returns QuickPickBindResult with outcome and error details if binding failed
    */
-  private async showPickerAndBindForPaste(): Promise<QuickPickBindResult> {
-    const logCtx = { fn: 'RangeLinkService.showPickerAndBindForPaste' };
+  private async showPickerAndBind(): Promise<QuickPickBindResult> {
+    const logCtx = { fn: 'RangeLinkService.showPickerAndBind' };
 
     const boundDest = this.destinationManager.getBoundDestination();
     const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
@@ -974,7 +974,7 @@ export class RangeLinkService {
         throw new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
           message: 'Unexpected picker result outcome',
-          functionName: 'RangeLinkService.showPickerAndBindForPaste',
+          functionName: 'RangeLinkService.showPickerAndBind',
           details: { result: _exhaustiveCheck },
         });
       }

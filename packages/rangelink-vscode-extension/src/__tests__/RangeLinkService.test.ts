@@ -1,7 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import type { DelimiterConfig, DelimiterConfigGetter } from 'rangelink-core-ts';
-import { Result } from 'rangelink-core-ts';
+import { LinkType, Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { JumpToDestinationCommand } from '../commands/JumpToDestinationCommand';
@@ -971,7 +971,7 @@ describe('RangeLinkService', () => {
             'No destination bound, showing quick pick',
           );
           expect(mockLogger.info).toHaveBeenCalledWith(
-            { fn: 'RangeLinkService.showPickerAndBindForPaste' },
+            { fn: 'RangeLinkService.showPickerAndBind' },
             'User cancelled quick pick - no action taken',
           );
           expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -1009,7 +1009,7 @@ describe('RangeLinkService', () => {
             'No destination bound, showing quick pick',
           );
           expect(mockLogger.info).toHaveBeenCalledWith(
-            { fn: 'RangeLinkService.showPickerAndBindForPaste' },
+            { fn: 'RangeLinkService.showPickerAndBind' },
             'User cancelled quick pick - no action taken',
           );
           expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -1103,7 +1103,7 @@ describe('RangeLinkService', () => {
           expect(showErrorMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
           expect(mockLogger.error).toHaveBeenCalledWith(
             {
-              fn: 'RangeLinkService.showPickerAndBindForPaste',
+              fn: 'RangeLinkService.showPickerAndBind',
               error: bindError,
             },
             'Binding failed - no action taken',
@@ -1138,7 +1138,7 @@ describe('RangeLinkService', () => {
           await service.pasteSelectedTextToDestination();
 
           expect(mockLogger.debug).toHaveBeenCalledWith(
-            { fn: 'RangeLinkService.showPickerAndBindForPaste' },
+            { fn: 'RangeLinkService.showPickerAndBind' },
             'Bind requested auto-paste suppression — returning bound-no-paste',
           );
           expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
@@ -1913,6 +1913,68 @@ describe('RangeLinkService', () => {
         );
       });
 
+      it('skips self-paste check and sends clipboard-only when bound-no-paste fires for same terminal', async () => {
+        const SHARED_PID = 99999;
+        const sharedTerminal = createMockTerminal({
+          processId: Promise.resolve(SHARED_PID),
+        });
+        const destination = createMockTerminalComposablePasteDestination({
+          processId: SHARED_PID,
+          terminal: sharedTerminal,
+        });
+
+        mockVscodeAdapter.__getVscodeInstance().window.activeTerminal = sharedTerminal;
+        mockPickerCommand.pick.mockResolvedValue({
+          outcome: 'selected',
+          bindOptions: { kind: 'terminal', terminal: sharedTerminal },
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: false,
+          boundDestination: destination,
+          bindResult: Result.ok({
+            destinationName: 'Terminal',
+            destinationKind: 'terminal',
+            suppressAutoPaste: true,
+          }),
+        });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        const mockCopyAndSend = jest
+          .spyOn(service as any, 'copyAndSendToDestination')
+          .mockResolvedValue(undefined);
+
+        const result = await service.pasteTerminalSelectionToDestination();
+
+        expect(result).toStrictEqual({ outcome: 'success' });
+        expect(mockLogger.info).not.toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.pasteTerminalSelectionToDestination' },
+          'Terminal self-paste detected - skipping send',
+        );
+        expect(mockShowInformationMessage).not.toHaveBeenCalled();
+        expect(mockCopyAndSend).toHaveBeenCalledWith({
+          control: {
+            contentType: 'Text',
+            destinationBehavior: 'clipboard-only',
+          },
+          content: {
+            clipboard: 'terminal selected text',
+            send: 'terminal selected text',
+          },
+          strategies: {
+            sendFn: expect.any(Function),
+            isEligibleFn: expect.any(Function),
+          },
+          contentName: 'Selected text',
+          fnName: 'pasteTerminalSelectionToDestination',
+        });
+      });
+
       it('sends when bound destination is a different terminal', async () => {
         const destination = createMockTerminalComposablePasteDestination({
           processId: 99999,
@@ -2095,6 +2157,7 @@ describe('RangeLinkService', () => {
   describe('createLink()', () => {
     let mockGenerateLink: jest.SpyInstance;
     let mockCopyToClipboard: jest.SpyInstance;
+    let mockResolveDestinationBehavior: jest.SpyInstance;
 
     beforeEach(() => {
       mockEditor = createMockEditor();
@@ -2108,7 +2171,10 @@ describe('RangeLinkService', () => {
           showInformationMessage: mockShowInformationMessage,
         },
       });
-      mockDestinationManager = createMockDestinationManager({ isBound: false });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: createMockTerminalPasteDestination(),
+      });
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -2121,27 +2187,28 @@ describe('RangeLinkService', () => {
       // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
       mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
       mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+      mockResolveDestinationBehavior = jest.spyOn(service as any, 'resolveDestinationBehavior');
     });
 
-    it('should call generateLinkFromSelection with WorkspaceRelative and portable=false', async () => {
+    it('should call generateLinkFromSelection with WorkspaceRelative and Regular linkType', async () => {
       const mockFormattedLink = createMockFormattedLink('src/file.ts#L10-L20');
       mockGenerateLink.mockResolvedValue(mockFormattedLink);
       mockCopyToClipboard.mockResolvedValue(undefined);
 
       await service.createLink(PathFormat.WorkspaceRelative);
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'regular');
       expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
-    it('should call generateLinkFromSelection with Absolute and portable=false', async () => {
+    it('should call generateLinkFromSelection with Absolute and Regular linkType', async () => {
       const mockFormattedLink = createMockFormattedLink('/workspace/src/file.ts#L10-L20');
       mockGenerateLink.mockResolvedValue(mockFormattedLink);
       mockCopyToClipboard.mockResolvedValue(undefined);
 
       await service.createLink(PathFormat.Absolute);
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.Absolute, false);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.Absolute, 'regular');
       expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
@@ -2152,7 +2219,7 @@ describe('RangeLinkService', () => {
 
       await service.createLink(); // No argument
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'regular');
     });
 
     it('should call copyToClipboardAndDestination when link generated', async () => {
@@ -2167,6 +2234,7 @@ describe('RangeLinkService', () => {
         mockFormattedLink,
         'RangeLink',
         mockEditor.document.uri,
+        'bound-destination',
       );
     });
 
@@ -2177,6 +2245,165 @@ describe('RangeLinkService', () => {
       await service.createLink(PathFormat.WorkspaceRelative);
 
       expect(mockCopyToClipboard).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.createLinkCore', linkType: 'regular' },
+        'generateLinkFromSelection returned undefined, aborting',
+      );
+    });
+
+    it('should not call resolveDestinationBehavior when generateLinkFromSelection returns null', async () => {
+      mockGenerateLink.mockResolvedValue(null);
+
+      await service.createLink(PathFormat.WorkspaceRelative);
+
+      expect(mockResolveDestinationBehavior).not.toHaveBeenCalled();
+    });
+
+    it('should not show picker when already bound', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
+
+      await service.createLink(PathFormat.WorkspaceRelative);
+
+      expect(mockPickerCommand.pick).not.toHaveBeenCalled();
+    });
+
+    it('should abort and log when active editor URI is unavailable after link generation', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      jest.spyOn(mockVscodeAdapter, 'getActiveTextEditorUri').mockReturnValue(undefined);
+
+      await service.createLink(PathFormat.WorkspaceRelative);
+
+      expect(mockCopyToClipboard).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.createLinkCore', linkType: 'regular' },
+        'Active editor URI unavailable, aborting',
+      );
+    });
+
+    describe('when no destination bound', () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10');
+
+      beforeEach(() => {
+        mockDestinationManager = createMockDestinationManager({ isBound: false });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+      });
+
+      it('should abort without clipboard write when picker is cancelled', async () => {
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
+
+        await service.createLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'regular' },
+          'No destination bound, showing quick pick',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'regular', outcome: 'cancelled' },
+          'Picker did not bind, aborting',
+        );
+      });
+
+      it('should abort without clipboard write when no destinations available', async () => {
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'no-resource' });
+
+        await service.createLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'regular', outcome: 'no-resource' },
+          'Picker did not bind, aborting',
+        );
+      });
+
+      it('should call copyToClipboardAndDestination with BoundDestination when picker binds', async () => {
+        const mockTerminal = createMockTerminal();
+        mockPickerCommand.pick.mockResolvedValue({
+          outcome: 'selected',
+          bindOptions: { kind: 'terminal', terminal: mockTerminal },
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: false,
+          boundDestination: createMockTerminalPasteDestination(),
+          bindResult: Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
+        });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+
+        await service.createLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).toHaveBeenCalledWith(
+          mockFormattedLink,
+          'RangeLink',
+          mockEditor.document.uri,
+          'bound-destination',
+        );
+        expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+      });
+
+      it('should call copyToClipboardAndDestination with ClipboardOnly when background tab opened via picker', async () => {
+        const mockTerminal = createMockTerminal();
+        mockPickerCommand.pick.mockResolvedValue({
+          outcome: 'selected',
+          bindOptions: { kind: 'terminal', terminal: mockTerminal },
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: false,
+          bindResult: Result.ok({
+            destinationName: 'Terminal',
+            destinationKind: 'terminal',
+            suppressAutoPaste: true,
+          }),
+        });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+
+        await service.createLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).toHaveBeenCalledWith(
+          mockFormattedLink,
+          'RangeLink',
+          mockEditor.document.uri,
+          'clipboard-only',
+        );
+        expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+      });
     });
 
     describe('when no active editor', () => {
@@ -2243,6 +2470,7 @@ describe('RangeLinkService', () => {
   describe('createPortableLink()', () => {
     let mockGenerateLink: jest.SpyInstance;
     let mockCopyToClipboard: jest.SpyInstance;
+    let mockResolveDestinationBehavior: jest.SpyInstance;
 
     beforeEach(() => {
       mockEditor = createMockEditor();
@@ -2256,7 +2484,10 @@ describe('RangeLinkService', () => {
           showInformationMessage: mockShowInformationMessage,
         },
       });
-      mockDestinationManager = createMockDestinationManager({ isBound: false });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: createMockTerminalPasteDestination(),
+      });
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -2269,20 +2500,21 @@ describe('RangeLinkService', () => {
       // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
       mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
       mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+      mockResolveDestinationBehavior = jest.spyOn(service as any, 'resolveDestinationBehavior');
     });
 
-    it('should call generateLinkFromSelection with WorkspaceRelative and portable=true', async () => {
+    it('should call generateLinkFromSelection with WorkspaceRelative and Portable linkType', async () => {
       const mockFormattedLink = createMockFormattedLink('src/file.ts#L10-L20{L:LINE,C:COL}');
       mockGenerateLink.mockResolvedValue(mockFormattedLink);
       mockCopyToClipboard.mockResolvedValue(undefined);
 
       await service.createPortableLink(PathFormat.WorkspaceRelative);
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, true);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'portable');
       expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
-    it('should call generateLinkFromSelection with Absolute and portable=true', async () => {
+    it('should call generateLinkFromSelection with Absolute and Portable linkType', async () => {
       const mockFormattedLink = createMockFormattedLink(
         '/workspace/src/file.ts#L10-L20{L:LINE,C:COL}',
       );
@@ -2291,7 +2523,7 @@ describe('RangeLinkService', () => {
 
       await service.createPortableLink(PathFormat.Absolute);
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.Absolute, true);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.Absolute, 'portable');
       expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
@@ -2302,7 +2534,7 @@ describe('RangeLinkService', () => {
 
       await service.createPortableLink(); // No argument
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, true);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'portable');
     });
 
     it('should call copyToClipboardAndDestination with Portable RangeLink label', async () => {
@@ -2316,6 +2548,7 @@ describe('RangeLinkService', () => {
         mockFormattedLink,
         'Portable RangeLink',
         mockEditor.document.uri,
+        'bound-destination',
       );
       expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
     });
@@ -2327,6 +2560,165 @@ describe('RangeLinkService', () => {
       await service.createPortableLink(PathFormat.WorkspaceRelative);
 
       expect(mockCopyToClipboard).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.createLinkCore', linkType: 'portable' },
+        'generateLinkFromSelection returned undefined, aborting',
+      );
+    });
+
+    it('should not call resolveDestinationBehavior when generateLinkFromSelection returns null', async () => {
+      mockGenerateLink.mockResolvedValue(null);
+
+      await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+      expect(mockResolveDestinationBehavior).not.toHaveBeenCalled();
+    });
+
+    it('should not show picker when already bound', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10{L:LINE,C:COL}');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      mockCopyToClipboard.mockResolvedValue(undefined);
+
+      await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+      expect(mockPickerCommand.pick).not.toHaveBeenCalled();
+    });
+
+    it('should abort and log when active editor URI is unavailable after link generation', async () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10{L:LINE,C:COL}');
+      mockGenerateLink.mockResolvedValue(mockFormattedLink);
+      jest.spyOn(mockVscodeAdapter, 'getActiveTextEditorUri').mockReturnValue(undefined);
+
+      await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+      expect(mockCopyToClipboard).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkService.createLinkCore', linkType: 'portable' },
+        'Active editor URI unavailable, aborting',
+      );
+    });
+
+    describe('when no destination bound', () => {
+      const mockFormattedLink = createMockFormattedLink('src/file.ts#L10{L:LINE,C:COL}');
+
+      beforeEach(() => {
+        mockDestinationManager = createMockDestinationManager({ isBound: false });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+      });
+
+      it('should abort without clipboard write when picker is cancelled', async () => {
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
+
+        await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'portable' },
+          'No destination bound, showing quick pick',
+        );
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'portable', outcome: 'cancelled' },
+          'Picker did not bind, aborting',
+        );
+      });
+
+      it('should abort without clipboard write when no destinations available', async () => {
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'no-resource' });
+
+        await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).not.toHaveBeenCalled();
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'RangeLinkService.createLinkCore', linkType: 'portable', outcome: 'no-resource' },
+          'Picker did not bind, aborting',
+        );
+      });
+
+      it('should call copyToClipboardAndDestination with BoundDestination when picker binds', async () => {
+        const mockTerminal = createMockTerminal();
+        mockPickerCommand.pick.mockResolvedValue({
+          outcome: 'selected',
+          bindOptions: { kind: 'terminal', terminal: mockTerminal },
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: false,
+          boundDestination: createMockTerminalPasteDestination(),
+          bindResult: Result.ok({ destinationName: 'Terminal', destinationKind: 'terminal' }),
+        });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+
+        await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).toHaveBeenCalledWith(
+          mockFormattedLink,
+          'Portable RangeLink',
+          mockEditor.document.uri,
+          'bound-destination',
+        );
+        expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+      });
+
+      it('should call copyToClipboardAndDestination with ClipboardOnly when background tab opened via picker', async () => {
+        const mockTerminal = createMockTerminal();
+        mockPickerCommand.pick.mockResolvedValue({
+          outcome: 'selected',
+          bindOptions: { kind: 'terminal', terminal: mockTerminal },
+        });
+        mockDestinationManager = createMockDestinationManager({
+          isBound: false,
+          bindResult: Result.ok({
+            destinationName: 'Terminal',
+            destinationKind: 'terminal',
+            suppressAutoPaste: true,
+          }),
+        });
+        service = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockPickerCommand,
+          mockConfigReader,
+          mockLogger,
+        );
+        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink.mockResolvedValue(mockFormattedLink);
+        mockCopyToClipboard.mockResolvedValue(undefined);
+
+        await service.createPortableLink(PathFormat.WorkspaceRelative);
+
+        expect(mockCopyToClipboard).toHaveBeenCalledWith(
+          mockFormattedLink,
+          'Portable RangeLink',
+          mockEditor.document.uri,
+          'clipboard-only',
+        );
+        expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
@@ -2373,7 +2765,7 @@ describe('RangeLinkService', () => {
 
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        LinkType.Regular,
       );
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
@@ -2397,7 +2789,7 @@ describe('RangeLinkService', () => {
 
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        true,
+        LinkType.Portable,
       );
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
@@ -2425,7 +2817,7 @@ describe('RangeLinkService', () => {
 
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        LinkType.Regular,
       );
 
       expect(result).toBeUndefined();
@@ -2446,7 +2838,7 @@ describe('RangeLinkService', () => {
 
       const result = await (service as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        true,
+        LinkType.Portable,
       );
 
       expect(result).toBeUndefined();
@@ -2522,7 +2914,10 @@ describe('RangeLinkService', () => {
       const { service: localService } = createServiceWithDirtyDocument(true, true);
       mockShowWarningMessage.mockResolvedValue('Generate Anyway');
 
-      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+      await (localService as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        LinkType.Regular,
+      );
 
       expect(mockShowWarningMessage).toHaveBeenCalledWith(
         'File has unsaved changes. Link may point to wrong position after save.',
@@ -2542,7 +2937,10 @@ describe('RangeLinkService', () => {
     it('should NOT show warning when document is dirty but setting is disabled', async () => {
       const { service: localService } = createServiceWithDirtyDocument(true, false);
 
-      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+      await (localService as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        LinkType.Regular,
+      );
 
       expect(mockShowWarningMessage).not.toHaveBeenCalled();
       expect(mockGenerateLinkFromSelections).toHaveBeenCalled();
@@ -2555,7 +2953,10 @@ describe('RangeLinkService', () => {
     it('should NOT show warning when document is not dirty', async () => {
       const { service: localService } = createServiceWithDirtyDocument(false, true);
 
-      await (localService as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+      await (localService as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        LinkType.Regular,
+      );
 
       expect(mockShowWarningMessage).not.toHaveBeenCalled();
       expect(mockGenerateLinkFromSelections).toHaveBeenCalled();
@@ -2567,7 +2968,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        LinkType.Regular,
       );
 
       expect(mockDocument.save).toHaveBeenCalled();
@@ -2585,7 +2986,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        LinkType.Regular,
       );
 
       expect(mockDocument.save).not.toHaveBeenCalled();
@@ -2603,7 +3004,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        LinkType.Regular,
       );
 
       expect(mockDocument.save).not.toHaveBeenCalled();
@@ -2622,7 +3023,7 @@ describe('RangeLinkService', () => {
 
       const result = await (localService as any).generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
-        false,
+        LinkType.Regular,
       );
 
       expect(mockDocument.save).toHaveBeenCalled();
@@ -2674,7 +3075,10 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+      await (service as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        LinkType.Regular,
+      );
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
         referencePath: 'src/file.ts',
@@ -2712,7 +3116,10 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      await (service as any).generateLinkFromSelection(PathFormat.WorkspaceRelative, false);
+      await (service as any).generateLinkFromSelection(
+        PathFormat.WorkspaceRelative,
+        LinkType.Regular,
+      );
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
         referencePath: '/standalone/file.ts',
@@ -2750,7 +3157,7 @@ describe('RangeLinkService', () => {
         mockLogger,
       );
 
-      await (service as any).generateLinkFromSelection(PathFormat.Absolute, false);
+      await (service as any).generateLinkFromSelection(PathFormat.Absolute, LinkType.Regular);
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
         referencePath: '/workspace/src/file.ts',
@@ -2790,7 +3197,7 @@ describe('RangeLinkService', () => {
 
       await service.createLinkOnly(PathFormat.WorkspaceRelative);
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'regular');
       expect(mockGenerateLink).toHaveBeenCalledTimes(1);
     });
 
@@ -2836,7 +3243,7 @@ describe('RangeLinkService', () => {
 
       await service.createLinkOnly(); // No argument
 
-      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, false);
+      expect(mockGenerateLink).toHaveBeenCalledWith(PathFormat.WorkspaceRelative, 'regular');
     });
   });
 
@@ -3257,34 +3664,25 @@ describe('RangeLinkService', () => {
 
       // ===== PHASE 1: ALL OPERATIONS WHILE UNBOUND =====
 
-      // R-L: createLink — unbound → clipboard only toast
+      picker.pick.mockResolvedValueOnce({ outcome: 'cancelled' });
       await svc.createLink();
-      expect(statusBar).toHaveBeenCalledTimes(1);
-      expect(statusBar).toHaveBeenNthCalledWith(
-        1,
-        '✓ RangeLink copied to clipboard',
-        STATUS_BAR_TIMEOUT,
-      );
-      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).not.toHaveBeenCalled();
 
-      // R-V: pasteSelectedTextToDestination — unbound → picker cancelled → no action
       picker.pick.mockResolvedValue({ outcome: 'cancelled' });
       await svc.pasteSelectedTextToDestination();
-      expect(statusBar).toHaveBeenCalledTimes(1);
-      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).not.toHaveBeenCalled();
 
-      // R-F: pasteCurrentFilePathToDestination — unbound → picker cancelled → no action
       picker.pick.mockResolvedValue({ outcome: 'cancelled' });
       await svc.pasteCurrentFilePathToDestination(PathFormat.Absolute);
-      expect(statusBar).toHaveBeenCalledTimes(1);
-      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).not.toHaveBeenCalled();
 
-      // R-J: jump — unbound → picker cancelled → no action
       picker.pick.mockResolvedValue({ outcome: 'cancelled' });
       await jumpCmd.execute();
-      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
 
-      // Unbound phase tally
       expect(infoMsg).not.toHaveBeenCalled();
       expect(errorMsg).not.toHaveBeenCalled();
       expect(warningMsg).not.toHaveBeenCalled();
@@ -3292,101 +3690,84 @@ describe('RangeLinkService', () => {
       // ===== PHASE 2: BIND TO TERMINAL — ALL OPERATIONS WHILE BOUND =====
       bound = true;
 
-      // R-L: createLink — bound → mock manager handles feedback → no statusBar from service
       await svc.createLink();
-      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+
+      await svc.pasteSelectedTextToDestination();
+      expect(statusBar).not.toHaveBeenCalled();
       expect(clipboard.writeText).toHaveBeenCalledTimes(2);
 
-      // R-V: pasteSelectedTextToDestination — bound → mock manager handles
-      await svc.pasteSelectedTextToDestination();
-      expect(statusBar).toHaveBeenCalledTimes(1);
+      await svc.pasteCurrentFilePathToDestination(PathFormat.Absolute);
+      expect(statusBar).not.toHaveBeenCalled();
       expect(clipboard.writeText).toHaveBeenCalledTimes(3);
 
-      // R-F: pasteCurrentFilePathToDestination — bound → mock manager handles
-      await svc.pasteCurrentFilePathToDestination(PathFormat.Absolute);
-      expect(statusBar).toHaveBeenCalledTimes(1);
-      expect(clipboard.writeText).toHaveBeenCalledTimes(4);
-
-      // R-J: jump — bound → focusBoundDestination (manager handles internally)
       const jumpResult = await jumpCmd.execute();
       expect(jumpResult).toStrictEqual({ outcome: 'focused', destinationName: 'Terminal' });
-      expect(statusBar).toHaveBeenCalledTimes(1);
+      expect(statusBar).not.toHaveBeenCalled();
 
-      // Bound phase tally: still no toasts from RangeLinkService
       expect(infoMsg).not.toHaveBeenCalled();
       expect(errorMsg).not.toHaveBeenCalled();
       expect(warningMsg).not.toHaveBeenCalled();
 
-      // ===== PHASE 3: UNBIND — BACK TO CLIPBOARD-ONLY =====
+      // ===== PHASE 3: UNBIND — BACK TO PICKER-WHEN-UNBOUND =====
       bound = false;
 
-      // R-L: createLink — unbound again → clipboard-only toast
+      picker.pick.mockResolvedValueOnce({ outcome: 'cancelled' });
       await svc.createLink();
-      expect(statusBar).toHaveBeenCalledTimes(2);
-      expect(statusBar).toHaveBeenNthCalledWith(
-        2,
-        '✓ RangeLink copied to clipboard',
-        STATUS_BAR_TIMEOUT,
-      );
-      expect(clipboard.writeText).toHaveBeenCalledTimes(5);
+      expect(statusBar).not.toHaveBeenCalled();
+      expect(clipboard.writeText).toHaveBeenCalledTimes(3);
 
-      // R-V: pasteSelectedTextToDestination — unbound → picker cancelled
       picker.pick.mockResolvedValue({ outcome: 'cancelled' });
       await svc.pasteSelectedTextToDestination();
-      expect(statusBar).toHaveBeenCalledTimes(2);
+      expect(statusBar).not.toHaveBeenCalled();
 
       // ===== PHASE 4: REBIND + INELIGIBLE CONTENT =====
       bound = true;
       terminalDest.isEligibleForPasteContent.mockResolvedValue(false);
 
-      // R-V: bound but ineligible → clipboard-only fallback toast
       await svc.pasteSelectedTextToDestination();
-      expect(statusBar).toHaveBeenCalledTimes(3);
+      expect(statusBar).toHaveBeenCalledTimes(1);
       expect(statusBar).toHaveBeenNthCalledWith(
-        3,
+        1,
         '✓ Selected text copied to clipboard',
         STATUS_BAR_TIMEOUT,
       );
-      expect(clipboard.writeText).toHaveBeenCalledTimes(6);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(4);
 
-      // R-F: bound but ineligible → clipboard-only fallback toast
       await svc.pasteCurrentFilePathToDestination(PathFormat.Absolute);
-      expect(statusBar).toHaveBeenCalledTimes(4);
+      expect(statusBar).toHaveBeenCalledTimes(2);
       expect(statusBar).toHaveBeenNthCalledWith(
-        4,
+        2,
         '✓ File path copied to clipboard',
         STATUS_BAR_TIMEOUT,
       );
-      expect(clipboard.writeText).toHaveBeenCalledTimes(7);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(5);
 
-      // R-L: bound but ineligible link → clipboard-only fallback toast
       terminalDest.isEligibleForPasteLink.mockResolvedValue(false);
       await svc.createLink();
-      expect(statusBar).toHaveBeenCalledTimes(5);
+      expect(statusBar).toHaveBeenCalledTimes(3);
       expect(statusBar).toHaveBeenNthCalledWith(
-        5,
+        3,
         '✓ RangeLink copied to clipboard',
         STATUS_BAR_TIMEOUT,
       );
-      expect(clipboard.writeText).toHaveBeenCalledTimes(8);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(6);
 
       // Reset eligibility, verify normal bound path resumes
       terminalDest.isEligibleForPasteContent.mockResolvedValue(true);
       terminalDest.isEligibleForPasteLink.mockResolvedValue(true);
 
-      // R-V: bound + eligible again → mock manager handles
       await svc.pasteSelectedTextToDestination();
-      expect(statusBar).toHaveBeenCalledTimes(5);
-      expect(clipboard.writeText).toHaveBeenCalledTimes(9);
+      expect(statusBar).toHaveBeenCalledTimes(3);
+      expect(clipboard.writeText).toHaveBeenCalledTimes(7);
 
       // ===== FINAL TALLY =====
-      // 5 statusBar calls total:
-      //   #1: R-L unbound (Phase 1)
-      //   #2: R-L unbound (Phase 3)
-      //   #3: R-V bound+ineligible (Phase 4)
-      //   #4: R-F bound+ineligible (Phase 4)
-      //   #5: R-L bound+ineligible (Phase 4)
-      expect(statusBar).toHaveBeenCalledTimes(5);
+      // 3 statusBar calls total:
+      //   #1: R-V bound+ineligible (Phase 4)
+      //   #2: R-F bound+ineligible (Phase 4)
+      //   #3: R-L bound+ineligible (Phase 4)
+      expect(statusBar).toHaveBeenCalledTimes(3);
       expect(infoMsg).not.toHaveBeenCalled();
       expect(errorMsg).not.toHaveBeenCalled();
       expect(warningMsg).not.toHaveBeenCalled();
