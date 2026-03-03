@@ -9,14 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Paste Terminal Selection (R-V)** - Send terminal text to your bound destination (#331)
-  - **Keyboard shortcut:** `Cmd+R Cmd+V` (Mac) / `Ctrl+R Ctrl+V` (Win/Linux) when terminal has focus
-  - Terminal context menu "Paste Selection to Destination" entry when text is selected and a destination is bound
-  - R-L and R-C gracefully guide users who press editor keybindings while in the terminal
-  - Terminal self-paste detection prevents pasting back into the same terminal
-- **Unbind (R-U)** - Keybinding to unbind the current destination (#348)
-  - **Keyboard shortcut:** `Cmd+R Cmd+U` (Mac) / `Ctrl+R Ctrl+U` (Win/Linux)
-  - Previously only accessible via Command Palette and context menus
+- **RangeLink Menu (R-M)** - Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the `🔗 RangeLink` status bar item to access ⚡ quick actions
+  - Jump to Bound Destination (shows quick pick of available destinations when unbound)
+  - Unbind Destination (when bound)
+  - Go to Link
+  - Show Version Info
 - **Bind to Destination (R-D)** - Direct keybinding to open the destination picker and bind (#330)
   - **Keyboard shortcut:** `Cmd+R Cmd+D` (Mac) / `Ctrl+R Ctrl+D` (Win/Linux)
   - Shows all available destinations (terminals, text editors, AI assistants) in a single picker
@@ -38,54 +35,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - When more open files exist beyond the inline list, extras collapse into "More files..." which opens a secondary picker
   - Secondary picker organizes all open files into "Active Files" section + per-"Tab Group N" sections
   - Escaping the secondary picker returns to the destination picker
-- **Dirty Buffer Warning** - Warning when generating a link from a file with unsaved changes (#298)
-  - Shows a dialog with options: "Save & Generate", "Generate Anyway", or dismiss to abort
-  - Controlled by `rangelink.warnOnDirtyBuffer` setting (default: `true`)
-  - Helps avoid creating links that may point to incorrect positions after the file is saved
-- **Paste File Path Commands** - Send file paths directly to bound destinations (#243)
+- **Send File Path Commands** - Send file paths directly to bound destinations (#243)
   - **Context menu commands** - See "Context Menu Integrations" section below for full details
   - **Command palette commands** - For the currently active editor
-    - "Paste Current File Path" - Sends workspace-relative path (default)
-    - "Paste Current File Path (Absolute)" - Sends absolute path
+    - "Send Current File Path" - Sends workspace-relative path (default)
+    - "Send Current File Path (Absolute)" - Sends absolute path
   - **Keyboard shortcuts** - `Cmd+R Cmd+F` for relative, `Cmd+R Cmd+Shift+F` for absolute
   - **Shell-safe quoting for terminals** - Paths with special characters (spaces, parentheses, etc.) are automatically wrapped in single quotes when sent to terminal destinations, matching Cursor's drag-drop behavior. Clipboard retains unquoted path for non-shell contexts.
   - Includes separate `smartPadding.pasteFilePath` setting (default: `both`) for controlling whitespace around pasted paths
-  - Copies to clipboard + sends to bound destination (like other paste commands)
+  - Copies to clipboard + sends to bound destination (like other send commands)
   - Shows quick pick to bind a destination when unbound
-- **Go to Link Command (R-G)** - Paste or type a RangeLink to go directly to that code location
-  - **Keyboard shortcut:** `Cmd+R Cmd+G` (Mac) / `Ctrl+R Ctrl+G` (Win/Linux)
-  - Supports all link formats: full paths, ranges, columns (e.g., `recipes/baking/chickenpie.ts#L3C14-L15C9`)
-  - Also available via Command Palette and status bar menu for discoverability
 - **Context Menu Integrations** - Right-click access to RangeLink commands (#73, #243, #246)
   - **Explorer** (right-click on files):
-    - "RangeLink: Paste File Path" - Send absolute path to bound destination
-    - "RangeLink: Paste Relative File Path" - Send relative path to bound destination
+    - "RangeLink: Send File Path" - Send absolute path to bound destination
+    - "RangeLink: Send Relative File Path" - Send relative path to bound destination
     - "RangeLink: Bind Here" - Open file and bind it as text editor destination (#247)
     - "RangeLink: Unbind" - Unbind current destination (when bound, files only)
   - **Editor Tab** (right-click on tabs):
-    - "RangeLink: Paste File Path" - Send absolute path to bound destination
-    - "RangeLink: Paste Relative File Path" - Send relative path to bound destination
+    - "RangeLink: Send File Path" - Send absolute path to bound destination
+    - "RangeLink: Send Relative File Path" - Send relative path to bound destination
     - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
     - "RangeLink: Unbind" - Unbind current destination (when bound)
   - **Editor Content** (right-click inside editor):
-    - "RangeLink: Copy Range Link" - Create relative path link (has selection)
-    - "RangeLink: Copy Range Link (Absolute)" - Create absolute path link (has selection)
-    - "RangeLink: Copy Portable Link" - Create BYOD portable link (has selection)
-    - "RangeLink: Copy Portable Link (Absolute)" - Create BYOD portable link (has selection)
-    - "RangeLink: Paste Selected Text" - Send selected text to bound destination (has selection)
+    - "RangeLink: Send RangeLink" - Send relative path link to destination (has selection)
+    - "RangeLink: Send RangeLink (Absolute)" - Send absolute path link to destination (has selection)
+    - "RangeLink: Send Portable Link" - Send BYOD portable link to destination (has selection)
+    - "RangeLink: Send Portable Link (Absolute)" - Send BYOD portable link to destination (has selection)
+    - "RangeLink: Send Selected Text" - Send selected text to bound destination (has selection)
     - ─── _visual separator_ ───
-    - "RangeLink: Paste This File's Path" - Send absolute path to bound destination
-    - "RangeLink: Paste This File's Relative Path" - Send relative path to bound destination
+    - "RangeLink: Send This File's Path" - Send absolute path to bound destination
+    - "RangeLink: Send This File's Relative Path" - Send relative path to bound destination
     - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
     - "RangeLink: Unbind" - Unbind current destination (when bound)
   - **Terminal** (right-click on terminal tabs or inside terminal):
     - "RangeLink: Bind Here" - Bind this terminal as destination
     - "RangeLink: Unbind" - Unbind current destination (when bound)
-- **RangeLink Menu (R-M)** - Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux) or click the `🔗 RangeLink` status bar item to access ⚡ quick actions
-  - Jump to Bound Destination (shows quick pick of available destinations when unbound)
-  - Unbind Destination (when bound)
-  - Go to Link
-  - Show Version Info
+- **Dirty Buffer Warning** - Warning when generating a link from a file with unsaved changes (#298)
+  - Shows a dialog with options: "Save & Generate", "Generate Anyway", or dismiss to abort
+  - Controlled by `rangelink.warnOnDirtyBuffer` setting (default: `true`)
+  - Helps avoid creating links that may point to incorrect positions after the file is saved
+- **Send Terminal Selection (R-V)** - Send terminal text to your bound destination (#331)
+  - **Keyboard shortcut:** `Cmd+R Cmd+V` (Mac) / `Ctrl+R Ctrl+V` (Win/Linux) when terminal has focus
+  - Terminal context menu "Send Selection to Destination" entry when text is selected and a destination is bound
+  - R-L and R-C gracefully guide users who press editor keybindings while in the terminal
+  - Terminal self-paste detection prevents pasting back into the same terminal
+- **Go to Link Command (R-G)** - Paste or type a RangeLink to go directly to that code location
+  - **Keyboard shortcut:** `Cmd+R Cmd+G` (Mac) / `Ctrl+R Ctrl+G` (Win/Linux)
+  - Supports all link formats: full paths, ranges, columns (e.g., `recipes/baking/chickenpie.ts#L3C14-L15C9`)
+  - Also available via Command Palette and status bar menu for discoverability
+- **Unbind (R-U)** - Keybinding to unbind the current destination (#348)
+  - **Keyboard shortcut:** `Cmd+R Cmd+U` (Mac) / `Ctrl+R Ctrl+U` (Win/Linux)
+  - Previously only accessible via Command Palette and context menus
 - **Smart Padding settings documented** - All 4 `smartPadding.*` settings now in README Configuration section (#270)
 
 <!-- TODO: #366 unhide when bookmarks graduate from beta — re-add these entries to the sections above
@@ -103,35 +103,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Links with unsafe paths auto-quoted** - RangeLinks containing spaces, parentheses, or other shell-unsafe characters are automatically single-quoted at generation time, enabling round-trip navigation. Both single-quoted (`'My Folder/file.ts#L10'`) and double-quoted (`"My Folder/file.ts#L10"`) formats are detected by the clickable link scanner in terminal and document providers. Clipboard always receives the raw unquoted link. Quoting is handled in the core library so all consumers benefit automatically. (#320)
-- **Cleaner command titles** - Removed redundant "RangeLink" from command palette titles (#243)
-  - **Before:** "RangeLink: Bind RangeLink to Terminal Destination"
-  - **After:** "RangeLink: Bind to Terminal"
-  - Category "RangeLink" already provides the namespace; titles now focus on the action
-- **Editor context menu labels** - Selection items now have "RangeLink:" prefix (#243)
-  - **Before:** "Copy Range Link [⌘R ⌘L]" (command palette title with keybinding in title)
-  - **After:** "RangeLink: Copy Range Link" (consistent prefix, cleaner appearance)
-- **Jump to Bound Destination UX** - Quick pick when no destination bound (#173)
-  - **Before:** Error message "No destination bound. Bind a destination first."
-  - **After:** Select destination → binds and jumps in one action
-  - Dismisses silently when user presses Escape
-  - Edge case: Shows info notification if no destinations exist (e.g., no terminal, no AI extensions)
-- **Paste Selected Text UX** - Quick pick when no destination bound (#90)
-  - **Before:** Silently copied to clipboard with no indication
-  - **After:** Select destination → binds and pastes in one action
-  - Dismisses silently when user presses Escape (no clipboard fallback — user can retry)
-  - Edge case: Shows info notification if no destinations exist
-- **Improved error message for stale selections** - Better guidance when external file changes cause selection loss (#258)
-  - **Before:** "No text selected. Select text and try again."
-  - **After:** "No text selected. Click in the file, select text, and try again."
-  - Addresses VSCode behavior where `editor.selections` returns stale data after external modifications
 - **Text editor destination no longer requires split editor** - Bind to any text editor regardless of tab group layout (#279)
   - **Before:** Required 2+ tab groups (split editor) to bind a text editor destination
   - **After:** Bind any text editor; if you try to paste to the same file you're selecting from, RangeLink copies to clipboard and shows a helpful message
   - Self-paste detection prevents the "paste into yourself" problem without restricting valid workflows
   - **Tip:** When self-paste is detected for R-L, the message suggests R-C (clipboard-only) as an alternative
-- **Vocabulary alignment: "Paste Destination" → "Destination"** - Docs now use "destination" and "bind/bound" consistently (#339)
-  - The "Paste" prefix was coined in v0.3.0 when destinations only pasted links — the feature now supports bind, unbind, jump, focus, and pick
-  - Section headers, body text, and context menu descriptions updated across README and CHANGELOG
+- **Editor context menu labels** - Selection items now have "RangeLink:" prefix (#243)
+  - **Before:** "Copy Range Link [⌘R ⌘L]" (command palette title with keybinding in title)
+  - **After:** "RangeLink: Send RangeLink" (consistent prefix, cleaner appearance)
+- **Improved error message for stale selections** - Better guidance when external file changes cause selection loss (#258)
+  - **Before:** "No text selected. Select text and try again."
+  - **After:** "No text selected. Click in the file, select text, and try again."
+  - Addresses VSCode behavior where `editor.selections` returns stale data after external modifications
+- **Paste Selected Text UX** - Quick pick when no destination bound (#90)
+  - **Before:** Silently copied to clipboard with no indication
+  - **After:** Select destination → binds and pastes in one action
+  - Dismisses silently when user presses Escape (no clipboard fallback — user can retry)
+  - Edge case: Shows info notification if no destinations exist
+- **Send RangeLink and Send Portable Link show picker when unbound** — These commands now open the destination picker when no destination is bound, consistent with Send Selected Text and Send File Path (#373)
+  - **Before:** Fell back silently to clipboard when unbound
+  - **After:** Opens destination picker; binds and sends in one action; dismisses silently on Escape
+  - Use Copy RangeLink or Copy RangeLink (Absolute) for clipboard-only behavior
+- **Jump to Bound Destination UX** - Quick pick when no destination bound (#173)
+  - **Before:** Error message "No destination bound. Bind a destination first."
+  - **After:** Select destination → binds and jumps in one action
+  - Dismisses silently when user presses Escape
+  - Edge case: Shows info notification if no destinations exist (e.g., no terminal, no AI extensions)
 - **Two-verb command vocabulary** — Commands now use **Send** (deliver to destination, picker if unbound) or **Copy** (clipboard only) instead of the previous mix of "Copy" and "Paste" verbs (#373)
   - "Copy Range Link" → **Send RangeLink** (now delivers to destination; see picker-when-unbound behavior below)
   - "Copy Range Link (Absolute)" → **Send RangeLink (Absolute)**
@@ -143,23 +140,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - "Paste Current File Path" → **Send Current File Path**; "Paste Current File Path (Absolute)" → **Send Current File Path (Absolute)**
   - "Paste File Path" → **Send File Path**; "Paste File Path (Absolute)" → **Send File Path (Absolute)**
   - Context menu entries updated to match (e.g., "RangeLink: Paste Selected Text" → "RangeLink: Send Selected Text")
-- **Send RangeLink and Send Portable Link show picker when unbound** — These commands now open the destination picker when no destination is bound, consistent with Send Selected Text and Send File Path (#373)
-  - **Before:** Fell back silently to clipboard when unbound
-  - **After:** Opens destination picker; binds and sends in one action; dismisses silently on Escape
-  - Use Copy RangeLink or Copy RangeLink (Absolute) for clipboard-only behavior
+- **Vocabulary alignment: "Paste Destination" → "Destination"** - Docs now use "destination" and "bind/bound" consistently (#339)
+  - The "Paste" prefix was coined in v0.3.0 when destinations only pasted links — the feature now supports bind, unbind, jump, focus, and pick
+  - Section headers, body text, and context menu descriptions updated across README and CHANGELOG
+- **Cleaner command titles** - Removed redundant "RangeLink" from command palette titles (#243)
+  - **Before:** "RangeLink: Bind RangeLink to Terminal Destination"
+  - **After:** "RangeLink: Bind to Terminal"
+  - Category "RangeLink" already provides the namespace; titles now focus on the action
 
 ### Fixed
 
-- **Text editor paste to hidden tabs** - Bound text editor no longer needs to be the topmost tab in its pane. Paste now works even when the bound file is hidden behind other tabs—RangeLink automatically brings it to the foreground during paste. (#181)
-- **Text editor binding validation** - Prevents binding to read-only editors (git diff views, output panels, settings UI) that would cause paste operations to fail with confusing errors. Now shows clear error messages: "Cannot bind to read-only editor (git)" or "Cannot bind to file.png - binary file".
 - **Full-line navigation selection** - Fixed `#L10` selecting only first character instead of entire line. Full-line links (`#L10`, `#L10-L15`) now correctly select from start of first line to end of last line.
 - **Full-line link generation with newline** - Fixed link generation when selection includes trailing newline. Selecting "line 20 + newline" now correctly generates `#L20` instead of `#L20-L21`.
-- **Smart padding preserves whitespace-only text** - Fixed `applySmartPadding()` incorrectly trimming whitespace-only strings to empty. Now whitespace-only content is preserved when using destinations.
-- **Web URLs no longer hijacked as RangeLinks** - Fixed clickable links incorrectly capturing URLs like `https://example.com/path/file.ts#L10`, which caused "file not found" errors when clicked. HTTP, HTTPS, and FTP URLs are now properly ignored while local file paths continue to work. (#288)
-- **Full-line selection validation error** - Fixed `SELECTION_ZERO_WIDTH` error when using Ctrl+L or triple-click to select full lines. The selection normalization now correctly sets the end character to the line length instead of 0. (#306)
-- # **Document link tooltip shows raw JSON** - Fixed hover tooltip displaying raw markdown with command URIs and JSON payloads instead of clean human-readable text. Defers the command URI target to `resolveDocumentLink()` so the hover shows only the tooltip string (e.g., "Open path/to/file.ts:10-20 • RangeLink"). (#311)
 - **Wrapped link navigation** - Fixed navigation failing when RangeLinks are wrapped in backticks, quotes, or angle brackets. Wrapper characters (`` ` ``, `'`, `"`, `<`, `>`) were captured as part of the path, producing unresolvable paths like `` `file.ts ``. The link detection pattern now excludes these characters from path matching. (#310)
+- **Web URLs no longer hijacked as RangeLinks** - Fixed clickable links incorrectly capturing URLs like `https://example.com/path/file.ts#L10`, which caused "file not found" errors when clicked. HTTP, HTTPS, and FTP URLs are now properly ignored while local file paths continue to work. (#288)
 - **Stale viewColumn after split/move** - Fixed paste targeting the wrong tab group when a bound text editor is moved between tab groups after binding. The editor's viewColumn is now resolved dynamically at paste time instead of using the stale bind-time snapshot. Shows clear error messages when the bound editor is no longer visible or is open in multiple tab groups. (#307)
+- **Text editor paste to hidden tabs** - Bound text editor no longer needs to be the topmost tab in its pane. Paste now works even when the bound file is hidden behind other tabs—RangeLink automatically brings it to the foreground during paste. (#181)
+- **Document link tooltip shows raw JSON** - Fixed hover tooltip displaying raw markdown with command URIs and JSON payloads instead of clean human-readable text. Defers the command URI target to `resolveDocumentLink()` so the hover shows only the tooltip string (e.g., "Open path/to/file.ts:10-20 • RangeLink"). (#311)
+- **Full-line selection validation error** - Fixed `SELECTION_ZERO_WIDTH` error when using Ctrl+L or triple-click to select full lines. The selection normalization now correctly sets the end character to the line length instead of 0. (#306)
+- **Text editor binding validation** - Prevents binding to read-only editors (git diff views, output panels, settings UI) that would cause paste operations to fail with confusing errors. Now shows clear error messages: "Cannot bind to read-only editor (git)" or "Cannot bind to file.png - binary file".
+- **Smart padding preserves whitespace-only text** - Fixed `applySmartPadding()` incorrectly trimming whitespace-only strings to empty. Now whitespace-only content is preserved when using destinations.
 
 ## [1.0.0]
 
