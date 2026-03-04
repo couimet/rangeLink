@@ -501,7 +501,9 @@ describe('parseLink', () => {
         const maxPath = 'a'.repeat(MAX_LINK_LENGTH - 4) + '#L10';
         const result = parseLink(maxPath, DEFAULT_DELIMITERS);
 
-        expect(result.success).toBe(true);
+        // toBeOk() intentionally — this test validates the length boundary guard,
+        // not the parsed shape; asserting the full ParsedLink would test parsing logic.
+        expect(result).toBeOk();
       });
     });
 
