@@ -41,7 +41,7 @@ export class FocusCapabilityFactory {
     return new TerminalFocusCapability(
       this.ideAdapter,
       terminal,
-      new TerminalInsertFactory(this.ideAdapter, this.logger),
+      new TerminalInsertFactory(this.ideAdapter, this.clipboardPreserver, this.logger),
       this.logger,
     );
   }

@@ -1,10 +1,21 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
+import type { ClipboardPreserver } from '../../../../clipboard/ClipboardPreserver';
 import { TerminalInsertFactory } from '../../../../destinations/capabilities/insertFactories/terminalInsertFactory';
-import { createMockTerminal, createMockVscodeAdapter } from '../../../helpers';
+import {
+  createMockClipboardPreserver,
+  createMockTerminal,
+  createMockVscodeAdapter,
+} from '../../../helpers';
 
 describe('TerminalInsertFactory', () => {
-  const mockLogger = createMockLogger();
+  let mockLogger: ReturnType<typeof createMockLogger>;
+  let mockClipboardPreserver: jest.Mocked<ClipboardPreserver>;
+
+  beforeEach(() => {
+    mockLogger = createMockLogger();
+    mockClipboardPreserver = createMockClipboardPreserver();
+  });
 
   it('creates an insert function that pastes text to terminal via clipboard', async () => {
     const mockAdapter = createMockVscodeAdapter();
@@ -13,7 +24,7 @@ describe('TerminalInsertFactory', () => {
       .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
       .mockResolvedValue(undefined);
 
-    const factory = new TerminalInsertFactory(mockAdapter, mockLogger);
+    const factory = new TerminalInsertFactory(mockAdapter, mockClipboardPreserver, mockLogger);
     const insertFn = factory.forTarget(mockTerminal);
 
     const result = await insertFn('test content');
@@ -33,7 +44,7 @@ describe('TerminalInsertFactory', () => {
     const testError = new Error('Paste failed');
     jest.spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard').mockRejectedValue(testError);
 
-    const factory = new TerminalInsertFactory(mockAdapter, mockLogger);
+    const factory = new TerminalInsertFactory(mockAdapter, mockClipboardPreserver, mockLogger);
     const insertFn = factory.forTarget(mockTerminal);
 
     const result = await insertFn('content');
@@ -53,7 +64,7 @@ describe('TerminalInsertFactory', () => {
       .spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard')
       .mockResolvedValue(undefined);
 
-    const factory = new TerminalInsertFactory(mockAdapter, mockLogger);
+    const factory = new TerminalInsertFactory(mockAdapter, mockClipboardPreserver, mockLogger);
     const insertFn1 = factory.forTarget(terminal1);
     const insertFn2 = factory.forTarget(terminal2);
 
@@ -62,5 +73,18 @@ describe('TerminalInsertFactory', () => {
 
     expect(pasteTextSpy).toHaveBeenNthCalledWith(1, terminal1, 'content for terminal 1');
     expect(pasteTextSpy).toHaveBeenNthCalledWith(2, terminal2, 'content for terminal 2');
+  });
+
+  it('delegates wrapping to the injected ClipboardPreserver', async () => {
+    const mockAdapter = createMockVscodeAdapter();
+    jest.spyOn(mockAdapter, 'pasteTextToTerminalViaClipboard').mockResolvedValue(undefined);
+    const mockTerminal = createMockTerminal({ name: 'My Terminal' });
+
+    const factory = new TerminalInsertFactory(mockAdapter, mockClipboardPreserver, mockLogger);
+    const insertFn = factory.forTarget(mockTerminal);
+
+    await insertFn('content');
+
+    expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(1);
   });
 });
