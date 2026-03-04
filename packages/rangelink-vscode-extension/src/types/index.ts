@@ -1,6 +1,7 @@
 export { ActiveSelections } from './ActiveSelections';
 export { AutoPasteResult } from './AutoPasteResult';
 export type { BoundState } from './BoundState';
+export type { ClipboardPreservationMode } from './ClipboardPreservationMode';
 export type { EligibleFile } from './EligibleFile';
 export type { EligibleTerminal } from './EligibleTerminal';
 export { BehaviourAfterPaste } from './BehaviourAfterPaste';
