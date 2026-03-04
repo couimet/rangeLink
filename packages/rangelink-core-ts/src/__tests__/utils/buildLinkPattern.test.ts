@@ -711,7 +711,7 @@ describe('buildLinkPattern', () => {
       });
     });
 
-    describe('parentheses and brackets are NOT excluded (appear in real paths)', () => {
+    describe('opening brackets and parentheses are captured (closing bracket ] is excluded)', () => {
       it('should capture leading parenthesis as part of path', () => {
         const line = '(file.ts#L10)';
         const matches = [...line.matchAll(pattern)];
