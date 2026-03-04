@@ -1,6 +1,3 @@
-import { getLogger } from 'barebone-logger';
-
-import { DEFAULT_DELIMITERS } from '../constants/DEFAULT_DELIMITERS';
 import { MAX_LINK_LENGTH } from '../constants/MAX_LINK_LENGTH';
 import { RangeLinkError } from '../errors/RangeLinkError';
 import { RangeLinkErrorCodes } from '../errors/RangeLinkErrorCodes';
@@ -34,11 +31,11 @@ import { quotePath } from '../utils/quotePath';
  * ensuring the hash delimiter is found in the anchor portion, not the filename.
  *
  * @param link - The RangeLink string to parse (e.g., "src/auth.ts#L42C10-L58C25")
- * @param delimiters - Optional delimiter configuration. If not provided, falls back to DEFAULT_DELIMITERS
+ * @param delimiters - Delimiter configuration to use for parsing
  */
 export const parseLink = (
   linkInput: string,
-  delimiters?: DelimiterConfig,
+  delimiters: DelimiterConfig,
 ): CoreResult<ParsedLink> => {
   // Strip surrounding quotes (single or double) so quoted links round-trip correctly
   const firstChar = linkInput[0];
@@ -85,27 +82,11 @@ export const parseLink = (
     );
   }
 
-  // Determine which delimiters to use and log accordingly
-  const useFallback = delimiters === undefined;
-  const activeDelimiters = useFallback ? DEFAULT_DELIMITERS : delimiters;
-
-  const logger = getLogger();
-  const logCtx = { fn: 'parseLink', link };
-
-  if (useFallback) {
-    logger.debug(
-      { ...logCtx, delimiters: activeDelimiters },
-      'No delimiter config provided, using DEFAULT_DELIMITERS',
-    );
-  } else {
-    logger.debug({ ...logCtx, delimiters: activeDelimiters }, 'Using provided delimiter config');
-  }
-
   // Escape delimiters for regex matching
-  const escapedHash = escapeRegex(activeDelimiters.hash);
-  const escapedLine = escapeRegex(activeDelimiters.line);
-  const escapedPosition = escapeRegex(activeDelimiters.position);
-  const escapedRange = escapeRegex(activeDelimiters.range);
+  const escapedHash = escapeRegex(delimiters.hash);
+  const escapedLine = escapeRegex(delimiters.line);
+  const escapedPosition = escapeRegex(delimiters.position);
+  const escapedRange = escapeRegex(delimiters.range);
 
   // Build unified regex pattern that matches entire link from start to end
   // Pattern: ^(path)(hash{1,2})(line)(digits)(optional: position digits)(optional: range section)$
@@ -120,7 +101,7 @@ export const parseLink = (
   // Trade-off: Multi-char hashes cannot appear in filenames to avoid ambiguity.
   // This is acceptable since multi-char delimiters are rare in practice.
   const pathPattern =
-    activeDelimiters.hash.length === 1
+    delimiters.hash.length === 1
       ? '(.+?)' // Single-char: allow in path, non-greedy matching
       : `((?:(?!${escapedHash}).)+)`; // Multi-char: prevent in path with negative lookahead
 
@@ -132,7 +113,7 @@ export const parseLink = (
 
   if (!match) {
     // Check for empty path (link starts with hash)
-    if (link.startsWith(activeDelimiters.hash)) {
+    if (link.startsWith(delimiters.hash)) {
       return CoreResult.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.PARSE_EMPTY_PATH,
@@ -143,13 +124,13 @@ export const parseLink = (
     }
 
     // Check if hash separator is missing entirely
-    if (!link.includes(activeDelimiters.hash)) {
+    if (!link.includes(delimiters.hash)) {
       return CoreResult.err(
         new RangeLinkError({
           code: RangeLinkErrorCodes.PARSE_NO_HASH_SEPARATOR,
-          message: `Link must contain ${activeDelimiters.hash} separator`,
+          message: `Link must contain ${delimiters.hash} separator`,
           functionName: 'parseLink',
-          details: { hash: activeDelimiters.hash },
+          details: { hash: delimiters.hash },
         }),
       );
     }
@@ -160,7 +141,7 @@ export const parseLink = (
         code: RangeLinkErrorCodes.PARSE_INVALID_RANGE_FORMAT,
         message: 'Invalid range format',
         functionName: 'parseLink',
-        details: { link, delimiters: activeDelimiters },
+        details: { link, delimiters: delimiters },
       }),
     );
   }
@@ -170,7 +151,7 @@ export const parseLink = (
 
   // Validate that path is not just the hash delimiter or empty
   // Edge case: ##L10 could match with path="#" if regex captures first # as path
-  if (path === activeDelimiters.hash || path.trim() === '') {
+  if (path === delimiters.hash || path.trim() === '') {
     return CoreResult.err(
       new RangeLinkError({
         code: RangeLinkErrorCodes.PARSE_EMPTY_PATH,
@@ -183,7 +164,7 @@ export const parseLink = (
   // Detect selection type based on hash length
   // Single hash (e.g., "#") → Normal mode
   // Double hash (e.g., "##") → Rectangular mode
-  const isRectangular = capturedHash.length === activeDelimiters.hash.length * 2;
+  const isRectangular = capturedHash.length === delimiters.hash.length * 2;
   const selectionType: SelectionType = isRectangular
     ? SelectionType.Rectangular
     : SelectionType.Normal;
