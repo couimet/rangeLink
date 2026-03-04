@@ -757,9 +757,7 @@ describe('buildLinkPattern', () => {
         expect(matches[0][0]).toBe(
           'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
         );
-        expect(matches[0][1]).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
-        );
+        expect(matches[0][1]).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
       });
 
       it('should detect the correct path from a backtick-labelled markdown link embedded in prose', () => {
@@ -771,9 +769,7 @@ describe('buildLinkPattern', () => {
         expect(matches[0][0]).toBe(
           'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
         );
-        expect(matches[0][1]).toBe(
-          'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
-        );
+        expect(matches[0][1]).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
       });
 
       it('should detect a range link inside a markdown link', () => {

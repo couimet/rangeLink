@@ -113,11 +113,7 @@ describe('findLinksInText', () => {
       });
 
       it('should detect a range link inside a markdown link', () => {
-        const results = findLinksInText(
-          '[text](src/auth.ts#L10-L20)',
-          DEFAULT_DELIMITERS,
-          logger,
-        );
+        const results = findLinksInText('[text](src/auth.ts#L10-L20)', DEFAULT_DELIMITERS, logger);
 
         expect(results).toHaveLength(1);
         expect(results[0].linkText).toBe('src/auth.ts#L10-L20');
