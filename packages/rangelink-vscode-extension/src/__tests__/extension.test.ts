@@ -53,6 +53,7 @@ jest.mock('vscode', () => ({
     getConfiguration: jest.fn(),
     openTextDocument: jest.fn().mockResolvedValue(undefined),
     onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
+    onDidChangeConfiguration: jest.fn(() => ({ dispose: jest.fn() })),
   },
   languages: {
     registerDocumentLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),
@@ -642,7 +643,7 @@ describe('Extension lifecycle', () => {
 
     extension.activate(mockContext as any);
 
-    const INFRASTRUCTURE_COUNT = 2;
+    const INFRASTRUCTURE_COUNT = 3;
     const PROVIDER_COUNT = 2;
     const COMMAND_COUNT = 49;
     const DESTINATION_MANAGER_LISTENERS = 2;

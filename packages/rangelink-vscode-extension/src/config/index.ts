@@ -8,6 +8,7 @@ export type {
 
 // Public classes
 export { ConfigReader } from './ConfigReader';
+export { DelimiterCache } from './DelimiterCache';
 
 // Public functions
 export { getDelimitersForExtension } from './getDelimitersForExtension';
