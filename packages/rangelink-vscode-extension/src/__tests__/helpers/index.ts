@@ -6,6 +6,7 @@ export * from './createMockCancellationToken';
 export * from './createMockClaudeCodeComposableDestination';
 export * from './createMockClaudeCodeDestination';
 export * from './createMockClipboard';
+export * from './createMockClipboardPreserver';
 export * from './createMockCommands';
 export * from './createMockComposablePasteDestination';
 export * from './createMockConfigGetter';

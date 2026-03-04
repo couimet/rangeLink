@@ -2,12 +2,16 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { FOCUS_TO_PASTE_DELAY_MS } from '../../../../constants/chatPasteConstants';
 import { AIAssistantInsertFactory } from '../../../../destinations/capabilities/insertFactories/aiAssistantInsertFactory';
-import { createMockVscodeAdapter } from '../../../helpers';
+import type { ClipboardPreserver } from '../../../../clipboard/ClipboardPreserver';
+import { createMockClipboardPreserver, createMockVscodeAdapter } from '../../../helpers';
 
 describe('AIAssistantInsertFactory', () => {
-  const mockLogger = createMockLogger();
+  let mockLogger: ReturnType<typeof createMockLogger>;
+  let mockClipboardPreserver: jest.Mocked<ClipboardPreserver>;
 
   beforeEach(() => {
+    mockLogger = createMockLogger();
+    mockClipboardPreserver = createMockClipboardPreserver();
     jest.useFakeTimers();
   });
 
@@ -27,6 +31,7 @@ describe('AIAssistantInsertFactory', () => {
     const factory = new AIAssistantInsertFactory(
       mockAdapter,
       ['editor.action.clipboardPasteAction'],
+      mockClipboardPreserver,
       mockLogger,
     );
     const insertFn = factory.forTarget();
@@ -58,6 +63,7 @@ describe('AIAssistantInsertFactory', () => {
     const factory = new AIAssistantInsertFactory(
       mockAdapter,
       ['editor.action.clipboardPasteAction'],
+      mockClipboardPreserver,
       mockLogger,
     );
     const insertFn = factory.forTarget();
@@ -83,6 +89,7 @@ describe('AIAssistantInsertFactory', () => {
     const factory = new AIAssistantInsertFactory(
       mockAdapter,
       ['command.first', 'command.second'],
+      mockClipboardPreserver,
       mockLogger,
     );
     const insertFn = factory.forTarget();
@@ -108,6 +115,7 @@ describe('AIAssistantInsertFactory', () => {
     const factory = new AIAssistantInsertFactory(
       mockAdapter,
       ['command.first', 'command.second'],
+      mockClipboardPreserver,
       mockLogger,
     );
     const insertFn = factory.forTarget();
@@ -132,6 +140,7 @@ describe('AIAssistantInsertFactory', () => {
     const factory = new AIAssistantInsertFactory(
       mockAdapter,
       ['editor.action.clipboardPasteAction'],
+      mockClipboardPreserver,
       mockLogger,
     );
     const insertFn = factory.forTarget();
@@ -144,5 +153,25 @@ describe('AIAssistantInsertFactory', () => {
       { fn: 'AIAssistantInsertFactory.insert', error: clipboardError },
       'Failed to write to clipboard',
     );
+  });
+
+  it('delegates wrapping to the injected ClipboardPreserver', async () => {
+    const mockAdapter = createMockVscodeAdapter();
+    jest.spyOn(mockAdapter, 'writeTextToClipboard').mockResolvedValue(undefined);
+    jest.spyOn(mockAdapter, 'executeCommand').mockResolvedValue(undefined);
+
+    const factory = new AIAssistantInsertFactory(
+      mockAdapter,
+      ['editor.action.clipboardPasteAction'],
+      mockClipboardPreserver,
+      mockLogger,
+    );
+    const insertFn = factory.forTarget();
+
+    const resultPromise = insertFn('content');
+    await jest.advanceTimersByTimeAsync(FOCUS_TO_PASTE_DELAY_MS);
+    await resultPromise;
+
+    expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(1);
   });
 });

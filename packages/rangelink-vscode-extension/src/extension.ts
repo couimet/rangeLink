@@ -67,6 +67,7 @@ import {
   CMD_UNBIND_DESTINATION,
 } from './constants';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
+import { DefaultClipboardPreserver } from './clipboard';
 import { FocusCapabilityFactory } from './destinations/capabilities/FocusCapabilityFactory';
 import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
 import { registerAllDestinationBuilders } from './destinations/destinationBuilders';
@@ -139,7 +140,8 @@ export function activate(context: vscode.ExtensionContext): void {
     loadDelimiterConfig(configReader, logger).delimiters;
 
   // Create capability factories for composition-based destinations
-  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, logger);
+  const clipboardPreserver = new DefaultClipboardPreserver(ideAdapter, configReader, logger);
+  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, clipboardPreserver, logger);
   const eligibilityCheckerFactory = new EligibilityCheckerFactory(logger);
 
   // Create destination registry with capability factories
