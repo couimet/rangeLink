@@ -9,7 +9,7 @@ import { escapeRegex } from './escapeRegex';
  * - NOT_AFTER_URL_CHAR: Lookbehind to block matches mid-URL
  * - NO_WEB_URL_SCHEME: Lookahead to block matches at URL scheme start
  */
-const NOT_AFTER_URL_CHAR = '(?<![a-zA-Z0-9:/._?&=%~-])';
+const NOT_AFTER_URL_CHAR = '(?<![a-zA-Z0-9:/._?&=%~\\-\\]])';
 const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
 
 /**
@@ -19,11 +19,12 @@ const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
  * These are excluded because they frequently surround links in prose and markdown
  * but are never (or practically never) part of real file paths.
  *
- * Excluded: \x60 (backtick), \x27 (single quote), \x22 (double quote), < >
+ * Excluded: \x60 (backtick), \x27 (single quote), \x22 (double quote), < >, \x5d (])
  *
- * NOT excluded: ( ) [ ] { } — these appear in real directory/file names.
+ * ] is excluded to prevent matching the markdown link boundary `](url)` as part of a path.
+ * NOT excluded: ( ) [ { } — these appear in real directory/file names.
  */
-const PATH_CHAR = '[^\\s\\x60\\x27\\x22<>]';
+const PATH_CHAR = '[^\\s\\x60\\x27\\x22<>\\x5d]';
 
 /**
  * Builds a RegExp pattern for detecting RangeLinks in terminal output.

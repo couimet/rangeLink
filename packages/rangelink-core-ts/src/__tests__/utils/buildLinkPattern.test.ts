@@ -711,7 +711,7 @@ describe('buildLinkPattern', () => {
       });
     });
 
-    describe('parentheses and brackets are NOT excluded (appear in real paths)', () => {
+    describe('opening brackets and parentheses are captured (closing bracket ] is excluded)', () => {
       it('should capture leading parenthesis as part of path', () => {
         const line = '(file.ts#L10)';
         const matches = [...line.matchAll(pattern)];
@@ -726,6 +726,79 @@ describe('buildLinkPattern', () => {
 
         expect(matches).toHaveLength(1);
         expect(matches[0][1]).toBe('[file.ts');
+      });
+    });
+
+    describe('markdown link syntax', () => {
+      it('should detect the path inside a simple markdown link', () => {
+        const line = '[text](file.ts#L10)';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+
+      it('should detect the path inside a simple markdown link embedded in prose', () => {
+        const line = 'See [text](file.ts#L10) for details';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('file.ts#L10');
+        expect(matches[0][1]).toBe('file.ts');
+      });
+
+      it('should detect the correct path from a backtick-labelled markdown link', () => {
+        const line =
+          '[`RangeLinkService.ts:876`](packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876)';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe(
+          'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
+        );
+        expect(matches[0][1]).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
+      });
+
+      it('should detect the correct path from a backtick-labelled markdown link embedded in prose', () => {
+        const line =
+          'See [`RangeLinkService.ts:876`](packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876) in the codebase';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe(
+          'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
+        );
+        expect(matches[0][1]).toBe('packages/rangelink-vscode-extension/src/RangeLinkService.ts');
+      });
+
+      it('should detect a range link inside a markdown link', () => {
+        const line = '[text](src/auth.ts#L10-L20)';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('src/auth.ts#L10-L20');
+        expect(matches[0][1]).toBe('src/auth.ts');
+      });
+
+      it('should detect a range link inside a markdown link embedded in prose', () => {
+        const line = 'Check [text](src/auth.ts#L10-L20) above';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0][0]).toBe('src/auth.ts#L10-L20');
+        expect(matches[0][1]).toBe('src/auth.ts');
+      });
+
+      it('should detect both links when multiple markdown links appear in one line', () => {
+        const line = 'Compare [a](src/a.ts#L1) with [b](src/b.ts#L2)';
+        const matches = [...line.matchAll(pattern)];
+
+        expect(matches).toHaveLength(2);
+        expect(matches[0][0]).toBe('src/a.ts#L1');
+        expect(matches[0][1]).toBe('src/a.ts');
+        expect(matches[1][0]).toBe('src/b.ts#L2');
+        expect(matches[1][1]).toBe('src/b.ts');
       });
     });
 

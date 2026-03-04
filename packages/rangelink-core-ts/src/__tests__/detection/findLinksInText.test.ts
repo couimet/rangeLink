@@ -56,6 +56,100 @@ describe('findLinksInText', () => {
 
       expect(results).toHaveLength(0);
     });
+
+    describe('markdown link syntax', () => {
+      it('should detect the path from a simple markdown link', () => {
+        const results = findLinksInText('[text](src/auth.ts#L10)', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('src/auth.ts#L10');
+        expect(results[0].parsed.path).toBe('src/auth.ts');
+        expect(results[0].parsed.start.line).toBe(10);
+      });
+
+      it('should detect the path from a simple markdown link embedded in prose', () => {
+        const results = findLinksInText(
+          'See [text](src/auth.ts#L10) for details',
+          DEFAULT_DELIMITERS,
+          logger,
+        );
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('src/auth.ts#L10');
+        expect(results[0].parsed.path).toBe('src/auth.ts');
+        expect(results[0].parsed.start.line).toBe(10);
+      });
+
+      it('should detect the correct link from a standalone backtick-labelled markdown link', () => {
+        const results = findLinksInText(
+          '[`RangeLinkService.ts:876`](packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876)',
+          DEFAULT_DELIMITERS,
+          logger,
+        );
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe(
+          'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
+        );
+        expect(results[0].parsed.path).toBe(
+          'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
+        );
+        expect(results[0].parsed.start.line).toBe(876);
+      });
+
+      it('should detect the correct link from a backtick-labelled markdown link in prose (issue #379)', () => {
+        const line =
+          '2. `copyAndSendToDestination` at [`RangeLinkService.ts:876`](packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876) — uses `isSelfPaste`';
+        const results = findLinksInText(line, DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe(
+          'packages/rangelink-vscode-extension/src/RangeLinkService.ts#L876',
+        );
+        expect(results[0].parsed.path).toBe(
+          'packages/rangelink-vscode-extension/src/RangeLinkService.ts',
+        );
+        expect(results[0].parsed.start.line).toBe(876);
+      });
+
+      it('should detect a range link inside a markdown link', () => {
+        const results = findLinksInText('[text](src/auth.ts#L10-L20)', DEFAULT_DELIMITERS, logger);
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('src/auth.ts#L10-L20');
+        expect(results[0].parsed.path).toBe('src/auth.ts');
+        expect(results[0].parsed.start.line).toBe(10);
+        expect(results[0].parsed.end.line).toBe(20);
+      });
+
+      it('should detect a range link inside a markdown link embedded in prose', () => {
+        const results = findLinksInText(
+          'Check [text](src/auth.ts#L10-L20) above',
+          DEFAULT_DELIMITERS,
+          logger,
+        );
+
+        expect(results).toHaveLength(1);
+        expect(results[0].linkText).toBe('src/auth.ts#L10-L20');
+        expect(results[0].parsed.path).toBe('src/auth.ts');
+        expect(results[0].parsed.start.line).toBe(10);
+        expect(results[0].parsed.end.line).toBe(20);
+      });
+
+      it('should detect both links when multiple markdown links appear in one line', () => {
+        const results = findLinksInText(
+          'Compare [a](src/a.ts#L1) with [b](src/b.ts#L2)',
+          DEFAULT_DELIMITERS,
+          logger,
+        );
+
+        expect(results).toHaveLength(2);
+        expect(results[0].linkText).toBe('src/a.ts#L1');
+        expect(results[0].parsed.path).toBe('src/a.ts');
+        expect(results[1].linkText).toBe('src/b.ts#L2');
+        expect(results[1].parsed.path).toBe('src/b.ts');
+      });
+    });
   });
 
   describe('quoted links', () => {
