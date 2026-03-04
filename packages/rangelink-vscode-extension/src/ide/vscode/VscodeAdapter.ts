@@ -11,6 +11,7 @@ import {
   TerminalFocusType,
 } from '../../types';
 import { getUntitledDisplayName, resolveWorkspacePath } from '../../utils';
+import type { ClipboardProvider } from '../ClipboardProvider';
 import type { ConfigurationProvider } from '../ConfigurationProvider';
 import type { ErrorFeedbackProvider } from '../ErrorFeedbackProvider';
 import type { MessageProvider } from '../MessageProvider';
@@ -44,7 +45,7 @@ const UNKNOWN_FILENAME = 'Unknown';
  * vscode module imports in business logic classes.
  */
 export class VscodeAdapter
-  implements ConfigurationProvider, ErrorFeedbackProvider, QuickPickProvider, MessageProvider
+  implements ClipboardProvider, ConfigurationProvider, ErrorFeedbackProvider, QuickPickProvider, MessageProvider
 {
   /**
    * Create a new VSCode adapter.
