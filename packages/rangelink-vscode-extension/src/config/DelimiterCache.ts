@@ -22,7 +22,10 @@ export class DelimiterCache implements vscode.Disposable {
     this.delimiters = getDelimitersForExtension(config, ideAdapter, logger);
     this.subscription = ideAdapter.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('rangelink')) {
-        logger.info({ fn: 'DelimiterCache' }, 'rangelink configuration changed — reloading delimiter config');
+        logger.info(
+          { fn: 'DelimiterCache' },
+          'rangelink configuration changed — reloading delimiter config',
+        );
         this.delimiters = getDelimitersForExtension(config, ideAdapter, logger);
       }
     });

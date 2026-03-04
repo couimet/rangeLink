@@ -125,9 +125,9 @@ describe('DelimiterCache', () => {
   describe('dispose', () => {
     it('disposes the underlying subscription', () => {
       const mockDisposable = { dispose: jest.fn() };
-      ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration.mockReturnValue(
-        mockDisposable,
-      );
+      ideAdapter
+        .__getVscodeInstance()
+        .workspace.onDidChangeConfiguration.mockReturnValue(mockDisposable);
 
       const cache = new DelimiterCache(createDefaultConfig(), ideAdapter, createMockLogger());
       cache.dispose();

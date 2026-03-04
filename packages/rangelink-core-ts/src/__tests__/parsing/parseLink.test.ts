@@ -1,4 +1,3 @@
-
 import { DEFAULT_DELIMITERS } from '../../constants/DEFAULT_DELIMITERS';
 import { MAX_LINK_LENGTH } from '../../constants/MAX_LINK_LENGTH';
 import { parseLink } from '../../parsing/parseLink';
@@ -593,7 +592,10 @@ describe('parseLink', () => {
 
     describe('PARSE_URL_NOT_SUPPORTED', () => {
       it('should reject https:// URLs', () => {
-        const result = parseLink('https://github.com/org/repo/blob/main/file.ts#L10', DEFAULT_DELIMITERS);
+        const result = parseLink(
+          'https://github.com/org/repo/blob/main/file.ts#L10',
+          DEFAULT_DELIMITERS,
+        );
 
         expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
@@ -1063,5 +1065,4 @@ describe('parseLink', () => {
       });
     });
   });
-
 });
