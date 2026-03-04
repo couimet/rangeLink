@@ -76,16 +76,19 @@ describe('DelimiterCache', () => {
 
   describe('cache invalidation on config change', () => {
     it('refreshes delimiters when a rangelink setting changes', () => {
-      const cache = new DelimiterCache(createDefaultConfig(), ideAdapter, createMockLogger());
+      const logger = createMockLogger();
+      const cache = new DelimiterCache(createDefaultConfig(), ideAdapter, logger);
       expect(cache.getDelimiters()).toStrictEqual(DEFAULT_DELIMITERS);
 
       const [capturedListener] =
         ideAdapter.__getVscodeInstance().workspace.onDidChangeConfiguration.mock.calls[0];
 
-      // Simulate a rangelink config change — the cache should re-read from config.
-      // Since the config mock is fixed, the result stays the same; what matters is the call happens.
       capturedListener({ affectsConfiguration: (ns: string) => ns === 'rangelink' });
 
+      expect(logger.info).toHaveBeenCalledWith(
+        { fn: 'DelimiterCache' },
+        'rangelink configuration changed — reloading delimiter config',
+      );
       expect(cache.getDelimiters()).toStrictEqual(DEFAULT_DELIMITERS);
     });
 

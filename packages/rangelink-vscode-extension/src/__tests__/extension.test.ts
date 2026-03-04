@@ -211,7 +211,7 @@ describe('Configuration loading and validation', () => {
         },
         'Default',
       ],
-    ])('should prioritize %s settings over others', (source, inspectResult, expectedValue) => {
+    ])('should prioritize %s settings over others', (_source, inspectResult, expectedValue) => {
       const mockConfig = {
         get: jest.fn(() => expectedValue),
         inspect: jest.fn(() => ({ ...inspectResult, defaultValue: 'Default' })),
@@ -397,29 +397,8 @@ describe('Configuration loading and validation', () => {
       };
       extension.activate(context as any);
 
-      // Should log configuration info
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringContaining('Delimiter configuration loaded:'),
-      );
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringContaining('Line delimiter'),
-      );
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringContaining('Position delimiter'),
-      );
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringContaining('Hash delimiter'),
-      );
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringContaining('Range delimiter'),
-      );
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringContaining('Column mode: indicated by double hash delimiter'),
-      );
-
-      // Verify "from default" is logged for Line delimiter
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringMatching(/Line delimiter.*from default/),
+        '[INFO] {"fn":"logSuccessfulConfig","delimiters":{"line":{"value":"L","source":"default"},"position":{"value":"C","source":"default"},"hash":{"value":"#","source":"default"},"range":{"value":"-","source":"default"}}} Delimiter configuration loaded: line=\'L\' position=\'C\' hash=\'#\' range=\'-\' columnMode=\'##\'',
       );
     });
 
@@ -459,9 +438,8 @@ describe('Configuration loading and validation', () => {
       };
       extension.activate(context as any);
 
-      // Verify Line delimiter logged with user source
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringMatching(/Line delimiter.*UserL.*from user/),
+        '[INFO] {"fn":"logSuccessfulConfig","delimiters":{"line":{"value":"UserL","source":"user"},"position":{"value":"C","source":"default"},"hash":{"value":"#","source":"default"},"range":{"value":"-","source":"default"}}} Delimiter configuration loaded: line=\'UserL\' position=\'C\' hash=\'#\' range=\'-\' columnMode=\'##\'',
       );
     });
 
@@ -502,15 +480,8 @@ describe('Configuration loading and validation', () => {
       };
       extension.activate(context as any);
 
-      // Verify source prioritization: workspace folder > workspace > user > default
       expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringMatching(/Line delimiter.*from workspaceFolder/),
-      );
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringMatching(/Position delimiter.*from workspace(?! folder)/),
-      );
-      expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
-        expect.stringMatching(/Hash delimiter.*from user/),
+        '[INFO] {"fn":"logSuccessfulConfig","delimiters":{"line":{"value":"FolderL","source":"workspaceFolder"},"position":{"value":"WorkspaceC","source":"workspace"},"hash":{"value":"U","source":"user"},"range":{"value":"-","source":"default"}}} Delimiter configuration loaded: line=\'FolderL\' position=\'WorkspaceC\' hash=\'U\' range=\'-\' columnMode=\'UU\'',
       );
     });
   });
@@ -536,7 +507,7 @@ describe('Extension lifecycle', () => {
 
     // Mock configuration
     const mockConfig = {
-      get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
+      get: jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
       inspect: jest.fn((key: string) => {
         const defaults: Record<string, string> = {
           delimiterLine: 'L',
@@ -629,7 +600,7 @@ describe('Extension lifecycle', () => {
     };
 
     const mockConfig = {
-      get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
+      get: jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
       inspect: jest.fn((key: string) => ({
         key,
         defaultValue: 'L',
@@ -660,7 +631,7 @@ describe('Extension lifecycle', () => {
     };
 
     const mockConfig = {
-      get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
+      get: jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
       inspect: jest.fn((key: string) => ({
         key,
         defaultValue: 'L',
@@ -710,7 +681,7 @@ describe('Extension lifecycle', () => {
 
     // Mock configuration
     const mockConfig = {
-      get: jest.fn((key: string, defaultValue?: string) => defaultValue ?? 'L'),
+      get: jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'L'),
       inspect: jest.fn((key: string) => {
         const defaults: Record<string, string> = {
           delimiterLine: 'L',
@@ -751,7 +722,7 @@ describe('Logger verification and communication channel', () => {
 
   it('should confirm logger initialization by calling debug() when setLogger is called', () => {
     const mockConfig = {
-      get: jest.fn((key: string, defaultValue: string) => defaultValue),
+      get: jest.fn((_key: string, defaultValue: string) => defaultValue),
       inspect: jest.fn(() => ({
         globalValue: undefined,
         workspaceValue: undefined,

@@ -34,30 +34,16 @@ export const logSuccessfulConfig = (
   delimiters: DelimiterConfig,
   sources: DelimiterConfigSources,
 ): void => {
-  logger.info({ fn: 'logSuccessfulConfig' }, 'Delimiter configuration loaded:');
-
   logger.info(
-    { fn: 'logSuccessfulConfig', field: 'line', source: sources.line },
-    `  - Line delimiter: '${delimiters.line}' (from ${sources.line})`,
-  );
-
-  logger.info(
-    { fn: 'logSuccessfulConfig', field: 'position', source: sources.position },
-    `  - Position delimiter: '${delimiters.position}' (from ${sources.position})`,
-  );
-
-  logger.info(
-    { fn: 'logSuccessfulConfig', field: 'hash', source: sources.hash },
-    `  - Hash delimiter: '${delimiters.hash}' (from ${sources.hash})`,
-  );
-
-  logger.info(
-    { fn: 'logSuccessfulConfig', field: 'range', source: sources.range },
-    `  - Range delimiter: '${delimiters.range}' (from ${sources.range})`,
-  );
-
-  logger.info(
-    { fn: 'logSuccessfulConfig' },
-    `  - Column mode: indicated by double hash delimiter (${delimiters.hash}${delimiters.hash})`,
+    {
+      fn: 'logSuccessfulConfig',
+      delimiters: {
+        line: { value: delimiters.line, source: sources.line },
+        position: { value: delimiters.position, source: sources.position },
+        hash: { value: delimiters.hash, source: sources.hash },
+        range: { value: delimiters.range, source: sources.range },
+      },
+    },
+    `Delimiter configuration loaded: line='${delimiters.line}' position='${delimiters.position}' hash='${delimiters.hash}' range='${delimiters.range}' columnMode='${delimiters.hash}${delimiters.hash}'`,
   );
 };
