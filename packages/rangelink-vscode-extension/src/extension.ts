@@ -200,6 +200,7 @@ export function activate(context: vscode.ExtensionContext): void {
     destinationManager,
     destinationPicker,
     configReader,
+    clipboardPreserver,
     logger,
   );
 
