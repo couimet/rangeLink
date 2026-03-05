@@ -673,6 +673,43 @@ describe('RangeLinkService', () => {
         expect(mockSetStatusBarMessage).toHaveBeenCalledWith(expectedMessage, 2000);
       });
     });
+
+    describe('clipboard preservation delegation', () => {
+      it('delegates to ClipboardPreserver for BoundDestination behavior', async () => {
+        const executeSpy = jest.spyOn(service as any, 'executeCopyAndSend').mockResolvedValue(undefined);
+        const sendFn = jest.fn();
+        const isEligibleFn = jest.fn();
+
+        await (service as any).copyAndSendToDestination({
+          control: { contentType: PasteContentType.Link, destinationBehavior: DestinationBehavior.BoundDestination },
+          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+          strategies: { sendFn, isEligibleFn },
+          contentName: 'RangeLink',
+          fnName: 'test',
+        });
+
+        expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(1);
+        expect(executeSpy).toHaveBeenCalledWith({
+          control: { contentType: 'Link', destinationBehavior: 'bound-destination' },
+          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+          strategies: { sendFn, isEligibleFn },
+          contentName: 'RangeLink',
+          fnName: 'test',
+        });
+      });
+
+      it('does not delegate to ClipboardPreserver for ClipboardOnly behavior', async () => {
+        await (service as any).copyAndSendToDestination({
+          control: { contentType: PasteContentType.Link, destinationBehavior: DestinationBehavior.ClipboardOnly },
+          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+          strategies: { sendFn: jest.fn(), isEligibleFn: jest.fn() },
+          contentName: 'RangeLink',
+          fnName: 'test',
+        });
+
+        expect(mockClipboardPreserver.preserve).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('pasteSelectedTextToDestination', () => {
@@ -2058,10 +2095,20 @@ describe('RangeLinkService', () => {
     });
 
     it('delegates clipboard roundtrip preservation to the injected ClipboardPreserver', async () => {
+      const executeSpy = jest.spyOn(service as any, 'executeCopyAndSend').mockResolvedValue(undefined);
+
       const result = await service.pasteTerminalSelectionToDestination();
 
       expect(result).toStrictEqual({ outcome: 'success' });
-      expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(1);
+      expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(2);
+      expect(mockExecuteCommand).toHaveBeenCalledWith('workbench.action.terminal.copySelection');
+      expect(executeSpy).toHaveBeenCalledWith({
+        control: { contentType: 'Text', destinationBehavior: 'bound-destination' },
+        content: { clipboard: 'terminal selected text', send: 'terminal selected text' },
+        strategies: { sendFn: expect.any(Function), isEligibleFn: expect.any(Function) },
+        contentName: 'Selected text',
+        fnName: 'pasteTerminalSelectionToDestination',
+      });
     });
   });
 

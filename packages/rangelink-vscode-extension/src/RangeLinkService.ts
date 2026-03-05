@@ -815,6 +815,19 @@ export class RangeLinkService {
   }
 
   /**
+   * Routes copy-and-send through clipboard preservation when the destination consumes the
+   * clipboard as a transport mechanism. ClipboardOnly (R-C) bypasses preservation because
+   * the clipboard is the intended output, not a side effect.
+   */
+  private async copyAndSendToDestination<T>(options: CopyAndSendOptions<T>): Promise<void> {
+    if (options.control.destinationBehavior !== DestinationBehavior.ClipboardOnly) {
+      await this.clipboardPreserver.preserve(() => this.executeCopyAndSend(options));
+    } else {
+      await this.executeCopyAndSend(options);
+    }
+  }
+
+  /**
    * Unified utility for copying content to clipboard and sending to bound destination
    *
    * Eliminates duplication between copyToClipboardAndDestination and other methods.
@@ -825,7 +838,7 @@ export class RangeLinkService {
    * - Clipboard destinations (Claude Code, Cursor AI): Shows status bar "✓ ${contentName} copied to clipboard" + information popup with getUserInstruction()
    * - No destination bound: Shows "✓ ${contentName} copied to clipboard"
    */
-  private async copyAndSendToDestination<T>(options: CopyAndSendOptions<T>): Promise<void> {
+  private async executeCopyAndSend<T>(options: CopyAndSendOptions<T>): Promise<void> {
     const { control, content, strategies, contentName, fnName } = options;
 
     // Copy to clipboard
