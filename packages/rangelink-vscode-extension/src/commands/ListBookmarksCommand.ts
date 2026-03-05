@@ -54,10 +54,10 @@ export class ListBookmarksCommand {
 
     switch (selected.itemKind) {
       case 'bookmark':
-        await this.bookmarkService.pasteBookmark(selected.bookmarkId);
+        await this.bookmarkService.sendBookmark(selected.bookmarkId);
         this.logger.debug(
           { ...logCtx, bookmarkId: selected.bookmarkId },
-          'Bookmark selected and pasted',
+          'Bookmark selected and sent',
         );
         break;
       case 'command':

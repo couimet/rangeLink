@@ -25,7 +25,7 @@ export const createMockBookmarkService = (
     hasBookmarks: jest.fn().mockReturnValue(bookmarks.length > 0),
     addBookmark: jest.fn().mockResolvedValue(ExtensionResult.ok(DEFAULT_BOOKMARK)),
     removeBookmark: jest.fn().mockResolvedValue(ExtensionResult.ok(DEFAULT_BOOKMARK)),
-    pasteBookmark: jest.fn(),
+    sendBookmark: jest.fn(),
     isVisible: jest.fn().mockReturnValue(true),
   } as unknown as jest.Mocked<BookmarkService>;
 };

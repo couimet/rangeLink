@@ -923,7 +923,7 @@ describe('RangeLinkStatusBar', () => {
   });
 
   describe('openMenu - bookmark selection', () => {
-    it('delegates to BookmarkService.pasteBookmark when bookmark item is selected', async () => {
+    it('delegates to BookmarkService.sendBookmark when a bookmark item is selected', async () => {
       showQuickPickMock.mockResolvedValue({
         label: '    $(bookmark) Test Bookmark',
         itemKind: 'bookmark',
@@ -941,7 +941,7 @@ describe('RangeLinkStatusBar', () => {
 
       expect(executeCommandMock).not.toHaveBeenCalled();
       expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
-      expect(mockBookmarkService.pasteBookmark).toHaveBeenCalledWith('bookmark-1');
+      expect(mockBookmarkService.sendBookmark).toHaveBeenCalledWith('bookmark-1');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
