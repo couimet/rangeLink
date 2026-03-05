@@ -14,7 +14,7 @@ import {
   ManageBookmarksCommand,
   ShowVersionCommand,
 } from './commands';
-import { ConfigReader, getDelimitersForExtension, loadDelimiterConfig } from './config';
+import { ConfigReader, DelimiterCache } from './config';
 import {
   CMD_BIND_TO_CLAUDE_CODE,
   CMD_BIND_TO_CURSOR_AI,
@@ -133,10 +133,10 @@ export function activate(context: vscode.ExtensionContext): void {
   const bookmarksStore = new BookmarksStore(context.globalState, logger);
   logger.debug({ fn: 'activate' }, 'Bookmarks store initialized');
 
-  getDelimitersForExtension(configReader, ideAdapter, logger);
+  const delimiterCache = new DelimiterCache(configReader, ideAdapter, logger);
+  context.subscriptions.push(delimiterCache);
 
-  const getDelimiters: DelimiterConfigGetter = () =>
-    loadDelimiterConfig(configReader, logger).delimiters;
+  const getDelimiters: DelimiterConfigGetter = delimiterCache.getDelimiters;
 
   // Create capability factories for composition-based destinations
   const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, logger);

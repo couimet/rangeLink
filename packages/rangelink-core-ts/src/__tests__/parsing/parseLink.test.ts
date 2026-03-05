@@ -1,5 +1,4 @@
-import { getLogger } from 'barebone-logger';
-
+import { DEFAULT_DELIMITERS } from '../../constants/DEFAULT_DELIMITERS';
 import { MAX_LINK_LENGTH } from '../../constants/MAX_LINK_LENGTH';
 import { parseLink } from '../../parsing/parseLink';
 import { ParsedLink } from '../../types/ParsedLink';
@@ -8,7 +7,7 @@ describe('parseLink', () => {
   describe('Basic formats (default delimiters)', () => {
     describe('Single line', () => {
       it('should parse single line without column', () => {
-        const result = parseLink('src/file.ts#L10');
+        const result = parseLink('src/file.ts#L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -23,7 +22,7 @@ describe('parseLink', () => {
       });
 
       it('should parse single line with column', () => {
-        const result = parseLink('src/auth.ts#L42C10');
+        const result = parseLink('src/auth.ts#L42C10', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -38,7 +37,7 @@ describe('parseLink', () => {
       });
 
       it('should parse line 1', () => {
-        const result = parseLink('file.ts#L1');
+        const result = parseLink('file.ts#L1', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -53,7 +52,7 @@ describe('parseLink', () => {
       });
 
       it('should parse very large line numbers', () => {
-        const result = parseLink('file.ts#L999999');
+        const result = parseLink('file.ts#L999999', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -70,7 +69,7 @@ describe('parseLink', () => {
 
     describe('Multi-line ranges', () => {
       it('should parse line-only range', () => {
-        const result = parseLink('file.ts#L10-L20');
+        const result = parseLink('file.ts#L10-L20', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -85,7 +84,7 @@ describe('parseLink', () => {
       });
 
       it('should parse range with start column only', () => {
-        const result = parseLink('file.ts#L10C5-L20');
+        const result = parseLink('file.ts#L10C5-L20', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -100,7 +99,7 @@ describe('parseLink', () => {
       });
 
       it('should parse range with end column only', () => {
-        const result = parseLink('file.ts#L10-L20C15');
+        const result = parseLink('file.ts#L10-L20C15', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -115,7 +114,7 @@ describe('parseLink', () => {
       });
 
       it('should parse full range with columns', () => {
-        const result = parseLink('src/auth.ts#L42C10-L58C25');
+        const result = parseLink('src/auth.ts#L42C10-L58C25', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -132,7 +131,7 @@ describe('parseLink', () => {
 
     describe('Rectangular mode (double hash)', () => {
       it('should parse rectangular single line', () => {
-        const result = parseLink('file.ts##L10C5');
+        const result = parseLink('file.ts##L10C5', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -147,7 +146,7 @@ describe('parseLink', () => {
       });
 
       it('should parse rectangular range', () => {
-        const result = parseLink('file.ts##L10C5-L20C10');
+        const result = parseLink('file.ts##L10C5-L20C10', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -165,7 +164,7 @@ describe('parseLink', () => {
 
   describe('Hash-in-filename support (bug fix)', () => {
     it('should parse filename with single hash correctly', () => {
-      const result = parseLink('file#1.ts#L10');
+      const result = parseLink('file#1.ts#L10', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -180,7 +179,7 @@ describe('parseLink', () => {
     });
 
     it('should parse filename with multiple hashes', () => {
-      const result = parseLink('issue#123#fix.ts#L42C5');
+      const result = parseLink('issue#123#fix.ts#L42C5', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -195,7 +194,7 @@ describe('parseLink', () => {
     });
 
     it('should parse path with hash in directory name', () => {
-      const result = parseLink('issue#123/auth.ts#L42');
+      const result = parseLink('issue#123/auth.ts#L42', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -210,7 +209,7 @@ describe('parseLink', () => {
     });
 
     it('should parse filename with hash and range', () => {
-      const result = parseLink('file#1.ts#L10-L20');
+      const result = parseLink('file#1.ts#L10-L20', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -225,7 +224,7 @@ describe('parseLink', () => {
     });
 
     it('should parse filename with hash in rectangular mode', () => {
-      const result = parseLink('file#1.ts##L10C5-L20C10');
+      const result = parseLink('file#1.ts##L10C5-L20C10', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -240,7 +239,7 @@ describe('parseLink', () => {
     });
 
     it('should parse absolute path with hash', () => {
-      const result = parseLink('/home/user/project#1/src/file.ts#L10');
+      const result = parseLink('/home/user/project#1/src/file.ts#L10', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -489,7 +488,7 @@ describe('parseLink', () => {
     describe('PARSE_LINK_TOO_LONG', () => {
       it('should reject link exceeding maximum length', () => {
         const longPath = 'a'.repeat(MAX_LINK_LENGTH + 1);
-        const result = parseLink(longPath);
+        const result = parseLink(longPath, DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_LINK_TOO_LONG', {
           message: `Link exceeds maximum length of ${MAX_LINK_LENGTH} characters`,
@@ -500,15 +499,17 @@ describe('parseLink', () => {
 
       it('should accept link at maximum length', () => {
         const maxPath = 'a'.repeat(MAX_LINK_LENGTH - 4) + '#L10';
-        const result = parseLink(maxPath);
+        const result = parseLink(maxPath, DEFAULT_DELIMITERS);
 
-        expect(result.success).toBe(true);
+        // toBeOk() intentionally — this test validates the length boundary guard,
+        // not the parsed shape; asserting the full ParsedLink would test parsing logic.
+        expect(result).toBeOk();
       });
     });
 
     describe('PARSE_EMPTY_LINK', () => {
       it('should reject empty string', () => {
-        const result = parseLink('');
+        const result = parseLink('', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_EMPTY_LINK', {
           message: 'Link cannot be empty',
@@ -517,7 +518,7 @@ describe('parseLink', () => {
       });
 
       it('should reject whitespace-only string', () => {
-        const result = parseLink('   ');
+        const result = parseLink('   ', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_EMPTY_LINK', {
           message: 'Link cannot be empty',
@@ -528,7 +529,7 @@ describe('parseLink', () => {
 
     describe('PARSE_EMPTY_PATH', () => {
       it('should reject link starting with hash', () => {
-        const result = parseLink('#L10');
+        const result = parseLink('#L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_EMPTY_PATH', {
           message: 'Path cannot be empty',
@@ -537,7 +538,7 @@ describe('parseLink', () => {
       });
 
       it('should reject link starting with double hash', () => {
-        const result = parseLink('##L10C5');
+        const result = parseLink('##L10C5', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_EMPTY_PATH', {
           message: 'Path cannot be empty',
@@ -564,7 +565,7 @@ describe('parseLink', () => {
 
     describe('PARSE_NO_HASH_SEPARATOR', () => {
       it('should reject link without hash separator', () => {
-        const result = parseLink('file.ts');
+        const result = parseLink('file.ts', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_NO_HASH_SEPARATOR', {
           message: 'Link must contain # separator',
@@ -593,7 +594,10 @@ describe('parseLink', () => {
 
     describe('PARSE_URL_NOT_SUPPORTED', () => {
       it('should reject https:// URLs', () => {
-        const result = parseLink('https://github.com/org/repo/blob/main/file.ts#L10');
+        const result = parseLink(
+          'https://github.com/org/repo/blob/main/file.ts#L10',
+          DEFAULT_DELIMITERS,
+        );
 
         expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
@@ -603,7 +607,7 @@ describe('parseLink', () => {
       });
 
       it('should reject http:// URLs', () => {
-        const result = parseLink('http://example.com/file.ts#L5');
+        const result = parseLink('http://example.com/file.ts#L5', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
@@ -613,7 +617,7 @@ describe('parseLink', () => {
       });
 
       it('should reject ftp:// URLs', () => {
-        const result = parseLink('ftp://server.com/path/file.ts#L10');
+        const result = parseLink('ftp://server.com/path/file.ts#L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
@@ -623,7 +627,7 @@ describe('parseLink', () => {
       });
 
       it('should accept file:// URLs (local file references)', () => {
-        const result = parseLink('file:///Users/name/file.ts#L10');
+        const result = parseLink('file:///Users/name/file.ts#L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -640,6 +644,7 @@ describe('parseLink', () => {
       it('should reject GitHub permalink with query params', () => {
         const result = parseLink(
           'https://github.com/nextjs/deploy-github-pages/blob/main/README.md?plain=1#L3-L9',
+          DEFAULT_DELIMITERS,
         );
 
         expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
@@ -652,7 +657,7 @@ describe('parseLink', () => {
       });
 
       it('should reject partial URL matches (ttps:// from shifted regex match)', () => {
-        const result = parseLink('ttps://github.com/file.ts#L10');
+        const result = parseLink('ttps://github.com/file.ts#L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_URL_NOT_SUPPORTED', {
           message: 'Web URLs are not supported - use local file paths',
@@ -662,7 +667,7 @@ describe('parseLink', () => {
       });
 
       it('should accept local paths that happen to contain colon', () => {
-        const result = parseLink('C:\\Users\\name\\file.ts#L10');
+        const result = parseLink('C:\\Users\\name\\file.ts#L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -677,7 +682,7 @@ describe('parseLink', () => {
       });
 
       it('should accept domain-like paths (could be local directories)', () => {
-        const result = parseLink('github.com/org/repo/file.ts#L10');
+        const result = parseLink('github.com/org/repo/file.ts#L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -692,7 +697,7 @@ describe('parseLink', () => {
       });
 
       it('should accept paths with dot that are not domains (./relative/path)', () => {
-        const result = parseLink('./relative/path.ts#L10');
+        const result = parseLink('./relative/path.ts#L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -707,7 +712,7 @@ describe('parseLink', () => {
       });
 
       it('should accept paths that look like domains but have leading slash', () => {
-        const result = parseLink('/github.com/local/file.ts#L10');
+        const result = parseLink('/github.com/local/file.ts#L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -722,7 +727,7 @@ describe('parseLink', () => {
       });
 
       it('should accept files with dots that are not domains', () => {
-        const result = parseLink('my.config.ts#L10');
+        const result = parseLink('my.config.ts#L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value).toStrictEqual({
@@ -739,7 +744,7 @@ describe('parseLink', () => {
 
     describe('PARSE_INVALID_RANGE_FORMAT', () => {
       it('should reject hash without line number', () => {
-        const result = parseLink('file.ts#');
+        const result = parseLink('file.ts#', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
@@ -752,7 +757,7 @@ describe('parseLink', () => {
       });
 
       it('should reject line without number', () => {
-        const result = parseLink('file.ts#L');
+        const result = parseLink('file.ts#L', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
@@ -765,7 +770,7 @@ describe('parseLink', () => {
       });
 
       it('should reject invalid range delimiter', () => {
-        const result = parseLink('file.ts#L10_L20');
+        const result = parseLink('file.ts#L10_L20', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
@@ -778,7 +783,7 @@ describe('parseLink', () => {
       });
 
       it('should reject column without number', () => {
-        const result = parseLink('file.ts#L10C');
+        const result = parseLink('file.ts#L10C', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
@@ -791,7 +796,7 @@ describe('parseLink', () => {
       });
 
       it('should reject malformed range', () => {
-        const result = parseLink('file.ts#L10-L20C');
+        const result = parseLink('file.ts#L10-L20C', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
@@ -806,7 +811,7 @@ describe('parseLink', () => {
 
     describe('PARSE_LINE_BELOW_MINIMUM', () => {
       it('should reject line 0', () => {
-        const result = parseLink('file.ts#L0');
+        const result = parseLink('file.ts#L0', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_LINE_BELOW_MINIMUM', {
           message: 'Start line must be >= 1',
@@ -816,7 +821,7 @@ describe('parseLink', () => {
       });
 
       it('should reject negative line number', () => {
-        const result = parseLink('file.ts#L-5');
+        const result = parseLink('file.ts#L-5', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
           message: 'Invalid range format',
@@ -831,7 +836,7 @@ describe('parseLink', () => {
 
     describe('PARSE_LINE_BACKWARD', () => {
       it('should reject end line before start line', () => {
-        const result = parseLink('file.ts#L20-L10');
+        const result = parseLink('file.ts#L20-L10', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_LINE_BACKWARD', {
           message: 'End line cannot be before start line',
@@ -843,7 +848,7 @@ describe('parseLink', () => {
 
     describe('PARSE_CHAR_BELOW_MINIMUM', () => {
       it('should reject start char 0', () => {
-        const result = parseLink('file.ts#L10C0');
+        const result = parseLink('file.ts#L10C0', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_CHAR_BELOW_MINIMUM', {
           message: 'Start character must be >= 1',
@@ -853,7 +858,7 @@ describe('parseLink', () => {
       });
 
       it('should reject end char 0', () => {
-        const result = parseLink('file.ts#L10-L20C0');
+        const result = parseLink('file.ts#L10-L20C0', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_CHAR_BELOW_MINIMUM', {
           message: 'End character must be >= 1',
@@ -865,7 +870,7 @@ describe('parseLink', () => {
 
     describe('PARSE_CHAR_BACKWARD_SAME_LINE', () => {
       it('should reject end char before start char on same line', () => {
-        const result = parseLink('file.ts#L10C20-L10C5');
+        const result = parseLink('file.ts#L10C20-L10C5', DEFAULT_DELIMITERS);
 
         expect(result).toBeRangeLinkErrorErr('PARSE_CHAR_BACKWARD_SAME_LINE', {
           message: 'End character cannot be before start character on same line',
@@ -875,7 +880,7 @@ describe('parseLink', () => {
       });
 
       it('should allow end char before start char on different lines', () => {
-        const result = parseLink('file.ts#L10C20-L11C5');
+        const result = parseLink('file.ts#L10C20-L11C5', DEFAULT_DELIMITERS);
 
         expect(result).toBeOkWith((value: ParsedLink) => {
           expect(value.start).toStrictEqual({ line: 10, character: 20 });
@@ -887,7 +892,7 @@ describe('parseLink', () => {
 
   describe('Quote stripping', () => {
     it('should strip surrounding single quotes from quoted link', () => {
-      const result = parseLink("'My Folder/file.ts#L10'");
+      const result = parseLink("'My Folder/file.ts#L10'", DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -902,7 +907,7 @@ describe('parseLink', () => {
     });
 
     it('should strip quotes from link with range', () => {
-      const result = parseLink("'src/(group)/file.ts#L10-L20'");
+      const result = parseLink("'src/(group)/file.ts#L10-L20'", DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -917,7 +922,7 @@ describe('parseLink', () => {
     });
 
     it('should strip quotes from link with positions', () => {
-      const result = parseLink("'My Folder/file.ts#L10C5-L20C15'");
+      const result = parseLink("'My Folder/file.ts#L10C5-L20C15'", DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -932,7 +937,7 @@ describe('parseLink', () => {
     });
 
     it('should parse link with only opening quote as part of path', () => {
-      const result = parseLink("'file.ts#L10");
+      const result = parseLink("'file.ts#L10", DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value.path).toBe("'file.ts");
@@ -940,7 +945,7 @@ describe('parseLink', () => {
     });
 
     it('should reject two quotes as missing hash separator', () => {
-      const result = parseLink("''");
+      const result = parseLink("''", DEFAULT_DELIMITERS);
 
       expect(result).toBeRangeLinkErrorErr('PARSE_NO_HASH_SEPARATOR', {
         message: 'Link must contain # separator',
@@ -950,7 +955,7 @@ describe('parseLink', () => {
     });
 
     it('should not strip quotes from unquoted link', () => {
-      const result = parseLink('src/file.ts#L10');
+      const result = parseLink('src/file.ts#L10', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value.path).toBe('src/file.ts');
@@ -958,7 +963,7 @@ describe('parseLink', () => {
     });
 
     it('should strip surrounding double quotes from quoted link', () => {
-      const result = parseLink('"My Folder/file.ts#L10"');
+      const result = parseLink('"My Folder/file.ts#L10"', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -973,7 +978,7 @@ describe('parseLink', () => {
     });
 
     it('should strip double quotes from link with range', () => {
-      const result = parseLink('"src/(group)/file.ts#L10-L20"');
+      const result = parseLink('"src/(group)/file.ts#L10-L20"', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value).toStrictEqual({
@@ -988,7 +993,7 @@ describe('parseLink', () => {
     });
 
     it('should not strip mismatched quotes', () => {
-      const result = parseLink('\'file.ts#L10"');
+      const result = parseLink('\'file.ts#L10"', DEFAULT_DELIMITERS);
 
       expect(result).toBeRangeLinkErrorErr('PARSE_INVALID_RANGE_FORMAT', {
         message: 'Invalid range format',
@@ -1004,7 +1009,7 @@ describe('parseLink', () => {
   describe('Edge cases', () => {
     it('should handle very long path', () => {
       const longPath = 'a/'.repeat(500) + 'file.ts';
-      const result = parseLink(`${longPath}#L10`);
+      const result = parseLink(`${longPath}#L10`, DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value.path).toStrictEqual(longPath);
@@ -1013,7 +1018,7 @@ describe('parseLink', () => {
     });
 
     it('should handle path with special characters', () => {
-      const result = parseLink('path/with spaces/file-name_2.ts#L10');
+      const result = parseLink('path/with spaces/file-name_2.ts#L10', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value.path).toStrictEqual('path/with spaces/file-name_2.ts');
@@ -1021,7 +1026,7 @@ describe('parseLink', () => {
     });
 
     it('should handle path with dots', () => {
-      const result = parseLink('../../relative/path/file.spec.ts#L10');
+      const result = parseLink('../../relative/path/file.spec.ts#L10', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value.path).toStrictEqual('../../relative/path/file.spec.ts');
@@ -1029,7 +1034,7 @@ describe('parseLink', () => {
     });
 
     it('should handle Windows-style path', () => {
-      const result = parseLink('C:\\Users\\name\\file.ts#L10');
+      const result = parseLink('C:\\Users\\name\\file.ts#L10', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value.path).toStrictEqual('C:\\Users\\name\\file.ts');
@@ -1037,7 +1042,7 @@ describe('parseLink', () => {
     });
 
     it('should handle path with Unicode characters', () => {
-      const result = parseLink('路径/файл/αρχείο.ts#L10');
+      const result = parseLink('路径/файл/αρχείο.ts#L10', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value.path).toStrictEqual('路径/файл/αρχείο.ts');
@@ -1045,7 +1050,7 @@ describe('parseLink', () => {
     });
 
     it('should handle identical start and end line', () => {
-      const result = parseLink('file.ts#L10-L10');
+      const result = parseLink('file.ts#L10-L10', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value.start.line).toStrictEqual(10);
@@ -1054,108 +1059,12 @@ describe('parseLink', () => {
     });
 
     it('should handle identical start and end char on same line', () => {
-      const result = parseLink('file.ts#L10C5-L10C5');
+      const result = parseLink('file.ts#L10C5-L10C5', DEFAULT_DELIMITERS);
 
       expect(result).toBeOkWith((value: ParsedLink) => {
         expect(value.start).toStrictEqual({ line: 10, character: 5 });
         expect(value.end).toStrictEqual({ line: 10, character: 5 });
       });
-    });
-  });
-
-  describe('Logger verification', () => {
-    let loggerDebugSpy: jest.SpyInstance;
-
-    beforeEach(() => {
-      const logger = getLogger();
-      loggerDebugSpy = jest.spyOn(logger, 'debug');
-    });
-
-    it('should log when using default delimiters (no param provided)', () => {
-      parseLink('file.ts#L10');
-
-      expect(loggerDebugSpy).toHaveBeenCalledWith(
-        {
-          fn: 'parseLink',
-          link: 'file.ts#L10',
-          delimiters: {
-            hash: '#',
-            line: 'L',
-            position: 'C',
-            range: '-',
-          },
-        },
-        'No delimiter config provided, using DEFAULT_DELIMITERS',
-      );
-    });
-
-    it('should log when using provided custom delimiters', () => {
-      const customDelimiters = {
-        hash: '@',
-        line: 'line',
-        position: 'pos',
-        range: ':',
-      };
-
-      parseLink('file.ts@line10', customDelimiters);
-
-      expect(loggerDebugSpy).toHaveBeenCalledWith(
-        {
-          fn: 'parseLink',
-          link: 'file.ts@line10',
-          delimiters: customDelimiters,
-        },
-        'Using provided delimiter config',
-      );
-    });
-
-    it('should log when using explicitly provided default delimiters', () => {
-      const explicitDefaults = {
-        hash: '#',
-        line: 'L',
-        position: 'C',
-        range: '-',
-      };
-
-      parseLink('file.ts#L10', explicitDefaults);
-
-      expect(loggerDebugSpy).toHaveBeenCalledWith(
-        {
-          fn: 'parseLink',
-          link: 'file.ts#L10',
-          delimiters: explicitDefaults,
-        },
-        'Using provided delimiter config',
-      );
-    });
-
-    it('should log even when parsing fails', () => {
-      const customDelimiters = {
-        hash: '@',
-        line: 'L',
-        position: 'C',
-        range: '-',
-      };
-
-      // This will fail because link uses # but config expects @
-      parseLink('file.ts#L10', customDelimiters);
-
-      // Logger should still be called before the error
-      expect(loggerDebugSpy).toHaveBeenCalledWith(
-        {
-          fn: 'parseLink',
-          link: 'file.ts#L10',
-          delimiters: customDelimiters,
-        },
-        'Using provided delimiter config',
-      );
-    });
-
-    it('should log exactly once per parseLink call', () => {
-      parseLink('file.ts#L10');
-
-      // Should be called exactly once
-      expect(loggerDebugSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

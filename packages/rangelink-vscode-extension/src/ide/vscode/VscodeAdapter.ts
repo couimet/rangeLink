@@ -631,6 +631,18 @@ export class VscodeAdapter
     return this.ideInstance.workspace.onDidCloseTextDocument(listener);
   }
 
+  /**
+   * Register event listener for configuration changes.
+   *
+   * @param listener - Callback invoked when any configuration changes
+   * @returns Disposable to unregister the listener
+   */
+  onDidChangeConfiguration(
+    listener: (event: vscode.ConfigurationChangeEvent) => void,
+  ): vscode.Disposable {
+    return this.ideInstance.workspace.onDidChangeConfiguration(listener);
+  }
+
   // ============================================================================
   // Workspace Getters
   // ============================================================================
