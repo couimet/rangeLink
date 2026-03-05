@@ -117,9 +117,6 @@ export class BookmarkService {
       `Bookmark pasted: ${bookmark.label}`,
       paddingMode,
     );
-    this.logger.debug(
-      { ...logCtx, bookmark },
-      `Sent bookmark to destination: ${bookmark.label}`,
-    );
+    this.logger.debug({ ...logCtx, bookmark }, `Sent bookmark to destination: ${bookmark.label}`);
   }
 }

@@ -4,8 +4,8 @@ import type { DelimiterConfig, DelimiterConfigGetter } from 'rangelink-core-ts';
 import { LinkType, Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import { JumpToDestinationCommand } from '../commands/JumpToDestinationCommand';
 import type { ClipboardPreserver } from '../clipboard/ClipboardPreserver';
+import { JumpToDestinationCommand } from '../commands/JumpToDestinationCommand';
 import type { ConfigReader } from '../config';
 import { VSCODE_CMD_TERMINAL_COPY_SELECTION } from '../constants';
 import type { DestinationPicker } from '../destinations';
@@ -676,12 +676,17 @@ describe('RangeLinkService', () => {
 
     describe('clipboard preservation delegation', () => {
       it('delegates to ClipboardPreserver for BoundDestination behavior', async () => {
-        const executeSpy = jest.spyOn(service as any, 'executeCopyAndSend').mockResolvedValue(undefined);
+        const executeSpy = jest
+          .spyOn(service as any, 'executeCopyAndSend')
+          .mockResolvedValue(undefined);
         const sendFn = jest.fn();
         const isEligibleFn = jest.fn();
 
         await (service as any).copyAndSendToDestination({
-          control: { contentType: PasteContentType.Link, destinationBehavior: DestinationBehavior.BoundDestination },
+          control: {
+            contentType: PasteContentType.Link,
+            destinationBehavior: DestinationBehavior.BoundDestination,
+          },
           content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
           strategies: { sendFn, isEligibleFn },
           contentName: 'RangeLink',
@@ -700,7 +705,10 @@ describe('RangeLinkService', () => {
 
       it('does not delegate to ClipboardPreserver for ClipboardOnly behavior', async () => {
         await (service as any).copyAndSendToDestination({
-          control: { contentType: PasteContentType.Link, destinationBehavior: DestinationBehavior.ClipboardOnly },
+          control: {
+            contentType: PasteContentType.Link,
+            destinationBehavior: DestinationBehavior.ClipboardOnly,
+          },
           content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
           strategies: { sendFn: jest.fn(), isEligibleFn: jest.fn() },
           contentName: 'RangeLink',
@@ -2095,7 +2103,9 @@ describe('RangeLinkService', () => {
     });
 
     it('delegates clipboard roundtrip preservation to the injected ClipboardPreserver', async () => {
-      const executeSpy = jest.spyOn(service as any, 'executeCopyAndSend').mockResolvedValue(undefined);
+      const executeSpy = jest
+        .spyOn(service as any, 'executeCopyAndSend')
+        .mockResolvedValue(undefined);
 
       const result = await service.pasteTerminalSelectionToDestination();
 
@@ -3764,7 +3774,15 @@ describe('RangeLinkService', () => {
       const mockGenLink = spyOnGenerateLinkFromSelections();
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1C1-L1C22')));
 
-      const svc = new RangeLinkService(getDelimiters, adapter, dm, picker, config, mockClipboardPreserver, logger);
+      const svc = new RangeLinkService(
+        getDelimiters,
+        adapter,
+        dm,
+        picker,
+        config,
+        mockClipboardPreserver,
+        logger,
+      );
       const jumpCmd = new JumpToDestinationCommand(dm, picker, logger);
 
       // ===== PHASE 1: ALL OPERATIONS WHILE UNBOUND =====

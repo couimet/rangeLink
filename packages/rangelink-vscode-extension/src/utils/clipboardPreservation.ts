@@ -34,7 +34,10 @@ export const withClipboardPreservation = async <T>(
   try {
     saved = await clipboard.readTextFromClipboard();
   } catch (error) {
-    logger.error({ fn: 'withClipboardPreservation', error }, 'Clipboard read failed — skipping preservation');
+    logger.error(
+      { fn: 'withClipboardPreservation', error },
+      'Clipboard read failed — skipping preservation',
+    );
     return fn();
   }
 

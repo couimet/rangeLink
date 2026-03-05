@@ -3,6 +3,7 @@ import type { DelimiterConfigGetter } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { BookmarkService, BookmarksStore } from './bookmarks';
+import { DefaultClipboardPreserver } from './clipboard';
 import {
   AddBookmarkCommand,
   BindToDestinationCommand,
@@ -67,7 +68,6 @@ import {
   CMD_UNBIND_DESTINATION,
 } from './constants';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
-import { DefaultClipboardPreserver } from './clipboard';
 import { FocusCapabilityFactory } from './destinations/capabilities/FocusCapabilityFactory';
 import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
 import { registerAllDestinationBuilders } from './destinations/destinationBuilders';

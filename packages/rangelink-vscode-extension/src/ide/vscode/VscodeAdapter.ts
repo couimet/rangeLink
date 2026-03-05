@@ -45,7 +45,12 @@ const UNKNOWN_FILENAME = 'Unknown';
  * vscode module imports in business logic classes.
  */
 export class VscodeAdapter
-  implements ClipboardProvider, ConfigurationProvider, ErrorFeedbackProvider, QuickPickProvider, MessageProvider
+  implements
+    ClipboardProvider,
+    ConfigurationProvider,
+    ErrorFeedbackProvider,
+    QuickPickProvider,
+    MessageProvider
 {
   /**
    * Create a new VSCode adapter.

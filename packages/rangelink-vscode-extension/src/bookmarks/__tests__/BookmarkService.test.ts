@@ -1,6 +1,5 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
-import type { Bookmark } from '../../bookmarks';
 import {
   createMockBookmarksStore,
   createMockClipboard,
@@ -8,6 +7,7 @@ import {
   createMockDestinationManager,
   createMockVscodeAdapter,
 } from '../../__tests__/helpers';
+import type { Bookmark } from '../../bookmarks';
 import { BookmarkService } from '../BookmarkService';
 
 describe('BookmarkService', () => {
@@ -47,13 +47,12 @@ describe('BookmarkService', () => {
         mockLogger,
       );
 
-      await expect(async () => service.sendBookmark('bookmark-1')).toThrowRangeLinkExtensionErrorAsync(
-        'DESTINATION_NOT_BOUND',
-        {
-          message: 'Cannot send bookmark: no destination is currently bound',
-          functionName: 'BookmarkService.sendBookmark',
-        },
-      );
+      await expect(async () =>
+        service.sendBookmark('bookmark-1'),
+      ).toThrowRangeLinkExtensionErrorAsync('DESTINATION_NOT_BOUND', {
+        message: 'Cannot send bookmark: no destination is currently bound',
+        functionName: 'BookmarkService.sendBookmark',
+      });
     });
 
     it('logs warning and returns early when bookmark is not found', async () => {

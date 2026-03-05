@@ -1,8 +1,8 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
+import type { ClipboardPreserver } from '../../../../clipboard/ClipboardPreserver';
 import { FOCUS_TO_PASTE_DELAY_MS } from '../../../../constants/chatPasteConstants';
 import { AIAssistantInsertFactory } from '../../../../destinations/capabilities/insertFactories/aiAssistantInsertFactory';
-import type { ClipboardPreserver } from '../../../../clipboard/ClipboardPreserver';
 import { createMockClipboardPreserver, createMockVscodeAdapter } from '../../../helpers';
 
 describe('AIAssistantInsertFactory', () => {

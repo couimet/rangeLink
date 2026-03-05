@@ -50,7 +50,12 @@ export class FocusCapabilityFactory {
     return new AIAssistantFocusCapability(
       this.ideAdapter,
       focusCommands,
-      new AIAssistantInsertFactory(this.ideAdapter, pasteCommands, this.clipboardPreserver, this.logger),
+      new AIAssistantInsertFactory(
+        this.ideAdapter,
+        pasteCommands,
+        this.clipboardPreserver,
+        this.logger,
+      ),
       this.logger,
     );
   }

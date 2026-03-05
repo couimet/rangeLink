@@ -1,9 +1,9 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 
-import { createMockConfigReader } from '../helpers/createMockConfigReader';
 import type { ClipboardProvider } from '../../ide/ClipboardProvider';
 import { withClipboardPreservation } from '../../utils';
+import { createMockConfigReader } from '../helpers/createMockConfigReader';
 
 const createMockClipboard = (): jest.Mocked<ClipboardProvider> => ({
   readTextFromClipboard: jest.fn(),
