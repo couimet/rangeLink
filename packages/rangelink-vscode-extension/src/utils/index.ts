@@ -1,5 +1,6 @@
 export * from './aiAssistants';
 export * from './applySmartPadding';
+export * from './clipboardPreservation';
 export * from './convertRangeLinkPosition';
 export * from './createIsoTimestamp';
 export * from './destinationKindGuards';

@@ -157,12 +157,12 @@ describe('ListBookmarksCommand', () => {
           { fn: 'ListBookmarksCommand.execute' },
           'User dismissed bookmark list',
         );
-        expect(mockBookmarkService.pasteBookmark).not.toHaveBeenCalled();
+        expect(mockBookmarkService.sendBookmark).not.toHaveBeenCalled();
       });
     });
 
     describe('bookmark selection', () => {
-      it('delegates to BookmarkService.pasteBookmark when selecting a bookmark', async () => {
+      it('delegates to BookmarkService.sendBookmark when a bookmark is selected', async () => {
         mockBookmarkService.getAllBookmarks.mockReturnValue([TEST_BOOKMARK]);
         const selectedItem = {
           label: '$(bookmark) Test Bookmark',
@@ -176,10 +176,10 @@ describe('ListBookmarksCommand', () => {
 
         await command.execute();
 
-        expect(mockBookmarkService.pasteBookmark).toHaveBeenCalledWith('bookmark-1');
+        expect(mockBookmarkService.sendBookmark).toHaveBeenCalledWith('bookmark-1');
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'ListBookmarksCommand.handleSelection', bookmarkId: 'bookmark-1' },
-          'Bookmark selected and pasted',
+          'Bookmark selected and sent',
         );
       });
     });
@@ -198,7 +198,7 @@ describe('ListBookmarksCommand', () => {
 
         await command.execute();
 
-        expect(mockBookmarkService.pasteBookmark).not.toHaveBeenCalled();
+        expect(mockBookmarkService.sendBookmark).not.toHaveBeenCalled();
         expect(executeCommandSpy).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           { fn: 'ListBookmarksCommand.handleSelection', selectedItem: emptyStateItem },

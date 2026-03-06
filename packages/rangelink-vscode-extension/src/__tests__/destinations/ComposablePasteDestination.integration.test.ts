@@ -9,6 +9,7 @@
  */
 import { createMockLogger } from 'barebone-logger-testing';
 
+import type { ClipboardPreserver } from '../../clipboard/ClipboardPreserver';
 import {
   AIAssistantFocusCapability,
   AIAssistantInsertFactory,
@@ -20,6 +21,7 @@ import {
   TerminalInsertFactory,
 } from '../../destinations';
 import {
+  createMockClipboardPreserver,
   createMockDocument,
   createMockEditor,
   createMockFormattedLink,
@@ -29,7 +31,13 @@ import {
 } from '../helpers';
 
 describe('ComposablePasteDestination Integration Tests', () => {
-  const mockLogger = createMockLogger();
+  let mockLogger: ReturnType<typeof createMockLogger>;
+  let mockClipboardPreserver: jest.Mocked<ClipboardPreserver>;
+
+  beforeEach(() => {
+    mockLogger = createMockLogger();
+    mockClipboardPreserver = createMockClipboardPreserver();
+  });
 
   describe('Terminal-like destination (real TerminalFocusCapability)', () => {
     it('should complete end-to-end paste flow with TerminalFocusCapability', async () => {
@@ -39,7 +47,11 @@ describe('ComposablePasteDestination Integration Tests', () => {
         processId: Promise.resolve(12345),
       });
 
-      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
+      const insertFactory = new TerminalInsertFactory(
+        mockAdapter,
+        mockClipboardPreserver,
+        mockLogger,
+      );
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -80,7 +92,11 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
+      const insertFactory = new TerminalInsertFactory(
+        mockAdapter,
+        mockClipboardPreserver,
+        mockLogger,
+      );
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -124,6 +140,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const insertFactory = new AIAssistantInsertFactory(
         mockAdapter,
         ['editor.action.clipboardPasteAction'],
+        mockClipboardPreserver,
         mockLogger,
       );
       const focusCapability = new AIAssistantFocusCapability(
@@ -170,6 +187,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const insertFactory = new AIAssistantInsertFactory(
         mockAdapter,
         ['editor.action.clipboardPasteAction'],
+        mockClipboardPreserver,
         mockLogger,
       );
       const focusCapability = new AIAssistantFocusCapability(
@@ -214,6 +232,7 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const insertFactory = new AIAssistantInsertFactory(
         mockAdapter,
         ['editor.action.clipboardPasteAction'],
+        mockClipboardPreserver,
         mockLogger,
       );
       const focusCapability = new AIAssistantFocusCapability(
@@ -371,7 +390,11 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
+      const insertFactory = new TerminalInsertFactory(
+        mockAdapter,
+        mockClipboardPreserver,
+        mockLogger,
+      );
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -401,7 +424,11 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
+      const insertFactory = new TerminalInsertFactory(
+        mockAdapter,
+        mockClipboardPreserver,
+        mockLogger,
+      );
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,
@@ -436,7 +463,11 @@ describe('ComposablePasteDestination Integration Tests', () => {
       const mockAdapter = createMockVscodeAdapter();
       const mockTerminal = createMockTerminal({ name: 'Test Terminal' });
 
-      const insertFactory = new TerminalInsertFactory(mockAdapter, mockLogger);
+      const insertFactory = new TerminalInsertFactory(
+        mockAdapter,
+        mockClipboardPreserver,
+        mockLogger,
+      );
       const focusCapability = new TerminalFocusCapability(
         mockAdapter,
         mockTerminal,

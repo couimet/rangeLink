@@ -7,6 +7,7 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { ClipboardPreserver } from './clipboard/ClipboardPreserver';
 import type { ConfigReader } from './config/ConfigReader';
 import {
   DEFAULT_SMART_PADDING_PASTE_CONTENT,
@@ -107,6 +108,7 @@ export class RangeLinkService {
     private readonly destinationManager: PasteDestinationManager,
     private readonly destinationPicker: DestinationPicker,
     private readonly configReader: ConfigReader,
+    private readonly clipboardPreserver: ClipboardPreserver,
     private readonly logger: Logger,
   ) {}
 
@@ -245,24 +247,32 @@ export class RangeLinkService {
       return { outcome: 'no-active-terminal' };
     }
 
-    // The VSCode API for this command does NOT return a value — no result to compare against for success/failure.
-    try {
-      await this.ideAdapter.executeCommand(VSCODE_CMD_TERMINAL_COPY_SELECTION);
-    } catch (error) {
-      this.logger.error(
-        { ...logCtx, terminalName: activeTerminal.name, error },
-        'executeCommand(terminal.copySelection) threw',
-      );
-      this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TERMINAL_COPY_COMMAND_FAILED),
-      );
-      return { outcome: 'copy-command-failed', error };
-    }
-
+    // Wrap the clipboard roundtrip in preservation so the user's clipboard is restored
+    // after reading the terminal text and before copyAndSendToDestination writes its own value.
     let terminalText: string;
+    let copyCommandFailed = false;
     try {
-      terminalText = await this.ideAdapter.readTextFromClipboard();
+      terminalText = await this.clipboardPreserver.preserve(async () => {
+        // The VSCode API for this command does NOT return a value — no result to compare against.
+        try {
+          await this.ideAdapter.executeCommand(VSCODE_CMD_TERMINAL_COPY_SELECTION);
+        } catch (e) {
+          copyCommandFailed = true;
+          throw e;
+        }
+        return this.ideAdapter.readTextFromClipboard();
+      });
     } catch (error) {
+      if (copyCommandFailed) {
+        this.logger.error(
+          { ...logCtx, terminalName: activeTerminal.name, error },
+          'executeCommand(terminal.copySelection) threw',
+        );
+        this.ideAdapter.showErrorMessage(
+          formatMessage(MessageCode.ERROR_TERMINAL_COPY_COMMAND_FAILED),
+        );
+        return { outcome: 'copy-command-failed', error };
+      }
       this.logger.error(
         { ...logCtx, terminalName: activeTerminal.name, error },
         'readTextFromClipboard() threw',
@@ -805,6 +815,23 @@ export class RangeLinkService {
   }
 
   /**
+   * Routes copy-and-send through clipboard preservation when the destination consumes the
+   * clipboard as a transport mechanism. Preservation is skipped when ClipboardOnly (R-C)
+   * because the clipboard is the intended output, not a side effect, and when no destination
+   * is bound because the link would be silently discarded by the restore step.
+   */
+  private async copyAndSendToDestination<T>(options: CopyAndSendOptions<T>): Promise<void> {
+    const shouldPreserve =
+      options.control.destinationBehavior !== DestinationBehavior.ClipboardOnly &&
+      this.destinationManager.isBound();
+    if (shouldPreserve) {
+      await this.clipboardPreserver.preserve(() => this.executeCopyAndSend(options));
+    } else {
+      await this.executeCopyAndSend(options);
+    }
+  }
+
+  /**
    * Unified utility for copying content to clipboard and sending to bound destination
    *
    * Eliminates duplication between copyToClipboardAndDestination and other methods.
@@ -815,7 +842,7 @@ export class RangeLinkService {
    * - Clipboard destinations (Claude Code, Cursor AI): Shows status bar "✓ ${contentName} copied to clipboard" + information popup with getUserInstruction()
    * - No destination bound: Shows "✓ ${contentName} copied to clipboard"
    */
-  private async copyAndSendToDestination<T>(options: CopyAndSendOptions<T>): Promise<void> {
+  private async executeCopyAndSend<T>(options: CopyAndSendOptions<T>): Promise<void> {
     const { control, content, strategies, contentName, fnName } = options;
 
     // Copy to clipboard
