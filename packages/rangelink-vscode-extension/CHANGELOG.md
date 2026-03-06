@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Secondary picker organizes all open files into "Active Files" section + per-"Tab Group N" sections
   - Escaping the secondary picker returns to the destination picker
 - **Clipboard Preservation** - RangeLink no longer silently overwrites your clipboard (#353)
-  - New setting `rangelink.preserveClipboard` (`"always"` | `"never"`, default: `"always"`)
+  - New setting `rangelink.clipboard.preserve` (`"always"` | `"never"`, default: `"always"`)
   - Under `"always"`, your prior clipboard content is saved before each transport operation (R-L, R-V, R-F, AI assistant paste, terminal paste) and restored afterward — your clipboard is only permanently overwritten when you explicitly ask for it (R-C)
   - Under `"never"`, your clipboard always contains the last RangeLink output (previous behavior)
 - **Send File Path Commands** - Send file paths directly to bound destinations (#243)

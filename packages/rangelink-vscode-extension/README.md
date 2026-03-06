@@ -388,9 +388,9 @@ When you have more terminals than this threshold, the destination picker shows a
 
 ### Clipboard Settings <sup>Unreleased</sup>
 
-| Setting                       | Default    | Description                                            |
-| ----------------------------- | ---------- | ------------------------------------------------------ |
-| `rangelink.preserveClipboard` | `"always"` | Save and restore clipboard around transport operations |
+| Setting                        | Default    | Description                                            |
+| ------------------------------ | ---------- | ------------------------------------------------------ |
+| `rangelink.clipboard.preserve` | `"always"` | Save and restore clipboard around transport operations |
 
 **Available values:**
 
