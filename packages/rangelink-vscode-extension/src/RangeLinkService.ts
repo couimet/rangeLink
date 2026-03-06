@@ -816,11 +816,15 @@ export class RangeLinkService {
 
   /**
    * Routes copy-and-send through clipboard preservation when the destination consumes the
-   * clipboard as a transport mechanism. ClipboardOnly (R-C) bypasses preservation because
-   * the clipboard is the intended output, not a side effect.
+   * clipboard as a transport mechanism. Preservation is skipped when ClipboardOnly (R-C)
+   * because the clipboard is the intended output, not a side effect, and when no destination
+   * is bound because the link would be silently discarded by the restore step.
    */
   private async copyAndSendToDestination<T>(options: CopyAndSendOptions<T>): Promise<void> {
-    if (options.control.destinationBehavior !== DestinationBehavior.ClipboardOnly) {
+    const shouldPreserve =
+      options.control.destinationBehavior !== DestinationBehavior.ClipboardOnly &&
+      this.destinationManager.isBound();
+    if (shouldPreserve) {
       await this.clipboardPreserver.preserve(() => this.executeCopyAndSend(options));
     } else {
       await this.executeCopyAndSend(options);
