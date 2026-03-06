@@ -37,7 +37,7 @@ describe('withClipboardPreservation', () => {
       );
     });
 
-    it('logs a warning and does not re-throw when clipboard restoration fails', async () => {
+    it('logs an error and does not re-throw when clipboard restoration fails', async () => {
       const clipboard = createMockClipboard();
       clipboard.readTextFromClipboard.mockResolvedValue('prior content');
       const writeError = new Error('clipboard write failed');

@@ -123,6 +123,9 @@ describe('BookmarkService', () => {
       await service.sendBookmark('bookmark-1');
 
       expect(mockBookmarksStore.recordAccess).toHaveBeenCalledWith('bookmark-1');
+      expect(mockBookmarksStore.recordAccess.mock.invocationCallOrder[0]).toBeLessThan(
+        mockClipboard.writeText.mock.invocationCallOrder[0],
+      );
     });
   });
 });

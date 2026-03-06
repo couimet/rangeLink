@@ -716,6 +716,8 @@ describe('RangeLinkService', () => {
         });
 
         expect(mockClipboardPreserver.preserve).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L1');
+        expect(mockClipboard.readText).not.toHaveBeenCalled();
       });
     });
   });

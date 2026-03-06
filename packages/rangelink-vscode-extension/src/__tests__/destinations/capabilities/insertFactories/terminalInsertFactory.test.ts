@@ -86,5 +86,9 @@ describe('TerminalInsertFactory', () => {
     await insertFn('content');
 
     expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(1);
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      { fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal' },
+      'Terminal paste succeeded',
+    );
   });
 });

@@ -23,6 +23,10 @@ describe('DefaultClipboardPreserver', () => {
       expect(fn).toHaveBeenCalledTimes(1);
       expect(writeSpy).toHaveBeenCalledTimes(1);
       expect(writeSpy).toHaveBeenCalledWith('prior content');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'withClipboardPreservation' },
+        'Clipboard restored',
+      );
     });
   });
 
