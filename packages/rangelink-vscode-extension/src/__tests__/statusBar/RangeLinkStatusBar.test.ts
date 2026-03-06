@@ -954,6 +954,49 @@ describe('RangeLinkStatusBar', () => {
         'Bookmark item selected',
       );
     });
+
+    it('shows error message when sendBookmark throws', async () => {
+      const sendError = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_BOUND,
+        message: 'Cannot send bookmark: no destination is currently bound',
+        functionName: 'BookmarkService.sendBookmark',
+      });
+      showQuickPickMock.mockResolvedValue({
+        label: '    $(bookmark) Test Bookmark',
+        itemKind: 'bookmark',
+        bookmarkId: 'bookmark-1',
+      });
+      mockBookmarkService.sendBookmark.mockRejectedValue(sendError);
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      const selectedItem = {
+        label: '    $(bookmark) Test Bookmark',
+        itemKind: 'bookmark',
+        bookmarkId: 'bookmark-1',
+      };
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem, error: sendError },
+        'Bookmark send failed',
+      );
+      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
+        .showErrorMessage as jest.Mock;
+      expect(showErrorMessageMock).toHaveBeenCalledWith(
+        'RangeLink: Cannot send bookmark — no destination is currently bound',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledTimes(1);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.constructor' },
+        'Status bar item created',
+      );
+    });
   });
 
   describe('dispose', () => {

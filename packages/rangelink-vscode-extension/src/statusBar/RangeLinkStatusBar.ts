@@ -115,7 +115,15 @@ export class RangeLinkStatusBar implements vscode.Disposable {
         this.logger.debug(logCtx, 'Command item selected');
         break;
       case 'bookmark':
-        await this.bookmarkService.sendBookmark(selected.bookmarkId);
+        try {
+          await this.bookmarkService.sendBookmark(selected.bookmarkId);
+        } catch (error) {
+          this.logger.error({ ...logCtx, error }, 'Bookmark send failed');
+          this.ideAdapter.showErrorMessage(
+            formatMessage(MessageCode.ERROR_BOOKMARK_SEND_NO_DESTINATION),
+          );
+          return;
+        }
         this.logger.debug(logCtx, 'Bookmark item selected');
         break;
       case 'info':
