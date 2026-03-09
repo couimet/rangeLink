@@ -3,6 +3,8 @@ import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { FilePathTerminalLink } from '../types';
+import { MessageCode } from '../types';
+import { formatMessage } from '../utils';
 
 import type { FilePathNavigationHandler } from './FilePathNavigationHandler';
 
@@ -59,7 +61,7 @@ export class FilePathTerminalProvider
       links.push({
         startIndex: match.index,
         length: match[0].length,
-        tooltip: `Open ${rawPath} \u2022 RangeLink`,
+        tooltip: formatMessage(MessageCode.TOOLTIP_FILE_PATH, { path: rawPath }),
         data: rawPath,
       });
     }

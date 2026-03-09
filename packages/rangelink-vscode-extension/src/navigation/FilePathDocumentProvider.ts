@@ -5,6 +5,8 @@ import * as vscode from 'vscode';
 import { CMD_HANDLE_FILE_PATH_CLICK } from '../constants/commandIds';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { FilePathClickArgs } from '../types';
+import { MessageCode } from '../types';
+import { formatMessage } from '../utils';
 
 import type { FilePathNavigationHandler } from './FilePathNavigationHandler';
 
@@ -68,7 +70,7 @@ export class FilePathDocumentProvider implements vscode.DocumentLinkProvider {
       const range = this.ideAdapter.createRange(startPos, endPos);
 
       const docLink = new vscode.DocumentLink(range);
-      docLink.tooltip = `Open ${rawPath} \u2022 RangeLink`;
+      docLink.tooltip = formatMessage(MessageCode.TOOLTIP_FILE_PATH, { path: rawPath });
       docLink.target = this.ideAdapter.parseUri(
         `command:${CMD_HANDLE_FILE_PATH_CLICK}?${encodeURIComponent(JSON.stringify({ filePath: rawPath }))}`,
       );
