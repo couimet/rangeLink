@@ -87,7 +87,7 @@ describe('withClipboardPreservation', () => {
       expect(clipboard.writeTextToClipboard).toHaveBeenCalledWith('prior content');
     });
 
-    it('calls fn without restoration and logs a warning when clipboard read fails', async () => {
+    it('calls fn without restoration and logs an error when clipboard read fails', async () => {
       const clipboard = createMockClipboard();
       const readError = new Error('clipboard unavailable');
       clipboard.readTextFromClipboard.mockRejectedValue(readError);

@@ -44,6 +44,10 @@ describe('DefaultClipboardPreserver', () => {
 
       expect(fn).toHaveBeenCalledTimes(1);
       expect(readSpy).not.toHaveBeenCalled();
+      expect(mockLogger.debug).not.toHaveBeenCalledWith(
+        { fn: 'withClipboardPreservation' },
+        'Clipboard restored',
+      );
     });
   });
 });
