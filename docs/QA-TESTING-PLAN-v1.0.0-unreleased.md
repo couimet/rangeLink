@@ -1271,6 +1271,106 @@ New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink
 | TC-106 | `RangeLink: Go to Link` available in Command Palette | all | pending |
 | TC-107 | `Go to Link` item in R-M menu opens the same input box | all | pending |
 
+### Test Case Details
+
+#### TC-099 / TC-100 — Keybinding opens Go to Link input box
+
+**Preconditions:** Extension installed. Any workspace open.
+
+**Steps:**
+1. Press `Cmd+R Cmd+G` (Mac) / `Ctrl+R Ctrl+G` (Win/Linux)
+
+**Expected result:** An input box appears (QuickInput or input prompt) with placeholder text indicating it expects a RangeLink (e.g., `path/to/file.ts#L10`).
+
+---
+
+#### TC-101 — Valid RangeLink navigates and selects the range
+
+**Preconditions:** Extension installed. A file with 10+ lines exists in the workspace (e.g., `src/utils/helper.ts`).
+
+**Steps:**
+1. Press `Cmd+R Cmd+G`
+2. Type or paste `src/utils/helper.ts#L3-L7`
+3. Press Enter
+
+**Expected result:** VS Code opens `src/utils/helper.ts` (if not already open) and selects lines 3–7. The selection is visible and highlighted.
+
+---
+
+#### TC-102 — Supports character-precision format `path#L3C14-L15C9`
+
+**Preconditions:** Extension installed. `src/utils/helper.ts` exists.
+
+**Steps:**
+1. Press `Cmd+R Cmd+G`
+2. Type `src/utils/helper.ts#L3C5-L3C20`
+3. Press Enter
+
+**Expected result:** The file opens and the selection spans from column 5 to column 20 on line 3 (character-level precision).
+
+---
+
+#### TC-103 — Invalid link format shows error message
+
+**Preconditions:** Extension installed.
+
+**Steps:**
+1. Press `Cmd+R Cmd+G`
+2. Type `not-a-valid-link-format`
+3. Press Enter
+
+**Expected result:** An error notification appears (e.g., `Invalid RangeLink format`). No navigation occurs.
+
+---
+
+#### TC-104 — Empty input dismisses with info notification
+
+**Preconditions:** Extension installed.
+
+**Steps:**
+1. Press `Cmd+R Cmd+G`
+2. Clear the input (leave it empty)
+3. Press Enter
+
+**Expected result:** The input box closes. An info notification appears (e.g., `No link entered`). No navigation occurs, no error.
+
+---
+
+#### TC-105 — File not found shows warning
+
+**Preconditions:** Extension installed.
+
+**Steps:**
+1. Press `Cmd+R Cmd+G`
+2. Type `src/nonexistent/file.ts#L1`
+3. Press Enter
+
+**Expected result:** A warning notification appears (e.g., `File not found: src/nonexistent/file.ts`). No navigation occurs.
+
+---
+
+#### TC-106 — `Go to Link` in Command Palette
+
+**Preconditions:** Extension installed.
+
+**Steps:**
+1. Open Command Palette (`Cmd+Shift+P`)
+2. Type `Go to Link` and select `RangeLink: Go to Link`
+
+**Expected result:** Same input box opens as the R-G keybinding.
+
+---
+
+#### TC-107 — `Go to Link` in R-M menu opens same input box
+
+**Preconditions:** Extension installed.
+
+**Steps:**
+1. Open R-M menu
+2. Select `Go to Link`
+
+**Expected result:** The R-G input box opens. Behavior is identical to the keybinding.
+
 ---
 
 ## Section 11 — R-U Unbind
@@ -1437,3 +1537,182 @@ Verify each fixed bug has not regressed.
 | TC-141 | Bound editor hidden behind other tabs → paste succeeds and brings the tab to the foreground | all | pending |
 | TC-142 | Hovering over a clickable document link shows clean tooltip text (not raw JSON or command URI) | all | pending |
 | TC-143 | Using `Ctrl+L` (select full line) then R-L generates link without `SELECTION_ZERO_WIDTH` error | all | pending |
+
+### Test Case Details
+
+> **Setup for Bug Fix Regression tests:** Use a project file with at least 20 lines. Use `src/utils/helper.ts` from the RangeLink workspace or any comparable file.
+
+#### TC-130 — `#L10` selects the entire line, not just the first character
+
+**Preconditions:** `src/utils/helper.ts` exists and is readable.
+
+**Steps:**
+1. Press `Cmd+R Cmd+G`
+2. Type `src/utils/helper.ts#L10`
+3. Press Enter
+4. Observe the selection in the editor
+
+**Expected result:** Line 10 is selected in its entirety (from column 0 to end of line). The cursor is not placed at just the first character.
+
+---
+
+#### TC-131 — `#L10-L15` selects from line 10 to end of line 15
+
+**Preconditions:** `src/utils/helper.ts` with 15+ lines.
+
+**Steps:**
+1. Press `Cmd+R Cmd+G`
+2. Type `src/utils/helper.ts#L10-L15`
+3. Press Enter
+
+**Expected result:** Lines 10 through 15 are selected. The selection spans all six lines fully.
+
+---
+
+#### TC-132 — Selecting line + trailing newline generates `#L20` not `#L20-L21`
+
+**Preconditions:** File with 20+ lines. Terminal or text editor bound as destination.
+
+**Steps:**
+1. In `src/utils/helper.ts`, triple-click line 20 to select it including the trailing newline (or use `Cmd+L` / `Ctrl+L` to select the full line)
+2. Verify the selection visually includes the newline (cursor at start of line 21)
+3. Press `Cmd+R Cmd+L` to generate and send the link
+
+**Expected result:** The generated link is `src/utils/helper.ts#L20` (single-line reference). NOT `#L20-L21`. The trailing newline is excluded from the line count.
+
+---
+
+#### TC-133 — Backtick-wrapped RangeLink in terminal is clickable
+
+**Preconditions:** Terminal open. A valid RangeLink exists for a file in the workspace.
+
+**Steps:**
+1. In the terminal, type or paste: `` `src/utils/helper.ts#L5-L10` `` (surrounded by backticks)
+2. Press Enter (or just click the link)
+3. Hold `Cmd` (Mac) and click the link in the terminal
+
+**Expected result:** VS Code opens `src/utils/helper.ts` and selects lines 5–10. The backtick wrapping did not prevent link detection.
+
+---
+
+#### TC-134 — Single-quote-wrapped RangeLink is clickable in terminal
+
+**Preconditions:** Terminal open.
+
+**Steps:**
+1. Type or paste in terminal: `'src/utils/helper.ts#L5'`
+2. `Cmd`-click the link
+
+**Expected result:** Navigates to line 5 of the file. Single quotes did not break link detection.
+
+---
+
+#### TC-135 — Double-quote-wrapped RangeLink is clickable in terminal
+
+**Preconditions:** Terminal open.
+
+**Steps:**
+1. Type or paste: `"src/utils/helper.ts#L5"`
+2. `Cmd`-click the link
+
+**Expected result:** Navigates to line 5. Double quotes did not break link detection.
+
+---
+
+#### TC-136 — Angle-bracket-wrapped RangeLink is clickable in terminal
+
+**Preconditions:** Terminal open.
+
+**Steps:**
+1. Type or paste: `<src/utils/helper.ts#L5>`
+2. `Cmd`-click the link
+
+**Expected result:** Navigates to line 5. Angle brackets did not break link detection.
+
+---
+
+#### TC-137 — Markdown link in document is clickable and navigates correctly
+
+**Preconditions:** A Markdown file (`.md`) is open in the editor.
+
+**Steps:**
+1. Add a Markdown link: `[See helper](src/utils/helper.ts#L10)` to the file
+2. In the Preview pane or with document link support enabled, hover over the link
+3. `Cmd`-click the link
+
+**Expected result:** VS Code opens `src/utils/helper.ts` and navigates to line 10. The `[label](path#L10)` syntax is recognized as a RangeLink document link.
+
+---
+
+#### TC-138 — HTTP URL with `#L10` in terminal is NOT captured as RangeLink
+
+**Preconditions:** Terminal open.
+
+**Steps:**
+1. Type or paste in terminal: `https://example.com/path/file.ts#L10`
+2. Observe whether RangeLink treats it as a link
+
+**Expected result:** The URL is rendered as a standard browser link (or not rendered), but RangeLink does NOT intercept it. No navigation to a local file occurs. The `https://` prefix is correctly excluded.
+
+---
+
+#### TC-139 — HTTP URL with `#L10` in a document is NOT captured as RangeLink
+
+**Preconditions:** A Markdown or text file open in the editor.
+
+**Steps:**
+1. Add the text `https://example.com/path/file.ts#L10` to the file
+2. Hover over it to inspect the link tooltip (if any)
+
+**Expected result:** RangeLink does not provide a document link for this text. No RangeLink navigation offered.
+
+---
+
+#### TC-140 — Moving bound editor between tab groups still pastes correctly
+
+**Preconditions:** `src/utils/helper.ts` is bound as destination and is in tab group 1. Terminal open.
+
+**Steps:**
+1. Drag the `src/utils/helper.ts` tab to tab group 2 (or use View → Move Editor to Next Group)
+2. Select text in another file
+3. Press `Cmd+R Cmd+L`
+
+**Expected result:** The RangeLink is inserted into `src/utils/helper.ts` in tab group 2. The paste did not fail due to the stale tab group reference.
+
+---
+
+#### TC-141 — Bound editor hidden behind other tabs pastes and comes forward
+
+**Preconditions:** `src/utils/helper.ts` is bound as destination but is hidden behind other tabs (not the frontmost tab in its group).
+
+**Steps:**
+1. Open several files in the same tab group as `src/utils/helper.ts` so it's not visible
+2. Select text in any other file
+3. Press `Cmd+R Cmd+L`
+
+**Expected result:** The paste succeeds. `src/utils/helper.ts` comes to the foreground (the tab is activated). The RangeLink is inserted. No error about hidden or inactive tab.
+
+---
+
+#### TC-142 — Clickable document link tooltip shows clean text
+
+**Preconditions:** A Markdown file with a RangeLink document link: `[See code](src/utils/helper.ts#L5)`.
+
+**Steps:**
+1. Hover over the link in the editor (no preview pane needed)
+2. Observe the tooltip that appears
+
+**Expected result:** The tooltip shows clean human-readable text (e.g., the file path and line number, or the link label). It does NOT show raw JSON, a `command:` URI, or internal command parameters.
+
+---
+
+#### TC-143 — `Ctrl+L` full-line select then R-L generates link without error
+
+**Preconditions:** Terminal or file destination bound.
+
+**Steps:**
+1. Place cursor on any line in a TypeScript file
+2. Press `Cmd+L` (Mac) / `Ctrl+L` (Win/Linux) to select the full line (VS Code built-in)
+3. Press `Cmd+R Cmd+L`
+
+**Expected result:** A valid RangeLink is generated and sent. No `SELECTION_ZERO_WIDTH` error notification appears. The link references the selected line correctly.
