@@ -143,4 +143,7 @@ export const extractFilePath = (match: RegExpExecArray): string =>
  * @returns RegExp with global flag for detecting all file paths in text
  */
 export const buildFilePathPattern = (): RegExp =>
-  new RegExp(`${FP_DOUBLE_QUOTED}|${FP_SINGLE_QUOTED}|${FP_ABSOLUTE}|${FP_RELATIVE}|${FP_TILDE}`, 'g');
+  new RegExp(
+    `${FP_DOUBLE_QUOTED}|${FP_SINGLE_QUOTED}|${FP_ABSOLUTE}|${FP_RELATIVE}|${FP_TILDE}`,
+    'g',
+  );

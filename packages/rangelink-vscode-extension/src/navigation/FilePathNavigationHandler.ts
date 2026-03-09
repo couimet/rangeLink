@@ -49,9 +49,7 @@ export class FilePathNavigationHandler {
 
     this.logger.info({ ...logCtx }, 'Navigating to file path');
 
-    const expandedPath = rawPath.startsWith('~/')
-      ? os.homedir() + rawPath.slice(1)
-      : rawPath;
+    const expandedPath = rawPath.startsWith('~/') ? os.homedir() + rawPath.slice(1) : rawPath;
 
     const fileUri = await this.ideAdapter.resolveWorkspacePath(expandedPath);
 

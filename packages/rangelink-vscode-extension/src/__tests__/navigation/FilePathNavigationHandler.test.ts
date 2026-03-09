@@ -6,7 +6,11 @@ import { createMockLogger } from 'barebone-logger-testing';
 import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 
 import { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
-import { createMockUri, createMockVscodeAdapter, type VscodeAdapterWithTestHooks } from '../helpers';
+import {
+  createMockUri,
+  createMockVscodeAdapter,
+  type VscodeAdapterWithTestHooks,
+} from '../helpers';
 
 describe('FilePathNavigationHandler', () => {
   let handler: FilePathNavigationHandler;

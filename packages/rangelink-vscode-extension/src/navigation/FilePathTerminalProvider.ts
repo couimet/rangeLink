@@ -21,9 +21,7 @@ import type { FilePathNavigationHandler } from './FilePathNavigationHandler';
  * - Relative: `./file.ts`, `../file.ts`
  * - Tilde: `~/file.ts`
  */
-export class FilePathTerminalProvider
-  implements vscode.TerminalLinkProvider<FilePathTerminalLink>
-{
+export class FilePathTerminalProvider implements vscode.TerminalLinkProvider<FilePathTerminalLink> {
   /**
    * Create a new file path terminal link provider.
    *

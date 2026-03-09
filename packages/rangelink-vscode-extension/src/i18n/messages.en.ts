@@ -66,8 +66,7 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: Cannot bind Claude Code - extension not installed or not active',
   [MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE]:
     'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
-  [MessageCode.ERROR_FILE_PATH_NAVIGATION_FAILED]:
-    'RangeLink: Failed to open file {path}: {error}',
+  [MessageCode.ERROR_FILE_PATH_NAVIGATION_FAILED]: 'RangeLink: Failed to open file {path}: {error}',
   [MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE]:
     'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
   [MessageCode.ERROR_INVALID_DELIMITER_CONFIG]:
