@@ -26,9 +26,14 @@ test_cases:
   - id: TC-001
     feature: "R-M Status Bar Menu"
     scenario: "Status bar item visible with correct text and tooltip in unbound state"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed from .vsix build"
+      - "Any workspace is open"
+    steps:
+      - "Look at the VS Code status bar (bottom bar)"
+      - "Locate the RangeLink item"
+      - "Hover over it to see the tooltip"
+    expected_result: "Status bar shows $(link) RangeLink. Tooltip reads 'RangeLink Menu'."
     platform: all
     automated: false
     status: pending
@@ -36,9 +41,12 @@ test_cases:
   - id: TC-002
     feature: "R-M Status Bar Menu"
     scenario: "Clicking the status bar item opens the R-M menu"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed from .vsix build"
+      - "Any workspace is open"
+    steps:
+      - "Click the $(link) RangeLink item in the status bar"
+    expected_result: "A QuickPick menu opens titled 'RangeLink Menu'. Menu items are visible."
     platform: all
     automated: false
     status: pending
@@ -46,9 +54,12 @@ test_cases:
   - id: TC-003
     feature: "R-M Status Bar Menu"
     scenario: "Cmd+R Cmd+M keybinding opens the R-M menu"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed from .vsix build"
+      - "Any workspace open with editor focus"
+    steps:
+      - "Press Cmd+R Cmd+M"
+    expected_result: "Same QuickPick menu opens as clicking the status bar item."
     platform: mac
     automated: false
     status: pending
@@ -56,9 +67,12 @@ test_cases:
   - id: TC-004
     feature: "R-M Status Bar Menu"
     scenario: "Ctrl+R Ctrl+M keybinding opens the R-M menu"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed from .vsix build"
+      - "Any workspace open with editor focus"
+    steps:
+      - "Press Ctrl+R Ctrl+M"
+    expected_result: "Same QuickPick menu opens as clicking the status bar item."
     platform: win/linux
     automated: false
     status: pending
@@ -66,9 +80,12 @@ test_cases:
   - id: TC-005
     feature: "R-M Status Bar Menu"
     scenario: "R-M menu shows Jump to Bound Destination when a destination is bound"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A destination (terminal or file) is currently bound"
+    steps:
+      - "Open the R-M menu (keybinding or status bar click)"
+      - "Observe the menu items"
+    expected_result: "Menu contains 'Jump to Bound Destination' with the destination name shown. 'Unbind Destination' is also visible."
     platform: all
     automated: false
     status: pending
@@ -76,9 +93,12 @@ test_cases:
   - id: TC-006
     feature: "R-M Status Bar Menu"
     scenario: "R-M menu shows destination picker when no destination is bound"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "No destination is bound (fresh install or after R-U unbind)"
+    steps:
+      - "Open the R-M menu"
+      - "Observe the first item"
+    expected_result: "Menu shows a bind item that opens the destination picker. 'Jump to Bound Destination' is absent."
     platform: all
     automated: false
     status: pending
@@ -86,9 +106,12 @@ test_cases:
   - id: TC-007
     feature: "R-M Status Bar Menu"
     scenario: "R-M menu shows Unbind Destination when a destination is bound"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A destination is currently bound"
+    steps:
+      - "Open the R-M menu"
+      - "Select 'Unbind Destination'"
+    expected_result: "The destination is unbound. A notification confirms. R-M menu no longer shows 'Jump to Bound Destination' next time."
     platform: all
     automated: false
     status: pending
@@ -96,9 +119,12 @@ test_cases:
   - id: TC-008
     feature: "R-M Status Bar Menu"
     scenario: "R-M menu Go to Link item opens the R-G input box"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+    steps:
+      - "Open the R-M menu"
+      - "Select 'Go to Link'"
+    expected_result: "R-G input box opens, ready to accept a RangeLink for navigation."
     platform: all
     automated: false
     status: pending
@@ -106,9 +132,12 @@ test_cases:
   - id: TC-009
     feature: "R-M Status Bar Menu"
     scenario: "R-M menu Show Version Info displays version, commit, branch, and build date"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+    steps:
+      - "Open the R-M menu"
+      - "Select 'Show Version Info'"
+    expected_result: "A notification or info message shows the extension version, short commit SHA, branch name, and build date."
     platform: all
     automated: false
     status: pending
@@ -120,9 +149,12 @@ test_cases:
   - id: TC-010
     feature: "R-D Bind to Destination"
     scenario: "Cmd+R Cmd+D opens destination picker showing terminals, files, and AI assistants"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "At least one terminal and one file are open"
+    steps:
+      - "Press Cmd+R Cmd+D"
+    expected_result: "A destination picker QuickPick opens listing terminals, open text files, and AI assistants."
     platform: mac
     automated: false
     status: pending
@@ -130,9 +162,12 @@ test_cases:
   - id: TC-011
     feature: "R-D Bind to Destination"
     scenario: "Ctrl+R Ctrl+D opens the destination picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "At least one terminal and one file are open"
+    steps:
+      - "Press Ctrl+R Ctrl+D"
+    expected_result: "A destination picker QuickPick opens listing terminals, open text files, and AI assistants."
     platform: win/linux
     automated: false
     status: pending
@@ -140,9 +175,12 @@ test_cases:
   - id: TC-012
     feature: "R-D Bind to Destination"
     scenario: "RangeLink: Bind to Destination in Command Palette opens destination picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+    steps:
+      - "Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)"
+      - "Type 'Bind to Destination' and select 'RangeLink: Bind to Destination'"
+    expected_result: "Same destination picker opens as the R-D keybinding."
     platform: all
     automated: false
     status: pending
@@ -150,9 +188,13 @@ test_cases:
   - id: TC-013
     feature: "R-D Bind to Destination"
     scenario: "Selecting a terminal destination binds it and shows success toast"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "At least one terminal open"
+      - "No binding active"
+    steps:
+      - "Open R-D picker"
+      - "Select a terminal from the list"
+    expected_result: "The terminal is bound. A success toast appears (e.g., 'Bound to Terminal')."
     platform: all
     automated: false
     status: pending
@@ -160,9 +202,13 @@ test_cases:
   - id: TC-014
     feature: "R-D Bind to Destination"
     scenario: "Selecting a text editor destination binds it and shows success toast"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "At least two editor tabs open"
+      - "No binding active"
+    steps:
+      - "Open R-D picker"
+      - "Select a text file from the list"
+    expected_result: "The selected file becomes the bound destination. Success toast appears."
     platform: all
     automated: false
     status: pending
@@ -170,9 +216,12 @@ test_cases:
   - id: TC-015
     feature: "R-D Bind to Destination"
     scenario: "Selecting an AI assistant destination binds it and shows success toast"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A supported AI assistant extension is installed and active (Claude Code, Copilot Chat)"
+    steps:
+      - "Open R-D picker"
+      - "Select the AI assistant entry from the list"
+    expected_result: "AI assistant is now the bound destination. Success toast appears."
     platform: all
     automated: false
     status: pending
@@ -180,9 +229,12 @@ test_cases:
   - id: TC-016
     feature: "R-D Bind to Destination"
     scenario: "When already bound, destination picker shows smart-bind confirmation dialog"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A destination is already bound"
+    steps:
+      - "Open R-D picker"
+      - "Select a different terminal or file"
+    expected_result: "A confirmation dialog appears showing the current binding name and the proposed new binding name, with 'Yes, replace' and 'No, keep current' options."
     platform: all
     automated: false
     status: pending
@@ -190,9 +242,12 @@ test_cases:
   - id: TC-017
     feature: "R-D Bind to Destination"
     scenario: "Smart-bind confirmation Yes replaces switches the binding to the new destination"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Destination A already bound"
+      - "Smart-bind confirmation dialog is showing (run TC-016 steps first)"
+    steps:
+      - "Click 'Yes, replace' (or equivalent) in the confirmation dialog"
+    expected_result: "Binding switches to the newly selected destination. Success toast confirms the new binding."
     platform: all
     automated: false
     status: pending
@@ -200,9 +255,12 @@ test_cases:
   - id: TC-018
     feature: "R-D Bind to Destination"
     scenario: "Smart-bind confirmation No keep retains the existing binding"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Destination A already bound"
+      - "Smart-bind confirmation dialog is showing (run TC-016 steps first)"
+    steps:
+      - "Click 'No, keep current' (or equivalent) in the confirmation dialog"
+    expected_result: "Original binding is preserved. No binding change occurs. Neutral info notification (if any)."
     platform: all
     automated: false
     status: pending
@@ -210,9 +268,12 @@ test_cases:
   - id: TC-019
     feature: "R-D Bind to Destination"
     scenario: "Escape from destination picker dismisses without changing binding"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Any binding state (bound or unbound)"
+    steps:
+      - "Open R-D picker"
+      - "Press Escape without selecting anything"
+    expected_result: "Picker closes. Binding state is unchanged."
     platform: all
     automated: false
     status: pending
@@ -224,9 +285,13 @@ test_cases:
   - id: TC-020
     feature: "Terminal Picker"
     scenario: "Active terminal is marked with active badge"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Two or more terminals open"
+      - "No terminal is bound"
+    steps:
+      - "Click a terminal tab (e.g., 'Gamma') to make it the active terminal"
+      - "Open the terminal picker via R-D or R-M"
+    expected_result: "'Gamma' shows an 'active' badge in the picker. Other terminals have no badge."
     platform: all
     automated: false
     status: pending
@@ -234,9 +299,12 @@ test_cases:
   - id: TC-021
     feature: "Terminal Picker"
     scenario: "Bound terminal is marked with bound badge"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "'Beta' terminal is bound"
+      - "'Gamma' is the active terminal (not bound)"
+    steps:
+      - "Open the terminal picker"
+    expected_result: "'Beta' shows a 'bound' badge. 'Gamma' shows an 'active' badge."
     platform: all
     automated: false
     status: pending
@@ -244,9 +312,12 @@ test_cases:
   - id: TC-022
     feature: "Terminal Picker"
     scenario: "Terminal that is both active and bound shows dual bound · active badge"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "'Beta' terminal is both bound and the currently active (focused) terminal"
+    steps:
+      - "Click the 'Beta' terminal tab to make it active"
+      - "Open the terminal picker"
+    expected_result: "'Beta' shows a combined 'bound · active' badge (both indicators present on the same item)."
     platform: all
     automated: false
     status: pending
@@ -254,9 +325,12 @@ test_cases:
   - id: TC-023
     feature: "Terminal Picker"
     scenario: "Bound terminal always appears first in the terminal picker list"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "'Beta' terminal is bound"
+      - "Multiple other terminals open"
+    steps:
+      - "Open the terminal picker"
+    expected_result: "'Beta' is the first item in the terminal list, regardless of the order terminals were opened."
     platform: all
     automated: false
     status: pending
@@ -264,9 +338,12 @@ test_cases:
   - id: TC-024
     feature: "Terminal Picker"
     scenario: "Active (non-bound) terminal appears second in the list"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "'Beta' is bound"
+      - "'Gamma' is active but not bound"
+    steps:
+      - "Open the terminal picker"
+    expected_result: "'Beta' (bound) is first. 'Gamma' (active, not bound) is second. Remaining terminals follow in any order."
     platform: all
     automated: false
     status: pending
@@ -274,9 +351,12 @@ test_cases:
   - id: TC-025
     feature: "Terminal Picker"
     scenario: "Hidden IDE terminals are absent from the picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Using Cursor or an IDE that creates hidden background terminals"
+      - "At least one hidden terminal exists"
+    steps:
+      - "Open the terminal picker"
+    expected_result: "Hidden background terminals do not appear in the picker. Only user-visible terminals are listed."
     platform: all
     automated: false
     status: pending
@@ -284,9 +364,12 @@ test_cases:
   - id: TC-026
     feature: "Terminal Picker"
     scenario: "With maxInline or fewer terminals, all are shown inline with no overflow item"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "rangelink.terminalPicker.maxInline = 3 (default)"
+      - "Exactly 3 or fewer terminals open"
+    steps:
+      - "Open R-D picker"
+    expected_result: "All terminals appear inline. No 'More terminals...' item is visible."
     platform: all
     automated: false
     status: pending
@@ -294,9 +377,12 @@ test_cases:
   - id: TC-027
     feature: "Terminal Picker"
     scenario: "With more terminals than maxInline, extras collapse into More terminals..."
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "rangelink.terminalPicker.maxInline = 3"
+      - "5 or more terminals open"
+    steps:
+      - "Open R-D picker or terminal sub-section of R-M"
+    expected_result: "Only 3 terminals shown inline. A 'More terminals...' item appears at the bottom of the terminal section."
     platform: all
     automated: false
     status: pending
@@ -304,9 +390,11 @@ test_cases:
   - id: TC-028
     feature: "Terminal Picker"
     scenario: "Selecting More terminals... opens the secondary full terminal picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Overflow scenario active (more terminals than maxInline)"
+    steps:
+      - "Select 'More terminals...' from the picker"
+    expected_result: "A secondary QuickPick opens listing all terminals, including those that were hidden behind 'More terminals...'."
     platform: all
     automated: false
     status: pending
@@ -314,9 +402,11 @@ test_cases:
   - id: TC-029
     feature: "Terminal Picker"
     scenario: "Escaping the secondary terminal picker returns to the parent destination picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Secondary terminal picker is open (from TC-028)"
+    steps:
+      - "Press Escape in the secondary terminal picker"
+    expected_result: "The secondary picker closes. The parent destination picker (R-D or R-M) is still visible."
     platform: all
     automated: false
     status: pending
@@ -324,9 +414,12 @@ test_cases:
   - id: TC-030
     feature: "Terminal Picker"
     scenario: "rangelink.terminalPicker.maxInline setting changes the overflow threshold"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "4 terminals open"
+    steps:
+      - "Set rangelink.terminalPicker.maxInline = 2 in VS Code settings"
+      - "Open R-D picker"
+    expected_result: "Only 2 terminals shown inline. 'More terminals...' appears. Previously all 4 were inline with higher maxInline."
     platform: all
     automated: false
     status: pending
@@ -334,9 +427,13 @@ test_cases:
   - id: TC-031
     feature: "Terminal Picker"
     scenario: "Terminal picker appears inline in the R-M menu when unbound"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "No destination bound"
+      - "Terminals are open"
+    steps:
+      - "Open R-M menu"
+      - "Observe the terminal entries in the menu"
+    expected_result: "Terminal picker items appear inline within the R-M menu. Selecting one binds that terminal."
     platform: all
     automated: false
     status: pending
@@ -344,9 +441,12 @@ test_cases:
   - id: TC-032
     feature: "Terminal Picker"
     scenario: "Terminal picker appears inline in the R-D destination picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "R-D picker is open"
+    steps:
+      - "Press Cmd+R Cmd+D"
+      - "Observe that terminal entries are part of the combined destination picker"
+    expected_result: "Terminal entries appear in the R-D picker with the same badges and ordering as when accessed from R-M."
     platform: all
     automated: false
     status: pending
@@ -358,9 +458,12 @@ test_cases:
   - id: TC-033
     feature: "File Picker"
     scenario: "Bound file appears first in the list with bound badge"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "src/utils/helper.ts is bound as destination"
+      - "Multiple other files are open"
+    steps:
+      - "Open R-D picker"
+    expected_result: "src/utils/helper.ts appears at the top of the file list with a 'bound' badge."
     platform: all
     automated: false
     status: pending
@@ -368,9 +471,14 @@ test_cases:
   - id: TC-034
     feature: "File Picker"
     scenario: "Active (frontmost) file per tab group appears before other files in that group"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Two tab groups open"
+      - "src/index.ts is the frontmost tab in tab group 1"
+      - "No binding active"
+    steps:
+      - "Click src/index.ts to make it active in tab group 1"
+      - "Open R-D picker"
+    expected_result: "src/index.ts appears before other files in tab group 1 within the picker."
     platform: all
     automated: false
     status: pending
@@ -378,9 +486,12 @@ test_cases:
   - id: TC-035
     feature: "File Picker"
     scenario: "Files with the same base name show path disambiguation"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Two files with the same base name are open: e.g., src/utils/index.ts and src/types/index.ts"
+    steps:
+      - "Open both files in the editor"
+      - "Open R-D picker (file section)"
+    expected_result: "Both index.ts files appear with enough path context to distinguish them (e.g., utils/index.ts and types/index.ts)."
     platform: all
     automated: false
     status: pending
@@ -388,9 +499,11 @@ test_cases:
   - id: TC-036
     feature: "File Picker"
     scenario: "Open files appear as inline items in the destination picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "3 or fewer files open (within inline limit)"
+    steps:
+      - "Open R-D picker"
+    expected_result: "The open file entries appear inline in the picker. No 'More files...' item."
     platform: all
     automated: false
     status: pending
@@ -398,9 +511,11 @@ test_cases:
   - id: TC-037
     feature: "File Picker"
     scenario: "With more open files than the inline limit, extras collapse into More files..."
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "More files open than the inline limit (e.g., 6+ files)"
+    steps:
+      - "Open R-D picker"
+    expected_result: "Only the inline limit of files is shown. A 'More files...' item appears at the bottom of the file section."
     platform: all
     automated: false
     status: pending
@@ -408,9 +523,12 @@ test_cases:
   - id: TC-038
     feature: "File Picker"
     scenario: "Secondary file picker shows Active Files section"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Overflow scenario active — select More files... from R-D picker"
+    steps:
+      - "Select 'More files...' from R-D picker"
+      - "Observe the secondary picker sections"
+    expected_result: "A secondary QuickPick opens with an 'Active Files' section header listing all open files."
     platform: all
     automated: false
     status: pending
@@ -418,9 +536,12 @@ test_cases:
   - id: TC-039
     feature: "File Picker"
     scenario: "Secondary file picker shows Tab Group N sections for each editor group"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Two or more tab groups open"
+      - "Secondary file picker is open"
+    steps:
+      - "Observe the secondary picker sections"
+    expected_result: "Files are grouped under 'Tab Group 1', 'Tab Group 2', etc. Each group lists the files in that tab group."
     platform: all
     automated: false
     status: pending
@@ -428,9 +549,11 @@ test_cases:
   - id: TC-040
     feature: "File Picker"
     scenario: "Escaping the secondary file picker returns to the parent destination picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Secondary file picker is open"
+    steps:
+      - "Press Escape in the secondary file picker"
+    expected_result: "The secondary picker closes. The parent R-D (or R-M) picker is still visible, not closed."
     platform: all
     automated: false
     status: pending
@@ -438,9 +561,12 @@ test_cases:
   - id: TC-041
     feature: "File Picker"
     scenario: "File picker appears inline in the R-M menu when unbound"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "No destination bound"
+      - "Files are open"
+    steps:
+      - "Open R-M menu"
+    expected_result: "File entries appear inline within the R-M menu. Selecting one binds the file as the destination."
     platform: all
     automated: false
     status: pending
@@ -1315,9 +1441,12 @@ test_cases:
   - id: TC-108
     feature: "R-U Unbind"
     scenario: "Cmd+R Cmd+U unbinds the current destination when bound"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A destination is currently bound"
+    steps:
+      - "Verify binding is active (status bar or prior R-L confirms)"
+      - "Press Cmd+R Cmd+U"
+    expected_result: "Destination is unbound. A toast confirms (e.g., 'Unbound from Terminal'). Subsequent R-L opens picker instead of sending directly."
     platform: mac
     automated: false
     status: pending
@@ -1325,9 +1454,13 @@ test_cases:
   - id: TC-109
     feature: "R-U Unbind"
     scenario: "Ctrl+R Ctrl+U on Win/Linux"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A destination is currently bound"
+      - "Running on Windows or Linux"
+    steps:
+      - "Verify binding is active"
+      - "Press Ctrl+R Ctrl+U"
+    expected_result: "Destination is unbound. Same confirmation behavior as TC-108."
     platform: win/linux
     automated: false
     status: pending
@@ -1335,9 +1468,11 @@ test_cases:
   - id: TC-110
     feature: "R-U Unbind"
     scenario: "R-U with no bound destination shows no-op or appropriate info message"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "No destination is currently bound"
+    steps:
+      - "Press Cmd+R Cmd+U (Mac) / Ctrl+R Ctrl+U (Win/Linux)"
+    expected_result: "An info notification appears (e.g., 'No destination is currently bound'). No error. Command is a safe no-op."
     platform: all
     automated: false
     status: pending
@@ -1345,9 +1480,12 @@ test_cases:
   - id: TC-111
     feature: "R-U Unbind"
     scenario: "RangeLink: Unbind Destination available in Command Palette"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A destination is currently bound"
+    steps:
+      - "Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)"
+      - "Type 'Unbind Destination' and select 'RangeLink: Unbind Destination'"
+    expected_result: "Same behavior as R-U keybinding — destination is unbound with confirmation notification."
     platform: all
     automated: false
     status: pending

@@ -179,6 +179,101 @@ New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink
 | TC-008 | R-M menu `Go to Link` item opens R-G input box | all | pending |
 | TC-009 | R-M menu `Show Version Info` displays version, commit, branch, and build date | all | pending |
 
+### Test Case Details
+
+#### TC-001 — Status bar item visible with correct text and tooltip
+
+**Preconditions:** Extension installed from `.vsix` build. Any workspace open.
+
+**Steps:**
+1. Look at the VS Code status bar (bottom bar)
+2. Locate the RangeLink item
+3. Hover over it to see the tooltip
+
+**Expected result:** Status bar shows `$(link) RangeLink` (a link icon followed by "RangeLink"). Tooltip reads `RangeLink Menu`.
+
+---
+
+#### TC-002 — Clicking the status bar item opens R-M menu
+
+**Preconditions:** Extension installed. Any workspace open.
+
+**Steps:**
+1. Click the `$(link) RangeLink` item in the status bar
+
+**Expected result:** A QuickPick menu opens. Menu title is `RangeLink Menu`. Menu items are visible.
+
+---
+
+#### TC-003 / TC-004 — Keybinding opens R-M menu
+
+**Preconditions:** Extension installed. Any workspace open with editor focus.
+
+**Steps:**
+1. Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux)
+
+**Expected result:** Same QuickPick menu opens as clicking the status bar item.
+
+---
+
+#### TC-005 — Bound state: `Jump to Bound Destination` item visible
+
+**Preconditions:** A destination (terminal or file) is currently bound.
+
+**Steps:**
+1. Open the R-M menu (keybinding or status bar click)
+2. Observe the menu items
+
+**Expected result:** Menu contains `Jump to Bound Destination` (with the destination name shown). Menu also shows `Unbind Destination`.
+
+---
+
+#### TC-006 — Unbound state: destination picker shown
+
+**Preconditions:** No destination is bound (fresh install or after R-U unbind).
+
+**Steps:**
+1. Open the R-M menu
+2. Observe the first item
+
+**Expected result:** Menu shows an item that opens the destination picker (no "Jump to Bound Destination"). The picker shows terminals, files, and AI assistants.
+
+---
+
+#### TC-007 — `Unbind Destination` unbinds when bound
+
+**Preconditions:** A destination is bound.
+
+**Steps:**
+1. Open the R-M menu
+2. Select `Unbind Destination`
+
+**Expected result:** The destination is unbound. Status bar or notification confirms. R-M menu no longer shows "Jump to Bound Destination" next time.
+
+---
+
+#### TC-008 — `Go to Link` in R-M menu opens R-G input box
+
+**Preconditions:** Extension installed.
+
+**Steps:**
+1. Open the R-M menu
+2. Select `Go to Link`
+
+**Expected result:** R-G input box opens, ready to accept a RangeLink for navigation.
+
+---
+
+#### TC-009 — `Show Version Info` displays version, commit, branch, build date
+
+**Preconditions:** Extension installed.
+
+**Steps:**
+1. Open the R-M menu
+2. Select `Show Version Info`
+
+**Expected result:** A notification or info message appears showing the extension version number, short commit SHA, branch name, and build date. All four fields are visible.
+
 ---
 
 ## Section 2 — R-D Bind to Destination
@@ -197,6 +292,111 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 | TC-017 | Smart-bind confirmation "Yes, replace" switches the binding to the new destination | all | pending |
 | TC-018 | Smart-bind confirmation "No, keep current binding" retains existing binding | all | pending |
 | TC-019 | Escape from destination picker dismisses without changing binding | all | pending |
+
+### Test Case Details
+
+#### TC-010 / TC-011 — R-D keybinding opens destination picker
+
+**Preconditions:** Extension installed. At least one terminal and one file are open.
+
+**Steps:**
+1. Press `Cmd+R Cmd+D` (Mac) / `Ctrl+R Ctrl+D` (Win/Linux)
+
+**Expected result:** A destination picker QuickPick opens. It lists available terminals, open text files, and AI assistants as selectable items.
+
+---
+
+#### TC-012 — `Bind to Destination` in Command Palette
+
+**Preconditions:** Extension installed.
+
+**Steps:**
+1. Open Command Palette (`Cmd+Shift+P`)
+2. Type `Bind to Destination` and select `RangeLink: Bind to Destination`
+
+**Expected result:** Same destination picker opens as the R-D keybinding.
+
+---
+
+#### TC-013 — Selecting a terminal destination binds and toasts
+
+**Preconditions:** At least one terminal open. No binding active.
+
+**Steps:**
+1. Open R-D picker
+2. Select a terminal from the list
+
+**Expected result:** The terminal is now the bound destination. A success toast appears (e.g., `✓ Bound to Terminal`). Status bar item reflects the bound state if applicable.
+
+---
+
+#### TC-014 — Selecting a text editor destination binds and toasts
+
+**Preconditions:** At least two editor tabs open. No binding active.
+
+**Steps:**
+1. Open R-D picker
+2. Select a text file from the list
+
+**Expected result:** The selected file becomes the bound destination. Success toast appears.
+
+---
+
+#### TC-015 — Selecting an AI assistant destination binds and toasts
+
+**Preconditions:** A supported AI assistant extension (Claude Code, Copilot Chat) is installed and active.
+
+**Steps:**
+1. Open R-D picker
+2. Select the AI assistant entry from the list
+
+**Expected result:** AI assistant is now the bound destination. Success toast appears.
+
+---
+
+#### TC-016 — Already-bound: smart-bind confirmation dialog appears
+
+**Preconditions:** A destination is already bound.
+
+**Steps:**
+1. Open R-D picker
+2. Select a **different** terminal or file
+
+**Expected result:** A confirmation dialog appears showing the current binding name and the proposed new binding name. Dialog offers "Yes, replace" and "No, keep current" options.
+
+---
+
+#### TC-017 — Smart-bind "Yes, replace" switches binding
+
+**Preconditions:** Destination A already bound. Running TC-016 scenario.
+
+**Steps:**
+1. In the confirmation dialog, click "Yes, replace" (or equivalent)
+
+**Expected result:** The binding switches to the newly selected destination. Success toast confirms the new binding.
+
+---
+
+#### TC-018 — Smart-bind "No, keep current" retains existing binding
+
+**Preconditions:** Destination A already bound. Running TC-016 scenario.
+
+**Steps:**
+1. In the confirmation dialog, click "No, keep current" (or equivalent)
+
+**Expected result:** The original binding is preserved. No binding change. No toast (or a neutral info notification that the binding was kept).
+
+---
+
+#### TC-019 — Escape from destination picker dismisses without change
+
+**Preconditions:** Any binding state (bound or unbound).
+
+**Steps:**
+1. Open R-D picker
+2. Press `Escape` without selecting anything
+
+**Expected result:** Picker closes. Binding state is unchanged (no new binding, existing binding preserved if it existed).
 
 ---
 
@@ -220,6 +420,157 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 | TC-031 | Terminal picker appears inline in the R-M menu (unbound state) | all | pending |
 | TC-032 | Terminal picker appears inline in the R-D destination picker | all | pending |
 
+### Test Case Details
+
+> **Setup for Terminal Picker tests:** Open 3–6 terminals. Name them (click terminal name in the panel header) to make them distinguishable: `Alpha`, `Beta`, `Gamma`, etc. Bind `Beta` as the destination before running badge/ordering tests.
+
+#### TC-020 — Active terminal has `active` badge
+
+**Preconditions:** Two or more terminals open. No terminal is bound.
+
+**Steps:**
+1. Click the `Gamma` terminal tab to make it the active (focused) terminal
+2. Open the terminal picker (via R-D or R-M)
+
+**Expected result:** `Gamma` shows an `active` badge (or `● active` indicator). Other terminals have no badge.
+
+---
+
+#### TC-021 — Bound terminal has `bound` badge
+
+**Preconditions:** `Beta` is bound. `Gamma` is the active terminal (not bound).
+
+**Steps:**
+1. Open the terminal picker
+
+**Expected result:** `Beta` shows a `bound` badge. `Gamma` shows an `active` badge.
+
+---
+
+#### TC-022 — Terminal that is both active and bound shows dual badge
+
+**Preconditions:** `Beta` is both bound and the currently active (focused) terminal.
+
+**Steps:**
+1. Click the `Beta` terminal tab to make it active
+2. Open the terminal picker
+
+**Expected result:** `Beta` shows a combined badge such as `bound · active` (both indicators present on the same item).
+
+---
+
+#### TC-023 — Bound terminal appears first in the list
+
+**Preconditions:** `Beta` is bound. Multiple other terminals open.
+
+**Steps:**
+1. Open the terminal picker
+
+**Expected result:** `Beta` is the first item in the terminal list, regardless of the order terminals were opened.
+
+---
+
+#### TC-024 — Active (non-bound) terminal appears second
+
+**Preconditions:** `Beta` is bound. `Gamma` is active but not bound.
+
+**Steps:**
+1. Open the terminal picker
+
+**Expected result:** `Beta` (bound) is first. `Gamma` (active, not bound) is second. Remaining terminals follow in any order.
+
+---
+
+#### TC-025 — Hidden IDE terminals absent from picker
+
+**Preconditions:** Using Cursor or another IDE that creates background terminals (e.g., the AI background task terminal).
+
+**Steps:**
+1. Verify at least one hidden/background terminal exists (visible in VS Code's terminal API but not shown in the UI panel)
+2. Open the terminal picker
+
+**Expected result:** The hidden background terminal does not appear in the picker list. Only user-visible terminals are shown.
+
+---
+
+#### TC-026 — Inline list shown when within `maxInline` threshold
+
+**Preconditions:** `rangelink.terminalPicker.maxInline` = 3 (default). Exactly 3 or fewer terminals open.
+
+**Steps:**
+1. Open R-D picker
+
+**Expected result:** All terminals appear inline in the picker. No `More terminals...` separator item is visible.
+
+---
+
+#### TC-027 — Overflow collapses into `More terminals...`
+
+**Preconditions:** `maxInline` = 3. Open 5 or more terminals.
+
+**Steps:**
+1. Open R-D picker or the terminal sub-section of R-M
+
+**Expected result:** Only `maxInline` (3) terminals are shown inline. A `More terminals...` item appears at the bottom of the terminal section.
+
+---
+
+#### TC-028 — `More terminals...` opens secondary full picker
+
+**Preconditions:** Running TC-027 setup (overflow scenario).
+
+**Steps:**
+1. Select `More terminals...` from the picker
+
+**Expected result:** A secondary QuickPick opens listing **all** terminals (including those that were hidden behind "More"). The secondary picker title indicates it is a terminal selection.
+
+---
+
+#### TC-029 — Escape from secondary terminal picker returns to parent
+
+**Preconditions:** Secondary terminal picker is open (from TC-028).
+
+**Steps:**
+1. Press `Escape` in the secondary terminal picker
+
+**Expected result:** The secondary picker closes and the parent destination picker (R-D or R-M) is shown again, not closed entirely.
+
+---
+
+#### TC-030 — `terminalPicker.maxInline` setting changes overflow threshold
+
+**Preconditions:** 4 terminals open.
+
+**Steps:**
+1. Set `rangelink.terminalPicker.maxInline` = 2 in VS Code settings
+2. Open R-D picker
+
+**Expected result:** Only 2 terminals shown inline. `More terminals...` appears. (Previously all 4 were inline if maxInline was ≥ 4.)
+
+---
+
+#### TC-031 — Terminal picker in R-M menu (unbound state)
+
+**Preconditions:** No destination bound. Terminals are open.
+
+**Steps:**
+1. Open R-M menu
+2. Observe the terminal entries in the menu
+
+**Expected result:** Terminal picker items appear inline within the R-M menu (not a separate QuickPick). Selecting one binds the terminal.
+
+---
+
+#### TC-032 — Terminal picker in R-D destination picker
+
+**Preconditions:** R-D picker is open.
+
+**Steps:**
+1. Press `Cmd+R Cmd+D`
+2. Observe that terminal entries are part of the combined destination picker
+
+**Expected result:** Terminal entries appear in the R-D picker. They have the same badges and ordering as when accessed from R-M.
+
 ---
 
 ## Section 4 — File Picker
@@ -237,6 +588,109 @@ New in this release: open files appear as individual destinations in the picker.
 | TC-039 | Secondary file picker shows `Tab Group N` sections for each editor group | all | pending |
 | TC-040 | Escaping the secondary file picker returns to the parent destination picker | all | pending |
 | TC-041 | File picker appears inline in the R-M menu (unbound state) | all | pending |
+
+### Test Case Details
+
+> **Setup for File Picker tests:** Open 4–6 files across two tab groups. Split the editor (`Cmd+\`) so you have two tab groups. Name files clearly (use project files like `src/index.ts`, `src/utils/helper.ts`, etc.). Bind one file as the destination before running badge/ordering tests.
+
+#### TC-033 — Bound file appears first with `bound` badge
+
+**Preconditions:** `src/utils/helper.ts` is bound as destination. Multiple other files open.
+
+**Steps:**
+1. Open R-D picker
+
+**Expected result:** `src/utils/helper.ts` appears at the top of the file list with a `bound` badge.
+
+---
+
+#### TC-034 — Active (frontmost) file per tab group appears before others in its group
+
+**Preconditions:** Two tab groups open. In tab group 1, `src/index.ts` is the frontmost tab (active). `src/utils/helper.ts` is also in tab group 1 but not active. No binding.
+
+**Steps:**
+1. Click `src/index.ts` to make it active in tab group 1
+2. Open R-D picker
+
+**Expected result:** `src/index.ts` appears before `src/utils/helper.ts` within the tab group 1 entries.
+
+---
+
+#### TC-035 — Files with same base name show path disambiguation
+
+**Preconditions:** Two files with the same base name open: e.g., `src/utils/index.ts` and `src/types/index.ts`.
+
+**Steps:**
+1. Open both files in the editor
+2. Open R-D picker (file section)
+
+**Expected result:** Both `index.ts` files appear with enough path context to distinguish them (e.g., `utils/index.ts` and `types/index.ts` or the full relative path).
+
+---
+
+#### TC-036 — Open files appear inline in the destination picker
+
+**Preconditions:** 3 or fewer files open (within inline limit).
+
+**Steps:**
+1. Open R-D picker
+
+**Expected result:** The open file entries appear inline in the picker. No `More files...` item.
+
+---
+
+#### TC-037 — Overflow collapses into `More files...`
+
+**Preconditions:** More files open than the inline limit allows (e.g., 6+ files).
+
+**Steps:**
+1. Open R-D picker
+
+**Expected result:** Only the inline limit of files is shown. A `More files...` item appears at the bottom of the file section.
+
+---
+
+#### TC-038 — Secondary file picker shows `Active Files` section
+
+**Preconditions:** Overflow scenario — select `More files...`.
+
+**Steps:**
+1. Select `More files...` from R-D picker
+
+**Expected result:** A secondary QuickPick opens with an `Active Files` section header, under which all open files (including those that were overflowed) are listed.
+
+---
+
+#### TC-039 — Secondary file picker shows `Tab Group N` sections
+
+**Preconditions:** Two or more tab groups open. Secondary file picker is open.
+
+**Steps:**
+1. Observe the secondary picker sections
+
+**Expected result:** Files are grouped under `Tab Group 1`, `Tab Group 2`, etc. Each group lists the files in that tab group.
+
+---
+
+#### TC-040 — Escape from secondary file picker returns to parent
+
+**Preconditions:** Secondary file picker is open.
+
+**Steps:**
+1. Press `Escape` in the secondary file picker
+
+**Expected result:** The secondary picker closes. The parent R-D (or R-M) picker is still visible, not closed.
+
+---
+
+#### TC-041 — File picker inline in R-M menu (unbound state)
+
+**Preconditions:** No destination bound. Files are open.
+
+**Steps:**
+1. Open R-M menu
+
+**Expected result:** File entries appear inline within the R-M menu. Selecting one binds the file as the destination.
 
 ---
 
@@ -829,6 +1283,41 @@ New in this release: dedicated `Cmd+R Cmd+U` / `Ctrl+R Ctrl+U` keybinding to unb
 | TC-109 | `Ctrl+R Ctrl+U` on Win/Linux | win/linux | pending |
 | TC-110 | R-U with no bound destination shows no-op or appropriate info message | all | pending |
 | TC-111 | `RangeLink: Unbind Destination` available in Command Palette | all | pending |
+
+### Test Case Details
+
+#### TC-108 / TC-109 — R-U unbinds when destination is bound
+
+**Preconditions:** A destination is currently bound.
+
+**Steps:**
+1. Verify binding is active (status bar or previous R-L should confirm)
+2. Press `Cmd+R Cmd+U` (Mac) / `Ctrl+R Ctrl+U` (Win/Linux)
+
+**Expected result:** Destination is unbound. A notification or toast confirms the unbind (e.g., `Unbound from Terminal`). Subsequent R-L opens the destination picker rather than sending directly.
+
+---
+
+#### TC-110 — R-U with no binding shows no-op or info message
+
+**Preconditions:** No destination is currently bound.
+
+**Steps:**
+1. Press `Cmd+R Cmd+U`
+
+**Expected result:** Nothing is sent or deleted. An info notification appears (e.g., `No destination is currently bound`) rather than an error. The command is a safe no-op.
+
+---
+
+#### TC-111 — `Unbind Destination` in Command Palette
+
+**Preconditions:** A destination is bound.
+
+**Steps:**
+1. Open Command Palette (`Cmd+Shift+P`)
+2. Type `Unbind Destination` and select `RangeLink: Unbind Destination`
+
+**Expected result:** Same behavior as the R-U keybinding — destination is unbound with confirmation notification.
 
 ---
 
