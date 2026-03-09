@@ -12,13 +12,13 @@ A companion structured YAML test case file for this cycle lives at [`docs/qa-tes
 
 The VSCode extension ecosystem offers several testing options. None provide a YAML/JSON-declarative UI automation harness — the question "can we drive tests from a YAML file?" is addressed in the **Recommendation** section below.
 
-| Tool | What it is | YAML/JSON input? | Verdict |
-| --- | --- | --- | --- |
-| **`@vscode/test-cli`** | Official Microsoft tool. Downloads a pinned VS Code version, installs the extension into it, runs a Mocha/Jest test runner inside the extension host. Tests are TypeScript and can import the full `vscode` API. Replaces the older `vscode-test` package. | No — TypeScript/JavaScript only | **Recommended for future automation** |
-| **`vscode-extension-tester`** (Red Hat) | Uses `selenium-webdriver` + `chromedriver` to drive VS Code's Electron shell like a browser. Supports clicking buttons, reading labels, and asserting UI state. | No — TypeScript API, not YAML | Not recommended — brittle (breaks on every VS Code UI update), slow, requires matching chromedriver version |
-| **`vscode-test-web`** | Official tool for extensions that run in `vscode.dev` (the browser-based VS Code). Only applicable to web extensions. | No | Not applicable — RangeLink targets desktop VS Code |
-| **`@playwright/test`** | Playwright drives web browsers. There is no official Playwright adapter for desktop VS Code extensions (only for VS Code's web-based variant). | No | Not applicable |
-| **Custom YAML runner** | Build a custom harness that reads YAML definitions and executes them via `@vscode/test-cli` integration test APIs. | Yes, but you build it | High implementation cost; no ecosystem support; maintenance burden grows with each VS Code API change |
+| Tool                                    | What it is                                                                                                                                                                                                                                                 | YAML/JSON input?                | Verdict                                                                                                     |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **`@vscode/test-cli`**                  | Official Microsoft tool. Downloads a pinned VS Code version, installs the extension into it, runs a Mocha/Jest test runner inside the extension host. Tests are TypeScript and can import the full `vscode` API. Replaces the older `vscode-test` package. | No — TypeScript/JavaScript only | **Recommended for future automation**                                                                       |
+| **`vscode-extension-tester`** (Red Hat) | Uses `selenium-webdriver` + `chromedriver` to drive VS Code's Electron shell like a browser. Supports clicking buttons, reading labels, and asserting UI state.                                                                                            | No — TypeScript API, not YAML   | Not recommended — brittle (breaks on every VS Code UI update), slow, requires matching chromedriver version |
+| **`vscode-test-web`**                   | Official tool for extensions that run in `vscode.dev` (the browser-based VS Code). Only applicable to web extensions.                                                                                                                                      | No                              | Not applicable — RangeLink targets desktop VS Code                                                          |
+| **`@playwright/test`**                  | Playwright drives web browsers. There is no official Playwright adapter for desktop VS Code extensions (only for VS Code's web-based variant).                                                                                                             | No                              | Not applicable                                                                                              |
+| **Custom YAML runner**                  | Build a custom harness that reads YAML definitions and executes them via `@vscode/test-cli` integration test APIs.                                                                                                                                         | Yes, but you build it           | High implementation cost; no ecosystem support; maintenance burden grows with each VS Code API change       |
 
 ### Recommendation
 
@@ -57,25 +57,27 @@ Before running any test cases, verify the following:
 
 The primary send commands. R-L delivers a RangeLink to the bound destination (and opens a picker when unbound). R-C copies to clipboard only and never interacts with a destination.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-144 | R-L (`Cmd+R Cmd+L`) sends RangeLink to bound terminal destination | mac | pending |
-| TC-145 | R-L sends RangeLink to bound text editor destination | all | pending |
-| TC-146 | R-L sends RangeLink to bound AI assistant destination | all | pending |
-| TC-147 | R-C (`Cmd+R Cmd+C`) copies RangeLink to clipboard and does NOT send to destination | mac | pending |
-| TC-148 | `RangeLink: Send RangeLink` in Command Palette behaves identically to R-L | all | pending |
-| TC-149 | `RangeLink: Copy RangeLink` in Command Palette behaves identically to R-C | all | pending |
+| TC     | Scenario                                                                           | Platform | Status  |
+| ------ | ---------------------------------------------------------------------------------- | -------- | ------- |
+| TC-144 | R-L (`Cmd+R Cmd+L`) sends RangeLink to bound terminal destination                  | mac      | pending |
+| TC-145 | R-L sends RangeLink to bound text editor destination                               | all      | pending |
+| TC-146 | R-L sends RangeLink to bound AI assistant destination                              | all      | pending |
+| TC-147 | R-C (`Cmd+R Cmd+C`) copies RangeLink to clipboard and does NOT send to destination | mac      | pending |
+| TC-148 | `RangeLink: Send RangeLink` in Command Palette behaves identically to R-L          | all      | pending |
+| TC-149 | `RangeLink: Copy RangeLink` in Command Palette behaves identically to R-C          | all      | pending |
 
 ### Test Case Details
 
 #### TC-144 — R-L sends RangeLink to bound terminal
 
 **Preconditions:**
+
 1. Extension installed from `.vsix` build
 2. A workspace is open with at least one TypeScript/JavaScript file containing 10+ lines
 3. A terminal is open and bound as the RangeLink destination
 
 **Steps:**
+
 1. Select lines 2–5 in the TypeScript file
 2. Press `Cmd+R Cmd+L` (Mac) / `Ctrl+R Ctrl+L` (Win/Linux)
 3. Observe the terminal output
@@ -88,12 +90,14 @@ The primary send commands. R-L delivers a RangeLink to the bound destination (an
 #### TC-145 — R-L sends RangeLink to bound text editor
 
 **Preconditions:**
+
 1. Extension installed from `.vsix` build
 2. Two files open: file A (source) and file B (destination) — in any tab group arrangement
 3. File B is bound as the text editor destination
 4. Cursor is positioned in file B at the intended paste location
 
 **Steps:**
+
 1. Click in file A and select 3 lines of code
 2. Press `Cmd+R Cmd+L`
 3. Observe file B
@@ -105,11 +109,13 @@ The primary send commands. R-L delivers a RangeLink to the bound destination (an
 #### TC-146 — R-L sends RangeLink to bound AI assistant
 
 **Preconditions:**
+
 1. Extension installed from `.vsix` build
 2. Claude Code extension (or GitHub Copilot Chat) is installed, active, and bound as destination
 3. AI chat panel is open
 
 **Steps:**
+
 1. Select 3–5 lines of code in any file
 2. Press `Cmd+R Cmd+L`
 3. Observe the AI chat input area
@@ -121,10 +127,12 @@ The primary send commands. R-L delivers a RangeLink to the bound destination (an
 #### TC-147 — R-C copies to clipboard only, no destination send
 
 **Preconditions:**
+
 1. Extension installed from `.vsix` build
 2. A terminal is open and bound (to verify it does NOT receive anything)
 
 **Steps:**
+
 1. Select 3 lines in any file
 2. Press `Cmd+R Cmd+C` (Mac) / `Ctrl+R Ctrl+C` (Win/Linux)
 3. Observe the terminal — nothing should arrive
@@ -139,6 +147,7 @@ The primary send commands. R-L delivers a RangeLink to the bound destination (an
 **Preconditions:** Extension installed, terminal bound.
 
 **Steps:**
+
 1. Select text in a file
 2. Open Command Palette (`Cmd+Shift+P`)
 3. Type `Send RangeLink` and press Enter on `RangeLink: Send RangeLink`
@@ -153,6 +162,7 @@ The primary send commands. R-L delivers a RangeLink to the bound destination (an
 **Preconditions:** Extension installed, terminal bound.
 
 **Steps:**
+
 1. Select text in a file
 2. Open Command Palette (`Cmd+Shift+P`)
 3. Type `Copy RangeLink` and press Enter on `RangeLink: Copy RangeLink`
@@ -167,17 +177,17 @@ The primary send commands. R-L delivers a RangeLink to the bound destination (an
 
 New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink` in the status bar opens a context-aware QuickPick menu.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-001 | Status bar item visible with correct text `$(link) RangeLink` and tooltip `RangeLink Menu` | all | pending |
-| TC-002 | Clicking the status bar item opens the R-M menu | all | pending |
-| TC-003 | `Cmd+R Cmd+M` keybinding opens the R-M menu | mac | pending |
-| TC-004 | `Ctrl+R Ctrl+M` keybinding opens the R-M menu | win/linux | pending |
-| TC-005 | R-M menu shows `Jump to Bound Destination` when a destination is bound | all | pending |
-| TC-006 | R-M menu shows destination picker when no destination is bound | all | pending |
-| TC-007 | R-M menu shows `Unbind Destination` when a destination is bound | all | pending |
-| TC-008 | R-M menu `Go to Link` item opens R-G input box | all | pending |
-| TC-009 | R-M menu `Show Version Info` displays version, commit, branch, and build date | all | pending |
+| TC     | Scenario                                                                                   | Platform  | Status  |
+| ------ | ------------------------------------------------------------------------------------------ | --------- | ------- |
+| TC-001 | Status bar item visible with correct text `$(link) RangeLink` and tooltip `RangeLink Menu` | all       | pending |
+| TC-002 | Clicking the status bar item opens the R-M menu                                            | all       | pending |
+| TC-003 | `Cmd+R Cmd+M` keybinding opens the R-M menu                                                | mac       | pending |
+| TC-004 | `Ctrl+R Ctrl+M` keybinding opens the R-M menu                                              | win/linux | pending |
+| TC-005 | R-M menu shows `Jump to Bound Destination` when a destination is bound                     | all       | pending |
+| TC-006 | R-M menu shows destination picker when no destination is bound                             | all       | pending |
+| TC-007 | R-M menu shows `Unbind Destination` when a destination is bound                            | all       | pending |
+| TC-008 | R-M menu `Go to Link` item opens R-G input box                                             | all       | pending |
+| TC-009 | R-M menu `Show Version Info` displays version, commit, branch, and build date              | all       | pending |
 
 ### Test Case Details
 
@@ -186,6 +196,7 @@ New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink
 **Preconditions:** Extension installed from `.vsix` build. Any workspace open.
 
 **Steps:**
+
 1. Look at the VS Code status bar (bottom bar)
 2. Locate the RangeLink item
 3. Hover over it to see the tooltip
@@ -199,6 +210,7 @@ New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink
 **Preconditions:** Extension installed. Any workspace open.
 
 **Steps:**
+
 1. Click the `$(link) RangeLink` item in the status bar
 
 **Expected result:** A QuickPick menu opens. Menu title is `RangeLink Menu`. Menu items are visible.
@@ -210,6 +222,7 @@ New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink
 **Preconditions:** Extension installed. Any workspace open with editor focus.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+M` (Mac) / `Ctrl+R Ctrl+M` (Win/Linux)
 
 **Expected result:** Same QuickPick menu opens as clicking the status bar item.
@@ -221,6 +234,7 @@ New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink
 **Preconditions:** A destination (terminal or file) is currently bound.
 
 **Steps:**
+
 1. Open the R-M menu (keybinding or status bar click)
 2. Observe the menu items
 
@@ -233,6 +247,7 @@ New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink
 **Preconditions:** No destination is bound (fresh install or after R-U unbind).
 
 **Steps:**
+
 1. Open the R-M menu
 2. Observe the first item
 
@@ -245,6 +260,7 @@ New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink
 **Preconditions:** A destination is bound.
 
 **Steps:**
+
 1. Open the R-M menu
 2. Select `Unbind Destination`
 
@@ -257,6 +273,7 @@ New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink
 **Preconditions:** Extension installed.
 
 **Steps:**
+
 1. Open the R-M menu
 2. Select `Go to Link`
 
@@ -269,6 +286,7 @@ New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink
 **Preconditions:** Extension installed.
 
 **Steps:**
+
 1. Open the R-M menu
 2. Select `Show Version Info`
 
@@ -280,18 +298,18 @@ New in this release: `Cmd+R Cmd+M` / `Ctrl+R Ctrl+M` or clicking `🔗 RangeLink
 
 New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to open the destination picker directly.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-010 | `Cmd+R Cmd+D` opens the destination picker showing terminals, files, and AI assistants | mac | pending |
-| TC-011 | `Ctrl+R Ctrl+D` opens the destination picker | win/linux | pending |
-| TC-012 | `RangeLink: Bind to Destination` in Command Palette opens destination picker | all | pending |
-| TC-013 | Selecting a terminal destination binds it and shows success toast | all | pending |
-| TC-014 | Selecting a text editor destination binds it and shows success toast | all | pending |
-| TC-015 | Selecting an AI assistant destination binds it and shows success toast | all | pending |
-| TC-016 | When already bound, destination picker shows smart-bind confirmation dialog | all | pending |
-| TC-017 | Smart-bind confirmation "Yes, replace" switches the binding to the new destination | all | pending |
-| TC-018 | Smart-bind confirmation "No, keep current binding" retains existing binding | all | pending |
-| TC-019 | Escape from destination picker dismisses without changing binding | all | pending |
+| TC     | Scenario                                                                               | Platform  | Status  |
+| ------ | -------------------------------------------------------------------------------------- | --------- | ------- |
+| TC-010 | `Cmd+R Cmd+D` opens the destination picker showing terminals, files, and AI assistants | mac       | pending |
+| TC-011 | `Ctrl+R Ctrl+D` opens the destination picker                                           | win/linux | pending |
+| TC-012 | `RangeLink: Bind to Destination` in Command Palette opens destination picker           | all       | pending |
+| TC-013 | Selecting a terminal destination binds it and shows success toast                      | all       | pending |
+| TC-014 | Selecting a text editor destination binds it and shows success toast                   | all       | pending |
+| TC-015 | Selecting an AI assistant destination binds it and shows success toast                 | all       | pending |
+| TC-016 | When already bound, destination picker shows smart-bind confirmation dialog            | all       | pending |
+| TC-017 | Smart-bind confirmation "Yes, replace" switches the binding to the new destination     | all       | pending |
+| TC-018 | Smart-bind confirmation "No, keep current binding" retains existing binding            | all       | pending |
+| TC-019 | Escape from destination picker dismisses without changing binding                      | all       | pending |
 
 ### Test Case Details
 
@@ -300,6 +318,7 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 **Preconditions:** Extension installed. At least one terminal and one file are open.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+D` (Mac) / `Ctrl+R Ctrl+D` (Win/Linux)
 
 **Expected result:** A destination picker QuickPick opens. It lists available terminals, open text files, and AI assistants as selectable items.
@@ -311,6 +330,7 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 **Preconditions:** Extension installed.
 
 **Steps:**
+
 1. Open Command Palette (`Cmd+Shift+P`)
 2. Type `Bind to Destination` and select `RangeLink: Bind to Destination`
 
@@ -323,6 +343,7 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 **Preconditions:** At least one terminal open. No binding active.
 
 **Steps:**
+
 1. Open R-D picker
 2. Select a terminal from the list
 
@@ -335,6 +356,7 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 **Preconditions:** At least two editor tabs open. No binding active.
 
 **Steps:**
+
 1. Open R-D picker
 2. Select a text file from the list
 
@@ -347,6 +369,7 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 **Preconditions:** A supported AI assistant extension (Claude Code, Copilot Chat) is installed and active.
 
 **Steps:**
+
 1. Open R-D picker
 2. Select the AI assistant entry from the list
 
@@ -359,6 +382,7 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 **Preconditions:** A destination is already bound.
 
 **Steps:**
+
 1. Open R-D picker
 2. Select a **different** terminal or file
 
@@ -371,6 +395,7 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 **Preconditions:** Destination A already bound. Running TC-016 scenario.
 
 **Steps:**
+
 1. In the confirmation dialog, click "Yes, replace" (or equivalent)
 
 **Expected result:** The binding switches to the newly selected destination. Success toast confirms the new binding.
@@ -382,6 +407,7 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 **Preconditions:** Destination A already bound. Running TC-016 scenario.
 
 **Steps:**
+
 1. In the confirmation dialog, click "No, keep current" (or equivalent)
 
 **Expected result:** The original binding is preserved. No binding change. No toast (or a neutral info notification that the binding was kept).
@@ -393,6 +419,7 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 **Preconditions:** Any binding state (bound or unbound).
 
 **Steps:**
+
 1. Open R-D picker
 2. Press `Escape` without selecting anything
 
@@ -404,21 +431,21 @@ New in this release: dedicated `Cmd+R Cmd+D` / `Ctrl+R Ctrl+D` keybinding to ope
 
 New in this release: QuickPick list of terminals instead of auto-binding the active one.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-020 | Active terminal is marked with `active` badge | all | pending |
-| TC-021 | Bound terminal is marked with `bound` badge | all | pending |
-| TC-022 | Terminal that is both active and bound shows dual `bound · active` badge | all | pending |
-| TC-023 | Bound terminal always appears first in the terminal picker list | all | pending |
-| TC-024 | Active (non-bound) terminal appears second in the list | all | pending |
-| TC-025 | Hidden IDE terminals (e.g. Cursor's background terminal) are absent from the picker | all | pending |
-| TC-026 | With ≤ `maxInline` terminals, all are shown inline (no "More terminals..." item) | all | pending |
-| TC-027 | With > `maxInline` terminals, extras collapse into `More terminals...` | all | pending |
-| TC-028 | Selecting `More terminals...` opens the secondary full terminal picker | all | pending |
-| TC-029 | Escaping the secondary terminal picker returns to the parent destination picker | all | pending |
-| TC-030 | `rangelink.terminalPicker.maxInline` setting changes the overflow threshold | all | pending |
-| TC-031 | Terminal picker appears inline in the R-M menu (unbound state) | all | pending |
-| TC-032 | Terminal picker appears inline in the R-D destination picker | all | pending |
+| TC     | Scenario                                                                            | Platform | Status  |
+| ------ | ----------------------------------------------------------------------------------- | -------- | ------- |
+| TC-020 | Active terminal is marked with `active` badge                                       | all      | pending |
+| TC-021 | Bound terminal is marked with `bound` badge                                         | all      | pending |
+| TC-022 | Terminal that is both active and bound shows dual `bound · active` badge            | all      | pending |
+| TC-023 | Bound terminal always appears first in the terminal picker list                     | all      | pending |
+| TC-024 | Active (non-bound) terminal appears second in the list                              | all      | pending |
+| TC-025 | Hidden IDE terminals (e.g. Cursor's background terminal) are absent from the picker | all      | pending |
+| TC-026 | With ≤ `maxInline` terminals, all are shown inline (no "More terminals..." item)    | all      | pending |
+| TC-027 | With > `maxInline` terminals, extras collapse into `More terminals...`              | all      | pending |
+| TC-028 | Selecting `More terminals...` opens the secondary full terminal picker              | all      | pending |
+| TC-029 | Escaping the secondary terminal picker returns to the parent destination picker     | all      | pending |
+| TC-030 | `rangelink.terminalPicker.maxInline` setting changes the overflow threshold         | all      | pending |
+| TC-031 | Terminal picker appears inline in the R-M menu (unbound state)                      | all      | pending |
+| TC-032 | Terminal picker appears inline in the R-D destination picker                        | all      | pending |
 
 ### Test Case Details
 
@@ -429,6 +456,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** Two or more terminals open. No terminal is bound.
 
 **Steps:**
+
 1. Click the `Gamma` terminal tab to make it the active (focused) terminal
 2. Open the terminal picker (via R-D or R-M)
 
@@ -441,6 +469,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** `Beta` is bound. `Gamma` is the active terminal (not bound).
 
 **Steps:**
+
 1. Open the terminal picker
 
 **Expected result:** `Beta` shows a `bound` badge. `Gamma` shows an `active` badge.
@@ -452,6 +481,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** `Beta` is both bound and the currently active (focused) terminal.
 
 **Steps:**
+
 1. Click the `Beta` terminal tab to make it active
 2. Open the terminal picker
 
@@ -464,6 +494,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** `Beta` is bound. Multiple other terminals open.
 
 **Steps:**
+
 1. Open the terminal picker
 
 **Expected result:** `Beta` is the first item in the terminal list, regardless of the order terminals were opened.
@@ -475,6 +506,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** `Beta` is bound. `Gamma` is active but not bound.
 
 **Steps:**
+
 1. Open the terminal picker
 
 **Expected result:** `Beta` (bound) is first. `Gamma` (active, not bound) is second. Remaining terminals follow in any order.
@@ -486,6 +518,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** Using Cursor or another IDE that creates background terminals (e.g., the AI background task terminal).
 
 **Steps:**
+
 1. Verify at least one hidden/background terminal exists (visible in VS Code's terminal API but not shown in the UI panel)
 2. Open the terminal picker
 
@@ -498,6 +531,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** `rangelink.terminalPicker.maxInline` = 3 (default). Exactly 3 or fewer terminals open.
 
 **Steps:**
+
 1. Open R-D picker
 
 **Expected result:** All terminals appear inline in the picker. No `More terminals...` separator item is visible.
@@ -509,6 +543,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** `maxInline` = 3. Open 5 or more terminals.
 
 **Steps:**
+
 1. Open R-D picker or the terminal sub-section of R-M
 
 **Expected result:** Only `maxInline` (3) terminals are shown inline. A `More terminals...` item appears at the bottom of the terminal section.
@@ -520,6 +555,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** Running TC-027 setup (overflow scenario).
 
 **Steps:**
+
 1. Select `More terminals...` from the picker
 
 **Expected result:** A secondary QuickPick opens listing **all** terminals (including those that were hidden behind "More"). The secondary picker title indicates it is a terminal selection.
@@ -531,6 +567,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** Secondary terminal picker is open (from TC-028).
 
 **Steps:**
+
 1. Press `Escape` in the secondary terminal picker
 
 **Expected result:** The secondary picker closes and the parent destination picker (R-D or R-M) is shown again, not closed entirely.
@@ -542,6 +579,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** 4 terminals open.
 
 **Steps:**
+
 1. Set `rangelink.terminalPicker.maxInline` = 2 in VS Code settings
 2. Open R-D picker
 
@@ -554,6 +592,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** No destination bound. Terminals are open.
 
 **Steps:**
+
 1. Open R-M menu
 2. Observe the terminal entries in the menu
 
@@ -566,6 +605,7 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 **Preconditions:** R-D picker is open.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+D`
 2. Observe that terminal entries are part of the combined destination picker
 
@@ -577,17 +617,17 @@ New in this release: QuickPick list of terminals instead of auto-binding the act
 
 New in this release: open files appear as individual destinations in the picker.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-033 | Bound file appears first in the list with `bound` badge | all | pending |
-| TC-034 | Active (frontmost) file per tab group appears before other files in that group | all | pending |
-| TC-035 | Files with the same base name show path disambiguation | all | pending |
-| TC-036 | Open files appear as inline items in the destination picker | all | pending |
-| TC-037 | With more open files than the inline limit, extras collapse into `More files...` | all | pending |
-| TC-038 | Secondary file picker shows `Active Files` section | all | pending |
-| TC-039 | Secondary file picker shows `Tab Group N` sections for each editor group | all | pending |
-| TC-040 | Escaping the secondary file picker returns to the parent destination picker | all | pending |
-| TC-041 | File picker appears inline in the R-M menu (unbound state) | all | pending |
+| TC     | Scenario                                                                         | Platform | Status  |
+| ------ | -------------------------------------------------------------------------------- | -------- | ------- |
+| TC-033 | Bound file appears first in the list with `bound` badge                          | all      | pending |
+| TC-034 | Active (frontmost) file per tab group appears before other files in that group   | all      | pending |
+| TC-035 | Files with the same base name show path disambiguation                           | all      | pending |
+| TC-036 | Open files appear as inline items in the destination picker                      | all      | pending |
+| TC-037 | With more open files than the inline limit, extras collapse into `More files...` | all      | pending |
+| TC-038 | Secondary file picker shows `Active Files` section                               | all      | pending |
+| TC-039 | Secondary file picker shows `Tab Group N` sections for each editor group         | all      | pending |
+| TC-040 | Escaping the secondary file picker returns to the parent destination picker      | all      | pending |
+| TC-041 | File picker appears inline in the R-M menu (unbound state)                       | all      | pending |
 
 ### Test Case Details
 
@@ -598,6 +638,7 @@ New in this release: open files appear as individual destinations in the picker.
 **Preconditions:** `src/utils/helper.ts` is bound as destination. Multiple other files open.
 
 **Steps:**
+
 1. Open R-D picker
 
 **Expected result:** `src/utils/helper.ts` appears at the top of the file list with a `bound` badge.
@@ -609,6 +650,7 @@ New in this release: open files appear as individual destinations in the picker.
 **Preconditions:** Two tab groups open. In tab group 1, `src/index.ts` is the frontmost tab (active). `src/utils/helper.ts` is also in tab group 1 but not active. No binding.
 
 **Steps:**
+
 1. Click `src/index.ts` to make it active in tab group 1
 2. Open R-D picker
 
@@ -621,6 +663,7 @@ New in this release: open files appear as individual destinations in the picker.
 **Preconditions:** Two files with the same base name open: e.g., `src/utils/index.ts` and `src/types/index.ts`.
 
 **Steps:**
+
 1. Open both files in the editor
 2. Open R-D picker (file section)
 
@@ -633,6 +676,7 @@ New in this release: open files appear as individual destinations in the picker.
 **Preconditions:** 3 or fewer files open (within inline limit).
 
 **Steps:**
+
 1. Open R-D picker
 
 **Expected result:** The open file entries appear inline in the picker. No `More files...` item.
@@ -644,6 +688,7 @@ New in this release: open files appear as individual destinations in the picker.
 **Preconditions:** More files open than the inline limit allows (e.g., 6+ files).
 
 **Steps:**
+
 1. Open R-D picker
 
 **Expected result:** Only the inline limit of files is shown. A `More files...` item appears at the bottom of the file section.
@@ -655,6 +700,7 @@ New in this release: open files appear as individual destinations in the picker.
 **Preconditions:** Overflow scenario — select `More files...`.
 
 **Steps:**
+
 1. Select `More files...` from R-D picker
 
 **Expected result:** A secondary QuickPick opens with an `Active Files` section header, under which all open files (including those that were overflowed) are listed.
@@ -666,6 +712,7 @@ New in this release: open files appear as individual destinations in the picker.
 **Preconditions:** Two or more tab groups open. Secondary file picker is open.
 
 **Steps:**
+
 1. Observe the secondary picker sections
 
 **Expected result:** Files are grouped under `Tab Group 1`, `Tab Group 2`, etc. Each group lists the files in that tab group.
@@ -677,6 +724,7 @@ New in this release: open files appear as individual destinations in the picker.
 **Preconditions:** Secondary file picker is open.
 
 **Steps:**
+
 1. Press `Escape` in the secondary file picker
 
 **Expected result:** The secondary picker closes. The parent R-D (or R-M) picker is still visible, not closed.
@@ -688,6 +736,7 @@ New in this release: open files appear as individual destinations in the picker.
 **Preconditions:** No destination bound. Files are open.
 
 **Steps:**
+
 1. Open R-M menu
 
 **Expected result:** File entries appear inline within the R-M menu. Selecting one binds the file as the destination.
@@ -698,17 +747,17 @@ New in this release: open files appear as individual destinations in the picker.
 
 New in this release: `rangelink.clipboard.preserve` setting (`"always"` | `"never"`, default `"always"`).
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-042 | `always` mode: clipboard content before R-L is restored after the operation | all | pending |
-| TC-043 | `always` mode: clipboard content before R-V is restored after the operation | all | pending |
-| TC-044 | `always` mode: clipboard content before R-F is restored after the operation | all | pending |
-| TC-045 | `always` mode: clipboard content before AI assistant paste is restored after | all | pending |
-| TC-046 | `always` mode: clipboard content before terminal paste is restored after | all | pending |
-| TC-047 | `never` mode: clipboard contains the last RangeLink output after R-L (previous behavior) | all | pending |
-| TC-048 | `never` mode: clipboard contains last output after R-V | all | pending |
-| TC-049 | R-C (Copy RangeLink) always writes to clipboard regardless of preserve setting | all | pending |
-| TC-050 | `always` mode: no preserve when no destination is bound (ClipboardOnly path skips preserve) | all | pending |
+| TC     | Scenario                                                                                    | Platform | Status  |
+| ------ | ------------------------------------------------------------------------------------------- | -------- | ------- |
+| TC-042 | `always` mode: clipboard content before R-L is restored after the operation                 | all      | pending |
+| TC-043 | `always` mode: clipboard content before R-V is restored after the operation                 | all      | pending |
+| TC-044 | `always` mode: clipboard content before R-F is restored after the operation                 | all      | pending |
+| TC-045 | `always` mode: clipboard content before AI assistant paste is restored after                | all      | pending |
+| TC-046 | `always` mode: clipboard content before terminal paste is restored after                    | all      | pending |
+| TC-047 | `never` mode: clipboard contains the last RangeLink output after R-L (previous behavior)    | all      | pending |
+| TC-048 | `never` mode: clipboard contains last output after R-V                                      | all      | pending |
+| TC-049 | R-C (Copy RangeLink) always writes to clipboard regardless of preserve setting              | all      | pending |
+| TC-050 | `always` mode: no preserve when no destination is bound (ClipboardOnly path skips preserve) | all      | pending |
 
 ### Test Case Details
 
@@ -718,11 +767,13 @@ New in this release: `rangelink.clipboard.preserve` setting (`"always"` | `"neve
 #### TC-042 — `always` mode: R-L restores clipboard
 
 **Preconditions:**
+
 1. `rangelink.clipboard.preserve` = `"always"` (default — verify in settings)
 2. Terminal open and bound as destination
 3. A TypeScript file open with 5+ lines
 
 **Steps:**
+
 1. Copy `CLIPBOARD_SENTINEL` to clipboard
 2. Select lines 2–4 in the TypeScript file
 3. Press `Cmd+R Cmd+L`
@@ -738,6 +789,7 @@ New in this release: `rangelink.clipboard.preserve` setting (`"always"` | `"neve
 **Preconditions:** `always` mode, a second terminal or text editor bound as destination, terminal open with visible output text.
 
 **Steps:**
+
 1. Copy `CLIPBOARD_SENTINEL` to clipboard
 2. Focus the terminal
 3. Select a line of terminal output (drag to highlight)
@@ -754,6 +806,7 @@ New in this release: `rangelink.clipboard.preserve` setting (`"always"` | `"neve
 **Preconditions:** `always` mode, terminal bound, any file open.
 
 **Steps:**
+
 1. Copy `CLIPBOARD_SENTINEL` to clipboard
 2. Focus the active editor
 3. Press `Cmd+R Cmd+F`
@@ -769,6 +822,7 @@ New in this release: `rangelink.clipboard.preserve` setting (`"always"` | `"neve
 **Preconditions:** `always` mode, Claude Code or Copilot Chat bound, AI panel open.
 
 **Steps:**
+
 1. Copy `CLIPBOARD_SENTINEL` to clipboard
 2. Select 3 lines of code
 3. Press `Cmd+R Cmd+L`
@@ -792,6 +846,7 @@ Same steps as TC-042. This TC exists to explicitly name the terminal-paste trans
 **Preconditions:** `rangelink.clipboard.preserve` = `"never"`, terminal bound.
 
 **Steps:**
+
 1. Copy `CLIPBOARD_SENTINEL` to clipboard
 2. Select 3 lines of code
 3. Press `Cmd+R Cmd+L`
@@ -806,6 +861,7 @@ Same steps as TC-042. This TC exists to explicitly name the terminal-paste trans
 **Preconditions:** `never` mode, another terminal or editor bound as destination.
 
 **Steps:**
+
 1. Copy `CLIPBOARD_SENTINEL` to clipboard
 2. Select text in a terminal
 3. Press `Cmd+R Cmd+V`
@@ -820,6 +876,7 @@ Same steps as TC-042. This TC exists to explicitly name the terminal-paste trans
 **Preconditions:** `rangelink.clipboard.preserve` = `"always"` (this should NOT apply to R-C), terminal bound.
 
 **Steps:**
+
 1. Copy `CLIPBOARD_SENTINEL` to clipboard
 2. Select 3 lines of code
 3. Press `Cmd+R Cmd+C` (Copy RangeLink — clipboard-only)
@@ -834,6 +891,7 @@ Same steps as TC-042. This TC exists to explicitly name the terminal-paste trans
 **Preconditions:** `always` mode, NO destination bound (unbind first if needed).
 
 **Steps:**
+
 1. Copy `CLIPBOARD_SENTINEL` to clipboard
 2. Select 3 lines of code
 3. Press `Cmd+R Cmd+L` — destination picker appears
@@ -848,19 +906,19 @@ Same steps as TC-042. This TC exists to explicitly name the terminal-paste trans
 
 New in this release: `Cmd+R Cmd+F` (relative) and `Cmd+R Cmd+Shift+F` (absolute) send current file path.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-051 | `Cmd+R Cmd+F` sends workspace-relative path to bound terminal destination | mac | pending |
-| TC-052 | `Cmd+R Cmd+Shift+F` sends absolute path to bound terminal destination | mac | pending |
-| TC-053 | `Ctrl+R Ctrl+F` sends relative path on Win/Linux | win/linux | pending |
-| TC-054 | Terminal destination: path with spaces auto-quoted in single quotes | all | pending |
-| TC-055 | Terminal destination: path with parentheses auto-quoted in single quotes | all | pending |
-| TC-056 | Text editor destination: path sent unquoted | all | pending |
-| TC-057 | Clipboard always contains the unquoted path regardless of destination type | all | pending |
-| TC-058 | Self-paste (sending path of the currently active file to that same file) shows info + clipboard copy | all | pending |
-| TC-059 | Unbound: R-F opens destination picker to bind before sending | all | pending |
-| TC-060 | `RangeLink: Send Current File Path` in Command Palette | all | pending |
-| TC-061 | `RangeLink: Send Current File Path (Absolute)` in Command Palette | all | pending |
+| TC     | Scenario                                                                                             | Platform  | Status  |
+| ------ | ---------------------------------------------------------------------------------------------------- | --------- | ------- |
+| TC-051 | `Cmd+R Cmd+F` sends workspace-relative path to bound terminal destination                            | mac       | pending |
+| TC-052 | `Cmd+R Cmd+Shift+F` sends absolute path to bound terminal destination                                | mac       | pending |
+| TC-053 | `Ctrl+R Ctrl+F` sends relative path on Win/Linux                                                     | win/linux | pending |
+| TC-054 | Terminal destination: path with spaces auto-quoted in single quotes                                  | all       | pending |
+| TC-055 | Terminal destination: path with parentheses auto-quoted in single quotes                             | all       | pending |
+| TC-056 | Text editor destination: path sent unquoted                                                          | all       | pending |
+| TC-057 | Clipboard always contains the unquoted path regardless of destination type                           | all       | pending |
+| TC-058 | Self-paste (sending path of the currently active file to that same file) shows info + clipboard copy | all       | pending |
+| TC-059 | Unbound: R-F opens destination picker to bind before sending                                         | all       | pending |
+| TC-060 | `RangeLink: Send Current File Path` in Command Palette                                               | all       | pending |
+| TC-061 | `RangeLink: Send Current File Path (Absolute)` in Command Palette                                    | all       | pending |
 
 ### Test Case Details
 
@@ -869,11 +927,13 @@ New in this release: `Cmd+R Cmd+F` (relative) and `Cmd+R Cmd+Shift+F` (absolute)
 #### TC-051 — `Cmd+R Cmd+F` sends relative path to terminal
 
 **Preconditions:**
+
 1. Workspace open at a known root
 2. Terminal bound as destination
 3. A file is active at e.g. `src/utils/helper.ts`
 
 **Steps:**
+
 1. Focus the file in the editor
 2. Press `Cmd+R Cmd+F` (Mac) / `Ctrl+R Ctrl+F` (Win/Linux)
 3. Observe terminal output
@@ -888,6 +948,7 @@ New in this release: `Cmd+R Cmd+F` (relative) and `Cmd+R Cmd+Shift+F` (absolute)
 **Preconditions:** Same as TC-051.
 
 **Steps:**
+
 1. Focus the file
 2. Press `Cmd+R Cmd+Shift+F`
 3. Observe terminal
@@ -909,10 +970,12 @@ New in this release: `Cmd+R Cmd+F` (relative) and `Cmd+R Cmd+Shift+F` (absolute)
 #### TC-054 — Terminal: path with spaces auto-quoted
 
 **Preconditions:**
+
 1. Terminal bound as destination
 2. Active file has spaces in its path (e.g., `src/my folder/helper.ts`)
 
 **Steps:**
+
 1. Focus the file with spaces in its path
 2. Press `Cmd+R Cmd+F`
 3. Observe terminal output
@@ -934,10 +997,12 @@ New in this release: `Cmd+R Cmd+F` (relative) and `Cmd+R Cmd+Shift+F` (absolute)
 #### TC-056 — Text editor destination: path sent unquoted
 
 **Preconditions:**
+
 1. Text editor (not terminal) bound as destination
 2. Active file has spaces in its path (e.g., `src/my folder/helper.ts`)
 
 **Steps:**
+
 1. Focus the file with spaces
 2. Press `Cmd+R Cmd+F`
 3. Observe bound text editor
@@ -951,6 +1016,7 @@ New in this release: `Cmd+R Cmd+F` (relative) and `Cmd+R Cmd+Shift+F` (absolute)
 **Preconditions:** Terminal bound, active file has spaces in path.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+F`
 2. Observe terminal (receives quoted path)
 3. Press `Cmd+V` in any text field
@@ -962,9 +1028,11 @@ New in this release: `Cmd+R Cmd+F` (relative) and `Cmd+R Cmd+Shift+F` (absolute)
 #### TC-058 — Self-paste shows info notification + clipboard copy
 
 **Preconditions:**
+
 1. The currently active file is bound as the text editor destination (bind `src/utils/helper.ts` and keep it focused)
 
 **Steps:**
+
 1. With the bound file active and focused, press `Cmd+R Cmd+F`
 2. Observe VS Code notifications
 3. Check that the file content was NOT modified
@@ -979,6 +1047,7 @@ New in this release: `Cmd+R Cmd+F` (relative) and `Cmd+R Cmd+Shift+F` (absolute)
 **Preconditions:** No destination bound.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+F`
 2. Observe the UI
 
@@ -998,46 +1067,345 @@ New in this release: right-click access across Explorer, Editor Tab, Editor Cont
 
 ### Explorer (right-click on files)
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-062 | Explorer → `RangeLink: Send File Path` sends absolute path to bound destination | all | pending |
-| TC-063 | Explorer → `RangeLink: Send Relative File Path` sends relative path | all | pending |
-| TC-064 | Explorer → `RangeLink: Bind Here` opens the file and binds it as text editor destination | all | pending |
-| TC-065 | Explorer → `RangeLink: Unbind` is visible when a destination is bound and unbinds it | all | pending |
-| TC-066 | Explorer → `RangeLink: Unbind` is hidden when no destination is bound | all | pending |
+| TC     | Scenario                                                                                 | Platform | Status  |
+| ------ | ---------------------------------------------------------------------------------------- | -------- | ------- |
+| TC-062 | Explorer → `RangeLink: Send File Path` sends absolute path to bound destination          | all      | pending |
+| TC-063 | Explorer → `RangeLink: Send Relative File Path` sends relative path                      | all      | pending |
+| TC-064 | Explorer → `RangeLink: Bind Here` opens the file and binds it as text editor destination | all      | pending |
+| TC-065 | Explorer → `RangeLink: Unbind` is visible when a destination is bound and unbinds it     | all      | pending |
+| TC-066 | Explorer → `RangeLink: Unbind` is hidden when no destination is bound                    | all      | pending |
 
 ### Editor Tab (right-click on tab)
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-067 | Editor tab → `RangeLink: Send File Path` | all | pending |
-| TC-068 | Editor tab → `RangeLink: Send Relative File Path` | all | pending |
-| TC-069 | Editor tab → `RangeLink: Bind Here` binds that editor | all | pending |
-| TC-070 | Editor tab → `RangeLink: Unbind` visible when bound, unbinds | all | pending |
+| TC     | Scenario                                                     | Platform | Status  |
+| ------ | ------------------------------------------------------------ | -------- | ------- |
+| TC-067 | Editor tab → `RangeLink: Send File Path`                     | all      | pending |
+| TC-068 | Editor tab → `RangeLink: Send Relative File Path`            | all      | pending |
+| TC-069 | Editor tab → `RangeLink: Bind Here` binds that editor        | all      | pending |
+| TC-070 | Editor tab → `RangeLink: Unbind` visible when bound, unbinds | all      | pending |
 
 ### Editor Content (right-click inside editor)
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-071 | Editor content (with selection) → `RangeLink: Send RangeLink` | all | pending |
-| TC-072 | Editor content (with selection) → `RangeLink: Send RangeLink (Absolute)` | all | pending |
-| TC-073 | Editor content (with selection) → `RangeLink: Send Portable Link` | all | pending |
-| TC-074 | Editor content (with selection) → `RangeLink: Send Portable Link (Absolute)` | all | pending |
-| TC-075 | Editor content (with selection) → `RangeLink: Send Selected Text` | all | pending |
-| TC-076 | Visual separator is visible in editor content context menu | all | pending |
-| TC-077 | Editor content → `RangeLink: Send This File's Path` (absolute) | all | pending |
-| TC-078 | Editor content → `RangeLink: Send This File's Relative Path` | all | pending |
-| TC-079 | Editor content → `RangeLink: Bind Here` | all | pending |
-| TC-080 | Editor content → `RangeLink: Unbind` visible when bound | all | pending |
-| TC-081 | Selection-dependent items (`Send RangeLink`, etc.) are hidden when no text is selected | all | pending |
+| TC     | Scenario                                                                               | Platform | Status  |
+| ------ | -------------------------------------------------------------------------------------- | -------- | ------- |
+| TC-071 | Editor content (with selection) → `RangeLink: Send RangeLink`                          | all      | pending |
+| TC-072 | Editor content (with selection) → `RangeLink: Send RangeLink (Absolute)`               | all      | pending |
+| TC-073 | Editor content (with selection) → `RangeLink: Send Portable Link`                      | all      | pending |
+| TC-074 | Editor content (with selection) → `RangeLink: Send Portable Link (Absolute)`           | all      | pending |
+| TC-075 | Editor content (with selection) → `RangeLink: Send Selected Text`                      | all      | pending |
+| TC-076 | Visual separator is visible in editor content context menu                             | all      | pending |
+| TC-077 | Editor content → `RangeLink: Send This File's Path` (absolute)                         | all      | pending |
+| TC-078 | Editor content → `RangeLink: Send This File's Relative Path`                           | all      | pending |
+| TC-079 | Editor content → `RangeLink: Bind Here`                                                | all      | pending |
+| TC-080 | Editor content → `RangeLink: Unbind` visible when bound                                | all      | pending |
+| TC-081 | Selection-dependent items (`Send RangeLink`, etc.) are hidden when no text is selected | all      | pending |
 
 ### Terminal (right-click on terminal tab or inside terminal)
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-082 | Terminal tab → `RangeLink: Bind Here` binds that terminal | all | pending |
-| TC-083 | Terminal content → `RangeLink: Bind Here` binds the terminal | all | pending |
-| TC-084 | Terminal → `RangeLink: Unbind` is visible when a destination is bound | all | pending |
+| TC     | Scenario                                                              | Platform | Status  |
+| ------ | --------------------------------------------------------------------- | -------- | ------- |
+| TC-082 | Terminal tab → `RangeLink: Bind Here` binds that terminal             | all      | pending |
+| TC-083 | Terminal content → `RangeLink: Bind Here` binds the terminal          | all      | pending |
+| TC-084 | Terminal → `RangeLink: Unbind` is visible when a destination is bound | all      | pending |
+
+### Test Case Details
+
+> **Setup for Context Menu tests:** Open a workspace with several files. Right-click menus differ by surface — follow each section's surface instructions carefully.
+
+#### TC-062 — Explorer `Send File Path` sends absolute path
+
+**Preconditions:** Extension installed. A file exists in the Explorer panel. Terminal is bound as destination.
+
+**Steps:**
+
+1. In the Explorer panel, right-click any file (e.g., `src/utils/helper.ts`)
+2. Select `RangeLink: Send File Path`
+3. Observe the terminal
+
+**Expected result:** Terminal receives the absolute file path (e.g., `/Users/username/project/src/utils/helper.ts`). No link format, no line number.
+
+---
+
+#### TC-063 — Explorer `Send Relative File Path` sends workspace-relative path
+
+**Preconditions:** Extension installed. Terminal bound.
+
+**Steps:**
+
+1. Right-click a file in Explorer
+2. Select `RangeLink: Send Relative File Path`
+
+**Expected result:** Terminal receives the workspace-relative path (e.g., `src/utils/helper.ts`). No leading slash.
+
+---
+
+#### TC-064 — Explorer `Bind Here` opens file and binds it
+
+**Preconditions:** Extension installed. No binding active (or an existing binding to confirm replacement).
+
+**Steps:**
+
+1. Right-click a file in Explorer (e.g., `src/utils/helper.ts`)
+2. Select `RangeLink: Bind Here`
+
+**Expected result:** `src/utils/helper.ts` opens in the editor and becomes the bound text editor destination. Success toast appears.
+
+---
+
+#### TC-065 — Explorer `Unbind` is visible when bound and unbinds
+
+**Preconditions:** A destination is currently bound.
+
+**Steps:**
+
+1. Right-click any file in Explorer
+2. Locate and select `RangeLink: Unbind`
+
+**Expected result:** The destination is unbound. Confirmation notification appears.
+
+---
+
+#### TC-066 — Explorer `Unbind` is hidden when no destination is bound
+
+**Preconditions:** No destination is bound.
+
+**Steps:**
+
+1. Right-click any file in Explorer
+2. Observe the context menu
+
+**Expected result:** `RangeLink: Unbind` is not visible in the menu (or is disabled).
+
+---
+
+#### TC-067 — Editor Tab `Send File Path` sends absolute path
+
+**Preconditions:** A file is open in a tab. Terminal bound.
+
+**Steps:**
+
+1. Right-click the file's tab in the tab bar
+2. Select `RangeLink: Send File Path`
+
+**Expected result:** Terminal receives the absolute file path of the tab's file.
+
+---
+
+#### TC-068 — Editor Tab `Send Relative File Path`
+
+**Preconditions:** A file is open in a tab. Terminal bound.
+
+**Steps:**
+
+1. Right-click the file tab
+2. Select `RangeLink: Send Relative File Path`
+
+**Expected result:** Terminal receives the workspace-relative path.
+
+---
+
+#### TC-069 — Editor Tab `Bind Here` binds that editor
+
+**Preconditions:** Extension installed. File is open.
+
+**Steps:**
+
+1. Right-click a file tab
+2. Select `RangeLink: Bind Here`
+
+**Expected result:** The tab's file is now the bound text editor destination. Success toast appears.
+
+---
+
+#### TC-070 — Editor Tab `Unbind` visible when bound and unbinds
+
+**Preconditions:** A destination is bound.
+
+**Steps:**
+
+1. Right-click any editor tab
+2. Select `RangeLink: Unbind`
+
+**Expected result:** Destination is unbound. Confirmation notification.
+
+---
+
+#### TC-071 — Editor Content `Send RangeLink` (with selection)
+
+**Preconditions:** Text selected in an editor. Terminal bound.
+
+**Steps:**
+
+1. Select 2–3 lines in a file
+2. Right-click in the editor
+3. Select `RangeLink: Send RangeLink`
+
+**Expected result:** Terminal receives the RangeLink (same as R-L keybinding). Success toast.
+
+---
+
+#### TC-072 — Editor Content `Send RangeLink (Absolute)` (with selection)
+
+**Preconditions:** Text selected. Terminal bound.
+
+**Steps:**
+
+1. Select text, right-click, select `RangeLink: Send RangeLink (Absolute)`
+
+**Expected result:** Terminal receives the RangeLink with an absolute file path (e.g., `/full/path/to/file.ts#L3-L5`).
+
+---
+
+#### TC-073 — Editor Content `Send Portable Link` (with selection)
+
+**Preconditions:** Text selected. Terminal bound.
+
+**Steps:**
+
+1. Select text, right-click, select `RangeLink: Send Portable Link`
+
+**Expected result:** Terminal receives the portable link format (GitHub-style URL with blob path and line anchor).
+
+---
+
+#### TC-074 — Editor Content `Send Portable Link (Absolute)` (with selection)
+
+**Preconditions:** Text selected. Terminal bound.
+
+**Steps:**
+
+1. Select text, right-click, select `RangeLink: Send Portable Link (Absolute)`
+
+**Expected result:** Terminal receives the portable link with an absolute file path variant.
+
+---
+
+#### TC-075 — Editor Content `Send Selected Text` (with selection)
+
+**Preconditions:** Text selected. Terminal bound.
+
+**Steps:**
+
+1. Select 2–3 lines, right-click, select `RangeLink: Send Selected Text`
+
+**Expected result:** Terminal receives the raw selected text (not a link format). Success toast.
+
+---
+
+#### TC-076 — Visual separator visible in editor content context menu
+
+**Preconditions:** Extension installed. Text editor open.
+
+**Steps:**
+
+1. Right-click inside the editor (with or without selection)
+2. Observe the context menu structure
+
+**Expected result:** A visual separator line is visible between the RangeLink commands and the rest of the VS Code context menu items.
+
+---
+
+#### TC-077 — Editor Content `Send This File's Path` sends absolute path
+
+**Preconditions:** A file is open. Terminal bound.
+
+**Steps:**
+
+1. Right-click inside the editor (no selection needed)
+2. Select `RangeLink: Send This File's Path`
+
+**Expected result:** Terminal receives the absolute path of the current file.
+
+---
+
+#### TC-078 — Editor Content `Send This File's Relative Path`
+
+**Preconditions:** A file is open. Terminal bound.
+
+**Steps:**
+
+1. Right-click inside the editor
+2. Select `RangeLink: Send This File's Relative Path`
+
+**Expected result:** Terminal receives the workspace-relative path of the current file.
+
+---
+
+#### TC-079 — Editor Content `Bind Here`
+
+**Preconditions:** Extension installed. File open.
+
+**Steps:**
+
+1. Right-click inside the editor
+2. Select `RangeLink: Bind Here`
+
+**Expected result:** The current file is bound as the text editor destination. Success toast appears.
+
+---
+
+#### TC-080 — Editor Content `Unbind` visible when bound
+
+**Preconditions:** A destination is bound.
+
+**Steps:**
+
+1. Right-click inside any editor
+2. Observe for `RangeLink: Unbind`
+
+**Expected result:** `RangeLink: Unbind` is visible in the context menu.
+
+---
+
+#### TC-081 — Selection-dependent items hidden when no text selected
+
+**Preconditions:** Editor open. No text selected (cursor only).
+
+**Steps:**
+
+1. Click in the editor to place cursor (no selection)
+2. Right-click inside the editor
+
+**Expected result:** `Send RangeLink`, `Send RangeLink (Absolute)`, `Send Portable Link`, `Send Portable Link (Absolute)`, and `Send Selected Text` are **not visible** in the context menu. File-path commands and Bind/Unbind remain visible.
+
+---
+
+#### TC-082 — Terminal Tab `Bind Here` binds that terminal
+
+**Preconditions:** Extension installed. Terminal open.
+
+**Steps:**
+
+1. Right-click the terminal tab (in the terminal panel tab bar)
+2. Select `RangeLink: Bind Here`
+
+**Expected result:** That terminal is bound as the destination. Success toast appears.
+
+---
+
+#### TC-083 — Terminal Content `Bind Here` binds the terminal
+
+**Preconditions:** Extension installed. Terminal open.
+
+**Steps:**
+
+1. Right-click inside the terminal output area
+2. Select `RangeLink: Bind Here`
+
+**Expected result:** Same result as TC-082 — the terminal is bound.
+
+---
+
+#### TC-084 — Terminal `Unbind` visible when destination is bound
+
+**Preconditions:** A destination is currently bound.
+
+**Steps:**
+
+1. Right-click in a terminal (tab or content)
+2. Observe the context menu
+
+**Expected result:** `RangeLink: Unbind` is visible in the terminal context menu.
 
 ---
 
@@ -1045,15 +1413,15 @@ New in this release: right-click access across Explorer, Editor Tab, Editor Cont
 
 New in this release: dialog when generating a link from a file with unsaved changes.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-085 | Generating a link from a file with unsaved changes shows the dirty buffer dialog | all | pending |
-| TC-086 | Dirty buffer dialog shows three options: `Save & Generate`, `Generate Anyway`, and dismiss | all | pending |
-| TC-087 | `Save & Generate`: saves the file then generates the link | all | pending |
-| TC-088 | `Generate Anyway`: generates the link without saving | all | pending |
-| TC-089 | Dismissing the dialog aborts link generation | all | pending |
-| TC-090 | `rangelink.warnOnDirtyBuffer: false` disables the dirty buffer warning entirely | all | pending |
-| TC-091 | Clean file (no unsaved changes) generates link immediately without dialog | all | pending |
+| TC     | Scenario                                                                                   | Platform | Status  |
+| ------ | ------------------------------------------------------------------------------------------ | -------- | ------- |
+| TC-085 | Generating a link from a file with unsaved changes shows the dirty buffer dialog           | all      | pending |
+| TC-086 | Dirty buffer dialog shows three options: `Save & Generate`, `Generate Anyway`, and dismiss | all      | pending |
+| TC-087 | `Save & Generate`: saves the file then generates the link                                  | all      | pending |
+| TC-088 | `Generate Anyway`: generates the link without saving                                       | all      | pending |
+| TC-089 | Dismissing the dialog aborts link generation                                               | all      | pending |
+| TC-090 | `rangelink.warnOnDirtyBuffer: false` disables the dirty buffer warning entirely            | all      | pending |
+| TC-091 | Clean file (no unsaved changes) generates link immediately without dialog                  | all      | pending |
 
 ### Test Case Details
 
@@ -1062,10 +1430,12 @@ New in this release: dialog when generating a link from a file with unsaved chan
 #### TC-085 — Dirty buffer dialog appears
 
 **Preconditions:**
+
 1. `rangelink.warnOnDirtyBuffer` = `true` (default)
 2. Terminal bound as destination
 
 **Steps:**
+
 1. Open any file and make a small edit (add a space) **without saving**
 2. Select 2–3 lines of code
 3. Press `Cmd+R Cmd+L`
@@ -1089,6 +1459,7 @@ New in this release: dialog when generating a link from a file with unsaved chan
 **Preconditions:** Terminal bound, file is dirty (unsaved change).
 
 **Steps:**
+
 1. Make an unsaved change to a file
 2. Select 2–3 lines, press `Cmd+R Cmd+L`
 3. Click **Save & Generate** in the dialog
@@ -1103,6 +1474,7 @@ New in this release: dialog when generating a link from a file with unsaved chan
 **Preconditions:** Terminal bound, file is dirty.
 
 **Steps:**
+
 1. Make an unsaved change
 2. Select 2–3 lines, press `Cmd+R Cmd+L`
 3. Click **Generate Anyway**
@@ -1117,6 +1489,7 @@ New in this release: dialog when generating a link from a file with unsaved chan
 **Preconditions:** Terminal bound, file is dirty.
 
 **Steps:**
+
 1. Make an unsaved change
 2. Select 2–3 lines, press `Cmd+R Cmd+L`
 3. Press `Escape` or click `×` to dismiss the dialog
@@ -1130,6 +1503,7 @@ New in this release: dialog when generating a link from a file with unsaved chan
 **Preconditions:** `rangelink.warnOnDirtyBuffer` = `false` (set in VS Code settings), terminal bound.
 
 **Steps:**
+
 1. Make an unsaved change to a file
 2. Select 2–3 lines, press `Cmd+R Cmd+L`
 3. Observe — no dialog should appear
@@ -1143,6 +1517,7 @@ New in this release: dialog when generating a link from a file with unsaved chan
 **Preconditions:** `rangelink.warnOnDirtyBuffer` = `true` (default), terminal bound, file is **saved** (no pending changes).
 
 **Steps:**
+
 1. Save the file (`Cmd+S`) to ensure no dirty state
 2. Select 2–3 lines, press `Cmd+R Cmd+L`
 
@@ -1154,26 +1529,28 @@ New in this release: dialog when generating a link from a file with unsaved chan
 
 New in this release: `Cmd+R Cmd+V` / `Ctrl+R Ctrl+V` sends terminal selection to bound destination.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-092 | `Cmd+R Cmd+V` with terminal focused and text selected sends to bound destination | mac | pending |
-| TC-093 | `Ctrl+R Ctrl+V` on Win/Linux | win/linux | pending |
-| TC-094 | R-V with no text selected in terminal shows error message | all | pending |
-| TC-095 | R-V with no bound destination (behavior: picker or clipboard fallback) | all | pending |
-| TC-096 | Terminal content context menu `Send Selection to Destination` (when text selected and bound) | all | pending |
-| TC-097 | R-L keybinding pressed while terminal has focus shows guidance message suggesting R-V | all | pending |
-| TC-098 | R-C keybinding pressed while terminal has focus shows guidance message suggesting R-V | all | pending |
+| TC     | Scenario                                                                                     | Platform  | Status  |
+| ------ | -------------------------------------------------------------------------------------------- | --------- | ------- |
+| TC-092 | `Cmd+R Cmd+V` with terminal focused and text selected sends to bound destination             | mac       | pending |
+| TC-093 | `Ctrl+R Ctrl+V` on Win/Linux                                                                 | win/linux | pending |
+| TC-094 | R-V with no text selected in terminal shows error message                                    | all       | pending |
+| TC-095 | R-V with no bound destination (behavior: picker or clipboard fallback)                       | all       | pending |
+| TC-096 | Terminal content context menu `Send Selection to Destination` (when text selected and bound) | all       | pending |
+| TC-097 | R-L keybinding pressed while terminal has focus shows guidance message suggesting R-V        | all       | pending |
+| TC-098 | R-C keybinding pressed while terminal has focus shows guidance message suggesting R-V        | all       | pending |
 
 ### Test Case Details
 
 #### TC-092 — `Cmd+R Cmd+V` with terminal focused and text selected
 
 **Preconditions:**
+
 1. Extension installed from `.vsix` build
 2. A terminal is open with visible output (run any command, e.g. `ls`)
 3. A second terminal **or** any other destination is open and bound
 
 **Steps:**
+
 1. Click in the terminal to focus it
 2. Drag to select a line of terminal output
 3. Press `Cmd+R Cmd+V` (Mac) / `Ctrl+R Ctrl+V` (Win/Linux)
@@ -1198,6 +1575,7 @@ New in this release: `Cmd+R Cmd+V` / `Ctrl+R Ctrl+V` sends terminal selection to
 **Preconditions:** Terminal focused, **nothing highlighted**, destination bound.
 
 **Steps:**
+
 1. Click in terminal (ensure no text is highlighted)
 2. Press `Cmd+R Cmd+V`
 
@@ -1210,6 +1588,7 @@ New in this release: `Cmd+R Cmd+V` / `Ctrl+R Ctrl+V` sends terminal selection to
 **Preconditions:** No destination bound, terminal focused, text selected in terminal.
 
 **Steps:**
+
 1. Unbind any destination
 2. Select text in terminal
 3. Press `Cmd+R Cmd+V`
@@ -1223,6 +1602,7 @@ New in this release: `Cmd+R Cmd+V` / `Ctrl+R Ctrl+V` sends terminal selection to
 **Preconditions:** Terminal focused, text selected, destination bound.
 
 **Steps:**
+
 1. Select text in the terminal
 2. Right-click in the terminal
 3. Look for and click `RangeLink: Send Selection to Destination`
@@ -1236,6 +1616,7 @@ New in this release: `Cmd+R Cmd+V` / `Ctrl+R Ctrl+V` sends terminal selection to
 **Preconditions:** Terminal has focus (you clicked in the terminal).
 
 **Steps:**
+
 1. Click in terminal to focus it
 2. Press `Cmd+R Cmd+L` (the editor link command)
 
@@ -1248,6 +1629,7 @@ New in this release: `Cmd+R Cmd+V` / `Ctrl+R Ctrl+V` sends terminal selection to
 **Preconditions:** Terminal has focus.
 
 **Steps:**
+
 1. Click in terminal to focus it
 2. Press `Cmd+R Cmd+C`
 
@@ -1259,17 +1641,17 @@ New in this release: `Cmd+R Cmd+V` / `Ctrl+R Ctrl+V` sends terminal selection to
 
 New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink to navigate to it.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-099 | `Cmd+R Cmd+G` opens the Go to Link input box | mac | pending |
-| TC-100 | `Ctrl+R Ctrl+G` on Win/Linux | win/linux | pending |
-| TC-101 | Valid RangeLink in input box navigates to the file and selects the range | all | pending |
-| TC-102 | Supports range format: `path/to/file.ts#L3C14-L15C9` | all | pending |
-| TC-103 | Invalid link format shows error message | all | pending |
-| TC-104 | Empty input dismisses with info notification | all | pending |
-| TC-105 | File not found shows warning message | all | pending |
-| TC-106 | `RangeLink: Go to Link` available in Command Palette | all | pending |
-| TC-107 | `Go to Link` item in R-M menu opens the same input box | all | pending |
+| TC     | Scenario                                                                 | Platform  | Status  |
+| ------ | ------------------------------------------------------------------------ | --------- | ------- |
+| TC-099 | `Cmd+R Cmd+G` opens the Go to Link input box                             | mac       | pending |
+| TC-100 | `Ctrl+R Ctrl+G` on Win/Linux                                             | win/linux | pending |
+| TC-101 | Valid RangeLink in input box navigates to the file and selects the range | all       | pending |
+| TC-102 | Supports range format: `path/to/file.ts#L3C14-L15C9`                     | all       | pending |
+| TC-103 | Invalid link format shows error message                                  | all       | pending |
+| TC-104 | Empty input dismisses with info notification                             | all       | pending |
+| TC-105 | File not found shows warning message                                     | all       | pending |
+| TC-106 | `RangeLink: Go to Link` available in Command Palette                     | all       | pending |
+| TC-107 | `Go to Link` item in R-M menu opens the same input box                   | all       | pending |
 
 ### Test Case Details
 
@@ -1278,6 +1660,7 @@ New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink
 **Preconditions:** Extension installed. Any workspace open.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+G` (Mac) / `Ctrl+R Ctrl+G` (Win/Linux)
 
 **Expected result:** An input box appears (QuickInput or input prompt) with placeholder text indicating it expects a RangeLink (e.g., `path/to/file.ts#L10`).
@@ -1289,6 +1672,7 @@ New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink
 **Preconditions:** Extension installed. A file with 10+ lines exists in the workspace (e.g., `src/utils/helper.ts`).
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+G`
 2. Type or paste `src/utils/helper.ts#L3-L7`
 3. Press Enter
@@ -1302,6 +1686,7 @@ New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink
 **Preconditions:** Extension installed. `src/utils/helper.ts` exists.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+G`
 2. Type `src/utils/helper.ts#L3C5-L3C20`
 3. Press Enter
@@ -1315,6 +1700,7 @@ New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink
 **Preconditions:** Extension installed.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+G`
 2. Type `not-a-valid-link-format`
 3. Press Enter
@@ -1328,6 +1714,7 @@ New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink
 **Preconditions:** Extension installed.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+G`
 2. Clear the input (leave it empty)
 3. Press Enter
@@ -1341,6 +1728,7 @@ New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink
 **Preconditions:** Extension installed.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+G`
 2. Type `src/nonexistent/file.ts#L1`
 3. Press Enter
@@ -1354,6 +1742,7 @@ New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink
 **Preconditions:** Extension installed.
 
 **Steps:**
+
 1. Open Command Palette (`Cmd+Shift+P`)
 2. Type `Go to Link` and select `RangeLink: Go to Link`
 
@@ -1366,6 +1755,7 @@ New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink
 **Preconditions:** Extension installed.
 
 **Steps:**
+
 1. Open R-M menu
 2. Select `Go to Link`
 
@@ -1377,12 +1767,12 @@ New in this release: `Cmd+R Cmd+G` / `Ctrl+R Ctrl+G` pastes or types a RangeLink
 
 New in this release: dedicated `Cmd+R Cmd+U` / `Ctrl+R Ctrl+U` keybinding to unbind.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-108 | `Cmd+R Cmd+U` unbinds the current destination when bound | mac | pending |
-| TC-109 | `Ctrl+R Ctrl+U` on Win/Linux | win/linux | pending |
-| TC-110 | R-U with no bound destination shows no-op or appropriate info message | all | pending |
-| TC-111 | `RangeLink: Unbind Destination` available in Command Palette | all | pending |
+| TC     | Scenario                                                              | Platform  | Status  |
+| ------ | --------------------------------------------------------------------- | --------- | ------- |
+| TC-108 | `Cmd+R Cmd+U` unbinds the current destination when bound              | mac       | pending |
+| TC-109 | `Ctrl+R Ctrl+U` on Win/Linux                                          | win/linux | pending |
+| TC-110 | R-U with no bound destination shows no-op or appropriate info message | all       | pending |
+| TC-111 | `RangeLink: Unbind Destination` available in Command Palette          | all       | pending |
 
 ### Test Case Details
 
@@ -1391,6 +1781,7 @@ New in this release: dedicated `Cmd+R Cmd+U` / `Ctrl+R Ctrl+U` keybinding to unb
 **Preconditions:** A destination is currently bound.
 
 **Steps:**
+
 1. Verify binding is active (status bar or previous R-L should confirm)
 2. Press `Cmd+R Cmd+U` (Mac) / `Ctrl+R Ctrl+U` (Win/Linux)
 
@@ -1403,6 +1794,7 @@ New in this release: dedicated `Cmd+R Cmd+U` / `Ctrl+R Ctrl+U` keybinding to unb
 **Preconditions:** No destination is currently bound.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+U`
 
 **Expected result:** Nothing is sent or deleted. An info notification appears (e.g., `No destination is currently bound`) rather than an error. The command is a safe no-op.
@@ -1414,6 +1806,7 @@ New in this release: dedicated `Cmd+R Cmd+U` / `Ctrl+R Ctrl+U` keybinding to unb
 **Preconditions:** A destination is bound.
 
 **Steps:**
+
 1. Open Command Palette (`Cmd+Shift+P`)
 2. Type `Unbind Destination` and select `RangeLink: Unbind Destination`
 
@@ -1427,41 +1820,170 @@ Behavior changes and renames shipped in this release.
 
 ### Two-Verb Vocabulary (Send vs Copy)
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-112 | `RangeLink: Send RangeLink` appears in Command Palette (replaces "Copy Range Link") | all | pending |
-| TC-113 | `RangeLink: Send RangeLink (Absolute)` in Command Palette | all | pending |
-| TC-114 | `RangeLink: Send Portable Link` in Command Palette | all | pending |
-| TC-115 | `RangeLink: Send Selected Text` in Command Palette | all | pending |
-| TC-116 | `RangeLink: Copy RangeLink` in Command Palette (clipboard-only, no destination picker) | all | pending |
-| TC-117 | `RangeLink: Copy RangeLink (Absolute)` in Command Palette | all | pending |
-| TC-118 | `RangeLink: Send Current File Path` in Command Palette | all | pending |
+| TC     | Scenario                                                                               | Platform | Status  |
+| ------ | -------------------------------------------------------------------------------------- | -------- | ------- |
+| TC-112 | `RangeLink: Send RangeLink` appears in Command Palette (replaces "Copy Range Link")    | all      | pending |
+| TC-113 | `RangeLink: Send RangeLink (Absolute)` in Command Palette                              | all      | pending |
+| TC-114 | `RangeLink: Send Portable Link` in Command Palette                                     | all      | pending |
+| TC-115 | `RangeLink: Send Selected Text` in Command Palette                                     | all      | pending |
+| TC-116 | `RangeLink: Copy RangeLink` in Command Palette (clipboard-only, no destination picker) | all      | pending |
+| TC-117 | `RangeLink: Copy RangeLink (Absolute)` in Command Palette                              | all      | pending |
+| TC-118 | `RangeLink: Send Current File Path` in Command Palette                                 | all      | pending |
 
 ### Picker-When-Unbound
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-119 | R-L with no bound destination opens destination picker (does not fall back to clipboard silently) | all | pending |
-| TC-120 | Send Portable Link with no bound destination opens picker | all | pending |
-| TC-121 | Jump to Bound Destination with no bound destination opens picker | all | pending |
-| TC-122 | Send Selected Text with no bound destination opens picker | all | pending |
+| TC     | Scenario                                                                                          | Platform | Status  |
+| ------ | ------------------------------------------------------------------------------------------------- | -------- | ------- |
+| TC-119 | R-L with no bound destination opens destination picker (does not fall back to clipboard silently) | all      | pending |
+| TC-120 | Send Portable Link with no bound destination opens picker                                         | all      | pending |
+| TC-121 | Jump to Bound Destination with no bound destination opens picker                                  | all      | pending |
+| TC-122 | Send Selected Text with no bound destination opens picker                                         | all      | pending |
 
 ### Text Editor — No Split Required
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-123 | Binding a text editor in a single tab group (no split) succeeds | all | pending |
-| TC-124 | Self-paste (pasting R-L to the same file you're selecting from) copies to clipboard and shows info message | all | pending |
-| TC-125 | Self-paste info message for R-L suggests using R-C as alternative | all | pending |
+| TC     | Scenario                                                                                                   | Platform | Status  |
+| ------ | ---------------------------------------------------------------------------------------------------------- | -------- | ------- |
+| TC-123 | Binding a text editor in a single tab group (no split) succeeds                                            | all      | pending |
+| TC-124 | Self-paste (pasting R-L to the same file you're selecting from) copies to clipboard and shows info message | all      | pending |
+| TC-125 | Self-paste info message for R-L suggests using R-C as alternative                                          | all      | pending |
 
 ### Editor Binding Validation
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-126 | Binding a git diff view (read-only) shows clear rejection message | all | pending |
-| TC-127 | Binding an output panel (read-only) shows clear rejection message | all | pending |
-| TC-128 | Binding the Settings UI (read-only) shows clear rejection message | all | pending |
-| TC-129 | Binding a binary file (e.g. `.png`) shows rejection message `Cannot bind to [file] - binary file` | all | pending |
+| TC     | Scenario                                                                                          | Platform | Status  |
+| ------ | ------------------------------------------------------------------------------------------------- | -------- | ------- |
+| TC-126 | Binding a git diff view (read-only) shows clear rejection message                                 | all      | pending |
+| TC-127 | Binding an output panel (read-only) shows clear rejection message                                 | all      | pending |
+| TC-128 | Binding the Settings UI (read-only) shows clear rejection message                                 | all      | pending |
+| TC-129 | Binding a binary file (e.g. `.png`) shows rejection message `Cannot bind to [file] - binary file` | all      | pending |
+
+### Test Case Details
+
+#### TC-112 to TC-115, TC-117, TC-118 — Two-verb vocabulary visible in Command Palette
+
+**Preconditions:** Extension installed. Text selected in a file (for selection-dependent commands).
+
+**Steps (for each TC):**
+
+1. Open Command Palette (`Cmd+Shift+P`)
+2. Type the command name listed in the TC table row
+3. Verify it appears and is selectable
+
+| TC     | Command to search for                  |
+| ------ | -------------------------------------- |
+| TC-112 | `RangeLink: Send RangeLink`            |
+| TC-113 | `RangeLink: Send RangeLink (Absolute)` |
+| TC-114 | `RangeLink: Send Portable Link`        |
+| TC-115 | `RangeLink: Send Selected Text`        |
+| TC-117 | `RangeLink: Copy RangeLink (Absolute)` |
+| TC-118 | `RangeLink: Send Current File Path`    |
+
+**Expected result (each):** The command appears in the Command Palette list. No "Copy Range Link" (old name) entries remain. Selecting the command executes the correct behavior.
+
+---
+
+#### TC-120 — Send Portable Link opens picker when unbound
+
+**Preconditions:** No destination bound. Text selected.
+
+**Steps:**
+
+1. Select text in a file
+2. Open Command Palette and select `RangeLink: Send Portable Link`
+
+**Expected result:** Destination picker opens (not a silent clipboard fallback). Selecting a destination binds it and sends the portable link.
+
+---
+
+#### TC-121 — Jump to Bound Destination opens picker when unbound
+
+**Preconditions:** No destination bound.
+
+**Steps:**
+
+1. Open R-M menu or Command Palette
+2. Select `Jump to Bound Destination` (or equivalent)
+
+**Expected result:** Destination picker opens so the user can bind a destination first.
+
+---
+
+#### TC-122 — Send Selected Text opens picker when unbound
+
+**Preconditions:** No destination bound. Text selected in editor.
+
+**Steps:**
+
+1. Select text
+2. Open Command Palette, select `RangeLink: Send Selected Text`
+
+**Expected result:** Destination picker opens. Selecting a destination sends the selected text to it.
+
+---
+
+#### TC-123 — Binding a text editor in a single tab group (no split) succeeds
+
+**Preconditions:** Only one tab group open (no editor split). Multiple files open in that one group.
+
+**Steps:**
+
+1. Press `Cmd+R Cmd+D`
+2. Select any open file from the list
+
+**Expected result:** The file is bound successfully. Success toast appears. No error about needing a split view or second tab group.
+
+---
+
+#### TC-126 — Binding git diff view shows rejection message
+
+**Preconditions:** A git diff view is open (run `git diff` and open the diff in VS Code, or use Source Control panel).
+
+**Steps:**
+
+1. Press `Cmd+R Cmd+D`
+2. If the git diff view appears in the picker, select it. Or right-click the diff editor and select `RangeLink: Bind Here`
+
+**Expected result:** A clear rejection message appears (e.g., "Cannot bind to read-only editor"). The git diff view is not bound.
+
+---
+
+#### TC-127 — Binding output panel shows rejection message
+
+**Preconditions:** An output panel is open (e.g., Extension Host output).
+
+**Steps:**
+
+1. Focus the output panel
+2. Press `Cmd+R Cmd+D` and select the output panel entry, or right-click → `Bind Here`
+
+**Expected result:** Clear rejection message. Output panel is not bound.
+
+---
+
+#### TC-128 — Binding Settings UI shows rejection message
+
+**Preconditions:** VS Code Settings (`Cmd+,`) is open.
+
+**Steps:**
+
+1. Focus the Settings editor
+2. Try to bind via `Cmd+R Cmd+D` or context menu `Bind Here`
+
+**Expected result:** Clear rejection message. Settings UI is not bound.
+
+---
+
+#### TC-129 — Binding binary file shows rejection message
+
+**Preconditions:** A binary file (e.g., a `.png` image) is open in VS Code's hex view.
+
+**Steps:**
+
+1. Open a `.png` in VS Code
+2. Press `Cmd+R Cmd+D` and select the binary file
+
+**Expected result:** Rejection message: `Cannot bind to [filename] - binary file` (or equivalent wording). File is not bound.
+
+---
 
 ### Selected Test Case Details (R-L / R-C related)
 
@@ -1470,6 +1992,7 @@ Behavior changes and renames shipped in this release.
 **Preconditions:** No destination bound.
 
 **Steps:**
+
 1. Select text in any file
 2. Press `Cmd+R Cmd+C` (or use `RangeLink: Copy RangeLink` in Command Palette)
 3. Observe — no picker should appear
@@ -1484,6 +2007,7 @@ Behavior changes and renames shipped in this release.
 **Preconditions:** No destination bound.
 
 **Steps:**
+
 1. Select text in a file
 2. Press `Cmd+R Cmd+L`
 3. Observe — destination picker should appear
@@ -1495,10 +2019,12 @@ Behavior changes and renames shipped in this release.
 #### TC-124 — Self-paste R-L shows info notification
 
 **Preconditions:**
+
 1. Open `src/utils/helper.ts`
 2. Bind it as the text editor destination (so source and destination are the same file)
 
 **Steps:**
+
 1. With the bound file focused, select 2–3 lines
 2. Press `Cmd+R Cmd+L`
 3. Observe notifications and file content
@@ -1521,22 +2047,22 @@ Behavior changes and renames shipped in this release.
 
 Verify each fixed bug has not regressed.
 
-| TC | Scenario | Platform | Status |
-| --- | --- | --- | --- |
-| TC-130 | `#L10` navigates and selects the entire line (not just the first character) | all | pending |
-| TC-131 | `#L10-L15` selects from the start of line 10 to the end of line 15 | all | pending |
-| TC-132 | Selecting a line including its trailing newline generates `#L20` (not `#L20-L21`) | all | pending |
-| TC-133 | Backtick-wrapped RangeLink in terminal is clickable and navigates correctly | all | pending |
-| TC-134 | Single-quote-wrapped RangeLink in terminal is clickable | all | pending |
-| TC-135 | Double-quote-wrapped RangeLink in terminal is clickable | all | pending |
-| TC-136 | Angle-bracket-wrapped RangeLink in terminal is clickable | all | pending |
-| TC-137 | Markdown link `[label](path/to/file.ts#L10)` in a document is clickable and navigates correctly | all | pending |
-| TC-138 | `https://example.com/path/file.ts#L10` in terminal is NOT captured as a RangeLink | all | pending |
-| TC-139 | `https://example.com/path/file.ts#L10` in a document is NOT captured as a RangeLink | all | pending |
-| TC-140 | Moving bound editor between tab groups → subsequent paste targets the correct new group | all | pending |
-| TC-141 | Bound editor hidden behind other tabs → paste succeeds and brings the tab to the foreground | all | pending |
-| TC-142 | Hovering over a clickable document link shows clean tooltip text (not raw JSON or command URI) | all | pending |
-| TC-143 | Using `Ctrl+L` (select full line) then R-L generates link without `SELECTION_ZERO_WIDTH` error | all | pending |
+| TC     | Scenario                                                                                        | Platform | Status  |
+| ------ | ----------------------------------------------------------------------------------------------- | -------- | ------- |
+| TC-130 | `#L10` navigates and selects the entire line (not just the first character)                     | all      | pending |
+| TC-131 | `#L10-L15` selects from the start of line 10 to the end of line 15                              | all      | pending |
+| TC-132 | Selecting a line including its trailing newline generates `#L20` (not `#L20-L21`)               | all      | pending |
+| TC-133 | Backtick-wrapped RangeLink in terminal is clickable and navigates correctly                     | all      | pending |
+| TC-134 | Single-quote-wrapped RangeLink in terminal is clickable                                         | all      | pending |
+| TC-135 | Double-quote-wrapped RangeLink in terminal is clickable                                         | all      | pending |
+| TC-136 | Angle-bracket-wrapped RangeLink in terminal is clickable                                        | all      | pending |
+| TC-137 | Markdown link `[label](path/to/file.ts#L10)` in a document is clickable and navigates correctly | all      | pending |
+| TC-138 | `https://example.com/path/file.ts#L10` in terminal is NOT captured as a RangeLink               | all      | pending |
+| TC-139 | `https://example.com/path/file.ts#L10` in a document is NOT captured as a RangeLink             | all      | pending |
+| TC-140 | Moving bound editor between tab groups → subsequent paste targets the correct new group         | all      | pending |
+| TC-141 | Bound editor hidden behind other tabs → paste succeeds and brings the tab to the foreground     | all      | pending |
+| TC-142 | Hovering over a clickable document link shows clean tooltip text (not raw JSON or command URI)  | all      | pending |
+| TC-143 | Using `Ctrl+L` (select full line) then R-L generates link without `SELECTION_ZERO_WIDTH` error  | all      | pending |
 
 ### Test Case Details
 
@@ -1547,6 +2073,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** `src/utils/helper.ts` exists and is readable.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+G`
 2. Type `src/utils/helper.ts#L10`
 3. Press Enter
@@ -1561,6 +2088,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** `src/utils/helper.ts` with 15+ lines.
 
 **Steps:**
+
 1. Press `Cmd+R Cmd+G`
 2. Type `src/utils/helper.ts#L10-L15`
 3. Press Enter
@@ -1574,6 +2102,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** File with 20+ lines. Terminal or text editor bound as destination.
 
 **Steps:**
+
 1. In `src/utils/helper.ts`, triple-click line 20 to select it including the trailing newline (or use `Cmd+L` / `Ctrl+L` to select the full line)
 2. Verify the selection visually includes the newline (cursor at start of line 21)
 3. Press `Cmd+R Cmd+L` to generate and send the link
@@ -1587,6 +2116,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** Terminal open. A valid RangeLink exists for a file in the workspace.
 
 **Steps:**
+
 1. In the terminal, type or paste: `` `src/utils/helper.ts#L5-L10` `` (surrounded by backticks)
 2. Press Enter (or just click the link)
 3. Hold `Cmd` (Mac) and click the link in the terminal
@@ -1600,6 +2130,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** Terminal open.
 
 **Steps:**
+
 1. Type or paste in terminal: `'src/utils/helper.ts#L5'`
 2. `Cmd`-click the link
 
@@ -1612,6 +2143,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** Terminal open.
 
 **Steps:**
+
 1. Type or paste: `"src/utils/helper.ts#L5"`
 2. `Cmd`-click the link
 
@@ -1624,6 +2156,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** Terminal open.
 
 **Steps:**
+
 1. Type or paste: `<src/utils/helper.ts#L5>`
 2. `Cmd`-click the link
 
@@ -1636,6 +2169,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** A Markdown file (`.md`) is open in the editor.
 
 **Steps:**
+
 1. Add a Markdown link: `[See helper](src/utils/helper.ts#L10)` to the file
 2. In the Preview pane or with document link support enabled, hover over the link
 3. `Cmd`-click the link
@@ -1649,6 +2183,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** Terminal open.
 
 **Steps:**
+
 1. Type or paste in terminal: `https://example.com/path/file.ts#L10`
 2. Observe whether RangeLink treats it as a link
 
@@ -1661,6 +2196,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** A Markdown or text file open in the editor.
 
 **Steps:**
+
 1. Add the text `https://example.com/path/file.ts#L10` to the file
 2. Hover over it to inspect the link tooltip (if any)
 
@@ -1673,6 +2209,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** `src/utils/helper.ts` is bound as destination and is in tab group 1. Terminal open.
 
 **Steps:**
+
 1. Drag the `src/utils/helper.ts` tab to tab group 2 (or use View → Move Editor to Next Group)
 2. Select text in another file
 3. Press `Cmd+R Cmd+L`
@@ -1686,6 +2223,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** `src/utils/helper.ts` is bound as destination but is hidden behind other tabs (not the frontmost tab in its group).
 
 **Steps:**
+
 1. Open several files in the same tab group as `src/utils/helper.ts` so it's not visible
 2. Select text in any other file
 3. Press `Cmd+R Cmd+L`
@@ -1699,6 +2237,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** A Markdown file with a RangeLink document link: `[See code](src/utils/helper.ts#L5)`.
 
 **Steps:**
+
 1. Hover over the link in the editor (no preview pane needed)
 2. Observe the tooltip that appears
 
@@ -1711,6 +2250,7 @@ Verify each fixed bug has not regressed.
 **Preconditions:** Terminal or file destination bound.
 
 **Steps:**
+
 1. Place cursor on any line in a TypeScript file
 2. Press `Cmd+L` (Mac) / `Ctrl+L` (Win/Linux) to select the full line (VS Code built-in)
 3. Press `Cmd+R Cmd+L`

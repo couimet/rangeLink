@@ -901,9 +901,15 @@ test_cases:
   - id: TC-062
     feature: "Context Menus — Explorer"
     scenario: "Explorer: RangeLink: Send File Path sends absolute path to bound destination"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed from .vsix build"
+      - "A file exists in the Explorer panel"
+      - "Terminal is bound as destination"
+    steps:
+      - "In the Explorer panel, right-click any file (e.g., src/utils/helper.ts)"
+      - "Select 'RangeLink: Send File Path'"
+      - "Observe the terminal"
+    expected_result: "Terminal receives the absolute file path (e.g., /Users/username/project/src/utils/helper.ts). No link format, no line number."
     platform: all
     automated: false
     status: pending
@@ -911,9 +917,13 @@ test_cases:
   - id: TC-063
     feature: "Context Menus — Explorer"
     scenario: "Explorer: RangeLink: Send Relative File Path sends relative path"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "Terminal bound"
+    steps:
+      - "Right-click a file in Explorer"
+      - "Select 'RangeLink: Send Relative File Path'"
+    expected_result: "Terminal receives the workspace-relative path (e.g., src/utils/helper.ts). No leading slash."
     platform: all
     automated: false
     status: pending
@@ -921,9 +931,13 @@ test_cases:
   - id: TC-064
     feature: "Context Menus — Explorer"
     scenario: "Explorer: RangeLink: Bind Here opens the file and binds it as text editor destination"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "No binding active"
+    steps:
+      - "Right-click a file in Explorer (e.g., src/utils/helper.ts)"
+      - "Select 'RangeLink: Bind Here'"
+    expected_result: "src/utils/helper.ts opens in the editor and becomes the bound text editor destination. Success toast appears."
     platform: all
     automated: false
     status: pending
@@ -931,9 +945,12 @@ test_cases:
   - id: TC-065
     feature: "Context Menus — Explorer"
     scenario: "Explorer: RangeLink: Unbind is visible when bound and unbinds on click"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A destination is currently bound"
+    steps:
+      - "Right-click any file in Explorer"
+      - "Locate and select 'RangeLink: Unbind'"
+    expected_result: "The destination is unbound. Confirmation notification appears."
     platform: all
     automated: false
     status: pending
@@ -941,9 +958,12 @@ test_cases:
   - id: TC-066
     feature: "Context Menus — Explorer"
     scenario: "Explorer: RangeLink: Unbind is hidden when no destination is bound"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "No destination is bound"
+    steps:
+      - "Right-click any file in Explorer"
+      - "Observe the context menu"
+    expected_result: "'RangeLink: Unbind' is not visible in the menu (or is disabled)."
     platform: all
     automated: false
     status: pending
@@ -951,9 +971,13 @@ test_cases:
   - id: TC-067
     feature: "Context Menus — Editor Tab"
     scenario: "Editor tab: RangeLink: Send File Path"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A file is open in a tab"
+      - "Terminal bound"
+    steps:
+      - "Right-click the file tab in the tab bar"
+      - "Select 'RangeLink: Send File Path'"
+    expected_result: "Terminal receives the absolute file path of the tab's file."
     platform: all
     automated: false
     status: pending
@@ -961,9 +985,13 @@ test_cases:
   - id: TC-068
     feature: "Context Menus — Editor Tab"
     scenario: "Editor tab: RangeLink: Send Relative File Path"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A file is open in a tab"
+      - "Terminal bound"
+    steps:
+      - "Right-click the file tab"
+      - "Select 'RangeLink: Send Relative File Path'"
+    expected_result: "Terminal receives the workspace-relative path."
     platform: all
     automated: false
     status: pending
@@ -971,9 +999,13 @@ test_cases:
   - id: TC-069
     feature: "Context Menus — Editor Tab"
     scenario: "Editor tab: RangeLink: Bind Here binds that editor"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "File is open in a tab"
+    steps:
+      - "Right-click the file tab"
+      - "Select 'RangeLink: Bind Here'"
+    expected_result: "The tab's file is now the bound text editor destination. Success toast appears."
     platform: all
     automated: false
     status: pending
@@ -981,9 +1013,12 @@ test_cases:
   - id: TC-070
     feature: "Context Menus — Editor Tab"
     scenario: "Editor tab: RangeLink: Unbind visible when bound and unbinds on click"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A destination is bound"
+    steps:
+      - "Right-click any editor tab"
+      - "Select 'RangeLink: Unbind'"
+    expected_result: "Destination is unbound. Confirmation notification."
     platform: all
     automated: false
     status: pending
@@ -991,9 +1026,14 @@ test_cases:
   - id: TC-071
     feature: "Context Menus — Editor Content"
     scenario: "Editor content (with selection): RangeLink: Send RangeLink"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Text selected in an editor"
+      - "Terminal bound"
+    steps:
+      - "Select 2-3 lines in a file"
+      - "Right-click in the editor"
+      - "Select 'RangeLink: Send RangeLink'"
+    expected_result: "Terminal receives the RangeLink (same as R-L keybinding). Success toast."
     platform: all
     automated: false
     status: pending
@@ -1001,9 +1041,12 @@ test_cases:
   - id: TC-072
     feature: "Context Menus — Editor Content"
     scenario: "Editor content (with selection): RangeLink: Send RangeLink (Absolute)"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Text selected in editor"
+      - "Terminal bound"
+    steps:
+      - "Select text, right-click, select 'RangeLink: Send RangeLink (Absolute)'"
+    expected_result: "Terminal receives the RangeLink with an absolute file path (e.g., /full/path/to/file.ts#L3-L5)."
     platform: all
     automated: false
     status: pending
@@ -1011,9 +1054,12 @@ test_cases:
   - id: TC-073
     feature: "Context Menus — Editor Content"
     scenario: "Editor content (with selection): RangeLink: Send Portable Link"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Text selected in editor"
+      - "Terminal bound"
+    steps:
+      - "Select text, right-click, select 'RangeLink: Send Portable Link'"
+    expected_result: "Terminal receives the portable link format (GitHub-style URL with blob path and line anchor)."
     platform: all
     automated: false
     status: pending
@@ -1021,9 +1067,12 @@ test_cases:
   - id: TC-074
     feature: "Context Menus — Editor Content"
     scenario: "Editor content (with selection): RangeLink: Send Portable Link (Absolute)"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Text selected in editor"
+      - "Terminal bound"
+    steps:
+      - "Select text, right-click, select 'RangeLink: Send Portable Link (Absolute)'"
+    expected_result: "Terminal receives the portable link with an absolute file path variant."
     platform: all
     automated: false
     status: pending
@@ -1031,9 +1080,12 @@ test_cases:
   - id: TC-075
     feature: "Context Menus — Editor Content"
     scenario: "Editor content (with selection): RangeLink: Send Selected Text"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Text selected in editor"
+      - "Terminal bound"
+    steps:
+      - "Select 2-3 lines, right-click, select 'RangeLink: Send Selected Text'"
+    expected_result: "Terminal receives the raw selected text (not a link format). Success toast."
     platform: all
     automated: false
     status: pending
@@ -1041,9 +1093,13 @@ test_cases:
   - id: TC-076
     feature: "Context Menus — Editor Content"
     scenario: "Visual separator is visible in editor content context menu"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "Text editor open"
+    steps:
+      - "Right-click inside the editor (with or without selection)"
+      - "Observe the context menu structure"
+    expected_result: "A visual separator line is visible between the RangeLink commands and the rest of the VS Code context menu items."
     platform: all
     automated: false
     status: pending
@@ -1051,9 +1107,13 @@ test_cases:
   - id: TC-077
     feature: "Context Menus — Editor Content"
     scenario: "Editor content: RangeLink: Send This File's Path (absolute)"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A file is open in the editor"
+      - "Terminal bound"
+    steps:
+      - "Right-click inside the editor (no selection needed)"
+      - "Select 'RangeLink: Send This File\'s Path'"
+    expected_result: "Terminal receives the absolute path of the current file."
     platform: all
     automated: false
     status: pending
@@ -1061,9 +1121,13 @@ test_cases:
   - id: TC-078
     feature: "Context Menus — Editor Content"
     scenario: "Editor content: RangeLink: Send This File's Relative Path"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A file is open in the editor"
+      - "Terminal bound"
+    steps:
+      - "Right-click inside the editor"
+      - "Select 'RangeLink: Send This File\'s Relative Path'"
+    expected_result: "Terminal receives the workspace-relative path of the current file."
     platform: all
     automated: false
     status: pending
@@ -1071,9 +1135,13 @@ test_cases:
   - id: TC-079
     feature: "Context Menus — Editor Content"
     scenario: "Editor content: RangeLink: Bind Here"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "File open in editor"
+    steps:
+      - "Right-click inside the editor"
+      - "Select 'RangeLink: Bind Here'"
+    expected_result: "The current file is bound as the text editor destination. Success toast appears."
     platform: all
     automated: false
     status: pending
@@ -1081,9 +1149,12 @@ test_cases:
   - id: TC-080
     feature: "Context Menus — Editor Content"
     scenario: "Editor content: RangeLink: Unbind visible when bound"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A destination is bound"
+    steps:
+      - "Right-click inside any editor"
+      - "Observe for 'RangeLink: Unbind'"
+    expected_result: "'RangeLink: Unbind' is visible in the editor context menu."
     platform: all
     automated: false
     status: pending
@@ -1091,9 +1162,14 @@ test_cases:
   - id: TC-081
     feature: "Context Menus — Editor Content"
     scenario: "Selection-dependent items hidden when no text is selected"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Editor open"
+      - "No text selected (cursor only)"
+    steps:
+      - "Click in the editor to place cursor (no selection)"
+      - "Right-click inside the editor"
+      - "Observe which RangeLink items are present"
+    expected_result: "'Send RangeLink', 'Send RangeLink (Absolute)', 'Send Portable Link', 'Send Portable Link (Absolute)', and 'Send Selected Text' are NOT visible. File-path and Bind/Unbind items remain visible."
     platform: all
     automated: false
     status: pending
@@ -1101,9 +1177,13 @@ test_cases:
   - id: TC-082
     feature: "Context Menus — Terminal"
     scenario: "Terminal tab: RangeLink: Bind Here binds that terminal"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "Terminal open"
+    steps:
+      - "Right-click the terminal tab in the terminal panel tab bar"
+      - "Select 'RangeLink: Bind Here'"
+    expected_result: "That terminal is bound as the destination. Success toast appears."
     platform: all
     automated: false
     status: pending
@@ -1111,9 +1191,13 @@ test_cases:
   - id: TC-083
     feature: "Context Menus — Terminal"
     scenario: "Terminal content: RangeLink: Bind Here binds the terminal"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "Terminal open"
+    steps:
+      - "Right-click inside the terminal output area"
+      - "Select 'RangeLink: Bind Here'"
+    expected_result: "Same result as TC-082 — the terminal is bound. Success toast."
     platform: all
     automated: false
     status: pending
@@ -1121,9 +1205,12 @@ test_cases:
   - id: TC-084
     feature: "Context Menus — Terminal"
     scenario: "Terminal: RangeLink: Unbind is visible when a destination is bound"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A destination is currently bound"
+    steps:
+      - "Right-click in a terminal (tab or content area)"
+      - "Observe the context menu"
+    expected_result: "'RangeLink: Unbind' is visible in the terminal context menu."
     platform: all
     automated: false
     status: pending
@@ -1532,9 +1619,14 @@ test_cases:
   - id: TC-112
     feature: "Changed — Two-Verb Vocabulary"
     scenario: "RangeLink: Send RangeLink appears in Command Palette (replaces Copy Range Link)"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "Text selected in a file"
+    steps:
+      - "Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)"
+      - "Type 'Send RangeLink'"
+      - "Verify 'RangeLink: Send RangeLink' appears and is selectable"
+    expected_result: "'RangeLink: Send RangeLink' appears in the Command Palette. No old 'Copy Range Link' entries remain."
     platform: all
     automated: false
     status: pending
@@ -1542,9 +1634,14 @@ test_cases:
   - id: TC-113
     feature: "Changed — Two-Verb Vocabulary"
     scenario: "RangeLink: Send RangeLink (Absolute) in Command Palette"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "Text selected"
+    steps:
+      - "Open Command Palette"
+      - "Type 'Send RangeLink Absolute'"
+      - "Verify 'RangeLink: Send RangeLink (Absolute)' appears"
+    expected_result: "'RangeLink: Send RangeLink (Absolute)' appears and executes correctly."
     platform: all
     automated: false
     status: pending
@@ -1552,9 +1649,14 @@ test_cases:
   - id: TC-114
     feature: "Changed — Two-Verb Vocabulary"
     scenario: "RangeLink: Send Portable Link in Command Palette"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "Text selected"
+    steps:
+      - "Open Command Palette"
+      - "Type 'Send Portable Link'"
+      - "Verify 'RangeLink: Send Portable Link' appears"
+    expected_result: "'RangeLink: Send Portable Link' appears and executes correctly."
     platform: all
     automated: false
     status: pending
@@ -1562,9 +1664,14 @@ test_cases:
   - id: TC-115
     feature: "Changed — Two-Verb Vocabulary"
     scenario: "RangeLink: Send Selected Text in Command Palette"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "Text selected"
+    steps:
+      - "Open Command Palette"
+      - "Type 'Send Selected Text'"
+      - "Verify 'RangeLink: Send Selected Text' appears"
+    expected_result: "'RangeLink: Send Selected Text' appears and sends the raw text."
     platform: all
     automated: false
     status: pending
@@ -1587,9 +1694,13 @@ test_cases:
   - id: TC-117
     feature: "Changed — Two-Verb Vocabulary"
     scenario: "RangeLink: Copy RangeLink (Absolute) in Command Palette"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+    steps:
+      - "Open Command Palette"
+      - "Type 'Copy RangeLink Absolute'"
+      - "Verify 'RangeLink: Copy RangeLink (Absolute)' appears"
+    expected_result: "'RangeLink: Copy RangeLink (Absolute)' appears and copies the absolute-path variant to clipboard only."
     platform: all
     automated: false
     status: pending
@@ -1597,9 +1708,14 @@ test_cases:
   - id: TC-118
     feature: "Changed — Two-Verb Vocabulary"
     scenario: "RangeLink: Send Current File Path in Command Palette"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Extension installed"
+      - "File open in editor"
+    steps:
+      - "Open Command Palette"
+      - "Type 'Send Current File Path'"
+      - "Verify 'RangeLink: Send Current File Path' appears"
+    expected_result: "'RangeLink: Send Current File Path' appears and sends the current file's path to the bound destination."
     platform: all
     automated: false
     status: pending
@@ -1621,9 +1737,14 @@ test_cases:
   - id: TC-120
     feature: "Changed — Picker When Unbound"
     scenario: "Send Portable Link with no bound destination opens picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "No destination bound"
+      - "Text selected in an editor"
+    steps:
+      - "Open Command Palette"
+      - "Select 'RangeLink: Send Portable Link'"
+      - "Observe — destination picker should appear"
+    expected_result: "Destination picker opens (not a silent clipboard fallback). Selecting a destination binds it and sends the portable link."
     platform: all
     automated: false
     status: pending
@@ -1631,9 +1752,12 @@ test_cases:
   - id: TC-121
     feature: "Changed — Picker When Unbound"
     scenario: "Jump to Bound Destination with no bound destination opens picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "No destination bound"
+    steps:
+      - "Open R-M menu or Command Palette"
+      - "Select 'Jump to Bound Destination' (or equivalent bind-and-jump item)"
+    expected_result: "Destination picker opens so the user can bind a destination first."
     platform: all
     automated: false
     status: pending
@@ -1641,9 +1765,13 @@ test_cases:
   - id: TC-122
     feature: "Changed — Picker When Unbound"
     scenario: "Send Selected Text with no bound destination opens picker"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "No destination bound"
+      - "Text selected in editor"
+    steps:
+      - "Select text"
+      - "Open Command Palette, select 'RangeLink: Send Selected Text'"
+    expected_result: "Destination picker opens. Selecting a destination sends the selected text to it."
     platform: all
     automated: false
     status: pending
@@ -1651,9 +1779,13 @@ test_cases:
   - id: TC-123
     feature: "Changed — Text Editor No Split Required"
     scenario: "Binding a text editor in a single tab group (no split) succeeds"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "Only one tab group open (no editor split)"
+      - "Multiple files open in that one group"
+    steps:
+      - "Press Cmd+R Cmd+D"
+      - "Select any open file from the list"
+    expected_result: "The file is bound successfully. Success toast appears. No error about needing a split view or second tab group."
     platform: all
     automated: false
     status: pending
@@ -1690,9 +1822,12 @@ test_cases:
   - id: TC-126
     feature: "Changed — Editor Binding Validation"
     scenario: "Binding a git diff view shows clear rejection: Cannot bind to read-only editor (git)"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A git diff view is open in VS Code"
+    steps:
+      - "Focus the git diff editor"
+      - "Press Cmd+R Cmd+D and select the diff view, or right-click → 'RangeLink: Bind Here'"
+    expected_result: "A clear rejection message appears (e.g., 'Cannot bind to read-only editor'). The git diff view is not bound."
     platform: all
     automated: false
     status: pending
@@ -1700,9 +1835,12 @@ test_cases:
   - id: TC-127
     feature: "Changed — Editor Binding Validation"
     scenario: "Binding an output panel shows clear rejection message"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "An Output panel is open (e.g., Extension Host output)"
+    steps:
+      - "Focus the output panel"
+      - "Press Cmd+R Cmd+D and select the output panel, or use 'Bind Here' context menu"
+    expected_result: "Clear rejection message. Output panel is not bound."
     platform: all
     automated: false
     status: pending
@@ -1710,9 +1848,12 @@ test_cases:
   - id: TC-128
     feature: "Changed — Editor Binding Validation"
     scenario: "Binding the Settings UI shows clear rejection message"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "VS Code Settings (Cmd+,) is open"
+    steps:
+      - "Focus the Settings editor"
+      - "Try to bind via Cmd+R Cmd+D or context menu 'Bind Here'"
+    expected_result: "Clear rejection message. Settings UI is not bound."
     platform: all
     automated: false
     status: pending
@@ -1720,9 +1861,12 @@ test_cases:
   - id: TC-129
     feature: "Changed — Editor Binding Validation"
     scenario: "Binding a binary file shows: Cannot bind to [file] - binary file"
-    preconditions: []
-    steps: []
-    expected_result: ""
+    preconditions:
+      - "A binary file (e.g., a .png image) is open in VS Code"
+    steps:
+      - "Press Cmd+R Cmd+D"
+      - "Select the binary file from the picker"
+    expected_result: "Rejection message: 'Cannot bind to [filename] - binary file' (or equivalent). File is not bound."
     platform: all
     automated: false
     status: pending
