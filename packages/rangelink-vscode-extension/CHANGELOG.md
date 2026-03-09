@@ -90,6 +90,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Keyboard shortcut:** `Cmd+R Cmd+U` (Mac) / `Ctrl+R Ctrl+U` (Win/Linux)
   - Previously only accessible via Command Palette and context menus
 - **Smart Padding settings documented** - All 4 `smartPadding.*` settings now in README Configuration section (#270)
+- **Clickable File Paths** - Plain file paths in terminal output and editor documents are now clickable (#253)
+  - `Cmd+click` (Mac) / `Ctrl+click` (Win/Linux) navigates directly to the file in the editor
+  - Supports quoted paths with spaces (e.g., `"/path/with spaces/file.ts"`), absolute paths (`/path/to/file.ts`), relative paths (`./file.ts`, `../file.ts`), and tilde paths (`~/file.ts`)
+  - File existence is validated on click (not during detection) to keep terminal and document scanning fast
+  - Works alongside existing RangeLink `#L` navigation — no conflicts
 
 <!-- TODO: #366 unhide when bookmarks graduate from beta — re-add these entries to the sections above
 - R-M menu: add "List Bookmarks / Manage Bookmarks" bullet
