@@ -3,14 +3,25 @@ import { DelimiterConfig } from '../types/DelimiterConfig';
 import { escapeRegex } from './escapeRegex';
 
 /**
- * URL exclusion patterns for RangeLink detection.
+ * URL exclusion patterns for RangeLink and file path detection.
  *
- * These prevent web URLs from being matched as RangeLinks:
- * - NOT_AFTER_URL_CHAR: Lookbehind to block matches mid-URL
+ * These prevent web URLs from being matched as links:
+ * - NOT_AFTER_URL_CHAR: Lookbehind to block matches mid-URL (exported for reuse in file path detection)
  * - NO_WEB_URL_SCHEME: Lookahead to block matches at URL scheme start
  */
-const NOT_AFTER_URL_CHAR = '(?<![a-zA-Z0-9:/._?&=%~\\-\\]])';
+export const NOT_AFTER_URL_CHAR = '(?<![a-zA-Z0-9:/._?&=%~\\-\\]])';
 const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
+
+/**
+ * File path sub-patterns for buildFilePathPattern().
+ *
+ * Defined at module scope so they are computed once, not on each call.
+ */
+const FP_DOUBLE_QUOTED = '"(?<dq>[^"]+)"';
+const FP_SINGLE_QUOTED = "'(?<sq>[^']+)'";
+const FP_ABSOLUTE = `${NOT_AFTER_URL_CHAR}/[\\w\\-./@]+\\.\\w+`;
+const FP_RELATIVE = `\\.{1,2}/[\\w\\-./@]+\\.\\w+`;
+const FP_TILDE = `~/[\\w\\-./@]+\\.\\w+`;
 
 /**
  * Path character class for RangeLink detection.
@@ -101,3 +112,35 @@ export const buildLinkPattern = (delimiters: DelimiterConfig): RegExp => {
   // Return with global flag to find all matches in a line
   return new RegExp(pattern, 'g');
 };
+
+/**
+ * Extract the file path string from a regex match produced by buildFilePathPattern().
+ *
+ * Double-quoted matches capture path content (without quotes) in named group `dq`.
+ * Single-quoted matches capture path content (without quotes) in named group `sq`.
+ * All other patterns produce no named groups — match[0] is the full unquoted path.
+ */
+export const extractFilePath = (match: RegExpExecArray): string =>
+  match.groups?.dq ?? match.groups?.sq ?? match[0];
+
+/**
+ * Builds a RegExp pattern for detecting plain file paths in text.
+ *
+ * Extends URL exclusion from buildLinkPattern for consistent detection behaviour.
+ * Supports quoted paths (with spaces), absolute, relative, and tilde-prefixed paths.
+ * Paths inside common wrappers (`{}`, `[]`, `()`, markdown links) are detected
+ * correctly because wrapper characters are not part of the matched path.
+ *
+ * **Supported formats:**
+ * - Double-quoted: `"/path/with spaces/file.ts"` — group `dq` captures content
+ * - Single-quoted: `'/path/to/file.ts'` — group `sq` captures content
+ * - Absolute unquoted: `/path/to/file.ts`
+ * - Relative: `./file.ts` or `../file.ts`
+ * - Tilde: `~/file.ts`
+ *
+ * Use extractFilePath() to get the clean path string from a match (strips quotes).
+ *
+ * @returns RegExp with global flag for detecting all file paths in text
+ */
+export const buildFilePathPattern = (): RegExp =>
+  new RegExp(`${FP_DOUBLE_QUOTED}|${FP_SINGLE_QUOTED}|${FP_ABSOLUTE}|${FP_RELATIVE}|${FP_TILDE}`, 'g');
