@@ -386,6 +386,17 @@ When enabled, a dialog appears with options: "Save & Generate", "Generate Anyway
 
 When you have more terminals than this threshold, the destination picker shows a "More terminals..." option instead of listing all terminals individually.
 
+### Clipboard Settings <sup>Unreleased</sup>
+
+| Setting                        | Default    | Description                                            |
+| ------------------------------ | ---------- | ------------------------------------------------------ |
+| `rangelink.clipboard.preserve` | `"always"` | Save and restore clipboard around transport operations |
+
+**Available values:**
+
+- `"always"` _(default)_ — Before each operation that uses the clipboard as transport (R-L, R-V, R-F), your prior clipboard content is saved and restored afterward. Your clipboard is only permanently overwritten by R-C (Copy RangeLink), where the clipboard is the intended output.
+- `"never"` — Disables preservation. Your clipboard always contains the last RangeLink output, matching the behavior of versions before this setting was introduced.
+
 ### Smart Padding Settings <sup>Unreleased</sup>
 
 | Setting                                | Default  | Description                               |

@@ -1,6 +1,7 @@
 import type { Logger } from 'barebone-logger';
 import type * as vscode from 'vscode';
 
+import type { ClipboardPreserver } from '../../clipboard/ClipboardPreserver';
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
 
 import { AIAssistantFocusCapability } from './AIAssistantFocusCapability';
@@ -22,6 +23,7 @@ import { TerminalFocusCapability } from './TerminalFocusCapability';
 export class FocusCapabilityFactory {
   constructor(
     private readonly ideAdapter: VscodeAdapter,
+    private readonly clipboardPreserver: ClipboardPreserver,
     private readonly logger: Logger,
   ) {}
 
@@ -39,7 +41,7 @@ export class FocusCapabilityFactory {
     return new TerminalFocusCapability(
       this.ideAdapter,
       terminal,
-      new TerminalInsertFactory(this.ideAdapter, this.logger),
+      new TerminalInsertFactory(this.ideAdapter, this.clipboardPreserver, this.logger),
       this.logger,
     );
   }
@@ -48,7 +50,12 @@ export class FocusCapabilityFactory {
     return new AIAssistantFocusCapability(
       this.ideAdapter,
       focusCommands,
-      new AIAssistantInsertFactory(this.ideAdapter, pasteCommands, this.logger),
+      new AIAssistantInsertFactory(
+        this.ideAdapter,
+        pasteCommands,
+        this.clipboardPreserver,
+        this.logger,
+      ),
       this.logger,
     );
   }

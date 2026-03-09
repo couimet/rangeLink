@@ -3,6 +3,7 @@ import type { DelimiterConfigGetter } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { BookmarkService, BookmarksStore } from './bookmarks';
+import { DefaultClipboardPreserver } from './clipboard';
 import {
   AddBookmarkCommand,
   BindToDestinationCommand,
@@ -139,7 +140,8 @@ export function activate(context: vscode.ExtensionContext): void {
   const getDelimiters: DelimiterConfigGetter = delimiterCache.getDelimiters;
 
   // Create capability factories for composition-based destinations
-  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, logger);
+  const clipboardPreserver = new DefaultClipboardPreserver(ideAdapter, configReader, logger);
+  const focusCapabilityFactory = new FocusCapabilityFactory(ideAdapter, clipboardPreserver, logger);
   const eligibilityCheckerFactory = new EligibilityCheckerFactory(logger);
 
   // Create destination registry with capability factories
@@ -198,6 +200,7 @@ export function activate(context: vscode.ExtensionContext): void {
     destinationManager,
     destinationPicker,
     configReader,
+    clipboardPreserver,
     logger,
   );
 

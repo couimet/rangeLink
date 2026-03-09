@@ -8,6 +8,8 @@ import {
   SETTING_SMART_PADDING_PASTE_BOOKMARK,
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations';
+import { RangeLinkExtensionError } from '../errors/RangeLinkExtensionError';
+import { RangeLinkExtensionErrorCodes } from '../errors/RangeLinkExtensionErrorCodes';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { ExtensionResult } from '../types';
 
@@ -77,17 +79,25 @@ export class BookmarkService {
   }
 
   /**
-   * Paste a bookmark's link to clipboard and bound destination (if any).
+   * Send a bookmark's link to the bound destination.
    *
    * - Records access (updates lastAccessedAt, accessCount)
    * - Copies link to clipboard
-   * - If destination bound: sends to destination with smart padding
-   * - If no destination: clipboard only
+   * - Sends to bound destination with smart padding
    *
-   * @param bookmarkId - The ID of the bookmark to paste
+   * @param bookmarkId - The ID of the bookmark to send
    */
-  async pasteBookmark(bookmarkId: BookmarkId): Promise<void> {
-    const logCtx = { fn: 'BookmarkService.pasteBookmark', bookmarkId };
+  async sendBookmark(bookmarkId: BookmarkId): Promise<void> {
+    const logCtx = { fn: 'BookmarkService.sendBookmark', bookmarkId };
+
+    // TODO #385: add clipboard preservation here when bookmarks are exposed
+    if (!this.destinationManager.isBound()) {
+      throw new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_BOUND,
+        message: 'Cannot send bookmark: no destination is currently bound',
+        functionName: 'BookmarkService.sendBookmark',
+      });
+    }
 
     const bookmark = this.bookmarksStore.getById(bookmarkId);
     if (!bookmark) {
@@ -98,25 +108,15 @@ export class BookmarkService {
     await this.bookmarksStore.recordAccess(bookmarkId);
     await this.ideAdapter.writeTextToClipboard(bookmark.link);
 
-    if (this.destinationManager.isBound()) {
-      const paddingMode = this.configReader.getPaddingMode(
-        SETTING_SMART_PADDING_PASTE_BOOKMARK,
-        DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
-      );
-      await this.destinationManager.sendTextToDestination(
-        bookmark.link,
-        `Bookmark pasted: ${bookmark.label}`,
-        paddingMode,
-      );
-      this.logger.debug(
-        { ...logCtx, bookmark, pastedToDestination: true },
-        `Pasted bookmark to destination: ${bookmark.label}`,
-      );
-    } else {
-      this.logger.debug(
-        { ...logCtx, bookmark, pastedToDestination: false },
-        `Copied bookmark to clipboard (no destination bound): ${bookmark.label}`,
-      );
-    }
+    const paddingMode = this.configReader.getPaddingMode(
+      SETTING_SMART_PADDING_PASTE_BOOKMARK,
+      DEFAULT_SMART_PADDING_PASTE_BOOKMARK,
+    );
+    await this.destinationManager.sendTextToDestination(
+      bookmark.link,
+      `Bookmark pasted: ${bookmark.label}`,
+      paddingMode,
+    );
+    this.logger.debug({ ...logCtx, bookmark }, `Sent bookmark to destination: ${bookmark.label}`);
   }
 }

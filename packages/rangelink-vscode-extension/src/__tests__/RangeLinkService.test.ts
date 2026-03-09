@@ -4,6 +4,7 @@ import type { DelimiterConfig, DelimiterConfigGetter } from 'rangelink-core-ts';
 import { LinkType, Result } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import type { ClipboardPreserver } from '../clipboard/ClipboardPreserver';
 import { JumpToDestinationCommand } from '../commands/JumpToDestinationCommand';
 import type { ConfigReader } from '../config';
 import { VSCODE_CMD_TERMINAL_COPY_SELECTION } from '../constants';
@@ -16,6 +17,7 @@ import { MessageCode, PasteContentType } from '../types';
 
 import {
   createMockClipboard,
+  createMockClipboardPreserver,
   createMockConfigReader,
   createMockDestinationManager,
   createMockDestinationPicker,
@@ -45,6 +47,7 @@ let mockVscodeAdapter: VscodeAdapterWithTestHooks;
 let mockDestinationManager: PasteDestinationManager;
 let mockPickerCommand: jest.Mocked<DestinationPicker>;
 let mockConfigReader: jest.Mocked<ConfigReader>;
+let mockClipboardPreserver: jest.Mocked<ClipboardPreserver>;
 let mockLogger: Logger;
 let mockClipboard: MockClipboard;
 let mockSetStatusBarMessage: jest.Mock;
@@ -114,6 +117,7 @@ describe('RangeLinkService', () => {
     mockPickerCommand = createMockDestinationPicker();
     mockClipboard = createMockClipboard();
     mockConfigReader = createMockConfigReader();
+    mockClipboardPreserver = createMockClipboardPreserver();
     mockSetStatusBarMessage = jest.fn().mockReturnValue({ dispose: jest.fn() });
     mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
     mockShowErrorMessage = jest.fn().mockResolvedValue(undefined);
@@ -144,6 +148,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
     });
@@ -267,6 +272,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -348,6 +354,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -424,6 +431,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -665,6 +673,81 @@ describe('RangeLinkService', () => {
         expect(mockSetStatusBarMessage).toHaveBeenCalledWith(expectedMessage, 2000);
       });
     });
+
+    describe('clipboard preservation delegation', () => {
+      it('delegates to ClipboardPreserver for BoundDestination behavior', async () => {
+        const boundService = new RangeLinkService(
+          getDelimiters,
+          mockVscodeAdapter,
+          createMockDestinationManager({
+            isBound: true,
+            boundDestination: createMockTerminalPasteDestination({ displayName: 'Terminal' }),
+          }),
+          mockPickerCommand,
+          mockConfigReader,
+          mockClipboardPreserver,
+          mockLogger,
+        );
+        const executeSpy = jest
+          .spyOn(boundService as any, 'executeCopyAndSend')
+          .mockResolvedValue(undefined);
+        const sendFn = jest.fn();
+        const isEligibleFn = jest.fn();
+
+        await (boundService as any).copyAndSendToDestination({
+          control: {
+            contentType: PasteContentType.Link,
+            destinationBehavior: DestinationBehavior.BoundDestination,
+          },
+          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+          strategies: { sendFn, isEligibleFn },
+          contentName: 'RangeLink',
+          fnName: 'test',
+        });
+
+        expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(1);
+        expect(executeSpy).toHaveBeenCalledWith({
+          control: { contentType: 'Link', destinationBehavior: 'bound-destination' },
+          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+          strategies: { sendFn, isEligibleFn },
+          contentName: 'RangeLink',
+          fnName: 'test',
+        });
+      });
+
+      it('does not preserve when no destination is bound', async () => {
+        await (service as any).copyAndSendToDestination({
+          control: {
+            contentType: PasteContentType.Link,
+            destinationBehavior: DestinationBehavior.BoundDestination,
+          },
+          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+          strategies: { sendFn: jest.fn(), isEligibleFn: jest.fn() },
+          contentName: 'RangeLink',
+          fnName: 'test',
+        });
+
+        expect(mockClipboardPreserver.preserve).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L1');
+      });
+
+      it('does not delegate to ClipboardPreserver for ClipboardOnly behavior', async () => {
+        await (service as any).copyAndSendToDestination({
+          control: {
+            contentType: PasteContentType.Link,
+            destinationBehavior: DestinationBehavior.ClipboardOnly,
+          },
+          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+          strategies: { sendFn: jest.fn(), isEligibleFn: jest.fn() },
+          contentName: 'RangeLink',
+          fnName: 'test',
+        });
+
+        expect(mockClipboardPreserver.preserve).not.toHaveBeenCalled();
+        expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L1');
+        expect(mockClipboard.readText).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('pasteSelectedTextToDestination', () => {
@@ -680,6 +763,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
     });
@@ -699,6 +783,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -770,6 +855,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -841,6 +927,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -920,6 +1007,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -954,6 +1042,7 @@ describe('RangeLinkService', () => {
             mockDestinationManager,
             mockPickerCommand,
             mockConfigReader,
+            mockClipboardPreserver,
             mockLogger,
           );
           mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
@@ -993,6 +1082,7 @@ describe('RangeLinkService', () => {
             mockDestinationManager,
             mockPickerCommand,
             mockConfigReader,
+            mockClipboardPreserver,
             mockLogger,
           );
           mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
@@ -1059,6 +1149,7 @@ describe('RangeLinkService', () => {
             mockDestinationManager,
             mockPickerCommand,
             mockConfigReader,
+            mockClipboardPreserver,
             mockLogger,
           );
 
@@ -1093,6 +1184,7 @@ describe('RangeLinkService', () => {
             mockDestinationManager,
             mockPickerCommand,
             mockConfigReader,
+            mockClipboardPreserver,
             mockLogger,
           );
 
@@ -1132,6 +1224,7 @@ describe('RangeLinkService', () => {
             mockDestinationManager,
             mockPickerCommand,
             mockConfigReader,
+            mockClipboardPreserver,
             mockLogger,
           );
 
@@ -1164,6 +1257,7 @@ describe('RangeLinkService', () => {
             mockDestinationManager,
             mockPickerCommand,
             mockConfigReader,
+            mockClipboardPreserver,
             mockLogger,
           );
         });
@@ -1205,6 +1299,7 @@ describe('RangeLinkService', () => {
             mockDestinationManager,
             mockPickerCommand,
             mockConfigReader,
+            mockClipboardPreserver,
             mockLogger,
           );
         });
@@ -1360,6 +1455,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -1386,6 +1482,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -1450,6 +1547,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -1476,6 +1574,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -1511,6 +1610,7 @@ describe('RangeLinkService', () => {
           boundDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -1544,6 +1644,7 @@ describe('RangeLinkService', () => {
           boundDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -1572,6 +1673,7 @@ describe('RangeLinkService', () => {
           boundDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -1611,6 +1713,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
     });
@@ -1655,6 +1758,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -1697,6 +1801,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -1738,6 +1843,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -1783,6 +1889,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -1819,6 +1926,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -1842,6 +1950,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -1892,6 +2001,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -1936,6 +2046,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
         const mockCopyAndSend = jest
@@ -1980,6 +2091,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -2006,6 +2118,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -2016,6 +2129,25 @@ describe('RangeLinkService', () => {
           '✓ Selected text copied to clipboard',
           'none',
         );
+      });
+    });
+
+    it('delegates clipboard roundtrip preservation to the injected ClipboardPreserver', async () => {
+      const executeSpy = jest
+        .spyOn(service as any, 'executeCopyAndSend')
+        .mockResolvedValue(undefined);
+
+      const result = await service.pasteTerminalSelectionToDestination();
+
+      expect(result).toStrictEqual({ outcome: 'success' });
+      expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(2);
+      expect(mockExecuteCommand).toHaveBeenCalledWith('workbench.action.terminal.copySelection');
+      expect(executeSpy).toHaveBeenCalledWith({
+        control: { contentType: 'Text', destinationBehavior: 'bound-destination' },
+        content: { clipboard: 'terminal selected text', send: 'terminal selected text' },
+        strategies: { sendFn: expect.any(Function), isEligibleFn: expect.any(Function) },
+        contentName: 'Selected text',
+        fnName: 'pasteTerminalSelectionToDestination',
       });
     });
   });
@@ -2049,6 +2181,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
     });
@@ -2093,6 +2226,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -2123,6 +2257,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
     });
@@ -2170,6 +2305,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -2283,6 +2419,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
@@ -2338,6 +2475,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
@@ -2376,6 +2514,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
@@ -2410,6 +2549,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -2483,6 +2623,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -2598,6 +2739,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
@@ -2653,6 +2795,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
@@ -2691,6 +2834,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
@@ -2742,6 +2886,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -2893,6 +3038,7 @@ describe('RangeLinkService', () => {
         createMockDestinationManager({ isBound: false }),
         mockPickerCommand,
         localMockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -3061,6 +3207,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -3102,6 +3249,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -3143,6 +3291,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -3171,6 +3320,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -3250,6 +3400,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -3344,6 +3495,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
 
@@ -3453,6 +3605,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -3477,6 +3630,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockPickerCommand,
         mockConfigReader,
+        mockClipboardPreserver,
         mockLogger,
       );
 
@@ -3510,6 +3664,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -3536,6 +3691,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockPickerCommand,
           mockConfigReader,
+          mockClipboardPreserver,
           mockLogger,
         );
       });
@@ -3648,7 +3804,15 @@ describe('RangeLinkService', () => {
       const mockGenLink = spyOnGenerateLinkFromSelections();
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1C1-L1C22')));
 
-      const svc = new RangeLinkService(getDelimiters, adapter, dm, picker, config, logger);
+      const svc = new RangeLinkService(
+        getDelimiters,
+        adapter,
+        dm,
+        picker,
+        config,
+        mockClipboardPreserver,
+        logger,
+      );
       const jumpCmd = new JumpToDestinationCommand(dm, picker, logger);
 
       // ===== PHASE 1: ALL OPERATIONS WHILE UNBOUND =====

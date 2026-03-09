@@ -496,6 +496,22 @@ describe('package.json contributions', () => {
       });
     });
 
+    describe('clipboard settings', () => {
+      it('rangelink.clipboard.preserve', () => {
+        expect(properties['rangelink.clipboard.preserve']).toStrictEqual({
+          type: 'string',
+          enum: ['always', 'never'],
+          default: 'always',
+          enumDescriptions: [
+            'Save and restore clipboard around operations that use it as transport — your prior clipboard content is preserved (default)',
+            'Never restore clipboard — clipboard always contains last RangeLink output',
+          ],
+          description:
+            'Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism',
+        });
+      });
+    });
+
     describe('delimiter settings', () => {
       it('rangelink.delimiterLine', () => {
         expect(properties['rangelink.delimiterLine']).toStrictEqual({
@@ -620,7 +636,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(11);
+      expect(Object.keys(properties)).toHaveLength(12);
     });
   });
 

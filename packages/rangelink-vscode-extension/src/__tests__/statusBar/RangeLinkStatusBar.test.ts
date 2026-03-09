@@ -53,6 +53,7 @@ describe('RangeLinkStatusBar', () => {
 
   let createStatusBarItemMock: jest.Mock;
   let showQuickPickMock: jest.Mock;
+  let showErrorMessageMock: jest.Mock;
   let executeCommandMock: jest.Mock;
   let mockStatusBarItem: ReturnType<typeof createMockStatusBarItem>;
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -69,11 +70,13 @@ describe('RangeLinkStatusBar', () => {
     mockAvailabilityService = createMockDestinationAvailabilityService();
     createStatusBarItemMock = jest.fn(() => mockStatusBarItem);
     showQuickPickMock = jest.fn().mockResolvedValue(undefined);
+    showErrorMessageMock = jest.fn().mockResolvedValue(undefined);
     executeCommandMock = jest.fn().mockResolvedValue(undefined);
     mockAdapter = createMockVscodeAdapter({
       windowOptions: {
         createStatusBarItem: createStatusBarItemMock,
         showQuickPick: showQuickPickMock,
+        showErrorMessage: showErrorMessageMock,
       },
       commandsOptions: {
         executeCommand: executeCommandMock,
@@ -554,8 +557,6 @@ describe('RangeLinkStatusBar', () => {
         },
         'Bind failed from status bar menu',
       );
-      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
-        .showErrorMessage as jest.Mock;
       expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
     });
 
@@ -707,8 +708,6 @@ describe('RangeLinkStatusBar', () => {
         },
         'Bind failed from overflow terminal picker',
       );
-      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
-        .showErrorMessage as jest.Mock;
       expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
     });
 
@@ -850,8 +849,6 @@ describe('RangeLinkStatusBar', () => {
         },
         'Bind failed from overflow file picker',
       );
-      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
-        .showErrorMessage as jest.Mock;
       expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to bind destination');
     });
 
@@ -875,8 +872,6 @@ describe('RangeLinkStatusBar', () => {
         { fn: 'RangeLinkStatusBar.openMenu', selectedItem: fileMoreItem },
         'No files available in secondary picker',
       );
-      const showErrorMessageMock = mockAdapter.__getVscodeInstance().window
-        .showErrorMessage as jest.Mock;
       expect(showErrorMessageMock).toHaveBeenCalledWith(
         'RangeLink: No active text editor. Open a file and try again.',
       );
@@ -923,7 +918,7 @@ describe('RangeLinkStatusBar', () => {
   });
 
   describe('openMenu - bookmark selection', () => {
-    it('delegates to BookmarkService.pasteBookmark when bookmark item is selected', async () => {
+    it('delegates to BookmarkService.sendBookmark when a bookmark item is selected', async () => {
       showQuickPickMock.mockResolvedValue({
         label: '    $(bookmark) Test Bookmark',
         itemKind: 'bookmark',
@@ -941,7 +936,7 @@ describe('RangeLinkStatusBar', () => {
 
       expect(executeCommandMock).not.toHaveBeenCalled();
       expect(mockDestinationManager.bindAndFocus).not.toHaveBeenCalled();
-      expect(mockBookmarkService.pasteBookmark).toHaveBeenCalledWith('bookmark-1');
+      expect(mockBookmarkService.sendBookmark).toHaveBeenCalledWith('bookmark-1');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         {
           fn: 'RangeLinkStatusBar.openMenu',
@@ -953,6 +948,77 @@ describe('RangeLinkStatusBar', () => {
         },
         'Bookmark item selected',
       );
+    });
+
+    it('shows error message when sendBookmark throws', async () => {
+      const sendError = new RangeLinkExtensionError({
+        code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_BOUND,
+        message: 'Cannot send bookmark: no destination is currently bound',
+        functionName: 'BookmarkService.sendBookmark',
+      });
+      showQuickPickMock.mockResolvedValue({
+        label: '    $(bookmark) Test Bookmark',
+        itemKind: 'bookmark',
+        bookmarkId: 'bookmark-1',
+      });
+      mockBookmarkService.sendBookmark.mockRejectedValue(sendError);
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      const selectedItem = {
+        label: '    $(bookmark) Test Bookmark',
+        itemKind: 'bookmark',
+        bookmarkId: 'bookmark-1',
+      };
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem, error: sendError },
+        'Bookmark send failed',
+      );
+      expect(showErrorMessageMock).toHaveBeenCalledWith(
+        'RangeLink: Cannot send bookmark — no destination is currently bound',
+      );
+      expect(mockLogger.debug).toHaveBeenCalledTimes(1);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.constructor' },
+        'Status bar item created',
+      );
+    });
+
+    it('shows generic error message when sendBookmark throws a non-destination error', async () => {
+      const sendError = new Error('clipboard write failed');
+      showQuickPickMock.mockResolvedValue({
+        label: '    $(bookmark) Test Bookmark',
+        itemKind: 'bookmark',
+        bookmarkId: 'bookmark-1',
+      });
+      mockBookmarkService.sendBookmark.mockRejectedValue(sendError);
+      const statusBar = new RangeLinkStatusBar(
+        mockAdapter,
+        mockDestinationManager,
+        mockAvailabilityService,
+        mockBookmarkService,
+        mockLogger,
+      );
+
+      await statusBar.openMenu();
+
+      const selectedItem = {
+        label: '    $(bookmark) Test Bookmark',
+        itemKind: 'bookmark',
+        bookmarkId: 'bookmark-1',
+      };
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { fn: 'RangeLinkStatusBar.openMenu', selectedItem, error: sendError },
+        'Bookmark send failed',
+      );
+      expect(showErrorMessageMock).toHaveBeenCalledWith('RangeLink: Failed to send bookmark');
     });
   });
 

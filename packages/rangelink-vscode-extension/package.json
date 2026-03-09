@@ -434,6 +434,19 @@
           "default": 5,
           "minimum": 1,
           "description": "Maximum terminals shown inline in destination picker (extras collapsed into 'More terminals...')"
+        },
+        "rangelink.clipboard.preserve": {
+          "type": "string",
+          "enum": [
+            "always",
+            "never"
+          ],
+          "default": "always",
+          "enumDescriptions": [
+            "Save and restore clipboard around operations that use it as transport — your prior clipboard content is preserved (default)",
+            "Never restore clipboard — clipboard always contains last RangeLink output"
+          ],
+          "description": "Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism"
         }
       }
     },

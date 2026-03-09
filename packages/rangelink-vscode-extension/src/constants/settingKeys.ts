@@ -12,6 +12,12 @@
 export const SETTING_NAMESPACE = 'rangelink';
 
 // =============================================================================
+// Clipboard Settings
+// =============================================================================
+
+export const SETTING_CLIPBOARD_PRESERVE = 'clipboard.preserve';
+
+// =============================================================================
 // Feature Flags — TODO: #366 remove when bookmarks graduates from beta
 // =============================================================================
 

@@ -7,6 +7,7 @@
 
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
+import type { ClipboardPreservationMode } from '../types/ClipboardPreservationMode';
 import type { PaddingMode } from '../utils/applySmartPadding';
 
 // =============================================================================
@@ -14,6 +15,12 @@ import type { PaddingMode } from '../utils/applySmartPadding';
 // =============================================================================
 
 export const DEFAULT_FEATURES_BOOKMARKS_ENABLED = false;
+
+// =============================================================================
+// Clipboard Defaults
+// =============================================================================
+
+export const DEFAULT_CLIPBOARD_PRESERVE: ClipboardPreservationMode = 'always';
 
 // =============================================================================
 // Delimiter Defaults (re-exported from core for extension use)
