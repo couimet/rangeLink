@@ -4,6 +4,8 @@ export type { BoundState } from './BoundState';
 export type { ClipboardPreservationMode } from './ClipboardPreservationMode';
 export type { EligibleFile } from './EligibleFile';
 export type { EligibleTerminal } from './EligibleTerminal';
+export type { FilePathClickArgs } from './FilePathClickArgs';
+export type { FilePathTerminalLink } from './FilePathTerminalLink';
 export { BehaviourAfterPaste } from './BehaviourAfterPaste';
 export type {
   BindOptions,
