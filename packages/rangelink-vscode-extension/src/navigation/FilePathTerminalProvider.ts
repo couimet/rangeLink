@@ -2,7 +2,6 @@ import type { Logger } from 'barebone-logger';
 import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import type { FilePathTerminalLink } from '../types';
 
 import type { FilePathNavigationHandler } from './FilePathNavigationHandler';
@@ -27,12 +26,10 @@ export class FilePathTerminalProvider
    * Create a new file path terminal link provider.
    *
    * @param handler - Navigation handler for file path navigation
-   * @param ideAdapter - VSCode adapter for UI operations
    * @param logger - Logger instance for structured logging
    */
   constructor(
     private readonly handler: FilePathNavigationHandler,
-    private readonly ideAdapter: VscodeAdapter,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
