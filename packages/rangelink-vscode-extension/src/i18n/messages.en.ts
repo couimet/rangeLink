@@ -56,6 +56,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.ERROR_BOOKMARK_NO_ACTIVE_EDITOR]:
     'RangeLink: Cannot add bookmark - no active editor',
   [MessageCode.ERROR_BOOKMARK_SAVE_FAILED]: 'RangeLink: Failed to save bookmark',
+  [MessageCode.ERROR_BOOKMARK_SEND_FAILED]: 'RangeLink: Failed to send bookmark',
   [MessageCode.ERROR_BOOKMARK_SEND_NO_DESTINATION]:
     'RangeLink: Cannot send bookmark — no destination is currently bound',
   [MessageCode.ERROR_BOOKMARK_UNTITLED_FILE]:
