@@ -46,6 +46,10 @@ describe('FilePathTerminalProvider', () => {
           data: '/path/to/file.ts',
         },
       ]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'FilePathTerminalProvider.provideTerminalLinks', lineLength: 32, linksFound: 1 },
+        'Scanned terminal line for file paths',
+      );
     });
 
     it('should detect relative path', () => {
@@ -95,20 +99,6 @@ describe('FilePathTerminalProvider', () => {
           fn: 'FilePathTerminalProvider.provideTerminalLinks',
           lineLength: 20,
           linksFound: 0,
-        },
-        'Scanned terminal line for file paths',
-      );
-    });
-
-    it('should log scan result', () => {
-      const context = createMockTerminalContext('See /path/to/file.ts');
-      provider.provideTerminalLinks(context);
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'FilePathTerminalProvider.provideTerminalLinks',
-          lineLength: 20,
-          linksFound: 1,
         },
         'Scanned terminal line for file paths',
       );
