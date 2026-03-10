@@ -119,14 +119,14 @@ suite('Link Generation', () => {
     );
   });
 
-  // TC-137: Angle-bracket-wrapped — not supported: PATH_CHAR excludes < > (buildLinkPattern.ts:27) to prevent false positives in prose and HTML
-  test('TC-137: angle-bracket-wrapped link (<src/foo.ts#L5>) is NOT detected — unsupported format', () => {
+  // TC-137: Angle-bracket-wrapped
+  test('TC-137: detects angle-bracket-wrapped link (<src/foo.ts#L5>)', () => {
     const links = findLinksInText('<src/foo.ts#L5>\n', DEFAULT_DELIMITERS, LOGGER);
 
-    assert.strictEqual(
-      links.length,
-      0,
-      `Expected 0 RangeLinks for angle-bracket-wrapped link but got ${links.length}`,
+    assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
+    assert.ok(
+      links[0].parsed.path.includes('foo.ts'),
+      `Expected path to include foo.ts: ${links[0].parsed.path}`,
     );
   });
 
