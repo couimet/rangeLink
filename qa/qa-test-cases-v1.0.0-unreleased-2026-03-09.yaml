@@ -623,7 +623,7 @@ test_cases:
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. File path sent to terminal; clipboard preserved.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-045
@@ -673,7 +673,7 @@ test_cases:
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains the RangeLink (e.g. src/utils/helper.ts#L2-L4). CLIPBOARD_SENTINEL is gone.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-048

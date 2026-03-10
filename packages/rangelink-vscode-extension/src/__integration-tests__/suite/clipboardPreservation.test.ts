@@ -15,6 +15,7 @@ const getWorkspaceRoot = (): string => {
 suite('Clipboard Preservation', () => {
   let testFileUri: vscode.Uri;
   let editor: vscode.TextEditor;
+  let terminal: vscode.Terminal;
 
   suiteSetup(async () => {
     const ext = vscode.extensions.getExtension('couimet.rangelink');
@@ -27,9 +28,18 @@ suite('Clipboard Preservation', () => {
 
     const doc = await vscode.workspace.openTextDocument(testFileUri);
     editor = await vscode.window.showTextDocument(doc);
+
+    // Bind a terminal so R-L and R-F send to a destination without opening QuickPick.
+    // bindToTerminalHere binds the focused terminal to the previously active text editor.
+    terminal = vscode.window.createTerminal({ name: 'rl-clipboard-test' });
+    terminal.show(true);
+    await new Promise<void>((resolve) => setTimeout(resolve, 500));
+    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    editor = await vscode.window.showTextDocument(doc);
   });
 
   suiteTeardown(async () => {
+    terminal.dispose();
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     try {
       fs.unlinkSync(testFileUri.fsPath);
@@ -106,14 +116,39 @@ suite('Clipboard Preservation', () => {
     );
   });
 
-  // TC-044, TC-045, TC-047: R-L clipboard preservation (preserve=always restores, preserve=never does not)
-  // Skipped: R-L (rangelink.copyLinkWithRelativePath) requires a bound destination. Without one, it opens
-  // QuickPick which blocks indefinitely in the extension host. Binding a text editor destination requires
-  // splitting the editor and calling rangelink.bindToTextEditorHere from that split context — more than
-  // 10 lines of setup and a text editor destination does not use clipboard as transport anyway (it inserts
-  // text directly), so it would not exercise the preserve=always save/restore path. Manual testing required
-  // per the QA plan (TC-044, TC-045, TC-047).
-  test.skip('TC-044: R-L with preserve=always restores sentinel to clipboard after send — requires bound destination (manual)', () => {});
-  test.skip('TC-045: R-L with preserve=always and no prior clipboard content — requires bound destination (manual)', () => {});
-  test.skip('TC-047: R-L with preserve=never leaves clipboard with last RangeLink output — requires bound destination (manual)', () => {});
+  // TC-044: preserve=always — R-F sends file path to terminal and restores clipboard
+  test('TC-044: R-F with preserve=always restores clipboard to sentinel after send', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
+
+    await vscode.commands.executeCommand('rangelink.pasteFileRelativePath');
+    const clipboard = await vscode.env.clipboard.readText();
+
+    assert.strictEqual(
+      clipboard,
+      SENTINEL,
+      `Expected clipboard to be restored to sentinel after R-F with preserve=always, but got: ${clipboard}`,
+    );
+  });
+
+  // TC-047: preserve=never — R-L leaves clipboard with the generated link, not the sentinel
+  test('TC-047: R-L with preserve=never leaves clipboard with the generated link', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
+
+    await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
+    const clipboard = await vscode.env.clipboard.readText();
+
+    assert.notStrictEqual(
+      clipboard,
+      SENTINEL,
+      'Expected clipboard NOT to be restored to sentinel when preserve=never',
+    );
+    assert.ok(
+      clipboard.includes('#L'),
+      `Expected clipboard to contain the generated link but got: ${clipboard}`,
+    );
+  });
 });

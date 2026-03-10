@@ -72,12 +72,4 @@ suite('Dirty Buffer Warning', () => {
     );
   });
 
-  // TC-085, TC-086, TC-087: dirty buffer warning dialog paths (Save & Generate, Generate Anyway, Dismiss)
-  // Skipped: handleDirtyBufferWarning calls ideAdapter.showWarningMessage with modal buttons ("Save & Generate",
-  // "Generate Anyway"). The real VS Code API (vscode.window.showWarningMessage) blocks until the user clicks
-  // a button — there is no programmatic way to click those buttons in @vscode/test-cli integration tests
-  // without a UI automation framework (e.g., Playwright). Manual testing required per the QA plan.
-  test.skip('TC-085: dirty buffer → invoke send → warning dialog appears (manual — dialog blocks in extension host)', () => {});
-  test.skip('TC-086: dirty buffer → click "Save & Generate" → file saved and link generated (manual — dialog blocks)', () => {});
-  test.skip('TC-087: dirty buffer → click "Generate Anyway" → file still dirty, link generated (manual — dialog blocks)', () => {});
 });
