@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 suite('RangeLink Integration Tests', () => {
   test('placeholder — integration test runner is working', () => {

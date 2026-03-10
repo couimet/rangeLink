@@ -1,6 +1,7 @@
-import assert from 'assert';
-import * as fs from 'fs';
-import * as path from 'path';
+import assert from 'node:assert';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+
 import * as vscode from 'vscode';
 
 const SENTINEL = 'rangelink-test-sentinel-value';

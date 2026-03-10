@@ -1,9 +1,10 @@
-import assert from 'assert';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as vscode from 'vscode';
+import assert from 'node:assert';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+
 import { NoOpLogger } from 'barebone-logger';
 import { findLinksInText, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import * as vscode from 'vscode';
 
 const LOGGER = new NoOpLogger();
 
