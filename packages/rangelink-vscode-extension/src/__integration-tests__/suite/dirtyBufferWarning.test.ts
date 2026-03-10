@@ -71,5 +71,4 @@ suite('Dirty Buffer Warning', () => {
       `Expected clipboard to contain a line reference but got: ${clipboard}`,
     );
   });
-
 });
