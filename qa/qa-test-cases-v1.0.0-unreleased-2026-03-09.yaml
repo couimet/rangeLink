@@ -589,7 +589,7 @@ test_cases:
       - 'Press Cmd+V in any text field'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL (not the RangeLink). Clipboard was silently restored after delivery.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-043
@@ -606,7 +606,7 @@ test_cases:
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. Terminal text sent to destination; clipboard preserved.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-044
@@ -657,7 +657,7 @@ test_cases:
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. RangeLink sent to terminal; clipboard preserved.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-047
@@ -1276,7 +1276,7 @@ test_cases:
       - 'Observe file state and terminal'
     expected_result: 'File still dirty (modified indicator remains). RangeLink generated from current unsaved state and sent.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-089
@@ -1886,7 +1886,7 @@ test_cases:
       - 'Observe the selection in the editor'
     expected_result: 'Line 10 is selected in its entirety (from column 0 to end of line). The cursor is not placed at just the first character.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-131
@@ -1900,7 +1900,7 @@ test_cases:
       - 'Press Enter'
     expected_result: 'Lines 10 through 15 are selected. The selection spans all six lines fully.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-132
@@ -1915,7 +1915,7 @@ test_cases:
       - 'Press Cmd+R Cmd+L to generate the link'
     expected_result: 'The generated link is src/utils/helper.ts#L20 (single-line reference). NOT #L20-L21. The trailing newline is excluded.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-133
@@ -1930,7 +1930,7 @@ test_cases:
       - 'Hold Cmd (Mac) and click the link in the terminal'
     expected_result: 'VS Code opens src/utils/helper.ts and selects lines 5-10. Backtick wrapping did not prevent link detection.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-134
@@ -1943,7 +1943,7 @@ test_cases:
       - 'Cmd-click the link'
     expected_result: 'Navigates to line 5 of the file. Single quotes did not break link detection.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-135
@@ -1956,7 +1956,7 @@ test_cases:
       - 'Cmd-click the link'
     expected_result: 'Navigates to line 5. Double quotes did not break link detection.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-136
@@ -1969,7 +1969,7 @@ test_cases:
       - 'Cmd-click the link'
     expected_result: 'Navigates to line 5. Angle brackets did not break link detection.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-137
@@ -1983,7 +1983,7 @@ test_cases:
       - 'Cmd-click the link'
     expected_result: 'VS Code opens src/utils/helper.ts and navigates to line 10. The [label](path#L10) syntax is recognized as a RangeLink document link.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-138
@@ -1996,7 +1996,7 @@ test_cases:
       - 'Observe whether RangeLink treats it as a local link'
     expected_result: 'RangeLink does NOT intercept the URL. No navigation to a local file occurs. The https:// prefix is correctly excluded.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-139
@@ -2009,7 +2009,7 @@ test_cases:
       - 'Hover over it to inspect the link tooltip (if any)'
     expected_result: 'RangeLink does not provide a document link for this text. No RangeLink navigation offered.'
     platform: all
-    automated: false
+    automated: true
     status: pending
 
   - id: TC-140
