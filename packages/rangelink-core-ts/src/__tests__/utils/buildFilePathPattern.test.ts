@@ -5,6 +5,7 @@ import {
   PROSE_INPUTS,
   QUOTED_FALSE_POSITIVES,
   QUOTED_TRUE_POSITIVES,
+  RANGELINK_COEXISTENCE,
   SPECIAL_CHAR_PATHS,
   URL_INPUTS,
 } from '../fixtures/pathPatternInputs';
@@ -287,6 +288,24 @@ describe('buildFilePathPattern', () => {
 
     it('should NOT match English possessive apostrophes as quote delimiters', () => {
       expect(matchesPattern(PROSE_INPUTS.POSSESSIVES_WITH_BACKTICK_CODE)).toStrictEqual([]);
+    });
+  });
+
+  describe('RangeLink coexistence', () => {
+    it('should NOT match relative path followed by #L (RangeLink owns it)', () => {
+      expect(matchesPattern(RANGELINK_COEXISTENCE.RELATIVE_WITH_RANGELINK)).toStrictEqual([]);
+    });
+
+    it('should NOT match absolute path followed by #L (RangeLink owns it)', () => {
+      expect(matchesPattern(RANGELINK_COEXISTENCE.ABSOLUTE_WITH_RANGELINK)).toStrictEqual([]);
+    });
+
+    it('should NOT match tilde path followed by #L (RangeLink owns it)', () => {
+      expect(matchesPattern(RANGELINK_COEXISTENCE.TILDE_WITH_RANGELINK)).toStrictEqual([]);
+    });
+
+    it('should still match a plain relative path without #L suffix', () => {
+      expect(matchesPattern(RANGELINK_COEXISTENCE.CLEAN_RELATIVE)).toStrictEqual(['./src/a.ts']);
     });
   });
 

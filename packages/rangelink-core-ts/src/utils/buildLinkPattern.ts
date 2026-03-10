@@ -19,9 +19,12 @@ const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
  */
 const FP_DOUBLE_QUOTED = '"(?<dq>[^"\\n`?*]*\\.\\w+)"';
 const FP_SINGLE_QUOTED = "'(?<sq>[^'\\n`?*]*\\.\\w+)'";
-const FP_ABSOLUTE = `${NOT_AFTER_URL_CHAR}/[\\w\\-./@]+\\.\\w+`;
-const FP_RELATIVE = `\\.{1,2}/[\\w\\-./@]+\\.\\w+`;
-const FP_TILDE = `~/[\\w\\-./@]+\\.\\w+`;
+// Backtracking guard: (?!\w) prevents \w+ from giving back chars to satisfy #L\d;
+// (?!#L\d) then blocks the full RangeLink suffix at the true end of the extension.
+const FP_NOT_BEFORE_RANGELINK = '(?!\\w|#L\\d)';
+const FP_ABSOLUTE = `${NOT_AFTER_URL_CHAR}/[\\w\\-./@]+\\.\\w+${FP_NOT_BEFORE_RANGELINK}`;
+const FP_RELATIVE = `\\.{1,2}/[\\w\\-./@]+\\.\\w+${FP_NOT_BEFORE_RANGELINK}`;
+const FP_TILDE = `~/[\\w\\-./@]+\\.\\w+${FP_NOT_BEFORE_RANGELINK}`;
 
 /**
  * Path character class for RangeLink detection.

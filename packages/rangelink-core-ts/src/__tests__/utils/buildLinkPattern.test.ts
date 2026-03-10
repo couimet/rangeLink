@@ -5,6 +5,7 @@ import {
   BOUNDARY_INPUTS,
   MULTI_MATCH_INPUTS,
   PROSE_INPUTS,
+  RANGELINK_COEXISTENCE,
   SPECIAL_CHAR_PATHS,
   URL_INPUTS,
 } from '../fixtures/pathPatternInputs';
@@ -939,6 +940,33 @@ describe('buildLinkPattern', () => {
       expect(matches).toHaveLength(2);
       expect(matches[0][1]).toBe('/abs/file.ts');
       expect(matches[1][1]).toBe('./rel/file.ts');
+    });
+  });
+
+  describe('coexistence with FilePathDocumentProvider / FilePathTerminalProvider', () => {
+    const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+    it('should match relative path with #L suffix (FilePathProvider rejects it)', () => {
+      const matches = [...RANGELINK_COEXISTENCE.RELATIVE_WITH_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][1]).toBe('./src/a.ts');
+    });
+
+    it('should match absolute path with #L suffix (FilePathProvider rejects it)', () => {
+      const matches = [...RANGELINK_COEXISTENCE.ABSOLUTE_WITH_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][1]).toBe('/abs/file.ts');
+    });
+
+    it('should match tilde path with #L suffix (FilePathProvider rejects it)', () => {
+      const matches = [...RANGELINK_COEXISTENCE.TILDE_WITH_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][1]).toBe('~/config.ts');
+    });
+
+    it('should NOT match clean path without #L suffix (FilePathProvider owns it)', () => {
+      const matches = [...RANGELINK_COEXISTENCE.CLEAN_RELATIVE.matchAll(pattern)];
+      expect(matches).toHaveLength(0);
     });
   });
 });

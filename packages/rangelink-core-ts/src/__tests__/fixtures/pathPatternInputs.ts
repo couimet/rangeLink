@@ -141,6 +141,22 @@ export const BOUNDARY_INPUTS = {
 // Multiple-match inputs — lines containing more than one detectable path
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// RangeLink coexistence — paths that must NOT match buildFilePathPattern
+// because RangeLinkDocumentProvider / RangeLinkTerminalProvider own the full link
+// ---------------------------------------------------------------------------
+
+export const RANGELINK_COEXISTENCE = {
+  RELATIVE_WITH_RANGELINK: './src/a.ts#L10',
+  ABSOLUTE_WITH_RANGELINK: '/abs/file.ts#L5',
+  TILDE_WITH_RANGELINK: '~/config.ts#L1',
+  CLEAN_RELATIVE: './src/a.ts',
+} as const;
+
+// ---------------------------------------------------------------------------
+// Multiple-match inputs — lines containing more than one detectable path
+// ---------------------------------------------------------------------------
+
 export const MULTI_MATCH_INPUTS = {
   TWO_RELATIVE_PATHS: 'From ./src/a.ts to ./src/b.ts',
   TWO_RANGELINKS: 'Compare file1.ts#L10 with file2.ts#L20',
