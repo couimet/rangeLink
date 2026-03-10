@@ -12,19 +12,6 @@ import { escapeRegex } from './escapeRegex';
 export const NOT_AFTER_URL_CHAR = '(?<![a-zA-Z0-9:/._?&=%~\\-\\]])';
 const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
 
-/**
- * File path sub-patterns for buildFilePathPattern().
- *
- * Defined at module scope so they are computed once, not on each call.
- */
-const FP_DOUBLE_QUOTED = '"(?<dq>[^"\\n`?*]*\\.\\w+)"';
-const FP_SINGLE_QUOTED = "'(?<sq>[^'\\n`?*]*\\.\\w+)'";
-// Backtracking guard: (?!\w) prevents \w+ from giving back chars to satisfy #L\d;
-// (?!#L\d) then blocks the full RangeLink suffix at the true end of the extension.
-const FP_NOT_BEFORE_RANGELINK = '(?!\\w|#L\\d)';
-const FP_ABSOLUTE = `${NOT_AFTER_URL_CHAR}/[\\w\\-./@]+\\.\\w+${FP_NOT_BEFORE_RANGELINK}`;
-const FP_RELATIVE = `\\.{1,2}/[\\w\\-./@]+\\.\\w+${FP_NOT_BEFORE_RANGELINK}`;
-const FP_TILDE = `~/[\\w\\-./@]+\\.\\w+${FP_NOT_BEFORE_RANGELINK}`;
 
 /**
  * Path character class for RangeLink detection.
@@ -134,6 +121,11 @@ export const extractFilePath = (match: RegExpExecArray): string =>
  * Paths inside common wrappers (`{}`, `[]`, `()`, markdown links) are detected
  * correctly because wrapper characters are not part of the matched path.
  *
+ * The delimiter config is used to derive the RangeLink coexistence lookahead so that
+ * paths immediately followed by any valid RangeLink suffix (single or double hash,
+ * including rectangular `##` mode and custom delimiter pairs) are excluded —
+ * RangeLinkDocumentProvider / RangeLinkTerminalProvider own those matches.
+ *
  * **Supported formats:**
  * - Double-quoted: `"/path/with spaces/file.ts"` — group `dq` captures content
  * - Single-quoted: `'/path/to/file.ts'` — group `sq` captures content
@@ -143,10 +135,28 @@ export const extractFilePath = (match: RegExpExecArray): string =>
  *
  * Use extractFilePath() to get the clean path string from a match (strips quotes).
  *
+ * @param delimiters - Delimiter configuration to use for pattern
  * @returns RegExp with global flag for detecting all file paths in text
  */
-export const buildFilePathPattern = (): RegExp =>
-  new RegExp(
-    `${FP_DOUBLE_QUOTED}|${FP_SINGLE_QUOTED}|${FP_ABSOLUTE}|${FP_RELATIVE}|${FP_TILDE}`,
-    'g',
-  );
+export const buildFilePathPattern = (delimiters: DelimiterConfig): RegExp => {
+  const escapedHash = escapeRegex(delimiters.hash);
+  const escapedLine = escapeRegex(delimiters.line);
+
+  // Backtracking guard: (?!\w) prevents \w+ from giving back chars to let the
+  // RangeLink suffix slip through. The second alternative blocks single-hash,
+  // double-hash (rectangular), and custom-delimiter suffixes.
+  const notBeforeRangeLink = `(?!\\w|(?:${escapedHash}){1,2}${escapedLine}\\d)`;
+
+  // Quoted patterns: NO_WEB_URL_SCHEME inside the opening quote blocks quoted URLs
+  // like "https://example.com/file.ts" from being matched as local file paths.
+  const doubleQuoted = `"${NO_WEB_URL_SCHEME}(?<dq>[^"\\n\`?*]*\\.\\w+)"`;
+  const singleQuoted = `'${NO_WEB_URL_SCHEME}(?<sq>[^'\\n\`?*]*\\.\\w+)'`;
+
+  // Unquoted patterns: NOT_AFTER_URL_CHAR prevents matching path segments that
+  // are embedded inside web URLs (e.g., https://example.com/./file.ts or ~/user).
+  const absolute = `${NOT_AFTER_URL_CHAR}/[\\w\\-./@]+\\.\\w+${notBeforeRangeLink}`;
+  const relative = `${NOT_AFTER_URL_CHAR}\\.{1,2}/[\\w\\-./@]+\\.\\w+${notBeforeRangeLink}`;
+  const tilde = `${NOT_AFTER_URL_CHAR}~/[\\w\\-./@]+\\.\\w+${notBeforeRangeLink}`;
+
+  return new RegExp(`${doubleQuoted}|${singleQuoted}|${absolute}|${relative}|${tilde}`, 'g');
+};

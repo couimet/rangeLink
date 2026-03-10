@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import type { DelimiterConfigGetter } from 'rangelink-core-ts';
 import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
@@ -29,6 +30,7 @@ export class FilePathTerminalProvider implements vscode.TerminalLinkProvider<Fil
    * @param logger - Logger instance for structured logging
    */
   constructor(
+    private readonly getDelimiters: DelimiterConfigGetter,
     private readonly handler: FilePathNavigationHandler,
     private readonly logger: Logger,
   ) {
@@ -50,7 +52,7 @@ export class FilePathTerminalProvider implements vscode.TerminalLinkProvider<Fil
   provideTerminalLinks(
     context: vscode.TerminalLinkContext,
   ): vscode.ProviderResult<FilePathTerminalLink[]> {
-    const pattern = buildFilePathPattern();
+    const pattern = buildFilePathPattern(this.getDelimiters());
     const links: FilePathTerminalLink[] = [];
     let match: RegExpExecArray | null;
 

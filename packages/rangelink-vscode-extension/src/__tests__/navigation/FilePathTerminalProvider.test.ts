@@ -1,11 +1,14 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 
 import type { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
 import { FilePathTerminalProvider } from '../../navigation/FilePathTerminalProvider';
 import type { FilePathTerminalLink } from '../../types';
 import { createMockFilePathNavigationHandler } from '../helpers';
+
+const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
 
 const createMockTerminalContext = (line: string): vscode.TerminalLinkContext =>
   ({ line }) as vscode.TerminalLinkContext;
@@ -18,7 +21,7 @@ describe('FilePathTerminalProvider', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockHandler = createMockFilePathNavigationHandler();
-    provider = new FilePathTerminalProvider(mockHandler, mockLogger);
+    provider = new FilePathTerminalProvider(GET_DELIMITERS, mockHandler, mockLogger);
   });
 
   describe('constructor', () => {

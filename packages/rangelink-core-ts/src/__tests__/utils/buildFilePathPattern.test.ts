@@ -1,3 +1,4 @@
+import { DEFAULT_DELIMITERS } from '../../constants/DEFAULT_DELIMITERS';
 import { buildFilePathPattern, extractFilePath } from '../../utils/buildLinkPattern';
 import {
   BOUNDARY_INPUTS,
@@ -11,7 +12,7 @@ import {
 } from '../fixtures/pathPatternInputs';
 
 const matchesPattern = (text: string): string[] => {
-  const pattern = buildFilePathPattern();
+  const pattern = buildFilePathPattern(DEFAULT_DELIMITERS);
   const results: string[] = [];
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(text)) !== null) {
@@ -22,7 +23,7 @@ const matchesPattern = (text: string): string[] => {
 
 describe('buildFilePathPattern', () => {
   it('should have global flag enabled', () => {
-    expect(buildFilePathPattern().global).toBe(true);
+    expect(buildFilePathPattern(DEFAULT_DELIMITERS).global).toBe(true);
   });
 
   describe('quoted paths — true positives', () => {
@@ -233,6 +234,22 @@ describe('buildFilePathPattern', () => {
     it('should NOT match path preceded by word characters', () => {
       expect(matchesPattern('domain.com/path/file.ts')).toStrictEqual([]);
     });
+
+    it('should NOT match double-quoted https:// URL', () => {
+      expect(matchesPattern('"https://example.com/file.ts"')).toStrictEqual([]);
+    });
+
+    it('should NOT match single-quoted https:// URL', () => {
+      expect(matchesPattern("'https://example.com/file.ts'")).toStrictEqual([]);
+    });
+
+    it('should NOT match relative path segment inside https:// URL', () => {
+      expect(matchesPattern('https://example.com/./file.ts')).toStrictEqual([]);
+    });
+
+    it('should NOT match tilde path segment inside https:// URL', () => {
+      expect(matchesPattern('https://example.com/~user/file.ts')).toStrictEqual([]);
+    });
   });
 
   describe('boundary and context', () => {
@@ -307,6 +324,26 @@ describe('buildFilePathPattern', () => {
     it('should still match a plain relative path without #L suffix', () => {
       expect(matchesPattern(RANGELINK_COEXISTENCE.CLEAN_RELATIVE)).toStrictEqual(['./src/a.ts']);
     });
+
+    it('should NOT match relative path followed by ##L (rectangular RangeLink owns it)', () => {
+      const pattern = buildFilePathPattern(DEFAULT_DELIMITERS);
+      const results: string[] = [];
+      let match;
+      while ((match = pattern.exec(RANGELINK_COEXISTENCE.RECTANGULAR_WITH_RANGELINK)) !== null) {
+        results.push(extractFilePath(match));
+      }
+      expect(results).toStrictEqual([]);
+    });
+
+    it('should NOT match path followed by custom delimiter (custom RangeLink owns it)', () => {
+      const pattern = buildFilePathPattern({ hash: '@', line: 'l', position: 'C', range: '-' });
+      const results: string[] = [];
+      let match;
+      while ((match = pattern.exec(RANGELINK_COEXISTENCE.CUSTOM_DELIMITER_WITH_RANGELINK)) !== null) {
+        results.push(extractFilePath(match));
+      }
+      expect(results).toStrictEqual([]);
+    });
   });
 
   describe('multiple matches', () => {
@@ -342,19 +379,19 @@ describe('buildFilePathPattern', () => {
 
 describe('extractFilePath', () => {
   it('should return double-quoted content without quotes', () => {
-    const pattern = buildFilePathPattern();
+    const pattern = buildFilePathPattern(DEFAULT_DELIMITERS);
     const match = pattern.exec('"./path/to/file.ts"')!;
     expect(extractFilePath(match)).toBe('./path/to/file.ts');
   });
 
   it('should return single-quoted content without quotes', () => {
-    const pattern = buildFilePathPattern();
+    const pattern = buildFilePathPattern(DEFAULT_DELIMITERS);
     const match = pattern.exec("'./path/to/file.ts'")!;
     expect(extractFilePath(match)).toBe('./path/to/file.ts');
   });
 
   it('should return full match for unquoted paths', () => {
-    const pattern = buildFilePathPattern();
+    const pattern = buildFilePathPattern(DEFAULT_DELIMITERS);
     const match = pattern.exec('./path/to/file.ts')!;
     expect(extractFilePath(match)).toBe('./path/to/file.ts');
   });

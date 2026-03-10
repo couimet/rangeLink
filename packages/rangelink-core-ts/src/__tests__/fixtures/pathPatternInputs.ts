@@ -151,6 +151,8 @@ export const RANGELINK_COEXISTENCE = {
   ABSOLUTE_WITH_RANGELINK: '/abs/file.ts#L5',
   TILDE_WITH_RANGELINK: '~/config.ts#L1',
   CLEAN_RELATIVE: './src/a.ts',
+  RECTANGULAR_WITH_RANGELINK: './src/a.ts##L10',
+  CUSTOM_DELIMITER_WITH_RANGELINK: './src/a.ts@l10',
 } as const;
 
 // ---------------------------------------------------------------------------

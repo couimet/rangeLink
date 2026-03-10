@@ -1,5 +1,6 @@
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
+import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { FilePathDocumentProvider } from '../../navigation/FilePathDocumentProvider';
@@ -15,6 +16,8 @@ import {
   type VscodeAdapterWithTestHooks,
 } from '../helpers';
 
+const GET_DELIMITERS = () => DEFAULT_DELIMITERS;
+
 describe('FilePathDocumentProvider', () => {
   let provider: FilePathDocumentProvider;
   let mockAdapter: VscodeAdapterWithTestHooks;
@@ -25,7 +28,7 @@ describe('FilePathDocumentProvider', () => {
     mockLogger = createMockLogger();
     mockAdapter = createMockVscodeAdapter();
     mockHandler = createMockFilePathNavigationHandler();
-    provider = new FilePathDocumentProvider(mockHandler, mockAdapter, mockLogger);
+    provider = new FilePathDocumentProvider(GET_DELIMITERS, mockHandler, mockAdapter, mockLogger);
   });
 
   describe('constructor', () => {

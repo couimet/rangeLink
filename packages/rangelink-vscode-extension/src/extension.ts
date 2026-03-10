@@ -238,7 +238,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   // Register file path terminal link provider for clickable plain file paths
-  const filePathTerminalProvider = new FilePathTerminalProvider(filePathNavigationHandler, logger);
+  const filePathTerminalProvider = new FilePathTerminalProvider(getDelimiters, filePathNavigationHandler, logger);
   context.subscriptions.push(
     registerWithLogging(
       ideAdapter.registerTerminalLinkProvider(filePathTerminalProvider),
@@ -249,6 +249,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register file path document link provider for clickable plain file paths in editor files
   // Only register for specific schemes to prevent infinite recursion when scanning output channels
   const filePathDocumentProvider = new FilePathDocumentProvider(
+    getDelimiters,
     filePathNavigationHandler,
     ideAdapter,
     logger,

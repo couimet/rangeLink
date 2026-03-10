@@ -2,7 +2,7 @@ import os from 'node:os';
 
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
-import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 
 import { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
 import {
@@ -33,7 +33,7 @@ describe('FilePathNavigationHandler', () => {
 
   describe('buildFilePathPattern', () => {
     const matchesPattern = (text: string): string[] => {
-      const pattern = buildFilePathPattern();
+      const pattern = buildFilePathPattern(DEFAULT_DELIMITERS);
       const results: string[] = [];
       let match: RegExpExecArray | null;
       while ((match = pattern.exec(text)) !== null) {
