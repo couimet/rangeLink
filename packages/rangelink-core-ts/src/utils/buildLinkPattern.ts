@@ -17,8 +17,8 @@ const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
  *
  * Defined at module scope so they are computed once, not on each call.
  */
-const FP_DOUBLE_QUOTED = '"(?<dq>[^"]+)"';
-const FP_SINGLE_QUOTED = "'(?<sq>[^']+)'";
+const FP_DOUBLE_QUOTED = '"(?<dq>[^"\\n`?*]*\\.\\w+)"';
+const FP_SINGLE_QUOTED = "'(?<sq>[^'\\n`?*]*\\.\\w+)'";
 const FP_ABSOLUTE = `${NOT_AFTER_URL_CHAR}/[\\w\\-./@]+\\.\\w+`;
 const FP_RELATIVE = `\\.{1,2}/[\\w\\-./@]+\\.\\w+`;
 const FP_TILDE = `~/[\\w\\-./@]+\\.\\w+`;

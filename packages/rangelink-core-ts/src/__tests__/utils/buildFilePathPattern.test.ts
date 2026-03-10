@@ -101,6 +101,14 @@ describe('buildFilePathPattern', () => {
     it('should NOT match plain text without extension', () => {
       expect(matchesPattern('no paths here at all')).toStrictEqual([]);
     });
+
+    it('should NOT match English possessive apostrophes as quote delimiters', () => {
+      expect(
+        matchesPattern(
+          "The handler branch's `checkout_globaldb_reads_enabled?` predicate is incompatible with the user_default_asset base's one-shot boundary pattern.",
+        ),
+      ).toStrictEqual([]);
+    });
   });
 
   describe('multiple matches', () => {
