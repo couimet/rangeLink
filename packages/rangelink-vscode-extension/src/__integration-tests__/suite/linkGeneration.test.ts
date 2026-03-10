@@ -46,7 +46,9 @@ suite('Link Generation', () => {
   // TC-132: Trailing-newline normalization
   test('TC-132: selecting line + trailing newline generates #L20 not #L20-L21', async () => {
     const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
-    const uri = trackFile(createTmpWorkspaceFile(`__rl-test-tc132-${Date.now()}.ts`, lines.join('\n') + '\n'));
+    const uri = trackFile(
+      createTmpWorkspaceFile(`__rl-test-tc132-${Date.now()}.ts`, lines.join('\n') + '\n'),
+    );
     const doc = await vscode.workspace.openTextDocument(uri);
     const editor = await vscode.window.showTextDocument(doc);
 
@@ -64,10 +66,7 @@ suite('Link Generation', () => {
       !clipboard.includes('#L20-L21'),
       `Expected no #L20-L21 in clipboard but got: ${clipboard}`,
     );
-    assert.ok(
-      !clipboard.includes('#L21'),
-      `Expected no #L21 in clipboard but got: ${clipboard}`,
-    );
+    assert.ok(!clipboard.includes('#L21'), `Expected no #L21 in clipboard but got: ${clipboard}`);
   });
 
   // TC-133: Plain link
@@ -75,8 +74,15 @@ suite('Link Generation', () => {
     const links = findLinksInText('src/foo.ts#L5\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.ok(links[0].parsed.path.includes('foo.ts'), `Expected path to include foo.ts: ${links[0].parsed.path}`);
-    assert.strictEqual(links[0].parsed.start.line, 5, `Expected start line 5 but got ${links[0].parsed.start.line}`);
+    assert.ok(
+      links[0].parsed.path.includes('foo.ts'),
+      `Expected path to include foo.ts: ${links[0].parsed.path}`,
+    );
+    assert.strictEqual(
+      links[0].parsed.start.line,
+      5,
+      `Expected start line 5 but got ${links[0].parsed.start.line}`,
+    );
   });
 
   // TC-134: Backtick-wrapped
@@ -84,7 +90,10 @@ suite('Link Generation', () => {
     const links = findLinksInText('`src/foo.ts#L5`\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.ok(links[0].parsed.path.includes('foo.ts'), `Expected path to include foo.ts: ${links[0].parsed.path}`);
+    assert.ok(
+      links[0].parsed.path.includes('foo.ts'),
+      `Expected path to include foo.ts: ${links[0].parsed.path}`,
+    );
   });
 
   // TC-135: Single-quote-wrapped
@@ -92,7 +101,10 @@ suite('Link Generation', () => {
     const links = findLinksInText("'src/foo.ts#L5'\n", DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.ok(links[0].parsed.path.includes('foo.ts'), `Expected path to include foo.ts: ${links[0].parsed.path}`);
+    assert.ok(
+      links[0].parsed.path.includes('foo.ts'),
+      `Expected path to include foo.ts: ${links[0].parsed.path}`,
+    );
   });
 
   // TC-136: Double-quote-wrapped
@@ -100,7 +112,10 @@ suite('Link Generation', () => {
     const links = findLinksInText('"src/foo.ts#L5"\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.ok(links[0].parsed.path.includes('foo.ts'), `Expected path to include foo.ts: ${links[0].parsed.path}`);
+    assert.ok(
+      links[0].parsed.path.includes('foo.ts'),
+      `Expected path to include foo.ts: ${links[0].parsed.path}`,
+    );
   });
 
   // TC-137: Angle-bracket-wrapped
@@ -108,7 +123,10 @@ suite('Link Generation', () => {
     const links = findLinksInText('<src/foo.ts#L5>\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.ok(links[0].parsed.path.includes('foo.ts'), `Expected path to include foo.ts: ${links[0].parsed.path}`);
+    assert.ok(
+      links[0].parsed.path.includes('foo.ts'),
+      `Expected path to include foo.ts: ${links[0].parsed.path}`,
+    );
   });
 
   // TC-138: Markdown link syntax
@@ -116,12 +134,19 @@ suite('Link Generation', () => {
     const links = findLinksInText('[click here](src/foo.ts#L5)\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.ok(links[0].parsed.path.includes('foo.ts'), `Expected path to include foo.ts: ${links[0].parsed.path}`);
+    assert.ok(
+      links[0].parsed.path.includes('foo.ts'),
+      `Expected path to include foo.ts: ${links[0].parsed.path}`,
+    );
   });
 
   // TC-139: HTTP URL exclusion
   test('TC-139: HTTP URL is excluded — no RangeLink detected for https://example.com/path/file.ts#L10', () => {
-    const links = findLinksInText('https://example.com/path/file.ts#L10\n', DEFAULT_DELIMITERS, LOGGER);
+    const links = findLinksInText(
+      'https://example.com/path/file.ts#L10\n',
+      DEFAULT_DELIMITERS,
+      LOGGER,
+    );
 
     assert.strictEqual(
       links.length,

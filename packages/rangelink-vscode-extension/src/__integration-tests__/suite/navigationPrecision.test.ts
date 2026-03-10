@@ -39,7 +39,11 @@ const navigateViaHandleLinkClick = (
       if (lastResult) {
         resolve(lastResult);
       } else {
-        reject(new Error(`No selection change event received within ${TIMEOUT_MS}ms for ${testFilename}`));
+        reject(
+          new Error(
+            `No selection change event received within ${TIMEOUT_MS}ms for ${testFilename}`,
+          ),
+        );
       }
     }, TIMEOUT_MS);
 
@@ -94,13 +98,25 @@ suite('Navigation Precision', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const { sel, doc } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
+    const { sel, doc } = await navigateViaHandleLinkClick(
+      linkText,
+      parseResult.value,
+      testFilename,
+    );
 
     const lineLength = doc.lineAt(9).text.length; // line 10 is 0-indexed as 9
     assert.strictEqual(sel.anchor.line, 9, `Expected anchor line 9 but got ${sel.anchor.line}`);
-    assert.strictEqual(sel.anchor.character, 0, `Expected anchor char 0 but got ${sel.anchor.character}`);
+    assert.strictEqual(
+      sel.anchor.character,
+      0,
+      `Expected anchor char 0 but got ${sel.anchor.character}`,
+    );
     assert.strictEqual(sel.active.line, 9, `Expected active line 9 but got ${sel.active.line}`);
-    assert.strictEqual(sel.active.character, lineLength, `Expected active char ${lineLength} but got ${sel.active.character}`);
+    assert.strictEqual(
+      sel.active.character,
+      lineLength,
+      `Expected active char ${lineLength} but got ${sel.active.character}`,
+    );
   });
 
   // TC-131: #L10-L15 selects lines 10 through 15 (anchor at start of line 10, active at end of line 15)
@@ -109,12 +125,24 @@ suite('Navigation Precision', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const { sel, doc } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
+    const { sel, doc } = await navigateViaHandleLinkClick(
+      linkText,
+      parseResult.value,
+      testFilename,
+    );
 
     const endLineLength = doc.lineAt(14).text.length; // line 15 is 0-indexed as 14
     assert.strictEqual(sel.anchor.line, 9, `Expected anchor line 9 but got ${sel.anchor.line}`);
-    assert.strictEqual(sel.anchor.character, 0, `Expected anchor char 0 but got ${sel.anchor.character}`);
+    assert.strictEqual(
+      sel.anchor.character,
+      0,
+      `Expected anchor char 0 but got ${sel.anchor.character}`,
+    );
     assert.strictEqual(sel.active.line, 14, `Expected active line 14 but got ${sel.active.line}`);
-    assert.strictEqual(sel.active.character, endLineLength, `Expected active char ${endLineLength} but got ${sel.active.character}`);
+    assert.strictEqual(
+      sel.active.character,
+      endLineLength,
+      `Expected active char ${endLineLength} but got ${sel.active.character}`,
+    );
   });
 });

@@ -54,8 +54,15 @@ suite('Clipboard Preservation', () => {
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
     const clipboard = await vscode.env.clipboard.readText();
 
-    assert.notStrictEqual(clipboard, SENTINEL, 'Expected clipboard to contain the generated link, not the sentinel');
-    assert.ok(clipboard.includes('#L'), `Expected clipboard to contain a line reference but got: ${clipboard}`);
+    assert.notStrictEqual(
+      clipboard,
+      SENTINEL,
+      'Expected clipboard to contain the generated link, not the sentinel',
+    );
+    assert.ok(
+      clipboard.includes('#L'),
+      `Expected clipboard to contain a line reference but got: ${clipboard}`,
+    );
   });
 
   // TC-042: preserve=always — R-C still writes to clipboard (R-C is the preserve exception)
@@ -67,8 +74,15 @@ suite('Clipboard Preservation', () => {
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
     const clipboard = await vscode.env.clipboard.readText();
 
-    assert.notStrictEqual(clipboard, SENTINEL, 'Expected clipboard to contain the generated link, not the sentinel');
-    assert.ok(clipboard.includes('#L'), `Expected clipboard to contain a line reference but got: ${clipboard}`);
+    assert.notStrictEqual(
+      clipboard,
+      SENTINEL,
+      'Expected clipboard to contain the generated link, not the sentinel',
+    );
+    assert.ok(
+      clipboard.includes('#L'),
+      `Expected clipboard to contain a line reference but got: ${clipboard}`,
+    );
   });
 
   // TC-046: preserve=never — R-C still writes to clipboard
@@ -80,8 +94,15 @@ suite('Clipboard Preservation', () => {
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
     const clipboard = await vscode.env.clipboard.readText();
 
-    assert.notStrictEqual(clipboard, SENTINEL, 'Expected clipboard to contain the generated link, not the sentinel');
-    assert.ok(clipboard.includes('#L'), `Expected clipboard to contain a line reference but got: ${clipboard}`);
+    assert.notStrictEqual(
+      clipboard,
+      SENTINEL,
+      'Expected clipboard to contain the generated link, not the sentinel',
+    );
+    assert.ok(
+      clipboard.includes('#L'),
+      `Expected clipboard to contain a line reference but got: ${clipboard}`,
+    );
   });
 
   // TC-044, TC-045, TC-047: R-L clipboard preservation (preserve=always restores, preserve=never does not)
