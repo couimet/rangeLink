@@ -141,6 +141,54 @@ describe('FilePathDocumentProvider', () => {
 
       expect(links).toStrictEqual([]);
     });
+
+    it('should detect single-quoted path and strip quotes from tooltip and command URI', () => {
+      const document = createMockDocument({
+        getText: createMockText("Open '/path/to/file.ts' now"),
+        uri: createMockUri('/test/doc.md'),
+        positionAt: createMockPositionAt(),
+      });
+
+      const links = provider.provideDocumentLinks(document) as vscode.DocumentLink[];
+
+      expect(links).toHaveLength(1);
+      expect(links[0].tooltip).toBe('Open /path/to/file.ts \u2022 RangeLink');
+      const expectedArgs = encodeURIComponent(JSON.stringify({ filePath: '/path/to/file.ts' }));
+      expect(links[0].target!.toString()).toBe(
+        `command:rangelink.handleFilePathClick?${expectedArgs}`,
+      );
+    });
+
+    it('should detect tilde path', () => {
+      const document = createMockDocument({
+        getText: createMockText('Open ~/projects/app/main.ts now'),
+        uri: createMockUri('/test/doc.md'),
+        positionAt: createMockPositionAt(),
+      });
+
+      const links = provider.provideDocumentLinks(document) as vscode.DocumentLink[];
+
+      expect(links).toHaveLength(1);
+      expect(links[0].tooltip).toBe('Open ~/projects/app/main.ts \u2022 RangeLink');
+      const expectedArgs = encodeURIComponent(
+        JSON.stringify({ filePath: '~/projects/app/main.ts' }),
+      );
+      expect(links[0].target!.toString()).toBe(
+        `command:rangelink.handleFilePathClick?${expectedArgs}`,
+      );
+    });
+
+    it('should NOT detect file path when path is a RangeLink (coexistence with RangeLinkDocumentProvider)', () => {
+      const document = createMockDocument({
+        getText: createMockText('./src/file.ts#L10'),
+        uri: createMockUri('/test/doc.md'),
+        positionAt: createMockPositionAt(),
+      });
+
+      const links = provider.provideDocumentLinks(document) as vscode.DocumentLink[];
+
+      expect(links).toStrictEqual([]);
+    });
   });
 
   describe('handleLinkClick', () => {
