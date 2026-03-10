@@ -94,7 +94,7 @@ export const QUOTED_TRUE_POSITIVES = {
 
   // Possessive earlier in the same sentence must not interfere with the quoted path
   POSSESSIVE_BEFORE_SINGLE_QUOTED_PATH: "The component's output is '/path/to/out.ts'",
-  POSSESSIVES_SURROUNDING_DOUBLE_QUOTED_PATH: "It's in \"/path/to/file.ts\", isn't it?",
+  POSSESSIVES_SURROUNDING_DOUBLE_QUOTED_PATH: 'It\'s in "/path/to/file.ts", isn\'t it?',
 } as const;
 
 // ---------------------------------------------------------------------------

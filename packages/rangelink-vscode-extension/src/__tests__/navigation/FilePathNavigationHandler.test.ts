@@ -1,8 +1,7 @@
-import os from 'os';
+import os from 'node:os';
 
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
-
 import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 
 import { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
