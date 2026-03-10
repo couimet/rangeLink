@@ -579,7 +579,7 @@ test_cases:
     feature: "Clipboard Preservation"
     scenario: "always mode: clipboard content before R-L is restored after the operation"
     preconditions:
-      - "rangelink.clipboard.preserve = "always" (default)"
+      - 'rangelink.clipboard.preserve = "always" (default)'
       - "Terminal open and bound as destination"
       - "TypeScript file open with 5+ lines"
     steps:
@@ -597,7 +597,7 @@ test_cases:
     feature: "Clipboard Preservation"
     scenario: "always mode: clipboard content before R-V is restored after the operation"
     preconditions:
-      - "rangelink.clipboard.preserve = "always""
+      - 'rangelink.clipboard.preserve = "always"'
       - "Terminal with visible output, another destination bound"
     steps:
       - "Copy CLIPBOARD_SENTINEL to clipboard"
@@ -614,7 +614,7 @@ test_cases:
     feature: "Clipboard Preservation"
     scenario: "always mode: clipboard content before R-F is restored after the operation"
     preconditions:
-      - "rangelink.clipboard.preserve = "always""
+      - 'rangelink.clipboard.preserve = "always"'
       - "Terminal bound, any file active"
     steps:
       - "Copy CLIPBOARD_SENTINEL to clipboard"
@@ -631,7 +631,7 @@ test_cases:
     feature: "Clipboard Preservation"
     scenario: "always mode: clipboard content before AI assistant paste is restored after"
     preconditions:
-      - "rangelink.clipboard.preserve = "always""
+      - 'rangelink.clipboard.preserve = "always"'
       - "AI assistant (Claude Code or Copilot Chat) bound, AI panel open"
     steps:
       - "Copy CLIPBOARD_SENTINEL to clipboard"
@@ -648,7 +648,7 @@ test_cases:
     feature: "Clipboard Preservation"
     scenario: "always mode: clipboard content before terminal paste is restored after"
     preconditions:
-      - "rangelink.clipboard.preserve = "always""
+      - 'rangelink.clipboard.preserve = "always"'
       - "Terminal bound as destination"
     steps:
       - "Copy CLIPBOARD_SENTINEL to clipboard"
@@ -665,7 +665,7 @@ test_cases:
     feature: "Clipboard Preservation"
     scenario: "never mode: clipboard contains the last RangeLink output after R-L"
     preconditions:
-      - "rangelink.clipboard.preserve = "never""
+      - 'rangelink.clipboard.preserve = "never"'
       - "Terminal bound as destination"
     steps:
       - "Copy CLIPBOARD_SENTINEL to clipboard"
@@ -681,7 +681,7 @@ test_cases:
     feature: "Clipboard Preservation"
     scenario: "never mode: clipboard contains last output after R-V"
     preconditions:
-      - "rangelink.clipboard.preserve = "never""
+      - 'rangelink.clipboard.preserve = "never"'
       - "Another destination bound, terminal open"
     steps:
       - "Copy CLIPBOARD_SENTINEL to clipboard"
@@ -697,7 +697,7 @@ test_cases:
     feature: "Clipboard Preservation"
     scenario: "R-C (Copy RangeLink) always writes to clipboard regardless of preserve setting"
     preconditions:
-      - "rangelink.clipboard.preserve = "always""
+      - 'rangelink.clipboard.preserve = "always"'
       - "Terminal bound"
     steps:
       - "Copy CLIPBOARD_SENTINEL to clipboard"
@@ -713,7 +713,7 @@ test_cases:
     feature: "Clipboard Preservation"
     scenario: "always mode: no preserve invoked when no destination is bound (ClipboardOnly path)"
     preconditions:
-      - "rangelink.clipboard.preserve = "always""
+      - 'rangelink.clipboard.preserve = "always"'
       - "No destination bound"
     steps:
       - "Copy CLIPBOARD_SENTINEL to clipboard"
@@ -1112,7 +1112,7 @@ test_cases:
       - "Terminal bound"
     steps:
       - "Right-click inside the editor (no selection needed)"
-      - "Select 'RangeLink: Send This File\'s Path'"
+      - "Select 'RangeLink: Send This File's Path'"
     expected_result: "Terminal receives the absolute path of the current file."
     platform: all
     automated: false
@@ -1126,7 +1126,7 @@ test_cases:
       - "Terminal bound"
     steps:
       - "Right-click inside the editor"
-      - "Select 'RangeLink: Send This File\'s Relative Path'"
+      - "Select 'RangeLink: Send This File's Relative Path'"
     expected_result: "Terminal receives the workspace-relative path of the current file."
     platform: all
     automated: false
@@ -1953,7 +1953,7 @@ test_cases:
     preconditions:
       - "Terminal open"
     steps:
-      - "Type or paste in terminal: "src/utils/helper.ts#L5" (double quotes)"
+      - 'Type or paste in terminal: "src/utils/helper.ts#L5" (double quotes)'
       - "Cmd-click the link"
     expected_result: "Navigates to line 5. Double quotes did not break link detection."
     platform: all
