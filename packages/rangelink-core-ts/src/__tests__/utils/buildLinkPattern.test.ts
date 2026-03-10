@@ -968,5 +968,33 @@ describe('buildLinkPattern', () => {
       const matches = [...RANGELINK_COEXISTENCE.CLEAN_RELATIVE.matchAll(pattern)];
       expect(matches).toHaveLength(0);
     });
+
+    describe('rectangular delimiter (##L)', () => {
+      const rectPattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+      it('should match rectangular path with ##L suffix (FilePathProvider rejects it)', () => {
+        const matches = [...RANGELINK_COEXISTENCE.RECTANGULAR_WITH_RANGELINK.matchAll(rectPattern)];
+        expect(matches).toHaveLength(1);
+        expect(matches[0][1]).toBe('./src/a.ts');
+      });
+
+      it('should NOT match without ##L suffix (FilePathProvider owns it)', () => {
+        const matches = [...RANGELINK_COEXISTENCE.CLEAN_RELATIVE.matchAll(rectPattern)];
+        expect(matches).toHaveLength(0);
+      });
+    });
+
+    describe('custom delimiter (@l)', () => {
+      const customDelimiters: DelimiterConfig = { hash: '@', line: 'l', position: 'C', range: '-' };
+      const customPattern = buildLinkPattern(customDelimiters);
+
+      it('should match custom-delimiter path (FilePathProvider with custom delimiters rejects it)', () => {
+        const matches = [
+          ...RANGELINK_COEXISTENCE.CUSTOM_DELIMITER_WITH_RANGELINK.matchAll(customPattern),
+        ];
+        expect(matches).toHaveLength(1);
+        expect(matches[0][1]).toBe('./src/a.ts');
+      });
+    });
   });
 });
