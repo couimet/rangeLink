@@ -238,7 +238,11 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   // Register file path terminal link provider for clickable plain file paths
-  const filePathTerminalProvider = new FilePathTerminalProvider(getDelimiters, filePathNavigationHandler, logger);
+  const filePathTerminalProvider = new FilePathTerminalProvider(
+    getDelimiters,
+    filePathNavigationHandler,
+    logger,
+  );
   context.subscriptions.push(
     registerWithLogging(
       ideAdapter.registerTerminalLinkProvider(filePathTerminalProvider),

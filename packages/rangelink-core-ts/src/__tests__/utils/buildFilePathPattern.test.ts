@@ -339,7 +339,9 @@ describe('buildFilePathPattern', () => {
       const pattern = buildFilePathPattern({ hash: '@', line: 'l', position: 'C', range: '-' });
       const results: string[] = [];
       let match;
-      while ((match = pattern.exec(RANGELINK_COEXISTENCE.CUSTOM_DELIMITER_WITH_RANGELINK)) !== null) {
+      while (
+        (match = pattern.exec(RANGELINK_COEXISTENCE.CUSTOM_DELIMITER_WITH_RANGELINK)) !== null
+      ) {
         results.push(extractFilePath(match));
       }
       expect(results).toStrictEqual([]);

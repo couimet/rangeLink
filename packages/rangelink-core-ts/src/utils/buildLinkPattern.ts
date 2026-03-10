@@ -12,7 +12,6 @@ import { escapeRegex } from './escapeRegex';
 export const NOT_AFTER_URL_CHAR = '(?<![a-zA-Z0-9:/._?&=%~\\-\\]])';
 const NO_WEB_URL_SCHEME = '(?![hH][tT][tT][pP][sS]?://|[fF][tT][pP]://)';
 
-
 /**
  * Path character class for RangeLink detection.
  *
