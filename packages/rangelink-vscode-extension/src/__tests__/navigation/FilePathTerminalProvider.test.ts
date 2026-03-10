@@ -66,6 +66,20 @@ describe('FilePathTerminalProvider', () => {
       ]);
     });
 
+    it('should detect parent-relative path', () => {
+      const context = createMockTerminalContext('Check ../src/file.ts please');
+      const links = provider.provideTerminalLinks(context) as FilePathTerminalLink[];
+
+      expect(links).toStrictEqual([
+        {
+          startIndex: 6,
+          length: 14,
+          tooltip: 'Open ../src/file.ts \u2022 RangeLink',
+          data: '../src/file.ts',
+        },
+      ]);
+    });
+
     it('should detect double-quoted path and strip quotes from data', () => {
       const context = createMockTerminalContext('Open "/path/with spaces/file.ts" now');
       const links = provider.provideTerminalLinks(context) as FilePathTerminalLink[];

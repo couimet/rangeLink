@@ -102,6 +102,23 @@ describe('FilePathDocumentProvider', () => {
       expect(links[1].tooltip).toBe('Open ./src/b.ts \u2022 RangeLink');
     });
 
+    it('should detect parent-relative path', () => {
+      const document = createMockDocument({
+        getText: createMockText('Check ../src/file.ts please'),
+        uri: createMockUri('/test/doc.md'),
+        positionAt: createMockPositionAt(),
+      });
+
+      const links = provider.provideDocumentLinks(document) as vscode.DocumentLink[];
+
+      expect(links).toHaveLength(1);
+      expect(links[0].tooltip).toBe('Open ../src/file.ts \u2022 RangeLink');
+      const expectedArgs = encodeURIComponent(JSON.stringify({ filePath: '../src/file.ts' }));
+      expect(links[0].target!.toString()).toBe(
+        `command:rangelink.handleFilePathClick?${expectedArgs}`,
+      );
+    });
+
     it('should return empty array when no paths found', () => {
       const document = createMockDocument({
         getText: createMockText('No paths here at all'),
