@@ -1,4 +1,13 @@
 import { buildFilePathPattern, extractFilePath } from '../../utils/buildLinkPattern';
+import {
+  BOUNDARY_INPUTS,
+  MULTI_MATCH_INPUTS,
+  PROSE_INPUTS,
+  QUOTED_FALSE_POSITIVES,
+  QUOTED_TRUE_POSITIVES,
+  SPECIAL_CHAR_PATHS,
+  URL_INPUTS,
+} from '../fixtures/pathPatternInputs';
 
 const matchesPattern = (text: string): string[] => {
   const pattern = buildFilePathPattern();
@@ -15,22 +24,102 @@ describe('buildFilePathPattern', () => {
     expect(buildFilePathPattern().global).toBe(true);
   });
 
-  describe('quoted paths', () => {
-    it('should match double-quoted path', () => {
-      expect(matchesPattern('Check "/path/to/file.ts" for details')).toStrictEqual([
+  describe('quoted paths — true positives', () => {
+    it('should match double-quoted absolute path', () => {
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_ABSOLUTE)).toStrictEqual([
         '/path/to/file.ts',
       ]);
     });
 
-    it('should match single-quoted path', () => {
-      expect(matchesPattern("Check '/path/to/file.ts' for details")).toStrictEqual([
+    it('should match single-quoted absolute path', () => {
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.SINGLE_ABSOLUTE)).toStrictEqual([
         '/path/to/file.ts',
       ]);
     });
 
     it('should match double-quoted path with spaces', () => {
-      expect(matchesPattern('Open "/path/with spaces/file.ts" now')).toStrictEqual([
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_WITH_SPACES)).toStrictEqual([
         '/path/with spaces/file.ts',
+      ]);
+    });
+
+    it('should match single-quoted path with spaces', () => {
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.SINGLE_WITH_SPACES)).toStrictEqual([
+        '/path/with spaces/file.ts',
+      ]);
+    });
+
+    it('should match single-quoted bare filename', () => {
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.SINGLE_BARE_FILENAME)).toStrictEqual([
+        'component.ts',
+      ]);
+    });
+
+    it('should match double-quoted bare filename', () => {
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_BARE_FILENAME)).toStrictEqual([
+        'component.ts',
+      ]);
+    });
+
+    it('should match double-quoted multi-extension path and capture last extension', () => {
+      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_MULTI_EXTENSION)).toStrictEqual([
+        '/path/to/file.test.ts',
+      ]);
+    });
+
+    it('should match single-quoted path when possessive apostrophe appears earlier in sentence', () => {
+      expect(
+        matchesPattern(QUOTED_TRUE_POSITIVES.POSSESSIVE_BEFORE_SINGLE_QUOTED_PATH),
+      ).toStrictEqual(['/path/to/out.ts']);
+    });
+
+    it('should match double-quoted path when possessives surround the quoted expression', () => {
+      expect(
+        matchesPattern(QUOTED_TRUE_POSITIVES.POSSESSIVES_SURROUNDING_DOUBLE_QUOTED_PATH),
+      ).toStrictEqual(['/path/to/file.ts']);
+    });
+  });
+
+  describe('quoted paths — false positives', () => {
+    it('should NOT match single-quoted string containing a question mark', () => {
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.SINGLE_QUESTION_MARK)).toStrictEqual([]);
+    });
+
+    it('should NOT match double-quoted glob pattern containing an asterisk', () => {
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.DOUBLE_GLOB_PATTERN)).toStrictEqual([]);
+    });
+
+    it('should NOT match single-quoted prose fragment with no file extension', () => {
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.SINGLE_NO_EXTENSION)).toStrictEqual([]);
+    });
+
+    it('should NOT match double-quoted prose phrase with no file extension', () => {
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.DOUBLE_NO_EXTENSION)).toStrictEqual([]);
+    });
+
+    it('should NOT span across newline — the valid quoted path on the second line should match independently', () => {
+      expect(
+        matchesPattern(QUOTED_FALSE_POSITIVES.NEWLINE_BETWEEN_POSSESSIVES_WITH_VALID_SECOND_LINE),
+      ).toStrictEqual(['/path/to/file.ts']);
+    });
+  });
+
+  describe('prose apostrophes — false positives', () => {
+    it('should NOT match possessive apostrophes with backtick code between them', () => {
+      expect(matchesPattern(PROSE_INPUTS.POSSESSIVES_WITH_BACKTICK_CODE)).toStrictEqual([]);
+    });
+
+    it('should NOT match possessive span where extension-like text is followed by a space, not a closing quote', () => {
+      expect(matchesPattern(PROSE_INPUTS.POSSESSIVES_SPACE_AFTER_EXTENSION)).toStrictEqual([]);
+    });
+
+    it('should NOT match a lone possessive with no second apostrophe on the line', () => {
+      expect(matchesPattern(PROSE_INPUTS.LONE_POSSESSIVE)).toStrictEqual([]);
+    });
+
+    it('should match the unquoted relative path when a contraction appears earlier on the same line', () => {
+      expect(matchesPattern(PROSE_INPUTS.CONTRACTION_WITH_VALID_RELATIVE_PATH)).toStrictEqual([
+        './src/component.tsx',
       ]);
     });
   });
@@ -43,17 +132,39 @@ describe('buildFilePathPattern', () => {
     });
 
     it('should match absolute path with hyphens and dots in name', () => {
-      expect(matchesPattern('/path/to/my-file.test.ts')).toStrictEqual([
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.MULTI_EXTENSION)).toStrictEqual([
         '/path/to/my-file.test.ts',
       ]);
     });
 
-    it('should NOT match absolute path inside a URL', () => {
-      expect(matchesPattern('See https://example.com/path/file.ts for info')).toStrictEqual([]);
+    it('should match absolute path with @ in path component', () => {
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.AT_IN_COMPONENT)).toStrictEqual([
+        '/home/user@hostname/project/file.ts',
+      ]);
     });
 
-    it('should NOT match path preceded by word characters', () => {
-      expect(matchesPattern('domain.com/path/file.ts')).toStrictEqual([]);
+    it('should match absolute path with dot in directory name (version directory)', () => {
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOT_IN_DIRECTORY)).toStrictEqual([
+        '/path/to/v1.2/config.ts',
+      ]);
+    });
+
+    it('should match absolute path for dotfile', () => {
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOTFILE_ABSOLUTE)).toStrictEqual([
+        '/repo/.eslintrc.js',
+      ]);
+    });
+
+    it('should match absolute path with numeric extension', () => {
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.EXTENSION_DIGITS)).toStrictEqual([
+        '/path/to/output.mp4',
+      ]);
+    });
+
+    it('should match absolute path with numbers in filename', () => {
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.NUMBERS_IN_FILENAME)).toStrictEqual([
+        '/path/to/script2.sh',
+      ]);
     });
   });
 
@@ -65,12 +176,84 @@ describe('buildFilePathPattern', () => {
     it('should match ../ relative path', () => {
       expect(matchesPattern('Check ../lib/util.ts please')).toStrictEqual(['../lib/util.ts']);
     });
+
+    it('should match relative path with dot in directory name', () => {
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOT_IN_DIRECTORY_RELATIVE)).toStrictEqual([
+        './src/v1.2/utils/helper.ts',
+      ]);
+    });
+
+    it('should match ./ shell script', () => {
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.SHELL_SCRIPT_RELATIVE)).toStrictEqual([
+        './deploy.sh',
+      ]);
+    });
   });
 
   describe('tilde paths', () => {
     it('should match ~/path', () => {
       expect(matchesPattern('Open ~/projects/app/main.ts now')).toStrictEqual([
         '~/projects/app/main.ts',
+      ]);
+    });
+
+    it('should match ~/path with yaml extension', () => {
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.YAML_TILDE)).toStrictEqual([
+        '~/config/settings.yaml',
+      ]);
+    });
+  });
+
+  describe('URL exclusion — should NOT match', () => {
+    it('should NOT match https:// URL', () => {
+      expect(matchesPattern(URL_INPUTS.HTTPS_NO_HASH)).toStrictEqual([]);
+    });
+
+    it('should NOT match https:// URL with file extension', () => {
+      expect(matchesPattern(URL_INPUTS.HTTPS_CDN_NO_HASH)).toStrictEqual([]);
+    });
+
+    it('should NOT match ftp:// URL', () => {
+      expect(matchesPattern(URL_INPUTS.FTP_NO_HASH)).toStrictEqual([]);
+    });
+
+    it('should NOT match http://localhost URL', () => {
+      expect(matchesPattern(URL_INPUTS.LOCALHOST_NO_HASH)).toStrictEqual([]);
+    });
+
+    it('should NOT match absolute path inside a web URL', () => {
+      expect(matchesPattern('See https://example.com/path/file.ts for info')).toStrictEqual([]);
+    });
+
+    it('should NOT match domain-prefixed path (dot before slash triggers lookbehind)', () => {
+      expect(matchesPattern(URL_INPUTS.DOMAIN_PREFIXED_NO_HASH)).toStrictEqual([]);
+    });
+
+    it('should NOT match path preceded by word characters', () => {
+      expect(matchesPattern('domain.com/path/file.ts')).toStrictEqual([]);
+    });
+  });
+
+  describe('boundary and context', () => {
+    it('should match absolute path after a comma', () => {
+      expect(matchesPattern(BOUNDARY_INPUTS.PATH_AFTER_COMMA)).toStrictEqual(['/path/to/file.ts']);
+    });
+
+    it('should match absolute path after a colon-label', () => {
+      expect(matchesPattern(BOUNDARY_INPUTS.PATH_AFTER_COLON_LABEL)).toStrictEqual([
+        '/path/to/file.ts',
+      ]);
+    });
+
+    it('should match absolute path wrapped in backticks without capturing backtick', () => {
+      expect(matchesPattern(BOUNDARY_INPUTS.ABS_PATH_IN_BACKTICKS)).toStrictEqual([
+        '/path/to/file.ts',
+      ]);
+    });
+
+    it('should match single-quoted dotfile and capture full path', () => {
+      expect(matchesPattern(SPECIAL_CHAR_PATHS.DOTFILE_SINGLE_QUOTED)).toStrictEqual([
+        '/path/.gitignore',
       ]);
     });
   });
@@ -103,19 +286,36 @@ describe('buildFilePathPattern', () => {
     });
 
     it('should NOT match English possessive apostrophes as quote delimiters', () => {
-      expect(
-        matchesPattern(
-          "The handler branch's `checkout_globaldb_reads_enabled?` predicate is incompatible with the user_default_asset base's one-shot boundary pattern.",
-        ),
-      ).toStrictEqual([]);
+      expect(matchesPattern(PROSE_INPUTS.POSSESSIVES_WITH_BACKTICK_CODE)).toStrictEqual([]);
     });
   });
 
   describe('multiple matches', () => {
-    it('should match multiple paths in one line', () => {
-      expect(matchesPattern('From ./src/a.ts to ./src/b.ts')).toStrictEqual([
+    it('should match multiple relative paths in one line', () => {
+      expect(matchesPattern(MULTI_MATCH_INPUTS.TWO_RELATIVE_PATHS)).toStrictEqual([
         './src/a.ts',
         './src/b.ts',
+      ]);
+    });
+
+    it('should match absolute and relative path on same line', () => {
+      expect(matchesPattern(MULTI_MATCH_INPUTS.ABS_AND_RELATIVE)).toStrictEqual([
+        '/abs/file.ts',
+        './rel/file.ts',
+      ]);
+    });
+
+    it('should match quoted and unquoted path on same line', () => {
+      expect(matchesPattern(MULTI_MATCH_INPUTS.QUOTED_AND_UNQUOTED)).toStrictEqual([
+        '/src/a.ts',
+        '/dst/b.ts',
+      ]);
+    });
+
+    it('should match two double-quoted paths on same line', () => {
+      expect(matchesPattern(MULTI_MATCH_INPUTS.TWO_DOUBLE_QUOTED)).toStrictEqual([
+        '/src/a.ts',
+        '/src/b.ts',
       ]);
     });
   });
