@@ -37,6 +37,5 @@ packages/rangelink-vscode-extension/__rl-test-*.ts
 .claude-questions/
 .commit-msgs/
 .scratchpads/
-
 # Claude skill working directories
 .claude-work/
