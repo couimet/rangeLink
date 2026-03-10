@@ -6,7 +6,9 @@ runs:
   steps:
     - name: Install Xvfb and VS Code native dependencies
       shell: bash
-      run: sudo apt-get install -y --no-install-recommends xvfb libgtk-3-0 libxss1 libnss3 libasound2
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends xvfb libgtk-3-0 libxss1 libnss3 libasound2
 
     - name: Cache VS Code test binary
       uses: actions/cache@v4
