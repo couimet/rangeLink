@@ -1,21 +1,21 @@
-# RangeLink QA Test Cases — v1.0.0 → Unreleased
+# RangeLink QA Test Cases — v1.0.0 → Unreleased — 2026-03-09
 #
 # Scope: Changes accumulated between the vscode-extension-v1.0.0 release tag and the current
 #        main branch tip. Created at commit a4d56b9c71be755a532af178b607d3f768363af9.
+#
+# Source of truth for this QA cycle. Run `pnpm generate:qa-issue qa/qa-test-cases-v1.0.0-unreleased-2026-03-09.yaml`
+# to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:
 #   id:              Unique test case identifier (TC-NNN)
 #   feature:         Feature area / CHANGELOG section
 #   scenario:        One-line description of the specific scenario being tested
-#   preconditions:   List of required setup steps before executing (filled in by S003-S006)
-#   steps:           Ordered list of test actions (filled in by S003-S006)
-#   expected_result: What a passing run looks like (filled in by S003-S006)
+#   preconditions:   List of required setup steps before executing
+#   steps:           Ordered list of test actions
+#   expected_result: What a passing run looks like
 #   platform:        all | mac | win/linux
 #   automated:       false (manual) | true (covered by TypeScript integration tests)
 #   status:          pending | pass | fail | skip
-#
-# Note: preconditions / steps / expected_result are left empty in this skeleton.
-#       They are populated by subsequent build steps (S003-S006).
 
 test_cases:
 
