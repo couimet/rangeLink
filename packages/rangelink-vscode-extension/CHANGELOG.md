@@ -93,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Clickable File Paths** - Plain file paths in terminal output and editor documents are now clickable (#253)
   - `Cmd+click` (Mac) / `Ctrl+click` (Win/Linux) navigates directly to the file in the editor
   - Supports quoted paths with spaces (e.g., `"/path/with spaces/file.ts"`), absolute paths (`/path/to/file.ts`), relative paths (`./file.ts`, `../file.ts`), and tilde paths (`~/file.ts`)
+  - Quoted path detection requires a file extension and excludes backtick-delimited code, so English prose with possessive apostrophes (e.g. `branch's … base's`) is never matched as a quoted path
   - File existence is validated on click (not during detection) to keep terminal and document scanning fast
   - Works alongside existing RangeLink `#L` navigation — no conflicts
 
