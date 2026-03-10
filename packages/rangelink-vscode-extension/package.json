@@ -46,6 +46,7 @@
     "publish:vsix": "./scripts/publish-from-vsix.sh",
     "test": "jest --coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
+    "test:release": "tsc -p tsconfig.integration.json && vscode-test",
     "test:watch": "jest --watch",
     "vscode:prepublish": "pnpm --filter rangelink-core-ts compile && pnpm compile && pnpm test",
     "watch": "tsc -watch -p ./"
@@ -801,8 +802,11 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.49.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.6.2",
     "barebone-logger-testing": "workspace:*",
     "esbuild": "^0.25.12",

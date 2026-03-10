@@ -26,6 +26,7 @@
     "package:vscode-extension:withInstall:both": "pnpm package:vscode-extension && pnpm install-local:vscode-extension:both",
     "publish:vscode-extension:vsix": "pnpm --filter rangelink-vscode-extension publish:vsix",
     "test": "pnpm -r test",
+    "test:release": "pnpm --filter rangelink-vscode-extension test:release",
     "watch": "pnpm -r --parallel watch"
   },
   "devDependencies": {
