@@ -87,6 +87,21 @@ export default [
     },
   },
   {
+    // Integration tests use Mocha TDD interface globals (suite/test/suiteSetup/suiteTeardown/setup/teardown)
+    // rather than Jest's describe/it — @vscode/test-cli runs these in the VS Code extension host
+    files: ['**/__integration-tests__/**/*.ts'],
+    languageOptions: {
+      globals: {
+        suite: 'readonly',
+        test: 'readonly',
+        suiteSetup: 'readonly',
+        suiteTeardown: 'readonly',
+        setup: 'readonly',
+        teardown: 'readonly',
+      },
+    },
+  },
+  {
     // VSCode extension: process is used for terminal process IDs and platform detection
     files: ['packages/rangelink-vscode-extension/src/**/*.ts'],
     languageOptions: {
