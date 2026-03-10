@@ -117,6 +117,41 @@ describe('FilePathTerminalProvider', () => {
 
       expect(links).toStrictEqual([]);
     });
+
+    it('should detect single-quoted path and strip quotes from data', () => {
+      const context = createMockTerminalContext("Open '/path/to/file.ts' now");
+      const links = provider.provideTerminalLinks(context) as FilePathTerminalLink[];
+
+      expect(links).toStrictEqual([
+        {
+          startIndex: 5,
+          length: 18,
+          tooltip: 'Open /path/to/file.ts \u2022 RangeLink',
+          data: '/path/to/file.ts',
+        },
+      ]);
+    });
+
+    it('should detect tilde path', () => {
+      const context = createMockTerminalContext('Open ~/projects/app/main.ts now');
+      const links = provider.provideTerminalLinks(context) as FilePathTerminalLink[];
+
+      expect(links).toStrictEqual([
+        {
+          startIndex: 5,
+          length: 22,
+          tooltip: 'Open ~/projects/app/main.ts \u2022 RangeLink',
+          data: '~/projects/app/main.ts',
+        },
+      ]);
+    });
+
+    it('should NOT detect file path when path is a RangeLink (coexistence with RangeLink provider)', () => {
+      const context = createMockTerminalContext('./src/file.ts#L10');
+      const links = provider.provideTerminalLinks(context) as FilePathTerminalLink[];
+
+      expect(links).toStrictEqual([]);
+    });
   });
 
   describe('handleTerminalLink', () => {
