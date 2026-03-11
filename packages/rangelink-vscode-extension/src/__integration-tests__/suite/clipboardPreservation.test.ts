@@ -49,6 +49,9 @@ suite('Clipboard Preservation', () => {
   });
 
   setup(async () => {
+    // Re-show the document to ensure it's the active text editor (not the terminal)
+    // before commands that call getActiveTextEditorUri() run.
+    editor = await vscode.window.showTextDocument(editor.document);
     await vscode.env.clipboard.writeText(SENTINEL);
     // Non-empty selection on line 1 (index 0)
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 7));
