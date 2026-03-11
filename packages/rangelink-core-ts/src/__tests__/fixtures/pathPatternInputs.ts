@@ -74,6 +74,15 @@ export const QUOTED_FALSE_POSITIVES = {
   SINGLE_NO_EXTENSION: "'hello world'",
   DOUBLE_NO_EXTENSION: '"output directory"',
 
+  // Bare filenames without a path separator are rejected — they match word.ext patterns
+  // like Ruby ActiveRecord query names (e.g. "Asset.Load") at too high a false-positive rate
+  SINGLE_BARE_FILENAME: "Edit 'component.ts' directly",
+  DOUBLE_BARE_FILENAME: 'Edit "component.ts" directly',
+
+  // Ruby/ORM-style class.operation strings that have a dot but no path separator
+  DOUBLE_ORM_QUERY: '"StoredValue::Global::Asset.Load"',
+  SINGLE_ORM_QUERY: "'UserPermission.find'",
+
   // Newline between two apostrophes — the newline exclusion prevents cross-line spanning;
   // the second line's valid path should still match
   NEWLINE_BETWEEN_POSSESSIVES_WITH_VALID_SECOND_LINE: "branch's\n'/path/to/file.ts'",
@@ -88,8 +97,6 @@ export const QUOTED_TRUE_POSITIVES = {
   DOUBLE_ABSOLUTE: 'Check "/path/to/file.ts" for details',
   DOUBLE_WITH_SPACES: 'Open "/path/with spaces/file.ts" now',
   SINGLE_WITH_SPACES: "Open '/path/with spaces/file.ts' now",
-  SINGLE_BARE_FILENAME: "Edit 'component.ts' directly",
-  DOUBLE_BARE_FILENAME: 'Edit "component.ts" directly',
   DOUBLE_MULTI_EXTENSION: '"/path/to/file.test.ts"',
 
   // Possessive earlier in the same sentence must not interfere with the quoted path

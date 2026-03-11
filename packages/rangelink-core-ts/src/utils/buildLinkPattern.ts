@@ -148,8 +148,8 @@ export const buildFilePathPattern = (delimiters: DelimiterConfig): RegExp => {
 
   // Quoted patterns: NO_WEB_URL_SCHEME inside the opening quote blocks quoted URLs
   // like "https://example.com/file.ts" from being matched as local file paths.
-  const doubleQuoted = `"${NO_WEB_URL_SCHEME}(?<dq>[^"\\n\`?*]*\\.\\w+)"`;
-  const singleQuoted = `'${NO_WEB_URL_SCHEME}(?<sq>[^'\\n\`?*]*\\.\\w+)'`;
+  const doubleQuoted = `"${NO_WEB_URL_SCHEME}(?<dq>[^"\\n\`?*]*/[^"\\n\`?*]*\\.\\w+)"`;
+  const singleQuoted = `'${NO_WEB_URL_SCHEME}(?<sq>[^'\\n\`?*]*/[^'\\n\`?*]*\\.\\w+)'`;
 
   // Unquoted patterns: NOT_AFTER_URL_CHAR prevents matching path segments that
   // are embedded inside web URLs (e.g., https://example.com/./file.ts or ~/user).

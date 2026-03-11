@@ -51,18 +51,6 @@ describe('buildFilePathPattern', () => {
       ]);
     });
 
-    it('should match single-quoted bare filename', () => {
-      expect(matchesPattern(QUOTED_TRUE_POSITIVES.SINGLE_BARE_FILENAME)).toStrictEqual([
-        'component.ts',
-      ]);
-    });
-
-    it('should match double-quoted bare filename', () => {
-      expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_BARE_FILENAME)).toStrictEqual([
-        'component.ts',
-      ]);
-    });
-
     it('should match double-quoted multi-extension path and capture last extension', () => {
       expect(matchesPattern(QUOTED_TRUE_POSITIVES.DOUBLE_MULTI_EXTENSION)).toStrictEqual([
         '/path/to/file.test.ts',
@@ -97,6 +85,22 @@ describe('buildFilePathPattern', () => {
 
     it('should NOT match double-quoted prose phrase with no file extension', () => {
       expect(matchesPattern(QUOTED_FALSE_POSITIVES.DOUBLE_NO_EXTENSION)).toStrictEqual([]);
+    });
+
+    it('should NOT match single-quoted bare filename without path separator', () => {
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.SINGLE_BARE_FILENAME)).toStrictEqual([]);
+    });
+
+    it('should NOT match double-quoted bare filename without path separator', () => {
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.DOUBLE_BARE_FILENAME)).toStrictEqual([]);
+    });
+
+    it('should NOT match double-quoted ORM-style class.operation string', () => {
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.DOUBLE_ORM_QUERY)).toStrictEqual([]);
+    });
+
+    it('should NOT match single-quoted ORM-style class.operation string', () => {
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.SINGLE_ORM_QUERY)).toStrictEqual([]);
     });
 
     it('should NOT span across newline — the valid quoted path on the second line should match independently', () => {
