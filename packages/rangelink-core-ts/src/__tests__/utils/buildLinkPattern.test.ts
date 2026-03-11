@@ -1,6 +1,14 @@
 import { DEFAULT_DELIMITERS } from '../../constants/DEFAULT_DELIMITERS';
 import { DelimiterConfig } from '../../types/DelimiterConfig';
 import { buildLinkPattern } from '../../utils/buildLinkPattern';
+import {
+  BOUNDARY_INPUTS,
+  MULTI_MATCH_INPUTS,
+  PROSE_INPUTS,
+  RANGELINK_COEXISTENCE,
+  SPECIAL_CHAR_PATHS,
+  URL_INPUTS,
+} from '../fixtures/pathPatternInputs';
 
 describe('buildLinkPattern', () => {
   describe('default delimiters', () => {
@@ -825,6 +833,167 @@ describe('buildLinkPattern', () => {
         expect(matches[2][1]).toBe('c.ts');
         expect(matches[3][0]).toBe('d.ts#L4');
         expect(matches[3][1]).toBe('d.ts');
+      });
+    });
+  });
+
+  describe('URL exclusion — additional schemes', () => {
+    const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+    it('should NOT match ftp:// URL with RangeLink suffix', () => {
+      const matches = [...URL_INPUTS.FTP_WITH_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(0);
+    });
+
+    it('should NOT match http://localhost URL with RangeLink suffix', () => {
+      const matches = [...URL_INPUTS.LOCALHOST_WITH_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(0);
+    });
+
+    it('should NOT match https:// URL with query params and RangeLink anchor', () => {
+      const matches = [...URL_INPUTS.HTTPS_WITH_QUERY_PARAM_AND_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(0);
+    });
+
+    it('should NOT match HTTPS:// URL (uppercase scheme)', () => {
+      const matches = [...URL_INPUTS.HTTPS_UPPERCASE_WITH_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(0);
+    });
+
+    it('should match only local RangeLink when line contains both a URL and a local link', () => {
+      const matches = [...MULTI_MATCH_INPUTS.URL_AND_LOCAL_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][0]).toBe('local.ts#L10');
+    });
+  });
+
+  describe('special characters in path segments', () => {
+    const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+    it('should match path with @ in path component', () => {
+      const line = `${SPECIAL_CHAR_PATHS.AT_IN_COMPONENT}#L10`;
+      const matches = [...line.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][1]).toBe(SPECIAL_CHAR_PATHS.AT_IN_COMPONENT);
+    });
+
+    it('should match path with dot in directory name and correctly identify extension', () => {
+      const line = `${SPECIAL_CHAR_PATHS.DOT_IN_DIRECTORY_RELATIVE}#L42`;
+      const matches = [...line.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][1]).toBe(SPECIAL_CHAR_PATHS.DOT_IN_DIRECTORY_RELATIVE);
+    });
+
+    it('should match path with numeric extension', () => {
+      const line = `${SPECIAL_CHAR_PATHS.NUMERIC_EXTENSION}#L10`;
+      const matches = [...line.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][1]).toBe(SPECIAL_CHAR_PATHS.NUMERIC_EXTENSION);
+    });
+  });
+
+  describe('prose context — PATH_CHAR exclusion guards', () => {
+    const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+    it('should match RangeLink when possessive apostrophe appears before it in the sentence', () => {
+      const matches = [...PROSE_INPUTS.POSSESSIVE_BEFORE_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][0]).toBe('file.ts#L10');
+      expect(matches[0][1]).toBe('file.ts');
+    });
+
+    it('should match RangeLink when possessive apostrophe appears after it in the sentence', () => {
+      const matches = [...PROSE_INPUTS.POSSESSIVE_AFTER_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][0]).toBe('file.ts#L10');
+      expect(matches[0][1]).toBe('file.ts');
+    });
+
+    it('should match RangeLink in backticks and NOT match adjacent backtick-wrapped code', () => {
+      const matches = [...PROSE_INPUTS.RANGELINK_AND_BACKTICK_CODE.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][0]).toBe('file.ts#L10');
+    });
+  });
+
+  describe('boundary and context', () => {
+    const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+    it('should match RangeLink after a comma', () => {
+      const matches = [...BOUNDARY_INPUTS.RANGELINK_AFTER_COMMA.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][0]).toBe('src/file.ts#L10');
+    });
+
+    it('should match RangeLink after a colon-label', () => {
+      const matches = [...BOUNDARY_INPUTS.RANGELINK_AFTER_COLON_LABEL.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][0]).toBe('src/file.ts#L10');
+    });
+  });
+
+  describe('multiple matches', () => {
+    const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+    it('should match absolute and relative RangeLinks on the same line', () => {
+      const matches = [...MULTI_MATCH_INPUTS.ABS_AND_RELATIVE_RANGELINKS.matchAll(pattern)];
+      expect(matches).toHaveLength(2);
+      expect(matches[0][1]).toBe('/abs/file.ts');
+      expect(matches[1][1]).toBe('./rel/file.ts');
+    });
+  });
+
+  describe('coexistence with FilePathDocumentProvider / FilePathTerminalProvider', () => {
+    const pattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+    it('should match relative path with #L suffix (FilePathProvider rejects it)', () => {
+      const matches = [...RANGELINK_COEXISTENCE.RELATIVE_WITH_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][1]).toBe('./src/a.ts');
+    });
+
+    it('should match absolute path with #L suffix (FilePathProvider rejects it)', () => {
+      const matches = [...RANGELINK_COEXISTENCE.ABSOLUTE_WITH_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][1]).toBe('/abs/file.ts');
+    });
+
+    it('should match tilde path with #L suffix (FilePathProvider rejects it)', () => {
+      const matches = [...RANGELINK_COEXISTENCE.TILDE_WITH_RANGELINK.matchAll(pattern)];
+      expect(matches).toHaveLength(1);
+      expect(matches[0][1]).toBe('~/config.ts');
+    });
+
+    it('should NOT match clean path without #L suffix (FilePathProvider owns it)', () => {
+      const matches = [...RANGELINK_COEXISTENCE.CLEAN_RELATIVE.matchAll(pattern)];
+      expect(matches).toHaveLength(0);
+    });
+
+    describe('rectangular delimiter (##L)', () => {
+      const rectPattern = buildLinkPattern(DEFAULT_DELIMITERS);
+
+      it('should match rectangular path with ##L suffix (FilePathProvider rejects it)', () => {
+        const matches = [...RANGELINK_COEXISTENCE.RECTANGULAR_WITH_RANGELINK.matchAll(rectPattern)];
+        expect(matches).toHaveLength(1);
+        expect(matches[0][1]).toBe('./src/a.ts');
+      });
+
+      it('should NOT match without ##L suffix (FilePathProvider owns it)', () => {
+        const matches = [...RANGELINK_COEXISTENCE.CLEAN_RELATIVE.matchAll(rectPattern)];
+        expect(matches).toHaveLength(0);
+      });
+    });
+
+    describe('custom delimiter (@l)', () => {
+      const customDelimiters: DelimiterConfig = { hash: '@', line: 'l', position: 'C', range: '-' };
+      const customPattern = buildLinkPattern(customDelimiters);
+
+      it('should match custom-delimiter path (FilePathProvider with custom delimiters rejects it)', () => {
+        const matches = [
+          ...RANGELINK_COEXISTENCE.CUSTOM_DELIMITER_WITH_RANGELINK.matchAll(customPattern),
+        ];
+        expect(matches).toHaveLength(1);
+        expect(matches[0][1]).toBe('./src/a.ts');
       });
     });
   });

@@ -182,6 +182,14 @@ RangeLinks in editor files (markdown, text, code, untitled) are also clickable:
 - **Cmd+Click** to jump to code
 - **Perfect for scratchpads** - Validate links before sending to claude-code
 
+#### Plain File Path Navigation <sup>Unreleased</sup>
+
+Plain file paths (without `#L` suffix) are also clickable — anywhere RangeLinks are detected:
+
+- **Cmd+Click** (Mac) or **Ctrl+Click** (Windows/Linux) opens the file directly
+- **Supported formats:** absolute (`/path/to/file.ts`), relative (`./file.ts`, `../file.ts`), tilde (`~/file.ts`), and quoted paths with spaces (`"/path/with spaces/file.ts"`)
+- **Validate on click:** detection is instant; file existence is only checked when you click
+
 #### Go to Link <sup>Unreleased</sup>
 
 **Have a RangeLink but no clickable context?** Paste or type it directly:

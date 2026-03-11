@@ -568,6 +568,7 @@ describe('Extension lifecycle', () => {
       'rangelink.explorer.unbind',
       'rangelink.goToRangeLink',
       'rangelink.handleDocumentLinkClick',
+      'rangelink.handleFilePathClick',
       'rangelink.jumpToBoundDestination',
       'rangelink.openStatusBarMenu',
       'rangelink.pasteCurrentFileAbsolutePath',
@@ -615,8 +616,8 @@ describe('Extension lifecycle', () => {
     extension.activate(mockContext as any);
 
     const INFRASTRUCTURE_COUNT = 3;
-    const PROVIDER_COUNT = 2;
-    const COMMAND_COUNT = 49;
+    const PROVIDER_COUNT = 4;
+    const COMMAND_COUNT = 50;
     const DESTINATION_MANAGER_LISTENERS = 2;
     const EXPECTED_SUBSCRIPTION_COUNT =
       INFRASTRUCTURE_COUNT + PROVIDER_COUNT + COMMAND_COUNT + DESTINATION_MANAGER_LISTENERS;

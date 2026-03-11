@@ -34,3 +34,6 @@ packages/*/icon_large.png
 .claude-questions/
 .commit-msgs/
 .scratchpads/
+
+# Claude skill working directories
+.claude-work/

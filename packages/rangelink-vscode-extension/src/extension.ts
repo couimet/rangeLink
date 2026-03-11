@@ -54,6 +54,7 @@ import {
   CMD_COPY_PORTABLE_LINK_ABSOLUTE,
   CMD_COPY_PORTABLE_LINK_RELATIVE,
   CMD_HANDLE_DOCUMENT_LINK_CLICK,
+  CMD_HANDLE_FILE_PATH_CLICK,
   CMD_JUMP_TO_DESTINATION,
   CMD_OPEN_STATUS_BAR_MENU,
   CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE,
@@ -76,12 +77,15 @@ import { DestinationRegistry } from './destinations/DestinationRegistry';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { setLocale } from './i18n/LocaleManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
+import { FilePathDocumentProvider } from './navigation/FilePathDocumentProvider';
+import { FilePathNavigationHandler } from './navigation/FilePathNavigationHandler';
+import { FilePathTerminalProvider } from './navigation/FilePathTerminalProvider';
 import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { RangeLinkStatusBar } from './statusBar';
-import { type RangeLinkClickArgs, type VersionInfo } from './types';
+import { type FilePathClickArgs, type RangeLinkClickArgs, type VersionInfo } from './types';
 import { formatMessage, registerWithLogging } from './utils';
 import { VSCodeLogger } from './VSCodeLogger';
 
@@ -223,11 +227,48 @@ export function activate(context: vscode.ExtensionContext): void {
   const navigationHandler = new RangeLinkNavigationHandler(getDelimiters, ideAdapter, logger);
   logger.debug({ fn: 'activate' }, 'Navigation handler created');
 
+  // Create file path navigation handler (used by file path terminal and document providers)
+  const filePathNavigationHandler = new FilePathNavigationHandler(ideAdapter, logger);
+
   const addBookmarkCommand = new AddBookmarkCommand(
     getDelimiters,
     ideAdapter,
     bookmarkService,
     logger,
+  );
+
+  // Register file path terminal link provider for clickable plain file paths
+  const filePathTerminalProvider = new FilePathTerminalProvider(
+    getDelimiters,
+    filePathNavigationHandler,
+    logger,
+  );
+  context.subscriptions.push(
+    registerWithLogging(
+      ideAdapter.registerTerminalLinkProvider(filePathTerminalProvider),
+      'File path terminal link provider registered',
+    ),
+  );
+
+  // Register file path document link provider for clickable plain file paths in editor files
+  // Only register for specific schemes to prevent infinite recursion when scanning output channels
+  const filePathDocumentProvider = new FilePathDocumentProvider(
+    getDelimiters,
+    filePathNavigationHandler,
+    ideAdapter,
+    logger,
+  );
+  context.subscriptions.push(
+    registerWithLogging(
+      ideAdapter.registerDocumentLinkProvider(
+        [
+          { scheme: 'file' }, // Regular files (markdown, code, etc.)
+          { scheme: 'untitled' }, // Unsaved/new files (scratchpad workflow)
+        ],
+        filePathDocumentProvider,
+      ),
+      'File path document link provider registered',
+    ),
   );
 
   // Register terminal link provider for clickable links
@@ -402,6 +443,13 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, (args) => {
       return documentLinkProvider.handleLinkClick(args as RangeLinkClickArgs);
+    }),
+  );
+
+  // Register file path document link navigation command
+  context.subscriptions.push(
+    ideAdapter.registerCommand(CMD_HANDLE_FILE_PATH_CLICK, (args) => {
+      return filePathDocumentProvider.handleLinkClick(args as FilePathClickArgs);
     }),
   );
 
