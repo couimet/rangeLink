@@ -52,6 +52,14 @@ describe('FilePathDocumentProvider', () => {
 
       expect(links).toHaveLength(1);
       expect(links[0].tooltip).toBe('Open /path/to/file.ts \u2022 RangeLink');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'FilePathDocumentProvider.provideDocumentLinks',
+          documentUri: 'file:///test/doc.md',
+          linksFound: 1,
+        },
+        'Found 1 file paths in document',
+      );
     });
 
     it('should encode filePath in command URI', () => {
@@ -129,25 +137,6 @@ describe('FilePathDocumentProvider', () => {
       const links = provider.provideDocumentLinks(document) as vscode.DocumentLink[];
 
       expect(links).toStrictEqual([]);
-    });
-
-    it('should log scan result', () => {
-      const document = createMockDocument({
-        getText: createMockText('See /path/to/file.ts'),
-        uri: createMockUri('/test/doc.md'),
-        positionAt: createMockPositionAt(),
-      });
-
-      provider.provideDocumentLinks(document);
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        {
-          fn: 'FilePathDocumentProvider.provideDocumentLinks',
-          documentUri: 'file:///test/doc.md',
-          linksFound: 1,
-        },
-        'Found 1 file paths in document',
-      );
     });
 
     it('should NOT match path inside URL', () => {
