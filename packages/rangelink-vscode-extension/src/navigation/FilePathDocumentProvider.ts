@@ -74,7 +74,7 @@ export class FilePathDocumentProvider implements vscode.DocumentLinkProvider {
       const docLink = new vscode.DocumentLink(range);
       docLink.tooltip = formatMessage(MessageCode.TOOLTIP_FILE_PATH, { path: rawPath });
       docLink.target = this.ideAdapter.parseUri(
-        `command:${CMD_HANDLE_FILE_PATH_CLICK}?${encodeURIComponent(JSON.stringify({ filePath: rawPath }))}`,
+        `command:${CMD_HANDLE_FILE_PATH_CLICK}?${encodeURIComponent(JSON.stringify([{ filePath: rawPath }]))}`,
       );
 
       links.push(docLink);

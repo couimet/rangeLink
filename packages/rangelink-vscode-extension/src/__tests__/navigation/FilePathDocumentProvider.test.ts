@@ -63,7 +63,7 @@ describe('FilePathDocumentProvider', () => {
 
       const links = provider.provideDocumentLinks(document) as vscode.DocumentLink[];
 
-      const expectedArgs = encodeURIComponent(JSON.stringify({ filePath: '/path/to/file.ts' }));
+      const expectedArgs = encodeURIComponent(JSON.stringify([{ filePath: '/path/to/file.ts' }]));
       expect(links[0].target!.toString()).toBe(
         `command:rangelink.handleFilePathClick?${expectedArgs}`,
       );
@@ -81,7 +81,7 @@ describe('FilePathDocumentProvider', () => {
       expect(links).toHaveLength(1);
       expect(links[0].tooltip).toBe('Open /path/with spaces/file.ts \u2022 RangeLink');
       const expectedArgs = encodeURIComponent(
-        JSON.stringify({ filePath: '/path/with spaces/file.ts' }),
+        JSON.stringify([{ filePath: '/path/with spaces/file.ts' }]),
       );
       expect(links[0].target!.toString()).toBe(
         `command:rangelink.handleFilePathClick?${expectedArgs}`,
@@ -113,7 +113,7 @@ describe('FilePathDocumentProvider', () => {
 
       expect(links).toHaveLength(1);
       expect(links[0].tooltip).toBe('Open ../src/file.ts \u2022 RangeLink');
-      const expectedArgs = encodeURIComponent(JSON.stringify({ filePath: '../src/file.ts' }));
+      const expectedArgs = encodeURIComponent(JSON.stringify([{ filePath: '../src/file.ts' }]));
       expect(links[0].target!.toString()).toBe(
         `command:rangelink.handleFilePathClick?${expectedArgs}`,
       );
@@ -173,7 +173,7 @@ describe('FilePathDocumentProvider', () => {
 
       expect(links).toHaveLength(1);
       expect(links[0].tooltip).toBe('Open /path/to/file.ts \u2022 RangeLink');
-      const expectedArgs = encodeURIComponent(JSON.stringify({ filePath: '/path/to/file.ts' }));
+      const expectedArgs = encodeURIComponent(JSON.stringify([{ filePath: '/path/to/file.ts' }]));
       expect(links[0].target!.toString()).toBe(
         `command:rangelink.handleFilePathClick?${expectedArgs}`,
       );
@@ -191,7 +191,7 @@ describe('FilePathDocumentProvider', () => {
       expect(links).toHaveLength(1);
       expect(links[0].tooltip).toBe('Open ~/projects/app/main.ts \u2022 RangeLink');
       const expectedArgs = encodeURIComponent(
-        JSON.stringify({ filePath: '~/projects/app/main.ts' }),
+        JSON.stringify([{ filePath: '~/projects/app/main.ts' }]),
       );
       expect(links[0].target!.toString()).toBe(
         `command:rangelink.handleFilePathClick?${expectedArgs}`,
