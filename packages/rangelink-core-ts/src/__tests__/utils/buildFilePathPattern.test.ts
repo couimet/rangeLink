@@ -103,6 +103,14 @@ describe('buildFilePathPattern', () => {
       expect(matchesPattern(QUOTED_FALSE_POSITIVES.SINGLE_ORM_QUERY)).toStrictEqual([]);
     });
 
+    it('should NOT match double-quoted path-like string without a path prefix', () => {
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.DOUBLE_NO_PATH_PREFIX)).toStrictEqual([]);
+    });
+
+    it('should NOT match single-quoted path-like string without a path prefix', () => {
+      expect(matchesPattern(QUOTED_FALSE_POSITIVES.SINGLE_NO_PATH_PREFIX)).toStrictEqual([]);
+    });
+
     it('should NOT span across newline — the valid quoted path on the second line should match independently', () => {
       expect(
         matchesPattern(QUOTED_FALSE_POSITIVES.NEWLINE_BETWEEN_POSSESSIVES_WITH_VALID_SECOND_LINE),

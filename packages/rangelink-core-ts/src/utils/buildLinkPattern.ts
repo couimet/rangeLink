@@ -112,6 +112,32 @@ export const buildLinkPattern = (delimiters: DelimiterConfig): RegExp => {
 export const extractFilePath = (match: RegExpExecArray): string =>
   match.groups?.dq ?? match.groups?.sq ?? match[0];
 
+// Quoted file-path patterns for buildFilePathPattern.
+//
+// NO_WEB_URL_SCHEME inside the opening quote blocks quoted URLs like
+// "https://example.com/file.ts" from being matched as local file paths.
+//
+// Path-prefix requirement (/, ./, ../, ~/): bare relative strings like
+// "data/reports/output.yml" are intentionally rejected. Any quoted string
+// containing a slash and a file extension is too ambiguous without an explicit
+// path anchor — it could be a namespaced identifier, an API route, a JSON
+// config key, etc.
+//
+// This pattern is deliberately conservative (pure regex, no I/O). A richer
+// alternative would be to broaden the pattern and let the providers perform a
+// post-match existence check (fs.existsSync / vscode.workspace.findFiles) as a
+// tiebreaker for ambiguous bare-relative strings. VSCode's own terminal link
+// detection uses this approach. Trade-offs to weigh if revisiting:
+//   + Correctly links real bare-relative paths the prefix rule currently misses
+//   + Terminal false-positives from remote paths are also eliminated (they simply
+//     won't exist on the local disk)
+//   - provideTerminalLinks is currently sync; async stat requires interface change
+//   - Behavior becomes environment-dependent: same text links or not based on
+//     disk state, which surprises users on machines where the file isn't present
+//   - Hot path cost: a stat call per match on every terminal line needs benchmarking
+const DOUBLE_QUOTED_PATH = `"${NO_WEB_URL_SCHEME}(?<dq>(?:/|\\.{1,2}/|~/)[^"\\n\`?*]*\\.\\w+)"`;
+const SINGLE_QUOTED_PATH = `'${NO_WEB_URL_SCHEME}(?<sq>(?:/|\\.{1,2}/|~/)[^'\\n\`?*]*\\.\\w+)'`;
+
 /**
  * Builds a RegExp pattern for detecting plain file paths in text.
  *
@@ -146,16 +172,11 @@ export const buildFilePathPattern = (delimiters: DelimiterConfig): RegExp => {
   // double-hash (rectangular), and custom-delimiter suffixes.
   const notBeforeRangeLink = `(?!\\w|(?:${escapedHash}){1,2}${escapedLine}\\d)`;
 
-  // Quoted patterns: NO_WEB_URL_SCHEME inside the opening quote blocks quoted URLs
-  // like "https://example.com/file.ts" from being matched as local file paths.
-  const doubleQuoted = `"${NO_WEB_URL_SCHEME}(?<dq>[^"\\n\`?*]*/[^"\\n\`?*]*\\.\\w+)"`;
-  const singleQuoted = `'${NO_WEB_URL_SCHEME}(?<sq>[^'\\n\`?*]*/[^'\\n\`?*]*\\.\\w+)'`;
-
   // Unquoted patterns: NOT_AFTER_URL_CHAR prevents matching path segments that
   // are embedded inside web URLs (e.g., https://example.com/./file.ts or ~/user).
   const absolute = `${NOT_AFTER_URL_CHAR}/[\\w\\-./@]+\\.\\w+${notBeforeRangeLink}`;
   const relative = `${NOT_AFTER_URL_CHAR}\\.{1,2}/[\\w\\-./@]+\\.\\w+${notBeforeRangeLink}`;
   const tilde = `${NOT_AFTER_URL_CHAR}~/[\\w\\-./@]+\\.\\w+${notBeforeRangeLink}`;
 
-  return new RegExp(`${doubleQuoted}|${singleQuoted}|${absolute}|${relative}|${tilde}`, 'g');
+  return new RegExp(`${DOUBLE_QUOTED_PATH}|${SINGLE_QUOTED_PATH}|${absolute}|${relative}|${tilde}`, 'g');
 };

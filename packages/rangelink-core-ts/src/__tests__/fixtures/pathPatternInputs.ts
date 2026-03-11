@@ -83,6 +83,12 @@ export const QUOTED_FALSE_POSITIVES = {
   DOUBLE_ORM_QUERY: '"StoredValue::Global::Asset.Load"',
   SINGLE_ORM_QUERY: "'UserPermission.find'",
 
+  // Path-like strings that contain a slash and a file extension but do NOT start
+  // with a recognised path prefix (/, ./, ../, ~/) — e.g. entries in a JSON
+  // "files" array. They must NOT be highlighted as clickable file paths.
+  DOUBLE_NO_PATH_PREFIX: '"data/reports/output.yml"',
+  SINGLE_NO_PATH_PREFIX: "'services/core/models/factory.rb'",
+
   // Newline between two apostrophes — the newline exclusion prevents cross-line spanning;
   // the second line's valid path should still match
   NEWLINE_BETWEEN_POSSESSIVES_WITH_VALID_SECOND_LINE: "branch's\n'/path/to/file.ts'",
