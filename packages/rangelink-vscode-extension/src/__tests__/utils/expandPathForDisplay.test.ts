@@ -45,7 +45,9 @@ describe('expandPathForDisplay', () => {
     });
 
     it('should resolve ../ relative to context directory', () => {
-      expect(expandPathForDisplay('../lib/util.ts', CONTEXT_FS_PATH)).toBe('/workspace/lib/util.ts');
+      expect(expandPathForDisplay('../lib/util.ts', CONTEXT_FS_PATH)).toBe(
+        '/workspace/lib/util.ts',
+      );
     });
 
     it('should resolve ../ path containing spaces', () => {
