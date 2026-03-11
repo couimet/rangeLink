@@ -178,5 +178,8 @@ export const buildFilePathPattern = (delimiters: DelimiterConfig): RegExp => {
   const relative = `${NOT_AFTER_URL_CHAR}\\.{1,2}/[\\w\\-./@]+\\.\\w+${notBeforeRangeLink}`;
   const tilde = `${NOT_AFTER_URL_CHAR}~/[\\w\\-./@]+\\.\\w+${notBeforeRangeLink}`;
 
-  return new RegExp(`${DOUBLE_QUOTED_PATH}|${SINGLE_QUOTED_PATH}|${absolute}|${relative}|${tilde}`, 'g');
+  return new RegExp(
+    `${DOUBLE_QUOTED_PATH}|${SINGLE_QUOTED_PATH}|${absolute}|${relative}|${tilde}`,
+    'g',
+  );
 };
