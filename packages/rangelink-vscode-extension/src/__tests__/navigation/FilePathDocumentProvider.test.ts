@@ -1,3 +1,5 @@
+import os from 'node:os';
+
 import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import { DEFAULT_DELIMITERS } from 'rangelink-core-ts';
@@ -106,8 +108,8 @@ describe('FilePathDocumentProvider', () => {
       const links = provider.provideDocumentLinks(document) as vscode.DocumentLink[];
 
       expect(links).toHaveLength(2);
-      expect(links[0].tooltip).toBe('Open ./src/a.ts \u2022 RangeLink');
-      expect(links[1].tooltip).toBe('Open ./src/b.ts \u2022 RangeLink');
+      expect(links[0].tooltip).toBe('Open /test/src/a.ts \u2022 RangeLink');
+      expect(links[1].tooltip).toBe('Open /test/src/b.ts \u2022 RangeLink');
     });
 
     it('should detect parent-relative path', () => {
@@ -120,7 +122,7 @@ describe('FilePathDocumentProvider', () => {
       const links = provider.provideDocumentLinks(document) as vscode.DocumentLink[];
 
       expect(links).toHaveLength(1);
-      expect(links[0].tooltip).toBe('Open ../src/file.ts \u2022 RangeLink');
+      expect(links[0].tooltip).toBe('Open /src/file.ts \u2022 RangeLink');
       const expectedArgs = encodeURIComponent(JSON.stringify([{ filePath: '../src/file.ts' }]));
       expect(links[0].target!.toString()).toBe(
         `command:rangelink.handleFilePathClick?${expectedArgs}`,
@@ -169,6 +171,8 @@ describe('FilePathDocumentProvider', () => {
     });
 
     it('should detect tilde path', () => {
+      jest.spyOn(os, 'homedir').mockReturnValue('/home/user');
+
       const document = createMockDocument({
         getText: createMockText('Open ~/projects/app/main.ts now'),
         uri: createMockUri('/test/doc.md'),
@@ -178,7 +182,7 @@ describe('FilePathDocumentProvider', () => {
       const links = provider.provideDocumentLinks(document) as vscode.DocumentLink[];
 
       expect(links).toHaveLength(1);
-      expect(links[0].tooltip).toBe('Open ~/projects/app/main.ts \u2022 RangeLink');
+      expect(links[0].tooltip).toBe('Open /home/user/projects/app/main.ts \u2022 RangeLink');
       const expectedArgs = encodeURIComponent(
         JSON.stringify([{ filePath: '~/projects/app/main.ts' }]),
       );
