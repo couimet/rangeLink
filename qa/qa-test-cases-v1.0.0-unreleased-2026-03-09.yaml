@@ -2167,3 +2167,145 @@ test_cases:
     platform: all
     automated: false
     status: pending
+
+  # ---------------------------------------------------------------------------
+  # Section — Clickable File Paths (issues/253)
+  # ---------------------------------------------------------------------------
+
+  - id: TC-150
+    feature: 'Clickable File Paths'
+    scenario: 'Absolute path (/path/to/file.ts) is detected as a clickable link'
+    preconditions:
+      - 'Extension installed'
+    steps:
+      - 'Call buildFilePathPattern(DEFAULT_DELIMITERS).exec on text containing /path/to/file.ts'
+    expected_result: 'Pattern returns one match; extractFilePath yields /path/to/file.ts'
+    platform: all
+    automated: true
+    status: pending
+
+  - id: TC-151
+    feature: 'Clickable File Paths'
+    scenario: 'Relative path (./file.ts) is detected as a clickable link'
+    preconditions:
+      - 'Extension installed'
+    steps:
+      - 'Call buildFilePathPattern on text containing ./file.ts'
+    expected_result: 'Pattern returns one match; extractFilePath yields ./file.ts'
+    platform: all
+    automated: true
+    status: pending
+
+  - id: TC-152
+    feature: 'Clickable File Paths'
+    scenario: 'Parent-relative path (../dir/file.ts) is detected as a clickable link'
+    preconditions:
+      - 'Extension installed'
+    steps:
+      - 'Call buildFilePathPattern on text containing ../dir/file.ts'
+    expected_result: 'Pattern returns one match; extractFilePath yields ../dir/file.ts'
+    platform: all
+    automated: true
+    status: pending
+
+  - id: TC-153
+    feature: 'Clickable File Paths'
+    scenario: 'Tilde home path (~/projects/app.ts) is detected as a clickable link'
+    preconditions:
+      - 'Extension installed'
+    steps:
+      - 'Call buildFilePathPattern on text containing ~/projects/app.ts'
+    expected_result: 'Pattern returns one match; extractFilePath yields ~/projects/app.ts'
+    platform: all
+    automated: true
+    status: pending
+
+  - id: TC-154
+    feature: 'Clickable File Paths'
+    scenario: 'Double-quoted path with spaces is detected and quotes are stripped'
+    preconditions:
+      - 'Extension installed'
+    steps:
+      - 'Call buildFilePathPattern on text containing "/path/with spaces/file.ts"'
+    expected_result: 'Pattern returns one match; extractFilePath strips quotes and yields /path/with spaces/file.ts'
+    platform: all
+    automated: true
+    status: pending
+
+  - id: TC-155
+    feature: 'Clickable File Paths'
+    scenario: 'Single-quoted path is detected and quotes are stripped'
+    preconditions:
+      - 'Extension installed'
+    steps:
+      - "Call buildFilePathPattern on text containing '/path/to/file.ts'"
+    expected_result: 'Pattern returns one match; extractFilePath strips quotes and yields /path/to/file.ts'
+    platform: all
+    automated: true
+    status: pending
+
+  - id: TC-156
+    feature: 'Clickable File Paths'
+    scenario: 'HTTP URL is NOT detected as a file path (false-positive guard)'
+    preconditions:
+      - 'Extension installed'
+    steps:
+      - 'Call buildFilePathPattern on text containing https://github.com/foo/bar.ts'
+    expected_result: 'Pattern returns zero matches — URL is excluded'
+    platform: all
+    automated: true
+    status: pending
+
+  - id: TC-157
+    feature: 'Clickable File Paths'
+    scenario: 'RangeLink path (src/foo.ts#L5) is NOT detected as a plain file path (coexistence guard)'
+    preconditions:
+      - 'Extension installed'
+    steps:
+      - 'Call buildFilePathPattern on text containing src/foo.ts#L5'
+    expected_result: 'Pattern returns zero matches — the #L suffix blocks the file path match so RangeLinkDocumentProvider handles it without overlap'
+    platform: all
+    automated: true
+    status: pending
+
+  - id: TC-158
+    feature: 'Clickable File Paths'
+    scenario: "ORM-style string ('User') without a path separator is NOT detected"
+    preconditions:
+      - 'Extension installed'
+    steps:
+      - "Call buildFilePathPattern on text containing 'User'"
+    expected_result: 'Pattern returns zero matches — single-quoted string without a path separator is excluded'
+    platform: all
+    automated: true
+    status: pending
+
+  - id: TC-159
+    feature: 'Clickable File Paths'
+    scenario: 'rangelink.handleFilePathClick opens a real workspace file in the active editor'
+    preconditions:
+      - 'Extension installed and activated'
+      - 'A workspace is open'
+    steps:
+      - 'Create a temp .ts file in the workspace root'
+      - 'Open a different anchor file so the temp file is not the active editor'
+      - 'Execute rangelink.handleFilePathClick with { filePath: tempFilePath }'
+      - 'Check vscode.window.activeTextEditor.document.uri.fsPath'
+    expected_result: 'Active editor URI matches tempFilePath — the file was opened by the navigation handler'
+    platform: all
+    automated: true
+    status: pending
+
+  - id: TC-160
+    feature: 'Clickable File Paths'
+    scenario: 'rangelink.handleFilePathClick shows a warning for a non-existent file path'
+    preconditions:
+      - 'Extension installed and activated'
+      - 'A workspace is open'
+    steps:
+      - 'Execute rangelink.handleFilePathClick with { filePath: /nonexistent/definitely-missing.ts }'
+      - 'Observe VS Code notification area'
+    expected_result: 'A warning notification appears (e.g., "Cannot open file: /nonexistent/definitely-missing.ts"). No error is thrown; active editor is unchanged.'
+    platform: all
+    automated: false
+    status: pending

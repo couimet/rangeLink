@@ -125,7 +125,7 @@ suite('Clipboard Preservation', () => {
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
 
-    await vscode.commands.executeCommand('rangelink.pasteFileRelativePath');
+    await vscode.commands.executeCommand('rangelink.pasteCurrentFileRelativePath');
     const clipboard = await vscode.env.clipboard.readText();
 
     assert.strictEqual(
