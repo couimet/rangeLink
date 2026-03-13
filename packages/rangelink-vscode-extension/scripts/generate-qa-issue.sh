@@ -52,12 +52,16 @@ if [[ "$DRY_RUN" == false ]] && ! command -v gh &>/dev/null; then
 fi
 
 # Derive version and date from filename.
-# Pattern: qa-test-cases-<version>-<YYYY-MM-DD>.yaml
-# The date is always the trailing YYYY-MM-DD (10 chars); version is everything before it.
+# Pattern: qa-test-cases-<version>-<YYYY-MM-DD>[-NNN].yaml
 BASENAME=$(basename "$YAML_FILE" .yaml)
 REST="${BASENAME#qa-test-cases-}"
-DATE="${REST: -10}"
-VERSION="${REST:0:${#REST}-11}"
+if [[ "$REST" =~ ^(.*)-([0-9]{4}-[0-9]{2}-[0-9]{2})(-[0-9]+)?$ ]]; then
+  VERSION="${BASH_REMATCH[1]}"
+  DATE="${BASH_REMATCH[2]}"
+else
+  echo "Error: cannot parse version and date from filename: $BASENAME" >&2
+  exit 1
+fi
 
 echo "QA issue generator"
 echo "  Version : $VERSION"
