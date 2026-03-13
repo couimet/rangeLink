@@ -376,6 +376,8 @@ pnpm package
 
 ## Testing the Extension
 
+For integration tests, CI pipeline, and QA test plan, see [TESTING.md](./TESTING.md).
+
 ### Functional Testing
 
 After installing (via either method above), test the core functionality:
