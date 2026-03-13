@@ -9,6 +9,9 @@ set -euo pipefail
 # Reads nextTargetVersion from package.json to name the output file.
 # Reads version (last published) to document the scope in the header.
 #
+# Filename: qa-test-cases-v<version>-<YYYY-MM-DD>.yaml
+# Same-day reruns append a suffix: -002, -003, etc.
+#
 # Requires: jq
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,11 +34,20 @@ fi
 
 TODAY=$(date +%Y-%m-%d)
 COMMIT=$(git -C "$REPO_ROOT" rev-parse --short HEAD)
-OUTPUT_FILE="$QA_DIR/qa-test-cases-v${NEXT_VERSION}-${TODAY}.yaml"
+BASE_NAME="qa-test-cases-v${NEXT_VERSION}-${TODAY}"
+OUTPUT_FILE="$QA_DIR/${BASE_NAME}.yaml"
 
 if [[ -f "$OUTPUT_FILE" ]]; then
-  echo "Error: $OUTPUT_FILE already exists — remove it first or update nextTargetVersion" >&2
-  exit 1
+  MAX_SUFFIX=1
+  for existing in "$QA_DIR/${BASE_NAME}"-[0-9][0-9][0-9].yaml; do
+    [[ -e "$existing" ]] || continue
+    suffix="${existing%.yaml}"
+    suffix="${suffix##*-}"
+    num=$((10#$suffix))
+    [[ $num -gt $MAX_SUFFIX ]] && MAX_SUFFIX=$num
+  done
+  NEXT_SUFFIX=$((MAX_SUFFIX + 1))
+  OUTPUT_FILE="$QA_DIR/${BASE_NAME}-$(printf '%03d' "$NEXT_SUFFIX").yaml"
 fi
 
 PREVIOUS_YAML=$(find "$QA_DIR" -name 'qa-test-cases-*.yaml' -type f | sort | tail -n 1)
