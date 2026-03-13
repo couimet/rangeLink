@@ -13,8 +13,6 @@ set -euo pipefail
 # Requires:
 #   python3 with PyYAML  — install with: pip3 install pyyaml
 #   gh CLI               — authenticated with write access to the repo
-#   'qa' label           — must already exist in the repository
-#     Create once with: gh label create qa --color '#e4e669' --description 'QA test cycle tracking'
 
 DRY_RUN=false
 YAML_FILE=""
@@ -116,7 +114,7 @@ ${CHECKBOXES}"
     echo "DRY-RUN sub-issue: $TITLE ($COUNT TCs)"
     SUB_ISSUE_ENTRIES+="<N>§${section}§${COUNT}"$'\n'
   else
-    URL=$(gh issue create --title "$TITLE" --body "$BODY" --label "qa")
+    URL=$(gh issue create --title "$TITLE" --body "$BODY")
     NUMBER=$(basename "$URL")
     echo "Created #${NUMBER}: ${section} ($COUNT TCs)"
     SUB_ISSUE_ENTRIES+="${NUMBER}§${section}§${COUNT}"$'\n'
@@ -146,6 +144,6 @@ if [[ "$DRY_RUN" == true ]]; then
   echo "$PARENT_BODY"
   echo "---"
 else
-  PARENT_URL=$(gh issue create --title "$PARENT_TITLE" --body "$PARENT_BODY" --label "qa")
+  PARENT_URL=$(gh issue create --title "$PARENT_TITLE" --body "$PARENT_BODY")
   echo "Created parent issue: $PARENT_URL"
 fi
