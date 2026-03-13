@@ -31,7 +31,7 @@ fi
 
 TODAY=$(date +%Y-%m-%d)
 COMMIT=$(git -C "$REPO_ROOT" rev-parse --short HEAD)
-OUTPUT_FILE="$QA_DIR/qa-test-cases-v${NEXT_VERSION}-unreleased-${TODAY}.yaml"
+OUTPUT_FILE="$QA_DIR/qa-test-cases-v${NEXT_VERSION}-${TODAY}.yaml"
 
 if [[ -f "$OUTPUT_FILE" ]]; then
   echo "Error: $OUTPUT_FILE already exists — remove it first or update nextTargetVersion" >&2
@@ -44,7 +44,7 @@ if [[ -z "$PREVIOUS_YAML" ]]; then
   exit 1
 fi
 
-HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION} (Unreleased) — ${TODAY}
+HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION} — ${TODAY}
 #
 # Scope: Changes accumulated between the vscode-extension-v${PUBLISHED_VERSION} release tag and the current
 #        main branch tip, targeting v${NEXT_VERSION}. Created at commit ${COMMIT}.

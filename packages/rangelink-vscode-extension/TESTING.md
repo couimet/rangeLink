@@ -80,9 +80,9 @@ The QA test plan is a version-scoped YAML file that tracks both automated and ma
 qa/qa-test-cases-<version>-<YYYY-MM-DD>.yaml
 ```
 
-Example: `qa/qa-test-cases-v1.0.0-unreleased-2026-03-09.yaml`
+Example: `qa/qa-test-cases-v1.1.0-2026-03-13.yaml`
 
-The version and date are embedded in the filename and parsed automatically by the `generate-qa-issue` script — no extra flags needed. The `unreleased` tag in the version string marks test cases for changes not yet released.
+The version is the target release (`nextTargetVersion` from `package.json`) and the date is when the plan was generated. Both are embedded in the filename and parsed automatically by the `generate-qa-issue` script — no extra flags needed.
 
 New QA YAML files are created by `pnpm generate:qa-test-plan`. The script carries forward all TCs from the most recent YAML, resets `status:` fields to `pending`, and preserves `automated:` flags.
 
@@ -107,7 +107,7 @@ Place new TCs at the end of the file under the relevant feature section. Use the
 ### Starting a new QA cycle
 
 1. Set `nextTargetVersion` in `packages/rangelink-vscode-extension/package.json` to the upcoming release version
-2. Run `pnpm generate:qa-test-plan` from the extension directory to create the new YAML with all existing TCs reset to `pending`
+2. Run `pnpm generate:qa-test-plan:vscode-extension` from the root of the project to create the new YAML with all existing TCs reset to `pending`
 3. Run `/qa-suggest` in Claude Code to get suggested TCs for new features based on the CHANGELOG `[Unreleased]` section
 4. Review the suggested TCs — add, edit, or remove as needed
 5. Commit the YAML and run `pnpm generate:qa-issue` to create the GitHub tracking issues
@@ -130,10 +130,10 @@ gh auth status
 
 ```bash
 # Dry run — prints what would be created without making API calls
-pnpm generate:qa-issue -- --dry-run qa/qa-test-cases-v1.0.0-unreleased-2026-03-09.yaml
+pnpm generate:qa-issue -- --dry-run qa/qa-test-cases-v1.1.0-2026-03-13.yaml
 
 # Live run — creates issues on GitHub
-pnpm generate:qa-issue -- qa/qa-test-cases-v1.0.0-unreleased-2026-03-09.yaml
+pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0-2026-03-13.yaml
 ```
 
 The script creates:

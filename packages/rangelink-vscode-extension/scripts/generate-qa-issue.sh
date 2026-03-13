@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Usage: ./scripts/generate-qa-issue.sh [--dry-run] <yaml-file>
-# Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.0.0-unreleased-2026-03-09.yaml
+# Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.1.0-2026-03-13.yaml
 #
 # Creates one parent GitHub issue + one sub-issue per feature section from a versioned QA YAML file.
 # The parent issue body uses GitHub task-list syntax (- [ ] #N) to track section-level progress.
@@ -27,7 +27,7 @@ done
 
 if [[ -z "$YAML_FILE" ]]; then
   echo "Usage: ./scripts/generate-qa-issue.sh [--dry-run] <yaml-file>" >&2
-  echo "Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.0.0-unreleased-2026-03-09.yaml" >&2
+  echo "Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.1.0-2026-03-13.yaml" >&2
   exit 1
 fi
 
