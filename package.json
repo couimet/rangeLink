@@ -17,6 +17,7 @@
     "format:fix": "prettier --write .",
     "generate:publish-instructions:vscode-extension": "pnpm --filter rangelink-vscode-extension run generate:publish-instructions",
     "generate:qa-issue": "bash scripts/generate-qa-issue.sh",
+    "generate:qa-test-plan:vscode-extension": "pnpm --filter rangelink-vscode-extension run generate:qa-test-plan",
     "install-local:vscode-extension:both": "pnpm --filter rangelink-vscode-extension install-local",
     "install-local:vscode-extension:cursor": "pnpm --filter rangelink-vscode-extension install-local:cursor",
     "install-local:vscode-extension:vscode": "pnpm --filter rangelink-vscode-extension install-local:vscode",
