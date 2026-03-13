@@ -2,7 +2,6 @@
   "name": "rangelink-vscode-extension",
   "displayName": "RangeLink",
   "version": "1.0.0",
-  "nextTargetVersion": "1.1.0",
   "description": "Create sharable links to code ranges in your files. Perfect for documentation, AI prompts, and team collaboration.",
   "categories": [
     "Other"
@@ -40,6 +39,7 @@
     "generate-version": "node scripts/generate-version.js --copy-to out",
     "generate-version:all": "node scripts/generate-version.js --copy-to out,dist",
     "generate:publish-instructions": "./scripts/generate-publishing-instructions.sh",
+    "generate:qa-issue": "./scripts/generate-qa-issue.sh",
     "generate:qa-test-plan": "./scripts/generate-qa-test-plan.sh",
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
@@ -820,5 +820,6 @@
   "engines": {
     "vscode": "^1.49.0"
   },
-  "icon": "icon.png"
+  "icon": "icon.png",
+  "nextTargetVersion": "1.1.0"
 }

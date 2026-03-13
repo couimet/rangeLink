@@ -3,7 +3,7 @@
 # Scope: Changes accumulated between the vscode-extension-v1.0.0 release tag and the current
 #        main branch tip. Created at commit a4d56b9c71be755a532af178b607d3f768363af9.
 #
-# Source of truth for this QA cycle. Run `pnpm generate:qa-issue qa/qa-test-cases-v1.0.0-unreleased-2026-03-09.yaml`
+# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.0.0-unreleased-2026-03-09.yaml`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:

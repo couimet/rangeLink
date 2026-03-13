@@ -20,6 +20,7 @@ Read packages/rangelink-vscode-extension/package.json
 ```
 
 Extract:
+
 - `nextTargetVersion` — the upcoming release version (e.g., `1.1.0`)
 - `version` — the last published version (e.g., `1.0.0`)
 
@@ -30,7 +31,7 @@ Extract:
 Find the current cycle's YAML and the previous version's YAML:
 
 ```text
-Glob(pattern="qa/qa-test-cases-*.yaml")
+Glob(pattern="packages/rangelink-vscode-extension/qa/qa-test-cases-*.yaml")
 ```
 
 - **Current YAML**: the file whose name contains `v<nextTargetVersion>` (e.g., `qa-test-cases-v1.1.0-unreleased-2026-03-12.yaml`)
@@ -66,6 +67,7 @@ For each entry under `## [Unreleased]` in the CHANGELOG:
 3. If neither covers it, draft a new TC entry
 
 **Skip these CHANGELOG entries** (and record them for the skipped list):
+
 - Internal refactors with no user-visible behavior change
 - CI/build-only changes
 - Documentation-only changes

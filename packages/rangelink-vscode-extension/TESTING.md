@@ -119,7 +119,7 @@ The `generate-qa-issue` script creates a parent GitHub issue + one sub-issue per
 **Prerequisites:**
 
 ```bash
-# python3 with PyYAML
+# python3 with PyYAML (the script shells out to python3 for YAML parsing)
 pip3 install pyyaml
 
 # gh CLI authenticated with write access

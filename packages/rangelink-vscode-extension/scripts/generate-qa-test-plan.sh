@@ -15,7 +15,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
 REPO_ROOT="$(git -C "$PACKAGE_DIR" rev-parse --show-toplevel)"
 PACKAGE_JSON="$PACKAGE_DIR/package.json"
-QA_DIR="$REPO_ROOT/qa"
+QA_DIR="$PACKAGE_DIR/qa"
 
 NEXT_VERSION=$(jq -r '.nextTargetVersion // empty' "$PACKAGE_JSON")
 if [[ -z "$NEXT_VERSION" ]]; then
@@ -49,7 +49,7 @@ HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION}
 # Scope: Changes accumulated between the vscode-extension-v${PUBLISHED_VERSION} release tag and the current
 #        main branch tip, targeting v${NEXT_VERSION}. Created at commit ${COMMIT}.
 #
-# Source of truth for this QA cycle. Run \`pnpm generate:qa-issue qa/$(basename "$OUTPUT_FILE")\`
+# Source of truth for this QA cycle. Run \`pnpm generate:qa-issue -- qa/$(basename "$OUTPUT_FILE")\`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:
