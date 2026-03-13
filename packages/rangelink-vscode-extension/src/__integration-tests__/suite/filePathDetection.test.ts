@@ -58,7 +58,11 @@ suite('File Path Detection', () => {
   // TC-156: HTTP URL is NOT detected
   test('TC-156: does NOT detect HTTP URL as a file path', () => {
     const paths = matchPaths('See https://github.com/foo/bar.ts for reference');
-    assert.strictEqual(paths.length, 0, `Expected 0 matches but got ${paths.length}: ${paths.join(', ')}`);
+    assert.strictEqual(
+      paths.length,
+      0,
+      `Expected 0 matches but got ${paths.length}: ${paths.join(', ')}`,
+    );
   });
 
   // TC-157: RangeLink with #L suffix is NOT double-detected
