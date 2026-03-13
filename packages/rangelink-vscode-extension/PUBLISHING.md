@@ -14,6 +14,7 @@ Guide for publishing the RangeLink VS Code extension to the marketplace.
 - Local installation for end-to-end testing
 - Building and packaging the extension
 - Testing strategies and checklists
+- Integration tests, CI pipeline, and QA sign-off — see [TESTING.md](./TESTING.md)
 
 **Quick reference:**
 
