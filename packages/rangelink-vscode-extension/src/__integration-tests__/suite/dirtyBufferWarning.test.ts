@@ -37,8 +37,8 @@ suite('Dirty Buffer Warning', () => {
       .update('warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Global);
   });
 
-  // TC-088: warnOnDirtyBuffer: false → no dialog, link generated immediately
-  test('TC-088: warnOnDirtyBuffer=false — R-C generates link without showing warning dialog', async () => {
+  // dirty-buffer-warning-004: warnOnDirtyBuffer: false → no dialog, link generated immediately
+  test('dirty-buffer-warning-004: warnOnDirtyBuffer=false — R-C generates link without showing warning dialog', async () => {
     const doc = await vscode.workspace.openTextDocument(testFileUri);
     const editor = await vscode.window.showTextDocument(doc);
 

@@ -63,8 +63,8 @@ suite('Clipboard Preservation', () => {
       .update('clipboard.preserve', undefined, vscode.ConfigurationTarget.Global);
   });
 
-  // TC-043: R-C is exempt — clipboard IS the output
-  test('TC-043: R-C always writes link to clipboard regardless of preserve setting (default)', async () => {
+  // clipboard-preservation-002: R-C is exempt — clipboard IS the output
+  test('clipboard-preservation-002: R-C always writes link to clipboard regardless of preserve setting (default)', async () => {
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
     const clipboard = await vscode.env.clipboard.readText();
 
@@ -79,8 +79,8 @@ suite('Clipboard Preservation', () => {
     );
   });
 
-  // TC-042: preserve=always — R-C still writes to clipboard (R-C is the preserve exception)
-  test('TC-042: R-C writes link to clipboard even when clipboard.preserve is "always"', async () => {
+  // clipboard-preservation-001: preserve=always — R-C still writes to clipboard (R-C is the preserve exception)
+  test('clipboard-preservation-001: R-C writes link to clipboard even when clipboard.preserve is "always"', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
@@ -99,8 +99,8 @@ suite('Clipboard Preservation', () => {
     );
   });
 
-  // TC-046: preserve=never — R-C still writes to clipboard
-  test('TC-046: R-C writes link to clipboard even when clipboard.preserve is "never"', async () => {
+  // clipboard-preservation-005: preserve=never — R-C still writes to clipboard
+  test('clipboard-preservation-005: R-C writes link to clipboard even when clipboard.preserve is "never"', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
@@ -119,8 +119,8 @@ suite('Clipboard Preservation', () => {
     );
   });
 
-  // TC-044: preserve=always — R-F sends file path to terminal and restores clipboard
-  test('TC-044: R-F with preserve=always restores clipboard to sentinel after send', async () => {
+  // clipboard-preservation-003: preserve=always — R-F sends file path to terminal and restores clipboard
+  test('clipboard-preservation-003: R-F with preserve=always restores clipboard to sentinel after send', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
@@ -135,8 +135,8 @@ suite('Clipboard Preservation', () => {
     );
   });
 
-  // TC-047: preserve=never — R-L leaves clipboard with the generated link, not the sentinel
-  test('TC-047: R-L with preserve=never leaves clipboard with the generated link', async () => {
+  // clipboard-preservation-006: preserve=never — R-L leaves clipboard with the generated link, not the sentinel
+  test('clipboard-preservation-006: R-L with preserve=never leaves clipboard with the generated link', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);

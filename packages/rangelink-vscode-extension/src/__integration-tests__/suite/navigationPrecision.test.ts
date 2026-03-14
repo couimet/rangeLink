@@ -93,8 +93,8 @@ suite('Navigation Precision', () => {
     }
   });
 
-  // TC-130: #L10 selects the full line (col 0 → end of line)
-  test('TC-130: #L10 navigates to full line 10 — selection spans col 0 to end of line', async () => {
+  // bugfix-full-line-navigation-001: #L10 selects the full line (col 0 → end of line)
+  test('bugfix-full-line-navigation-001: #L10 navigates to full line 10 — selection spans col 0 to end of line', async () => {
     const linkText = `${testFilename}#L10`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
@@ -120,8 +120,8 @@ suite('Navigation Precision', () => {
     );
   });
 
-  // TC-131: #L10-L15 selects lines 10 through 15 (anchor at start of line 10, active at end of line 15)
-  test('TC-131: #L10-L15 navigates to range — anchor (9,0), active at end of line 15', async () => {
+  // bugfix-full-line-navigation-002: #L10-L15 selects lines 10 through 15 (anchor at start of line 10, active at end of line 15)
+  test('bugfix-full-line-navigation-002: #L10-L15 navigates to range — anchor (9,0), active at end of line 15', async () => {
     const linkText = `${testFilename}#L10-L15`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);

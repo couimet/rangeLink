@@ -44,8 +44,8 @@ suite('Link Generation', () => {
     return uri;
   };
 
-  // TC-132: Trailing-newline normalization
-  test('TC-132: selecting line + trailing newline generates #L20 not #L20-L21', async () => {
+  // bugfix-full-line-link-generation-001: Trailing-newline normalization
+  test('bugfix-full-line-link-generation-001: selecting line + trailing newline generates #L20 not #L20-L21', async () => {
     const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
     const uri = trackFile(
       createTmpWorkspaceFile(`__rl-test-tc132-${Date.now()}.ts`, lines.join('\n') + '\n'),
@@ -70,8 +70,8 @@ suite('Link Generation', () => {
     assert.ok(!clipboard.includes('#L21'), `Expected no #L21 in clipboard but got: ${clipboard}`);
   });
 
-  // TC-133: Plain link
-  test('TC-133: detects plain link (src/foo.ts#L5)', () => {
+  // bugfix-wrapped-link-navigation-001: Plain link
+  test('bugfix-wrapped-link-navigation-001: detects plain link (src/foo.ts#L5)', () => {
     const links = findLinksInText('src/foo.ts#L5\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -86,8 +86,8 @@ suite('Link Generation', () => {
     );
   });
 
-  // TC-134: Backtick-wrapped
-  test('TC-134: detects backtick-wrapped link (`src/foo.ts#L5`)', () => {
+  // bugfix-wrapped-link-navigation-002: Backtick-wrapped
+  test('bugfix-wrapped-link-navigation-002: detects backtick-wrapped link (`src/foo.ts#L5`)', () => {
     const links = findLinksInText('`src/foo.ts#L5`\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -97,8 +97,8 @@ suite('Link Generation', () => {
     );
   });
 
-  // TC-135: Single-quote-wrapped
-  test("TC-135: detects single-quote-wrapped link ('src/foo.ts#L5')", () => {
+  // bugfix-wrapped-link-navigation-003: Single-quote-wrapped
+  test("bugfix-wrapped-link-navigation-003: detects single-quote-wrapped link ('src/foo.ts#L5')", () => {
     const links = findLinksInText("'src/foo.ts#L5'\n", DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -108,8 +108,8 @@ suite('Link Generation', () => {
     );
   });
 
-  // TC-136: Double-quote-wrapped
-  test('TC-136: detects double-quote-wrapped link ("src/foo.ts#L5")', () => {
+  // bugfix-wrapped-link-navigation-004: Double-quote-wrapped
+  test('bugfix-wrapped-link-navigation-004: detects double-quote-wrapped link ("src/foo.ts#L5")', () => {
     const links = findLinksInText('"src/foo.ts#L5"\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -119,8 +119,8 @@ suite('Link Generation', () => {
     );
   });
 
-  // TC-137: Angle-bracket-wrapped
-  test('TC-137: detects angle-bracket-wrapped link (<src/foo.ts#L5>)', () => {
+  // bugfix-markdown-link-navigation-001: Angle-bracket-wrapped
+  test('bugfix-markdown-link-navigation-001: detects angle-bracket-wrapped link (<src/foo.ts#L5>)', () => {
     const links = findLinksInText('<src/foo.ts#L5>\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -130,8 +130,8 @@ suite('Link Generation', () => {
     );
   });
 
-  // TC-138: Markdown link syntax
-  test('TC-138: detects Markdown link syntax ([text](src/foo.ts#L5))', () => {
+  // bugfix-url-exclusion-001: Markdown link syntax
+  test('bugfix-url-exclusion-001: detects Markdown link syntax ([text](src/foo.ts#L5))', () => {
     const links = findLinksInText('[click here](src/foo.ts#L5)\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -141,8 +141,8 @@ suite('Link Generation', () => {
     );
   });
 
-  // TC-139: HTTP URL exclusion
-  test('TC-139: HTTP URL is excluded — no RangeLink detected for https://example.com/path/file.ts#L10', () => {
+  // bugfix-url-exclusion-002: HTTP URL exclusion
+  test('bugfix-url-exclusion-002: HTTP URL is excluded — no RangeLink detected for https://example.com/path/file.ts#L10', () => {
     const links = findLinksInText(
       'https://example.com/path/file.ts#L10\n',
       DEFAULT_DELIMITERS,

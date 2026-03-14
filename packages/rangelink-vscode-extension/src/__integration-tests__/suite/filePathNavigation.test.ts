@@ -38,8 +38,8 @@ suite('File Path Navigation', () => {
     }
   });
 
-  // TC-159: handleFilePathClick opens a real workspace file in the editor
-  test('TC-159: handleFilePathClick opens the file in the active editor', async () => {
+  // clickable-file-paths-010: handleFilePathClick opens a real workspace file in the editor
+  test('clickable-file-paths-010: handleFilePathClick opens the file in the active editor', async () => {
     await vscode.commands.executeCommand('rangelink.handleFilePathClick', {
       filePath: tempFilePath,
     });
