@@ -189,19 +189,27 @@ Do NOT auto-write to the QA file. The developer reviews and appends manually.
 
 If nothing was skipped, write: "No entries skipped — all [Unreleased] items have corresponding TCs."
 
-### Ready-to-Paste Prompt
+### Ready-to-Paste Prompts
 
-Add a final section with a pre-built prompt the user can copy-paste into Claude Code to integrate the suggestions. Use the actual scratchpad path and QA YAML path from this run:
+Add a final section with pre-built prompts the user can copy-paste into Claude Code. Use the actual scratchpad path, QA YAML path, and YAML filename from this run:
 
 ```text
-## Integrate suggestions
+## Next steps — copy-paste prompts
 
-Copy-paste this prompt into Claude Code after reviewing the suggestions above:
+### 1. Integrate suggested TCs into the QA file
 
 Integrate suggestions from <scratchpad-path> to <current-yaml-path>
+
+### 2. Generate GitHub tracking issues (run from project root)
+
+pnpm generate:qa-issue:vscode-extension
+
+To target a specific file instead of auto-discover:
+
+pnpm generate:qa-issue:vscode-extension -- qa/<current-yaml-filename>
 ```
 
-Replace `<scratchpad-path>` and `<current-yaml-path>` with the real paths (e.g., `.claude-work/issues/382/scratchpads/0023-qa-suggest-v1.1.0.txt` and `packages/rangelink-vscode-extension/qa/qa-test-cases-v1.1.0-2026-03-14.yaml`).
+Replace `<scratchpad-path>`, `<current-yaml-path>`, and `<current-yaml-filename>` with the real values from this run.
 
 ### Terminal Output
 

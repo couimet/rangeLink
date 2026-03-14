@@ -110,7 +110,7 @@ Place new TCs at the end of the file under the relevant feature section. Use the
 2. Run `pnpm generate:qa-test-plan:vscode-extension` from the root of the project to create the new YAML with all existing TCs reset to `pending`
 3. Run `/qa-suggest` in Claude Code — it creates a scratchpad with suggested TCs and a YAML block ready to append
 4. Review the scratchpad, edit/remove TCs as needed, then append the YAML block to the QA file
-5. Commit the YAML and run `pnpm generate:qa-issue` to create the GitHub tracking issues
+5. Commit the YAML and run `pnpm generate:qa-issue:vscode-extension` from the root of the project to create the GitHub tracking issues (auto-discovers the latest QA YAML)
 
 ### Generating a QA GitHub issue
 
