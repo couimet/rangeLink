@@ -189,6 +189,20 @@ Do NOT auto-write to the QA file. The developer reviews and appends manually.
 
 If nothing was skipped, write: "No entries skipped — all [Unreleased] items have corresponding TCs."
 
+### Ready-to-Paste Prompt
+
+Add a final section with a pre-built prompt the user can copy-paste into Claude Code to integrate the suggestions. Use the actual scratchpad path and QA YAML path from this run:
+
+```text
+## Integrate suggestions
+
+Copy-paste this prompt into Claude Code after reviewing the suggestions above:
+
+Integrate suggestions from <scratchpad-path> to <current-yaml-path>
+```
+
+Replace `<scratchpad-path>` and `<current-yaml-path>` with the real paths (e.g., `.claude-work/issues/382/scratchpads/0023-qa-suggest-v1.1.0.txt` and `packages/rangelink-vscode-extension/qa/qa-test-cases-v1.1.0-2026-03-14.yaml`).
+
 ### Terminal Output
 
 After writing the scratchpad, print only a short summary to the terminal:
