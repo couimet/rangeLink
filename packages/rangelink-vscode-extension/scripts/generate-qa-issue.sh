@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: ./scripts/generate-qa-issue.sh [--dry-run] <yaml-file>
+# Usage: ./scripts/generate-qa-issue.sh [--dry-run] [yaml-file]
 # Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.1.0-2026-03-13.yaml
 #
 # Creates one parent GitHub issue + one sub-issue per feature section from a versioned QA YAML file.
 # The parent issue body uses GitHub task-list syntax (- [ ] #N) to track section-level progress.
 #
-# Filename convention: qa-test-cases-<version>-<YYYY-MM-DD>.yaml
+# If no yaml-file is provided, auto-discovers the most recent QA YAML in qa/ and
+# prompts for confirmation before proceeding.
+#
+# Filename convention: qa-test-cases-<version>-<YYYY-MM-DD>[-NNN].yaml
 # Version and date are derived from the filename — no extra flags needed.
 #
 # Requires:
@@ -25,10 +28,39 @@ for arg in "$@"; do
   esac
 done
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+QA_DIR="$(dirname "$SCRIPT_DIR")/qa"
+
 if [[ -z "$YAML_FILE" ]]; then
-  echo "Usage: ./scripts/generate-qa-issue.sh [--dry-run] <yaml-file>" >&2
-  echo "Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.1.0-2026-03-13.yaml" >&2
-  exit 1
+  # Auto-discover: find the most recent QA YAML.
+  # Suffix sort fix: unsuffixed files (v1.1.0-2026-03-14.yaml) sort AFTER
+  # suffixed files (v1.1.0-2026-03-14-002.yaml) because '.' > '-' in ASCII.
+  # Normalize by appending -001 to unsuffixed names for sorting purposes.
+  LATEST=$(
+    for f in "$QA_DIR"/qa-test-cases-*.yaml; do
+      [[ -e "$f" ]] || continue
+      name=$(basename "$f")
+      base="${name%.yaml}"
+      if [[ "$base" =~ -[0-9]{3}$ ]]; then
+        printf '%s\t%s\n' "$base" "$name"
+      else
+        printf '%s-001\t%s\n' "$base" "$name"
+      fi
+    done | sort -t$'\t' -k1,1 | tail -1 | cut -f2
+  )
+
+  if [[ -z "$LATEST" ]]; then
+    echo "Error: no QA YAML files found in $QA_DIR" >&2
+    exit 1
+  fi
+
+  YAML_FILE="$QA_DIR/$LATEST"
+  printf 'Use %s? [Y/n] ' "qa/$LATEST"
+  read -r REPLY
+  if [[ -n "$REPLY" && ! "$REPLY" =~ ^[Yy]$ ]]; then
+    echo "Aborted." >&2
+    exit 0
+  fi
 fi
 
 if [[ ! -f "$YAML_FILE" ]]; then
