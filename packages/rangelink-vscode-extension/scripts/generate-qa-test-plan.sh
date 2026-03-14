@@ -65,7 +65,7 @@ HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION}
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:
-#   id:              Unique test case identifier (TC-NNN)
+#   id:              Unique test case identifier (<feature-slug>-NNN)
 #   feature:         Feature area / CHANGELOG section
 #   scenario:        One-line description of the specific scenario being tested
 #   preconditions:   List of required setup steps before executing
