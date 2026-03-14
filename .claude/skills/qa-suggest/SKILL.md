@@ -1,8 +1,8 @@
 ---
 name: qa-suggest
-version: 2026.03.12.1
+version: 2026.03.14.1
 description: Analyze CHANGELOG [Unreleased] against QA YAML test cases and suggest new TCs for uncovered features. Zero-argument — auto-discovers all inputs from the project.
-allowed-tools: Read, Glob, Grep
+allowed-tools: Read, Write, Glob, Grep, Bash
 ---
 
 # QA Suggest
@@ -34,19 +34,21 @@ Find the current cycle's YAML and the previous version's YAML:
 Glob(pattern="packages/rangelink-vscode-extension/qa/qa-test-cases-*.yaml")
 ```
 
-- **Current YAML**: the file whose name contains `v<nextTargetVersion>` (e.g., `qa-test-cases-v1.1.0-2026-03-13.yaml`)
+- **Current YAML**: the file whose name contains `v<nextTargetVersion>` (e.g., `qa-test-cases-v1.1.0-2026-03-14.yaml`)
 - **Previous YAML**: the most recent file that does NOT contain `v<nextTargetVersion>` — this is the baseline for diffing
 
 **If the current YAML doesn't exist**, STOP: "No QA YAML found for v`<nextTargetVersion>`. Run `pnpm generate:qa-test-plan` first."
 
 Read both YAML files in parallel.
 
+**YAML structure note**: TC entries are nested under `test_cases:` with indentation (`  - id: ...`). When searching for TC IDs, use `id: ` without a `^` line-start anchor — the entries are indented.
+
 ## Step 3: Read CHANGELOG and Integration Tests
 
 Read these in parallel:
 
 1. `packages/rangelink-vscode-extension/CHANGELOG.md` — extract only the `## [Unreleased]` section (stop at the next `## [` header)
-2. `src/__integration-tests__/suite/` — Glob for `*.test.ts` files and scan their `suite()`/`test()` names to understand what is already automated
+2. `packages/rangelink-vscode-extension/src/__integration-tests__/suite/` — Glob for `*.test.ts` files and scan their `suite()`/`test()` names to understand what is already automated
 
 ## Step 4: Diff TCs Between Versions
 
@@ -78,69 +80,104 @@ For each entry under `## [Unreleased]` in the CHANGELOG:
 For each uncovered CHANGELOG entry, draft one or more TC entries following the YAML schema:
 
 ```yaml
-- id: TC-NNN
-  feature: '<CHANGELOG section name>'
-  scenario: '<one-line description of the specific scenario>'
-  preconditions:
-    - '<setup step>'
-  steps:
-    - '<test action>'
-  expected_result: '<what passing looks like>'
-  platform: all
-  automated: false
-  status: pending
+  - id: <feature-slug>-NNN
+    feature: '<CHANGELOG section name>'
+    scenario: '<one-line description of the specific scenario>'
+    preconditions:
+      - '<setup step>'
+    steps:
+      - '<test action>'
+    expected_result: '<what passing looks like>'
+    platform: all
+    automated: false
+    status: pending
 ```
 
-**TC numbering**: find the highest `TC-NNN` ID in the current YAML and number new TCs starting from `max + 1`.
+### TC ID scheme: feature-slug IDs
+
+IDs are derived from the `feature:` field value using this algorithm:
+
+1. Strip keybinding prefix `R-[A-Z] ` if present (e.g., `R-M Status Bar Menu` → `Status Bar Menu`)
+2. Replace ` — ` and ` - ` with `-`
+3. Replace `Bug Fix` with `bugfix`
+4. Lowercase everything
+5. Replace spaces with `-`
+6. Remove non-alphanumeric chars except hyphens
+7. Collapse multiple hyphens to one, strip leading/trailing hyphens
+8. Append `-NNN` where NNN is the next available 3-digit zero-padded number for that slug within the current YAML
+
+**To find the next available number**: scan the current YAML for all `id:` values that start with the derived slug prefix, extract the highest NNN, and use `max + 1`.
 
 **`automated` field**: set to `true` only if you confirmed an integration test already covers this exact scenario in Step 3. Otherwise set `false`.
 
-## Step 7: Output Report
+**Section placement**: new TCs go at the end of their feature's section in the YAML. If no section exists for the feature yet, create a new section comment block following the existing pattern.
 
-Print three sections:
+## Step 7: Write Scratchpad Report
 
-### 1. Change Summary
+Create a scratchpad file for the report. Use the `/scratchpad` conventions:
 
-Compare the current QA YAML against the previous version's YAML:
+1. Determine the issue context from the current git branch (e.g., `issues/382` → issue ID `382`)
+2. Find the next available sequence number in `.claude-work/issues/<ID>/scratchpads/`
+3. Write the scratchpad to `.claude-work/issues/<ID>/scratchpads/NNNN-qa-suggest-v<nextTargetVersion>.txt`
+
+If no issue context can be determined, use `.claude-work/scratchpads/` instead.
+
+The scratchpad should contain these sections in order:
+
+### Header
 
 ```text
-## Change Summary (v<version> → v<nextTargetVersion>)
+# QA Suggest — v<version> → v<nextTargetVersion>
 
-### Added (N new TCs suggested)
-- TC-NNN: <scenario> — covers CHANGELOG entry "<entry>"
-- ...
+## What to do next
 
-### Removed (N TCs dropped)
-- TC-NNN: <scenario> — reason
+1. Review the suggested TCs below — edit descriptions, remove irrelevant ones
+2. Copy the YAML block at the bottom into the QA file at the appropriate section
+3. Verify the IDs don't collide with existing entries
+```
+
+### Change Summary
+
+```text
+## Change Summary
+
+### Suggested (N new TCs)
+- [ ] <id>: <scenario> — covers CHANGELOG entry "<entry>"
+- [ ] ...
+
+### Removed (N TCs dropped from previous cycle)
+- <id>: <scenario> — reason
 - ...
 
 ### Changed (N TCs updated)
-- TC-NNN: automated false → true (integration test added)
+- <id>: automated false → true (integration test added)
 - ...
 
 ### Carried Forward (N TCs unchanged)
 <count only, no individual listing>
 ```
 
-### 2. Suggested YAML Block
+Each suggested TC has a `- [ ]` checkbox so the user can mark which ones to keep.
 
-Print the new TC entries as a fenced YAML block ready to append to the QA file:
+### Suggested YAML Block
+
+A fenced YAML block ready to copy-paste into the QA file:
 
 ````text
+## Suggested YAML — copy into QA file
+
 ```yaml
 # --- Suggested TCs for [Unreleased] features ---
 
-- id: TC-NNN
-  feature: '...'
-  ...
+  - id: <feature-slug>-NNN
+    feature: '...'
+    ...
 ```
 ````
 
-Do NOT auto-write to the file. The developer reviews and appends manually.
+Do NOT auto-write to the QA file. The developer reviews and appends manually.
 
-### 3. Skipped Entries
-
-List CHANGELOG entries that were intentionally omitted:
+### Skipped Entries
 
 ```text
 ## Skipped CHANGELOG Entries
@@ -150,7 +187,18 @@ List CHANGELOG entries that were intentionally omitted:
 - ...
 ```
 
-If nothing was skipped, print: "No entries skipped — all [Unreleased] items have corresponding TCs."
+If nothing was skipped, write: "No entries skipped — all [Unreleased] items have corresponding TCs."
+
+### Terminal Output
+
+After writing the scratchpad, print only a short summary to the terminal:
+
+```text
+Wrote <scratchpad-path>
+  Suggested: N new TCs
+  Skipped:   N CHANGELOG entries
+  Review the scratchpad to finalize.
+```
 
 ## Output Format
 
