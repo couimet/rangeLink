@@ -15,8 +15,6 @@
 #   expected_result: What a passing run looks like
 #   automated:       false (manual) | true (covered by TypeScript integration tests)
 
-
-
 test_cases:
   # ---------------------------------------------------------------------------
   # Section 1 — R-M Status Bar Menu
