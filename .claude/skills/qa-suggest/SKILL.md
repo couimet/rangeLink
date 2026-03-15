@@ -79,6 +79,7 @@ For each entry under `## [Unreleased]` in the CHANGELOG:
 
 For each uncovered CHANGELOG entry, draft one or more TC entries following the YAML schema:
 
+<!-- prettier-ignore -->
 ```yaml
   - id: <feature-slug>-NNN
     feature: '<CHANGELOG section name>'
@@ -96,7 +97,7 @@ For each uncovered CHANGELOG entry, draft one or more TC entries following the Y
 IDs are derived from the `feature:` field value using this algorithm:
 
 1. Strip keybinding prefix `R-[A-Z] ` if present (e.g., `R-M Status Bar Menu` → `Status Bar Menu`)
-2. Replace ` — ` and ` - ` with `-`
+2. Replace space-emdash-space and space-hyphen-space with a single `-`
 3. Replace `Bug Fix` with `bugfix`
 4. Lowercase everything
 5. Replace spaces with `-`
