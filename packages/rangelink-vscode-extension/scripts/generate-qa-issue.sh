@@ -23,6 +23,7 @@ YAML_FILE=""
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
+    --) ;;
     -*) echo "Unknown option: $arg" >&2; exit 1 ;;
     *) YAML_FILE="$arg" ;;
   esac
