@@ -16,6 +16,7 @@ set -euo pipefail
 # Requires:
 #   python3 with PyYAML  — install with: pip3 install pyyaml
 #   gh CLI               — authenticated with write access to the repo
+#   jq                   — for building GraphQL payloads (sub-issue linking)
 
 DRY_RUN=false
 YAML_FILE=""
@@ -83,6 +84,15 @@ if [[ "$DRY_RUN" == false ]] && ! command -v gh &>/dev/null; then
   echo "Error: gh CLI is required but not found on PATH" >&2
   exit 1
 fi
+
+if [[ "$DRY_RUN" == false ]] && ! command -v jq &>/dev/null; then
+  echo "Error: jq is required but not found on PATH" >&2
+  exit 1
+fi
+
+REPO_ROOT=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)
+REPO_OWNER=$(gh repo view --json owner -q '.owner.login' 2>/dev/null) || true
+REPO_NAME=$(gh repo view --json name -q '.name' 2>/dev/null) || true
 
 # Derive version and date from filename.
 # Pattern: qa-test-cases-<version>-<YYYY-MM-DD>[-NNN].yaml
@@ -182,5 +192,78 @@ if [[ "$DRY_RUN" == true ]]; then
   echo "---"
 else
   PARENT_URL=$(gh issue create --title "$PARENT_TITLE" --body "$PARENT_BODY")
+  PARENT_NUMBER=$(basename "$PARENT_URL")
   echo "Created parent issue: $PARENT_URL"
+
+  echo ""
+  echo "Linking sub-issues to parent #${PARENT_NUMBER}..."
+
+  link_sub_issue() {
+    local parent_num="$1" child_num="$2"
+    local nodes_payload mutation_payload
+
+    nodes_payload="$(mktemp "${TMPDIR:-/tmp}/qa-link.nodes.XXXXXX.json")"
+    mutation_payload="$(mktemp "${TMPDIR:-/tmp}/qa-link.mutation.XXXXXX.json")"
+
+    jq -n \
+      --arg owner "$REPO_OWNER" \
+      --arg repo "$REPO_NAME" \
+      --argjson parent "$parent_num" \
+      --argjson child "$child_num" \
+      '{"query": "query($owner: String!, $repo: String!, $parent: Int!, $child: Int!) { repository(owner: $owner, name: $repo) { parent: issue(number: $parent) { id } child: issue(number: $child) { id } } }", "variables": {"owner": $owner, "repo": $repo, "parent": $parent, "child": $child}}' \
+      > "$nodes_payload"
+
+    local NODES
+    NODES=$(gh api graphql -H 'GraphQL-Features: sub_issues' --input "$nodes_payload" 2>&1) || {
+      echo "  Warning: failed to fetch node IDs for #$child_num → #$parent_num: $NODES" >&2
+      rm -f "$nodes_payload" "$mutation_payload"
+      return 1
+    }
+
+    local PARENT_NODE_ID CHILD_NODE_ID
+    PARENT_NODE_ID=$(echo "$NODES" | jq -r '.data.repository.parent.id // empty')
+    CHILD_NODE_ID=$(echo "$NODES" | jq -r '.data.repository.child.id // empty')
+
+    if [[ -z "$PARENT_NODE_ID" || -z "$CHILD_NODE_ID" ]]; then
+      echo "  Warning: could not resolve node IDs for #$child_num → #$parent_num" >&2
+      rm -f "$nodes_payload" "$mutation_payload"
+      return 1
+    fi
+
+    jq -n \
+      --arg parentId "$PARENT_NODE_ID" \
+      --arg childId "$CHILD_NODE_ID" \
+      '{"query": "mutation($parentId: ID!, $childId: ID!) { addSubIssue(input: {issueId: $parentId, subIssueId: $childId}) { issue { number } subIssue { number } } }", "variables": {"parentId": $parentId, "childId": $childId}}' \
+      > "$mutation_payload"
+
+    local RESULT
+    RESULT=$(gh api graphql -H 'GraphQL-Features: sub_issues' --input "$mutation_payload" 2>&1) || {
+      echo "  Warning: addSubIssue failed for #$child_num → #$parent_num: $RESULT" >&2
+      rm -f "$nodes_payload" "$mutation_payload"
+      return 1
+    }
+
+    local ERRORS
+    ERRORS=$(echo "$RESULT" | jq -r '.errors[0].message // empty')
+    if [[ -n "$ERRORS" ]]; then
+      echo "  Warning: addSubIssue error for #$child_num → #$parent_num: $ERRORS" >&2
+      rm -f "$nodes_payload" "$mutation_payload"
+      return 1
+    fi
+
+    rm -f "$nodes_payload" "$mutation_payload"
+    echo "  Linked #$child_num → #$parent_num"
+  }
+
+  LINK_FAILURES=0
+  while IFS= read -r entry; do
+    [[ -z "$entry" ]] && continue
+    CHILD_NUMBER=$(echo "$entry" | cut -d'§' -f1)
+    link_sub_issue "$PARENT_NUMBER" "$CHILD_NUMBER" || LINK_FAILURES=$((LINK_FAILURES + 1))
+  done <<< "$SUB_ISSUE_ENTRIES"
+
+  if [[ $LINK_FAILURES -gt 0 ]]; then
+    echo ""
+    echo "Warning: $LINK_FAILURES sub-issue(s) could not be linked. Link them manually via the GitHub UI."
+  fi
 fi
