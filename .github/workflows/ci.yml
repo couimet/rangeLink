@@ -33,6 +33,9 @@ jobs:
       - name: Run tests with coverage
         uses: ./.github/actions/run-tests
 
+      - name: Run integration tests (VS Code extension host)
+        uses: ./.github/actions/run-integration-tests
+
       - name: Check TODOs/FIXMEs
         uses: ./.github/actions/check-todos
         with:

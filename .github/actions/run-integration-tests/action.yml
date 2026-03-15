@@ -1,0 +1,22 @@
+name: 'Run Integration Tests'
+description: 'Run pnpm test:release (VS Code extension host tests via @vscode/test-cli) under Xvfb'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Xvfb and VS Code native dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends xvfb libgtk-3-0 libxss1 libnss3 libasound2t64
+
+    - name: Cache VS Code test binary
+      uses: actions/cache@v4
+      with:
+        path: ~/.vscode-test
+        key: vscode-test-${{ runner.os }}-stable
+        restore-keys: vscode-test-${{ runner.os }}-
+
+    - name: Run integration tests under Xvfb
+      shell: bash
+      run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" pnpm test:release

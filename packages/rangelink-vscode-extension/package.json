@@ -39,6 +39,8 @@
     "generate-version": "node scripts/generate-version.js --copy-to out",
     "generate-version:all": "node scripts/generate-version.js --copy-to out,dist",
     "generate:publish-instructions": "./scripts/generate-publishing-instructions.sh",
+    "generate:qa-issue": "./scripts/generate-qa-issue.sh",
+    "generate:qa-test-plan": "./scripts/generate-qa-test-plan.sh",
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
     "install-local:vscode": "./scripts/install-local.sh vscode",
@@ -46,6 +48,7 @@
     "publish:vsix": "./scripts/publish-from-vsix.sh",
     "test": "jest --coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
+    "test:release": "pnpm compile && tsc -p tsconfig.integration.json && vscode-test",
     "test:watch": "jest --watch",
     "vscode:prepublish": "pnpm --filter rangelink-core-ts compile && pnpm compile && pnpm test",
     "watch": "tsc -watch -p ./"
@@ -801,8 +804,11 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.49.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.6.2",
     "barebone-logger-testing": "workspace:*",
     "esbuild": "^0.25.12",
@@ -814,5 +820,6 @@
   "engines": {
     "vscode": "^1.49.0"
   },
-  "icon": "icon.png"
+  "icon": "icon.png",
+  "nextTargetVersion": "1.1.0"
 }
