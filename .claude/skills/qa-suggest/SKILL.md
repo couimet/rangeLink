@@ -88,9 +88,7 @@ For each uncovered CHANGELOG entry, draft one or more TC entries following the Y
     steps:
       - '<test action>'
     expected_result: '<what passing looks like>'
-    platform: all
     automated: false
-    status: pending
 ```
 
 ### TC ID scheme: feature-slug IDs

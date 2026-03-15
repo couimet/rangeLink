@@ -113,32 +113,58 @@ echo "  Source  : $YAML_FILE"
 [[ "$DRY_RUN" == true ]] && echo "  Mode    : DRY RUN (no GitHub issues will be created)"
 echo ""
 
-# Parse YAML and emit tab-separated rows: feature<TAB>id<TAB>scenario<TAB>platform<TAB>automated
-TC_DATA=$(python3 - "$YAML_FILE" <<'PYEOF'
-import sys, yaml
+# Parse YAML into JSON: array of {feature, count, body} per section.
+# Body includes full TC details (preconditions, steps, expected result) as sub-bullets.
+SECTIONS_JSON=$(python3 - "$YAML_FILE" <<'PYEOF'
+import sys, json, yaml
 
 with open(sys.argv[1]) as f:
     data = yaml.safe_load(f)
 
-for tc in data.get('test_cases', []):
-    feature   = tc.get('feature', 'Uncategorized').replace('\t', ' ')
-    tc_id     = tc.get('id', '').replace('\t', ' ')
-    scenario  = tc.get('scenario', '').replace('\t', ' ')
-    platform  = tc.get('platform', 'all')
-    automated = 'automated' if tc.get('automated', False) else 'manual'
-    print(f"{feature}\t{tc_id}\t{scenario}\t{platform}\t{automated}")
+tcs = data.get('test_cases', [])
+if not tcs:
+    sys.exit(1)
+
+sections = {}
+section_order = []
+for tc in tcs:
+    feature = tc.get('feature', 'Uncategorized')
+    if feature not in sections:
+        sections[feature] = []
+        section_order.append(feature)
+    sections[feature].append(tc)
+
+result = []
+for feature in section_order:
+    tc_list = sections[feature]
+    lines = []
+    for tc in tc_list:
+        tc_id = tc.get('id', '')
+        scenario = tc.get('scenario', '')
+        auto_tag = ' `automated`' if tc.get('automated', False) else ''
+        lines.append(f"- [ ] **{tc_id}** — {scenario}{auto_tag}")
+
+        for pre in tc.get('preconditions', []):
+            lines.append(f"  - **Pre:** {pre}")
+        for i, step in enumerate(tc.get('steps', []), 1):
+            lines.append(f"  - **Step {i}:** {step}")
+        expected = tc.get('expected_result', '')
+        if expected:
+            lines.append(f"  - **Expected:** {expected}")
+
+    result.append({"feature": feature, "count": len(tc_list), "body": '\n'.join(lines)})
+
+json.dump(result, sys.stdout)
 PYEOF
 )
 
-if [[ -z "$TC_DATA" ]]; then
+if [[ -z "$SECTIONS_JSON" ]]; then
   echo "Error: No test cases found in $YAML_FILE" >&2
   exit 1
 fi
 
-# Get unique section names in first-appearance order (awk, no bash 4 needed)
-SECTIONS=$(echo "$TC_DATA" | awk -F'\t' '!seen[$1]++ {print $1}')
-TOTAL_SECTIONS=$(echo "$SECTIONS" | wc -l | tr -d ' ')
-TOTAL_TCS=$(echo "$TC_DATA" | wc -l | tr -d ' ')
+TOTAL_SECTIONS=$(echo "$SECTIONS_JSON" | jq 'length')
+TOTAL_TCS=$(echo "$SECTIONS_JSON" | jq '[.[].count] | add')
 
 echo "Found $TOTAL_TCS test cases across $TOTAL_SECTIONS sections"
 echo ""
@@ -146,14 +172,13 @@ echo ""
 # Create sub-issues and accumulate their numbers for the parent body
 SUB_ISSUE_ENTRIES=""
 
-while IFS= read -r section; do
-  COUNT=$(echo "$TC_DATA" | awk -F'\t' -v s="$section" '$1 == s' | wc -l | tr -d ' ')
-  CHECKBOXES=$(echo "$TC_DATA" | awk -F'\t' -v s="$section" '$1 == s {printf "- [ ] **%s** — %s `%s`\n", $2, $3, $4}')
+for i in $(seq 0 $((TOTAL_SECTIONS - 1))); do
+  section=$(echo "$SECTIONS_JSON" | jq -r ".[$i].feature")
+  COUNT=$(echo "$SECTIONS_JSON" | jq -r ".[$i].count")
+  CHECKBOXES=$(echo "$SECTIONS_JSON" | jq -r ".[$i].body")
 
   TITLE="[QA ${VERSION} / ${DATE}] ${section}"
   BODY="Test cases for **${section}** — QA cycle ${VERSION} — ${DATE}
-
-Full preconditions and steps: \`${YAML_FILE}\`
 
 ${CHECKBOXES}"
 
@@ -166,7 +191,7 @@ ${CHECKBOXES}"
     echo "Created #${NUMBER}: ${section} ($COUNT TCs)"
     SUB_ISSUE_ENTRIES+="${NUMBER}§${section}§${COUNT}"$'\n'
   fi
-done <<< "$SECTIONS"
+done
 
 # Build parent issue body from collected sub-issue entries (§-delimited: number§section§count)
 PARENT_CHECKLIST=""

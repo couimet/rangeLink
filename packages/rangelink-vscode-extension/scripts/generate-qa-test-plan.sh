@@ -71,13 +71,9 @@ HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION}
 #   preconditions:   List of required setup steps before executing
 #   steps:           Ordered list of test actions
 #   expected_result: What a passing run looks like
-#   platform:        all | mac | win/linux
-#   automated:       false (manual) | true (covered by TypeScript integration tests)
-#   status:          pending | pass | fail | skip"
+#   automated:       false (manual) | true (covered by TypeScript integration tests)"
 
 BODY=$(sed '1,/^test_cases:/{ /^#/d; }' "$PREVIOUS_YAML")
-
-BODY=$(echo "$BODY" | sed -E 's/^(    status:) (pass|fail|skip)$/\1 pending/')
 
 {
   echo "$HEADER"
