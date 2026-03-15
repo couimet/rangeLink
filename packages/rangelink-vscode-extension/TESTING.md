@@ -120,20 +120,25 @@ The `generate-qa-issue` script creates a parent GitHub issue + one sub-issue per
 
 ```bash
 # python3 with PyYAML (the script shells out to python3 for YAML parsing)
-pip3 install pyyaml
+# If pip3 install fails on system Python, use a venv:
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install pyyaml
 
 # gh CLI authenticated with write access
 gh auth status
 ```
 
-**Running the script:**
+**Running the script (from the root of the project):**
 
 ```bash
-# Dry run — prints what would be created without making API calls
-pnpm generate:qa-issue -- --dry-run qa/qa-test-cases-v1.1.0-2026-03-13.yaml
+# Auto-discover latest YAML — prompts for confirmation
+pnpm generate:qa-issue:vscode-extension
 
-# Live run — creates issues on GitHub
-pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0-2026-03-13.yaml
+# Dry run — prints what would be created without making API calls
+pnpm generate:qa-issue:vscode-extension -- --dry-run
+
+# Explicit file — skips auto-discover prompt
+pnpm generate:qa-issue:vscode-extension -- qa/qa-test-cases-v1.1.0-2026-03-14.yaml
 ```
 
 The script creates:
