@@ -83,7 +83,7 @@ suite('Navigation Precision', () => {
 
   suiteSetup(async () => {
     const ext = vscode.extensions.getExtension('couimet.rangelink-vscode-extension');
-    
+
     assert.ok(ext, 'Extension couimet.rangelink-vscode-extension not found');
     await ext.activate();
 
