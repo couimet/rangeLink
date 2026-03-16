@@ -523,7 +523,7 @@ export class ComposablePasteDestination implements PasteDestination {
       loggingDetails: params.loggingDetails,
       logger: params.logger,
       getUserInstruction: params.getUserInstruction,
-      compareWith: undefined, // Singleton comparison (this === other)
+      compareWith: async (other) => other.id === params.id,
     });
   }
 
