@@ -1,6 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 import { Result } from 'rangelink-core-ts';
 
+import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
 import { FocusErrorReason } from '../../destinations/capabilities/FocusCapability';
 import { AutoPasteResult, PasteContentType } from '../../types';
 import type { PaddingMode } from '../../utils/applySmartPadding';
@@ -9,6 +10,7 @@ import {
   createMockEligibilityChecker,
   createMockFocusCapability,
   createMockFormattedLink,
+  createMockTerminalComposablePasteDestination,
 } from '../helpers';
 
 const UNUSED_PADDING_MODE = 'parameter not used' as unknown as PaddingMode;
@@ -390,6 +392,42 @@ describe('ComposablePasteDestination', () => {
       const result = await destination.equals(other);
 
       expect(result).toBe(false);
+    });
+
+    describe('AI assistant kind-based equality (createAiAssistant factory)', () => {
+      const createAiAssistantDestination = (id: 'claude-code' | 'cursor-ai' | 'github-copilot-chat') =>
+        ComposablePasteDestination.createAiAssistant({
+          id,
+          displayName: `Mock ${id}`,
+          focusCapability: createMockFocusCapability(),
+          isAvailable: jest.fn().mockResolvedValue(true),
+          jumpSuccessMessage: `Focused ${id}`,
+          loggingDetails: {},
+          logger: mockLogger,
+        });
+
+      it('should return true for two destinations with the same AI assistant kind', async () => {
+        const first = createAiAssistantDestination('claude-code');
+        const second = createAiAssistantDestination('claude-code');
+
+        expect(await first.equals(second)).toBe(true);
+        expect(await second.equals(first)).toBe(true);
+      });
+
+      it('should return false for two destinations with different AI assistant kinds', async () => {
+        const claudeCode = createAiAssistantDestination('claude-code');
+        const cursorAi = createAiAssistantDestination('cursor-ai');
+
+        expect(await claudeCode.equals(cursorAi)).toBe(false);
+        expect(await cursorAi.equals(claudeCode)).toBe(false);
+      });
+
+      it('should return false when comparing AI assistant with terminal destination', async () => {
+        const claudeCode = createAiAssistantDestination('claude-code');
+        const terminal = createMockTerminalComposablePasteDestination({ logger: mockLogger });
+
+        expect(await claudeCode.equals(terminal)).toBe(false);
+      });
     });
   });
 
