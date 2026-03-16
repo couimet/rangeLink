@@ -66,12 +66,14 @@ const navigateViaHandleLinkClick = (
     // Do NOT await — the command never resolves in tests because showInformationMessage
     // requires user interaction to dismiss. Navigation completes (selection set) before
     // that blocking await, so our event listener captures it.
-    vscode.commands.executeCommand('rangelink.handleDocumentLinkClick', { linkText, parsed }).catch((error) => {
-      clearTimeout(overallTimeout);
-      if (stableTimer) clearTimeout(stableTimer);
-      disposable.dispose();
-      reject(error);
-    });
+    vscode.commands
+      .executeCommand('rangelink.handleDocumentLinkClick', { linkText, parsed })
+      .catch((error) => {
+        clearTimeout(overallTimeout);
+        if (stableTimer) clearTimeout(stableTimer);
+        disposable.dispose();
+        reject(error);
+      });
   });
 };
 
