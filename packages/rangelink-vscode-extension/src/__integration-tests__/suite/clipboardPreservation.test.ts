@@ -18,8 +18,9 @@ suite('Clipboard Preservation', () => {
   let terminal: vscode.Terminal;
 
   suiteSetup(async () => {
-    const ext = vscode.extensions.getExtension('couimet.rangelink');
-    assert.ok(ext, 'Extension couimet.rangelink not found — is it installed?');
+    const ext = vscode.extensions.getExtension('couimet.rangelink-vscode-extension');
+    
+    assert.ok(ext, 'Extension couimet.rangelink-vscode-extension not found');
     await ext.activate();
 
     const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content`);

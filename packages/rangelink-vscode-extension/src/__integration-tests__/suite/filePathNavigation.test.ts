@@ -15,8 +15,9 @@ suite('File Path Navigation', () => {
   let anchorFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    const ext = vscode.extensions.getExtension('couimet.rangelink');
-    assert.ok(ext, 'Extension couimet.rangelink not found — is it installed?');
+    const ext = vscode.extensions.getExtension('couimet.rangelink-vscode-extension');
+    
+    assert.ok(ext, 'Extension couimet.rangelink-vscode-extension not found');
     await ext.activate();
 
     tempFilePath = path.join(getWorkspaceRoot(), `__rl-test-filepath-${Date.now()}.ts`);
