@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 
 import {
   type BindSuccessInfo,
+  ComposablePasteDestination,
   type FocusSuccessInfo,
   type PasteDestination,
   PasteDestinationManager,
@@ -968,6 +969,83 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to Cursor AI Assistant',
         2000,
       );
+
+      localManager.dispose();
+    });
+
+    it('should skip confirmation when re-binding the same AI assistant', async () => {
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
+
+      const localRegistry = createMockDestinationRegistry({
+        createImpl: (opts) =>
+          ComposablePasteDestination.createAiAssistant({
+            id: opts.kind as 'claude-code',
+            displayName: 'Claude Code Chat',
+            focusCapability: createMockFocusCapability(),
+            isAvailable: jest.fn().mockResolvedValue(true),
+            jumpSuccessMessage: 'Focused Claude Code',
+            loggingDetails: {},
+            logger: mockLogger,
+          }),
+      });
+      (localManager as unknown as { registry: typeof localRegistry }).registry = localRegistry;
+
+      await localManager.bind({ kind: 'claude-code' });
+
+      const showQuickPickMock = localAdapter.__getVscodeInstance().window.showQuickPick;
+
+      const result = await localManager.bind({ kind: 'claude-code' });
+
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'Already bound to same destination',
+        functionName: 'PasteDestinationManager.commitBind',
+        details: { failedBindDetails: 'ALREADY_BOUND_TO_SAME' },
+      });
+      expect(showQuickPickMock).not.toHaveBeenCalled();
+      expect(localAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
+        'RangeLink: Already bound to Claude Code Chat',
+      );
+
+      localManager.dispose();
+    });
+
+    it('should show confirmation when switching between different AI assistants', async () => {
+      const { manager: localManager, adapter: localAdapter } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
+
+      const localRegistry = createMockDestinationRegistry({
+        createImpl: (opts) =>
+          ComposablePasteDestination.createAiAssistant({
+            id: opts.kind as 'claude-code' | 'cursor-ai',
+            displayName: opts.kind === 'claude-code' ? 'Claude Code Chat' : 'Cursor AI Assistant',
+            focusCapability: createMockFocusCapability(),
+            isAvailable: jest.fn().mockResolvedValue(true),
+            jumpSuccessMessage: `Focused ${opts.kind}`,
+            loggingDetails: {},
+            logger: mockLogger,
+          }),
+      });
+      (localManager as unknown as { registry: typeof localRegistry }).registry = localRegistry;
+
+      await localManager.bind({ kind: 'claude-code' });
+
+      const showQuickPickMock = localAdapter.__getVscodeInstance().window.showQuickPick;
+      showQuickPickMock.mockResolvedValueOnce(undefined);
+
+      const result = await localManager.bind({ kind: 'cursor-ai' });
+
+      expect(result).toBeRangeLinkExtensionErrorErr('DESTINATION_BIND_FAILED', {
+        message: 'User cancelled binding replacement',
+        functionName: 'PasteDestinationManager.commitBind',
+        details: { failedBindDetails: 'USER_CANCELLED_REPLACEMENT' },
+      });
+      expectQuickPickConfirmation(showQuickPickMock, {
+        currentDestination: 'Claude Code Chat',
+        newDestination: 'Cursor AI Assistant',
+      });
 
       localManager.dispose();
     });
