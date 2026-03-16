@@ -75,7 +75,11 @@ suite('Link Generation', () => {
     const links = findLinksInText('src/foo.ts#L5\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
+    assert.strictEqual(
+      links[0].linkText,
+      'src/foo.ts#L5',
+      `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`,
+    );
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
@@ -91,7 +95,11 @@ suite('Link Generation', () => {
     const links = findLinksInText('`src/foo.ts#L5`\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
+    assert.strictEqual(
+      links[0].linkText,
+      'src/foo.ts#L5',
+      `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`,
+    );
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
@@ -102,7 +110,11 @@ suite('Link Generation', () => {
     const links = findLinksInText("'src/foo.ts#L5'\n", DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
+    assert.strictEqual(
+      links[0].linkText,
+      'src/foo.ts#L5',
+      `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`,
+    );
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
@@ -113,7 +125,11 @@ suite('Link Generation', () => {
     const links = findLinksInText('"src/foo.ts#L5"\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
+    assert.strictEqual(
+      links[0].linkText,
+      'src/foo.ts#L5',
+      `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`,
+    );
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
@@ -124,7 +140,11 @@ suite('Link Generation', () => {
     const links = findLinksInText('<src/foo.ts#L5>\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
+    assert.strictEqual(
+      links[0].linkText,
+      'src/foo.ts#L5',
+      `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`,
+    );
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
@@ -135,7 +155,11 @@ suite('Link Generation', () => {
     const links = findLinksInText('[click here](src/foo.ts#L5)\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
-    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
+    assert.strictEqual(
+      links[0].linkText,
+      'src/foo.ts#L5',
+      `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`,
+    );
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
