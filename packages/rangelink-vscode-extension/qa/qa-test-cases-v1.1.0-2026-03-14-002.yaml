@@ -312,8 +312,8 @@ test_cases:
     feature: 'Terminal Picker'
     scenario: 'With maxInline or fewer terminals, all are shown inline with no overflow item'
     preconditions:
-      - 'rangelink.terminalPicker.maxInline = 3 (default)'
-      - 'Exactly 3 or fewer terminals open'
+      - 'rangelink.terminalPicker.maxInline = 5 (default)'
+      - 'Exactly 5 or fewer terminals open'
     steps:
       - 'Open R-D picker'
     expected_result: "All terminals appear inline. No 'More terminals...' item is visible."
@@ -323,7 +323,7 @@ test_cases:
     feature: 'Terminal Picker'
     scenario: 'With more terminals than maxInline, extras collapse into More terminals...'
     preconditions:
-      - 'rangelink.terminalPicker.maxInline = 3'
+      - 'rangelink.terminalPicker.maxInline = 2'
       - '5 or more terminals open'
     steps:
       - 'Open R-D picker or terminal sub-section of R-M'
@@ -1781,7 +1781,7 @@ test_cases:
     automated: false
 
   # ---------------------------------------------------------------------------
-  # Section 0 — Core Send Commands (R-L, R-C) — added in S003
+  # Section 14 — Core Send Commands (R-L, R-C)
   # ---------------------------------------------------------------------------
 
   - id: core-send-commands-r-l-001
@@ -1983,9 +1983,9 @@ test_cases:
       - 'Extension installed and activated'
       - 'A workspace is open'
     steps:
-      - 'Execute rangelink.handleFilePathClick with { filePath: /nonexistent/definitely-missing.ts }'
+      - 'Execute rangelink.handleFilePathClick with an absolute path that does not exist on the current OS'
       - 'Observe VS Code notification area'
-    expected_result: 'A warning notification appears (e.g., "Cannot open file: /nonexistent/definitely-missing.ts"). No error is thrown; active editor is unchanged.'
+    expected_result: 'A warning notification appears (e.g., "Cannot open file: <path>"). No error is thrown; active editor is unchanged.'
     automated: false
 
   - id: clickable-file-paths-012
