@@ -90,7 +90,6 @@ if [[ "$DRY_RUN" == false ]] && ! command -v jq &>/dev/null; then
   exit 1
 fi
 
-REPO_ROOT=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)
 REPO_OWNER=$(gh repo view --json owner -q '.owner.login' 2>/dev/null) || true
 REPO_NAME=$(gh repo view --json name -q '.name' 2>/dev/null) || true
 
