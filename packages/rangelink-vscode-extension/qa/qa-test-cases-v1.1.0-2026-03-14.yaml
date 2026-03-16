@@ -209,7 +209,7 @@ test_cases:
     scenario: 'Smart-bind confirmation Yes replaces switches the binding to the new destination'
     preconditions:
       - 'Destination A already bound'
-      - 'Smart-bind confirmation dialog is showing (run TC-016 steps first)'
+      - 'Smart-bind confirmation dialog is showing (run bind-to-destination-007 steps first)'
     steps:
       - "Click 'Yes, replace' (or equivalent) in the confirmation dialog"
     expected_result: 'Binding switches to the newly selected destination. Success toast confirms the new binding.'
@@ -220,7 +220,7 @@ test_cases:
     scenario: 'Smart-bind confirmation No keep retains the existing binding'
     preconditions:
       - 'Destination A already bound'
-      - 'Smart-bind confirmation dialog is showing (run TC-016 steps first)'
+      - 'Smart-bind confirmation dialog is showing (run bind-to-destination-007 steps first)'
     steps:
       - "Click 'No, keep current' (or equivalent) in the confirmation dialog"
     expected_result: 'Original binding is preserved. No binding change occurs. Neutral info notification (if any).'
@@ -344,7 +344,7 @@ test_cases:
     feature: 'Terminal Picker'
     scenario: 'Escaping the secondary terminal picker returns to the parent destination picker'
     preconditions:
-      - 'Secondary terminal picker is open (from TC-028)'
+      - 'Secondary terminal picker is open (from terminal-picker-009)'
     steps:
       - 'Press Escape in the secondary terminal picker'
     expected_result: 'The secondary picker closes. The parent destination picker (R-D or R-M) is still visible.'
@@ -666,7 +666,7 @@ test_cases:
       - 'Focus a file'
       - 'Press Ctrl+R Ctrl+F'
       - 'Observe terminal'
-    expected_result: 'Terminal receives workspace-relative path. Same as TC-051.'
+    expected_result: 'Terminal receives workspace-relative path. Same as send-file-path-001.'
     automated: false
 
   - id: send-file-path-004
@@ -1030,7 +1030,7 @@ test_cases:
     steps:
       - 'Right-click inside the terminal output area'
       - "Select 'RangeLink: Bind Here'"
-    expected_result: 'Same result as TC-082 — the terminal is bound. Success toast.'
+    expected_result: 'Same result as context-menus-terminal-001 — the terminal is bound. Success toast.'
     automated: false
 
   - id: context-menus-terminal-003
@@ -1167,7 +1167,7 @@ test_cases:
       - 'Select text'
       - 'Press Ctrl+R Ctrl+V'
       - 'Observe bound destination'
-    expected_result: 'Same as TC-092.'
+    expected_result: 'Same as send-terminal-selection-001.'
     automated: false
 
   - id: send-terminal-selection-003
@@ -1363,7 +1363,7 @@ test_cases:
     steps:
       - 'Verify binding is active'
       - 'Press Ctrl+R Ctrl+U'
-    expected_result: 'Destination is unbound. Same confirmation behavior as TC-108.'
+    expected_result: 'Destination is unbound. Same confirmation behavior as unbind-001.'
     automated: false
 
   - id: unbind-003
@@ -1558,7 +1558,7 @@ test_cases:
     feature: 'Changed — Text Editor No Split Required'
     scenario: 'Self-paste info message for R-L suggests using R-C as alternative'
     preconditions:
-      - 'Same file bound as destination (same as TC-124)'
+      - 'Same file bound as destination (same as changed-text-editor-no-split-required-002)'
     steps:
       - 'With bound file focused, select 2-3 lines'
       - 'Press Cmd+R Cmd+L'
