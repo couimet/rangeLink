@@ -75,6 +75,7 @@ suite('Link Generation', () => {
     const links = findLinksInText('src/foo.ts#L5\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
+    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
@@ -90,6 +91,7 @@ suite('Link Generation', () => {
     const links = findLinksInText('`src/foo.ts#L5`\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
+    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
@@ -100,6 +102,7 @@ suite('Link Generation', () => {
     const links = findLinksInText("'src/foo.ts#L5'\n", DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
+    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
@@ -110,33 +113,36 @@ suite('Link Generation', () => {
     const links = findLinksInText('"src/foo.ts#L5"\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
+    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
     );
   });
 
-  test('bugfix-markdown-link-navigation-001: detects angle-bracket-wrapped link (<src/foo.ts#L5>)', () => {
+  test('bugfix-wrapped-link-navigation-005: detects angle-bracket-wrapped link (<src/foo.ts#L5>)', () => {
     const links = findLinksInText('<src/foo.ts#L5>\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
+    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
     );
   });
 
-  test('bugfix-url-exclusion-001: detects Markdown link syntax ([text](src/foo.ts#L5))', () => {
+  test('bugfix-markdown-link-navigation-001: detects Markdown link syntax ([text](src/foo.ts#L5))', () => {
     const links = findLinksInText('[click here](src/foo.ts#L5)\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
+    assert.strictEqual(links[0].linkText, 'src/foo.ts#L5', `Expected linkText 'src/foo.ts#L5' but got '${links[0].linkText}'`);
     assert.ok(
       links[0].parsed.path.includes('foo.ts'),
       `Expected path to include foo.ts: ${links[0].parsed.path}`,
     );
   });
 
-  test('bugfix-url-exclusion-002: HTTP URL is excluded — no RangeLink detected for https://example.com/path/file.ts#L10', () => {
+  test('bugfix-url-exclusion-001: HTTP URL is excluded — no RangeLink detected for https://example.com/path/file.ts#L10', () => {
     const links = findLinksInText(
       'https://example.com/path/file.ts#L10\n',
       DEFAULT_DELIMITERS,
