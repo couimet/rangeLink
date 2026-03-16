@@ -24,6 +24,8 @@ const EXPECTED_COMMAND_IDS = [
   'rangelink.openStatusBarMenu',
   'rangelink.bookmark.add',
   'rangelink.bookmark.list',
+  'rangelink.bookmark.manage',
+  'rangelink.bookmark.navigate',
   'rangelink.pasteFileAbsolutePath',
   'rangelink.pasteFileRelativePath',
   'rangelink.pasteCurrentFileAbsolutePath',
@@ -50,6 +52,8 @@ const EXPECTED_COMMAND_IDS = [
   'rangelink.terminal.linkBridge',
   'rangelink.terminal.pasteSelectedTextToDestination',
   'rangelink.terminal.unbind',
+  'rangelink.handleDocumentLinkClick',
+  'rangelink.handleFilePathClick',
 ] as const;
 
 suite('Command Registration', () => {

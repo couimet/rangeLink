@@ -66,7 +66,12 @@ const navigateViaHandleLinkClick = (
     // Do NOT await — the command never resolves in tests because showInformationMessage
     // requires user interaction to dismiss. Navigation completes (selection set) before
     // that blocking await, so our event listener captures it.
-    void vscode.commands.executeCommand('rangelink.handleDocumentLinkClick', { linkText, parsed });
+    vscode.commands.executeCommand('rangelink.handleDocumentLinkClick', { linkText, parsed }).catch((error) => {
+      clearTimeout(overallTimeout);
+      if (stableTimer) clearTimeout(stableTimer);
+      disposable.dispose();
+      reject(error);
+    });
   });
 };
 
@@ -76,7 +81,8 @@ suite('Navigation Precision', () => {
 
   suiteSetup(async () => {
     const ext = vscode.extensions.getExtension('couimet.rangelink');
-    await ext?.activate();
+    assert.ok(ext, 'Extension couimet.rangelink not found — is it installed?');
+    await ext.activate();
 
     const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
     testFilename = `__rl-test-nav-${Date.now()}.ts`;

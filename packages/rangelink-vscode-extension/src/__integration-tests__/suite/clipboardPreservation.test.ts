@@ -19,7 +19,8 @@ suite('Clipboard Preservation', () => {
 
   suiteSetup(async () => {
     const ext = vscode.extensions.getExtension('couimet.rangelink');
-    await ext?.activate();
+    assert.ok(ext, 'Extension couimet.rangelink not found — is it installed?');
+    await ext.activate();
 
     const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content`);
     const filePath = path.join(getWorkspaceRoot(), `__rl-test-clipboard-${Date.now()}.ts`);

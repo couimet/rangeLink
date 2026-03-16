@@ -15,7 +15,8 @@ suite('Dirty Buffer Warning', () => {
 
   suiteSetup(async () => {
     const ext = vscode.extensions.getExtension('couimet.rangelink');
-    await ext?.activate();
+    assert.ok(ext, 'Extension couimet.rangelink not found — is it installed?');
+    await ext.activate();
 
     const filePath = path.join(getWorkspaceRoot(), `__rl-test-dirty-${Date.now()}.ts`);
     fs.writeFileSync(filePath, 'const x = 1;\n', 'utf8');

@@ -25,7 +25,8 @@ suite('Link Generation', () => {
 
   suiteSetup(async () => {
     const ext = vscode.extensions.getExtension('couimet.rangelink');
-    await ext?.activate();
+    assert.ok(ext, 'Extension couimet.rangelink not found — is it installed?');
+    await ext.activate();
   });
 
   suiteTeardown(async () => {
@@ -44,7 +45,6 @@ suite('Link Generation', () => {
     return uri;
   };
 
-  // bugfix-full-line-link-generation-001: Trailing-newline normalization
   test('bugfix-full-line-link-generation-001: selecting line + trailing newline generates #L20 not #L20-L21', async () => {
     const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
     const uri = trackFile(
@@ -70,7 +70,6 @@ suite('Link Generation', () => {
     assert.ok(!clipboard.includes('#L21'), `Expected no #L21 in clipboard but got: ${clipboard}`);
   });
 
-  // bugfix-wrapped-link-navigation-001: Plain link
   test('bugfix-wrapped-link-navigation-001: detects plain link (src/foo.ts#L5)', () => {
     const links = findLinksInText('src/foo.ts#L5\n', DEFAULT_DELIMITERS, LOGGER);
 
@@ -86,7 +85,6 @@ suite('Link Generation', () => {
     );
   });
 
-  // bugfix-wrapped-link-navigation-002: Backtick-wrapped
   test('bugfix-wrapped-link-navigation-002: detects backtick-wrapped link (`src/foo.ts#L5`)', () => {
     const links = findLinksInText('`src/foo.ts#L5`\n', DEFAULT_DELIMITERS, LOGGER);
 
@@ -97,7 +95,6 @@ suite('Link Generation', () => {
     );
   });
 
-  // bugfix-wrapped-link-navigation-003: Single-quote-wrapped
   test("bugfix-wrapped-link-navigation-003: detects single-quote-wrapped link ('src/foo.ts#L5')", () => {
     const links = findLinksInText("'src/foo.ts#L5'\n", DEFAULT_DELIMITERS, LOGGER);
 
@@ -108,7 +105,6 @@ suite('Link Generation', () => {
     );
   });
 
-  // bugfix-wrapped-link-navigation-004: Double-quote-wrapped
   test('bugfix-wrapped-link-navigation-004: detects double-quote-wrapped link ("src/foo.ts#L5")', () => {
     const links = findLinksInText('"src/foo.ts#L5"\n', DEFAULT_DELIMITERS, LOGGER);
 
@@ -119,7 +115,6 @@ suite('Link Generation', () => {
     );
   });
 
-  // bugfix-markdown-link-navigation-001: Angle-bracket-wrapped
   test('bugfix-markdown-link-navigation-001: detects angle-bracket-wrapped link (<src/foo.ts#L5>)', () => {
     const links = findLinksInText('<src/foo.ts#L5>\n', DEFAULT_DELIMITERS, LOGGER);
 
@@ -130,7 +125,6 @@ suite('Link Generation', () => {
     );
   });
 
-  // bugfix-url-exclusion-001: Markdown link syntax
   test('bugfix-url-exclusion-001: detects Markdown link syntax ([text](src/foo.ts#L5))', () => {
     const links = findLinksInText('[click here](src/foo.ts#L5)\n', DEFAULT_DELIMITERS, LOGGER);
 
@@ -141,7 +135,6 @@ suite('Link Generation', () => {
     );
   });
 
-  // bugfix-url-exclusion-002: HTTP URL exclusion
   test('bugfix-url-exclusion-002: HTTP URL is excluded — no RangeLink detected for https://example.com/path/file.ts#L10', () => {
     const links = findLinksInText(
       'https://example.com/path/file.ts#L10\n',
