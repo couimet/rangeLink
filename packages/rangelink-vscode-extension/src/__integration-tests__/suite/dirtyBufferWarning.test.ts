@@ -35,26 +35,23 @@ suite('Dirty Buffer Warning', () => {
   teardown(async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
-      .update('warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Global);
+      .update('warnOnDirtyBuffer', undefined, vscode.ConfigurationTarget.Workspace);
   });
 
-  // dirty-buffer-warning-004: warnOnDirtyBuffer: false → no dialog, link generated immediately
   test('dirty-buffer-warning-004: warnOnDirtyBuffer=false — R-C generates link without showing warning dialog', async () => {
     const doc = await vscode.workspace.openTextDocument(testFileUri);
     const editor = await vscode.window.showTextDocument(doc);
 
-    // Make the document dirty
     await editor.edit((editBuilder) => {
       editBuilder.insert(new vscode.Position(0, 0), '// dirty\n');
     });
     assert.ok(doc.isDirty, 'Expected document to be dirty after edit');
 
-    // Select line 1 (the inserted line, index 0)
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 8));
 
     await vscode.workspace
       .getConfiguration('rangelink')
-      .update('warnOnDirtyBuffer', false, vscode.ConfigurationTarget.Global);
+      .update('warnOnDirtyBuffer', false, vscode.ConfigurationTarget.Workspace);
 
     // Sentinel so we can detect that R-C actually wrote to clipboard
     await vscode.env.clipboard.writeText('rangelink-dirty-test-sentinel');

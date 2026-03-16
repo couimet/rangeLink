@@ -93,6 +93,12 @@ fi
 REPO_OWNER=$(gh repo view --json owner -q '.owner.login' 2>/dev/null) || true
 REPO_NAME=$(gh repo view --json name -q '.name' 2>/dev/null) || true
 
+if [[ "$DRY_RUN" == false ]] && [[ -z "$REPO_OWNER" || -z "$REPO_NAME" ]]; then
+  echo "Error: could not determine repository owner/name via 'gh repo view'." >&2
+  echo "Ensure you are in a git repo with a GitHub remote and 'gh auth status' succeeds." >&2
+  exit 1
+fi
+
 # Derive version and date from filename.
 # Pattern: qa-test-cases-<version>-<YYYY-MM-DD>[-NNN].yaml
 BASENAME=$(basename "$YAML_FILE" .yaml)
@@ -117,6 +123,9 @@ echo ""
 SECTIONS_JSON=$(python3 - "$YAML_FILE" <<'PYEOF'
 import sys, json, yaml
 
+def normalize(value):
+    return ' '.join(str(value).split()) if value else ''
+
 with open(sys.argv[1]) as f:
     data = yaml.safe_load(f)
 
@@ -138,16 +147,16 @@ for feature in section_order:
     tc_list = sections[feature]
     lines = []
     for tc in tc_list:
-        tc_id = tc.get('id', '')
-        scenario = tc.get('scenario', '')
+        tc_id = normalize(tc.get('id', ''))
+        scenario = normalize(tc.get('scenario', ''))
         auto_tag = ' `automated`' if tc.get('automated', False) else ''
         lines.append(f"- [ ] **{tc_id}** — {scenario}{auto_tag}")
 
         for pre in tc.get('preconditions', []):
-            lines.append(f"  - **Pre:** {pre}")
+            lines.append(f"  - **Pre:** {normalize(pre)}")
         for i, step in enumerate(tc.get('steps', []), 1):
-            lines.append(f"  - **Step {i}:** {step}")
-        expected = tc.get('expected_result', '')
+            lines.append(f"  - **Step {i}:** {normalize(step)}")
+        expected = normalize(tc.get('expected_result', ''))
         if expected:
             lines.append(f"  - **Expected:** {expected}")
 
