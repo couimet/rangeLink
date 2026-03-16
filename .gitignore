@@ -29,11 +29,13 @@ packages/*/icon_large.png
 # Claude config
 .claude/settings.local.json
 
+# Temp files created by integration test suites (cleaned up on normal exit; guard for CI kills)
+packages/rangelink-vscode-extension/__rl-test-*.ts
+
 # Folders where Claude Code is told to create and manage working documents
 .breadcrumbs/
 .claude-questions/
 .commit-msgs/
 .scratchpads/
-
 # Claude skill working directories
 .claude-work/
