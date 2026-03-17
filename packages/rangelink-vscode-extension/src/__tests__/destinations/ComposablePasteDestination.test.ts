@@ -1,8 +1,8 @@
 import { createMockLogger } from 'barebone-logger-testing';
 import { Result } from 'rangelink-core-ts';
 
-import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
 import { FocusErrorReason } from '../../destinations/capabilities/FocusCapability';
+import { ComposablePasteDestination } from '../../destinations/ComposablePasteDestination';
 import { AutoPasteResult, PasteContentType } from '../../types';
 import type { PaddingMode } from '../../utils/applySmartPadding';
 import {
@@ -395,7 +395,9 @@ describe('ComposablePasteDestination', () => {
     });
 
     describe('AI assistant kind-based equality (createAiAssistant factory)', () => {
-      const createAiAssistantDestination = (id: 'claude-code' | 'cursor-ai' | 'github-copilot-chat') =>
+      const createAiAssistantDestination = (
+        id: 'claude-code' | 'cursor-ai' | 'github-copilot-chat',
+      ) =>
         ComposablePasteDestination.createAiAssistant({
           id,
           displayName: `Mock ${id}`,
