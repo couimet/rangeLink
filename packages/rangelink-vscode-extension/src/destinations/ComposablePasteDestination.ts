@@ -505,7 +505,7 @@ export class ComposablePasteDestination implements PasteDestination {
    * AI assistant destinations:
    * - Use ContentEligibilityChecker (validate non-empty content)
    * - May require availability checking (extension presence)
-   * - Singleton equality (compared by reference)
+   * - Singleton equality (compared by id — two destinations with the same kind are equal)
    * - May provide user instructions for manual paste fallback
    *
    * @param params - AI assistant-specific parameters
@@ -523,7 +523,7 @@ export class ComposablePasteDestination implements PasteDestination {
       loggingDetails: params.loggingDetails,
       logger: params.logger,
       getUserInstruction: params.getUserInstruction,
-      compareWith: undefined, // Singleton comparison (this === other)
+      compareWith: async (other) => other.id === params.id,
     });
   }
 
