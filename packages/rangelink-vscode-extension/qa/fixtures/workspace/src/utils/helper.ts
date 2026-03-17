@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const CONFIG_PATH = join(__dirname, 'config.json');
+const CONFIG_PATH = join('src', 'config.json');
 const VERSION = '1.0.0';
 
 interface HelperOptions {
