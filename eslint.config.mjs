@@ -13,6 +13,7 @@ export default [
       '**/node_modules/**',
       '**/coverage/**',
       '**/.history/**',
+      '**/.vscode-test/**',
       '**/*.vsix',
       '**/*.config.js',
       '**/*.config.mjs',
