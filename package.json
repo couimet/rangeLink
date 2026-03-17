@@ -29,6 +29,7 @@
     "publish:vscode-extension:vsix": "pnpm --filter rangelink-vscode-extension publish:vsix",
     "test": "pnpm -r test",
     "test:release": "pnpm --filter rangelink-vscode-extension test:release",
+    "validate:qa-coverage:vscode-extension": "pnpm --filter rangelink-vscode-extension validate:qa-coverage",
     "watch": "pnpm -r --parallel watch"
   },
   "devDependencies": {
