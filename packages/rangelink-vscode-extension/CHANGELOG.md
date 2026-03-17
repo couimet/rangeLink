@@ -171,6 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Full-line selection validation error** - Fixed `SELECTION_ZERO_WIDTH` error when using Ctrl+L or triple-click to select full lines. The selection normalization now correctly sets the end character to the line length instead of 0. (#306)
 - **Text editor binding validation** - Prevents binding to read-only editors (git diff views, output panels, settings UI) that would cause paste operations to fail with confusing errors. Now shows clear error messages: "Cannot bind to read-only editor (git)" or "Cannot bind to file.png - binary file".
 - **Smart padding preserves whitespace-only text** - Fixed `applySmartPadding()` incorrectly trimming whitespace-only strings to empty. Now whitespace-only content is preserved when using destinations.
+- **Re-binding same AI assistant no longer shows redundant confirmation** - Binding to an AI assistant you're already bound to now shows "already bound" instead of a "Replace?" dialog. (#396)
 
 ## [1.0.0]
 
