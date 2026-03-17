@@ -6,7 +6,6 @@ const VERSION = '1.0.0';
 
 interface HelperOptions {
   verbose: boolean;
-  timeout: number;
 }
 
 const processInput = (input: string, options: HelperOptions): string => {
@@ -17,8 +16,12 @@ const processInput = (input: string, options: HelperOptions): string => {
 };
 
 const loadConfig = (): Record<string, unknown> => {
-  const raw = readFileSync(CONFIG_PATH, 'utf-8');
-  return JSON.parse(raw) as Record<string, unknown>;
+  try {
+    const raw = readFileSync(CONFIG_PATH, 'utf-8');
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch (error) {
+    throw new Error(`Failed to load config from ${CONFIG_PATH}: ${error}`);
+  }
 };
 
 class DataProcessor {

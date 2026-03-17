@@ -4,7 +4,7 @@ This workspace is used for manual QA testing of the RangeLink extension.
 
 ## Code References
 
-The helper module has a useful processing function at [processInput](src/utils/helper.ts#L13).
+The helper module has a useful processing function at [processInput](../src/utils/helper.ts#L13).
 
 Here is a plain RangeLink reference: src/utils/helper.ts#L5
 
