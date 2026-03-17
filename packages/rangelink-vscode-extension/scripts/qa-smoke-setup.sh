@@ -237,7 +237,6 @@ else
   if [[ ! -f "$VSIX_FILE" ]]; then
     NEEDS_BUILD=true
   else
-    VSIX_MTIME=$(stat -f %m "$VSIX_FILE" 2>/dev/null || stat -c %Y "$VSIX_FILE" 2>/dev/null)
     SRC_MTIME=$(find "$PACKAGE_DIR/src" -type f -newer "$VSIX_FILE" 2>/dev/null | head -1)
     if [[ -n "$SRC_MTIME" ]]; then
       NEEDS_BUILD=true
@@ -273,6 +272,7 @@ for i in "${!EDITORS[@]}"; do
     "$local_editor" --profile qa-test --new-window "$WORKSPACE_DIR" &
     LAUNCH_PID=$!
     sleep 3
+    kill "$LAUNCH_PID" 2>/dev/null || true
     echo -e "  ${DIM}Profile created. Installing extension...${NC}"
   fi
 
@@ -285,6 +285,7 @@ echo -e "${GREEN}Profile install complete.${NC}"
 
 echo -e "${BLUE}Phase 3: Setting up fixture workspace...${NC}"
 
+mkdir -p "$WORKSPACE_DIR/.vscode"
 cp "$PROFILE_SETTINGS" "$WORKSPACE_DIR/.vscode/settings.json"
 echo -e "  Settings profile: ${GREEN}${SETTINGS_PROFILE}${NC}"
 
@@ -333,7 +334,10 @@ echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BOLD}║  RangeLink QA Session — v${NEXT_VERSION}$(printf '%*s' $((36 - ${#NEXT_VERSION})) '')║${NC}"
 echo -e "${BOLD}╠══════════════════════════════════════════════════════════════╣${NC}"
-echo -e "${BOLD}║${NC}  Editor:    ${CYAN}$(IFS=', '; echo "${EDITOR_NAMES[*]}")${NC}$(printf '%*s' $((48 - ${#EDITOR_NAMES[*]} * 8)) '')${BOLD}║${NC}"
+EDITORS_STR=$(IFS=', '; echo "${EDITOR_NAMES[*]}")
+EDITORS_PAD=$((48 - ${#EDITORS_STR}))
+[[ $EDITORS_PAD -lt 0 ]] && EDITORS_PAD=0
+echo -e "${BOLD}║${NC}  Editor:    ${CYAN}${EDITORS_STR}${NC}$(printf '%*s' $EDITORS_PAD '')${BOLD}║${NC}"
 echo -e "${BOLD}║${NC}  Settings:  ${CYAN}${SETTINGS_PROFILE}${NC}$(printf '%*s' $((48 - ${#SETTINGS_PROFILE})) '')${BOLD}║${NC}"
 echo -e "${BOLD}║${NC}  Extension: ${CYAN}${VERSION_INFO}${NC}$(printf '%*s' $((48 - ${#VERSION_INFO})) '')${BOLD}║${NC}"
 echo -e "${BOLD}║${NC}  Workspace: ${CYAN}qa/fixtures/workspace/${NC}$(printf '%*s' 27 '')${BOLD}║${NC}"
