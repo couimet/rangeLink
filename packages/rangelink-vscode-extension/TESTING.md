@@ -6,14 +6,17 @@
 
 ## Quick Reference
 
-| Test type            | Command                      | When to run                        | Runs in CI           |
-| -------------------- | ---------------------------- | ---------------------------------- | -------------------- |
-| Unit tests           | `pnpm test`                  | Every change                       | ✅                   |
-| Unit tests (watch)   | `pnpm test:watch`            | During active development          | —                    |
-| Coverage report      | `pnpm test:coverage`         | Before PR / on demand              | ✅ (with thresholds) |
-| Integration tests    | `pnpm test:release`          | Before PR, after feature work      | ✅                   |
-| Prepare QA test plan | `pnpm generate:qa-test-plan` | Start of release cycle             | —                    |
-| Generate QA issue    | `pnpm generate:qa-issue`     | At the start of each release cycle | —                    |
+| Test type             | Command                      | When to run                        | Runs in CI           |
+| --------------------- | ---------------------------- | ---------------------------------- | -------------------- |
+| Unit tests            | `pnpm test`                  | Every change                       | ✅                   |
+| Unit tests (watch)    | `pnpm test:watch`            | During active development          | —                    |
+| Coverage report       | `pnpm test:coverage`         | Before PR / on demand              | ✅ (with thresholds) |
+| Integration tests     | `pnpm test:release`          | Before PR, after feature work      | ✅                   |
+| Prepare QA test plan  | `pnpm generate:qa-test-plan` | Start of release cycle             | —                    |
+| Generate QA issue     | `pnpm generate:qa-issue`     | At the start of each release cycle | —                    |
+| Generate QA checklist | `pnpm generate:qa-checklist` | Before manual QA pass              | —                    |
+| QA smoke setup        | `pnpm qa:setup`              | Before manual QA pass              | —                    |
+| Validate QA coverage  | `pnpm validate:qa-coverage`  | After adding integration tests     | ✅                   |
 
 All commands run from `packages/rangelink-vscode-extension/` unless noted.
 
@@ -111,6 +114,33 @@ Place new TCs at the end of the file under the relevant feature section. Use the
 3. Run `/qa-suggest` in Claude Code — it creates a scratchpad with suggested TCs and a YAML block ready to append
 4. Review the scratchpad, edit/remove TCs as needed, then append the YAML block to the QA file
 5. Commit the YAML and run `pnpm generate:qa-issue:vscode-extension` from the root of the project to create the GitHub tracking issues (auto-discovers the latest QA YAML)
+6. Run `pnpm qa:setup:vscode-extension` to build the extension, install into an isolated `qa-test` profile, generate a QA checklist, and launch the editor with the fixture workspace
+
+### Running a QA pass
+
+The QA smoke setup script automates the repetitive environment setup for manual testing:
+
+```bash
+pnpm qa:setup:vscode-extension
+```
+
+This builds the extension, installs it into an isolated `qa-test` VS Code/Cursor profile, copies the selected settings profile into the fixture workspace, generates a date-stamped QA checklist, and launches the editor.
+
+**Fixture workspace:** `qa/fixtures/workspace/` contains pre-built files covering all TC preconditions (TypeScript, TSX, markdown with embedded links, nested paths, paths with spaces, path-format reference file).
+
+**Settings profiles:** `qa/fixtures/settings/` contains pre-built configurations for different TC groups. Switch between them with the `--settings` flag:
+
+```bash
+pnpm qa:setup -- --settings clipboard-never
+pnpm qa:setup -- --settings custom-delimiters
+pnpm qa:setup -- --list-profiles          # show all available profiles
+```
+
+**QA checklist:** Generated at `qa/qa-checklist-v<version>-<date>.txt`. Groups TCs by feature area, tags readiness state and required settings profiles, and marks automated TCs. Can also be generated standalone:
+
+```bash
+pnpm generate:qa-checklist:vscode-extension
+```
 
 ### Generating a QA GitHub issue
 

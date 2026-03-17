@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const CONFIG_PATH = join(__dirname, 'config.json');
 const VERSION = '1.0.0';

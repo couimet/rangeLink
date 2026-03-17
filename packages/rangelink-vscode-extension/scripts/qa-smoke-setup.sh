@@ -267,6 +267,15 @@ echo -e "${BLUE}Phase 2: Installing into qa-test profile...${NC}"
 for i in "${!EDITORS[@]}"; do
   local_editor="${EDITORS[$i]}"
   local_name="${EDITOR_NAMES[$i]}"
+
+  if ! "$local_editor" --profile qa-test --list-extensions &>/dev/null; then
+    echo -e "  ${local_name}: creating qa-test profile (first run)..."
+    "$local_editor" --profile qa-test --new-window "$WORKSPACE_DIR" &
+    LAUNCH_PID=$!
+    sleep 3
+    echo -e "  ${DIM}Profile created. Installing extension...${NC}"
+  fi
+
   echo -e "  ${local_name}: installing extension..."
   "$local_editor" --profile qa-test --install-extension "$VSIX_ABSOLUTE" 2>&1 | head -3
 done
@@ -279,9 +288,19 @@ echo -e "${BLUE}Phase 3: Setting up fixture workspace...${NC}"
 cp "$PROFILE_SETTINGS" "$WORKSPACE_DIR/.vscode/settings.json"
 echo -e "  Settings profile: ${GREEN}${SETTINGS_PROFILE}${NC}"
 
-CHECKLIST_OUTPUT=$("$SCRIPT_DIR/generate-qa-checklist.sh" 2>&1)
-CHECKLIST_FILE=$(echo "$CHECKLIST_OUTPUT" | grep "^Checklist:" | sed 's/^Checklist: //')
-echo -e "  ${CHECKLIST_OUTPUT}"
+if CHECKLIST_OUTPUT=$("$SCRIPT_DIR/generate-qa-checklist.sh" 2>&1); then
+  CHECKLIST_FILE=$(echo "$CHECKLIST_OUTPUT" | grep "^Checklist:" | sed 's/^Checklist: //')
+  echo -e "  ${CHECKLIST_OUTPUT}"
+else
+  CHECKLIST_FILE=""
+  echo -e "  ${YELLOW}Checklist generation failed:${NC}"
+  echo "$CHECKLIST_OUTPUT" | sed 's/^/    /'
+  if [[ -f "$REPO_ROOT/pnpm-workspace.yaml" && "$PWD" == "$REPO_ROOT" ]]; then
+    echo -e "  ${YELLOW}Continuing without checklist — fix the issue above and run: pnpm generate:qa-checklist:vscode-extension${NC}"
+  else
+    echo -e "  ${YELLOW}Continuing without checklist — fix the issue above and run: pnpm generate:qa-checklist${NC}"
+  fi
+fi
 
 # --- Phase 4: Editor Launch ---
 
