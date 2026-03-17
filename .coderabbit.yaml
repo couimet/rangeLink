@@ -11,5 +11,34 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
+  path_instructions:
+    - path: 'packages/rangelink-vscode-extension/src/**'
+      instructions: |
+        When reviewing changes in the VS Code extension source code, check whether
+        the QA test plan YAML (packages/rangelink-vscode-extension/qa/qa-test-cases-*.yaml)
+        was also updated in this PR.
+
+        Flag a potential QA coverage gap if ALL of the following are true:
+        1. The PR modifies user-visible behavior (new commands, changed UI text, new settings,
+           new keybindings, new context menu entries, changed error messages, or new notifications)
+        2. The PR does NOT add or modify test cases in the QA YAML
+        3. The change is not purely internal (refactoring, logging, test infrastructure, CI config)
+
+        User-visible signals to look for:
+        - Changes to contributes.commands, contributes.menus, contributes.keybindings,
+          or contributes.configuration in package.json
+        - New or modified files in src/commands/, src/destinations/, src/statusBar/
+        - Changes to user-facing message strings or notification text
+        - New or modified context menu when clauses
+
+        If you flag a gap, suggest specific test case scenarios the developer should add,
+        following the project's QA YAML schema (id, feature, scenario, preconditions, steps,
+        expected_result, automated).
+    - path: 'packages/rangelink-core-ts/src/**'
+      instructions: |
+        Changes to the core library affect all consumers (VS Code extension, future extensions).
+        If the change modifies the public API (exported functions, types, or behavior),
+        check whether the VS Code extension's QA YAML needs new test cases for the
+        changed behavior.
 chat:
   auto_reply: true

@@ -1,0 +1,238 @@
+name: QA Coverage Gap Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  models: read
+
+jobs:
+  qa-gap-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff
+        id: diff
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr diff ${{ github.event.pull_request.number }} > /tmp/pr-diff.txt
+          echo "diff_size=$(wc -c < /tmp/pr-diff.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Get changed files
+        id: files
+        run: |
+          git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD > /tmp/changed-files.txt
+          echo "Changed files:"
+          cat /tmp/changed-files.txt
+
+      - name: Check if QA-relevant files changed
+        id: relevance
+        run: |
+          RELEVANT=false
+
+          if grep -qE '^packages/rangelink-vscode-extension/src/' /tmp/changed-files.txt; then
+            RELEVANT=true
+          fi
+          if grep -qE '^packages/rangelink-core-ts/src/' /tmp/changed-files.txt; then
+            RELEVANT=true
+          fi
+          if grep -q 'package.json' /tmp/changed-files.txt; then
+            if git diff origin/${{ github.event.pull_request.base.ref }}...HEAD -- '*/package.json' | grep -qE '^\+.*"(commands|menus|keybindings|configuration)"'; then
+              RELEVANT=true
+            fi
+          fi
+
+          QA_YAML_CHANGED=false
+          if grep -q 'qa/qa-test-cases' /tmp/changed-files.txt; then
+            QA_YAML_CHANGED=true
+          fi
+
+          echo "relevant=$RELEVANT" >> "$GITHUB_OUTPUT"
+          echo "qa_yaml_changed=$QA_YAML_CHANGED" >> "$GITHUB_OUTPUT"
+          echo "Relevant: $RELEVANT, QA YAML changed: $QA_YAML_CHANGED"
+
+      - name: Analyze with AI
+        if: steps.relevance.outputs.relevant == 'true'
+        id: analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DIFF_CONTENT=$(head -c 6000 /tmp/pr-diff.txt)
+          CHANGED_FILES=$(cat /tmp/changed-files.txt)
+          QA_YAML_CHANGED="${{ steps.relevance.outputs.qa_yaml_changed }}"
+
+          PROMPT=$(cat <<'PROMPT_EOF'
+          You are a QA testing expert reviewing a pull request for the RangeLink VS Code extension.
+          RangeLink is a code location link generator that works with VS Code, Cursor, and AI assistants.
+
+          Your task: determine if this PR introduces user-visible changes that need QA test cases
+          in the project's QA YAML test plan.
+
+          ## What counts as user-visible
+
+          - New commands, keybindings, or context menu entries
+          - Changed command behavior or output
+          - New or modified settings (contributes.configuration)
+          - Changed error messages, notifications, or toast text
+          - New UI elements (status bar items, quick picks, input boxes)
+          - Changed clipboard behavior
+          - Changed navigation behavior (go-to-link, document links)
+          - New or changed file path detection patterns
+          - Changes to the core library (rangelink-core-ts) that affect link generation or parsing
+
+          ## What does NOT need QA test cases
+
+          - Internal refactoring that doesn't change behavior
+          - Test infrastructure changes (new test helpers, mock updates)
+          - CI/CD pipeline changes
+          - Documentation-only changes
+          - Logging changes (unless they affect user-visible output)
+          - Build tooling or dev dependency updates
+
+          ## Integration test limitations
+
+          The project uses @vscode/test-cli for integration tests. These run inside a real VS Code
+          process but CANNOT programmatically interact with:
+          - QuickPick menus (cannot select items)
+          - InputBox dialogs (cannot type text)
+          - Warning/Information dialog buttons (cannot click buttons)
+          - Toast notifications (cannot read or dismiss)
+
+          When suggesting test cases, indicate whether each can be automated (integration test)
+          or must be manual. Tests that require QuickPick, InputBox, dialog buttons, or toast
+          verification must be marked as manual (automated: false).
+
+          Commands that work without UI interaction CAN be automated:
+          - Commands that modify clipboard content
+          - Commands that change editor selection/cursor position
+          - Commands that create/modify files
+          - Commands that change extension state (bind/unbind)
+          - Document link detection (pattern matching)
+
+          ## QA YAML schema
+
+          Each test case follows this schema:
+          ```yaml
+          - id: <feature-slug>-NNN
+            feature: '<Feature area>'
+            scenario: '<One-line description>'
+            preconditions:
+              - '<Setup step>'
+            steps:
+              - '<Action>'
+            expected_result: '<What passing looks like>'
+            automated: false  # true only if integration-testable
+          ```
+
+          ## Your response format
+
+          Respond with ONLY a JSON object (no markdown fences, no explanation outside the JSON):
+          {
+            "has_user_visible_changes": true/false,
+            "qa_yaml_was_updated": true/false,
+            "gap_detected": true/false,
+            "summary": "Brief explanation of what user-visible changes were found (or why none)",
+            "suggested_test_cases": [
+              {
+                "feature": "Feature area name",
+                "scenario": "What to test",
+                "automated": true/false,
+                "reason_for_manual": "Only if automated is false — explain why"
+              }
+            ]
+          }
+
+          If no user-visible changes exist, set gap_detected to false and leave suggested_test_cases empty.
+          If the QA YAML was already updated in this PR, note it but still check if coverage is complete.
+          PROMPT_EOF
+          )
+
+          RESPONSE=$(curl -s "https://models.github.ai/inference/chat/completions" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -d "$(jq -n \
+              --arg prompt "$PROMPT" \
+              --arg diff "$DIFF_CONTENT" \
+              --arg files "$CHANGED_FILES" \
+              --arg qa_changed "$QA_YAML_CHANGED" \
+              '{
+                "messages": [
+                  {"role": "system", "content": $prompt},
+                  {"role": "user", "content": ("PR diff (truncated to 6000 chars):\n\n" + $diff + "\n\nChanged files:\n" + $files + "\n\nQA YAML updated in this PR: " + $qa_changed)}
+                ],
+                "model": "openai/gpt-4o-mini",
+                "temperature": 0.2
+              }')")
+
+          AI_CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "ERROR: No response from model"')
+          echo "AI Response:"
+          echo "$AI_CONTENT"
+
+          {
+            echo "ai_response<<RESPONSE_EOF"
+            echo "$AI_CONTENT"
+            echo "RESPONSE_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post PR comment
+        if: steps.relevance.outputs.relevant == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          AI_RESPONSE='${{ steps.analysis.outputs.ai_response }}'
+
+          GAP_DETECTED=$(echo "$AI_RESPONSE" | jq -r '.gap_detected // false' 2>/dev/null || echo "parse_error")
+          SUMMARY=$(echo "$AI_RESPONSE" | jq -r '.summary // "Could not parse AI response"' 2>/dev/null || echo "Could not parse AI response")
+
+          if [ "$GAP_DETECTED" = "true" ]; then
+            ICON="⚠️"
+            TITLE="QA Coverage Gap Detected"
+            SUGGESTIONS=$(echo "$AI_RESPONSE" | jq -r '.suggested_test_cases[]? | "- **\(.feature)**: \(.scenario) (\(if .automated then "automatable" else "manual — \(.reason_for_manual)" end))"' 2>/dev/null || echo "- Could not parse suggestions")
+          elif [ "$GAP_DETECTED" = "false" ]; then
+            ICON="✅"
+            TITLE="QA Coverage OK"
+            SUGGESTIONS=""
+          else
+            ICON="🤖"
+            TITLE="QA Gap Check — Could Not Parse Response"
+            SUGGESTIONS="Raw response:\n\`\`\`\n${AI_RESPONSE}\n\`\`\`"
+          fi
+
+          COMMENT_BODY="${ICON} **${TITLE}**
+
+          ${SUMMARY}"
+
+          if [ -n "$SUGGESTIONS" ]; then
+            COMMENT_BODY="${COMMENT_BODY}
+
+          **Suggested test cases:**
+          ${SUGGESTIONS}"
+          fi
+
+          COMMENT_BODY="${COMMENT_BODY}
+
+          ---
+          <sub>Generated by QA Gap Check (GPT-4o-mini via GitHub Models)</sub>"
+
+          EXISTING_COMMENT=$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+            --jq '.[] | select(.body | contains("Generated by QA Gap Check")) | .id' | head -1)
+
+          if [ -n "$EXISTING_COMMENT" ]; then
+            gh api repos/${{ github.repository }}/issues/comments/$EXISTING_COMMENT \
+              -X PATCH -f body="$COMMENT_BODY"
+          else
+            gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+              -f body="$COMMENT_BODY"
+          fi
+
+      - name: Skip — no QA-relevant changes
+        if: steps.relevance.outputs.relevant != 'true'
+        run: echo "No QA-relevant files changed — skipping AI analysis"
