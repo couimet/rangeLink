@@ -76,7 +76,9 @@ if ! command -v python3 &>/dev/null; then
 fi
 
 if ! python3 -c "import yaml" 2>/dev/null; then
-  echo "Error: PyYAML is required. Install with: pip3 install pyyaml" >&2
+  echo "Error: PyYAML is required — install with: pip3 install pyyaml" >&2
+  echo "  If pip3 fails on system Python, use a venv:" >&2
+  echo "  python3 -m venv .venv && source .venv/bin/activate && pip install pyyaml" >&2
   exit 1
 fi
 
