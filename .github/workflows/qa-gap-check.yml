@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+concurrency:
+  group: qa-gap-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: write
@@ -11,6 +15,7 @@ permissions:
 
 jobs:
   qa-gap-check:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -62,6 +67,7 @@ jobs:
       - name: Analyze with AI
         if: steps.relevance.outputs.relevant == 'true'
         id: analysis
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -155,7 +161,7 @@ jobs:
           PROMPT_EOF
           )
 
-          RESPONSE=$(curl -s "https://models.github.ai/inference/chat/completions" \
+          RESPONSE=$(curl -s --fail --max-time 60 "https://models.github.ai/inference/chat/completions" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -d "$(jq -n \
@@ -170,7 +176,10 @@ jobs:
                 ],
                 "model": "openai/gpt-4o-mini",
                 "temperature": 0.2
-              }')")
+              }')") || {
+            echo "Warning: GitHub Models API request failed (curl exit $?)"
+            RESPONSE='{"choices":[{"message":{"content":"{\"has_user_visible_changes\":false,\"qa_yaml_was_updated\":false,\"gap_detected\":false,\"summary\":\"AI analysis unavailable — GitHub Models API request failed. Run manually if needed.\",\"suggested_test_cases\":[]}"}}]}'
+          }
 
           AI_CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "ERROR: No response from model"')
           echo "AI Response:"
@@ -203,7 +212,7 @@ jobs:
           else
             ICON="🤖"
             TITLE="QA Gap Check — Could Not Parse Response"
-            SUGGESTIONS="Raw response:\n\`\`\`\n${AI_RESPONSE}\n\`\`\`"
+            SUGGESTIONS=$(printf 'Raw response:\n```\n%s\n```' "$AI_RESPONSE")
           fi
 
           COMMENT_BODY="${ICON} **${TITLE}**
