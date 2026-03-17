@@ -1730,7 +1730,7 @@ test_cases:
       - 'Add the text: https://example.com/path/file.ts#L10'
       - 'Hover over it to inspect the link tooltip (if any)'
     expected_result: 'RangeLink does not provide a document link for this text. No RangeLink navigation offered.'
-    automated: true
+    automated: false
 
   - id: bugfix-stale-viewcolumn-001
     feature: 'Bug Fix — Stale viewColumn'
