@@ -1,0 +1,50 @@
+QA Test Notes — File Path Detection Fixtures
+=============================================
+
+These paths should be detected as clickable file paths by the extension:
+
+Absolute paths:
+  /Users/test/projects/rangelink/src/utils/helper.ts
+  /tmp/test-file.ts
+
+Relative paths:
+  ./src/utils/helper.ts
+  ./src/components/Button.tsx
+  ../other-project/file.ts
+
+Parent-relative paths:
+  ../sibling/module.ts
+
+Tilde home paths:
+  ~/projects/app.ts
+  ~/Documents/notes.txt
+
+Double-quoted paths with spaces:
+  "/Users/test/path with spaces/file.ts"
+
+Single-quoted paths:
+  './src/utils/helper.ts'
+  '/tmp/test-file.ts'
+
+Deeply nested paths:
+  ./deep/nested/path/file.ts
+
+These should NOT be detected as file paths:
+
+URLs (excluded by the extension):
+  https://github.com/couimet/rangeLink/blob/main/src/index.ts
+  https://example.com/path/file.ts#L10
+
+RangeLinks (handled by RangeLink provider, not file path provider):
+  src/utils/helper.ts#L5
+  src/utils/helper.ts#L13-L17
+
+ORM-style strings without path separators:
+  'User'
+  'DataProcessor'
+
+Backtick-wrapped RangeLinks:
+  `src/utils/helper.ts#L5`
+
+Angle-bracket-wrapped RangeLinks:
+  <src/utils/helper.ts#L5>

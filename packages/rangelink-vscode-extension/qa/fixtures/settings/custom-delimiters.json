@@ -1,0 +1,12 @@
+{
+  "rangelink.clipboard.preserve": "always",
+  "rangelink.warnOnDirtyBuffer": true,
+  "rangelink.delimiterLine": "@l",
+  "rangelink.delimiterPosition": "@c",
+  "rangelink.delimiterHash": "#",
+  "rangelink.delimiterRange": "-",
+  "rangelink.terminalPicker.maxInline": 5,
+  "rangelink.smartPadding.pasteLink": "both",
+  "rangelink.smartPadding.pasteContent": "none",
+  "rangelink.smartPadding.pasteFilePath": "both"
+}
