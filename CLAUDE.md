@@ -536,6 +536,49 @@
 
 ---
 
+<qa-yaml>
+
+<rule id="QA001" priority="critical">
+  <title>Never renumber existing QA test case IDs</title>
+  <do>Keep existing IDs stable across QA runs so results are comparable apples-to-apples</do>
+  <never>Renumber, reorder, or reassign existing TC IDs — even to "fill gaps"</never>
+  <rationale>QA results reference IDs by name; renumbering breaks traceability between runs</rationale>
+</rule>
+
+<rule id="QA002" priority="critical">
+  <title>QA YAML files are a journal — copy-forward, never edit in place</title>
+  <do>Copy the latest QA YAML file to a new date-stamped file (e.g., `qa-test-cases-v1.1.0-2026-03-17.yaml`), then append new TCs to the copy</do>
+  <do>Update the header date and `generate:qa-issue` filename reference in the new copy</do>
+  <never>Edit a previous QA YAML file to add, remove, or reorder test cases</never>
+  <exception>Fixing typos or updating `automated: true/false` status in an existing file is allowed</exception>
+  <rationale>Each file is a point-in-time snapshot; diffing consecutive files shows exactly what was added between QA cycles</rationale>
+</rule>
+
+<rule id="QA003" priority="critical">
+  <title>TC IDs are globally unique across all QA YAML files</title>
+  <do>Check all existing YAML files in `qa/` for the highest ID in the same `<feature-slug>` before assigning new numbers</do>
+  <never>Reuse an ID that appears in any QA YAML file for the same version</never>
+</rule>
+
+<rule id="QA004" priority="critical">
+  <title>No gaps in TC ID sequences</title>
+  <do>When appending TCs to a journal snapshot, continue from the highest existing ID in that feature slug (e.g., if `bind-to-destination-010` exists, the next is `bind-to-destination-011`)</do>
+  <never>Skip numbers or leave gaps in the sequence</never>
+  <rationale>Gaps make it ambiguous whether a TC was deleted or never existed</rationale>
+</rule>
+
+<rule id="QA005" priority="critical">
+  <title>`automated: true` requires a matching integration test on the branch</title>
+  <do>When marking a TC `automated: true`, ensure the corresponding integration test (in `src/__integration-tests__/suite/`) exists on the same branch before the PR merges — it can be a separate commit/step</do>
+  <do>Use `automated: false` for scenarios that can't be integration-tested (e.g., toast content, QuickPick suppression)</do>
+  <never>Mark `automated: true` based on unit tests alone — the validator only checks integration tests</never>
+  <see>packages/rangelink-vscode-extension/scripts/validate-qa-coverage.sh</see>
+</rule>
+
+</qa-yaml>
+
+---
+
 <project-context>
   <name>RangeLink</name>
   <tagline>One keybinding. Precise references. Any AI assistant or tool.</tagline>
