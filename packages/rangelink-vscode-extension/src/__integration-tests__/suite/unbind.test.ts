@@ -34,10 +34,7 @@ suite('Unbind Destination', () => {
       language: 'typescript',
     });
     const editor = await vscode.window.showTextDocument(doc);
-    editor.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(0, 7),
-    );
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 7));
 
     await vscode.env.clipboard.writeText('unbind-test-sentinel');
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
