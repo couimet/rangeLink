@@ -253,7 +253,13 @@ else
   fi
 fi
 
-VSIX_ABSOLUTE="$(cd "$(dirname "$VSIX_FILE")" 2>/dev/null && pwd)/$(basename "$VSIX_FILE")"
+if [[ ! -f "$VSIX_FILE" ]]; then
+  echo -e "${RED}Error: .vsix not found at $VSIX_FILE${NC}" >&2
+  echo -e "${BLUE}Run without --skip-build to build first, or run: pnpm package:vscode-extension${NC}" >&2
+  exit 1
+fi
+
+VSIX_ABSOLUTE="$(cd "$(dirname "$VSIX_FILE")" && pwd)/$(basename "$VSIX_FILE")"
 
 # --- Phase 2: Profile + Extension Install ---
 
