@@ -152,7 +152,13 @@ flowchart TD
     I --> J
 ```
 
-Place new TCs at the end of the file under the relevant feature section. Use the next available TC-NNN ID. Set `automated: true` immediately if you are also writing the integration test; otherwise set `false` and leave a note in the scenario description.
+Place new TCs at the end of the file under the relevant feature section. TC ID rules:
+
+- **Never renumber** existing IDs — results reference IDs by name across QA cycles
+- **Continue from the highest** existing ID for that feature slug (e.g., if `bind-to-destination-010` exists, the next is `bind-to-destination-011`)
+- **IDs are globally unique** per feature slug across all QA YAML snapshots — check the highest ID in `qa/` before assigning
+
+Set `automated: true` immediately if you are also writing the integration test; otherwise set `false` and leave a note in the scenario description.
 
 ### Starting a new QA cycle
 
@@ -178,12 +184,12 @@ This builds the extension, installs it into an isolated `qa-test` VS Code/Cursor
 **Settings profiles:** `qa/fixtures/settings/` contains pre-built configurations for different TC groups. Switch between them with the `--settings` flag:
 
 ```bash
-pnpm qa:setup -- --settings clipboard-never
-pnpm qa:setup -- --settings custom-delimiters
-pnpm qa:setup -- --list-profiles          # show all available profiles
+pnpm qa:setup:vscode-extension -- --settings clipboard-never
+pnpm qa:setup:vscode-extension -- --settings custom-delimiters
+pnpm qa:setup:vscode-extension -- --list-profiles          # show all available profiles
 ```
 
-**QA checklist:** Generated at `qa/qa-checklist-v<version>-<date>.txt`. Groups TCs by feature area, tags readiness state and required settings profiles, and marks automated TCs. Can also be generated standalone:
+**QA checklist:** Generated at `qa/qa-checklist-v<version>-<date>.txt`. Groups TCs by feature area, tags readiness state and required settings profiles, and marks automated TCs. The checklist can also be generated standalone:
 
 ```bash
 pnpm generate:qa-checklist:vscode-extension
