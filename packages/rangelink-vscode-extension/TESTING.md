@@ -22,6 +22,37 @@ All commands run from `packages/rangelink-vscode-extension/` unless noted.
 
 ---
 
+## Testing Lifecycle
+
+### Release QA Cycle (once per release)
+
+```mermaid
+flowchart TD
+    A[Set nextTargetVersion] --> B[generate:qa-test-plan]
+    B --> C[/qa-suggest in Claude Code/]
+    C --> D[Review + append new TCs]
+    D --> E[Commit YAML]
+    E --> F[generate:qa-issue]
+    F --> G[GitHub parent + sub-issues created]
+    G --> H[qa:setup]
+    H --> H1[Build .vsix]
+    H1 --> H2[Install in qa-test profile]
+    H2 --> H3[Apply settings profile]
+    H3 --> H4[Generate checklist]
+    H4 --> H5[Launch editor with fixture workspace]
+    H5 --> I[Manual QA pass]
+    I --> I1[Ready-now TCs — no setup needed]
+    I1 --> I2[Open terminals + bind]
+    I2 --> I3[Terminal-dependent TCs]
+    I3 --> I4[Switch settings profiles as needed]
+    I4 --> J{All TCs pass?}
+    J -- No --> K[Fix + re-run affected TCs]
+    K --> J
+    J -- Yes --> L[Tag release + publish]
+```
+
+---
+
 ## Unit Tests
 
 ```bash
@@ -104,6 +135,22 @@ Add at least one TC to the QA YAML for every:
 
 - New user-visible feature
 - Bug fix that should not regress
+
+```mermaid
+flowchart TD
+    A[PR ready for review] --> B{User-visible change?}
+    B -- No --> C[No QA TC needed]
+    B -- Yes --> D{New feature or bug fix?}
+    D -- New feature --> E[Add QA TC to YAML]
+    D -- Bug fix --> F{Could it regress?}
+    F -- No --> C
+    F -- Yes --> E
+    E --> G{Can it be integration-tested?}
+    G -- Yes --> H["Set automated: true<br/>Write integration test"]
+    G -- No --> I["Set automated: false<br/>Describe manual steps"]
+    H --> J[validate:qa-coverage passes]
+    I --> J
+```
 
 Place new TCs at the end of the file under the relevant feature section. Use the next available TC-NNN ID. Set `automated: true` immediately if you are also writing the integration test; otherwise set `false` and leave a note in the scenario description.
 
