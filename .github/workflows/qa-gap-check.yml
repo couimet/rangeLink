@@ -185,26 +185,24 @@ jobs:
           echo "AI Response:"
           echo "$AI_CONTENT"
 
-          {
-            echo "ai_response<<RESPONSE_EOF"
-            echo "$AI_CONTENT"
-            echo "RESPONSE_EOF"
-          } >> "$GITHUB_OUTPUT"
+          echo "$AI_CONTENT" > /tmp/ai-response.json
 
       - name: Post PR comment
         if: steps.relevance.outputs.relevant == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          AI_RESPONSE='${{ steps.analysis.outputs.ai_response }}'
+          if [ ! -f /tmp/ai-response.json ]; then
+            echo '{"gap_detected":false,"summary":"AI analysis step did not produce output"}' > /tmp/ai-response.json
+          fi
 
-          GAP_DETECTED=$(echo "$AI_RESPONSE" | jq -r '.gap_detected // false' 2>/dev/null || echo "parse_error")
-          SUMMARY=$(echo "$AI_RESPONSE" | jq -r '.summary // "Could not parse AI response"' 2>/dev/null || echo "Could not parse AI response")
+          GAP_DETECTED=$(jq -r '.gap_detected // false' /tmp/ai-response.json 2>/dev/null || echo "parse_error")
+          SUMMARY=$(jq -r '.summary // "Could not parse AI response"' /tmp/ai-response.json 2>/dev/null || echo "Could not parse AI response")
 
           if [ "$GAP_DETECTED" = "true" ]; then
             ICON="⚠️"
             TITLE="QA Coverage Gap Detected"
-            SUGGESTIONS=$(echo "$AI_RESPONSE" | jq -r '.suggested_test_cases[]? | "- **\(.feature)**: \(.scenario) (\(if .automated then "automatable" else "manual — \(.reason_for_manual)" end))"' 2>/dev/null || echo "- Could not parse suggestions")
+            SUGGESTIONS=$(jq -r '.suggested_test_cases[]? | "- **\(.feature)**: \(.scenario) (\(if .automated then "automatable" else "manual — \(.reason_for_manual)" end))"' /tmp/ai-response.json 2>/dev/null || echo "- Could not parse suggestions")
           elif [ "$GAP_DETECTED" = "false" ]; then
             ICON="✅"
             TITLE="QA Coverage OK"
@@ -212,7 +210,7 @@ jobs:
           else
             ICON="🤖"
             TITLE="QA Gap Check — Could Not Parse Response"
-            SUGGESTIONS=$(printf 'Raw response:\n```\n%s\n```' "$AI_RESPONSE")
+            SUGGESTIONS=$(printf 'Raw response:\n```\n%s\n```' "$(cat /tmp/ai-response.json)")
           fi
 
           COMMENT_BODY="${ICON} **${TITLE}**
