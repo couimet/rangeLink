@@ -53,4 +53,24 @@ suite('File Path Navigation', () => {
       `Expected active editor to be ${tempFilePath} but got ${activeUri}`,
     );
   });
+
+  // clickable-file-paths-011: handleFilePathClick with non-existent path — no editor change
+  test('clickable-file-paths-011: handleFilePathClick with non-existent path does not change active editor', async () => {
+    // Ensure anchor file is the active editor before the test
+    await vscode.window.showTextDocument(anchorFileUri);
+    const editorBefore = vscode.window.activeTextEditor?.document.uri.fsPath;
+
+    const nonExistentPath = path.join(getWorkspaceRoot(), '__rl-nonexistent-file-12345.ts');
+
+    await vscode.commands.executeCommand('rangelink.handleFilePathClick', {
+      filePath: nonExistentPath,
+    });
+
+    const editorAfter = vscode.window.activeTextEditor?.document.uri.fsPath;
+    assert.strictEqual(
+      editorAfter,
+      editorBefore,
+      `Expected active editor to remain ${editorBefore} but got ${editorAfter}`,
+    );
+  });
 });
