@@ -35,7 +35,7 @@ suite('Clipboard Preservation', () => {
     // bindToTerminalHere binds the focused terminal to the previously active text editor.
     terminal = vscode.window.createTerminal({ name: 'rl-clipboard-test' });
     terminal.show(true);
-    await new Promise<void>((resolve) => setTimeout(resolve, 500));
+    await new Promise<void>((resolve) => setTimeout(resolve, 1500));
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     editor = await vscode.window.showTextDocument(doc);
   });

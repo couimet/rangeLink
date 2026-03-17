@@ -86,13 +86,15 @@ suite('File Path Detection', () => {
     );
   });
 
-  // clickable-file-paths-012: Custom delimiter — path with custom line suffix defers to RangeLink
-  test('clickable-file-paths-012: does NOT detect file path with custom delimiter suffix (./src/file.ts@l10)', () => {
+  // clickable-file-paths-012: Custom delimiter — RangeLink with custom line delimiter is NOT detected as plain file path
+  // With line='@l', a RangeLink looks like file.ts#@l10 (hash is still '#'). The file path
+  // pattern must exclude this so the RangeLink provider handles it instead.
+  test('clickable-file-paths-012: does NOT detect RangeLink with custom delimiter (./src/file.ts#@l10) as a plain file path', () => {
     const customDelimiters: DelimiterConfig = {
       ...DEFAULT_DELIMITERS,
       line: '@l',
     };
-    const paths = matchPaths('./src/file.ts@l10', customDelimiters);
+    const paths = matchPaths('./src/file.ts#@l10', customDelimiters);
     assert.strictEqual(
       paths.length,
       0,
