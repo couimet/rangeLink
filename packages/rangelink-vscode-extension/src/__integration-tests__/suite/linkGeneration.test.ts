@@ -71,7 +71,7 @@ suite('Link Generation', () => {
     assert.ok(!clipboard.includes('#L21'), `Expected no #L21 in clipboard but got: ${clipboard}`);
   });
 
-  test('bugfix-wrapped-link-navigation-001: detects plain link (src/foo.ts#L5)', () => {
+  test('bugfix-wrapped-link-navigation-baseline: detects plain link (src/foo.ts#L5)', () => {
     const links = findLinksInText('src/foo.ts#L5\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -91,7 +91,7 @@ suite('Link Generation', () => {
     );
   });
 
-  test('bugfix-wrapped-link-navigation-002: detects backtick-wrapped link (`src/foo.ts#L5`)', () => {
+  test('bugfix-wrapped-link-navigation-001: detects backtick-wrapped link (`src/foo.ts#L5`)', () => {
     const links = findLinksInText('`src/foo.ts#L5`\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -106,7 +106,7 @@ suite('Link Generation', () => {
     );
   });
 
-  test("bugfix-wrapped-link-navigation-003: detects single-quote-wrapped link ('src/foo.ts#L5')", () => {
+  test("bugfix-wrapped-link-navigation-002: detects single-quote-wrapped link ('src/foo.ts#L5')", () => {
     const links = findLinksInText("'src/foo.ts#L5'\n", DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -121,7 +121,7 @@ suite('Link Generation', () => {
     );
   });
 
-  test('bugfix-wrapped-link-navigation-004: detects double-quote-wrapped link ("src/foo.ts#L5")', () => {
+  test('bugfix-wrapped-link-navigation-003: detects double-quote-wrapped link ("src/foo.ts#L5")', () => {
     const links = findLinksInText('"src/foo.ts#L5"\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -136,7 +136,7 @@ suite('Link Generation', () => {
     );
   });
 
-  test('bugfix-wrapped-link-navigation-005: detects angle-bracket-wrapped link (<src/foo.ts#L5>)', () => {
+  test('bugfix-wrapped-link-navigation-004: detects angle-bracket-wrapped link (<src/foo.ts#L5>)', () => {
     const links = findLinksInText('<src/foo.ts#L5>\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);

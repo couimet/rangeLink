@@ -35,7 +35,7 @@ suite('Clipboard Preservation', () => {
     // bindToTerminalHere binds the focused terminal to the previously active text editor.
     terminal = vscode.window.createTerminal({ name: 'rl-clipboard-test' });
     terminal.show(true);
-    await new Promise<void>((resolve) => setTimeout(resolve, 500));
+    await new Promise<void>((resolve) => setTimeout(resolve, 1500));
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     editor = await vscode.window.showTextDocument(doc);
   });
@@ -65,24 +65,7 @@ suite('Clipboard Preservation', () => {
       .update('clipboard.preserve', undefined, vscode.ConfigurationTarget.Global);
   });
 
-  // clipboard-preservation-002: R-C is exempt — clipboard IS the output
-  test('clipboard-preservation-002: R-C always writes link to clipboard regardless of preserve setting (default)', async () => {
-    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
-    const clipboard = await vscode.env.clipboard.readText();
-
-    assert.notStrictEqual(
-      clipboard,
-      SENTINEL,
-      'Expected clipboard to contain the generated link, not the sentinel',
-    );
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected clipboard to contain a line reference but got: ${clipboard}`,
-    );
-  });
-
-  // clipboard-preservation-001: preserve=always — R-C still writes to clipboard (R-C is the preserve exception)
-  test('clipboard-preservation-001: R-C writes link to clipboard even when clipboard.preserve is "always"', async () => {
+  test('clipboard-preservation-008: R-C writes link to clipboard with preserve=always (R-C is exempt from preserve)', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
@@ -101,8 +84,22 @@ suite('Clipboard Preservation', () => {
     );
   });
 
-  // clipboard-preservation-005: preserve=never — R-C still writes to clipboard
-  test('clipboard-preservation-005: R-C writes link to clipboard even when clipboard.preserve is "never"', async () => {
+  test('clipboard-preservation-008 (variant): R-C writes link to clipboard with default preserve setting', async () => {
+    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    const clipboard = await vscode.env.clipboard.readText();
+
+    assert.notStrictEqual(
+      clipboard,
+      SENTINEL,
+      'Expected clipboard to contain the generated link, not the sentinel',
+    );
+    assert.ok(
+      clipboard.includes('#L'),
+      `Expected clipboard to contain a line reference but got: ${clipboard}`,
+    );
+  });
+
+  test('clipboard-preservation-008 (variant): R-C writes link to clipboard with preserve=never', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);

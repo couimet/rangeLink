@@ -48,8 +48,9 @@
     "publish:vsix": "./scripts/publish-from-vsix.sh",
     "test": "jest --coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
-    "test:release": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json && vscode-test",
+    "test:release": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json && vscode-test && pnpm validate:qa-coverage",
     "test:watch": "jest --watch",
+    "validate:qa-coverage": "./scripts/validate-qa-coverage.sh",
     "vscode:prepublish": "pnpm --filter rangelink-core-ts compile && pnpm compile && pnpm test",
     "watch": "tsc -watch -p ./"
   },

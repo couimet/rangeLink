@@ -53,4 +53,29 @@ suite('File Path Navigation', () => {
       `Expected active editor to be ${tempFilePath} but got ${activeUri}`,
     );
   });
+
+  // clickable-file-paths-011: handleFilePathClick with non-existent path — no editor change
+  // Fire-and-forget: showWarningMessage blocks awaiting user dismissal in the extension host,
+  // so we cannot await the command. Instead, fire the command and verify the editor is unchanged
+  // after a short delay.
+  test('clickable-file-paths-011: handleFilePathClick with non-existent path does not change active editor', async () => {
+    await vscode.window.showTextDocument(anchorFileUri);
+    const editorBefore = vscode.window.activeTextEditor?.document.uri.fsPath;
+
+    const nonExistentPath = path.join(getWorkspaceRoot(), '__rl-nonexistent-file-12345.ts');
+
+    // Do NOT await — showWarningMessage blocks in the extension host
+    void vscode.commands.executeCommand('rangelink.handleFilePathClick', {
+      filePath: nonExistentPath,
+    });
+
+    await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+
+    const editorAfter = vscode.window.activeTextEditor?.document.uri.fsPath;
+    assert.strictEqual(
+      editorAfter,
+      editorBefore,
+      `Expected active editor to remain ${editorBefore} but got ${editorAfter}`,
+    );
+  });
 });

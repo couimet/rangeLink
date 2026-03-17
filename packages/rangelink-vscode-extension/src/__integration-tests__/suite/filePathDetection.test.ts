@@ -1,9 +1,10 @@
 import assert from 'node:assert';
 
+import type { DelimiterConfig } from 'rangelink-core-ts';
 import { buildFilePathPattern, DEFAULT_DELIMITERS, extractFilePath } from 'rangelink-core-ts';
 
-const matchPaths = (text: string): string[] => {
-  const pattern = buildFilePathPattern(DEFAULT_DELIMITERS);
+const matchPaths = (text: string, delimiters: DelimiterConfig = DEFAULT_DELIMITERS): string[] => {
+  const pattern = buildFilePathPattern(delimiters);
   const results: string[] = [];
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(text)) !== null) {
@@ -82,6 +83,22 @@ suite('File Path Detection', () => {
       paths.length,
       0,
       `Expected 0 matches but got ${paths.length}: ${paths.join(', ')}`,
+    );
+  });
+
+  // clickable-file-paths-012: Custom delimiter — RangeLink with custom line delimiter is NOT detected as plain file path
+  // With line='@l', a RangeLink looks like file.ts#@l10 (hash is still '#'). The file path
+  // pattern must exclude this so the RangeLink provider handles it instead.
+  test('clickable-file-paths-012: does NOT detect RangeLink with custom delimiter (./src/file.ts#@l10) as a plain file path', () => {
+    const customDelimiters: DelimiterConfig = {
+      ...DEFAULT_DELIMITERS,
+      line: '@l',
+    };
+    const paths = matchPaths('./src/file.ts#@l10', customDelimiters);
+    assert.strictEqual(
+      paths.length,
+      0,
+      `Expected 0 matches (custom delimiter coexistence) but got ${paths.length}: ${paths.join(', ')}`,
     );
   });
 });
