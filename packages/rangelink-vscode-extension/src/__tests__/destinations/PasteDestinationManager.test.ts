@@ -1007,6 +1007,10 @@ describe('PasteDestinationManager', () => {
       expect(localAdapter.__getVscodeInstance().window.showInformationMessage).toHaveBeenCalledWith(
         'RangeLink: Already bound to Claude Code Chat',
       );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'PasteDestinationManager.commitBind', kind: 'claude-code', displayName: 'Claude Code Chat' },
+        'Already bound to Claude Code Chat, no action taken',
+      );
 
       localManager.dispose();
     });
@@ -1046,6 +1050,15 @@ describe('PasteDestinationManager', () => {
         currentDestination: 'Claude Code Chat',
         newDestination: 'Cursor AI Assistant',
       });
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.confirmReplaceBinding',
+          currentKind: 'claude-code',
+          newKind: 'cursor-ai',
+          confirmed: false,
+        },
+        'User cancelled replacement',
+      );
 
       localManager.dispose();
     });
