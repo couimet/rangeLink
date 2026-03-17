@@ -39,6 +39,8 @@ find_latest_qa_yaml() {
 
 # Extract TC IDs where automated: true from YAML.
 # Strategy: pair each `id:` line with its `automated:` line using awk.
+# Assumes the YAML schema places `id:` before `automated:` in each test case entry.
+# current_id is set on `id:` match and cleared on `automated: true/false` match.
 parse_automated_ids() {
   local yaml_path="$1"
   awk '
@@ -92,8 +94,8 @@ echo "YAML automated: true entries: $AUTOMATED_COUNT"
 echo "Integration test IDs found:   $TEST_COUNT"
 echo
 
-MARKED_BUT_NO_TEST=$(comm -23 <(echo "$AUTOMATED_IDS") <(echo "$TEST_IDS"))
-TEST_BUT_NOT_MARKED=$(comm -13 <(echo "$AUTOMATED_IDS") <(echo "$TEST_IDS"))
+MARKED_BUT_NO_TEST=$(comm -23 <(echo "$AUTOMATED_IDS" | grep .) <(echo "$TEST_IDS" | grep .))
+TEST_BUT_NOT_MARKED=$(comm -13 <(echo "$AUTOMATED_IDS" | grep .) <(echo "$TEST_IDS" | grep .))
 
 HAS_ERRORS=false
 

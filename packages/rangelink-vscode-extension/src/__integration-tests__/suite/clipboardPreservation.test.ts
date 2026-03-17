@@ -65,7 +65,6 @@ suite('Clipboard Preservation', () => {
       .update('clipboard.preserve', undefined, vscode.ConfigurationTarget.Global);
   });
 
-  // clipboard-preservation-008: R-C always writes to clipboard regardless of preserve setting
   test('clipboard-preservation-008: R-C writes link to clipboard with preserve=always (R-C is exempt from preserve)', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
@@ -85,7 +84,6 @@ suite('Clipboard Preservation', () => {
     );
   });
 
-  // clipboard-preservation-008 (variant): R-C with default preserve setting
   test('clipboard-preservation-008 (variant): R-C writes link to clipboard with default preserve setting', async () => {
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
     const clipboard = await vscode.env.clipboard.readText();
@@ -101,7 +99,6 @@ suite('Clipboard Preservation', () => {
     );
   });
 
-  // clipboard-preservation-008 (variant): R-C with preserve=never
   test('clipboard-preservation-008 (variant): R-C writes link to clipboard with preserve=never', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
