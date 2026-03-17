@@ -1008,7 +1008,11 @@ describe('PasteDestinationManager', () => {
         'RangeLink: Already bound to Claude Code Chat',
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'PasteDestinationManager.commitBind', kind: 'claude-code', displayName: 'Claude Code Chat' },
+        {
+          fn: 'PasteDestinationManager.commitBind',
+          kind: 'claude-code',
+          displayName: 'Claude Code Chat',
+        },
         'Already bound to Claude Code Chat, no action taken',
       );
 
