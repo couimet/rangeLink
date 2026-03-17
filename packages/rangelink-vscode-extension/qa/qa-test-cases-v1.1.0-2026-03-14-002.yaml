@@ -504,7 +504,7 @@ test_cases:
       - 'Verify terminal received the RangeLink'
       - 'Press Cmd+V in any text field'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL (not the RangeLink). Clipboard was silently restored after delivery.'
-    automated: true
+    automated: false
 
   - id: clipboard-preservation-002
     feature: 'Clipboard Preservation'
@@ -519,7 +519,7 @@ test_cases:
       - 'Verify bound destination received terminal text'
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. Terminal text sent to destination; clipboard preserved.'
-    automated: true
+    automated: false
 
   - id: clipboard-preservation-003
     feature: 'Clipboard Preservation'
@@ -564,7 +564,7 @@ test_cases:
       - 'Verify terminal received RangeLink'
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. RangeLink sent to terminal; clipboard preserved.'
-    automated: true
+    automated: false
 
   - id: clipboard-preservation-006
     feature: 'Clipboard Preservation'
@@ -606,7 +606,7 @@ test_cases:
       - 'Press Cmd+R Cmd+C (Copy RangeLink)'
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains the RangeLink, NOT CLIPBOARD_SENTINEL. R-C is clipboard-only; preserve does not apply.'
-    automated: false
+    automated: true
 
   - id: clipboard-preservation-009
     feature: 'Clipboard Preservation'
