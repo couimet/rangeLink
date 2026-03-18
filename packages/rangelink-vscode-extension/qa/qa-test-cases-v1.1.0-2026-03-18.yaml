@@ -2076,3 +2076,17 @@ test_cases:
       - 'Press Cmd+R Cmd+L (or any bound-destination send command: R-V, R-L, Send File Path)'
     expected_result: 'Paste does not occur. An error toast appears: "RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again." No text is inserted into either instance of src/utils/helper.ts.'
     automated: false
+
+  - id: bugfix-duplicate-tab-group-004
+    feature: 'Bug Fix — Duplicate Tab Group Guard (State Clears on Resolve)'
+    scenario: 'Duplicate warning state resets when the conflict is resolved — a new duplicate triggers a fresh warning'
+    preconditions:
+      - 'src/utils/helper.ts is bound as a text editor destination'
+      - 'The file is currently open in two tab groups (proactive warning was already shown once)'
+    steps:
+      - 'Close the duplicate tab (leave only one instance of src/utils/helper.ts open)'
+      - 'Observe the notification area — no toast should appear'
+      - 'Open src/utils/helper.ts again in a second tab group (re-enter the duplicate state)'
+      - 'Observe the notification area again'
+    expected_result: 'Step 2: No toast appears when the duplicate is closed. Step 4: A fresh warning toast appears — "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." — confirming the flag was reset and re-entry into the duplicate state is correctly detected.'
+    automated: false
