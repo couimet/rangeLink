@@ -1850,6 +1850,7 @@ describe('PasteDestinationManager', () => {
       tabChangeListener();
 
       expect(mockAdapter.__getVscodeInstance().window.showWarningMessage).toHaveBeenCalledTimes(1);
+      expect(mockLogger.warn).toHaveBeenCalledTimes(1);
     });
 
     it('should clear duplicate state when back to 1 instance', async () => {
@@ -1920,12 +1921,14 @@ describe('PasteDestinationManager', () => {
       tabChangeListener();
 
       expect(formatMessageSpy).not.toHaveBeenCalledWith('WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS');
+      expect(mockLogger.warn).not.toHaveBeenCalled();
     });
 
     it('should not warn when not bound', () => {
       tabChangeListener();
 
       expect(formatMessageSpy).not.toHaveBeenCalledWith('WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS');
+      expect(mockLogger.warn).not.toHaveBeenCalled();
     });
   });
 
