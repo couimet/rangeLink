@@ -649,6 +649,16 @@ export class VscodeAdapter
     return this.ideInstance.workspace.onDidChangeConfiguration(listener);
   }
 
+  /**
+   * Register event listener for tab changes across all tab groups.
+   *
+   * @param listener - Callback invoked when tabs are opened, closed, or changed
+   * @returns Disposable to unregister the listener
+   */
+  onDidChangeTabs(listener: (event: vscode.TabChangeEvent) => void): vscode.Disposable {
+    return this.ideInstance.window.tabGroups.onDidChangeTabs(listener);
+  }
+
   // ============================================================================
   // Workspace Getters
   // ============================================================================
