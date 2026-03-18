@@ -105,6 +105,11 @@ const mockWindow = {
   showErrorMessage: jest.fn().mockResolvedValue(undefined),
   showTextDocument: jest.fn(),
   createStatusBarItem: jest.fn(() => createMockStatusBarItem()),
+  tabGroups: {
+    all: [],
+    onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
+    onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
+  },
 };
 
 const mockWorkspace = {
