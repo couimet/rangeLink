@@ -6,6 +6,7 @@ export default defineConfig([
     extensionDevelopmentPath: './',
     workspaceFolder: './',
     version: 'stable',
+    launchArgs: ['--user-data-dir', '/tmp/rl-vscode-test'],
     mocha: {
       timeout: 20000,
     },

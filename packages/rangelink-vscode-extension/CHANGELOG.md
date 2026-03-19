@@ -173,6 +173,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Smart padding preserves whitespace-only text** - Fixed `applySmartPadding()` incorrectly trimming whitespace-only strings to empty. Now whitespace-only content is preserved when using destinations.
 - **Re-binding same AI assistant no longer shows redundant confirmation** - Binding to an AI assistant you're already bound to now shows "already bound" instead of a "Replace?" dialog. (#396)
 - **Guard against paste to wrong tab group** — RangeLink now detects when the bound file is open in multiple editor groups and shows a clear error instead of pasting to the wrong instance. A proactive warning also appears immediately when the conflict is detected so you know before attempting to paste. (https://github.com/couimet/rangeLink/issues/315)
+- **Whitespace-only content no longer silently dropped** - Selecting whitespace (spaces, tabs, newlines) from terminal output or code indentation now reaches the bound destination. Previously the eligibility check rejected it, showing "copied to clipboard" while nothing arrived. (#362)
 
 ## [1.0.0]
 

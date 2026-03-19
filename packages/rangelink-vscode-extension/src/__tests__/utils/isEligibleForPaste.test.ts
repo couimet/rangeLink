@@ -17,29 +17,29 @@ describe('isEligibleForPaste', () => {
     });
   });
 
-  describe('Whitespace-only strings', () => {
-    it('should return false for single space', () => {
-      expect(isEligibleForPaste(' ')).toBe(false);
+  describe('Whitespace-only strings (eligible for paste)', () => {
+    it('should return true for single space', () => {
+      expect(isEligibleForPaste(' ')).toBe(true);
     });
 
-    it('should return false for multiple spaces', () => {
-      expect(isEligibleForPaste('   ')).toBe(false);
+    it('should return true for multiple spaces', () => {
+      expect(isEligibleForPaste('   ')).toBe(true);
     });
 
-    it('should return false for tab character', () => {
-      expect(isEligibleForPaste('\t')).toBe(false);
+    it('should return true for tab character', () => {
+      expect(isEligibleForPaste('\t')).toBe(true);
     });
 
-    it('should return false for newline character', () => {
-      expect(isEligibleForPaste('\n')).toBe(false);
+    it('should return true for newline character', () => {
+      expect(isEligibleForPaste('\n')).toBe(true);
     });
 
-    it('should return false for mixed whitespace', () => {
-      expect(isEligibleForPaste(' \t\n ')).toBe(false);
+    it('should return true for mixed whitespace', () => {
+      expect(isEligibleForPaste(' \t\n ')).toBe(true);
     });
 
-    it('should return false for carriage return and newline', () => {
-      expect(isEligibleForPaste('\r\n')).toBe(false);
+    it('should return true for carriage return and newline', () => {
+      expect(isEligibleForPaste('\r\n')).toBe(true);
     });
   });
 

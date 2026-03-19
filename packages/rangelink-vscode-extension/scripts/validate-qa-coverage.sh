@@ -22,14 +22,12 @@ relative_path() {
 }
 
 find_latest_qa_yaml() {
-  # Among YAML files sharing a date prefix, revision suffixes (-002, -003) are newer.
-  # Sort by filename length descending (longer = has suffix = newer), then by name.
+  # Sort by name descending: dates sort naturally (2026-03-17 > 2026-03-14),
+  # and revision suffixes sort after their base file (v1.1.0-002 > v1.1.0).
   local latest
   latest=$(ls "$QA_DIR"/qa-test-cases*.yaml 2>/dev/null \
-    | awk '{ print length, $0 }' \
-    | sort -k1,1rn -k2,2 \
-    | head -1 \
-    | cut -d' ' -f2-)
+    | sort -r \
+    | head -1)
   if [[ -z "$latest" ]]; then
     echo "No QA YAML files found in $QA_DIR" >&2
     exit 1

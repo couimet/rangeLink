@@ -7,8 +7,9 @@ import type { EligibilityChecker } from './EligibilityChecker';
 /**
  * Validates content eligibility for paste operations.
  *
- * Rejects empty or whitespace-only content since pasting such content
- * provides no value to any destination (terminal, text editor, or AI assistant).
+ * Rejects undefined/null and empty strings. Whitespace-only content is
+ * allowed — it may be an intentional selection from terminal output or
+ * code formatting.
  *
  * Used by ALL paste destinations for consistent content validation.
  */
