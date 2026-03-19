@@ -75,6 +75,7 @@ export class PasteDestinationManager implements vscode.Disposable {
 
   private boundDestination: PasteDestination | undefined;
   private disposables: vscode.Disposable[] = [];
+  private isInDuplicateTabState = false;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -86,6 +87,8 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.setupTerminalCloseListener();
     // Listen for text document closure (text-editor-only auto-unbind)
     this.setupTextDocumentCloseListener();
+    // Warn when bound editor appears in multiple tab groups
+    this.setupMultiColumnGuardListener();
   }
 
   /**
@@ -559,6 +562,7 @@ export class PasteDestinationManager implements vscode.Disposable {
    */
   private clearBoundDestination(): void {
     this.boundDestination = undefined;
+    this.isInDuplicateTabState = false;
     void this.vscodeAdapter.executeCommand('setContext', CONTEXT_IS_BOUND, false);
   }
 
@@ -599,6 +603,52 @@ export class PasteDestinationManager implements vscode.Disposable {
 
     this.context.subscriptions.push(documentCloseDisposable);
     this.disposables.push(documentCloseDisposable);
+  }
+
+  /**
+   * Proactive guard: warn when a tab change causes the bound editor file
+   * to appear in multiple tab groups simultaneously.
+   *
+   * Fires once per "entry into duplicate state" to avoid spamming.
+   * Resets when duplicates are resolved (back to 1 instance) or on unbind.
+   */
+  private setupMultiColumnGuardListener(): void {
+    const tabChangeDisposable = this.vscodeAdapter.onDidChangeTabs(() => {
+      if (!isEditorDestination(this.boundDestination)) {
+        return;
+      }
+
+      const boundDocumentUri = this.boundDestination.resource.uri;
+      const matchingEditors = this.vscodeAdapter.findVisibleEditorsByUri(boundDocumentUri);
+
+      if (matchingEditors.length > 1 && !this.isInDuplicateTabState) {
+        this.isInDuplicateTabState = true;
+        this.logger.warn(
+          {
+            fn: 'PasteDestinationManager.onDidChangeTabs',
+            editorUri: boundDocumentUri.toString(),
+            matchCount: matchingEditors.length,
+            viewColumns: matchingEditors.map((e) => e.viewColumn),
+          },
+          'Bound file detected in multiple editor groups',
+        );
+        void this.vscodeAdapter.showWarningMessage(
+          formatMessage(MessageCode.WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS),
+        );
+      } else if (matchingEditors.length <= 1 && this.isInDuplicateTabState) {
+        this.isInDuplicateTabState = false;
+        this.logger.info(
+          {
+            fn: 'PasteDestinationManager.onDidChangeTabs',
+            editorUri: boundDocumentUri.toString(),
+          },
+          'Bound file no longer in multiple editor groups — duplicate state cleared',
+        );
+      }
+    });
+
+    this.context.subscriptions.push(tabChangeDisposable);
+    this.disposables.push(tabChangeDisposable);
   }
 
   /**

@@ -46,6 +46,11 @@ jest.mock('vscode', () => ({
     onDidCloseTerminal: jest.fn(() => ({ dispose: jest.fn() })),
     onDidChangeVisibleTextEditors: jest.fn(() => ({ dispose: jest.fn() })),
     registerTerminalLinkProvider: jest.fn(() => ({ dispose: jest.fn() })),
+    tabGroups: {
+      all: [],
+      onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
+      onDidChangeTabGroups: jest.fn(() => ({ dispose: jest.fn() })),
+    },
   },
   workspace: {
     getWorkspaceFolder: jest.fn(),
@@ -618,7 +623,7 @@ describe('Extension lifecycle', () => {
     const INFRASTRUCTURE_COUNT = 3;
     const PROVIDER_COUNT = 4;
     const COMMAND_COUNT = 50;
-    const DESTINATION_MANAGER_LISTENERS = 2;
+    const DESTINATION_MANAGER_LISTENERS = 3;
     const EXPECTED_SUBSCRIPTION_COUNT =
       INFRASTRUCTURE_COUNT + PROVIDER_COUNT + COMMAND_COUNT + DESTINATION_MANAGER_LISTENERS;
 
@@ -656,7 +661,7 @@ describe('Extension lifecycle', () => {
 
     const mockEditor = { viewColumn: 1 } as vscode.TextEditor;
     (vscode.window.showTextDocument as jest.Mock).mockResolvedValue(mockEditor);
-    (vscode.window as any).tabGroups = { all: [] };
+    (vscode.window.tabGroups as any).all = [];
 
     extension.activate(mockContext as any);
 

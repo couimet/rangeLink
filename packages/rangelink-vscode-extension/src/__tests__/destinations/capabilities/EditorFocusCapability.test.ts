@@ -26,7 +26,9 @@ describe('EditorFocusCapability', () => {
 
       const freshEditor = createMockEditor({
         document: createMockDocument({ uri: DOCUMENT_URI }),
+        viewColumn: BOUND_VIEW_COLUMN,
       });
+      jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([freshEditor]);
       jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(freshEditor);
 
       const mockInserterFn = jest.fn().mockResolvedValue(true);
@@ -47,6 +49,7 @@ describe('EditorFocusCapability', () => {
         expect(value.inserter).toBe(mockInserterFn);
       });
       expect(mockAdapter.hasVisibleEditorAt).toHaveBeenCalledWith(DOCUMENT_URI, BOUND_VIEW_COLUMN);
+      expect(mockAdapter.findVisibleEditorsByUri).toHaveBeenCalledWith(DOCUMENT_URI);
       expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, {
         viewColumn: BOUND_VIEW_COLUMN,
       });
@@ -62,6 +65,49 @@ describe('EditorFocusCapability', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith(
         { ...LOGGING_CONTEXT, editorUri: DOCUMENT_URI_STRING, viewColumn: BOUND_VIEW_COLUMN },
         'Editor focused via showTextDocument()',
+      );
+    });
+
+    it('returns EDITOR_AMBIGUOUS_COLUMNS when file is at bound viewColumn but also open in another tab group', async () => {
+      const mockAdapter = createMockVscodeAdapter();
+      jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(true);
+
+      const editor1 = createMockEditor({
+        document: createMockDocument({ uri: DOCUMENT_URI }),
+        viewColumn: BOUND_VIEW_COLUMN,
+      });
+      const editor2 = createMockEditor({
+        document: createMockDocument({ uri: DOCUMENT_URI }),
+        viewColumn: 2,
+      });
+      jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([editor1, editor2]);
+      const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
+
+      const mockInsertFactory = createMockInsertFactory();
+      const capability = new EditorFocusCapability(
+        mockAdapter,
+        DOCUMENT_URI,
+        BOUND_VIEW_COLUMN,
+        mockInsertFactory,
+        mockLogger,
+      );
+
+      const result = await capability.focus(LOGGING_CONTEXT);
+
+      expect(result).toBeErrWith((error) => {
+        expect(error).toStrictEqual({ reason: 'EDITOR_AMBIGUOUS_COLUMNS' });
+      });
+      expect(showErrorSpy).toHaveBeenCalledWith(
+        'RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'EditorFocusCapability.resolveViewColumn',
+          editorUri: DOCUMENT_URI_STRING,
+          matchCount: 2,
+          viewColumns: [BOUND_VIEW_COLUMN, 2],
+        },
+        'Bound editor at expected viewColumn but also found in other tab groups — ambiguous target',
       );
     });
   });

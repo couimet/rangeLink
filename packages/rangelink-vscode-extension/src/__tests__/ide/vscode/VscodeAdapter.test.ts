@@ -2609,5 +2609,50 @@ describe('VscodeAdapter', () => {
         expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
       });
     });
+
+    describe('onDidChangeTabs', () => {
+      it('should register listener and verify Disposable returned', () => {
+        const mockDisposable = { dispose: jest.fn() };
+        const listener = jest.fn();
+        (mockVSCode.window.tabGroups.onDidChangeTabs as jest.Mock).mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidChangeTabs(listener);
+
+        expect(mockVSCode.window.tabGroups.onDidChangeTabs).toHaveBeenCalledWith(listener);
+        expect(mockVSCode.window.tabGroups.onDidChangeTabs).toHaveBeenCalledTimes(1);
+        expect(result).toBe(mockDisposable);
+        expect(result.dispose).toBeDefined();
+      });
+
+      it('should verify listener is called when tabs change', () => {
+        const listener = jest.fn();
+        const mockEvent = { opened: [], closed: [], changed: [] };
+        let registeredListener: ((event: any) => void) | undefined;
+
+        (mockVSCode.window.tabGroups.onDidChangeTabs as jest.Mock).mockImplementation(
+          (cb: (event: any) => void) => {
+            registeredListener = cb;
+            return { dispose: jest.fn() };
+          },
+        );
+
+        adapter.onDidChangeTabs(listener);
+        registeredListener!(mockEvent);
+
+        expect(listener).toHaveBeenCalledWith(mockEvent);
+        expect(listener).toHaveBeenCalledTimes(1);
+      });
+
+      it('should verify dispose unregisters listener', () => {
+        const listener = jest.fn();
+        const mockDisposable = { dispose: jest.fn() };
+        (mockVSCode.window.tabGroups.onDidChangeTabs as jest.Mock).mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidChangeTabs(listener);
+        result.dispose();
+
+        expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 });

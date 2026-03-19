@@ -89,6 +89,22 @@ export class EditorFocusCapability implements FocusCapability {
     const editorUri = this.documentUri.toString();
 
     if (this.ideAdapter.hasVisibleEditorAt(this.documentUri, this.boundViewColumn)) {
+      const matchingEditors = this.ideAdapter.findVisibleEditorsByUri(this.documentUri);
+      if (matchingEditors.length > 1) {
+        this.logger.warn(
+          {
+            fn,
+            editorUri,
+            matchCount: matchingEditors.length,
+            viewColumns: matchingEditors.map((e) => e.viewColumn),
+          },
+          'Bound editor at expected viewColumn but also found in other tab groups — ambiguous target',
+        );
+        this.ideAdapter.showErrorMessage(
+          formatMessage(MessageCode.ERROR_TEXT_EDITOR_AMBIGUOUS_COLUMNS),
+        );
+        return 'ambiguous';
+      }
       this.logger.debug(
         { fn, editorUri, viewColumn: this.boundViewColumn },
         'Editor at bound viewColumn',

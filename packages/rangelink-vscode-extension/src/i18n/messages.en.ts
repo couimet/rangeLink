@@ -211,6 +211,8 @@ export const messagesEn: Record<MessageCode, string> = {
     '{statusMessage}. Could not send to editor. Bound editor is hidden behind other tabs.',
   [MessageCode.WARN_PASTE_FAILED_TERMINAL]:
     '{statusMessage}. Could not send to terminal. Terminal may be closed or not accepting input.',
+  [MessageCode.WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS]:
+    'RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed.',
 
   // Keep the keys in alphabetical order.
 };
