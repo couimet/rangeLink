@@ -1721,7 +1721,7 @@ describe('PasteDestinationManager', () => {
   describe('Text editor closure auto-unbind', () => {
     it('should auto-unbind when bound text editor document closes', async () => {
       const mockUri = createMockUri('/test/file.ts');
-      const mockDocument = { uri: mockUri } as vscode.TextDocument;
+      const mockDocument = { uri: mockUri, isClosed: true } as vscode.TextDocument;
       const mockEditor = { document: mockDocument, viewColumn: 1 } as vscode.TextEditor;
 
       mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
@@ -1735,6 +1735,15 @@ describe('PasteDestinationManager', () => {
 
       expect(manager.isBound()).toBe(false);
       expect(formatMessageSpy).toHaveBeenCalledWith('BOUND_EDITOR_CLOSED_AUTO_UNBOUND');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.onDidCloseTextDocument',
+          editorDisplayName: 'Text Editor ("file.ts")',
+          boundDocumentUri: mockUri.toString(),
+          isClosed: true,
+        },
+        'Bound document closed (isClosed=true): Text Editor ("file.ts") — auto-unbinding',
+      );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenCalledTimes(3);
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).toHaveBeenNthCalledWith(
         1,
@@ -1799,6 +1808,33 @@ describe('PasteDestinationManager', () => {
         '✓ RangeLink bound to Terminal ("bash")',
         2000,
       );
+    });
+
+    it('should keep binding when document close is a language-mode transition (isClosed=false)', async () => {
+      const mockUri = createMockUri('/test/file.ts');
+      const mockDocument = { uri: mockUri, isClosed: false } as vscode.TextDocument;
+      const mockEditor = { document: mockDocument, viewColumn: 1 } as vscode.TextEditor;
+
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor;
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor];
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+      await manager.bind({ kind: 'text-editor', uri: mockUri, viewColumn: 1 });
+      expect(manager.isBound()).toBe(true);
+
+      documentCloseListener(mockDocument);
+
+      expect(manager.isBound()).toBe(true);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          fn: 'PasteDestinationManager.onDidCloseTextDocument',
+          editorDisplayName: 'Text Editor ("file.ts")',
+          boundDocumentUri: mockUri.toString(),
+          isClosed: false,
+        },
+        'Document close event with isClosed=false — language-mode transition detected, keeping binding for Text Editor ("file.ts")',
+      );
+      expect(formatMessageSpy).not.toHaveBeenCalledWith('BOUND_EDITOR_CLOSED_AUTO_UNBOUND');
     });
   });
 
