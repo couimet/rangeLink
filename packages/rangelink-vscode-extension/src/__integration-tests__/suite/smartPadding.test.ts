@@ -402,9 +402,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     );
 
     const visibleEditors = vscode.window.visibleTextEditors;
-    const destVisible = visibleEditors.filter(
-      (e) => e.document.uri.toString() === originalUri,
-    );
+    const destVisible = visibleEditors.filter((e) => e.document.uri.toString() === originalUri);
     log(
       `langswitch: visibleEditors=${visibleEditors.length}, destVisible=${destVisible.length}, destViewColumns=${destVisible.map((e) => e.viewColumn)}`,
     );
@@ -461,7 +459,9 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
       currentDestDoc = await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
       await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
     }
-    log(`content-lang: language now=${currentDestDoc.languageId}, sameRef=${destDoc === currentDestDoc}`);
+    log(
+      `content-lang: language now=${currentDestDoc.languageId}, sameRef=${destDoc === currentDestDoc}`,
+    );
 
     const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri);
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, {
