@@ -1930,6 +1930,32 @@ describe('PasteDestinationManager', () => {
       expect(formatMessageSpy).not.toHaveBeenCalledWith('WARN_TEXT_EDITOR_DUPLICATE_TAB_GROUPS');
       expect(mockLogger.warn).not.toHaveBeenCalled();
     });
+
+    it('should re-warn after unbind and rebind when duplicate tabs still exist', async () => {
+      const mockUri = createMockUri('/test/file.ts');
+      const mockDocument = { uri: mockUri } as vscode.TextDocument;
+      const mockEditor1 = { document: mockDocument, viewColumn: 1 } as vscode.TextEditor;
+      const mockEditor2 = { document: mockDocument, viewColumn: 2 } as vscode.TextEditor;
+
+      mockAdapter.__getVscodeInstance().window.activeTextEditor = mockEditor1;
+      configureEmptyTabGroups(mockAdapter.__getVscodeInstance().window, 2);
+
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor1];
+      await manager.bind({ kind: 'text-editor', uri: mockUri, viewColumn: 1 });
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor1, mockEditor2];
+      tabChangeListener();
+      expect(mockAdapter.__getVscodeInstance().window.showWarningMessage).toHaveBeenCalledTimes(1);
+
+      manager.unbind();
+
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor1];
+      await manager.bind({ kind: 'text-editor', uri: mockUri, viewColumn: 1 });
+      mockAdapter.__getVscodeInstance().window.visibleTextEditors = [mockEditor1, mockEditor2];
+      tabChangeListener();
+
+      expect(mockAdapter.__getVscodeInstance().window.showWarningMessage).toHaveBeenCalledTimes(2);
+      expect(mockLogger.warn).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('getBoundDestination()', () => {
