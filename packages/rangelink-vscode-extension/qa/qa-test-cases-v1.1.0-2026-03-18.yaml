@@ -2029,13 +2029,78 @@ test_cases:
     scenario: 'Whitespace-only text preserved when sent to destination with smart padding enabled'
     preconditions:
       - 'Extension installed from .vsix build'
-      - 'A terminal is bound as destination'
-      - 'smartPadding.pasteLink set to "both" (default)'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "none" (default)'
     steps:
       - 'Select whitespace-only text (e.g., spaces or tabs) in an editor'
-      - 'Press R-V or use Send Selected Text to send it to the bound terminal'
-    expected_result: 'The whitespace-only text is delivered to the terminal intact — not trimmed to empty string. Smart padding adds newlines around it without destroying the content.'
-    automated: false
+      - 'Press R-V or use Send Selected Text to send it to the bound editor destination'
+    expected_result: 'The whitespace-only text is delivered to the destination intact — not trimmed to empty string. Smart padding adds spaces (not newlines) around it without destroying the content.'
+    automated: true
+
+  - id: smart-padding-002
+    feature: 'Smart Padding'
+    scenario: 'Simple text with pasteContent=both adds leading and trailing space'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "both"'
+    steps:
+      - 'Select text (e.g., "hello world") in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives " hello world " — a leading space and trailing space are added by smart padding.'
+    automated: true
+
+  - id: smart-padding-003
+    feature: 'Smart Padding'
+    scenario: 'Multiline selection sent to editor destination'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "none" (default)'
+    steps:
+      - 'Select multiple lines in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'All selected lines arrive at the destination intact with no padding (pasteContent=none).'
+    automated: true
+
+  - id: smart-padding-004
+    feature: 'Smart Padding'
+    scenario: 'pasteContent=none sends exact text without padding'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "none" (default)'
+    steps:
+      - 'Select text in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives the exact selected text with no added spaces.'
+    automated: true
+
+  - id: smart-padding-005
+    feature: 'Smart Padding'
+    scenario: 'pasteContent=before adds leading space only'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "before"'
+    steps:
+      - 'Select text (e.g., "hello") in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives " hello" — only a leading space is added.'
+    automated: true
+
+  - id: smart-padding-006
+    feature: 'Smart Padding'
+    scenario: 'pasteContent=after adds trailing space only'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "after"'
+    steps:
+      - 'Select text (e.g., "hello") in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives "hello " — only a trailing space is added.'
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section — Bug Fix: Guard Against Duplicate Tab Groups (#315)
