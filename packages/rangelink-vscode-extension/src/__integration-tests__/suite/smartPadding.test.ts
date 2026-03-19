@@ -11,7 +11,7 @@ const LOG_PREFIX = '[RL-integ:smartPadding]';
 const SETTINGS_PROFILES_DIR = 'qa/fixtures/settings';
 
 const log = (msg: string): void => {
-  console.log(`${LOG_PREFIX} ${msg}`);
+  console.log(`${LOG_PREFIX} ${msg}`); // eslint-disable-line no-undef
 };
 
 const waitForActiveEditor = async (expectedUri: string): Promise<boolean> => {
@@ -127,7 +127,10 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
     const focused = await waitForActiveEditor(sourceFileUri.toString());
     log(`setupEditorPair: source active=${focused}, viewColumn=${sourceEditor.viewColumn}`);
-    assert.ok(focused, 'Source editor must be active before R-V — if this fails, external focus steal likely occurred');
+    assert.ok(
+      focused,
+      'Source editor must be active before R-V — if this fails, external focus steal likely occurred',
+    );
 
     return { sourceEditor, destEditor };
   };
@@ -144,7 +147,9 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log('setupUntitledEditorPair: creating untitled dest in ViewColumn.Two');
     const destDoc = await vscode.workspace.openTextDocument({ content: '', language: 'plaintext' });
     await vscode.window.showTextDocument(destDoc, vscode.ViewColumn.Two);
-    log(`setupUntitledEditorPair: dest scheme=${destDoc.uri.scheme}, uri=${destDoc.uri.toString()}`);
+    log(
+      `setupUntitledEditorPair: dest scheme=${destDoc.uri.scheme}, uri=${destDoc.uri.toString()}`,
+    );
 
     log('setupUntitledEditorPair: binding untitled dest (with URI to bypass picker)');
     await vscode.commands.executeCommand('rangelink.bindToTextEditorHere', destDoc.uri);
@@ -154,14 +159,19 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
     const focused = await waitForActiveEditor(sourceFileUri.toString());
     log(`setupUntitledEditorPair: source active=${focused}`);
-    assert.ok(focused, 'Source editor must be active before R-V — if this fails, external focus steal likely occurred');
+    assert.ok(
+      focused,
+      'Source editor must be active before R-V — if this fails, external focus steal likely occurred',
+    );
 
     return { sourceEditor, destDoc };
   };
 
   test('smart-padding-001: whitespace-only text preserved when sent to editor destination', async () => {
     const whitespaceContent = '   \t   ';
-    log('smart-padding-001: starting — whitespace-only content, default profile (pasteContent=none)');
+    log(
+      'smart-padding-001: starting — whitespace-only content, default profile (pasteContent=none)',
+    );
     await loadSettingsProfile('default');
 
     const { sourceEditor, destEditor } = await setupEditorPair(whitespaceContent);
@@ -178,7 +188,9 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
 
     const destContent = destEditor.document.getText();
-    log(`smart-padding-001: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`);
+    log(
+      `smart-padding-001: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`,
+    );
 
     assert.ok(
       destContent.length > 0,
@@ -211,7 +223,9 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
 
     const destContent = destEditor.document.getText();
-    log(`smart-padding-002: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`);
+    log(
+      `smart-padding-002: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`,
+    );
 
     assert.strictEqual(
       destContent,
@@ -239,7 +253,9 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
 
     const destContent = destDoc.getText();
-    log(`smart-padding-001-untitled: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`);
+    log(
+      `smart-padding-001-untitled: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`,
+    );
 
     assert.ok(
       destContent.length > 0,
@@ -267,7 +283,9 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
 
     const destContent = destEditor.document.getText();
-    log(`smart-padding-003: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`);
+    log(
+      `smart-padding-003: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`,
+    );
 
     assert.strictEqual(
       destContent,
@@ -379,7 +397,9 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log('langswitch: changing language to markdown');
     await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
     await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
-    log(`langswitch: language now=${destDoc.languageId}, uriChanged=${originalUri !== destDoc.uri.toString()}`);
+    log(
+      `langswitch: language now=${destDoc.languageId}, uriChanged=${originalUri !== destDoc.uri.toString()}`,
+    );
 
     const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri);
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
