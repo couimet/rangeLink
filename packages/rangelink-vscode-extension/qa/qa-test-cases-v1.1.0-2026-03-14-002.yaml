@@ -2014,5 +2014,5 @@ test_cases:
     steps:
       - 'Select whitespace-only text (e.g., spaces or tabs) in an editor'
       - 'Press R-V or use Send Selected Text to send it to the bound terminal'
-    expected_result: 'The whitespace-only text is delivered to the terminal intact — not trimmed to empty string. Smart padding adds newlines around it without destroying the content.'
+    expected_result: 'The whitespace-only text is delivered to the destination intact — not trimmed to empty string. Smart padding adds spaces (not newlines) around it without destroying the content.'
     automated: false
