@@ -868,6 +868,103 @@ describe('RangeLinkNavigationHandler', () => {
     });
   });
 
+  describe('Clamping Detection Logging', () => {
+    beforeEach(() => {
+      mockDocument = createMockDocument({
+        getText: createMockText('short file'),
+        uri: createMockUri('/test/file.ts'),
+        lineCount: 10,
+        lineAt: createMockLineAt('short file'),
+      });
+
+      mockEditor = createMockEditor({
+        document: mockDocument,
+      });
+
+      mockAdapter = createMockVscodeAdapter({
+        windowOptions: createWindowOptionsForEditor(mockEditor),
+        workspaceOptions: {
+          openTextDocument: jest
+            .fn()
+            .mockImplementation((uri: unknown) => Promise.resolve({ uri })),
+        },
+      });
+
+      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
+    });
+
+    it('should log warning when line is clamped to document bounds', async () => {
+      const parsed: ParsedLink = {
+        path: 'file.ts',
+        quotedPath: 'file.ts',
+        start: { line: 50 },
+        end: { line: 50 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      await handler.navigateToLink(parsed, 'file.ts#L50');
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          linkText: 'file.ts#L50',
+          requestedStart: { line: 50, character: undefined },
+          actualStart: { line: 10, character: 1 },
+          startClamping: { line: true, character: false },
+          requestedEnd: { line: 50, character: undefined },
+          actualEnd: { line: 10, character: 1 },
+          endClamping: { line: true, character: false },
+        },
+        'Position clamped to document bounds',
+      );
+    });
+
+    it('should log warning when character is clamped to line length', async () => {
+      mockDocument.lineAt = createMockLineAt('short');
+
+      const parsed: ParsedLink = {
+        path: 'file.ts',
+        quotedPath: 'file.ts',
+        start: { line: 1, character: 100 },
+        end: { line: 1, character: 100 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      await handler.navigateToLink(parsed, 'file.ts#L1C100');
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          linkText: 'file.ts#L1C100',
+          requestedStart: { line: 1, character: 100 },
+          actualStart: { line: 1, character: 6 },
+          startClamping: { line: false, character: true },
+          requestedEnd: { line: 1, character: 100 },
+          actualEnd: { line: 1, character: 6 },
+          endClamping: { line: false, character: true },
+        },
+        'Position clamped to document bounds',
+      );
+    });
+
+    it('should not log clamping warning when position is within bounds', async () => {
+      const parsed: ParsedLink = {
+        path: 'file.ts',
+        quotedPath: 'file.ts',
+        start: { line: 5, character: 3 },
+        end: { line: 5, character: 8 },
+        linkType: LinkType.Regular,
+        selectionType: SelectionType.Normal,
+      };
+
+      await handler.navigateToLink(parsed, 'file.ts#L5C3-L5C8');
+
+      expect(mockLogger.warn).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Rectangular Selection Mode', () => {
     beforeEach(() => {
       mockDocument = createMockDocument({

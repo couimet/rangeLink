@@ -9,6 +9,10 @@ export interface ConvertedPosition {
   line: number;
   /** 0-indexed character position (clamped to line length) */
   character: number;
+  /** true when the requested line exceeded document.lineCount */
+  lineClamped: boolean;
+  /** true when the requested character exceeded the line length */
+  characterClamped: boolean;
 }
 
 /**
@@ -35,17 +39,24 @@ export const convertRangeLinkPosition = (
   position: LinkPosition,
   document: vscode.TextDocument,
 ): ConvertedPosition => {
-  // Convert 1-indexed to 0-indexed and clamp to document bounds
-  const line = Math.max(0, Math.min(position.line - 1, document.lineCount - 1));
+  const requestedLine = position.line - 1;
+  const maxLine = document.lineCount - 1;
+  const line = Math.max(0, Math.min(requestedLine, maxLine));
+  const lineClamped = requestedLine > maxLine;
 
-  // Get actual line length for character clamping
   const lineLength = document.lineAt(line).text.length;
 
-  // Convert character (default to 0 if undefined) and clamp to line length
-  const character =
-    position.character !== undefined
-      ? Math.max(0, Math.min(position.character - 1, lineLength))
-      : 0;
+  let character: number;
+  let characterClamped: boolean;
 
-  return { line, character };
+  if (position.character !== undefined) {
+    const requestedChar = position.character - 1;
+    character = Math.max(0, Math.min(requestedChar, lineLength));
+    characterClamped = requestedChar > lineLength;
+  } else {
+    character = 0;
+    characterClamped = false;
+  }
+
+  return { line, character, lineClamped, characterClamped };
 };
