@@ -1,4 +1,5 @@
 export { AddBookmarkCommand } from './AddBookmarkCommand';
+export { createBindAIAssistantCommand } from './createBindAIAssistantCommand';
 export { BindToDestinationCommand } from './BindToDestinationCommand';
 export { BindToTextEditorCommand } from './BindToTextEditorCommand';
 export { BindToTerminalCommand } from './BindToTerminalCommand';
