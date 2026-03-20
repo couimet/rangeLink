@@ -7,19 +7,8 @@ import type { AIAssistantDestinationKind } from '../types';
 import { formatMessage } from '../utils';
 
 /**
- * Factory that creates a command handler for binding to an AI assistant destination.
- *
- * All AI assistant bind commands share the same logic:
- * 1. Check if the assistant is available
- * 2. Show an info message if unavailable
- * 3. Bind to the destination if available
- *
- * @param kind - Which AI assistant to bind to
- * @param availabilityService - Service for checking assistant availability
- * @param destinationManager - Manager for binding destinations
- * @param ideAdapter - Adapter for showing messages
- * @param logger - Logger instance
- * @returns Async handler suitable for registerCommand()
+ * Creates a command handler for binding to an AI assistant destination.
+ * Returns an async handler suitable for ideAdapter.registerCommand().
  */
 export const createBindAIAssistantCommand = (
   kind: AIAssistantDestinationKind,

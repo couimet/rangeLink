@@ -67,8 +67,13 @@ describe('createBindAIAssistantCommand', () => {
 
       expect(mockAvailability.isAIAssistantAvailable).toHaveBeenCalledWith(kind);
       expect(mockAvailability.getUnavailableMessageCode).toHaveBeenCalledWith(kind);
-      expect(formatMessageSpy).toHaveBeenCalled();
-      expect(showInfoSpy).toHaveBeenCalled();
+
+      const returnedMessageCode = mockAvailability.getUnavailableMessageCode.mock.results[0].value;
+      expect(formatMessageSpy).toHaveBeenCalledWith(returnedMessageCode);
+
+      const renderedMessage = formatMessageSpy.mock.results[0].value;
+      expect(showInfoSpy).toHaveBeenCalledWith(renderedMessage);
+
       expect(mockManager.bind).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
         { fn: `createBindAIAssistantCommand[${kind}]`, kind },
