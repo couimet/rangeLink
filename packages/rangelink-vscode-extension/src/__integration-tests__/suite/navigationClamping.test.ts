@@ -150,11 +150,7 @@ suite('Navigation Clamping', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
-    const { sel } = await navigateViaHandleLinkClick(
-      linkText,
-      parseResult.value,
-      testFilename,
-    );
+    const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
 
     assert.strictEqual(sel.anchor.line, 4, 'Expected anchor at line 4 (0-indexed)');
     assert.strictEqual(sel.anchor.character, 9, 'Expected anchor char 9 (0-indexed)');
