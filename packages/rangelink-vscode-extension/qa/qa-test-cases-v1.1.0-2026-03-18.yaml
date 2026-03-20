@@ -2186,3 +2186,59 @@ test_cases:
       - 'Press R-V to send selected text to the bound destination'
     expected_result: 'The selected text arrives in the untitled file alongside the markdown content. The binding was preserved despite the language change triggered by content insertion.'
     automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Navigation Clamping Feedback (#47)
+  # ---------------------------------------------------------------------------
+
+  - id: navigation-clamping-001
+    feature: 'Navigation Clamping Feedback'
+    scenario: 'Navigate to line beyond end of file — cursor lands at last line'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A file with a known number of lines exists in the workspace (e.g., src/utils/helper.ts with 45 lines)'
+    steps:
+      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
+      - 'Type: src/utils/helper.ts#L200'
+      - 'Press Enter'
+    expected_result: 'The file opens and the cursor lands at the last line of the file (line 45), not line 200. A warning toast is shown indicating that the position was clamped.'
+    automated: true
+
+  - id: navigation-clamping-002
+    feature: 'Navigation Clamping Feedback'
+    scenario: 'Navigate to column beyond line length — cursor lands at end of line'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A file exists in the workspace with lines shorter than 200 characters'
+    steps:
+      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
+      - 'Type: src/utils/helper.ts#L1C200'
+      - 'Press Enter'
+    expected_result: 'The file opens and the cursor lands at the end of line 1 (clamped to line length), not column 200. A warning toast is shown indicating that the column was clamped.'
+    automated: true
+
+  - id: navigation-clamping-003
+    feature: 'Navigation Clamping Feedback'
+    scenario: 'Navigate to valid position — cursor lands exactly, info toast shown'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A file with 10+ lines exists in the workspace'
+    steps:
+      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
+      - 'Type: src/utils/helper.ts#L5C10'
+      - 'Press Enter'
+    expected_result: 'The file opens and the cursor lands at exactly line 5, column 10. An info toast is shown (not a warning).'
+    automated: true
+
+  - id: navigation-clamping-004
+    feature: 'Navigation Clamping Feedback'
+    scenario: 'Navigate with both line and column beyond bounds — both axes clamped'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A file with a known number of lines and short lines exists in the workspace'
+    steps:
+      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
+      - 'Type: src/utils/helper.ts#L200C500'
+      - 'Press Enter'
+    expected_result: 'The file opens and the cursor lands at the last line, last column (both axes clamped). A warning toast is shown indicating both line and column were clamped.'
+    automated: true
