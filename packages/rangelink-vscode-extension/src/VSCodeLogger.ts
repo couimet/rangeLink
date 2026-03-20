@@ -1,12 +1,18 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
-import * as vscode from 'vscode';
+
+/**
+ * Minimal interface for log output — satisfied by both vscode.OutputChannel and LogCapture.
+ */
+export interface LogSink {
+  appendLine(value: string): void;
+}
 
 /**
  * VSCode implementation of the Logger interface.
- * Bridges the core logging interface to VSCode's OutputChannel.
+ * Bridges the core logging interface to any LogSink (OutputChannel, LogCapture, etc.).
  */
 export class VSCodeLogger implements Logger {
-  constructor(private readonly outputChannel: vscode.OutputChannel) {}
+  constructor(private readonly sink: LogSink) {}
 
   debug(ctx: LoggingContext, message: string): void {
     this.log('DEBUG', ctx, message);
@@ -26,6 +32,6 @@ export class VSCodeLogger implements Logger {
 
   private log(level: string, ctx: LoggingContext, message: string): void {
     const contextStr = JSON.stringify(ctx);
-    this.outputChannel.appendLine(`[${level}] ${contextStr} ${message}`);
+    this.sink.appendLine(`[${level}] ${contextStr} ${message}`);
   }
 }

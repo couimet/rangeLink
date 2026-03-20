@@ -78,6 +78,7 @@ import { DestinationRegistry } from './destinations/DestinationRegistry';
 import { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { setLocale } from './i18n/LocaleManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
+import { LogCapture } from './LogCapture';
 import { FilePathDocumentProvider } from './navigation/FilePathDocumentProvider';
 import { FilePathNavigationHandler } from './navigation/FilePathNavigationHandler';
 import { FilePathTerminalProvider } from './navigation/FilePathTerminalProvider';
@@ -86,7 +87,12 @@ import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHand
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { RangeLinkStatusBar } from './statusBar';
-import { type FilePathClickArgs, type RangeLinkClickArgs, type VersionInfo } from './types';
+import {
+  type FilePathClickArgs,
+  type RangeLinkClickArgs,
+  type RangeLinkExtensionApi,
+  type VersionInfo,
+} from './types';
 import { registerWithLogging } from './utils';
 import { VSCodeLogger } from './VSCodeLogger';
 
@@ -99,10 +105,11 @@ let outputChannel: vscode.OutputChannel;
 /**
  * Extension activation entry point
  */
-export function activate(context: vscode.ExtensionContext): void {
+export function activate(context: vscode.ExtensionContext): RangeLinkExtensionApi {
   // Initialize logger FIRST so it can be passed to VscodeAdapter
   outputChannel = vscode.window.createOutputChannel('RangeLink');
-  const vscodeLogger = new VSCodeLogger(outputChannel);
+  const logCapture = new LogCapture(outputChannel);
+  const vscodeLogger = new VSCodeLogger(logCapture);
   setLogger(vscodeLogger);
   const logger = getLogger();
 
@@ -585,6 +592,8 @@ export function activate(context: vscode.ExtensionContext): void {
       addBookmarkCommand.execute(),
     ),
   );
+
+  return { logCapture };
 }
 
 /**

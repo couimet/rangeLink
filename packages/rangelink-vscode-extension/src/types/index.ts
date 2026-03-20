@@ -55,6 +55,7 @@ export type {
 } from './QuickPickTypes';
 export type { QuickPickBindOutcome, QuickPickBindResult } from './QuickPickBindResult';
 export type { RangeLinkClickArgs } from './RangeLinkClickArgs';
+export type { RangeLinkExtensionApi } from './RangeLinkExtensionApi';
 export type { RangeLinkTerminalLink } from './RangeLinkTerminalLink';
 export type { SendTextToTerminalOptions } from './SendTextToTerminalOptions';
 export { TerminalFocusType } from './TerminalFocusType';
