@@ -74,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Terminal** (right-click on terminal tabs or inside terminal):
     - "RangeLink: Bind Here" - Bind this terminal as destination
     - "RangeLink: Unbind" - Unbind current destination (when bound)
+- **Navigation clamping feedback** - Navigation now warns when a link points beyond file boundaries instead of silently landing at the nearest valid position
 - **Dirty Buffer Warning** - Warning when generating a link from a file with unsaved changes (#298)
   - Shows a dialog with options: "Save & Generate", "Generate Anyway", or dismiss to abort
   - Controlled by `rangelink.warnOnDirtyBuffer` setting (default: `true`)
