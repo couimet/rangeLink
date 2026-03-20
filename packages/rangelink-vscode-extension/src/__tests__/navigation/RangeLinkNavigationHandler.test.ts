@@ -961,10 +961,7 @@ describe('RangeLinkNavigationHandler', () => {
 
       await handler.navigateToLink(parsed, 'file.ts#L5C3-L5C8');
 
-      expect(mockLogger.warn).not.toHaveBeenCalledWith(
-        expect.anything(),
-        'Position clamped to document bounds',
-      );
+      expect(mockLogger.warn).not.toHaveBeenCalled();
     });
   });
 
