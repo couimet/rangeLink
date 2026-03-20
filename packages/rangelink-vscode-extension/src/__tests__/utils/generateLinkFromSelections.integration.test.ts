@@ -24,7 +24,7 @@ const DELIMITERS: DelimiterConfig = {
   range: '-',
 };
 
-const mockLogger = createMockLogger();
+let mockLogger: ReturnType<typeof createMockLogger>;
 
 const mockSelection = (
   startLine: number,
@@ -61,6 +61,10 @@ const createDocumentWithLines = (lines: string[]): vscode.TextDocument => {
 };
 
 describe('trailing newline normalization integration', () => {
+  beforeEach(() => {
+    mockLogger = createMockLogger();
+  });
+
   it('single full-line selection (Ctrl+L) produces #L5 without character positions', () => {
     const lines = ['line 0', 'line 1', 'line 2', 'line 3', 'line 4 content here', 'line 5'];
     const doc = createDocumentWithLines(lines);
