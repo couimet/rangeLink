@@ -379,7 +379,7 @@ describe('VscodeAdapter', () => {
     });
   });
 
-  describe('integration scenarios', () => {
+  describe('sequential operations', () => {
     it('should handle multiple clipboard operations sequentially', async () => {
       await adapter.writeTextToClipboard('first');
       await adapter.writeTextToClipboard('second');
