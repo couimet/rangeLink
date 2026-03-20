@@ -107,10 +107,9 @@ describe('RangeLinkService i18n integration', () => {
       fnName: 'test',
     });
 
-    expect(formatMessageSpy).toHaveBeenCalledWith(
-      MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD,
-      { linkTypeName: 'RangeLink' },
-    );
+    expect(formatMessageSpy).toHaveBeenCalledWith(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, {
+      linkTypeName: 'RangeLink',
+    });
   });
 
   it('should produce correct status message with "RangeLink" parameter', async () => {

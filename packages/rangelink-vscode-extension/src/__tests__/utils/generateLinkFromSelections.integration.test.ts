@@ -100,16 +100,7 @@ describe('trailing newline normalization integration', () => {
   });
 
   it('multi-line full selection (Ctrl+L x3) produces #L5-L7 without character positions', () => {
-    const lines = [
-      'line 0',
-      'line 1',
-      'line 2',
-      'line 3',
-      'line 4',
-      'line 5',
-      'line 6',
-      'line 7',
-    ];
+    const lines = ['line 0', 'line 1', 'line 2', 'line 3', 'line 4', 'line 5', 'line 6', 'line 7'];
     const doc = createDocumentWithLines(lines);
     const selection = mockSelection(4, 0, 7, 0);
 
