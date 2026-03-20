@@ -1634,8 +1634,8 @@ test_cases:
   # Section 13 — Bug Fix Regressions
   # ---------------------------------------------------------------------------
 
-  - id: bugfix-full-line-navigation-001
-    feature: 'Bug Fix — Full-Line Navigation'
+  - id: full-line-navigation-001
+    feature: 'Link Navigation — Full-Line Selection'
     scenario: '#L10 navigates and selects the entire line (not just the first character)'
     preconditions:
       - 'src/utils/helper.ts exists and is readable'
@@ -1647,8 +1647,8 @@ test_cases:
     expected_result: 'Line 10 is selected in its entirety (from column 0 to end of line). The cursor is not placed at just the first character.'
     automated: true
 
-  - id: bugfix-full-line-navigation-002
-    feature: 'Bug Fix — Full-Line Navigation'
+  - id: full-line-navigation-002
+    feature: 'Link Navigation — Full-Line Selection'
     scenario: '#L10-L15 selects from the start of line 10 to the end of line 15'
     preconditions:
       - 'src/utils/helper.ts with 15+ lines'
@@ -1659,8 +1659,8 @@ test_cases:
     expected_result: 'Lines 10 through 15 are selected. The selection spans all six lines fully.'
     automated: true
 
-  - id: bugfix-full-line-link-generation-001
-    feature: 'Bug Fix — Full-Line Link Generation'
+  - id: full-line-link-generation-001
+    feature: 'Link Generation — Full-Line'
     scenario: 'Selecting a line including its trailing newline generates #L20 (not #L20-L21)'
     preconditions:
       - 'File with 20+ lines'
@@ -1672,8 +1672,8 @@ test_cases:
     expected_result: 'The generated link is src/utils/helper.ts#L20 (single-line reference). NOT #L20-L21. The trailing newline is excluded.'
     automated: true
 
-  - id: bugfix-wrapped-link-navigation-001
-    feature: 'Bug Fix — Wrapped Link Navigation'
+  - id: wrapped-link-navigation-001
+    feature: 'Link Navigation — Wrapped Links'
     scenario: 'Backtick-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1685,8 +1685,8 @@ test_cases:
     expected_result: 'VS Code opens src/utils/helper.ts and selects lines 5-10. Backtick wrapping did not prevent link detection.'
     automated: true
 
-  - id: bugfix-wrapped-link-navigation-002
-    feature: 'Bug Fix — Wrapped Link Navigation'
+  - id: wrapped-link-navigation-002
+    feature: 'Link Navigation — Wrapped Links'
     scenario: 'Single-quote-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1696,8 +1696,8 @@ test_cases:
     expected_result: 'Navigates to line 5 of the file. Single quotes did not break link detection.'
     automated: true
 
-  - id: bugfix-wrapped-link-navigation-003
-    feature: 'Bug Fix — Wrapped Link Navigation'
+  - id: wrapped-link-navigation-003
+    feature: 'Link Navigation — Wrapped Links'
     scenario: 'Double-quote-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1707,8 +1707,8 @@ test_cases:
     expected_result: 'Navigates to line 5. Double quotes did not break link detection.'
     automated: true
 
-  - id: bugfix-wrapped-link-navigation-004
-    feature: 'Bug Fix — Wrapped Link Navigation'
+  - id: wrapped-link-navigation-004
+    feature: 'Link Navigation — Wrapped Links'
     scenario: 'Angle-bracket-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1718,8 +1718,8 @@ test_cases:
     expected_result: 'Navigates to line 5. Angle brackets did not break link detection.'
     automated: true
 
-  - id: bugfix-markdown-link-navigation-001
-    feature: 'Bug Fix — Markdown Link Navigation'
+  - id: markdown-link-navigation-001
+    feature: 'Link Navigation — Markdown Syntax'
     scenario: 'Markdown link [label](path/to/file.ts#L10) in a document is clickable and navigates correctly'
     preconditions:
       - 'A Markdown (.md) file is open in the editor'
@@ -1730,8 +1730,8 @@ test_cases:
     expected_result: 'VS Code opens src/utils/helper.ts and navigates to line 10. The [label](path#L10) syntax is recognized as a RangeLink document link.'
     automated: true
 
-  - id: bugfix-url-exclusion-001
-    feature: 'Bug Fix — URL Exclusion'
+  - id: url-exclusion-001
+    feature: 'Link Navigation — URL Exclusion'
     scenario: 'https://example.com/path/file.ts#L10 in terminal is NOT captured as a RangeLink'
     preconditions:
       - 'Terminal open'
@@ -1741,8 +1741,8 @@ test_cases:
     expected_result: 'RangeLink does NOT intercept the URL. No navigation to a local file occurs. The https:// prefix is correctly excluded.'
     automated: true
 
-  - id: bugfix-url-exclusion-002
-    feature: 'Bug Fix — URL Exclusion'
+  - id: url-exclusion-002
+    feature: 'Link Navigation — URL Exclusion'
     scenario: 'https://example.com/path/file.ts#L10 in a document is NOT captured as a RangeLink'
     preconditions:
       - 'A Markdown or text file open in the editor'
@@ -1752,8 +1752,8 @@ test_cases:
     expected_result: 'RangeLink does not provide a document link for this text. No RangeLink navigation offered.'
     automated: false
 
-  - id: bugfix-stale-viewcolumn-001
-    feature: 'Bug Fix — Stale viewColumn'
+  - id: stale-viewcolumn-001
+    feature: 'Text Editor Destination — Stale viewColumn'
     scenario: 'Moving bound editor between tab groups — subsequent paste targets the correct new group'
     preconditions:
       - 'src/utils/helper.ts is bound as destination and is in tab group 1'
@@ -1765,8 +1765,8 @@ test_cases:
     expected_result: 'The RangeLink is inserted into src/utils/helper.ts in tab group 2. Paste did not fail due to stale tab group reference.'
     automated: false
 
-  - id: bugfix-hidden-tab-paste-001
-    feature: 'Bug Fix — Hidden Tab Paste'
+  - id: hidden-tab-paste-001
+    feature: 'Text Editor Destination — Hidden Tab Paste'
     scenario: 'Bound editor hidden behind other tabs — paste succeeds and brings the tab to foreground'
     preconditions:
       - 'src/utils/helper.ts is bound as destination but is not the frontmost tab in its group'
@@ -1777,8 +1777,8 @@ test_cases:
     expected_result: 'The paste succeeds. src/utils/helper.ts comes to the foreground (tab is activated). RangeLink inserted. No error about hidden or inactive tab.'
     automated: false
 
-  - id: bugfix-document-link-tooltip-001
-    feature: 'Bug Fix — Document Link Tooltip'
+  - id: document-link-tooltip-001
+    feature: 'Clickable Links — Document Link Tooltip'
     scenario: 'Hovering over a clickable document link shows clean tooltip (not raw JSON or command URI)'
     preconditions:
       - 'A Markdown file with a RangeLink document link: [See code](src/utils/helper.ts#L5)'
@@ -1788,8 +1788,8 @@ test_cases:
     expected_result: 'The tooltip shows clean human-readable text (e.g., file path and line number). It does NOT show raw JSON, a command: URI, or internal command parameters.'
     automated: false
 
-  - id: bugfix-full-line-selection-validation-001
-    feature: 'Bug Fix — Full-Line Selection Validation'
+  - id: full-line-selection-validation-001
+    feature: 'Link Generation — Full-Line Selection Validation'
     scenario: 'Using Ctrl+L (select full line) then R-L generates link without SELECTION_ZERO_WIDTH error'
     preconditions:
       - 'Terminal or file destination bound'
@@ -2103,11 +2103,11 @@ test_cases:
     automated: true
 
   # ---------------------------------------------------------------------------
-  # Section — Bug Fix: Guard Against Duplicate Tab Groups (#315)
+  # Section — Text Editor Destination: Multi-Group Guard (#315)
   # ---------------------------------------------------------------------------
 
-  - id: bugfix-duplicate-tab-group-001
-    feature: 'Bug Fix — Duplicate Tab Group Guard (Proactive Warning)'
+  - id: duplicate-tab-group-001
+    feature: 'Text Editor Destination — Multi-Group Guard (Proactive Warning)'
     scenario: 'Proactive warning toast appears when bound file is opened in a second editor group'
     preconditions:
       - 'Extension installed from .vsix build'
@@ -2118,8 +2118,8 @@ test_cases:
     expected_result: 'A warning toast appears: "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." No paste was attempted — the warning fires on tab change, not on paste.'
     automated: false
 
-  - id: bugfix-duplicate-tab-group-002
-    feature: 'Bug Fix — Duplicate Tab Group Guard (No Re-warn)'
+  - id: duplicate-tab-group-002
+    feature: 'Text Editor Destination — Multi-Group Guard (No Re-warn)'
     scenario: 'Warning is not repeated when the duplicate state is already active'
     preconditions:
       - 'src/utils/helper.ts is bound as a text editor destination'
@@ -2130,8 +2130,8 @@ test_cases:
     expected_result: 'No second warning toast appears. The warning is shown only once per entry into the duplicate state, not on every subsequent tab change while duplicates exist.'
     automated: false
 
-  - id: bugfix-duplicate-tab-group-003
-    feature: 'Bug Fix — Duplicate Tab Group Guard (Reactive Paste Error)'
+  - id: duplicate-tab-group-003
+    feature: 'Text Editor Destination — Multi-Group Guard (Reactive Paste Error)'
     scenario: 'Paste is blocked with a clear error message when bound file is open in multiple tab groups'
     preconditions:
       - 'src/utils/helper.ts is bound as a text editor destination'
@@ -2142,8 +2142,8 @@ test_cases:
     expected_result: 'Paste does not occur. An error toast appears: "RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again." No text is inserted into either instance of src/utils/helper.ts.'
     automated: false
 
-  - id: bugfix-duplicate-tab-group-004
-    feature: 'Bug Fix — Duplicate Tab Group Guard (State Clears on Resolve)'
+  - id: duplicate-tab-group-004
+    feature: 'Text Editor Destination — Multi-Group Guard (State Clears on Resolve)'
     scenario: 'Duplicate warning state resets when the conflict is resolved — a new duplicate triggers a fresh warning'
     preconditions:
       - 'src/utils/helper.ts is bound as a text editor destination'
@@ -2155,3 +2155,34 @@ test_cases:
       - 'Observe the notification area again'
     expected_result: 'Step 2: No toast appears when the duplicate is closed. Step 4: A fresh warning toast appears — "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." — confirming the flag was reset and re-entry into the duplicate state is correctly detected.'
     automated: false
+
+  # ---------------------------------------------------------------------------
+  # Section — Text Editor Destination: Language-Mode Binding Resilience (#472)
+  # ---------------------------------------------------------------------------
+
+  - id: langswitch-binding-001
+    feature: 'Text Editor Destination — Language-Mode Resilience'
+    scenario: 'Binding survives manual language-mode change on untitled file'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'An untitled file is open in ViewColumn.Two and bound as a text editor destination'
+    steps:
+      - 'Change the untitled file language mode to Markdown (via status bar or setTextDocumentLanguage)'
+      - 'Switch to the source file in ViewColumn.One, select text'
+      - 'Press R-V to send selected text to the bound destination'
+    expected_result: 'The selected text arrives in the untitled file. The binding was preserved across the language-mode change — no re-bind required.'
+    automated: true
+
+  - id: langswitch-binding-002
+    feature: 'Text Editor Destination — Language-Mode Resilience'
+    scenario: 'Binding survives language change after content insertion'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'An untitled file (plaintext) is open in ViewColumn.Two and bound as a text editor destination'
+    steps:
+      - 'Insert markdown-style content (e.g., triple backticks with code) into the untitled file'
+      - 'Trigger language detection (manual or via setTextDocumentLanguage to markdown)'
+      - 'Switch to the source file in ViewColumn.One, select text'
+      - 'Press R-V to send selected text to the bound destination'
+    expected_result: 'The selected text arrives in the untitled file alongside the markdown content. The binding was preserved despite the language change triggered by content insertion.'
+    automated: true

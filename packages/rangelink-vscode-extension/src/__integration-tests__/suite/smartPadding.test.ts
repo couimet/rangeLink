@@ -379,7 +379,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log('smart-padding-006: PASSED');
   });
 
-  test.skip('smart-padding-001-untitled-langswitch: binding survives language mode change on untitled file — skipped: known bug #472', async () => {
+  test('langswitch-binding-001: binding survives manual language-mode change on untitled file', async () => {
     const sourceContent = 'hello world';
     log('langswitch: starting');
 
@@ -395,14 +395,28 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
 
     log('langswitch: changing language to markdown');
-    await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
+    const updatedDestDoc = await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
     await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
     log(
-      `langswitch: language now=${destDoc.languageId}, uriChanged=${originalUri !== destDoc.uri.toString()}`,
+      `langswitch: language now=${updatedDestDoc.languageId}, uriChanged=${originalUri !== updatedDestDoc.uri.toString()}, sameRef=${destDoc === updatedDestDoc}`,
+    );
+
+    const visibleEditors = vscode.window.visibleTextEditors;
+    const destVisible = visibleEditors.filter((e) => e.document.uri.toString() === originalUri);
+    log(
+      `langswitch: visibleEditors=${visibleEditors.length}, destVisible=${destVisible.length}, destViewColumns=${destVisible.map((e) => e.viewColumn)}`,
     );
 
     const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri);
-    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
+    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, {
+      viewColumn: vscode.ViewColumn.One,
+      preserveFocus: false,
+    });
+    await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
+    const sourceFocused = await waitForActiveEditor(sourceFileUri.toString());
+    log(`langswitch: source active=${sourceFocused}, viewColumn=${sourceEditor.viewColumn}`);
+    assert.ok(sourceFocused, 'Source editor must be active before R-V');
+
     sourceEditor.selection = new vscode.Selection(
       new vscode.Position(0, 0),
       new vscode.Position(0, sourceContent.length),
@@ -411,17 +425,17 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
     await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
 
-    const destContent = destDoc.getText();
+    const destContent = updatedDestDoc.getText();
     log(`langswitch: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`);
 
     assert.ok(
       destContent.length > 0,
-      `POSSIBLE BUG: dest empty after language change. language=${originalLanguage}→${destDoc.languageId}, isClosed=${destDoc.isClosed}`,
+      `POSSIBLE BUG: dest empty after language change. language=${originalLanguage}→${updatedDestDoc.languageId}, isClosed=${updatedDestDoc.isClosed}`,
     );
     log('langswitch: PASSED');
   });
 
-  test.skip('smart-padding-001-untitled-content-triggers-lang: binding survives content-triggered language detection — skipped: known bug #472', async () => {
+  test('langswitch-binding-002: binding survives language change after content insertion', async () => {
     const sourceContent = 'hello world';
     log('content-lang: starting');
 
@@ -440,14 +454,25 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     });
     await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
 
+    let currentDestDoc = destDoc;
     if (destDoc.languageId === 'plaintext') {
-      await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
+      currentDestDoc = await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
       await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
     }
-    log(`content-lang: language now=${destDoc.languageId}`);
+    log(
+      `content-lang: language now=${currentDestDoc.languageId}, sameRef=${destDoc === currentDestDoc}`,
+    );
 
     const sourceDoc = await vscode.workspace.openTextDocument(sourceFileUri);
-    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
+    const sourceEditor = await vscode.window.showTextDocument(sourceDoc, {
+      viewColumn: vscode.ViewColumn.One,
+      preserveFocus: false,
+    });
+    await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
+    const sourceFocused = await waitForActiveEditor(sourceFileUri.toString());
+    log(`content-lang: source active=${sourceFocused}, viewColumn=${sourceEditor.viewColumn}`);
+    assert.ok(sourceFocused, 'Source editor must be active before R-V');
+
     sourceEditor.selection = new vscode.Selection(
       new vscode.Position(0, 0),
       new vscode.Position(0, sourceContent.length),
@@ -456,12 +481,12 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
     await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
 
-    const destContent = destDoc.getText();
+    const destContent = currentDestDoc.getText();
     log(`content-lang: destContent=${JSON.stringify(destContent)}`);
 
     assert.ok(
       destContent.includes(sourceContent),
-      `POSSIBLE BUG: dest doesn't contain source text after language change. language=${destDoc.languageId}, isClosed=${destDoc.isClosed}`,
+      `POSSIBLE BUG: dest doesn't contain source text after language change. language=${currentDestDoc.languageId}, isClosed=${currentDestDoc.isClosed}`,
     );
     log('content-lang: PASSED');
   });

@@ -573,6 +573,13 @@ export class PasteDestinationManager implements vscode.Disposable {
    * - Only unbinds when bound document is actually closed (not just hidden)
    * - Allows user to move document between tab groups or switch to other files
    * - Paste automatically brings hidden document to foreground via showTextDocument()
+   *
+   * **Language-mode transition handling:**
+   * - `setTextDocumentLanguage()` fires onDidCloseTextDocument followed by onDidOpenTextDocument
+   *   for the same URI (confirmed by VS Code issue microsoft/vscode#102737)
+   * - During these transient close events, `closedDocument.isClosed` is `false`
+   * - Real document closures have `closedDocument.isClosed === true`
+   * - We use this discriminator to avoid false auto-unbinds during language changes
    */
   private setupTextDocumentCloseListener(): void {
     const documentCloseDisposable = this.vscodeAdapter.onDidCloseTextDocument((closedDocument) => {
@@ -582,23 +589,34 @@ export class PasteDestinationManager implements vscode.Disposable {
 
       const boundDocumentUri = this.boundDestination.resource.uri;
 
-      // Check if the closed document matches the bound document
-      if (closedDocument.uri.toString() === boundDocumentUri.toString()) {
-        // Document actually closed - auto-unbind
-        const editorDisplayName = this.boundDestination.displayName || 'Unknown';
-        this.logger.info(
-          {
-            fn: 'PasteDestinationManager.onDidCloseTextDocument',
-            editorDisplayName,
-            boundDocumentUri: boundDocumentUri.toString(),
-          },
-          `Bound document closed: ${editorDisplayName} - auto-unbinding`,
-        );
-        this.unbind();
-        this.vscodeAdapter.setStatusBarMessage(
-          formatMessage(MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND),
-        );
+      if (closedDocument.uri.toString() !== boundDocumentUri.toString()) {
+        return;
       }
+
+      const editorDisplayName = this.boundDestination.displayName || 'Unknown';
+      const logCtx = {
+        fn: 'PasteDestinationManager.onDidCloseTextDocument',
+        editorDisplayName,
+        boundDocumentUri: boundDocumentUri.toString(),
+        isClosed: closedDocument.isClosed,
+      };
+
+      if (!closedDocument.isClosed) {
+        this.logger.info(
+          logCtx,
+          `Document close event with isClosed=false — language-mode transition detected, keeping binding for ${editorDisplayName}`,
+        );
+        return;
+      }
+
+      this.logger.info(
+        logCtx,
+        `Bound document closed (isClosed=true): ${editorDisplayName} — auto-unbinding`,
+      );
+      this.unbind();
+      this.vscodeAdapter.setStatusBarMessage(
+        formatMessage(MessageCode.BOUND_EDITOR_CLOSED_AUTO_UNBOUND),
+      );
     });
 
     this.context.subscriptions.push(documentCloseDisposable);

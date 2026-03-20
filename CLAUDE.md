@@ -575,6 +575,22 @@
   <see>packages/rangelink-vscode-extension/scripts/validate-qa-coverage.sh</see>
 </rule>
 
+<rule id="QA006" priority="critical">
+  <title>TC IDs are a shared contract — rename both sides</title>
+  <do>When renaming a TC ID in QA YAML or integration tests, update ALL occurrences in both `qa/*.yaml` (latest file only) and `src/__integration-tests__/suite/*.test.ts`</do>
+  <do>After any TC ID rename, run `./scripts/validate-qa-coverage.sh` to confirm no mismatches</do>
+  <do>Before committing, grep for the old ID: `grep -r "old-id" qa/ src/__integration-tests__/`</do>
+  <never>Rename a TC ID in only one location — partial renames cause false-positive validator matches</never>
+  <rationale>The validator regex extracts slug-NNN patterns; if YAML and test IDs diverge, the validator may silently match the wrong entry</rationale>
+</rule>
+
+<rule id="QA007" priority="critical">
+  <title>TC IDs use domain-based naming, not origin-based</title>
+  <do>Name TC IDs by feature domain: `link-navigation-001`, `text-editor-destination-001`, `smart-padding-001`</do>
+  <never>Prefix TC IDs with `bugfix-`, `feature-`, `changed-`, or other origin/changelog-category prefixes</never>
+  <rationale>TCs describe what is tested, not why it was added; domain grouping survives across releases</rationale>
+</rule>
+
 </qa-yaml>
 
 ---
