@@ -9,6 +9,7 @@ import {
   BindToDestinationCommand,
   BindToTextEditorCommand,
   BindToTerminalCommand,
+  createBindAIAssistantCommand,
   GoToRangeLinkCommand,
   JumpToDestinationCommand,
   ListBookmarksCommand,
@@ -86,7 +87,7 @@ import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvide
 import { PathFormat, RangeLinkService } from './RangeLinkService';
 import { RangeLinkStatusBar } from './statusBar';
 import { type FilePathClickArgs, type RangeLinkClickArgs, type VersionInfo } from './types';
-import { formatMessage, registerWithLogging } from './utils';
+import { registerWithLogging } from './utils';
 import { VSCodeLogger } from './VSCodeLogger';
 
 // ============================================================================
@@ -372,44 +373,27 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   // Register AI assistant destination binding commands
-  // Both commands are always registered to make them discoverable in Command Palette
+  // All commands are always registered to make them discoverable in Command Palette
   // Runtime availability checks show helpful messages when IDE/extension not available
   // This prevents "command not found" errors while maintaining discoverability
-  context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_BIND_TO_CURSOR_AI, async () => {
-      if (!(await availabilityService.isAIAssistantAvailable('cursor-ai'))) {
-        void ideAdapter.showInformationMessage(
-          formatMessage(availabilityService.getUnavailableMessageCode('cursor-ai')),
-        );
-        return;
-      }
-      await destinationManager.bind({ kind: 'cursor-ai' });
-    }),
-  );
-
-  context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_BIND_TO_CLAUDE_CODE, async () => {
-      if (!(await availabilityService.isAIAssistantAvailable('claude-code'))) {
-        void ideAdapter.showInformationMessage(
-          formatMessage(availabilityService.getUnavailableMessageCode('claude-code')),
-        );
-        return;
-      }
-      await destinationManager.bind({ kind: 'claude-code' });
-    }),
-  );
-
-  context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_BIND_TO_GITHUB_COPILOT_CHAT, async () => {
-      if (!(await availabilityService.isAIAssistantAvailable('github-copilot-chat'))) {
-        void ideAdapter.showInformationMessage(
-          formatMessage(availabilityService.getUnavailableMessageCode('github-copilot-chat')),
-        );
-        return;
-      }
-      await destinationManager.bind({ kind: 'github-copilot-chat' });
-    }),
-  );
+  for (const [cmd, kind] of [
+    [CMD_BIND_TO_CURSOR_AI, 'cursor-ai'],
+    [CMD_BIND_TO_CLAUDE_CODE, 'claude-code'],
+    [CMD_BIND_TO_GITHUB_COPILOT_CHAT, 'github-copilot-chat'],
+  ] as const) {
+    context.subscriptions.push(
+      ideAdapter.registerCommand(
+        cmd,
+        createBindAIAssistantCommand(
+          kind,
+          availabilityService,
+          destinationManager,
+          ideAdapter,
+          logger,
+        ),
+      ),
+    );
+  }
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_UNBIND_DESTINATION, () => {
