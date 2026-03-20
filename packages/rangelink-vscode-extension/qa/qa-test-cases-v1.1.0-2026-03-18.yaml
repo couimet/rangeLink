@@ -2175,7 +2175,7 @@ test_cases:
 
   - id: langswitch-binding-002
     feature: 'Text Editor Destination — Language-Mode Resilience'
-    scenario: 'Binding survives content-triggered language detection'
+    scenario: 'Binding survives language change after content insertion'
     preconditions:
       - 'Extension installed from .vsix build'
       - 'An untitled file (plaintext) is open in ViewColumn.Two and bound as a text editor destination'

@@ -435,7 +435,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log('langswitch: PASSED');
   });
 
-  test('langswitch-binding-002: binding survives content-triggered language detection', async () => {
+  test('langswitch-binding-002: binding survives language change after content insertion', async () => {
     const sourceContent = 'hello world';
     log('content-lang: starting');
 
