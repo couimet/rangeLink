@@ -155,7 +155,11 @@ suite('Navigation Clamping', () => {
     assert.strictEqual(sel.anchor.line, 4, 'Expected anchor at line 4 (0-indexed)');
     assert.strictEqual(sel.anchor.character, 9, 'Expected anchor char 9 (0-indexed)');
     assert.strictEqual(sel.active.line, 4, 'Expected active at line 4 (0-indexed)');
-    assert.strictEqual(sel.active.character, 10, 'Expected active char 10 (extended by 1 for visibility)');
+    assert.strictEqual(
+      sel.active.character,
+      10,
+      'Expected active char 10 (extended by 1 for visibility)',
+    );
   });
 
   // navigation-clamping-004: both line and column beyond bounds → both axes clamped
