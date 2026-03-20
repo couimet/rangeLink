@@ -54,7 +54,11 @@ describe('createBindAIAssistantCommand', () => {
       const mockAdapter = createMockVscodeAdapter();
       const showInfoSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
+      const unavailableCode = 'MOCK_UNAVAILABLE_CODE';
+      const renderedMessage = 'Mocked unavailable message';
       (mockAvailability.isAIAssistantAvailable as jest.Mock).mockResolvedValue(false);
+      (mockAvailability.getUnavailableMessageCode as jest.Mock).mockReturnValue(unavailableCode);
+      formatMessageSpy.mockReturnValue(renderedMessage);
 
       const handler = createBindAIAssistantCommand(
         kind,
@@ -67,11 +71,7 @@ describe('createBindAIAssistantCommand', () => {
 
       expect(mockAvailability.isAIAssistantAvailable).toHaveBeenCalledWith(kind);
       expect(mockAvailability.getUnavailableMessageCode).toHaveBeenCalledWith(kind);
-
-      const returnedMessageCode = mockAvailability.getUnavailableMessageCode.mock.results[0].value;
-      expect(formatMessageSpy).toHaveBeenCalledWith(returnedMessageCode);
-
-      const renderedMessage = formatMessageSpy.mock.results[0].value;
+      expect(formatMessageSpy).toHaveBeenCalledWith(unavailableCode);
       expect(showInfoSpy).toHaveBeenCalledWith(renderedMessage);
 
       expect(mockManager.bind).not.toHaveBeenCalled();
