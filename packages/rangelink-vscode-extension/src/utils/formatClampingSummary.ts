@@ -14,10 +14,7 @@ import { formatMessage } from './formatMessage';
  * @param end - Converted end position with clamping flags
  * @returns Localized summary string describing what was clamped
  */
-export const formatClampingSummary = (
-  start: ConvertedPosition,
-  end: ConvertedPosition,
-): string => {
+export const formatClampingSummary = (start: ConvertedPosition, end: ConvertedPosition): string => {
   const lineClamped = start.lineClamped || end.lineClamped;
   const characterClamped = start.characterClamped || end.characterClamped;
 
