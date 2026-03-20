@@ -6,7 +6,12 @@ import { TextEditorRevealType } from 'vscode';
 
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types';
-import { convertRangeLinkPosition, formatLinkPosition, formatMessage } from '../utils';
+import {
+  convertRangeLinkPosition,
+  formatClampingSummary,
+  formatLinkPosition,
+  formatMessage,
+} from '../utils';
 
 /**
  * Navigation handler for RangeLink file navigation.
@@ -227,11 +232,18 @@ export class RangeLinkNavigationHandler {
 
       this.logger.info({ ...logCtx }, 'Navigation completed successfully');
 
-      // Show success toast with formatted position
       const position = formatLinkPosition(start, end);
-      await this.ideAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_NAVIGATION_SUCCESS, { path, position }),
-      );
+
+      if (anyClamping) {
+        const clampingSummary = formatClampingSummary(convertedStart, convertedEnd);
+        await this.ideAdapter.showWarningMessage(
+          formatMessage(MessageCode.WARN_NAVIGATION_CLAMPED, { path, position, clampingSummary }),
+        );
+      } else {
+        await this.ideAdapter.showInformationMessage(
+          formatMessage(MessageCode.INFO_NAVIGATION_SUCCESS, { path, position }),
+        );
+      }
     } catch (error) {
       this.logger.error({ ...logCtx, error }, 'Navigation failed');
       const errorMessage = error instanceof Error ? error.message : String(error);
