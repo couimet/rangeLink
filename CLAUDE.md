@@ -503,6 +503,18 @@
   <rationale>Asserts on type + message + reference equality</rationale>
 </error-testing>
 
+<integration-test-convention>
+  <principle>Files named `*.integration.test.ts` in `__tests__/` are Jest tests that use real module compositions instead of full mocking</principle>
+  <principle>These are distinct from `__integration-tests__/` which are VS Code extension tests run via `test:release`</principle>
+  <scripts>
+    - `test` — runs ALL Jest tests (unit + integration), unchanged default
+    - `test:fast` — excludes `*.integration.test.ts` files for a quick feedback loop during development
+    - `test:release` — runs VS Code extension integration tests (separate concern, separate runner)
+  </scripts>
+  <naming>Use `*.integration.test.ts` suffix for tests that exercise real module compositions with minimal mocking (e.g., real `formatMessage()`, real `toInputSelection()`)</naming>
+  <placement>Co-locate with the unit test file: `Foo.test.ts` → `Foo.integration.test.ts` in the same directory</placement>
+</integration-test-convention>
+
 </testing>
 
 ---
