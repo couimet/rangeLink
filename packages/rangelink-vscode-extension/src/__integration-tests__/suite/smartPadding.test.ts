@@ -379,7 +379,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log('smart-padding-006: PASSED');
   });
 
-  test('smart-padding-001-untitled-langswitch: binding survives language mode change on untitled file', async () => {
+  test('langswitch-binding-001: binding survives manual language-mode change on untitled file', async () => {
     const sourceContent = 'hello world';
     log('langswitch: starting');
 
@@ -435,7 +435,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log('langswitch: PASSED');
   });
 
-  test('smart-padding-001-untitled-content-triggers-lang: binding survives content-triggered language detection', async () => {
+  test('langswitch-binding-002: binding survives content-triggered language detection', async () => {
     const sourceContent = 'hello world';
     log('content-lang: starting');
 

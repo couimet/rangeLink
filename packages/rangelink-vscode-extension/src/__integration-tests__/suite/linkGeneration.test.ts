@@ -46,7 +46,7 @@ suite('Link Generation', () => {
     return uri;
   };
 
-  test('bugfix-full-line-link-generation-001: selecting line + trailing newline generates #L20 not #L20-L21', async () => {
+  test('full-line-link-generation-001: selecting line + trailing newline generates #L20 not #L20-L21', async () => {
     const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
     const uri = trackFile(
       createTmpWorkspaceFile(`__rl-test-tc132-${Date.now()}.ts`, lines.join('\n') + '\n'),
@@ -71,7 +71,7 @@ suite('Link Generation', () => {
     assert.ok(!clipboard.includes('#L21'), `Expected no #L21 in clipboard but got: ${clipboard}`);
   });
 
-  test('bugfix-wrapped-link-navigation-baseline: detects plain link (src/foo.ts#L5)', () => {
+  test('wrapped-link-navigation-baseline: detects plain link (src/foo.ts#L5)', () => {
     const links = findLinksInText('src/foo.ts#L5\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -91,7 +91,7 @@ suite('Link Generation', () => {
     );
   });
 
-  test('bugfix-wrapped-link-navigation-001: detects backtick-wrapped link (`src/foo.ts#L5`)', () => {
+  test('wrapped-link-navigation-001: detects backtick-wrapped link (`src/foo.ts#L5`)', () => {
     const links = findLinksInText('`src/foo.ts#L5`\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -106,7 +106,7 @@ suite('Link Generation', () => {
     );
   });
 
-  test("bugfix-wrapped-link-navigation-002: detects single-quote-wrapped link ('src/foo.ts#L5')", () => {
+  test("wrapped-link-navigation-002: detects single-quote-wrapped link ('src/foo.ts#L5')", () => {
     const links = findLinksInText("'src/foo.ts#L5'\n", DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -121,7 +121,7 @@ suite('Link Generation', () => {
     );
   });
 
-  test('bugfix-wrapped-link-navigation-003: detects double-quote-wrapped link ("src/foo.ts#L5")', () => {
+  test('wrapped-link-navigation-003: detects double-quote-wrapped link ("src/foo.ts#L5")', () => {
     const links = findLinksInText('"src/foo.ts#L5"\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -136,7 +136,7 @@ suite('Link Generation', () => {
     );
   });
 
-  test('bugfix-wrapped-link-navigation-004: detects angle-bracket-wrapped link (<src/foo.ts#L5>)', () => {
+  test('wrapped-link-navigation-004: detects angle-bracket-wrapped link (<src/foo.ts#L5>)', () => {
     const links = findLinksInText('<src/foo.ts#L5>\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -151,7 +151,7 @@ suite('Link Generation', () => {
     );
   });
 
-  test('bugfix-markdown-link-navigation-001: detects Markdown link syntax ([text](src/foo.ts#L5))', () => {
+  test('markdown-link-navigation-001: detects Markdown link syntax ([text](src/foo.ts#L5))', () => {
     const links = findLinksInText('[click here](src/foo.ts#L5)\n', DEFAULT_DELIMITERS, LOGGER);
 
     assert.strictEqual(links.length, 1, `Expected 1 RangeLink but got ${links.length}`);
@@ -166,7 +166,7 @@ suite('Link Generation', () => {
     );
   });
 
-  test('bugfix-url-exclusion-001: HTTP URL is excluded — no RangeLink detected for https://example.com/path/file.ts#L10', () => {
+  test('url-exclusion-001: HTTP URL is excluded — no RangeLink detected for https://example.com/path/file.ts#L10', () => {
     const links = findLinksInText(
       'https://example.com/path/file.ts#L10\n',
       DEFAULT_DELIMITERS,
