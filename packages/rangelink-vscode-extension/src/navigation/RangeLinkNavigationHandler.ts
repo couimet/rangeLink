@@ -113,6 +113,33 @@ export class RangeLinkNavigationHandler {
       const convertedStart = convertRangeLinkPosition(start, document);
       const convertedEnd = convertRangeLinkPosition(end, document);
 
+      const anyClamping =
+        convertedStart.lineClamped ||
+        convertedStart.characterClamped ||
+        convertedEnd.lineClamped ||
+        convertedEnd.characterClamped;
+
+      if (anyClamping) {
+        this.logger.warn(
+          {
+            ...logCtx,
+            requestedStart: { line: start.line, character: start.character },
+            actualStart: { line: convertedStart.line + 1, character: convertedStart.character + 1 },
+            startClamping: {
+              line: convertedStart.lineClamped,
+              character: convertedStart.characterClamped,
+            },
+            requestedEnd: { line: end.line, character: end.character },
+            actualEnd: { line: convertedEnd.line + 1, character: convertedEnd.character + 1 },
+            endClamping: {
+              line: convertedEnd.lineClamped,
+              character: convertedEnd.characterClamped,
+            },
+          },
+          'Position clamped to document bounds',
+        );
+      }
+
       let vsStart = this.ideAdapter.createPosition(convertedStart.line, convertedStart.character);
       let vsEnd: ReturnType<typeof this.ideAdapter.createPosition>;
 
