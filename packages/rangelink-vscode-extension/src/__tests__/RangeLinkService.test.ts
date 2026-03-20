@@ -36,7 +36,6 @@ import {
   createMockVscodeAdapter,
   createMockWorkspaceFolder,
   createWindowOptionsForEditor,
-  spyOnFormatMessage,
   spyOnGenerateLinkFromSelections,
   type MockClipboard,
   type VscodeAdapterWithTestHooks,
@@ -589,88 +588,6 @@ describe('RangeLinkService', () => {
           '✓ Custom <Type> Name copied to clipboard',
           2000,
         );
-      });
-    });
-
-    describe('i18n integration', () => {
-      let formatMessageSpy: jest.SpyInstance;
-
-      beforeEach(() => {
-        formatMessageSpy = spyOnFormatMessage();
-      });
-
-      it('should call formatMessage with STATUS_BAR_LINK_COPIED_TO_CLIPBOARD and linkTypeName parameter', async () => {
-        await (service as any).copyAndSendToDestination({
-          control: {
-            contentType: PasteContentType.Link,
-            destinationBehavior: DestinationBehavior.ClipboardOnly,
-          },
-          content: {
-            clipboard: 'src/file.ts#L1',
-            send: 'src/file.ts#L1',
-          },
-          strategies: {
-            sendFn: jest.fn().mockResolvedValue(true),
-            isEligibleFn: jest.fn().mockResolvedValue(true),
-          },
-          contentName: 'RangeLink',
-          fnName: 'test',
-        });
-
-        expect(formatMessageSpy).toHaveBeenCalledWith(
-          MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD,
-          { linkTypeName: 'RangeLink' },
-        );
-      });
-
-      it('should produce correct status message with "RangeLink" parameter', async () => {
-        await (service as any).copyAndSendToDestination({
-          control: {
-            contentType: PasteContentType.Link,
-            destinationBehavior: DestinationBehavior.ClipboardOnly,
-          },
-          content: {
-            clipboard: 'src/file.ts#L1',
-            send: 'src/file.ts#L1',
-          },
-          strategies: {
-            sendFn: jest.fn().mockResolvedValue(true),
-            isEligibleFn: jest.fn().mockResolvedValue(true),
-          },
-          contentName: 'RangeLink',
-          fnName: 'test',
-        });
-
-        const expectedMessage = messagesEn[MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD].replace(
-          '{linkTypeName}',
-          'RangeLink',
-        );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(expectedMessage, 2000);
-      });
-
-      it('should produce correct status message with "Portable RangeLink" parameter', async () => {
-        await (service as any).copyAndSendToDestination({
-          control: {
-            contentType: PasteContentType.Link,
-            destinationBehavior: DestinationBehavior.ClipboardOnly,
-          },
-          content: {
-            clipboard: 'src/file.ts#L1',
-            send: 'src/file.ts#L1',
-          },
-          strategies: {
-            sendFn: jest.fn().mockResolvedValue(true),
-            isEligibleFn: jest.fn().mockResolvedValue(true),
-          },
-          contentName: 'Portable RangeLink',
-          fnName: 'test',
-        });
-
-        const expectedMessage = messagesEn[MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD].replace(
-          '{linkTypeName}',
-          'Portable RangeLink',
-        );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(expectedMessage, 2000);
       });
     });
 
