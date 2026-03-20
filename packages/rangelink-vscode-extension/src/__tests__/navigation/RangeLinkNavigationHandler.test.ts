@@ -893,7 +893,10 @@ describe('RangeLinkNavigationHandler', () => {
       handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockLogger);
     });
 
-    it('should log warning when line is clamped to document bounds', async () => {
+    it('should log warning and show warning toast when line is clamped', async () => {
+      const showWarningMessageSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+      const showInformationMessageSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+
       const parsed: ParsedLink = {
         path: 'file.ts',
         quotedPath: 'file.ts',
@@ -918,10 +921,17 @@ describe('RangeLinkNavigationHandler', () => {
         },
         'Position clamped to document bounds',
       );
+
+      expect(showWarningMessageSpy).toHaveBeenCalledWith(
+        'RangeLink: Navigated to file.ts @ 50 (clamped: line exceeded file length)',
+      );
+      expect(showInformationMessageSpy).not.toHaveBeenCalled();
     });
 
-    it('should log warning when character is clamped to line length', async () => {
+    it('should log warning and show warning toast when character is clamped', async () => {
       mockDocument.lineAt = createMockLineAt('short');
+      const showWarningMessageSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+      const showInformationMessageSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
 
       const parsed: ParsedLink = {
         path: 'file.ts',
@@ -947,9 +957,17 @@ describe('RangeLinkNavigationHandler', () => {
         },
         'Position clamped to document bounds',
       );
+
+      expect(showWarningMessageSpy).toHaveBeenCalledWith(
+        'RangeLink: Navigated to file.ts @ 1:100 (clamped: column exceeded line length)',
+      );
+      expect(showInformationMessageSpy).not.toHaveBeenCalled();
     });
 
-    it('should not log clamping warning when position is within bounds', async () => {
+    it('should show info toast when position is within bounds', async () => {
+      const showWarningMessageSpy = jest.spyOn(mockAdapter, 'showWarningMessage');
+      const showInformationMessageSpy = jest.spyOn(mockAdapter, 'showInformationMessage');
+
       const parsed: ParsedLink = {
         path: 'file.ts',
         quotedPath: 'file.ts',
@@ -962,6 +980,11 @@ describe('RangeLinkNavigationHandler', () => {
       await handler.navigateToLink(parsed, 'file.ts#L5C3-L5C8');
 
       expect(mockLogger.warn).not.toHaveBeenCalled();
+
+      expect(showInformationMessageSpy).toHaveBeenCalledWith(
+        'RangeLink: Navigated to file.ts @ 5:3-5:8',
+      );
+      expect(showWarningMessageSpy).not.toHaveBeenCalled();
     });
   });
 
