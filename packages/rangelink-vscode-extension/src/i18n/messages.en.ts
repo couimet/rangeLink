@@ -204,6 +204,11 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.WARN_LINK_DIRTY_BUFFER_SAVE]: 'Save & Generate',
   [MessageCode.WARN_LINK_DIRTY_BUFFER_SAVE_FAILED]:
     'File could not be saved. Link generation aborted.',
+  [MessageCode.WARN_NAVIGATION_CLAMPED]:
+    'RangeLink: Navigated to {path} @ {position} (clamped: {clampingSummary})',
+  [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_BOTH]: 'line and column exceeded bounds',
+  [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_CHARACTER]: 'column exceeded line length',
+  [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_LINE]: 'line exceeded file length',
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
   [MessageCode.WARN_NAVIGATION_UNTITLED_FILE]:
     'RangeLink: Cannot navigate to unsaved file ({path}). Save the file first, then try again.',

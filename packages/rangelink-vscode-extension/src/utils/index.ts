@@ -5,6 +5,7 @@ export * from './convertRangeLinkPosition';
 export * from './createIsoTimestamp';
 export * from './destinationKindGuards';
 export * from './expandPathForDisplay';
+export * from './formatClampingSummary';
 export * from './formatLinkPosition';
 export * from './formatLinkTooltip';
 export * from './formatMessage';
