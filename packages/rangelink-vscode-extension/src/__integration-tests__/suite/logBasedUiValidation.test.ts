@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 import { assertStatusBarMsgLogged, assertToastLogged, getLogCapture } from '../helpers';
 
 const SETTLE_MS = 500;
+const settle = () => new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
 
 const getWorkspaceRoot = (): string => {
   const folder = vscode.workspace.workspaceFolders?.[0];
@@ -59,9 +60,9 @@ suite('Log-Based UI Assertions', () => {
   const bindTerminal = async (): Promise<vscode.Terminal> => {
     terminal = vscode.window.createTerminal({ name: 'rl-toast-test' });
     terminal.show();
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
     return terminal;
   };
 
@@ -84,7 +85,7 @@ suite('Log-Based UI Assertions', () => {
     logCapture.mark('before-unbind-003');
 
     await vscode.commands.executeCommand('rangelink.unbindDestination');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const lines = logCapture.getLinesSince('before-unbind-003');
     assertStatusBarMsgLogged(lines, {
@@ -100,9 +101,9 @@ suite('Log-Based UI Assertions', () => {
     logCapture.mark('before-terminal-rl-006');
 
     terminal!.show();
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
     await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const lines = logCapture.getLinesSince('before-terminal-rl-006');
     assertToastLogged(lines, {
@@ -119,9 +120,9 @@ suite('Log-Based UI Assertions', () => {
     logCapture.mark('before-terminal-rc-007');
 
     terminal!.show();
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const lines = logCapture.getLinesSince('before-terminal-rc-007');
     assertToastLogged(lines, {
@@ -134,13 +135,13 @@ suite('Log-Based UI Assertions', () => {
   test('core-send-commands-r-l-001: R-L sends RangeLink to bound terminal', async () => {
     await bindTerminal();
     await openAndSelectLines(1, 4);
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-send-rl-001');
 
     await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const lines = logCapture.getLinesSince('before-send-rl-001');
     assertStatusBarMsgLogged(lines, {
@@ -154,13 +155,13 @@ suite('Log-Based UI Assertions', () => {
     const doc = await vscode.workspace.openTextDocument(testFileUri);
     await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
     await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-send-fp-001');
 
     await vscode.commands.executeCommand('rangelink.pasteCurrentFileRelativePath');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const lines = logCapture.getLinesSince('before-send-fp-001');
     assertStatusBarMsgLogged(lines, {
@@ -173,13 +174,13 @@ suite('Log-Based UI Assertions', () => {
     await bindTerminal();
     const editor = await openAndSelectLines(1, 3);
     await editor.document.save();
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-clean-send-007');
 
     await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const lines = logCapture.getLinesSince('before-clean-send-007');
     assertStatusBarMsgLogged(lines, {
@@ -194,16 +195,16 @@ suite('Log-Based UI Assertions', () => {
       await vscode.workspace.openTextDocument(testFileUri),
       vscode.ViewColumn.One,
     );
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     await vscode.commands.executeCommand('expandLineSelection');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-fullline-001');
 
     await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const lines = logCapture.getLinesSince('before-fullline-001');
     assertStatusBarMsgLogged(lines, {
