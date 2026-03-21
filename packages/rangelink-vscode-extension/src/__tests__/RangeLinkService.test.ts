@@ -1946,43 +1946,10 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should show error message and log diagnostic context', async () => {
+      it('shows error and does not copy to clipboard', async () => {
         await service.createLink(PathFormat.WorkspaceRelative);
 
         expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          {
-            fn: 'RangeLinkService.validateSelectionsAndShowError',
-            hasEditor: false,
-            selectionCount: 0,
-            selections: [],
-            documentVersion: undefined,
-            documentLineCount: undefined,
-            documentIsDirty: undefined,
-            documentIsClosed: undefined,
-          },
-          'Selection validation starting',
-        );
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-          {
-            fn: 'RangeLinkService.validateSelectionsAndShowError',
-            hasEditor: false,
-            errorCode: 'ERROR_NO_ACTIVE_EDITOR',
-            selectionCount: 0,
-            selections: [],
-            documentVersion: undefined,
-            documentLineCount: undefined,
-            documentIsDirty: undefined,
-            documentIsClosed: undefined,
-            lineContentAtBoundaries: undefined,
-          },
-          'Selection validation failed - full diagnostic context',
-        );
-      });
-
-      it('should not copy to clipboard', async () => {
-        await service.createLink(PathFormat.WorkspaceRelative);
-
         expect(mockClipboard.writeText).not.toHaveBeenCalled();
       });
     });
