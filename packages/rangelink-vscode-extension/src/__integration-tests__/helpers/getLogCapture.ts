@@ -17,5 +17,9 @@ export const getLogCapture = (): LogCapture => {
   if (!ext.isActive) {
     throw new Error(`Extension ${EXTENSION_ID} is not active — call ext.activate() first`);
   }
-  return ext.exports.logCapture;
+  const logCapture = ext.exports?.logCapture;
+  if (!logCapture) {
+    throw new Error(`Extension ${EXTENSION_ID} is active but did not export logCapture`);
+  }
+  return logCapture;
 };
