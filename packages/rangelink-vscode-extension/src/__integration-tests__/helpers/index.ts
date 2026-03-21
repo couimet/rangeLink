@@ -1,2 +1,7 @@
 export { getLogCapture } from './getLogCapture';
-export { assertNoToastLogged, assertToastLogged } from './toastAssertions';
+export {
+  assertNoStatusBarMsgLogged,
+  assertNoToastLogged,
+  assertStatusBarMsgLogged,
+  assertToastLogged,
+} from './logBasedUiAssertions';

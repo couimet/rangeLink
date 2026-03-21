@@ -129,14 +129,11 @@ describe('LogCapture', () => {
       const mockChannel = createMockOutputChannel();
       const capture = new LogCapture(mockChannel as any);
 
-      expect(() => capture.mark('test')).toThrowRangeLinkExtensionError(
-        'LOG_CAPTURE_DISABLED',
-        {
-          message:
-            'LogCapture.mark() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
-          functionName: 'LogCapture.mark',
-        },
-      );
+      expect(() => capture.mark('test')).toThrowRangeLinkExtensionError('LOG_CAPTURE_DISABLED', {
+        message:
+          'LogCapture.mark() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
+        functionName: 'LogCapture.mark',
+      });
     });
 
     it('getLinesSince() throws LOG_CAPTURE_DISABLED', () => {
@@ -157,14 +154,11 @@ describe('LogCapture', () => {
       const mockChannel = createMockOutputChannel();
       const capture = new LogCapture(mockChannel as any);
 
-      expect(() => capture.getAllLines()).toThrowRangeLinkExtensionError(
-        'LOG_CAPTURE_DISABLED',
-        {
-          message:
-            'LogCapture.getAllLines() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
-          functionName: 'LogCapture.getAllLines',
-        },
-      );
+      expect(() => capture.getAllLines()).toThrowRangeLinkExtensionError('LOG_CAPTURE_DISABLED', {
+        message:
+          'LogCapture.getAllLines() called without RANGELINK_CAPTURE_LOGS=true — this method is for integration tests only',
+        functionName: 'LogCapture.getAllLines',
+      });
     });
 
     it('clear() throws LOG_CAPTURE_DISABLED', () => {
