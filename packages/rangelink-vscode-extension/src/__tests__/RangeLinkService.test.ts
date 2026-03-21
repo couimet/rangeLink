@@ -152,78 +152,78 @@ describe('RangeLinkService', () => {
       );
     });
 
-      it('delegates to ClipboardPreserver for BoundDestination behavior', async () => {
-        const boundService = new RangeLinkService(
-          getDelimiters,
-          mockVscodeAdapter,
-          createMockDestinationManager({
-            isBound: true,
-            boundDestination: createMockTerminalPasteDestination({ displayName: 'Terminal' }),
-          }),
-          mockPickerCommand,
-          mockConfigReader,
-          mockClipboardPreserver,
-          mockLogger,
-        );
-        const executeSpy = jest
-          .spyOn(boundService as any, 'executeCopyAndSend')
-          .mockResolvedValue(undefined);
-        const sendFn = jest.fn();
-        const isEligibleFn = jest.fn();
+    it('delegates to ClipboardPreserver for BoundDestination behavior', async () => {
+      const boundService = new RangeLinkService(
+        getDelimiters,
+        mockVscodeAdapter,
+        createMockDestinationManager({
+          isBound: true,
+          boundDestination: createMockTerminalPasteDestination({ displayName: 'Terminal' }),
+        }),
+        mockPickerCommand,
+        mockConfigReader,
+        mockClipboardPreserver,
+        mockLogger,
+      );
+      const executeSpy = jest
+        .spyOn(boundService as any, 'executeCopyAndSend')
+        .mockResolvedValue(undefined);
+      const sendFn = jest.fn();
+      const isEligibleFn = jest.fn();
 
-        await (boundService as any).copyAndSendToDestination({
-          control: {
-            contentType: PasteContentType.Link,
-            destinationBehavior: DestinationBehavior.BoundDestination,
-          },
-          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
-          strategies: { sendFn, isEligibleFn },
-          contentName: 'RangeLink',
-          fnName: 'test',
-        });
-
-        expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(1);
-        expect(executeSpy).toHaveBeenCalledWith({
-          control: { contentType: 'Link', destinationBehavior: 'bound-destination' },
-          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
-          strategies: { sendFn, isEligibleFn },
-          contentName: 'RangeLink',
-          fnName: 'test',
-        });
+      await (boundService as any).copyAndSendToDestination({
+        control: {
+          contentType: PasteContentType.Link,
+          destinationBehavior: DestinationBehavior.BoundDestination,
+        },
+        content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+        strategies: { sendFn, isEligibleFn },
+        contentName: 'RangeLink',
+        fnName: 'test',
       });
 
-      it('does not preserve when no destination is bound', async () => {
-        await (service as any).copyAndSendToDestination({
-          control: {
-            contentType: PasteContentType.Link,
-            destinationBehavior: DestinationBehavior.BoundDestination,
-          },
-          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
-          strategies: { sendFn: jest.fn(), isEligibleFn: jest.fn() },
-          contentName: 'RangeLink',
-          fnName: 'test',
-        });
+      expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(1);
+      expect(executeSpy).toHaveBeenCalledWith({
+        control: { contentType: 'Link', destinationBehavior: 'bound-destination' },
+        content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+        strategies: { sendFn, isEligibleFn },
+        contentName: 'RangeLink',
+        fnName: 'test',
+      });
+    });
 
-        expect(mockClipboardPreserver.preserve).not.toHaveBeenCalled();
-        expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L1');
+    it('does not preserve when no destination is bound', async () => {
+      await (service as any).copyAndSendToDestination({
+        control: {
+          contentType: PasteContentType.Link,
+          destinationBehavior: DestinationBehavior.BoundDestination,
+        },
+        content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+        strategies: { sendFn: jest.fn(), isEligibleFn: jest.fn() },
+        contentName: 'RangeLink',
+        fnName: 'test',
       });
 
-      it('does not delegate to ClipboardPreserver for ClipboardOnly behavior', async () => {
-        await (service as any).copyAndSendToDestination({
-          control: {
-            contentType: PasteContentType.Link,
-            destinationBehavior: DestinationBehavior.ClipboardOnly,
-          },
-          content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
-          strategies: { sendFn: jest.fn(), isEligibleFn: jest.fn() },
-          contentName: 'RangeLink',
-          fnName: 'test',
-        });
+      expect(mockClipboardPreserver.preserve).not.toHaveBeenCalled();
+      expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L1');
+    });
 
-        expect(mockClipboardPreserver.preserve).not.toHaveBeenCalled();
-        expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L1');
-        expect(mockClipboard.readText).not.toHaveBeenCalled();
+    it('does not delegate to ClipboardPreserver for ClipboardOnly behavior', async () => {
+      await (service as any).copyAndSendToDestination({
+        control: {
+          contentType: PasteContentType.Link,
+          destinationBehavior: DestinationBehavior.ClipboardOnly,
+        },
+        content: { clipboard: 'src/file.ts#L1', send: 'src/file.ts#L1' },
+        strategies: { sendFn: jest.fn(), isEligibleFn: jest.fn() },
+        contentName: 'RangeLink',
+        fnName: 'test',
       });
+
+      expect(mockClipboardPreserver.preserve).not.toHaveBeenCalled();
+      expect(mockClipboard.writeText).toHaveBeenCalledWith('src/file.ts#L1');
+      expect(mockClipboard.readText).not.toHaveBeenCalled();
+    });
   });
 
   describe('pasteSelectedTextToDestination', () => {
