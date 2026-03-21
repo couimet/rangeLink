@@ -4,6 +4,8 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
+import { assertStatusBarMsgLogged, getLogCapture } from '../helpers';
+
 const TERMINAL_READY_MS = 1500;
 
 const getWorkspaceRoot = (): string => {
@@ -45,7 +47,15 @@ suite('Unbind Destination', () => {
 
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-unbind-001');
+
     await vscode.commands.executeCommand('rangelink.unbindDestination');
+
+    const lines = logCapture.getLinesSince('before-unbind-001');
+    assertStatusBarMsgLogged(lines, {
+      message: '✓ RangeLink unbound from Terminal ("rl-unbind-test")',
+    });
 
     // Re-show editor and verify unbound via R-C
     await vscode.window.showTextDocument(doc);
@@ -64,6 +74,26 @@ suite('Unbind Destination', () => {
       clipboard.includes('#L'),
       `Expected clipboard to contain a line reference but got: ${clipboard}`,
     );
+
+    terminal.dispose();
+  });
+
+  test('unbind-004: RangeLink: Unbind Destination available in Command Palette', async () => {
+    const terminal = vscode.window.createTerminal({ name: 'rl-unbind-004-test' });
+    terminal.show(true);
+    await new Promise<void>((resolve) => setTimeout(resolve, TERMINAL_READY_MS));
+
+    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-unbind-004');
+
+    await vscode.commands.executeCommand('rangelink.unbindDestination');
+
+    const lines = logCapture.getLinesSince('before-unbind-004');
+    assertStatusBarMsgLogged(lines, {
+      message: '✓ RangeLink unbound from Terminal ("rl-unbind-004-test")',
+    });
 
     terminal.dispose();
   });

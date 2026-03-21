@@ -1388,12 +1388,12 @@ test_cases:
 
   - id: unbind-003
     feature: 'R-U Unbind'
-    scenario: 'R-U with no bound destination shows no-op or appropriate info message'
+    scenario: 'R-U with no bound destination is disabled (keybinding gated by rangelink.isBound)'
     preconditions:
       - 'No destination is currently bound'
     steps:
       - 'Press Cmd+R Cmd+U (Mac) / Ctrl+R Ctrl+U (Win/Linux)'
-    expected_result: "An info notification appears (e.g., 'No destination is currently bound'). No error. Command is a safe no-op."
+    expected_result: "Keybinding does not fire (gated by rangelink.isBound when clause). If invoked directly via executeCommand, a status bar message appears ('RangeLink: No destination bound'). No error."
     automated: true
 
   - id: unbind-004
@@ -1405,7 +1405,7 @@ test_cases:
       - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
       - "Type 'Unbind Destination' and select 'RangeLink: Unbind Destination'"
     expected_result: 'Same behavior as R-U keybinding — destination is unbound with confirmation notification.'
-    automated: false
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 12 — Changed Behaviors

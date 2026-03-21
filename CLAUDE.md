@@ -515,6 +515,12 @@
   <placement>Co-locate with the unit test file: `Foo.test.ts` → `Foo.integration.test.ts` in the same directory</placement>
 </integration-test-convention>
 
+<release-test-requirement>
+  <rule>Any change to files in `packages/rangelink-vscode-extension/qa/` or `packages/rangelink-vscode-extension/src/__integration-tests__/` MUST be validated by running `pnpm test:release`</rule>
+  <reason>The QA validator script only checks ID matching — it does not execute the tests. Only `test:release` compiles the extension and runs integration tests in a real VS Code host, which is the only way to verify that log-based assertions and command behavior actually work.</reason>
+  <command>`pnpm test:release` (compiles the extension, launches VS Code host, runs integration tests, then runs QA validator — all in one command)</command>
+</release-test-requirement>
+
 </testing>
 
 ---
@@ -582,7 +588,7 @@
 <rule id="QA005" priority="critical">
   <title>`automated: true` requires a matching integration test on the branch</title>
   <do>When marking a TC `automated: true`, ensure the corresponding integration test (in `src/__integration-tests__/suite/`) exists on the same branch before the PR merges — it can be a separate commit/step</do>
-  <do>Use `automated: false` for scenarios that can't be integration-tested (e.g., toast content, QuickPick suppression)</do>
+  <do>Use `automated: false` for scenarios that can't be integration-tested (e.g., QuickPick content verification, dialog interaction). See TESTING.md § "QuickPick limitation" for what can and cannot be automated.</do>
   <never>Mark `automated: true` based on unit tests alone — the validator only checks integration tests</never>
   <see>packages/rangelink-vscode-extension/scripts/validate-qa-coverage.sh</see>
 </rule>

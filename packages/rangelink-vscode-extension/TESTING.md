@@ -83,6 +83,16 @@ Integration tests run inside a real VS Code process via `@vscode/test-cli`. They
 pnpm test:release
 ```
 
+### QuickPick limitation
+
+VS Code's extension host test runner provides no API to interact with QuickPick UI — tests cannot programmatically select items, dismiss pickers, or read picker contents. A QuickPick that opens during a test **will stall the test indefinitely** because it blocks the command from completing, and there is no way to dismiss it from test code.
+
+**Workaround — command bypass:** Many TCs that involve a QuickPick as a means to an end (e.g., "bind via picker, verify toast") can be automated by calling the underlying command directly (`rangelink.bindToTerminalHere`, `rangelink.bindToTextEditorHere`) to bypass the picker entirely, then asserting the outcome via log-based UI assertions.
+
+**What cannot be automated:** TCs that verify picker content itself (item ordering, badges, grouping, placeholder text) or dialog interaction (confirmation buttons, cancel behavior) must remain `automated: false` in the QA YAML. These require manual testing.
+
+See https://github.com/couimet/rangeLink/issues/483 for the full triage of automatable vs manual TCs.
+
 ---
 
 ## CI Pipeline
