@@ -89,6 +89,8 @@ export class PasteDestinationManager implements vscode.Disposable {
     this.setupTextDocumentCloseListener();
     // Warn when bound editor appears in multiple tab groups
     this.setupMultiColumnGuardListener();
+
+    void this.vscodeAdapter.executeCommand('setContext', CONTEXT_IS_BOUND, false);
   }
 
   /**

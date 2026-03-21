@@ -46,7 +46,7 @@ import {
  * @param expectedKeyValues - Record of expected context keys and their final values
  *   - Bind success: { 'rangelink.isBound': true }
  *   - Unbind success: { 'rangelink.isBound': false }
- *   - Bind failure: {} (empty - no keys should be set)
+ *   - Bind failure: { 'rangelink.isBound': false } (unchanged from constructor initialization)
  */
 const expectContextKeys = (
   mockVscode: ReturnType<VscodeAdapterWithTestHooks['__getVscodeInstance']>,
@@ -372,7 +372,7 @@ describe('PasteDestinationManager', () => {
         'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should fail when claude-code not available', async () => {
@@ -392,7 +392,7 @@ describe('PasteDestinationManager', () => {
         'RangeLink: Cannot bind Claude Code - extension not installed or not active',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should bind to claude-code when available', async () => {
@@ -464,7 +464,7 @@ describe('PasteDestinationManager', () => {
         'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should show info message when binding same chat destination twice', async () => {
@@ -611,7 +611,7 @@ describe('PasteDestinationManager', () => {
         'RangeLink: Could not open "gone.ts". Try again or choose another file.',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should bind to background tab by bringing it to foreground', async () => {
@@ -707,7 +707,7 @@ describe('PasteDestinationManager', () => {
         'RangeLink: "file.ts" opened in a different editor group. Try again or choose another file.',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should fail to bind text editor to read-only scheme', async () => {
@@ -740,7 +740,7 @@ describe('PasteDestinationManager', () => {
         'RangeLink: Cannot bind to read-only editor (git)',
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
 
     it('should fail to bind text editor to binary file', async () => {
@@ -774,7 +774,7 @@ describe('PasteDestinationManager', () => {
         `RangeLink: Cannot bind to ${testFileName} - binary file`,
       );
       expect(mockAdapter.__getVscodeInstance().window.setStatusBarMessage).not.toHaveBeenCalled();
-      expectContextKeys(mockAdapter.__getVscodeInstance(), {});
+      expectContextKeys(mockAdapter.__getVscodeInstance(), { 'rangelink.isBound': false });
     });
   });
 

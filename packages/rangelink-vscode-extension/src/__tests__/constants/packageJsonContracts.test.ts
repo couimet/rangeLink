@@ -197,6 +197,7 @@ describe('package.json contributions', () => {
           title: 'Unbind',
           category: 'RangeLink',
           icon: '$(close)',
+          enablement: 'rangelink.isBound',
         });
       });
 
@@ -782,6 +783,7 @@ describe('package.json contributions', () => {
         command: 'rangelink.unbindDestination',
         key: 'ctrl+r ctrl+u',
         mac: 'cmd+r cmd+u',
+        when: 'rangelink.isBound',
       });
     });
 
