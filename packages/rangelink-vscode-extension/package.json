@@ -167,7 +167,8 @@
         "command": "rangelink.unbindDestination",
         "title": "Unbind",
         "category": "RangeLink",
-        "icon": "$(close)"
+        "icon": "$(close)",
+        "enablement": "rangelink.isBound"
       },
       {
         "command": "rangelink.jumpToBoundDestination",
@@ -548,7 +549,8 @@
       {
         "command": "rangelink.unbindDestination",
         "key": "ctrl+r ctrl+u",
-        "mac": "cmd+r cmd+u"
+        "mac": "cmd+r cmd+u",
+        "when": "rangelink.isBound"
       },
       {
         "command": "rangelink.terminal.copyLinkGuard",
