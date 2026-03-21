@@ -4,6 +4,8 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
+import { assertStatusBarMsgLogged, getLogCapture } from '../helpers';
+
 const TERMINAL_READY_MS = 1500;
 
 const getWorkspaceRoot = (): string => {
@@ -45,7 +47,15 @@ suite('Unbind Destination', () => {
 
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-unbind-001');
+
     await vscode.commands.executeCommand('rangelink.unbindDestination');
+
+    const lines = logCapture.getLinesSince('before-unbind-001');
+    assertStatusBarMsgLogged(lines, {
+      message: '✓ RangeLink unbound from Terminal ("rl-unbind-test")',
+    });
 
     // Re-show editor and verify unbound via R-C
     await vscode.window.showTextDocument(doc);
