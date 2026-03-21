@@ -1327,10 +1327,18 @@ describe('VscodeAdapter', () => {
       const mockDoc = createMockDocument({ uri: createMockUntitledUri('untitled:untitled-1') });
       mockVSCode.workspace.textDocuments = [mockDoc];
 
-      // With case-insensitive matching, "untitled-1" is the display name (no "Untitled-" prefix added)
       const result = adapter.findOpenUntitledFile('untitled-1');
 
       expect(result?.toString()).toBe('untitled:untitled-1');
+    });
+
+    it('should match case-insensitively when search term differs from display name', () => {
+      const mockDoc = createMockDocument({ uri: createMockUntitledUri('untitled:Untitled-1') });
+      mockVSCode.workspace.textDocuments = [mockDoc];
+
+      const result = adapter.findOpenUntitledFile('untitled-1');
+
+      expect(result?.toString()).toBe('untitled:Untitled-1');
     });
   });
 

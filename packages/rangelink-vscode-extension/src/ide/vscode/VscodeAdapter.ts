@@ -470,7 +470,7 @@ export class VscodeAdapter
 
     for (const doc of untitledDocs) {
       const docDisplayName = getUntitledDisplayName(doc.uri);
-      if (docDisplayName === displayName) {
+      if (docDisplayName.toLowerCase() === displayName.toLowerCase()) {
         return doc.uri;
       }
     }
