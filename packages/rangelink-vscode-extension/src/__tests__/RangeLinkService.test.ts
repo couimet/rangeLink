@@ -153,25 +153,7 @@ describe('RangeLinkService', () => {
     });
 
     describe('when no destination is bound', () => {
-      it('should copy link to clipboard', async () => {
-        const link = 'src/auth.ts#L10-L20';
-        const formattedLink = createMockFormattedLink(link);
-
-        // Access private method via any cast for testing
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-          2000,
-        );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
-      });
-
-      it('should show status message with "copied to clipboard"', async () => {
+      it('copies to clipboard with status message, does not send to destination or warn', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
 
@@ -188,71 +170,17 @@ describe('RangeLinkService', () => {
         expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
       });
 
-      it('should use link type name in status message (RangeLink)', async () => {
-        const link = 'src/auth.ts#L10';
-        const formattedLink = createMockFormattedLink(link);
-
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-          2000,
-        );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
-      });
-
-      it('should use link type name in status message (Portable RangeLink)', async () => {
+      it('uses link type name in status message for Portable RangeLink', async () => {
         const link = 'src/auth.ts#L10{L:LINE,C:COL}';
         const formattedLink = createMockFormattedLink(link);
 
         await (service as any).copyToClipboardAndDestination(formattedLink, 'Portable RangeLink');
 
         expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
         expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
           '✓ Portable RangeLink copied to clipboard',
           2000,
         );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
-      });
-
-      it('should not call showWarningMessage', async () => {
-        const link = 'src/auth.ts#L10';
-        const formattedLink = createMockFormattedLink(link);
-
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-          2000,
-        );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
-      });
-
-      it('should not send to terminal', async () => {
-        const link = 'src/auth.ts#L10';
-        const formattedLink = createMockFormattedLink(link);
-
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-          2000,
-        );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
         expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
       });
     });
@@ -276,7 +204,7 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should copy link to clipboard', async () => {
+      it('copies to clipboard then sends to destination in order, no status bar or warnings', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
 
@@ -290,43 +218,6 @@ describe('RangeLinkService', () => {
           'both',
         );
         expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
-        expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockShowErrorMessage).not.toHaveBeenCalled();
-      });
-
-      it('should send link to terminal with basicStatusMessage', async () => {
-        const link = 'src/auth.ts#L10-L20';
-        const formattedLink = createMockFormattedLink(link);
-
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
-          formattedLink,
-          '✓ RangeLink copied to clipboard',
-          'both',
-        );
-        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
-        expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockShowErrorMessage).not.toHaveBeenCalled();
-      });
-
-      it('should call methods in correct order: clipboard then manager', async () => {
-        const link = 'src/auth.ts#L10';
-        const formattedLink = createMockFormattedLink(link);
-
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
-          formattedLink,
-          '✓ RangeLink copied to clipboard',
-          'both',
-        );
-        // Verify call order (service handles clipboard, manager handles destination + feedback)
         const clipboardCall = (mockClipboard.writeText as jest.Mock).mock.invocationCallOrder[0];
         const managerCall = (mockDestinationManager.sendLinkToDestination as jest.Mock).mock
           .invocationCallOrder[0];
@@ -358,7 +249,7 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should copy link to clipboard', async () => {
+      it('copies to clipboard and attempts send to destination (paste fails silently)', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
 
@@ -377,26 +268,7 @@ describe('RangeLinkService', () => {
         expect(mockShowErrorMessage).not.toHaveBeenCalled();
       });
 
-      it('should attempt to send to destination with basicStatusMessage', async () => {
-        const link = 'src/auth.ts#L10-L20';
-        const formattedLink = createMockFormattedLink(link);
-
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledWith(
-          formattedLink,
-          '✓ RangeLink copied to clipboard',
-          'both',
-        );
-        expect(mockDestinationManager.sendLinkToDestination).toHaveBeenCalledTimes(1);
-        expect(mockSetStatusBarMessage).not.toHaveBeenCalled();
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockShowErrorMessage).not.toHaveBeenCalled();
-      });
-
-      it('should pass correct basicStatusMessage for Portable RangeLink', async () => {
+      it('passes correct basicStatusMessage for Portable RangeLink', async () => {
         const formattedLink = createMockFormattedLink('src/file.ts#L1');
         await (service as any).copyToClipboardAndDestination(formattedLink, 'Portable RangeLink');
 
@@ -435,7 +307,7 @@ describe('RangeLinkService', () => {
         );
       });
 
-      it('should copy link to clipboard', async () => {
+      it('copies to clipboard only, skips destination, logs eligibility skip', async () => {
         const link = 'src/auth.ts#L10-L20';
         const formattedLink = createMockFormattedLink(link);
 
@@ -455,99 +327,6 @@ describe('RangeLinkService', () => {
           'Content not eligible for paste - skipping auto-paste',
         );
         const mockDestination = mockDestinationManager.getBoundDestination()!;
-        expect(mockDestination.isEligibleForPasteLink).toHaveBeenCalledWith(formattedLink);
-        expect(mockDestination.isEligibleForPasteLink).toHaveBeenCalledTimes(1);
-      });
-
-      it('should NOT send to destination when link not eligible', async () => {
-        const link = 'src/auth.ts#L10-L20';
-        const formattedLink = createMockFormattedLink(link);
-
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-          2000,
-        );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'copyToClipboardAndDestination', boundDestination: 'Terminal' },
-          'Content not eligible for paste - skipping auto-paste',
-        );
-        const mockDestination = mockDestinationManager.getBoundDestination()!;
-        expect(mockDestination.isEligibleForPasteLink).toHaveBeenCalledWith(formattedLink);
-      });
-
-      it('should show clipboard-only status message', async () => {
-        const link = 'src/auth.ts#L10-L20';
-        const formattedLink = createMockFormattedLink(link);
-
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-          2000,
-        );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'copyToClipboardAndDestination', boundDestination: 'Terminal' },
-          'Content not eligible for paste - skipping auto-paste',
-        );
-        const mockDestination = mockDestinationManager.getBoundDestination()!;
-        expect(mockDestination.isEligibleForPasteLink).toHaveBeenCalledWith(formattedLink);
-      });
-
-      it('should log debug message about skipping auto-paste', async () => {
-        const link = 'src/auth.ts#L10-L20';
-        const formattedLink = createMockFormattedLink(link);
-
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-          2000,
-        );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'copyToClipboardAndDestination', boundDestination: 'Terminal' },
-          'Content not eligible for paste - skipping auto-paste',
-        );
-        const mockDestination = mockDestinationManager.getBoundDestination()!;
-        expect(mockDestination.isEligibleForPasteLink).toHaveBeenCalledWith(formattedLink);
-      });
-
-      it('should verify isEligibleForPasteLink was called with correct link', async () => {
-        const link = 'src/auth.ts#L10-L20';
-        const formattedLink = createMockFormattedLink(link);
-        const mockDestination = mockDestinationManager.getBoundDestination()!;
-
-        await (service as any).copyToClipboardAndDestination(formattedLink, 'RangeLink');
-
-        expect(mockClipboard.writeText).toHaveBeenCalledWith(link);
-        expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-        expect(mockDestinationManager.sendLinkToDestination).not.toHaveBeenCalled();
-        expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-          '✓ RangeLink copied to clipboard',
-          2000,
-        );
-        expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-        expect(mockShowWarningMessage).not.toHaveBeenCalled();
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'copyToClipboardAndDestination', boundDestination: 'Terminal' },
-          'Content not eligible for paste - skipping auto-paste',
-        );
         expect(mockDestination.isEligibleForPasteLink).toHaveBeenCalledWith(formattedLink);
         expect(mockDestination.isEligibleForPasteLink).toHaveBeenCalledTimes(1);
       });
@@ -1221,91 +1000,7 @@ describe('RangeLinkService', () => {
           );
         });
 
-        it('should copy text to clipboard', async () => {
-          await service.pasteSelectedTextToDestination();
-
-          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
-          expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-          expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
-          expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-            '✓ Selected text copied to clipboard',
-            2000,
-          );
-          expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-          expect(mockShowWarningMessage).not.toHaveBeenCalled();
-          expect(mockLogger.debug).toHaveBeenCalledWith(
-            { fn: 'pasteSelectedTextToDestination', boundDestination: 'Terminal' },
-            'Content not eligible for paste - skipping auto-paste',
-          );
-          expect(mockDestination.isEligibleForPasteContent).toHaveBeenCalledWith(
-            'const foo = "bar";',
-          );
-        });
-
-        it('should NOT send to destination when text content not eligible', async () => {
-          await service.pasteSelectedTextToDestination();
-
-          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
-          expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-          expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
-          expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-            '✓ Selected text copied to clipboard',
-            2000,
-          );
-          expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-          expect(mockShowWarningMessage).not.toHaveBeenCalled();
-          expect(mockLogger.debug).toHaveBeenCalledWith(
-            { fn: 'pasteSelectedTextToDestination', boundDestination: 'Terminal' },
-            'Content not eligible for paste - skipping auto-paste',
-          );
-          expect(mockDestination.isEligibleForPasteContent).toHaveBeenCalledWith(
-            'const foo = "bar";',
-          );
-        });
-
-        it('should show clipboard-only status message', async () => {
-          await service.pasteSelectedTextToDestination();
-
-          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
-          expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-          expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
-          expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-            '✓ Selected text copied to clipboard',
-            2000,
-          );
-          expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-          expect(mockShowWarningMessage).not.toHaveBeenCalled();
-          expect(mockLogger.debug).toHaveBeenCalledWith(
-            { fn: 'pasteSelectedTextToDestination', boundDestination: 'Terminal' },
-            'Content not eligible for paste - skipping auto-paste',
-          );
-          expect(mockDestination.isEligibleForPasteContent).toHaveBeenCalledWith(
-            'const foo = "bar";',
-          );
-        });
-
-        it('should log debug message about skipping auto-paste', async () => {
-          await service.pasteSelectedTextToDestination();
-
-          expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
-          expect(mockClipboard.writeText).toHaveBeenCalledTimes(1);
-          expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
-          expect(mockSetStatusBarMessage).toHaveBeenCalledWith(
-            '✓ Selected text copied to clipboard',
-            2000,
-          );
-          expect(mockSetStatusBarMessage).toHaveBeenCalledTimes(1);
-          expect(mockShowWarningMessage).not.toHaveBeenCalled();
-          expect(mockLogger.debug).toHaveBeenCalledWith(
-            { fn: 'pasteSelectedTextToDestination', boundDestination: 'Terminal' },
-            'Content not eligible for paste - skipping auto-paste',
-          );
-          expect(mockDestination.isEligibleForPasteContent).toHaveBeenCalledWith(
-            'const foo = "bar";',
-          );
-        });
-
-        it('should verify isEligibleForPasteContent was called with correct text', async () => {
+        it('copies to clipboard only, skips destination, logs eligibility skip', async () => {
           await service.pasteSelectedTextToDestination();
 
           expect(mockClipboard.writeText).toHaveBeenCalledWith('const foo = "bar";');
