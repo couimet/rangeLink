@@ -15,6 +15,14 @@ describe('logBasedUiAssertions', () => {
       assertToastLogged(lines, { type: 'info', message: 'Claude Code is not available' });
     });
 
+    it('passes when JSON context contains nested objects', () => {
+      const lines = [
+        '[DEBUG] {"fn":"VscodeAdapter.showInformationMessage","message":"nested test","details":{"key":"val"}} Showing info message',
+      ];
+
+      assertToastLogged(lines, { type: 'info', message: 'nested test' });
+    });
+
     it('passes when matching warning toast is found', () => {
       const lines = [
         '[DEBUG] {"fn":"VscodeAdapter.showWarningMessage","message":"RangeLink: Bound file is open in multiple editor groups."} Showing warning message',

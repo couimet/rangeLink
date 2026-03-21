@@ -28,7 +28,7 @@ interface ToastAssertionOptions extends MessageAssertionOptions {
  */
 const parseLogContext = (line: string): { fn: string; message: string } | undefined => {
   const jsonStart = line.indexOf('{');
-  const jsonEnd = line.indexOf('}');
+  const jsonEnd = line.lastIndexOf('}');
   if (jsonStart === -1 || jsonEnd === -1) {
     return undefined;
   }
