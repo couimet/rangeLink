@@ -7,6 +7,9 @@ export default defineConfig([
     workspaceFolder: './',
     version: 'stable',
     launchArgs: ['--user-data-dir', '/tmp/rl-vscode-test'],
+    env: {
+      RANGELINK_CAPTURE_LOGS: 'true',
+    },
     mocha: {
       timeout: 20000,
     },

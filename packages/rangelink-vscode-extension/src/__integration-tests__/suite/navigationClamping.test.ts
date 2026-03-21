@@ -6,6 +6,8 @@ import type { ParsedLink } from 'rangelink-core-ts';
 import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { assertToastLogged, getLogCapture } from '../helpers';
+
 const LINE_COUNT = 10;
 const LINE_CONTENT = 'abcdefghijklmnopqrst'; // 20 characters per line
 
@@ -95,10 +97,11 @@ suite('Navigation Clamping', () => {
     }
   });
 
-  // TODO: Toast type verification (info vs warning) blocked on https://github.com/couimet/rangeLink/issues/481
-
   // navigation-clamping-001: line beyond EOF → selection at last line
   test('navigation-clamping-001: #L50 on 10-line file — selection clamped to last line', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clamping-001');
+
     const linkText = `${testFilename}#L50`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
@@ -119,11 +122,19 @@ suite('Navigation Clamping', () => {
       lastLineLength,
       `Expected active char at end of last line (${lastLineLength})`,
     );
+
+    const lines = logCapture.getLinesSince('before-clamping-001');
+    assertToastLogged(lines, {
+      type: 'warning',
+      message: `RangeLink: Navigated to ${testFilename} @ 50 (clamped: line exceeded file length)`,
+    });
   });
 
   // navigation-clamping-002: column beyond line length → selection at end of line
-  // TODO: Toast content verification ("column exceeded line length") blocked on https://github.com/couimet/rangeLink/issues/481
   test('navigation-clamping-002: #L1C200 on 20-char line — character clamped to line length', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clamping-002');
+
     const linkText = `${testFilename}#L1C200`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
@@ -141,11 +152,19 @@ suite('Navigation Clamping', () => {
       lineLength,
       `Expected anchor char clamped to line length (${lineLength})`,
     );
+
+    const lines = logCapture.getLinesSince('before-clamping-002');
+    assertToastLogged(lines, {
+      type: 'warning',
+      message: `RangeLink: Navigated to ${testFilename} @ 1:200 (clamped: column exceeded line length)`,
+    });
   });
 
   // navigation-clamping-003: valid position → selection at exact position
-  // TODO: Toast type verification (should be info, not warning) blocked on https://github.com/couimet/rangeLink/issues/481
   test('navigation-clamping-003: #L5C10 within bounds — selection at exact position', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clamping-003');
+
     const linkText = `${testFilename}#L5C10`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
@@ -160,11 +179,19 @@ suite('Navigation Clamping', () => {
       10,
       'Expected active char 10 (extended by 1 for visibility)',
     );
+
+    const lines = logCapture.getLinesSince('before-clamping-003');
+    assertToastLogged(lines, {
+      type: 'info',
+      message: `RangeLink: Navigated to ${testFilename} @ 5:10`,
+    });
   });
 
   // navigation-clamping-004: both line and column beyond bounds → both axes clamped
-  // TODO: Toast content verification ("line and column exceeded bounds") blocked on https://github.com/couimet/rangeLink/issues/481
   test('navigation-clamping-004: #L50C200 — both line and column clamped', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clamping-004');
+
     const linkText = `${testFilename}#L50C200`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
@@ -183,5 +210,11 @@ suite('Navigation Clamping', () => {
       lastLineLength,
       `Expected anchor char clamped to line length (${lastLineLength})`,
     );
+
+    const lines = logCapture.getLinesSince('before-clamping-004');
+    assertToastLogged(lines, {
+      type: 'warning',
+      message: `RangeLink: Navigated to ${testFilename} @ 50:200 (clamped: line and column exceeded bounds)`,
+    });
   });
 });

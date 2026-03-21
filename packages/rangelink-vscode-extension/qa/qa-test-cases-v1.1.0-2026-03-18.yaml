@@ -659,7 +659,7 @@ test_cases:
       - 'Press Cmd+R Cmd+F (Mac) / Ctrl+R Ctrl+F (Win/Linux)'
       - 'Observe terminal output'
     expected_result: 'Terminal receives src/utils/helper.ts (workspace-relative). Success toast confirms send.'
-    automated: false
+    automated: true
 
   - id: send-file-path-002
     feature: 'Send File Path'
@@ -1156,7 +1156,7 @@ test_cases:
       - 'Save file (Cmd+S) to ensure clean state'
       - 'Select 2-3 lines, press Cmd+R Cmd+L'
     expected_result: 'No dialog appears. RangeLink generated and sent immediately. Success toast shown.'
-    automated: false
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 9 — R-V Send Terminal Selection
@@ -1235,7 +1235,7 @@ test_cases:
       - 'Click in terminal to focus it'
       - 'Press Cmd+R Cmd+L'
     expected_result: 'Error or info notification guides user: R-L requires editor selection, use R-V for terminal text. Terminal not modified.'
-    automated: false
+    automated: true
 
   - id: send-terminal-selection-007
     feature: 'R-V Send Terminal Selection'
@@ -1246,7 +1246,7 @@ test_cases:
       - 'Click in terminal to focus it'
       - 'Press Cmd+R Cmd+C'
     expected_result: 'Notification guides user to use R-V instead. No clipboard write for invalid terminal context.'
-    automated: false
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 10 — R-G Go to Link
@@ -1798,7 +1798,7 @@ test_cases:
       - 'Press Cmd+L (Mac) / Ctrl+L (Win/Linux) to select the full line'
       - 'Press Cmd+R Cmd+L'
     expected_result: 'A valid RangeLink is generated and sent. No SELECTION_ZERO_WIDTH error notification appears.'
-    automated: false
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section 14 — Core Send Commands (R-L, R-C)
@@ -1817,7 +1817,7 @@ test_cases:
       - 'Observe terminal output'
       - 'Observe VS Code status bar or notification'
     expected_result: 'Terminal receives workspace-relative RangeLink (e.g. src/utils/helper.ts#L2-L5). Success toast appears.'
-    automated: false
+    automated: true
 
   - id: core-send-commands-r-l-002
     feature: 'Core Send Commands — R-L'
