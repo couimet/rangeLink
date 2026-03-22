@@ -25,7 +25,7 @@ import type { PasteDestinationManager } from './destinations/PasteDestinationMan
 import { resolveBoundTerminalProcessId } from './destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from './errors';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
-import { SelectionValidator } from './services';
+import { handleDirtyBufferWarning, SelectionValidator } from './services';
 import {
   DirtyBufferWarningResult,
   MessageCode,
@@ -513,7 +513,7 @@ export class RangeLinkService {
     if (document.isDirty) {
       const shouldWarnOnDirty = this.configReader.getBoolean(SETTING_WARN_ON_DIRTY_BUFFER, true);
       if (shouldWarnOnDirty) {
-        const warningResult = await this.handleDirtyBufferWarning(document);
+        const warningResult = await handleDirtyBufferWarning(document, this.ideAdapter, this.logger);
         if (
           warningResult === DirtyBufferWarningResult.Dismissed ||
           warningResult === DirtyBufferWarningResult.SaveFailed
@@ -558,72 +558,6 @@ export class RangeLinkService {
     );
 
     return formattedLink;
-  }
-
-  /**
-   * Handles the dirty buffer warning dialog.
-   *
-   * @param document The document with unsaved changes
-   * @returns The user's choice from the warning dialog
-   */
-  private async handleDirtyBufferWarning(
-    document: vscode.TextDocument,
-  ): Promise<DirtyBufferWarningResult> {
-    const warningMessage = formatMessage(MessageCode.WARN_LINK_DIRTY_BUFFER);
-    const saveAndGenerateLabel = formatMessage(MessageCode.WARN_LINK_DIRTY_BUFFER_SAVE);
-    const generateAnywayLabel = formatMessage(MessageCode.WARN_LINK_DIRTY_BUFFER_CONTINUE);
-
-    this.logger.debug(
-      { fn: 'handleDirtyBufferWarning', documentUri: document.uri.toString() },
-      'Document has unsaved changes, showing warning',
-    );
-
-    const choice = await this.ideAdapter.showWarningMessage(
-      warningMessage,
-      saveAndGenerateLabel,
-      generateAnywayLabel,
-    );
-
-    const result: DirtyBufferWarningResult =
-      choice === saveAndGenerateLabel
-        ? DirtyBufferWarningResult.SaveAndGenerate
-        : choice === generateAnywayLabel
-          ? DirtyBufferWarningResult.GenerateAnyway
-          : DirtyBufferWarningResult.Dismissed;
-
-    switch (result) {
-      case DirtyBufferWarningResult.SaveAndGenerate: {
-        this.logger.debug({ fn: 'handleDirtyBufferWarning' }, 'User chose to save and generate');
-        const saved = await document.save();
-        if (!saved) {
-          this.logger.warn(
-            { fn: 'handleDirtyBufferWarning' },
-            'Save operation failed or was cancelled',
-          );
-          this.ideAdapter.showWarningMessage(
-            formatMessage(MessageCode.WARN_LINK_DIRTY_BUFFER_SAVE_FAILED),
-          );
-          return DirtyBufferWarningResult.SaveFailed;
-        }
-        this.logger.debug({ fn: 'handleDirtyBufferWarning' }, 'Document saved successfully');
-        return result;
-      }
-      case DirtyBufferWarningResult.GenerateAnyway:
-        this.logger.debug({ fn: 'handleDirtyBufferWarning' }, 'User chose to generate anyway');
-        return result;
-      case DirtyBufferWarningResult.Dismissed:
-        this.logger.debug({ fn: 'handleDirtyBufferWarning' }, 'User dismissed warning, aborting');
-        return result;
-      default: {
-        const exhaustiveCheck: never = result;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
-          message: `Unexpected dirty buffer warning result: ${exhaustiveCheck}`,
-          functionName: 'handleDirtyBufferWarning',
-          details: { exhaustiveCheck },
-        });
-      }
-    }
   }
 
   /**
