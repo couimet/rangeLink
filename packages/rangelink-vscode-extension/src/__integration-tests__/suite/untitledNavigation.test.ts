@@ -4,6 +4,7 @@ import type { ParsedLink } from 'rangelink-core-ts';
 import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { getUntitledDisplayName } from '../../utils/getUntitledDisplayName';
 import { assertToastLogged, assertNoToastLogged, getLogCapture } from '../helpers';
 
 const SETTLE_MS = 500;
@@ -89,8 +90,7 @@ suite('Untitled File Navigation', () => {
 
     assert.strictEqual(untitledDoc.uri.scheme, 'untitled', 'Expected untitled document');
 
-    const uriPath = untitledDoc.uri.path.replace(/^\//, '');
-    untitledDisplayName = /^Untitled/i.test(uriPath) ? uriPath : `Untitled-${uriPath}`;
+    untitledDisplayName = getUntitledDisplayName(untitledDoc.uri);
   });
 
   suiteTeardown(async () => {
@@ -254,5 +254,41 @@ suite('Untitled File Navigation', () => {
       message: `RangeLink: Navigated to ${untitledDisplayName} @ 50 (clamped: line exceeded file length)`,
     });
     assertNoToastLogged(lines, { type: 'error', message: 'RangeLink: Failed to navigate' });
+  });
+
+  // untitled-navigation-006: Case-insensitive untitled name matching
+  test('untitled-navigation-006: lowercase name matches open Untitled file', async () => {
+    const lowercaseName = untitledDisplayName.toLowerCase();
+    const linkText = `${lowercaseName}#L5`;
+    const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
+    assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-untitled-nav-006');
+
+    const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
+    await settle();
+
+    assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
+    assert.strictEqual(sel.anchor.line, 4, `Expected anchor line 4 but got ${sel.anchor.line}`);
+    assert.strictEqual(
+      sel.anchor.character,
+      0,
+      `Expected anchor char 0 but got ${sel.anchor.character}`,
+    );
+    const lineLength = doc.lineAt(4).text.length;
+    assert.strictEqual(sel.active.line, 4, `Expected active line 4 but got ${sel.active.line}`);
+    assert.strictEqual(
+      sel.active.character,
+      lineLength,
+      `Expected active char ${lineLength} but got ${sel.active.character}`,
+    );
+
+    const lines = logCapture.getLinesSince('before-untitled-nav-006');
+    assertToastLogged(lines, {
+      type: 'info',
+      message: `RangeLink: Navigated to ${lowercaseName} @ 5`,
+    });
+    assertNoToastLogged(lines, { type: 'warning', message: 'RangeLink: Cannot find file' });
   });
 });
