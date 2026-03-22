@@ -13,7 +13,13 @@ import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { messagesEn } from '../i18n';
 import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkService';
-import { ClipboardRouter, SelectionValidator, TerminalSelectionService } from '../services';
+import {
+  ClipboardRouter,
+  FilePathPaster,
+  SelectionValidator,
+  TerminalSelectionService,
+} from '../services';
+import * as filePathPasterModule from '../services/FilePathPaster';
 import { MessageCode, PasteContentType } from '../types';
 
 import {
@@ -46,6 +52,7 @@ let service: RangeLinkService;
 let selectionValidator: SelectionValidator;
 let clipboardRouter: ClipboardRouter;
 let terminalSelectionService: TerminalSelectionService;
+let filePathPaster: FilePathPaster;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
 let mockDestinationManager: PasteDestinationManager;
 let mockPickerCommand: jest.Mocked<DestinationPicker>;
@@ -150,6 +157,13 @@ describe('RangeLinkService', () => {
       clipboardRouter,
       mockLogger,
     );
+    filePathPaster = new FilePathPaster(
+      mockVscodeAdapter,
+      mockDestinationManager,
+      mockConfigReader,
+      clipboardRouter,
+      mockLogger,
+    );
   });
 
   describe('clipboard preservation delegation', () => {
@@ -175,6 +189,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
 
       service = new RangeLinkService(
         getDelimiters,
@@ -183,6 +204,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -206,6 +228,7 @@ describe('RangeLinkService', () => {
           mockLogger,
         ),
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -291,6 +314,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
 
       service = new RangeLinkService(
         getDelimiters,
@@ -299,6 +329,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -329,6 +360,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -336,6 +374,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -418,6 +457,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -425,6 +471,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -507,6 +554,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -514,6 +568,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -596,6 +651,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -640,6 +696,13 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
+          filePathPaster = new FilePathPaster(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
@@ -647,6 +710,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             clipboardRouter,
             terminalSelectionService,
+            filePathPaster,
             mockLogger,
             selectionValidator,
           );
@@ -696,6 +760,13 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
+          filePathPaster = new FilePathPaster(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
@@ -703,6 +774,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             clipboardRouter,
             terminalSelectionService,
+            filePathPaster,
             mockLogger,
             selectionValidator,
           );
@@ -779,6 +851,13 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
+          filePathPaster = new FilePathPaster(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
@@ -786,6 +865,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             clipboardRouter,
             terminalSelectionService,
+            filePathPaster,
             mockLogger,
             selectionValidator,
           );
@@ -830,6 +910,13 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
+          filePathPaster = new FilePathPaster(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
@@ -837,6 +924,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             clipboardRouter,
             terminalSelectionService,
+            filePathPaster,
             mockLogger,
             selectionValidator,
           );
@@ -886,6 +974,13 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
+          filePathPaster = new FilePathPaster(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
@@ -893,6 +988,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             clipboardRouter,
             terminalSelectionService,
+            filePathPaster,
             mockLogger,
             selectionValidator,
           );
@@ -935,6 +1031,13 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
+          filePathPaster = new FilePathPaster(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
@@ -942,6 +1045,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             clipboardRouter,
             terminalSelectionService,
+            filePathPaster,
             mockLogger,
             selectionValidator,
           );
@@ -993,6 +1097,13 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
+          filePathPaster = new FilePathPaster(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
@@ -1000,6 +1111,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             clipboardRouter,
             terminalSelectionService,
+            filePathPaster,
             mockLogger,
             selectionValidator,
           );
@@ -1081,6 +1193,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
 
         service = new RangeLinkService(
           getDelimiters,
@@ -1089,6 +1208,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1125,6 +1245,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1132,6 +1259,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1206,6 +1334,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
 
         service = new RangeLinkService(
           getDelimiters,
@@ -1214,6 +1349,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1250,6 +1386,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1257,6 +1400,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1301,6 +1445,7 @@ describe('RangeLinkService', () => {
             mockLogger,
           ),
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1343,6 +1488,7 @@ describe('RangeLinkService', () => {
             mockLogger,
           ),
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1380,6 +1526,7 @@ describe('RangeLinkService', () => {
             mockLogger,
           ),
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1430,6 +1577,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -1437,6 +1591,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -1492,6 +1647,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1499,6 +1661,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1552,6 +1715,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1559,6 +1729,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1611,6 +1782,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1618,6 +1796,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1674,6 +1853,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1681,6 +1867,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1727,6 +1914,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1734,6 +1928,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1767,6 +1962,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1774,6 +1976,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1837,6 +2040,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1844,6 +2054,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1898,6 +2109,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1905,6 +2123,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -1959,6 +2178,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1966,6 +2192,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -2002,6 +2229,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -2009,6 +2243,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -2082,6 +2317,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -2089,6 +2331,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -2144,6 +2387,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -2151,6 +2401,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -2192,6 +2443,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -2199,6 +2457,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -2257,6 +2516,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -2264,6 +2530,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -2390,6 +2657,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -2397,6 +2671,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -2462,6 +2737,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -2469,6 +2751,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -2517,6 +2800,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -2524,6 +2814,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -2569,6 +2860,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -2576,6 +2874,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -2627,6 +2926,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -2634,6 +2940,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -2762,6 +3069,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -2769,6 +3083,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -2834,6 +3149,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -2841,6 +3163,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -2889,6 +3212,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -2896,6 +3226,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -2958,6 +3289,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -2965,6 +3303,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -3125,6 +3464,7 @@ describe('RangeLinkService', () => {
           mockLogger,
         ),
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         new SelectionValidator(localMockVscodeAdapter, mockLogger),
       );
@@ -3304,6 +3644,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -3311,6 +3658,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -3363,6 +3711,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -3370,6 +3725,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -3422,6 +3778,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -3429,6 +3792,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -3467,6 +3831,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -3474,6 +3845,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -3563,6 +3935,13 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
+      filePathPaster = new FilePathPaster(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -3570,6 +3949,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         clipboardRouter,
         terminalSelectionService,
+        filePathPaster,
         mockLogger,
         selectionValidator,
       );
@@ -3582,13 +3962,21 @@ describe('RangeLinkService', () => {
     describe('path resolution', () => {
       it('should delegate to getReferencePath and pass result to copyAndSendToDestination', async () => {
         const getRefPathSpy = jest
-          .spyOn(service as any, 'getReferencePath')
+          .spyOn(filePathPasterModule, 'getReferencePath')
           .mockReturnValue('mocked/path.ts');
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
-        await (service as any).pasteFilePath(mockUri, PathFormat.WorkspaceRelative, 'context-menu');
+        await (service as any).filePathPaster.pasteFilePath(
+          mockUri,
+          PathFormat.WorkspaceRelative,
+          'context-menu',
+        );
 
-        expect(getRefPathSpy).toHaveBeenCalledWith(mockUri, PathFormat.WorkspaceRelative);
+        expect(getRefPathSpy).toHaveBeenCalledWith(
+          mockVscodeAdapter,
+          mockUri,
+          PathFormat.WorkspaceRelative,
+        );
         expect(copyAndSendSpy).toHaveBeenCalledWith({
           control: {
             contentType: 'Text',
@@ -3608,7 +3996,7 @@ describe('RangeLinkService', () => {
         });
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.pasteFilePath',
+            fn: 'FilePathPaster.pasteFilePath',
             pathFormat: 'workspace-relative',
             uriSource: 'context-menu',
             filePath: 'mocked/path.ts',
@@ -3623,7 +4011,11 @@ describe('RangeLinkService', () => {
         mockConfigReader.getPaddingMode.mockReturnValue('before');
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
-        await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
+        await (service as any).filePathPaster.pasteFilePath(
+          mockUri,
+          PathFormat.Absolute,
+          'context-menu',
+        );
 
         expect(mockConfigReader.getPaddingMode).toHaveBeenCalledWith(
           'smartPadding.pasteFilePath',
@@ -3648,7 +4040,11 @@ describe('RangeLinkService', () => {
       it('should skip picker when destination is already bound', async () => {
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
-        await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
+        await (service as any).filePathPaster.pasteFilePath(
+          mockUri,
+          PathFormat.Absolute,
+          'context-menu',
+        );
 
         expect(mockPickerCommand.pick).not.toHaveBeenCalled();
         expect(copyAndSendSpy).toHaveBeenCalled();
@@ -3673,6 +4069,13 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
+        filePathPaster = new FilePathPaster(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
+          mockLogger,
+        );
         mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
         service = new RangeLinkService(
           getDelimiters,
@@ -3681,6 +4084,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
+          filePathPaster,
           mockLogger,
           selectionValidator,
         );
@@ -3690,12 +4094,16 @@ describe('RangeLinkService', () => {
           .mockResolvedValue(undefined);
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
-        await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
+        await (service as any).filePathPaster.pasteFilePath(
+          mockUri,
+          PathFormat.Absolute,
+          'context-menu',
+        );
 
         expect(mockPickerCommand.pick).toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.pasteFilePath',
+            fn: 'FilePathPaster.pasteFilePath',
             pathFormat: 'absolute',
             uriSource: 'context-menu',
           },
@@ -3704,7 +4112,7 @@ describe('RangeLinkService', () => {
         expect(copyAndSendSpy).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.pasteFilePath',
+            fn: 'FilePathPaster.pasteFilePath',
             pathFormat: 'absolute',
             uriSource: 'context-menu',
             outcome: 'cancelled',
@@ -3718,7 +4126,11 @@ describe('RangeLinkService', () => {
       it('should quote path with unsafe characters and log the change', async () => {
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH_WITH_SPACES);
 
-        await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
+        await (service as any).filePathPaster.pasteFilePath(
+          mockUri,
+          PathFormat.Absolute,
+          'context-menu',
+        );
 
         expect(copyAndSendSpy).toHaveBeenCalledWith({
           control: {
@@ -3739,7 +4151,7 @@ describe('RangeLinkService', () => {
         });
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.pasteFilePath',
+            fn: 'FilePathPaster.pasteFilePath',
             pathFormat: 'absolute',
             uriSource: 'context-menu',
             before: TEST_ABSOLUTE_PATH_WITH_SPACES,
@@ -3752,7 +4164,11 @@ describe('RangeLinkService', () => {
       it('should not quote path when no special characters', async () => {
         const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
-        await (service as any).pasteFilePath(mockUri, PathFormat.Absolute, 'context-menu');
+        await (service as any).filePathPaster.pasteFilePath(
+          mockUri,
+          PathFormat.Absolute,
+          'context-menu',
+        );
 
         expect(copyAndSendSpy).toHaveBeenCalledWith({
           control: {
@@ -3777,7 +4193,9 @@ describe('RangeLinkService', () => {
 
   describe('pasteFilePathToDestination', () => {
     it('should delegate to pasteFilePath with Absolute and context-menu', async () => {
-      const spy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
+      const spy = jest
+        .spyOn((service as any).filePathPaster, 'pasteFilePath')
+        .mockResolvedValue(undefined);
       const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
       await service.pasteFilePathToDestination(mockUri, PathFormat.Absolute);
@@ -3786,7 +4204,9 @@ describe('RangeLinkService', () => {
     });
 
     it('should delegate to pasteFilePath with WorkspaceRelative and context-menu', async () => {
-      const spy = jest.spyOn(service as any, 'pasteFilePath').mockResolvedValue(undefined);
+      const spy = jest
+        .spyOn((service as any).filePathPaster, 'pasteFilePath')
+        .mockResolvedValue(undefined);
       const mockUri = createMockUri(TEST_ABSOLUTE_PATH);
 
       await service.pasteFilePathToDestination(mockUri, PathFormat.WorkspaceRelative);
@@ -3797,7 +4217,9 @@ describe('RangeLinkService', () => {
 
   describe('pasteCurrentFilePathToDestination', () => {
     it('should delegate to pasteCurrentFilePath with Absolute', async () => {
-      const spy = jest.spyOn(service as any, 'pasteCurrentFilePath').mockResolvedValue(undefined);
+      const spy = jest
+        .spyOn((service as any).filePathPaster, 'pasteCurrentFilePath')
+        .mockResolvedValue(undefined);
 
       await service.pasteCurrentFilePathToDestination(PathFormat.Absolute);
 
@@ -3805,7 +4227,9 @@ describe('RangeLinkService', () => {
     });
 
     it('should delegate to pasteCurrentFilePath with WorkspaceRelative', async () => {
-      const spy = jest.spyOn(service as any, 'pasteCurrentFilePath').mockResolvedValue(undefined);
+      const spy = jest
+        .spyOn((service as any).filePathPaster, 'pasteCurrentFilePath')
+        .mockResolvedValue(undefined);
 
       await service.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative);
 
@@ -3870,13 +4294,36 @@ describe('RangeLinkService', () => {
       const mockGenLink = spyOnGenerateLinkFromSelections();
       mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1C1-L1C22')));
 
+      const localClipboardRouter = new ClipboardRouter(
+        adapter,
+        dm,
+        picker,
+        mockClipboardPreserver,
+        logger,
+      );
+      const localFilePathPaster = new FilePathPaster(
+        adapter,
+        dm,
+        config,
+        localClipboardRouter,
+        logger,
+      );
+      const localTerminalService = new TerminalSelectionService(
+        adapter,
+        dm,
+        config,
+        mockClipboardPreserver,
+        localClipboardRouter,
+        logger,
+      );
       const svc = new RangeLinkService(
         getDelimiters,
         adapter,
         dm,
         config,
-        new ClipboardRouter(adapter, dm, picker, mockClipboardPreserver, logger),
-        terminalSelectionService,
+        localClipboardRouter,
+        localTerminalService,
+        localFilePathPaster,
         logger,
         selectionValidator,
       );

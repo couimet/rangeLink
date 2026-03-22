@@ -1,19 +1,12 @@
 import type { Logger } from 'barebone-logger';
-import {
-  type DelimiterConfigGetter,
-  type FormattedLink,
-  LinkType,
-  quotePath,
-} from 'rangelink-core-ts';
+import { type DelimiterConfigGetter, type FormattedLink, LinkType } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import type { ConfigReader } from './config/ConfigReader';
 import {
   DEFAULT_SMART_PADDING_PASTE_CONTENT,
-  DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
   DEFAULT_SMART_PADDING_PASTE_LINK,
   SETTING_SMART_PADDING_PASTE_CONTENT,
-  SETTING_SMART_PADDING_PASTE_FILE_PATH,
   SETTING_SMART_PADDING_PASTE_LINK,
   SETTING_WARN_ON_DIRTY_BUFFER,
 } from './constants';
@@ -21,6 +14,8 @@ import type { PasteDestinationManager } from './destinations/PasteDestinationMan
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import {
   ClipboardRouter,
+  FilePathPaster,
+  getReferencePath,
   handleDirtyBufferWarning,
   SelectionValidator,
   TerminalSelectionService,
@@ -31,7 +26,6 @@ import {
   MessageCode,
   PasteContentType,
   PathFormat,
-  RelativePathFormat,
   type TerminalPasteResult,
 } from './types';
 import { formatMessage, generateLinkFromSelections } from './utils';
@@ -53,6 +47,7 @@ export class RangeLinkService {
     private readonly configReader: ConfigReader,
     private readonly clipboardRouter: ClipboardRouter,
     private readonly terminalSelectionService: TerminalSelectionService,
+    private readonly filePathPaster: FilePathPaster,
     private readonly logger: Logger,
     private readonly selectionValidator: SelectionValidator,
   ) {}
@@ -180,112 +175,12 @@ export class RangeLinkService {
     this.terminalSelectionService.terminalCopyLinkGuard();
   }
 
-  /**
-   * Pastes the file path to the bound destination (context menu)
-   *
-   * Used by context menu commands where URI is provided from right-click context.
-   * Falls back to absolute path if pathFormat is WorkspaceRelative and file is outside workspace.
-   *
-   * @param uri - URI from context menu (mandatory)
-   * @param pathFormat - Whether to use absolute or workspace-relative path
-   */
   async pasteFilePathToDestination(uri: vscode.Uri, pathFormat: PathFormat): Promise<void> {
-    await this.pasteFilePath(uri, pathFormat, 'context-menu');
+    return this.filePathPaster.pasteFilePathToDestination(uri, pathFormat);
   }
 
-  /**
-   * Pastes the file path of the current active editor to the bound destination
-   *
-   * Used by command palette commands. Resolves URI from active text editor.
-   * Falls back to absolute path if pathFormat is WorkspaceRelative and file is outside workspace.
-   * Shows error if no active editor.
-   *
-   * @param pathFormat - Whether to use absolute or workspace-relative path
-   */
   async pasteCurrentFilePathToDestination(pathFormat: PathFormat): Promise<void> {
-    await this.pasteCurrentFilePath(pathFormat);
-  }
-
-  /**
-   * Core implementation for command palette file path pasting
-   *
-   * Resolves URI from active text editor and delegates to pasteFilePath.
-   * Shows error if no active editor.
-   *
-   * @param pathFormat - Whether to use relative or absolute paths
-   */
-  private async pasteCurrentFilePath(pathFormat: PathFormat): Promise<void> {
-    const uri = this.ideAdapter.getActiveTextEditorUri();
-    if (!uri) {
-      this.logger.debug(
-        { fn: 'RangeLinkService.pasteCurrentFilePath', pathFormat },
-        'No active editor',
-      );
-      await this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_PASTE_FILE_PATH_NO_ACTIVE_FILE),
-      );
-      return;
-    }
-    await this.pasteFilePath(uri, pathFormat, 'command-palette');
-  }
-
-  /**
-   * Core implementation for pasting file paths to bound destination
-   *
-   * Follows the R-V (Paste Selected Text) pattern:
-   * 1. Format the path based on pathFormat preference
-   * 2. Show quick pick if no destination bound
-   * 3. Copy to clipboard and send to destination
-   *
-   * @param uri - File URI (mandatory - caller responsible for resolution)
-   * @param pathFormat - Whether to use relative or absolute paths
-   * @param uriSource - Source of the URI for logging ('context-menu' or 'command-palette')
-   */
-  private async pasteFilePath(
-    uri: vscode.Uri,
-    pathFormat: PathFormat,
-    uriSource: 'context-menu' | 'command-palette',
-  ): Promise<void> {
-    const logCtx = { fn: 'RangeLinkService.pasteFilePath', pathFormat, uriSource };
-
-    const filePath = this.getReferencePath(uri, pathFormat);
-    this.logger.debug({ ...logCtx, filePath }, `Resolved file path: ${filePath}`);
-
-    const paddingMode = this.configReader.getPaddingMode(
-      SETTING_SMART_PADDING_PASTE_FILE_PATH,
-      DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
-    );
-
-    const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
-    if (destinationBehavior === undefined) return;
-
-    const destinationFilePath = quotePath(filePath);
-
-    if (destinationFilePath !== filePath) {
-      this.logger.debug(
-        { ...logCtx, before: filePath, after: destinationFilePath },
-        'Quoted path for unsafe characters',
-      );
-    }
-
-    await this.clipboardRouter.copyAndSendToDestination({
-      control: {
-        contentType: PasteContentType.Text,
-        destinationBehavior,
-      },
-      content: {
-        clipboard: filePath,
-        send: destinationFilePath,
-        sourceUri: uri,
-      },
-      strategies: {
-        sendFn: (text, basicStatusMessage) =>
-          this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
-        isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
-      },
-      contentName: formatMessage(MessageCode.CONTENT_NAME_FILE_PATH),
-      fnName: 'pasteFilePath',
-    });
+    return this.filePathPaster.pasteCurrentFilePathToDestination(pathFormat);
   }
 
   private async createLinkCore(
@@ -354,7 +249,7 @@ export class RangeLinkService {
       }
     }
 
-    const referencePath = this.getReferencePath(document.uri, pathFormat);
+    const referencePath = getReferencePath(this.ideAdapter, document.uri, pathFormat);
 
     const result = generateLinkFromSelections({
       referencePath,
@@ -433,20 +328,5 @@ export class RangeLinkService {
       contentName: linkTypeName,
       fnName: 'copyToClipboardAndDestination',
     });
-  }
-
-  /**
-   * Gets the reference path based on the path format preference
-   *
-   * Returns workspace-relative path only when both conditions are met:
-   * - pathFormat is WorkspaceRelative
-   * - file is inside a workspace folder (required to compute relative path)
-   */
-  private getReferencePath(uri: vscode.Uri, pathFormat: PathFormat): string {
-    const workspaceFolder = this.ideAdapter.getWorkspaceFolder(uri);
-    if (workspaceFolder && pathFormat === PathFormat.WorkspaceRelative) {
-      return this.ideAdapter.asRelativePath(uri, RelativePathFormat.PathOnly);
-    }
-    return uri.fsPath;
   }
 }
