@@ -232,7 +232,12 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
   context.subscriptions.push(destinationManager);
 
   // Create navigation handler (used by both terminal and document providers)
-  const navigationHandler = new RangeLinkNavigationHandler(getDelimiters, ideAdapter, logger);
+  const navigationHandler = new RangeLinkNavigationHandler(
+    getDelimiters,
+    ideAdapter,
+    configReader,
+    logger,
+  );
   logger.debug({ fn: 'activate' }, 'Navigation handler created');
 
   // Create file path navigation handler (used by file path terminal and document providers)

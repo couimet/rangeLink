@@ -614,6 +614,26 @@ describe('package.json contributions', () => {
       });
     });
 
+    describe('navigation settings', () => {
+      it('rangelink.navigation.showNavigatedToast', () => {
+        expect(properties['rangelink.navigation.showNavigatedToast']).toStrictEqual({
+          type: 'boolean',
+          default: true,
+          description:
+            "Show info toast after successful navigation (e.g., 'Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16')",
+        });
+      });
+
+      it('rangelink.navigation.showClampingWarning', () => {
+        expect(properties['rangelink.navigation.showClampingWarning']).toStrictEqual({
+          type: 'boolean',
+          default: true,
+          description:
+            'Show warning toast when navigation position is clamped to file boundaries',
+        });
+      });
+    });
+
     describe('warning settings', () => {
       it('rangelink.warnOnDirtyBuffer', () => {
         expect(properties['rangelink.warnOnDirtyBuffer']).toStrictEqual({
@@ -637,7 +657,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(12);
+      expect(Object.keys(properties)).toHaveLength(14);
     });
   });
 

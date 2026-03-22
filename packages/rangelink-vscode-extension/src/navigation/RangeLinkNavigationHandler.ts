@@ -4,6 +4,15 @@ import { SelectionType, parseLink } from 'rangelink-core-ts';
 import type * as vscode from 'vscode';
 import { TextEditorRevealType } from 'vscode';
 
+import type { ConfigReader } from '../config/ConfigReader';
+import {
+  DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING,
+  DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST,
+} from '../constants/settingDefaults';
+import {
+  SETTING_NAVIGATION_SHOW_CLAMPING_WARNING,
+  SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST,
+} from '../constants/settingKeys';
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import { MessageCode } from '../types';
 import {
@@ -27,11 +36,13 @@ export class RangeLinkNavigationHandler {
    *
    * @param getDelimiters - Factory function for fresh delimiter configuration
    * @param ideAdapter - VSCode adapter providing complete VSCode API facade
+   * @param configReader - Configuration reader for navigation settings
    * @param logger - Logger instance for structured logging
    */
   constructor(
     private readonly getDelimiters: DelimiterConfigGetter,
     private readonly ideAdapter: VscodeAdapter,
+    private readonly configReader: ConfigReader,
     private readonly logger: Logger,
   ) {
     this.logger.debug(
@@ -222,13 +233,17 @@ export class RangeLinkNavigationHandler {
 
       if (anyClamping) {
         const clampingSummary = formatClampingSummary(convertedStart, convertedEnd);
-        await this.ideAdapter.showWarningMessage(
-          formatMessage(MessageCode.WARN_NAVIGATION_CLAMPED, { path, position, clampingSummary }),
-        );
+        if (this.configReader.getBoolean(SETTING_NAVIGATION_SHOW_CLAMPING_WARNING, DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING)) {
+          await this.ideAdapter.showWarningMessage(
+            formatMessage(MessageCode.WARN_NAVIGATION_CLAMPED, { path, position, clampingSummary }),
+          );
+        }
       } else {
-        await this.ideAdapter.showInformationMessage(
-          formatMessage(MessageCode.INFO_NAVIGATION_SUCCESS, { path, position }),
-        );
+        if (this.configReader.getBoolean(SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST, DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST)) {
+          await this.ideAdapter.showInformationMessage(
+            formatMessage(MessageCode.INFO_NAVIGATION_SUCCESS, { path, position }),
+          );
+        }
       }
     } catch (error) {
       this.logger.error({ ...logCtx, error }, 'Navigation failed');
