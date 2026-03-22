@@ -7,7 +7,6 @@ import {
 } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import type { ClipboardPreserver } from './clipboard/ClipboardPreserver';
 import type { ConfigReader } from './config/ConfigReader';
 import {
   DEFAULT_SMART_PADDING_PASTE_CONTENT,
@@ -17,11 +16,15 @@ import {
   SETTING_SMART_PADDING_PASTE_FILE_PATH,
   SETTING_SMART_PADDING_PASTE_LINK,
   SETTING_WARN_ON_DIRTY_BUFFER,
-  VSCODE_CMD_TERMINAL_COPY_SELECTION,
 } from './constants';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
-import { ClipboardRouter, handleDirtyBufferWarning, SelectionValidator } from './services';
+import {
+  ClipboardRouter,
+  handleDirtyBufferWarning,
+  SelectionValidator,
+  TerminalSelectionService,
+} from './services';
 import {
   DestinationBehavior,
   DirtyBufferWarningResult,
@@ -49,7 +52,7 @@ export class RangeLinkService {
     private readonly destinationManager: PasteDestinationManager,
     private readonly configReader: ConfigReader,
     private readonly clipboardRouter: ClipboardRouter,
-    private readonly clipboardPreserver: ClipboardPreserver,
+    private readonly terminalSelectionService: TerminalSelectionService,
     private readonly logger: Logger,
     private readonly selectionValidator: SelectionValidator,
   ) {}
@@ -165,138 +168,16 @@ export class RangeLinkService {
     });
   }
 
-  /**
-   * Pastes the terminal selection to the bound destination (R-V from terminal).
-   *
-   * Uses a clipboard roundtrip to read terminal selection text because VSCode
-   * does not expose Terminal.selection as a string (microsoft/vscode#188173).
-   *
-   * Flow: copy terminal selection to clipboard → read clipboard → send to destination.
-   * The clipboard overwrite is consistent with existing RangeLink behavior;
-   * clipboard preservation is tracked in #353.
-   *
-   * @returns TerminalPasteResult with the outcome and optional error for catch-originated failures
-   */
-  // Clipboard roundtrip can be revisited if microsoft/vscode#188173 ships a Terminal.selection API,
-  // but adopting it would raise our minimum VSCode engine version.
   async pasteTerminalSelectionToDestination(): Promise<TerminalPasteResult> {
-    const logCtx = { fn: 'RangeLinkService.pasteTerminalSelectionToDestination' };
-
-    const activeTerminal = this.ideAdapter.activeTerminal;
-    if (!activeTerminal) {
-      this.logger.debug(logCtx, 'No active terminal');
-      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_ACTIVE_TERMINAL));
-      return { outcome: 'no-active-terminal' };
-    }
-
-    // Wrap the clipboard roundtrip in preservation so the user's clipboard is restored
-    // after reading the terminal text and before copyAndSendToDestination writes its own value.
-    let terminalText: string;
-    let copyCommandFailed = false;
-    try {
-      terminalText = await this.clipboardPreserver.preserve(async () => {
-        // The VSCode API for this command does NOT return a value — no result to compare against.
-        try {
-          await this.ideAdapter.executeCommand(VSCODE_CMD_TERMINAL_COPY_SELECTION);
-        } catch (e) {
-          copyCommandFailed = true;
-          throw e;
-        }
-        return this.ideAdapter.readTextFromClipboard();
-      });
-    } catch (error) {
-      if (copyCommandFailed) {
-        this.logger.error(
-          { ...logCtx, terminalName: activeTerminal.name, error },
-          'executeCommand(terminal.copySelection) threw',
-        );
-        this.ideAdapter.showErrorMessage(
-          formatMessage(MessageCode.ERROR_TERMINAL_COPY_COMMAND_FAILED),
-        );
-        return { outcome: 'copy-command-failed', error };
-      }
-      this.logger.error(
-        { ...logCtx, terminalName: activeTerminal.name, error },
-        'readTextFromClipboard() threw',
-      );
-      this.ideAdapter.showErrorMessage(
-        formatMessage(MessageCode.ERROR_TERMINAL_CLIPBOARD_READ_FAILED),
-      );
-      return { outcome: 'clipboard-read-failed', error };
-    }
-
-    if (!terminalText) {
-      this.logger.debug(logCtx, 'No terminal text after clipboard roundtrip');
-      this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_NO_TERMINAL_TEXT_SELECTED));
-      return { outcome: 'no-text-selected' };
-    }
-
-    this.logger.debug(
-      { ...logCtx, contentLength: terminalText.length },
-      `Read ${terminalText.length} chars from terminal selection`,
-    );
-
-    const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
-    if (destinationBehavior === undefined) return { outcome: 'picker-cancelled' };
-
-    const paddingMode = this.configReader.getPaddingMode(
-      SETTING_SMART_PADDING_PASTE_CONTENT,
-      DEFAULT_SMART_PADDING_PASTE_CONTENT,
-    );
-
-    await this.clipboardRouter.copyAndSendToDestination({
-      control: {
-        contentType: PasteContentType.Text,
-        destinationBehavior,
-      },
-      content: {
-        clipboard: terminalText,
-        send: terminalText,
-      },
-      strategies: {
-        sendFn: (text, basicStatusMessage) =>
-          this.destinationManager.sendTextToDestination(text, basicStatusMessage, paddingMode),
-        isEligibleFn: (destination, text) => destination.isEligibleForPasteContent(text),
-      },
-      contentName: formatMessage(MessageCode.CONTENT_NAME_SELECTED_TEXT),
-      fnName: 'pasteTerminalSelectionToDestination',
-    });
-
-    return { outcome: 'success' };
+    return this.terminalSelectionService.pasteTerminalSelectionToDestination();
   }
 
-  /**
-   * Bridge for R-L keybinding in terminal context.
-   *
-   * Delegates to pasteTerminalSelectionToDestination() (same as R-V),
-   * then shows an informational tip nudging the user toward R-V directly.
-   */
   async terminalLinkBridge(): Promise<void> {
-    const logCtx = { fn: 'RangeLinkService.terminalLinkBridge' };
-    this.logger.debug(logCtx, 'Bridging R-L to pasteTerminalSelectionToDestination');
-
-    const result = await this.pasteTerminalSelectionToDestination();
-
-    if (result.outcome === 'success') {
-      this.ideAdapter.showInformationMessage(
-        formatMessage(MessageCode.INFO_TERMINAL_LINK_BRIDGE_TIP),
-      );
-    }
+    return this.terminalSelectionService.terminalLinkBridge();
   }
 
-  /**
-   * Guard for R-C keybinding in terminal context.
-   *
-   * R-C generates code location links, which require an editor selection.
-   * In terminal context, show an error explaining this and suggest R-V instead.
-   */
   terminalCopyLinkGuard(): void {
-    const logCtx = { fn: 'RangeLinkService.terminalCopyLinkGuard' };
-    this.logger.debug(logCtx, 'R-C pressed in terminal context');
-
-    this.ideAdapter.showErrorMessage(
-      formatMessage(MessageCode.ERROR_TERMINAL_COPY_LINK_NOT_SUPPORTED),
-    );
+    this.terminalSelectionService.terminalCopyLinkGuard();
   }
 
   /**

@@ -13,7 +13,7 @@ import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { messagesEn } from '../i18n';
 import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkService';
-import { ClipboardRouter, SelectionValidator } from '../services';
+import { ClipboardRouter, SelectionValidator, TerminalSelectionService } from '../services';
 import { MessageCode, PasteContentType } from '../types';
 
 import {
@@ -45,6 +45,7 @@ import {
 let service: RangeLinkService;
 let selectionValidator: SelectionValidator;
 let clipboardRouter: ClipboardRouter;
+let terminalSelectionService: TerminalSelectionService;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
 let mockDestinationManager: PasteDestinationManager;
 let mockPickerCommand: jest.Mocked<DestinationPicker>;
@@ -141,6 +142,14 @@ describe('RangeLinkService', () => {
       mockClipboardPreserver,
       mockLogger,
     );
+    terminalSelectionService = new TerminalSelectionService(
+      mockVscodeAdapter,
+      mockDestinationManager,
+      mockConfigReader,
+      mockClipboardPreserver,
+      clipboardRouter,
+      mockLogger,
+    );
   });
 
   describe('clipboard preservation delegation', () => {
@@ -158,6 +167,14 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
 
       service = new RangeLinkService(
         getDelimiters,
@@ -165,7 +182,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -188,7 +205,7 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         ),
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -266,6 +283,14 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
 
       service = new RangeLinkService(
         getDelimiters,
@@ -273,7 +298,7 @@ describe('RangeLinkService', () => {
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -296,13 +321,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -377,13 +410,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -458,13 +499,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -546,7 +595,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -583,13 +632,21 @@ describe('RangeLinkService', () => {
             mockClipboardPreserver,
             mockLogger,
           );
+          terminalSelectionService = new TerminalSelectionService(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            mockClipboardPreserver,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
-            mockClipboardPreserver,
+            terminalSelectionService,
             mockLogger,
             selectionValidator,
           );
@@ -631,13 +688,21 @@ describe('RangeLinkService', () => {
             mockClipboardPreserver,
             mockLogger,
           );
+          terminalSelectionService = new TerminalSelectionService(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            mockClipboardPreserver,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
-            mockClipboardPreserver,
+            terminalSelectionService,
             mockLogger,
             selectionValidator,
           );
@@ -706,13 +771,21 @@ describe('RangeLinkService', () => {
             mockClipboardPreserver,
             mockLogger,
           );
+          terminalSelectionService = new TerminalSelectionService(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            mockClipboardPreserver,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
-            mockClipboardPreserver,
+            terminalSelectionService,
             mockLogger,
             selectionValidator,
           );
@@ -749,13 +822,21 @@ describe('RangeLinkService', () => {
             mockClipboardPreserver,
             mockLogger,
           );
+          terminalSelectionService = new TerminalSelectionService(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            mockClipboardPreserver,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
-            mockClipboardPreserver,
+            terminalSelectionService,
             mockLogger,
             selectionValidator,
           );
@@ -797,13 +878,21 @@ describe('RangeLinkService', () => {
             mockClipboardPreserver,
             mockLogger,
           );
+          terminalSelectionService = new TerminalSelectionService(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            mockClipboardPreserver,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
-            mockClipboardPreserver,
+            terminalSelectionService,
             mockLogger,
             selectionValidator,
           );
@@ -838,13 +927,21 @@ describe('RangeLinkService', () => {
             mockClipboardPreserver,
             mockLogger,
           );
+          terminalSelectionService = new TerminalSelectionService(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            mockClipboardPreserver,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
-            mockClipboardPreserver,
+            terminalSelectionService,
             mockLogger,
             selectionValidator,
           );
@@ -888,13 +985,21 @@ describe('RangeLinkService', () => {
             mockClipboardPreserver,
             mockLogger,
           );
+          terminalSelectionService = new TerminalSelectionService(
+            mockVscodeAdapter,
+            mockDestinationManager,
+            mockConfigReader,
+            mockClipboardPreserver,
+            clipboardRouter,
+            mockLogger,
+          );
           service = new RangeLinkService(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
-            mockClipboardPreserver,
+            terminalSelectionService,
             mockLogger,
             selectionValidator,
           );
@@ -968,6 +1073,14 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
 
         service = new RangeLinkService(
           getDelimiters,
@@ -975,7 +1088,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1004,13 +1117,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1077,6 +1198,14 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
 
         service = new RangeLinkService(
           getDelimiters,
@@ -1084,7 +1213,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1113,13 +1242,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1163,7 +1300,7 @@ describe('RangeLinkService', () => {
             mockClipboardPreserver,
             mockLogger,
           ),
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1205,7 +1342,7 @@ describe('RangeLinkService', () => {
             mockClipboardPreserver,
             mockLogger,
           ),
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1242,7 +1379,7 @@ describe('RangeLinkService', () => {
             mockClipboardPreserver,
             mockLogger,
           ),
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1285,13 +1422,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -1309,7 +1454,7 @@ describe('RangeLinkService', () => {
         'none',
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkService.pasteTerminalSelectionToDestination', contentLength: 22 },
+        { fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination', contentLength: 22 },
         'Read 22 chars from terminal selection',
       );
     });
@@ -1339,13 +1484,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1363,7 +1516,7 @@ describe('RangeLinkService', () => {
         expect(mockExecuteCommand).not.toHaveBeenCalled();
         expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.pasteTerminalSelectionToDestination' },
+          { fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination' },
           'No active terminal',
         );
       });
@@ -1391,13 +1544,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1415,7 +1576,7 @@ describe('RangeLinkService', () => {
         );
         expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.pasteTerminalSelectionToDestination' },
+          { fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination' },
           'No terminal text after clipboard roundtrip',
         );
       });
@@ -1442,13 +1603,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1458,7 +1627,7 @@ describe('RangeLinkService', () => {
         expect(result).toStrictEqual({ outcome: 'copy-command-failed', error: executeError });
         expect(mockLogger.error).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.pasteTerminalSelectionToDestination',
+            fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination',
             terminalName: 'bash',
             error: executeError,
           },
@@ -1497,13 +1666,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1514,7 +1691,7 @@ describe('RangeLinkService', () => {
         expect(mockExecuteCommand).toHaveBeenCalledWith(VSCODE_CMD_TERMINAL_COPY_SELECTION);
         expect(mockLogger.error).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.pasteTerminalSelectionToDestination',
+            fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination',
             terminalName: 'bash',
             error: clipboardError,
           },
@@ -1542,13 +1719,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1574,13 +1759,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1607,7 +1800,10 @@ describe('RangeLinkService', () => {
         expect(mockPickerCommand.pick).toHaveBeenCalled();
         expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.pasteTerminalSelectionToDestination', outcome: 'cancelled' },
+          {
+            fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination',
+            outcome: 'cancelled',
+          },
           'Picker did not bind, aborting',
         );
       });
@@ -1633,13 +1829,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1654,7 +1858,7 @@ describe('RangeLinkService', () => {
         );
         expect(mockShowInformationMessage).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.pasteTerminalSelectionToDestination', contentLength: 22 },
+          { fn: 'TerminalSelectionService.pasteTerminalSelectionToDestination', contentLength: 22 },
           'Read 22 chars from terminal selection',
         );
       });
@@ -1686,13 +1890,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1739,13 +1951,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1774,13 +1994,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -1846,13 +2074,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -1873,7 +2109,7 @@ describe('RangeLinkService', () => {
         'Terminal text pasted to destination. Tip: Use R-V directly for terminal selections.',
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkService.terminalLinkBridge' },
+        { fn: 'TerminalSelectionService.terminalLinkBridge' },
         'Bridging R-L to pasteTerminalSelectionToDestination',
       );
     });
@@ -1900,13 +2136,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -1940,13 +2184,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -1962,7 +2214,7 @@ describe('RangeLinkService', () => {
       );
       expect(mockDestinationManager.sendTextToDestination).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkService.terminalCopyLinkGuard' },
+        { fn: 'TerminalSelectionService.terminalCopyLinkGuard' },
         'R-C pressed in terminal context',
       );
     });
@@ -1997,13 +2249,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -2122,13 +2382,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -2186,13 +2454,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -2233,13 +2509,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -2277,13 +2561,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -2327,13 +2619,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -2454,13 +2754,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -2518,13 +2826,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -2565,13 +2881,21 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -2626,13 +2950,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -2792,7 +3124,7 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         ),
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         new SelectionValidator(localMockVscodeAdapter, mockLogger),
       );
@@ -2964,13 +3296,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -3015,13 +3355,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -3066,13 +3414,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -3103,13 +3459,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -3191,13 +3555,21 @@ describe('RangeLinkService', () => {
         mockClipboardPreserver,
         mockLogger,
       );
+      terminalSelectionService = new TerminalSelectionService(
+        mockVscodeAdapter,
+        mockDestinationManager,
+        mockConfigReader,
+        mockClipboardPreserver,
+        clipboardRouter,
+        mockLogger,
+      );
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
-        mockClipboardPreserver,
+        terminalSelectionService,
         mockLogger,
         selectionValidator,
       );
@@ -3293,6 +3665,14 @@ describe('RangeLinkService', () => {
           mockClipboardPreserver,
           mockLogger,
         );
+        terminalSelectionService = new TerminalSelectionService(
+          mockVscodeAdapter,
+          mockDestinationManager,
+          mockConfigReader,
+          mockClipboardPreserver,
+          clipboardRouter,
+          mockLogger,
+        );
         mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
         service = new RangeLinkService(
           getDelimiters,
@@ -3300,7 +3680,7 @@ describe('RangeLinkService', () => {
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
-          mockClipboardPreserver,
+          terminalSelectionService,
           mockLogger,
           selectionValidator,
         );
@@ -3496,7 +3876,7 @@ describe('RangeLinkService', () => {
         dm,
         config,
         new ClipboardRouter(adapter, dm, picker, mockClipboardPreserver, logger),
-        mockClipboardPreserver,
+        terminalSelectionService,
         logger,
         selectionValidator,
       );
