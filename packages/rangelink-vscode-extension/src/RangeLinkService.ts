@@ -1,4 +1,4 @@
-import type { Logger, LoggingContext } from 'barebone-logger';
+import type { Logger } from 'barebone-logger';
 import {
   type DelimiterConfigGetter,
   type FormattedLink,
@@ -19,83 +19,24 @@ import {
   SETTING_WARN_ON_DIRTY_BUFFER,
   VSCODE_CMD_TERMINAL_COPY_SELECTION,
 } from './constants';
-import type { DestinationPicker } from './destinations/DestinationPicker';
-import type { PasteDestination } from './destinations/PasteDestination';
 import type { PasteDestinationManager } from './destinations/PasteDestinationManager';
-import { resolveBoundTerminalProcessId } from './destinations/utils';
-import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from './errors';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
-import { handleDirtyBufferWarning, SelectionValidator } from './services';
+import { ClipboardRouter, handleDirtyBufferWarning, SelectionValidator } from './services';
 import {
+  DestinationBehavior,
   DirtyBufferWarningResult,
   MessageCode,
   PasteContentType,
-  type QuickPickBindResult,
+  PathFormat,
   RelativePathFormat,
   type TerminalPasteResult,
 } from './types';
-import {
-  formatMessage,
-  generateLinkFromSelections,
-  isEditorDestination,
-  isSameFileDestination,
-} from './utils';
+import { formatMessage, generateLinkFromSelections } from './utils';
 
-export enum PathFormat {
-  WorkspaceRelative = 'workspace-relative',
-  Absolute = 'absolute',
-}
+export { DestinationBehavior, PathFormat } from './types';
 
-/**
- * Controls whether content should be sent to bound destination
- */
-export enum DestinationBehavior {
-  /**
-   * Normal behavior: Send to bound destination if one exists and is eligible
-   */
-  BoundDestination = 'bound-destination',
-
-  /**
-   * Force clipboard-only: Skip destination even if one is bound
-   * Used by explicit clipboard-only commands (Issue #117)
-   */
-  ClipboardOnly = 'clipboard-only',
-}
-
-/**
- * No-op send function for clipboard-only operations.
- * Never invoked because ClipboardOnly behavior exits before reaching send logic.
- */
 const NOOP_SEND_FN = () => Promise.resolve(false);
-
-/**
- * No-op eligibility function for clipboard-only operations.
- * Never invoked because ClipboardOnly behavior exits before eligibility checks.
- */
 const NOOP_ELIGIBILITY_FN = () => Promise.resolve(false);
-
-/**
- * Options for copyAndSendToDestination, grouped by concern.
- */
-interface CopyAndSendOptions<T> {
-  control: {
-    contentType: PasteContentType;
-    destinationBehavior: DestinationBehavior;
-  };
-  content: {
-    clipboard: string;
-    send: T;
-    sourceUri?: vscode.Uri;
-  };
-  strategies: {
-    sendFn: (content: T, basicStatusMessage: string) => Promise<boolean>;
-    isEligibleFn: (destination: PasteDestination, content: T) => Promise<boolean>;
-  };
-  /** User-facing name for status bar messages (e.g., "RangeLink", "Selected text") */
-  contentName: string;
-  /** Function name for internal logging context */
-  fnName: string;
-}
 
 /**
  * RangeLinkService: VSCode-specific orchestration layer
@@ -106,8 +47,8 @@ export class RangeLinkService {
     private readonly getDelimiters: DelimiterConfigGetter,
     private readonly ideAdapter: VscodeAdapter,
     private readonly destinationManager: PasteDestinationManager,
-    private readonly destinationPicker: DestinationPicker,
     private readonly configReader: ConfigReader,
+    private readonly clipboardRouter: ClipboardRouter,
     private readonly clipboardPreserver: ClipboardPreserver,
     private readonly logger: Logger,
     private readonly selectionValidator: SelectionValidator,
@@ -135,7 +76,7 @@ export class RangeLinkService {
   async createLinkOnly(pathFormat: PathFormat = PathFormat.WorkspaceRelative): Promise<void> {
     const formattedLink = await this.generateLinkFromSelection(pathFormat, LinkType.Regular);
     if (formattedLink) {
-      await this.copyAndSendToDestination({
+      await this.clipboardRouter.copyAndSendToDestination({
         control: {
           contentType: PasteContentType.Link,
           destinationBehavior: DestinationBehavior.ClipboardOnly,
@@ -201,10 +142,10 @@ export class RangeLinkService {
       DEFAULT_SMART_PADDING_PASTE_CONTENT,
     );
 
-    const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
+    const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
     if (destinationBehavior === undefined) return;
 
-    await this.copyAndSendToDestination({
+    await this.clipboardRouter.copyAndSendToDestination({
       control: {
         contentType: PasteContentType.Text,
         destinationBehavior,
@@ -295,7 +236,7 @@ export class RangeLinkService {
       `Read ${terminalText.length} chars from terminal selection`,
     );
 
-    const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
+    const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
     if (destinationBehavior === undefined) return { outcome: 'picker-cancelled' };
 
     const paddingMode = this.configReader.getPaddingMode(
@@ -303,7 +244,7 @@ export class RangeLinkService {
       DEFAULT_SMART_PADDING_PASTE_CONTENT,
     );
 
-    await this.copyAndSendToDestination({
+    await this.clipboardRouter.copyAndSendToDestination({
       control: {
         contentType: PasteContentType.Text,
         destinationBehavior,
@@ -434,7 +375,7 @@ export class RangeLinkService {
       DEFAULT_SMART_PADDING_PASTE_FILE_PATH,
     );
 
-    const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
+    const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
     if (destinationBehavior === undefined) return;
 
     const destinationFilePath = quotePath(filePath);
@@ -446,7 +387,7 @@ export class RangeLinkService {
       );
     }
 
-    await this.copyAndSendToDestination({
+    await this.clipboardRouter.copyAndSendToDestination({
       control: {
         contentType: PasteContentType.Text,
         destinationBehavior,
@@ -479,7 +420,7 @@ export class RangeLinkService {
         this.logger.debug(logCtx, 'Active editor URI unavailable, aborting');
         return;
       }
-      const destinationBehavior = await this.resolveDestinationBehavior(logCtx);
+      const destinationBehavior = await this.clipboardRouter.resolveDestinationBehavior(logCtx);
       if (destinationBehavior === undefined) return;
       await this.copyToClipboardAndDestination(
         formattedLink,
@@ -513,7 +454,11 @@ export class RangeLinkService {
     if (document.isDirty) {
       const shouldWarnOnDirty = this.configReader.getBoolean(SETTING_WARN_ON_DIRTY_BUFFER, true);
       if (shouldWarnOnDirty) {
-        const warningResult = await handleDirtyBufferWarning(document, this.ideAdapter, this.logger);
+        const warningResult = await handleDirtyBufferWarning(
+          document,
+          this.ideAdapter,
+          this.logger,
+        );
         if (
           warningResult === DirtyBufferWarningResult.Dismissed ||
           warningResult === DirtyBufferWarningResult.SaveFailed
@@ -589,7 +534,7 @@ export class RangeLinkService {
       'Sending link to destination',
     );
 
-    await this.copyAndSendToDestination({
+    await this.clipboardRouter.copyAndSendToDestination({
       control: {
         contentType: PasteContentType.Link,
         destinationBehavior,
@@ -622,182 +567,5 @@ export class RangeLinkService {
       return this.ideAdapter.asRelativePath(uri, RelativePathFormat.PathOnly);
     }
     return uri.fsPath;
-  }
-
-  /**
-   * Routes copy-and-send through clipboard preservation when the destination consumes the
-   * clipboard as a transport mechanism. Preservation is skipped when ClipboardOnly (R-C)
-   * because the clipboard is the intended output, not a side effect, and when no destination
-   * is bound because the link would be silently discarded by the restore step.
-   */
-  private async copyAndSendToDestination<T>(options: CopyAndSendOptions<T>): Promise<void> {
-    const shouldPreserve =
-      options.control.destinationBehavior !== DestinationBehavior.ClipboardOnly &&
-      this.destinationManager.isBound();
-    if (shouldPreserve) {
-      await this.clipboardPreserver.preserve(() => this.executeCopyAndSend(options));
-    } else {
-      await this.executeCopyAndSend(options);
-    }
-  }
-
-  /**
-   * Unified utility for copying content to clipboard and sending to bound destination
-   *
-   * Eliminates duplication between copyToClipboardAndDestination and other methods.
-   * Handles clipboard copy, destination binding check, skip-auto-paste logic, sending, and status messages.
-   *
-   * **Message handling:**
-   * - Automatic destinations (Terminal, Text Editor): Shows status bar "✓ ${contentName} copied to clipboard and sent to ${displayName}"
-   * - Clipboard destinations (Claude Code, Cursor AI): Shows status bar "✓ ${contentName} copied to clipboard" + information popup with getUserInstruction()
-   * - No destination bound: Shows "✓ ${contentName} copied to clipboard"
-   */
-  private async executeCopyAndSend<T>(options: CopyAndSendOptions<T>): Promise<void> {
-    const { control, content, strategies, contentName, fnName } = options;
-
-    // Copy to clipboard
-    await this.ideAdapter.writeTextToClipboard(content.clipboard);
-
-    const basicStatusMessage = formatMessage(MessageCode.STATUS_BAR_LINK_COPIED_TO_CLIPBOARD, {
-      linkTypeName: contentName,
-    });
-
-    // Early return if skipping destination (either forced or not bound)
-    const shouldSkipDestination =
-      control.destinationBehavior === DestinationBehavior.ClipboardOnly ||
-      !this.destinationManager.isBound();
-
-    if (shouldSkipDestination) {
-      const reason =
-        control.destinationBehavior === DestinationBehavior.ClipboardOnly
-          ? 'Skipping destination (clipboard-only command)'
-          : 'No destination bound - copied to clipboard only';
-      this.logger.info({ fn: fnName }, reason);
-      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
-      return;
-    }
-
-    // Safe: isBound() guarantees getBoundDestination() returns non-undefined
-    const destination = this.destinationManager.getBoundDestination()!;
-    const displayName = destination.displayName || 'destination';
-
-    // Check eligibility before sending
-    const isEligible = await strategies.isEligibleFn(destination, content.send);
-    if (!isEligible) {
-      this.logger.debug(
-        { fn: fnName, boundDestination: displayName },
-        'Content not eligible for paste - skipping auto-paste',
-      );
-      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
-      return;
-    }
-
-    // Check for self-paste (source and destination are the same file)
-    if (content.sourceUri && isSameFileDestination(content.sourceUri, destination)) {
-      this.logger.info({ fn: fnName }, 'Self-paste detected - skipping auto-paste');
-      const selfPasteMessageCodes: Record<PasteContentType, MessageCode> = {
-        [PasteContentType.Link]: MessageCode.INFO_SELF_PASTE_LINK_SKIPPED,
-        [PasteContentType.Text]: MessageCode.INFO_SELF_PASTE_CONTENT_SKIPPED,
-      };
-      const selfPasteMessage = formatMessage(selfPasteMessageCodes[control.contentType]);
-      this.ideAdapter.showInformationMessage(selfPasteMessage);
-      this.ideAdapter.setStatusBarMessage(basicStatusMessage);
-      return;
-    }
-
-    this.logger.debug(
-      { fn: fnName, boundDestination: displayName },
-      `Attempting to send content to bound destination: ${displayName}`,
-    );
-
-    // Send to bound destination (manager handles all feedback)
-    await strategies.sendFn(content.send, basicStatusMessage);
-  }
-
-  /**
-   * Resolves the destination behavior for a Send command, showing the picker if no destination is bound.
-   * Returns undefined when the picker did not produce a usable destination — caller should abort.
-   */
-  private async resolveDestinationBehavior(
-    logCtx: LoggingContext,
-  ): Promise<DestinationBehavior | undefined> {
-    if (!this.destinationManager.isBound()) {
-      this.logger.debug(logCtx, 'No destination bound, showing quick pick');
-      const pickerResult = await this.showPickerAndBind();
-      if (pickerResult.outcome !== 'bound' && pickerResult.outcome !== 'bound-no-paste') {
-        this.logger.debug(
-          { ...logCtx, outcome: pickerResult.outcome },
-          'Picker did not bind, aborting',
-        );
-        return undefined;
-      }
-      if (pickerResult.outcome === 'bound-no-paste') {
-        return DestinationBehavior.ClipboardOnly;
-      }
-    }
-    return DestinationBehavior.BoundDestination;
-  }
-
-  /**
-   * Orchestrates: picker command → user selection → manager.bind()
-   *
-   * @returns QuickPickBindResult with outcome and error details if binding failed
-   */
-  private async showPickerAndBind(): Promise<QuickPickBindResult> {
-    const logCtx = { fn: 'RangeLinkService.showPickerAndBind' };
-
-    const boundDest = this.destinationManager.getBoundDestination();
-    const boundEditorDest = isEditorDestination(boundDest) ? boundDest : undefined;
-    const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
-
-    const result = await this.destinationPicker.pick({
-      noDestinationsMessageCode: MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE,
-      placeholderMessageCode: MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW,
-      ...(boundEditorDest && {
-        boundFileUriString: boundEditorDest.resource.uri.toString(),
-        boundFileViewColumn: boundEditorDest.resource.viewColumn,
-      }),
-      ...(boundTerminalProcessId !== undefined && { boundTerminalProcessId }),
-    });
-
-    switch (result.outcome) {
-      case 'no-resource':
-        this.logger.info(logCtx, 'No destinations available - no action taken');
-        return { outcome: 'no-resource' };
-
-      case 'cancelled':
-        this.logger.info(logCtx, 'User cancelled quick pick - no action taken');
-        return { outcome: 'cancelled' };
-
-      case 'selected': {
-        const bindResult = await this.destinationManager.bind(result.bindOptions);
-        if (!bindResult.success) {
-          this.logger.error(
-            { ...logCtx, error: bindResult.error },
-            'Binding failed - no action taken',
-          );
-          this.ideAdapter.showErrorMessage(formatMessage(MessageCode.ERROR_BIND_FAILED));
-          return { outcome: 'bind-failed', error: bindResult.error };
-        }
-        if (bindResult.value.suppressAutoPaste) {
-          this.logger.debug(
-            logCtx,
-            'Bind requested auto-paste suppression — returning bound-no-paste',
-          );
-          return { outcome: 'bound-no-paste', bindInfo: bindResult.value };
-        }
-        return { outcome: 'bound', bindInfo: bindResult.value };
-      }
-
-      default: {
-        const _exhaustiveCheck: never = result;
-        throw new RangeLinkExtensionError({
-          code: RangeLinkExtensionErrorCodes.UNEXPECTED_PICKER_OUTCOME,
-          message: 'Unexpected picker result outcome',
-          functionName: 'RangeLinkService.showPickerAndBind',
-          details: { result: _exhaustiveCheck },
-        });
-      }
-    }
   }
 }
