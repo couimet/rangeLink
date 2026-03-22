@@ -13,6 +13,7 @@ import type { PasteDestinationManager } from '../destinations';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import { messagesEn } from '../i18n';
 import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkService';
+import { SelectionValidator } from '../services';
 import { MessageCode, PasteContentType } from '../types';
 
 import {
@@ -42,6 +43,7 @@ import {
 } from './helpers';
 
 let service: RangeLinkService;
+let selectionValidator: SelectionValidator;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
 let mockDestinationManager: PasteDestinationManager;
 let mockPickerCommand: jest.Mocked<DestinationPicker>;
@@ -130,6 +132,7 @@ describe('RangeLinkService', () => {
         showInformationMessage: mockShowInformationMessage,
       },
     });
+    selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
   });
 
   describe('clipboard preservation delegation', () => {
@@ -149,6 +152,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
     });
 
@@ -164,6 +168,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
       const executeSpy = jest
         .spyOn(boundService as any, 'executeCopyAndSend')
@@ -241,6 +246,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
     });
 
@@ -253,6 +259,7 @@ describe('RangeLinkService', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
+        selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -261,6 +268,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
       });
 
@@ -270,7 +278,7 @@ describe('RangeLinkService', () => {
         expect(mockShowErrorMessage).toHaveBeenCalledWith('RangeLink: No active editor');
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.validateSelectionsAndShowError',
+            fn: 'SelectionValidator.validateSelectionsAndShowError',
             hasEditor: false,
             selectionCount: 0,
             selections: [],
@@ -283,7 +291,7 @@ describe('RangeLinkService', () => {
         );
         expect(mockLogger.warn).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.validateSelectionsAndShowError',
+            fn: 'SelectionValidator.validateSelectionsAndShowError',
             hasEditor: false,
             errorCode: 'ERROR_NO_ACTIVE_EDITOR',
             selectionCount: 0,
@@ -325,6 +333,7 @@ describe('RangeLinkService', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
+        selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -333,6 +342,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
       });
 
@@ -344,7 +354,7 @@ describe('RangeLinkService', () => {
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.validateSelectionsAndShowError',
+            fn: 'SelectionValidator.validateSelectionsAndShowError',
             hasEditor: true,
             selectionCount: 0,
             selections: [],
@@ -357,7 +367,7 @@ describe('RangeLinkService', () => {
         );
         expect(mockLogger.warn).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.validateSelectionsAndShowError',
+            fn: 'SelectionValidator.validateSelectionsAndShowError',
             hasEditor: true,
             errorCode: 'ERROR_NO_TEXT_SELECTED',
             selectionCount: 0,
@@ -397,6 +407,7 @@ describe('RangeLinkService', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
+        selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -405,6 +416,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
       });
 
@@ -416,7 +428,7 @@ describe('RangeLinkService', () => {
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.validateSelectionsAndShowError',
+            fn: 'SelectionValidator.validateSelectionsAndShowError',
             hasEditor: true,
             selectionCount: 2,
             selections: [
@@ -432,7 +444,7 @@ describe('RangeLinkService', () => {
         );
         expect(mockLogger.warn).toHaveBeenCalledWith(
           {
-            fn: 'RangeLinkService.validateSelectionsAndShowError',
+            fn: 'SelectionValidator.validateSelectionsAndShowError',
             hasEditor: true,
             errorCode: 'ERROR_NO_TEXT_SELECTED',
             selectionCount: 2,
@@ -476,6 +488,7 @@ describe('RangeLinkService', () => {
             },
           },
         });
+        selectionValidator = new SelectionValidator(adapter, mockLogger);
         mockVscodeAdapter = adapter;
         service = new RangeLinkService(
           getDelimiters,
@@ -485,6 +498,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
       });
 
@@ -520,6 +534,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             mockClipboardPreserver,
             mockLogger,
+            selectionValidator,
           );
           mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
 
@@ -560,6 +575,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             mockClipboardPreserver,
             mockLogger,
+            selectionValidator,
           );
           mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
 
@@ -627,6 +643,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             mockClipboardPreserver,
             mockLogger,
+            selectionValidator,
           );
 
           await service.pasteSelectedTextToDestination();
@@ -662,6 +679,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             mockClipboardPreserver,
             mockLogger,
+            selectionValidator,
           );
 
           await service.pasteSelectedTextToDestination();
@@ -702,6 +720,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             mockClipboardPreserver,
             mockLogger,
+            selectionValidator,
           );
 
           await service.pasteSelectedTextToDestination();
@@ -735,6 +754,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             mockClipboardPreserver,
             mockLogger,
+            selectionValidator,
           );
         });
 
@@ -777,6 +797,7 @@ describe('RangeLinkService', () => {
             mockConfigReader,
             mockClipboardPreserver,
             mockLogger,
+            selectionValidator,
           );
         });
 
@@ -820,6 +841,7 @@ describe('RangeLinkService', () => {
             windowOptions: { setStatusBarMessage: mockSetStatusBarMessage },
           },
         });
+        selectionValidator = new SelectionValidator(adapter, mockLogger);
 
         // Override getText to return different text per selection (test requirement)
         const selection1 = adapter.activeTextEditor!.selections[0];
@@ -849,6 +871,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
       });
 
@@ -876,6 +899,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         await service.pasteSelectedTextToDestination();
@@ -916,6 +940,7 @@ describe('RangeLinkService', () => {
             windowOptions: { setStatusBarMessage: mockSetStatusBarMessage },
           },
         });
+        selectionValidator = new SelectionValidator(adapter, mockLogger);
 
         // Override getText to return text only for second selection (test requirement)
         const selection2 = adapter.activeTextEditor!.selections[1];
@@ -941,6 +966,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
       });
 
@@ -968,6 +994,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         await service.pasteSelectedTextToDestination();
@@ -990,6 +1017,7 @@ describe('RangeLinkService', () => {
           selections: [[0, 0, 0, 10000]],
           adapterOptions: { envOptions: { clipboard } },
         });
+        selectionValidator = new SelectionValidator(adapter, mockLogger);
         const mockDestination = createMockTerminalPasteDestination({ displayName: 'Terminal' });
         const boundDestinationManager = createMockDestinationManager({
           isBound: true,
@@ -1004,6 +1032,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         await service.pasteSelectedTextToDestination();
@@ -1024,6 +1053,7 @@ describe('RangeLinkService', () => {
           selections: [[0, 0, 0, 40]],
           adapterOptions: { envOptions: { clipboard } },
         });
+        selectionValidator = new SelectionValidator(adapter, mockLogger);
         const mockDestination = createMockTerminalPasteDestination({ displayName: 'Terminal' });
         const boundDestinationManager = createMockDestinationManager({
           isBound: true,
@@ -1038,6 +1068,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         await service.pasteSelectedTextToDestination();
@@ -1053,6 +1084,7 @@ describe('RangeLinkService', () => {
           selections: [[0, 0, 0, 20]],
           adapterOptions: { envOptions: { clipboard } },
         });
+        selectionValidator = new SelectionValidator(adapter, mockLogger);
         const mockDestination = createMockTerminalPasteDestination({ displayName: 'Terminal' });
         const boundDestinationManager = createMockDestinationManager({
           isBound: true,
@@ -1067,6 +1099,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         await service.pasteSelectedTextToDestination();
@@ -1094,6 +1127,7 @@ describe('RangeLinkService', () => {
         },
         commandsOptions: { executeCommand: mockExecuteCommand },
       });
+      selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         sendTextToDestinationResult: true,
@@ -1107,6 +1141,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
     });
 
@@ -1144,6 +1179,7 @@ describe('RangeLinkService', () => {
           },
           commandsOptions: { executeCommand: mockExecuteCommand },
         });
+        selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1152,6 +1188,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
       });
 
@@ -1187,6 +1224,7 @@ describe('RangeLinkService', () => {
           },
           commandsOptions: { executeCommand: mockExecuteCommand },
         });
+        selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1195,6 +1233,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
       });
 
@@ -1229,6 +1268,7 @@ describe('RangeLinkService', () => {
           },
           commandsOptions: { executeCommand: mockExecuteCommand },
         });
+        selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1237,6 +1277,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         const result = await service.pasteTerminalSelectionToDestination();
@@ -1275,6 +1316,7 @@ describe('RangeLinkService', () => {
           },
           commandsOptions: { executeCommand: mockExecuteCommand },
         });
+        selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1283,6 +1325,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         const result = await service.pasteTerminalSelectionToDestination();
@@ -1320,6 +1363,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
       });
 
@@ -1344,6 +1388,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         await service.pasteTerminalSelectionToDestination();
@@ -1395,6 +1440,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         const result = await service.pasteTerminalSelectionToDestination();
@@ -1440,6 +1486,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
         const mockCopyAndSend = jest
           .spyOn(service as any, 'copyAndSendToDestination')
@@ -1485,6 +1532,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         await service.pasteTerminalSelectionToDestination();
@@ -1512,6 +1560,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         await service.pasteTerminalSelectionToDestination();
@@ -1562,6 +1611,7 @@ describe('RangeLinkService', () => {
         },
         commandsOptions: { executeCommand: mockExecuteCommand },
       });
+      selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         sendTextToDestinationResult: true,
@@ -1575,6 +1625,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
     });
 
@@ -1612,6 +1663,7 @@ describe('RangeLinkService', () => {
         },
         commandsOptions: { executeCommand: mockExecuteCommand },
       });
+      selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
       service = new RangeLinkService(
         getDelimiters,
         mockVscodeAdapter,
@@ -1620,6 +1672,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
 
       await service.terminalLinkBridge();
@@ -1639,6 +1692,7 @@ describe('RangeLinkService', () => {
       mockVscodeAdapter = createMockVscodeAdapter({
         windowOptions: { showErrorMessage: mockShowErrorMessage },
       });
+      selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: createMockTerminalPasteDestination({ displayName: 'Terminal' }),
@@ -1651,6 +1705,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
     });
 
@@ -1687,6 +1742,7 @@ describe('RangeLinkService', () => {
           showInformationMessage: mockShowInformationMessage,
         },
       });
+      selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: createMockTerminalPasteDestination(),
@@ -1699,6 +1755,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
 
       // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
@@ -1813,6 +1870,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
         mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
@@ -1869,6 +1927,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
         mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
@@ -1908,6 +1967,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
         mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
@@ -1935,6 +1995,7 @@ describe('RangeLinkService', () => {
             showErrorMessage: mockShowErrorMessage,
           },
         });
+        selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
         service = new RangeLinkService(
           getDelimiters,
           mockVscodeAdapter,
@@ -1943,6 +2004,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
       });
 
@@ -1972,6 +2034,7 @@ describe('RangeLinkService', () => {
           showInformationMessage: mockShowInformationMessage,
         },
       });
+      selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
       mockDestinationManager = createMockDestinationManager({
         isBound: true,
         boundDestination: createMockTerminalPasteDestination(),
@@ -1984,6 +2047,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
 
       // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
@@ -2100,6 +2164,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
         mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
@@ -2156,6 +2221,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
         mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
@@ -2195,6 +2261,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
         mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
         mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
@@ -2237,6 +2304,7 @@ describe('RangeLinkService', () => {
           asRelativePath: jest.fn().mockReturnValue('file.ts'),
         },
       });
+      selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
 
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
@@ -2247,6 +2315,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
 
       mockGenerateLinkFromSelections = spyOnGenerateLinkFromSelections();
@@ -2399,6 +2468,7 @@ describe('RangeLinkService', () => {
         localMockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        new SelectionValidator(localMockVscodeAdapter, mockLogger),
       );
 
       return { service: localService, mockDocument, mockVscodeAdapter: localMockVscodeAdapter };
@@ -2558,6 +2628,7 @@ describe('RangeLinkService', () => {
           asRelativePath: jest.fn().mockReturnValue('src/file.ts'),
         },
       });
+      selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
 
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
@@ -2568,6 +2639,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
 
       await (service as any).generateLinkFromSelection(
@@ -2600,6 +2672,7 @@ describe('RangeLinkService', () => {
           asRelativePath: jest.fn().mockReturnValue('/standalone/file.ts'),
         },
       });
+      selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
 
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
@@ -2610,6 +2683,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
 
       await (service as any).generateLinkFromSelection(
@@ -2642,6 +2716,7 @@ describe('RangeLinkService', () => {
           asRelativePath: jest.fn().mockReturnValue('src/file.ts'),
         },
       });
+      selectionValidator = new SelectionValidator(mockVscodeAdapter, mockLogger);
 
       mockDestinationManager = createMockDestinationManager({ isBound: false });
       service = new RangeLinkService(
@@ -2652,6 +2727,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
 
       await (service as any).generateLinkFromSelection(PathFormat.Absolute, LinkType.Regular);
@@ -2681,6 +2757,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
 
       // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
@@ -2761,6 +2838,7 @@ describe('RangeLinkService', () => {
         mockConfigReader,
         mockClipboardPreserver,
         mockLogger,
+        selectionValidator,
       );
 
       copyAndSendSpy = jest
@@ -2856,6 +2934,7 @@ describe('RangeLinkService', () => {
           mockConfigReader,
           mockClipboardPreserver,
           mockLogger,
+          selectionValidator,
         );
 
         copyAndSendSpy = jest
@@ -3014,6 +3093,7 @@ describe('RangeLinkService', () => {
           },
         },
       });
+      selectionValidator = new SelectionValidator(adapter, mockLogger);
 
       let bound = false;
       const terminalDest = createMockTerminalPasteDestination({ displayName: 'Terminal' });
@@ -3050,6 +3130,7 @@ describe('RangeLinkService', () => {
         config,
         mockClipboardPreserver,
         logger,
+        selectionValidator,
       );
       const jumpCmd = new JumpToDestinationCommand(dm, picker, logger);
 

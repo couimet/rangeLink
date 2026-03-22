@@ -86,6 +86,7 @@ import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvide
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
 import { PathFormat, RangeLinkService } from './RangeLinkService';
+import { SelectionValidator } from './services';
 import { RangeLinkStatusBar } from './statusBar';
 import {
   type FilePathClickArgs,
@@ -206,6 +207,7 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     logger,
   );
 
+  const selectionValidator = new SelectionValidator(ideAdapter, logger);
   const service = new RangeLinkService(
     getDelimiters,
     ideAdapter,
@@ -214,6 +216,7 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     configReader,
     clipboardPreserver,
     logger,
+    selectionValidator,
   );
 
   const statusBar = new RangeLinkStatusBar(

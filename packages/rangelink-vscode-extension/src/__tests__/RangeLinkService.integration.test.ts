@@ -17,6 +17,7 @@ import type { ConfigReader } from '../config';
 import type { DestinationPicker, PasteDestinationManager } from '../destinations';
 import { messagesEn } from '../i18n';
 import { DestinationBehavior, RangeLinkService } from '../RangeLinkService';
+import { SelectionValidator } from '../services';
 import { MessageCode, PasteContentType } from '../types';
 
 import {
@@ -84,6 +85,7 @@ describe('RangeLinkService i18n integration', () => {
       mockConfigReader,
       mockClipboardPreserver,
       mockLogger,
+      new SelectionValidator(mockVscodeAdapter, mockLogger),
     );
 
     formatMessageSpy = spyOnFormatMessage();

@@ -25,8 +25,8 @@ import type { PasteDestinationManager } from './destinations/PasteDestinationMan
 import { resolveBoundTerminalProcessId } from './destinations/utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from './errors';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
+import { SelectionValidator } from './services';
 import {
-  ActiveSelections,
   DirtyBufferWarningResult,
   MessageCode,
   PasteContentType,
@@ -110,6 +110,7 @@ export class RangeLinkService {
     private readonly configReader: ConfigReader,
     private readonly clipboardPreserver: ClipboardPreserver,
     private readonly logger: Logger,
+    private readonly selectionValidator: SelectionValidator,
   ) {}
 
   /**
@@ -179,7 +180,7 @@ export class RangeLinkService {
   async pasteSelectedTextToDestination(): Promise<void> {
     const logCtx = { fn: 'RangeLinkService.pasteSelectedTextToDestination' };
 
-    const validated = this.validateSelectionsAndShowError();
+    const validated = this.selectionValidator.validateSelectionsAndShowError();
     if (!validated) {
       return;
     }
@@ -501,7 +502,7 @@ export class RangeLinkService {
     pathFormat: PathFormat,
     linkType: LinkType,
   ): Promise<FormattedLink | undefined> {
-    const validated = this.validateSelectionsAndShowError();
+    const validated = this.selectionValidator.validateSelectionsAndShowError();
     if (!validated) {
       return undefined;
     }
@@ -671,131 +672,6 @@ export class RangeLinkService {
       },
       contentName: linkTypeName,
       fnName: 'copyToClipboardAndDestination',
-    });
-  }
-
-  /**
-   * Validates that active editor exists with non-empty selections and shows appropriate error if not.
-   *
-   * Consolidates duplicate validation logic from generateLinkFromSelection and other methods.
-   * Shows context-appropriate error message based on failure reason:
-   * - No active editor: ERROR_NO_ACTIVE_EDITOR
-   * - Empty selections: ERROR_NO_TEXT_SELECTED
-   *
-   * @returns Object with editor and selections if valid, undefined if validation failed
-   */
-  private validateSelectionsAndShowError():
-    | { editor: vscode.TextEditor; selections: readonly vscode.Selection[] }
-    | undefined {
-    const logCtx = { fn: 'RangeLinkService.validateSelectionsAndShowError' };
-    const activeSelections = ActiveSelections.create(this.ideAdapter.activeTextEditor);
-
-    this.logger.debug(
-      {
-        ...logCtx,
-        hasEditor: !!activeSelections.editor,
-        selectionCount: activeSelections.selections.length,
-        selections: this.mapSelectionsForLogging(activeSelections.selections),
-        documentVersion: activeSelections.editor?.document.version,
-        documentLineCount: activeSelections.editor?.document.lineCount,
-        documentIsDirty: activeSelections.editor?.document.isDirty,
-        documentIsClosed: activeSelections.editor?.document.isClosed,
-      },
-      'Selection validation starting',
-    );
-
-    const nonEmptySelections = activeSelections.getNonEmptySelections();
-
-    if (!nonEmptySelections) {
-      const errorCode = activeSelections.editor
-        ? MessageCode.ERROR_NO_TEXT_SELECTED
-        : MessageCode.ERROR_NO_ACTIVE_EDITOR;
-      const errorMsg = formatMessage(errorCode);
-
-      const editor = activeSelections.editor;
-      const lineContentAtBoundaries = editor
-        ? this.getLineContentAtSelectionBoundaries(editor.document, activeSelections.selections)
-        : undefined;
-
-      this.logger.warn(
-        {
-          ...logCtx,
-          hasEditor: !!editor,
-          errorCode,
-          selectionCount: activeSelections.selections.length,
-          selections: this.mapSelectionsForLogging(activeSelections.selections),
-          documentVersion: editor?.document.version,
-          documentLineCount: editor?.document.lineCount,
-          documentIsDirty: editor?.document.isDirty,
-          documentIsClosed: editor?.document.isClosed,
-          lineContentAtBoundaries,
-        },
-        'Selection validation failed - full diagnostic context',
-      );
-
-      this.ideAdapter.showErrorMessage(errorMsg);
-      return undefined;
-    }
-
-    // Safe: getNonEmptySelections() returning non-null guarantees editor exists
-    return { editor: activeSelections.editor!, selections: nonEmptySelections };
-  }
-
-  /**
-   * Maps selections to a logging-friendly format with defensive property access
-   */
-  private mapSelectionsForLogging(selections: readonly vscode.Selection[]): Array<{
-    index: number;
-    start: { line: number | undefined; char: number | undefined };
-    end: { line: number | undefined; char: number | undefined };
-    isEmpty: boolean | undefined;
-  }> {
-    return selections.map((s, i) => ({
-      index: i,
-      start: { line: s.start?.line, char: s.start?.character },
-      end: { line: s.end?.line, char: s.end?.character },
-      isEmpty: s.isEmpty,
-    }));
-  }
-
-  /**
-   * Extracts line content at selection boundaries for diagnostic logging
-   *
-   * Safely retrieves the text content at each selection's start and end lines.
-   * Returns undefined for lines that are out of bounds (indicating stale selection state).
-   */
-  private getLineContentAtSelectionBoundaries(
-    document: vscode.TextDocument,
-    selections: readonly vscode.Selection[],
-  ): Array<{
-    index: number;
-    startLineContent: string | undefined;
-    endLineContent: string | undefined;
-  }> {
-    return selections.map((sel, index) => {
-      let startLineContent: string | undefined;
-      let endLineContent: string | undefined;
-
-      const startLine = sel.start?.line;
-      const endLine = sel.end?.line;
-
-      try {
-        if (startLine !== undefined && startLine >= 0 && startLine < document.lineCount) {
-          startLineContent = document.lineAt(startLine).text;
-        }
-      } catch {
-        startLineContent = undefined;
-      }
-
-      try {
-        if (endLine !== undefined && endLine >= 0 && endLine < document.lineCount) {
-          endLineContent = document.lineAt(endLine).text;
-        }
-      } catch {
-        endLineContent = undefined;
-      }
-
-      return { index, startLineContent, endLineContent };
     });
   }
 
