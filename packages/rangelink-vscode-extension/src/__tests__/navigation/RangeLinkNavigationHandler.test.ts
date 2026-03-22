@@ -34,7 +34,12 @@ describe('RangeLinkNavigationHandler', () => {
     mockLogger = createMockLogger();
     mockAdapter = createMockVscodeAdapter();
     mockConfigReader = createMockConfigReader();
-    handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+    handler = new RangeLinkNavigationHandler(
+      GET_DELIMITERS,
+      mockAdapter,
+      mockConfigReader,
+      mockLogger,
+    );
   });
 
   describe('Single Position Selection Extension', () => {
@@ -62,7 +67,12 @@ describe('RangeLinkNavigationHandler', () => {
       });
 
       createSelectionSpy = jest.spyOn(mockAdapter, 'createSelection');
-      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+      handler = new RangeLinkNavigationHandler(
+        GET_DELIMITERS,
+        mockAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
     });
 
     it('should extend single-position selection by 1 character (normal case)', async () => {
@@ -420,7 +430,12 @@ describe('RangeLinkNavigationHandler', () => {
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(untitledUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await handler.navigateToLink(parsed, linkText);
 
@@ -466,7 +481,12 @@ describe('RangeLinkNavigationHandler', () => {
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(untitledUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await handler.navigateToLink(parsed, 'Untitled-2#L5');
 
@@ -504,7 +524,12 @@ describe('RangeLinkNavigationHandler', () => {
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(untitledUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await handler.navigateToLink(parsed, 'Sans titre-1#L3');
 
@@ -557,7 +582,12 @@ describe('RangeLinkNavigationHandler', () => {
           .mockReturnValueOnce(mockVsEnd);
         jest.spyOn(mockAdapter, 'createRange').mockReturnValue(mockRange);
 
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await handler.navigateToLink(parsed, linkText);
 
@@ -589,7 +619,12 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(undefined);
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await handler.navigateToLink(parsed, 'src/missing.ts#L10');
 
@@ -617,7 +652,12 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(undefined);
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await handler.navigateToLink(parsed, '/tmp/missing.ts#L1');
 
@@ -643,7 +683,12 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(undefined);
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await handler.navigateToLink(parsed, 'Sans titre-1#L1');
 
@@ -670,7 +715,12 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(undefined);
         jest.spyOn(mockAdapter, 'findOpenUntitledFile').mockReturnValue(undefined);
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
 
         await handler.navigateToLink(parsed, 'Untitled-3#L1');
 
@@ -727,7 +777,12 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(showTextDocumentError);
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
 
         // Should re-throw the exact same error object (reference equality)
         await expect(handler.navigateToLink(parsed, linkText)).rejects.toBe(showTextDocumentError);
@@ -768,7 +823,12 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(mockUri);
         jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(nonErrorException);
-        handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
 
         // Should re-throw the exact same exception value (reference equality)
         await expect(handler.navigateToLink(parsed, 'file.ts#L10')).rejects.toBe(nonErrorException);
@@ -803,7 +863,12 @@ describe('RangeLinkNavigationHandler', () => {
         },
       });
 
-      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+      handler = new RangeLinkNavigationHandler(
+        GET_DELIMITERS,
+        mockAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
     });
 
     it('should log warning and show warning toast when line is clamped', async () => {
@@ -921,7 +986,12 @@ describe('RangeLinkNavigationHandler', () => {
         },
       });
 
-      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+      handler = new RangeLinkNavigationHandler(
+        GET_DELIMITERS,
+        mockAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
     });
 
     it('should create multi-cursor selections for rectangular mode', async () => {
@@ -1026,7 +1096,12 @@ describe('RangeLinkNavigationHandler', () => {
           key === 'navigation.showNavigatedToast' ? false : defaultValue,
         ),
       });
-      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+      handler = new RangeLinkNavigationHandler(
+        GET_DELIMITERS,
+        mockAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
 
       const parsed: ParsedLink = {
         path: 'recipes/baking/chicken pie.ts',
@@ -1042,7 +1117,10 @@ describe('RangeLinkNavigationHandler', () => {
       await handler.navigateToLink(parsed, "'recipes/baking/chicken pie.ts'#L3C5-L42C10");
 
       expect(showInfoSpy).not.toHaveBeenCalled();
-      expect(mockConfigReader.getBoolean).toHaveBeenCalledWith('navigation.showNavigatedToast', true);
+      expect(mockConfigReader.getBoolean).toHaveBeenCalledWith(
+        'navigation.showNavigatedToast',
+        true,
+      );
     });
 
     it('should suppress clamping warning when showClampingWarning is false', async () => {
@@ -1064,7 +1142,12 @@ describe('RangeLinkNavigationHandler', () => {
           key === 'navigation.showClampingWarning' ? false : defaultValue,
         ),
       });
-      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+      handler = new RangeLinkNavigationHandler(
+        GET_DELIMITERS,
+        mockAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
 
       const parsed: ParsedLink = {
         path: 'recipes/baking/chicken pie.ts',
@@ -1080,7 +1163,10 @@ describe('RangeLinkNavigationHandler', () => {
       await handler.navigateToLink(parsed, "'recipes/baking/chicken pie.ts'#L50");
 
       expect(showWarnSpy).not.toHaveBeenCalled();
-      expect(mockConfigReader.getBoolean).toHaveBeenCalledWith('navigation.showClampingWarning', true);
+      expect(mockConfigReader.getBoolean).toHaveBeenCalledWith(
+        'navigation.showClampingWarning',
+        true,
+      );
     });
 
     it('should show both toasts when settings default to true', async () => {
@@ -1098,7 +1184,12 @@ describe('RangeLinkNavigationHandler', () => {
         },
       });
       jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(navDoc.uri);
-      handler = new RangeLinkNavigationHandler(GET_DELIMITERS, mockAdapter, mockConfigReader, mockLogger);
+      handler = new RangeLinkNavigationHandler(
+        GET_DELIMITERS,
+        mockAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
 
       const parsed: ParsedLink = {
         path: 'recipes/baking/chicken pie.ts',
@@ -1113,8 +1204,13 @@ describe('RangeLinkNavigationHandler', () => {
 
       await handler.navigateToLink(parsed, "'recipes/baking/chicken pie.ts'#L3C5-L42C10");
 
-      expect(showInfoSpy).toHaveBeenCalledWith('RangeLink: Navigated to recipes/baking/chicken pie.ts @ 3:5-42:10');
-      expect(mockConfigReader.getBoolean).toHaveBeenCalledWith('navigation.showNavigatedToast', true);
+      expect(showInfoSpy).toHaveBeenCalledWith(
+        'RangeLink: Navigated to recipes/baking/chicken pie.ts @ 3:5-42:10',
+      );
+      expect(mockConfigReader.getBoolean).toHaveBeenCalledWith(
+        'navigation.showNavigatedToast',
+        true,
+      );
     });
   });
 });

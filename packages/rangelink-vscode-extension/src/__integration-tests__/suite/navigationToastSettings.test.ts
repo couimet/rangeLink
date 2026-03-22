@@ -97,8 +97,16 @@ suite('Navigation Toast Settings', () => {
 
   teardown(async () => {
     const config = vscode.workspace.getConfiguration('rangelink');
-    await config.update('navigation.showNavigatedToast', undefined, vscode.ConfigurationTarget.Workspace);
-    await config.update('navigation.showClampingWarning', undefined, vscode.ConfigurationTarget.Workspace);
+    await config.update(
+      'navigation.showNavigatedToast',
+      undefined,
+      vscode.ConfigurationTarget.Workspace,
+    );
+    await config.update(
+      'navigation.showClampingWarning',
+      undefined,
+      vscode.ConfigurationTarget.Workspace,
+    );
   });
 
   // navigation-toast-settings-001: showNavigatedToast=false suppresses info toast
@@ -136,7 +144,11 @@ suite('Navigation Toast Settings', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-toast-settings-002');
 
-    const { sel, doc } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
+    const { sel, doc } = await navigateViaHandleLinkClick(
+      linkText,
+      parseResult.value,
+      testFilename,
+    );
     await settle();
 
     const lastLine = doc.lineCount - 1;

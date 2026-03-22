@@ -380,9 +380,9 @@ Invalid configurations will fall back to defaults with a warning in the output c
 
 ### Navigation Settings <sup>Unreleased</sup>
 
-| Setting                                    | Default | Description                                                                     |
-| ------------------------------------------ | ------- | ------------------------------------------------------------------------------- |
-| `rangelink.navigation.showClampingWarning` | `true`  | Show warning toast when navigation is clamped to file boundaries                |
+| Setting                                    | Default | Description                                                                                                   |
+| ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
+| `rangelink.navigation.showClampingWarning` | `true`  | Show warning toast when navigation is clamped to file boundaries                                              |
 | `rangelink.navigation.showNavigatedToast`  | `true`  | Show info toast after successful navigation (e.g., "Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16") |
 
 Set either to `false` for a quieter workflow. Navigation itself is unaffected — only the feedback toasts are suppressed. Error toasts (e.g., "Failed to navigate") always appear regardless of these settings.

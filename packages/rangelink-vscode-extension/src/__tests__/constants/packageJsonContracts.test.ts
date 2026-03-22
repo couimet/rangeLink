@@ -628,8 +628,7 @@ describe('package.json contributions', () => {
         expect(properties['rangelink.navigation.showClampingWarning']).toStrictEqual({
           type: 'boolean',
           default: true,
-          description:
-            'Show warning toast when navigation position is clamped to file boundaries',
+          description: 'Show warning toast when navigation position is clamped to file boundaries',
         });
       });
     });

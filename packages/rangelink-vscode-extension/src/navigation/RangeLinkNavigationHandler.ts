@@ -233,13 +233,23 @@ export class RangeLinkNavigationHandler {
 
       if (anyClamping) {
         const clampingSummary = formatClampingSummary(convertedStart, convertedEnd);
-        if (this.configReader.getBoolean(SETTING_NAVIGATION_SHOW_CLAMPING_WARNING, DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING)) {
+        if (
+          this.configReader.getBoolean(
+            SETTING_NAVIGATION_SHOW_CLAMPING_WARNING,
+            DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING,
+          )
+        ) {
           await this.ideAdapter.showWarningMessage(
             formatMessage(MessageCode.WARN_NAVIGATION_CLAMPED, { path, position, clampingSummary }),
           );
         }
       } else {
-        if (this.configReader.getBoolean(SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST, DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST)) {
+        if (
+          this.configReader.getBoolean(
+            SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST,
+            DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST,
+          )
+        ) {
           await this.ideAdapter.showInformationMessage(
             formatMessage(MessageCode.INFO_NAVIGATION_SUCCESS, { path, position }),
           );
