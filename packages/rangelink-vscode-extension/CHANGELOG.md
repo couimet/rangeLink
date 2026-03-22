@@ -75,6 +75,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "RangeLink: Bind Here" - Bind this terminal as destination
     - "RangeLink: Unbind" - Unbind current destination (when bound)
 - **Navigation clamping feedback** - Navigation now warns when a link points beyond file boundaries instead of silently landing at the nearest valid position
+- **Navigation toast settings** - Control which toasts appear after clicking a RangeLink (#54)
+  - `rangelink.navigation.showNavigatedToast` (default: `true`) — suppress the "Navigated to …" info toast for a quieter workflow
+  - `rangelink.navigation.showClampingWarning` (default: `true`) — suppress the clamping warning when navigation is adjusted to file boundaries
+  - Navigation itself is unaffected — only the feedback toasts are controlled
 - **Dirty Buffer Warning** - Warning when generating a link from a file with unsaved changes (#298)
   - Shows a dialog with options: "Save & Generate", "Generate Anyway", or dismiss to abort
   - Controlled by `rangelink.warnOnDirtyBuffer` setting (default: `true`)
