@@ -2242,3 +2242,79 @@ test_cases:
       - 'Press Enter'
     expected_result: 'The file opens and the cursor lands at the last line, last column (both axes clamped). A warning toast is shown indicating both line and column were clamped.'
     automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Untitled File Navigation (Issue #101)
+  # ---------------------------------------------------------------------------
+
+  - id: untitled-navigation-001
+    feature: 'Untitled File Navigation'
+    scenario: 'Navigate to single line in open untitled file'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'An untitled file is open with at least 10 lines of content'
+    steps:
+      - 'In a terminal or document, create a RangeLink referencing the untitled file: Untitled-1#L5'
+      - 'Click the RangeLink (or use Cmd+R Cmd+G / Ctrl+R Ctrl+G and type Untitled-1#L5)'
+    expected_result: 'The untitled file becomes active and line 5 is fully selected (anchor at start, active at end of line).'
+    automated: true
+
+  - id: untitled-navigation-002
+    feature: 'Untitled File Navigation'
+    scenario: 'Navigate to line range in open untitled file'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'An untitled file is open with at least 10 lines of content'
+    steps:
+      - 'In a terminal or document, create a RangeLink referencing the untitled file: Untitled-1#L3-L7'
+      - 'Click the RangeLink'
+    expected_result: 'The untitled file becomes active with lines 3 through 7 selected (anchor at start of line 3, active at end of line 7).'
+    automated: true
+
+  - id: untitled-navigation-003
+    feature: 'Untitled File Navigation'
+    scenario: 'Navigate to untitled file that is not currently open shows file-not-found warning'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'No untitled files are open'
+    steps:
+      - 'Use Cmd+R Cmd+G (or Ctrl+R Ctrl+G) and type Untitled-99#L1'
+      - 'Press Enter'
+    expected_result: 'A warning toast is shown: "RangeLink: Cannot find file: Untitled-99". No file opens.'
+    automated: true
+
+  - id: untitled-navigation-004
+    feature: 'Untitled File Navigation'
+    scenario: 'Character-precision navigation in open untitled file'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'An untitled file is open with at least 10 lines of content'
+    steps:
+      - 'Create a RangeLink referencing the untitled file with character precision: Untitled-1#L5C10-L5C20'
+      - 'Click the RangeLink'
+    expected_result: 'The untitled file becomes active with characters 10-20 on line 5 selected (not full line). An info toast confirms navigation.'
+    automated: true
+
+  - id: untitled-navigation-005
+    feature: 'Untitled File Navigation'
+    scenario: 'Line clamping when navigating beyond end of untitled file'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'An untitled file is open with 15 lines of content'
+    steps:
+      - 'Create a RangeLink referencing line 50 of the untitled file: Untitled-1#L50'
+      - 'Click the RangeLink'
+    expected_result: 'The cursor is clamped to the last line of the untitled file. A warning toast indicates line exceeded file length.'
+    automated: true
+
+  - id: untitled-navigation-006
+    feature: 'Untitled File Navigation'
+    scenario: 'Case-insensitive untitled-name matching'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'An untitled file named "Untitled-1" (or locale equivalent) is open with at least 10 lines'
+    steps:
+      - 'Create a RangeLink using a differently-cased name: untitled-1#L5 (all lowercase)'
+      - 'Click the RangeLink'
+    expected_result: 'The untitled file becomes active and line 5 is fully selected. An info toast confirms navigation despite the case mismatch.'
+    automated: true

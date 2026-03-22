@@ -134,6 +134,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Before:** Fell back silently to clipboard when unbound
   - **After:** Opens destination picker; binds and sends in one action; dismisses silently on Escape
   - Use Copy RangeLink or Copy RangeLink (Absolute) for clipboard-only behavior
+- **Untitled file navigation works in all locales** - Clicking a RangeLink that references an open untitled file now navigates correctly regardless of VS Code's display language (#101)
+  - **Before:** Only English "Untitled-N" names were recognized; non-English locales (e.g., French "Sans titre-1") showed "Cannot find file"
+  - **After:** The fallback searches all open untitled documents by URI scheme, which is locale-independent
+  - Case-insensitive matching ensures links work even when casing differs between the link and the document name
 - **Jump to Bound Destination UX** - Quick pick when no destination bound (#173)
   - **Before:** Error message "No destination bound. Bind a destination first."
   - **After:** Select destination → binds and jumps in one action
