@@ -1121,6 +1121,14 @@ describe('RangeLinkNavigationHandler', () => {
         'navigation.showNavigatedToast',
         true,
       );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          linkText: "'recipes/baking/chicken pie.ts'#L3C5-L42C10",
+          suppressedMessage: "RangeLink: Navigated to recipes/baking/chicken pie.ts @ 3:5-42:10",
+        },
+        'Navigated toast suppressed by setting',
+      );
     });
 
     it('should suppress clamping warning when showClampingWarning is false', async () => {
@@ -1166,6 +1174,14 @@ describe('RangeLinkNavigationHandler', () => {
       expect(mockConfigReader.getBoolean).toHaveBeenCalledWith(
         'navigation.showClampingWarning',
         true,
+      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          linkText: "'recipes/baking/chicken pie.ts'#L50",
+          suppressedMessage: "RangeLink: Navigated to recipes/baking/chicken pie.ts @ 50 (clamped: line exceeded file length)",
+        },
+        'Clamping warning suppressed by setting',
       );
     });
 

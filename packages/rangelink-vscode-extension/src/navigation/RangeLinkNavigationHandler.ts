@@ -233,25 +233,37 @@ export class RangeLinkNavigationHandler {
 
       if (anyClamping) {
         const clampingSummary = formatClampingSummary(convertedStart, convertedEnd);
+        const clampingMessage = formatMessage(MessageCode.WARN_NAVIGATION_CLAMPED, {
+          path,
+          position,
+          clampingSummary,
+        });
         if (
           this.configReader.getBoolean(
             SETTING_NAVIGATION_SHOW_CLAMPING_WARNING,
             DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING,
           )
         ) {
-          await this.ideAdapter.showWarningMessage(
-            formatMessage(MessageCode.WARN_NAVIGATION_CLAMPED, { path, position, clampingSummary }),
+          await this.ideAdapter.showWarningMessage(clampingMessage);
+        } else {
+          this.logger.debug(
+            { ...logCtx, suppressedMessage: clampingMessage },
+            'Clamping warning suppressed by setting',
           );
         }
       } else {
+        const toastMessage = formatMessage(MessageCode.INFO_NAVIGATION_SUCCESS, { path, position });
         if (
           this.configReader.getBoolean(
             SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST,
             DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST,
           )
         ) {
-          await this.ideAdapter.showInformationMessage(
-            formatMessage(MessageCode.INFO_NAVIGATION_SUCCESS, { path, position }),
+          await this.ideAdapter.showInformationMessage(toastMessage);
+        } else {
+          this.logger.debug(
+            { ...logCtx, suppressedMessage: toastMessage },
+            'Navigated toast suppressed by setting',
           );
         }
       }

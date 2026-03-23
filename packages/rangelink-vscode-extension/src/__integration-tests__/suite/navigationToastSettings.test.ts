@@ -6,7 +6,12 @@ import type { ParsedLink } from 'rangelink-core-ts';
 import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
-import { assertToastLogged, assertNoToastLogged, getLogCapture } from '../helpers';
+import {
+  assertNoToastLogged,
+  assertSuppressionLogged,
+  assertToastLogged,
+  getLogCapture,
+} from '../helpers';
 
 const SETTLE_MS = 500;
 const settle = () => new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
@@ -81,7 +86,7 @@ suite('Navigation Toast Settings', () => {
     );
 
     const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content here`);
-    testFilename = `__rl-test-toast-settings-${Date.now()}.ts`;
+    testFilename = `__rl test toast settings ${Date.now()}.ts`;
     testFilePath = path.join(getWorkspaceRoot(), testFilename);
     fs.writeFileSync(testFilePath, lines.join('\n') + '\n', 'utf8');
   });
@@ -128,7 +133,14 @@ suite('Navigation Toast Settings', () => {
     assert.strictEqual(sel.anchor.line, 4, `Expected anchor line 4 but got ${sel.anchor.line}`);
 
     const lines = logCapture.getLinesSince('before-toast-settings-001');
-    assertNoToastLogged(lines, { type: 'info', message: 'RangeLink: Navigated to' });
+    assertSuppressionLogged(lines, {
+      fn: 'RangeLinkNavigationHandler.navigateToLink',
+      suppressedMessage: `RangeLink: Navigated to ${testFilename} @ 5`,
+    });
+    assertNoToastLogged(lines, {
+      type: 'info',
+      message: `RangeLink: Navigated to ${testFilename} @ 5`,
+    });
   });
 
   // navigation-toast-settings-002: showClampingWarning=false suppresses clamping warning
@@ -155,7 +167,14 @@ suite('Navigation Toast Settings', () => {
     assert.strictEqual(sel.anchor.line, lastLine, `Expected clamped to last line ${lastLine}`);
 
     const lines = logCapture.getLinesSince('before-toast-settings-002');
-    assertNoToastLogged(lines, { type: 'warning', message: 'clamped' });
+    assertSuppressionLogged(lines, {
+      fn: 'RangeLinkNavigationHandler.navigateToLink',
+      suppressedMessage: `RangeLink: Navigated to ${testFilename} @ 50 (clamped: line exceeded file length)`,
+    });
+    assertNoToastLogged(lines, {
+      type: 'warning',
+      message: `RangeLink: Navigated to ${testFilename} @ 50 (clamped: line exceeded file length)`,
+    });
   });
 
   // navigation-toast-settings-003: default settings show info toast
