@@ -2,6 +2,8 @@ export { ActiveSelections } from './ActiveSelections';
 export { AutoPasteResult } from './AutoPasteResult';
 export type { BoundState } from './BoundState';
 export type { ClipboardPreservationMode } from './ClipboardPreservationMode';
+export type { CopyAndSendOptions } from './CopyAndSendOptions';
+export { DestinationBehavior } from './DestinationBehavior';
 export type { EligibleFile } from './EligibleFile';
 export type { EligibleTerminal } from './EligibleTerminal';
 export type { FilePathClickArgs } from './FilePathClickArgs';
@@ -31,6 +33,7 @@ export type { WithDestinationKind } from './WithDestinationKind';
 export type { WithDisplayName } from './WithDisplayName';
 export { MessageCode } from './MessageCode';
 export { PasteContentType } from './PasteContentType';
+export { PathFormat } from './PathFormat';
 export { RelativePathFormat } from './RelativePathFormat';
 export type {
   GetAvailableDestinationItemsOptions,
