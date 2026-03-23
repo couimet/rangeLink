@@ -157,6 +157,52 @@ describe('EditorFocusCapability', () => {
       );
     });
 
+    it('falls back to boundViewColumn when moved editor has undefined viewColumn', async () => {
+      const mockAdapter = createMockVscodeAdapter();
+      jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
+
+      const movedEditor = createMockEditor({
+        document: createMockDocument({ uri: DOCUMENT_URI }),
+        viewColumn: undefined,
+      });
+      jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([movedEditor]);
+
+      const freshEditor = createMockEditor({
+        document: createMockDocument({ uri: DOCUMENT_URI }),
+      });
+      jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(freshEditor);
+
+      const mockInserterFn = jest.fn().mockResolvedValue(true);
+      const mockInsertFactory = createMockInsertFactory();
+      mockInsertFactory.forTarget.mockReturnValue(mockInserterFn);
+
+      const capability = new EditorFocusCapability(
+        mockAdapter,
+        DOCUMENT_URI,
+        BOUND_VIEW_COLUMN,
+        mockInsertFactory,
+        mockLogger,
+      );
+
+      const result = await capability.focus(LOGGING_CONTEXT);
+
+      expect(result).toBeOkWith((value: FocusedDestination) => {
+        expect(value.inserter).toBe(mockInserterFn);
+      });
+      expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, {
+        viewColumn: BOUND_VIEW_COLUMN,
+      });
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'EditorFocusCapability.resolveViewColumn',
+          editorUri: DOCUMENT_URI_STRING,
+          boundViewColumn: BOUND_VIEW_COLUMN,
+          movedViewColumn: BOUND_VIEW_COLUMN,
+        },
+        'Editor moved to different viewColumn, following it',
+      );
+    });
+
     it('returns error when file is not visible anywhere', async () => {
       const mockAdapter = createMockVscodeAdapter();
       jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
