@@ -287,6 +287,20 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     bookmarkService,
     logger,
   );
+  const showVersionCommand = new ShowVersionCommand(ideAdapter, logger, versionInfo);
+  const bindToDestinationCommand = new BindToDestinationCommand(
+    destinationManager,
+    destinationPicker,
+    logger,
+  );
+  const jumpToDestinationCommand = new JumpToDestinationCommand(
+    destinationManager,
+    destinationPicker,
+    logger,
+  );
+  const goToRangeLinkCommand = new GoToRangeLinkCommand(ideAdapter, navigationHandler, logger);
+  const listBookmarksCommand = new ListBookmarksCommand(ideAdapter, bookmarkService, logger);
+  const manageBookmarksCommand = new ManageBookmarksCommand(ideAdapter, bookmarkService, logger);
 
   // Register file path terminal link provider for clickable plain file paths
   const filePathTerminalProvider = new FilePathTerminalProvider(
@@ -402,8 +416,6 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     ),
   );
 
-  // Register version info command
-  const showVersionCommand = new ShowVersionCommand(ideAdapter, logger, versionInfo);
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_SHOW_VERSION, () => showVersionCommand.execute()),
   );
@@ -451,22 +463,12 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     }),
   );
 
-  const bindToDestinationCommand = new BindToDestinationCommand(
-    destinationManager,
-    destinationPicker,
-    logger,
-  );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BIND_TO_DESTINATION, async () => {
       await bindToDestinationCommand.execute();
     }),
   );
 
-  const jumpToDestinationCommand = new JumpToDestinationCommand(
-    destinationManager,
-    destinationPicker,
-    logger,
-  );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_JUMP_TO_DESTINATION, async () => {
       await jumpToDestinationCommand.execute();
@@ -487,7 +489,6 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     }),
   );
 
-  const goToRangeLinkCommand = new GoToRangeLinkCommand(ideAdapter, navigationHandler, logger);
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_GO_TO_RANGELINK, () => goToRangeLinkCommand.execute()),
   );
@@ -496,13 +497,9 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     ideAdapter.registerCommand(CMD_BOOKMARK_ADD, () => addBookmarkCommand.execute()),
   );
 
-  const listBookmarksCommand = new ListBookmarksCommand(ideAdapter, bookmarkService, logger);
-
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BOOKMARK_LIST, () => listBookmarksCommand.execute()),
   );
-
-  const manageBookmarksCommand = new ManageBookmarksCommand(ideAdapter, bookmarkService, logger);
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_BOOKMARK_MANAGE, () => manageBookmarksCommand.execute()),
