@@ -4,3 +4,4 @@ export { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
 export { LinkGenerator } from './LinkGenerator';
 export { SelectionValidator } from './SelectionValidator';
 export { TerminalSelectionService } from './TerminalSelectionService';
+export { TextSelectionPaster } from './TextSelectionPaster';

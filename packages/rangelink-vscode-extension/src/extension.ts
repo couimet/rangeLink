@@ -85,17 +85,18 @@ import { FilePathTerminalProvider } from './navigation/FilePathTerminalProvider'
 import { RangeLinkDocumentProvider } from './navigation/RangeLinkDocumentProvider';
 import { RangeLinkNavigationHandler } from './navigation/RangeLinkNavigationHandler';
 import { RangeLinkTerminalProvider } from './navigation/RangeLinkTerminalProvider';
-import { PathFormat, RangeLinkService } from './RangeLinkService';
 import {
   ClipboardRouter,
   FilePathPaster,
   LinkGenerator,
   SelectionValidator,
   TerminalSelectionService,
+  TextSelectionPaster,
 } from './services';
 import { RangeLinkStatusBar } from './statusBar';
 import {
   type FilePathClickArgs,
+  PathFormat,
   type RangeLinkClickArgs,
   type RangeLinkExtensionApi,
   type VersionInfo,
@@ -245,15 +246,12 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     selectionValidator,
     logger,
   );
-  const service = new RangeLinkService(
+  const textSelectionPaster = new TextSelectionPaster(
     destinationManager,
     configReader,
     clipboardRouter,
-    terminalSelectionService,
-    filePathPaster,
-    linkGenerator,
-    logger,
     selectionValidator,
+    logger,
   );
 
   const statusBar = new RangeLinkStatusBar(
@@ -357,45 +355,45 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
   // Register commands
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_COPY_LINK_RELATIVE, () =>
-      service.createLink(PathFormat.WorkspaceRelative),
+      linkGenerator.createLink(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_COPY_LINK_ABSOLUTE, () =>
-      service.createLink(PathFormat.Absolute),
+      linkGenerator.createLink(PathFormat.Absolute),
     ),
   );
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_COPY_PORTABLE_LINK_RELATIVE, () =>
-      service.createPortableLink(PathFormat.WorkspaceRelative),
+      linkGenerator.createPortableLink(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_COPY_PORTABLE_LINK_ABSOLUTE, () =>
-      service.createPortableLink(PathFormat.Absolute),
+      linkGenerator.createPortableLink(PathFormat.Absolute),
     ),
   );
 
   // Register clipboard-only commands (issue #117)
   context.subscriptions.push(
     vscode.commands.registerCommand(CMD_COPY_LINK_ONLY_RELATIVE, () =>
-      service.createLinkOnly(PathFormat.WorkspaceRelative),
+      linkGenerator.createLinkOnly(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(CMD_COPY_LINK_ONLY_ABSOLUTE, () =>
-      service.createLinkOnly(PathFormat.Absolute),
+      linkGenerator.createLinkOnly(PathFormat.Absolute),
     ),
   );
 
   // Register paste selected text command (issue #89)
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_PASTE_TO_DESTINATION, () =>
-      service.pasteSelectedTextToDestination(),
+      textSelectionPaster.pasteSelectedTextToDestination(),
     ),
   );
 
@@ -507,34 +505,34 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_PASTE_FILE_PATH_ABSOLUTE, (uri) =>
-      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
+      filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
     ),
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_PASTE_FILE_PATH_RELATIVE, (uri) =>
-      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
+      filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE, () =>
-      service.pasteCurrentFilePathToDestination(PathFormat.Absolute),
+      filePathPaster.pasteCurrentFilePathToDestination(PathFormat.Absolute),
     ),
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE, () =>
-      service.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative),
+      filePathPaster.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH, (uri) =>
-      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
+      filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
     ),
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH, (uri) =>
-      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
+      filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
     ),
   );
 
@@ -549,27 +547,27 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH, (uri) =>
-      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
+      filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute),
     ),
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH, (uri) =>
-      service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
+      filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_CONTENT_PASTE_FILE_PATH, (uri) =>
       uri
-        ? service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute)
-        : service.pasteCurrentFilePathToDestination(PathFormat.Absolute),
+        ? filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.Absolute)
+        : filePathPaster.pasteCurrentFilePathToDestination(PathFormat.Absolute),
     ),
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_CONTENT_PASTE_RELATIVE_FILE_PATH, (uri) =>
       uri
-        ? service.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative)
-        : service.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative),
+        ? filePathPaster.pasteFilePathToDestination(uri as vscode.Uri, PathFormat.WorkspaceRelative)
+        : filePathPaster.pasteCurrentFilePathToDestination(PathFormat.WorkspaceRelative),
     ),
   );
   context.subscriptions.push(
@@ -592,39 +590,43 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_TERMINAL_PASTE_SELECTED_TEXT, () =>
-      service.pasteTerminalSelectionToDestination(),
+      terminalSelectionService.pasteTerminalSelectionToDestination(),
     ),
   );
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_TERMINAL_LINK_BRIDGE, () => service.terminalLinkBridge()),
+    ideAdapter.registerCommand(CMD_TERMINAL_LINK_BRIDGE, () =>
+      terminalSelectionService.terminalLinkBridge(),
+    ),
   );
   context.subscriptions.push(
-    ideAdapter.registerCommand(CMD_TERMINAL_COPY_LINK_GUARD, () => service.terminalCopyLinkGuard()),
+    ideAdapter.registerCommand(CMD_TERMINAL_COPY_LINK_GUARD, () =>
+      terminalSelectionService.terminalCopyLinkGuard(),
+    ),
   );
 
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_LINK, () =>
-      service.createLink(PathFormat.WorkspaceRelative),
+      linkGenerator.createLink(PathFormat.WorkspaceRelative),
     ),
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_LINK_ABSOLUTE, () =>
-      service.createLink(PathFormat.Absolute),
+      linkGenerator.createLink(PathFormat.Absolute),
     ),
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK, () =>
-      service.createPortableLink(PathFormat.WorkspaceRelative),
+      linkGenerator.createPortableLink(PathFormat.WorkspaceRelative),
     ),
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK_ABSOLUTE, () =>
-      service.createPortableLink(PathFormat.Absolute),
+      linkGenerator.createPortableLink(PathFormat.Absolute),
     ),
   );
   context.subscriptions.push(
     ideAdapter.registerCommand(CMD_CONTEXT_EDITOR_PASTE_SELECTED_TEXT, () =>
-      service.pasteSelectedTextToDestination(),
+      textSelectionPaster.pasteSelectedTextToDestination(),
     ),
   );
   context.subscriptions.push(
