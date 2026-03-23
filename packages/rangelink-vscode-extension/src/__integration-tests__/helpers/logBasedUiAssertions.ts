@@ -1,5 +1,7 @@
 import assert from 'node:assert';
 
+import type { LoggingContext } from 'barebone-logger';
+
 /**
  * Toast types mapped to the VscodeAdapter function names that appear in log JSON context.
  * Status bar messages are NOT toasts — use assertStatusBarMsgLogged() for those.
@@ -23,27 +25,10 @@ interface ToastAssertionOptions extends MessageAssertionOptions {
 }
 
 /**
- * Parse a log line's JSON context to extract the `fn` and `message` fields.
+ * Parse a log line's JSON context block.
  * Log format: `[LEVEL] {"fn":"...","message":"...",...} Human-readable text`
  */
-const parseLogContext = (line: string): { fn: string; message: string } | undefined => {
-  const jsonStart = line.indexOf('{');
-  const jsonEnd = line.lastIndexOf('}');
-  if (jsonStart === -1 || jsonEnd === -1) {
-    return undefined;
-  }
-  try {
-    const ctx = JSON.parse(line.slice(jsonStart, jsonEnd + 1));
-    if (typeof ctx.fn === 'string' && typeof ctx.message === 'string') {
-      return { fn: ctx.fn, message: ctx.message };
-    }
-  } catch {
-    return undefined;
-  }
-  return undefined;
-};
-
-const parseLogContextFull = (line: string): Record<string, unknown> | undefined => {
+const parseLogContext = (line: string): LoggingContext | undefined => {
   const jsonStart = line.indexOf('{');
   const jsonEnd = line.lastIndexOf('}');
   if (jsonStart === -1 || jsonEnd === -1) {
@@ -52,7 +37,7 @@ const parseLogContextFull = (line: string): Record<string, unknown> | undefined 
   try {
     const ctx = JSON.parse(line.slice(jsonStart, jsonEnd + 1));
     if (typeof ctx === 'object' && ctx !== null && typeof ctx.fn === 'string') {
-      return ctx as Record<string, unknown>;
+      return ctx as LoggingContext;
     }
   } catch {
     return undefined;
@@ -124,7 +109,7 @@ export const assertSuppressionLogged = (
 ): void => {
   assert.ok(
     lines.some((line) => {
-      const ctx = parseLogContextFull(line);
+      const ctx = parseLogContext(line);
       return (
         ctx !== undefined && ctx.fn === opts.fn && ctx.suppressedMessage === opts.suppressedMessage
       );
