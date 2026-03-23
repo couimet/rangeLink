@@ -659,4 +659,161 @@ describe('BookmarksStore', () => {
       expect(result).toStrictEqual([]);
     });
   });
+
+  describe('save failure', () => {
+    it('wraps globalState.update error as BOOKMARK_SAVE_FAILED in add', async () => {
+      const saveError = new Error('disk full');
+      mockMemento.update = jest.fn().mockRejectedValue(saveError);
+
+      const result = await store.add({ label: 'test', link: 'file.ts#L1' });
+
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+        message: 'Failed to persist bookmarks during add',
+        functionName: 'BookmarksStore.add',
+        details: { operation: 'add' },
+        cause: saveError,
+      });
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { fn: 'BookmarksStore.add', error: saveError, syncEnabled: true },
+        'Failed to save bookmarks during add',
+      );
+    });
+
+    it('wraps globalState.update error as BOOKMARK_SAVE_FAILED in update', async () => {
+      await store.add({ label: 'test', link: 'file.ts#L1' });
+      const saveError = new Error('disk full');
+      mockMemento.update = jest.fn().mockRejectedValue(saveError);
+
+      const result = await store.update(TEST_ID, { label: 'updated' });
+
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+        message: 'Failed to persist bookmarks during update',
+        functionName: 'BookmarksStore.update',
+        details: { operation: 'update' },
+        cause: saveError,
+      });
+    });
+
+    it('wraps globalState.update error as BOOKMARK_SAVE_FAILED in remove', async () => {
+      await store.add({ label: 'test', link: 'file.ts#L1' });
+      const saveError = new Error('disk full');
+      mockMemento.update = jest.fn().mockRejectedValue(saveError);
+
+      const result = await store.remove(TEST_ID);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+        message: 'Failed to persist bookmarks during remove',
+        functionName: 'BookmarksStore.remove',
+        details: { operation: 'remove' },
+        cause: saveError,
+      });
+    });
+
+    it('wraps globalState.update error as BOOKMARK_SAVE_FAILED in recordAccess', async () => {
+      await store.add({ label: 'test', link: 'file.ts#L1' });
+      const saveError = new Error('disk full');
+      mockMemento.update = jest.fn().mockRejectedValue(saveError);
+
+      const result = await store.recordAccess(TEST_ID);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+        message: 'Failed to persist bookmarks during recordAccess',
+        functionName: 'BookmarksStore.recordAccess',
+        details: { operation: 'recordAccess' },
+        cause: saveError,
+      });
+    });
+  });
+
+  describe('unexpected non-RangeLinkExtensionError', () => {
+    it('wraps generic error as BOOKMARK_SAVE_FAILED in add', async () => {
+      const genericError = new TypeError('Cannot read properties of undefined');
+      mockIdGenerator.mockImplementation(() => {
+        throw genericError;
+      });
+
+      const result = await store.add({ label: 'test', link: 'file.ts#L1' });
+
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+        message: 'Unexpected error while adding bookmark',
+        functionName: 'BookmarksStore.add',
+        cause: genericError,
+      });
+    });
+
+    it('wraps generic error as BOOKMARK_SAVE_FAILED in update', async () => {
+      await store.add({ label: 'test', link: 'file.ts#L1' });
+      const genericError = new TypeError('Cannot read properties of undefined');
+      mockMemento.get = jest.fn(() => {
+        throw genericError;
+      });
+
+      const result = await store.update(TEST_ID, { label: 'updated' });
+
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+        message: 'Unexpected error while updating bookmark',
+        functionName: 'BookmarksStore.update',
+        cause: genericError,
+      });
+    });
+
+    it('wraps generic error as BOOKMARK_SAVE_FAILED in remove', async () => {
+      await store.add({ label: 'test', link: 'file.ts#L1' });
+      const genericError = new TypeError('Cannot read properties of undefined');
+      mockMemento.get = jest.fn(() => {
+        throw genericError;
+      });
+
+      const result = await store.remove(TEST_ID);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+        message: 'Unexpected error while removing bookmark',
+        functionName: 'BookmarksStore.remove',
+        cause: genericError,
+      });
+    });
+
+    it('wraps generic error as BOOKMARK_SAVE_FAILED in recordAccess', async () => {
+      await store.add({ label: 'test', link: 'file.ts#L1' });
+      const genericError = new TypeError('Cannot read properties of undefined');
+      mockMemento.get = jest.fn(() => {
+        throw genericError;
+      });
+
+      const result = await store.recordAccess(TEST_ID);
+
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+        message: 'Unexpected error while recording bookmark access',
+        functionName: 'BookmarksStore.recordAccess',
+        cause: genericError,
+      });
+    });
+
+    it('sets cause to undefined when thrown value is not an Error in add', async () => {
+      // eslint-disable-next-line no-throw-literal
+      mockIdGenerator.mockImplementation(() => {
+        throw 'string error';
+      });
+
+      const result = await store.add({ label: 'test', link: 'file.ts#L1' });
+
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+        message: 'Unexpected error while adding bookmark',
+        functionName: 'BookmarksStore.add',
+      });
+    });
+
+    it('sets cause to undefined when globalState.update rejects with non-Error in save', async () => {
+      // eslint-disable-next-line prefer-promise-reject-errors
+      mockMemento.update = jest.fn().mockRejectedValue('not an error');
+
+      const result = await store.add({ label: 'test', link: 'file.ts#L1' });
+
+      expect(result).toBeRangeLinkExtensionErrorErr('BOOKMARK_SAVE_FAILED', {
+        message: 'Failed to persist bookmarks during add',
+        functionName: 'BookmarksStore.add',
+        details: { operation: 'add' },
+      });
+    });
+  });
 });
