@@ -1,14 +1,12 @@
 import { createMockLogger } from 'barebone-logger-testing';
 import { Result } from 'rangelink-core-ts';
 
-import { ClipboardRouter } from '../../services/ClipboardRouter';
+import * as resolveBoundTerminalProcessIdModule from '../../destinations/utils/resolveBoundTerminalProcessId';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../../errors';
+import { ClipboardRouter } from '../../services/ClipboardRouter';
 import { DestinationBehavior, MessageCode, PasteContentType } from '../../types';
 import type { CopyAndSendOptions } from '../../types';
-
-import * as resolveBoundTerminalProcessIdModule from '../../destinations/utils/resolveBoundTerminalProcessId';
 import * as isSameFileDestinationModule from '../../utils/isSameFileDestination';
-
 import {
   createMockClipboardPreserver,
   createMockDestinationManager,

@@ -4,7 +4,6 @@ import type * as vscode from 'vscode';
 import type { ClipboardPreserver } from '../clipboard/ClipboardPreserver';
 import type { DestinationPicker, PasteDestinationManager } from '../destinations';
 import { resolveBoundTerminalProcessId } from '../destinations/utils';
-import { isEditorDestination } from '../utils';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
@@ -14,6 +13,7 @@ import {
   PasteContentType,
   type QuickPickBindResult,
 } from '../types';
+import { isEditorDestination } from '../utils';
 import { formatMessage, isSameFileDestination } from '../utils';
 
 /**

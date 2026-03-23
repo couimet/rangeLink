@@ -6,11 +6,9 @@ import {
   Result,
 } from 'rangelink-core-ts';
 
+import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';
 import { LinkGenerator } from '../../services/LinkGenerator';
 import { DestinationBehavior, DirtyBufferWarningResult, PathFormat } from '../../types';
-
-import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';
-
 import {
   createMockConfigReader,
   createMockDestinationManager,

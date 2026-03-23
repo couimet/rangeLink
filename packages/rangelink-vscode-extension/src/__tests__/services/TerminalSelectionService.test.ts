@@ -2,7 +2,6 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { TerminalSelectionService } from '../../services/TerminalSelectionService';
 import { DestinationBehavior } from '../../types';
-
 import {
   createMockClipboardPreserver,
   createMockConfigReader,

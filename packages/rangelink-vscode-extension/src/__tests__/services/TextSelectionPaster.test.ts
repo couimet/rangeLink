@@ -2,7 +2,6 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { TextSelectionPaster } from '../../services/TextSelectionPaster';
 import { DestinationBehavior } from '../../types';
-
 import {
   createMockConfigReader,
   createMockDestinationManager,
