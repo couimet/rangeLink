@@ -43,9 +43,7 @@ const parseLogContext = (line: string): { fn: string; message: string } | undefi
   return undefined;
 };
 
-const parseLogContextFull = (
-  line: string,
-): Record<string, unknown> | undefined => {
+const parseLogContextFull = (line: string): Record<string, unknown> | undefined => {
   const jsonStart = line.indexOf('{');
   const jsonEnd = line.lastIndexOf('}');
   if (jsonStart === -1 || jsonEnd === -1) {
@@ -128,9 +126,7 @@ export const assertSuppressionLogged = (
     lines.some((line) => {
       const ctx = parseLogContextFull(line);
       return (
-        ctx !== undefined &&
-        ctx.fn === opts.fn &&
-        ctx.suppressedMessage === opts.suppressedMessage
+        ctx !== undefined && ctx.fn === opts.fn && ctx.suppressedMessage === opts.suppressedMessage
       );
     }),
     `Expected suppression log with fn="${opts.fn}" and suppressedMessage="${opts.suppressedMessage}" but it was not found in ${lines.length} log lines`,
