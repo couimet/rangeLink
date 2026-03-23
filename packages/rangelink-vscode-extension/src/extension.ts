@@ -379,13 +379,13 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
 
   // Register clipboard-only commands (issue #117)
   context.subscriptions.push(
-    vscode.commands.registerCommand(CMD_COPY_LINK_ONLY_RELATIVE, () =>
+    ideAdapter.registerCommand(CMD_COPY_LINK_ONLY_RELATIVE, () =>
       linkGenerator.createLinkOnly(PathFormat.WorkspaceRelative),
     ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(CMD_COPY_LINK_ONLY_ABSOLUTE, () =>
+    ideAdapter.registerCommand(CMD_COPY_LINK_ONLY_ABSOLUTE, () =>
       linkGenerator.createLinkOnly(PathFormat.Absolute),
     ),
   );
