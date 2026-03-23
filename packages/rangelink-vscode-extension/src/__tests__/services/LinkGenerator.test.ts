@@ -142,7 +142,10 @@ describe('LinkGenerator', () => {
 
       expect(mockClipboardRouter.copyAndSendToDestination).not.toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelection', formattedLink: createMockFormattedLink('src/file.ts#L1') },
+        {
+          fn: 'generateLinkFromSelection',
+          formattedLink: createMockFormattedLink('src/file.ts#L1'),
+        },
         'Generated link: src/file.ts#L1',
       );
     });
