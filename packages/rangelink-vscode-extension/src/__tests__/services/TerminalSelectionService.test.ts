@@ -6,7 +6,6 @@ import {
   createMockClipboardPreserver,
   createMockConfigReader,
   createMockDestinationManager,
-  createMockDestinationPicker,
   createMockTerminal,
   createMockVscodeAdapter,
   spyOnFormatMessage,

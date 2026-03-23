@@ -1,5 +1,4 @@
 import type { Logger, LoggingContext } from 'barebone-logger';
-import type * as vscode from 'vscode';
 
 import type { ClipboardPreserver } from '../clipboard/ClipboardPreserver';
 import type { DestinationPicker, PasteDestinationManager } from '../destinations';

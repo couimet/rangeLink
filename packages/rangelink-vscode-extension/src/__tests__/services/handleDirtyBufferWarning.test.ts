@@ -1,7 +1,6 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { handleDirtyBufferWarning } from '../../services/handleDirtyBufferWarning';
-import { DirtyBufferWarningResult } from '../../types';
 import {
   createMockDocument,
   createMockUri,

@@ -1,14 +1,9 @@
 import { createMockLogger } from 'barebone-logger-testing';
-import {
-  type DelimiterConfig,
-  type DelimiterConfigGetter,
-  LinkType,
-  Result,
-} from 'rangelink-core-ts';
+import { type DelimiterConfig, type DelimiterConfigGetter, Result } from 'rangelink-core-ts';
 
 import * as handleDirtyBufferWarningModule from '../../services/handleDirtyBufferWarning';
 import { LinkGenerator } from '../../services/LinkGenerator';
-import { DestinationBehavior, DirtyBufferWarningResult, PathFormat } from '../../types';
+import { DestinationBehavior, DirtyBufferWarningResult } from '../../types';
 import {
   createMockConfigReader,
   createMockDestinationManager,

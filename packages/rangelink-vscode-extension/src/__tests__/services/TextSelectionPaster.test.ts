@@ -10,14 +10,11 @@ import {
   createMockSelection,
   createMockText,
   createMockUri,
-  createMockVscodeAdapter,
   spyOnFormatMessage,
-  type VscodeAdapterWithTestHooks,
 } from '../helpers';
 
 describe('TextSelectionPaster', () => {
   let paster: TextSelectionPaster;
-  let mockAdapter: VscodeAdapterWithTestHooks;
   let mockDestinationManager: ReturnType<typeof createMockDestinationManager>;
   let mockConfigReader: ReturnType<typeof createMockConfigReader>;
   let mockLogger: ReturnType<typeof createMockLogger>;
@@ -33,7 +30,6 @@ describe('TextSelectionPaster', () => {
   beforeEach(() => {
     mockLogger = createMockLogger();
     mockConfigReader = createMockConfigReader();
-    mockAdapter = createMockVscodeAdapter();
     mockDestinationManager = createMockDestinationManager({ isBound: false });
     mockClipboardRouter = {
       resolveDestinationBehavior: jest.fn(),

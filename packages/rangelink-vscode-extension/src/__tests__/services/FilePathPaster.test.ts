@@ -1,7 +1,7 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
 import { FilePathPaster, getReferencePath } from '../../services/FilePathPaster';
-import { DestinationBehavior, PathFormat, RelativePathFormat } from '../../types';
+import { DestinationBehavior, PathFormat } from '../../types';
 import {
   createMockConfigReader,
   createMockDestinationManager,
