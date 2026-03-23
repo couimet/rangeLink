@@ -98,7 +98,11 @@ describe('LinkGenerator', () => {
     });
 
     it('aborts when generateLinkFromSelection returns undefined', async () => {
-      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(undefined);
+      const { mockDoc, validated } = createValidatedResult();
+      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue(validated);
+      jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
+      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
+      mockGenLink.mockReturnValue(Result.err(new Error('generation failed')));
 
       await generator.createLink();
 
@@ -137,6 +141,10 @@ describe('LinkGenerator', () => {
       await generator.createLink();
 
       expect(mockClipboardRouter.copyAndSendToDestination).not.toHaveBeenCalled();
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'generateLinkFromSelection', formattedLink: createMockFormattedLink('src/file.ts#L1') },
+        'Generated link: src/file.ts#L1',
+      );
     });
   });
 

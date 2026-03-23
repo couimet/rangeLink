@@ -52,6 +52,11 @@ describe('ClipboardRouter', () => {
   let mockShowErrorMessage: jest.Mock;
 
   beforeEach(() => {
+    jest
+      .spyOn(resolveBoundTerminalProcessIdModule, 'resolveBoundTerminalProcessId')
+      .mockResolvedValue(undefined);
+    jest.spyOn(isSameFileDestinationModule, 'isSameFileDestination').mockReturnValue(false);
+
     mockLogger = createMockLogger();
     mockPicker = createMockDestinationPicker();
     mockPreserver = createMockClipboardPreserver();
@@ -104,6 +109,10 @@ describe('ClipboardRouter', () => {
       await router.copyAndSendToDestination(options);
 
       expect(mockPreserver.preserve).toHaveBeenCalledTimes(1);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'test', boundDestination: 'Terminal' },
+        'Attempting to send content to bound destination: Terminal',
+      );
     });
 
     it('skips preservation when destinationBehavior is ClipboardOnly', async () => {
@@ -131,6 +140,10 @@ describe('ClipboardRouter', () => {
 
       expect(mockPreserver.preserve).not.toHaveBeenCalled();
       expect(mockAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L1');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'test' },
+        'Skipping destination (clipboard-only command)',
+      );
     });
 
     it('skips preservation when destination manager is not bound', async () => {
@@ -140,6 +153,10 @@ describe('ClipboardRouter', () => {
 
       expect(mockPreserver.preserve).not.toHaveBeenCalled();
       expect(mockAdapter.writeTextToClipboard).toHaveBeenCalledWith('src/file.ts#L1');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'test' },
+        'No destination bound - copied to clipboard only',
+      );
     });
   });
 
@@ -393,6 +410,10 @@ describe('ClipboardRouter', () => {
       const result = await router.resolveDestinationBehavior(logCtx);
 
       expect(result).toBe('clipboard-only');
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'ClipboardRouter.showPickerAndBind' },
+        'Bind requested auto-paste suppression — returning bound-no-paste',
+      );
     });
 
     it('returns undefined when picker is cancelled', async () => {
@@ -413,6 +434,10 @@ describe('ClipboardRouter', () => {
       const result = await router.resolveDestinationBehavior(logCtx);
 
       expect(result).toBeUndefined();
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { fn: 'ClipboardRouter.showPickerAndBind' },
+        'No destinations available - no action taken',
+      );
     });
   });
 
