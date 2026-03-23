@@ -2318,3 +2318,43 @@ test_cases:
       - 'Click the RangeLink'
     expected_result: 'The untitled file becomes active and line 5 is fully selected. An info toast confirms navigation despite the case mismatch.'
     automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Navigation Toast Settings (Issue #54)
+  # ---------------------------------------------------------------------------
+
+  - id: navigation-toast-settings-001
+    feature: 'Navigation Toast Settings'
+    scenario: 'showNavigatedToast=false suppresses info toast after successful navigation'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A file with at least 10 lines exists in the workspace'
+    steps:
+      - 'Set rangelink.navigation.showNavigatedToast to false in workspace settings'
+      - 'Click a RangeLink pointing to an exact position (e.g., file.ts#L5)'
+    expected_result: 'Navigation succeeds (cursor moves to line 5) but no info toast is shown. The navigation is silent.'
+    automated: true
+
+  - id: navigation-toast-settings-002
+    feature: 'Navigation Toast Settings'
+    scenario: 'showClampingWarning=false suppresses clamping warning toast'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A file with 10 lines exists in the workspace'
+    steps:
+      - 'Set rangelink.navigation.showClampingWarning to false in workspace settings'
+      - 'Click a RangeLink pointing beyond end of file (e.g., file.ts#L50)'
+    expected_result: 'Navigation succeeds (cursor clamped to last line) but no clamping warning toast is shown.'
+    automated: true
+
+  - id: navigation-toast-settings-003
+    feature: 'Navigation Toast Settings'
+    scenario: 'Default settings show info toast after successful navigation'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A file with at least 10 lines exists in the workspace'
+      - 'Navigation toast settings are at their defaults (both true)'
+    steps:
+      - 'Click a RangeLink pointing to an exact position (e.g., file.ts#L3)'
+    expected_result: 'Navigation succeeds and an info toast is shown: "RangeLink: Navigated to file.ts @ 3".'
+    automated: true

@@ -32,6 +32,13 @@ export const DEFAULT_DELIMITER_POSITION = DEFAULT_DELIMITERS.position;
 export const DEFAULT_DELIMITER_RANGE = DEFAULT_DELIMITERS.range;
 
 // =============================================================================
+// Navigation Defaults
+// =============================================================================
+
+export const DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING = true;
+export const DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST = true;
+
+// =============================================================================
 // Smart Padding Defaults
 // =============================================================================
 

@@ -33,6 +33,13 @@ export const SETTING_DELIMITER_POSITION = 'delimiterPosition';
 export const SETTING_DELIMITER_RANGE = 'delimiterRange';
 
 // =============================================================================
+// Navigation Settings
+// =============================================================================
+
+export const SETTING_NAVIGATION_SHOW_CLAMPING_WARNING = 'navigation.showClampingWarning';
+export const SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST = 'navigation.showNavigatedToast';
+
+// =============================================================================
 // Smart Padding Settings
 // =============================================================================
 

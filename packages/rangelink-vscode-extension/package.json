@@ -433,6 +433,16 @@
           "default": false,
           "description": "Enable Bookmarks feature (beta). Save code locations for quick access later."
         },
+        "rangelink.navigation.showClampingWarning": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warning toast when navigation position is clamped to file boundaries"
+        },
+        "rangelink.navigation.showNavigatedToast": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show info toast after successful navigation (e.g., 'Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16')"
+        },
         "rangelink.warnOnDirtyBuffer": {
           "type": "boolean",
           "default": true,
