@@ -16,6 +16,7 @@ import { DestinationBehavior, PathFormat, RangeLinkService } from '../RangeLinkS
 import {
   ClipboardRouter,
   FilePathPaster,
+  LinkGenerator,
   SelectionValidator,
   TerminalSelectionService,
 } from '../services';
@@ -53,6 +54,7 @@ let selectionValidator: SelectionValidator;
 let clipboardRouter: ClipboardRouter;
 let terminalSelectionService: TerminalSelectionService;
 let filePathPaster: FilePathPaster;
+let linkGenerator: LinkGenerator;
 let mockVscodeAdapter: VscodeAdapterWithTestHooks;
 let mockDestinationManager: PasteDestinationManager;
 let mockPickerCommand: jest.Mocked<DestinationPicker>;
@@ -164,6 +166,15 @@ describe('RangeLinkService', () => {
       clipboardRouter,
       mockLogger,
     );
+    linkGenerator = new LinkGenerator(
+      getDelimiters,
+      mockVscodeAdapter,
+      mockDestinationManager,
+      mockConfigReader,
+      clipboardRouter,
+      selectionValidator,
+      mockLogger,
+    );
   });
 
   describe('clipboard preservation delegation', () => {
@@ -196,15 +207,23 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
@@ -216,8 +235,6 @@ describe('RangeLinkService', () => {
         boundDestination: createMockTerminalPasteDestination({ displayName: 'Terminal' }),
       });
       const boundService = new RangeLinkService(
-        getDelimiters,
-        mockVscodeAdapter,
         boundDm,
         mockConfigReader,
         new ClipboardRouter(
@@ -229,6 +246,7 @@ describe('RangeLinkService', () => {
         ),
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
@@ -321,15 +339,23 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
@@ -367,14 +393,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -464,14 +498,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -561,14 +603,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -645,13 +695,12 @@ describe('RangeLinkService', () => {
         selectionValidator = new SelectionValidator(adapter, mockLogger);
         mockVscodeAdapter = adapter;
         service = new RangeLinkService(
-          getDelimiters,
-          mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -703,14 +752,22 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
-          service = new RangeLinkService(
+          linkGenerator = new LinkGenerator(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
+            selectionValidator,
+            mockLogger,
+          );
+          service = new RangeLinkService(
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
             terminalSelectionService,
             filePathPaster,
+            linkGenerator,
             mockLogger,
             selectionValidator,
           );
@@ -767,14 +824,22 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
-          service = new RangeLinkService(
+          linkGenerator = new LinkGenerator(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
+            selectionValidator,
+            mockLogger,
+          );
+          service = new RangeLinkService(
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
             terminalSelectionService,
             filePathPaster,
+            linkGenerator,
             mockLogger,
             selectionValidator,
           );
@@ -858,14 +923,22 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
-          service = new RangeLinkService(
+          linkGenerator = new LinkGenerator(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
+            selectionValidator,
+            mockLogger,
+          );
+          service = new RangeLinkService(
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
             terminalSelectionService,
             filePathPaster,
+            linkGenerator,
             mockLogger,
             selectionValidator,
           );
@@ -917,14 +990,22 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
-          service = new RangeLinkService(
+          linkGenerator = new LinkGenerator(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
+            selectionValidator,
+            mockLogger,
+          );
+          service = new RangeLinkService(
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
             terminalSelectionService,
             filePathPaster,
+            linkGenerator,
             mockLogger,
             selectionValidator,
           );
@@ -981,14 +1062,22 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
-          service = new RangeLinkService(
+          linkGenerator = new LinkGenerator(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
+            selectionValidator,
+            mockLogger,
+          );
+          service = new RangeLinkService(
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
             terminalSelectionService,
             filePathPaster,
+            linkGenerator,
             mockLogger,
             selectionValidator,
           );
@@ -1038,14 +1127,22 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
-          service = new RangeLinkService(
+          linkGenerator = new LinkGenerator(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
+            selectionValidator,
+            mockLogger,
+          );
+          service = new RangeLinkService(
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
             terminalSelectionService,
             filePathPaster,
+            linkGenerator,
             mockLogger,
             selectionValidator,
           );
@@ -1104,14 +1201,22 @@ describe('RangeLinkService', () => {
             clipboardRouter,
             mockLogger,
           );
-          service = new RangeLinkService(
+          linkGenerator = new LinkGenerator(
             getDelimiters,
             mockVscodeAdapter,
             mockDestinationManager,
             mockConfigReader,
             clipboardRouter,
+            selectionValidator,
+            mockLogger,
+          );
+          service = new RangeLinkService(
+            mockDestinationManager,
+            mockConfigReader,
+            clipboardRouter,
             terminalSelectionService,
             filePathPaster,
+            linkGenerator,
             mockLogger,
             selectionValidator,
           );
@@ -1200,15 +1305,23 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1252,14 +1365,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1341,15 +1462,23 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1393,14 +1522,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1433,8 +1570,6 @@ describe('RangeLinkService', () => {
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(
-          getDelimiters,
-          adapter,
           boundDestinationManager,
           mockConfigReader,
           new ClipboardRouter(
@@ -1446,6 +1581,7 @@ describe('RangeLinkService', () => {
           ),
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1476,8 +1612,6 @@ describe('RangeLinkService', () => {
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(
-          getDelimiters,
-          adapter,
           boundDestinationManager,
           mockConfigReader,
           new ClipboardRouter(
@@ -1489,6 +1623,7 @@ describe('RangeLinkService', () => {
           ),
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1514,8 +1649,6 @@ describe('RangeLinkService', () => {
           boundDestination: mockDestination,
         });
         service = new RangeLinkService(
-          getDelimiters,
-          adapter,
           boundDestinationManager,
           mockConfigReader,
           new ClipboardRouter(
@@ -1527,6 +1660,7 @@ describe('RangeLinkService', () => {
           ),
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1584,14 +1718,22 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
@@ -1654,14 +1796,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1722,14 +1872,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1789,14 +1947,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1860,14 +2026,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1921,14 +2095,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -1969,14 +2151,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -2047,14 +2237,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -2116,14 +2314,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -2185,14 +2391,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -2236,14 +2450,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -2324,14 +2546,22 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
@@ -2394,14 +2624,22 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
@@ -2450,14 +2688,22 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
@@ -2523,21 +2769,32 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
 
       // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
-      mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
-      mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+      mockGenerateLink = jest.spyOn((service as any).linkGenerator, 'generateLinkFromSelection');
+      mockCopyToClipboard = jest.spyOn(
+        (service as any).linkGenerator,
+        'copyToClipboardAndDestination',
+      );
       mockResolveDestinationBehavior = jest.spyOn(
         (service as any).clipboardRouter,
         'resolveDestinationBehavior',
@@ -2600,7 +2857,7 @@ describe('RangeLinkService', () => {
 
       expect(mockCopyToClipboard).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkService.createLinkCore', linkType: 'regular' },
+        { fn: 'LinkGenerator.createLinkCore', linkType: 'regular' },
         'generateLinkFromSelection returned undefined, aborting',
       );
     });
@@ -2632,7 +2889,7 @@ describe('RangeLinkService', () => {
 
       expect(mockCopyToClipboard).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkService.createLinkCore', linkType: 'regular' },
+        { fn: 'LinkGenerator.createLinkCore', linkType: 'regular' },
         'Active editor URI unavailable, aborting',
       );
     });
@@ -2664,19 +2921,30 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
-        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
-        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink = jest.spyOn((service as any).linkGenerator, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(
+          (service as any).linkGenerator,
+          'copyToClipboardAndDestination',
+        );
         mockGenerateLink.mockResolvedValue(mockFormattedLink);
         mockCopyToClipboard.mockResolvedValue(undefined);
       });
@@ -2689,11 +2957,11 @@ describe('RangeLinkService', () => {
         expect(mockCopyToClipboard).not.toHaveBeenCalled();
         expect(mockClipboard.writeText).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.createLinkCore', linkType: 'regular' },
+          { fn: 'LinkGenerator.createLinkCore', linkType: 'regular' },
           'No destination bound, showing quick pick',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.createLinkCore', linkType: 'regular', outcome: 'cancelled' },
+          { fn: 'LinkGenerator.createLinkCore', linkType: 'regular', outcome: 'cancelled' },
           'Picker did not bind, aborting',
         );
       });
@@ -2706,7 +2974,7 @@ describe('RangeLinkService', () => {
         expect(mockCopyToClipboard).not.toHaveBeenCalled();
         expect(mockClipboard.writeText).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.createLinkCore', linkType: 'regular', outcome: 'no-resource' },
+          { fn: 'LinkGenerator.createLinkCore', linkType: 'regular', outcome: 'no-resource' },
           'Picker did not bind, aborting',
         );
       });
@@ -2744,19 +3012,30 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
-        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
-        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink = jest.spyOn((service as any).linkGenerator, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(
+          (service as any).linkGenerator,
+          'copyToClipboardAndDestination',
+        );
         mockGenerateLink.mockResolvedValue(mockFormattedLink);
         mockCopyToClipboard.mockResolvedValue(undefined);
 
@@ -2807,19 +3086,30 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
-        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
-        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink = jest.spyOn((service as any).linkGenerator, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(
+          (service as any).linkGenerator,
+          'copyToClipboardAndDestination',
+        );
         mockGenerateLink.mockResolvedValue(mockFormattedLink);
         mockCopyToClipboard.mockResolvedValue(undefined);
 
@@ -2867,14 +3157,22 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -2933,21 +3231,32 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
 
       // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
-      mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
-      mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+      mockGenerateLink = jest.spyOn((service as any).linkGenerator, 'generateLinkFromSelection');
+      mockCopyToClipboard = jest.spyOn(
+        (service as any).linkGenerator,
+        'copyToClipboardAndDestination',
+      );
       mockResolveDestinationBehavior = jest.spyOn(
         (service as any).clipboardRouter,
         'resolveDestinationBehavior',
@@ -3012,7 +3321,7 @@ describe('RangeLinkService', () => {
 
       expect(mockCopyToClipboard).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkService.createLinkCore', linkType: 'portable' },
+        { fn: 'LinkGenerator.createLinkCore', linkType: 'portable' },
         'generateLinkFromSelection returned undefined, aborting',
       );
     });
@@ -3044,7 +3353,7 @@ describe('RangeLinkService', () => {
 
       expect(mockCopyToClipboard).not.toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'RangeLinkService.createLinkCore', linkType: 'portable' },
+        { fn: 'LinkGenerator.createLinkCore', linkType: 'portable' },
         'Active editor URI unavailable, aborting',
       );
     });
@@ -3076,19 +3385,30 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
-        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
-        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink = jest.spyOn((service as any).linkGenerator, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(
+          (service as any).linkGenerator,
+          'copyToClipboardAndDestination',
+        );
         mockGenerateLink.mockResolvedValue(mockFormattedLink);
         mockCopyToClipboard.mockResolvedValue(undefined);
       });
@@ -3101,11 +3421,11 @@ describe('RangeLinkService', () => {
         expect(mockCopyToClipboard).not.toHaveBeenCalled();
         expect(mockClipboard.writeText).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.createLinkCore', linkType: 'portable' },
+          { fn: 'LinkGenerator.createLinkCore', linkType: 'portable' },
           'No destination bound, showing quick pick',
         );
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.createLinkCore', linkType: 'portable', outcome: 'cancelled' },
+          { fn: 'LinkGenerator.createLinkCore', linkType: 'portable', outcome: 'cancelled' },
           'Picker did not bind, aborting',
         );
       });
@@ -3118,7 +3438,7 @@ describe('RangeLinkService', () => {
         expect(mockCopyToClipboard).not.toHaveBeenCalled();
         expect(mockClipboard.writeText).not.toHaveBeenCalled();
         expect(mockLogger.debug).toHaveBeenCalledWith(
-          { fn: 'RangeLinkService.createLinkCore', linkType: 'portable', outcome: 'no-resource' },
+          { fn: 'LinkGenerator.createLinkCore', linkType: 'portable', outcome: 'no-resource' },
           'Picker did not bind, aborting',
         );
       });
@@ -3156,19 +3476,30 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
-        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
-        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink = jest.spyOn((service as any).linkGenerator, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(
+          (service as any).linkGenerator,
+          'copyToClipboardAndDestination',
+        );
         mockGenerateLink.mockResolvedValue(mockFormattedLink);
         mockCopyToClipboard.mockResolvedValue(undefined);
 
@@ -3219,19 +3550,30 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
-        mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
-        mockCopyToClipboard = jest.spyOn(service as any, 'copyToClipboardAndDestination');
+        mockGenerateLink = jest.spyOn((service as any).linkGenerator, 'generateLinkFromSelection');
+        mockCopyToClipboard = jest.spyOn(
+          (service as any).linkGenerator,
+          'copyToClipboardAndDestination',
+        );
         mockGenerateLink.mockResolvedValue(mockFormattedLink);
         mockCopyToClipboard.mockResolvedValue(undefined);
 
@@ -3296,14 +3638,22 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
@@ -3315,7 +3665,7 @@ describe('RangeLinkService', () => {
       const mockResult = createMockFormattedLink('file.ts#L10');
       mockGenerateLinkFromSelections.mockReturnValue(Result.ok(mockResult));
 
-      const result = await (service as any).generateLinkFromSelection(
+      const result = await (service as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3339,7 +3689,7 @@ describe('RangeLinkService', () => {
       const mockResult = createMockFormattedLink('file.ts#L10~L~C~#~-~');
       mockGenerateLinkFromSelections.mockReturnValue(Result.ok(mockResult));
 
-      const result = await (service as any).generateLinkFromSelection(
+      const result = await (service as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Portable,
       );
@@ -3367,7 +3717,7 @@ describe('RangeLinkService', () => {
       });
       mockGenerateLinkFromSelections.mockReturnValue(Result.err(testError));
 
-      const result = await (service as any).generateLinkFromSelection(
+      const result = await (service as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3388,7 +3738,7 @@ describe('RangeLinkService', () => {
       });
       mockGenerateLinkFromSelections.mockReturnValue(Result.err(testError));
 
-      const result = await (service as any).generateLinkFromSelection(
+      const result = await (service as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Portable,
       );
@@ -3451,22 +3801,32 @@ describe('RangeLinkService', () => {
       });
 
       const localDm = createMockDestinationManager({ isBound: false });
-      const localService = new RangeLinkService(
+      const localClipboardRouter = new ClipboardRouter(
+        localMockVscodeAdapter,
+        localDm,
+        mockPickerCommand,
+        mockClipboardPreserver,
+        mockLogger,
+      );
+      const localSelectionValidator = new SelectionValidator(localMockVscodeAdapter, mockLogger);
+      const localLinkGenerator = new LinkGenerator(
         getDelimiters,
         localMockVscodeAdapter,
         localDm,
         localMockConfigReader,
-        new ClipboardRouter(
-          localMockVscodeAdapter,
-          localDm,
-          mockPickerCommand,
-          mockClipboardPreserver,
-          mockLogger,
-        ),
+        localClipboardRouter,
+        localSelectionValidator,
+        mockLogger,
+      );
+      const localService = new RangeLinkService(
+        localDm,
+        localMockConfigReader,
+        localClipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        localLinkGenerator,
         mockLogger,
-        new SelectionValidator(localMockVscodeAdapter, mockLogger),
+        localSelectionValidator,
       );
 
       return { service: localService, mockDocument, mockVscodeAdapter: localMockVscodeAdapter };
@@ -3476,7 +3836,7 @@ describe('RangeLinkService', () => {
       const { service: localService } = createServiceWithDirtyDocument(true, true);
       mockShowWarningMessage.mockResolvedValue('Generate Anyway');
 
-      await (localService as any).generateLinkFromSelection(
+      await (localService as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3499,7 +3859,7 @@ describe('RangeLinkService', () => {
     it('should NOT show warning when document is dirty but setting is disabled', async () => {
       const { service: localService } = createServiceWithDirtyDocument(true, false);
 
-      await (localService as any).generateLinkFromSelection(
+      await (localService as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3515,7 +3875,7 @@ describe('RangeLinkService', () => {
     it('should NOT show warning when document is not dirty', async () => {
       const { service: localService } = createServiceWithDirtyDocument(false, true);
 
-      await (localService as any).generateLinkFromSelection(
+      await (localService as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3528,7 +3888,7 @@ describe('RangeLinkService', () => {
       const { service: localService, mockDocument } = createServiceWithDirtyDocument(true, true);
       mockShowWarningMessage.mockResolvedValue('Save & Generate');
 
-      const result = await (localService as any).generateLinkFromSelection(
+      const result = await (localService as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3546,7 +3906,7 @@ describe('RangeLinkService', () => {
       const { service: localService, mockDocument } = createServiceWithDirtyDocument(true, true);
       mockShowWarningMessage.mockResolvedValue('Generate Anyway');
 
-      const result = await (localService as any).generateLinkFromSelection(
+      const result = await (localService as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3564,7 +3924,7 @@ describe('RangeLinkService', () => {
       const { service: localService, mockDocument } = createServiceWithDirtyDocument(true, true);
       mockShowWarningMessage.mockResolvedValue(undefined);
 
-      const result = await (localService as any).generateLinkFromSelection(
+      const result = await (localService as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3583,7 +3943,7 @@ describe('RangeLinkService', () => {
       const { service: localService, mockDocument } = createServiceWithDirtyDocument(true, true);
       mockShowWarningMessage.mockResolvedValue('Save & Generate');
 
-      const result = await (localService as any).generateLinkFromSelection(
+      const result = await (localService as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3651,19 +4011,27 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
 
-      await (service as any).generateLinkFromSelection(
+      await (service as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3718,19 +4086,27 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
 
-      await (service as any).generateLinkFromSelection(
+      await (service as any).linkGenerator.generateLinkFromSelection(
         PathFormat.WorkspaceRelative,
         LinkType.Regular,
       );
@@ -3785,19 +4161,30 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
 
-      await (service as any).generateLinkFromSelection(PathFormat.Absolute, LinkType.Regular);
+      await (service as any).linkGenerator.generateLinkFromSelection(
+        PathFormat.Absolute,
+        LinkType.Regular,
+      );
 
       expect(mockGenerateLinkFromSelections).toHaveBeenCalledWith({
         referencePath: '/workspace/src/file.ts',
@@ -3838,20 +4225,28 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
 
       // Spy on private methods (auto-restored by jest.config.js restoreMocks: true)
-      mockGenerateLink = jest.spyOn(service as any, 'generateLinkFromSelection');
+      mockGenerateLink = jest.spyOn((service as any).linkGenerator, 'generateLinkFromSelection');
       mockCopyAndSend = jest.spyOn((service as any).clipboardRouter, 'copyAndSendToDestination');
     });
 
@@ -3942,14 +4337,22 @@ describe('RangeLinkService', () => {
         clipboardRouter,
         mockLogger,
       );
-      service = new RangeLinkService(
+      linkGenerator = new LinkGenerator(
         getDelimiters,
         mockVscodeAdapter,
         mockDestinationManager,
         mockConfigReader,
         clipboardRouter,
+        selectionValidator,
+        mockLogger,
+      );
+      service = new RangeLinkService(
+        mockDestinationManager,
+        mockConfigReader,
+        clipboardRouter,
         terminalSelectionService,
         filePathPaster,
+        linkGenerator,
         mockLogger,
         selectionValidator,
       );
@@ -4076,15 +4479,23 @@ describe('RangeLinkService', () => {
           clipboardRouter,
           mockLogger,
         );
-        mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
-        service = new RangeLinkService(
+        linkGenerator = new LinkGenerator(
           getDelimiters,
           mockVscodeAdapter,
           mockDestinationManager,
           mockConfigReader,
           clipboardRouter,
+          selectionValidator,
+          mockLogger,
+        );
+        mockPickerCommand.pick.mockResolvedValue({ outcome: 'cancelled' });
+        service = new RangeLinkService(
+          mockDestinationManager,
+          mockConfigReader,
+          clipboardRouter,
           terminalSelectionService,
           filePathPaster,
+          linkGenerator,
           mockLogger,
           selectionValidator,
         );
@@ -4316,14 +4727,22 @@ describe('RangeLinkService', () => {
         localClipboardRouter,
         logger,
       );
-      const svc = new RangeLinkService(
+      const localLinkGenerator = new LinkGenerator(
         getDelimiters,
         adapter,
         dm,
         config,
         localClipboardRouter,
+        selectionValidator,
+        logger,
+      );
+      const svc = new RangeLinkService(
+        dm,
+        config,
+        localClipboardRouter,
         localTerminalService,
         localFilePathPaster,
+        localLinkGenerator,
         logger,
         selectionValidator,
       );

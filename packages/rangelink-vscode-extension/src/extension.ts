@@ -89,6 +89,7 @@ import { PathFormat, RangeLinkService } from './RangeLinkService';
 import {
   ClipboardRouter,
   FilePathPaster,
+  LinkGenerator,
   SelectionValidator,
   TerminalSelectionService,
 } from './services';
@@ -235,14 +236,22 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
     clipboardRouter,
     logger,
   );
-  const service = new RangeLinkService(
+  const linkGenerator = new LinkGenerator(
     getDelimiters,
     ideAdapter,
     destinationManager,
     configReader,
     clipboardRouter,
+    selectionValidator,
+    logger,
+  );
+  const service = new RangeLinkService(
+    destinationManager,
+    configReader,
+    clipboardRouter,
     terminalSelectionService,
     filePathPaster,
+    linkGenerator,
     logger,
     selectionValidator,
   );
