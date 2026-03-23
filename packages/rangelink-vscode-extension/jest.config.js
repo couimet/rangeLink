@@ -16,7 +16,12 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.ts', '**/*.test.ts'],
   testPathIgnorePatterns: ['<rootDir>/src/__integration-tests__/'],
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup/matchers.ts'],
-  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.test.ts', '!src/__tests__/**'],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.test.ts',
+    '!src/__tests__/**',
+    '!src/__integration-tests__/helpers/getLogCapture.ts',
+  ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
   coverageThreshold: {
