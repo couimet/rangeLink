@@ -1,14 +1,19 @@
 import type * as vscode from 'vscode';
 
+import { PathFormat } from './PathFormat';
+
 /**
  * Strategy used to resolve a file path to a workspace URI.
+ *
+ * Reuses PathFormat values for the standard strategies (absolute, workspace-relative)
+ * and extends with resolution-only strategies that don't correspond to an input format.
  *
  * - `absolute`: Path was absolute and the file existed at that location
  * - `workspace-relative`: Path was resolved relative to a workspace folder
  * - `filename-fallback`: Bare filename (no directory separators) matched
  *    exactly one file in the workspace via glob search (Issue #342)
  */
-export type PathResolutionStrategy = 'absolute' | 'workspace-relative' | 'filename-fallback';
+export type PathResolutionStrategy = `${PathFormat}` | 'filename-fallback';
 
 /**
  * Result of resolving a file path, including the URI and the strategy
