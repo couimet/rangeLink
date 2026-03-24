@@ -51,9 +51,16 @@ export class FilePathNavigationHandler {
 
     const expandedPath = rawPath.startsWith('~/') ? os.homedir() + rawPath.slice(1) : rawPath;
 
-    const fileUri = await this.ideAdapter.resolveWorkspacePath(expandedPath);
+    const resolved = await this.ideAdapter.resolveWorkspacePath(expandedPath);
 
-    if (!fileUri) {
+    if (resolved) {
+      this.logger.debug(
+        { ...logCtx, expandedPath, resolvedVia: resolved.resolvedVia },
+        'Path resolved',
+      );
+    }
+
+    if (!resolved) {
       this.logger.warn({ ...logCtx, expandedPath }, 'Cannot resolve file path');
       await this.ideAdapter.showWarningMessage(
         formatMessage(MessageCode.WARN_FILE_PATH_NOT_FOUND, { path: rawPath }),
@@ -62,7 +69,7 @@ export class FilePathNavigationHandler {
     }
 
     try {
-      await this.ideAdapter.showTextDocument(fileUri);
+      await this.ideAdapter.showTextDocument(resolved.uri);
       this.logger.info({ ...logCtx }, 'Navigation completed successfully');
     } catch (error) {
       this.logger.error({ ...logCtx, error }, 'Navigation failed');

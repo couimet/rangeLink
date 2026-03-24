@@ -78,7 +78,15 @@ export class RangeLinkNavigationHandler {
     const { path, start, end, selectionType } = parsed;
 
     // Resolve path to file URI (async)
-    let fileUri = await this.ideAdapter.resolveWorkspacePath(path);
+    const resolved = await this.ideAdapter.resolveWorkspacePath(path);
+    let fileUri = resolved?.uri;
+
+    if (resolved) {
+      this.logger.debug(
+        { ...logCtx, path, resolvedVia: resolved.resolvedVia },
+        'Path resolved',
+      );
+    }
 
     // Issue #101: When path doesn't resolve on disk, check open untitled documents.
     // Uses URI scheme (untitled:) not filename patterns, so works in all locales.
