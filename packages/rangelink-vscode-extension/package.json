@@ -42,6 +42,7 @@
     "generate:qa-checklist": "./scripts/generate-qa-checklist.sh",
     "generate:qa-issue": "./scripts/generate-qa-issue.sh",
     "generate:qa-test-plan": "./scripts/generate-qa-test-plan.sh",
+    "generate:release-testing-instructions": "./scripts/generate-release-testing-instructions.sh",
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
     "install-local:vscode": "./scripts/install-local.sh vscode",

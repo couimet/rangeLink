@@ -19,6 +19,7 @@
     "generate:qa-checklist:vscode-extension": "pnpm --filter rangelink-vscode-extension run generate:qa-checklist",
     "generate:qa-issue:vscode-extension": "pnpm --filter rangelink-vscode-extension run generate:qa-issue",
     "generate:qa-test-plan:vscode-extension": "pnpm --filter rangelink-vscode-extension run generate:qa-test-plan",
+    "generate:release-testing-instructions:vscode-extension": "pnpm --filter rangelink-vscode-extension run generate:release-testing-instructions",
     "install-local:vscode-extension:both": "pnpm --filter rangelink-vscode-extension install-local",
     "install-local:vscode-extension:cursor": "pnpm --filter rangelink-vscode-extension install-local:cursor",
     "install-local:vscode-extension:vscode": "pnpm --filter rangelink-vscode-extension install-local:vscode",
