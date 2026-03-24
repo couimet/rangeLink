@@ -82,10 +82,7 @@ export class RangeLinkNavigationHandler {
     let fileUri = resolved?.uri;
 
     if (resolved) {
-      this.logger.debug(
-        { ...logCtx, path, resolvedVia: resolved.resolvedVia },
-        'Path resolved',
-      );
+      this.logger.debug({ ...logCtx, path, resolvedVia: resolved.resolvedVia }, 'Path resolved');
     }
 
     // Issue #101: When path doesn't resolve on disk, check open untitled documents.

@@ -63,7 +63,11 @@ export const resolveWorkspacePath = async (
   if (isBareFilename) {
     const pattern = `**/${linkPath}`;
     try {
-      const matches = await ideInstance.workspace.findFiles(pattern, undefined, AMBIGUITY_THRESHOLD);
+      const matches = await ideInstance.workspace.findFiles(
+        pattern,
+        undefined,
+        AMBIGUITY_THRESHOLD,
+      );
       if (matches.length === 1) {
         return { uri: matches[0], resolvedVia: 'filename-fallback' };
       }

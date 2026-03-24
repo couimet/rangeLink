@@ -178,7 +178,9 @@ describe('FilePathNavigationHandler', () => {
 
     it('should show error message and rethrow on showTextDocument failure', async () => {
       const fileUri = createMockUri('/path/file.ts');
-      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({ uri: fileUri, resolvedVia: 'workspace-relative' });
+      jest
+        .spyOn(mockAdapter, 'resolveWorkspacePath')
+        .mockResolvedValue({ uri: fileUri, resolvedVia: 'workspace-relative' });
       const navigationError = new Error('Failed to open document');
       jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(navigationError);
       const showErrorMessageSpy = jest
