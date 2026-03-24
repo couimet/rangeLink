@@ -24,3 +24,19 @@ export interface ResolvedPath {
   uri: vscode.Uri;
   resolvedVia: PathResolutionStrategy;
 }
+
+/**
+ * Sentinel value returned by resolveWorkspacePath when a bare filename
+ * matches multiple files in the workspace. Callers use this to show
+ * a distinct "multiple matches" warning instead of the generic "not found".
+ */
+export const FILENAME_AMBIGUOUS = 'filename-ambiguous' as const;
+
+/**
+ * Full return type of resolveWorkspacePath.
+ *
+ * - `ResolvedPath`: file found successfully
+ * - `'filename-ambiguous'`: bare filename matched 2+ files (caller should warn about ambiguity)
+ * - `undefined`: file not found by any strategy
+ */
+export type ResolveWorkspacePathResult = ResolvedPath | typeof FILENAME_AMBIGUOUS | undefined;

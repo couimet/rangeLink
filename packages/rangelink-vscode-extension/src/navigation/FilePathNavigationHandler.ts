@@ -4,7 +4,7 @@ import type { Logger } from 'barebone-logger';
 import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { MessageCode } from '../types';
+import { FILENAME_AMBIGUOUS, MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 export { buildFilePathPattern, extractFilePath };
@@ -52,6 +52,14 @@ export class FilePathNavigationHandler {
     const expandedPath = rawPath.startsWith('~/') ? os.homedir() + rawPath.slice(1) : rawPath;
 
     const resolved = await this.ideAdapter.resolveWorkspacePath(expandedPath);
+
+    if (resolved === FILENAME_AMBIGUOUS) {
+      this.logger.warn({ ...logCtx, expandedPath }, 'Multiple files match bare filename');
+      await this.ideAdapter.showWarningMessage(
+        formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path: rawPath }),
+      );
+      return;
+    }
 
     if (resolved) {
       this.logger.debug(

@@ -4,6 +4,7 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import { DEFAULT_DELIMITERS, buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 
+import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
 import { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
 import {
   createMockUri,
@@ -160,6 +161,27 @@ describe('FilePathNavigationHandler', () => {
           expandedPath: '/nonexistent/file.ts',
         },
         'Cannot resolve file path',
+      );
+    });
+
+    it('should show ambiguity warning when resolveWorkspacePath returns FILENAME_AMBIGUOUS', async () => {
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(FILENAME_AMBIGUOUS);
+      const showWarningMessageSpy = jest
+        .spyOn(mockAdapter, 'showWarningMessage')
+        .mockResolvedValue(undefined);
+
+      await handler.navigateToFile('index.ts');
+
+      expect(showWarningMessageSpy).toHaveBeenCalledWith(
+        'RangeLink: Multiple files match: index.ts',
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'FilePathNavigationHandler.navigateToFile',
+          rawPath: 'index.ts',
+          expandedPath: 'index.ts',
+        },
+        'Multiple files match bare filename',
       );
     });
 

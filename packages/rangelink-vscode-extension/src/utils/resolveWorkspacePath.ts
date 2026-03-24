@@ -2,9 +2,27 @@ import * as path from 'node:path';
 
 import type * as vscode from 'vscode';
 
-import type { ResolvedPath } from '../types/ResolvedPath';
+import { FILENAME_AMBIGUOUS } from '../types/ResolvedPath';
+import type { ResolveWorkspacePathResult } from '../types/ResolvedPath';
 
 const AMBIGUITY_THRESHOLD = 2;
+
+const GLOB_METACHARACTERS: ReadonlyMap<string, string> = new Map([
+  ['[', '[[]'],
+  [']', '[]]'],
+  ['*', '[*]'],
+  ['?', '[?]'],
+  ['{', '[{]'],
+  ['}', '[}]'],
+]);
+
+const escapeGlobPattern = (filename: string): string => {
+  let escaped = '';
+  for (const char of filename) {
+    escaped += GLOB_METACHARACTERS.get(char) ?? char;
+  }
+  return escaped;
+};
 
 /**
  * Resolve a file path from a RangeLink to an absolute file URI.
@@ -21,12 +39,12 @@ const AMBIGUITY_THRESHOLD = 2;
  *
  * @param linkPath - File path from RangeLink (may be relative or absolute)
  * @param ideInstance - VSCode module instance for workspace/URI operations
- * @returns ResolvedPath with URI and resolution strategy if found, undefined otherwise
+ * @returns ResolvedPath if found, 'filename-ambiguous' if multiple matches, undefined if not found
  */
 export const resolveWorkspacePath = async (
   linkPath: string,
   ideInstance: typeof vscode,
-): Promise<ResolvedPath | undefined> => {
+): Promise<ResolveWorkspacePathResult> => {
   // Try as absolute path first
   if (path.isAbsolute(linkPath)) {
     const uri = ideInstance.Uri.file(linkPath);
@@ -61,7 +79,7 @@ export const resolveWorkspacePath = async (
   // search the workspace for a unique match (Issue #342)
   const isBareFilename = !linkPath.includes('/') && !linkPath.includes('\\');
   if (isBareFilename) {
-    const pattern = `**/${linkPath}`;
+    const pattern = `**/${escapeGlobPattern(linkPath)}`;
     try {
       const matches = await ideInstance.workspace.findFiles(
         pattern,
@@ -70,6 +88,9 @@ export const resolveWorkspacePath = async (
       );
       if (matches.length === 1) {
         return { uri: matches[0], resolvedVia: 'filename-fallback' };
+      }
+      if (matches.length >= AMBIGUITY_THRESHOLD) {
+        return FILENAME_AMBIGUOUS;
       }
     } catch {
       // findFiles failed (e.g., no workspace open) — fall through to undefined

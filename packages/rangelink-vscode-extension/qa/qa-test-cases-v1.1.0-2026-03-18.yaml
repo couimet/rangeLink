@@ -2376,13 +2376,13 @@ test_cases:
 
   - id: filename-fallback-navigation-002
     feature: 'Filename-Only Navigation Fallback'
-    scenario: 'Bare filename with multiple matches shows file-not-found warning'
+    scenario: 'Bare filename with multiple matches shows ambiguity warning'
     preconditions:
       - 'Extension installed from .vsix build'
       - 'Two or more files with the same name exist in different directories (e.g., index.ts in src/ and lib/)'
     steps:
       - 'Click a RangeLink using only the ambiguous filename (e.g., index.ts#L1)'
-    expected_result: 'A warning toast is shown: "RangeLink: Cannot find file: index.ts". No navigation occurs.'
+    expected_result: 'A warning toast is shown: "RangeLink: Multiple files match: index.ts". No navigation occurs.'
     automated: false
 
   - id: filename-fallback-navigation-003

@@ -7,7 +7,7 @@ import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErr
 import {
   BehaviourAfterPaste,
   RelativePathFormat,
-  type ResolvedPath,
+  type ResolveWorkspacePathResult,
   type SendTextToTerminalOptions,
   TerminalFocusType,
 } from '../../types';
@@ -447,9 +447,9 @@ export class VscodeAdapter
    * Delegates to resolveWorkspacePath utility for path resolution logic.
    *
    * @param linkPath - File path from RangeLink (may be relative or absolute)
-   * @returns ResolvedPath with URI and resolution strategy if found, undefined otherwise
+   * @returns ResolvedPath if found, 'filename-ambiguous' if multiple matches, undefined if not found
    */
-  async resolveWorkspacePath(linkPath: string): Promise<ResolvedPath | undefined> {
+  async resolveWorkspacePath(linkPath: string): Promise<ResolveWorkspacePathResult> {
     return resolveWorkspacePath(linkPath, this.ideInstance);
   }
 

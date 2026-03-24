@@ -3,6 +3,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
+import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
 import type { ConfigReader } from '../../config/ConfigReader';
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import {
@@ -729,6 +730,41 @@ describe('RangeLinkNavigationHandler', () => {
         expect(mockAdapter.findOpenUntitledFile).toHaveBeenCalledWith('Untitled-3');
         expect(mockShowWarningMessage).toHaveBeenCalledWith(
           'RangeLink: Cannot find file: Untitled-3',
+        );
+      });
+    });
+
+    describe('Ambiguous filename', () => {
+      it('should show ambiguity warning when resolveWorkspacePath returns FILENAME_AMBIGUOUS', async () => {
+        const parsed: ParsedLink = {
+          path: 'index.ts',
+          quotedPath: 'index.ts',
+          start: { line: 1 },
+          end: { line: 1 },
+          linkType: LinkType.Regular,
+          selectionType: SelectionType.Normal,
+        };
+
+        const mockShowWarningMessage = jest.fn().mockResolvedValue(undefined);
+        mockAdapter = createMockVscodeAdapter({
+          windowOptions: { showWarningMessage: mockShowWarningMessage },
+        });
+        jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(FILENAME_AMBIGUOUS);
+        handler = new RangeLinkNavigationHandler(
+          GET_DELIMITERS,
+          mockAdapter,
+          mockConfigReader,
+          mockLogger,
+        );
+
+        await handler.navigateToLink(parsed, 'index.ts#L1');
+
+        expect(mockShowWarningMessage).toHaveBeenCalledWith(
+          'RangeLink: Multiple files match: index.ts',
+        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          { fn: 'RangeLinkNavigationHandler.navigateToLink', linkText: 'index.ts#L1', path: 'index.ts' },
+          'Multiple files match bare filename',
         );
       });
     });

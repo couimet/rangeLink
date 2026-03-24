@@ -14,7 +14,7 @@ import {
   SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST,
 } from '../constants/settingKeys';
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { MessageCode } from '../types';
+import { FILENAME_AMBIGUOUS, MessageCode } from '../types';
 import {
   convertRangeLinkPosition,
   formatClampingSummary,
@@ -79,6 +79,15 @@ export class RangeLinkNavigationHandler {
 
     // Resolve path to file URI (async)
     const resolved = await this.ideAdapter.resolveWorkspacePath(path);
+
+    if (resolved === FILENAME_AMBIGUOUS) {
+      this.logger.warn({ ...logCtx, path }, 'Multiple files match bare filename');
+      await this.ideAdapter.showWarningMessage(
+        formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path }),
+      );
+      return;
+    }
+
     let fileUri = resolved?.uri;
 
     if (resolved) {
