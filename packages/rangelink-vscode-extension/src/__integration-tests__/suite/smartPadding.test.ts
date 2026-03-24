@@ -4,62 +4,19 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-const SETTLE_MS = 500;
-const POLL_INTERVAL_MS = 100;
-const POLL_TIMEOUT_MS = 5000;
-const LOG_PREFIX = '[RL-integ:smartPadding]';
-const SETTINGS_PROFILES_DIR = 'qa/fixtures/settings';
+import {
+  activateExtension,
+  cleanupFiles,
+  closeAllEditors,
+  createLogger,
+  getWorkspaceRoot,
+  loadSettingsProfile,
+  resetRangelinkSettings,
+  settle,
+  waitForActiveEditor,
+} from '../helpers';
 
-const log = (msg: string): void => {
-  console.log(`${LOG_PREFIX} ${msg}`); // eslint-disable-line no-undef
-};
-
-const waitForActiveEditor = async (expectedUri: string): Promise<boolean> => {
-  const start = Date.now();
-  while (Date.now() - start < POLL_TIMEOUT_MS) {
-    const activeUri = vscode.window.activeTextEditor?.document.uri.toString();
-    if (activeUri === expectedUri) {
-      log(`waitForActiveEditor: matched after ${Date.now() - start}ms`);
-      return true;
-    }
-    await new Promise<void>((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
-  }
-  const actualUri = vscode.window.activeTextEditor?.document.uri.toString() ?? '(none)';
-  log(`waitForActiveEditor: TIMEOUT — expected=${expectedUri}, actual=${actualUri}`);
-  return false;
-};
-
-const getWorkspaceRoot = (): string => {
-  const folder = vscode.workspace.workspaceFolders?.[0];
-  assert.ok(folder, 'Expected a workspace folder to be open');
-  return folder.uri.fsPath;
-};
-
-const loadSettingsProfile = async (profileName: string): Promise<void> => {
-  const profilePath = path.join(getWorkspaceRoot(), SETTINGS_PROFILES_DIR, `${profileName}.json`);
-  log(`loadSettingsProfile: loading ${profileName} from ${profilePath}`);
-
-  const profileContent = fs.readFileSync(profilePath, 'utf8');
-  const settings = JSON.parse(profileContent) as Record<string, unknown>;
-  const config = vscode.workspace.getConfiguration();
-
-  for (const [key, value] of Object.entries(settings)) {
-    await config.update(key, value, vscode.ConfigurationTarget.Global);
-  }
-  log(`loadSettingsProfile: applied ${Object.keys(settings).length} settings from ${profileName}`);
-};
-
-const resetRangelinkSettings = async (): Promise<void> => {
-  const defaultProfilePath = path.join(getWorkspaceRoot(), SETTINGS_PROFILES_DIR, 'default.json');
-  const defaultContent = fs.readFileSync(defaultProfilePath, 'utf8');
-  const defaultSettings = JSON.parse(defaultContent) as Record<string, unknown>;
-  const config = vscode.workspace.getConfiguration();
-
-  for (const key of Object.keys(defaultSettings)) {
-    await config.update(key, undefined, vscode.ConfigurationTarget.Global);
-  }
-  log('resetRangelinkSettings: cleared all rangelink settings to defaults');
-};
+const log = createLogger('smartPadding');
 
 suite('Smart Padding — Editor-to-Editor R-V', () => {
   let sourceFileUri: vscode.Uri;
@@ -67,10 +24,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
 
   suiteSetup(async () => {
     log('suiteSetup: activating extension');
-    const ext = vscode.extensions.getExtension('couimet.rangelink-vscode-extension');
-
-    assert.ok(ext, 'Extension couimet.rangelink-vscode-extension not found');
-    await ext.activate();
+    await activateExtension();
     log('suiteSetup: extension activated');
   });
 
@@ -93,16 +47,9 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   teardown(async () => {
     log('teardown: unbinding + closing editors + resetting settings');
     await vscode.commands.executeCommand('rangelink.unbindDestination');
-    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    await resetRangelinkSettings();
-
-    for (const uri of [sourceFileUri, destFileUri]) {
-      try {
-        fs.unlinkSync(uri.fsPath);
-      } catch {
-        // best-effort cleanup
-      }
-    }
+    await closeAllEditors();
+    await resetRangelinkSettings(log);
+    cleanupFiles([sourceFileUri, destFileUri]);
     log('teardown: complete');
   });
 
@@ -121,11 +68,11 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
 
     log('setupEditorPair: binding dest via bindToTextEditorHere (with URI to bypass picker)');
     await vscode.commands.executeCommand('rangelink.bindToTextEditorHere', destFileUri);
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     log('setupEditorPair: re-focusing source in ViewColumn.One');
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
-    const focused = await waitForActiveEditor(sourceFileUri.toString());
+    const focused = await waitForActiveEditor(sourceFileUri.toString(), log);
     log(`setupEditorPair: source active=${focused}, viewColumn=${sourceEditor.viewColumn}`);
     assert.ok(
       focused,
@@ -153,11 +100,11 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
 
     log('setupUntitledEditorPair: binding untitled dest (with URI to bypass picker)');
     await vscode.commands.executeCommand('rangelink.bindToTextEditorHere', destDoc.uri);
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     log('setupUntitledEditorPair: re-focusing source in ViewColumn.One');
     const sourceEditor = await vscode.window.showTextDocument(sourceDoc, vscode.ViewColumn.One);
-    const focused = await waitForActiveEditor(sourceFileUri.toString());
+    const focused = await waitForActiveEditor(sourceFileUri.toString(), log);
     log(`setupUntitledEditorPair: source active=${focused}`);
     assert.ok(
       focused,
@@ -172,7 +119,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log(
       'smart-padding-001: starting — whitespace-only content, default profile (pasteContent=none)',
     );
-    await loadSettingsProfile('default');
+    await loadSettingsProfile('default', log);
 
     const { sourceEditor, destEditor } = await setupEditorPair(whitespaceContent);
 
@@ -185,7 +132,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log(`smart-padding-001: selected ${lastChar} chars`);
 
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const destContent = destEditor.document.getText();
     log(
@@ -206,7 +153,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-002: simple text with pasteContent=both adds leading and trailing space', async () => {
     const sourceContent = 'hello world';
     log('smart-padding-002: starting — loading default profile then overriding pasteContent=both');
-    await loadSettingsProfile('default');
+    await loadSettingsProfile('default', log);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
@@ -220,7 +167,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log(`smart-padding-002: selected ${sourceContent.length} chars`);
 
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const destContent = destEditor.document.getText();
     log(
@@ -238,7 +185,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-001-untitled: whitespace-only text sent to untitled editor destination', async () => {
     const whitespaceContent = '   \t   ';
     log('smart-padding-001-untitled: starting — default profile');
-    await loadSettingsProfile('default');
+    await loadSettingsProfile('default', log);
 
     const { sourceEditor, destDoc } = await setupUntitledEditorPair(whitespaceContent);
 
@@ -250,7 +197,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     );
 
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const destContent = destDoc.getText();
     log(
@@ -267,7 +214,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-003: multiline selection sent to editor destination', async () => {
     const sourceContent = 'line 1\nline 2\nline 3';
     log('smart-padding-003: starting — multiline, default profile (pasteContent=none)');
-    await loadSettingsProfile('default');
+    await loadSettingsProfile('default', log);
 
     const { sourceEditor, destEditor } = await setupEditorPair(sourceContent);
 
@@ -280,7 +227,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log(`smart-padding-003: selected lines 0-${lastLine}`);
 
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const destContent = destEditor.document.getText();
     log(
@@ -298,7 +245,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-004: pasteContent=none sends exact text without padding', async () => {
     const sourceContent = 'hello';
     log('smart-padding-004: starting — default profile (pasteContent=none)');
-    await loadSettingsProfile('default');
+    await loadSettingsProfile('default', log);
 
     const { sourceEditor, destEditor } = await setupEditorPair(sourceContent);
 
@@ -308,7 +255,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     );
 
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const destContent = destEditor.document.getText();
     log(`smart-padding-004: destContent=${JSON.stringify(destContent)}`);
@@ -324,7 +271,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-005: pasteContent=before adds leading space only', async () => {
     const sourceContent = 'hello';
     log('smart-padding-005: starting — pasteContent=before');
-    await loadSettingsProfile('default');
+    await loadSettingsProfile('default', log);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'before', vscode.ConfigurationTarget.Global);
@@ -337,7 +284,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     );
 
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const destContent = destEditor.document.getText();
     log(`smart-padding-005: destContent=${JSON.stringify(destContent)}`);
@@ -353,7 +300,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-006: pasteContent=after adds trailing space only', async () => {
     const sourceContent = 'hello';
     log('smart-padding-006: starting — pasteContent=after');
-    await loadSettingsProfile('default');
+    await loadSettingsProfile('default', log);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'after', vscode.ConfigurationTarget.Global);
@@ -366,7 +313,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     );
 
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const destContent = destEditor.document.getText();
     log(`smart-padding-006: destContent=${JSON.stringify(destContent)}`);
@@ -392,11 +339,11 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log(`langswitch: dest uri=${originalUri}, language=${originalLanguage}`);
 
     await vscode.commands.executeCommand('rangelink.bindToTextEditorHere', destDoc.uri);
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     log('langswitch: changing language to markdown');
     const updatedDestDoc = await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
     log(
       `langswitch: language now=${updatedDestDoc.languageId}, uriChanged=${originalUri !== updatedDestDoc.uri.toString()}, sameRef=${destDoc === updatedDestDoc}`,
     );
@@ -413,7 +360,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
       preserveFocus: false,
     });
     await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
-    const sourceFocused = await waitForActiveEditor(sourceFileUri.toString());
+    const sourceFocused = await waitForActiveEditor(sourceFileUri.toString(), log);
     log(`langswitch: source active=${sourceFocused}, viewColumn=${sourceEditor.viewColumn}`);
     assert.ok(sourceFocused, 'Source editor must be active before R-V');
 
@@ -423,7 +370,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     );
 
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const destContent = updatedDestDoc.getText();
     log(`langswitch: destContent=${JSON.stringify(destContent)} (length=${destContent.length})`);
@@ -446,18 +393,18 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log(`content-lang: dest uri=${destDoc.uri.toString()}, language=${destDoc.languageId}`);
 
     await vscode.commands.executeCommand('rangelink.bindToTextEditorHere', destDoc.uri);
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const mdContent = '```typescript\nconst x = 1;\n```\n';
     await destEditor.edit((editBuilder) => {
       editBuilder.insert(new vscode.Position(0, 0), mdContent);
     });
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     let currentDestDoc = destDoc;
     if (destDoc.languageId === 'plaintext') {
       currentDestDoc = await vscode.languages.setTextDocumentLanguage(destDoc, 'markdown');
-      await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+      await settle();
     }
     log(
       `content-lang: language now=${currentDestDoc.languageId}, sameRef=${destDoc === currentDestDoc}`,
@@ -469,7 +416,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
       preserveFocus: false,
     });
     await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
-    const sourceFocused = await waitForActiveEditor(sourceFileUri.toString());
+    const sourceFocused = await waitForActiveEditor(sourceFileUri.toString(), log);
     log(`content-lang: source active=${sourceFocused}, viewColumn=${sourceEditor.viewColumn}`);
     assert.ok(sourceFocused, 'Source editor must be active before R-V');
 
@@ -479,7 +426,7 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     );
 
     await vscode.commands.executeCommand('rangelink.pasteSelectedTextToDestination');
-    await new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+    await settle();
 
     const destContent = currentDestDoc.getText();
     log(`content-lang: destContent=${JSON.stringify(destContent)}`);
