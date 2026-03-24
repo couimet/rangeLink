@@ -10,6 +10,7 @@ import {
   type DestinationBuilderContext,
   registerAllDestinationBuilders,
 } from '../../destinations';
+import { AutoPasteResult } from '../../types';
 import {
   createMockDocument,
   createMockEditor,
@@ -18,6 +19,9 @@ import {
   createMockTerminal,
   createMockUri,
   createMockVscodeAdapter,
+  spyOnIsClaudeCodeAvailable,
+  spyOnIsCursorIDEDetected,
+  spyOnIsGitHubCopilotChatAvailable,
 } from '../helpers';
 
 describe('destinationBuilders', () => {
@@ -45,6 +49,21 @@ describe('destinationBuilders', () => {
         id: 'terminal',
         displayName: 'Terminal ("zsh")',
       });
+    });
+
+    it('compareWith delegates to compareTerminalsByProcessId', async () => {
+      const context = createMockContext();
+      const terminal = createMockTerminal({ name: 'zsh', processId: Promise.resolve(1234) });
+      const destination = buildTerminalDestination({ kind: 'terminal', terminal }, context);
+
+      const otherTerminal = createMockTerminal({ name: 'bash', processId: Promise.resolve(5678) });
+      const otherDestination = buildTerminalDestination(
+        { kind: 'terminal', terminal: otherTerminal },
+        context,
+      );
+
+      expect(await destination.equals(otherDestination)).toBe(false);
+      expect(await destination.equals(destination)).toBe(true);
     });
 
     it('throws RangeLinkExtensionError when called with wrong kind', () => {
@@ -127,6 +146,41 @@ describe('destinationBuilders', () => {
       });
     });
 
+    it('compareWith delegates to compareEditorsByUri', async () => {
+      const mockUri = createMockUri('/workspace/src/auth.ts');
+      const editor = createMockEditor({
+        document: createMockDocument({ uri: mockUri }),
+        viewColumn: 1,
+      });
+      const context = createMockContext({ windowOptions: { visibleTextEditors: [editor] } });
+      context.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({ uri: mockUri });
+      context.ideAdapter.asRelativePath = jest.fn().mockReturnValue('src/auth.ts');
+
+      const destination = buildTextEditorDestination(
+        { kind: 'text-editor', uri: mockUri, viewColumn: 1 },
+        context,
+      );
+
+      const differentUri = createMockUri('/workspace/src/other.ts');
+      const otherEditor = createMockEditor({
+        document: createMockDocument({ uri: differentUri }),
+        viewColumn: 2,
+      });
+      const otherContext = createMockContext({
+        windowOptions: { visibleTextEditors: [otherEditor] },
+      });
+      otherContext.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({ uri: differentUri });
+      otherContext.ideAdapter.asRelativePath = jest.fn().mockReturnValue('src/other.ts');
+
+      const otherDestination = buildTextEditorDestination(
+        { kind: 'text-editor', uri: differentUri, viewColumn: 2 },
+        otherContext,
+      );
+
+      expect(await destination.equals(otherDestination)).toBe(false);
+      expect(await destination.equals(destination)).toBe(true);
+    });
+
     it('throws RangeLinkExtensionError when called with wrong kind', () => {
       const context = createMockContext();
 
@@ -152,6 +206,31 @@ describe('destinationBuilders', () => {
       });
     });
 
+    it('isAvailable delegates to isCursorIDEDetected', async () => {
+      const spy = spyOnIsCursorIDEDetected().mockReturnValue(true);
+      const context = createMockContext();
+      const destination = buildCursorAIDestination({ kind: 'cursor-ai' }, context);
+
+      expect(await destination.isAvailable()).toBe(true);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('getUserInstruction returns undefined on auto-paste success', () => {
+      const context = createMockContext();
+      const destination = buildCursorAIDestination({ kind: 'cursor-ai' }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
+    });
+
+    it('getUserInstruction returns instruction message on auto-paste failure', () => {
+      const context = createMockContext();
+      const destination = buildCursorAIDestination({ kind: 'cursor-ai' }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
+        'Paste (Cmd/Ctrl+V) in Cursor chat to use.',
+      );
+    });
+
     it('throws RangeLinkExtensionError when called with wrong kind', () => {
       const context = createMockContext();
 
@@ -175,6 +254,31 @@ describe('destinationBuilders', () => {
         id: 'claude-code',
         displayName: 'Claude Code Chat',
       });
+    });
+
+    it('isAvailable delegates to isClaudeCodeAvailable', async () => {
+      const spy = spyOnIsClaudeCodeAvailable().mockReturnValue(false);
+      const context = createMockContext();
+      const destination = buildClaudeCodeDestination({ kind: 'claude-code' }, context);
+
+      expect(await destination.isAvailable()).toBe(false);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('getUserInstruction returns undefined on auto-paste success', () => {
+      const context = createMockContext();
+      const destination = buildClaudeCodeDestination({ kind: 'claude-code' }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
+    });
+
+    it('getUserInstruction returns instruction message on auto-paste failure', () => {
+      const context = createMockContext();
+      const destination = buildClaudeCodeDestination({ kind: 'claude-code' }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
+        'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
+      );
     });
 
     it('throws RangeLinkExtensionError when called with wrong kind', () => {
@@ -203,6 +307,40 @@ describe('destinationBuilders', () => {
         id: 'github-copilot-chat',
         displayName: 'GitHub Copilot Chat',
       });
+    });
+
+    it('isAvailable delegates to isGitHubCopilotChatAvailable', async () => {
+      const spy = spyOnIsGitHubCopilotChatAvailable().mockResolvedValue(true);
+      const context = createMockContext();
+      const destination = buildGitHubCopilotChatDestination(
+        { kind: 'github-copilot-chat' },
+        context,
+      );
+
+      expect(await destination.isAvailable()).toBe(true);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('getUserInstruction returns undefined on auto-paste success', () => {
+      const context = createMockContext();
+      const destination = buildGitHubCopilotChatDestination(
+        { kind: 'github-copilot-chat' },
+        context,
+      );
+
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
+    });
+
+    it('getUserInstruction returns instruction message on auto-paste failure', () => {
+      const context = createMockContext();
+      const destination = buildGitHubCopilotChatDestination(
+        { kind: 'github-copilot-chat' },
+        context,
+      );
+
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
+        'Paste (Cmd/Ctrl+V) in GitHub Copilot chat to use.',
+      );
     });
 
     it('throws RangeLinkExtensionError when called with wrong kind', () => {

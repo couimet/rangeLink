@@ -167,17 +167,24 @@ describe('DestinationPicker', () => {
           createMockTextEditorQuickPickItem(),
         ]);
 
+        let capturedPlaceholder: string | undefined;
         showFilePickerSpy.mockImplementation(
           async <T>(
             _files: readonly FileBindableQuickPickItem[],
             _provider: unknown,
             handlers: FilePickerHandlers<T>,
             _logger: unknown,
-          ): Promise<T | undefined> => handlers.onSelected(fileInfo),
+          ): Promise<T | undefined> => {
+            capturedPlaceholder = handlers.getPlaceholder();
+            return handlers.onSelected(fileInfo);
+          },
         );
 
         const result = await picker.pick(defaultOptions);
 
+        expect(capturedPlaceholder).toBe(
+          'RangeLink: No destination bound. Choose destination to jump to',
+        );
         expect(showFilePickerSpy).toHaveBeenCalled();
         expect(result).toStrictEqual({
           outcome: 'selected',
@@ -306,18 +313,28 @@ describe('DestinationPicker', () => {
           createMockTerminalQuickPickItem(terminal2),
         ]);
 
+        let capturedPlaceholder: string | undefined;
         showTerminalPickerSpy.mockImplementation(
           async <T>(
             _terminals: readonly TerminalBindableQuickPickItem[],
             _provider: unknown,
             handlers: TerminalPickerHandlers<T>,
             _logger: unknown,
-          ): Promise<T | undefined> =>
-            handlers.onSelected({ terminal: terminal2, name: 'Terminal 2', isActive: false }),
+          ): Promise<T | undefined> => {
+            capturedPlaceholder = handlers.getPlaceholder();
+            return handlers.onSelected({
+              terminal: terminal2,
+              name: 'Terminal 2',
+              isActive: false,
+            });
+          },
         );
 
         const result = await picker.pick(defaultOptions);
 
+        expect(capturedPlaceholder).toBe(
+          'RangeLink: No destination bound. Choose destination to jump to',
+        );
         expect(showTerminalPickerSpy).toHaveBeenCalled();
         expect(result).toStrictEqual({
           outcome: 'selected',

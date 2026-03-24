@@ -2,6 +2,7 @@ import {
   assertNoStatusBarMsgLogged,
   assertNoToastLogged,
   assertStatusBarMsgLogged,
+  assertSuppressionLogged,
   assertToastLogged,
 } from '../../__integration-tests__/helpers/logBasedUiAssertions';
 
@@ -146,6 +147,107 @@ describe('logBasedUiAssertions', () => {
       expect(() => assertNoStatusBarMsgLogged(lines, { message: 'found it' })).toThrow(
         'Expected status bar message "found it" to NOT be logged',
       );
+    });
+  });
+
+  describe('assertSuppressionLogged', () => {
+    it('passes when suppression log with matching fn and suppressedMessage is found', () => {
+      const lines = [
+        '[DEBUG] {"fn":"RangeLinkNavigationHandler.navigateToLink","suppressedMessage":"RangeLink: Navigated to file.ts @ 5"} Navigated toast suppressed by setting',
+      ];
+
+      assertSuppressionLogged(lines, {
+        fn: 'RangeLinkNavigationHandler.navigateToLink',
+        suppressedMessage: 'RangeLink: Navigated to file.ts @ 5',
+      });
+    });
+
+    it('throws when fn does not match', () => {
+      const lines = [
+        '[DEBUG] {"fn":"RangeLinkNavigationHandler.navigateToLink","suppressedMessage":"msg"} Suppressed',
+      ];
+
+      expect(() =>
+        assertSuppressionLogged(lines, { fn: 'WrongHandler.method', suppressedMessage: 'msg' }),
+      ).toThrow('but it was not found');
+    });
+
+    it('throws when suppressedMessage does not match', () => {
+      const lines = [
+        '[DEBUG] {"fn":"RangeLinkNavigationHandler.navigateToLink","suppressedMessage":"actual msg"} Suppressed',
+      ];
+
+      expect(() =>
+        assertSuppressionLogged(lines, {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          suppressedMessage: 'wrong msg',
+        }),
+      ).toThrow('but it was not found');
+    });
+
+    it('throws with empty lines', () => {
+      expect(() =>
+        assertSuppressionLogged([], {
+          fn: 'RangeLinkNavigationHandler.navigateToLink',
+          suppressedMessage: 'msg',
+        }),
+      ).toThrow('but it was not found in 0 log lines');
+    });
+  });
+
+  describe('parseLogContext edge cases (tested indirectly)', () => {
+    it('handles lines without any JSON braces', () => {
+      expect(() =>
+        assertToastLogged(['plain text with no JSON at all'], {
+          type: 'info',
+          message: 'anything',
+        }),
+      ).toThrow('but it was not found');
+    });
+
+    it('handles invalid JSON between braces', () => {
+      expect(() =>
+        assertToastLogged(['[INFO] {not valid json} text'], {
+          type: 'info',
+          message: 'anything',
+        }),
+      ).toThrow('but it was not found');
+    });
+
+    it('handles JSON where fn is not a string', () => {
+      expect(() =>
+        assertToastLogged(['[INFO] {"fn":42,"message":"hello"} text'], {
+          type: 'info',
+          message: 'hello',
+        }),
+      ).toThrow('but it was not found');
+    });
+
+    it('handles JSON that parses to a non-object (string)', () => {
+      expect(() =>
+        assertToastLogged(['[INFO] "just a string" text'], {
+          type: 'info',
+          message: 'anything',
+        }),
+      ).toThrow('but it was not found');
+    });
+
+    it('handles JSON that parses to null', () => {
+      expect(() =>
+        assertToastLogged(['[INFO] null text'], {
+          type: 'info',
+          message: 'anything',
+        }),
+      ).toThrow('but it was not found');
+    });
+
+    it('handles JSON without fn field', () => {
+      expect(() =>
+        assertToastLogged(['[INFO] {"message":"hello","other":"field"} text'], {
+          type: 'info',
+          message: 'hello',
+        }),
+      ).toThrow('but it was not found');
     });
   });
 });
