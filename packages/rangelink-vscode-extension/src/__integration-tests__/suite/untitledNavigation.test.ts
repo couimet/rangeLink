@@ -5,10 +5,14 @@ import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { getUntitledDisplayName } from '../../utils/getUntitledDisplayName';
-import { assertToastLogged, assertNoToastLogged, getLogCapture } from '../helpers';
-
-const SETTLE_MS = 500;
-const settle = () => new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS));
+import {
+  activateExtension,
+  assertNoToastLogged,
+  assertToastLogged,
+  closeAllEditors,
+  getLogCapture,
+  settle,
+} from '../helpers';
 
 /**
  * Navigate to a RangeLink targeting an untitled file.
@@ -71,9 +75,7 @@ suite('Untitled File Navigation', () => {
   let untitledDisplayName: string;
 
   suiteSetup(async () => {
-    const ext = vscode.extensions.getExtension('couimet.rangelink-vscode-extension');
-    assert.ok(ext, 'Extension couimet.rangelink-vscode-extension not found');
-    await ext.activate();
+    await activateExtension();
 
     assert.ok(
       getLogCapture().isCapturing,
@@ -94,7 +96,7 @@ suite('Untitled File Navigation', () => {
   });
 
   suiteTeardown(async () => {
-    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+    await closeAllEditors();
   });
 
   // untitled-navigation-001: Navigate to single line in untitled file

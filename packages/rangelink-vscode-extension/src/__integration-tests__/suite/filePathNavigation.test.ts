@@ -1,75 +1,59 @@
 import assert from 'node:assert';
-import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-const getWorkspaceRoot = (): string => {
-  const folder = vscode.workspace.workspaceFolders?.[0];
-  assert.ok(folder, 'Expected a workspace folder to be open');
-  return folder.uri.fsPath;
-};
+import {
+  activateExtension,
+  cleanupFiles,
+  closeAllEditors,
+  createWorkspaceFile,
+  getWorkspaceRoot,
+  openEditor,
+  settle,
+} from '../helpers';
 
 suite('File Path Navigation', () => {
-  let tempFilePath: string;
+  let testFileUri: vscode.Uri;
   let anchorFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    const ext = vscode.extensions.getExtension('couimet.rangelink-vscode-extension');
+    await activateExtension();
 
-    assert.ok(ext, 'Extension couimet.rangelink-vscode-extension not found');
-    await ext.activate();
-
-    tempFilePath = path.join(getWorkspaceRoot(), `__rl-test-filepath-${Date.now()}.ts`);
-    fs.writeFileSync(tempFilePath, '// rangelink file path nav test\n', 'utf8');
-
-    // Open a different file as the anchor so the temp file is not already active
-    const anchorPath = path.join(getWorkspaceRoot(), `__rl-test-filepath-anchor-${Date.now()}.ts`);
-    fs.writeFileSync(anchorPath, '// anchor\n', 'utf8');
-    anchorFileUri = vscode.Uri.file(anchorPath);
-    await vscode.window.showTextDocument(anchorFileUri);
+    testFileUri = createWorkspaceFile('filepath', '// rangelink file path nav test\n');
+    anchorFileUri = createWorkspaceFile('filepath-anchor', '// anchor\n');
+    await openEditor(anchorFileUri);
   });
 
   suiteTeardown(async () => {
-    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    try {
-      fs.unlinkSync(tempFilePath);
-      fs.unlinkSync(anchorFileUri.fsPath);
-    } catch {
-      // best-effort cleanup
-    }
+    await closeAllEditors();
+    cleanupFiles([testFileUri, anchorFileUri]);
   });
 
-  // clickable-file-paths-010: handleFilePathClick opens a real workspace file in the editor
   test('clickable-file-paths-010: handleFilePathClick opens the file in the active editor', async () => {
     await vscode.commands.executeCommand('rangelink.handleFilePathClick', {
-      filePath: tempFilePath,
+      filePath: testFileUri.fsPath,
     });
 
     const activeUri = vscode.window.activeTextEditor?.document.uri.fsPath;
     assert.strictEqual(
       activeUri,
-      tempFilePath,
-      `Expected active editor to be ${tempFilePath} but got ${activeUri}`,
+      testFileUri.fsPath,
+      `Expected active editor to be ${testFileUri.fsPath} but got ${activeUri}`,
     );
   });
 
-  // clickable-file-paths-011: handleFilePathClick with non-existent path — no editor change
-  // Fire-and-forget: showWarningMessage blocks awaiting user dismissal in the extension host,
-  // so we cannot await the command. Instead, fire the command and verify the editor is unchanged
-  // after a short delay.
   test('clickable-file-paths-011: handleFilePathClick with non-existent path does not change active editor', async () => {
-    await vscode.window.showTextDocument(anchorFileUri);
+    await openEditor(anchorFileUri);
     const editorBefore = vscode.window.activeTextEditor?.document.uri.fsPath;
 
     const nonExistentPath = path.join(getWorkspaceRoot(), '__rl-nonexistent-file-12345.ts');
 
-    // Do NOT await — showWarningMessage blocks in the extension host
     void vscode.commands.executeCommand('rangelink.handleFilePathClick', {
       filePath: nonExistentPath,
     });
 
-    await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+    await settle(1000);
 
     const editorAfter = vscode.window.activeTextEditor?.document.uri.fsPath;
     assert.strictEqual(
