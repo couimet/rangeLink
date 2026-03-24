@@ -692,6 +692,10 @@ describe('BookmarksStore', () => {
         details: { operation: 'update' },
         cause: saveError,
       });
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { fn: 'BookmarksStore.update', error: saveError, syncEnabled: true },
+        'Failed to save bookmarks during update',
+      );
     });
 
     it('wraps globalState.update error as BOOKMARK_SAVE_FAILED in remove', async () => {
@@ -707,6 +711,10 @@ describe('BookmarksStore', () => {
         details: { operation: 'remove' },
         cause: saveError,
       });
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { fn: 'BookmarksStore.remove', error: saveError, syncEnabled: true },
+        'Failed to save bookmarks during remove',
+      );
     });
 
     it('wraps globalState.update error as BOOKMARK_SAVE_FAILED in recordAccess', async () => {
@@ -722,6 +730,10 @@ describe('BookmarksStore', () => {
         details: { operation: 'recordAccess' },
         cause: saveError,
       });
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { fn: 'BookmarksStore.recordAccess', error: saveError, syncEnabled: true },
+        'Failed to save bookmarks during recordAccess',
+      );
     });
   });
 

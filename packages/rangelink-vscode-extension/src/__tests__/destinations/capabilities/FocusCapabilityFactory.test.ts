@@ -12,10 +12,14 @@ import {
 } from '../../helpers';
 
 describe('FocusCapabilityFactory', () => {
-  const mockLogger = createMockLogger();
-  const mockAdapter = createMockVscodeAdapter();
-  const mockClipboardPreserver = createMockClipboardPreserver();
-  const factory = new FocusCapabilityFactory(mockAdapter, mockClipboardPreserver, mockLogger);
+  let factory: FocusCapabilityFactory;
+
+  beforeEach(() => {
+    const mockLogger = createMockLogger();
+    const mockAdapter = createMockVscodeAdapter();
+    const mockClipboardPreserver = createMockClipboardPreserver();
+    factory = new FocusCapabilityFactory(mockAdapter, mockClipboardPreserver, mockLogger);
+  });
 
   it('creates EditorFocusCapability', () => {
     const uri = createMockUri('/workspace/src/file.ts');

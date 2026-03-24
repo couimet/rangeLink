@@ -32,7 +32,18 @@ describe('SelectionValidator', () => {
       expect(result!.editor).toBe(editor);
       expect(result!.selections).toStrictEqual([selection]);
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.objectContaining({ fn: 'SelectionValidator.validateSelectionsAndShowError' }),
+        {
+          fn: 'SelectionValidator.validateSelectionsAndShowError',
+          hasEditor: true,
+          selectionCount: 1,
+          selections: [
+            { index: 0, start: { line: 0, char: 0 }, end: { line: 0, char: 10 }, isEmpty: false },
+          ],
+          documentVersion: undefined,
+          documentLineCount: undefined,
+          documentIsDirty: undefined,
+          documentIsClosed: undefined,
+        },
         'Selection validation starting',
       );
     });
@@ -49,11 +60,18 @@ describe('SelectionValidator', () => {
       expect(result).toBeUndefined();
       expect(showErrorSpy).toHaveBeenCalledWith('RangeLink: No active editor');
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'SelectionValidator.validateSelectionsAndShowError',
           hasEditor: false,
           errorCode: 'ERROR_NO_ACTIVE_EDITOR',
-        }),
+          selectionCount: 0,
+          selections: [],
+          documentVersion: undefined,
+          documentLineCount: undefined,
+          documentIsDirty: undefined,
+          documentIsClosed: undefined,
+          lineContentAtBoundaries: undefined,
+        },
         'Selection validation failed - full diagnostic context',
       );
     });
@@ -78,11 +96,22 @@ describe('SelectionValidator', () => {
         'RangeLink: No text selected. Click in the file, select text, and try again.',
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           fn: 'SelectionValidator.validateSelectionsAndShowError',
           hasEditor: true,
           errorCode: 'ERROR_NO_TEXT_SELECTED',
-        }),
+          selectionCount: 1,
+          selections: [
+            { index: 0, start: { line: 5, char: 0 }, end: { line: 5, char: 0 }, isEmpty: true },
+          ],
+          documentVersion: undefined,
+          documentLineCount: undefined,
+          documentIsDirty: undefined,
+          documentIsClosed: undefined,
+          lineContentAtBoundaries: [
+            { index: 0, startLineContent: undefined, endLineContent: undefined },
+          ],
+        },
         'Selection validation failed - full diagnostic context',
       );
     });

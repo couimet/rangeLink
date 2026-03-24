@@ -310,7 +310,7 @@ describe('destinationBuilders', () => {
     });
 
     it('isAvailable delegates to isGitHubCopilotChatAvailable', async () => {
-      const spy = spyOnIsGitHubCopilotChatAvailable().mockResolvedValue(true as never);
+      const spy = spyOnIsGitHubCopilotChatAvailable().mockResolvedValue(true);
       const context = createMockContext();
       const destination = buildGitHubCopilotChatDestination(
         { kind: 'github-copilot-chat' },
