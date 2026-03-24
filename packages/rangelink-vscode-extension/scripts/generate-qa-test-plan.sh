@@ -9,8 +9,8 @@ set -euo pipefail
 # Reads nextTargetVersion from package.json to name the output file.
 # Reads version (last published) to document the scope in the header.
 #
-# Filename: qa-test-cases-v<version>-<YYYY-MM-DD>.yaml
-# Same-day reruns append a suffix: -002, -003, etc.
+# Filename: qa-test-cases-v<version>[-NNN].yaml
+# Reruns append a suffix: -001, -002, etc.
 #
 # Requires: jq
 
@@ -32,13 +32,12 @@ if [[ -z "$PUBLISHED_VERSION" ]]; then
   exit 1
 fi
 
-TODAY=$(date +%Y-%m-%d)
 COMMIT=$(git -C "$REPO_ROOT" rev-parse --short HEAD)
-BASE_NAME="qa-test-cases-v${NEXT_VERSION}-${TODAY}"
+BASE_NAME="qa-test-cases-v${NEXT_VERSION}"
 OUTPUT_FILE="$QA_DIR/${BASE_NAME}.yaml"
 
 if [[ -f "$OUTPUT_FILE" ]]; then
-  MAX_SUFFIX=1
+  MAX_SUFFIX=0
   for existing in "$QA_DIR/${BASE_NAME}"-[0-9][0-9][0-9].yaml; do
     [[ -e "$existing" ]] || continue
     suffix="${existing%.yaml}"
@@ -56,7 +55,7 @@ if [[ -z "$PREVIOUS_YAML" ]]; then
   exit 1
 fi
 
-HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION} — ${TODAY}
+HEADER="# RangeLink QA Test Cases — v${PUBLISHED_VERSION} → v${NEXT_VERSION}
 #
 # Scope: Changes accumulated between the vscode-extension-v${PUBLISHED_VERSION} release tag and the current
 #        main branch tip, targeting v${NEXT_VERSION}. Created at commit ${COMMIT}.

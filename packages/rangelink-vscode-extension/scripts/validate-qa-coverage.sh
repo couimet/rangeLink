@@ -22,12 +22,22 @@ relative_path() {
 }
 
 find_latest_qa_yaml() {
-  # Sort by name descending: dates sort naturally (2026-03-17 > 2026-03-14),
-  # and revision suffixes sort after their base file (v1.1.0-002 > v1.1.0).
+  # Suffix sort fix: unsuffixed files (v1.1.0.yaml) sort AFTER suffixed files
+  # (v1.1.0-001.yaml) because '.' > '-' in ASCII. Normalize by appending -000
+  # to unsuffixed names for sorting purposes, then pick the highest.
   local latest
-  latest=$(ls "$QA_DIR"/qa-test-cases*.yaml 2>/dev/null \
-    | sort -r \
-    | head -1)
+  latest=$(
+    for f in "$QA_DIR"/qa-test-cases-*.yaml; do
+      [[ -e "$f" ]] || continue
+      name=$(basename "$f")
+      base="${name%.yaml}"
+      if [[ "$base" =~ -[0-9]{3}$ ]]; then
+        printf '%s\t%s\n' "$base" "$f"
+      else
+        printf '%s-000\t%s\n' "$base" "$f"
+      fi
+    done | sort -t$'\t' -k1,1 | tail -1 | cut -f2
+  )
   if [[ -z "$latest" ]]; then
     echo "No QA YAML files found in $QA_DIR" >&2
     exit 1

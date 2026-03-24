@@ -3,12 +3,12 @@ set -euo pipefail
 
 # Usage: ./scripts/generate-qa-checklist.sh [yaml-file]
 #
-# Generates a date-stamped QA checklist from a QA test case YAML file.
+# Generates a QA checklist from a QA test case YAML file.
 # Groups TCs by feature area, tags readiness and settings profiles,
 # and includes a quick-start section for immediately testable TCs.
 #
-# Filename: qa-checklist-v<version>-<YYYY-MM-DD>[-NNN].txt
-# Same-day reruns append a suffix: -002, -003, etc.
+# Filename: qa-checklist-v<version>[-NNN].txt
+# Reruns append a suffix: -001, -002, etc.
 #
 # Requires: python3 with PyYAML, jq
 
@@ -47,7 +47,7 @@ if [[ -z "$YAML_FILE" ]]; then
       if [[ "$base" =~ -[0-9]{3}$ ]]; then
         printf '%s\t%s\n' "$base" "$name"
       else
-        printf '%s-001\t%s\n' "$base" "$name"
+        printf '%s-000\t%s\n' "$base" "$name"
       fi
     done | sort -t$'\t' -k1,1 | tail -1 | cut -f2
   )
@@ -65,12 +65,11 @@ if [[ ! -f "$YAML_FILE" ]]; then
   exit 1
 fi
 
-TODAY=$(date +%Y-%m-%d)
-BASE_NAME="qa-checklist-v${NEXT_VERSION}-${TODAY}"
+BASE_NAME="qa-checklist-v${NEXT_VERSION}"
 OUTPUT_FILE="$QA_DIR/${BASE_NAME}.txt"
 
 if [[ -f "$OUTPUT_FILE" ]]; then
-  MAX_SUFFIX=1
+  MAX_SUFFIX=0
   for existing in "$QA_DIR/${BASE_NAME}"-[0-9][0-9][0-9].txt; do
     [[ -e "$existing" ]] || continue
     suffix="${existing%.txt}"
@@ -82,7 +81,7 @@ if [[ -f "$OUTPUT_FILE" ]]; then
   OUTPUT_FILE="$QA_DIR/${BASE_NAME}-$(printf '%03d' "$NEXT_SUFFIX").txt"
 fi
 
-python3 - "$YAML_FILE" "$OUTPUT_FILE" "$NEXT_VERSION" "$TODAY" <<'PYTHON_SCRIPT'
+python3 - "$YAML_FILE" "$OUTPUT_FILE" "$NEXT_VERSION" <<'PYTHON_SCRIPT'
 import sys
 import yaml
 from collections import OrderedDict
@@ -90,7 +89,6 @@ from collections import OrderedDict
 yaml_path = sys.argv[1]
 output_path = sys.argv[2]
 version = sys.argv[3]
-today = sys.argv[4]
 
 with open(yaml_path, 'r') as f:
     data = yaml.safe_load(f)
@@ -146,7 +144,7 @@ for feature, tcs in sections.items():
             ready_now_ids.append(tc_id)
 
 lines = []
-lines.append(f'RangeLink QA Checklist — v{version} — {today}')
+lines.append(f'RangeLink QA Checklist — v{version}')
 lines.append(f'Source: {yaml_path.split("/qa/")[-1] if "/qa/" in yaml_path else yaml_path}')
 lines.append('')
 lines.append('=' * 70)
