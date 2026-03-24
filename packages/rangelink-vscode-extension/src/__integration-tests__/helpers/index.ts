@@ -1,3 +1,11 @@
+export {
+  assertClipboardChanged,
+  assertClipboardRestored,
+  CLIPBOARD_SENTINEL,
+  writeClipboardSentinel,
+} from './clipboardHelpers';
+export { selectAll, waitForActiveEditor } from './editorHelpers';
+export { cleanupFiles, closeAllEditors, createWorkspaceFile, openEditor } from './fileHelpers';
 export { getLogCapture } from './getLogCapture';
 export {
   assertNoStatusBarMsgLogged,
@@ -6,6 +14,10 @@ export {
   assertSuppressionLogged,
   assertToastLogged,
 } from './logBasedUiAssertions';
+export { createLogger } from './logHelpers';
+export { navigateViaHandleLinkClick } from './navigationHelpers';
+export { loadSettingsProfile, resetRangelinkSettings } from './settingsHelpers';
+export { createAndBindTerminal } from './terminalHelpers';
 export {
   activateExtension,
   getWorkspaceRoot,
