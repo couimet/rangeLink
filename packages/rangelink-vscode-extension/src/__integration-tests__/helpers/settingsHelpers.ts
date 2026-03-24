@@ -21,7 +21,9 @@ export const loadSettingsProfile = async (
   for (const [key, value] of Object.entries(settings)) {
     await config.update(key, value, vscode.ConfigurationTarget.Global);
   }
-  log?.(`loadSettingsProfile: applied ${Object.keys(settings).length} settings from ${profileName}`);
+  log?.(
+    `loadSettingsProfile: applied ${Object.keys(settings).length} settings from ${profileName}`,
+  );
 };
 
 export const resetRangelinkSettings = async (log?: (msg: string) => void): Promise<void> => {
