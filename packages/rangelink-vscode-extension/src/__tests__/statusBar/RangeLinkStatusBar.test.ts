@@ -623,6 +623,7 @@ describe('RangeLinkStatusBar', () => {
 
       showQuickPickMock.mockResolvedValueOnce(terminalMoreItem);
 
+      let capturedPlaceholder: string | undefined;
       showTerminalPickerSpy.mockImplementation(
         async (
           _terminals: readonly TerminalBindableQuickPickItem[],
@@ -630,6 +631,7 @@ describe('RangeLinkStatusBar', () => {
           handlers: TerminalPickerHandlers<void>,
           _logger: unknown,
         ): Promise<void | undefined> => {
+          capturedPlaceholder = handlers.getPlaceholder();
           await handlers.onSelected(eligibleTerminal);
         },
       );
@@ -644,6 +646,7 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
+      expect(capturedPlaceholder).toBe('Select terminal to bind to');
       expect(showTerminalPickerSpy).toHaveBeenCalled();
       expect(mockDestinationManager.bind).toHaveBeenCalledWith({
         kind: 'terminal',
@@ -764,6 +767,7 @@ describe('RangeLinkStatusBar', () => {
 
       showQuickPickMock.mockResolvedValueOnce(fileMoreItem);
 
+      let capturedPlaceholder: string | undefined;
       showFilePickerSpy.mockImplementation(
         async (
           _files: readonly FileBindableQuickPickItem[],
@@ -771,6 +775,7 @@ describe('RangeLinkStatusBar', () => {
           handlers: FilePickerHandlers<void>,
           _logger: unknown,
         ): Promise<void | undefined> => {
+          capturedPlaceholder = handlers.getPlaceholder();
           await handlers.onSelected(eligibleFile);
         },
       );
@@ -785,6 +790,7 @@ describe('RangeLinkStatusBar', () => {
 
       await statusBar.openMenu();
 
+      expect(capturedPlaceholder).toBe('Select file to bind to');
       expect(showFilePickerSpy).toHaveBeenCalled();
       expect(mockDestinationManager.bind).toHaveBeenCalledWith({
         kind: 'text-editor',
