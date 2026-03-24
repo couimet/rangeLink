@@ -317,5 +317,92 @@ describe('wireSubscriptions', () => {
       registrar.getHandler(CMD_CONTEXT_EDITOR_COPY_PORTABLE_LINK_ABSOLUTE)();
       expect(services.linkGenerator.createPortableLink).toHaveBeenCalledWith('absolute');
     });
+
+    it('CMD_BIND_TO_TERMINAL delegates to bindToTerminalCommand.execute', async () => {
+      await registrar.getHandler(CMD_BIND_TO_TERMINAL)();
+      expect(services.bindToTerminalCommand.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('CMD_BIND_TO_DESTINATION delegates to bindToDestinationCommand.execute', async () => {
+      await registrar.getHandler(CMD_BIND_TO_DESTINATION)();
+      expect(services.bindToDestinationCommand.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('CMD_JUMP_TO_DESTINATION delegates to jumpToDestinationCommand.execute', async () => {
+      await registrar.getHandler(CMD_JUMP_TO_DESTINATION)();
+      expect(services.jumpToDestinationCommand.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('CMD_HANDLE_DOCUMENT_LINK_CLICK delegates to documentLinkProvider.handleLinkClick', () => {
+      const mockArgs = { linkText: 'file.ts#L1', parsedLink: {} };
+      registrar.getHandler(CMD_HANDLE_DOCUMENT_LINK_CLICK)(mockArgs);
+      expect(services.documentLinkProvider.handleLinkClick).toHaveBeenCalledWith(mockArgs);
+    });
+
+    it('CMD_HANDLE_FILE_PATH_CLICK delegates to filePathDocumentProvider.handleLinkClick', () => {
+      const mockArgs = { path: '/workspace/file.ts' };
+      registrar.getHandler(CMD_HANDLE_FILE_PATH_CLICK)(mockArgs);
+      expect(services.filePathDocumentProvider.handleLinkClick).toHaveBeenCalledWith(mockArgs);
+    });
+
+    it('CMD_PASTE_FILE_PATH_RELATIVE delegates to filePathPaster with WorkspaceRelative', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      registrar.getHandler(CMD_PASTE_FILE_PATH_RELATIVE)(mockUri);
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
+        mockUri,
+        'workspace-relative',
+      );
+    });
+
+    it('CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH delegates to filePathPaster with absolute', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      registrar.getHandler(CMD_CONTEXT_EXPLORER_PASTE_FILE_PATH)(mockUri);
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
+        mockUri,
+        'absolute',
+      );
+    });
+
+    it('CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH delegates to filePathPaster with workspace-relative', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      registrar.getHandler(CMD_CONTEXT_EXPLORER_PASTE_RELATIVE_FILE_PATH)(mockUri);
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
+        mockUri,
+        'workspace-relative',
+      );
+    });
+
+    it('CMD_CONTEXT_EXPLORER_UNBIND delegates to destinationManager.unbind', () => {
+      registrar.getHandler(CMD_CONTEXT_EXPLORER_UNBIND)();
+      expect(services.destinationManager.unbind).toHaveBeenCalledTimes(1);
+    });
+
+    it('CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH delegates to filePathPaster with absolute', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      registrar.getHandler(CMD_CONTEXT_EDITOR_TAB_PASTE_FILE_PATH)(mockUri);
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
+        mockUri,
+        'absolute',
+      );
+    });
+
+    it('CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH delegates to filePathPaster with workspace-relative', () => {
+      const mockUri = createMockUri('/workspace/src/file.ts');
+      registrar.getHandler(CMD_CONTEXT_EDITOR_TAB_PASTE_RELATIVE_FILE_PATH)(mockUri);
+      expect(services.filePathPaster.pasteFilePathToDestination).toHaveBeenCalledWith(
+        mockUri,
+        'workspace-relative',
+      );
+    });
+
+    it('CMD_CONTEXT_EDITOR_CONTENT_UNBIND delegates to destinationManager.unbind', () => {
+      registrar.getHandler(CMD_CONTEXT_EDITOR_CONTENT_UNBIND)();
+      expect(services.destinationManager.unbind).toHaveBeenCalledTimes(1);
+    });
+
+    it('CMD_CONTEXT_TERMINAL_UNBIND delegates to destinationManager.unbind', () => {
+      registrar.getHandler(CMD_CONTEXT_TERMINAL_UNBIND)();
+      expect(services.destinationManager.unbind).toHaveBeenCalledTimes(1);
+    });
   });
 });
