@@ -19,3 +19,13 @@ export const createMockPosition = (overrides: Partial<vscode.Position>): vscode.
     ...overrides,
   } as vscode.Position;
 };
+
+/**
+ * Shorthand for createMockPosition with positional args.
+ *
+ * @param line - Line number
+ * @param character - Character offset
+ * @returns Mock Position with line and character set
+ */
+export const createMockPos = (line: number, character: number): vscode.Position =>
+  createMockPosition({ line, character });
