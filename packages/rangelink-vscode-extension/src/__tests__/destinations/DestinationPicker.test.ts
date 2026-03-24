@@ -182,7 +182,9 @@ describe('DestinationPicker', () => {
 
         const result = await picker.pick(defaultOptions);
 
-        expect(capturedPlaceholder).toBe('RangeLink: No destination bound. Choose destination to jump to');
+        expect(capturedPlaceholder).toBe(
+          'RangeLink: No destination bound. Choose destination to jump to',
+        );
         expect(showFilePickerSpy).toHaveBeenCalled();
         expect(result).toStrictEqual({
           outcome: 'selected',
@@ -320,13 +322,19 @@ describe('DestinationPicker', () => {
             _logger: unknown,
           ): Promise<T | undefined> => {
             capturedPlaceholder = handlers.getPlaceholder();
-            return handlers.onSelected({ terminal: terminal2, name: 'Terminal 2', isActive: false });
+            return handlers.onSelected({
+              terminal: terminal2,
+              name: 'Terminal 2',
+              isActive: false,
+            });
           },
         );
 
         const result = await picker.pick(defaultOptions);
 
-        expect(capturedPlaceholder).toBe('RangeLink: No destination bound. Choose destination to jump to');
+        expect(capturedPlaceholder).toBe(
+          'RangeLink: No destination bound. Choose destination to jump to',
+        );
         expect(showTerminalPickerSpy).toHaveBeenCalled();
         expect(result).toStrictEqual({
           outcome: 'selected',

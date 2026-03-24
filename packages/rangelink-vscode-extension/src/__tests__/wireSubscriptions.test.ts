@@ -184,7 +184,9 @@ describe('wireSubscriptions', () => {
 
     it('CMD_TERMINAL_PASTE_SELECTED_TEXT delegates to terminalSelectionService', () => {
       registrar.getHandler(CMD_TERMINAL_PASTE_SELECTED_TEXT)();
-      expect(services.terminalSelectionService.pasteTerminalSelectionToDestination).toHaveBeenCalledTimes(1);
+      expect(
+        services.terminalSelectionService.pasteTerminalSelectionToDestination,
+      ).toHaveBeenCalledTimes(1);
     });
 
     it('CMD_BOOKMARK_ADD delegates to addBookmarkCommand.execute', () => {
@@ -280,12 +282,16 @@ describe('wireSubscriptions', () => {
 
     it('CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE delegates to filePathPaster.pasteCurrentFilePathToDestination', () => {
       registrar.getHandler(CMD_PASTE_CURRENT_FILE_PATH_ABSOLUTE)();
-      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith('absolute');
+      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith(
+        'absolute',
+      );
     });
 
     it('CMD_PASTE_CURRENT_FILE_PATH_RELATIVE delegates to filePathPaster.pasteCurrentFilePathToDestination', () => {
       registrar.getHandler(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE)();
-      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith('workspace-relative');
+      expect(services.filePathPaster.pasteCurrentFilePathToDestination).toHaveBeenCalledWith(
+        'workspace-relative',
+      );
     });
 
     it('CMD_CONTEXT_EDITOR_COPY_LINK delegates to linkGenerator.createLink', () => {

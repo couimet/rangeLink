@@ -130,10 +130,23 @@ export const createWiringServices = (
     destinationManager,
     logger,
   );
-  const addBookmarkCommand = new AddBookmarkCommand(getDelimiters, ideAdapter, bookmarkService, logger);
+  const addBookmarkCommand = new AddBookmarkCommand(
+    getDelimiters,
+    ideAdapter,
+    bookmarkService,
+    logger,
+  );
   const showVersionCommand = new ShowVersionCommand(ideAdapter, logger, versionInfo);
-  const bindToDestinationCommand = new BindToDestinationCommand(destinationManager, destinationPicker, logger);
-  const jumpToDestinationCommand = new JumpToDestinationCommand(destinationManager, destinationPicker, logger);
+  const bindToDestinationCommand = new BindToDestinationCommand(
+    destinationManager,
+    destinationPicker,
+    logger,
+  );
+  const jumpToDestinationCommand = new JumpToDestinationCommand(
+    destinationManager,
+    destinationPicker,
+    logger,
+  );
   const listBookmarksCommand = new ListBookmarksCommand(ideAdapter, bookmarkService, logger);
   const manageBookmarksCommand = new ManageBookmarksCommand(ideAdapter, bookmarkService, logger);
 
@@ -153,7 +166,13 @@ export const createWiringServices = (
     clipboardRouter,
     logger,
   );
-  const filePathPaster = new FilePathPaster(ideAdapter, destinationManager, configReader, clipboardRouter, logger);
+  const filePathPaster = new FilePathPaster(
+    ideAdapter,
+    destinationManager,
+    configReader,
+    clipboardRouter,
+    logger,
+  );
   const linkGenerator = new LinkGenerator(
     getDelimiters,
     ideAdapter,
@@ -170,17 +189,47 @@ export const createWiringServices = (
     selectionValidator,
     logger,
   );
-  const statusBar = new RangeLinkStatusBar(ideAdapter, destinationManager, availabilityService, bookmarkService, logger);
+  const statusBar = new RangeLinkStatusBar(
+    ideAdapter,
+    destinationManager,
+    availabilityService,
+    bookmarkService,
+    logger,
+  );
 
-  const navigationHandler = new RangeLinkNavigationHandler(getDelimiters, ideAdapter, configReader, logger);
+  const navigationHandler = new RangeLinkNavigationHandler(
+    getDelimiters,
+    ideAdapter,
+    configReader,
+    logger,
+  );
   logger.debug({ fn: 'createWiringServices' }, 'Navigation handler created');
   const filePathNavigationHandler = new FilePathNavigationHandler(ideAdapter, logger);
   const goToRangeLinkCommand = new GoToRangeLinkCommand(ideAdapter, navigationHandler, logger);
 
-  const filePathTerminalProvider = new FilePathTerminalProvider(getDelimiters, filePathNavigationHandler, logger);
-  const filePathDocumentProvider = new FilePathDocumentProvider(getDelimiters, filePathNavigationHandler, ideAdapter, logger);
-  const terminalLinkProvider = new RangeLinkTerminalProvider(navigationHandler, getDelimiters, ideAdapter, logger);
-  const documentLinkProvider = new RangeLinkDocumentProvider(navigationHandler, getDelimiters, ideAdapter, logger);
+  const filePathTerminalProvider = new FilePathTerminalProvider(
+    getDelimiters,
+    filePathNavigationHandler,
+    logger,
+  );
+  const filePathDocumentProvider = new FilePathDocumentProvider(
+    getDelimiters,
+    filePathNavigationHandler,
+    ideAdapter,
+    logger,
+  );
+  const terminalLinkProvider = new RangeLinkTerminalProvider(
+    navigationHandler,
+    getDelimiters,
+    ideAdapter,
+    logger,
+  );
+  const documentLinkProvider = new RangeLinkDocumentProvider(
+    navigationHandler,
+    getDelimiters,
+    ideAdapter,
+    logger,
+  );
 
   return {
     ideAdapter,

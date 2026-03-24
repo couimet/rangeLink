@@ -790,7 +790,6 @@ describe('BookmarksStore', () => {
     });
 
     it('sets cause to undefined when thrown value is not an Error in add', async () => {
-      // eslint-disable-next-line no-throw-literal
       mockIdGenerator.mockImplementation(() => {
         throw 'string error';
       });
@@ -804,7 +803,6 @@ describe('BookmarksStore', () => {
     });
 
     it('sets cause to undefined when globalState.update rejects with non-Error in save', async () => {
-      // eslint-disable-next-line prefer-promise-reject-errors
       mockMemento.update = jest.fn().mockRejectedValue('not an error');
 
       const result = await store.add({ label: 'test', link: 'file.ts#L1' });

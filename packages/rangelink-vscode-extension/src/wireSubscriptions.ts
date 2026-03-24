@@ -113,10 +113,7 @@ export const wireSubscriptions = (
     filePathDocumentProvider,
     'File path document link provider registered',
   );
-  registrar.registerTerminalLinkProvider(
-    terminalLinkProvider,
-    'Terminal link provider registered',
-  );
+  registrar.registerTerminalLinkProvider(terminalLinkProvider, 'Terminal link provider registered');
   registrar.registerDocumentLinkProvider(
     [{ scheme: 'file' }, { scheme: 'untitled' }],
     documentLinkProvider,
@@ -159,7 +156,13 @@ export const wireSubscriptions = (
   ] as const) {
     registrar.registerCommand(
       cmd,
-      createBindAIAssistantCommand(kind, availabilityService, destinationManager, ideAdapter, logger),
+      createBindAIAssistantCommand(
+        kind,
+        availabilityService,
+        destinationManager,
+        ideAdapter,
+        logger,
+      ),
     );
   }
 
@@ -259,7 +262,5 @@ export const wireSubscriptions = (
   registrar.registerCommand(CMD_CONTEXT_EDITOR_PASTE_SELECTED_TEXT, () =>
     textSelectionPaster.pasteSelectedTextToDestination(),
   );
-  registrar.registerCommand(CMD_CONTEXT_EDITOR_SAVE_BOOKMARK, () =>
-    addBookmarkCommand.execute(),
-  );
+  registrar.registerCommand(CMD_CONTEXT_EDITOR_SAVE_BOOKMARK, () => addBookmarkCommand.execute());
 };

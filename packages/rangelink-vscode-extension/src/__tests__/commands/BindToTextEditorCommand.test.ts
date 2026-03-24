@@ -251,7 +251,9 @@ describe('BindToTextEditorCommand', () => {
     it('opens file and binds when file is not in any tab group', async () => {
       const uri = createMockUri('/workspace/src/new-file.ts');
       const mockEditor = createMockEditor({ viewColumn: 1 });
-      const showTextDocSpy = jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
+      const showTextDocSpy = jest
+        .spyOn(mockAdapter, 'showTextDocument')
+        .mockResolvedValue(mockEditor);
       const vscodeInstance = mockAdapter.__getVscodeInstance();
       vscodeInstance.window.tabGroups = createMockTabGroups({ all: [] });
       mockDestinationManager.bind.mockResolvedValue(
@@ -276,7 +278,9 @@ describe('BindToTextEditorCommand', () => {
       const tab = createMockTab(uri);
       const group = createMockTabGroup([tab], { viewColumn: 2 });
       const mockEditor = createMockEditor({ viewColumn: 2 });
-      const showTextDocSpy = jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
+      const showTextDocSpy = jest
+        .spyOn(mockAdapter, 'showTextDocument')
+        .mockResolvedValue(mockEditor);
       const vscodeInstance = mockAdapter.__getVscodeInstance();
       vscodeInstance.window.tabGroups = createMockTabGroups({ all: [group] });
       mockDestinationManager.bind.mockResolvedValue(

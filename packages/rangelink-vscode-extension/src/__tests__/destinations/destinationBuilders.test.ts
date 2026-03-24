@@ -166,7 +166,9 @@ describe('destinationBuilders', () => {
         document: createMockDocument({ uri: differentUri }),
         viewColumn: 2,
       });
-      const otherContext = createMockContext({ windowOptions: { visibleTextEditors: [otherEditor] } });
+      const otherContext = createMockContext({
+        windowOptions: { visibleTextEditors: [otherEditor] },
+      });
       otherContext.ideAdapter.getWorkspaceFolder = jest.fn().mockReturnValue({ uri: differentUri });
       otherContext.ideAdapter.asRelativePath = jest.fn().mockReturnValue('src/other.ts');
 
@@ -310,7 +312,10 @@ describe('destinationBuilders', () => {
     it('isAvailable delegates to isGitHubCopilotChatAvailable', async () => {
       const spy = spyOnIsGitHubCopilotChatAvailable().mockResolvedValue(true as never);
       const context = createMockContext();
-      const destination = buildGitHubCopilotChatDestination({ kind: 'github-copilot-chat' }, context);
+      const destination = buildGitHubCopilotChatDestination(
+        { kind: 'github-copilot-chat' },
+        context,
+      );
 
       expect(await destination.isAvailable()).toBe(true);
       expect(spy).toHaveBeenCalledTimes(1);
@@ -318,14 +323,20 @@ describe('destinationBuilders', () => {
 
     it('getUserInstruction returns undefined on auto-paste success', () => {
       const context = createMockContext();
-      const destination = buildGitHubCopilotChatDestination({ kind: 'github-copilot-chat' }, context);
+      const destination = buildGitHubCopilotChatDestination(
+        { kind: 'github-copilot-chat' },
+        context,
+      );
 
       expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
     });
 
     it('getUserInstruction returns instruction message on auto-paste failure', () => {
       const context = createMockContext();
-      const destination = buildGitHubCopilotChatDestination({ kind: 'github-copilot-chat' }, context);
+      const destination = buildGitHubCopilotChatDestination(
+        { kind: 'github-copilot-chat' },
+        context,
+      );
 
       expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
         'Paste (Cmd/Ctrl+V) in GitHub Copilot chat to use.',

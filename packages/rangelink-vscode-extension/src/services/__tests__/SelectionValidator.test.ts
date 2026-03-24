@@ -15,7 +15,11 @@ describe('SelectionValidator', () => {
 
   describe('validateSelectionsAndShowError', () => {
     it('returns editor and selections when editor has non-empty selections', () => {
-      const selection = createMockSelection({ start: createMockPos(0, 0), end: createMockPos(0, 10), isEmpty: false });
+      const selection = createMockSelection({
+        start: createMockPos(0, 0),
+        end: createMockPos(0, 10),
+        isEmpty: false,
+      });
       const editor = createMockEditor({ selections: [selection] });
       const mockAdapter = createMockVscodeAdapter({
         windowOptions: { activeTextEditor: editor },
@@ -43,9 +47,7 @@ describe('SelectionValidator', () => {
       const result = validator.validateSelectionsAndShowError();
 
       expect(result).toBeUndefined();
-      expect(showErrorSpy).toHaveBeenCalledWith(
-        'RangeLink: No active editor',
-      );
+      expect(showErrorSpy).toHaveBeenCalledWith('RangeLink: No active editor');
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.objectContaining({
           fn: 'SelectionValidator.validateSelectionsAndShowError',
@@ -57,7 +59,11 @@ describe('SelectionValidator', () => {
     });
 
     it('returns undefined and shows no-selection error when editor has only empty selections', () => {
-      const emptySelection = createMockSelection({ start: createMockPos(5, 0), end: createMockPos(5, 0), isEmpty: true });
+      const emptySelection = createMockSelection({
+        start: createMockPos(5, 0),
+        end: createMockPos(5, 0),
+        isEmpty: true,
+      });
       const editor = createMockEditor({ selections: [emptySelection] });
       const mockAdapter = createMockVscodeAdapter({
         windowOptions: { activeTextEditor: editor },
@@ -84,7 +90,11 @@ describe('SelectionValidator', () => {
 
   describe('mapSelectionsForLogging', () => {
     it('maps selections to logging format with start/end positions', () => {
-      const selection = createMockSelection({ start: createMockPos(2, 5), end: createMockPos(10, 15), isEmpty: false });
+      const selection = createMockSelection({
+        start: createMockPos(2, 5),
+        end: createMockPos(10, 15),
+        isEmpty: false,
+      });
       const mockAdapter = createMockVscodeAdapter();
       const validator = new SelectionValidator(mockAdapter, mockLogger);
 
@@ -116,7 +126,11 @@ describe('SelectionValidator', () => {
         lineCount: 10,
         lineAt: createMockLineAt('line content'),
       });
-      const selection = createMockSelection({ start: createMockPos(2, 0), end: createMockPos(5, 10), isEmpty: false });
+      const selection = createMockSelection({
+        start: createMockPos(2, 0),
+        end: createMockPos(5, 10),
+        isEmpty: false,
+      });
       const mockAdapter = createMockVscodeAdapter();
       const validator = new SelectionValidator(mockAdapter, mockLogger);
 
@@ -132,7 +146,11 @@ describe('SelectionValidator', () => {
         lineCount: 5,
         lineAt: createMockLineAt('content'),
       });
-      const selection = createMockSelection({ start: createMockPos(10, 0), end: createMockPos(20, 0), isEmpty: false });
+      const selection = createMockSelection({
+        start: createMockPos(10, 0),
+        end: createMockPos(20, 0),
+        isEmpty: false,
+      });
       const mockAdapter = createMockVscodeAdapter();
       const validator = new SelectionValidator(mockAdapter, mockLogger);
 
@@ -150,7 +168,11 @@ describe('SelectionValidator', () => {
           throw new Error('stale document');
         }),
       });
-      const selection = createMockSelection({ start: createMockPos(2, 0), end: createMockPos(5, 0), isEmpty: false });
+      const selection = createMockSelection({
+        start: createMockPos(2, 0),
+        end: createMockPos(5, 0),
+        isEmpty: false,
+      });
       const mockAdapter = createMockVscodeAdapter();
       const validator = new SelectionValidator(mockAdapter, mockLogger);
 
@@ -166,7 +188,11 @@ describe('SelectionValidator', () => {
         lineCount: 10,
         lineAt: createMockLineAt('content'),
       });
-      const selection = createMockSelection({ start: createMockPos(-1, 0), end: createMockPos(5, 0), isEmpty: false });
+      const selection = createMockSelection({
+        start: createMockPos(-1, 0),
+        end: createMockPos(5, 0),
+        isEmpty: false,
+      });
       const mockAdapter = createMockVscodeAdapter();
       const validator = new SelectionValidator(mockAdapter, mockLogger);
 
