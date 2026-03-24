@@ -54,6 +54,7 @@ export * from './createMockRange';
 export * from './createMockSelection';
 export * from './createMockSingletonComposablePasteDestination';
 export * from './createMockStatusBarItem';
+export * from './createMockSubscriptionRegistrar';
 export * from './createMockTab';
 export * from './createMockTabGroup';
 export * from './createMockTabGroups';
@@ -68,6 +69,7 @@ export * from './createMockWorkspace';
 export * from './createMockWorkspaceFolder';
 export * from './createMockVscode';
 export * from './createMockVscodeAdapter';
+export * from './createMockWiringServices';
 
 export * from './spyOnFormatLinkTooltip';
 export * from './spyOnFormatMessage';
