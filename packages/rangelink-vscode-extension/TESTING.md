@@ -121,12 +121,12 @@ The QA test plan is a version-scoped YAML file that tracks both automated and ma
 ### File location and naming
 
 ```text
-qa/qa-test-cases-<version>-<YYYY-MM-DD>.yaml
+qa/qa-test-cases-v<version>[-NNN].yaml
 ```
 
-Example: `qa/qa-test-cases-v1.1.0-2026-03-13.yaml`
+Example: `qa/qa-test-cases-v1.1.0.yaml` (base), `qa/qa-test-cases-v1.1.0-001.yaml` (first iteration)
 
-The version is the target release (`nextTargetVersion` from `package.json`) and the date is when the plan was generated. Both are embedded in the filename and parsed automatically by the `generate-qa-issue` script — no extra flags needed.
+The version is the target release (`nextTargetVersion` from `package.json`). It is embedded in the filename and parsed automatically by the `generate-qa-issue` script — no extra flags needed. The `-NNN` suffix handles multiple iterations within a version.
 
 New QA YAML files are created by `pnpm generate:qa-test-plan`. The script carries forward all TCs from the most recent YAML, resets `status:` fields to `pending`, and preserves `automated:` flags.
 
@@ -187,7 +187,7 @@ The QA smoke setup script automates the repetitive environment setup for manual 
 pnpm qa:setup:vscode-extension
 ```
 
-This builds the extension, installs it into an isolated `qa-test` VS Code/Cursor profile, copies the selected settings profile into the fixture workspace, generates a date-stamped QA checklist, and launches the editor.
+This builds the extension, installs it into an isolated `qa-test` VS Code/Cursor profile, copies the selected settings profile into the fixture workspace, generates a QA checklist, and launches the editor.
 
 **Fixture workspace:** `qa/fixtures/workspace/` contains pre-built files covering all TC preconditions (TypeScript, TSX, markdown with embedded links, nested paths, paths with spaces, path-format reference file).
 
@@ -199,7 +199,7 @@ pnpm qa:setup:vscode-extension -- --settings custom-delimiters
 pnpm qa:setup:vscode-extension -- --list-profiles          # show all available profiles
 ```
 
-**QA checklist:** Generated at `qa/qa-checklist-v<version>-<date>.txt`. Groups TCs by feature area, tags readiness state and required settings profiles, and marks automated TCs. The checklist can also be generated standalone:
+**QA checklist:** Generated at `qa/qa-checklist-v<version>[-NNN].txt`. Groups TCs by feature area, tags readiness state and required settings profiles, and marks automated TCs. The checklist can also be generated standalone:
 
 ```bash
 pnpm generate:qa-checklist:vscode-extension
@@ -231,7 +231,7 @@ pnpm generate:qa-issue:vscode-extension
 pnpm generate:qa-issue:vscode-extension -- --dry-run
 
 # Explicit file — skips auto-discover prompt
-pnpm generate:qa-issue:vscode-extension -- qa/qa-test-cases-v1.1.0-2026-03-14.yaml
+pnpm generate:qa-issue:vscode-extension -- qa/qa-test-cases-v1.1.0.yaml
 ```
 
 The script creates:

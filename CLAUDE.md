@@ -565,8 +565,8 @@
 
 <rule id="QA002" priority="critical">
   <title>QA YAML files are a journal — copy-forward, never edit in place</title>
-  <do>Copy the latest QA YAML file to a new date-stamped file (e.g., `qa-test-cases-v1.1.0-2026-03-17.yaml`), then append new TCs to the copy</do>
-  <do>Update the header date and `generate:qa-issue` filename reference in the new copy</do>
+  <do>Copy the latest QA YAML file to a new version-suffixed file (e.g., `qa-test-cases-v1.1.0-001.yaml`), then append new TCs to the copy</do>
+  <do>Update the header and `generate:qa-issue` filename reference in the new copy</do>
   <never>Edit a previous QA YAML file to add, remove, or reorder test cases</never>
   <exception>Fixing typos or updating `automated: true/false` status in an existing file is allowed</exception>
   <rationale>Each file is a point-in-time snapshot; diffing consecutive files shows exactly what was added between QA cycles</rationale>
