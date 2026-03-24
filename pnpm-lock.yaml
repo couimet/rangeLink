@@ -18,7 +18,7 @@ importers:
         specifier: ^8.8.0
         version: 8.46.2(eslint@9.38.0)(typescript@5.9.3)
       baseline-browser-mapping:
-        specifier: latest
+        specifier: ^2.10.10
         version: 2.10.10
       eslint:
         specifier: ^9.10.0
