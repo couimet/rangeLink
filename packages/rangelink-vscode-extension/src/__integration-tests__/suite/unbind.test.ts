@@ -1,40 +1,30 @@
 import assert from 'node:assert';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-import { assertStatusBarMsgLogged, getLogCapture } from '../helpers';
-
-const TERMINAL_READY_MS = 1500;
-
-const getWorkspaceRoot = (): string => {
-  const folder = vscode.workspace.workspaceFolders?.[0];
-  assert.ok(folder, 'Expected a workspace folder to be open');
-  return folder.uri.fsPath;
-};
+import {
+  activateExtension,
+  assertStatusBarMsgLogged,
+  cleanupFiles,
+  closeAllEditors,
+  createWorkspaceFile,
+  getLogCapture,
+  settle,
+  TERMINAL_READY_MS,
+} from '../helpers';
 
 suite('Unbind Destination', () => {
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    const ext = vscode.extensions.getExtension('couimet.rangelink-vscode-extension');
+    await activateExtension();
 
-    assert.ok(ext, 'Extension couimet.rangelink-vscode-extension not found');
-    await ext.activate();
-
-    const filePath = path.join(getWorkspaceRoot(), `__rl-test-unbind-${Date.now()}.ts`);
-    fs.writeFileSync(filePath, 'line 1 content\nline 2 content\n', 'utf8');
-    testFileUri = vscode.Uri.file(filePath);
+    testFileUri = createWorkspaceFile('unbind', 'line 1 content\nline 2 content\n');
   });
 
   suiteTeardown(async () => {
-    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    try {
-      fs.unlinkSync(testFileUri.fsPath);
-    } catch {
-      // best-effort cleanup
-    }
+    await closeAllEditors();
+    cleanupFiles([testFileUri]);
   });
 
   test('unbind-001: unbindDestination unbinds a currently bound terminal destination', async () => {
@@ -43,7 +33,7 @@ suite('Unbind Destination', () => {
 
     const terminal = vscode.window.createTerminal({ name: 'rl-unbind-test' });
     terminal.show(true);
-    await new Promise<void>((resolve) => setTimeout(resolve, TERMINAL_READY_MS));
+    await settle(TERMINAL_READY_MS);
 
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
 
@@ -57,7 +47,6 @@ suite('Unbind Destination', () => {
       message: '✓ RangeLink unbound from Terminal ("rl-unbind-test")',
     });
 
-    // Re-show editor and verify unbound via R-C
     await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 7));
 
@@ -81,7 +70,7 @@ suite('Unbind Destination', () => {
   test('unbind-004: RangeLink: Unbind Destination available in Command Palette', async () => {
     const terminal = vscode.window.createTerminal({ name: 'rl-unbind-004-test' });
     terminal.show(true);
-    await new Promise<void>((resolve) => setTimeout(resolve, TERMINAL_READY_MS));
+    await settle(TERMINAL_READY_MS);
 
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
 
