@@ -3,6 +3,8 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
+const NON_EXISTENT_PATH_SETTLE_MS = 1000;
+
 import {
   activateExtension,
   cleanupFiles,
@@ -53,7 +55,7 @@ suite('File Path Navigation', () => {
       filePath: nonExistentPath,
     });
 
-    await settle(1000);
+    await settle(NON_EXISTENT_PATH_SETTLE_MS);
 
     const editorAfter = vscode.window.activeTextEditor?.document.uri.fsPath;
     assert.strictEqual(

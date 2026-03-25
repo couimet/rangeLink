@@ -1,5 +1,4 @@
 import assert from 'node:assert';
-import * as fs from 'node:fs';
 
 import * as vscode from 'vscode';
 
@@ -7,6 +6,7 @@ import {
   activateExtension,
   assertStatusBarMsgLogged,
   assertToastLogged,
+  cleanupFiles,
   closeAllEditors,
   createWorkspaceFile,
   getLogCapture,
@@ -42,11 +42,7 @@ suite('Log-Based UI Assertions', () => {
       terminal.dispose();
       terminal = undefined;
     }
-    try {
-      fs.unlinkSync(testFileUri.fsPath);
-    } catch {
-      // best-effort
-    }
+    cleanupFiles([testFileUri]);
   });
 
   const bindTerminal = async (): Promise<vscode.Terminal> => {

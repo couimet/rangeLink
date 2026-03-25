@@ -4,8 +4,9 @@ import * as vscode from 'vscode';
 
 import {
   activateExtension,
+  assertClipboardChanged,
+  assertClipboardRestored,
   cleanupFiles,
-  CLIPBOARD_SENTINEL,
   closeAllEditors,
   createAndBindTerminal,
   createWorkspaceFile,
@@ -54,32 +55,14 @@ suite('Clipboard Preservation', () => {
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
 
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
-    const clipboard = await vscode.env.clipboard.readText();
-
-    assert.notStrictEqual(
-      clipboard,
-      CLIPBOARD_SENTINEL,
-      'Expected clipboard to contain the generated link, not the sentinel',
-    );
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected clipboard to contain a line reference but got: ${clipboard}`,
-    );
+    const clipboard = await assertClipboardChanged('R-C with preserve=always');
+    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
   });
 
   test('clipboard-preservation-008 (variant): R-C writes link to clipboard with default preserve setting', async () => {
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
-    const clipboard = await vscode.env.clipboard.readText();
-
-    assert.notStrictEqual(
-      clipboard,
-      CLIPBOARD_SENTINEL,
-      'Expected clipboard to contain the generated link, not the sentinel',
-    );
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected clipboard to contain a line reference but got: ${clipboard}`,
-    );
+    const clipboard = await assertClipboardChanged('R-C with default preserve');
+    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
   });
 
   test('clipboard-preservation-008 (variant): R-C writes link to clipboard with preserve=never', async () => {
@@ -88,17 +71,8 @@ suite('Clipboard Preservation', () => {
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
-    const clipboard = await vscode.env.clipboard.readText();
-
-    assert.notStrictEqual(
-      clipboard,
-      CLIPBOARD_SENTINEL,
-      'Expected clipboard to contain the generated link, not the sentinel',
-    );
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected clipboard to contain a line reference but got: ${clipboard}`,
-    );
+    const clipboard = await assertClipboardChanged('R-C with preserve=never');
+    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
   });
 
   test('clipboard-preservation-003: R-F with preserve=always restores clipboard to sentinel after send', async () => {
@@ -107,13 +81,7 @@ suite('Clipboard Preservation', () => {
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
 
     await vscode.commands.executeCommand('rangelink.pasteCurrentFileRelativePath');
-    const clipboard = await vscode.env.clipboard.readText();
-
-    assert.strictEqual(
-      clipboard,
-      CLIPBOARD_SENTINEL,
-      `Expected clipboard to be restored to sentinel after R-F with preserve=always, but got: ${clipboard}`,
-    );
+    await assertClipboardRestored('R-F with preserve=always');
   });
 
   test('clipboard-preservation-006: R-L with preserve=never leaves clipboard with the generated link', async () => {
@@ -122,16 +90,7 @@ suite('Clipboard Preservation', () => {
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
     await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
-    const clipboard = await vscode.env.clipboard.readText();
-
-    assert.notStrictEqual(
-      clipboard,
-      CLIPBOARD_SENTINEL,
-      'Expected clipboard NOT to be restored to sentinel when preserve=never',
-    );
-    assert.ok(
-      clipboard.includes('#L'),
-      `Expected clipboard to contain the generated link but got: ${clipboard}`,
-    );
+    const clipboard = await assertClipboardChanged('R-L with preserve=never');
+    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
   });
 });

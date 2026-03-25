@@ -1,5 +1,4 @@
 import assert from 'node:assert';
-import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
@@ -12,8 +11,8 @@ import {
   assertToastLogged,
   cleanupFiles,
   closeAllEditors,
+  createWorkspaceFile,
   getLogCapture,
-  getWorkspaceRoot,
   navigateViaHandleLinkClick,
   settle,
 } from '../helpers';
@@ -31,10 +30,8 @@ suite('Navigation Toast Settings', () => {
     );
 
     const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content here`);
-    testFilename = `__rl test toast settings ${Date.now()}.ts`;
-    const testFilePath = path.join(getWorkspaceRoot(), testFilename);
-    fs.writeFileSync(testFilePath, lines.join('\n') + '\n', 'utf8');
-    testFileUri = vscode.Uri.file(testFilePath);
+    testFileUri = createWorkspaceFile('toast settings', lines.join('\n') + '\n');
+    testFilename = path.basename(testFileUri.fsPath);
   });
 
   suiteTeardown(async () => {
