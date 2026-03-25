@@ -3,10 +3,10 @@ import { createMockLogger } from 'barebone-logger-testing';
 import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
-import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
-import { PathFormat } from '../../types/PathFormat';
 import type { ConfigReader } from '../../config/ConfigReader';
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
+import { PathFormat } from '../../types/PathFormat';
+import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
 import {
   createMockConfigReader,
   createMockDocument,
@@ -764,7 +764,11 @@ describe('RangeLinkNavigationHandler', () => {
           'RangeLink: Multiple files match: index.ts',
         );
         expect(mockLogger.warn).toHaveBeenCalledWith(
-          { fn: 'RangeLinkNavigationHandler.navigateToLink', linkText: 'index.ts#L1', path: 'index.ts' },
+          {
+            fn: 'RangeLinkNavigationHandler.navigateToLink',
+            linkText: 'index.ts#L1',
+            path: 'index.ts',
+          },
           'Multiple files match bare filename',
         );
       });

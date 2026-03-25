@@ -4,9 +4,9 @@ import type { Logger } from 'barebone-logger';
 import { createMockLogger } from 'barebone-logger-testing';
 import { DEFAULT_DELIMITERS, buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 
-import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
-import { PathFormat } from '../../types/PathFormat';
 import { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
+import { PathFormat } from '../../types/PathFormat';
+import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
 import {
   createMockUri,
   createMockVscodeAdapter,
