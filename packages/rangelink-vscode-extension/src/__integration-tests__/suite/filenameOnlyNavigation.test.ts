@@ -3,7 +3,6 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
-import * as vscode from 'vscode';
 
 import {
   activateExtension,
