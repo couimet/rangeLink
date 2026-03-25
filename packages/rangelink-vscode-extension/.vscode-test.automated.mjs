@@ -11,7 +11,9 @@ export default defineConfig([
       RANGELINK_CAPTURE_LOGS: 'true',
     },
     mocha: {
-      timeout: 300000,
+      timeout: 20000,
+      grep: '\\[assisted\\]',
+      invert: true,
     },
   },
 ]);
