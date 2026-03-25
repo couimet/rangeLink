@@ -477,7 +477,11 @@
           "markdownDescription": "Define custom AI assistants for RangeLink to send content to. Each entry appears in the destination picker. Restart VS Code after changes.\n\nExample:\n```json\n[\n  {\n    \"extensionId\": \"acme.spark-ai\",\n    \"extensionName\": \"Spark AI\",\n    \"focusCommands\": [\"sparkAi.focus\"]\n  }\n]\n```",
           "items": {
             "type": "object",
-            "required": ["extensionId", "extensionName", "focusCommands"],
+            "required": [
+              "extensionId",
+              "extensionName",
+              "focusCommands"
+            ],
             "properties": {
               "extensionId": {
                 "type": "string",
@@ -489,7 +493,9 @@
               },
               "focusCommands": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "minItems": 1,
                 "description": "VS Code command IDs to focus the AI chat panel (first match wins, rest are fallbacks)"
               }

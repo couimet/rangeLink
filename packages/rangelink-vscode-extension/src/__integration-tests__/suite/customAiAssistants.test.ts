@@ -2,10 +2,7 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import {
-  activateExtension,
-  getLogCapture,
-} from '../helpers';
+import { activateExtension, getLogCapture } from '../helpers';
 
 suite('Custom AI Assistants', () => {
   suiteSetup(async () => {

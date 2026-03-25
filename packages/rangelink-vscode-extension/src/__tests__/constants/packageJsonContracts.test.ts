@@ -530,7 +530,8 @@ describe('package.json contributions', () => {
             properties: {
               extensionId: {
                 type: 'string',
-                description: 'VS Code extension identifier (publisher.name) used to detect availability',
+                description:
+                  'VS Code extension identifier (publisher.name) used to detect availability',
               },
               extensionName: {
                 type: 'string',
@@ -540,7 +541,8 @@ describe('package.json contributions', () => {
                 type: 'array',
                 items: { type: 'string' },
                 minItems: 1,
-                description: 'VS Code command IDs to focus the AI chat panel (first match wins, rest are fallbacks)',
+                description:
+                  'VS Code command IDs to focus the AI chat panel (first match wins, rest are fallbacks)',
               },
             },
             additionalProperties: false,

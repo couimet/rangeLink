@@ -394,7 +394,9 @@ describe('destinationBuilders', () => {
     it('isAvailable falls back to command check when extension not found', async () => {
       const context = createMockContext();
       jest.spyOn(context.ideAdapter, 'getExtension').mockReturnValue(undefined);
-      jest.spyOn(context.ideAdapter, 'getCommands').mockResolvedValue(['sparkAi.focus', 'other.cmd']);
+      jest
+        .spyOn(context.ideAdapter, 'getCommands')
+        .mockResolvedValue(['sparkAi.focus', 'other.cmd']);
 
       const builder = createCustomAiAssistantBuilder(customConfig);
       const destination = builder({ kind: customConfig.kind }, context);
@@ -472,10 +474,7 @@ describe('destinationBuilders', () => {
       ]);
 
       expect(mockRegister).toHaveBeenCalledTimes(6);
-      expect(mockRegister).toHaveBeenCalledWith(
-        'custom-ai:acme.spark-ai',
-        expect.any(Function),
-      );
+      expect(mockRegister).toHaveBeenCalledWith('custom-ai:acme.spark-ai', expect.any(Function));
     });
   });
 });

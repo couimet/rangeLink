@@ -80,7 +80,9 @@ export class DestinationAvailabilityService {
    * @param kind - AI assistant destination kind
    * @returns Promise<true> if available, Promise<false> otherwise
    */
-  async isAIAssistantAvailable(kind: AIAssistantDestinationKind | CustomAiAssistantKind): Promise<boolean> {
+  async isAIAssistantAvailable(
+    kind: AIAssistantDestinationKind | CustomAiAssistantKind,
+  ): Promise<boolean> {
     const destination = this.registry.create({ kind });
     const available = await destination.isAvailable();
 
@@ -169,7 +171,10 @@ export class DestinationAvailabilityService {
       );
     } else {
       this.logger.debug(
-        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', kindCount: destinationKinds.length },
+        {
+          fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+          kindCount: destinationKinds.length,
+        },
         'Using all registered destination kinds',
       );
     }

@@ -96,7 +96,11 @@ export const parseCustomAiAssistants = (
 
   if (results.length > 0) {
     logger.info(
-      { fn: 'parseCustomAiAssistants', count: results.length, ids: results.map((r) => r.extensionId) },
+      {
+        fn: 'parseCustomAiAssistants',
+        count: results.length,
+        ids: results.map((r) => r.extensionId),
+      },
       `Loaded ${results.length} custom AI assistant(s)`,
     );
   }

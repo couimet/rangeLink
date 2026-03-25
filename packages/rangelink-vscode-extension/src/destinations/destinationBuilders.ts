@@ -7,9 +7,9 @@
  */
 import type * as vscode from 'vscode';
 
+import type { CustomAiAssistantConfig } from '../config/parseCustomAiAssistants';
 import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import type { CustomAiAssistantConfig } from '../config/parseCustomAiAssistants';
 import { AutoPasteResult, type DestinationKind, MessageCode, RelativePathFormat } from '../types';
 import {
   formatMessage,
@@ -272,7 +272,12 @@ export const createCustomAiAssistantBuilder = (
         if (extension !== undefined) {
           const available = extension.isActive;
           context.logger.debug(
-            { fn: 'customAiAssistant.isAvailable', extensionId, extensionFound: true, extensionActive: available },
+            {
+              fn: 'customAiAssistant.isAvailable',
+              extensionId,
+              extensionFound: true,
+              extensionActive: available,
+            },
             `Custom AI assistant '${extensionName}' availability via extension: ${available}`,
           );
           return available;
@@ -281,7 +286,13 @@ export const createCustomAiAssistantBuilder = (
         const commands = await context.ideAdapter.getCommands();
         const commandAvailable = focusCommands.some((cmd) => commands.includes(cmd));
         context.logger.debug(
-          { fn: 'customAiAssistant.isAvailable', extensionId, extensionFound: false, commandAvailable, checkedCommands: focusCommands },
+          {
+            fn: 'customAiAssistant.isAvailable',
+            extensionId,
+            extensionFound: false,
+            commandAvailable,
+            checkedCommands: focusCommands,
+          },
           `Custom AI assistant '${extensionName}' availability via commands: ${commandAvailable}`,
         );
         return commandAvailable;

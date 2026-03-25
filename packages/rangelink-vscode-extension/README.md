@@ -434,16 +434,16 @@ Most paste commands default to `"both"` to prevent the pasted text from concaten
 
 ### Custom AI Assistant Settings <sup>Unreleased</sup>
 
-| Setting                            | Default | Description                                          |
-| ---------------------------------- | ------- | ---------------------------------------------------- |
-| `rangelink.customAiAssistants`     | `[]`    | Array of custom AI assistant definitions (see below) |
+| Setting                        | Default | Description                                          |
+| ------------------------------ | ------- | ---------------------------------------------------- |
+| `rangelink.customAiAssistants` | `[]`    | Array of custom AI assistant definitions (see below) |
 
 Define custom AI assistants to extend RangeLink beyond the three built-in AI tools. Each entry requires:
 
-| Field           | Type       | Description                                                                    |
-| --------------- | ---------- | ------------------------------------------------------------------------------ |
-| `extensionId`   | `string`   | VS Code extension identifier (`publisher.name`) — used for availability check  |
-| `extensionName` | `string`   | Display name shown in the destination picker                                   |
+| Field           | Type       | Description                                                                        |
+| --------------- | ---------- | ---------------------------------------------------------------------------------- |
+| `extensionId`   | `string`   | VS Code extension identifier (`publisher.name`) — used for availability check      |
+| `extensionName` | `string`   | Display name shown in the destination picker                                       |
 | `focusCommands` | `string[]` | VS Code command IDs to focus the chat panel (first match wins, rest are fallbacks) |
 
 **Example — adding two custom AI tools as destinations:**

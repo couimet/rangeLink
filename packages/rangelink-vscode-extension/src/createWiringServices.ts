@@ -4,7 +4,6 @@ import type * as vscode from 'vscode';
 
 import { BookmarkService, BookmarksStore } from './bookmarks';
 import { DefaultClipboardPreserver } from './clipboard';
-import { parseCustomAiAssistants } from './config/parseCustomAiAssistants';
 import {
   AddBookmarkCommand,
   BindToDestinationCommand,
@@ -17,6 +16,7 @@ import {
   ShowVersionCommand,
 } from './commands';
 import { ConfigReader, DelimiterCache } from './config';
+import { parseCustomAiAssistants } from './config/parseCustomAiAssistants';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
 import { FocusCapabilityFactory } from './destinations/capabilities/FocusCapabilityFactory';
 import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';

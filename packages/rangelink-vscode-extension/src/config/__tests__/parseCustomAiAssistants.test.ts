@@ -66,9 +66,9 @@ describe('parseCustomAiAssistants', () => {
 
   it('skips entry with missing extensionId and logs warning', () => {
     const configReader = createMockConfigReader({
-      get: jest.fn().mockReturnValue([
-        { extensionName: 'Missing ID', focusCommands: ['cmd.focus'] },
-      ]),
+      get: jest
+        .fn()
+        .mockReturnValue([{ extensionName: 'Missing ID', focusCommands: ['cmd.focus'] }]),
     });
 
     const result = parseCustomAiAssistants(configReader, mockLogger);
@@ -82,9 +82,7 @@ describe('parseCustomAiAssistants', () => {
 
   it('skips entry with missing extensionName and logs warning', () => {
     const configReader = createMockConfigReader({
-      get: jest.fn().mockReturnValue([
-        { extensionId: 'some.ext', focusCommands: ['cmd.focus'] },
-      ]),
+      get: jest.fn().mockReturnValue([{ extensionId: 'some.ext', focusCommands: ['cmd.focus'] }]),
     });
 
     const result = parseCustomAiAssistants(configReader, mockLogger);
@@ -98,9 +96,9 @@ describe('parseCustomAiAssistants', () => {
 
   it('skips entry with empty focusCommands and logs warning', () => {
     const configReader = createMockConfigReader({
-      get: jest.fn().mockReturnValue([
-        { extensionId: 'some.ext', extensionName: 'Some', focusCommands: [] },
-      ]),
+      get: jest
+        .fn()
+        .mockReturnValue([{ extensionId: 'some.ext', extensionName: 'Some', focusCommands: [] }]),
     });
 
     const result = parseCustomAiAssistants(configReader, mockLogger);
