@@ -1,60 +1,38 @@
 import assert from 'node:assert';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 
 import { NoOpLogger } from 'barebone-logger';
 import { findLinksInText, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import {
+  activateExtension,
+  cleanupFiles,
+  closeAllEditors,
+  createWorkspaceFile,
+  openEditor,
+} from '../helpers';
+
 const LOGGER = new NoOpLogger();
 
-const getWorkspaceRoot = (): string => {
-  const folder = vscode.workspace.workspaceFolders?.[0];
-  assert.ok(folder, 'Expected a workspace folder to be open');
-  return folder.uri.fsPath;
-};
-
-const createTmpWorkspaceFile = (name: string, content: string): vscode.Uri => {
-  const filePath = path.join(getWorkspaceRoot(), name);
-  fs.writeFileSync(filePath, content, 'utf8');
-  return vscode.Uri.file(filePath);
-};
-
 suite('Link Generation', () => {
-  const tmpFiles: string[] = [];
+  const tmpFileUris: vscode.Uri[] = [];
 
   suiteSetup(async () => {
-    const ext = vscode.extensions.getExtension('couimet.rangelink-vscode-extension');
-
-    assert.ok(ext, 'Extension couimet.rangelink-vscode-extension not found');
-    await ext.activate();
+    await activateExtension();
   });
 
   suiteTeardown(async () => {
-    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    for (const filePath of tmpFiles) {
-      try {
-        fs.unlinkSync(filePath);
-      } catch {
-        // best-effort cleanup
-      }
-    }
+    await closeAllEditors();
+    cleanupFiles(tmpFileUris);
   });
-
-  const trackFile = (uri: vscode.Uri): vscode.Uri => {
-    tmpFiles.push(uri.fsPath);
-    return uri;
-  };
 
   test('full-line-link-generation-001: selecting line + trailing newline generates #L20 not #L20-L21', async () => {
     const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
-    const uri = trackFile(
-      createTmpWorkspaceFile(`__rl-test-tc132-${Date.now()}.ts`, lines.join('\n') + '\n'),
-    );
-    const doc = await vscode.workspace.openTextDocument(uri);
-    const editor = await vscode.window.showTextDocument(doc);
+    const uri = createWorkspaceFile('tc132', lines.join('\n') + '\n');
+    tmpFileUris.push(uri);
 
-    // Line 20 is index 19. Select from col 0 of line 19 to col 0 of line 20 — includes the trailing newline.
+    const editor = await openEditor(uri);
+
     editor.selection = new vscode.Selection(new vscode.Position(19, 0), new vscode.Position(20, 0));
 
     await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
