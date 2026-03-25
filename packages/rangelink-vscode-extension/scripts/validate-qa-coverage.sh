@@ -79,6 +79,7 @@ find_test_ids() {
   fi
 
   grep -hE '(test|it|describe|suite)[[:space:]]*\(' "$INTEGRATION_TEST_DIR"/*.test.ts \
+    | grep -v '\[assisted\]' \
     | grep -oE '[a-z][-a-z]*-[0-9]{3}' \
     | sort -u
 }
