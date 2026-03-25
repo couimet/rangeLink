@@ -5,6 +5,8 @@
 # Parses the QA YAML for entries marked `automated: true`, scans integration test files
 # for matching TC IDs in test()/describe() blocks, and reports mismatches in both directions.
 #
+# Output: qa/qa-coverage-report-v<version>.txt (alongside terminal output)
+#
 # Usage:
 #   ./scripts/validate-qa-coverage.sh [path-to-yaml]
 #
@@ -88,46 +90,71 @@ if [[ ! -f "$YAML_PATH" ]]; then
   exit 1
 fi
 
-echo "QA YAML: $(relative_path "$YAML_PATH" "$PACKAGE_ROOT")"
-echo "Tests:   $(relative_path "$INTEGRATION_TEST_DIR" "$PACKAGE_ROOT")"
-echo
-
-AUTOMATED_IDS=$(parse_automated_ids "$YAML_PATH")
-TEST_IDS=$(find_test_ids)
-
-AUTOMATED_COUNT=$(echo "$AUTOMATED_IDS" | grep -c . || true)
-TEST_COUNT=$(echo "$TEST_IDS" | grep -c . || true)
-
-echo "YAML automated: true entries: $AUTOMATED_COUNT"
-echo "Integration test IDs found:   $TEST_COUNT"
-echo
-
-MARKED_BUT_NO_TEST=$(comm -23 <(echo "$AUTOMATED_IDS" | grep .) <(echo "$TEST_IDS" | grep .))
-TEST_BUT_NOT_MARKED=$(comm -13 <(echo "$AUTOMATED_IDS" | grep .) <(echo "$TEST_IDS" | grep .))
-
-HAS_ERRORS=false
-
-if [[ -n "$MARKED_BUT_NO_TEST" ]]; then
-  HAS_ERRORS=true
-  echo "MISMATCH: Marked automated: true in YAML but no matching integration test:" >&2
-  while IFS= read -r id; do
-    echo "  - $id" >&2
-  done <<< "$MARKED_BUT_NO_TEST"
-  echo >&2
+# Derive version from YAML filename for the report file
+YAML_BASENAME=$(basename "$YAML_PATH" .yaml)
+YAML_REST="${YAML_BASENAME#qa-test-cases-}"
+if [[ "$YAML_REST" =~ ^(.*)-[0-9]{3}$ ]]; then
+  REPORT_VERSION="${BASH_REMATCH[1]}"
+else
+  REPORT_VERSION="$YAML_REST"
 fi
+REPORT_FILE="$QA_DIR/qa-coverage-report-${REPORT_VERSION}.txt"
 
-if [[ -n "$TEST_BUT_NOT_MARKED" ]]; then
-  HAS_ERRORS=true
-  echo "MISMATCH: Integration test exists but not marked automated: true in YAML:" >&2
-  while IFS= read -r id; do
-    echo "  - $id" >&2
-  done <<< "$TEST_BUT_NOT_MARKED"
-  echo >&2
-fi
+# Collect all output, write to both terminal and file
+{
+  echo "QA Coverage Report"
+  echo "Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+  echo ""
+  echo "QA YAML: $(relative_path "$YAML_PATH" "$PACKAGE_ROOT")"
+  echo "Tests:   $(relative_path "$INTEGRATION_TEST_DIR" "$PACKAGE_ROOT")"
+  echo ""
 
-if [[ "$HAS_ERRORS" == true ]]; then
-  echo "Validation FAILED — mismatches found." >&2
+  AUTOMATED_IDS=$(parse_automated_ids "$YAML_PATH")
+  TEST_IDS=$(find_test_ids)
+
+  AUTOMATED_COUNT=$(echo "$AUTOMATED_IDS" | grep -c . || true)
+  TEST_COUNT=$(echo "$TEST_IDS" | grep -c . || true)
+
+  echo "YAML automated: true entries: $AUTOMATED_COUNT"
+  echo "Integration test IDs found:   $TEST_COUNT"
+  echo ""
+
+  MARKED_BUT_NO_TEST=$(comm -23 <(echo "$AUTOMATED_IDS" | grep .) <(echo "$TEST_IDS" | grep .))
+  TEST_BUT_NOT_MARKED=$(comm -13 <(echo "$AUTOMATED_IDS" | grep .) <(echo "$TEST_IDS" | grep .))
+
+  HAS_ERRORS=false
+
+  if [[ -n "$MARKED_BUT_NO_TEST" ]]; then
+    HAS_ERRORS=true
+    echo "MISMATCH: Marked automated: true in YAML but no matching integration test:"
+    while IFS= read -r id; do
+      echo "  - $id"
+    done <<< "$MARKED_BUT_NO_TEST"
+    echo ""
+  fi
+
+  if [[ -n "$TEST_BUT_NOT_MARKED" ]]; then
+    HAS_ERRORS=true
+    echo "MISMATCH: Integration test exists but not marked automated: true in YAML:"
+    while IFS= read -r id; do
+      echo "  - $id"
+    done <<< "$TEST_BUT_NOT_MARKED"
+    echo ""
+  fi
+
+  if [[ "$HAS_ERRORS" == true ]]; then
+    echo "Validation FAILED — mismatches found."
+  else
+    echo "Validation PASSED — all automated markers match integration tests."
+  fi
+} 2>&1 | tee "$REPORT_FILE"
+
+REPO_ROOT="$(git -C "$PACKAGE_ROOT" rev-parse --show-toplevel)"
+RELATIVE_REPORT="${REPORT_FILE#"$REPO_ROOT"/}"
+echo ""
+echo "Report: $RELATIVE_REPORT"
+
+# Exit with error if mismatches were found
+if grep -q "FAILED" "$REPORT_FILE"; then
   exit 1
 fi
-
-echo "Validation PASSED — all automated markers match integration tests."
