@@ -271,6 +271,50 @@ describe('resolveWorkspacePath', () => {
       expect(resolved.resolvedVia).toBe('filename-fallback');
       expect(mockFindFiles).toHaveBeenCalledWith('**/[{]slug[}].ts', undefined, 2);
     });
+
+    it('should return FILENAME_AMBIGUOUS when bare filename exists at workspace root and subdirectory', async () => {
+      const rootMatch = createMockUri('/Users/name/project/index.ts');
+      const subMatch = createMockUri('/Users/name/project/src/index.ts');
+      mockFindFiles.mockResolvedValueOnce([rootMatch, subMatch]);
+      mockStat.mockResolvedValue({} as any);
+
+      const result = await resolveWorkspacePath('index.ts', mockVscode);
+
+      expect(result).toBe(FILENAME_AMBIGUOUS);
+      expect(mockStat).not.toHaveBeenCalled();
+    });
+
+    it('should return filename-fallback when bare filename exists only at workspace root', async () => {
+      const rootMatch = createMockUri('/Users/name/project/auth.ts');
+      mockFindFiles.mockResolvedValueOnce([rootMatch]);
+
+      const result = await resolveWorkspacePath('auth.ts', mockVscode);
+
+      const resolved = expectResolvedPath(result);
+      expect(resolved.resolvedVia).toBe('filename-fallback');
+      expect(resolved.uri.fsPath).toBe('/Users/name/project/auth.ts');
+      expect(mockStat).not.toHaveBeenCalled();
+    });
+
+    it('should return undefined when findFiles rejects even if file exists at workspace root', async () => {
+      mockFindFiles.mockRejectedValueOnce(new Error('workspace error'));
+      mockStat.mockResolvedValue({} as any);
+
+      const result = await resolveWorkspacePath('auth.ts', mockVscode);
+
+      expect(result).toBeUndefined();
+      expect(mockStat).not.toHaveBeenCalled();
+    });
+
+    it('should return undefined when findFiles returns empty even if workspace-relative would match', async () => {
+      mockFindFiles.mockResolvedValueOnce([]);
+      mockStat.mockResolvedValue({} as any);
+
+      const result = await resolveWorkspacePath('auth.ts', mockVscode);
+
+      expect(result).toBeUndefined();
+      expect(mockStat).not.toHaveBeenCalled();
+    });
   });
 
   describe('Edge cases', () => {

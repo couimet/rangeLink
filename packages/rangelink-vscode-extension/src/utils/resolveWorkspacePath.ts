@@ -29,9 +29,10 @@ const escapeGlobPattern = (filename: string): string => {
  *
  * Attempts to resolve the path in the following order:
  * 1. If path is absolute and exists, use it directly
- * 2. Try resolving relative to each workspace folder
- * 3. If path is a bare filename (no directory separators), search workspace
- *    via findFiles — return the URI only when exactly one match exists
+ * 2. If path is a bare filename (no directory separators), search workspace
+ *    via findFiles — return the URI only when exactly one match exists,
+ *    return FILENAME_AMBIGUOUS when multiple matches exist
+ * 3. Try resolving relative to each workspace folder
  * 4. If no workspace or file not found, return undefined
  *
  * Handles multi-folder workspaces by checking all workspace folders
@@ -56,27 +57,14 @@ export const resolveWorkspacePath = async (
     }
   }
 
-  // Try resolving relative to each workspace folder
   const workspaceFolders = ideInstance.workspace.workspaceFolders;
   if (!workspaceFolders || workspaceFolders.length === 0) {
     return undefined;
   }
 
-  for (const folder of workspaceFolders) {
-    const absolutePath = path.join(folder.uri.fsPath, linkPath);
-    const uri = ideInstance.Uri.file(absolutePath);
-
-    try {
-      await ideInstance.workspace.fs.stat(uri);
-      return { uri, resolvedVia: 'workspace-relative' };
-    } catch {
-      // File doesn't exist in this workspace folder, try next
-      continue;
-    }
-  }
-
-  // Bare-filename fallback: if the path has no directory separators,
-  // search the workspace for a unique match (Issue #342)
+  // Bare-filename resolution: if the path has no directory separators,
+  // use findFiles to check for ambiguity BEFORE the workspace-relative
+  // loop — otherwise a root-level match would silently win (Issue #342)
   const isBareFilename = !linkPath.includes('/') && !linkPath.includes('\\');
   if (isBareFilename) {
     const pattern = `**/${escapeGlobPattern(linkPath)}`;
@@ -93,7 +81,22 @@ export const resolveWorkspacePath = async (
         return FILENAME_AMBIGUOUS;
       }
     } catch {
-      // findFiles failed (e.g., no workspace open) — fall through to undefined
+      // findFiles failed — fall through to undefined
+    }
+    return undefined;
+  }
+
+  // Try resolving relative to each workspace folder
+  for (const folder of workspaceFolders) {
+    const absolutePath = path.join(folder.uri.fsPath, linkPath);
+    const uri = ideInstance.Uri.file(absolutePath);
+
+    try {
+      await ideInstance.workspace.fs.stat(uri);
+      return { uri, resolvedVia: 'workspace-relative' };
+    } catch {
+      // File doesn't exist in this workspace folder, try next
+      continue;
     }
   }
 
