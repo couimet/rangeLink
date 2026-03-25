@@ -42,6 +42,7 @@
     "generate:qa-checklist": "./scripts/generate-qa-checklist.sh",
     "generate:qa-issue": "./scripts/generate-qa-issue.sh",
     "generate:qa-test-plan": "./scripts/generate-qa-test-plan.sh",
+    "generate:release-testing-instructions": "./scripts/generate-release-testing-instructions.sh",
     "install-local": "./scripts/install-local.sh",
     "install-local:cursor": "./scripts/install-local.sh cursor",
     "install-local:vscode": "./scripts/install-local.sh vscode",
@@ -55,6 +56,7 @@
     "test:release": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json && vscode-test && pnpm validate:qa-coverage",
     "test:watch": "jest --watch",
     "validate:qa-coverage": "./scripts/validate-qa-coverage.sh",
+    "verify:qa-scripts": "./scripts/verify-qa-scripts.sh",
     "vscode:prepublish": "pnpm --filter rangelink-core-ts compile && pnpm compile && pnpm test",
     "watch": "tsc -watch -p ./"
   },

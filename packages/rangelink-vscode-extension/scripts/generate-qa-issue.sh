@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Usage: ./scripts/generate-qa-issue.sh [--dry-run] [yaml-file]
-# Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.1.0-2026-03-13.yaml
+# Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.1.0.yaml
 #
 # Creates one parent GitHub issue + one sub-issue per feature section from a versioned QA YAML file.
 # The parent issue body uses GitHub task-list syntax (- [ ] #N) to track section-level progress.
@@ -10,11 +10,11 @@ set -euo pipefail
 # If no yaml-file is provided, auto-discovers the most recent QA YAML in qa/ and
 # prompts for confirmation before proceeding.
 #
-# Filename convention: qa-test-cases-<version>-<YYYY-MM-DD>[-NNN].yaml
-# Version and date are derived from the filename — no extra flags needed.
+# Filename convention: qa-test-cases-<version>[-NNN].yaml
+# Version is derived from the filename — no extra flags needed.
 #
 # Requires:
-#   python3 with PyYAML  — install with: pip3 install pyyaml
+#   python3 with PyYAML  — auto-installed into .venv/ if missing
 #   gh CLI               — authenticated with write access to the repo
 #   jq                   — for building GraphQL payloads (sub-issue linking)
 
@@ -35,9 +35,9 @@ QA_DIR="$(dirname "$SCRIPT_DIR")/qa"
 
 if [[ -z "$YAML_FILE" ]]; then
   # Auto-discover: find the most recent QA YAML.
-  # Suffix sort fix: unsuffixed files (v1.1.0-2026-03-14.yaml) sort AFTER
-  # suffixed files (v1.1.0-2026-03-14-002.yaml) because '.' > '-' in ASCII.
-  # Normalize by appending -001 to unsuffixed names for sorting purposes.
+  # Suffix sort fix: unsuffixed files (v1.1.0.yaml) sort AFTER
+  # suffixed files (v1.1.0-001.yaml) because '.' > '-' in ASCII.
+  # Normalize by appending -000 to unsuffixed names for sorting purposes.
   LATEST=$(
     for f in "$QA_DIR"/qa-test-cases-*.yaml; do
       [[ -e "$f" ]] || continue
@@ -46,7 +46,7 @@ if [[ -z "$YAML_FILE" ]]; then
       if [[ "$base" =~ -[0-9]{3}$ ]]; then
         printf '%s\t%s\n' "$base" "$name"
       else
-        printf '%s-001\t%s\n' "$base" "$name"
+        printf '%s-000\t%s\n' "$base" "$name"
       fi
     done | sort -t$'\t' -k1,1 | tail -1 | cut -f2
   )
@@ -75,11 +75,21 @@ if ! command -v python3 &>/dev/null; then
   exit 1
 fi
 
+REPO_ROOT_FOR_VENV="$(git rev-parse --show-toplevel)"
+VENV_DIR="$REPO_ROOT_FOR_VENV/.venv"
+
 if ! python3 -c "import yaml" 2>/dev/null; then
-  echo "Error: PyYAML is required — install with: pip3 install pyyaml" >&2
-  echo "  If pip3 fails on system Python, use a venv:" >&2
-  echo "  python3 -m venv .venv && source .venv/bin/activate && pip install pyyaml" >&2
-  exit 1
+  if [[ -d "$VENV_DIR" ]] && "$VENV_DIR/bin/python3" -c "import yaml" 2>/dev/null; then
+    # shellcheck disable=SC1091
+    source "$VENV_DIR/bin/activate"
+  else
+    echo "PyYAML not found — creating venv and installing..." >&2
+    python3 -m venv "$VENV_DIR"
+    "$VENV_DIR/bin/pip" install --quiet pyyaml
+    # shellcheck disable=SC1091
+    source "$VENV_DIR/bin/activate"
+    echo "PyYAML installed in $VENV_DIR" >&2
+  fi
 fi
 
 if [[ "$DRY_RUN" == false ]] && ! command -v gh &>/dev/null; then
@@ -101,21 +111,19 @@ if [[ "$DRY_RUN" == false ]] && [[ -z "$REPO_OWNER" || -z "$REPO_NAME" ]]; then
   exit 1
 fi
 
-# Derive version and date from filename.
-# Pattern: qa-test-cases-<version>-<YYYY-MM-DD>[-NNN].yaml
+# Derive version from filename.
+# Pattern: qa-test-cases-<version>[-NNN].yaml
 BASENAME=$(basename "$YAML_FILE" .yaml)
 REST="${BASENAME#qa-test-cases-}"
-if [[ "$REST" =~ ^(.*)-([0-9]{4}-[0-9]{2}-[0-9]{2})(-[0-9]+)?$ ]]; then
+# Strip optional -NNN suffix to get the version
+if [[ "$REST" =~ ^(.*)-[0-9]{3}$ ]]; then
   VERSION="${BASH_REMATCH[1]}"
-  DATE="${BASH_REMATCH[2]}"
 else
-  echo "Error: cannot parse version and date from filename: $BASENAME" >&2
-  exit 1
+  VERSION="$REST"
 fi
 
 echo "QA issue generator"
 echo "  Version : $VERSION"
-echo "  Date    : $DATE"
 echo "  Source  : $YAML_FILE"
 [[ "$DRY_RUN" == true ]] && echo "  Mode    : DRY RUN (no GitHub issues will be created)"
 echo ""
@@ -187,8 +195,8 @@ for i in $(seq 0 $((TOTAL_SECTIONS - 1))); do
   COUNT=$(echo "$SECTIONS_JSON" | jq -r ".[$i].count")
   CHECKBOXES=$(echo "$SECTIONS_JSON" | jq -r ".[$i].body")
 
-  TITLE="[QA ${VERSION} / ${DATE}] ${section}"
-  BODY="Test cases for **${section}** — QA cycle ${VERSION} — ${DATE}
+  TITLE="[QA ${VERSION}] ${section}"
+  BODY="Test cases for **${section}** — QA cycle ${VERSION}
 
 ${CHECKBOXES}"
 
@@ -213,7 +221,7 @@ while IFS= read -r entry; do
   PARENT_CHECKLIST+="- [ ] #${NUMBER} ${SECTION_NAME} (${COUNT} TCs)"$'\n'
 done <<< "$SUB_ISSUE_ENTRIES"
 
-PARENT_TITLE="QA Checklist — ${VERSION} — ${DATE}"
+PARENT_TITLE="QA Checklist — ${VERSION}"
 PARENT_BODY="Generated from \`${YAML_FILE}\`.
 
 ${PARENT_CHECKLIST}"

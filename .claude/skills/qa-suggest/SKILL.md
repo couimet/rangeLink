@@ -34,7 +34,7 @@ Find the current cycle's YAML and the previous version's YAML:
 Glob(pattern="packages/rangelink-vscode-extension/qa/qa-test-cases-*.yaml")
 ```
 
-- **Current YAML**: the file whose name contains `v<nextTargetVersion>` (e.g., `qa-test-cases-v1.1.0-2026-03-14.yaml`)
+- **Current YAML**: the file matching `qa-test-cases-v<nextTargetVersion>[-NNN].yaml` (e.g., `qa-test-cases-v1.1.0.yaml` or `qa-test-cases-v1.1.0-003.yaml`)
 - **Previous YAML**: the most recent file that does NOT contain `v<nextTargetVersion>` — this is the baseline for diffing
 
 **If the current YAML doesn't exist**, STOP: "No QA YAML found for v`<nextTargetVersion>`. Run `pnpm generate:qa-test-plan` first."

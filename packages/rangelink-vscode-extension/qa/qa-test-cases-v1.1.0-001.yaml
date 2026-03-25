@@ -1,9 +1,9 @@
-# RangeLink QA Test Cases — v1.0.0 → v1.1.0 — 2026-03-14
+# RangeLink QA Test Cases — v1.0.0 → v1.1.0
 #
 # Scope: Changes accumulated between the vscode-extension-v1.0.0 release tag and the current
-#        main branch tip, targeting v1.1.0. Created at commit 6102749d.
+#        main branch tip, targeting v1.1.0. Created at commit 622137b6.
 #
-# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0-2026-03-14.yaml`
+# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0-001.yaml`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:
@@ -504,7 +504,7 @@ test_cases:
       - 'Verify terminal received the RangeLink'
       - 'Press Cmd+V in any text field'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL (not the RangeLink). Clipboard was silently restored after delivery.'
-    automated: true
+    automated: false
 
   - id: clipboard-preservation-002
     feature: 'Clipboard Preservation'
@@ -519,7 +519,7 @@ test_cases:
       - 'Verify bound destination received terminal text'
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. Terminal text sent to destination; clipboard preserved.'
-    automated: true
+    automated: false
 
   - id: clipboard-preservation-003
     feature: 'Clipboard Preservation'
@@ -564,7 +564,7 @@ test_cases:
       - 'Verify terminal received RangeLink'
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. RangeLink sent to terminal; clipboard preserved.'
-    automated: true
+    automated: false
 
   - id: clipboard-preservation-006
     feature: 'Clipboard Preservation'
@@ -606,7 +606,7 @@ test_cases:
       - 'Press Cmd+R Cmd+C (Copy RangeLink)'
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains the RangeLink, NOT CLIPBOARD_SENTINEL. R-C is clipboard-only; preserve does not apply.'
-    automated: false
+    automated: true
 
   - id: clipboard-preservation-009
     feature: 'Clipboard Preservation'
@@ -1352,7 +1352,7 @@ test_cases:
       - 'Verify binding is active (status bar or prior R-L confirms)'
       - 'Press Cmd+R Cmd+U'
     expected_result: "Destination is unbound. A toast confirms (e.g., 'Unbound from Terminal'). Subsequent R-L opens picker instead of sending directly."
-    automated: false
+    automated: true
 
   - id: unbind-002
     feature: 'R-U Unbind'
@@ -1374,7 +1374,7 @@ test_cases:
     steps:
       - 'Press Cmd+R Cmd+U (Mac) / Ctrl+R Ctrl+U (Win/Linux)'
     expected_result: "An info notification appears (e.g., 'No destination is currently bound'). No error. Command is a safe no-op."
-    automated: false
+    automated: true
 
   - id: unbind-004
     feature: 'R-U Unbind'
@@ -1730,7 +1730,7 @@ test_cases:
       - 'Add the text: https://example.com/path/file.ts#L10'
       - 'Hover over it to inspect the link tooltip (if any)'
     expected_result: 'RangeLink does not provide a document link for this text. No RangeLink navigation offered.'
-    automated: true
+    automated: false
 
   - id: bugfix-stale-viewcolumn-001
     feature: 'Bug Fix — Stale viewColumn'
@@ -1986,4 +1986,33 @@ test_cases:
       - 'Execute rangelink.handleFilePathClick with an absolute path that does not exist on the current OS'
       - 'Observe VS Code notification area'
     expected_result: 'A warning notification appears (e.g., "Cannot open file: <path>"). No error is thrown; active editor is unchanged.'
-    automated: false
+    automated: true
+
+  - id: clickable-file-paths-012
+    feature: 'Clickable File Paths'
+    scenario: 'Custom delimiter config respected — file path with custom delimiter suffix defers to RangeLink instead of matching as plain file path'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'Setting rangelink.delimiter.line set to a custom value (e.g., @l)'
+      - 'Terminal or editor contains a path like ./src/file.ts@l10'
+    steps:
+      - 'Hover over ./src/file.ts@l10 in the terminal or editor'
+    expected_result: 'The path is detected as a RangeLink (not as a plain file path). Clicking navigates to line 10 via RangeLink, not to the file root via file path provider.'
+    automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Smart Padding
+  # ---------------------------------------------------------------------------
+
+  - id: smart-padding-001
+    feature: 'Smart Padding'
+    scenario: 'Whitespace-only text preserved when sent to destination with smart padding enabled'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A terminal is bound as destination'
+      - 'smartPadding.pasteLink set to "both" (default)'
+    steps:
+      - 'Select whitespace-only text (e.g., spaces or tabs) in an editor'
+      - 'Press R-V or use Send Selected Text to send it to the bound terminal'
+    expected_result: 'The whitespace-only text is delivered to the destination intact — not trimmed to empty string. Smart padding adds spaces (not newlines) around it without destroying the content.'
+    automated: true

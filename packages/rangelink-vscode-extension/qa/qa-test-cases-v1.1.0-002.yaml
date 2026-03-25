@@ -1,9 +1,9 @@
-# RangeLink QA Test Cases — v1.0.0 → v1.1.0 — 2026-03-14
+# RangeLink QA Test Cases — v1.0.0 → v1.1.0
 #
 # Scope: Changes accumulated between the vscode-extension-v1.0.0 release tag and the current
-#        main branch tip, targeting v1.1.0. Created at commit 622137b6.
+#        main branch tip, targeting v1.1.0.
 #
-# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0-2026-03-14-002.yaml`
+# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0-002.yaml`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:
@@ -235,6 +235,26 @@ test_cases:
       - 'Open R-D picker'
       - 'Press Escape without selecting anything'
     expected_result: 'Picker closes. Binding state is unchanged.'
+    automated: false
+
+  - id: bind-to-destination-011
+    feature: 'R-D Bind to Destination'
+    scenario: 'Re-binding same AI assistant shows already-bound message instead of confirmation dialog'
+    preconditions:
+      - 'Bound to an AI assistant (e.g., Claude Code)'
+    steps:
+      - 'Run the same bind command again (e.g., Bind to Claude Code)'
+    expected_result: 'No confirmation dialog appears. An "already bound" info notification is shown. Binding is unchanged.'
+    automated: false
+
+  - id: bind-to-destination-012
+    feature: 'R-D Bind to Destination'
+    scenario: 'Switching between different AI assistants shows confirmation dialog'
+    preconditions:
+      - 'Bound to an AI assistant (e.g., Claude Code)'
+    steps:
+      - 'Run a different AI assistant bind command (e.g., Bind to Cursor AI)'
+    expected_result: 'A confirmation dialog appears with current and proposed destination names. Selecting Yes switches the binding.'
     automated: false
 
   # ---------------------------------------------------------------------------
@@ -2015,4 +2035,69 @@ test_cases:
       - 'Select whitespace-only text (e.g., spaces or tabs) in an editor'
       - 'Press R-V or use Send Selected Text to send it to the bound terminal'
     expected_result: 'The whitespace-only text is delivered to the destination intact — not trimmed to empty string. Smart padding adds spaces (not newlines) around it without destroying the content.'
+    automated: true
+
+  - id: smart-padding-002
+    feature: 'Smart Padding'
+    scenario: 'Simple text with pasteContent=both adds leading and trailing space'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "both"'
+    steps:
+      - 'Select text (e.g., "hello world") in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives " hello world " — a leading space and trailing space are added by smart padding.'
+    automated: true
+
+  - id: smart-padding-003
+    feature: 'Smart Padding'
+    scenario: 'Multiline selection sent to editor destination'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "none" (default)'
+    steps:
+      - 'Select multiple lines in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'All selected lines arrive at the destination intact with no padding (pasteContent=none).'
+    automated: true
+
+  - id: smart-padding-004
+    feature: 'Smart Padding'
+    scenario: 'pasteContent=none sends exact text without padding'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "none" (default)'
+    steps:
+      - 'Select text in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives the exact selected text with no added spaces.'
+    automated: true
+
+  - id: smart-padding-005
+    feature: 'Smart Padding'
+    scenario: 'pasteContent=before adds leading space only'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "before"'
+    steps:
+      - 'Select text (e.g., "hello") in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives " hello" — only a leading space is added.'
+    automated: true
+
+  - id: smart-padding-006
+    feature: 'Smart Padding'
+    scenario: 'pasteContent=after adds trailing space only'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A text editor is bound as destination'
+      - 'smartPadding.pasteContent set to "after"'
+    steps:
+      - 'Select text (e.g., "hello") in an editor'
+      - 'Press R-V to send it to the bound editor destination'
+    expected_result: 'The destination receives "hello " — only a trailing space is added.'
     automated: true

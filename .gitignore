@@ -19,6 +19,9 @@ packages/*/dist/
 # pnpm store (should use global cache)
 .pnpm-store/
 
+# Python virtual environment (auto-created by QA scripts for PyYAML)
+.venv/
+
 # Generated version files
 packages/*/src/version.json
 

@@ -1,9 +1,9 @@
-# RangeLink QA Test Cases — v1.0.0 → v1.1.0 — 2026-03-18
+# RangeLink QA Test Cases — v1.0.0 → v1.1.0
 #
 # Scope: Changes accumulated between the vscode-extension-v1.0.0 release tag and the current
-#        main branch tip, targeting v1.1.0.
+#        main branch tip, targeting v1.1.0. Created at commit 6102749d.
 #
-# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0-2026-03-18.yaml`
+# Source of truth for this QA cycle. Run `pnpm generate:qa-issue -- qa/qa-test-cases-v1.1.0.yaml`
 # to create the corresponding GitHub issue tracker (parent issue + per-section sub-issues).
 #
 # Schema:
@@ -235,26 +235,6 @@ test_cases:
       - 'Open R-D picker'
       - 'Press Escape without selecting anything'
     expected_result: 'Picker closes. Binding state is unchanged.'
-    automated: false
-
-  - id: bind-to-destination-011
-    feature: 'R-D Bind to Destination'
-    scenario: 'Re-binding same AI assistant shows already-bound message instead of confirmation dialog'
-    preconditions:
-      - 'Bound to an AI assistant (e.g., Claude Code)'
-    steps:
-      - 'Run the same bind command again (e.g., Bind to Claude Code)'
-    expected_result: 'No confirmation dialog appears. An "already bound" info notification is shown. Binding is unchanged.'
-    automated: false
-
-  - id: bind-to-destination-012
-    feature: 'R-D Bind to Destination'
-    scenario: 'Switching between different AI assistants shows confirmation dialog'
-    preconditions:
-      - 'Bound to an AI assistant (e.g., Claude Code)'
-    steps:
-      - 'Run a different AI assistant bind command (e.g., Bind to Cursor AI)'
-    expected_result: 'A confirmation dialog appears with current and proposed destination names. Selecting Yes switches the binding.'
     automated: false
 
   # ---------------------------------------------------------------------------
@@ -524,7 +504,7 @@ test_cases:
       - 'Verify terminal received the RangeLink'
       - 'Press Cmd+V in any text field'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL (not the RangeLink). Clipboard was silently restored after delivery.'
-    automated: false
+    automated: true
 
   - id: clipboard-preservation-002
     feature: 'Clipboard Preservation'
@@ -539,7 +519,7 @@ test_cases:
       - 'Verify bound destination received terminal text'
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. Terminal text sent to destination; clipboard preserved.'
-    automated: false
+    automated: true
 
   - id: clipboard-preservation-003
     feature: 'Clipboard Preservation'
@@ -584,7 +564,7 @@ test_cases:
       - 'Verify terminal received RangeLink'
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. RangeLink sent to terminal; clipboard preserved.'
-    automated: false
+    automated: true
 
   - id: clipboard-preservation-006
     feature: 'Clipboard Preservation'
@@ -626,7 +606,7 @@ test_cases:
       - 'Press Cmd+R Cmd+C (Copy RangeLink)'
       - 'Press Cmd+V anywhere'
     expected_result: 'Clipboard contains the RangeLink, NOT CLIPBOARD_SENTINEL. R-C is clipboard-only; preserve does not apply.'
-    automated: true
+    automated: false
 
   - id: clipboard-preservation-009
     feature: 'Clipboard Preservation'
@@ -659,7 +639,7 @@ test_cases:
       - 'Press Cmd+R Cmd+F (Mac) / Ctrl+R Ctrl+F (Win/Linux)'
       - 'Observe terminal output'
     expected_result: 'Terminal receives src/utils/helper.ts (workspace-relative). Success toast confirms send.'
-    automated: true
+    automated: false
 
   - id: send-file-path-002
     feature: 'Send File Path'
@@ -1156,7 +1136,7 @@ test_cases:
       - 'Save file (Cmd+S) to ensure clean state'
       - 'Select 2-3 lines, press Cmd+R Cmd+L'
     expected_result: 'No dialog appears. RangeLink generated and sent immediately. Success toast shown.'
-    automated: true
+    automated: false
 
   # ---------------------------------------------------------------------------
   # Section 9 — R-V Send Terminal Selection
@@ -1235,7 +1215,7 @@ test_cases:
       - 'Click in terminal to focus it'
       - 'Press Cmd+R Cmd+L'
     expected_result: 'Error or info notification guides user: R-L requires editor selection, use R-V for terminal text. Terminal not modified.'
-    automated: true
+    automated: false
 
   - id: send-terminal-selection-007
     feature: 'R-V Send Terminal Selection'
@@ -1246,7 +1226,7 @@ test_cases:
       - 'Click in terminal to focus it'
       - 'Press Cmd+R Cmd+C'
     expected_result: 'Notification guides user to use R-V instead. No clipboard write for invalid terminal context.'
-    automated: true
+    automated: false
 
   # ---------------------------------------------------------------------------
   # Section 10 — R-G Go to Link
@@ -1372,7 +1352,7 @@ test_cases:
       - 'Verify binding is active (status bar or prior R-L confirms)'
       - 'Press Cmd+R Cmd+U'
     expected_result: "Destination is unbound. A toast confirms (e.g., 'Unbound from Terminal'). Subsequent R-L opens picker instead of sending directly."
-    automated: true
+    automated: false
 
   - id: unbind-002
     feature: 'R-U Unbind'
@@ -1388,13 +1368,13 @@ test_cases:
 
   - id: unbind-003
     feature: 'R-U Unbind'
-    scenario: 'R-U with no bound destination is disabled (keybinding gated by rangelink.isBound)'
+    scenario: 'R-U with no bound destination shows no-op or appropriate info message'
     preconditions:
       - 'No destination is currently bound'
     steps:
       - 'Press Cmd+R Cmd+U (Mac) / Ctrl+R Ctrl+U (Win/Linux)'
-    expected_result: "Keybinding does not fire (gated by rangelink.isBound when clause). If invoked directly via executeCommand, a status bar message appears ('RangeLink: No destination bound'). No error."
-    automated: true
+    expected_result: "An info notification appears (e.g., 'No destination is currently bound'). No error. Command is a safe no-op."
+    automated: false
 
   - id: unbind-004
     feature: 'R-U Unbind'
@@ -1405,7 +1385,7 @@ test_cases:
       - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
       - "Type 'Unbind Destination' and select 'RangeLink: Unbind Destination'"
     expected_result: 'Same behavior as R-U keybinding — destination is unbound with confirmation notification.'
-    automated: true
+    automated: false
 
   # ---------------------------------------------------------------------------
   # Section 12 — Changed Behaviors
@@ -1634,8 +1614,8 @@ test_cases:
   # Section 13 — Bug Fix Regressions
   # ---------------------------------------------------------------------------
 
-  - id: full-line-navigation-001
-    feature: 'Link Navigation — Full-Line Selection'
+  - id: bugfix-full-line-navigation-001
+    feature: 'Bug Fix — Full-Line Navigation'
     scenario: '#L10 navigates and selects the entire line (not just the first character)'
     preconditions:
       - 'src/utils/helper.ts exists and is readable'
@@ -1647,8 +1627,8 @@ test_cases:
     expected_result: 'Line 10 is selected in its entirety (from column 0 to end of line). The cursor is not placed at just the first character.'
     automated: true
 
-  - id: full-line-navigation-002
-    feature: 'Link Navigation — Full-Line Selection'
+  - id: bugfix-full-line-navigation-002
+    feature: 'Bug Fix — Full-Line Navigation'
     scenario: '#L10-L15 selects from the start of line 10 to the end of line 15'
     preconditions:
       - 'src/utils/helper.ts with 15+ lines'
@@ -1659,28 +1639,8 @@ test_cases:
     expected_result: 'Lines 10 through 15 are selected. The selection spans all six lines fully.'
     automated: true
 
-  - id: char-navigation-001
-    feature: 'Link Navigation — Character-Level Precision'
-    scenario: '#L10C5 navigates to cursor position at line 10, column 5'
-    preconditions:
-      - 'File with 10+ lines, each 20+ characters'
-    steps:
-      - 'Navigate to a link targeting file.ts#L10C5'
-    expected_result: 'Cursor is placed at line 10, column 5 (0-indexed: line 9, char 4). Selection extends 1 character for visibility.'
-    automated: true
-
-  - id: char-navigation-002
-    feature: 'Link Navigation — Character-Level Precision'
-    scenario: '#L10C5-L15C10 navigates to character-level range'
-    preconditions:
-      - 'File with 15+ lines, each 20+ characters'
-    steps:
-      - 'Navigate to a link targeting file.ts#L10C5-L15C10'
-    expected_result: 'Selection spans from line 10 col 5 to line 15 col 10 (0-indexed: anchor at 9:4, active at 14:9).'
-    automated: true
-
-  - id: full-line-link-generation-001
-    feature: 'Link Generation — Full-Line'
+  - id: bugfix-full-line-link-generation-001
+    feature: 'Bug Fix — Full-Line Link Generation'
     scenario: 'Selecting a line including its trailing newline generates #L20 (not #L20-L21)'
     preconditions:
       - 'File with 20+ lines'
@@ -1692,8 +1652,8 @@ test_cases:
     expected_result: 'The generated link is src/utils/helper.ts#L20 (single-line reference). NOT #L20-L21. The trailing newline is excluded.'
     automated: true
 
-  - id: wrapped-link-navigation-001
-    feature: 'Link Navigation — Wrapped Links'
+  - id: bugfix-wrapped-link-navigation-001
+    feature: 'Bug Fix — Wrapped Link Navigation'
     scenario: 'Backtick-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1705,8 +1665,8 @@ test_cases:
     expected_result: 'VS Code opens src/utils/helper.ts and selects lines 5-10. Backtick wrapping did not prevent link detection.'
     automated: true
 
-  - id: wrapped-link-navigation-002
-    feature: 'Link Navigation — Wrapped Links'
+  - id: bugfix-wrapped-link-navigation-002
+    feature: 'Bug Fix — Wrapped Link Navigation'
     scenario: 'Single-quote-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1716,8 +1676,8 @@ test_cases:
     expected_result: 'Navigates to line 5 of the file. Single quotes did not break link detection.'
     automated: true
 
-  - id: wrapped-link-navigation-003
-    feature: 'Link Navigation — Wrapped Links'
+  - id: bugfix-wrapped-link-navigation-003
+    feature: 'Bug Fix — Wrapped Link Navigation'
     scenario: 'Double-quote-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1727,8 +1687,8 @@ test_cases:
     expected_result: 'Navigates to line 5. Double quotes did not break link detection.'
     automated: true
 
-  - id: wrapped-link-navigation-004
-    feature: 'Link Navigation — Wrapped Links'
+  - id: bugfix-wrapped-link-navigation-004
+    feature: 'Bug Fix — Wrapped Link Navigation'
     scenario: 'Angle-bracket-wrapped RangeLink in terminal is clickable and navigates correctly'
     preconditions:
       - 'Terminal open'
@@ -1738,8 +1698,8 @@ test_cases:
     expected_result: 'Navigates to line 5. Angle brackets did not break link detection.'
     automated: true
 
-  - id: markdown-link-navigation-001
-    feature: 'Link Navigation — Markdown Syntax'
+  - id: bugfix-markdown-link-navigation-001
+    feature: 'Bug Fix — Markdown Link Navigation'
     scenario: 'Markdown link [label](path/to/file.ts#L10) in a document is clickable and navigates correctly'
     preconditions:
       - 'A Markdown (.md) file is open in the editor'
@@ -1750,8 +1710,8 @@ test_cases:
     expected_result: 'VS Code opens src/utils/helper.ts and navigates to line 10. The [label](path#L10) syntax is recognized as a RangeLink document link.'
     automated: true
 
-  - id: url-exclusion-001
-    feature: 'Link Navigation — URL Exclusion'
+  - id: bugfix-url-exclusion-001
+    feature: 'Bug Fix — URL Exclusion'
     scenario: 'https://example.com/path/file.ts#L10 in terminal is NOT captured as a RangeLink'
     preconditions:
       - 'Terminal open'
@@ -1761,8 +1721,8 @@ test_cases:
     expected_result: 'RangeLink does NOT intercept the URL. No navigation to a local file occurs. The https:// prefix is correctly excluded.'
     automated: true
 
-  - id: url-exclusion-002
-    feature: 'Link Navigation — URL Exclusion'
+  - id: bugfix-url-exclusion-002
+    feature: 'Bug Fix — URL Exclusion'
     scenario: 'https://example.com/path/file.ts#L10 in a document is NOT captured as a RangeLink'
     preconditions:
       - 'A Markdown or text file open in the editor'
@@ -1770,10 +1730,10 @@ test_cases:
       - 'Add the text: https://example.com/path/file.ts#L10'
       - 'Hover over it to inspect the link tooltip (if any)'
     expected_result: 'RangeLink does not provide a document link for this text. No RangeLink navigation offered.'
-    automated: false
+    automated: true
 
-  - id: stale-viewcolumn-001
-    feature: 'Text Editor Destination — Stale viewColumn'
+  - id: bugfix-stale-viewcolumn-001
+    feature: 'Bug Fix — Stale viewColumn'
     scenario: 'Moving bound editor between tab groups — subsequent paste targets the correct new group'
     preconditions:
       - 'src/utils/helper.ts is bound as destination and is in tab group 1'
@@ -1785,8 +1745,8 @@ test_cases:
     expected_result: 'The RangeLink is inserted into src/utils/helper.ts in tab group 2. Paste did not fail due to stale tab group reference.'
     automated: false
 
-  - id: hidden-tab-paste-001
-    feature: 'Text Editor Destination — Hidden Tab Paste'
+  - id: bugfix-hidden-tab-paste-001
+    feature: 'Bug Fix — Hidden Tab Paste'
     scenario: 'Bound editor hidden behind other tabs — paste succeeds and brings the tab to foreground'
     preconditions:
       - 'src/utils/helper.ts is bound as destination but is not the frontmost tab in its group'
@@ -1797,8 +1757,8 @@ test_cases:
     expected_result: 'The paste succeeds. src/utils/helper.ts comes to the foreground (tab is activated). RangeLink inserted. No error about hidden or inactive tab.'
     automated: false
 
-  - id: document-link-tooltip-001
-    feature: 'Clickable Links — Document Link Tooltip'
+  - id: bugfix-document-link-tooltip-001
+    feature: 'Bug Fix — Document Link Tooltip'
     scenario: 'Hovering over a clickable document link shows clean tooltip (not raw JSON or command URI)'
     preconditions:
       - 'A Markdown file with a RangeLink document link: [See code](src/utils/helper.ts#L5)'
@@ -1808,8 +1768,8 @@ test_cases:
     expected_result: 'The tooltip shows clean human-readable text (e.g., file path and line number). It does NOT show raw JSON, a command: URI, or internal command parameters.'
     automated: false
 
-  - id: full-line-selection-validation-001
-    feature: 'Link Generation — Full-Line Selection Validation'
+  - id: bugfix-full-line-selection-validation-001
+    feature: 'Bug Fix — Full-Line Selection Validation'
     scenario: 'Using Ctrl+L (select full line) then R-L generates link without SELECTION_ZERO_WIDTH error'
     preconditions:
       - 'Terminal or file destination bound'
@@ -1818,7 +1778,7 @@ test_cases:
       - 'Press Cmd+L (Mac) / Ctrl+L (Win/Linux) to select the full line'
       - 'Press Cmd+R Cmd+L'
     expected_result: 'A valid RangeLink is generated and sent. No SELECTION_ZERO_WIDTH error notification appears.'
-    automated: true
+    automated: false
 
   # ---------------------------------------------------------------------------
   # Section 14 — Core Send Commands (R-L, R-C)
@@ -1837,7 +1797,7 @@ test_cases:
       - 'Observe terminal output'
       - 'Observe VS Code status bar or notification'
     expected_result: 'Terminal receives workspace-relative RangeLink (e.g. src/utils/helper.ts#L2-L5). Success toast appears.'
-    automated: true
+    automated: false
 
   - id: core-send-commands-r-l-002
     feature: 'Core Send Commands — R-L'
@@ -2026,403 +1986,4 @@ test_cases:
       - 'Execute rangelink.handleFilePathClick with an absolute path that does not exist on the current OS'
       - 'Observe VS Code notification area'
     expected_result: 'A warning notification appears (e.g., "Cannot open file: <path>"). No error is thrown; active editor is unchanged.'
-    automated: true
-
-  - id: clickable-file-paths-012
-    feature: 'Clickable File Paths'
-    scenario: 'Custom delimiter config respected — file path with custom delimiter suffix defers to RangeLink instead of matching as plain file path'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'Setting rangelink.delimiter.line set to a custom value (e.g., @l)'
-      - 'Terminal or editor contains a path like ./src/file.ts@l10'
-    steps:
-      - 'Hover over ./src/file.ts@l10 in the terminal or editor'
-    expected_result: 'The path is detected as a RangeLink (not as a plain file path). Clicking navigates to line 10 via RangeLink, not to the file root via file path provider.'
-    automated: true
-
-  # ---------------------------------------------------------------------------
-  # Section — Smart Padding
-  # ---------------------------------------------------------------------------
-
-  - id: smart-padding-001
-    feature: 'Smart Padding'
-    scenario: 'Whitespace-only text preserved when sent to destination with smart padding enabled'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A text editor is bound as destination'
-      - 'smartPadding.pasteContent set to "none" (default)'
-    steps:
-      - 'Select whitespace-only text (e.g., spaces or tabs) in an editor'
-      - 'Press R-V or use Send Selected Text to send it to the bound editor destination'
-    expected_result: 'The whitespace-only text is delivered to the destination intact — not trimmed to empty string. Smart padding adds spaces (not newlines) around it without destroying the content.'
-    automated: true
-
-  - id: smart-padding-002
-    feature: 'Smart Padding'
-    scenario: 'Simple text with pasteContent=both adds leading and trailing space'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A text editor is bound as destination'
-      - 'smartPadding.pasteContent set to "both"'
-    steps:
-      - 'Select text (e.g., "hello world") in an editor'
-      - 'Press R-V to send it to the bound editor destination'
-    expected_result: 'The destination receives " hello world " — a leading space and trailing space are added by smart padding.'
-    automated: true
-
-  - id: smart-padding-003
-    feature: 'Smart Padding'
-    scenario: 'Multiline selection sent to editor destination'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A text editor is bound as destination'
-      - 'smartPadding.pasteContent set to "none" (default)'
-    steps:
-      - 'Select multiple lines in an editor'
-      - 'Press R-V to send it to the bound editor destination'
-    expected_result: 'All selected lines arrive at the destination intact with no padding (pasteContent=none).'
-    automated: true
-
-  - id: smart-padding-004
-    feature: 'Smart Padding'
-    scenario: 'pasteContent=none sends exact text without padding'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A text editor is bound as destination'
-      - 'smartPadding.pasteContent set to "none" (default)'
-    steps:
-      - 'Select text in an editor'
-      - 'Press R-V to send it to the bound editor destination'
-    expected_result: 'The destination receives the exact selected text with no added spaces.'
-    automated: true
-
-  - id: smart-padding-005
-    feature: 'Smart Padding'
-    scenario: 'pasteContent=before adds leading space only'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A text editor is bound as destination'
-      - 'smartPadding.pasteContent set to "before"'
-    steps:
-      - 'Select text (e.g., "hello") in an editor'
-      - 'Press R-V to send it to the bound editor destination'
-    expected_result: 'The destination receives " hello" — only a leading space is added.'
-    automated: true
-
-  - id: smart-padding-006
-    feature: 'Smart Padding'
-    scenario: 'pasteContent=after adds trailing space only'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A text editor is bound as destination'
-      - 'smartPadding.pasteContent set to "after"'
-    steps:
-      - 'Select text (e.g., "hello") in an editor'
-      - 'Press R-V to send it to the bound editor destination'
-    expected_result: 'The destination receives "hello " — only a trailing space is added.'
-    automated: true
-
-  # ---------------------------------------------------------------------------
-  # Section — Text Editor Destination: Multi-Group Guard (#315)
-  # ---------------------------------------------------------------------------
-
-  - id: duplicate-tab-group-001
-    feature: 'Text Editor Destination — Multi-Group Guard (Proactive Warning)'
-    scenario: 'Proactive warning toast appears when bound file is opened in a second editor group'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'src/utils/helper.ts is bound as a text editor destination (visible in tab group 1)'
-    steps:
-      - 'Drag the src/utils/helper.ts tab to a second tab group (or right-click the tab → Split Right/Down)'
-      - 'Observe the notification area immediately after the split'
-    expected_result: 'A warning toast appears: "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." No paste was attempted — the warning fires on tab change, not on paste.'
     automated: false
-
-  - id: duplicate-tab-group-002
-    feature: 'Text Editor Destination — Multi-Group Guard (No Re-warn)'
-    scenario: 'Warning is not repeated when the duplicate state is already active'
-    preconditions:
-      - 'src/utils/helper.ts is bound as a text editor destination'
-      - 'The file is already open in two tab groups (duplicate state is active — warning was shown once)'
-    steps:
-      - 'Open src/utils/helper.ts in a third tab group (or trigger another tab change that keeps 2+ instances visible)'
-      - 'Observe the notification area'
-    expected_result: 'No second warning toast appears. The warning is shown only once per entry into the duplicate state, not on every subsequent tab change while duplicates exist.'
-    automated: false
-
-  - id: duplicate-tab-group-003
-    feature: 'Text Editor Destination — Multi-Group Guard (Reactive Paste Error)'
-    scenario: 'Paste is blocked with a clear error message when bound file is open in multiple tab groups'
-    preconditions:
-      - 'src/utils/helper.ts is bound as a text editor destination'
-      - 'The file is visible in two tab groups simultaneously'
-    steps:
-      - 'Select any text in a different file'
-      - 'Press Cmd+R Cmd+L (or any bound-destination send command: R-V, R-L, Send File Path)'
-    expected_result: 'Paste does not occur. An error toast appears: "RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again." No text is inserted into either instance of src/utils/helper.ts.'
-    automated: false
-
-  - id: duplicate-tab-group-004
-    feature: 'Text Editor Destination — Multi-Group Guard (State Clears on Resolve)'
-    scenario: 'Duplicate warning state resets when the conflict is resolved — a new duplicate triggers a fresh warning'
-    preconditions:
-      - 'src/utils/helper.ts is bound as a text editor destination'
-      - 'The file is currently open in two tab groups (proactive warning was already shown once)'
-    steps:
-      - 'Close the duplicate tab (leave only one instance of src/utils/helper.ts open)'
-      - 'Observe the notification area — no toast should appear'
-      - 'Open src/utils/helper.ts again in a second tab group (re-enter the duplicate state)'
-      - 'Observe the notification area again'
-    expected_result: 'Step 2: No toast appears when the duplicate is closed. Step 4: A fresh warning toast appears — "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." — confirming the flag was reset and re-entry into the duplicate state is correctly detected.'
-    automated: false
-
-  # ---------------------------------------------------------------------------
-  # Section — Text Editor Destination: Language-Mode Binding Resilience (#472)
-  # ---------------------------------------------------------------------------
-
-  - id: langswitch-binding-001
-    feature: 'Text Editor Destination — Language-Mode Resilience'
-    scenario: 'Binding survives manual language-mode change on untitled file'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'An untitled file is open in ViewColumn.Two and bound as a text editor destination'
-    steps:
-      - 'Change the untitled file language mode to Markdown (via status bar or setTextDocumentLanguage)'
-      - 'Switch to the source file in ViewColumn.One, select text'
-      - 'Press R-V to send selected text to the bound destination'
-    expected_result: 'The selected text arrives in the untitled file. The binding was preserved across the language-mode change — no re-bind required.'
-    automated: true
-
-  - id: langswitch-binding-002
-    feature: 'Text Editor Destination — Language-Mode Resilience'
-    scenario: 'Binding survives language change after content insertion'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'An untitled file (plaintext) is open in ViewColumn.Two and bound as a text editor destination'
-    steps:
-      - 'Insert markdown-style content (e.g., triple backticks with code) into the untitled file'
-      - 'Trigger language detection (manual or via setTextDocumentLanguage to markdown)'
-      - 'Switch to the source file in ViewColumn.One, select text'
-      - 'Press R-V to send selected text to the bound destination'
-    expected_result: 'The selected text arrives in the untitled file alongside the markdown content. The binding was preserved despite the language change triggered by content insertion.'
-    automated: true
-
-  # ---------------------------------------------------------------------------
-  # Section — Navigation Clamping Feedback (#47)
-  # ---------------------------------------------------------------------------
-
-  - id: navigation-clamping-001
-    feature: 'Navigation Clamping Feedback'
-    scenario: 'Navigate to line beyond end of file — cursor lands at last line'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A file with a known number of lines exists in the workspace (e.g., src/utils/helper.ts with 45 lines)'
-    steps:
-      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
-      - 'Type: src/utils/helper.ts#L200'
-      - 'Press Enter'
-    expected_result: 'The file opens and the cursor lands at the last line of the file (line 45), not line 200. A warning toast is shown indicating that the position was clamped.'
-    automated: true
-
-  - id: navigation-clamping-002
-    feature: 'Navigation Clamping Feedback'
-    scenario: 'Navigate to column beyond line length — cursor lands at end of line'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A file exists in the workspace with lines shorter than 200 characters'
-    steps:
-      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
-      - 'Type: src/utils/helper.ts#L1C200'
-      - 'Press Enter'
-    expected_result: 'The file opens and the cursor lands at the end of line 1 (clamped to line length), not column 200. A warning toast is shown indicating that the column was clamped.'
-    automated: true
-
-  - id: navigation-clamping-003
-    feature: 'Navigation Clamping Feedback'
-    scenario: 'Navigate to valid position — cursor lands exactly, info toast shown'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A file with 10+ lines exists in the workspace'
-    steps:
-      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
-      - 'Type: src/utils/helper.ts#L5C10'
-      - 'Press Enter'
-    expected_result: 'The file opens and the cursor lands at exactly line 5, column 10. An info toast is shown (not a warning).'
-    automated: true
-
-  - id: navigation-clamping-004
-    feature: 'Navigation Clamping Feedback'
-    scenario: 'Navigate with both line and column beyond bounds — both axes clamped'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A file with a known number of lines and short lines exists in the workspace'
-    steps:
-      - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
-      - 'Type: src/utils/helper.ts#L200C500'
-      - 'Press Enter'
-    expected_result: 'The file opens and the cursor lands at the last line, last column (both axes clamped). A warning toast is shown indicating both line and column were clamped.'
-    automated: true
-
-  # ---------------------------------------------------------------------------
-  # Section — Untitled File Navigation (Issue #101)
-  # ---------------------------------------------------------------------------
-
-  - id: untitled-navigation-001
-    feature: 'Untitled File Navigation'
-    scenario: 'Navigate to single line in open untitled file'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'An untitled file is open with at least 10 lines of content'
-    steps:
-      - 'In a terminal or document, create a RangeLink referencing the untitled file: Untitled-1#L5'
-      - 'Click the RangeLink (or use Cmd+R Cmd+G / Ctrl+R Ctrl+G and type Untitled-1#L5)'
-    expected_result: 'The untitled file becomes active and line 5 is fully selected (anchor at start, active at end of line).'
-    automated: true
-
-  - id: untitled-navigation-002
-    feature: 'Untitled File Navigation'
-    scenario: 'Navigate to line range in open untitled file'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'An untitled file is open with at least 10 lines of content'
-    steps:
-      - 'In a terminal or document, create a RangeLink referencing the untitled file: Untitled-1#L3-L7'
-      - 'Click the RangeLink'
-    expected_result: 'The untitled file becomes active with lines 3 through 7 selected (anchor at start of line 3, active at end of line 7).'
-    automated: true
-
-  - id: untitled-navigation-003
-    feature: 'Untitled File Navigation'
-    scenario: 'Navigate to untitled file that is not currently open shows file-not-found warning'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'No untitled files are open'
-    steps:
-      - 'Use Cmd+R Cmd+G (or Ctrl+R Ctrl+G) and type Untitled-99#L1'
-      - 'Press Enter'
-    expected_result: 'A warning toast is shown: "RangeLink: Cannot find file: Untitled-99". No file opens.'
-    automated: true
-
-  - id: untitled-navigation-004
-    feature: 'Untitled File Navigation'
-    scenario: 'Character-precision navigation in open untitled file'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'An untitled file is open with at least 10 lines of content'
-    steps:
-      - 'Create a RangeLink referencing the untitled file with character precision: Untitled-1#L5C10-L5C20'
-      - 'Click the RangeLink'
-    expected_result: 'The untitled file becomes active with characters 10-20 on line 5 selected (not full line). An info toast confirms navigation.'
-    automated: true
-
-  - id: untitled-navigation-005
-    feature: 'Untitled File Navigation'
-    scenario: 'Line clamping when navigating beyond end of untitled file'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'An untitled file is open with 15 lines of content'
-    steps:
-      - 'Create a RangeLink referencing line 50 of the untitled file: Untitled-1#L50'
-      - 'Click the RangeLink'
-    expected_result: 'The cursor is clamped to the last line of the untitled file. A warning toast indicates line exceeded file length.'
-    automated: true
-
-  - id: untitled-navigation-006
-    feature: 'Untitled File Navigation'
-    scenario: 'Case-insensitive untitled-name matching'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'An untitled file named "Untitled-1" (or locale equivalent) is open with at least 10 lines'
-    steps:
-      - 'Create a RangeLink using a differently-cased name: untitled-1#L5 (all lowercase)'
-      - 'Click the RangeLink'
-    expected_result: 'The untitled file becomes active and line 5 is fully selected. An info toast confirms navigation despite the case mismatch.'
-    automated: true
-
-  # ---------------------------------------------------------------------------
-  # Section — Navigation Toast Settings (Issue #54)
-  # ---------------------------------------------------------------------------
-
-  - id: navigation-toast-settings-001
-    feature: 'Navigation Toast Settings'
-    scenario: 'showNavigatedToast=false suppresses info toast after successful navigation'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A file with at least 10 lines exists in the workspace'
-    steps:
-      - 'Set rangelink.navigation.showNavigatedToast to false in workspace settings'
-      - 'Click a RangeLink pointing to an exact position (e.g., file.ts#L5)'
-    expected_result: 'Navigation succeeds (cursor moves to line 5) but no info toast is shown. The navigation is silent.'
-    automated: true
-
-  - id: navigation-toast-settings-002
-    feature: 'Navigation Toast Settings'
-    scenario: 'showClampingWarning=false suppresses clamping warning toast'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A file with 10 lines exists in the workspace'
-    steps:
-      - 'Set rangelink.navigation.showClampingWarning to false in workspace settings'
-      - 'Click a RangeLink pointing beyond end of file (e.g., file.ts#L50)'
-    expected_result: 'Navigation succeeds (cursor clamped to last line) but no clamping warning toast is shown.'
-    automated: true
-
-  - id: navigation-toast-settings-003
-    feature: 'Navigation Toast Settings'
-    scenario: 'Default settings show info toast after successful navigation'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A file with at least 10 lines exists in the workspace'
-      - 'Navigation toast settings are at their defaults (both true)'
-    steps:
-      - 'Click a RangeLink pointing to an exact position (e.g., file.ts#L3)'
-    expected_result: 'Navigation succeeds and an info toast is shown: "RangeLink: Navigated to file.ts @ 3".'
-    automated: true
-
-  # ---------------------------------------------------------------------------
-  # Filename-Only Navigation Fallback (Issue #342)
-  # ---------------------------------------------------------------------------
-
-  - id: filename-fallback-navigation-001
-    feature: 'Filename-Only Navigation Fallback'
-    scenario: 'Bare filename with unique match navigates to correct file and line'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A file with a unique name exists somewhere in the workspace (e.g., uniqueTestFile.ts)'
-    steps:
-      - 'Click a RangeLink using only the filename without a directory path (e.g., uniqueTestFile.ts#L5)'
-    expected_result: 'Navigation succeeds — the file opens and line 5 is fully selected, same as if the full relative path had been provided.'
-    automated: true
-
-  - id: filename-fallback-navigation-002
-    feature: 'Filename-Only Navigation Fallback'
-    scenario: 'Bare filename with multiple matches shows ambiguity warning'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'Two or more files with the same name exist in different directories (e.g., index.ts in src/ and lib/)'
-    steps:
-      - 'Click a RangeLink using only the ambiguous filename (e.g., index.ts#L1)'
-    expected_result: 'A warning toast is shown: "RangeLink: Multiple files match: index.ts". No navigation occurs.'
-    automated: false
-
-  - id: filename-fallback-navigation-003
-    feature: 'Filename-Only Navigation Fallback'
-    scenario: 'Bare filename with no matches shows file-not-found warning'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'No file named nonexistent-file.ts exists in the workspace'
-    steps:
-      - 'Click a RangeLink using a nonexistent bare filename (e.g., nonexistent-file.ts#L1)'
-    expected_result: 'A warning toast is shown: "RangeLink: Cannot find file: nonexistent-file.ts". No navigation occurs.'
-    automated: false
-
-  - id: filename-fallback-navigation-004
-    feature: 'Filename-Only Navigation Fallback'
-    scenario: 'Path with directory separators uses standard resolution, not fallback'
-    preconditions:
-      - 'Extension installed from .vsix build'
-      - 'A file exists at a known relative path in the workspace'
-    steps:
-      - 'Click a RangeLink using a relative path with directory separators (e.g., src/utils/resolveWorkspacePath.ts#L10)'
-    expected_result: 'Navigation succeeds via standard workspace-relative resolution — the file opens and line 10 is fully selected.'
-    automated: true

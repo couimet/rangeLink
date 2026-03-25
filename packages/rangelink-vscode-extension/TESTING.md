@@ -6,17 +6,19 @@
 
 ## Quick Reference
 
-| Test type             | Command                      | When to run                        | Runs in CI           |
-| --------------------- | ---------------------------- | ---------------------------------- | -------------------- |
-| Unit tests            | `pnpm test`                  | Every change                       | ✅                   |
-| Unit tests (watch)    | `pnpm test:watch`            | During active development          | —                    |
-| Coverage report       | `pnpm test:coverage`         | Before PR / on demand              | ✅ (with thresholds) |
-| Integration tests     | `pnpm test:release`          | Before PR, after feature work      | ✅                   |
-| Prepare QA test plan  | `pnpm generate:qa-test-plan` | Start of release cycle             | —                    |
-| Generate QA issue     | `pnpm generate:qa-issue`     | At the start of each release cycle | —                    |
-| Generate QA checklist | `pnpm generate:qa-checklist` | Before manual QA pass              | —                    |
-| QA smoke setup        | `pnpm qa:setup`              | Before manual QA pass              | —                    |
-| Validate QA coverage  | `pnpm validate:qa-coverage`  | After adding integration tests     | ✅                   |
+| Test type             | Command                                      | When to run                        | Runs in CI           |
+| --------------------- | -------------------------------------------- | ---------------------------------- | -------------------- |
+| Unit tests            | `pnpm test`                                  | Every change                       | ✅                   |
+| Unit tests (watch)    | `pnpm test:watch`                            | During active development          | —                    |
+| Coverage report       | `pnpm test:coverage`                         | Before PR / on demand              | ✅ (with thresholds) |
+| Integration tests     | `pnpm test:release`                          | Before PR, after feature work      | ✅                   |
+| Prepare QA test plan  | `pnpm generate:qa-test-plan`                 | Start of release cycle             | —                    |
+| Generate QA issue     | `pnpm generate:qa-issue`                     | At the start of each release cycle | —                    |
+| Generate QA checklist | `pnpm generate:qa-checklist`                 | Before manual QA pass              | —                    |
+| QA smoke setup        | `pnpm qa:setup`                              | Before manual QA pass              | —                    |
+| Validate QA coverage  | `pnpm validate:qa-coverage`                  | After adding integration tests     | ✅                   |
+| Release testing guide | `pnpm generate:release-testing-instructions` | Start of release cycle             | —                    |
+| Verify all QA scripts | `pnpm verify:qa-scripts`                     | After QA script changes            | —                    |
 
 All commands run from `packages/rangelink-vscode-extension/` unless noted.
 
@@ -28,6 +30,7 @@ All commands run from `packages/rangelink-vscode-extension/` unless noted.
 
 ```mermaid
 flowchart TD
+    Z[generate:release-testing-instructions] -.->|generates guide| A
     A[Set nextTargetVersion] --> B[generate:qa-test-plan]
     B --> C[/qa-suggest in Claude Code/]
     C --> D[Review + append new TCs]
@@ -53,24 +56,9 @@ flowchart TD
 
 ---
 
-## Unit Tests
-
-```bash
-# Run all unit tests
-pnpm test
-
-# Watch mode — re-runs on file change
-pnpm test:watch
-
-# Coverage report (writes to coverage/)
-pnpm test:coverage
-```
-
-Integration test files (`src/__integration-tests__/`) are excluded from the Jest run — they require the VS Code extension host and are covered by `pnpm test:release`.
-
----
-
 ## Integration Tests (VS Code Extension Host)
+
+> **Note:** Integration test files (`src/__integration-tests__/`) are excluded from the Jest unit test run — they require the VS Code extension host and are covered by `pnpm test:release`.
 
 ### What they cover
 
@@ -121,12 +109,12 @@ The QA test plan is a version-scoped YAML file that tracks both automated and ma
 ### File location and naming
 
 ```text
-qa/qa-test-cases-<version>-<YYYY-MM-DD>.yaml
+qa/qa-test-cases-v<version>[-NNN].yaml
 ```
 
-Example: `qa/qa-test-cases-v1.1.0-2026-03-13.yaml`
+Example: `qa/qa-test-cases-v1.1.0.yaml` (base), `qa/qa-test-cases-v1.1.0-001.yaml` (first iteration)
 
-The version is the target release (`nextTargetVersion` from `package.json`) and the date is when the plan was generated. Both are embedded in the filename and parsed automatically by the `generate-qa-issue` script — no extra flags needed.
+The version is the target release (`nextTargetVersion` from `package.json`). It is embedded in the filename and parsed automatically by the `generate-qa-issue` script — no extra flags needed. The `-NNN` suffix handles multiple iterations within a version.
 
 New QA YAML files are created by `pnpm generate:qa-test-plan`. The script carries forward all TCs from the most recent YAML, resets `status:` fields to `pending`, and preserves `automated:` flags.
 
@@ -170,73 +158,12 @@ Place new TCs at the end of the file under the relevant feature section. TC ID r
 
 Set `automated: true` immediately if you are also writing the integration test; otherwise set `false` and leave a note in the scenario description.
 
-### Starting a new QA cycle
+### Quick Start
 
-1. Set `nextTargetVersion` in `packages/rangelink-vscode-extension/package.json` to the upcoming release version
-2. Run `pnpm generate:qa-test-plan:vscode-extension` from the root of the project to create the new YAML with all existing TCs reset to `pending`
-3. Run `/qa-suggest` in Claude Code — it creates a scratchpad with suggested TCs and a YAML block ready to append
-4. Review the scratchpad, edit/remove TCs as needed, then append the YAML block to the QA file
-5. Commit the YAML and run `pnpm generate:qa-issue:vscode-extension` from the root of the project to create the GitHub tracking issues (auto-discovers the latest QA YAML)
-6. Run `pnpm qa:setup:vscode-extension` to build the extension, install into an isolated `qa-test` profile, generate a QA checklist, and launch the editor with the fixture workspace
-
-### Running a QA pass
-
-The QA smoke setup script automates the repetitive environment setup for manual testing:
+Release testing is **guided through a script** that generates version-specific instructions:
 
 ```bash
-pnpm qa:setup:vscode-extension
+pnpm generate:release-testing-instructions:vscode-extension
 ```
 
-This builds the extension, installs it into an isolated `qa-test` VS Code/Cursor profile, copies the selected settings profile into the fixture workspace, generates a date-stamped QA checklist, and launches the editor.
-
-**Fixture workspace:** `qa/fixtures/workspace/` contains pre-built files covering all TC preconditions (TypeScript, TSX, markdown with embedded links, nested paths, paths with spaces, path-format reference file).
-
-**Settings profiles:** `qa/fixtures/settings/` contains pre-built configurations for different TC groups. Switch between them with the `--settings` flag:
-
-```bash
-pnpm qa:setup:vscode-extension -- --settings clipboard-never
-pnpm qa:setup:vscode-extension -- --settings custom-delimiters
-pnpm qa:setup:vscode-extension -- --list-profiles          # show all available profiles
-```
-
-**QA checklist:** Generated at `qa/qa-checklist-v<version>-<date>.txt`. Groups TCs by feature area, tags readiness state and required settings profiles, and marks automated TCs. The checklist can also be generated standalone:
-
-```bash
-pnpm generate:qa-checklist:vscode-extension
-```
-
-### Generating a QA GitHub issue
-
-The `generate-qa-issue` script creates a parent GitHub issue + one sub-issue per feature section, linked with task-list checkboxes. This is the starting point for a manual QA cycle.
-
-**Prerequisites:**
-
-```bash
-# python3 with PyYAML (the script shells out to python3 for YAML parsing)
-# If pip3 install fails on system Python, use a venv:
-python3 -m venv .venv && source .venv/bin/activate
-python3 -m pip install pyyaml
-
-# gh CLI authenticated with write access
-gh auth status
-```
-
-**Running the script (from the root of the project):**
-
-```bash
-# Auto-discover latest YAML — prompts for confirmation
-pnpm generate:qa-issue:vscode-extension
-
-# Dry run — prints what would be created without making API calls
-pnpm generate:qa-issue:vscode-extension -- --dry-run
-
-# Explicit file — skips auto-discover prompt
-pnpm generate:qa-issue:vscode-extension -- qa/qa-test-cases-v1.1.0-2026-03-14.yaml
-```
-
-The script creates:
-
-1. One **parent issue** titled `QA: <version> — <date>` with a task list of sub-issue links
-2. One **sub-issue per feature section** listing all TCs (automated ones marked for reference)
-
-Sub-issues are linked to the parent via GitHub's sub-issue API. Run with `--dry-run` first to verify the output before committing API calls.
+The script validates prerequisites and generates a markdown file at `qa/release-testing-instructions-v<version>[-NNN].md` with copy-paste-ready commands for the full release testing lifecycle (7 phases: prerequisites → QA test plan → GitHub issues → unit tests → integration tests → manual QA → pre-publish verification).
