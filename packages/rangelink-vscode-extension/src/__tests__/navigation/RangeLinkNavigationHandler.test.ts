@@ -67,6 +67,10 @@ describe('RangeLinkNavigationHandler', () => {
             .mockImplementation((uri: unknown) => Promise.resolve({ uri })),
         },
       });
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({
+        uri: createMockUri('/test/file.ts'),
+        resolvedVia: PathFormat.WorkspaceRelative,
+      });
 
       createSelectionSpy = jest.spyOn(mockAdapter, 'createSelection');
       handler = new RangeLinkNavigationHandler(
@@ -913,6 +917,10 @@ describe('RangeLinkNavigationHandler', () => {
             .mockImplementation((uri: unknown) => Promise.resolve({ uri })),
         },
       });
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({
+        uri: createMockUri('/test/file.ts'),
+        resolvedVia: PathFormat.WorkspaceRelative,
+      });
 
       handler = new RangeLinkNavigationHandler(
         GET_DELIMITERS,
@@ -1035,6 +1043,10 @@ describe('RangeLinkNavigationHandler', () => {
         workspaceOptions: {
           openTextDocument: jest.fn().mockResolvedValue({ uri: mockDocument.uri }),
         },
+      });
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue({
+        uri: createMockUri('/test/file.ts'),
+        resolvedVia: PathFormat.WorkspaceRelative,
       });
 
       handler = new RangeLinkNavigationHandler(

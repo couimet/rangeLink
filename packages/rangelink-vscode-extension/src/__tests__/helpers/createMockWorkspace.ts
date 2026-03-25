@@ -46,7 +46,7 @@ export const createMockWorkspace = (
     getConfiguration: jest.fn(),
     onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
     onDidChangeConfiguration: jest.fn(() => ({ dispose: jest.fn() })),
-    findFiles: jest.fn().mockResolvedValue([{ fsPath: '/workspace/mock-file', scheme: 'file' }]),
+    findFiles: jest.fn().mockResolvedValue([]),
     fs: {
       stat: jest.fn(),
     },
