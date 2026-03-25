@@ -18,6 +18,7 @@
 | QA smoke setup        | `pnpm qa:setup`                              | Before manual QA pass              | —                    |
 | Validate QA coverage  | `pnpm validate:qa-coverage`                  | After adding integration tests     | ✅                   |
 | Release testing guide | `pnpm generate:release-testing-instructions` | Start of release cycle             | —                    |
+| Verify all QA scripts | `pnpm verify:qa-scripts`                     | After QA script changes            | —                    |
 
 All commands run from `packages/rangelink-vscode-extension/` unless noted.
 
@@ -55,24 +56,9 @@ flowchart TD
 
 ---
 
-## Unit Tests
-
-```bash
-# Run all unit tests
-pnpm test
-
-# Watch mode — re-runs on file change
-pnpm test:watch
-
-# Coverage report (writes to coverage/)
-pnpm test:coverage
-```
-
-Integration test files (`src/__integration-tests__/`) are excluded from the Jest run — they require the VS Code extension host and are covered by `pnpm test:release`.
-
----
-
 ## Integration Tests (VS Code Extension Host)
+
+> **Note:** Integration test files (`src/__integration-tests__/`) are excluded from the Jest unit test run — they require the VS Code extension host and are covered by `pnpm test:release`.
 
 ### What they cover
 
