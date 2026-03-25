@@ -1,6 +1,8 @@
 import type { ParsedLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
+import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
+
 const STABLE_MS = 300;
 const TIMEOUT_MS = 10000;
 
@@ -47,7 +49,7 @@ export const navigateViaHandleLinkClick = (
     });
 
     Promise.resolve(
-      vscode.commands.executeCommand('rangelink.handleDocumentLinkClick', { linkText, parsed }),
+      vscode.commands.executeCommand(CMD_HANDLE_DOCUMENT_LINK_CLICK, { linkText, parsed }),
     ).catch((error: unknown) => {
       clearTimeout(overallTimeout);
       if (stableTimer) clearTimeout(stableTimer);

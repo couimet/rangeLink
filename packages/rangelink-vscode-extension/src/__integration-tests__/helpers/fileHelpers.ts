@@ -5,8 +5,14 @@ import * as vscode from 'vscode';
 
 import { getWorkspaceRoot } from './testEnv';
 
+let fileCounter = 0;
+
 export const createWorkspaceFile = (descriptor: string, content: string): vscode.Uri => {
-  const filePath = path.join(getWorkspaceRoot(), `__rl-test-${descriptor}-${Date.now()}.txt`);
+  fileCounter++;
+  const filePath = path.join(
+    getWorkspaceRoot(),
+    `__rl-test-${descriptor}-${Date.now()}-${fileCounter}.txt`,
+  );
   fs.writeFileSync(filePath, content, 'utf8');
   return vscode.Uri.file(filePath);
 };

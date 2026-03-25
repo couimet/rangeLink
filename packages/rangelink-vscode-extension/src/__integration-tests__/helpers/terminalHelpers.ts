@@ -6,6 +6,11 @@ export const createAndBindTerminal = async (name: string): Promise<vscode.Termin
   const terminal = vscode.window.createTerminal({ name });
   terminal.show(true);
   await settle(TERMINAL_READY_MS);
-  await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+  try {
+    await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+  } catch (error) {
+    terminal.dispose();
+    throw error;
+  }
   return terminal;
 };
