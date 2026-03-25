@@ -1,3 +1,4 @@
+export { printAssistedBanner, waitForHuman } from './assistedTestHelper';
 export {
   assertClipboardChanged,
   assertClipboardRestored,
