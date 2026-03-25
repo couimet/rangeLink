@@ -9,6 +9,7 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
   type AIAssistantDestinationKind,
+  type CustomAiAssistantKind,
   DESTINATION_KINDS,
   type EligibleFile,
   type EligibleTerminal,
@@ -16,6 +17,7 @@ import {
   type FileMoreQuickPickItem,
   type GetAvailableDestinationItemsOptions,
   type GroupedDestinationItems,
+  isCustomAiAssistantKind,
   MessageCode,
   type TerminalBindableQuickPickItem,
   type TerminalMoreQuickPickItem,
@@ -78,7 +80,7 @@ export class DestinationAvailabilityService {
    * @param kind - AI assistant destination kind
    * @returns Promise<true> if available, Promise<false> otherwise
    */
-  async isAIAssistantAvailable(kind: AIAssistantDestinationKind): Promise<boolean> {
+  async isAIAssistantAvailable(kind: AIAssistantDestinationKind | CustomAiAssistantKind): Promise<boolean> {
     const destination = this.registry.create({ kind });
     const available = await destination.isAvailable();
 
@@ -238,12 +240,27 @@ export class DestinationAvailabilityService {
         }
 
         default: {
-          const _exhaustiveCheck: never = kind;
+          if (isCustomAiAssistantKind(kind)) {
+            const available = await this.isAIAssistantAvailable(kind);
+            if (!available) break;
+
+            const displayNames = this.registry.getDisplayNames();
+            const displayName = displayNames[kind] ?? kind;
+            result[kind] = [
+              {
+                label: displayName,
+                displayName,
+                bindOptions: { kind },
+                itemKind: 'bindable',
+              },
+            ];
+            break;
+          }
           throw new RangeLinkExtensionError({
             code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
             message: `Unhandled destination kind in getGroupedDestinationItems`,
             functionName: 'DestinationAvailabilityService.getGroupedDestinationItems',
-            details: { kind: _exhaustiveCheck },
+            details: { kind },
           });
         }
       }

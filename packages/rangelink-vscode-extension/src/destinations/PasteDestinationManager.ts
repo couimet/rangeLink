@@ -15,6 +15,8 @@ import {
   type TextEditorBindOptions,
   type DestinationKind,
   ExtensionResult,
+  isAnyAiAssistantKind,
+  isCustomAiAssistantKind,
   MessageCode,
 } from '../types';
 import {
@@ -115,6 +117,9 @@ export class PasteDestinationManager implements vscode.Disposable {
       case 'claude-code':
         return this.bindGenericDestination(options.kind);
       default:
+        if (isCustomAiAssistantKind(options.kind)) {
+          return this.bindGenericDestination(options.kind);
+        }
         throw new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
           message: `Unhandled bind options kind: ${(options as BindOptions).kind}`,
@@ -433,11 +438,11 @@ export class PasteDestinationManager implements vscode.Disposable {
    * @returns ExtensionResult with bind success info or error
    */
   private async bindGenericDestination(
-    kind: AIAssistantDestinationKind,
+    kind: DestinationKind,
   ): Promise<ExtensionResult<BindSuccessInfo>> {
     const fnName = 'bindGenericDestination';
 
-    const newDestination = this.registry.create({ kind });
+    const newDestination = this.registry.create({ kind } as BindOptions);
 
     if (!(await newDestination.isAvailable())) {
       this.logger.warn(
@@ -446,17 +451,15 @@ export class PasteDestinationManager implements vscode.Disposable {
       );
 
       const messageCode =
-        PasteDestinationManager.AI_ASSISTANT_ERROR_CODES[kind] ??
-        (() => {
-          throw new RangeLinkExtensionError({
-            code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
-            message: `Unhandled AI assistant destination kind: ${kind}`,
-            functionName: 'PasteDestinationManager.bindGenericDestination',
-            details: { kind },
-          });
-        })();
+        PasteDestinationManager.AI_ASSISTANT_ERROR_CODES[kind as AIAssistantDestinationKind];
 
-      this.vscodeAdapter.showErrorMessage(formatMessage(messageCode));
+      if (messageCode) {
+        this.vscodeAdapter.showErrorMessage(formatMessage(messageCode));
+      } else {
+        this.vscodeAdapter.showErrorMessage(
+          `RangeLink: ${newDestination.displayName} is not available`,
+        );
+      }
 
       return this.bindFailedResult(
         fnName,
@@ -809,7 +812,14 @@ export class PasteDestinationManager implements vscode.Disposable {
         });
 
       default:
-        // Unknown destination kind - indicates missing switch case for new destination
+        if (isAnyAiAssistantKind(destination.id as DestinationKind)) {
+          throw new RangeLinkExtensionError({
+            code: RangeLinkExtensionErrorCodes.UNEXPECTED_CODE_PATH,
+            message: `AI assistant destination '${destination.id}' should provide getUserInstruction() and never reach buildPasteFailureMessage()`,
+            functionName: 'PasteDestinationManager.buildPasteFailureMessage',
+            details: { destinationId: destination.id, displayName: destination.displayName },
+          });
+        }
         throw new RangeLinkExtensionError({
           code: RangeLinkExtensionErrorCodes.DESTINATION_NOT_IMPLEMENTED,
           message: `Unknown destination kind '${destination.id}' - missing case in buildPasteFailureMessage()`,

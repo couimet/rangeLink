@@ -18,7 +18,7 @@ import { formatMessage } from '../../utils';
 import { buildTerminalDescription } from './buildTerminalDescription';
 
 const isDestinationKind = (key: string): key is DestinationKind =>
-  DESTINATION_KINDS.includes(key as DestinationKind);
+  (DESTINATION_KINDS as readonly string[]).includes(key) || key.startsWith('custom-ai:');
 
 const isTerminalItem = (item: BindableQuickPickItem): item is TerminalBindableQuickPickItem =>
   'terminalInfo' in item;

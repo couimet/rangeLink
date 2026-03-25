@@ -1,6 +1,6 @@
 import type * as vscode from 'vscode';
 
-import type { DestinationKind } from './DestinationKind';
+import type { CustomAiAssistantKind, DestinationKind } from './DestinationKind';
 import type { WithDestinationKind } from './WithDestinationKind';
 
 /**
@@ -49,6 +49,13 @@ export interface ClaudeCodeBindOptions extends WithDestinationKind {
 }
 
 /**
+ * Bind to a user-defined custom AI assistant.
+ */
+export interface CustomAiAssistantBindOptions extends WithDestinationKind {
+  readonly kind: CustomAiAssistantKind;
+}
+
+/**
  * Discriminated union for bind() method options.
  * Each destination kind can have its own specific fields.
  *
@@ -65,4 +72,5 @@ export type BindOptions =
   | TextEditorBindOptions
   | CursorAIBindOptions
   | CopilotChatBindOptions
-  | ClaudeCodeBindOptions;
+  | ClaudeCodeBindOptions
+  | CustomAiAssistantBindOptions;

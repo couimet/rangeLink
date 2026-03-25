@@ -13,14 +13,30 @@ export const DESTINATION_KINDS = [
 ] as const;
 
 /**
- * Supported paste destination kinds (derived from DESTINATION_KINDS array)
+ * Built-in paste destination kinds (derived from DESTINATION_KINDS array)
  */
-export type DestinationKind = (typeof DESTINATION_KINDS)[number];
+export type BuiltInDestinationKind = (typeof DESTINATION_KINDS)[number];
 
 /**
- * AI assistant destination kind identifiers.
+ * Custom AI assistant destination kinds use a `custom-ai:` prefix followed by the extensionId.
+ */
+export type CustomAiAssistantKind = `custom-ai:${string}`;
+
+/**
+ * All supported paste destination kinds — built-in + custom AI assistants.
+ */
+export type DestinationKind = BuiltInDestinationKind | CustomAiAssistantKind;
+
+/**
+ * Type guard for custom AI assistant kinds.
+ */
+export const isCustomAiAssistantKind = (kind: string): kind is CustomAiAssistantKind =>
+  kind.startsWith('custom-ai:');
+
+/**
+ * Built-in AI assistant destination kind identifiers.
  *
- * Single source of truth - AIAssistantDestinationKind is derived from this array.
+ * Single source of truth - BuiltInAIAssistantDestinationKind is derived from this array.
  * These destinations require extension availability checks rather than
  * resource binding (like terminal or text-editor).
  */
@@ -28,12 +44,19 @@ export const AI_ASSISTANT_KINDS = [
   'claude-code',
   'cursor-ai',
   'github-copilot-chat',
-] as const satisfies readonly DestinationKind[];
+] as const satisfies readonly BuiltInDestinationKind[];
 
 /**
- * AI assistant destination kinds (derived from AI_ASSISTANT_KINDS array)
+ * Built-in AI assistant destination kinds (derived from AI_ASSISTANT_KINDS array)
  */
 export type AIAssistantDestinationKind = (typeof AI_ASSISTANT_KINDS)[number];
+
+/**
+ * Check if a destination kind is any AI assistant (built-in or custom).
+ */
+export const isAnyAiAssistantKind = (kind: DestinationKind): boolean =>
+  isCustomAiAssistantKind(kind) ||
+  (AI_ASSISTANT_KINDS as readonly string[]).includes(kind);
 
 /**
  * Non-terminal destination kinds (text-editor and AI assistants).
