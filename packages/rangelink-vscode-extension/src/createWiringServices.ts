@@ -4,6 +4,7 @@ import type * as vscode from 'vscode';
 
 import { BookmarkService, BookmarksStore } from './bookmarks';
 import { DefaultClipboardPreserver } from './clipboard';
+import { parseCustomAiAssistants } from './config/parseCustomAiAssistants';
 import {
   AddBookmarkCommand,
   BindToDestinationCommand,
@@ -99,7 +100,8 @@ export const createWiringServices = (
     ideAdapter,
     logger,
   );
-  registerAllDestinationBuilders(registry);
+  const customAssistants = parseCustomAiAssistants(configReader, logger);
+  registerAllDestinationBuilders(registry, customAssistants);
 
   const availabilityService = new DestinationAvailabilityService(
     registry,

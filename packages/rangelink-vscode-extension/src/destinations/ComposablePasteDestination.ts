@@ -5,6 +5,7 @@ import type * as vscode from 'vscode';
 import {
   type AIAssistantDestinationKind,
   type AutoPasteResult,
+  type CustomAiAssistantKind,
   type DestinationKind,
   PasteContentType,
 } from '../types';
@@ -67,7 +68,7 @@ export interface EditorDestinationParams {
  * - May provide user instructions for manual paste fallback
  */
 export interface AiAssistantDestinationParams {
-  readonly id: AIAssistantDestinationKind;
+  readonly id: AIAssistantDestinationKind | CustomAiAssistantKind;
   readonly displayName: string;
   readonly focusCapability: FocusCapability;
   readonly isAvailable: () => Promise<boolean>;

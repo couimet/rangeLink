@@ -7,6 +7,7 @@ import {
   buildGitHubCopilotChatDestination,
   buildTerminalDestination,
   buildTextEditorDestination,
+  createCustomAiAssistantBuilder,
   type DestinationBuilderContext,
   registerAllDestinationBuilders,
 } from '../../destinations';
@@ -359,8 +360,88 @@ describe('destinationBuilders', () => {
     });
   });
 
+  describe('createCustomAiAssistantBuilder', () => {
+    const customConfig = {
+      kind: 'custom-ai:codeium.windsurf' as const,
+      extensionId: 'codeium.windsurf',
+      extensionName: 'Windsurf',
+      focusCommands: ['windsurf.focus', 'windsurf.sidebar.open'],
+    };
+
+    it('creates destination with correct id and displayName', () => {
+      const context = createMockContext();
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
+        id: 'custom-ai:codeium.windsurf',
+        displayName: 'Windsurf',
+      });
+    });
+
+    it('isAvailable returns true when extension is active', async () => {
+      const context = createMockContext();
+      jest.spyOn(context.ideAdapter, 'getExtension').mockReturnValue({
+        isActive: true,
+      } as any);
+
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect(await destination.isAvailable()).toBe(true);
+    });
+
+    it('isAvailable falls back to command check when extension not found', async () => {
+      const context = createMockContext();
+      jest.spyOn(context.ideAdapter, 'getExtension').mockReturnValue(undefined);
+      jest.spyOn(context.ideAdapter, 'getCommands').mockResolvedValue(['windsurf.focus', 'other.cmd']);
+
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect(await destination.isAvailable()).toBe(true);
+    });
+
+    it('isAvailable returns false when neither extension nor commands available', async () => {
+      const context = createMockContext();
+      jest.spyOn(context.ideAdapter, 'getExtension').mockReturnValue(undefined);
+      jest.spyOn(context.ideAdapter, 'getCommands').mockResolvedValue(['other.cmd']);
+
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect(await destination.isAvailable()).toBe(false);
+    });
+
+    it('getUserInstruction returns undefined on success', () => {
+      const context = createMockContext();
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
+    });
+
+    it('getUserInstruction returns instruction with extensionName on failure', () => {
+      const context = createMockContext();
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
+        'Paste (Cmd/Ctrl+V) in Windsurf to use.',
+      );
+    });
+
+    it('jumpSuccessMessage uses i18n with extensionName', () => {
+      const context = createMockContext();
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect(destination.getJumpSuccessMessage()).toBe('✓ Focused Windsurf');
+    });
+  });
+
   describe('registerAllDestinationBuilders', () => {
-    it('registers all five destination kinds', () => {
+    it('registers all five built-in destination kinds', () => {
       const mockRegister = jest.fn();
       const mockRegistry = { register: mockRegister };
 
@@ -374,6 +455,26 @@ describe('destinationBuilders', () => {
       expect(mockRegister).toHaveBeenCalledWith(
         'github-copilot-chat',
         buildGitHubCopilotChatDestination,
+      );
+    });
+
+    it('registers custom AI assistants when provided', () => {
+      const mockRegister = jest.fn();
+      const mockRegistry = { register: mockRegister };
+
+      registerAllDestinationBuilders(mockRegistry, [
+        {
+          kind: 'custom-ai:codeium.windsurf',
+          extensionId: 'codeium.windsurf',
+          extensionName: 'Windsurf',
+          focusCommands: ['windsurf.focus'],
+        },
+      ]);
+
+      expect(mockRegister).toHaveBeenCalledTimes(6);
+      expect(mockRegister).toHaveBeenCalledWith(
+        'custom-ai:codeium.windsurf',
+        expect.any(Function),
       );
     });
   });

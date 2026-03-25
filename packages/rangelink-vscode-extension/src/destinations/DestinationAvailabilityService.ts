@@ -161,7 +161,7 @@ export class DestinationAvailabilityService {
       -readonly [K in keyof GroupedDestinationItems]: GroupedDestinationItems[K];
     } = {};
 
-    const destinationKinds = options?.destinationKinds ?? DESTINATION_KINDS;
+    const destinationKinds = options?.destinationKinds ?? this.registry.getSupportedKinds();
     if (options?.destinationKinds) {
       this.logger.debug(
         { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', destinationKinds },
@@ -169,8 +169,8 @@ export class DestinationAvailabilityService {
       );
     } else {
       this.logger.debug(
-        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems' },
-        'Using default DESTINATION_KINDS',
+        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', kindCount: destinationKinds.length },
+        'Using all registered destination kinds',
       );
     }
 

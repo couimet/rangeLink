@@ -9,8 +9,8 @@ import type * as vscode from 'vscode';
 
 import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import type { DestinationKind } from '../types';
-import { AutoPasteResult, MessageCode, RelativePathFormat } from '../types';
+import type { CustomAiAssistantConfig } from '../config/parseCustomAiAssistants';
+import { AutoPasteResult, type DestinationKind, MessageCode, RelativePathFormat } from '../types';
 import {
   formatMessage,
   getUntitledDisplayName,
@@ -245,18 +245,80 @@ export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, c
 };
 
 /**
+ * Create a builder for a user-defined custom AI assistant.
+ *
+ * Returns a DestinationBuilder that creates a ComposablePasteDestination
+ * configured with the user's extensionId, displayName, and focusCommands.
+ *
+ * Availability detection: checks if the extension is installed and active
+ * via getExtension(extensionId). Falls back to checking if any focusCommand
+ * is a registered VS Code command.
+ */
+export const createCustomAiAssistantBuilder = (
+  config: CustomAiAssistantConfig,
+): DestinationBuilder => {
+  const { kind, extensionId, extensionName, focusCommands } = config;
+
+  return (_options, context) =>
+    ComposablePasteDestination.createAiAssistant({
+      id: kind,
+      displayName: extensionName,
+      focusCapability: context.factories.focusCapability.createAIAssistantCapability(
+        focusCommands,
+        [...CHAT_PASTE_COMMANDS],
+      ),
+      isAvailable: async () => {
+        const extension = context.ideAdapter.getExtension(extensionId);
+        if (extension !== undefined) {
+          const available = extension.isActive;
+          context.logger.debug(
+            { fn: 'customAiAssistant.isAvailable', extensionId, extensionFound: true, extensionActive: available },
+            `Custom AI assistant '${extensionName}' availability via extension: ${available}`,
+          );
+          return available;
+        }
+
+        const commands = await context.ideAdapter.getCommands();
+        const commandAvailable = focusCommands.some((cmd) => commands.includes(cmd));
+        context.logger.debug(
+          { fn: 'customAiAssistant.isAvailable', extensionId, extensionFound: false, commandAvailable, checkedCommands: focusCommands },
+          `Custom AI assistant '${extensionName}' availability via commands: ${commandAvailable}`,
+        );
+        return commandAvailable;
+      },
+      jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CUSTOM_AI, {
+        extensionName,
+      }),
+      loggingDetails: { extensionId },
+      logger: context.logger,
+      getUserInstruction: (autoPasteResult) =>
+        autoPasteResult === AutoPasteResult.Success
+          ? undefined
+          : formatMessage(MessageCode.INFO_CUSTOM_AI_USER_INSTRUCTIONS, { extensionName }),
+    });
+};
+
+/**
  * Register all destination builders with the registry.
  *
  * Called from extension.ts during activation to set up all destination kinds.
  *
  * @param registry - DestinationRegistry to register builders with
+ * @param customAssistants - Optional custom AI assistant configs from user settings
  */
-export const registerAllDestinationBuilders = (registry: {
-  register: (kind: DestinationKind, builder: DestinationBuilder) => void;
-}): void => {
+export const registerAllDestinationBuilders = (
+  registry: {
+    register: (kind: DestinationKind, builder: DestinationBuilder) => void;
+  },
+  customAssistants: CustomAiAssistantConfig[] = [],
+): void => {
   registry.register('terminal', buildTerminalDestination);
   registry.register('text-editor', buildTextEditorDestination);
   registry.register('cursor-ai', buildCursorAIDestination);
   registry.register('claude-code', buildClaudeCodeDestination);
   registry.register('github-copilot-chat', buildGitHubCopilotChatDestination);
+
+  for (const config of customAssistants) {
+    registry.register(config.kind, createCustomAiAssistantBuilder(config));
+  }
 };

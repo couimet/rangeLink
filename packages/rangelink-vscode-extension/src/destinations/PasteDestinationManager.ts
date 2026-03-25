@@ -457,7 +457,9 @@ export class PasteDestinationManager implements vscode.Disposable {
         this.vscodeAdapter.showErrorMessage(formatMessage(messageCode));
       } else {
         this.vscodeAdapter.showErrorMessage(
-          `RangeLink: ${newDestination.displayName} is not available`,
+          formatMessage(MessageCode.ERROR_CUSTOM_AI_NOT_AVAILABLE, {
+            extensionName: newDestination.displayName,
+          }),
         );
       }
 

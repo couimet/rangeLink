@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 
 import type { DestinationRegistry, PasteDestination } from '../../destinations';
-import type { DestinationKind } from '../../types';
+import { DESTINATION_KINDS, type DestinationKind } from '../../types';
 
 import { createMockClaudeCodeComposableDestination } from './createMockClaudeCodeComposableDestination';
 import { createMockCursorAIComposableDestination } from './createMockCursorAIComposableDestination';
@@ -97,7 +97,7 @@ export const createMockDestinationRegistry = (
   return {
     register: jest.fn(),
     create: jest.fn().mockImplementation(createImpl),
-    getSupportedKinds: jest.fn().mockReturnValue([]),
+    getSupportedKinds: jest.fn().mockReturnValue([...DESTINATION_KINDS]),
     getDisplayNames: jest.fn().mockReturnValue(DEFAULT_DISPLAY_NAMES),
   } as unknown as jest.Mocked<DestinationRegistry>;
 };

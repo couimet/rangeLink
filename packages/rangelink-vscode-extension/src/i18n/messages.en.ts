@@ -66,6 +66,8 @@ export const messagesEn: Record<MessageCode, string> = {
     'RangeLink: Cannot bind Claude Code - extension not installed or not active',
   [MessageCode.ERROR_CURSOR_AI_NOT_AVAILABLE]:
     'RangeLink: Cannot bind Cursor AI Assistant - not running in Cursor IDE',
+  [MessageCode.ERROR_CUSTOM_AI_NOT_AVAILABLE]:
+    'RangeLink: Cannot bind {extensionName} - extension not installed or not active',
   [MessageCode.ERROR_FILE_PATH_NAVIGATION_FAILED]: 'RangeLink: Failed to open file {path}: {error}',
   [MessageCode.ERROR_GITHUB_COPILOT_CHAT_NOT_AVAILABLE]:
     'RangeLink: Cannot bind GitHub Copilot Chat - extension not installed or not active',
@@ -120,6 +122,8 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS]:
     'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
   [MessageCode.INFO_COMMIT_HASH_COPIED]: 'Commit hash copied to clipboard',
+  [MessageCode.INFO_CUSTOM_AI_USER_INSTRUCTIONS]:
+    'Paste (Cmd/Ctrl+V) in {extensionName} to use.',
   [MessageCode.INFO_CURSOR_AI_NOT_AVAILABLE]:
     'This command is designed for Cursor IDE, which has built-in AI chat.\n\nRangeLink can paste code ranges directly into Cursor AI chat for faster context sharing. To use this feature, open your project in Cursor IDE instead of VS Code.',
   [MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS]: 'Paste (Cmd/Ctrl+V) in Cursor chat to use.',
@@ -168,6 +172,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.STATUS_BAR_ITEM_TEXT]: '$(link) RangeLink',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE]: '✓ Focused Claude Code Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI]: '✓ Focused Cursor AI Assistant',
+  [MessageCode.STATUS_BAR_JUMP_SUCCESS_CUSTOM_AI]: '✓ Focused {extensionName}',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_EDITOR]: '✓ Focused Editor: "{resourceName}"',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT]: '✓ Focused GitHub Copilot Chat',
   [MessageCode.STATUS_BAR_JUMP_SUCCESS_TERMINAL]: '✓ Focused Terminal: "{resourceName}"',
