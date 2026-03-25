@@ -1659,6 +1659,26 @@ test_cases:
     expected_result: 'Lines 10 through 15 are selected. The selection spans all six lines fully.'
     automated: true
 
+  - id: char-navigation-001
+    feature: 'Link Navigation — Character-Level Precision'
+    scenario: '#L10C5 navigates to cursor position at line 10, column 5'
+    preconditions:
+      - 'File with 10+ lines, each 20+ characters'
+    steps:
+      - 'Navigate to a link targeting file.ts#L10C5'
+    expected_result: 'Cursor is placed at line 10, column 5 (0-indexed: line 9, char 4). Selection extends 1 character for visibility.'
+    automated: true
+
+  - id: char-navigation-002
+    feature: 'Link Navigation — Character-Level Precision'
+    scenario: '#L10C5-L15C10 navigates to character-level range'
+    preconditions:
+      - 'File with 15+ lines, each 20+ characters'
+    steps:
+      - 'Navigate to a link targeting file.ts#L10C5-L15C10'
+    expected_result: 'Selection spans from line 10 col 5 to line 15 col 10 (0-indexed: anchor at 9:4, active at 14:9).'
+    automated: true
+
   - id: full-line-link-generation-001
     feature: 'Link Generation — Full-Line'
     scenario: 'Selecting a line including its trailing newline generates #L20 (not #L20-L21)'

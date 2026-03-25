@@ -69,11 +69,11 @@ suite('Navigation Clamping', () => {
     });
   });
 
-  test('navigation-clamping-002: #L5C30 on 20-char lines — column clamped to end of line', async () => {
+  test('navigation-clamping-002: #L1C200 on 20-char line — character clamped to line length', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-clamping-002');
 
-    const linkText = `${testFilename}#L5C30`;
+    const linkText = `${testFilename}#L1C200`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
@@ -83,26 +83,52 @@ suite('Navigation Clamping', () => {
       testFilename,
     );
 
-    const lineLength = doc.lineAt(4).text.length;
-    assert.strictEqual(sel.anchor.line, 4, `Expected anchor at line 4`);
+    const lineLength = doc.lineAt(0).text.length;
+    assert.strictEqual(sel.anchor.line, 0, 'Expected anchor at line 0');
     assert.strictEqual(
       sel.anchor.character,
       lineLength,
-      `Expected anchor char clamped to ${lineLength}`,
+      `Expected anchor char clamped to line length (${lineLength})`,
     );
 
     const lines = logCapture.getLinesSince('before-clamping-002');
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Navigated to ${testFilename} @ 5:30 (clamped: column exceeded line length)`,
+      message: `RangeLink: Navigated to ${testFilename} @ 1:200 (clamped: column exceeded line length)`,
     });
   });
 
-  test('navigation-clamping-003: #L50C30 — both line and column clamped', async () => {
+  test('navigation-clamping-003: #L5C10 within bounds — selection at exact position', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-clamping-003');
 
-    const linkText = `${testFilename}#L50C30`;
+    const linkText = `${testFilename}#L5C10`;
+    const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
+    assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
+
+    const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
+
+    assert.strictEqual(sel.anchor.line, 4, 'Expected anchor at line 4 (0-indexed)');
+    assert.strictEqual(sel.anchor.character, 9, 'Expected anchor char 9 (0-indexed)');
+    assert.strictEqual(sel.active.line, 4, 'Expected active at line 4 (0-indexed)');
+    assert.strictEqual(
+      sel.active.character,
+      10,
+      'Expected active char 10 (extended by 1 for visibility)',
+    );
+
+    const lines = logCapture.getLinesSince('before-clamping-003');
+    assertToastLogged(lines, {
+      type: 'info',
+      message: `RangeLink: Navigated to ${testFilename} @ 5:10`,
+    });
+  });
+
+  test('navigation-clamping-004: #L50C200 — both line and column clamped', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-clamping-004');
+
+    const linkText = `${testFilename}#L50C200`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
@@ -118,13 +144,13 @@ suite('Navigation Clamping', () => {
     assert.strictEqual(
       sel.anchor.character,
       lastLineLength,
-      `Expected anchor char clamped to ${lastLineLength}`,
+      `Expected anchor char clamped to line length (${lastLineLength})`,
     );
 
-    const lines = logCapture.getLinesSince('before-clamping-003');
+    const lines = logCapture.getLinesSince('before-clamping-004');
     assertToastLogged(lines, {
       type: 'warning',
-      message: `RangeLink: Navigated to ${testFilename} @ 50:30 (clamped: line and column exceeded bounds)`,
+      message: `RangeLink: Navigated to ${testFilename} @ 50:200 (clamped: line and column exceeded bounds)`,
     });
   });
 });
