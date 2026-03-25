@@ -24,11 +24,11 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 - **One keybinding** — `Cmd+R Cmd+L` works with Claude, Copilot, Cursor, terminal tools, text editors. Learn once, use everywhere.
 - **Better precision** — Character-level ranges, not just lines. Share exactly what matters.
 - **Universal format** — GitHub-style links work in PRs, Slack, docs. Not proprietary.
-- **AI-agnostic** — Your workflow doesn't change when you switch AI assistants.
+- **AI-agnostic** — Your workflow doesn't change when you switch AI assistants. Bring your own AI tool — if it has a VS Code extension with a focus command, RangeLink can paste into it.
 
 ### For AI-Assisted Development
 
-**Using Claude Code Extension, terminal claude-code, ChatGPT, or Cursor for development?** RangeLink eliminates the context-sharing friction:
+**Using Claude Code, Cursor, Copilot, or any other AI tool?** RangeLink eliminates the context-sharing friction:
 
 1. **Select code** → Generate link (`Cmd+R Cmd+L`)
 2. **Destination handles delivery** → Link appears where your AI can see it
@@ -137,25 +137,27 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 
 **Pro tip:** Split your editor into two panes (side-by-side or vertical) for the smoothest workflow — browse code on one side, build your prompt on the other. No tab switching needed.
 
-#### AI Assistants (Claude Code, Cursor AI & GitHub Copilot)
+#### AI Assistants (Built-in + Custom) <sup>Unreleased</sup>
 
 **One keybinding to rule them all.** AI assistants have their own ways to share code — different shortcuts, different formats, and only work with _their_ AI. RangeLink unifies it all: **one keybinding** (`Cmd+R Cmd+L`), **character-level precision** (not just lines), and works with **any AI assistant**.
 
 **The precision advantage:** Most AI code-sharing tools work at _line-level_ precision. RangeLink goes deeper with _character-level_ ranges (`#L3C14-L15C9`), letting you highlight exactly the function signature, the problematic condition, or that one sneaky semicolon — not the whole block.
 
-**Supported AI assistants:**
+**Built-in AI assistants:**
 
 - **[Claude Code Extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)** — Anthropic's official extension (works in VSCode and Cursor)
 - **Cursor AI** — Built into Cursor IDE
 - **[GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat)** — GitHub's AI coding assistant
 
+**Bring Your Own AI Assistant** <sup>Unreleased</sup>: Any VS Code extension that exposes a focus command can be used as a RangeLink destination. Configure custom AI assistants in settings — RangeLink copies content to clipboard, focuses the AI chat panel, and you paste with Cmd/Ctrl+V. See [Custom AI Assistant Settings](#custom-ai-assistant-settings-unreleased) for configuration details.
+
 **How it works:**
 
-1. Bind your AI assistant: Command Palette → "Bind to..."
+1. Bind your AI assistant: Command Palette → "Bind to..." or R-D picker
 2. Select code → `Cmd+R Cmd+L` → Link auto-pastes into chat
 3. Review and send
 
-**One destination at a time:** Bind to Claude Code, Cursor AI, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command to replace your current binding with confirmation—no need to unbind first.
+**One destination at a time:** Bind to Claude Code, Cursor AI, a custom AI tool, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command or use the R-D picker to replace your current binding with confirmation—no need to unbind first.
 
 ---
 
@@ -429,6 +431,43 @@ When you have more terminals than this threshold, the destination picker shows a
 **Available values:** `"both"` (space before and after), `"before"` (space before only), `"after"` (space after only), `"none"` (no padding).
 
 Most paste commands default to `"both"` to prevent the pasted text from concatenating with surrounding content. The exception is `pasteContent` which defaults to `"none"` — selected text is pasted exactly as-is since it typically represents raw code or prose where extra whitespace would be unwanted.
+
+### Custom AI Assistant Settings <sup>Unreleased</sup>
+
+| Setting                            | Default | Description                                          |
+| ---------------------------------- | ------- | ---------------------------------------------------- |
+| `rangelink.customAiAssistants`     | `[]`    | Array of custom AI assistant definitions (see below) |
+
+Define custom AI assistants to extend RangeLink beyond the three built-in AI tools. Each entry requires:
+
+| Field           | Type       | Description                                                                    |
+| --------------- | ---------- | ------------------------------------------------------------------------------ |
+| `extensionId`   | `string`   | VS Code extension identifier (`publisher.name`) — used for availability check  |
+| `extensionName` | `string`   | Display name shown in the destination picker                                   |
+| `focusCommands` | `string[]` | VS Code command IDs to focus the chat panel (first match wins, rest are fallbacks) |
+
+**Example — adding two custom AI tools as destinations:**
+
+```json
+{
+  "rangelink.customAiAssistants": [
+    {
+      "extensionId": "acme.spark-ai",
+      "extensionName": "Spark AI",
+      "focusCommands": ["sparkAi.focus", "sparkAi.sidebar.open"]
+    },
+    {
+      "extensionId": "example.codebuddy",
+      "extensionName": "CodeBuddy",
+      "focusCommands": ["codebuddy.openChat"]
+    }
+  ]
+}
+```
+
+**How availability works:** RangeLink first checks if the extension is installed and active via `extensionId`. If not found, it falls back to checking if any `focusCommand` is registered as a VS Code command. Custom assistants only appear in the destination picker when available.
+
+**Restart required** after changing this setting.
 
 ## What's Next
 

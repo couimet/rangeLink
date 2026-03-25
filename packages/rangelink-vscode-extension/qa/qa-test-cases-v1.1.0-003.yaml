@@ -2439,3 +2439,90 @@ test_cases:
       - 'Click a RangeLink using a relative path with directory separators (e.g., src/utils/resolveWorkspacePath.ts#L10)'
     expected_result: 'Navigation succeeds via standard workspace-relative resolution — the file opens and line 10 is fully selected.'
     automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Custom AI Assistants
+  # ---------------------------------------------------------------------------
+
+  - id: custom-ai-assistant-001
+    feature: 'Custom AI Assistants — Configuration'
+    scenario: 'Valid custom AI assistant config is parsed and logged at activation'
+    preconditions:
+      - 'settings.json contains rangelink.customAiAssistants with one valid entry'
+      - 'Focus command from the entry is registered as a VS Code command'
+    steps:
+      - 'Extension activates with custom AI assistant configured'
+      - 'Check output logs'
+    expected_result: 'Log shows "Loaded 1 custom AI assistant(s)" with the configured extensionId'
+    automated: true
+
+  - id: custom-ai-assistant-002
+    feature: 'Custom AI Assistants — Availability'
+    scenario: 'Custom AI assistant detected as available when focus command exists but extension not installed'
+    preconditions:
+      - 'settings.json contains custom AI assistant with extensionId "fake-tool.test"'
+      - 'Focus command "fake-tool.focus" registered as VS Code command'
+      - 'No extension with ID "fake-tool.test" installed'
+    steps:
+      - 'Extension checks availability of custom AI assistant'
+      - 'Check output logs'
+    expected_result: 'Log shows availability check with extensionFound=false, commandAvailable=true'
+    automated: true
+
+  - id: custom-ai-assistant-003
+    feature: 'Custom AI Assistants — Destination Picker'
+    scenario: 'Custom AI assistant appears in the R-D destination picker with configured display name'
+    preconditions:
+      - 'A real AI extension installed with known focus commands'
+      - 'settings.json configures it as a custom AI assistant'
+    steps:
+      - 'Press Cmd+R Cmd+D to open destination picker'
+      - 'Observe the picker items'
+    expected_result: 'The custom AI assistant appears in the picker with its configured extensionName, after the built-in destinations'
+    automated: false
+
+  - id: custom-ai-assistant-004
+    feature: 'Custom AI Assistants — Command Registration'
+    scenario: 'Registering a fake focus command makes it detectable by the availability system'
+    preconditions:
+      - 'Custom AI assistant configured with focusCommands containing "fake-tool.focus"'
+    steps:
+      - 'Register fake-tool.focus as a VS Code command'
+      - 'Query registered commands'
+    expected_result: 'The fake-tool.focus command is present in the registered commands list'
+    automated: true
+
+  - id: custom-ai-assistant-005
+    feature: 'Custom AI Assistants — Availability'
+    scenario: 'Custom AI assistant with no matching extension or command is not available'
+    preconditions:
+      - 'Custom AI assistant configured with extensionId "nonexistent.ext" and focusCommands ["nonexistent.focus"]'
+      - 'No extension or command matching those IDs exists'
+    steps:
+      - 'Extension checks availability'
+      - 'Check output logs'
+    expected_result: 'Log shows availability check with extensionFound=false, commandAvailable=false'
+    automated: true
+
+  - id: custom-ai-assistant-006
+    feature: 'Custom AI Assistants — Configuration'
+    scenario: 'Malformed custom AI assistant entries are skipped with warning logs'
+    preconditions:
+      - 'settings.json contains one valid and one invalid entry (missing extensionName)'
+    steps:
+      - 'Extension activates'
+      - 'Check output logs'
+    expected_result: 'Warning log for invalid entry, info log shows only valid assistants loaded'
+    automated: true
+
+  - id: custom-ai-assistant-007
+    feature: 'Custom AI Assistants — Destination Picker'
+    scenario: 'Multiple custom AI assistants listed in user-defined order'
+    preconditions:
+      - 'Two or more custom AI assistants configured with different extensionNames'
+      - 'All have available focus commands or extensions'
+    steps:
+      - 'Press Cmd+R Cmd+D to open destination picker'
+      - 'Observe order of custom AI assistants in the picker'
+    expected_result: 'Custom AI assistants appear after built-in destinations, in the same order as defined in settings.json'
+    automated: false

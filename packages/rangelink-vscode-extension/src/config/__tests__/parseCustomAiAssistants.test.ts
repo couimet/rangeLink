@@ -26,9 +26,9 @@ describe('parseCustomAiAssistants', () => {
     const configReader = createMockConfigReader({
       get: jest.fn().mockReturnValue([
         {
-          extensionId: 'codeium.windsurf',
-          extensionName: 'Windsurf',
-          focusCommands: ['windsurf.focus', 'windsurf.sidebar.open'],
+          extensionId: 'acme.spark-ai',
+          extensionName: 'Spark AI',
+          focusCommands: ['sparkAi.focus', 'sparkAi.sidebar.open'],
         },
       ]),
     });
@@ -37,14 +37,14 @@ describe('parseCustomAiAssistants', () => {
 
     expect(result).toStrictEqual([
       {
-        kind: 'custom-ai:codeium.windsurf',
-        extensionId: 'codeium.windsurf',
-        extensionName: 'Windsurf',
-        focusCommands: ['windsurf.focus', 'windsurf.sidebar.open'],
+        kind: 'custom-ai:acme.spark-ai',
+        extensionId: 'acme.spark-ai',
+        extensionName: 'Spark AI',
+        focusCommands: ['sparkAi.focus', 'sparkAi.sidebar.open'],
       },
     ]);
     expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'parseCustomAiAssistants', count: 1, ids: ['codeium.windsurf'] },
+      { fn: 'parseCustomAiAssistants', count: 1, ids: ['acme.spark-ai'] },
       'Loaded 1 custom AI assistant(s)',
     );
   });

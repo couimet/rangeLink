@@ -1138,7 +1138,7 @@ describe('DestinationAvailabilityService', () => {
 
   describe('custom AI assistant in getGroupedDestinationItems', () => {
     it('includes available custom AI assistant in menu results', async () => {
-      const customKind = 'custom-ai:codeium.windsurf' as const;
+      const customKind = 'custom-ai:acme.spark-ai' as const;
       const mockDestination = createBaseMockPasteDestination({ id: customKind });
       mockDestination.isAvailable.mockResolvedValue(true);
 
@@ -1147,7 +1147,7 @@ describe('DestinationAvailabilityService', () => {
       });
       customRegistry.getSupportedKinds.mockReturnValue([customKind]);
       customRegistry.getDisplayNames.mockReturnValue({
-        [customKind]: 'Windsurf',
+        [customKind]: 'Spark AI',
       } as any);
 
       const customService = new DestinationAvailabilityService(
@@ -1161,8 +1161,8 @@ describe('DestinationAvailabilityService', () => {
 
       expect(result[customKind]).toStrictEqual([
         {
-          label: 'Windsurf',
-          displayName: 'Windsurf',
+          label: 'Spark AI',
+          displayName: 'Spark AI',
           bindOptions: { kind: customKind },
           itemKind: 'bindable',
         },

@@ -474,7 +474,7 @@
           "type": "array",
           "default": [],
           "description": "Define custom AI assistants for RangeLink to send content to. Each entry appears in the destination picker. Restart VS Code after changes.",
-          "markdownDescription": "Define custom AI assistants for RangeLink to send content to. Each entry appears in the destination picker. Restart VS Code after changes.\n\nExample:\n```json\n[\n  {\n    \"extensionId\": \"codeium.windsurf\",\n    \"extensionName\": \"Windsurf\",\n    \"focusCommands\": [\"windsurf.focus\"]\n  }\n]\n```",
+          "markdownDescription": "Define custom AI assistants for RangeLink to send content to. Each entry appears in the destination picker. Restart VS Code after changes.\n\nExample:\n```json\n[\n  {\n    \"extensionId\": \"acme.spark-ai\",\n    \"extensionName\": \"Spark AI\",\n    \"focusCommands\": [\"sparkAi.focus\"]\n  }\n]\n```",
           "items": {
             "type": "object",
             "required": ["extensionId", "extensionName", "focusCommands"],

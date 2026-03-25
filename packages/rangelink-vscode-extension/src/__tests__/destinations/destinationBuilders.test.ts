@@ -362,10 +362,10 @@ describe('destinationBuilders', () => {
 
   describe('createCustomAiAssistantBuilder', () => {
     const customConfig = {
-      kind: 'custom-ai:codeium.windsurf' as const,
-      extensionId: 'codeium.windsurf',
-      extensionName: 'Windsurf',
-      focusCommands: ['windsurf.focus', 'windsurf.sidebar.open'],
+      kind: 'custom-ai:acme.spark-ai' as const,
+      extensionId: 'acme.spark-ai',
+      extensionName: 'Spark AI',
+      focusCommands: ['sparkAi.focus', 'sparkAi.sidebar.open'],
     };
 
     it('creates destination with correct id and displayName', () => {
@@ -374,8 +374,8 @@ describe('destinationBuilders', () => {
       const destination = builder({ kind: customConfig.kind }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
-        id: 'custom-ai:codeium.windsurf',
-        displayName: 'Windsurf',
+        id: 'custom-ai:acme.spark-ai',
+        displayName: 'Spark AI',
       });
     });
 
@@ -394,7 +394,7 @@ describe('destinationBuilders', () => {
     it('isAvailable falls back to command check when extension not found', async () => {
       const context = createMockContext();
       jest.spyOn(context.ideAdapter, 'getExtension').mockReturnValue(undefined);
-      jest.spyOn(context.ideAdapter, 'getCommands').mockResolvedValue(['windsurf.focus', 'other.cmd']);
+      jest.spyOn(context.ideAdapter, 'getCommands').mockResolvedValue(['sparkAi.focus', 'other.cmd']);
 
       const builder = createCustomAiAssistantBuilder(customConfig);
       const destination = builder({ kind: customConfig.kind }, context);
@@ -427,7 +427,7 @@ describe('destinationBuilders', () => {
       const destination = builder({ kind: customConfig.kind }, context);
 
       expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
-        'Paste (Cmd/Ctrl+V) in Windsurf to use.',
+        'Paste (Cmd/Ctrl+V) in Spark AI to use.',
       );
     });
 
@@ -436,7 +436,7 @@ describe('destinationBuilders', () => {
       const builder = createCustomAiAssistantBuilder(customConfig);
       const destination = builder({ kind: customConfig.kind }, context);
 
-      expect(destination.getJumpSuccessMessage()).toBe('✓ Focused Windsurf');
+      expect(destination.getJumpSuccessMessage()).toBe('✓ Focused Spark AI');
     });
   });
 
@@ -464,16 +464,16 @@ describe('destinationBuilders', () => {
 
       registerAllDestinationBuilders(mockRegistry, [
         {
-          kind: 'custom-ai:codeium.windsurf',
-          extensionId: 'codeium.windsurf',
-          extensionName: 'Windsurf',
-          focusCommands: ['windsurf.focus'],
+          kind: 'custom-ai:acme.spark-ai',
+          extensionId: 'acme.spark-ai',
+          extensionName: 'Spark AI',
+          focusCommands: ['sparkAi.focus'],
         },
       ]);
 
       expect(mockRegister).toHaveBeenCalledTimes(6);
       expect(mockRegister).toHaveBeenCalledWith(
-        'custom-ai:codeium.windsurf',
+        'custom-ai:acme.spark-ai',
         expect.any(Function),
       );
     });
