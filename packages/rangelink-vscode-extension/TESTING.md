@@ -180,4 +180,4 @@ Release testing is **guided through a script** that generates version-specific i
 pnpm generate:release-testing-instructions:vscode-extension
 ```
 
-The script validates prerequisites and generates a markdown file at `qa/release-testing-instructions-v<version>[-NNN].md` with copy-paste ready commands for the full release testing lifecycle (7 phases: prerequisites → QA test plan → GitHub issues → unit tests → integration tests → manual QA → pre-publish verification).
+The script validates prerequisites and generates a markdown file at `qa/release-testing-instructions-v<version>[-NNN].md` with copy-paste-ready commands for the full release testing lifecycle (7 phases: prerequisites → QA test plan → GitHub issues → unit tests → integration tests → manual QA → pre-publish verification).
