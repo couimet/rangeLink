@@ -46,7 +46,7 @@ fi
 if ! command -v python3 &>/dev/null; then
   WARNINGS+="  ${YELLOW}Warning: python3 not found — Phases 2 and 5 require it (PyYAML)${NC}\n"
 elif ! python3 -c "import yaml" 2>/dev/null; then
-  WARNINGS+="  ${YELLOW}Warning: PyYAML not installed — Phases 2 and 5 require it (pip3 install pyyaml)${NC}\n"
+  WARNINGS+="  ${YELLOW}Warning: PyYAML not installed — scripts that need it will auto-install into .venv/${NC}\n"
 fi
 
 echo -e "${GREEN}Generating release testing instructions for v${NEXT_VERSION}${NC}"
@@ -90,6 +90,7 @@ Work through each phase in order — later phases depend on earlier ones complet
 ## Phase 0: Prerequisites
 
 Ensure your environment is ready before starting the release testing cycle.
+All commands in this guide run from the **monorepo root** (where \`pnpm-workspace.yaml\` lives).
 
 ### Node.js / pnpm
 
@@ -115,7 +116,7 @@ gh auth status
 
 \`\`\`bash
 python3 -c "import yaml; print('PyYAML OK')"
-# If missing: pip3 install pyyaml
+# If missing, scripts will auto-install into .venv/ on first run
 \`\`\`
 
 ---
