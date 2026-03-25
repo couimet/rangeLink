@@ -14,7 +14,7 @@ import {
   SETTING_NAVIGATION_SHOW_NAVIGATED_TOAST,
 } from '../constants/settingKeys';
 import { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { MessageCode } from '../types';
+import { FILENAME_AMBIGUOUS, MessageCode } from '../types';
 import {
   convertRangeLinkPosition,
   formatClampingSummary,
@@ -78,7 +78,21 @@ export class RangeLinkNavigationHandler {
     const { path, start, end, selectionType } = parsed;
 
     // Resolve path to file URI (async)
-    let fileUri = await this.ideAdapter.resolveWorkspacePath(path);
+    const resolved = await this.ideAdapter.resolveWorkspacePath(path);
+
+    if (resolved === FILENAME_AMBIGUOUS) {
+      this.logger.warn({ ...logCtx, path }, 'Multiple files match bare filename');
+      await this.ideAdapter.showWarningMessage(
+        formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path }),
+      );
+      return;
+    }
+
+    let fileUri = resolved?.uri;
+
+    if (resolved) {
+      this.logger.debug({ ...logCtx, path, resolvedVia: resolved.resolvedVia }, 'Path resolved');
+    }
 
     // Issue #101: When path doesn't resolve on disk, check open untitled documents.
     // Uses URI scheme (untitled:) not filename patterns, so works in all locales.

@@ -1,5 +1,9 @@
 out/
+dist/
 node_modules/
 coverage/
+.venv/
+.vscode-test/
+.claude-work/
 **/*.map
 pnpm-lock.yaml

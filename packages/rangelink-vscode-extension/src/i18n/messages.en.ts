@@ -209,6 +209,7 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_BOTH]: 'line and column exceeded bounds',
   [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_CHARACTER]: 'column exceeded line length',
   [MessageCode.WARN_NAVIGATION_CLAMPED_SUMMARY_LINE]: 'line exceeded file length',
+  [MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS]: 'RangeLink: Multiple files match: {path}',
   [MessageCode.WARN_NAVIGATION_FILE_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
   [MessageCode.WARN_PASTE_FAILED_EDITOR_HIDDEN]:
     '{statusMessage}. Could not send to editor. Bound editor is hidden behind other tabs.',

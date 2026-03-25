@@ -4,7 +4,7 @@ import type { Logger } from 'barebone-logger';
 import { buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { MessageCode } from '../types';
+import { FILENAME_AMBIGUOUS, MessageCode } from '../types';
 import { formatMessage } from '../utils';
 
 export { buildFilePathPattern, extractFilePath };
@@ -51,9 +51,24 @@ export class FilePathNavigationHandler {
 
     const expandedPath = rawPath.startsWith('~/') ? os.homedir() + rawPath.slice(1) : rawPath;
 
-    const fileUri = await this.ideAdapter.resolveWorkspacePath(expandedPath);
+    const resolved = await this.ideAdapter.resolveWorkspacePath(expandedPath);
 
-    if (!fileUri) {
+    if (resolved === FILENAME_AMBIGUOUS) {
+      this.logger.warn({ ...logCtx, expandedPath }, 'Multiple files match bare filename');
+      await this.ideAdapter.showWarningMessage(
+        formatMessage(MessageCode.WARN_NAVIGATION_FILENAME_AMBIGUOUS, { path: rawPath }),
+      );
+      return;
+    }
+
+    if (resolved) {
+      this.logger.debug(
+        { ...logCtx, expandedPath, resolvedVia: resolved.resolvedVia },
+        'Path resolved',
+      );
+    }
+
+    if (!resolved) {
       this.logger.warn({ ...logCtx, expandedPath }, 'Cannot resolve file path');
       await this.ideAdapter.showWarningMessage(
         formatMessage(MessageCode.WARN_FILE_PATH_NOT_FOUND, { path: rawPath }),
@@ -62,7 +77,7 @@ export class FilePathNavigationHandler {
     }
 
     try {
-      await this.ideAdapter.showTextDocument(fileUri);
+      await this.ideAdapter.showTextDocument(resolved.uri);
       this.logger.info({ ...logCtx }, 'Navigation completed successfully');
     } catch (error) {
       this.logger.error({ ...logCtx, error }, 'Navigation failed');

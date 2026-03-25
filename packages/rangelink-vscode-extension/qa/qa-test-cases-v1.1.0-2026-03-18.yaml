@@ -2358,3 +2358,51 @@ test_cases:
       - 'Click a RangeLink pointing to an exact position (e.g., file.ts#L3)'
     expected_result: 'Navigation succeeds and an info toast is shown: "RangeLink: Navigated to file.ts @ 3".'
     automated: true
+
+  # ---------------------------------------------------------------------------
+  # Filename-Only Navigation Fallback (Issue #342)
+  # ---------------------------------------------------------------------------
+
+  - id: filename-fallback-navigation-001
+    feature: 'Filename-Only Navigation Fallback'
+    scenario: 'Bare filename with unique match navigates to correct file and line'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A file with a unique name exists somewhere in the workspace (e.g., uniqueTestFile.ts)'
+    steps:
+      - 'Click a RangeLink using only the filename without a directory path (e.g., uniqueTestFile.ts#L5)'
+    expected_result: 'Navigation succeeds — the file opens and line 5 is fully selected, same as if the full relative path had been provided.'
+    automated: true
+
+  - id: filename-fallback-navigation-002
+    feature: 'Filename-Only Navigation Fallback'
+    scenario: 'Bare filename with multiple matches shows ambiguity warning'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'Two or more files with the same name exist in different directories (e.g., index.ts in src/ and lib/)'
+    steps:
+      - 'Click a RangeLink using only the ambiguous filename (e.g., index.ts#L1)'
+    expected_result: 'A warning toast is shown: "RangeLink: Multiple files match: index.ts". No navigation occurs.'
+    automated: false
+
+  - id: filename-fallback-navigation-003
+    feature: 'Filename-Only Navigation Fallback'
+    scenario: 'Bare filename with no matches shows file-not-found warning'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'No file named nonexistent-file.ts exists in the workspace'
+    steps:
+      - 'Click a RangeLink using a nonexistent bare filename (e.g., nonexistent-file.ts#L1)'
+    expected_result: 'A warning toast is shown: "RangeLink: Cannot find file: nonexistent-file.ts". No navigation occurs.'
+    automated: false
+
+  - id: filename-fallback-navigation-004
+    feature: 'Filename-Only Navigation Fallback'
+    scenario: 'Path with directory separators uses standard resolution, not fallback'
+    preconditions:
+      - 'Extension installed from .vsix build'
+      - 'A file exists at a known relative path in the workspace'
+    steps:
+      - 'Click a RangeLink using a relative path with directory separators (e.g., src/utils/resolveWorkspacePath.ts#L10)'
+    expected_result: 'Navigation succeeds via standard workspace-relative resolution — the file opens and line 10 is fully selected.'
+    automated: true

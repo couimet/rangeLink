@@ -5,6 +5,8 @@ import { createMockLogger } from 'barebone-logger-testing';
 import { DEFAULT_DELIMITERS, buildFilePathPattern, extractFilePath } from 'rangelink-core-ts';
 
 import { FilePathNavigationHandler } from '../../navigation/FilePathNavigationHandler';
+import { PathFormat } from '../../types/PathFormat';
+import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
 import {
   createMockUri,
   createMockVscodeAdapter,
@@ -127,7 +129,7 @@ describe('FilePathNavigationHandler', () => {
       const fileUri = createMockUri('/resolved/file.ts');
       const resolveWorkspacePathSpy = jest
         .spyOn(mockAdapter, 'resolveWorkspacePath')
-        .mockResolvedValue(fileUri);
+        .mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.WorkspaceRelative });
       const showTextDocumentSpy = jest
         .spyOn(mockAdapter, 'showTextDocument')
         .mockResolvedValue(undefined as any);
@@ -163,12 +165,33 @@ describe('FilePathNavigationHandler', () => {
       );
     });
 
+    it('should show ambiguity warning when resolveWorkspacePath returns FILENAME_AMBIGUOUS', async () => {
+      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(FILENAME_AMBIGUOUS);
+      const showWarningMessageSpy = jest
+        .spyOn(mockAdapter, 'showWarningMessage')
+        .mockResolvedValue(undefined);
+
+      await handler.navigateToFile('index.ts');
+
+      expect(showWarningMessageSpy).toHaveBeenCalledWith(
+        'RangeLink: Multiple files match: index.ts',
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          fn: 'FilePathNavigationHandler.navigateToFile',
+          rawPath: 'index.ts',
+          expandedPath: 'index.ts',
+        },
+        'Multiple files match bare filename',
+      );
+    });
+
     it('should expand tilde and resolve expanded path', async () => {
       const homeDir = os.homedir();
       const fileUri = createMockUri(`${homeDir}/projects/file.ts`);
       const resolveWorkspacePathSpy = jest
         .spyOn(mockAdapter, 'resolveWorkspacePath')
-        .mockResolvedValue(fileUri);
+        .mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.Absolute });
       jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(undefined as any);
 
       await handler.navigateToFile('~/projects/file.ts');
@@ -178,7 +201,9 @@ describe('FilePathNavigationHandler', () => {
 
     it('should show error message and rethrow on showTextDocument failure', async () => {
       const fileUri = createMockUri('/path/file.ts');
-      jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(fileUri);
+      jest
+        .spyOn(mockAdapter, 'resolveWorkspacePath')
+        .mockResolvedValue({ uri: fileUri, resolvedVia: PathFormat.WorkspaceRelative });
       const navigationError = new Error('Failed to open document');
       jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(navigationError);
       const showErrorMessageSpy = jest

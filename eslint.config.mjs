@@ -10,10 +10,13 @@ export default [
   {
     ignores: [
       '**/out/**',
+      '**/dist/**',
       '**/node_modules/**',
       '**/coverage/**',
       '**/.history/**',
+      '**/.venv/**',
       '**/.vscode-test/**',
+      '**/.claude-work/**',
       '**/*.vsix',
       '**/*.config.js',
       '**/*.config.mjs',

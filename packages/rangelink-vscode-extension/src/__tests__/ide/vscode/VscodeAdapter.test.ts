@@ -3,6 +3,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { BehaviourAfterPaste } from '../../../types/BehaviourAfterPaste';
+import { PathFormat } from '../../../types/PathFormat';
 import { RelativePathFormat } from '../../../types/RelativePathFormat';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
 import {
@@ -409,12 +410,15 @@ describe('VscodeAdapter', () => {
   describe('resolveWorkspacePath', () => {
     it('should delegate to resolveWorkspacePath utility with ideInstance', async () => {
       const linkPath = 'src/auth.ts';
-      const mockUri = { fsPath: '/workspace/src/auth.ts' };
-      const spy = spyOnResolveWorkspacePath().mockResolvedValue(mockUri as any);
+      const mockResolved = {
+        uri: { fsPath: '/workspace/src/auth.ts' },
+        resolvedVia: PathFormat.WorkspaceRelative,
+      };
+      const spy = spyOnResolveWorkspacePath().mockResolvedValue(mockResolved as any);
 
       const result = await adapter.resolveWorkspacePath(linkPath);
 
-      expect(result).toStrictEqual(mockUri);
+      expect(result).toStrictEqual(mockResolved);
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(linkPath, mockVSCode);
     });
