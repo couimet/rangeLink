@@ -4,6 +4,7 @@ import { DEFAULT_DELIMITERS, LinkType, SelectionType } from 'rangelink-core-ts';
 import type { ParsedLink } from 'rangelink-core-ts';
 
 import { FILENAME_AMBIGUOUS } from '../../types/ResolvedPath';
+import { PathFormat } from '../../types/PathFormat';
 import type { ConfigReader } from '../../config/ConfigReader';
 import { RangeLinkNavigationHandler } from '../../navigation/RangeLinkNavigationHandler';
 import {
@@ -573,7 +574,7 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest
           .spyOn(mockAdapter, 'resolveWorkspacePath')
-          .mockResolvedValue({ uri: mockUri, resolvedVia: 'workspace-relative' });
+          .mockResolvedValue({ uri: mockUri, resolvedVia: PathFormat.WorkspaceRelative });
         jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(mockEditor);
 
         const mockVsStart = createMockPosition({ line: 9, character: 0 });
@@ -815,7 +816,7 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest
           .spyOn(mockAdapter, 'resolveWorkspacePath')
-          .mockResolvedValue({ uri: mockUri, resolvedVia: 'workspace-relative' });
+          .mockResolvedValue({ uri: mockUri, resolvedVia: PathFormat.WorkspaceRelative });
         jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(showTextDocumentError);
         handler = new RangeLinkNavigationHandler(
           GET_DELIMITERS,
@@ -863,7 +864,7 @@ describe('RangeLinkNavigationHandler', () => {
         });
         jest
           .spyOn(mockAdapter, 'resolveWorkspacePath')
-          .mockResolvedValue({ uri: mockUri, resolvedVia: 'workspace-relative' });
+          .mockResolvedValue({ uri: mockUri, resolvedVia: PathFormat.WorkspaceRelative });
         jest.spyOn(mockAdapter, 'showTextDocument').mockRejectedValue(nonErrorException);
         handler = new RangeLinkNavigationHandler(
           GET_DELIMITERS,
@@ -1134,7 +1135,7 @@ describe('RangeLinkNavigationHandler', () => {
       });
       jest
         .spyOn(mockAdapter, 'resolveWorkspacePath')
-        .mockResolvedValue({ uri: navDoc.uri, resolvedVia: 'workspace-relative' });
+        .mockResolvedValue({ uri: navDoc.uri, resolvedVia: PathFormat.WorkspaceRelative });
       mockConfigReader = createMockConfigReader({
         getBoolean: jest.fn((key: string, defaultValue: boolean) =>
           key === 'navigation.showNavigatedToast' ? false : defaultValue,
@@ -1246,7 +1247,7 @@ describe('RangeLinkNavigationHandler', () => {
       });
       jest
         .spyOn(mockAdapter, 'resolveWorkspacePath')
-        .mockResolvedValue({ uri: navDoc.uri, resolvedVia: 'workspace-relative' });
+        .mockResolvedValue({ uri: navDoc.uri, resolvedVia: PathFormat.WorkspaceRelative });
       handler = new RangeLinkNavigationHandler(
         GET_DELIMITERS,
         mockAdapter,

@@ -3,6 +3,7 @@ import { createMockLogger } from 'barebone-logger-testing';
 
 import { VscodeAdapter } from '../../../ide/vscode/VscodeAdapter';
 import { BehaviourAfterPaste } from '../../../types/BehaviourAfterPaste';
+import { PathFormat } from '../../../types/PathFormat';
 import { RelativePathFormat } from '../../../types/RelativePathFormat';
 import { TerminalFocusType } from '../../../types/TerminalFocusType';
 import {
@@ -411,7 +412,7 @@ describe('VscodeAdapter', () => {
       const linkPath = 'src/auth.ts';
       const mockResolved = {
         uri: { fsPath: '/workspace/src/auth.ts' },
-        resolvedVia: 'workspace-relative' as const,
+        resolvedVia: PathFormat.WorkspaceRelative,
       };
       const spy = spyOnResolveWorkspacePath().mockResolvedValue(mockResolved as any);
 
