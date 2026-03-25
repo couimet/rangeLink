@@ -49,7 +49,21 @@ if [[ -f "$OUTPUT_FILE" ]]; then
   OUTPUT_FILE="$QA_DIR/${BASE_NAME}-$(printf '%03d' "$NEXT_SUFFIX").yaml"
 fi
 
-PREVIOUS_YAML=$(find "$QA_DIR" -name 'qa-test-cases-*.yaml' -type f | sort | tail -n 1)
+# Suffix sort fix: unsuffixed files (v1.1.0.yaml) sort AFTER suffixed files
+# (v1.1.0-001.yaml) because '.' > '-' in ASCII. Normalize by appending -000
+# to unsuffixed names for sorting purposes, then pick the highest.
+PREVIOUS_YAML=$(
+  for f in "$QA_DIR"/qa-test-cases-*.yaml; do
+    [[ -e "$f" ]] || continue
+    name=$(basename "$f")
+    base="${name%.yaml}"
+    if [[ "$base" =~ -[0-9]{3}$ ]]; then
+      printf '%s\t%s\n' "$base" "$f"
+    else
+      printf '%s-000\t%s\n' "$base" "$f"
+    fi
+  done | sort -t$'\t' -k1,1 | tail -1 | cut -f2
+)
 if [[ -z "$PREVIOUS_YAML" ]]; then
   echo "Error: no previous QA YAML found in $QA_DIR" >&2
   exit 1
