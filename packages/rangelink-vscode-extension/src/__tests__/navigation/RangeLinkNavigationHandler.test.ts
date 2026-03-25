@@ -751,6 +751,8 @@ describe('RangeLinkNavigationHandler', () => {
           windowOptions: { showWarningMessage: mockShowWarningMessage },
         });
         jest.spyOn(mockAdapter, 'resolveWorkspacePath').mockResolvedValue(FILENAME_AMBIGUOUS);
+        const findOpenUntitledFileSpy = jest.spyOn(mockAdapter, 'findOpenUntitledFile');
+        const showTextDocumentSpy = jest.spyOn(mockAdapter, 'showTextDocument');
         handler = new RangeLinkNavigationHandler(
           GET_DELIMITERS,
           mockAdapter,
@@ -763,6 +765,8 @@ describe('RangeLinkNavigationHandler', () => {
         expect(mockShowWarningMessage).toHaveBeenCalledWith(
           'RangeLink: Multiple files match: index.ts',
         );
+        expect(findOpenUntitledFileSpy).not.toHaveBeenCalled();
+        expect(showTextDocumentSpy).not.toHaveBeenCalled();
         expect(mockLogger.warn).toHaveBeenCalledWith(
           {
             fn: 'RangeLinkNavigationHandler.navigateToLink',
