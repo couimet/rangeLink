@@ -54,6 +54,7 @@
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=html",
     "test:fast": "jest --coverage --testPathIgnorePatterns '<rootDir>/src/__integration-tests__/' '\\.integration\\.test\\.ts$'",
     "test:release": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json && vscode-test && pnpm validate:qa-coverage",
+    "test:release:automated": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json && vscode-test --config .vscode-test.automated.mjs && pnpm validate:qa-coverage",
     "test:watch": "jest --watch",
     "validate:qa-coverage": "./scripts/validate-qa-coverage.sh",
     "verify:qa-scripts": "./scripts/verify-qa-scripts.sh",

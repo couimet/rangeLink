@@ -33,6 +33,7 @@
     "qa:setup:vscode-extension": "pnpm --filter rangelink-vscode-extension run qa:setup",
     "test": "pnpm -r test",
     "test:release": "pnpm --filter rangelink-vscode-extension test:release",
+    "test:release:automated": "pnpm --filter rangelink-vscode-extension test:release:automated",
     "validate:qa-coverage:vscode-extension": "pnpm --filter rangelink-vscode-extension validate:qa-coverage",
     "verify:qa-scripts:vscode-extension": "pnpm --filter rangelink-vscode-extension verify:qa-scripts",
     "watch": "pnpm -r --parallel watch"
