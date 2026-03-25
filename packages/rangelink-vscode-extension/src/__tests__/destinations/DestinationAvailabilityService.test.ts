@@ -1135,4 +1135,60 @@ describe('DestinationAvailabilityService', () => {
       );
     });
   });
+
+  describe('custom AI assistant in getGroupedDestinationItems', () => {
+    it('includes available custom AI assistant in menu results', async () => {
+      const customKind = 'custom-ai:codeium.windsurf' as const;
+      const mockDestination = createBaseMockPasteDestination({ id: customKind });
+      mockDestination.isAvailable.mockResolvedValue(true);
+
+      const customRegistry = createMockDestinationRegistry({
+        createImpl: () => mockDestination,
+      });
+      customRegistry.getSupportedKinds.mockReturnValue([customKind]);
+      customRegistry.getDisplayNames.mockReturnValue({
+        [customKind]: 'Windsurf',
+      } as any);
+
+      const customService = new DestinationAvailabilityService(
+        customRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = await customService.getGroupedDestinationItems();
+
+      expect(result[customKind]).toStrictEqual([
+        {
+          label: 'Windsurf',
+          displayName: 'Windsurf',
+          bindOptions: { kind: customKind },
+          itemKind: 'bindable',
+        },
+      ]);
+    });
+
+    it('excludes unavailable custom AI assistant from menu results', async () => {
+      const customKind = 'custom-ai:unavailable.ext' as const;
+      const mockDestination = createBaseMockPasteDestination({ id: customKind });
+      mockDestination.isAvailable.mockResolvedValue(false);
+
+      const customRegistry = createMockDestinationRegistry({
+        createImpl: () => mockDestination,
+      });
+      customRegistry.getSupportedKinds.mockReturnValue([customKind]);
+
+      const customService = new DestinationAvailabilityService(
+        customRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = await customService.getGroupedDestinationItems();
+
+      expect(result[customKind]).toBeUndefined();
+    });
+  });
 });
