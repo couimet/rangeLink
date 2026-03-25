@@ -17,7 +17,6 @@ set -euo pipefail
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
 NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -40,7 +39,7 @@ WARNINGS=""
 
 if ! command -v gh &>/dev/null; then
   WARNINGS+="  ${YELLOW}Warning: gh CLI not found — Phase 2 (GitHub QA Issues) requires it${NC}\n"
-elif ! gh auth status &>/dev/null 2>&1; then
+elif ! gh auth status &>/dev/null; then
   WARNINGS+="  ${YELLOW}Warning: gh CLI not authenticated — Phase 2 (GitHub QA Issues) requires auth${NC}\n"
 fi
 

@@ -6,18 +6,18 @@
 
 ## Quick Reference
 
-| Test type             | Command                      | When to run                        | Runs in CI           |
-| --------------------- | ---------------------------- | ---------------------------------- | -------------------- |
-| Unit tests            | `pnpm test`                  | Every change                       | ✅                   |
-| Unit tests (watch)    | `pnpm test:watch`            | During active development          | —                    |
-| Coverage report       | `pnpm test:coverage`         | Before PR / on demand              | ✅ (with thresholds) |
-| Integration tests     | `pnpm test:release`          | Before PR, after feature work      | ✅                   |
-| Prepare QA test plan  | `pnpm generate:qa-test-plan` | Start of release cycle             | —                    |
-| Generate QA issue     | `pnpm generate:qa-issue`     | At the start of each release cycle | —                    |
-| Generate QA checklist | `pnpm generate:qa-checklist` | Before manual QA pass              | —                    |
-| QA smoke setup        | `pnpm qa:setup`              | Before manual QA pass              | —                    |
-| Validate QA coverage  | `pnpm validate:qa-coverage`  | After adding integration tests     | ✅                   |
-| Release testing guide | `pnpm generate:release-testing-instructions` | Start of release cycle | —         |
+| Test type             | Command                                      | When to run                        | Runs in CI           |
+| --------------------- | -------------------------------------------- | ---------------------------------- | -------------------- |
+| Unit tests            | `pnpm test`                                  | Every change                       | ✅                   |
+| Unit tests (watch)    | `pnpm test:watch`                            | During active development          | —                    |
+| Coverage report       | `pnpm test:coverage`                         | Before PR / on demand              | ✅ (with thresholds) |
+| Integration tests     | `pnpm test:release`                          | Before PR, after feature work      | ✅                   |
+| Prepare QA test plan  | `pnpm generate:qa-test-plan`                 | Start of release cycle             | —                    |
+| Generate QA issue     | `pnpm generate:qa-issue`                     | At the start of each release cycle | —                    |
+| Generate QA checklist | `pnpm generate:qa-checklist`                 | Before manual QA pass              | —                    |
+| QA smoke setup        | `pnpm qa:setup`                              | Before manual QA pass              | —                    |
+| Validate QA coverage  | `pnpm validate:qa-coverage`                  | After adding integration tests     | ✅                   |
+| Release testing guide | `pnpm generate:release-testing-instructions` | Start of release cycle             | —                    |
 
 All commands run from `packages/rangelink-vscode-extension/` unless noted.
 
