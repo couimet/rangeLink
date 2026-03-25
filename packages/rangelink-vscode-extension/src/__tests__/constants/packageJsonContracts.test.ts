@@ -10,12 +10,14 @@ interface CommandContribution {
 
 interface ConfigurationProperty {
   type: string;
-  default: string | boolean | number;
+  default: string | boolean | number | unknown[];
   description: string;
+  markdownDescription?: string;
   pattern?: string;
   enum?: string[];
   enumDescriptions?: string[];
   minimum?: number;
+  items?: unknown;
 }
 
 interface KeybindingContribution {
@@ -513,6 +515,40 @@ describe('package.json contributions', () => {
       });
     });
 
+    describe('custom AI assistant settings', () => {
+      it('rangelink.customAiAssistants', () => {
+        expect(properties['rangelink.customAiAssistants']).toStrictEqual({
+          type: 'array',
+          default: [],
+          description:
+            'Define custom AI assistants for RangeLink to send content to. Each entry appears in the destination picker. Restart VS Code after changes.',
+          markdownDescription:
+            'Define custom AI assistants for RangeLink to send content to. Each entry appears in the destination picker. Restart VS Code after changes.\n\nExample:\n```json\n[\n  {\n    "extensionId": "codeium.windsurf",\n    "extensionName": "Windsurf",\n    "focusCommands": ["windsurf.focus"]\n  }\n]\n```',
+          items: {
+            type: 'object',
+            required: ['extensionId', 'extensionName', 'focusCommands'],
+            properties: {
+              extensionId: {
+                type: 'string',
+                description: 'VS Code extension identifier (publisher.name) used to detect availability',
+              },
+              extensionName: {
+                type: 'string',
+                description: 'Display name shown in the destination picker menu',
+              },
+              focusCommands: {
+                type: 'array',
+                items: { type: 'string' },
+                minItems: 1,
+                description: 'VS Code command IDs to focus the AI chat panel (first match wins, rest are fallbacks)',
+              },
+            },
+            additionalProperties: false,
+          },
+        });
+      });
+    });
+
     describe('delimiter settings', () => {
       it('rangelink.delimiterLine', () => {
         expect(properties['rangelink.delimiterLine']).toStrictEqual({
@@ -656,7 +692,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(14);
+      expect(Object.keys(properties)).toHaveLength(15);
     });
   });
 
