@@ -9,8 +9,8 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
   type AIAssistantDestinationKind,
+  type BindOptions,
   type CustomAiAssistantKind,
-  DESTINATION_KINDS,
   type EligibleFile,
   type EligibleTerminal,
   type FileBindableQuickPickItem,
@@ -246,11 +246,11 @@ export class DestinationAvailabilityService {
 
         default: {
           if (isCustomAiAssistantKind(kind)) {
-            const available = await this.isAIAssistantAvailable(kind);
+            const destination = this.registry.create({ kind } as BindOptions);
+            const available = await destination.isAvailable();
             if (!available) break;
 
-            const displayNames = this.registry.getDisplayNames();
-            const displayName = displayNames[kind] ?? kind;
+            const displayName = destination.displayName;
             result[kind] = [
               {
                 label: displayName,

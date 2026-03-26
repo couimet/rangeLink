@@ -269,33 +269,26 @@ export const createCustomAiAssistantBuilder = (
       ),
       isAvailable: async () => {
         const extension = context.ideAdapter.getExtension(extensionId);
-        if (extension !== undefined) {
-          const available = extension.isActive;
-          context.logger.debug(
-            {
-              fn: 'customAiAssistant.isAvailable',
-              extensionId,
-              extensionFound: true,
-              extensionActive: available,
-            },
-            `Custom AI assistant '${extensionName}' availability via extension: ${available}`,
-          );
-          return available;
-        }
+        const extensionFound = extension !== undefined;
+        const extensionActive = extension?.isActive === true;
 
         const commands = await context.ideAdapter.getCommands();
         const commandAvailable = focusCommands.some((cmd) => commands.includes(cmd));
+
+        const available = extensionActive || commandAvailable;
         context.logger.debug(
           {
             fn: 'customAiAssistant.isAvailable',
             extensionId,
-            extensionFound: false,
+            extensionFound,
+            extensionActive,
             commandAvailable,
             checkedCommands: focusCommands,
+            available,
           },
-          `Custom AI assistant '${extensionName}' availability via commands: ${commandAvailable}`,
+          `Custom AI assistant '${extensionName}' available: ${available}`,
         );
-        return commandAvailable;
+        return available;
       },
       jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CUSTOM_AI, {
         extensionName,

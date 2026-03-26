@@ -54,7 +54,9 @@ export type AIAssistantDestinationKind = (typeof AI_ASSISTANT_KINDS)[number];
 /**
  * Check if a destination kind is any AI assistant (built-in or custom).
  */
-export const isAnyAiAssistantKind = (kind: DestinationKind): boolean =>
+export const isAnyAiAssistantKind = (
+  kind: string,
+): kind is AIAssistantDestinationKind | CustomAiAssistantKind =>
   isCustomAiAssistantKind(kind) || (AI_ASSISTANT_KINDS as readonly string[]).includes(kind);
 
 /**

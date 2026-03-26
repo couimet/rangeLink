@@ -6,6 +6,7 @@ import {
   DESTINATION_KINDS,
   type DestinationQuickPickItem,
   type DestinationKind,
+  isCustomAiAssistantKind,
   type FileBindableQuickPickItem,
   type FileMoreQuickPickItem,
   type GroupedDestinationItems,
@@ -84,11 +85,21 @@ export const buildDestinationQuickPickItems = (
   const items: (DestinationQuickPickItem | vscode.QuickPickItem)[] = [];
   let currentGroup: DestinationGroup | undefined;
 
-  for (const key of DESTINATION_PICKER_SEQUENCE) {
+  const customAiKinds = Object.keys(grouped).filter(
+    (key) => isCustomAiAssistantKind(key) && grouped[key as keyof GroupedDestinationItems],
+  );
+  const fullSequence: PickerSequenceKey[] = [
+    ...DESTINATION_PICKER_SEQUENCE.slice(0, 3),
+    ...(customAiKinds as PickerSequenceKey[]),
+    ...DESTINATION_PICKER_SEQUENCE.slice(3),
+  ];
+
+  for (const key of fullSequence) {
     const groupItems = grouped[key];
     if (!groupItems) continue;
 
-    const nextGroup = DESTINATION_GROUP_MAP[key];
+    const nextGroup = DESTINATION_GROUP_MAP[key] ?? (isCustomAiAssistantKind(key) ? 'ai' : undefined);
+    if (!nextGroup) continue;
     if (nextGroup !== currentGroup) {
       items.push({
         label: formatMessage(DESTINATION_GROUP_LABELS[nextGroup]),

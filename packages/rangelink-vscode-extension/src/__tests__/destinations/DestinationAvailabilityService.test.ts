@@ -1139,16 +1139,16 @@ describe('DestinationAvailabilityService', () => {
   describe('custom AI assistant in getGroupedDestinationItems', () => {
     it('includes available custom AI assistant in menu results', async () => {
       const customKind = 'custom-ai:acme.spark-ai' as const;
-      const mockDestination = createBaseMockPasteDestination({ id: customKind });
+      const mockDestination = createBaseMockPasteDestination({
+        id: customKind,
+        displayName: 'Spark AI',
+      });
       mockDestination.isAvailable.mockResolvedValue(true);
 
       const customRegistry = createMockDestinationRegistry({
         createImpl: () => mockDestination,
       });
       customRegistry.getSupportedKinds.mockReturnValue([customKind]);
-      customRegistry.getDisplayNames.mockReturnValue({
-        [customKind]: 'Spark AI',
-      } as any);
 
       const customService = new DestinationAvailabilityService(
         customRegistry,
