@@ -289,20 +289,6 @@ mkdir -p "$WORKSPACE_DIR/.vscode"
 cp "$PROFILE_SETTINGS" "$WORKSPACE_DIR/.vscode/settings.json"
 echo -e "  Settings profile: ${GREEN}${SETTINGS_PROFILE}${NC}"
 
-if CHECKLIST_OUTPUT=$("$SCRIPT_DIR/generate-qa-checklist.sh" 2>&1); then
-  CHECKLIST_FILE=$(echo "$CHECKLIST_OUTPUT" | grep "^Checklist:" | sed 's/^Checklist: //')
-  echo -e "  ${CHECKLIST_OUTPUT}"
-else
-  CHECKLIST_FILE=""
-  echo -e "  ${YELLOW}Checklist generation failed:${NC}"
-  echo "$CHECKLIST_OUTPUT" | sed 's/^/    /'
-  if [[ -f "$REPO_ROOT/pnpm-workspace.yaml" && "$PWD" == "$REPO_ROOT" ]]; then
-    echo -e "  ${YELLOW}Continuing without checklist — fix the issue above and run: pnpm generate:qa-checklist:vscode-extension${NC}"
-  else
-    echo -e "  ${YELLOW}Continuing without checklist — fix the issue above and run: pnpm generate:qa-checklist${NC}"
-  fi
-fi
-
 # --- Phase 4: Editor Launch ---
 
 echo -e "${BLUE}Phase 4: Launching editors...${NC}"
@@ -341,10 +327,6 @@ echo -e "${BOLD}║${NC}  Editor:    ${CYAN}${EDITORS_STR}${NC}$(printf '%*s' $E
 echo -e "${BOLD}║${NC}  Settings:  ${CYAN}${SETTINGS_PROFILE}${NC}$(printf '%*s' $((48 - ${#SETTINGS_PROFILE})) '')${BOLD}║${NC}"
 echo -e "${BOLD}║${NC}  Extension: ${CYAN}${VERSION_INFO}${NC}$(printf '%*s' $((48 - ${#VERSION_INFO})) '')${BOLD}║${NC}"
 echo -e "${BOLD}║${NC}  Workspace: ${CYAN}qa/fixtures/workspace/${NC}$(printf '%*s' 27 '')${BOLD}║${NC}"
-if [[ -n "${CHECKLIST_FILE:-}" ]]; then
-  local_checklist_basename=$(basename "$CHECKLIST_FILE")
-  echo -e "${BOLD}║${NC}  Checklist: ${CYAN}${local_checklist_basename}${NC}$(printf '%*s' $((48 - ${#local_checklist_basename})) '')${BOLD}║${NC}"
-fi
 echo -e "${BOLD}╠══════════════════════════════════════════════════════════════╣${NC}"
 echo -e "${BOLD}║${NC}  ${GREEN}Ready now:${NC} editor-only TCs (no terminal/binding needed)     ${BOLD}║${NC}"
 echo -e "${BOLD}║${NC}  ${YELLOW}After setup:${NC} open 1+ terminals, R-D bind, then continue    ${BOLD}║${NC}"

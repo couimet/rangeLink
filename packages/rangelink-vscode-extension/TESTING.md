@@ -16,8 +16,7 @@
 | Integration (filter)  | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite    | —                    |
 | Prepare QA test plan  | `pnpm generate:qa-test-plan:vscode-extension`                 | Start of release cycle             | —                    |
 | Generate QA issue     | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle | —                    |
-| Local QA checklist    | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA sessions                | —                    |
-| Generate QA checklist | `pnpm generate:qa-checklist:vscode-extension`                 | Before manual QA pass              | —                    |
+| Local QA checklist    | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass    | —                    |
 | QA smoke setup        | `pnpm qa:setup:vscode-extension`                              | Before manual QA pass              | —                    |
 | Validate QA coverage  | `pnpm validate:qa-coverage:vscode-extension`                  | After adding integration tests     | ✅                   |
 | Release testing guide | `pnpm generate:release-testing-instructions:vscode-extension` | Start of release cycle             | —                    |

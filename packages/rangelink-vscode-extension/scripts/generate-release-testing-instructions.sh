@@ -219,7 +219,13 @@ pnpm qa:setup:vscode-extension -- --settings terminal-picker-low
 
 ### Walk through the checklist
 
-The generated checklist is at \`qa/qa-checklist-v${NEXT_VERSION}[-NNN].txt\`.
+Generate a local QA checklist:
+
+\`\`\`bash
+pnpm generate:qa-issue:vscode-extension -- --local
+\`\`\`
+
+The generated checklist is at \`qa/qa-issues-local-v${NEXT_VERSION}-<timestamp>.md\`.
 
 **Suggested order:**
 1. **Ready-now TCs** — no terminal setup needed, test immediately
