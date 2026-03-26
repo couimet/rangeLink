@@ -58,13 +58,13 @@ recipes/baking/chickenpie.ts#L3C14-L314C16
 
 ## Features at a Glance
 
-| Feature                   | Description                                                                                                |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Feature                   | Description                                                                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **Destinations**          | Auto-send links to Claude Code, Cursor AI, Copilot Chat, Terminal, Text Editor, or any custom AI assistant <sup>Unreleased</sup> |
-| **Link Navigation**       | Cmd+Click any RangeLink in terminal or editor to jump directly to code                                     |
-| **Character Precision**   | `#L3C14-L314C16` — not just lines, exact character ranges                                                  |
-| **Portable Links (BYOD)** | Links work regardless of recipient's delimiter configuration                                               |
-| **R-Keybinding Family**   | R-L (link), R-C (clipboard), R-V (paste text), R-J (jump to destination)                                   |
+| **Link Navigation**       | Cmd+Click any RangeLink in terminal or editor to jump directly to code                                                           |
+| **Character Precision**   | `#L3C14-L314C16` — not just lines, exact character ranges                                                                        |
+| **Portable Links (BYOD)** | Links work regardless of recipient's delimiter configuration                                                                     |
+| **R-Keybinding Family**   | R-L (link), R-C (clipboard), R-V (paste text), R-J (jump to destination)                                                         |
 
 **📖 [Full Feature Guide →](./packages/rangelink-vscode-extension/#readme)**
 

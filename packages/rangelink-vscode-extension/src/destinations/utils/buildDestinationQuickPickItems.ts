@@ -98,7 +98,8 @@ export const buildDestinationQuickPickItems = (
     const groupItems = grouped[key];
     if (!groupItems) continue;
 
-    const nextGroup = DESTINATION_GROUP_MAP[key] ?? (isCustomAiAssistantKind(key) ? 'ai' : undefined);
+    const nextGroup =
+      DESTINATION_GROUP_MAP[key] ?? (isCustomAiAssistantKind(key) ? 'ai' : undefined);
     if (!nextGroup) continue;
     if (nextGroup !== currentGroup) {
       items.push({
