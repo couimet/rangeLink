@@ -147,7 +147,8 @@ needs_setup_ids = []
 for feature, tcs in sections.items():
     for tc in tcs:
         tc_id = tc['id']
-        if tc.get('automated', False):
+        automated = tc.get('automated', False)
+        if automated is True or automated == 'assisted':
             continue
         if needs_terminal_setup(tc):
             needs_setup_ids.append(tc_id)
@@ -175,12 +176,15 @@ lines.append('')
 
 for feature, tcs in sections.items():
     tc_count = len(tcs)
-    automated_count = sum(1 for tc in tcs if tc.get('automated', False))
-    manual_count = tc_count - automated_count
+    automated_count = sum(1 for tc in tcs if tc.get('automated', False) is True)
+    assisted_count = sum(1 for tc in tcs if tc.get('automated', False) == 'assisted')
+    manual_count = tc_count - automated_count - assisted_count
 
     header = f'{feature} ({tc_count} TCs'
     if automated_count > 0:
         header += f', {automated_count} automated'
+    if assisted_count > 0:
+        header += f', {assisted_count} assisted'
     header += ')'
 
     lines.append(header)
@@ -189,10 +193,13 @@ for feature, tcs in sections.items():
     for tc in tcs:
         tc_id = tc['id']
         scenario = tc['scenario']
+        automated = tc.get('automated', False)
         tags = []
 
-        if tc.get('automated', False):
+        if automated is True:
             tags.append('automated')
+        elif automated == 'assisted':
+            tags.append('assisted')
 
         settings_tag = get_settings_tag(tc)
         if settings_tag:
@@ -205,7 +212,7 @@ for feature, tcs in sections.items():
         if tags:
             tag_str = '  [' + ', '.join(tags) + ']'
 
-        if tc.get('automated', False):
+        if automated is True or automated == 'assisted':
             lines.append(f'  [x] {tc_id} — {scenario}{tag_str}')
         else:
             lines.append(f'  [ ] {tc_id} — {scenario}{tag_str}')
