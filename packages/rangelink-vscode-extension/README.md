@@ -362,76 +362,6 @@ Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 
 Customize settings in VSCode (Preferences > Settings > search "rangelink").
 
-### Delimiter Settings
-
-| Setting                       | Default | Description                         |
-| ----------------------------- | ------- | ----------------------------------- |
-| `rangelink.delimiterLine`     | `"L"`   | Line number prefix                  |
-| `rangelink.delimiterPosition` | `"C"`   | Column/character position prefix    |
-| `rangelink.delimiterHash`     | `"#"`   | Separator between path and location |
-| `rangelink.delimiterRange`    | `"-"`   | Range separator (start-end)         |
-
-**Validation Rules:**
-
-- Delimiters cannot contain digits
-- Delimiters cannot be empty
-- All delimiters must be unique
-- Reserved characters (`~`, `|`, `/`, `\`, `:`, `,`, `@`) cannot be used
-
-Invalid configurations will fall back to defaults with a warning in the output channel (`Cmd+Shift+U` / `Ctrl+Shift+U`, select "RangeLink"). See [DEVELOPMENT.md](./DEVELOPMENT.md#development-workflow) for details.
-
-### Navigation Settings <sup>Unreleased</sup>
-
-| Setting                                    | Default | Description                                                                                                   |
-| ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
-| `rangelink.navigation.showClampingWarning` | `true`  | Show warning toast when navigation is clamped to file boundaries                                              |
-| `rangelink.navigation.showNavigatedToast`  | `true`  | Show info toast after successful navigation (e.g., "Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16") |
-
-Set either to `false` for a quieter workflow. Navigation itself is unaffected — only the feedback toasts are suppressed. Error toasts (e.g., "Failed to navigate") always appear regardless of these settings.
-
-### Warning Settings <sup>Unreleased</sup>
-
-| Setting                       | Default | Description                                                          |
-| ----------------------------- | ------- | -------------------------------------------------------------------- |
-| `rangelink.warnOnDirtyBuffer` | `true`  | Show warning when generating a link from a file with unsaved changes |
-
-When enabled, a dialog appears with options: "Save & Generate", "Generate Anyway", or dismiss to abort. This helps avoid creating links that may point to incorrect positions after the file is saved.
-
-### Terminal Picker Settings <sup>Unreleased</sup>
-
-| Setting                              | Default | Description                                                              |
-| ------------------------------------ | ------- | ------------------------------------------------------------------------ |
-| `rangelink.terminalPicker.maxInline` | `5`     | Maximum terminals shown inline in picker (extras in "More terminals...") |
-
-When you have more terminals than this threshold, the destination picker shows a "More terminals..." option instead of listing all terminals individually.
-
-### Clipboard Settings <sup>Unreleased</sup>
-
-| Setting                        | Default    | Description                                            |
-| ------------------------------ | ---------- | ------------------------------------------------------ |
-| `rangelink.clipboard.preserve` | `"always"` | Save and restore clipboard around transport operations |
-
-**Available values:**
-
-- `"always"` _(default)_ — Before each operation that uses the clipboard as transport (R-L, R-V, R-F), your prior clipboard content is saved and restored afterward. Your clipboard is only permanently overwritten by R-C (Copy RangeLink), where the clipboard is the intended output.
-- `"never"` — Disables preservation. Your clipboard always contains the last RangeLink output, matching the behavior of versions before this setting was introduced.
-
-### Smart Padding Settings <sup>Unreleased</sup>
-
-| Setting                                | Default  | Description                               |
-| -------------------------------------- | -------- | ----------------------------------------- |
-| `rangelink.smartPadding.pasteLink`     | `"both"` | Padding around generated RangeLinks (R-L) |
-| `rangelink.smartPadding.pasteContent`  | `"none"` | Padding around selected text (R-V)        |
-| `rangelink.smartPadding.pasteFilePath` | `"both"` | Padding around file paths (R-F)           |
-
-<!-- TODO: #366 unhide when bookmarks graduates from beta — re-add this row to the Smart Padding table above
-| `rangelink.smartPadding.pasteBookmark` | `"both"` | Padding around saved bookmarks            |
--->
-
-**Available values:** `"both"` (space before and after), `"before"` (space before only), `"after"` (space after only), `"none"` (no padding).
-
-Most paste commands default to `"both"` to prevent the pasted text from concatenating with surrounding content. The exception is `pasteContent` which defaults to `"none"` — selected text is pasted exactly as-is since it typically represents raw code or prose where extra whitespace would be unwanted.
-
 ### Custom AI Assistant Settings <sup>Unreleased</sup>
 
 | Setting                        | Default | Description                                          |
@@ -468,6 +398,71 @@ Define custom AI assistants to extend RangeLink beyond the three built-in AI too
 **How availability works:** RangeLink first checks if the extension is installed and active via `extensionId`. If not found, it falls back to checking if any `focusCommand` is registered as a VS Code command. Custom assistants only appear in the destination picker when available.
 
 **Restart required** after changing this setting.
+
+### Clipboard Settings <sup>Unreleased</sup>
+
+| Setting                        | Default    | Description                                            |
+| ------------------------------ | ---------- | ------------------------------------------------------ |
+| `rangelink.clipboard.preserve` | `"always"` | Save and restore clipboard around transport operations |
+
+**Available values:**
+
+- `"always"` _(default)_ — Before each operation that uses the clipboard as transport (R-L, R-V, R-F), your prior clipboard content is saved and restored afterward. Your clipboard is only permanently overwritten by R-C (Copy RangeLink), where the clipboard is the intended output.
+- `"never"` — Disables preservation. Your clipboard always contains the last RangeLink output, matching the behavior of versions before this setting was introduced.
+
+### Smart Padding Settings <sup>Unreleased</sup>
+
+| Setting                                | Default  | Description                               |
+| -------------------------------------- | -------- | ----------------------------------------- |
+| `rangelink.smartPadding.pasteLink`     | `"both"` | Padding around generated RangeLinks (R-L) |
+| `rangelink.smartPadding.pasteContent`  | `"none"` | Padding around selected text (R-V)        |
+| `rangelink.smartPadding.pasteFilePath` | `"both"` | Padding around file paths (R-F)           |
+
+<!-- TODO: #366 unhide when bookmarks graduates from beta — re-add this row to the Smart Padding table above
+| `rangelink.smartPadding.pasteBookmark` | `"both"` | Padding around saved bookmarks            |
+-->
+
+**Available values:** `"both"` (space before and after), `"before"` (space before only), `"after"` (space after only), `"none"` (no padding).
+
+Most paste commands default to `"both"` to prevent the pasted text from concatenating with surrounding content. The exception is `pasteContent` which defaults to `"none"` — selected text is pasted exactly as-is since it typically represents raw code or prose where extra whitespace would be unwanted.
+
+### Feedback & Warning Settings <sup>Unreleased</sup>
+
+| Setting                                    | Default | Description                                                                                                   |
+| ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
+| `rangelink.warnOnDirtyBuffer`              | `true`  | Show warning when generating a link from a file with unsaved changes                                          |
+| `rangelink.navigation.showNavigatedToast`  | `true`  | Show info toast after successful navigation (e.g., "Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16") |
+| `rangelink.navigation.showClampingWarning` | `true`  | Show warning toast when navigation is clamped to file boundaries                                              |
+
+When `warnOnDirtyBuffer` is enabled, a dialog appears with options: "Save & Generate", "Generate Anyway", or dismiss to abort. This helps avoid creating links that may point to incorrect positions after the file is saved.
+
+Set the navigation settings to `false` for a quieter workflow. Navigation itself is unaffected — only the feedback toasts are suppressed. Error toasts (e.g., "Failed to navigate") always appear regardless of these settings.
+
+### Terminal Picker Settings <sup>Unreleased</sup>
+
+| Setting                              | Default | Description                                                              |
+| ------------------------------------ | ------- | ------------------------------------------------------------------------ |
+| `rangelink.terminalPicker.maxInline` | `5`     | Maximum terminals shown inline in picker (extras in "More terminals...") |
+
+When you have more terminals than this threshold, the destination picker shows a "More terminals..." option instead of listing all terminals individually.
+
+### Delimiter Settings
+
+| Setting                       | Default | Description                         |
+| ----------------------------- | ------- | ----------------------------------- |
+| `rangelink.delimiterHash`     | `"#"`   | Separator between path and location |
+| `rangelink.delimiterLine`     | `"L"`   | Line number prefix                  |
+| `rangelink.delimiterPosition` | `"C"`   | Column/character position prefix    |
+| `rangelink.delimiterRange`    | `"-"`   | Range separator (start-end)         |
+
+**Validation Rules:**
+
+- Delimiters cannot contain digits
+- Delimiters cannot be empty
+- All delimiters must be unique
+- Reserved characters (`~`, `|`, `/`, `\`, `:`, `,`, `@`) cannot be used
+
+Invalid configurations will fall back to defaults with a warning in the output channel (`Cmd+Shift+U` / `Ctrl+Shift+U`, select "RangeLink"). See [DEVELOPMENT.md](./DEVELOPMENT.md#development-workflow) for details.
 
 ## What's Next
 

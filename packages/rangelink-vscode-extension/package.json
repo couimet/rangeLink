@@ -339,29 +339,51 @@
     "configuration": {
       "title": "RangeLink",
       "properties": {
-        "rangelink.delimiterLine": {
-          "type": "string",
-          "default": "L",
-          "description": "Delimiter used before line numbers (e.g., L in #L10-L20)",
-          "pattern": "^[^0-9]+$"
+        "rangelink.customAiAssistants": {
+          "type": "array",
+          "default": [],
+          "description": "Define custom AI assistants for RangeLink to send content to. Each entry appears in the destination picker. Restart VS Code after changes.",
+          "markdownDescription": "Define custom AI assistants for RangeLink to send content to. Each entry appears in the destination picker. Restart VS Code after changes.\n\nExample:\n```json\n[\n  {\n    \"extensionId\": \"acme.spark-ai\",\n    \"extensionName\": \"Spark AI\",\n    \"focusCommands\": [\"sparkAi.focus\"]\n  }\n]\n```",
+          "items": {
+            "type": "object",
+            "required": [
+              "extensionId",
+              "extensionName",
+              "focusCommands"
+            ],
+            "properties": {
+              "extensionId": {
+                "type": "string",
+                "description": "VS Code extension identifier (publisher.name) used to detect availability"
+              },
+              "extensionName": {
+                "type": "string",
+                "description": "Display name shown in the destination picker menu"
+              },
+              "focusCommands": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "description": "VS Code command IDs to focus the AI chat panel (first match wins, rest are fallbacks)"
+              }
+            },
+            "additionalProperties": false
+          }
         },
-        "rangelink.delimiterPosition": {
+        "rangelink.clipboard.preserve": {
           "type": "string",
-          "default": "C",
-          "description": "Delimiter used before position numbers (e.g., C in #L10C5-L20C10)",
-          "pattern": "^[^0-9]+$"
-        },
-        "rangelink.delimiterHash": {
-          "type": "string",
-          "default": "#",
-          "description": "Delimiter used before the range specification (e.g., # in path#L10-L20)",
-          "pattern": "^[^0-9]+$"
-        },
-        "rangelink.delimiterRange": {
-          "type": "string",
-          "default": "-",
-          "description": "Delimiter used between start and end positions (e.g., - in #L10-L20)",
-          "pattern": "^[^0-9]+$"
+          "enum": [
+            "always",
+            "never"
+          ],
+          "default": "always",
+          "enumDescriptions": [
+            "Save and restore clipboard around operations that use it as transport — your prior clipboard content is preserved (default)",
+            "Never restore clipboard — clipboard always contains last RangeLink output"
+          ],
+          "description": "Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism"
         },
         "rangelink.smartPadding.pasteLink": {
           "type": "string",
@@ -431,25 +453,20 @@
           ],
           "description": "Smart padding for saved bookmarks when pasting to destinations"
         },
-        "rangelink.features.bookmarks.enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable Bookmarks feature (beta). Save code locations for quick access later."
-        },
-        "rangelink.navigation.showClampingWarning": {
+        "rangelink.warnOnDirtyBuffer": {
           "type": "boolean",
           "default": true,
-          "description": "Show warning toast when navigation position is clamped to file boundaries"
+          "description": "Show warning when generating link from file with unsaved changes"
         },
         "rangelink.navigation.showNavigatedToast": {
           "type": "boolean",
           "default": true,
           "description": "Show info toast after successful navigation (e.g., 'Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16')"
         },
-        "rangelink.warnOnDirtyBuffer": {
+        "rangelink.navigation.showClampingWarning": {
           "type": "boolean",
           "default": true,
-          "description": "Show warning when generating link from file with unsaved changes"
+          "description": "Show warning toast when navigation position is clamped to file boundaries"
         },
         "rangelink.terminalPicker.maxInline": {
           "type": "number",
@@ -457,51 +474,34 @@
           "minimum": 1,
           "description": "Maximum terminals shown inline in destination picker (extras collapsed into 'More terminals...')"
         },
-        "rangelink.clipboard.preserve": {
+        "rangelink.delimiterHash": {
           "type": "string",
-          "enum": [
-            "always",
-            "never"
-          ],
-          "default": "always",
-          "enumDescriptions": [
-            "Save and restore clipboard around operations that use it as transport — your prior clipboard content is preserved (default)",
-            "Never restore clipboard — clipboard always contains last RangeLink output"
-          ],
-          "description": "Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism"
+          "default": "#",
+          "description": "Delimiter used before the range specification (e.g., # in path#L10-L20)",
+          "pattern": "^[^0-9]+$"
         },
-        "rangelink.customAiAssistants": {
-          "type": "array",
-          "default": [],
-          "description": "Define custom AI assistants for RangeLink to send content to. Each entry appears in the destination picker. Restart VS Code after changes.",
-          "markdownDescription": "Define custom AI assistants for RangeLink to send content to. Each entry appears in the destination picker. Restart VS Code after changes.\n\nExample:\n```json\n[\n  {\n    \"extensionId\": \"acme.spark-ai\",\n    \"extensionName\": \"Spark AI\",\n    \"focusCommands\": [\"sparkAi.focus\"]\n  }\n]\n```",
-          "items": {
-            "type": "object",
-            "required": [
-              "extensionId",
-              "extensionName",
-              "focusCommands"
-            ],
-            "properties": {
-              "extensionId": {
-                "type": "string",
-                "description": "VS Code extension identifier (publisher.name) used to detect availability"
-              },
-              "extensionName": {
-                "type": "string",
-                "description": "Display name shown in the destination picker menu"
-              },
-              "focusCommands": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "minItems": 1,
-                "description": "VS Code command IDs to focus the AI chat panel (first match wins, rest are fallbacks)"
-              }
-            },
-            "additionalProperties": false
-          }
+        "rangelink.delimiterLine": {
+          "type": "string",
+          "default": "L",
+          "description": "Delimiter used before line numbers (e.g., L in #L10-L20)",
+          "pattern": "^[^0-9]+$"
+        },
+        "rangelink.delimiterPosition": {
+          "type": "string",
+          "default": "C",
+          "description": "Delimiter used before position numbers (e.g., C in #L10C5-L20C10)",
+          "pattern": "^[^0-9]+$"
+        },
+        "rangelink.delimiterRange": {
+          "type": "string",
+          "default": "-",
+          "description": "Delimiter used between start and end positions (e.g., - in #L10-L20)",
+          "pattern": "^[^0-9]+$"
+        },
+        "rangelink.features.bookmarks.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Bookmarks feature (beta). Save code locations for quick access later."
         }
       }
     },
