@@ -164,12 +164,19 @@ New QA YAML files are created by `pnpm generate:qa-test-plan`. The script carrie
 
 ### The `automated` field
 
-Each test case has an `automated: true/false` field:
+Each test case has an `automated` field with three possible values:
 
-- `automated: true` — covered by an integration test in `src/__integration-tests__/`. These run on every CI push and do not require manual execution during a release cycle.
-- `automated: false` — must be executed manually. Reasons include: requires AI assistant interaction, requires UI interaction (e.g. modal dialogs, drag-and-drop), or tests platform-specific behaviour that differs from the CI environment.
+| Value | Meaning | Covered by | Runs in CI |
+| --- | --- | --- | --- |
+| `true` | Fully automated, no human needed | `test:release:automated` and `test:release` | Yes |
+| `assisted` | Automated setup + validation, human performs UI action | `test:release` only (human at screen) | No |
+| `false` | Fully manual, no integration test exists | Manual QA checklist | No |
 
-When you implement an integration test for a TC, update its `automated` field to `true` in the YAML.
+- `automated: true` — covered by a non-`[assisted]` integration test in `src/__integration-tests__/suite/`. Runs on every CI push.
+- `automated: assisted` — covered by an `[assisted]`-tagged integration test. The test automates setup and validation but pauses for a human to perform a UI action (QuickPick verification, dialog interaction). See [Assisted mode](#assisted-mode-assisted-tests) above.
+- `automated: false` — must be executed manually. Reasons include: requires AI assistant interaction, requires platform-specific behaviour, or cannot be tested even with human-in-the-loop assistance.
+
+When you implement an integration test for a TC, update its `automated` field to `true` or `assisted` in the YAML.
 
 ### When to add new test cases
 

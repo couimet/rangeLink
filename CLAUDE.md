@@ -586,10 +586,12 @@
 </rule>
 
 <rule id="QA005" priority="critical">
-  <title>`automated: true` requires a matching integration test on the branch</title>
-  <do>When marking a TC `automated: true`, ensure the corresponding integration test (in `src/__integration-tests__/suite/`) exists on the same branch before the PR merges — it can be a separate commit/step</do>
-  <do>Use `automated: false` for scenarios that can't be integration-tested (e.g., QuickPick content verification, dialog interaction). See TESTING.md § "QuickPick limitation" for what can and cannot be automated.</do>
-  <never>Mark `automated: true` based on unit tests alone — the validator only checks integration tests</never>
+  <title>`automated` field requires a matching integration test on the branch</title>
+  <do>The `automated` field accepts three values: `true` (fully automated), `assisted` (human-in-the-loop), `false` (fully manual)</do>
+  <do>When marking a TC `automated: true`, ensure a non-`[assisted]` integration test exists in `src/__integration-tests__/suite/` on the same branch</do>
+  <do>When marking a TC `automated: assisted`, ensure an `[assisted]`-tagged integration test exists in `src/__integration-tests__/suite/` on the same branch. See TESTING.md § "Assisted mode" for the `[assisted]` tag convention.</do>
+  <do>Use `automated: false` for scenarios that can't be integration-tested at all (e.g., requires AI assistant interaction, platform-specific behaviour). See TESTING.md § "QuickPick limitation" for what can and cannot be automated.</do>
+  <never>Mark `automated: true` or `automated: assisted` based on unit tests alone — the validator only checks integration tests</never>
   <see>packages/rangelink-vscode-extension/scripts/validate-qa-coverage.sh</see>
 </rule>
 
