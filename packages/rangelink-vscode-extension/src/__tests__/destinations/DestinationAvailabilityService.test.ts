@@ -1167,6 +1167,10 @@ describe('DestinationAvailabilityService', () => {
           itemKind: 'bindable',
         },
       ]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', kindCount: 1 },
+        'Using all registered destination kinds',
+      );
     });
 
     it('excludes unavailable custom AI assistant from menu results', async () => {

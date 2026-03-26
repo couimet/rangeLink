@@ -57,7 +57,7 @@ suite('Custom AI Assistants', () => {
     }
   });
 
-  test('custom-ai-assistant-005: config loaded but assistant not available without matching command at startup', () => {
+  test('custom-ai-assistant-005: unavailable at startup — no matching command or extension', () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
@@ -66,23 +66,54 @@ suite('Custom AI Assistants', () => {
     );
     assert.ok(parseLog, 'Expected custom AI assistant to be loaded from settings');
 
-    const availableAtStartup = allLines.some(
+    const unavailabilityLogs = allLines.filter(
       (line) =>
         line.includes('customAiAssistant.isAvailable') &&
         line.includes('fake-tool.test') &&
-        line.includes('"commandAvailable":true'),
+        line.includes('"available":false'),
     );
 
-    assert.ok(
-      !availableAtStartup,
-      'Expected custom AI assistant NOT to be available at startup (fake-tool.focus not registered at activation)',
+    const availabilityLogs = allLines.filter(
+      (line) =>
+        line.includes('customAiAssistant.isAvailable') &&
+        line.includes('fake-tool.test') &&
+        line.includes('"available":true'),
     );
+
+    assert.strictEqual(
+      availabilityLogs.length,
+      0,
+      `Expected no "available":true logs for fake-tool.test at startup but found ${availabilityLogs.length}`,
+    );
+
+    if (unavailabilityLogs.length > 0) {
+      assert.ok(
+        unavailabilityLogs[0].includes('"extensionFound":false'),
+        `Expected extensionFound:false in unavailability log but got: ${unavailabilityLogs[0]}`,
+      );
+      assert.ok(
+        unavailabilityLogs[0].includes('"commandAvailable":false'),
+        `Expected commandAvailable:false in unavailability log but got: ${unavailabilityLogs[0]}`,
+      );
+    }
   });
 
-  test('custom-ai-assistant-006: invalid config entries are skipped (verified via unit tests)', () => {
+  test('custom-ai-assistant-006: only valid entries loaded — invalid entries produce no registration', () => {
+    const logCapture = getLogCapture();
+    const allLines = logCapture.getAllLines();
+
+    const registrationLogs = allLines.filter(
+      (line) => line.includes('Registering builder for destination') && line.includes('custom-ai:'),
+    );
+
+    assert.strictEqual(
+      registrationLogs.length,
+      1,
+      `Expected exactly 1 custom AI registration (fake-tool.test) but found ${registrationLogs.length}: ${registrationLogs.join(', ')}`,
+    );
     assert.ok(
-      true,
-      'Invalid config validation is covered by parseCustomAiAssistants unit tests at 100% coverage',
+      registrationLogs[0].includes('custom-ai:fake-tool.test'),
+      `Expected registration for fake-tool.test but got: ${registrationLogs[0]}`,
     );
   });
 });

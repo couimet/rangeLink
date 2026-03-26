@@ -60,7 +60,7 @@ recipes/baking/chickenpie.ts#L3C14-L314C16
 
 | Feature                   | Description                                                                                                |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Destinations**          | Auto-send links to Claude Code, Cursor AI, Copilot Chat, Terminal, Text Editor, or any custom AI assistant |
+| **Destinations**          | Auto-send links to Claude Code, Cursor AI, Copilot Chat, Terminal, Text Editor, or any custom AI assistant <sup>Unreleased</sup> |
 | **Link Navigation**       | Cmd+Click any RangeLink in terminal or editor to jump directly to code                                     |
 | **Character Precision**   | `#L3C14-L314C16` — not just lines, exact character ranges                                                  |
 | **Portable Links (BYOD)** | Links work regardless of recipient's delimiter configuration                                               |
@@ -72,7 +72,7 @@ recipes/baking/chickenpie.ts#L3C14-L314C16
 
 ## Perfect For
 
-- 🤖 **AI Assistants** — Claude Code, Cursor AI, GitHub Copilot, plus any custom AI tool via settings — with exact context
+- 🤖 **AI Assistants** — Claude Code, Cursor AI, GitHub Copilot, plus any custom AI tool via settings <sup>Unreleased</sup> — with exact context
 - 💬 **Code Reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`" (click to view)
 - 👥 **Team Collaboration** — Universal format everyone can use and navigate
 - 📝 **Documentation** — Precise references in docs, Slack, PRs, anywhere

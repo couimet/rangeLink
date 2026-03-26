@@ -384,11 +384,24 @@ describe('destinationBuilders', () => {
       jest.spyOn(context.ideAdapter, 'getExtension').mockReturnValue({
         isActive: true,
       } as any);
+      jest.spyOn(context.ideAdapter, 'getCommands').mockResolvedValue([]);
 
       const builder = createCustomAiAssistantBuilder(customConfig);
       const destination = builder({ kind: customConfig.kind }, context);
 
       expect(await destination.isAvailable()).toBe(true);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'customAiAssistant.isAvailable',
+          extensionId: 'acme.spark-ai',
+          extensionFound: true,
+          extensionActive: true,
+          commandAvailable: false,
+          checkedCommands: ['sparkAi.focus', 'sparkAi.sidebar.open'],
+          available: true,
+        },
+        "Custom AI assistant 'Spark AI' available: true",
+      );
     });
 
     it('isAvailable falls back to command check when extension not found', async () => {
@@ -402,6 +415,18 @@ describe('destinationBuilders', () => {
       const destination = builder({ kind: customConfig.kind }, context);
 
       expect(await destination.isAvailable()).toBe(true);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'customAiAssistant.isAvailable',
+          extensionId: 'acme.spark-ai',
+          extensionFound: false,
+          extensionActive: false,
+          commandAvailable: true,
+          checkedCommands: ['sparkAi.focus', 'sparkAi.sidebar.open'],
+          available: true,
+        },
+        "Custom AI assistant 'Spark AI' available: true",
+      );
     });
 
     it('isAvailable returns false when neither extension nor commands available', async () => {
@@ -413,6 +438,18 @@ describe('destinationBuilders', () => {
       const destination = builder({ kind: customConfig.kind }, context);
 
       expect(await destination.isAvailable()).toBe(false);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'customAiAssistant.isAvailable',
+          extensionId: 'acme.spark-ai',
+          extensionFound: false,
+          extensionActive: false,
+          commandAvailable: false,
+          checkedCommands: ['sparkAi.focus', 'sparkAi.sidebar.open'],
+          available: false,
+        },
+        "Custom AI assistant 'Spark AI' available: false",
+      );
     });
 
     it('getUserInstruction returns undefined on success', () => {

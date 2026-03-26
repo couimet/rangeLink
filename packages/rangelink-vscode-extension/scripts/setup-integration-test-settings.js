@@ -30,8 +30,10 @@ fs.mkdirSync(SETTINGS_DIR, { recursive: true });
 let existing = {};
 try {
   existing = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
-} catch {
-  // File doesn't exist yet — start fresh
+} catch (err) {
+  if (err.code !== 'ENOENT') {
+    console.warn(`[setup-integration-test-settings] Warning: ${err.message}, starting fresh`);
+  }
 }
 
 const merged = { ...existing, ...settings };
