@@ -38,6 +38,7 @@ packages/rangelink-vscode-extension/__rl-test-*.ts
 # Generated QA artifacts (not committed)
 packages/rangelink-vscode-extension/qa/qa-coverage-report-*.txt
 packages/rangelink-vscode-extension/qa/qa-checklist-*.txt
+packages/rangelink-vscode-extension/qa/qa-issues-local-*.md
 packages/rangelink-vscode-extension/qa/test-run-*.txt
 
 # Folders where Claude Code is told to create and manage working documents
