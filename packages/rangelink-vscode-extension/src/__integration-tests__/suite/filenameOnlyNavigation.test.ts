@@ -6,6 +6,7 @@ import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
 import {
   activateExtension,
+  clearEditorSelection,
   closeAllEditors,
   getWorkspaceRoot,
   navigateViaHandleLinkClick,
@@ -44,6 +45,7 @@ suite('Filename-Only Navigation Fallback', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
       linkText,
       parseResult.value,
@@ -70,6 +72,7 @@ suite('Filename-Only Navigation Fallback', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
       linkText,
       parseResult.value,

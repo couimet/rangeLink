@@ -9,6 +9,7 @@ import {
   activateExtension,
   assertToastLogged,
   cleanupFiles,
+  clearEditorSelection,
   closeAllEditors,
   getLogCapture,
   getWorkspaceRoot,
@@ -45,6 +46,7 @@ suite('Navigation Clamping', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
       linkText,
       parseResult.value,
@@ -77,6 +79,7 @@ suite('Navigation Clamping', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
       linkText,
       parseResult.value,
@@ -106,6 +109,7 @@ suite('Navigation Clamping', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    await clearEditorSelection();
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
 
     assert.strictEqual(sel.anchor.line, 4, 'Expected anchor at line 4 (0-indexed)');
@@ -132,6 +136,7 @@ suite('Navigation Clamping', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
       linkText,
       parseResult.value,

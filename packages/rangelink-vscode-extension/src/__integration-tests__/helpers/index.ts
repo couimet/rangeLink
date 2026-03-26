@@ -5,7 +5,7 @@ export {
   CLIPBOARD_SENTINEL,
   writeClipboardSentinel,
 } from './clipboardHelpers';
-export { selectAll, waitForActiveEditor } from './editorHelpers';
+export { clearEditorSelection, selectAll, waitForActiveEditor } from './editorHelpers';
 export { cleanupFiles, closeAllEditors, createWorkspaceFile, openEditor } from './fileHelpers';
 export { getLogCapture } from './getLogCapture';
 export {
