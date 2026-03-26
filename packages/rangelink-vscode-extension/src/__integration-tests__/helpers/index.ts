@@ -11,6 +11,7 @@ export { getLogCapture } from './getLogCapture';
 export {
   assertNoStatusBarMsgLogged,
   assertNoToastLogged,
+  assertQuickPickItemsLogged,
   assertStatusBarMsgLogged,
   assertSuppressionLogged,
   assertToastLogged,

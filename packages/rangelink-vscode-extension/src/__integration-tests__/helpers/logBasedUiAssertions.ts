@@ -94,6 +94,59 @@ export const assertNoStatusBarMsgLogged = (
   );
 };
 
+const QUICK_PICK_FN = 'VscodeAdapter.showQuickPick';
+
+interface QuickPickItemExpectation {
+  label: string;
+  description?: string;
+  detail?: string;
+  kind?: number;
+  itemKind?: string;
+}
+
+/**
+ * Assert that a showQuickPick log entry contains the expected items in order.
+ * Matches on the subset of fields provided in each expectation — omitted fields are not checked.
+ */
+export const assertQuickPickItemsLogged = (
+  lines: string[],
+  expectedItems: QuickPickItemExpectation[],
+): void => {
+  let loggedItems: Record<string, unknown>[] | undefined;
+
+  for (const line of lines) {
+    const ctx = parseLogContext(line);
+    if (ctx !== undefined && ctx.fn === QUICK_PICK_FN && Array.isArray(ctx.items)) {
+      loggedItems = ctx.items as Record<string, unknown>[];
+      break;
+    }
+  }
+
+  assert.ok(
+    loggedItems !== undefined,
+    `Expected ${QUICK_PICK_FN} log entry with items but none found in ${lines.length} log lines`,
+  );
+
+  assert.strictEqual(
+    loggedItems!.length,
+    expectedItems.length,
+    `Expected ${expectedItems.length} QuickPick items but logged ${loggedItems!.length}`,
+  );
+
+  for (let i = 0; i < expectedItems.length; i++) {
+    const expected = expectedItems[i];
+    const actual: Record<string, unknown> = loggedItems![i];
+
+    for (const [key, value] of Object.entries(expected)) {
+      assert.strictEqual(
+        actual[key],
+        value,
+        `QuickPick item [${i}] field "${key}": expected "${value}" but got "${actual[key]}"`,
+      );
+    }
+  }
+};
+
 interface SuppressionAssertionOptions {
   fn: string;
   suppressedMessage: string;
