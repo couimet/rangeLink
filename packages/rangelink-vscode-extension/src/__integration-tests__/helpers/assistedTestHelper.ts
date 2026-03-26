@@ -1,6 +1,8 @@
+import { Console } from 'node:console';
+
 import * as vscode from 'vscode';
 
-const DONE_BUTTON = 'Done ✓';
+const nodeConsole = new Console(process.stdout, process.stderr);
 
 const BANNER_LINE = '═'.repeat(60);
 const SECTION_LINE = '─'.repeat(60);
@@ -10,41 +12,52 @@ const SECTION_LINE = '─'.repeat(60);
  * Call this in suiteSetup() for any suite containing [assisted] tests.
  */
 export const printAssistedBanner = (): void => {
-  console.log(`\n${BANNER_LINE}`);
-  console.log('ASSISTED TEST MODE');
-  console.log('Tests tagged [assisted] will pause for human interaction.');
-  console.log('Instructions appear both here and as a VS Code notification.');
-  console.log('Click "Done ✓" on the notification when you have completed the action.');
-  console.log(BANNER_LINE);
+  nodeConsole.log(`\n${BANNER_LINE}`);
+  nodeConsole.log('ASSISTED TEST MODE');
+  nodeConsole.log('Tests tagged [assisted] will pause for human interaction.');
+  nodeConsole.log('Instructions appear as a persistent VS Code notification.');
+  nodeConsole.log('Click Cancel on the notification when you have completed the action.');
+  nodeConsole.log(BANNER_LINE);
 };
 
 /**
  * Pauses the test until the human completes a UI action.
  *
- * Prints the instruction to the console (for the terminal-side screen) and shows
- * a VS Code notification with the same instruction text and a "Done" button.
- * If the notification is dismissed without clicking "Done", it re-shows automatically.
+ * Shows a persistent VS Code progress notification. The title contains the TC ID
+ * and a short action. The message is flowing prose describing what to verify —
+ * the notification flattens newlines to spaces, so content reads as a paragraph.
  *
- * @param instruction - What the tester should do (shown in both console and notification)
- * @param details - Optional additional context lines printed to the console only
+ * Console output uses structured line breaks for the terminal-side screen.
+ *
+ * @param tcId - Test case ID (e.g., "status-bar-menu-002"), shown as prefix in the notification
+ * @param action - Short action description (notification title after TC ID)
+ * @param consoleSteps - Structured step lines for the console (line breaks preserved)
+ * @param notificationSummary - Flowing prose for the notification body (rendered as one paragraph)
  */
-export const waitForHuman = async (instruction: string, details?: string[]): Promise<void> => {
-  console.log(`\n${SECTION_LINE}`);
-  console.log(`ACTION REQUIRED: ${instruction}`);
-  if (details !== undefined) {
-    details.forEach((line) => console.log(`  ${line}`));
-  }
-  console.log(`Click "Done ✓" on the VS Code notification when ready.`);
-  console.log(SECTION_LINE);
+export const waitForHuman = async (
+  tcId: string,
+  action: string,
+  consoleSteps: string[],
+  notificationSummary?: string,
+): Promise<void> => {
+  nodeConsole.log(`\n${SECTION_LINE}`);
+  nodeConsole.log(`[${tcId}] ${action}`);
+  consoleSteps.forEach((line) => nodeConsole.log(`  ${line}`));
+  nodeConsole.log('Click Cancel on the notification when done.');
+  nodeConsole.log(SECTION_LINE);
 
-  let done = false;
-  while (!done) {
-    const result = await vscode.window.showInformationMessage(
-      `🧪 ${instruction}`,
-      DONE_BUTTON,
-    );
-    if (result === DONE_BUTTON) {
-      done = true;
-    }
-  }
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: `🧪 ${tcId}: ${action}`,
+      cancellable: true,
+    },
+    (progress, token) =>
+      new Promise<void>((resolve) => {
+        if (notificationSummary !== undefined) {
+          progress.report({ message: notificationSummary });
+        }
+        token.onCancellationRequested(() => resolve());
+      }),
+  );
 };
