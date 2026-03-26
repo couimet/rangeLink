@@ -9,6 +9,9 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/couimet/rangeLink?utm_source=oss&utm_medium=github&utm_campaign=couimet%2FrangeLink&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
+> [!IMPORTANT]
+> Some features documented below are marked <sup>Unreleased</sup> — they are on `main` but not yet in a published release.
+
 > **"Claude Code today. Cursor AI tomorrow. Different shortcuts, different muscle memory."**<br />
 > **RangeLink ends it.** One keybinding. Any AI, any tool. Character-level precision. `recipes/baking/chickenpie.ts#L3C14-L314C16`
 
@@ -116,7 +119,7 @@ That was the lightbulb moment: **precise code references should be universal**. 
 
 I built the VS Code extension first, then extracted a platform-agnostic core library. The goal: make this work _everywhere_, for _everyone_.
 
-Today, with **destinations**, RangeLink sends links directly where you need them — Claude Code, Cursor AI, GitHub Copilot Chat, terminals, or text editors. No more copy-paste friction. It helps developers share code with precision across any AI assistant, VSCode, Cursor, GitHub, Slack, and more. One format, zero friction.
+Today, with **destinations**, RangeLink sends links directly where you need them — Claude Code, Cursor AI, GitHub Copilot Chat, terminals, text editors, or custom AI tools <sup>Unreleased</sup>. No more copy-paste friction. It helps developers share code with precision across any AI assistant, VSCode, Cursor, GitHub, Slack, and more. One format, zero friction.
 
 **The best part?** Your teammates don't even need RangeLink installed to understand your links. The notation is GitHub-inspired — developers already know it.
 

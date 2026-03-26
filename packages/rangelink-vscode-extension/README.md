@@ -45,7 +45,7 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 
 ### Perfect For
 
-- 🤖 **AI assistants** — Claude Code Extension, Cursor AI, terminal claude-code, Copilot with _exact_ context + clickable navigation
+- 🤖 **AI assistants** — Claude Code Extension, Cursor AI, terminal claude-code, Copilot, plus any custom AI tool via settings <sup>Unreleased</sup> — with _exact_ context + clickable navigation
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`" (click to view)
 - 👥 **Team collaboration** — Universal format everyone can use and navigate
 
