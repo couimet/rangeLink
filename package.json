@@ -34,6 +34,7 @@
     "test": "pnpm -r test",
     "test:release": "pnpm --filter rangelink-vscode-extension test:release",
     "test:release:automated": "pnpm --filter rangelink-vscode-extension test:release:automated",
+    "test:release:grep": "pnpm --filter rangelink-vscode-extension test:release:grep",
     "validate:qa-coverage:vscode-extension": "pnpm --filter rangelink-vscode-extension validate:qa-coverage",
     "verify:qa-scripts:vscode-extension": "pnpm --filter rangelink-vscode-extension verify:qa-scripts",
     "watch": "pnpm -r --parallel watch"

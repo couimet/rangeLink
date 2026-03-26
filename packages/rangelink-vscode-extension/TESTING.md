@@ -11,7 +11,9 @@
 | Unit tests            | `pnpm test`                                  | Every change                       | ✅                   |
 | Unit tests (watch)    | `pnpm test:watch`                            | During active development          | —                    |
 | Coverage report       | `pnpm test:coverage`                         | Before PR / on demand              | ✅ (with thresholds) |
-| Integration tests     | `pnpm test:release`                          | Before PR, after feature work      | ✅                   |
+| Integration tests     | `pnpm test:release`                          | Before PR, after feature work      | —                    |
+| Integration (CI-safe) | `pnpm test:release:automated`                | CI / headless environments         | ✅                   |
+| Integration (filter)  | `pnpm test:release:grep "<pattern>"`         | Run specific TCs by ID or suite    | —                    |
 | Prepare QA test plan  | `pnpm generate:qa-test-plan`                 | Start of release cycle             | —                    |
 | Generate QA issue     | `pnpm generate:qa-issue`                     | At the start of each release cycle | —                    |
 | Generate QA checklist | `pnpm generate:qa-checklist`                 | Before manual QA pass              | —                    |
@@ -81,6 +83,48 @@ VS Code's extension host test runner provides no API to interact with QuickPick 
 
 See https://github.com/couimet/rangeLink/issues/483 for the full triage of automatable vs manual TCs.
 
+### Assisted mode (`[assisted]` tests)
+
+Tests tagged `[assisted]` in their name automate setup and validation but pause for a human to perform UI actions that the extension host cannot control (QuickPick interaction, dialog buttons, visual verification). A persistent VS Code notification shows the instruction text; the tester clicks Cancel to signal completion and resume the test.
+
+**Two scripts, two modes:**
+
+| Script | What runs | Timeout | Use case |
+| --- | --- | --- | --- |
+| `pnpm test:release` | All tests (automated + `[assisted]`) | 5 min/test | Human at screen — QA sessions |
+| `pnpm test:release:automated` | Automated only (skips `[assisted]`) | 20 s/test | CI / headless environments |
+
+Both share `pnpm test:release:prepare` for compilation. The difference is the Mocha config: `.vscode-test.automated.mjs` uses `grep: '\\[assisted\\]'` with `invert: true` to skip assisted tests.
+
+**Filtering with `test:release:grep`:**
+
+```bash
+# Single TC by ID
+pnpm test:release:grep "status-bar-menu-002"
+
+# Multiple TCs (regex OR)
+pnpm test:release:grep "status-bar-menu-002|status-bar-menu-005"
+
+# All TCs in a suite (matches suite name)
+pnpm test:release:grep "R-M Status Bar Menu"
+
+# Only [assisted] tests
+pnpm test:release:grep "\[assisted\]"
+```
+
+Runs from the project root or extension directory. Compiles first, then runs only matching tests. The `validate:qa-coverage` step is intentionally skipped — it expects the full suite. Under the hood, the pattern is passed as `MOCHA_GREP` to `.vscode-test.mjs` because `@vscode/test-cli` does not support Mocha flags via CLI.
+
+**Adding new assisted tests:**
+
+1. Add the test to the relevant themed file in `src/__integration-tests__/suite/` — do not create a separate directory.
+2. Prefix the test name with `[assisted]`: `test('[assisted] my-tc-id: description', ...)`.
+3. Call `printAssistedBanner()` in `suiteSetup()` if this is the first `[assisted]` test in the suite.
+4. Use `waitForHuman(tcId, action, consoleSteps, notificationSummary)` to pause for human input.
+5. Add assertions after `waitForHuman` returns (log-based, clipboard, etc.).
+6. Clean up in `teardown`/`suiteTeardown` — close editors, dispose terminals, delete temp files.
+
+**Two-screen workflow:** Run `pnpm test:release` in a terminal on one screen. The VS Code test host opens on the other. Instructions appear in both the terminal (structured steps) and as a persistent notification in VS Code (flowing summary). Perform the action, click Cancel on the notification, and the test continues.
+
 ---
 
 ## CI Pipeline
@@ -97,7 +141,7 @@ Steps run in this order:
 | Install dependencies         | Runs `pnpm install` via the `install-deps` composite action                          |
 | Check formatting and linting | Runs Prettier and ESLint via `check-formatting`                                      |
 | Run tests with coverage      | Runs `pnpm test` (all packages) with coverage thresholds enforced                    |
-| Run integration tests        | Runs `pnpm test:release` under Xvfb via the `run-integration-tests` composite action |
+| Run integration tests        | Runs `pnpm test:release:automated` under Xvfb via the `run-integration-tests` composite action |
 | Check TODOs/FIXMEs           | Counts or diffs `TODO`/`FIXME` comments; on PRs, fails if new ones are introduced    |
 
 ---

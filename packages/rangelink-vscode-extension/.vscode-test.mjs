@@ -12,6 +12,7 @@ export default defineConfig([
     },
     mocha: {
       timeout: 300000,
+      ...(process.env.MOCHA_GREP ? { grep: process.env.MOCHA_GREP } : {}),
     },
   },
 ]);

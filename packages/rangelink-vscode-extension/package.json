@@ -55,6 +55,7 @@
     "test:fast": "jest --coverage --testPathIgnorePatterns '<rootDir>/src/__integration-tests__/' '\\.integration\\.test\\.ts$'",
     "test:release": "pnpm test:release:prepare && vscode-test && pnpm validate:qa-coverage",
     "test:release:automated": "pnpm test:release:prepare && vscode-test --config .vscode-test.automated.mjs && pnpm validate:qa-coverage",
+    "test:release:grep": "./scripts/test-release-grep.sh",
     "test:release:prepare": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json",
     "test:watch": "jest --watch",
     "validate:qa-coverage": "./scripts/validate-qa-coverage.sh",
