@@ -50,7 +50,8 @@ suite('R-M Status Bar Menu', () => {
 
     const lines = logCapture.getLinesSince('before-menu-002');
     const menuOpened = lines.some(
-      (line) => line.includes('RangeLinkStatusBar.openMenu') && line.includes('User dismissed menu'),
+      (line) =>
+        line.includes('RangeLinkStatusBar.openMenu') && line.includes('User dismissed menu'),
     );
     if (menuOpened) {
       log('✓ Log confirms menu was opened and dismissed');
@@ -87,7 +88,8 @@ suite('R-M Status Bar Menu', () => {
 
     const lines = logCapture.getLinesSince('before-menu-003');
     const menuOpened = lines.some(
-      (line) => line.includes('RangeLinkStatusBar.openMenu') && line.includes('User dismissed menu'),
+      (line) =>
+        line.includes('RangeLinkStatusBar.openMenu') && line.includes('User dismissed menu'),
     );
     if (menuOpened) {
       log('✓ Log confirms menu was opened and dismissed via keybinding');

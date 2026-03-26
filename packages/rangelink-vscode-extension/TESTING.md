@@ -89,10 +89,10 @@ Tests tagged `[assisted]` in their name automate setup and validation but pause 
 
 **Two scripts, two modes:**
 
-| Script | What runs | Timeout | Use case |
-| --- | --- | --- | --- |
-| `pnpm test:release` | All tests (automated + `[assisted]`) | 5 min/test | Human at screen — QA sessions |
-| `pnpm test:release:automated` | Automated only (skips `[assisted]`) | 20 s/test | CI / headless environments |
+| Script                        | What runs                            | Timeout    | Use case                      |
+| ----------------------------- | ------------------------------------ | ---------- | ----------------------------- |
+| `pnpm test:release`           | All tests (automated + `[assisted]`) | 5 min/test | Human at screen — QA sessions |
+| `pnpm test:release:automated` | Automated only (skips `[assisted]`)  | 20 s/test  | CI / headless environments    |
 
 Both share `pnpm test:release:prepare` for compilation. The difference is the Mocha config: `.vscode-test.automated.mjs` uses `grep: '\\[assisted\\]'` with `invert: true` to skip assisted tests.
 
@@ -135,14 +135,14 @@ CI runs automatically on every pull request and on pushes to `main`. The job is 
 
 Steps run in this order:
 
-| Step                         | What it does                                                                         |
-| ---------------------------- | ------------------------------------------------------------------------------------ |
-| Setup Node.js and pnpm       | Installs the Node version from `.nvmrc` via the `setup-node-pnpm` composite action   |
-| Install dependencies         | Runs `pnpm install` via the `install-deps` composite action                          |
-| Check formatting and linting | Runs Prettier and ESLint via `check-formatting`                                      |
-| Run tests with coverage      | Runs `pnpm test` (all packages) with coverage thresholds enforced                    |
+| Step                         | What it does                                                                                   |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Setup Node.js and pnpm       | Installs the Node version from `.nvmrc` via the `setup-node-pnpm` composite action             |
+| Install dependencies         | Runs `pnpm install` via the `install-deps` composite action                                    |
+| Check formatting and linting | Runs Prettier and ESLint via `check-formatting`                                                |
+| Run tests with coverage      | Runs `pnpm test` (all packages) with coverage thresholds enforced                              |
 | Run integration tests        | Runs `pnpm test:release:automated` under Xvfb via the `run-integration-tests` composite action |
-| Check TODOs/FIXMEs           | Counts or diffs `TODO`/`FIXME` comments; on PRs, fails if new ones are introduced    |
+| Check TODOs/FIXMEs           | Counts or diffs `TODO`/`FIXME` comments; on PRs, fails if new ones are introduced              |
 
 ---
 
