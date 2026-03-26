@@ -42,7 +42,7 @@ test_cases:
     steps:
       - 'Click the $(link) RangeLink item in the status bar'
     expected_result: "A QuickPick menu opens titled 'RangeLink Menu'. Menu items are visible."
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-003
     feature: 'R-M Status Bar Menu'
@@ -53,7 +53,7 @@ test_cases:
     steps:
       - 'Press Cmd+R Cmd+M'
     expected_result: 'Same QuickPick menu opens as clicking the status bar item.'
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-004
     feature: 'R-M Status Bar Menu'
@@ -75,7 +75,7 @@ test_cases:
       - 'Open the R-M menu (keybinding or status bar click)'
       - 'Observe the menu items'
     expected_result: "Menu contains 'Jump to Bound Destination' with the destination name shown. 'Unbind Destination' is also visible."
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-006
     feature: 'R-M Status Bar Menu'
