@@ -11,6 +11,7 @@ export * from './formatLinkTooltip';
 export * from './formatMessage';
 export * from './generateLinkFromSelections';
 export * from './getUntitledDisplayName';
+export * from './interpolateArgs';
 export * from './isBinaryFile';
 export * from './isEligibleForPaste';
 export * from './isSelectableQuickPickItem';
