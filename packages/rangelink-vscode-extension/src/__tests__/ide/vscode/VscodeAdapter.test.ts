@@ -372,10 +372,24 @@ describe('VscodeAdapter', () => {
 
     it('should log full item manifest including description, detail, kind, and itemKind', async () => {
       const items = [
-        { label: '$(arrow-right) Jump to Bound Destination', description: '→ Terminal ("bash")', itemKind: 'command' as const, command: 'rangelink.jumpToDestination' },
-        { label: '$(close) Unbind Destination', itemKind: 'command' as const, command: 'rangelink.unbindDestination' },
+        {
+          label: '$(arrow-right) Jump to Bound Destination',
+          description: '→ Terminal ("bash")',
+          itemKind: 'command' as const,
+          command: 'rangelink.jumpToDestination',
+        },
+        {
+          label: '$(close) Unbind Destination',
+          itemKind: 'command' as const,
+          command: 'rangelink.unbindDestination',
+        },
         { label: '', kind: -1 },
-        { label: '$(link-external) Go to Link', detail: 'Navigate to a RangeLink', itemKind: 'command' as const, command: 'rangelink.goToLink' },
+        {
+          label: '$(link-external) Go to Link',
+          detail: 'Navigate to a RangeLink',
+          itemKind: 'command' as const,
+          command: 'rangelink.goToLink',
+        },
         { label: 'No destinations available', itemKind: 'info' as const },
       ];
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
@@ -388,10 +402,18 @@ describe('VscodeAdapter', () => {
           itemCount: 5,
           options: undefined,
           items: [
-            { label: '$(arrow-right) Jump to Bound Destination', description: '→ Terminal ("bash")', itemKind: 'command' },
+            {
+              label: '$(arrow-right) Jump to Bound Destination',
+              description: '→ Terminal ("bash")',
+              itemKind: 'command',
+            },
             { label: '$(close) Unbind Destination', itemKind: 'command' },
             { label: '', kind: -1 },
-            { label: '$(link-external) Go to Link', detail: 'Navigate to a RangeLink', itemKind: 'command' },
+            {
+              label: '$(link-external) Go to Link',
+              detail: 'Navigate to a RangeLink',
+              itemKind: 'command',
+            },
             { label: 'No destinations available', itemKind: 'info' },
           ],
         },
