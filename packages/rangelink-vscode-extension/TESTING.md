@@ -6,21 +6,23 @@
 
 ## Quick Reference
 
-| Test type             | Command                                      | When to run                        | Runs in CI           |
-| --------------------- | -------------------------------------------- | ---------------------------------- | -------------------- |
-| Unit tests            | `pnpm test`                                  | Every change                       | ✅                   |
-| Unit tests (watch)    | `pnpm test:watch`                            | During active development          | —                    |
-| Coverage report       | `pnpm test:coverage`                         | Before PR / on demand              | ✅ (with thresholds) |
-| Integration tests     | `pnpm test:release`                          | Before PR, after feature work      | ✅                   |
-| Prepare QA test plan  | `pnpm generate:qa-test-plan`                 | Start of release cycle             | —                    |
-| Generate QA issue     | `pnpm generate:qa-issue`                     | At the start of each release cycle | —                    |
-| Generate QA checklist | `pnpm generate:qa-checklist`                 | Before manual QA pass              | —                    |
-| QA smoke setup        | `pnpm qa:setup`                              | Before manual QA pass              | —                    |
-| Validate QA coverage  | `pnpm validate:qa-coverage`                  | After adding integration tests     | ✅                   |
-| Release testing guide | `pnpm generate:release-testing-instructions` | Start of release cycle             | —                    |
-| Verify all QA scripts | `pnpm verify:qa-scripts`                     | After QA script changes            | —                    |
+| Test type             | Command                                                       | When to run                        | Runs in CI           |
+| --------------------- | ------------------------------------------------------------- | ---------------------------------- | -------------------- |
+| Unit tests            | `pnpm test`                                                   | Every change                       | ✅                   |
+| Unit tests (watch)    | `pnpm test:watch` (from extension dir)                        | During active development          | —                    |
+| Coverage report       | `pnpm test:coverage` (from extension dir)                     | Before PR / on demand              | ✅ (with thresholds) |
+| Integration tests     | `pnpm test:release`                                           | Before PR, after feature work      | —                    |
+| Integration (CI-safe) | `pnpm test:release:automated`                                 | CI / headless environments         | ✅                   |
+| Integration (filter)  | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite    | —                    |
+| Prepare QA test plan  | `pnpm generate:qa-test-plan:vscode-extension`                 | Start of release cycle             | —                    |
+| Generate QA issue     | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle | —                    |
+| Local QA checklist    | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass    | —                    |
+| QA smoke setup        | `pnpm qa:setup:vscode-extension`                              | Before manual QA pass              | —                    |
+| Validate QA coverage  | `pnpm validate:qa-coverage:vscode-extension`                  | After adding integration tests     | ✅                   |
+| Release testing guide | `pnpm generate:release-testing-instructions:vscode-extension` | Start of release cycle             | —                    |
+| Verify all QA scripts | `pnpm verify:qa-scripts:vscode-extension`                     | After QA script changes            | —                    |
 
-All commands run from `packages/rangelink-vscode-extension/` unless noted.
+All commands run from the project root unless noted.
 
 ---
 
@@ -77,9 +79,51 @@ VS Code's extension host test runner provides no API to interact with QuickPick 
 
 **Workaround — command bypass:** Many TCs that involve a QuickPick as a means to an end (e.g., "bind via picker, verify toast") can be automated by calling the underlying command directly (`rangelink.bindToTerminalHere`, `rangelink.bindToTextEditorHere`) to bypass the picker entirely, then asserting the outcome via log-based UI assertions.
 
-**What cannot be automated:** TCs that verify picker content itself (item ordering, badges, grouping, placeholder text) or dialog interaction (confirmation buttons, cancel behavior) must remain `automated: false` in the QA YAML. These require manual testing.
+**What cannot be fully automated:** TCs that verify picker content itself (item ordering, badges, grouping, placeholder text) or dialog interaction (confirmation buttons, cancel behavior) require a human to open/dismiss the picker. Mark these `automated: assisted` in the QA YAML — the test automates setup and validates content via log-based QuickPick assertions while the human performs the mechanical UI action. See [Assisted mode](#assisted-mode-assisted-tests) below. Only TCs that genuinely cannot be tested even with human-in-the-loop assistance should remain `automated: false`.
 
 See https://github.com/couimet/rangeLink/issues/483 for the full triage of automatable vs manual TCs.
+
+### Assisted mode (`[assisted]` tests)
+
+Tests tagged `[assisted]` in their name automate setup and validation but pause for a human to perform UI actions that the extension host cannot control (QuickPick interaction, dialog buttons, visual verification). A persistent VS Code notification shows the instruction text; the tester clicks Cancel to signal completion and resume the test.
+
+**Two scripts, two modes:**
+
+| Script                        | What runs                            | Timeout    | Use case                      |
+| ----------------------------- | ------------------------------------ | ---------- | ----------------------------- |
+| `pnpm test:release`           | All tests (automated + `[assisted]`) | 5 min/test | Human at screen — QA sessions |
+| `pnpm test:release:automated` | Automated only (skips `[assisted]`)  | 20 s/test  | CI / headless environments    |
+
+Both share `pnpm test:release:prepare` for compilation. The difference is the Mocha config: `.vscode-test.automated.mjs` uses `grep: '\\[assisted\\]'` with `invert: true` to skip assisted tests.
+
+**Filtering with `test:release:grep`:**
+
+```bash
+# Single TC by ID
+pnpm test:release:grep "status-bar-menu-002"
+
+# Multiple TCs (regex OR)
+pnpm test:release:grep "status-bar-menu-002|status-bar-menu-005"
+
+# All TCs in a suite (matches suite name)
+pnpm test:release:grep "R-M Status Bar Menu"
+
+# Only [assisted] tests
+pnpm test:release:grep "\[assisted\]"
+```
+
+Runs from the project root or extension directory. Compiles first, then runs only matching tests. The `validate:qa-coverage` step is intentionally skipped — it expects the full suite. Under the hood, the pattern is passed as `MOCHA_GREP` to `.vscode-test.mjs` because `@vscode/test-cli` does not support Mocha flags via CLI.
+
+**Adding new assisted tests:**
+
+1. Add the test to the relevant themed file in `src/__integration-tests__/suite/` — do not create a separate directory.
+2. Prefix the test name with `[assisted]`: `test('[assisted] my-tc-id: description', ...)`.
+3. Call `printAssistedBanner()` in `suiteSetup()` if this is the first `[assisted]` test in the suite.
+4. Use `waitForHuman(tcId, action, consoleSteps, notificationSummary)` to pause for human input.
+5. Add assertions after `waitForHuman` returns (log-based, clipboard, etc.).
+6. Clean up in `teardown`/`suiteTeardown` — close editors, dispose terminals, delete temp files.
+
+**Two-screen workflow:** Run `pnpm test:release` in a terminal on one screen. The VS Code test host opens on the other. Instructions appear in both the terminal (structured steps) and as a persistent notification in VS Code (flowing summary). Perform the action, click Cancel on the notification, and the test continues.
 
 ---
 
@@ -91,14 +135,14 @@ CI runs automatically on every pull request and on pushes to `main`. The job is 
 
 Steps run in this order:
 
-| Step                         | What it does                                                                         |
-| ---------------------------- | ------------------------------------------------------------------------------------ |
-| Setup Node.js and pnpm       | Installs the Node version from `.nvmrc` via the `setup-node-pnpm` composite action   |
-| Install dependencies         | Runs `pnpm install` via the `install-deps` composite action                          |
-| Check formatting and linting | Runs Prettier and ESLint via `check-formatting`                                      |
-| Run tests with coverage      | Runs `pnpm test` (all packages) with coverage thresholds enforced                    |
-| Run integration tests        | Runs `pnpm test:release` under Xvfb via the `run-integration-tests` composite action |
-| Check TODOs/FIXMEs           | Counts or diffs `TODO`/`FIXME` comments; on PRs, fails if new ones are introduced    |
+| Step                         | What it does                                                                                   |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Setup Node.js and pnpm       | Installs the Node version from `.nvmrc` via the `setup-node-pnpm` composite action             |
+| Install dependencies         | Runs `pnpm install` via the `install-deps` composite action                                    |
+| Check formatting and linting | Runs Prettier and ESLint via `check-formatting`                                                |
+| Run tests with coverage      | Runs `pnpm test` (all packages) with coverage thresholds enforced                              |
+| Run integration tests        | Runs `pnpm test:release:automated` under Xvfb via the `run-integration-tests` composite action |
+| Check TODOs/FIXMEs           | Counts or diffs `TODO`/`FIXME` comments; on PRs, fails if new ones are introduced              |
 
 ---
 
@@ -120,12 +164,19 @@ New QA YAML files are created by `pnpm generate:qa-test-plan`. The script carrie
 
 ### The `automated` field
 
-Each test case has an `automated: true/false` field:
+Each test case has an `automated` field with three possible values:
 
-- `automated: true` — covered by an integration test in `src/__integration-tests__/`. These run on every CI push and do not require manual execution during a release cycle.
-- `automated: false` — must be executed manually. Reasons include: requires AI assistant interaction, requires UI interaction (e.g. modal dialogs, drag-and-drop), or tests platform-specific behaviour that differs from the CI environment.
+| Value      | Meaning                                                | Covered by                                  | Runs in CI |
+| ---------- | ------------------------------------------------------ | ------------------------------------------- | ---------- |
+| `true`     | Fully automated, no human needed                       | `test:release:automated` and `test:release` | Yes        |
+| `assisted` | Automated setup + validation, human performs UI action | `test:release` only (human at screen)       | No         |
+| `false`    | Fully manual, no integration test exists               | Manual QA checklist                         | No         |
 
-When you implement an integration test for a TC, update its `automated` field to `true` in the YAML.
+- `automated: true` — covered by a non-`[assisted]` integration test in `src/__integration-tests__/suite/`. Runs on every CI push.
+- `automated: assisted` — covered by an `[assisted]`-tagged integration test. The test automates setup and validation but pauses for a human to perform a UI action (QuickPick verification, dialog interaction). See [Assisted mode](#assisted-mode-assisted-tests) above.
+- `automated: false` — must be executed manually. Reasons include: requires AI assistant interaction, requires platform-specific behaviour, or cannot be tested even with human-in-the-loop assistance.
+
+When you implement an integration test for a TC, update its `automated` field to `true` or `assisted` in the YAML.
 
 ### When to add new test cases
 
@@ -143,10 +194,13 @@ flowchart TD
     D -- Bug fix --> F{Could it regress?}
     F -- No --> C
     F -- Yes --> E
-    E --> G{Can it be integration-tested?}
+    E --> G{Can it be fully automated?}
     G -- Yes --> H["Set automated: true<br/>Write integration test"]
-    G -- No --> I["Set automated: false<br/>Describe manual steps"]
+    G -- No --> K{Needs human UI action<br/>but test can validate?}
+    K -- Yes --> L["Set automated: assisted<br/>Write [assisted] test"]
+    K -- No --> I["Set automated: false<br/>Describe manual steps"]
     H --> J[validate:qa-coverage passes]
+    L --> J
     I --> J
 ```
 

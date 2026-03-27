@@ -330,6 +330,8 @@ describe('VscodeAdapter', () => {
   });
 
   describe('showQuickPick', () => {
+    const QUICK_PICK_SEPARATOR_KIND = -1;
+
     it('should show quick pick with items using VSCode API', async () => {
       const items = [{ label: 'Item 1' }, { label: 'Item 2' }];
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(items[0]);
@@ -340,7 +342,12 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.window.showQuickPick).toHaveBeenCalledTimes(1);
       expect(result).toStrictEqual({ label: 'Item 1' });
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.showQuickPick', itemCount: 2, options: undefined },
+        {
+          fn: 'VscodeAdapter.showQuickPick',
+          itemCount: 2,
+          options: undefined,
+          items: [{ label: 'Item 1' }, { label: 'Item 2' }],
+        },
         'Showing quick pick',
       );
     });
@@ -355,7 +362,97 @@ describe('VscodeAdapter', () => {
       expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(items, options);
       expect(result).toStrictEqual({ label: 'Option B' });
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'VscodeAdapter.showQuickPick', itemCount: 2, options },
+        {
+          fn: 'VscodeAdapter.showQuickPick',
+          itemCount: 2,
+          options,
+          items: [{ label: 'Option A' }, { label: 'Option B' }],
+        },
+        'Showing quick pick',
+      );
+    });
+
+    it('should log full item manifest including description, detail, kind, and itemKind', async () => {
+      const items = [
+        {
+          label: '$(arrow-right) Jump to Bound Destination',
+          description: '→ Terminal ("bash")',
+          itemKind: 'command' as const,
+          command: 'rangelink.jumpToDestination',
+        },
+        {
+          label: '$(close) Unbind Destination',
+          itemKind: 'command' as const,
+          command: 'rangelink.unbindDestination',
+        },
+        { label: '', kind: QUICK_PICK_SEPARATOR_KIND },
+        {
+          label: '$(link-external) Go to Link',
+          detail: 'Navigate to a RangeLink',
+          itemKind: 'command' as const,
+          command: 'rangelink.goToLink',
+        },
+        { label: 'No destinations available', itemKind: 'info' as const },
+      ];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      await adapter.showQuickPick(items);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.showQuickPick',
+          itemCount: 5,
+          options: undefined,
+          items: [
+            {
+              label: '$(arrow-right) Jump to Bound Destination',
+              description: '→ Terminal ("bash")',
+              itemKind: 'command',
+            },
+            { label: '$(close) Unbind Destination', itemKind: 'command' },
+            { label: '', kind: QUICK_PICK_SEPARATOR_KIND },
+            {
+              label: '$(link-external) Go to Link',
+              detail: 'Navigate to a RangeLink',
+              itemKind: 'command',
+            },
+            { label: 'No destinations available', itemKind: 'info' },
+          ],
+        },
+        'Showing quick pick',
+      );
+    });
+
+    it('should log only description when detail, kind, and itemKind are absent', async () => {
+      const items = [{ label: 'Terminal "bash"', description: 'active' }];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      await adapter.showQuickPick(items);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.showQuickPick',
+          itemCount: 1,
+          options: undefined,
+          items: [{ label: 'Terminal "bash"', description: 'active' }],
+        },
+        'Showing quick pick',
+      );
+    });
+
+    it('should log only detail when description, kind, and itemKind are absent', async () => {
+      const items = [{ label: 'Go to Link', detail: 'Navigate to a code reference' }];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      await adapter.showQuickPick(items);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.showQuickPick',
+          itemCount: 1,
+          options: undefined,
+          items: [{ label: 'Go to Link', detail: 'Navigate to a code reference' }],
+        },
         'Showing quick pick',
       );
     });

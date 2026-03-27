@@ -4,7 +4,8 @@ import * as path from 'node:path';
 
 import { defineConfig } from '@vscode/test-cli';
 
-const MOCHA_TIMEOUT_MS = 300_000;
+const MOCHA_TIMEOUT_MS = 20_000;
+const ASSISTED_TEST_GREP = '\\[assisted\\]';
 const USER_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'rl-vscode-test-'));
 
 export default defineConfig([
@@ -19,7 +20,8 @@ export default defineConfig([
     },
     mocha: {
       timeout: MOCHA_TIMEOUT_MS,
-      ...(process.env.MOCHA_GREP ? { grep: process.env.MOCHA_GREP } : {}),
+      grep: ASSISTED_TEST_GREP,
+      invert: true,
     },
   },
 ]);

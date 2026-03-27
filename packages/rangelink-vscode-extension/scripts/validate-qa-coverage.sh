@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 #
-# Cross-reference validator: QA YAML `automated: true` markers ↔ integration test IDs.
+# Cross-reference validator: QA YAML automated markers ↔ integration test IDs.
 #
-# Parses the QA YAML for entries marked `automated: true`, scans integration test files
-# for matching TC IDs in test()/describe() blocks, and reports mismatches in both directions.
+# Validates three categories:
+#   automated: true     → must have a non-[assisted] integration test
+#   automated: assisted → must have an [assisted]-tagged integration test
+#   automated: false    → must NOT have an integration test (fully manual)
 #
-# Output: qa/qa-coverage-report-v<version>.txt (alongside terminal output)
+# Output: qa/qa-coverage-report-v<version>-<timestamp>.txt (alongside terminal output)
 #
 # Usage:
 #   ./scripts/validate-qa-coverage.sh [path-to-yaml]
@@ -47,38 +49,49 @@ find_latest_qa_yaml() {
   echo "$latest"
 }
 
-# Extract TC IDs where automated: true from YAML.
-# Strategy: pair each `id:` line with its `automated:` line using awk.
-# Assumes the YAML schema places `id:` before `automated:` in each test case entry.
-# current_id is set on `id:` match and cleared on `automated: true/false` match.
-parse_automated_ids() {
+# Extract TC IDs by automated value from YAML.
+# Usage: parse_ids_by_automated <yaml_path> <value>
+# where <value> is "true", "assisted", or "false"
+parse_ids_by_automated() {
   local yaml_path="$1"
-  awk '
+  local target_value="$2"
+  awk -v target="$target_value" '
     /^[[:space:]]+-[[:space:]]+id:/ {
       gsub(/^[[:space:]]+-[[:space:]]+id:[[:space:]]+/, "")
       gsub(/^'\''|'\''$/, "")
       gsub(/^"/, ""); gsub(/"$/, "")
       current_id = $0
     }
-    /^[[:space:]]+automated:[[:space:]]+true/ {
-      if (current_id != "") print current_id
-      current_id = ""
-    }
-    /^[[:space:]]+automated:[[:space:]]+false/ {
+    /^[[:space:]]+automated:/ {
+      gsub(/^[[:space:]]+automated:[[:space:]]+/, "")
+      if ($0 == target && current_id != "") print current_id
       current_id = ""
     }
   ' "$yaml_path" | sort
 }
 
-# Extract TC IDs from integration test files.
-# Looks for test()/it()/describe()/suite() calls containing slug-NNN patterns.
-find_test_ids() {
+# Extract TC IDs from non-[assisted] integration tests.
+find_automated_test_ids() {
   if [[ ! -d "$INTEGRATION_TEST_DIR" ]]; then
     echo "Integration test directory not found: $INTEGRATION_TEST_DIR" >&2
     exit 1
   fi
 
   grep -hE '(test|it|describe|suite)[[:space:]]*\(' "$INTEGRATION_TEST_DIR"/*.test.ts \
+    | grep -v '\[assisted\]' \
+    | grep -oE '[a-z][-a-z]*-[0-9]{3}' \
+    | sort -u
+}
+
+# Extract TC IDs from [assisted]-tagged integration tests.
+find_assisted_test_ids() {
+  if [[ ! -d "$INTEGRATION_TEST_DIR" ]]; then
+    echo "Integration test directory not found: $INTEGRATION_TEST_DIR" >&2
+    exit 1
+  fi
+
+  grep -hE '(test|it|describe|suite)[[:space:]]*\(' "$INTEGRATION_TEST_DIR"/*.test.ts \
+    | grep '\[assisted\]' \
     | grep -oE '[a-z][-a-z]*-[0-9]{3}' \
     | sort -u
 }
@@ -98,7 +111,8 @@ if [[ "$YAML_REST" =~ ^(.*)-[0-9]{3}$ ]]; then
 else
   REPORT_VERSION="$YAML_REST"
 fi
-REPORT_FILE="$QA_DIR/qa-coverage-report-${REPORT_VERSION}.txt"
+TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
+REPORT_FILE="$QA_DIR/qa-coverage-report-${REPORT_VERSION}-${TIMESTAMP}.txt"
 
 # Collect all output, write to both terminal and file
 {
@@ -109,43 +123,75 @@ REPORT_FILE="$QA_DIR/qa-coverage-report-${REPORT_VERSION}.txt"
   echo "Tests:   $(relative_path "$INTEGRATION_TEST_DIR" "$PACKAGE_ROOT")"
   echo ""
 
-  AUTOMATED_IDS=$(parse_automated_ids "$YAML_PATH")
-  TEST_IDS=$(find_test_ids)
+  YAML_AUTOMATED_IDS=$(parse_ids_by_automated "$YAML_PATH" "true")
+  YAML_ASSISTED_IDS=$(parse_ids_by_automated "$YAML_PATH" "assisted")
+  YAML_MANUAL_IDS=$(parse_ids_by_automated "$YAML_PATH" "false")
+  CODE_AUTOMATED_IDS=$(find_automated_test_ids)
+  CODE_ASSISTED_IDS=$(find_assisted_test_ids)
 
-  AUTOMATED_COUNT=$(echo "$AUTOMATED_IDS" | grep -c . || true)
-  TEST_COUNT=$(echo "$TEST_IDS" | grep -c . || true)
+  YAML_AUTOMATED_COUNT=$(echo "$YAML_AUTOMATED_IDS" | grep -c . || true)
+  YAML_ASSISTED_COUNT=$(echo "$YAML_ASSISTED_IDS" | grep -c . || true)
+  YAML_MANUAL_COUNT=$(echo "$YAML_MANUAL_IDS" | grep -c . || true)
+  CODE_AUTOMATED_COUNT=$(echo "$CODE_AUTOMATED_IDS" | grep -c . || true)
+  CODE_ASSISTED_COUNT=$(echo "$CODE_ASSISTED_IDS" | grep -c . || true)
 
-  echo "YAML automated: true entries: $AUTOMATED_COUNT"
-  echo "Integration test IDs found:   $TEST_COUNT"
+  echo "YAML automated: true entries:     $YAML_AUTOMATED_COUNT"
+  echo "YAML automated: assisted entries:  $YAML_ASSISTED_COUNT"
+  echo "YAML automated: false entries:     $YAML_MANUAL_COUNT"
+  echo "Integration test IDs (automated):  $CODE_AUTOMATED_COUNT"
+  echo "Integration test IDs (assisted):   $CODE_ASSISTED_COUNT"
   echo ""
-
-  MARKED_BUT_NO_TEST=$(comm -23 <(echo "$AUTOMATED_IDS" | grep .) <(echo "$TEST_IDS" | grep .))
-  TEST_BUT_NOT_MARKED=$(comm -13 <(echo "$AUTOMATED_IDS" | grep .) <(echo "$TEST_IDS" | grep .))
 
   HAS_ERRORS=false
 
-  if [[ -n "$MARKED_BUT_NO_TEST" ]]; then
+  # --- Validate automated: true ↔ non-[assisted] tests ---
+  MARKED_AUTO_NO_TEST=$(comm -23 <(echo "$YAML_AUTOMATED_IDS" | grep . || true) <(echo "$CODE_AUTOMATED_IDS" | grep . || true))
+  TEST_AUTO_NOT_MARKED=$(comm -13 <(echo "$YAML_AUTOMATED_IDS" | grep . || true) <(echo "$CODE_AUTOMATED_IDS" | grep . || true))
+
+  if [[ -n "$MARKED_AUTO_NO_TEST" ]]; then
     HAS_ERRORS=true
     echo "MISMATCH: Marked automated: true in YAML but no matching integration test:"
     while IFS= read -r id; do
       echo "  - $id"
-    done <<< "$MARKED_BUT_NO_TEST"
+    done <<< "$MARKED_AUTO_NO_TEST"
     echo ""
   fi
 
-  if [[ -n "$TEST_BUT_NOT_MARKED" ]]; then
+  if [[ -n "$TEST_AUTO_NOT_MARKED" ]]; then
     HAS_ERRORS=true
     echo "MISMATCH: Integration test exists but not marked automated: true in YAML:"
     while IFS= read -r id; do
       echo "  - $id"
-    done <<< "$TEST_BUT_NOT_MARKED"
+    done <<< "$TEST_AUTO_NOT_MARKED"
+    echo ""
+  fi
+
+  # --- Validate automated: assisted ↔ [assisted]-tagged tests ---
+  MARKED_ASSIST_NO_TEST=$(comm -23 <(echo "$YAML_ASSISTED_IDS" | grep . || true) <(echo "$CODE_ASSISTED_IDS" | grep . || true))
+  TEST_ASSIST_NOT_MARKED=$(comm -13 <(echo "$YAML_ASSISTED_IDS" | grep . || true) <(echo "$CODE_ASSISTED_IDS" | grep . || true))
+
+  if [[ -n "$MARKED_ASSIST_NO_TEST" ]]; then
+    HAS_ERRORS=true
+    echo "MISMATCH: Marked automated: assisted in YAML but no matching [assisted] test:"
+    while IFS= read -r id; do
+      echo "  - $id"
+    done <<< "$MARKED_ASSIST_NO_TEST"
+    echo ""
+  fi
+
+  if [[ -n "$TEST_ASSIST_NOT_MARKED" ]]; then
+    HAS_ERRORS=true
+    echo "MISMATCH: [assisted] test exists but not marked automated: assisted in YAML:"
+    while IFS= read -r id; do
+      echo "  - $id"
+    done <<< "$TEST_ASSIST_NOT_MARKED"
     echo ""
   fi
 
   if [[ "$HAS_ERRORS" == true ]]; then
     echo "Validation FAILED — mismatches found."
   else
-    echo "Validation PASSED — all automated markers match integration tests."
+    echo "Validation PASSED — all automated and assisted markers match integration tests."
   fi
 } 2>&1 | tee "$REPORT_FILE"
 

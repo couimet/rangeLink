@@ -568,7 +568,7 @@
   <do>Copy the latest QA YAML file to a new version-suffixed file (e.g., `qa-test-cases-v1.1.0-001.yaml`), then append new TCs to the copy</do>
   <do>Update the header and `generate:qa-issue` filename reference in the new copy</do>
   <never>Edit a previous QA YAML file to add, remove, or reorder test cases</never>
-  <exception>Fixing typos or updating `automated: true/false` status in an existing file is allowed</exception>
+  <exception>Fixing typos or updating `automated` status (`true`/`assisted`/`false`) in an existing file is allowed</exception>
   <rationale>Each file is a point-in-time snapshot; diffing consecutive files shows exactly what was added between QA cycles</rationale>
 </rule>
 
@@ -586,10 +586,12 @@
 </rule>
 
 <rule id="QA005" priority="critical">
-  <title>`automated: true` requires a matching integration test on the branch</title>
-  <do>When marking a TC `automated: true`, ensure the corresponding integration test (in `src/__integration-tests__/suite/`) exists on the same branch before the PR merges — it can be a separate commit/step</do>
-  <do>Use `automated: false` for scenarios that can't be integration-tested (e.g., QuickPick content verification, dialog interaction). See TESTING.md § "QuickPick limitation" for what can and cannot be automated.</do>
-  <never>Mark `automated: true` based on unit tests alone — the validator only checks integration tests</never>
+  <title>`automated` field requires a matching integration test on the branch</title>
+  <do>The `automated` field accepts three values: `true` (fully automated), `assisted` (human-in-the-loop), `false` (fully manual)</do>
+  <do>When marking a TC `automated: true`, ensure a non-`[assisted]` integration test exists in `src/__integration-tests__/suite/` on the same branch</do>
+  <do>When marking a TC `automated: assisted`, ensure an `[assisted]`-tagged integration test exists in `src/__integration-tests__/suite/` on the same branch. See TESTING.md § "Assisted mode" for the `[assisted]` tag convention.</do>
+  <do>Use `automated: false` for scenarios that can't be integration-tested at all (e.g., requires AI assistant interaction, platform-specific behaviour). See TESTING.md § "QuickPick limitation" for what can and cannot be automated.</do>
+  <never>Mark `automated: true` or `automated: assisted` based on unit tests alone — the validator only checks integration tests</never>
   <see>packages/rangelink-vscode-extension/scripts/validate-qa-coverage.sh</see>
 </rule>
 

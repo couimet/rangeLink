@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import {
   activateExtension,
   cleanupFiles,
+  clearEditorSelection,
   closeAllEditors,
   getWorkspaceRoot,
   navigateViaHandleLinkClick,
@@ -37,6 +38,7 @@ suite('Navigation Precision', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
       linkText,
       parseResult.value,
@@ -63,6 +65,7 @@ suite('Navigation Precision', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
       linkText,
       parseResult.value,
@@ -89,6 +92,7 @@ suite('Navigation Precision', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    await clearEditorSelection();
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
 
     assert.strictEqual(sel.anchor.line, 9, `Expected anchor line 9 but got ${sel.anchor.line}`);
@@ -110,6 +114,7 @@ suite('Navigation Precision', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    await clearEditorSelection();
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
 
     assert.strictEqual(sel.anchor.line, 9, `Expected anchor line 9 but got ${sel.anchor.line}`);

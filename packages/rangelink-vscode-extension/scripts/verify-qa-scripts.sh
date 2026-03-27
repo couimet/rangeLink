@@ -79,11 +79,11 @@ check_artifact "generate-release-testing-instructions" "release-testing-instruct
 run_check "generate-qa-test-plan" ./scripts/generate-qa-test-plan.sh
 check_artifact "generate-qa-test-plan" "qa-test-cases-v*.yaml"
 
-run_check "generate-qa-checklist" ./scripts/generate-qa-checklist.sh
-check_artifact "generate-qa-checklist" "qa-checklist-v*.txt"
-
 # dry-run produces no artifact — exit code is sufficient
 run_check "generate-qa-issue (dry-run)" bash -c 'echo "y" | ./scripts/generate-qa-issue.sh --dry-run'
+
+run_check "generate-qa-issue (local)" bash -c 'echo "y" | ./scripts/generate-qa-issue.sh --local'
+check_artifact "generate-qa-issue (local)" "qa-issues-local-v*.md"
 
 echo ""
 if [[ $FAILED -eq 0 ]]; then

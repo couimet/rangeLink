@@ -1,5 +1,5 @@
 name: 'Run Integration Tests'
-description: 'Run pnpm test:release (VS Code extension host tests via @vscode/test-cli) under Xvfb'
+description: 'Run pnpm test:release:automated (VS Code extension host tests via @vscode/test-cli) under Xvfb — skips [assisted] tests that require human interaction'
 
 runs:
   using: 'composite'
@@ -19,4 +19,4 @@ runs:
 
     - name: Run integration tests under Xvfb
       shell: bash
-      run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" pnpm test:release
+      run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" pnpm test:release:automated

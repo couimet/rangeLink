@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: ./scripts/generate-qa-issue.sh [--dry-run] [yaml-file]
+# Usage: ./scripts/generate-qa-issue.sh [--dry-run] [--local] [yaml-file]
 # Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.1.0.yaml
+#          ./scripts/generate-qa-issue.sh --local
 #
 # Creates one parent GitHub issue + one sub-issue per feature section from a versioned QA YAML file.
+# With --local, writes the same structured content to a local markdown file in qa/ instead of
+# creating GitHub issues. Useful for offline QA sessions and comparing runs.
 # The parent issue body uses GitHub task-list syntax (- [ ] #N) to track section-level progress.
 #
 # If no yaml-file is provided, auto-discovers the most recent QA YAML in qa/ and
@@ -19,11 +22,13 @@ set -euo pipefail
 #   jq                   — for building GraphQL payloads (sub-issue linking)
 
 DRY_RUN=false
+LOCAL_MODE=false
 YAML_FILE=""
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
+    --local) LOCAL_MODE=true ;;
     --) ;;
     -*) echo "Unknown option: $arg" >&2; exit 1 ;;
     *) YAML_FILE="$arg" ;;
@@ -92,12 +97,12 @@ if ! python3 -c "import yaml" 2>/dev/null; then
   fi
 fi
 
-if [[ "$DRY_RUN" == false ]] && ! command -v gh &>/dev/null; then
+if [[ "$DRY_RUN" == false && "$LOCAL_MODE" == false ]] && ! command -v gh &>/dev/null; then
   echo "Error: gh CLI is required but not found on PATH" >&2
   exit 1
 fi
 
-if [[ "$DRY_RUN" == false ]] && ! command -v jq &>/dev/null; then
+if [[ "$DRY_RUN" == false && "$LOCAL_MODE" == false ]] && ! command -v jq &>/dev/null; then
   echo "Error: jq is required but not found on PATH" >&2
   exit 1
 fi
@@ -105,7 +110,7 @@ fi
 REPO_OWNER=$(gh repo view --json owner -q '.owner.login' 2>/dev/null) || true
 REPO_NAME=$(gh repo view --json name -q '.name' 2>/dev/null) || true
 
-if [[ "$DRY_RUN" == false ]] && [[ -z "$REPO_OWNER" || -z "$REPO_NAME" ]]; then
+if [[ "$DRY_RUN" == false && "$LOCAL_MODE" == false ]] && [[ -z "$REPO_OWNER" || -z "$REPO_NAME" ]]; then
   echo "Error: could not determine repository owner/name via 'gh repo view'." >&2
   echo "Ensure you are in a git repo with a GitHub remote and 'gh auth status' succeeds." >&2
   exit 1
@@ -126,6 +131,7 @@ echo "QA issue generator"
 echo "  Version : $VERSION"
 echo "  Source  : $YAML_FILE"
 [[ "$DRY_RUN" == true ]] && echo "  Mode    : DRY RUN (no GitHub issues will be created)"
+[[ "$LOCAL_MODE" == true ]] && echo "  Mode    : LOCAL (writing to file, no GitHub issues)"
 echo ""
 
 # Parse YAML into JSON: array of {feature, count, body} per section.
@@ -159,7 +165,13 @@ for feature in section_order:
     for tc in tc_list:
         tc_id = normalize(tc.get('id', ''))
         scenario = normalize(tc.get('scenario', ''))
-        auto_tag = ' `automated`' if tc.get('automated', False) else ''
+        automated = tc.get('automated', False)
+        if automated is True:
+            auto_tag = ' `automated`'
+        elif automated == 'assisted':
+            auto_tag = ' `assisted`'
+        else:
+            auto_tag = ''
         lines.append(f"- [ ] **{tc_id}** — {scenario}{auto_tag}")
 
         for pre in tc.get('preconditions', []):
@@ -187,7 +199,39 @@ TOTAL_TCS=$(echo "$SECTIONS_JSON" | jq '[.[].count] | add')
 echo "Found $TOTAL_TCS test cases across $TOTAL_SECTIONS sections"
 echo ""
 
-# Create sub-issues and accumulate their numbers for the parent body
+# --- Local mode: write structured content to a markdown file ---
+if [[ "$LOCAL_MODE" == true ]]; then
+  TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
+  LOCAL_FILE="$QA_DIR/qa-issues-local-${VERSION}-${TIMESTAMP}.md"
+
+  {
+    echo "# QA Checklist — ${VERSION}"
+    echo ""
+    echo "Generated from \`$(basename "$YAML_FILE")\` on $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+    echo ""
+    echo "---"
+
+    for i in $(seq 0 $((TOTAL_SECTIONS - 1))); do
+      section=$(echo "$SECTIONS_JSON" | jq -r ".[$i].feature")
+      COUNT=$(echo "$SECTIONS_JSON" | jq -r ".[$i].count")
+      CHECKBOXES=$(echo "$SECTIONS_JSON" | jq -r ".[$i].body")
+
+      echo ""
+      echo "## ${section} (${COUNT} TCs)"
+      echo ""
+      echo "${CHECKBOXES}"
+      echo ""
+      echo "---"
+    done
+  } > "$LOCAL_FILE"
+
+  REPO_ROOT="$(git rev-parse --show-toplevel)"
+  RELATIVE_PATH="${LOCAL_FILE#"$REPO_ROOT"/}"
+  echo "Local checklist: $RELATIVE_PATH"
+  exit 0
+fi
+
+# --- GitHub mode: create sub-issues and accumulate their numbers for the parent body ---
 SUB_ISSUE_ENTRIES=""
 
 for i in $(seq 0 $((TOTAL_SECTIONS - 1))); do

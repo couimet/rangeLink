@@ -20,7 +20,7 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.test.ts',
     '!src/__tests__/**',
-    '!src/__integration-tests__/helpers/!(logBasedUiAssertions).ts',
+    '!src/__integration-tests__/**',
     '!src/**/index.ts',
   ],
   coverageDirectory: 'coverage',

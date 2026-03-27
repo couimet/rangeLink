@@ -9,6 +9,7 @@ import {
   activateExtension,
   assertNoToastLogged,
   assertToastLogged,
+  clearEditorSelection,
   closeAllEditors,
   getLogCapture,
   settle,
@@ -108,6 +109,7 @@ suite('Untitled File Navigation', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-untitled-nav-001');
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
     await settle();
 
@@ -144,6 +146,7 @@ suite('Untitled File Navigation', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-untitled-nav-002');
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
     await settle();
 
@@ -205,6 +208,7 @@ suite('Untitled File Navigation', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-untitled-nav-004');
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
     await settle();
 
@@ -239,6 +243,7 @@ suite('Untitled File Navigation', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-untitled-nav-005');
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
     await settle();
 
@@ -268,6 +273,7 @@ suite('Untitled File Navigation', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-untitled-nav-006');
 
+    await clearEditorSelection();
     const { sel, doc } = await navigateToUntitledLink(linkText, parseResult.value, untitledDoc.uri);
     await settle();
 

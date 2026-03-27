@@ -20,6 +20,21 @@ export const waitForActiveEditor = async (
   return false;
 };
 
+/**
+ * Collapse the active editor's selection to position (0,0).
+ * Call before navigateViaHandleLinkClick to guarantee the navigation's
+ * selection change event fires — without this, a stale selection at the
+ * target position would suppress the event.
+ */
+export const clearEditorSelection = async (): Promise<void> => {
+  const editor = vscode.window.activeTextEditor;
+  if (editor !== undefined) {
+    const origin = new vscode.Position(0, 0);
+    editor.selection = new vscode.Selection(origin, origin);
+    await settle();
+  }
+};
+
 export const selectAll = (editor: vscode.TextEditor): void => {
   const lastLine = editor.document.lineCount - 1;
   const lastChar = editor.document.lineAt(lastLine).text.length;

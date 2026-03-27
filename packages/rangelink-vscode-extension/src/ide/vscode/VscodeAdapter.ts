@@ -142,7 +142,18 @@ export class VscodeAdapter
     options?: vscode.QuickPickOptions,
   ): Promise<T | undefined> {
     this.logger.debug(
-      { fn: 'VscodeAdapter.showQuickPick', itemCount: items.length, options },
+      {
+        fn: 'VscodeAdapter.showQuickPick',
+        itemCount: items.length,
+        options,
+        items: items.map((item) => ({
+          label: item.label,
+          ...(item.description !== undefined ? { description: item.description } : {}),
+          ...(item.detail !== undefined ? { detail: item.detail } : {}),
+          ...(item.kind !== undefined ? { kind: item.kind } : {}),
+          ...('itemKind' in item ? { itemKind: (item as Record<string, unknown>).itemKind } : {}),
+        })),
+      },
       'Showing quick pick',
     );
     return this.ideInstance.window.showQuickPick(items, options);

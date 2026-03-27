@@ -1,16 +1,19 @@
+export { printAssistedBanner, waitForHuman } from './assistedTestHelper';
 export {
   assertClipboardChanged,
   assertClipboardRestored,
   CLIPBOARD_SENTINEL,
   writeClipboardSentinel,
 } from './clipboardHelpers';
-export { selectAll, waitForActiveEditor } from './editorHelpers';
+export { clearEditorSelection, selectAll, waitForActiveEditor } from './editorHelpers';
 export { cleanupFiles, closeAllEditors, createWorkspaceFile, openEditor } from './fileHelpers';
 export { getLogCapture } from './getLogCapture';
 export {
   assertNoStatusBarMsgLogged,
   assertNoToastLogged,
+  assertQuickPickItemsLogged,
   assertStatusBarMsgLogged,
+  extractQuickPickItemsLogged,
   assertSuppressionLogged,
   assertToastLogged,
 } from './logBasedUiAssertions';
