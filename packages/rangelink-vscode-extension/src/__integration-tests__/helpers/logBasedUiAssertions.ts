@@ -147,6 +147,22 @@ export const assertQuickPickItemsLogged = (
   }
 };
 
+/**
+ * Extract the items array from a showQuickPick log entry.
+ * Returns undefined if no matching log entry is found.
+ */
+export const extractQuickPickItemsLogged = (
+  lines: string[],
+): Record<string, unknown>[] | undefined => {
+  for (const line of lines) {
+    const ctx = parseLogContext(line);
+    if (ctx !== undefined && ctx.fn === QUICK_PICK_FN && Array.isArray(ctx.items)) {
+      return ctx.items as Record<string, unknown>[];
+    }
+  }
+  return undefined;
+};
+
 interface SuppressionAssertionOptions {
   fn: string;
   suppressedMessage: string;

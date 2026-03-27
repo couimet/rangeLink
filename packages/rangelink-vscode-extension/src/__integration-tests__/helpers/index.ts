@@ -13,6 +13,7 @@ export {
   assertNoToastLogged,
   assertQuickPickItemsLogged,
   assertStatusBarMsgLogged,
+  extractQuickPickItemsLogged,
   assertSuppressionLogged,
   assertToastLogged,
 } from './logBasedUiAssertions';
