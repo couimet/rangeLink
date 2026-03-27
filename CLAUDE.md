@@ -568,7 +568,7 @@
   <do>Copy the latest QA YAML file to a new version-suffixed file (e.g., `qa-test-cases-v1.1.0-001.yaml`), then append new TCs to the copy</do>
   <do>Update the header and `generate:qa-issue` filename reference in the new copy</do>
   <never>Edit a previous QA YAML file to add, remove, or reorder test cases</never>
-  <exception>Fixing typos or updating `automated: true/false` status in an existing file is allowed</exception>
+  <exception>Fixing typos or updating `automated` status (`true`/`assisted`/`false`) in an existing file is allowed</exception>
   <rationale>Each file is a point-in-time snapshot; diffing consecutive files shows exactly what was added between QA cycles</rationale>
 </rule>
 

@@ -330,6 +330,8 @@ describe('VscodeAdapter', () => {
   });
 
   describe('showQuickPick', () => {
+    const QUICK_PICK_SEPARATOR_KIND = -1;
+
     it('should show quick pick with items using VSCode API', async () => {
       const items = [{ label: 'Item 1' }, { label: 'Item 2' }];
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(items[0]);
@@ -383,7 +385,7 @@ describe('VscodeAdapter', () => {
           itemKind: 'command' as const,
           command: 'rangelink.unbindDestination',
         },
-        { label: '', kind: -1 },
+        { label: '', kind: QUICK_PICK_SEPARATOR_KIND },
         {
           label: '$(link-external) Go to Link',
           detail: 'Navigate to a RangeLink',
@@ -408,7 +410,7 @@ describe('VscodeAdapter', () => {
               itemKind: 'command',
             },
             { label: '$(close) Unbind Destination', itemKind: 'command' },
-            { label: '', kind: -1 },
+            { label: '', kind: QUICK_PICK_SEPARATOR_KIND },
             {
               label: '$(link-external) Go to Link',
               detail: 'Navigate to a RangeLink',

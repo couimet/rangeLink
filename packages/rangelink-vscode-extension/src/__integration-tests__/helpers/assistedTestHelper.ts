@@ -4,8 +4,9 @@ import * as vscode from 'vscode';
 
 const nodeConsole = new Console(process.stdout, process.stderr);
 
-const BANNER_LINE = '═'.repeat(60);
-const SECTION_LINE = '─'.repeat(60);
+const ASSISTED_BANNER_WIDTH = 60;
+const BANNER_LINE = '═'.repeat(ASSISTED_BANNER_WIDTH);
+const SECTION_LINE = '─'.repeat(ASSISTED_BANNER_WIDTH);
 
 /**
  * Prints a visible banner at suite start explaining the assisted mode workflow.

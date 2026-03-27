@@ -1,4 +1,12 @@
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+
 import { defineConfig } from '@vscode/test-cli';
+
+const MOCHA_TIMEOUT_MS = 20_000;
+const ASSISTED_TEST_GREP = '\\[assisted\\]';
+const USER_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'rl-vscode-test-'));
 
 export default defineConfig([
   {
@@ -6,13 +14,13 @@ export default defineConfig([
     extensionDevelopmentPath: './',
     workspaceFolder: './',
     version: 'stable',
-    launchArgs: ['--user-data-dir', '/tmp/rl-vscode-test'],
+    launchArgs: ['--user-data-dir', USER_DATA_DIR],
     env: {
       RANGELINK_CAPTURE_LOGS: 'true',
     },
     mocha: {
-      timeout: 20000,
-      grep: '\\[assisted\\]',
+      timeout: MOCHA_TIMEOUT_MS,
+      grep: ASSISTED_TEST_GREP,
       invert: true,
     },
   },

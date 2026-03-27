@@ -79,7 +79,7 @@ VS Code's extension host test runner provides no API to interact with QuickPick 
 
 **Workaround — command bypass:** Many TCs that involve a QuickPick as a means to an end (e.g., "bind via picker, verify toast") can be automated by calling the underlying command directly (`rangelink.bindToTerminalHere`, `rangelink.bindToTextEditorHere`) to bypass the picker entirely, then asserting the outcome via log-based UI assertions.
 
-**What cannot be automated:** TCs that verify picker content itself (item ordering, badges, grouping, placeholder text) or dialog interaction (confirmation buttons, cancel behavior) must remain `automated: false` in the QA YAML. These require manual testing.
+**What cannot be fully automated:** TCs that verify picker content itself (item ordering, badges, grouping, placeholder text) or dialog interaction (confirmation buttons, cancel behavior) require a human to open/dismiss the picker. Mark these `automated: assisted` in the QA YAML — the test automates setup and validates content via log-based QuickPick assertions while the human performs the mechanical UI action. See [Assisted mode](#assisted-mode-assisted-tests) below. Only TCs that genuinely cannot be tested even with human-in-the-loop assistance should remain `automated: false`.
 
 See https://github.com/couimet/rangeLink/issues/483 for the full triage of automatable vs manual TCs.
 
@@ -194,10 +194,13 @@ flowchart TD
     D -- Bug fix --> F{Could it regress?}
     F -- No --> C
     F -- Yes --> E
-    E --> G{Can it be integration-tested?}
+    E --> G{Can it be fully automated?}
     G -- Yes --> H["Set automated: true<br/>Write integration test"]
-    G -- No --> I["Set automated: false<br/>Describe manual steps"]
+    G -- No --> K{Needs human UI action<br/>but test can validate?}
+    K -- Yes --> L["Set automated: assisted<br/>Write [assisted] test"]
+    K -- No --> I["Set automated: false<br/>Describe manual steps"]
     H --> J[validate:qa-coverage passes]
+    L --> J
     I --> J
 ```
 

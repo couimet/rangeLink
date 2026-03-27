@@ -46,16 +46,20 @@ suite('R-M Status Bar Menu', () => {
     assert.ok(items, 'Expected showQuickPick log entry with items');
     assert.ok(items!.length >= 4, `Expected at least 4 menu items but got ${items!.length}`);
 
-    assert.strictEqual(items![0].label, 'No bound destination. Choose below to bind:');
-    assert.strictEqual(items![0].itemKind, 'info');
+    assert.deepStrictEqual(
+      { label: items![0].label, itemKind: items![0].itemKind },
+      { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
+    );
 
     const lastThree = items!.slice(-3);
-    assert.strictEqual(lastThree[0].label, '');
-    assert.strictEqual(lastThree[0].kind, SEPARATOR_KIND);
-    assert.strictEqual(lastThree[1].label, '$(link-external) Go to Link');
-    assert.strictEqual(lastThree[1].itemKind, 'command');
-    assert.strictEqual(lastThree[2].label, '$(info) Show Version Info');
-    assert.strictEqual(lastThree[2].itemKind, 'command');
+    assert.deepStrictEqual(
+      lastThree.map(({ label, kind, itemKind }) => ({ label, kind, itemKind })),
+      [
+        { label: '', kind: SEPARATOR_KIND, itemKind: undefined },
+        { label: '$(link-external) Go to Link', kind: undefined, itemKind: 'command' },
+        { label: '$(info) Show Version Info', kind: undefined, itemKind: 'command' },
+      ],
+    );
 
     log('✓ Unbound menu items validated via log capture');
   });
@@ -79,14 +83,20 @@ suite('R-M Status Bar Menu', () => {
     assert.ok(items, 'Expected showQuickPick log entry with items');
     assert.ok(items!.length >= 4, `Expected at least 4 menu items but got ${items!.length}`);
 
-    assert.strictEqual(items![0].label, 'No bound destination. Choose below to bind:');
-    assert.strictEqual(items![0].itemKind, 'info');
+    assert.deepStrictEqual(
+      { label: items![0].label, itemKind: items![0].itemKind },
+      { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
+    );
 
     const lastThree = items!.slice(-3);
-    assert.strictEqual(lastThree[0].label, '');
-    assert.strictEqual(lastThree[0].kind, SEPARATOR_KIND);
-    assert.strictEqual(lastThree[1].label, '$(link-external) Go to Link');
-    assert.strictEqual(lastThree[2].label, '$(info) Show Version Info');
+    assert.deepStrictEqual(
+      lastThree.map(({ label, kind, itemKind }) => ({ label, kind, itemKind })),
+      [
+        { label: '', kind: SEPARATOR_KIND, itemKind: undefined },
+        { label: '$(link-external) Go to Link', kind: undefined, itemKind: 'command' },
+        { label: '$(info) Show Version Info', kind: undefined, itemKind: 'command' },
+      ],
+    );
 
     log('✓ Keybinding menu items validated via log capture');
   });
