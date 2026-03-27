@@ -421,6 +421,40 @@ describe('VscodeAdapter', () => {
       );
     });
 
+    it('should log only description when detail, kind, and itemKind are absent', async () => {
+      const items = [{ label: 'Terminal "bash"', description: 'active' }];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      await adapter.showQuickPick(items);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.showQuickPick',
+          itemCount: 1,
+          options: undefined,
+          items: [{ label: 'Terminal "bash"', description: 'active' }],
+        },
+        'Showing quick pick',
+      );
+    });
+
+    it('should log only detail when description, kind, and itemKind are absent', async () => {
+      const items = [{ label: 'Go to Link', detail: 'Navigate to a code reference' }];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      await adapter.showQuickPick(items);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.showQuickPick',
+          itemCount: 1,
+          options: undefined,
+          items: [{ label: 'Go to Link', detail: 'Navigate to a code reference' }],
+        },
+        'Showing quick pick',
+      );
+    });
+
     it('should return undefined when user cancels', async () => {
       const items = [{ label: 'Item 1' }];
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
