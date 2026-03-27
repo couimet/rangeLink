@@ -4,6 +4,8 @@ import { AIAssistantFocusCapability } from '../../../destinations/capabilities/A
 import { EditorFocusCapability } from '../../../destinations/capabilities/EditorFocusCapability';
 import { FocusCapabilityFactory } from '../../../destinations/capabilities/FocusCapabilityFactory';
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
+import { TieredFocusCapability } from '../../../destinations/capabilities/TieredFocusCapability';
+import type { CustomAiAssistantConfig } from '../../../config/parseCustomAiAssistants';
 import {
   createMockClipboardPreserver,
   createMockTerminal,
@@ -42,5 +44,48 @@ describe('FocusCapabilityFactory', () => {
     );
 
     expect(capability).toBeInstanceOf(AIAssistantFocusCapability);
+  });
+
+  describe('createCustomAIAssistantCapability', () => {
+    it('creates TieredFocusCapability with all three tiers', () => {
+      const config: CustomAiAssistantConfig = {
+        kind: 'custom-ai:acme.spark-ai',
+        extensionId: 'acme.spark-ai',
+        extensionName: 'Spark AI',
+        insertCommands: [{ command: 'sparkAi.insertText' }],
+        focusAndPasteCommands: ['sparkAi.openChat'],
+        focusCommands: ['sparkAi.chatView.focus'],
+      };
+
+      const capability = factory.createCustomAIAssistantCapability(config);
+
+      expect(capability).toBeInstanceOf(TieredFocusCapability);
+    });
+
+    it('creates TieredFocusCapability with only focusCommands', () => {
+      const config: CustomAiAssistantConfig = {
+        kind: 'custom-ai:acme.spark-ai',
+        extensionId: 'acme.spark-ai',
+        extensionName: 'Spark AI',
+        focusCommands: ['sparkAi.chatView.focus'],
+      };
+
+      const capability = factory.createCustomAIAssistantCapability(config);
+
+      expect(capability).toBeInstanceOf(TieredFocusCapability);
+    });
+
+    it('creates TieredFocusCapability with only insertCommands', () => {
+      const config: CustomAiAssistantConfig = {
+        kind: 'custom-ai:acme.spark-ai',
+        extensionId: 'acme.spark-ai',
+        extensionName: 'Spark AI',
+        insertCommands: [{ command: 'sparkAi.insertText' }],
+      };
+
+      const capability = factory.createCustomAIAssistantCapability(config);
+
+      expect(capability).toBeInstanceOf(TieredFocusCapability);
+    });
   });
 });

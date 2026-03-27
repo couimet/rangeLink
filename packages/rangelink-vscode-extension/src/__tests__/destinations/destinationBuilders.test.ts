@@ -452,12 +452,27 @@ describe('destinationBuilders', () => {
       );
     });
 
-    it('getUserInstruction returns undefined on success', () => {
+    it('getUserInstruction returns undefined on success when tier is not focusCommands', () => {
       const context = createMockContext();
       const builder = createCustomAiAssistantBuilder(customConfig);
       const destination = builder({ kind: customConfig.kind }, context);
 
       expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
+    });
+
+    it('getUserInstruction returns toast on success when tier 3 (focusCommands) won', () => {
+      const context = createMockContext();
+      const mockTiered = context.factories.focusCapability.createCustomAIAssistantCapability(
+        customConfig,
+      );
+      mockTiered.lastTierLabel = 'focusCommands';
+
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBe(
+        'Paste (Cmd/Ctrl+V) in Spark AI to use.',
+      );
     });
 
     it('getUserInstruction returns instruction with extensionName on failure', () => {

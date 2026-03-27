@@ -248,30 +248,30 @@ export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, c
  * Create a builder for a user-defined custom AI assistant.
  *
  * Returns a DestinationBuilder that creates a ComposablePasteDestination
- * configured with the user's extensionId, displayName, and focusCommands.
+ * configured with the user's extensionId, displayName, and three-tier commands.
  *
  * Availability detection: checks if the extension is installed and active
- * via getExtension(extensionId). Falls back to checking if any focusCommand
- * is a registered VS Code command.
+ * via getExtension(extensionId). Falls back to checking if any command from
+ * any tier is a registered VS Code command.
  */
 export const createCustomAiAssistantBuilder = (
   config: CustomAiAssistantConfig,
 ): DestinationBuilder => {
-  const { kind, extensionId, extensionName, focusCommands = [] } = config;
+  const { kind, extensionId, extensionName } = config;
   const allCommands = [
     ...(config.insertCommands ?? []).map((e) => e.command),
     ...(config.focusAndPasteCommands ?? []),
-    ...focusCommands,
+    ...(config.focusCommands ?? []),
   ];
 
-  return (_options, context) =>
-    ComposablePasteDestination.createAiAssistant({
+  return (_options, context) => {
+    const tieredCapability =
+      context.factories.focusCapability.createCustomAIAssistantCapability(config);
+
+    return ComposablePasteDestination.createAiAssistant({
       id: kind,
       displayName: extensionName,
-      focusCapability: context.factories.focusCapability.createAIAssistantCapability(
-        focusCommands,
-        [...CHAT_PASTE_COMMANDS],
-      ),
+      focusCapability: tieredCapability,
       isAvailable: async () => {
         const extension = context.ideAdapter.getExtension(extensionId);
         const extensionFound = extension !== undefined;
@@ -300,11 +300,17 @@ export const createCustomAiAssistantBuilder = (
       }),
       loggingDetails: { extensionId },
       logger: context.logger,
-      getUserInstruction: (autoPasteResult) =>
-        autoPasteResult === AutoPasteResult.Success
-          ? undefined
-          : formatMessage(MessageCode.INFO_CUSTOM_AI_USER_INSTRUCTIONS, { extensionName }),
+      getUserInstruction: (autoPasteResult) => {
+        if (autoPasteResult === AutoPasteResult.Success) {
+          if (tieredCapability.lastTierLabel === 'focusCommands') {
+            return formatMessage(MessageCode.INFO_CUSTOM_AI_USER_INSTRUCTIONS, { extensionName });
+          }
+          return undefined;
+        }
+        return formatMessage(MessageCode.INFO_CUSTOM_AI_USER_INSTRUCTIONS, { extensionName });
+      },
     });
+  };
 };
 
 /**
