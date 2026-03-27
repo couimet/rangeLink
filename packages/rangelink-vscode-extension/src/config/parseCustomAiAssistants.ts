@@ -1,5 +1,6 @@
 import type { Logger } from 'barebone-logger';
 
+import type { InsertCommandEntry } from '../destinations/capabilities/insertFactories';
 import type { CustomAiAssistantKind } from '../types';
 
 import type { ConfigReader } from './ConfigReader';
@@ -10,12 +11,16 @@ export interface CustomAiAssistantConfig {
   kind: CustomAiAssistantKind;
   extensionId: string;
   extensionName: string;
-  focusCommands: string[];
+  insertCommands?: InsertCommandEntry[];
+  focusAndPasteCommands?: string[];
+  focusCommands?: string[];
 }
 
 interface RawCustomAiAssistantEntry {
   extensionId?: unknown;
   extensionName?: unknown;
+  insertCommands?: unknown;
+  focusAndPasteCommands?: unknown;
   focusCommands?: unknown;
 }
 
@@ -26,8 +31,72 @@ const isNonEmptyStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.length > 0 && value.every((item) => isNonEmptyString(item));
 
 /**
+ * Validate and normalize a single insertCommands entry.
+ * Plain strings become { command: str }. Objects must have a string command field.
+ */
+const normalizeInsertCommandEntry = (item: unknown): InsertCommandEntry | undefined => {
+  if (typeof item === 'string' && item.trim().length > 0) {
+    return { command: item };
+  }
+  if (item && typeof item === 'object' && !Array.isArray(item)) {
+    const obj = item as Record<string, unknown>;
+    if (typeof obj.command === 'string' && obj.command.trim().length > 0) {
+      return obj.args !== undefined ? { command: obj.command, args: obj.args } : { command: obj.command };
+    }
+  }
+  return undefined;
+};
+
+/**
+ * Parse and normalize an insertCommands array from raw config.
+ * Returns undefined if the array is absent/empty, or a normalized array skipping invalid entries.
+ */
+const parseInsertCommands = (
+  raw: unknown,
+  index: number,
+  logger: Logger,
+): InsertCommandEntry[] | undefined => {
+  if (raw === undefined) {
+    return undefined;
+  }
+  if (!Array.isArray(raw) || raw.length === 0) {
+    return undefined;
+  }
+
+  const entries: InsertCommandEntry[] = [];
+  for (const [itemIndex, item] of raw.entries()) {
+    const normalized = normalizeInsertCommandEntry(item);
+    if (normalized) {
+      entries.push(normalized);
+    } else {
+      logger.warn(
+        { fn: 'parseCustomAiAssistants', index, itemIndex },
+        `Skipping customAiAssistants[${index}].insertCommands[${itemIndex}]: invalid entry`,
+      );
+    }
+  }
+
+  return entries.length > 0 ? entries : undefined;
+};
+
+/**
+ * Parse an optional string array field. Returns undefined if absent or invalid.
+ */
+const parseOptionalStringArray = (raw: unknown): string[] | undefined => {
+  if (isNonEmptyStringArray(raw)) {
+    return raw;
+  }
+  return undefined;
+};
+
+/**
  * Parse and validate custom AI assistant entries from user settings.
  * Invalid entries are logged as warnings and skipped — never crash the extension.
+ *
+ * Three command tiers are supported (all optional, at least one required):
+ * - insertCommands: Tier 1 — direct text delivery via command argument
+ * - focusAndPasteCommands: Tier 2 — focus + auto-paste via clipboard
+ * - focusCommands: Tier 3 — focus only, user pastes manually
  */
 export const parseCustomAiAssistants = (
   configReader: ConfigReader,
@@ -51,7 +120,7 @@ export const parseCustomAiAssistants = (
       continue;
     }
 
-    const { extensionId, extensionName, focusCommands } = entry;
+    const { extensionId, extensionName } = entry;
 
     if (!isNonEmptyString(extensionId)) {
       logger.warn(
@@ -69,10 +138,14 @@ export const parseCustomAiAssistants = (
       continue;
     }
 
-    if (!isNonEmptyStringArray(focusCommands)) {
+    const insertCommands = parseInsertCommands(entry.insertCommands, index, logger);
+    const focusAndPasteCommands = parseOptionalStringArray(entry.focusAndPasteCommands);
+    const focusCommands = parseOptionalStringArray(entry.focusCommands);
+
+    if (!insertCommands && !focusAndPasteCommands && !focusCommands) {
       logger.warn(
-        { fn: 'parseCustomAiAssistants', index, focusCommands },
-        `Skipping customAiAssistants[${index}]: focusCommands must be a non-empty array of strings`,
+        { fn: 'parseCustomAiAssistants', index },
+        `Skipping customAiAssistants[${index}]: at least one of insertCommands, focusAndPasteCommands, or focusCommands must be a non-empty array`,
       );
       continue;
     }
@@ -86,12 +159,17 @@ export const parseCustomAiAssistants = (
     }
 
     seenIds.add(extensionId);
-    results.push({
+
+    const config: CustomAiAssistantConfig = {
       kind: `custom-ai:${extensionId}`,
       extensionId,
       extensionName,
-      focusCommands,
-    });
+    };
+    if (insertCommands) config.insertCommands = insertCommands;
+    if (focusAndPasteCommands) config.focusAndPasteCommands = focusAndPasteCommands;
+    if (focusCommands) config.focusCommands = focusCommands;
+
+    results.push(config);
   }
 
   if (results.length > 0) {

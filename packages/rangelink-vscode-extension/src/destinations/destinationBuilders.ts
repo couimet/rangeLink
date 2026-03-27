@@ -257,7 +257,12 @@ export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, c
 export const createCustomAiAssistantBuilder = (
   config: CustomAiAssistantConfig,
 ): DestinationBuilder => {
-  const { kind, extensionId, extensionName, focusCommands } = config;
+  const { kind, extensionId, extensionName, focusCommands = [] } = config;
+  const allCommands = [
+    ...(config.insertCommands ?? []).map((e) => e.command),
+    ...(config.focusAndPasteCommands ?? []),
+    ...focusCommands,
+  ];
 
   return (_options, context) =>
     ComposablePasteDestination.createAiAssistant({
@@ -273,7 +278,7 @@ export const createCustomAiAssistantBuilder = (
         const extensionActive = extension?.isActive === true;
 
         const commands = await context.ideAdapter.getCommands();
-        const commandAvailable = focusCommands.some((cmd) => commands.includes(cmd));
+        const commandAvailable = allCommands.some((cmd) => commands.includes(cmd));
 
         const available = extensionActive || commandAvailable;
         context.logger.debug(
@@ -283,7 +288,7 @@ export const createCustomAiAssistantBuilder = (
             extensionFound,
             extensionActive,
             commandAvailable,
-            checkedCommands: focusCommands,
+            checkedCommands: allCommands,
             available,
           },
           `Custom AI assistant '${extensionName}' available: ${available}`,
