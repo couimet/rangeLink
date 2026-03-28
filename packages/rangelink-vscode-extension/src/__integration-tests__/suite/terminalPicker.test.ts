@@ -4,8 +4,10 @@ import * as vscode from 'vscode';
 
 import {
   activateExtension,
+  cleanupFiles,
   closeAllEditors,
   createLogger,
+  createWorkspaceFile,
   extractQuickPickItemsLogged,
   getLogCapture,
   loadSettingsProfile,
@@ -438,5 +440,49 @@ suite('Terminal Picker', () => {
     );
 
     log('✓ Terminal appears inline in R-D picker');
+  });
+
+  test('[assisted] bind-to-destination-013: R-D picker shows both overflow items when many terminals and files are open', async () => {
+    for (let i = 1; i <= 6; i++) {
+      await createTerminal(`rl-btd-013-${i}`);
+    }
+
+    const tmpFileUris: vscode.Uri[] = [];
+    for (let i = 1; i <= 5; i++) {
+      const uri = createWorkspaceFile(`btd-013-${i}`, `file ${i}\n`);
+      tmpFileUris.push(uri);
+      const doc = await vscode.workspace.openTextDocument(uri);
+      await vscode.window.showTextDocument(doc, { viewColumn: vscode.ViewColumn.One, preview: false });
+      await settle();
+    }
+
+    try {
+      const logCapture = getLogCapture();
+      logCapture.mark('before-btd-013');
+
+      await waitForHuman('bind-to-destination-013', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
+        'Six terminals + five files created (both exceed inline limits).',
+        'Press Cmd+R Cmd+D, then Escape.',
+      ]);
+
+      const lines = logCapture.getLinesSince('before-btd-013');
+      const items = extractQuickPickItemsLogged(lines);
+      assert.ok(items, 'Expected showQuickPick log entry');
+
+      const moreTerminals = items!.find(
+        (i) => typeof i.label === 'string' && (i.label as string).includes('More terminals...'),
+      );
+      assert.ok(moreTerminals, 'Expected "More terminals..." overflow item');
+
+      const moreFiles = items!.find(
+        (i) => typeof i.label === 'string' && (i.label as string).includes('More files...'),
+      );
+      assert.ok(moreFiles, 'Expected "More files..." overflow item');
+
+      log('✓ Both overflow items validated in R-D picker');
+    } finally {
+      await closeAllEditors();
+      cleanupFiles(tmpFileUris);
+    }
   });
 });

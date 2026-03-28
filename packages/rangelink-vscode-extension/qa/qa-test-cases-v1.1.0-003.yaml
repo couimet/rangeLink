@@ -257,6 +257,19 @@ test_cases:
     expected_result: 'A confirmation dialog appears with current and proposed destination names. Selecting Yes switches the binding.'
     automated: false
 
+  - id: bind-to-destination-013
+    feature: 'R-D Bind to Destination'
+    scenario: 'R-D picker shows both "More terminals..." and "More files..." overflow items when many terminals and files are open'
+    preconditions:
+      - 'More terminals than maxInline (default 5) are open'
+      - 'Multiple files are open across tab groups'
+      - 'No destination is bound'
+    steps:
+      - 'Open R-D destination picker (Cmd+R Cmd+D or Ctrl+R Ctrl+D)'
+      - 'Observe the picker items'
+    expected_result: 'Picker shows inline terminal items up to maxInline limit, "More terminals..." overflow item, inline file items (current-in-group), "More files..." overflow item, and standard command items (Go to Link, Show Version Info).'
+    automated: assisted
+
   # ---------------------------------------------------------------------------
   # Section 3 — Terminal Picker
   # ---------------------------------------------------------------------------
