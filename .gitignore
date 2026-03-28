@@ -34,6 +34,7 @@ packages/*/icon_large.png
 
 # Temp files created by integration test suites (cleaned up on normal exit; guard for CI kills)
 packages/rangelink-vscode-extension/__rl-test-*.ts
+packages/rangelink-vscode-extension/.vscode/
 
 # Generated QA output (not committed)
 packages/rangelink-vscode-extension/qa/output/
