@@ -137,7 +137,7 @@ suite('Terminal Picker', () => {
   });
 
   test('[assisted] terminal-picker-004: bound terminal always appears first in the list', async () => {
-    const t1 = await createTerminal('rl-tp-004-b');
+    await createTerminal('rl-tp-004-b');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
     await createTerminal('rl-tp-004-a');
