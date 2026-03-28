@@ -45,11 +45,12 @@ suite('Terminal Picker', () => {
     return t;
   };
 
-  const findTerminalItems = (
-    items: Record<string, unknown>[],
-  ): Record<string, unknown>[] =>
+  const findTerminalItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
     items.filter(
-      (item) => item.itemKind === 'bindable' && typeof item.label === 'string' && (item.label as string).includes('Terminal ('),
+      (item) =>
+        item.itemKind === 'bindable' &&
+        typeof item.label === 'string' &&
+        (item.label as string).includes('Terminal ('),
     );
 
   test('[assisted] terminal-picker-001: active terminal is marked with active badge', async () => {
@@ -99,7 +100,8 @@ suite('Terminal Picker', () => {
     const boundItem = termItems.find((i) => (i.label as string).includes('rl-tp-002'));
     assert.ok(boundItem, 'Expected to find terminal rl-tp-002');
     assert.ok(
-      typeof boundItem!.description === 'string' && (boundItem!.description as string).includes('bound'),
+      typeof boundItem!.description === 'string' &&
+        (boundItem!.description as string).includes('bound'),
       `Expected description to include "bound" but got "${boundItem!.description}"`,
     );
 
@@ -151,7 +153,10 @@ suite('Terminal Picker', () => {
     assert.ok(items, 'Expected showQuickPick log entry');
 
     const termItems = findTerminalItems(items!);
-    assert.ok(termItems.length >= 2, `Expected at least 2 terminal items but got ${termItems.length}`);
+    assert.ok(
+      termItems.length >= 2,
+      `Expected at least 2 terminal items but got ${termItems.length}`,
+    );
 
     const firstTermLabel = termItems[0].label as string;
     assert.ok(
@@ -183,12 +188,21 @@ suite('Terminal Picker', () => {
     assert.ok(items, 'Expected showQuickPick log entry');
 
     const termItems = findTerminalItems(items!);
-    assert.ok(termItems.length >= 2, `Expected at least 2 terminal items but got ${termItems.length}`);
+    assert.ok(
+      termItems.length >= 2,
+      `Expected at least 2 terminal items but got ${termItems.length}`,
+    );
 
     const firstLabel = termItems[0].label as string;
     const secondLabel = termItems[1].label as string;
-    assert.ok(firstLabel.includes('rl-tp-005-a'), `Expected bound terminal first but got "${firstLabel}"`);
-    assert.ok(secondLabel.includes('rl-tp-005-b'), `Expected active terminal second but got "${secondLabel}"`);
+    assert.ok(
+      firstLabel.includes('rl-tp-005-a'),
+      `Expected bound terminal first but got "${firstLabel}"`,
+    );
+    assert.ok(
+      secondLabel.includes('rl-tp-005-b'),
+      `Expected active terminal second but got "${secondLabel}"`,
+    );
 
     log('✓ Active non-bound terminal appears second validated');
   });
@@ -240,7 +254,10 @@ suite('Terminal Picker', () => {
     assert.strictEqual(moreItem, undefined, 'Expected no "More terminals..." overflow item');
 
     const termItems = findTerminalItems(items!);
-    assert.ok(termItems.length >= 2, `Expected at least 2 terminal items but got ${termItems.length}`);
+    assert.ok(
+      termItems.length >= 2,
+      `Expected at least 2 terminal items but got ${termItems.length}`,
+    );
 
     log('✓ All terminals shown inline without overflow');
   });
@@ -265,7 +282,8 @@ suite('Terminal Picker', () => {
     const moreItem = items!.find((i) => i.label === 'More terminals...');
     assert.ok(moreItem, 'Expected "More terminals..." overflow item');
     assert.ok(
-      typeof moreItem!.description === 'string' && (moreItem!.description as string).includes('more'),
+      typeof moreItem!.description === 'string' &&
+        (moreItem!.description as string).includes('more'),
       `Expected "N more" description but got "${moreItem!.description}"`,
     );
 
@@ -280,15 +298,19 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-009');
 
-    await waitForHuman('terminal-picker-009', 'Open R-D picker, click "More terminals...", then Escape the secondary picker', [
-      'Six terminals created. Open R-D picker (Cmd+R Cmd+D).',
-      'Select "More terminals..." from the list.',
-      'A secondary picker opens with the full terminal list — press Escape.',
-    ]);
+    await waitForHuman(
+      'terminal-picker-009',
+      'Open R-D picker, click "More terminals...", then Escape the secondary picker',
+      [
+        'Six terminals created. Open R-D picker (Cmd+R Cmd+D).',
+        'Select "More terminals..." from the list.',
+        'A secondary picker opens with the full terminal list — press Escape.',
+      ],
+    );
 
     const lines = logCapture.getLinesSince('before-tp-009');
-    const quickPickEntries = lines.filter((line) =>
-      line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
+    const quickPickEntries = lines.filter(
+      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
     );
     assert.ok(
       quickPickEntries.length >= 2,
@@ -306,16 +328,20 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-010');
 
-    await waitForHuman('terminal-picker-010', 'Open R-D → "More terminals..." → Escape → verify parent reopens → Escape', [
-      'Six terminals created. Open R-D picker (Cmd+R Cmd+D).',
-      'Select "More terminals...".',
-      'Press Escape on the secondary picker — the parent R-D picker should reopen.',
-      'Press Escape again to dismiss the parent picker.',
-    ]);
+    await waitForHuman(
+      'terminal-picker-010',
+      'Open R-D → "More terminals..." → Escape → verify parent reopens → Escape',
+      [
+        'Six terminals created. Open R-D picker (Cmd+R Cmd+D).',
+        'Select "More terminals...".',
+        'Press Escape on the secondary picker — the parent R-D picker should reopen.',
+        'Press Escape again to dismiss the parent picker.',
+      ],
+    );
 
     const lines = logCapture.getLinesSince('before-tp-010');
-    const quickPickEntries = lines.filter((line) =>
-      line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
+    const quickPickEntries = lines.filter(
+      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
     );
     assert.ok(
       quickPickEntries.length >= 3,
@@ -366,10 +392,11 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-012');
 
-    await waitForHuman('terminal-picker-012', 'Open R-M menu (click status bar or Cmd+R Cmd+M), then Escape', [
-      'One terminal created, no destination bound.',
-      'Open the R-M menu, then Escape.',
-    ]);
+    await waitForHuman(
+      'terminal-picker-012',
+      'Open R-M menu (click status bar or Cmd+R Cmd+M), then Escape',
+      ['One terminal created, no destination bound.', 'Open the R-M menu, then Escape.'],
+    );
 
     const lines = logCapture.getLinesSince('before-tp-012');
     const items = extractQuickPickItemsLogged(lines);
