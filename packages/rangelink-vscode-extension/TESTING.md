@@ -94,7 +94,7 @@ Tests tagged `[assisted]` in their name automate setup and validation but pause 
 | `pnpm test:release`           | All tests (automated + `[assisted]`) | 5 min/test | Human at screen — QA sessions |
 | `pnpm test:release:automated` | Automated only (skips `[assisted]`)  | 20 s/test  | CI / headless environments    |
 
-Both share `pnpm test:release:prepare` for compilation. The difference is the Mocha config: `.vscode-test.automated.mjs` uses `grep: '\\[assisted\\]'` with `invert: true` to skip assisted tests.
+All three scripts are handled by a single `scripts/test-release-run.sh` with different flags. The automated config (`.vscode-test.automated.mjs`) uses `grep: '\\[assisted\\]'` with `invert: true` to skip assisted tests.
 
 **Filtering with `test:release:grep`:**
 
@@ -112,7 +112,18 @@ pnpm test:release:grep "R-M Status Bar Menu"
 pnpm test:release:grep "\[assisted\]"
 ```
 
-Runs from the project root or extension directory. Compiles first, then runs only matching tests. The `validate:qa-coverage` step is intentionally skipped — it expects the full suite. Under the hood, the pattern is passed as `MOCHA_GREP` to `.vscode-test.mjs` because `@vscode/test-cli` does not support Mocha flags via CLI.
+Runs from the project root or extension directory. Compiles first, then runs only matching tests. The `validate:qa-coverage` step is intentionally skipped when filtering — it expects the full suite.
+
+**Output capture and failed-test rerun:**
+
+All `test:release*` commands capture output to timestamped files in `qa/output/` (e.g., `qa/output/test-run-20260328-141328-grep-assisted-file-picker.txt`). The report file path is printed at the start and end of each run. Output streams incrementally — partial reports are preserved if the run is interrupted.
+
+When tests fail, the script extracts failed TC IDs and prints a ready-to-use rerun command:
+
+```text
+Re-run failed tests:
+  pnpm test:release:grep "file-picker-002|file-picker-003"
+```
 
 **Adding new assisted tests:**
 
