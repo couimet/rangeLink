@@ -452,7 +452,10 @@ suite('Terminal Picker', () => {
       const uri = createWorkspaceFile(`btd-013-${i}`, `file ${i}\n`);
       tmpFileUris.push(uri);
       const doc = await vscode.workspace.openTextDocument(uri);
-      await vscode.window.showTextDocument(doc, { viewColumn: vscode.ViewColumn.One, preview: false });
+      await vscode.window.showTextDocument(doc, {
+        viewColumn: vscode.ViewColumn.One,
+        preview: false,
+      });
       await settle();
     }
 
