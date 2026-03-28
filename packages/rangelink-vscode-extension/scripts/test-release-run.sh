@@ -46,14 +46,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-QA_DIR="$PACKAGE_ROOT/qa"
+OUTPUT_DIR="$PACKAGE_ROOT/qa/output"
+mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
 
 if [[ "$MODE" == "grep" ]]; then
   PATTERN_SLUG=$(echo "$GREP_PATTERN" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
-  REPORT_FILE="$QA_DIR/test-run-${TIMESTAMP}-grep-${PATTERN_SLUG}.txt"
+  REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-grep-${PATTERN_SLUG}.txt"
 else
-  REPORT_FILE="$QA_DIR/test-run-${TIMESTAMP}-${MODE}.txt"
+  REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-${MODE}.txt"
 fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"

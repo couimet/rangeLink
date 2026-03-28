@@ -111,8 +111,10 @@ if [[ "$YAML_REST" =~ ^(.*)-[0-9]{3}$ ]]; then
 else
   REPORT_VERSION="$YAML_REST"
 fi
+OUTPUT_DIR="$QA_DIR/output"
+mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
-REPORT_FILE="$QA_DIR/qa-coverage-report-${REPORT_VERSION}-${TIMESTAMP}.txt"
+REPORT_FILE="$OUTPUT_DIR/qa-coverage-report-${REPORT_VERSION}-${TIMESTAMP}.txt"
 
 # Collect all output, write to both terminal and file
 {
