@@ -423,6 +423,74 @@ describe('VscodeAdapter', () => {
       );
     });
 
+    it('should log semantic fields: displayName, isActive, boundState, remainingCount', async () => {
+      const items = [
+        {
+          label: 'Terminal ("bash")',
+          description: 'bound · active',
+          itemKind: 'bindable' as const,
+          displayName: 'Terminal ("bash")',
+          isActive: true,
+          boundState: 'bound' as const,
+        },
+        {
+          label: 'More terminals...',
+          itemKind: 'terminal-more' as const,
+          displayName: 'More terminals...',
+          remainingCount: 3,
+        },
+        { label: 'No destinations available', itemKind: 'info' as const },
+      ];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      await adapter.showQuickPick(items);
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'VscodeAdapter.showQuickPick',
+          itemCount: 3,
+          options: undefined,
+          items: [
+            {
+              label: 'Terminal ("bash")',
+              description: 'bound · active',
+              itemKind: 'bindable',
+              displayName: 'Terminal ("bash")',
+              isActive: true,
+              boundState: 'bound',
+            },
+            {
+              label: 'More terminals...',
+              itemKind: 'terminal-more',
+              displayName: 'More terminals...',
+              remainingCount: 3,
+            },
+            { label: 'No destinations available', itemKind: 'info' },
+          ],
+        },
+        'Showing quick pick',
+      );
+    });
+
+    it('should omit absent semantic fields from logged items (not set to undefined)', async () => {
+      const items = [
+        { label: 'Plain item' },
+        { label: 'With displayName only', displayName: 'raw name' },
+        { label: 'With boundState only', boundState: 'not-bound' as const, itemKind: 'bindable' as const },
+      ];
+      (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
+
+      await adapter.showQuickPick(items);
+
+      const loggedItems = (mockLogger.debug as jest.Mock).mock.calls.find(
+        (call) => call[0]?.fn === 'VscodeAdapter.showQuickPick',
+      )?.[0]?.items;
+
+      expect(Object.keys(loggedItems[0])).toStrictEqual(['label']);
+      expect(Object.keys(loggedItems[1]).sort()).toStrictEqual(['displayName', 'label']);
+      expect(Object.keys(loggedItems[2]).sort()).toStrictEqual(['boundState', 'itemKind', 'label']);
+    });
+
     it('should log only description when detail, kind, and itemKind are absent', async () => {
       const items = [{ label: 'Terminal "bash"', description: 'active' }];
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
@@ -784,6 +852,7 @@ describe('VscodeAdapter', () => {
         selection: {
           active: { line: 5, character: 10 },
         },
+        document: { uri: { toString: () => 'file:///test.ts' } },
         edit: jest.fn().mockImplementation((callback) => {
           capturedCallback = callback;
           return Promise.resolve(true);
@@ -810,6 +879,7 @@ describe('VscodeAdapter', () => {
         selection: {
           active: { line: 0, character: 0 },
         },
+        document: { uri: { toString: () => 'file:///test.ts' } },
         edit: jest.fn().mockResolvedValue(false),
       } as any;
 
@@ -824,6 +894,7 @@ describe('VscodeAdapter', () => {
         selection: {
           active: { line: 0, character: 0 },
         },
+        document: { uri: { toString: () => 'file:///test.ts' } },
         edit: jest.fn().mockImplementation((callback) => {
           capturedCallback = callback;
           return Promise.resolve(true);
@@ -1004,6 +1075,14 @@ describe('VscodeAdapter', () => {
       const result = adapter.getFilenameFromUri(mockUri);
 
       expect(result).toBe('standalone.ts');
+    });
+
+    it('returns Unknown for path ending with trailing separator', () => {
+      const mockUri = createMockUri('/some/path/');
+
+      const result = adapter.getFilenameFromUri(mockUri);
+
+      expect(result).toBe('Unknown');
     });
   });
 
@@ -2762,6 +2841,60 @@ describe('VscodeAdapter', () => {
 
         expect(mockDisposable.dispose).toHaveBeenCalledTimes(1);
       });
+    });
+
+    describe('onDidChangeConfiguration', () => {
+      it('should register listener and return Disposable', () => {
+        const listener = jest.fn();
+        const mockDisposable = { dispose: jest.fn() };
+        (mockVSCode.workspace.onDidChangeConfiguration as jest.Mock).mockReturnValue(mockDisposable);
+
+        const result = adapter.onDidChangeConfiguration(listener);
+
+        expect(mockVSCode.workspace.onDidChangeConfiguration).toHaveBeenCalledWith(listener);
+        expect(result).toBe(mockDisposable);
+      });
+    });
+  });
+
+  describe('createStatusBarItem', () => {
+    it('should create status bar item with alignment and priority', () => {
+      const mockItem = { text: '', tooltip: '', command: '', show: jest.fn(), dispose: jest.fn() };
+      (mockVSCode.window.createStatusBarItem as jest.Mock).mockReturnValue(mockItem);
+
+      const result = adapter.createStatusBarItem(2, 100);
+
+      expect(mockVSCode.window.createStatusBarItem).toHaveBeenCalledWith(2, 100);
+      expect(result).toBe(mockItem);
+    });
+  });
+
+  describe('hasVisibleEditorAt', () => {
+    it('should return true when a visible editor matches URI and viewColumn', () => {
+      const mockUri = { toString: () => 'file:///test.ts' };
+      Object.defineProperty(adapter, 'visibleTextEditors', {
+        get: () => [
+          { document: { uri: { toString: () => 'file:///test.ts' } }, viewColumn: 1 },
+          { document: { uri: { toString: () => 'file:///other.ts' } }, viewColumn: 2 },
+        ],
+      });
+
+      const result = adapter.hasVisibleEditorAt(mockUri as any, 1);
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false when no visible editor matches', () => {
+      const mockUri = { toString: () => 'file:///missing.ts' };
+      Object.defineProperty(adapter, 'visibleTextEditors', {
+        get: () => [
+          { document: { uri: { toString: () => 'file:///test.ts' } }, viewColumn: 1 },
+        ],
+      });
+
+      const result = adapter.hasVisibleEditorAt(mockUri as any, 1);
+
+      expect(result).toBe(false);
     });
   });
 });
