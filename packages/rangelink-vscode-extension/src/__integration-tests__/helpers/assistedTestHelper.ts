@@ -31,19 +31,19 @@ export const printAssistedBanner = (): void => {
  * Console output uses structured line breaks for the terminal-side screen.
  *
  * @param tcId - Test case ID (e.g., "status-bar-menu-002"), shown as prefix in the notification
- * @param action - Short action description (notification title after TC ID)
- * @param consoleSteps - Structured step lines for the console (line breaks preserved)
- * @param notificationSummary - Flowing prose for the notification body (rendered as one paragraph)
+ * @param action - Short mechanical action the human should perform (notification title after TC ID)
+ * @param consoleSteps - Optional extra step lines for multi-step actions (e.g., secondary picker flows)
  */
 export const waitForHuman = async (
   tcId: string,
   action: string,
-  consoleSteps: string[],
-  notificationSummary?: string,
+  consoleSteps?: string[],
 ): Promise<void> => {
   nodeConsole.log(`\n${SECTION_LINE}`);
   nodeConsole.log(`[${tcId}] ${action}`);
-  consoleSteps.forEach((line) => nodeConsole.log(`  ${line}`));
+  if (consoleSteps !== undefined) {
+    consoleSteps.forEach((line) => nodeConsole.log(`  ${line}`));
+  }
   nodeConsole.log('Click Cancel on the notification when done.');
   nodeConsole.log(SECTION_LINE);
 
@@ -53,11 +53,8 @@ export const waitForHuman = async (
       title: `🧪 ${tcId}: ${action}`,
       cancellable: true,
     },
-    (progress, token) =>
+    (_progress, token) =>
       new Promise<void>((resolve) => {
-        if (notificationSummary !== undefined) {
-          progress.report({ message: notificationSummary });
-        }
         token.onCancellationRequested(() => resolve());
       }),
   );
