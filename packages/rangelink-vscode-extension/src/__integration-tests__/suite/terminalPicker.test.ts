@@ -11,6 +11,7 @@ import {
   extractQuickPickItemsLogged,
   getLogCapture,
   loadSettingsProfile,
+  parseQuickPickItemsFromLogLine,
   printAssistedBanner,
   resetRangelinkSettings,
   settle,
@@ -19,6 +20,9 @@ import {
 } from '../helpers';
 
 const SEPARATOR_KIND = -1;
+const TERMINAL_OVERFLOW_COUNT = 6;
+const MAX_INLINE_DEFAULT = 5;
+const FILE_OVERFLOW_THRESHOLD = 5;
 
 suite('Terminal Picker', () => {
   const log = createLogger('terminalPicker');
@@ -73,14 +77,27 @@ suite('Terminal Picker', () => {
     const termItems = findTerminalItems(items!);
     const activeItem = termItems.find((i) => (i.label as string).includes('rl-tp-001-a'));
     assert.ok(activeItem, 'Expected to find terminal rl-tp-001-a');
-    assert.strictEqual(activeItem!.description, 'active');
+    assert.deepStrictEqual(
+      { description: activeItem!.description, isActive: activeItem!.isActive },
+      { description: 'active', isActive: true },
+    );
 
-    log('✓ Active terminal badge validated');
+    const nonActiveItem = termItems.find((i) => (i.label as string).includes('rl-tp-001-b'));
+    assert.ok(nonActiveItem, 'Expected to find terminal rl-tp-001-b');
+    assert.deepStrictEqual(
+      { description: nonActiveItem!.description, isActive: nonActiveItem!.isActive },
+      { description: undefined, isActive: undefined },
+    );
+
+    log('✓ Active: isActive=true + badge, non-active: isActive=undefined + no badge');
   });
 
   test('[assisted] terminal-picker-002: bound terminal is marked with bound badge', async () => {
     await createTerminal('rl-tp-002');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
+    await settle();
+    const t2 = await createTerminal('rl-tp-002-other');
+    t2.show(true);
     await settle();
 
     const logCapture = getLogCapture();
@@ -93,15 +110,21 @@ suite('Terminal Picker', () => {
     assert.ok(items, 'Expected showQuickPick log entry');
 
     const termItems = findTerminalItems(items!);
-    const boundItem = termItems.find((i) => (i.label as string).includes('rl-tp-002'));
+    const boundItem = termItems.find((i) => (i.label as string).includes('rl-tp-002"'));
     assert.ok(boundItem, 'Expected to find terminal rl-tp-002');
-    assert.ok(
-      typeof boundItem!.description === 'string' &&
-        (boundItem!.description as string).includes('bound'),
-      `Expected description to include "bound" but got "${boundItem!.description}"`,
+    assert.deepStrictEqual(
+      { description: boundItem!.description, boundState: boundItem!.boundState, isActive: boundItem!.isActive },
+      { description: 'bound', boundState: 'bound', isActive: undefined },
     );
 
-    log('✓ Bound terminal badge validated');
+    const otherItem = termItems.find((i) => (i.label as string).includes('rl-tp-002-other'));
+    assert.ok(otherItem, 'Expected to find terminal rl-tp-002-other');
+    assert.deepStrictEqual(
+      { description: otherItem!.description, boundState: otherItem!.boundState, isActive: otherItem!.isActive },
+      { description: 'active', boundState: 'not-bound', isActive: true },
+    );
+
+    log('✓ Bound: boundState=bound + no active, Other: boundState=not-bound + isActive=true');
   });
 
   test('[assisted] terminal-picker-003: terminal that is both active and bound shows dual badge', async () => {
@@ -122,9 +145,12 @@ suite('Terminal Picker', () => {
     const termItems = findTerminalItems(items!);
     const dualItem = termItems.find((i) => (i.label as string).includes('rl-tp-003'));
     assert.ok(dualItem, 'Expected to find terminal rl-tp-003');
-    assert.strictEqual(dualItem!.description, 'bound · active');
+    assert.deepStrictEqual(
+      { description: dualItem!.description, boundState: dualItem!.boundState, isActive: dualItem!.isActive },
+      { description: 'bound · active', boundState: 'bound', isActive: true },
+    );
 
-    log('✓ Dual bound · active badge validated');
+    log('✓ Dual: boundState=bound + isActive=true + "bound · active" badge');
   });
 
   test('[assisted] terminal-picker-004: bound terminal always appears first in the list', async () => {
@@ -143,18 +169,15 @@ suite('Terminal Picker', () => {
     assert.ok(items, 'Expected showQuickPick log entry');
 
     const termItems = findTerminalItems(items!);
-    assert.ok(
-      termItems.length >= 2,
-      `Expected at least 2 terminal items but got ${termItems.length}`,
+    assert.deepStrictEqual(
+      termItems.map(({ label, displayName, boundState, isActive, itemKind }) => ({ label, displayName, boundState, isActive, itemKind })),
+      [
+        { label: 'Terminal ("rl-tp-004-b")', displayName: 'Terminal ("rl-tp-004-b")', boundState: 'bound', isActive: true, itemKind: 'bindable' },
+        { label: 'Terminal ("rl-tp-004-a")', displayName: 'Terminal ("rl-tp-004-a")', boundState: 'not-bound', isActive: undefined, itemKind: 'bindable' },
+      ],
     );
 
-    const firstTermLabel = termItems[0].label as string;
-    assert.ok(
-      firstTermLabel.includes('rl-tp-004-b'),
-      `Expected bound terminal first but got "${firstTermLabel}"`,
-    );
-
-    log('✓ Bound terminal appears first validated');
+    log('✓ Bound terminal first, non-bound second — full semantic state');
   });
 
   test('[assisted] terminal-picker-005: active non-bound terminal appears second', async () => {
@@ -175,23 +198,16 @@ suite('Terminal Picker', () => {
     assert.ok(items, 'Expected showQuickPick log entry');
 
     const termItems = findTerminalItems(items!);
-    assert.ok(
-      termItems.length >= 2,
-      `Expected at least 2 terminal items but got ${termItems.length}`,
+    assert.strictEqual(termItems.length, 2, `Expected exactly 2 terminal items but got ${termItems.length}`);
+    assert.deepStrictEqual(
+      termItems.map(({ label, description, boundState, isActive }) => ({ label, description, boundState, isActive })),
+      [
+        { label: 'Terminal ("rl-tp-005-a")', description: 'bound', boundState: 'bound', isActive: undefined },
+        { label: 'Terminal ("rl-tp-005-b")', description: 'active', boundState: 'not-bound', isActive: true },
+      ],
     );
 
-    const firstLabel = termItems[0].label as string;
-    const secondLabel = termItems[1].label as string;
-    assert.ok(
-      firstLabel.includes('rl-tp-005-a'),
-      `Expected bound terminal first but got "${firstLabel}"`,
-    );
-    assert.ok(
-      secondLabel.includes('rl-tp-005-b'),
-      `Expected active terminal second but got "${secondLabel}"`,
-    );
-
-    log('✓ Active non-bound terminal appears second validated');
+    log('✓ Bound first with semantic state, active second with semantic state');
   });
 
   test('[assisted] terminal-picker-006: hidden IDE terminals are absent from the picker', async () => {
@@ -207,15 +223,12 @@ suite('Terminal Picker', () => {
     assert.ok(items, 'Expected showQuickPick log entry');
 
     const termItems = findTerminalItems(items!);
-    for (const item of termItems) {
-      const label = item.label as string;
-      assert.ok(
-        label.includes('rl-tp-006'),
-        `Expected only test terminals but found unexpected item: "${label}"`,
-      );
-    }
+    assert.deepStrictEqual(
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
+      [{ label: 'Terminal ("rl-tp-006")', displayName: 'Terminal ("rl-tp-006")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' }],
+    );
 
-    log('✓ Only explicitly created test terminals appear');
+    log('✓ Only the test terminal appears — full field validation');
   });
 
   test('[assisted] terminal-picker-007: all terminals shown inline when within maxInline limit', async () => {
@@ -231,20 +244,26 @@ suite('Terminal Picker', () => {
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry');
 
-    const moreItem = items!.find((i) => i.label === 'More terminals...');
-    assert.strictEqual(moreItem, undefined, 'Expected no "More terminals..." overflow item');
-
-    const termItems = findTerminalItems(items!);
-    assert.ok(
-      termItems.length >= 2,
-      `Expected at least 2 terminal items but got ${termItems.length}`,
+    assert.strictEqual(
+      items!.find((i) => i.label === 'More terminals...'),
+      undefined,
+      'Expected no "More terminals..." overflow item',
     );
 
-    log('✓ All terminals shown inline without overflow');
+    const termItems = findTerminalItems(items!);
+    assert.deepStrictEqual(
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
+      [
+        { label: 'Terminal ("rl-tp-007-a")', displayName: 'Terminal ("rl-tp-007-a")', description: undefined, isActive: undefined, boundState: 'not-bound', itemKind: 'bindable' },
+        { label: 'Terminal ("rl-tp-007-b")', displayName: 'Terminal ("rl-tp-007-b")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
+      ],
+    );
+
+    log('✓ Both terminals inline, full field validation');
   });
 
   test('[assisted] terminal-picker-008: overflow shows "More terminals..." when exceeding maxInline', async () => {
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await createTerminal(`rl-tp-008-${i}`);
     }
 
@@ -259,17 +278,19 @@ suite('Terminal Picker', () => {
 
     const moreItem = items!.find((i) => i.label === 'More terminals...');
     assert.ok(moreItem, 'Expected "More terminals..." overflow item');
-    assert.ok(
-      typeof moreItem!.description === 'string' &&
-        (moreItem!.description as string).includes('more'),
-      `Expected "N more" description but got "${moreItem!.description}"`,
+    assert.deepStrictEqual(
+      { label: moreItem!.label, displayName: moreItem!.displayName, description: moreItem!.description, remainingCount: moreItem!.remainingCount, itemKind: moreItem!.itemKind },
+      { label: 'More terminals...', displayName: 'More terminals...', description: `${TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT} more`, remainingCount: TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT, itemKind: 'terminal-more' },
     );
 
-    log('✓ Overflow "More terminals..." item validated');
+    const termItems = findTerminalItems(items!);
+    assert.strictEqual(termItems.length, MAX_INLINE_DEFAULT, `Expected ${MAX_INLINE_DEFAULT} inline items`);
+
+    log('✓ Overflow item fully validated, inline capped at maxInline');
   });
 
   test('[assisted] terminal-picker-009: selecting "More terminals..." opens secondary full picker', async () => {
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await createTerminal(`rl-tp-009-${i}`);
     }
 
@@ -290,16 +311,23 @@ suite('Terminal Picker', () => {
     const quickPickEntries = lines.filter(
       (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
     );
-    assert.ok(
-      quickPickEntries.length >= 2,
-      `Expected at least 2 showQuickPick log entries (primary + secondary) but got ${quickPickEntries.length}`,
+    assert.ok(quickPickEntries.length >= 2, 'Expected at least 2 showQuickPick entries');
+
+    const secondaryItems = parseQuickPickItemsFromLogLine(quickPickEntries[1]);
+    const secondaryTerminals = secondaryItems.filter(
+      (i) => typeof i.label === 'string' && (i.label as string).includes('rl-tp-009-'),
+    );
+    assert.strictEqual(
+      secondaryTerminals.length,
+      TERMINAL_OVERFLOW_COUNT,
+      `Expected all ${TERMINAL_OVERFLOW_COUNT} terminals in secondary picker`,
     );
 
-    log('✓ Secondary terminal picker opened after "More terminals..."');
+    log('✓ Secondary picker contains all terminals');
   });
 
   test('[assisted] terminal-picker-010: escaping secondary picker returns to parent destination picker', async () => {
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await createTerminal(`rl-tp-010-${i}`);
     }
 
@@ -321,19 +349,26 @@ suite('Terminal Picker', () => {
     const quickPickEntries = lines.filter(
       (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
     );
-    assert.ok(
-      quickPickEntries.length >= 3,
-      `Expected at least 3 showQuickPick entries (primary → secondary → primary reopened) but got ${quickPickEntries.length}`,
+    assert.ok(quickPickEntries.length >= 3, 'Expected at least 3 showQuickPick entries');
+
+    const firstItems = parseQuickPickItemsFromLogLine(quickPickEntries[0]);
+    const reopenedItems = parseQuickPickItemsFromLogLine(quickPickEntries[2]);
+    assert.strictEqual(
+      reopenedItems.length,
+      firstItems.length,
+      `Expected reopened parent item count ${firstItems.length} but got ${reopenedItems.length}`,
     );
 
-    log('✓ Escape from secondary picker returns to parent');
+    log('✓ Parent picker reopened with same item count');
   });
 
   test('[assisted] terminal-picker-011: maxInline setting changes overflow threshold', async () => {
     await loadSettingsProfile('terminal-picker-low');
+    const LOW_MAX_INLINE = 2;
+    const TC_TERMINAL_COUNT = 3;
 
     try {
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= TC_TERMINAL_COUNT; i++) {
         await createTerminal(`rl-tp-011-${i}`);
       }
 
@@ -347,15 +382,16 @@ suite('Terminal Picker', () => {
       assert.ok(items, 'Expected showQuickPick log entry');
 
       const moreItem = items!.find((i) => i.label === 'More terminals...');
-      assert.ok(moreItem, 'Expected "More terminals..." overflow item with maxInline=2');
-
-      const termItems = findTerminalItems(items!);
-      assert.ok(
-        termItems.length <= 2,
-        `Expected at most 2 inline terminal items (maxInline=2) but got ${termItems.length}`,
+      assert.ok(moreItem, 'Expected "More terminals..." overflow item');
+      assert.deepStrictEqual(
+        { label: moreItem!.label, displayName: moreItem!.displayName, description: moreItem!.description, remainingCount: moreItem!.remainingCount, itemKind: moreItem!.itemKind },
+        { label: 'More terminals...', displayName: 'More terminals...', description: `${TC_TERMINAL_COUNT - LOW_MAX_INLINE} more`, remainingCount: TC_TERMINAL_COUNT - LOW_MAX_INLINE, itemKind: 'terminal-more' },
       );
 
-      log('✓ maxInline=2 overflow threshold validated');
+      const termItems = findTerminalItems(items!);
+      assert.strictEqual(termItems.length, LOW_MAX_INLINE, `Expected ${LOW_MAX_INLINE} inline items`);
+
+      log('✓ maxInline=2: overflow fully validated, inline capped');
     } finally {
       await resetRangelinkSettings();
     }
@@ -379,12 +415,12 @@ suite('Terminal Picker', () => {
     assert.ok(terminalSeparator, 'Expected "Terminals" separator in R-M menu');
 
     const termItems = findTerminalItems(items!);
-    assert.ok(
-      termItems.some((i) => (i.label as string).includes('rl-tp-012')),
-      'Expected test terminal to appear inline in R-M menu',
+    assert.deepStrictEqual(
+      termItems.map(({ displayName, description, isActive, boundState, itemKind }) => ({ displayName, description, isActive, boundState, itemKind })),
+      [{ displayName: 'Terminal ("rl-tp-012")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' }],
     );
 
-    log('✓ Terminal appears inline in R-M menu');
+    log('✓ Terminal inline in R-M menu with full description');
   });
 
   test('[assisted] terminal-picker-013: terminal picker appears inline in R-D destination picker', async () => {
@@ -400,21 +436,21 @@ suite('Terminal Picker', () => {
     assert.ok(items, 'Expected showQuickPick log entry');
 
     const termItems = findTerminalItems(items!);
-    assert.ok(
-      termItems.some((i) => (i.label as string).includes('rl-tp-013')),
-      'Expected test terminal to appear in R-D destination picker',
+    assert.deepStrictEqual(
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
+      [{ label: 'Terminal ("rl-tp-013")', displayName: 'Terminal ("rl-tp-013")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' }],
     );
 
-    log('✓ Terminal appears inline in R-D picker');
+    log('✓ Terminal inline in R-D picker — full fields');
   });
 
   test('[assisted] bind-to-destination-013: R-D picker shows both overflow items when many terminals and files are open', async () => {
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
       await createTerminal(`rl-btd-013-${i}`);
     }
 
     const tmpFileUris: vscode.Uri[] = [];
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= FILE_OVERFLOW_THRESHOLD; i++) {
       const uri = createWorkspaceFile(`btd-013-${i}`, `file ${i}\n`);
       tmpFileUris.push(uri);
       const doc = await vscode.workspace.openTextDocument(uri);
@@ -435,17 +471,23 @@ suite('Terminal Picker', () => {
       const items = extractQuickPickItemsLogged(lines);
       assert.ok(items, 'Expected showQuickPick log entry');
 
-      const moreTerminals = items!.find(
-        (i) => typeof i.label === 'string' && (i.label as string).includes('More terminals...'),
-      );
+      const moreTerminals = items!.find((i) => i.label === 'More terminals...');
       assert.ok(moreTerminals, 'Expected "More terminals..." overflow item');
+      assert.deepStrictEqual(
+        { label: moreTerminals!.label, displayName: moreTerminals!.displayName, description: moreTerminals!.description, remainingCount: moreTerminals!.remainingCount, itemKind: moreTerminals!.itemKind },
+        { label: 'More terminals...', displayName: 'More terminals...', description: `${TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT} more`, remainingCount: TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT, itemKind: 'terminal-more' },
+      );
 
       const moreFiles = items!.find(
         (i) => typeof i.label === 'string' && (i.label as string).includes('More files...'),
       );
       assert.ok(moreFiles, 'Expected "More files..." overflow item');
+      assert.deepStrictEqual(
+        { label: moreFiles!.label, displayName: moreFiles!.displayName, description: moreFiles!.description, remainingCount: moreFiles!.remainingCount, itemKind: moreFiles!.itemKind },
+        { label: 'More files...', displayName: 'More files...', description: `${(moreFiles!.remainingCount as number)} more`, remainingCount: moreFiles!.remainingCount, itemKind: 'file-more' },
+      );
 
-      log('✓ Both overflow items validated in R-D picker');
+      log('✓ Both overflow items validated with displayName + itemKind');
     } finally {
       await closeAllEditors();
       cleanupFiles(tmpFileUris);
