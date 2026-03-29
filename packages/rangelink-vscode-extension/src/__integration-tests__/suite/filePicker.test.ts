@@ -66,10 +66,7 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-001');
 
-    await waitForHuman('file-picker-001', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'One file opened and bound.',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('file-picker-001', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-fp-001');
     const items = extractQuickPickItemsLogged(lines);
@@ -91,10 +88,7 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-002');
 
-    await waitForHuman('file-picker-002', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'Two files opened in separate groups. "fp-002-b" is active.',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('file-picker-002', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-fp-002');
     const items = extractQuickPickItemsLogged(lines);
@@ -138,10 +132,7 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-003');
 
-    await waitForHuman('file-picker-003', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'Two files with the same name in different tab groups opened.',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('file-picker-003', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-fp-003');
     const items = extractQuickPickItemsLogged(lines);
@@ -173,10 +164,7 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-004');
 
-    await waitForHuman('file-picker-004', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'One file opened.',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('file-picker-004', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-fp-004');
     const items = extractQuickPickItemsLogged(lines);
@@ -199,10 +187,7 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-005');
 
-    await waitForHuman('file-picker-005', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'Five files opened.',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('file-picker-005', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-fp-005');
     const items = extractQuickPickItemsLogged(lines);
@@ -231,11 +216,11 @@ suite('File Picker', () => {
 
     await waitForHuman(
       'file-picker-006',
-      'Open R-D → click "More files..." → Escape the secondary picker',
+      'Cmd+R Cmd+D → click "More files..." → Escape',
       [
-        'Five files opened. Open R-D picker (Cmd+R Cmd+D).',
-        'Click "More files..." from the list.',
-        'A secondary file picker opens — press Escape.',
+        '1. Press Cmd+R Cmd+D',
+        '2. Click "More files..."',
+        '3. Escape the secondary picker',
       ],
     );
 
@@ -264,11 +249,11 @@ suite('File Picker', () => {
 
     await waitForHuman(
       'file-picker-007',
-      'Open R-D → click "More files..." → Escape the secondary picker',
+      'Cmd+R Cmd+D → click "More files..." → Escape',
       [
-        'Files opened in Tab Group 1 and Tab Group 2. Open R-D picker.',
-        'Click "More files...".',
-        'The secondary picker should show "Tab Group 1" and "Tab Group 2" sections — press Escape.',
+        '1. Press Cmd+R Cmd+D',
+        '2. Click "More files..."',
+        '3. Escape the secondary picker',
       ],
     );
 
@@ -294,12 +279,12 @@ suite('File Picker', () => {
 
     await waitForHuman(
       'file-picker-008',
-      'Open R-D → "More files..." → Escape → verify parent reopens → Escape',
+      'Cmd+R Cmd+D → "More files..." → Escape → Escape again',
       [
-        'Five files opened. Open R-D picker (Cmd+R Cmd+D).',
-        'Click "More files...".',
-        'Press Escape on the secondary picker — the parent R-D picker should reopen.',
-        'Press Escape again to dismiss the parent picker.',
+        '1. Press Cmd+R Cmd+D',
+        '2. Click "More files..."',
+        '3. Escape the secondary picker (parent should reopen)',
+        '4. Escape the parent picker',
       ],
     );
 

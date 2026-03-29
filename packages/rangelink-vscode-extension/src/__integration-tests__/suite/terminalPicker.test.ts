@@ -64,10 +64,7 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-001');
 
-    await waitForHuman('terminal-picker-001', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'Two terminals created: "rl-tp-001-a" (active) and "rl-tp-001-b".',
-      'Press Cmd+R Cmd+D (or Ctrl+R Ctrl+D) to open the destination picker, then Escape.',
-    ]);
+    await waitForHuman('terminal-picker-001', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-tp-001');
     const items = extractQuickPickItemsLogged(lines);
@@ -89,10 +86,7 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-002');
 
-    await waitForHuman('terminal-picker-002', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'Terminal "rl-tp-002" is bound.',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('terminal-picker-002', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-tp-002');
     const items = extractQuickPickItemsLogged(lines);
@@ -119,10 +113,7 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-003');
 
-    await waitForHuman('terminal-picker-003', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'Terminal "rl-tp-003" is both bound and active.',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('terminal-picker-003', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-tp-003');
     const items = extractQuickPickItemsLogged(lines);
@@ -145,10 +136,7 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-004');
 
-    await waitForHuman('terminal-picker-004', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'Terminal "rl-tp-004-b" is bound. "rl-tp-004-a" is not bound.',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('terminal-picker-004', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-tp-004');
     const items = extractQuickPickItemsLogged(lines);
@@ -180,10 +168,7 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-005');
 
-    await waitForHuman('terminal-picker-005', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'Terminal "rl-tp-005-a" is bound. "rl-tp-005-b" is active (not bound).',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('terminal-picker-005', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-tp-005');
     const items = extractQuickPickItemsLogged(lines);
@@ -215,10 +200,7 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-006');
 
-    await waitForHuman('terminal-picker-006', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'One test terminal "rl-tp-006" created.',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('terminal-picker-006', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-tp-006');
     const items = extractQuickPickItemsLogged(lines);
@@ -243,10 +225,7 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-007');
 
-    await waitForHuman('terminal-picker-007', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'Two terminals created (within default maxInline=5).',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('terminal-picker-007', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-tp-007');
     const items = extractQuickPickItemsLogged(lines);
@@ -272,10 +251,7 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-008');
 
-    await waitForHuman('terminal-picker-008', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'Six terminals created (exceeds default maxInline=5).',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('terminal-picker-008', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-tp-008');
     const items = extractQuickPickItemsLogged(lines);
@@ -302,11 +278,11 @@ suite('Terminal Picker', () => {
 
     await waitForHuman(
       'terminal-picker-009',
-      'Open R-D picker, click "More terminals...", then Escape the secondary picker',
+      'Cmd+R Cmd+D → click "More terminals..." → Escape',
       [
-        'Six terminals created. Open R-D picker (Cmd+R Cmd+D).',
-        'Select "More terminals..." from the list.',
-        'A secondary picker opens with the full terminal list — press Escape.',
+        '1. Press Cmd+R Cmd+D',
+        '2. Click "More terminals..."',
+        '3. Escape the secondary picker',
       ],
     );
 
@@ -332,12 +308,12 @@ suite('Terminal Picker', () => {
 
     await waitForHuman(
       'terminal-picker-010',
-      'Open R-D → "More terminals..." → Escape → verify parent reopens → Escape',
+      'Cmd+R Cmd+D → "More terminals..." → Escape → Escape again',
       [
-        'Six terminals created. Open R-D picker (Cmd+R Cmd+D).',
-        'Select "More terminals...".',
-        'Press Escape on the secondary picker — the parent R-D picker should reopen.',
-        'Press Escape again to dismiss the parent picker.',
+        '1. Press Cmd+R Cmd+D',
+        '2. Click "More terminals..."',
+        '3. Escape the secondary picker (parent should reopen)',
+        '4. Escape the parent picker',
       ],
     );
 
@@ -364,10 +340,7 @@ suite('Terminal Picker', () => {
       const logCapture = getLogCapture();
       logCapture.mark('before-tp-011');
 
-      await waitForHuman('terminal-picker-011', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-        'maxInline set to 2. Three terminals created (exceeds threshold).',
-        'Press Cmd+R Cmd+D, then Escape.',
-      ]);
+      await waitForHuman('terminal-picker-011', 'Press Cmd+R Cmd+D, then Escape');
 
       const lines = logCapture.getLinesSince('before-tp-011');
       const items = extractQuickPickItemsLogged(lines);
@@ -394,11 +367,7 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-012');
 
-    await waitForHuman(
-      'terminal-picker-012',
-      'Open R-M menu (click status bar or Cmd+R Cmd+M), then Escape',
-      ['One terminal created, no destination bound.', 'Open the R-M menu, then Escape.'],
-    );
+    await waitForHuman('terminal-picker-012', 'Open R-M menu (Cmd+R Cmd+M), then Escape');
 
     const lines = logCapture.getLinesSince('before-tp-012');
     const items = extractQuickPickItemsLogged(lines);
@@ -424,10 +393,7 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-013');
 
-    await waitForHuman('terminal-picker-013', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-      'One terminal created.',
-      'Press Cmd+R Cmd+D, then Escape.',
-    ]);
+    await waitForHuman('terminal-picker-013', 'Press Cmd+R Cmd+D, then Escape');
 
     const lines = logCapture.getLinesSince('before-tp-013');
     const items = extractQuickPickItemsLogged(lines);
@@ -463,10 +429,7 @@ suite('Terminal Picker', () => {
       const logCapture = getLogCapture();
       logCapture.mark('before-btd-013');
 
-      await waitForHuman('bind-to-destination-013', 'Open R-D picker (Cmd+R Cmd+D), then Escape', [
-        'Six terminals + five files created (both exceed inline limits).',
-        'Press Cmd+R Cmd+D, then Escape.',
-      ]);
+      await waitForHuman('bind-to-destination-013', 'Press Cmd+R Cmd+D, then Escape');
 
       const lines = logCapture.getLinesSince('before-btd-013');
       const items = extractQuickPickItemsLogged(lines);

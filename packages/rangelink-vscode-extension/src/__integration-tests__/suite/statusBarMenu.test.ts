@@ -37,9 +37,7 @@ suite('R-M Status Bar Menu', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-menu-002');
 
-    await waitForHuman('status-bar-menu-002', 'Click the RangeLink status bar item, then Escape', [
-      'Click the $(link) RangeLink item in the bottom-right status bar, then press Escape.',
-    ]);
+    await waitForHuman('status-bar-menu-002', 'Click the RangeLink status bar item, then Escape');
 
     const lines = logCapture.getLinesSince('before-menu-002');
     const items = extractQuickPickItemsLogged(lines);
@@ -74,9 +72,7 @@ suite('R-M Status Bar Menu', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-menu-003');
 
-    await waitForHuman('status-bar-menu-003', 'Press Cmd+R Cmd+M (or Ctrl+R Ctrl+M), then Escape', [
-      'A file was opened for editor focus. Press the keybinding, then Escape.',
-    ]);
+    await waitForHuman('status-bar-menu-003', 'Press Cmd+R Cmd+M, then Escape');
 
     const lines = logCapture.getLinesSince('before-menu-003');
     const items = extractQuickPickItemsLogged(lines);
@@ -113,9 +109,7 @@ suite('R-M Status Bar Menu', () => {
       const logCapture = getLogCapture();
       logCapture.mark('before-menu-005');
 
-      await waitForHuman('status-bar-menu-005', 'Open the R-M menu, then Escape', [
-        'Terminal "rl-menu-test" is bound. Open the menu and press Escape.',
-      ]);
+      await waitForHuman('status-bar-menu-005', 'Open R-M menu (Cmd+R Cmd+M), then Escape');
 
       const lines = logCapture.getLinesSince('before-menu-005');
       assertQuickPickItemsLogged(lines, [
