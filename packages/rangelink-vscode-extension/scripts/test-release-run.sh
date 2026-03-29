@@ -84,14 +84,17 @@ else
   npx vscode-test $VSCODE_TEST_CONFIG 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE" || TEST_EXIT=$?
 fi
 
+QA_EXIT=0
 if [[ "$MODE" != "grep" ]]; then
-  pnpm validate:qa-coverage 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE"
+  pnpm validate:qa-coverage 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE" || QA_EXIT=$?
 fi
 
 echo ""
 echo "Report: $RELATIVE_REPORT"
 
-if [[ $TEST_EXIT -ne 0 ]]; then
+FINAL_EXIT=$((TEST_EXIT > QA_EXIT ? TEST_EXIT : QA_EXIT))
+
+if [[ $FINAL_EXIT -ne 0 ]]; then
   FAILED_IDS=$(grep -A1 '^\s*[0-9]\+)\s' "$REPORT_FILE" | grep -oE '[a-z][-a-z]*-[0-9]{3}' | sort -u)
   if [[ -n "$FAILED_IDS" ]]; then
     RERUN_PATTERN=$(echo "$FAILED_IDS" | paste -sd '|' -)
@@ -101,4 +104,4 @@ if [[ $TEST_EXIT -ne 0 ]]; then
   fi
 fi
 
-exit $TEST_EXIT
+exit $FINAL_EXIT
