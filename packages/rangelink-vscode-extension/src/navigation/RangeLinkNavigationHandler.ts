@@ -241,7 +241,18 @@ export class RangeLinkNavigationHandler {
         TextEditorRevealType.InCenterIfOutsideViewport,
       );
 
-      this.logger.info({ ...logCtx }, 'Navigation completed successfully');
+      this.logger.info(
+        {
+          ...logCtx,
+          finalSelection: {
+            anchorLine: vsStart.line,
+            anchorChar: vsStart.character,
+            activeLine: vsEnd.line,
+            activeChar: vsEnd.character,
+          },
+        },
+        'Navigation completed successfully',
+      );
 
       const position = formatLinkPosition(start, end);
 

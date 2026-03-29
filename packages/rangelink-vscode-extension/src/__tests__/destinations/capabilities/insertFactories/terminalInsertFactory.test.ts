@@ -33,7 +33,7 @@ describe('TerminalInsertFactory', () => {
     expect(pasteTextSpy).toHaveBeenCalledTimes(1);
     expect(pasteTextSpy).toHaveBeenCalledWith(mockTerminal, 'test content');
     expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal' },
+      { fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal', textLength: 12 },
       'Terminal paste succeeded',
     );
   });
@@ -87,7 +87,7 @@ describe('TerminalInsertFactory', () => {
 
     expect(mockClipboardPreserver.preserve).toHaveBeenCalledTimes(1);
     expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal' },
+      { fn: 'TerminalInsertFactory.insert', terminalName: 'My Terminal', textLength: 7 },
       'Terminal paste succeeded',
     );
   });

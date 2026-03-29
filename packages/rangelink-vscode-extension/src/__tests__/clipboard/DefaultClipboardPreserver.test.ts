@@ -24,7 +24,7 @@ describe('DefaultClipboardPreserver', () => {
       expect(writeSpy).toHaveBeenCalledTimes(1);
       expect(writeSpy).toHaveBeenCalledWith('prior content');
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'withClipboardPreservation' },
+        { fn: 'withClipboardPreservation', restoredLength: 13 },
         'Clipboard restored',
       );
     });
@@ -45,7 +45,7 @@ describe('DefaultClipboardPreserver', () => {
       expect(fn).toHaveBeenCalledTimes(1);
       expect(readSpy).not.toHaveBeenCalled();
       expect(mockLogger.debug).not.toHaveBeenCalledWith(
-        { fn: 'withClipboardPreservation' },
+        { fn: 'withClipboardPreservation', restoredLength: 13 },
         'Clipboard restored',
       );
     });

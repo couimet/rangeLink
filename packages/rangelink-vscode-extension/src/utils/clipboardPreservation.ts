@@ -27,12 +27,14 @@ export const withClipboardPreservation = async <T>(
   const mode = configReader.getWithDefault(SETTING_CLIPBOARD_PRESERVE, DEFAULT_CLIPBOARD_PRESERVE);
 
   if (mode === 'never') {
+    logger.debug({ fn: 'withClipboardPreservation', mode }, 'Preservation disabled');
     return fn();
   }
 
   let saved: string;
   try {
     saved = await clipboard.readTextFromClipboard();
+    logger.debug({ fn: 'withClipboardPreservation', mode, savedLength: saved.length }, 'Clipboard saved');
   } catch (error) {
     logger.error(
       { fn: 'withClipboardPreservation', error },
@@ -46,7 +48,7 @@ export const withClipboardPreservation = async <T>(
   } finally {
     try {
       await clipboard.writeTextToClipboard(saved);
-      logger.debug({ fn: 'withClipboardPreservation' }, 'Clipboard restored');
+      logger.debug({ fn: 'withClipboardPreservation', restoredLength: saved.length }, 'Clipboard restored');
     } catch (error) {
       logger.error({ fn: 'withClipboardPreservation', error }, 'Clipboard restoration failed');
     }

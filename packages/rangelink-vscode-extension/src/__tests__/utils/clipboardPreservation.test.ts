@@ -32,7 +32,7 @@ describe('withClipboardPreservation', () => {
       expect(fn).toHaveBeenCalledTimes(1);
       expect(clipboard.writeTextToClipboard).toHaveBeenCalledWith('prior content');
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'withClipboardPreservation' },
+        { fn: 'withClipboardPreservation', restoredLength: 13 },
         'Clipboard restored',
       );
     });
