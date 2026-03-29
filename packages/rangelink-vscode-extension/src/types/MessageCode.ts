@@ -169,6 +169,9 @@ export enum MessageCode {
   // Tooltip messages (user-facing UI)
   TOOLTIP_FILE_PATH = 'TOOLTIP_FILE_PATH',
 
+  // Fallback labels
+  UNKNOWN_FILENAME_FALLBACK = 'UNKNOWN_FILENAME_FALLBACK',
+
   // Warning messages (user-facing UI)
   WARN_FILE_PATH_NOT_FOUND = 'WARN_FILE_PATH_NOT_FOUND',
   WARN_LINK_DIRTY_BUFFER = 'WARN_LINK_DIRTY_BUFFER',

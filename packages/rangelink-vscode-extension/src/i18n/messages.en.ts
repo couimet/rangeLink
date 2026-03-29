@@ -197,6 +197,8 @@ export const messagesEn: Record<MessageCode, string> = {
 
   [MessageCode.TOOLTIP_FILE_PATH]: 'Open {path} \u2022 RangeLink',
 
+  [MessageCode.UNKNOWN_FILENAME_FALLBACK]: 'Unknown',
+
   [MessageCode.WARN_FILE_PATH_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
   [MessageCode.WARN_LINK_DIRTY_BUFFER]:
     'File has unsaved changes. Link may point to wrong position after save.',
