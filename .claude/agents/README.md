@@ -32,6 +32,34 @@ Task(subagent_type="test-scope-fixer", prompt="Analyze <test-file-path>")
 - Ensures each test asserts on mock calls (delegation verification)
 - Runs tests after refactoring to verify correctness
 
+### plan-integration-test
+
+**Purpose**: Plans the exact assertion template for an `[assisted]` integration test by tracing the production code path, log manifest shape, and QA YAML preconditions. Run BEFORE writing test code.
+
+**When to use**: When you need to write a new `[assisted]` integration test for a QA TC ID. Produces a ready-to-paste test template with the gold standard assertion pattern.
+
+**Usage**:
+
+```
+Agent(subagent_type="plan-integration-test", prompt="Plan the integration test for TC ID: file-picker-001")
+```
+
+**What it produces**:
+
+1. Setup code (terminals, files, binds) based on QA YAML preconditions
+2. `waitForHuman()` with minimal mechanical action
+3. `assert.deepStrictEqual` on the full logged item shape (label, displayName, description, isActive, boundState, itemKind)
+4. Cleanup code
+
+**Key Features**:
+
+- Traces the exact code path from command → adapter → log manifest
+- Knows the difference between R-D inline (label = displayName) vs R-M menu (label = indented with codicon)
+- Knows file descriptions include `· Tab Group N` in inline picker but not in secondary picker
+- Produces assertions that match CLAUDE.md rules T009-T018
+
+---
+
 ## How Agents Work
 
 **Accessing agents**:
