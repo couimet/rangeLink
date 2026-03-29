@@ -519,6 +519,38 @@ test_cases:
     expected_result: 'File entries appear inline within the R-M menu. Selecting one binds the file as the destination.'
     automated: assisted
 
+  - id: file-picker-010
+    feature: 'File Picker'
+    scenario: 'Secondary picker shows path disambiguation for same-name files'
+    preconditions:
+      - 'More than the inline limit of files are open'
+      - 'Two files share the same base name in different directories'
+    steps:
+      - 'Open R-D destination picker'
+      - 'Click "More files..."'
+    expected_result: 'Secondary file picker shows both same-name files with disambiguating path fragments in their descriptions.'
+    automated: assisted
+
+  - id: file-picker-011
+    feature: 'File Picker'
+    scenario: 'Three files with same name show deeper disambiguation paths'
+    preconditions:
+      - 'Three files with the same base name exist in different directory trees'
+    steps:
+      - 'Open R-D destination picker'
+    expected_result: 'All three files appear with unique disambiguating path fragments that distinguish their locations.'
+    automated: assisted
+
+  - id: file-picker-012
+    feature: 'File Picker'
+    scenario: 'Unique file names have no disambiguator in their description'
+    preconditions:
+      - 'Multiple files with different names are open'
+    steps:
+      - 'Open R-D destination picker'
+    expected_result: 'File descriptions contain only badges and tab group labels — no disambiguation path prefix.'
+    automated: assisted
+
   # ---------------------------------------------------------------------------
   # Section 5 — Clipboard Preservation
   # ---------------------------------------------------------------------------
