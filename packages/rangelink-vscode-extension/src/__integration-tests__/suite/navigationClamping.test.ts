@@ -85,7 +85,7 @@ suite('Navigation Clamping', () => {
     const lineLength = doc.lineAt(0).text.length;
     assert.deepStrictEqual(
       { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
-      { anchorLine: 0, anchorChar: lineLength, activeLine: 0, activeChar: lineLength + 1 },
+      { anchorLine: 0, anchorChar: lineLength, activeLine: 0, activeChar: lineLength },
     );
 
     const lines = logCapture.getLinesSince('before-clamping-002');
@@ -137,7 +137,7 @@ suite('Navigation Clamping', () => {
     const lastLineLength = doc.lineAt(lastLine).text.length;
     assert.deepStrictEqual(
       { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
-      { anchorLine: lastLine, anchorChar: lastLineLength, activeLine: lastLine, activeChar: lastLineLength + 1 },
+      { anchorLine: lastLine, anchorChar: lastLineLength, activeLine: lastLine, activeChar: lastLineLength },
     );
 
     const lines = logCapture.getLinesSince('before-clamping-004');

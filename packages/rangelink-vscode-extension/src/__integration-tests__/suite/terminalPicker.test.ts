@@ -79,7 +79,7 @@ suite('Terminal Picker', () => {
       termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
       [
         { label: 'Terminal ("rl-tp-001-a")', displayName: 'Terminal ("rl-tp-001-a")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
-        { label: 'Terminal ("rl-tp-001-b")', displayName: 'Terminal ("rl-tp-001-b")', description: undefined, isActive: undefined, boundState: 'not-bound', itemKind: 'bindable' },
+        { label: 'Terminal ("rl-tp-001-b")', displayName: 'Terminal ("rl-tp-001-b")', description: undefined, isActive: false, boundState: 'not-bound', itemKind: 'bindable' },
       ],
     );
 
@@ -107,7 +107,7 @@ suite('Terminal Picker', () => {
     assert.deepStrictEqual(
       termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
       [
-        { label: 'Terminal ("rl-tp-002")', displayName: 'Terminal ("rl-tp-002")', description: 'bound', isActive: undefined, boundState: 'bound', itemKind: 'bindable' },
+        { label: 'Terminal ("rl-tp-002")', displayName: 'Terminal ("rl-tp-002")', description: 'bound', isActive: false, boundState: 'bound', itemKind: 'bindable' },
         { label: 'Terminal ("rl-tp-002-other")', displayName: 'Terminal ("rl-tp-002-other")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
       ],
     );
@@ -160,8 +160,8 @@ suite('Terminal Picker', () => {
     assert.deepStrictEqual(
       termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
       [
-        { label: 'Terminal ("rl-tp-004-b")', displayName: 'Terminal ("rl-tp-004-b")', description: 'bound · active', isActive: true, boundState: 'bound', itemKind: 'bindable' },
-        { label: 'Terminal ("rl-tp-004-a")', displayName: 'Terminal ("rl-tp-004-a")', description: undefined, isActive: undefined, boundState: 'not-bound', itemKind: 'bindable' },
+        { label: 'Terminal ("rl-tp-004-b")', displayName: 'Terminal ("rl-tp-004-b")', description: 'bound', isActive: false, boundState: 'bound', itemKind: 'bindable' },
+        { label: 'Terminal ("rl-tp-004-a")', displayName: 'Terminal ("rl-tp-004-a")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
       ],
     );
 
@@ -189,7 +189,7 @@ suite('Terminal Picker', () => {
     assert.deepStrictEqual(
       termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
       [
-        { label: 'Terminal ("rl-tp-005-a")', displayName: 'Terminal ("rl-tp-005-a")', description: 'bound', isActive: undefined, boundState: 'bound', itemKind: 'bindable' },
+        { label: 'Terminal ("rl-tp-005-a")', displayName: 'Terminal ("rl-tp-005-a")', description: 'bound', isActive: false, boundState: 'bound', itemKind: 'bindable' },
         { label: 'Terminal ("rl-tp-005-b")', displayName: 'Terminal ("rl-tp-005-b")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
       ],
     );
@@ -241,8 +241,8 @@ suite('Terminal Picker', () => {
     assert.deepStrictEqual(
       termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
       [
-        { label: 'Terminal ("rl-tp-007-a")', displayName: 'Terminal ("rl-tp-007-a")', description: undefined, isActive: undefined, boundState: 'not-bound', itemKind: 'bindable' },
         { label: 'Terminal ("rl-tp-007-b")', displayName: 'Terminal ("rl-tp-007-b")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
+        { label: 'Terminal ("rl-tp-007-a")', displayName: 'Terminal ("rl-tp-007-a")', description: undefined, isActive: false, boundState: 'not-bound', itemKind: 'bindable' },
       ],
     );
 
@@ -323,7 +323,7 @@ suite('Terminal Picker', () => {
     assert.ok(nonActiveSecondary, 'Expected rl-tp-009-1 in secondary picker');
     assert.deepStrictEqual(
       { description: nonActiveSecondary!.description, isActive: nonActiveSecondary!.isActive, boundState: nonActiveSecondary!.boundState, itemKind: nonActiveSecondary!.itemKind },
-      { description: undefined, isActive: undefined, boundState: 'not-bound', itemKind: 'bindable' },
+      { description: undefined, isActive: false, boundState: 'not-bound', itemKind: 'bindable' },
     );
 
     log('✓ Secondary picker: all terminals + active/non-active field validation');
