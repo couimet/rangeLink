@@ -209,16 +209,17 @@ suite('File Picker', () => {
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry');
 
+    const EXPECTED_FILE_OVERFLOW = FILE_OVERFLOW_THRESHOLD - 1;
     const moreItem = items!.find(
       (i) => typeof i.label === 'string' && (i.label as string).includes('More files...'),
     );
     assert.ok(moreItem, 'Expected "More files..." overflow item');
     assert.deepStrictEqual(
-      { description: moreItem!.description, remainingCount: moreItem!.remainingCount, itemKind: moreItem!.itemKind },
-      { description: `${(moreItem!.remainingCount as number)} more`, remainingCount: moreItem!.remainingCount, itemKind: 'file-more' },
+      { label: moreItem!.label, displayName: moreItem!.displayName, description: moreItem!.description, remainingCount: moreItem!.remainingCount, itemKind: moreItem!.itemKind },
+      { label: 'More files...', displayName: 'More files...', description: `${EXPECTED_FILE_OVERFLOW} more`, remainingCount: EXPECTED_FILE_OVERFLOW, itemKind: 'file-more' },
     );
 
-    log('✓ File overflow "More files..." item validated with description + remainingCount');
+    log('✓ File overflow fully validated with concrete expected count');
   });
 
   test('[assisted] file-picker-006: secondary picker shows Active Files section', async () => {
@@ -265,11 +266,15 @@ suite('File Picker', () => {
     const activeFile = testFiles.find((i) => i.label === lastFileName);
     assert.ok(activeFile, `Expected active file "${lastFileName}" in secondary picker`);
     assert.deepStrictEqual(
-      { label: activeFile!.label, displayName: activeFile!.displayName, boundState: activeFile!.boundState, itemKind: activeFile!.itemKind },
-      { label: lastFileName, displayName: lastFileName, boundState: undefined, itemKind: 'bindable' },
+      { label: activeFile!.label, displayName: activeFile!.displayName, description: activeFile!.description, boundState: activeFile!.boundState, itemKind: activeFile!.itemKind },
+      { label: lastFileName, displayName: lastFileName, description: 'active', boundState: undefined, itemKind: 'bindable' },
     );
 
-    log('✓ Secondary picker: Active Files separator + all test files with full field validation');
+    const nonActiveFile = testFiles.find((i) => i.label !== lastFileName);
+    assert.ok(nonActiveFile, 'Expected at least one non-active file');
+    assert.strictEqual(nonActiveFile!.description, undefined, 'Non-active file should have no description badge');
+
+    log('✓ Secondary picker: active file has "active" badge, non-active has none');
   });
 
   test('[assisted] file-picker-007: secondary picker shows Tab Group sections', async () => {
@@ -320,16 +325,23 @@ suite('File Picker', () => {
     const testFiles = secondaryItems.filter(
       (i) => typeof i.label === 'string' && (i.label as string).includes('__rl-test-fp-007'),
     );
+    const lastExtraName = extraNames[extraNames.length - 1];
     assert.deepStrictEqual(
-      testFiles.map(({ label, displayName, boundState, itemKind }) => ({ label, displayName, boundState, itemKind })),
+      testFiles.map(({ label, displayName, description, boundState, itemKind }) => ({ label, displayName, description, boundState, itemKind })),
       [
-        { label: fnG2, displayName: fnG2, boundState: undefined, itemKind: 'bindable' },
-        ...extraNames.map((n) => ({ label: n, displayName: n, boundState: undefined, itemKind: 'bindable' })),
-        { label: fnG1, displayName: fnG1, boundState: undefined, itemKind: 'bindable' },
+        { label: fnG2, displayName: fnG2, description: undefined, boundState: undefined, itemKind: 'bindable' },
+        ...extraNames.map((n) => ({
+          label: n,
+          displayName: n,
+          description: n === lastExtraName ? 'active' : undefined,
+          boundState: undefined,
+          itemKind: 'bindable',
+        })),
+        { label: fnG1, displayName: fnG1, description: undefined, boundState: undefined, itemKind: 'bindable' },
       ],
     );
 
-    log('✓ Tab Group sections + all test files validated with full fields');
+    log('✓ Tab Group sections + all test files with description validated');
   });
 
   test('[assisted] file-picker-008: escaping secondary file picker returns to parent', async () => {
@@ -362,13 +374,14 @@ suite('File Picker', () => {
 
     const firstItems = parseQuickPickItemsFromLogLine(quickPickEntries[0]);
     const reopenedItems = parseQuickPickItemsFromLogLine(quickPickEntries[2]);
-    assert.strictEqual(
-      reopenedItems.length,
-      firstItems.length,
-      `Expected reopened parent to have same item count (${firstItems.length}) but got ${reopenedItems.length}`,
+
+    const mapFields = (i: Record<string, unknown>) => ({ label: i.label, displayName: i.displayName, description: i.description, itemKind: i.itemKind });
+    assert.deepStrictEqual(
+      reopenedItems.map(mapFields),
+      firstItems.map(mapFields),
     );
 
-    log('✓ Escape from secondary file picker returns to parent with same items');
+    log('✓ Reopened parent picker has identical items');
   });
 
   test('[assisted] file-picker-010: secondary picker shows path disambiguation for same-name files', async () => {
