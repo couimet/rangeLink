@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Run integration tests with output captured to a timestamped file in qa/.
+# Run integration tests with output captured to a timestamped file in qa/output/.
 #
 # Usage:
 #   ./scripts/test-release-run.sh                            # all tests
@@ -8,7 +8,7 @@
 #   ./scripts/test-release-run.sh --grep "pattern"           # filtered by Mocha grep
 #   ./scripts/test-release-run.sh --grep "\[assisted\]"      # only [assisted] tests
 #
-# Output: qa/test-run-<timestamp>-<mode>.txt
+# Output: qa/output/test-run-<timestamp>-<mode>.txt
 
 set -euo pipefail
 

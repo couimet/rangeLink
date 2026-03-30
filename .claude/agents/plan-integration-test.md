@@ -85,8 +85,8 @@ For each item type, the available fields are:
 - `label` — `Terminal ("name")` (inline) or `    $(arrow-right) Terminal ("name")` (R-M menu)
 - `displayName` — `Terminal ("name")` (always the raw name)
 - `description` — badges: `'bound'`, `'active'`, `'bound · active'`, or `undefined`
-- `isActive` — `true` if VS Code's active terminal, `undefined` otherwise
-- `boundState` — `'bound'` or `'not-bound'`
+- `isActive` — `true` if VS Code's active terminal, `false` otherwise (always present on terminal items, never undefined)
+- `boundState` — `'bound'` or `'not-bound'` (always present on terminal items)
 - `itemKind` — `'bindable'`
 
 **File bindable item:**
@@ -94,7 +94,7 @@ For each item type, the available fields are:
 - `label` — filename (inline R-D) or `    $(arrow-right) filename` (R-M menu)
 - `displayName` — raw filename
 - `description` — `{disambiguator} · {badges} · Tab Group {N}` for inline R-D; `{disambiguator} · {badges}` for secondary picker. Badges: `'bound'`, `'active'`. No tab group suffix in secondary picker.
-- `boundState` — `'bound'` or `undefined`
+- `boundState` — `'bound'` or `'not-bound'` (always present on file items, never undefined)
 - `itemKind` — `'bindable'`
 - Note: file items do NOT have `isActive` — active state is in description badge only
 
@@ -172,5 +172,5 @@ Also output:
 6. ALWAYS include `description` — it contains badges and tab group labels
 7. For overflow items, ALWAYS include `remainingCount` alongside `description`
 8. Use named constants for thresholds: `TERMINAL_OVERFLOW_COUNT`, `FILE_OVERFLOW_THRESHOLD`, `MAX_INLINE_DEFAULT`
-9. When testing negative cases (e.g., non-active terminal), assert the field is `undefined`, not just absent
+9. When testing negative cases (e.g., non-active terminal), assert the exact value: `isActive: false` for non-active terminals, `boundState: 'not-bound'` for unbound items — these are explicit values, not undefined/absent
 10. For file descriptions in R-D inline picker: format is `{disambiguator} · {badges} · Tab Group {N}`. Segments are joined with `·`. Empty segments are omitted.

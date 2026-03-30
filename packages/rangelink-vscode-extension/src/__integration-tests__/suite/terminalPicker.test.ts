@@ -453,10 +453,11 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-009');
 
-    await waitForHuman('terminal-picker-009', 'Cmd+R Cmd+D → click "More terminals..." → Escape', [
+    await waitForHuman('terminal-picker-009', 'Cmd+R Cmd+D → "More terminals..." → Escape → Escape again', [
       '1. Press Cmd+R Cmd+D',
       '2. Click "More terminals..."',
-      '3. Escape the secondary picker',
+      '3. Escape the secondary picker (parent reopens)',
+      '4. Escape the parent picker',
     ]);
 
     const lines = logCapture.getLinesSince('before-tp-009');

@@ -315,10 +315,11 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-006');
 
-    await waitForHuman('file-picker-006', 'Cmd+R Cmd+D → click "More files..." → Escape', [
+    await waitForHuman('file-picker-006', 'Cmd+R Cmd+D → "More files..." → Escape → Escape again', [
       '1. Press Cmd+R Cmd+D',
       '2. Click "More files..."',
-      '3. Escape the secondary picker',
+      '3. Escape the secondary picker (parent reopens)',
+      '4. Escape the parent picker',
     ]);
 
     const lines = logCapture.getLinesSince('before-fp-006');
@@ -393,10 +394,11 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-007');
 
-    await waitForHuman('file-picker-007', 'Cmd+R Cmd+D → click "More files..." → Escape', [
+    await waitForHuman('file-picker-007', 'Cmd+R Cmd+D → "More files..." → Escape → Escape again', [
       '1. Press Cmd+R Cmd+D',
       '2. Click "More files..."',
-      '3. Escape the secondary picker',
+      '3. Escape the secondary picker (parent reopens)',
+      '4. Escape the parent picker',
     ]);
 
     const lines = logCapture.getLinesSince('before-fp-007');
@@ -506,10 +508,11 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-010');
 
-    await waitForHuman('file-picker-010', 'Cmd+R Cmd+D → click "More files..." → Escape', [
+    await waitForHuman('file-picker-010', 'Cmd+R Cmd+D → "More files..." → Escape → Escape again', [
       '1. Press Cmd+R Cmd+D',
       '2. Click "More files..."',
-      '3. Escape the secondary picker',
+      '3. Escape the secondary picker (parent reopens)',
+      '4. Escape the parent picker',
     ]);
 
     const lines = logCapture.getLinesSince('before-fp-010');
