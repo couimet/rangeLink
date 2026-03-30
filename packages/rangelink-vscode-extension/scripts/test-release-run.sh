@@ -51,7 +51,7 @@ mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
 
 if [[ "$MODE" == "grep" ]]; then
-  PATTERN_SLUG=$(echo "$GREP_PATTERN" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
+  PATTERN_SLUG=$(echo "$GREP_PATTERN" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//' | cut -c1-80)
   REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-grep-${PATTERN_SLUG}.txt"
 else
   REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-${MODE}.txt"
@@ -89,19 +89,21 @@ if [[ "$MODE" != "grep" ]]; then
   pnpm validate:qa-coverage 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE" || QA_EXIT=$?
 fi
 
-echo ""
-echo "Report: $RELATIVE_REPORT"
-
 FINAL_EXIT=$((TEST_EXIT > QA_EXIT ? TEST_EXIT : QA_EXIT))
 
-if [[ $FINAL_EXIT -ne 0 ]]; then
-  FAILED_IDS=$(grep -A1 '^\s*[0-9]\+)\s' "$REPORT_FILE" | grep -oE '[a-z][-a-z]*-[0-9]{3}' | sort -u)
-  if [[ -n "$FAILED_IDS" ]]; then
-    RERUN_PATTERN=$(echo "$FAILED_IDS" | paste -sd '|' -)
-    echo ""
-    echo "Re-run failed tests:"
-    echo "  pnpm test:release:grep \"$RERUN_PATTERN\""
+{
+  echo ""
+  echo "Report: $RELATIVE_REPORT"
+
+  if [[ $FINAL_EXIT -ne 0 ]]; then
+    FAILED_IDS=$(grep -A1 '^\s*[0-9]\+)\s' "$REPORT_FILE" | grep -oE '[a-z][-a-z]*-[0-9]{3}' | sort -u)
+    if [[ -n "$FAILED_IDS" ]]; then
+      RERUN_PATTERN=$(echo "$FAILED_IDS" | paste -sd '|' -)
+      echo ""
+      echo "Re-run failed tests:"
+      echo "  pnpm test:release:grep \"$RERUN_PATTERN\""
+    fi
   fi
-fi
+} | tee -a "$REPORT_FILE"
 
 exit $FINAL_EXIT
