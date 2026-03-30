@@ -6,12 +6,13 @@ import { RangeLinkExtensionError } from '../../errors/RangeLinkExtensionError';
 import { RangeLinkExtensionErrorCodes } from '../../errors/RangeLinkExtensionErrorCodes';
 import {
   BehaviourAfterPaste,
+  MessageCode,
   RelativePathFormat,
   type ResolveWorkspacePathResult,
   type SendTextToTerminalOptions,
   TerminalFocusType,
 } from '../../types';
-import { getUntitledDisplayName, resolveWorkspacePath } from '../../utils';
+import { formatMessage, getUntitledDisplayName, resolveWorkspacePath } from '../../utils';
 import type { ClipboardProvider } from '../ClipboardProvider';
 import type { ConfigurationProvider } from '../ConfigurationProvider';
 import type { ErrorFeedbackProvider } from '../ErrorFeedbackProvider';
@@ -23,10 +24,7 @@ import type { QuickPickProvider } from '../QuickPickProvider';
  */
 const DEFAULT_STATUS_BAR_TIMEOUT_MS = 2000;
 
-/**
- * Fallback filename when extraction fails.
- */
-const UNKNOWN_FILENAME = 'Unknown';
+const getUnknownFilename = (): string => formatMessage(MessageCode.UNKNOWN_FILENAME_FALLBACK);
 
 /**
  * VSCode adapter for IDE-specific operations.
@@ -75,6 +73,10 @@ export class VscodeAdapter
    * Write text to clipboard using VSCode API
    */
   async writeTextToClipboard(text: string): Promise<void> {
+    this.logger.debug(
+      { fn: 'VscodeAdapter.writeTextToClipboard', textLength: text.length },
+      'Writing to clipboard',
+    );
     return this.ideInstance.env.clipboard.writeText(text);
   }
 
@@ -146,13 +148,20 @@ export class VscodeAdapter
         fn: 'VscodeAdapter.showQuickPick',
         itemCount: items.length,
         options,
-        items: items.map((item) => ({
-          label: item.label,
-          ...(item.description !== undefined ? { description: item.description } : {}),
-          ...(item.detail !== undefined ? { detail: item.detail } : {}),
-          ...(item.kind !== undefined ? { kind: item.kind } : {}),
-          ...('itemKind' in item ? { itemKind: (item as Record<string, unknown>).itemKind } : {}),
-        })),
+        items: items.map((item) => {
+          const record = item as Record<string, unknown>;
+          return {
+            label: item.label,
+            ...(item.description !== undefined ? { description: item.description } : {}),
+            ...(item.detail !== undefined ? { detail: item.detail } : {}),
+            ...(item.kind !== undefined ? { kind: item.kind } : {}),
+            ...('itemKind' in item ? { itemKind: record.itemKind } : {}),
+            ...('displayName' in item ? { displayName: record.displayName } : {}),
+            ...('isActive' in item ? { isActive: record.isActive } : {}),
+            ...('boundState' in item ? { boundState: record.boundState } : {}),
+            ...('remainingCount' in item ? { remainingCount: record.remainingCount } : {}),
+          };
+        }),
       },
       'Showing quick pick',
     );
@@ -239,6 +248,10 @@ export class VscodeAdapter
    */
   showTerminal(terminal: vscode.Terminal, focusType: TerminalFocusType): void {
     this.enforceTerminalExists(terminal, 'VscodeAdapter.showTerminal');
+    this.logger.debug(
+      { fn: 'VscodeAdapter.showTerminal', terminalName: terminal.name, focusType },
+      'Showing terminal',
+    );
 
     switch (focusType) {
       case TerminalFocusType.StealFocus:
@@ -275,6 +288,16 @@ export class VscodeAdapter
     options?: SendTextToTerminalOptions,
   ): Promise<void> {
     this.enforceTerminalExists(terminal, 'VscodeAdapter.pasteTextToTerminalViaClipboard');
+    const behaviour = options?.behaviour ?? BehaviourAfterPaste.NOTHING;
+    this.logger.debug(
+      {
+        fn: 'VscodeAdapter.pasteTextToTerminalViaClipboard',
+        textLength: text.length,
+        terminalName: terminal.name,
+        behaviour,
+      },
+      'Pasting to terminal via clipboard',
+    );
 
     // Write text to clipboard
     await this.writeTextToClipboard(text);
@@ -286,7 +309,6 @@ export class VscodeAdapter
     await this.executeCommand(VSCODE_CMD_TERMINAL_PASTE);
 
     // Handle execution behavior if requested
-    const behaviour = options?.behaviour ?? BehaviourAfterPaste.NOTHING;
     if (behaviour === BehaviourAfterPaste.EXECUTE) {
       // Send Enter key separately after paste completes
       terminal.sendText('', true);
@@ -321,9 +343,24 @@ export class VscodeAdapter
    * @returns Promise resolving to true if edit succeeded, false otherwise
    */
   async insertTextAtCursor(editor: vscode.TextEditor, text: string): Promise<boolean> {
-    return editor.edit((editBuilder) => {
+    this.logger.debug(
+      {
+        fn: 'VscodeAdapter.insertTextAtCursor',
+        textLength: text.length,
+        editorUri: editor.document.uri.toString(),
+      },
+      'Inserting text at cursor',
+    );
+    const success = await editor.edit((editBuilder) => {
       editBuilder.insert(editor.selection.active, text);
     });
+    if (!success) {
+      this.logger.warn(
+        { fn: 'VscodeAdapter.insertTextAtCursor', editorUri: editor.document.uri.toString() },
+        'Editor edit failed',
+      );
+    }
+    return success;
   }
 
   /**
@@ -362,11 +399,11 @@ export class VscodeAdapter
   getFilenameFromUri(uri: vscode.Uri): string {
     const fsPath = uri?.fsPath;
     if (!fsPath) {
-      return UNKNOWN_FILENAME;
+      return getUnknownFilename();
     }
     const lastSeparatorIndex = Math.max(fsPath.lastIndexOf('/'), fsPath.lastIndexOf('\\'));
     const filename = lastSeparatorIndex >= 0 ? fsPath.slice(lastSeparatorIndex + 1) : fsPath;
-    return filename || UNKNOWN_FILENAME;
+    return filename || getUnknownFilename();
   }
 
   // ============================================================================

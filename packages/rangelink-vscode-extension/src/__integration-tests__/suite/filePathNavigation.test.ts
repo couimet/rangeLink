@@ -7,9 +7,11 @@ const NON_EXISTENT_PATH_SETTLE_MS = 1000;
 
 import {
   activateExtension,
+  assertToastLogged,
   cleanupFiles,
   closeAllEditors,
   createWorkspaceFile,
+  getLogCapture,
   getWorkspaceRoot,
   openEditor,
   settle,
@@ -51,6 +53,9 @@ suite('File Path Navigation', () => {
 
     const nonExistentPath = path.join(getWorkspaceRoot(), '__rl-nonexistent-file-12345.ts');
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-fp-011');
+
     void vscode.commands.executeCommand('rangelink.handleFilePathClick', {
       filePath: nonExistentPath,
     });
@@ -63,5 +68,11 @@ suite('File Path Navigation', () => {
       editorBefore,
       `Expected active editor to remain ${editorBefore} but got ${editorAfter}`,
     );
+
+    const lines = logCapture.getLinesSince('before-fp-011');
+    assertToastLogged(lines, {
+      type: 'warning',
+      message: `RangeLink: Cannot find file: ${nonExistentPath}`,
+    });
   });
 });

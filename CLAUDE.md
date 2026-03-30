@@ -192,6 +192,69 @@
   </good-example>
 </rule>
 
+<rule id="T009" priority="critical">
+  <title>Assert the negative in integration tests</title>
+  <do>When asserting item X has property P, also assert that item Y does NOT have property P</do>
+  <rationale>Proves the property is specific to X, not applied to everything. Without the negative assertion, a bug that gives every item the property would pass.</rationale>
+  <good-example>
+    ```typescript
+    assert.strictEqual(activeItem.isActive, true);
+    assert.strictEqual(nonActiveItem.isActive, undefined); // proves specificity
+    ```
+  </good-example>
+</rule>
+
+<rule id="T010" priority="critical">
+  <title>Assert content, not just count</title>
+  <do>When testing that a list contains items, assert on specific item labels/fields, not just array.length</do>
+  <never>Use `assert.ok(items.length >= N)` as the sole assertion — count-only checks mask wrong items</never>
+  <rationale>A list with the right count but wrong content passes count-only assertions</rationale>
+</rule>
+
+<rule id="T011" priority="critical">
+  <title>Assert payload on secondary/reopened pickers</title>
+  <do>When testing that a secondary picker opens or a parent picker reopens, parse the logged items and verify content matches expectations</do>
+  <never>Just count showQuickPick invocations — that proves a picker opened but not what it contained</never>
+  <rationale>A bug could open an empty picker or one with wrong items while still producing the expected invocation count</rationale>
+</rule>
+
+<rule id="T012" priority="critical">
+  <title>Assert ordering explicitly</title>
+  <do>When a test title claims ordering (e.g., "X appears first"), assert the specific item is at index 0 or that its index is less than others</do>
+  <never>Assert only that the list has enough items — `length >= 2` does not prove ordering</never>
+</rule>
+
+<rule id="T013" priority="critical">
+  <title>Named constants for test thresholds</title>
+  <do>Overflow thresholds, item counts, and setup sizes in integration tests must use SCREAMING_SNAKE_CASE constants</do>
+  <rationale>Cross-references P003. Prevents magic numbers in test loops and assertions from drifting when thresholds change.</rationale>
+</rule>
+
+<rule id="T014" priority="critical">
+  <title>Assert on semantic log fields, not rendered text</title>
+  <do>When a log entry contains structured fields (isActive, boundState, remainingCount), assert on those fields directly</do>
+  <never>Parse human-readable description strings to infer semantic state when a structured field is available</never>
+  <good-example>
+    ```typescript
+    assert.deepStrictEqual(
+      { boundState: item.boundState, isActive: item.isActive },
+      { boundState: 'bound', isActive: true },
+    );
+    ```
+  </good-example>
+  <bad-example>
+    ```typescript
+    assert.ok(item.description.includes('bound')); // fragile text parsing
+    ```
+  </bad-example>
+</rule>
+
+<rule id="T015" priority="critical">
+  <title>Adapter methods that mutate external state must log their inputs</title>
+  <do>Clipboard writes, terminal text sends, editor inserts, and navigation selections must log the values being set (or their length for large content)</do>
+  <rationale>Integration tests verify behavior via log capture. Unlogged mutations are invisible to test assertions and can only be checked via side effects, which is fragile.</rationale>
+</rule>
+
 <rule id="E001" priority="critical">
   <title>Shell environment setup</title>
   <when>Before running pnpm, npm, node, or any JS tooling commands</when>

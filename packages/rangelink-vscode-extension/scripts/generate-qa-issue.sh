@@ -201,8 +201,10 @@ echo ""
 
 # --- Local mode: write structured content to a markdown file ---
 if [[ "$LOCAL_MODE" == true ]]; then
+  OUTPUT_DIR="$QA_DIR/output"
+  mkdir -p "$OUTPUT_DIR"
   TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
-  LOCAL_FILE="$QA_DIR/qa-issues-local-${VERSION}-${TIMESTAMP}.md"
+  LOCAL_FILE="$OUTPUT_DIR/qa-issues-local-${VERSION}-${TIMESTAMP}.md"
 
   {
     echo "# QA Checklist — ${VERSION}"

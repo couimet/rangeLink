@@ -34,11 +34,10 @@ packages/*/icon_large.png
 
 # Temp files created by integration test suites (cleaned up on normal exit; guard for CI kills)
 packages/rangelink-vscode-extension/__rl-test-*.ts
+packages/rangelink-vscode-extension/.vscode/
 
-# Generated QA artifacts (not committed)
-packages/rangelink-vscode-extension/qa/qa-coverage-report-*.txt
-packages/rangelink-vscode-extension/qa/qa-issues-local-*.md
-packages/rangelink-vscode-extension/qa/test-run-*.txt
+# Generated QA output (not committed)
+packages/rangelink-vscode-extension/qa/output/
 
 # Folders where Claude Code is told to create and manage working documents
 .breadcrumbs/

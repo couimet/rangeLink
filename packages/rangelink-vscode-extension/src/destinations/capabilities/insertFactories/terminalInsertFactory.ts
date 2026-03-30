@@ -26,7 +26,10 @@ export class TerminalInsertFactory implements InsertFactory<vscode.Terminal> {
       return this.clipboardPreserver.preserve(async () => {
         try {
           await this.ideAdapter.pasteTextToTerminalViaClipboard(terminal, text);
-          this.logger.info({ fn, terminalName }, 'Terminal paste succeeded');
+          this.logger.info(
+            { fn, terminalName, textLength: text.length },
+            'Terminal paste succeeded',
+          );
           return true;
         } catch (error) {
           this.logger.warn({ fn, terminalName, error }, 'Terminal paste failed');

@@ -55,13 +55,14 @@ suite('Navigation Clamping', () => {
 
     const lastLine = doc.lineCount - 1;
     const lastLineLength = doc.lineAt(lastLine).text.length;
-    assert.strictEqual(sel.anchor.line, lastLine, `Expected anchor at last line ${lastLine}`);
-    assert.strictEqual(sel.anchor.character, 0, 'Expected anchor char 0 (full-line selection)');
-    assert.strictEqual(sel.active.line, lastLine, `Expected active at last line ${lastLine}`);
-    assert.strictEqual(
-      sel.active.character,
-      lastLineLength,
-      `Expected active char at end of last line (${lastLineLength})`,
+    assert.deepStrictEqual(
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
+      { anchorLine: lastLine, anchorChar: 0, activeLine: lastLine, activeChar: lastLineLength },
     );
 
     const lines = logCapture.getLinesSince('before-clamping-001');
@@ -87,11 +88,14 @@ suite('Navigation Clamping', () => {
     );
 
     const lineLength = doc.lineAt(0).text.length;
-    assert.strictEqual(sel.anchor.line, 0, 'Expected anchor at line 0');
-    assert.strictEqual(
-      sel.anchor.character,
-      lineLength,
-      `Expected anchor char clamped to line length (${lineLength})`,
+    assert.deepStrictEqual(
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
+      { anchorLine: 0, anchorChar: lineLength, activeLine: 0, activeChar: lineLength },
     );
 
     const lines = logCapture.getLinesSince('before-clamping-002');
@@ -112,13 +116,14 @@ suite('Navigation Clamping', () => {
     await clearEditorSelection();
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
 
-    assert.strictEqual(sel.anchor.line, 4, 'Expected anchor at line 4 (0-indexed)');
-    assert.strictEqual(sel.anchor.character, 9, 'Expected anchor char 9 (0-indexed)');
-    assert.strictEqual(sel.active.line, 4, 'Expected active at line 4 (0-indexed)');
-    assert.strictEqual(
-      sel.active.character,
-      10,
-      'Expected active char 10 (extended by 1 for visibility)',
+    assert.deepStrictEqual(
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
+      { anchorLine: 4, anchorChar: 9, activeLine: 4, activeChar: 10 },
     );
 
     const lines = logCapture.getLinesSince('before-clamping-003');
@@ -145,11 +150,19 @@ suite('Navigation Clamping', () => {
 
     const lastLine = doc.lineCount - 1;
     const lastLineLength = doc.lineAt(lastLine).text.length;
-    assert.strictEqual(sel.anchor.line, lastLine, `Expected anchor at last line ${lastLine}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      lastLineLength,
-      `Expected anchor char clamped to line length (${lastLineLength})`,
+    assert.deepStrictEqual(
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
+      {
+        anchorLine: lastLine,
+        anchorChar: lastLineLength,
+        activeLine: lastLine,
+        activeChar: lastLineLength,
+      },
     );
 
     const lines = logCapture.getLinesSince('before-clamping-004');

@@ -148,7 +148,19 @@ export const assertQuickPickItemsLogged = (
 };
 
 /**
- * Extract the items array from a showQuickPick log entry.
+ * Parse the items array from a single showQuickPick log line.
+ * Use when you need items from a specific log entry (e.g., the 2nd picker invocation).
+ */
+export const parseQuickPickItemsFromLogLine = (logLine: string): Record<string, unknown>[] => {
+  const ctx = parseLogContext(logLine);
+  if (ctx === undefined || !Array.isArray(ctx.items)) {
+    throw new Error('Log line does not contain a showQuickPick items payload');
+  }
+  return ctx.items as Record<string, unknown>[];
+};
+
+/**
+ * Extract the items array from the first showQuickPick log entry in a set of lines.
  * Returns undefined if no matching log entry is found.
  */
 export const extractQuickPickItemsLogged = (

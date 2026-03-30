@@ -6,8 +6,10 @@ import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
 
 import {
   activateExtension,
+  assertToastLogged,
   clearEditorSelection,
   closeAllEditors,
+  getLogCapture,
   getWorkspaceRoot,
   navigateViaHandleLinkClick,
 } from '../helpers';
@@ -45,6 +47,9 @@ suite('Filename-Only Navigation Fallback', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-fallback-001');
+
     await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
       linkText,
@@ -53,24 +58,30 @@ suite('Filename-Only Navigation Fallback', () => {
     );
 
     const lineLength = doc.lineAt(4).text.length;
-    assert.strictEqual(sel.anchor.line, 4, `Expected anchor line 4 but got ${sel.anchor.line}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      0,
-      `Expected anchor char 0 but got ${sel.anchor.character}`,
+    assert.deepStrictEqual(
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
+      { anchorLine: 4, anchorChar: 0, activeLine: 4, activeChar: lineLength },
     );
-    assert.strictEqual(sel.active.line, 4, `Expected active line 4 but got ${sel.active.line}`);
-    assert.strictEqual(
-      sel.active.character,
-      lineLength,
-      `Expected active char ${lineLength} but got ${sel.active.character}`,
-    );
+
+    const lines = logCapture.getLinesSince('before-fallback-001');
+    assertToastLogged(lines, {
+      type: 'info',
+      message: `RangeLink: Navigated to ${uniqueFilename} @ 5`,
+    });
   });
 
   test('filename-fallback-navigation-004: path with directory separators uses standard resolution', async () => {
     const linkText = `${relativeFilePath}#L10`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-fallback-004');
 
     await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
@@ -80,17 +91,20 @@ suite('Filename-Only Navigation Fallback', () => {
     );
 
     const lineLength = doc.lineAt(9).text.length;
-    assert.strictEqual(sel.anchor.line, 9, `Expected anchor line 9 but got ${sel.anchor.line}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      0,
-      `Expected anchor char 0 but got ${sel.anchor.character}`,
+    assert.deepStrictEqual(
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
+      { anchorLine: 9, anchorChar: 0, activeLine: 9, activeChar: lineLength },
     );
-    assert.strictEqual(sel.active.line, 9, `Expected active line 9 but got ${sel.active.line}`);
-    assert.strictEqual(
-      sel.active.character,
-      lineLength,
-      `Expected active char ${lineLength} but got ${sel.active.character}`,
-    );
+
+    const lines = logCapture.getLinesSince('before-fallback-004');
+    assertToastLogged(lines, {
+      type: 'info',
+      message: `RangeLink: Navigated to ${relativeFilePath} @ 10`,
+    });
   });
 });

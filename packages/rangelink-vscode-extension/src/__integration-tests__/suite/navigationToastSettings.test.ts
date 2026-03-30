@@ -132,5 +132,9 @@ suite('Navigation Toast Settings', () => {
       type: 'info',
       message: `RangeLink: Navigated to ${testFilename} @ 3`,
     });
+    assertNoToastLogged(lines, {
+      type: 'warning',
+      message: `RangeLink: Navigated to ${testFilename} @ 3 (clamped: line exceeded file length)`,
+    });
   });
 });

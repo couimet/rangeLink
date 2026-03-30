@@ -257,6 +257,19 @@ test_cases:
     expected_result: 'A confirmation dialog appears with current and proposed destination names. Selecting Yes switches the binding.'
     automated: false
 
+  - id: bind-to-destination-013
+    feature: 'R-D Bind to Destination'
+    scenario: 'R-D picker shows both "More terminals..." and "More files..." overflow items when many terminals and files are open'
+    preconditions:
+      - 'More terminals than maxInline (default 5) are open'
+      - 'Multiple files are open across tab groups'
+      - 'No destination is bound'
+    steps:
+      - 'Open R-D destination picker (Cmd+R Cmd+D or Ctrl+R Ctrl+D)'
+      - 'Observe the picker items'
+    expected_result: 'Picker shows inline terminal items up to maxInline limit, "More terminals..." overflow item, inline file items (current-in-group), "More files..." overflow item, and standard command items (Go to Link, Show Version Info).'
+    automated: assisted
+
   # ---------------------------------------------------------------------------
   # Section 3 — Terminal Picker
   # ---------------------------------------------------------------------------
@@ -271,7 +284,7 @@ test_cases:
       - "Click a terminal tab (e.g., 'Gamma') to make it the active terminal"
       - 'Open the terminal picker via R-D or R-M'
     expected_result: "'Gamma' shows an 'active' badge in the picker. Other terminals have no badge."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-002
     feature: 'Terminal Picker'
@@ -282,7 +295,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: "'Beta' shows a 'bound' badge. 'Gamma' shows an 'active' badge."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-003
     feature: 'Terminal Picker'
@@ -293,7 +306,7 @@ test_cases:
       - "Click the 'Beta' terminal tab to make it active"
       - 'Open the terminal picker'
     expected_result: "'Beta' shows a combined 'bound · active' badge (both indicators present on the same item)."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-004
     feature: 'Terminal Picker'
@@ -304,7 +317,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: "'Beta' is the first item in the terminal list, regardless of the order terminals were opened."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-005
     feature: 'Terminal Picker'
@@ -315,7 +328,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: "'Beta' (bound) is first. 'Gamma' (active, not bound) is second. Remaining terminals follow in any order."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-006
     feature: 'Terminal Picker'
@@ -326,7 +339,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: 'Hidden background terminals do not appear in the picker. Only user-visible terminals are listed.'
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-007
     feature: 'Terminal Picker'
@@ -337,7 +350,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "All terminals appear inline. No 'More terminals...' item is visible."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-008
     feature: 'Terminal Picker'
@@ -348,7 +361,7 @@ test_cases:
     steps:
       - 'Open R-D picker or terminal sub-section of R-M'
     expected_result: "Only 3 terminals shown inline. A 'More terminals...' item appears at the bottom of the terminal section."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-009
     feature: 'Terminal Picker'
@@ -358,7 +371,7 @@ test_cases:
     steps:
       - "Select 'More terminals...' from the picker"
     expected_result: "A secondary QuickPick opens listing all terminals, including those that were hidden behind 'More terminals...'."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-010
     feature: 'Terminal Picker'
@@ -368,7 +381,7 @@ test_cases:
     steps:
       - 'Press Escape in the secondary terminal picker'
     expected_result: 'The secondary picker closes. The parent destination picker (R-D or R-M) is still visible.'
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-011
     feature: 'Terminal Picker'
@@ -379,7 +392,7 @@ test_cases:
       - 'Set rangelink.terminalPicker.maxInline = 2 in VS Code settings'
       - 'Open R-D picker'
     expected_result: "Only 2 terminals shown inline. 'More terminals...' appears. Previously all 4 were inline with higher maxInline."
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-012
     feature: 'Terminal Picker'
@@ -391,7 +404,7 @@ test_cases:
       - 'Open R-M menu'
       - 'Observe the terminal entries in the menu'
     expected_result: 'Terminal picker items appear inline within the R-M menu. Selecting one binds that terminal.'
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-013
     feature: 'Terminal Picker'
@@ -402,7 +415,7 @@ test_cases:
       - 'Press Cmd+R Cmd+D'
       - 'Observe that terminal entries are part of the combined destination picker'
     expected_result: 'Terminal entries appear in the R-D picker with the same badges and ordering as when accessed from R-M.'
-    automated: false
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 4 — File Picker
@@ -417,7 +430,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "src/utils/helper.ts appears at the top of the file list with a 'bound' badge."
-    automated: false
+    automated: assisted
 
   - id: file-picker-002
     feature: 'File Picker'
@@ -430,7 +443,7 @@ test_cases:
       - 'Click src/index.ts to make it active in tab group 1'
       - 'Open R-D picker'
     expected_result: 'src/index.ts appears before other files in tab group 1 within the picker.'
-    automated: false
+    automated: assisted
 
   - id: file-picker-003
     feature: 'File Picker'
@@ -441,7 +454,7 @@ test_cases:
       - 'Open both files in the editor'
       - 'Open R-D picker (file section)'
     expected_result: 'Both index.ts files appear with enough path context to distinguish them (e.g., utils/index.ts and types/index.ts).'
-    automated: false
+    automated: assisted
 
   - id: file-picker-004
     feature: 'File Picker'
@@ -451,7 +464,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "The open file entries appear inline in the picker. No 'More files...' item."
-    automated: false
+    automated: assisted
 
   - id: file-picker-005
     feature: 'File Picker'
@@ -461,7 +474,7 @@ test_cases:
     steps:
       - 'Open R-D picker'
     expected_result: "Only the inline limit of files is shown. A 'More files...' item appears at the bottom of the file section."
-    automated: false
+    automated: assisted
 
   - id: file-picker-006
     feature: 'File Picker'
@@ -472,7 +485,7 @@ test_cases:
       - "Select 'More files...' from R-D picker"
       - 'Observe the secondary picker sections'
     expected_result: "A secondary QuickPick opens with an 'Active Files' section header listing all open files."
-    automated: false
+    automated: assisted
 
   - id: file-picker-007
     feature: 'File Picker'
@@ -483,7 +496,7 @@ test_cases:
     steps:
       - 'Observe the secondary picker sections'
     expected_result: "Files are grouped under 'Tab Group 1', 'Tab Group 2', etc. Each group lists the files in that tab group."
-    automated: false
+    automated: assisted
 
   - id: file-picker-008
     feature: 'File Picker'
@@ -493,7 +506,7 @@ test_cases:
     steps:
       - 'Press Escape in the secondary file picker'
     expected_result: 'The secondary picker closes. The parent R-D (or R-M) picker is still visible, not closed.'
-    automated: false
+    automated: assisted
 
   - id: file-picker-009
     feature: 'File Picker'
@@ -504,7 +517,39 @@ test_cases:
     steps:
       - 'Open R-M menu'
     expected_result: 'File entries appear inline within the R-M menu. Selecting one binds the file as the destination.'
-    automated: false
+    automated: assisted
+
+  - id: file-picker-010
+    feature: 'File Picker'
+    scenario: 'Secondary picker shows path disambiguation for same-name files'
+    preconditions:
+      - 'More than the inline limit of files are open'
+      - 'Two files share the same base name in different directories'
+    steps:
+      - 'Open R-D destination picker'
+      - 'Click "More files..."'
+    expected_result: 'Secondary file picker shows both same-name files with disambiguating path fragments in their descriptions.'
+    automated: assisted
+
+  - id: file-picker-011
+    feature: 'File Picker'
+    scenario: 'Three files with same name show deeper disambiguation paths'
+    preconditions:
+      - 'Three files with the same base name exist in different directory trees'
+    steps:
+      - 'Open R-D destination picker'
+    expected_result: 'All three files appear with unique disambiguating path fragments that distinguish their locations.'
+    automated: assisted
+
+  - id: file-picker-012
+    feature: 'File Picker'
+    scenario: 'Unique file names have no disambiguator in their description'
+    preconditions:
+      - 'Multiple files with different names are open'
+    steps:
+      - 'Open R-D destination picker'
+    expected_result: 'File descriptions contain only badges and tab group labels — no disambiguation path prefix.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 5 — Clipboard Preservation

@@ -4,6 +4,8 @@ import * as vscode from 'vscode';
 
 import {
   activateExtension,
+  assertNoStatusBarMsgLogged,
+  assertNoToastLogged,
   assertStatusBarMsgLogged,
   assertToastLogged,
   cleanupFiles,
@@ -96,6 +98,13 @@ suite('Log-Based UI Assertions', () => {
       type: 'error',
       message: 'RangeLink: No active editor',
     });
+    assert.ok(
+      !lines.some((line) => line.includes('VscodeAdapter.writeTextToClipboard')),
+      'Expected no clipboard write when R-L invoked from terminal focus',
+    );
+    assertNoStatusBarMsgLogged(lines, {
+      message: '✓ RangeLink copied to clipboard & sent to Terminal ("rl-toast-test")',
+    });
   });
 
   test('send-terminal-selection-007: R-C with terminal focus shows no-active-editor error', async () => {
@@ -114,6 +123,10 @@ suite('Log-Based UI Assertions', () => {
       type: 'error',
       message: 'RangeLink: No active editor',
     });
+    assert.ok(
+      !lines.some((line) => line.includes('VscodeAdapter.writeTextToClipboard')),
+      'Expected no clipboard write when R-C invoked from terminal focus',
+    );
   });
 
   test('core-send-commands-r-l-001: R-L sends RangeLink to bound terminal', async () => {
@@ -131,6 +144,14 @@ suite('Log-Based UI Assertions', () => {
     assertStatusBarMsgLogged(lines, {
       message: '✓ RangeLink copied to clipboard & sent to Terminal ("rl-toast-test")',
     });
+    assert.ok(
+      lines.some(
+        (line) =>
+          line.includes('VscodeAdapter.pasteTextToTerminalViaClipboard') &&
+          line.includes('rl-toast-test'),
+      ),
+      'Expected pasteTextToTerminalViaClipboard to be logged for rl-toast-test',
+    );
   });
 
   test('send-file-path-001: R-F sends file path to bound terminal', async () => {
@@ -150,6 +171,14 @@ suite('Log-Based UI Assertions', () => {
     assertStatusBarMsgLogged(lines, {
       message: '✓ File path copied to clipboard & sent to Terminal ("rl-toast-test")',
     });
+    assert.ok(
+      lines.some(
+        (line) =>
+          line.includes('VscodeAdapter.pasteTextToTerminalViaClipboard') &&
+          line.includes('rl-toast-test'),
+      ),
+      'Expected pasteTextToTerminalViaClipboard to be logged for rl-toast-test',
+    );
   });
 
   test('dirty-buffer-warning-007: clean file generates link immediately without dialog', async () => {
@@ -167,6 +196,10 @@ suite('Log-Based UI Assertions', () => {
     const lines = logCapture.getLinesSince('before-clean-send-007');
     assertStatusBarMsgLogged(lines, {
       message: '✓ RangeLink copied to clipboard & sent to Terminal ("rl-toast-test")',
+    });
+    assertNoToastLogged(lines, {
+      type: 'warning',
+      message: 'File has unsaved changes. Link may point to wrong position after save.',
     });
   });
 
@@ -190,6 +223,10 @@ suite('Log-Based UI Assertions', () => {
     const lines = logCapture.getLinesSince('before-fullline-001');
     assertStatusBarMsgLogged(lines, {
       message: '✓ RangeLink copied to clipboard & sent to Terminal ("rl-toast-test")',
+    });
+    assertNoToastLogged(lines, {
+      type: 'error',
+      message: 'RangeLink: No active editor',
     });
   });
 });
