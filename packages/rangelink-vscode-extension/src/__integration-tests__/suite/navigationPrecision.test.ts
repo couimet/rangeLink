@@ -7,9 +7,11 @@ import * as vscode from 'vscode';
 
 import {
   activateExtension,
+  assertToastLogged,
   cleanupFiles,
   clearEditorSelection,
   closeAllEditors,
+  getLogCapture,
   getWorkspaceRoot,
   navigateViaHandleLinkClick,
 } from '../helpers';
@@ -38,6 +40,9 @@ suite('Navigation Precision', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-nav-001');
+
     await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
       linkText,
@@ -46,24 +51,22 @@ suite('Navigation Precision', () => {
     );
 
     const lineLength = doc.lineAt(9).text.length;
-    assert.strictEqual(sel.anchor.line, 9, `Expected anchor line 9 but got ${sel.anchor.line}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      0,
-      `Expected anchor char 0 but got ${sel.anchor.character}`,
+    assert.deepStrictEqual(
+      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      { anchorLine: 9, anchorChar: 0, activeLine: 9, activeChar: lineLength },
     );
-    assert.strictEqual(sel.active.line, 9, `Expected active line 9 but got ${sel.active.line}`);
-    assert.strictEqual(
-      sel.active.character,
-      lineLength,
-      `Expected active char ${lineLength} but got ${sel.active.character}`,
-    );
+
+    const lines = logCapture.getLinesSince('before-nav-001');
+    assertToastLogged(lines, { type: 'info', message: `RangeLink: Navigated to ${testFilename} @ 10` });
   });
 
   test('full-line-navigation-002: #L10-L15 navigates to range — anchor (9,0), active at end of line 15', async () => {
     const linkText = `${testFilename}#L10-L15`;
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-nav-002');
 
     await clearEditorSelection();
     const { sel, doc } = await navigateViaHandleLinkClick(
@@ -73,18 +76,13 @@ suite('Navigation Precision', () => {
     );
 
     const endLineLength = doc.lineAt(14).text.length;
-    assert.strictEqual(sel.anchor.line, 9, `Expected anchor line 9 but got ${sel.anchor.line}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      0,
-      `Expected anchor char 0 but got ${sel.anchor.character}`,
+    assert.deepStrictEqual(
+      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      { anchorLine: 9, anchorChar: 0, activeLine: 14, activeChar: endLineLength },
     );
-    assert.strictEqual(sel.active.line, 14, `Expected active line 14 but got ${sel.active.line}`);
-    assert.strictEqual(
-      sel.active.character,
-      endLineLength,
-      `Expected active char ${endLineLength} but got ${sel.active.character}`,
-    );
+
+    const lines = logCapture.getLinesSince('before-nav-002');
+    assertToastLogged(lines, { type: 'info', message: `RangeLink: Navigated to ${testFilename} @ 10-15` });
   });
 
   test('char-navigation-001: #L10C5 navigates to cursor position (9,4)', async () => {
@@ -92,21 +90,19 @@ suite('Navigation Precision', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-char-001');
+
     await clearEditorSelection();
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
 
-    assert.strictEqual(sel.anchor.line, 9, `Expected anchor line 9 but got ${sel.anchor.line}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      4,
-      `Expected anchor char 4 but got ${sel.anchor.character}`,
+    assert.deepStrictEqual(
+      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      { anchorLine: 9, anchorChar: 4, activeLine: 9, activeChar: 5 },
     );
-    assert.strictEqual(sel.active.line, 9, `Expected active line 9 but got ${sel.active.line}`);
-    assert.strictEqual(
-      sel.active.character,
-      5,
-      `Expected active char 5 but got ${sel.active.character}`,
-    );
+
+    const lines = logCapture.getLinesSince('before-char-001');
+    assertToastLogged(lines, { type: 'info', message: `RangeLink: Navigated to ${testFilename} @ 10:5` });
   });
 
   test('char-navigation-002: #L10C5-L15C10 navigates to range (9,4)→(14,9)', async () => {
@@ -114,20 +110,18 @@ suite('Navigation Precision', () => {
     const parseResult = parseLink(linkText, DEFAULT_DELIMITERS);
     assert.ok(parseResult.success, `Expected parseLink to succeed for: ${linkText}`);
 
+    const logCapture = getLogCapture();
+    logCapture.mark('before-char-002');
+
     await clearEditorSelection();
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
 
-    assert.strictEqual(sel.anchor.line, 9, `Expected anchor line 9 but got ${sel.anchor.line}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      4,
-      `Expected anchor char 4 but got ${sel.anchor.character}`,
+    assert.deepStrictEqual(
+      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      { anchorLine: 9, anchorChar: 4, activeLine: 14, activeChar: 9 },
     );
-    assert.strictEqual(sel.active.line, 14, `Expected active line 14 but got ${sel.active.line}`);
-    assert.strictEqual(
-      sel.active.character,
-      9,
-      `Expected active char 9 but got ${sel.active.character}`,
-    );
+
+    const lines = logCapture.getLinesSince('before-char-002');
+    assertToastLogged(lines, { type: 'info', message: `RangeLink: Navigated to ${testFilename} @ 10:5-15:10` });
   });
 });

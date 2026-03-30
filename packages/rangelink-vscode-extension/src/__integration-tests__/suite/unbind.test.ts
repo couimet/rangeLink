@@ -90,8 +90,15 @@ suite('Unbind Destination', () => {
   test('unbind-003: unbindDestination is a safe no-op when no destination is bound', async () => {
     await vscode.commands.executeCommand('rangelink.unbindDestination');
 
-    await vscode.commands.executeCommand('rangelink.unbindDestination');
+    const logCapture = getLogCapture();
+    logCapture.mark('before-unbind-003-noop');
 
-    assert.ok(true, 'unbindDestination completed without error when no destination was bound');
+    await vscode.commands.executeCommand('rangelink.unbindDestination');
+    await settle();
+
+    const lines = logCapture.getLinesSince('before-unbind-003-noop');
+    assertStatusBarMsgLogged(lines, {
+      message: 'RangeLink: No destination bound',
+    });
   });
 });

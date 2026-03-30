@@ -42,11 +42,16 @@ suite('R-M Status Bar Menu', () => {
     const lines = logCapture.getLinesSince('before-menu-002');
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry with items');
-    assert.ok(items!.length >= 4, `Expected at least 4 menu items but got ${items!.length}`);
 
     assert.deepStrictEqual(
       { label: items![0].label, itemKind: items![0].itemKind },
       { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
+    );
+
+    assert.strictEqual(
+      items!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
+      undefined,
+      'Expected no Jump item in unbound state',
     );
 
     const lastThree = items!.slice(-3);
@@ -59,7 +64,7 @@ suite('R-M Status Bar Menu', () => {
       ],
     );
 
-    log('✓ Unbound menu items validated via log capture');
+    log('✓ Unbound menu: no Jump item, correct structure');
   });
 
   test('[assisted] status-bar-menu-003: Cmd+R Cmd+M keybinding opens the R-M menu', async () => {
@@ -77,11 +82,16 @@ suite('R-M Status Bar Menu', () => {
     const lines = logCapture.getLinesSince('before-menu-003');
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry with items');
-    assert.ok(items!.length >= 4, `Expected at least 4 menu items but got ${items!.length}`);
 
     assert.deepStrictEqual(
       { label: items![0].label, itemKind: items![0].itemKind },
       { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
+    );
+
+    assert.strictEqual(
+      items!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
+      undefined,
+      'Expected no Jump item in unbound state',
     );
 
     const lastThree = items!.slice(-3);
@@ -94,7 +104,7 @@ suite('R-M Status Bar Menu', () => {
       ],
     );
 
-    log('✓ Keybinding menu items validated via log capture');
+    log('✓ Keybinding menu: no Jump item, correct structure');
   });
 
   test('[assisted] status-bar-menu-005: R-M menu shows Jump to Bound Destination when bound', async () => {

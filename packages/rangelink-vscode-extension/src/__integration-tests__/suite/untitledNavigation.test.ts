@@ -114,18 +114,10 @@ suite('Untitled File Navigation', () => {
     await settle();
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
-    assert.strictEqual(sel.anchor.line, 4, `Expected anchor line 4 but got ${sel.anchor.line}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      0,
-      `Expected anchor char 0 but got ${sel.anchor.character}`,
-    );
     const lineLength = doc.lineAt(4).text.length;
-    assert.strictEqual(sel.active.line, 4, `Expected active line 4 but got ${sel.active.line}`);
-    assert.strictEqual(
-      sel.active.character,
-      lineLength,
-      `Expected active char ${lineLength} but got ${sel.active.character}`,
+    assert.deepStrictEqual(
+      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      { anchorLine: 4, anchorChar: 0, activeLine: 4, activeChar: lineLength },
     );
 
     const lines = logCapture.getLinesSince('before-untitled-nav-001');
@@ -133,8 +125,8 @@ suite('Untitled File Navigation', () => {
       type: 'info',
       message: `RangeLink: Navigated to ${untitledDisplayName} @ 5`,
     });
-    assertNoToastLogged(lines, { type: 'warning', message: 'RangeLink: Cannot find file' });
-    assertNoToastLogged(lines, { type: 'error', message: 'RangeLink: Failed to navigate' });
+    assertNoToastLogged(lines, { type: 'warning', message: `RangeLink: Cannot find file: ${untitledDisplayName}` });
+    assertNoToastLogged(lines, { type: 'error', message: `RangeLink: Failed to navigate to ${untitledDisplayName}` });
   });
 
   // untitled-navigation-002: Navigate to line range in untitled file
@@ -151,18 +143,10 @@ suite('Untitled File Navigation', () => {
     await settle();
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
-    assert.strictEqual(sel.anchor.line, 2, `Expected anchor line 2 but got ${sel.anchor.line}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      0,
-      `Expected anchor char 0 but got ${sel.anchor.character}`,
-    );
     const endLineLength = doc.lineAt(6).text.length;
-    assert.strictEqual(sel.active.line, 6, `Expected active line 6 but got ${sel.active.line}`);
-    assert.strictEqual(
-      sel.active.character,
-      endLineLength,
-      `Expected active char ${endLineLength} but got ${sel.active.character}`,
+    assert.deepStrictEqual(
+      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      { anchorLine: 2, anchorChar: 0, activeLine: 6, activeChar: endLineLength },
     );
 
     const lines = logCapture.getLinesSince('before-untitled-nav-002');
@@ -170,7 +154,7 @@ suite('Untitled File Navigation', () => {
       type: 'info',
       message: `RangeLink: Navigated to ${untitledDisplayName} @ 3-7`,
     });
-    assertNoToastLogged(lines, { type: 'warning', message: 'RangeLink: Cannot find file' });
+    assertNoToastLogged(lines, { type: 'warning', message: `RangeLink: Cannot find file: ${untitledDisplayName}` });
   });
 
   // untitled-navigation-003: Navigate to untitled file that is not open shows warning
@@ -196,7 +180,7 @@ suite('Untitled File Navigation', () => {
       type: 'warning',
       message: `RangeLink: Cannot find file: ${fakeName}`,
     });
-    assertNoToastLogged(lines, { type: 'info', message: 'RangeLink: Navigated to' });
+    assertNoToastLogged(lines, { type: 'info', message: `RangeLink: Navigated to ${fakeName} @ 1` });
   });
 
   // untitled-navigation-004: Character-precision navigation in untitled file
@@ -213,17 +197,9 @@ suite('Untitled File Navigation', () => {
     await settle();
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
-    assert.strictEqual(sel.anchor.line, 4, `Expected anchor line 4 but got ${sel.anchor.line}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      9,
-      `Expected anchor char 9 but got ${sel.anchor.character}`,
-    );
-    assert.strictEqual(sel.active.line, 4, `Expected active line 4 but got ${sel.active.line}`);
-    assert.strictEqual(
-      sel.active.character,
-      19,
-      `Expected active char 19 but got ${sel.active.character}`,
+    assert.deepStrictEqual(
+      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      { anchorLine: 4, anchorChar: 9, activeLine: 4, activeChar: 19 },
     );
 
     const lines = logCapture.getLinesSince('before-untitled-nav-004');
@@ -231,7 +207,7 @@ suite('Untitled File Navigation', () => {
       type: 'info',
       message: `RangeLink: Navigated to ${untitledDisplayName} @ 5:10-5:20`,
     });
-    assertNoToastLogged(lines, { type: 'warning', message: 'RangeLink: Cannot find file' });
+    assertNoToastLogged(lines, { type: 'warning', message: `RangeLink: Cannot find file: ${untitledDisplayName}` });
   });
 
   // untitled-navigation-005: Line clamping in untitled file
@@ -249,10 +225,10 @@ suite('Untitled File Navigation', () => {
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
     const lastLine = doc.lineCount - 1;
-    assert.strictEqual(
-      sel.anchor.line,
-      lastLine,
-      `Expected anchor at last line ${lastLine} but got ${sel.anchor.line}`,
+    const lastLineLength = doc.lineAt(lastLine).text.length;
+    assert.deepStrictEqual(
+      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      { anchorLine: lastLine, anchorChar: 0, activeLine: lastLine, activeChar: lastLineLength },
     );
 
     const lines = logCapture.getLinesSince('before-untitled-nav-005');
@@ -260,7 +236,7 @@ suite('Untitled File Navigation', () => {
       type: 'warning',
       message: `RangeLink: Navigated to ${untitledDisplayName} @ 50 (clamped: line exceeded file length)`,
     });
-    assertNoToastLogged(lines, { type: 'error', message: 'RangeLink: Failed to navigate' });
+    assertNoToastLogged(lines, { type: 'error', message: `RangeLink: Failed to navigate to ${untitledDisplayName}` });
   });
 
   // untitled-navigation-006: Case-insensitive untitled name matching
@@ -278,18 +254,10 @@ suite('Untitled File Navigation', () => {
     await settle();
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
-    assert.strictEqual(sel.anchor.line, 4, `Expected anchor line 4 but got ${sel.anchor.line}`);
-    assert.strictEqual(
-      sel.anchor.character,
-      0,
-      `Expected anchor char 0 but got ${sel.anchor.character}`,
-    );
     const lineLength = doc.lineAt(4).text.length;
-    assert.strictEqual(sel.active.line, 4, `Expected active line 4 but got ${sel.active.line}`);
-    assert.strictEqual(
-      sel.active.character,
-      lineLength,
-      `Expected active char ${lineLength} but got ${sel.active.character}`,
+    assert.deepStrictEqual(
+      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      { anchorLine: 4, anchorChar: 0, activeLine: 4, activeChar: lineLength },
     );
 
     const lines = logCapture.getLinesSince('before-untitled-nav-006');
@@ -297,6 +265,6 @@ suite('Untitled File Navigation', () => {
       type: 'info',
       message: `RangeLink: Navigated to ${lowercaseName} @ 5`,
     });
-    assertNoToastLogged(lines, { type: 'warning', message: 'RangeLink: Cannot find file' });
+    assertNoToastLogged(lines, { type: 'warning', message: `RangeLink: Cannot find file: ${untitledDisplayName}` });
   });
 });
