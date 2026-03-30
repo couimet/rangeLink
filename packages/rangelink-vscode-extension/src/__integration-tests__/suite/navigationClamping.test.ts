@@ -56,7 +56,12 @@ suite('Navigation Clamping', () => {
     const lastLine = doc.lineCount - 1;
     const lastLineLength = doc.lineAt(lastLine).text.length;
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
       { anchorLine: lastLine, anchorChar: 0, activeLine: lastLine, activeChar: lastLineLength },
     );
 
@@ -84,7 +89,12 @@ suite('Navigation Clamping', () => {
 
     const lineLength = doc.lineAt(0).text.length;
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
       { anchorLine: 0, anchorChar: lineLength, activeLine: 0, activeChar: lineLength },
     );
 
@@ -107,7 +117,12 @@ suite('Navigation Clamping', () => {
     const { sel } = await navigateViaHandleLinkClick(linkText, parseResult.value, testFilename);
 
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
       { anchorLine: 4, anchorChar: 9, activeLine: 4, activeChar: 10 },
     );
 
@@ -136,8 +151,18 @@ suite('Navigation Clamping', () => {
     const lastLine = doc.lineCount - 1;
     const lastLineLength = doc.lineAt(lastLine).text.length;
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
-      { anchorLine: lastLine, anchorChar: lastLineLength, activeLine: lastLine, activeChar: lastLineLength },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
+      {
+        anchorLine: lastLine,
+        anchorChar: lastLineLength,
+        activeLine: lastLine,
+        activeChar: lastLineLength,
+      },
     );
 
     const lines = logCapture.getLinesSince('before-clamping-004');

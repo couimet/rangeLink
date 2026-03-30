@@ -476,7 +476,11 @@ describe('VscodeAdapter', () => {
       const items = [
         { label: 'Plain item' },
         { label: 'With displayName only', displayName: 'raw name' },
-        { label: 'With boundState only', boundState: 'not-bound' as const, itemKind: 'bindable' as const },
+        {
+          label: 'With boundState only',
+          boundState: 'not-bound' as const,
+          itemKind: 'bindable' as const,
+        },
       ];
       (mockVSCode.window.showQuickPick as jest.Mock).mockResolvedValue(undefined);
 
@@ -2847,7 +2851,9 @@ describe('VscodeAdapter', () => {
       it('should register listener and return Disposable', () => {
         const listener = jest.fn();
         const mockDisposable = { dispose: jest.fn() };
-        (mockVSCode.workspace.onDidChangeConfiguration as jest.Mock).mockReturnValue(mockDisposable);
+        (mockVSCode.workspace.onDidChangeConfiguration as jest.Mock).mockReturnValue(
+          mockDisposable,
+        );
 
         const result = adapter.onDidChangeConfiguration(listener);
 
@@ -2887,9 +2893,7 @@ describe('VscodeAdapter', () => {
     it('should return false when no visible editor matches', () => {
       const mockUri = { toString: () => 'file:///missing.ts' };
       Object.defineProperty(adapter, 'visibleTextEditors', {
-        get: () => [
-          { document: { uri: { toString: () => 'file:///test.ts' } }, viewColumn: 1 },
-        ],
+        get: () => [{ document: { uri: { toString: () => 'file:///test.ts' } }, viewColumn: 1 }],
       });
 
       const result = adapter.hasVisibleEditorAt(mockUri as any, 1);

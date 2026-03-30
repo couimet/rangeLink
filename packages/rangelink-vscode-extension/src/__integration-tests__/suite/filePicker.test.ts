@@ -79,10 +79,28 @@ suite('File Picker', () => {
 
     const fileItems = findTestFileItems(items!);
     assert.deepStrictEqual(
-      fileItems.map(({ label, displayName, description, boundState, itemKind }) => ({ label, displayName, description, boundState, itemKind })),
+      fileItems.map(({ label, displayName, description, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: fnA, displayName: fnA, description: 'bound · Tab Group 1', boundState: 'bound', itemKind: 'bindable' },
-        { label: fnB, displayName: fnB, description: 'active · Tab Group 2', boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: fnA,
+          displayName: fnA,
+          description: 'bound · Tab Group 1',
+          boundState: 'bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: fnB,
+          displayName: fnB,
+          description: 'active · Tab Group 2',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -106,10 +124,28 @@ suite('File Picker', () => {
 
     const testFileItems = findTestFileItems(items!);
     assert.deepStrictEqual(
-      testFileItems.map(({ label, displayName, description, boundState, itemKind }) => ({ label, displayName, description, boundState, itemKind })),
+      testFileItems.map(({ label, displayName, description, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: fnA, displayName: fnA, description: 'Tab Group 1', boundState: 'not-bound', itemKind: 'bindable' },
-        { label: fnB, displayName: fnB, description: 'active · Tab Group 2', boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: fnA,
+          displayName: fnA,
+          description: 'Tab Group 1',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: fnB,
+          displayName: fnB,
+          description: 'active · Tab Group 2',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -156,17 +192,37 @@ suite('File Picker', () => {
     );
 
     const descriptions = sharedNameItems.map(({ description }) => description as string);
-    assert.strictEqual(sharedNameItems.length, 2, `Expected exactly 2 disambiguated items but got ${sharedNameItems.length}`);
+    assert.strictEqual(
+      sharedNameItems.length,
+      2,
+      `Expected exactly 2 disambiguated items but got ${sharedNameItems.length}`,
+    );
     assert.ok(
-      descriptions.some((d) => d && d.includes('dirA')) && descriptions.some((d) => d && d.includes('dirB')),
+      descriptions.some((d) => d && d.includes('dirA')) &&
+        descriptions.some((d) => d && d.includes('dirB')),
       `Expected disambiguator paths containing "dirA" and "dirB" but got: ${JSON.stringify(descriptions)}`,
     );
 
     assert.deepStrictEqual(
-      sharedNameItems.map(({ label, displayName, boundState, itemKind }) => ({ label, displayName, boundState, itemKind })),
+      sharedNameItems.map(({ label, displayName, boundState, itemKind }) => ({
+        label,
+        displayName,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: '__rl-test-fp-003-shared.ts', displayName: '__rl-test-fp-003-shared.ts', boundState: 'not-bound', itemKind: 'bindable' },
-        { label: '__rl-test-fp-003-shared.ts', displayName: '__rl-test-fp-003-shared.ts', boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: '__rl-test-fp-003-shared.ts',
+          displayName: '__rl-test-fp-003-shared.ts',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: '__rl-test-fp-003-shared.ts',
+          displayName: '__rl-test-fp-003-shared.ts',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -188,8 +244,22 @@ suite('File Picker', () => {
 
     const fileItems = findTestFileItems(items!);
     assert.deepStrictEqual(
-      fileItems.map(({ label, displayName, description, boundState, itemKind }) => ({ label, displayName, description, boundState, itemKind })),
-      [{ label: fn, displayName: fn, description: 'active · Tab Group 1', boundState: 'not-bound', itemKind: 'bindable' }],
+      fileItems.map(({ label, displayName, description, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        boundState,
+        itemKind,
+      })),
+      [
+        {
+          label: fn,
+          displayName: fn,
+          description: 'active · Tab Group 1',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+      ],
     );
 
     log('✓ File appears inline in R-D picker — full assertion');
@@ -215,8 +285,20 @@ suite('File Picker', () => {
     );
     assert.ok(moreItem, 'Expected "More files..." overflow item');
     assert.deepStrictEqual(
-      { label: moreItem!.label, displayName: moreItem!.displayName, description: moreItem!.description, remainingCount: moreItem!.remainingCount, itemKind: moreItem!.itemKind },
-      { label: 'More files...', displayName: 'More files...', description: `${EXPECTED_FILE_OVERFLOW} more`, remainingCount: EXPECTED_FILE_OVERFLOW, itemKind: 'file-more' },
+      {
+        label: moreItem!.label,
+        displayName: moreItem!.displayName,
+        description: moreItem!.description,
+        remainingCount: moreItem!.remainingCount,
+        itemKind: moreItem!.itemKind,
+      },
+      {
+        label: 'More files...',
+        displayName: 'More files...',
+        description: `${EXPECTED_FILE_OVERFLOW} more`,
+        remainingCount: EXPECTED_FILE_OVERFLOW,
+        itemKind: 'file-more',
+      },
     );
 
     log('✓ File overflow fully validated with concrete expected count');
@@ -233,15 +315,11 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-006');
 
-    await waitForHuman(
-      'file-picker-006',
-      'Cmd+R Cmd+D → click "More files..." → Escape',
-      [
-        '1. Press Cmd+R Cmd+D',
-        '2. Click "More files..."',
-        '3. Escape the secondary picker',
-      ],
-    );
+    await waitForHuman('file-picker-006', 'Cmd+R Cmd+D → click "More files..." → Escape', [
+      '1. Press Cmd+R Cmd+D',
+      '2. Click "More files..."',
+      '3. Escape the secondary picker',
+    ]);
 
     const lines = logCapture.getLinesSince('before-fp-006');
     const quickPickEntries = lines.filter(
@@ -261,18 +339,38 @@ suite('File Picker', () => {
     const testFiles = secondaryItems.filter(
       (i) => typeof i.label === 'string' && (i.label as string).includes('__rl-test-fp-006'),
     );
-    assert.strictEqual(testFiles.length, FILE_OVERFLOW_THRESHOLD, `Expected ${FILE_OVERFLOW_THRESHOLD} test files in secondary picker`);
+    assert.strictEqual(
+      testFiles.length,
+      FILE_OVERFLOW_THRESHOLD,
+      `Expected ${FILE_OVERFLOW_THRESHOLD} test files in secondary picker`,
+    );
 
     const activeFile = testFiles.find((i) => i.label === lastFileName);
     assert.ok(activeFile, `Expected active file "${lastFileName}" in secondary picker`);
     assert.deepStrictEqual(
-      { label: activeFile!.label, displayName: activeFile!.displayName, description: activeFile!.description, boundState: activeFile!.boundState, itemKind: activeFile!.itemKind },
-      { label: lastFileName, displayName: lastFileName, description: 'active', boundState: 'not-bound', itemKind: 'bindable' },
+      {
+        label: activeFile!.label,
+        displayName: activeFile!.displayName,
+        description: activeFile!.description,
+        boundState: activeFile!.boundState,
+        itemKind: activeFile!.itemKind,
+      },
+      {
+        label: lastFileName,
+        displayName: lastFileName,
+        description: 'active',
+        boundState: 'not-bound',
+        itemKind: 'bindable',
+      },
     );
 
     const nonActiveFile = testFiles.find((i) => i.label !== lastFileName);
     assert.ok(nonActiveFile, 'Expected at least one non-active file');
-    assert.strictEqual(nonActiveFile!.description, undefined, 'Non-active file should have no description badge');
+    assert.strictEqual(
+      nonActiveFile!.description,
+      undefined,
+      'Non-active file should have no description badge',
+    );
 
     log('✓ Secondary picker: active file has "active" badge, non-active has none');
   });
@@ -283,7 +381,11 @@ suite('File Picker', () => {
 
     const extraNames: string[] = [];
     for (let i = 1; i <= 3; i++) {
-      const uri = await createAndOpenFile(`fp-007-extra-${i}`, `extra ${i}\n`, vscode.ViewColumn.One);
+      const uri = await createAndOpenFile(
+        `fp-007-extra-${i}`,
+        `extra ${i}\n`,
+        vscode.ViewColumn.One,
+      );
       extraNames.push(path.basename(uri.fsPath));
     }
     await createAndOpenFile('fp-007-g2b', 'group 2 extra\n', vscode.ViewColumn.Two);
@@ -291,15 +393,11 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-007');
 
-    await waitForHuman(
-      'file-picker-007',
-      'Cmd+R Cmd+D → click "More files..." → Escape',
-      [
-        '1. Press Cmd+R Cmd+D',
-        '2. Click "More files..."',
-        '3. Escape the secondary picker',
-      ],
-    );
+    await waitForHuman('file-picker-007', 'Cmd+R Cmd+D → click "More files..." → Escape', [
+      '1. Press Cmd+R Cmd+D',
+      '2. Click "More files..."',
+      '3. Escape the secondary picker',
+    ]);
 
     const lines = logCapture.getLinesSince('before-fp-007');
     const quickPickEntries = lines.filter(
@@ -324,7 +422,10 @@ suite('File Picker', () => {
     const testFiles = secondaryItems.filter(
       (i) => typeof i.label === 'string' && (i.label as string).includes('__rl-test-fp-007'),
     );
-    assert.ok(testFiles.length >= 5, `Expected at least 5 test files in secondary picker but got ${testFiles.length}`);
+    assert.ok(
+      testFiles.length >= 5,
+      `Expected at least 5 test files in secondary picker but got ${testFiles.length}`,
+    );
     assert.ok(
       testFiles.every((f) => f.itemKind === 'bindable' && f.boundState === 'not-bound'),
       'Expected all test files to be bindable and not-bound',
@@ -341,16 +442,12 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-008');
 
-    await waitForHuman(
-      'file-picker-008',
-      'Cmd+R Cmd+D → "More files..." → Escape → Escape again',
-      [
-        '1. Press Cmd+R Cmd+D',
-        '2. Click "More files..."',
-        '3. Escape the secondary picker (parent should reopen)',
-        '4. Escape the parent picker',
-      ],
-    );
+    await waitForHuman('file-picker-008', 'Cmd+R Cmd+D → "More files..." → Escape → Escape again', [
+      '1. Press Cmd+R Cmd+D',
+      '2. Click "More files..."',
+      '3. Escape the secondary picker (parent should reopen)',
+      '4. Escape the parent picker',
+    ]);
 
     const lines = logCapture.getLinesSince('before-fp-008');
     const quickPickEntries = lines.filter(
@@ -364,11 +461,13 @@ suite('File Picker', () => {
     const firstItems = parseQuickPickItemsFromLogLine(quickPickEntries[0]);
     const reopenedItems = parseQuickPickItemsFromLogLine(quickPickEntries[2]);
 
-    const mapFields = (i: Record<string, unknown>) => ({ label: i.label, displayName: i.displayName, description: i.description, itemKind: i.itemKind });
-    assert.deepStrictEqual(
-      reopenedItems.map(mapFields),
-      firstItems.map(mapFields),
-    );
+    const mapFields = (i: Record<string, unknown>) => ({
+      label: i.label,
+      displayName: i.displayName,
+      description: i.description,
+      itemKind: i.itemKind,
+    });
+    assert.deepStrictEqual(reopenedItems.map(mapFields), firstItems.map(mapFields));
 
     log('✓ Reopened parent picker has identical items');
   });
@@ -389,9 +488,15 @@ suite('File Picker', () => {
     const uriB = vscode.Uri.file(fileB);
     tmpFileUris.push(uriA, uriB);
 
-    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uriA), { viewColumn: vscode.ViewColumn.One, preview: false });
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uriA), {
+      viewColumn: vscode.ViewColumn.One,
+      preview: false,
+    });
     await settle();
-    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uriB), { viewColumn: vscode.ViewColumn.Two, preview: false });
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uriB), {
+      viewColumn: vscode.ViewColumn.Two,
+      preview: false,
+    });
     await settle();
 
     for (let i = 1; i <= FILE_OVERFLOW_THRESHOLD; i++) {
@@ -401,15 +506,11 @@ suite('File Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-010');
 
-    await waitForHuman(
-      'file-picker-010',
-      'Cmd+R Cmd+D → click "More files..." → Escape',
-      [
-        '1. Press Cmd+R Cmd+D',
-        '2. Click "More files..."',
-        '3. Escape the secondary picker',
-      ],
-    );
+    await waitForHuman('file-picker-010', 'Cmd+R Cmd+D → click "More files..." → Escape', [
+      '1. Press Cmd+R Cmd+D',
+      '2. Click "More files..."',
+      '3. Escape the secondary picker',
+    ]);
 
     const lines = logCapture.getLinesSince('before-fp-010');
     const quickPickEntries = lines.filter(
@@ -421,11 +522,16 @@ suite('File Picker', () => {
     const sharedItems = secondaryItems.filter(
       (i) => typeof i.label === 'string' && (i.label as string).includes('fp-010-shared'),
     );
-    assert.strictEqual(sharedItems.length, 2, `Expected 2 same-name items in secondary picker but got ${sharedItems.length}`);
+    assert.strictEqual(
+      sharedItems.length,
+      2,
+      `Expected 2 same-name items in secondary picker but got ${sharedItems.length}`,
+    );
 
     const descriptions = sharedItems.map((i) => i.description as string);
     assert.ok(
-      descriptions.some((d) => d && d.includes('fp010A')) && descriptions.some((d) => d && d.includes('fp010B')),
+      descriptions.some((d) => d && d.includes('fp010A')) &&
+        descriptions.some((d) => d && d.includes('fp010B')),
       `Expected disambiguator paths in secondary picker descriptions but got: ${JSON.stringify(descriptions)}`,
     );
 
@@ -453,11 +559,20 @@ suite('File Picker', () => {
     });
     tmpFileUris.push(...uris);
 
-    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uris[0]), { viewColumn: vscode.ViewColumn.One, preview: false });
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uris[0]), {
+      viewColumn: vscode.ViewColumn.One,
+      preview: false,
+    });
     await settle();
-    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uris[1]), { viewColumn: vscode.ViewColumn.Two, preview: false });
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uris[1]), {
+      viewColumn: vscode.ViewColumn.Two,
+      preview: false,
+    });
     await settle();
-    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uris[2]), { viewColumn: vscode.ViewColumn.Three, preview: false });
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uris[2]), {
+      viewColumn: vscode.ViewColumn.Three,
+      preview: false,
+    });
     await settle();
 
     const logCapture = getLogCapture();
@@ -469,17 +584,41 @@ suite('File Picker', () => {
     const items = extractQuickPickItemsLogged(lines);
     assert.ok(items, 'Expected showQuickPick log entry');
 
-    const sharedItems = findTestFileItems(items!).filter(
-      (i) => (i.label as string).includes('fp-011-shared'),
+    const sharedItems = findTestFileItems(items!).filter((i) =>
+      (i.label as string).includes('fp-011-shared'),
     );
-    assert.strictEqual(sharedItems.length, 3, `Expected 3 same-name items but got ${sharedItems.length}`);
+    assert.strictEqual(
+      sharedItems.length,
+      3,
+      `Expected 3 same-name items but got ${sharedItems.length}`,
+    );
 
     assert.deepStrictEqual(
-      sharedItems.map(({ label, displayName, boundState, itemKind }) => ({ label, displayName, boundState, itemKind })),
+      sharedItems.map(({ label, displayName, boundState, itemKind }) => ({
+        label,
+        displayName,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: '__rl-test-fp-011-shared.ts', displayName: '__rl-test-fp-011-shared.ts', boundState: 'not-bound', itemKind: 'bindable' },
-        { label: '__rl-test-fp-011-shared.ts', displayName: '__rl-test-fp-011-shared.ts', boundState: 'not-bound', itemKind: 'bindable' },
-        { label: '__rl-test-fp-011-shared.ts', displayName: '__rl-test-fp-011-shared.ts', boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: '__rl-test-fp-011-shared.ts',
+          displayName: '__rl-test-fp-011-shared.ts',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: '__rl-test-fp-011-shared.ts',
+          displayName: '__rl-test-fp-011-shared.ts',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: '__rl-test-fp-011-shared.ts',
+          displayName: '__rl-test-fp-011-shared.ts',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -511,10 +650,28 @@ suite('File Picker', () => {
 
     const testFileItems = findTestFileItems(items!);
     assert.deepStrictEqual(
-      testFileItems.map(({ label, displayName, description, boundState, itemKind }) => ({ label, displayName, description, boundState, itemKind })),
+      testFileItems.map(({ label, displayName, description, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: fnA, displayName: fnA, description: 'Tab Group 1', boundState: 'not-bound', itemKind: 'bindable' },
-        { label: fnB, displayName: fnB, description: 'active · Tab Group 2', boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: fnA,
+          displayName: fnA,
+          description: 'Tab Group 1',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: fnB,
+          displayName: fnB,
+          description: 'active · Tab Group 2',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -539,8 +696,22 @@ suite('File Picker', () => {
 
     const fileItems = findTestFileItems(items!);
     assert.deepStrictEqual(
-      fileItems.map(({ label, displayName, description, boundState, itemKind }) => ({ label, displayName, description, boundState, itemKind })),
-      [{ label: `    $(arrow-right) ${fn}`, displayName: fn, description: 'active · Tab Group 1', boundState: 'not-bound', itemKind: 'bindable' }],
+      fileItems.map(({ label, displayName, description, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        boundState,
+        itemKind,
+      })),
+      [
+        {
+          label: `    $(arrow-right) ${fn}`,
+          displayName: fn,
+          description: 'active · Tab Group 1',
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+      ],
     );
 
     log('✓ File appears inline in R-M menu — full assertion');

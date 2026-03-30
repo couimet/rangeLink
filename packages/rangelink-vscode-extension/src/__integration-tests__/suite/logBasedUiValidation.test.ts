@@ -145,7 +145,11 @@ suite('Log-Based UI Assertions', () => {
       message: '✓ RangeLink copied to clipboard & sent to Terminal ("rl-toast-test")',
     });
     assert.ok(
-      lines.some((line) => line.includes('VscodeAdapter.pasteTextToTerminalViaClipboard') && line.includes('rl-toast-test')),
+      lines.some(
+        (line) =>
+          line.includes('VscodeAdapter.pasteTextToTerminalViaClipboard') &&
+          line.includes('rl-toast-test'),
+      ),
       'Expected pasteTextToTerminalViaClipboard to be logged for rl-toast-test',
     );
   });
@@ -168,7 +172,11 @@ suite('Log-Based UI Assertions', () => {
       message: '✓ File path copied to clipboard & sent to Terminal ("rl-toast-test")',
     });
     assert.ok(
-      lines.some((line) => line.includes('VscodeAdapter.pasteTextToTerminalViaClipboard') && line.includes('rl-toast-test')),
+      lines.some(
+        (line) =>
+          line.includes('VscodeAdapter.pasteTextToTerminalViaClipboard') &&
+          line.includes('rl-toast-test'),
+      ),
       'Expected pasteTextToTerminalViaClipboard to be logged for rl-toast-test',
     );
   });

@@ -59,12 +59,20 @@ suite('Filename-Only Navigation Fallback', () => {
 
     const lineLength = doc.lineAt(4).text.length;
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
       { anchorLine: 4, anchorChar: 0, activeLine: 4, activeChar: lineLength },
     );
 
     const lines = logCapture.getLinesSince('before-fallback-001');
-    assertToastLogged(lines, { type: 'info', message: `RangeLink: Navigated to ${uniqueFilename} @ 5` });
+    assertToastLogged(lines, {
+      type: 'info',
+      message: `RangeLink: Navigated to ${uniqueFilename} @ 5`,
+    });
   });
 
   test('filename-fallback-navigation-004: path with directory separators uses standard resolution', async () => {
@@ -84,11 +92,19 @@ suite('Filename-Only Navigation Fallback', () => {
 
     const lineLength = doc.lineAt(9).text.length;
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
       { anchorLine: 9, anchorChar: 0, activeLine: 9, activeChar: lineLength },
     );
 
     const lines = logCapture.getLinesSince('before-fallback-004');
-    assertToastLogged(lines, { type: 'info', message: `RangeLink: Navigated to ${relativeFilePath} @ 10` });
+    assertToastLogged(lines, {
+      type: 'info',
+      message: `RangeLink: Navigated to ${relativeFilePath} @ 10`,
+    });
   });
 });

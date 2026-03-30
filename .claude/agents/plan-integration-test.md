@@ -16,6 +16,7 @@ You receive a TC ID (e.g., `file-picker-001`, `terminal-picker-005`, `bind-to-de
 ## Output
 
 A complete test template with:
+
 1. Setup code (terminals, files, binds)
 2. `waitForHuman()` call with minimal mechanical action only
 3. `assert.deepStrictEqual` on the full logged item shape
@@ -26,6 +27,7 @@ A complete test template with:
 ### Step 1: Read the QA YAML
 
 Find the TC in `packages/rangelink-vscode-extension/qa/qa-test-cases-v1.1.0*.yaml` (use the latest file). Extract:
+
 - `scenario` — what the test verifies
 - `preconditions` — what setup is needed
 - `steps` — what the human does
@@ -35,6 +37,7 @@ Find the TC in `packages/rangelink-vscode-extension/qa/qa-test-cases-v1.1.0*.yam
 ### Step 2: Determine the picker trigger
 
 Based on the TC's steps, identify which command opens the picker:
+
 - "Open R-D destination picker" → human presses Cmd+R Cmd+D → `rangelink.bindToDestination` → `DestinationPicker.pick()` → `showQuickPick`
 - "Open R-M menu" → human clicks status bar or Cmd+R Cmd+M → `RangeLinkStatusBar.openMenu()` → `showQuickPick`
 - "Open terminal picker" → `rangelink.bindToTerminal` → `showTerminalPicker` → `showQuickPick`
@@ -45,21 +48,25 @@ Based on the TC's steps, identify which command opens the picker:
 Based on the picker trigger, identify which code builds the QuickPick items:
 
 **R-D inline picker:**
+
 - `DestinationPicker.pick()` → `DestinationAvailabilityService.getGroupedDestinationItems()` → `buildDestinationQuickPickItems(grouped, (name) => name)`
 - Terminal items: `buildTerminalItem()` → label = `Terminal ("name")`, description from `buildTerminalDescription()`
 - File items: `buildFileItem()` → label = filename, description from `buildFileDescription()`
 - Label builder: `(name) => name` (no indent/codicon)
 
 **R-M menu inline picker:**
+
 - `RangeLinkStatusBar.openMenu()` → `buildQuickPickItems()` → `buildDestinationQuickPickItems(grouped, (name) => MENU_ITEM_INDENT + '$(arrow-right) ' + name)`
-- Same items but label has `    $(arrow-right) ` prefix
+- Same items but label has `   $(arrow-right)` prefix
 - Use `displayName` for assertions instead of `label` (displayName = raw name without prefix)
 
 **Secondary terminal picker:**
+
 - `showTerminalPicker()` → label = `Terminal "name"` (note: different format than inline — uses `TERMINAL_PICKER_TERMINAL_LABEL_FORMAT`)
 - Description from `buildTerminalDescription()`
 
 **Secondary file picker:**
+
 - `showFilePicker()` → `buildFilePickerItems()` → separators: "Active Files", "Tab Group N"
 - Description from `buildFileDescription()` (no tab group suffix — tab groups are separators)
 
@@ -74,6 +81,7 @@ label, description, detail, kind, itemKind, displayName, isActive, boundState, r
 For each item type, the available fields are:
 
 **Terminal bindable item:**
+
 - `label` — `Terminal ("name")` (inline) or `    $(arrow-right) Terminal ("name")` (R-M menu)
 - `displayName` — `Terminal ("name")` (always the raw name)
 - `description` — badges: `'bound'`, `'active'`, `'bound · active'`, or `undefined`
@@ -82,6 +90,7 @@ For each item type, the available fields are:
 - `itemKind` — `'bindable'`
 
 **File bindable item:**
+
 - `label` — filename (inline R-D) or `    $(arrow-right) filename` (R-M menu)
 - `displayName` — raw filename
 - `description` — `{disambiguator} · {badges} · Tab Group {N}` for inline R-D; `{disambiguator} · {badges}` for secondary picker. Badges: `'bound'`, `'active'`. No tab group suffix in secondary picker.
@@ -90,10 +99,12 @@ For each item type, the available fields are:
 - Note: file items do NOT have `isActive` — active state is in description badge only
 
 **Separator:**
+
 - `label` — e.g., `'Terminals'`, `'Files'`, `'AI Assistants'`, `'Active Files'`, `'Tab Group 1'`
 - `kind` — `-1` (QuickPickItemKind.Separator)
 
 **Overflow "More..." item:**
+
 - `label` — `'More terminals...'` or `'More files...'`
 - `displayName` — same as label
 - `description` — `'{N} more'`
@@ -103,6 +114,7 @@ For each item type, the available fields are:
 ### Step 5: Build the template
 
 **Gold standard assertion shape for bindable items:**
+
 ```typescript
 assert.deepStrictEqual(
   items.map(({ label, displayName, description, isActive, boundState, itemKind }) =>
@@ -118,17 +130,20 @@ For file items: include ALL 5 fields (label, displayName, description, boundStat
 For overflow items: include ALL 5 fields (label, displayName, description, remainingCount, itemKind).
 
 **waitForHuman rules:**
+
 - `waitForHuman(tcId, action)` — NO console steps for single-action tests
 - `action` is the mechanical instruction: `'Press Cmd+R Cmd+D, then Escape'`
 - Multi-step tests (secondary pickers): add numbered console steps for the sub-actions only
 - NEVER include setup context ("Two files opened"), test state ("fp-001-a is bound"), or validation instructions
 
 **File naming:**
+
 - Use `createAndOpenFile()` and capture the URI: `const uri = await createAndOpenFile('fp-xxx', ...)`
 - Extract filename: `const fn = path.basename(uri.fsPath)`
 - Use `fn` in assertions — the filename includes a timestamp so it can't be hardcoded
 
 **Terminal naming:**
+
 - Terminal names are controlled: `await createTerminal('rl-tp-xxx')`
 - Labels are predictable: `Terminal ("rl-tp-xxx")`
 - Use exact strings in assertions
@@ -136,12 +151,14 @@ For overflow items: include ALL 5 fields (label, displayName, description, remai
 ### Step 6: Output format
 
 Output a fenced TypeScript code block with the complete test, ready to paste into the test file. Include:
+
 - All imports needed (if the test file doesn't already have them)
 - The `test('[assisted] tc-id: scenario', async () => { ... })` block
 - Setup, waitForHuman, assertions, cleanup
 - A `log('✓ ...')` line at the end
 
 Also output:
+
 - Which test file this belongs in
 - Whether the QA YAML needs updating (if `automated: false`, suggest changing to `automated: assisted`)
 
@@ -156,4 +173,4 @@ Also output:
 7. For overflow items, ALWAYS include `remainingCount` alongside `description`
 8. Use named constants for thresholds: `TERMINAL_OVERFLOW_COUNT`, `FILE_OVERFLOW_THRESHOLD`, `MAX_INLINE_DEFAULT`
 9. When testing negative cases (e.g., non-active terminal), assert the field is `undefined`, not just absent
-10. For file descriptions in R-D inline picker: format is `{disambiguator} · {badges} · Tab Group {N}`. Segments are joined with ` · `. Empty segments are omitted.
+10. For file descriptions in R-D inline picker: format is `{disambiguator} · {badges} · Tab Group {N}`. Segments are joined with `·`. Empty segments are omitted.

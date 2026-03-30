@@ -116,7 +116,12 @@ suite('Untitled File Navigation', () => {
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
     const lineLength = doc.lineAt(4).text.length;
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
       { anchorLine: 4, anchorChar: 0, activeLine: 4, activeChar: lineLength },
     );
 
@@ -125,8 +130,14 @@ suite('Untitled File Navigation', () => {
       type: 'info',
       message: `RangeLink: Navigated to ${untitledDisplayName} @ 5`,
     });
-    assertNoToastLogged(lines, { type: 'warning', message: `RangeLink: Cannot find file: ${untitledDisplayName}` });
-    assertNoToastLogged(lines, { type: 'error', message: `RangeLink: Failed to navigate to ${untitledDisplayName}` });
+    assertNoToastLogged(lines, {
+      type: 'warning',
+      message: `RangeLink: Cannot find file: ${untitledDisplayName}`,
+    });
+    assertNoToastLogged(lines, {
+      type: 'error',
+      message: `RangeLink: Failed to navigate to ${untitledDisplayName}`,
+    });
   });
 
   // untitled-navigation-002: Navigate to line range in untitled file
@@ -145,7 +156,12 @@ suite('Untitled File Navigation', () => {
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
     const endLineLength = doc.lineAt(6).text.length;
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
       { anchorLine: 2, anchorChar: 0, activeLine: 6, activeChar: endLineLength },
     );
 
@@ -154,7 +170,10 @@ suite('Untitled File Navigation', () => {
       type: 'info',
       message: `RangeLink: Navigated to ${untitledDisplayName} @ 3-7`,
     });
-    assertNoToastLogged(lines, { type: 'warning', message: `RangeLink: Cannot find file: ${untitledDisplayName}` });
+    assertNoToastLogged(lines, {
+      type: 'warning',
+      message: `RangeLink: Cannot find file: ${untitledDisplayName}`,
+    });
   });
 
   // untitled-navigation-003: Navigate to untitled file that is not open shows warning
@@ -180,7 +199,10 @@ suite('Untitled File Navigation', () => {
       type: 'warning',
       message: `RangeLink: Cannot find file: ${fakeName}`,
     });
-    assertNoToastLogged(lines, { type: 'info', message: `RangeLink: Navigated to ${fakeName} @ 1` });
+    assertNoToastLogged(lines, {
+      type: 'info',
+      message: `RangeLink: Navigated to ${fakeName} @ 1`,
+    });
   });
 
   // untitled-navigation-004: Character-precision navigation in untitled file
@@ -198,7 +220,12 @@ suite('Untitled File Navigation', () => {
 
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
       { anchorLine: 4, anchorChar: 9, activeLine: 4, activeChar: 19 },
     );
 
@@ -207,7 +234,10 @@ suite('Untitled File Navigation', () => {
       type: 'info',
       message: `RangeLink: Navigated to ${untitledDisplayName} @ 5:10-5:20`,
     });
-    assertNoToastLogged(lines, { type: 'warning', message: `RangeLink: Cannot find file: ${untitledDisplayName}` });
+    assertNoToastLogged(lines, {
+      type: 'warning',
+      message: `RangeLink: Cannot find file: ${untitledDisplayName}`,
+    });
   });
 
   // untitled-navigation-005: Line clamping in untitled file
@@ -227,7 +257,12 @@ suite('Untitled File Navigation', () => {
     const lastLine = doc.lineCount - 1;
     const lastLineLength = doc.lineAt(lastLine).text.length;
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
       { anchorLine: lastLine, anchorChar: 0, activeLine: lastLine, activeChar: lastLineLength },
     );
 
@@ -236,7 +271,10 @@ suite('Untitled File Navigation', () => {
       type: 'warning',
       message: `RangeLink: Navigated to ${untitledDisplayName} @ 50 (clamped: line exceeded file length)`,
     });
-    assertNoToastLogged(lines, { type: 'error', message: `RangeLink: Failed to navigate to ${untitledDisplayName}` });
+    assertNoToastLogged(lines, {
+      type: 'error',
+      message: `RangeLink: Failed to navigate to ${untitledDisplayName}`,
+    });
   });
 
   // untitled-navigation-006: Case-insensitive untitled name matching
@@ -256,7 +294,12 @@ suite('Untitled File Navigation', () => {
     assert.strictEqual(doc.uri.scheme, 'untitled', 'Expected navigation to untitled document');
     const lineLength = doc.lineAt(4).text.length;
     assert.deepStrictEqual(
-      { anchorLine: sel.anchor.line, anchorChar: sel.anchor.character, activeLine: sel.active.line, activeChar: sel.active.character },
+      {
+        anchorLine: sel.anchor.line,
+        anchorChar: sel.anchor.character,
+        activeLine: sel.active.line,
+        activeChar: sel.active.character,
+      },
       { anchorLine: 4, anchorChar: 0, activeLine: 4, activeChar: lineLength },
     );
 
@@ -265,6 +308,9 @@ suite('Untitled File Navigation', () => {
       type: 'info',
       message: `RangeLink: Navigated to ${lowercaseName} @ 5`,
     });
-    assertNoToastLogged(lines, { type: 'warning', message: `RangeLink: Cannot find file: ${untitledDisplayName}` });
+    assertNoToastLogged(lines, {
+      type: 'warning',
+      message: `RangeLink: Cannot find file: ${untitledDisplayName}`,
+    });
   });
 });

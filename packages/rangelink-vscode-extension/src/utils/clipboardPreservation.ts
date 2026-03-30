@@ -34,7 +34,10 @@ export const withClipboardPreservation = async <T>(
   let saved: string;
   try {
     saved = await clipboard.readTextFromClipboard();
-    logger.debug({ fn: 'withClipboardPreservation', mode, savedLength: saved.length }, 'Clipboard saved');
+    logger.debug(
+      { fn: 'withClipboardPreservation', mode, savedLength: saved.length },
+      'Clipboard saved',
+    );
   } catch (error) {
     logger.error(
       { fn: 'withClipboardPreservation', error },
@@ -48,7 +51,10 @@ export const withClipboardPreservation = async <T>(
   } finally {
     try {
       await clipboard.writeTextToClipboard(saved);
-      logger.debug({ fn: 'withClipboardPreservation', restoredLength: saved.length }, 'Clipboard restored');
+      logger.debug(
+        { fn: 'withClipboardPreservation', restoredLength: saved.length },
+        'Clipboard restored',
+      );
     } catch (error) {
       logger.error({ fn: 'withClipboardPreservation', error }, 'Clipboard restoration failed');
     }

@@ -76,10 +76,31 @@ suite('Terminal Picker', () => {
 
     const termItems = findTerminalItems(items!);
     assert.deepStrictEqual(
-      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: 'Terminal ("rl-tp-001-a")', displayName: 'Terminal ("rl-tp-001-a")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
-        { label: 'Terminal ("rl-tp-001-b")', displayName: 'Terminal ("rl-tp-001-b")', description: undefined, isActive: false, boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: 'Terminal ("rl-tp-001-a")',
+          displayName: 'Terminal ("rl-tp-001-a")',
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: 'Terminal ("rl-tp-001-b")',
+          displayName: 'Terminal ("rl-tp-001-b")',
+          description: undefined,
+          isActive: false,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -105,10 +126,31 @@ suite('Terminal Picker', () => {
 
     const termItems = findTerminalItems(items!);
     assert.deepStrictEqual(
-      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: 'Terminal ("rl-tp-002")', displayName: 'Terminal ("rl-tp-002")', description: 'bound', isActive: false, boundState: 'bound', itemKind: 'bindable' },
-        { label: 'Terminal ("rl-tp-002-other")', displayName: 'Terminal ("rl-tp-002-other")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: 'Terminal ("rl-tp-002")',
+          displayName: 'Terminal ("rl-tp-002")',
+          description: 'bound',
+          isActive: false,
+          boundState: 'bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: 'Terminal ("rl-tp-002-other")',
+          displayName: 'Terminal ("rl-tp-002-other")',
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -132,9 +174,23 @@ suite('Terminal Picker', () => {
 
     const termItems = findTerminalItems(items!);
     assert.deepStrictEqual(
-      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: 'Terminal ("rl-tp-003")', displayName: 'Terminal ("rl-tp-003")', description: 'bound · active', isActive: true, boundState: 'bound', itemKind: 'bindable' },
+        {
+          label: 'Terminal ("rl-tp-003")',
+          displayName: 'Terminal ("rl-tp-003")',
+          description: 'bound · active',
+          isActive: true,
+          boundState: 'bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -158,10 +214,31 @@ suite('Terminal Picker', () => {
 
     const termItems = findTerminalItems(items!);
     assert.deepStrictEqual(
-      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: 'Terminal ("rl-tp-004-b")', displayName: 'Terminal ("rl-tp-004-b")', description: 'bound', isActive: false, boundState: 'bound', itemKind: 'bindable' },
-        { label: 'Terminal ("rl-tp-004-a")', displayName: 'Terminal ("rl-tp-004-a")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: 'Terminal ("rl-tp-004-b")',
+          displayName: 'Terminal ("rl-tp-004-b")',
+          description: 'bound',
+          isActive: false,
+          boundState: 'bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: 'Terminal ("rl-tp-004-a")',
+          displayName: 'Terminal ("rl-tp-004-a")',
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -187,10 +264,31 @@ suite('Terminal Picker', () => {
 
     const termItems = findTerminalItems(items!);
     assert.deepStrictEqual(
-      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: 'Terminal ("rl-tp-005-a")', displayName: 'Terminal ("rl-tp-005-a")', description: 'bound', isActive: false, boundState: 'bound', itemKind: 'bindable' },
-        { label: 'Terminal ("rl-tp-005-b")', displayName: 'Terminal ("rl-tp-005-b")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: 'Terminal ("rl-tp-005-a")',
+          displayName: 'Terminal ("rl-tp-005-a")',
+          description: 'bound',
+          isActive: false,
+          boundState: 'bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: 'Terminal ("rl-tp-005-b")',
+          displayName: 'Terminal ("rl-tp-005-b")',
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -211,8 +309,24 @@ suite('Terminal Picker', () => {
 
     const termItems = findTerminalItems(items!);
     assert.deepStrictEqual(
-      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
-      [{ label: 'Terminal ("rl-tp-006")', displayName: 'Terminal ("rl-tp-006")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' }],
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
+      [
+        {
+          label: 'Terminal ("rl-tp-006")',
+          displayName: 'Terminal ("rl-tp-006")',
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+      ],
     );
 
     log('✓ Only the test terminal appears — full field validation');
@@ -239,10 +353,31 @@ suite('Terminal Picker', () => {
 
     const termItems = findTerminalItems(items!);
     assert.deepStrictEqual(
-      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
       [
-        { label: 'Terminal ("rl-tp-007-b")', displayName: 'Terminal ("rl-tp-007-b")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
-        { label: 'Terminal ("rl-tp-007-a")', displayName: 'Terminal ("rl-tp-007-a")', description: undefined, isActive: false, boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: 'Terminal ("rl-tp-007-b")',
+          displayName: 'Terminal ("rl-tp-007-b")',
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+        {
+          label: 'Terminal ("rl-tp-007-a")',
+          displayName: 'Terminal ("rl-tp-007-a")',
+          description: undefined,
+          isActive: false,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       ],
     );
 
@@ -266,17 +401,45 @@ suite('Terminal Picker', () => {
     const moreItem = items!.find((i) => i.label === 'More terminals...');
     assert.ok(moreItem, 'Expected "More terminals..." overflow item');
     assert.deepStrictEqual(
-      { label: moreItem!.label, displayName: moreItem!.displayName, description: moreItem!.description, remainingCount: moreItem!.remainingCount, itemKind: moreItem!.itemKind },
-      { label: 'More terminals...', displayName: 'More terminals...', description: `${TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT} more`, remainingCount: TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT, itemKind: 'terminal-more' },
+      {
+        label: moreItem!.label,
+        displayName: moreItem!.displayName,
+        description: moreItem!.description,
+        remainingCount: moreItem!.remainingCount,
+        itemKind: moreItem!.itemKind,
+      },
+      {
+        label: 'More terminals...',
+        displayName: 'More terminals...',
+        description: `${TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT} more`,
+        remainingCount: TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT,
+        itemKind: 'terminal-more',
+      },
     );
 
     const termItems = findTerminalItems(items!);
-    assert.strictEqual(termItems.length, MAX_INLINE_DEFAULT, `Expected ${MAX_INLINE_DEFAULT} inline items`);
+    assert.strictEqual(
+      termItems.length,
+      MAX_INLINE_DEFAULT,
+      `Expected ${MAX_INLINE_DEFAULT} inline items`,
+    );
     const activeInline = termItems.find((i) => i.isActive === true);
     assert.ok(activeInline, 'Expected one active terminal in inline items');
     assert.deepStrictEqual(
-      { label: activeInline!.label, description: activeInline!.description, isActive: activeInline!.isActive, boundState: activeInline!.boundState, itemKind: activeInline!.itemKind },
-      { label: `Terminal ("rl-tp-008-${TERMINAL_OVERFLOW_COUNT}")`, description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
+      {
+        label: activeInline!.label,
+        description: activeInline!.description,
+        isActive: activeInline!.isActive,
+        boundState: activeInline!.boundState,
+        itemKind: activeInline!.itemKind,
+      },
+      {
+        label: `Terminal ("rl-tp-008-${TERMINAL_OVERFLOW_COUNT}")`,
+        description: 'active',
+        isActive: true,
+        boundState: 'not-bound',
+        itemKind: 'bindable',
+      },
     );
 
     log('✓ Overflow item + active inline terminal fully validated');
@@ -290,15 +453,11 @@ suite('Terminal Picker', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-009');
 
-    await waitForHuman(
-      'terminal-picker-009',
-      'Cmd+R Cmd+D → click "More terminals..." → Escape',
-      [
-        '1. Press Cmd+R Cmd+D',
-        '2. Click "More terminals..."',
-        '3. Escape the secondary picker',
-      ],
-    );
+    await waitForHuman('terminal-picker-009', 'Cmd+R Cmd+D → click "More terminals..." → Escape', [
+      '1. Press Cmd+R Cmd+D',
+      '2. Click "More terminals..."',
+      '3. Escape the secondary picker',
+    ]);
 
     const lines = logCapture.getLinesSince('before-tp-009');
     const quickPickEntries = lines.filter(
@@ -315,14 +474,31 @@ suite('Terminal Picker', () => {
     const activeSecondary = secondaryTerminals.find((i) => i.isActive === true);
     assert.ok(activeSecondary, 'Expected one active terminal in secondary picker');
     assert.deepStrictEqual(
-      { label: activeSecondary!.label, description: activeSecondary!.description, isActive: activeSecondary!.isActive, boundState: activeSecondary!.boundState, itemKind: activeSecondary!.itemKind },
-      { label: `rl-tp-009-${TERMINAL_OVERFLOW_COUNT}`, description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
+      {
+        label: activeSecondary!.label,
+        description: activeSecondary!.description,
+        isActive: activeSecondary!.isActive,
+        boundState: activeSecondary!.boundState,
+        itemKind: activeSecondary!.itemKind,
+      },
+      {
+        label: `rl-tp-009-${TERMINAL_OVERFLOW_COUNT}`,
+        description: 'active',
+        isActive: true,
+        boundState: 'not-bound',
+        itemKind: 'bindable',
+      },
     );
 
     const nonActiveSecondary = secondaryTerminals.find((i) => i.label === 'rl-tp-009-1');
     assert.ok(nonActiveSecondary, 'Expected rl-tp-009-1 in secondary picker');
     assert.deepStrictEqual(
-      { description: nonActiveSecondary!.description, isActive: nonActiveSecondary!.isActive, boundState: nonActiveSecondary!.boundState, itemKind: nonActiveSecondary!.itemKind },
+      {
+        description: nonActiveSecondary!.description,
+        isActive: nonActiveSecondary!.isActive,
+        boundState: nonActiveSecondary!.boundState,
+        itemKind: nonActiveSecondary!.itemKind,
+      },
       { description: undefined, isActive: false, boundState: 'not-bound', itemKind: 'bindable' },
     );
 
@@ -357,11 +533,13 @@ suite('Terminal Picker', () => {
     const firstItems = parseQuickPickItemsFromLogLine(quickPickEntries[0]);
     const reopenedItems = parseQuickPickItemsFromLogLine(quickPickEntries[2]);
 
-    const mapFields = (i: Record<string, unknown>) => ({ label: i.label, displayName: i.displayName, description: i.description, itemKind: i.itemKind });
-    assert.deepStrictEqual(
-      reopenedItems.map(mapFields),
-      firstItems.map(mapFields),
-    );
+    const mapFields = (i: Record<string, unknown>) => ({
+      label: i.label,
+      displayName: i.displayName,
+      description: i.description,
+      itemKind: i.itemKind,
+    });
+    assert.deepStrictEqual(reopenedItems.map(mapFields), firstItems.map(mapFields));
 
     log('✓ Parent picker reopened with identical items');
   });
@@ -388,17 +566,45 @@ suite('Terminal Picker', () => {
       const moreItem = items!.find((i) => i.label === 'More terminals...');
       assert.ok(moreItem, 'Expected "More terminals..." overflow item');
       assert.deepStrictEqual(
-        { label: moreItem!.label, displayName: moreItem!.displayName, description: moreItem!.description, remainingCount: moreItem!.remainingCount, itemKind: moreItem!.itemKind },
-        { label: 'More terminals...', displayName: 'More terminals...', description: `${TC_TERMINAL_COUNT - LOW_MAX_INLINE} more`, remainingCount: TC_TERMINAL_COUNT - LOW_MAX_INLINE, itemKind: 'terminal-more' },
+        {
+          label: moreItem!.label,
+          displayName: moreItem!.displayName,
+          description: moreItem!.description,
+          remainingCount: moreItem!.remainingCount,
+          itemKind: moreItem!.itemKind,
+        },
+        {
+          label: 'More terminals...',
+          displayName: 'More terminals...',
+          description: `${TC_TERMINAL_COUNT - LOW_MAX_INLINE} more`,
+          remainingCount: TC_TERMINAL_COUNT - LOW_MAX_INLINE,
+          itemKind: 'terminal-more',
+        },
       );
 
       const termItems = findTerminalItems(items!);
-      assert.strictEqual(termItems.length, LOW_MAX_INLINE, `Expected ${LOW_MAX_INLINE} inline items`);
+      assert.strictEqual(
+        termItems.length,
+        LOW_MAX_INLINE,
+        `Expected ${LOW_MAX_INLINE} inline items`,
+      );
       const activeInline = termItems.find((i) => i.isActive === true);
       assert.ok(activeInline, 'Expected one active terminal in inline items');
       assert.deepStrictEqual(
-        { label: activeInline!.label, description: activeInline!.description, isActive: activeInline!.isActive, boundState: activeInline!.boundState, itemKind: activeInline!.itemKind },
-        { label: `Terminal ("rl-tp-011-${TC_TERMINAL_COUNT}")`, description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' },
+        {
+          label: activeInline!.label,
+          description: activeInline!.description,
+          isActive: activeInline!.isActive,
+          boundState: activeInline!.boundState,
+          itemKind: activeInline!.itemKind,
+        },
+        {
+          label: `Terminal ("rl-tp-011-${TC_TERMINAL_COUNT}")`,
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
       );
 
       log('✓ maxInline=2: overflow + active inline terminal fully validated');
@@ -426,8 +632,24 @@ suite('Terminal Picker', () => {
 
     const termItems = findTerminalItems(items!);
     assert.deepStrictEqual(
-      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
-      [{ label: '    $(arrow-right) Terminal ("rl-tp-012")', displayName: 'Terminal ("rl-tp-012")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' }],
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
+      [
+        {
+          label: '    $(arrow-right) Terminal ("rl-tp-012")',
+          displayName: 'Terminal ("rl-tp-012")',
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+      ],
     );
 
     log('✓ Terminal inline in R-M menu with full description');
@@ -447,8 +669,24 @@ suite('Terminal Picker', () => {
 
     const termItems = findTerminalItems(items!);
     assert.deepStrictEqual(
-      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({ label, displayName, description, isActive, boundState, itemKind })),
-      [{ label: 'Terminal ("rl-tp-013")', displayName: 'Terminal ("rl-tp-013")', description: 'active', isActive: true, boundState: 'not-bound', itemKind: 'bindable' }],
+      termItems.map(({ label, displayName, description, isActive, boundState, itemKind }) => ({
+        label,
+        displayName,
+        description,
+        isActive,
+        boundState,
+        itemKind,
+      })),
+      [
+        {
+          label: 'Terminal ("rl-tp-013")',
+          displayName: 'Terminal ("rl-tp-013")',
+          description: 'active',
+          isActive: true,
+          boundState: 'not-bound',
+          itemKind: 'bindable',
+        },
+      ],
     );
 
     log('✓ Terminal inline in R-D picker — full fields');
@@ -484,8 +722,20 @@ suite('Terminal Picker', () => {
       const moreTerminals = items!.find((i) => i.label === 'More terminals...');
       assert.ok(moreTerminals, 'Expected "More terminals..." overflow item');
       assert.deepStrictEqual(
-        { label: moreTerminals!.label, displayName: moreTerminals!.displayName, description: moreTerminals!.description, remainingCount: moreTerminals!.remainingCount, itemKind: moreTerminals!.itemKind },
-        { label: 'More terminals...', displayName: 'More terminals...', description: `${TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT} more`, remainingCount: TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT, itemKind: 'terminal-more' },
+        {
+          label: moreTerminals!.label,
+          displayName: moreTerminals!.displayName,
+          description: moreTerminals!.description,
+          remainingCount: moreTerminals!.remainingCount,
+          itemKind: moreTerminals!.itemKind,
+        },
+        {
+          label: 'More terminals...',
+          displayName: 'More terminals...',
+          description: `${TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT} more`,
+          remainingCount: TERMINAL_OVERFLOW_COUNT - MAX_INLINE_DEFAULT,
+          itemKind: 'terminal-more',
+        },
       );
 
       const moreFiles = items!.find(
@@ -493,8 +743,20 @@ suite('Terminal Picker', () => {
       );
       assert.ok(moreFiles, 'Expected "More files..." overflow item');
       assert.deepStrictEqual(
-        { label: moreFiles!.label, displayName: moreFiles!.displayName, description: moreFiles!.description, remainingCount: moreFiles!.remainingCount, itemKind: moreFiles!.itemKind },
-        { label: 'More files...', displayName: 'More files...', description: `${FILE_OVERFLOW_THRESHOLD - 1} more`, remainingCount: FILE_OVERFLOW_THRESHOLD - 1, itemKind: 'file-more' },
+        {
+          label: moreFiles!.label,
+          displayName: moreFiles!.displayName,
+          description: moreFiles!.description,
+          remainingCount: moreFiles!.remainingCount,
+          itemKind: moreFiles!.itemKind,
+        },
+        {
+          label: 'More files...',
+          displayName: 'More files...',
+          description: `${FILE_OVERFLOW_THRESHOLD - 1} more`,
+          remainingCount: FILE_OVERFLOW_THRESHOLD - 1,
+          itemKind: 'file-more',
+        },
       );
 
       const activeTerminal = findTerminalItems(items!).find((i) => i.isActive === true);
