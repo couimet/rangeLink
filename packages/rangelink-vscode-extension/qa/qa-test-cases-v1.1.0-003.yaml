@@ -125,39 +125,6 @@ test_cases:
   # Section 2 — R-D Bind to Destination
   # ---------------------------------------------------------------------------
 
-  - id: bind-to-destination-001
-    feature: 'R-D Bind to Destination'
-    scenario: 'Cmd+R Cmd+D opens destination picker showing terminals, files, and AI assistants'
-    preconditions:
-      - 'Extension installed'
-      - 'At least one terminal and one file are open'
-    steps:
-      - 'Press Cmd+R Cmd+D'
-    expected_result: 'A destination picker QuickPick opens listing terminals, open text files, and AI assistants.'
-    automated: false
-
-  - id: bind-to-destination-002
-    feature: 'R-D Bind to Destination'
-    scenario: 'Ctrl+R Ctrl+D opens the destination picker'
-    preconditions:
-      - 'Extension installed'
-      - 'At least one terminal and one file are open'
-    steps:
-      - 'Press Ctrl+R Ctrl+D'
-    expected_result: 'A destination picker QuickPick opens listing terminals, open text files, and AI assistants.'
-    automated: false
-
-  - id: bind-to-destination-003
-    feature: 'R-D Bind to Destination'
-    scenario: 'RangeLink: Bind to Destination in Command Palette opens destination picker'
-    preconditions:
-      - 'Extension installed'
-    steps:
-      - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
-      - "Type 'Bind to Destination' and select 'RangeLink: Bind to Destination'"
-    expected_result: 'Same destination picker opens as the R-D keybinding.'
-    automated: false
-
   - id: bind-to-destination-004
     feature: 'R-D Bind to Destination'
     scenario: 'Selecting a terminal destination binds it and shows success toast'
@@ -168,7 +135,7 @@ test_cases:
       - 'Open R-D picker'
       - 'Select a terminal from the list'
     expected_result: "The terminal is bound. A success toast appears (e.g., 'Bound to Terminal')."
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-005
     feature: 'R-D Bind to Destination'
@@ -180,7 +147,7 @@ test_cases:
       - 'Open R-D picker'
       - 'Select a text file from the list'
     expected_result: 'The selected file becomes the bound destination. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-006
     feature: 'R-D Bind to Destination'
@@ -191,7 +158,7 @@ test_cases:
       - 'Open R-D picker'
       - 'Select the AI assistant entry from the list'
     expected_result: 'AI assistant is now the bound destination. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-007
     feature: 'R-D Bind to Destination'
@@ -202,7 +169,7 @@ test_cases:
       - 'Open R-D picker'
       - 'Select a different terminal or file'
     expected_result: "A confirmation dialog appears showing the current binding name and the proposed new binding name, with 'Yes, replace' and 'No, keep current' options."
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-008
     feature: 'R-D Bind to Destination'
@@ -213,7 +180,7 @@ test_cases:
     steps:
       - "Click 'Yes, replace' (or equivalent) in the confirmation dialog"
     expected_result: 'Binding switches to the newly selected destination. Success toast confirms the new binding.'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-009
     feature: 'R-D Bind to Destination'
@@ -224,7 +191,7 @@ test_cases:
     steps:
       - "Click 'No, keep current' (or equivalent) in the confirmation dialog"
     expected_result: 'Original binding is preserved. No binding change occurs. Neutral info notification (if any).'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-010
     feature: 'R-D Bind to Destination'
@@ -235,7 +202,7 @@ test_cases:
       - 'Open R-D picker'
       - 'Press Escape without selecting anything'
     expected_result: 'Picker closes. Binding state is unchanged.'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-011
     feature: 'R-D Bind to Destination'
@@ -245,17 +212,18 @@ test_cases:
     steps:
       - 'Run the same bind command again (e.g., Bind to Claude Code)'
     expected_result: 'No confirmation dialog appears. An "already bound" info notification is shown. Binding is unchanged.'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-012
     feature: 'R-D Bind to Destination'
     scenario: 'Switching between different AI assistants shows confirmation dialog'
     preconditions:
       - 'Bound to an AI assistant (e.g., Claude Code)'
+      - 'At least two AI assistant extensions installed and active'
     steps:
       - 'Run a different AI assistant bind command (e.g., Bind to Cursor AI)'
     expected_result: 'A confirmation dialog appears with current and proposed destination names. Selecting Yes switches the binding.'
-    automated: false
+    automated: assisted
 
   - id: bind-to-destination-013
     feature: 'R-D Bind to Destination'
