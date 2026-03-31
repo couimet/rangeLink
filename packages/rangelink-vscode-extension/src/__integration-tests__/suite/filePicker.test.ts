@@ -8,12 +8,13 @@ import {
   activateExtension,
   cleanupFiles,
   closeAllEditors,
+  createAndOpenFile,
   createLogger,
-  createWorkspaceFile,
   extractQuickPickItemsLogged,
+  findTestItemsByPrefix,
   getLogCapture,
-  parseQuickPickItemsFromLogLine,
   getWorkspaceRoot,
+  parseQuickPickItemsFromLogLine,
   printAssistedBanner,
   settle,
   waitForHuman,
@@ -39,33 +40,25 @@ suite('File Picker', () => {
     await settle();
   });
 
-  const createAndOpenFile = async (
-    name: string,
-    content: string,
-    viewColumn: vscode.ViewColumn = vscode.ViewColumn.One,
-  ): Promise<vscode.Uri> => {
-    const uri = createWorkspaceFile(name, content);
-    tmpFileUris.push(uri);
-    const doc = await vscode.workspace.openTextDocument(uri);
-    await vscode.window.showTextDocument(doc, { viewColumn, preview: false });
-    await settle();
-    return uri;
-  };
-
   const findTestFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
-    items.filter(
-      (item) =>
-        item.itemKind === 'bindable' &&
-        typeof item.label === 'string' &&
-        (item.label as string).includes('__rl-test-fp-'),
-    );
+    findTestItemsByPrefix(items, '__rl-test-fp-');
 
   test('[assisted] file-picker-001: bound file appears first with bound badge', async () => {
-    const uriA = await createAndOpenFile('fp-001-a', 'line 1\nline 2\n', vscode.ViewColumn.One);
+    const uriA = await createAndOpenFile(
+      'fp-001-a',
+      'line 1\nline 2\n',
+      vscode.ViewColumn.One,
+      tmpFileUris,
+    );
     const fnA = path.basename(uriA.fsPath);
     await vscode.commands.executeCommand('rangelink.bindToTextEditorHere');
     await settle();
-    const uriB = await createAndOpenFile('fp-001-b', 'other file\n', vscode.ViewColumn.Two);
+    const uriB = await createAndOpenFile(
+      'fp-001-b',
+      'other file\n',
+      vscode.ViewColumn.Two,
+      tmpFileUris,
+    );
     const fnB = path.basename(uriB.fsPath);
 
     const logCapture = getLogCapture();
@@ -108,9 +101,19 @@ suite('File Picker', () => {
   });
 
   test('[assisted] file-picker-002: active file appears before others in its group', async () => {
-    const uriA = await createAndOpenFile('fp-002-a', 'file a\n', vscode.ViewColumn.One);
+    const uriA = await createAndOpenFile(
+      'fp-002-a',
+      'file a\n',
+      vscode.ViewColumn.One,
+      tmpFileUris,
+    );
     const fnA = path.basename(uriA.fsPath);
-    const uriB = await createAndOpenFile('fp-002-b', 'file b\n', vscode.ViewColumn.Two);
+    const uriB = await createAndOpenFile(
+      'fp-002-b',
+      'file b\n',
+      vscode.ViewColumn.Two,
+      tmpFileUris,
+    );
     const fnB = path.basename(uriB.fsPath);
 
     const logCapture = getLogCapture();
@@ -230,7 +233,7 @@ suite('File Picker', () => {
   });
 
   test('[assisted] file-picker-004: open files appear as inline items in destination picker', async () => {
-    const uri = await createAndOpenFile('fp-004', 'content\n');
+    const uri = await createAndOpenFile('fp-004', 'content\n', undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
 
     const logCapture = getLogCapture();
@@ -267,7 +270,7 @@ suite('File Picker', () => {
 
   test('[assisted] file-picker-005: overflow shows "More files..." when exceeding inline limit', async () => {
     for (let i = 1; i <= FILE_OVERFLOW_THRESHOLD; i++) {
-      await createAndOpenFile(`fp-005-${i}`, `file ${i}\n`);
+      await createAndOpenFile(`fp-005-${i}`, `file ${i}\n`, undefined, tmpFileUris);
     }
 
     const logCapture = getLogCapture();
@@ -307,7 +310,7 @@ suite('File Picker', () => {
   test('[assisted] file-picker-006: secondary picker shows Active Files section', async () => {
     const fileNames: string[] = [];
     for (let i = 1; i <= FILE_OVERFLOW_THRESHOLD; i++) {
-      const uri = await createAndOpenFile(`fp-006-${i}`, `file ${i}\n`);
+      const uri = await createAndOpenFile(`fp-006-${i}`, `file ${i}\n`, undefined, tmpFileUris);
       fileNames.push(path.basename(uri.fsPath));
     }
     const lastFileName = fileNames[fileNames.length - 1];
@@ -377,8 +380,8 @@ suite('File Picker', () => {
   });
 
   test('[assisted] file-picker-007: secondary picker shows Tab Group sections', async () => {
-    await createAndOpenFile('fp-007-g1', 'group 1\n', vscode.ViewColumn.One);
-    await createAndOpenFile('fp-007-g2', 'group 2\n', vscode.ViewColumn.Two);
+    await createAndOpenFile('fp-007-g1', 'group 1\n', vscode.ViewColumn.One, tmpFileUris);
+    await createAndOpenFile('fp-007-g2', 'group 2\n', vscode.ViewColumn.Two, tmpFileUris);
 
     const extraNames: string[] = [];
     for (let i = 1; i <= 3; i++) {
@@ -386,10 +389,11 @@ suite('File Picker', () => {
         `fp-007-extra-${i}`,
         `extra ${i}\n`,
         vscode.ViewColumn.One,
+        tmpFileUris,
       );
       extraNames.push(path.basename(uri.fsPath));
     }
-    await createAndOpenFile('fp-007-g2b', 'group 2 extra\n', vscode.ViewColumn.Two);
+    await createAndOpenFile('fp-007-g2b', 'group 2 extra\n', vscode.ViewColumn.Two, tmpFileUris);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-fp-007');
@@ -438,7 +442,7 @@ suite('File Picker', () => {
 
   test('[assisted] file-picker-008: escaping secondary file picker returns to parent', async () => {
     for (let i = 1; i <= FILE_OVERFLOW_THRESHOLD; i++) {
-      await createAndOpenFile(`fp-008-${i}`, `file ${i}\n`);
+      await createAndOpenFile(`fp-008-${i}`, `file ${i}\n`, undefined, tmpFileUris);
     }
 
     const logCapture = getLogCapture();
@@ -502,7 +506,7 @@ suite('File Picker', () => {
     await settle();
 
     for (let i = 1; i <= FILE_OVERFLOW_THRESHOLD; i++) {
-      await createAndOpenFile(`fp-010-filler-${i}`, `filler ${i}\n`);
+      await createAndOpenFile(`fp-010-filler-${i}`, `filler ${i}\n`, undefined, tmpFileUris);
     }
 
     const logCapture = getLogCapture();
@@ -637,9 +641,19 @@ suite('File Picker', () => {
   });
 
   test('[assisted] file-picker-012: unique file names have no disambiguator in description', async () => {
-    const uriA = await createAndOpenFile('fp-012-alpha', 'file a\n', vscode.ViewColumn.One);
+    const uriA = await createAndOpenFile(
+      'fp-012-alpha',
+      'file a\n',
+      vscode.ViewColumn.One,
+      tmpFileUris,
+    );
     const fnA = path.basename(uriA.fsPath);
-    const uriB = await createAndOpenFile('fp-012-beta', 'file b\n', vscode.ViewColumn.Two);
+    const uriB = await createAndOpenFile(
+      'fp-012-beta',
+      'file b\n',
+      vscode.ViewColumn.Two,
+      tmpFileUris,
+    );
     const fnB = path.basename(uriB.fsPath);
 
     const logCapture = getLogCapture();
@@ -682,7 +696,7 @@ suite('File Picker', () => {
   });
 
   test('[assisted] file-picker-009: file picker appears inline in R-M menu when unbound', async () => {
-    const uri = await createAndOpenFile('fp-009', 'content\n');
+    const uri = await createAndOpenFile('fp-009', 'content\n', undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
 
     const logCapture = getLogCapture();
