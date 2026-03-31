@@ -7,15 +7,16 @@ import {
   cleanupFiles,
   closeAllEditors,
   createLogger,
+  createTerminal,
   createWorkspaceFile,
   extractQuickPickItemsLogged,
+  findTerminalItems,
   getLogCapture,
   loadSettingsProfile,
   parseQuickPickItemsFromLogLine,
   printAssistedBanner,
   resetRangelinkSettings,
   settle,
-  TERMINAL_READY_MS,
   waitForHuman,
 } from '../helpers';
 
@@ -43,25 +44,9 @@ suite('Terminal Picker', () => {
     await settle();
   });
 
-  const createTerminal = async (name: string): Promise<vscode.Terminal> => {
-    const t = vscode.window.createTerminal({ name });
-    terminals.push(t);
-    t.show(true);
-    await settle(TERMINAL_READY_MS);
-    return t;
-  };
-
-  const findTerminalItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
-    items.filter(
-      (item) =>
-        item.itemKind === 'bindable' &&
-        typeof item.label === 'string' &&
-        (item.label as string).includes('Terminal ('),
-    );
-
   test('[assisted] terminal-picker-001: active terminal is marked with active badge', async () => {
-    const t1 = await createTerminal('rl-tp-001-a');
-    await createTerminal('rl-tp-001-b');
+    const t1 = await createTerminal('rl-tp-001-a', terminals);
+    await createTerminal('rl-tp-001-b', terminals);
     t1.show(true);
     await settle();
 
@@ -108,10 +93,10 @@ suite('Terminal Picker', () => {
   });
 
   test('[assisted] terminal-picker-002: bound terminal is marked with bound badge', async () => {
-    await createTerminal('rl-tp-002');
+    await createTerminal('rl-tp-002', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
-    const t2 = await createTerminal('rl-tp-002-other');
+    const t2 = await createTerminal('rl-tp-002-other', terminals);
     t2.show(true);
     await settle();
 
@@ -158,7 +143,7 @@ suite('Terminal Picker', () => {
   });
 
   test('[assisted] terminal-picker-003: terminal that is both active and bound shows dual badge', async () => {
-    const t = await createTerminal('rl-tp-003');
+    const t = await createTerminal('rl-tp-003', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     t.show(true);
     await settle();
@@ -198,10 +183,10 @@ suite('Terminal Picker', () => {
   });
 
   test('[assisted] terminal-picker-004: bound terminal always appears first in the list', async () => {
-    await createTerminal('rl-tp-004-b');
+    await createTerminal('rl-tp-004-b', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
-    await createTerminal('rl-tp-004-a');
+    await createTerminal('rl-tp-004-a', terminals);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-004');
@@ -246,10 +231,10 @@ suite('Terminal Picker', () => {
   });
 
   test('[assisted] terminal-picker-005: active non-bound terminal appears second', async () => {
-    await createTerminal('rl-tp-005-a');
+    await createTerminal('rl-tp-005-a', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
-    const t2 = await createTerminal('rl-tp-005-b');
+    const t2 = await createTerminal('rl-tp-005-b', terminals);
     t2.show(true);
     await settle();
 
@@ -296,7 +281,7 @@ suite('Terminal Picker', () => {
   });
 
   test('[assisted] terminal-picker-006: hidden IDE terminals are absent from the picker', async () => {
-    await createTerminal('rl-tp-006');
+    await createTerminal('rl-tp-006', terminals);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-006');
@@ -333,8 +318,8 @@ suite('Terminal Picker', () => {
   });
 
   test('[assisted] terminal-picker-007: all terminals shown inline when within maxInline limit', async () => {
-    await createTerminal('rl-tp-007-a');
-    await createTerminal('rl-tp-007-b');
+    await createTerminal('rl-tp-007-a', terminals);
+    await createTerminal('rl-tp-007-b', terminals);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-007');
@@ -386,7 +371,7 @@ suite('Terminal Picker', () => {
 
   test('[assisted] terminal-picker-008: overflow shows "More terminals..." when exceeding maxInline', async () => {
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
-      await createTerminal(`rl-tp-008-${i}`);
+      await createTerminal(`rl-tp-008-${i}`, terminals);
     }
 
     const logCapture = getLogCapture();
@@ -447,7 +432,7 @@ suite('Terminal Picker', () => {
 
   test('[assisted] terminal-picker-009: selecting "More terminals..." opens secondary full picker', async () => {
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
-      await createTerminal(`rl-tp-009-${i}`);
+      await createTerminal(`rl-tp-009-${i}`, terminals);
     }
 
     const logCapture = getLogCapture();
@@ -512,7 +497,7 @@ suite('Terminal Picker', () => {
 
   test('[assisted] terminal-picker-010: escaping secondary picker returns to parent destination picker', async () => {
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
-      await createTerminal(`rl-tp-010-${i}`);
+      await createTerminal(`rl-tp-010-${i}`, terminals);
     }
 
     const logCapture = getLogCapture();
@@ -556,7 +541,7 @@ suite('Terminal Picker', () => {
 
     try {
       for (let i = 1; i <= TC_TERMINAL_COUNT; i++) {
-        await createTerminal(`rl-tp-011-${i}`);
+        await createTerminal(`rl-tp-011-${i}`, terminals);
       }
 
       const logCapture = getLogCapture();
@@ -619,7 +604,7 @@ suite('Terminal Picker', () => {
   });
 
   test('[assisted] terminal-picker-012: terminal picker appears inline in R-M menu when unbound', async () => {
-    await createTerminal('rl-tp-012');
+    await createTerminal('rl-tp-012', terminals);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-012');
@@ -661,7 +646,7 @@ suite('Terminal Picker', () => {
   });
 
   test('[assisted] terminal-picker-013: terminal picker appears inline in R-D destination picker', async () => {
-    await createTerminal('rl-tp-013');
+    await createTerminal('rl-tp-013', terminals);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tp-013');
@@ -699,7 +684,7 @@ suite('Terminal Picker', () => {
 
   test('[assisted] bind-to-destination-013: R-D picker shows both overflow items when many terminals and files are open', async () => {
     for (let i = 1; i <= TERMINAL_OVERFLOW_COUNT; i++) {
-      await createTerminal(`rl-btd-013-${i}`);
+      await createTerminal(`rl-btd-013-${i}`, terminals);
     }
 
     const tmpFileUris: vscode.Uri[] = [];

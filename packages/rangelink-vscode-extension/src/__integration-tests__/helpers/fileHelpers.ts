@@ -3,7 +3,7 @@ import * as path from 'node:path';
 
 import * as vscode from 'vscode';
 
-import { getWorkspaceRoot } from './testEnv';
+import { getWorkspaceRoot, settle } from './testEnv';
 
 let fileCounter = 0;
 
@@ -16,6 +16,34 @@ export const createWorkspaceFile = (descriptor: string, content: string): vscode
   fs.writeFileSync(filePath, content, 'utf8');
   return vscode.Uri.file(filePath);
 };
+
+export const createAndOpenFile = async (
+  descriptor: string,
+  content: string,
+  viewColumn?: vscode.ViewColumn,
+  trackingArray?: vscode.Uri[],
+): Promise<vscode.Uri> => {
+  const uri = createWorkspaceFile(descriptor, content);
+  trackingArray?.push(uri);
+  const doc = await vscode.workspace.openTextDocument(uri);
+  await vscode.window.showTextDocument(doc, {
+    viewColumn: viewColumn ?? vscode.ViewColumn.One,
+    preview: false,
+  });
+  await settle();
+  return uri;
+};
+
+export const findTestItemsByPrefix = (
+  items: Record<string, unknown>[],
+  prefix: string,
+): Record<string, unknown>[] =>
+  items.filter(
+    (item) =>
+      item.itemKind === 'bindable' &&
+      typeof item.label === 'string' &&
+      (item.label as string).includes(prefix),
+  );
 
 export const openEditor = async (
   uri: vscode.Uri,

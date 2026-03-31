@@ -6,7 +6,14 @@ export {
   writeClipboardSentinel,
 } from './clipboardHelpers';
 export { clearEditorSelection, selectAll, waitForActiveEditor } from './editorHelpers';
-export { cleanupFiles, closeAllEditors, createWorkspaceFile, openEditor } from './fileHelpers';
+export {
+  cleanupFiles,
+  closeAllEditors,
+  createAndOpenFile,
+  createWorkspaceFile,
+  findTestItemsByPrefix,
+  openEditor,
+} from './fileHelpers';
 export { getLogCapture } from './getLogCapture';
 export {
   assertNoStatusBarMsgLogged,
@@ -21,7 +28,7 @@ export {
 export { createLogger } from './logHelpers';
 export { navigateViaHandleLinkClick } from './navigationHelpers';
 export { loadSettingsProfile, resetRangelinkSettings } from './settingsHelpers';
-export { createAndBindTerminal } from './terminalHelpers';
+export { createAndBindTerminal, createTerminal, findTerminalItems } from './terminalHelpers';
 export {
   activateExtension,
   getWorkspaceRoot,
