@@ -54,7 +54,7 @@
     "test:release": "./scripts/test-release-run.sh",
     "test:release:automated": "./scripts/test-release-run.sh --automated",
     "test:release:grep": "./scripts/test-release-run.sh --grep",
-    "test:release:prepare": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json",
+    "test:release:prepare": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json && node scripts/setup-integration-test-settings.js",
     "test:watch": "jest --watch",
     "validate:qa-coverage": "./scripts/validate-qa-coverage.sh",
     "verify:qa-scripts": "./scripts/verify-qa-scripts.sh",

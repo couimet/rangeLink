@@ -20,6 +20,7 @@ const settings = {
     {
       extensionId: 'fake-tool.test',
       extensionName: 'Fake AI Tool',
+      insertCommands: ['fake-tool.insertText'],
       focusCommands: ['fake-tool.focus'],
     },
   ],

@@ -9,7 +9,7 @@ suite('Custom AI Assistants', () => {
     await activateExtension();
   });
 
-  test('custom-ai-assistant-001: valid config is parsed and logged at activation', () => {
+  test('custom-ai-assistant-001: three-tier config is parsed and logged at activation', () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
@@ -27,7 +27,7 @@ suite('Custom AI Assistants', () => {
     );
   });
 
-  test('custom-ai-assistant-002: custom AI registered as destination kind in registry', () => {
+  test('custom-ai-assistant-002: custom AI registered as destination kind with tiered capability', () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
@@ -43,21 +43,24 @@ suite('Custom AI Assistants', () => {
     );
   });
 
-  test('custom-ai-assistant-004: fake focus command makes assistant detectable', async () => {
-    const fakeCommandDisposable = vscode.commands.registerCommand('fake-tool.focus', () => {});
+  test('custom-ai-assistant-004: registering a fake insertCommand makes it detectable', async () => {
+    const fakeCommandDisposable = vscode.commands.registerCommand(
+      'fake-tool.insertText',
+      () => {},
+    );
 
     try {
       const commands = await vscode.commands.getCommands(true);
       assert.ok(
-        commands.includes('fake-tool.focus'),
-        'Expected fake-tool.focus to be registered as a VS Code command',
+        commands.includes('fake-tool.insertText'),
+        'Expected fake-tool.insertText to be registered as a VS Code command',
       );
     } finally {
       fakeCommandDisposable.dispose();
     }
   });
 
-  test('custom-ai-assistant-005: unavailable at startup — no matching command or extension', () => {
+  test('custom-ai-assistant-005: unavailable at startup — no matching command from any tier', () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 
@@ -103,7 +106,8 @@ suite('Custom AI Assistants', () => {
     const allLines = logCapture.getAllLines();
 
     const registrationLogs = allLines.filter(
-      (line) => line.includes('Registering builder for destination') && line.includes('custom-ai:'),
+      (line) =>
+        line.includes('Registering builder for destination') && line.includes('custom-ai:'),
     );
 
     assert.strictEqual(
@@ -114,6 +118,24 @@ suite('Custom AI Assistants', () => {
     assert.ok(
       registrationLogs[0].includes('custom-ai:fake-tool.test'),
       `Expected registration for fake-tool.test but got: ${registrationLogs[0]}`,
+    );
+  });
+
+  test('custom-ai-assistant-008: parser normalizes plain string insertCommands', () => {
+    const logCapture = getLogCapture();
+    const allLines = logCapture.getAllLines();
+
+    const parseLog = allLines.find(
+      (line) => line.includes('parseCustomAiAssistants') && line.includes('Loaded'),
+    );
+
+    assert.ok(
+      parseLog,
+      'Expected parseCustomAiAssistants to load the assistant with insertCommands configured as plain strings',
+    );
+    assert.ok(
+      parseLog.includes('fake-tool.test'),
+      `Expected loaded assistant to include fake-tool.test but got: ${parseLog}`,
     );
   });
 });
