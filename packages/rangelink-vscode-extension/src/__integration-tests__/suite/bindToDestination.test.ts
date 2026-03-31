@@ -9,24 +9,16 @@ import {
   assertStatusBarMsgLogged,
   cleanupFiles,
   closeAllEditors,
-  createAndOpenFile,
   createLogger,
-  createTerminal,
+  createWorkspaceFile,
   extractQuickPickItemsLogged,
-  findTerminalItems,
-  findTestItemsByPrefix,
   getLogCapture,
   parseQuickPickItemsFromLogLine,
   printAssistedBanner,
   settle,
+  TERMINAL_READY_MS,
   waitForHuman,
 } from '../helpers';
-
-const AI_ASSISTANT_DISPLAY_NAMES = [
-  'Claude Code Chat',
-  'Cursor AI Assistant',
-  'GitHub Copilot Chat',
-];
 
 suite('R-D Bind to Destination', () => {
   const log = createLogger('bindToDestination');
@@ -50,15 +42,49 @@ suite('R-D Bind to Destination', () => {
     await settle();
   });
 
+  const createTerminal = async (name: string): Promise<vscode.Terminal> => {
+    const t = vscode.window.createTerminal({ name });
+    terminals.push(t);
+    t.show(true);
+    await settle(TERMINAL_READY_MS);
+    return t;
+  };
+
+  const createAndOpenFile = async (
+    descriptor: string,
+    content: string,
+    viewColumn: vscode.ViewColumn = vscode.ViewColumn.One,
+  ): Promise<vscode.Uri> => {
+    const uri = createWorkspaceFile(descriptor, content);
+    tmpFileUris.push(uri);
+    const doc = await vscode.workspace.openTextDocument(uri);
+    await vscode.window.showTextDocument(doc, { viewColumn, preview: false });
+    await settle();
+    return uri;
+  };
+
+  const findTerminalItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
+    items.filter(
+      (item) =>
+        item.itemKind === 'bindable' &&
+        typeof item.label === 'string' &&
+        (item.label as string).includes('Terminal ('),
+    );
+
   const findFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
-    findTestItemsByPrefix(items, '__rl-test-btd-');
+    items.filter(
+      (item) =>
+        item.itemKind === 'bindable' &&
+        typeof item.label === 'string' &&
+        (item.label as string).includes('__rl-test-btd-'),
+    );
 
   // ---------------------------------------------------------------------------
   // TC bind-to-destination-004
   // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-004: selecting a terminal destination binds it and shows success toast', async () => {
-    await createTerminal('rl-btd-004', terminals);
+    await createTerminal('rl-btd-004');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-004');
@@ -111,13 +137,8 @@ suite('R-D Bind to Destination', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-005: selecting a text editor destination binds it and shows success toast', async () => {
-    await createAndOpenFile('btd-005-a', 'line 1\n', undefined, tmpFileUris);
-    const uriB = await createAndOpenFile(
-      'btd-005-b',
-      'line 2\n',
-      vscode.ViewColumn.Two,
-      tmpFileUris,
-    );
+    await createAndOpenFile('btd-005-a', 'line 1\n');
+    const uriB = await createAndOpenFile('btd-005-b', 'line 2\n', vscode.ViewColumn.Two);
     const fnB = path.basename(uriB.fsPath);
 
     const logCapture = getLogCapture();
@@ -174,6 +195,11 @@ suite('R-D Bind to Destination', () => {
 
     const lines = logCapture.getLinesSince('before-btd-006');
 
+    const AI_ASSISTANT_DISPLAY_NAMES = [
+      'Claude Code Chat',
+      'Cursor AI Assistant',
+      'GitHub Copilot Chat',
+    ];
     const boundToAny = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
       lines.some((line) => line.includes(`✓ RangeLink bound to ${name}`)),
     );
@@ -190,10 +216,10 @@ suite('R-D Bind to Destination', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-007: when already bound, destination picker shows smart-bind confirmation dialog', async () => {
-    await createTerminal('rl-btd-007-a', terminals);
+    await createTerminal('rl-btd-007-a');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
-    await createTerminal('rl-btd-007-b', terminals);
+    await createTerminal('rl-btd-007-b');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-007');
@@ -247,10 +273,10 @@ suite('R-D Bind to Destination', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-008: smart-bind confirmation Yes replaces the binding', async () => {
-    await createTerminal('rl-btd-008-a', terminals);
+    await createTerminal('rl-btd-008-a');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
-    await createTerminal('rl-btd-008-b', terminals);
+    await createTerminal('rl-btd-008-b');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-008');
@@ -283,10 +309,10 @@ suite('R-D Bind to Destination', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-009: smart-bind confirmation No keeps existing binding', async () => {
-    await createTerminal('rl-btd-009-a', terminals);
+    await createTerminal('rl-btd-009-a');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
-    await createTerminal('rl-btd-009-b', terminals);
+    await createTerminal('rl-btd-009-b');
 
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-009');
@@ -318,7 +344,7 @@ suite('R-D Bind to Destination', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-010: Escape from destination picker dismisses without changing binding', async () => {
-    await createTerminal('rl-btd-010', terminals);
+    await createTerminal('rl-btd-010');
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
 
@@ -371,6 +397,11 @@ suite('R-D Bind to Destination', () => {
       `Expected exactly 2 showQuickPick entries (two destination picker opens, no confirmation dialog), got ${quickPickEntries.length}`,
     );
 
+    const AI_ASSISTANT_DISPLAY_NAMES = [
+      'Claude Code Chat',
+      'Cursor AI Assistant',
+      'GitHub Copilot Chat',
+    ];
     const alreadyBoundLogged = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
       lines.some((line) => line.includes(`RangeLink: Already bound to ${name}`)),
     );
