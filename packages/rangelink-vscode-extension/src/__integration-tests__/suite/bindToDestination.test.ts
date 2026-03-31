@@ -22,6 +22,12 @@ import {
   waitForHuman,
 } from '../helpers';
 
+const AI_ASSISTANT_DISPLAY_NAMES = [
+  'Claude Code Chat',
+  'Cursor AI Assistant',
+  'GitHub Copilot Chat',
+];
+
 suite('R-D Bind to Destination', () => {
   const log = createLogger('bindToDestination');
   const terminals: vscode.Terminal[] = [];
@@ -168,11 +174,6 @@ suite('R-D Bind to Destination', () => {
 
     const lines = logCapture.getLinesSince('before-btd-006');
 
-    const AI_ASSISTANT_DISPLAY_NAMES = [
-      'Claude Code Chat',
-      'Cursor AI Assistant',
-      'GitHub Copilot Chat',
-    ];
     const boundToAny = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
       lines.some((line) => line.includes(`✓ RangeLink bound to ${name}`)),
     );
@@ -370,11 +371,6 @@ suite('R-D Bind to Destination', () => {
       `Expected exactly 2 showQuickPick entries (two destination picker opens, no confirmation dialog), got ${quickPickEntries.length}`,
     );
 
-    const AI_ASSISTANT_DISPLAY_NAMES = [
-      'Claude Code Chat',
-      'Cursor AI Assistant',
-      'GitHub Copilot Chat',
-    ];
     const alreadyBoundLogged = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
       lines.some((line) => line.includes(`RangeLink: Already bound to ${name}`)),
     );
