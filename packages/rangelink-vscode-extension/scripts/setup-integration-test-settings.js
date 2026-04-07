@@ -40,6 +40,12 @@ const settings = {
         { command: 'dummyAi.insertWithArgs', args: [{ text: '${content}', source: 'rangelink' }] },
       ],
     },
+    {
+      extensionId: 'rangelink.dummy-ai-extension-fallback',
+      extensionName: 'Dummy AI (Fallback)',
+      focusAndPasteCommands: ['nonexistent.paste'],
+      focusCommands: ['dummyAi.focusPanel'],
+    },
   ],
 };
 

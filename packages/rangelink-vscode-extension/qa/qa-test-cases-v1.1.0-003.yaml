@@ -2545,3 +2545,68 @@ test_cases:
       - 'Check registration logs'
     expected_result: 'Destination builder registered for the template entry'
     automated: true
+
+  - id: custom-ai-assistant-010
+    feature: 'Custom AI Assistants — Tier 1 Paste Flow'
+    scenario: 'Tier 1 direct insert delivers text to dummy extension textarea'
+    preconditions:
+      - 'Dummy AI extension loaded'
+      - 'File open in editor with text selected'
+    steps:
+      - 'Bind to Dummy AI (Tier 1) via R-D picker'
+      - 'Execute R-L (Copy Link with Relative Path)'
+      - 'Check dummy extension textarea via dummyAi.getText'
+    expected_result: 'tier1 textarea contains the generated link; tier2 textarea is empty'
+    automated: assisted
+
+  - id: custom-ai-assistant-011
+    feature: 'Custom AI Assistants — Tier 1 Clipboard'
+    scenario: 'Tier 1 paste preserves clipboard (sentinel restored after R-L)'
+    preconditions:
+      - 'Bound to Dummy AI (Tier 1)'
+      - 'Clipboard sentinel written before R-L'
+    steps:
+      - 'Write clipboard sentinel'
+      - 'Execute R-L'
+      - 'Read clipboard after settle'
+    expected_result: 'Clipboard contains the sentinel (outer preserve restores it; DirectInsertFactory never touches clipboard)'
+    automated: assisted
+
+  - id: custom-ai-assistant-012
+    feature: 'Custom AI Assistants — Tier 3 Toast'
+    scenario: 'Tier 3 focusCommands shows manual-paste toast after R-L'
+    preconditions:
+      - 'Dummy AI extension loaded'
+      - 'File open in editor with text selected'
+    steps:
+      - 'Bind to Dummy AI (Tier 3) via R-D picker'
+      - 'Execute R-L'
+      - 'Check logs for toast and ManualPasteInsertFactory'
+    expected_result: 'Info toast "Paste (Cmd/Ctrl+V) in Dummy AI (Tier 3) to use." logged; ManualPasteInsertFactory success logged'
+    automated: assisted
+
+  - id: custom-ai-assistant-013
+    feature: 'Custom AI Assistants — Tier 2→3 Fallback'
+    scenario: 'Tier 2 focusAndPasteCommands not registered — falls through to Tier 3'
+    preconditions:
+      - 'Dummy AI extension loaded'
+      - 'Settings entry with non-existent focusAndPasteCommands + valid focusCommands'
+    steps:
+      - 'Bind to Dummy AI (Fallback) via R-D picker'
+      - 'Execute R-L'
+      - 'Check logs for tier skip and resolution'
+    expected_result: 'Tier 2 skip log (nonexistent.paste not registered), Tier 3 resolution log (dummyAi.focusPanel), manual-paste toast shown'
+    automated: assisted
+
+  - id: custom-ai-assistant-014
+    feature: 'Custom AI Assistants — ${content} Template'
+    scenario: 'insertCommands with ${content} template interpolation delivers text via insertWithArgs'
+    preconditions:
+      - 'Dummy AI extension loaded with dummyAi.insertWithArgs command'
+      - 'Settings entry uses { command, args } object with ${content} placeholder'
+    steps:
+      - 'Bind to Dummy AI (Template) via R-D picker'
+      - 'Execute R-L'
+      - 'Check dummy extension textarea via dummyAi.getText'
+    expected_result: 'tier1 textarea contains the generated link; DirectInsertFactory success log mentions dummyAi.insertWithArgs'
+    automated: assisted
