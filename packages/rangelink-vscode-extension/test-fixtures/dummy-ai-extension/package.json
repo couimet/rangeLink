@@ -1,0 +1,60 @@
+{
+  "name": "dummy-ai-extension",
+  "displayName": "Dummy AI (Test Fixture)",
+  "version": "0.0.1",
+  "description": "Webview-based AI assistant stub for RangeLink integration testing",
+  "publisher": "rangelink",
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "dummyAi.insertText",
+        "title": "Dummy AI: Insert Text"
+      },
+      {
+        "command": "dummyAi.insertWithArgs",
+        "title": "Dummy AI: Insert With Args"
+      },
+      {
+        "command": "dummyAi.focusForPaste",
+        "title": "Dummy AI: Focus for Paste"
+      },
+      {
+        "command": "dummyAi.focusPanel",
+        "title": "Dummy AI: Focus Panel"
+      },
+      {
+        "command": "dummyAi.getText",
+        "title": "Dummy AI: Get Text"
+      },
+      {
+        "command": "dummyAi.clearAll",
+        "title": "Dummy AI: Clear All"
+      }
+    ],
+    "views": {
+      "dummy-ai": [
+        {
+          "type": "webview",
+          "id": "dummyAi.chatView",
+          "name": "Dummy AI Chat"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "dummy-ai",
+          "title": "Dummy AI",
+          "icon": "media/icon.svg"
+        }
+      ]
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  }
+}

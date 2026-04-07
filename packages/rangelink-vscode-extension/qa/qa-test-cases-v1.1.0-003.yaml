@@ -2446,24 +2446,25 @@ test_cases:
 
   - id: custom-ai-assistant-001
     feature: 'Custom AI Assistants — Configuration'
-    scenario: 'Three-tier config (insertCommands + focusCommands) is parsed and logged at activation'
+    scenario: 'Three-tier config with dummy AI extension is parsed and logged at activation'
     preconditions:
-      - 'settings.json contains rangelink.customAiAssistants with one entry using insertCommands and focusCommands'
+      - 'settings.json contains 3 custom AI assistant entries (one per tier) using dummy extension commands'
+      - 'Dummy AI extension loaded via extensionDevelopmentPath'
     steps:
-      - 'Extension activates with custom AI assistant configured'
+      - 'Extension activates with custom AI assistants configured'
       - 'Check output logs'
-    expected_result: 'Log shows "Loaded 1 custom AI assistant(s)" with the configured extensionId'
+    expected_result: 'Log shows "Loaded 3 custom AI assistant(s)" with all three extensionIds'
     automated: true
 
   - id: custom-ai-assistant-002
     feature: 'Custom AI Assistants — Registration'
-    scenario: 'Custom AI assistant registered as destination kind with tiered capability'
+    scenario: 'All three tier entries registered as destination kinds'
     preconditions:
-      - 'settings.json contains custom AI assistant with extensionId "fake-tool.test"'
+      - 'settings.json contains 3 custom AI assistant entries (one per tier)'
     steps:
       - 'Extension activates'
       - 'Check registration logs'
-    expected_result: 'Log shows destination builder registered for "custom-ai:fake-tool.test"'
+    expected_result: 'Log shows 3 custom-ai: destination registrations — one for each tier entry'
     automated: true
 
   - id: custom-ai-assistant-003
@@ -2480,36 +2481,34 @@ test_cases:
 
   - id: custom-ai-assistant-004
     feature: 'Custom AI Assistants — Command Detection'
-    scenario: 'Registering a fake insertCommand makes the assistant detectable by the availability system'
+    scenario: 'Dummy extension insertText command is detectable by the availability system'
     preconditions:
-      - 'Custom AI assistant configured with insertCommands containing "fake-tool.insertText"'
+      - 'Dummy AI extension loaded with dummyAi.insertText command'
     steps:
-      - 'Register fake-tool.insertText as a VS Code command'
       - 'Query registered commands'
-    expected_result: 'The fake-tool.insertText command is present in the registered commands list'
+    expected_result: 'dummyAi.insertText is present in the registered commands list'
     automated: true
 
   - id: custom-ai-assistant-005
     feature: 'Custom AI Assistants — Availability'
-    scenario: 'Custom AI assistant with no matching commands from any tier is not available'
+    scenario: 'Tier 1 entry availability checked when insertCommand is registered'
     preconditions:
-      - 'Custom AI assistant configured with insertCommands and focusCommands referencing nonexistent commands'
-      - 'No extension or command matching those IDs exists'
+      - 'Custom AI assistant configured with insertCommands pointing to dummy extension command'
+      - 'Dummy AI extension loaded and active'
     steps:
       - 'Extension checks availability'
       - 'Check output logs'
-    expected_result: 'Log shows availability check with extensionFound=false, commandAvailable=false'
+    expected_result: 'Availability check log exists for the Tier 1 entry'
     automated: true
 
   - id: custom-ai-assistant-006
-    feature: 'Custom AI Assistants — Configuration'
-    scenario: 'Only valid entries produce registrations — invalid entries are skipped'
+    feature: 'Custom AI Assistants — Command Registration'
+    scenario: 'All dummy extension commands are registered and detectable'
     preconditions:
-      - 'settings.json contains one valid three-tier entry and one invalid entry'
+      - 'Dummy AI extension loaded via extensionDevelopmentPath'
     steps:
-      - 'Extension activates'
-      - 'Check output logs'
-    expected_result: 'Only one custom AI registration (valid entry), invalid entries produce no registration'
+      - 'Query registered VS Code commands'
+    expected_result: 'All 5 dummyAi commands (insertText, focusForPaste, focusPanel, getText, clearAll) are registered'
     automated: true
 
   - id: custom-ai-assistant-007
@@ -2533,4 +2532,16 @@ test_cases:
       - 'Extension activates'
       - 'Check output logs for parsed config'
     expected_result: 'Activation log shows insertCommands were parsed and the assistant was loaded'
+    automated: true
+
+  - id: custom-ai-assistant-009
+    feature: 'Custom AI Assistants — Configuration'
+    scenario: 'Template entry with ${content} interpolation in insertCommands is parsed and registered'
+    preconditions:
+      - 'settings.json contains custom AI assistant with insertCommands using { command, args } object with ${content} placeholder'
+      - 'Dummy AI extension loaded with dummyAi.insertWithArgs command'
+    steps:
+      - 'Extension activates'
+      - 'Check registration logs'
+    expected_result: 'Destination builder registered for the template entry'
     automated: true

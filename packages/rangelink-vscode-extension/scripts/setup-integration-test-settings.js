@@ -10,18 +10,35 @@
  */
 
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
-const SETTINGS_DIR = '/tmp/rl-vscode-test/User';
+const SETTINGS_DIR = path.join(os.tmpdir(), 'rl-vscode-test', 'User');
 const SETTINGS_FILE = path.join(SETTINGS_DIR, 'settings.json');
 
 const settings = {
   'rangelink.customAiAssistants': [
     {
-      extensionId: 'fake-tool.test',
-      extensionName: 'Fake AI Tool',
-      insertCommands: ['fake-tool.insertText'],
-      focusCommands: ['fake-tool.focus'],
+      extensionId: 'rangelink.dummy-ai-extension',
+      extensionName: 'Dummy AI (Tier 1)',
+      insertCommands: ['dummyAi.insertText'],
+    },
+    {
+      extensionId: 'rangelink.dummy-ai-extension-tier2',
+      extensionName: 'Dummy AI (Tier 2)',
+      focusAndPasteCommands: ['dummyAi.focusForPaste'],
+    },
+    {
+      extensionId: 'rangelink.dummy-ai-extension-tier3',
+      extensionName: 'Dummy AI (Tier 3)',
+      focusCommands: ['dummyAi.focusPanel'],
+    },
+    {
+      extensionId: 'rangelink.dummy-ai-extension-template',
+      extensionName: 'Dummy AI (Template)',
+      insertCommands: [
+        { command: 'dummyAi.insertWithArgs', args: [{ text: '${content}', source: 'rangelink' }] },
+      ],
     },
   ],
 };
