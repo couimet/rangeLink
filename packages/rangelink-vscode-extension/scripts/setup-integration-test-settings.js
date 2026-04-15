@@ -46,6 +46,11 @@ const settings = {
       focusAndPasteCommands: ['nonexistent.paste'],
       focusCommands: ['dummyAi.focusPanel'],
     },
+    {
+      extensionId: 'github.copilot-chat',
+      extensionName: 'Copilot Override',
+      insertCommands: ['dummyAi.insertText'],
+    },
   ],
 };
 

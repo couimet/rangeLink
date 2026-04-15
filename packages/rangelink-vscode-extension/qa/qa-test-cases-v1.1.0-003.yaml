@@ -2610,3 +2610,25 @@ test_cases:
       - 'Check dummy extension textarea via dummyAi.getText'
     expected_result: 'tier1 textarea contains the generated link; DirectInsertFactory success log mentions dummyAi.insertWithArgs'
     automated: assisted
+
+  - id: custom-ai-assistant-015
+    feature: 'Custom AI Assistants — Built-in Override'
+    scenario: 'custom config with built-in extensionId registers under the built-in kind'
+    preconditions:
+      - 'Settings entry with extensionId github.copilot-chat and custom insertCommands pointing to dummy extension'
+    steps:
+      - 'Extension activates with override config'
+      - 'Check activation logs for registration of github-copilot-chat kind'
+    expected_result: 'Exactly one registration for github-copilot-chat kind (override replaces built-in); no separate custom-ai: registration'
+    automated: true
+
+  - id: custom-ai-assistant-016
+    feature: 'Custom AI Assistants — Built-in Override'
+    scenario: 'built-in override does not register a separate custom-ai: kind'
+    preconditions:
+      - 'Settings entry with extensionId github.copilot-chat and custom insertCommands pointing to dummy extension'
+    steps:
+      - 'Extension activates with override config'
+      - 'Check activation logs for absence of custom-ai:github.copilot-chat registration'
+    expected_result: 'No custom-ai:github.copilot-chat registration found — override takes over the built-in kind instead'
+    automated: true

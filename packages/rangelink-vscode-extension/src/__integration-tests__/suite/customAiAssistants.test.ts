@@ -36,8 +36,8 @@ suite('Custom AI Assistants', () => {
       'Expected parseCustomAiAssistants INFO log showing loaded custom AI assistants — if missing, the rangelink.customAiAssistants setting may not be configured in the test workspace',
     );
     assert.ok(
-      parseLogLine.includes('"count":5'),
-      `Expected 5 custom AI assistants loaded but got: ${parseLogLine}`,
+      parseLogLine.includes('"count":6'),
+      `Expected 6 custom AI assistants loaded but got: ${parseLogLine}`,
     );
     assert.ok(
       parseLogLine.includes('rangelink.dummy-ai-extension'),
@@ -138,6 +138,55 @@ suite('Custom AI Assistants', () => {
     assert.ok(
       registrationLog,
       'Expected registration for template entry (rangelink.dummy-ai-extension-template)',
+    );
+  });
+
+  test('custom-ai-assistant-015: built-in override registers under built-in kind', () => {
+    const logCapture = getLogCapture();
+    const allLines = logCapture.getAllLines();
+
+    const overrideRegistration = allLines.find(
+      (line) =>
+        line.includes('Registering builder for destination') &&
+        line.includes('"kind":"github-copilot-chat"'),
+    );
+    assert.ok(
+      overrideRegistration,
+      'Expected override entry (github.copilot-chat extensionId) to register under github-copilot-chat kind',
+    );
+
+    const customAiRegistrations = allLines.filter(
+      (line) =>
+        line.includes('Registering builder for destination') &&
+        line.includes('"kind":"github-copilot-chat"'),
+    );
+    assert.strictEqual(
+      customAiRegistrations.length,
+      1,
+      `Expected exactly 1 registration for github-copilot-chat (override replaces built-in) but found ${customAiRegistrations.length}`,
+    );
+  });
+
+  test('custom-ai-assistant-016: built-in override carries overridden flag in logging details', async () => {
+    const logCapture = getLogCapture();
+    const allLines = logCapture.getAllLines();
+
+    const overrideRegistration = allLines.find(
+      (line) =>
+        line.includes('Registering builder for destination') &&
+        line.includes('"kind":"github-copilot-chat"'),
+    );
+    assert.ok(overrideRegistration, 'Expected github-copilot-chat registration log');
+
+    const noSeparateCustomRegistration = allLines.filter(
+      (line) =>
+        line.includes('Registering builder for destination') &&
+        line.includes('custom-ai:github.copilot-chat'),
+    );
+    assert.strictEqual(
+      noSeparateCustomRegistration.length,
+      0,
+      'Override should NOT register as custom-ai:github.copilot-chat — it takes over the built-in kind',
     );
   });
 

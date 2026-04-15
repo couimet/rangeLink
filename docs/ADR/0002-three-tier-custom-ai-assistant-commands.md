@@ -44,7 +44,7 @@ Users can **override built-in AI assistants** (Cursor, Claude Code, Copilot) by 
 
 - Three-tier schema: HIGH — validated with dummy test extension in VS Code host
 - Bind-time resolution: HIGH — clear performance and UX benefit
-- Built-in override with fallback: MEDIUM — designed and implemented, integration test coverage planned
+- Built-in override with fallback: HIGH — validated with integration test using github.copilot-chat override pointing to dummy extension
 - `${content}` template interpolation: MEDIUM — unit-tested, integration test with dummy extension planned
 
 ## Alternatives Considered
