@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Custom AI Assistants** - Connect RangeLink to any AI tool with a VS Code extension (#500) <sup>Unreleased</sup>
   - New setting `rangelink.customAiAssistants`: three-tier command schema — `insertCommands` (direct text delivery), `focusAndPasteCommands` (focus + auto-paste), `focusCommands` (focus + manual paste toast)
   - Custom assistants appear in the destination picker (R-D) alongside built-in destinations
-  - Bind-time tier resolution: RangeLink checks which commands are registered once at bind time and caches the result — no per-operation overhead
+  - Lazy tier resolution: RangeLink checks which commands are registered on first use and caches the winning tier — no per-operation overhead
   - Override built-in assistants (Cursor, Claude Code, Copilot) via config with automatic fallback to hardcoded commands
   - `${content}` template interpolation for insert commands with non-standard argument formats
 - **Clipboard Preservation** - RangeLink no longer silently overwrites your clipboard (#353)

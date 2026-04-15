@@ -370,15 +370,15 @@ Customize settings in VSCode (Preferences > Settings > search "rangelink").
 
 Define custom AI assistants to extend RangeLink beyond the three built-in AI tools. Each entry has two required fields and three optional command arrays:
 
-| Field                   | Type                   | Required | Description                                                                                                                                           |
-| ----------------------- | ---------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `extensionId`           | `string`               | Yes      | VS Code extension identifier (`publisher.name`) — used for availability check                                                                         |
-| `extensionName`         | `string`               | Yes      | Display name shown in the destination picker                                                                                                          |
-| `insertCommands`        | `(string \| object)[]` | No       | **Tier 1:** Commands that accept text directly as an argument. Clipboard is never touched.                                                            |
-| `focusAndPasteCommands` | `string[]`             | No       | **Tier 2:** Commands that focus the AI chat input where VS Code paste commands work. RangeLink auto-pastes via clipboard (clipboard preserved).       |
-| `focusCommands`         | `string[]`             | No       | **Tier 3:** Commands that focus/reveal the AI panel. RangeLink copies the link to clipboard and shows a "paste now" toast. Clipboard is not restored. |
+| Field                   | Type                   | Required | Description                                                                                                                                                                                          |
+| ----------------------- | ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `extensionId`           | `string`               | Yes      | VS Code extension identifier (`publisher.name`) — used for availability check                                                                                                                        |
+| `extensionName`         | `string`               | Yes      | Display name shown in the destination picker                                                                                                                                                         |
+| `insertCommands`        | `(string \| object)[]` | No       | **Tier 1:** Commands that accept text directly as an argument. Clipboard is never touched.                                                                                                           |
+| `focusAndPasteCommands` | `string[]`             | No       | **Tier 2:** Commands that focus the AI chat input where VS Code paste commands work. RangeLink auto-pastes via clipboard (clipboard preserved).                                                      |
+| `focusCommands`         | `string[]`             | No       | **Tier 3:** Commands that focus/reveal the AI panel. RangeLink copies the link to clipboard and shows a "paste now" toast — clipboard is intentionally left with the link so you can Cmd+V / Ctrl+V. |
 
-At least one of the three command arrays must be present. RangeLink tries them in tier order (1 → 2 → 3) and uses the first tier whose commands are registered in VS Code. This is resolved once at bind time — not on every operation.
+At least one of the three command arrays must be present. RangeLink tries them in tier order (1 → 2 → 3) and uses the first tier whose commands are registered in VS Code. This is resolved once on first use and cached — not checked on every operation.
 
 **Example — webview-based assistant (focus only, user pastes manually):**
 
@@ -411,7 +411,21 @@ At least one of the three command arrays must be present. RangeLink tries them i
 
 When `sparkAi.insertText` is registered (extension supports it), RangeLink uses direct insertion — no clipboard involved. If the command isn't available (older extension version), RangeLink falls back to the focus + manual paste flow automatically.
 
-**Overriding built-in assistants:** <sup>Unreleased</sup> You can customize the built-in AI assistants (Cursor, Claude Code, Copilot) by adding an entry with the same `extensionId`. RangeLink merges your custom tiers with the built-in's hardcoded commands as a safety-net fallback. If your custom commands aren't registered (typo, extension not updated), the built-in behavior takes over.
+**Overriding built-in assistants:** <sup>Unreleased</sup> You can customize the built-in AI assistants (Cursor, Claude Code, Copilot) by adding an entry with the same `extensionId`. RangeLink merges your custom tiers with the built-in's hardcoded commands as a safety-net fallback. If your custom commands aren't registered (typo, extension not updated), the built-in behavior takes over automatically.
+
+```json
+{
+  "rangelink.customAiAssistants": [
+    {
+      "extensionId": "github.copilot-chat",
+      "extensionName": "Copilot (Custom)",
+      "insertCommands": ["myPlugin.sendToCopilot"]
+    }
+  ]
+}
+```
+
+Here `insertCommands` is tried first (Tier 1). If `myPlugin.sendToCopilot` isn't registered, RangeLink falls back to Copilot's built-in focus + paste commands.
 
 **`insertCommands` argument format:** Plain strings pass the link text as the first positional argument. For extensions that expect a different argument shape, use an object with `${content}` interpolation:
 
@@ -422,7 +436,11 @@ When `sparkAi.insertText` is registered (extension supports it), RangeLink uses 
 ]
 ```
 
-**How availability works:** RangeLink first checks if the extension is installed and active via `extensionId`. If not found, it falls back to checking if any command from any tier is registered as a VS Code command. Custom assistants only appear in the destination picker when available.
+**How availability works:** A custom assistant appears in the destination picker when either the extension is installed and active (matched by `extensionId`), or at least one command from any tier is registered as a VS Code command. Both conditions are checked — an extension that registers commands without activating still works.
+
+> **Finding extension and command IDs:** Open the Extensions panel, click on the extension, and find the identifier shown as `publisher.name` below the title (e.g., `github.copilot-chat`). To discover command IDs, check the extension's documentation or run **Developer: Toggle Developer Tools** and use `await vscode.commands.getCommands(true)` in the console.
+
+> **Duplicate entries:** If two entries use the same `extensionId`, only the first is used — duplicates are skipped with a warning in the RangeLink output channel.
 
 Run **Developer: Reload Window** (or restart VS Code) after changing this setting.
 
