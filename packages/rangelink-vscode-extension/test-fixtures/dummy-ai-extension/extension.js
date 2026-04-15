@@ -17,28 +17,38 @@ function activate(context) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('dummyAi.insertText', (text) => {
+    vscode.commands.registerCommand('dummyAi.insertText', async (text) => {
+      await provider?.ensureView();
       provider?.postMessage({ type: 'insertText', text: String(text) });
     }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('dummyAi.insertWithArgs', (args) => {
+    vscode.commands.registerCommand('dummyAi.insertWithArgs', async (args) => {
       const text = args && typeof args === 'object' ? String(args.text) : String(args);
+      await provider?.ensureView();
       provider?.postMessage({ type: 'insertText', text });
     }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('dummyAi.focusForPaste', () => {
-      provider?.reveal();
+    vscode.commands.registerCommand('dummyAi.focusForPaste', async () => {
+      if (!provider?._view) {
+        await vscode.commands.executeCommand('dummyAi.chatView.focus');
+      } else {
+        provider.reveal();
+      }
       provider?.postMessage({ type: 'focusForPaste' });
     }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('dummyAi.focusPanel', () => {
-      provider?.reveal();
+    vscode.commands.registerCommand('dummyAi.focusPanel', async () => {
+      if (!provider?._view) {
+        await vscode.commands.executeCommand('dummyAi.chatView.focus');
+      } else {
+        provider.reveal();
+      }
     }),
   );
 
@@ -66,16 +76,30 @@ class DummyAiViewProvider {
   /** @type {((value: any) => void) | undefined} */
   _pendingTextResolve;
 
+  /** @type {Promise<void> | undefined} */
+  _readyPromise;
+
+  /** @type {(() => void) | undefined} */
+  _readyResolve;
+
   /**
    * @param {vscode.WebviewView} webviewView
    */
   resolveWebviewView(webviewView) {
     this._view = webviewView;
 
+    this._readyPromise = new Promise((resolve) => {
+      this._readyResolve = resolve;
+    });
+
     webviewView.webview.options = { enableScripts: true };
     webviewView.webview.html = getWebviewHtml();
 
     webviewView.webview.onDidReceiveMessage((msg) => {
+      if (msg.type === 'ready' && this._readyResolve) {
+        this._readyResolve();
+        this._readyResolve = undefined;
+      }
       if (msg.type === 'textResponse' && this._pendingTextResolve) {
         this._pendingTextResolve(msg.data);
         this._pendingTextResolve = undefined;
@@ -84,6 +108,7 @@ class DummyAiViewProvider {
 
     webviewView.onDidDispose(() => {
       this._view = undefined;
+      this._readyPromise = undefined;
     });
   }
 
@@ -97,6 +122,24 @@ class DummyAiViewProvider {
   reveal() {
     if (this._view) {
       this._view.show(true);
+    }
+  }
+
+  async ensureView() {
+    if (!this._view) {
+      await vscode.commands.executeCommand('dummyAi.chatView.focus');
+    }
+
+    const POLL_INTERVAL_MS = 50;
+    const MAX_WAIT_MS = 3000;
+    let elapsed = 0;
+    while (!this._readyPromise && elapsed < MAX_WAIT_MS) {
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+      elapsed += POLL_INTERVAL_MS;
+    }
+
+    if (this._readyPromise) {
+      await this._readyPromise;
     }
   }
 
@@ -170,6 +213,8 @@ function getWebviewHtml() {
     const vscode = acquireVsCodeApi();
     const tier1 = document.getElementById('tier1');
     const tier2 = document.getElementById('tier2');
+
+    vscode.postMessage({ type: 'ready' });
 
     window.addEventListener('message', (event) => {
       const msg = event.data;

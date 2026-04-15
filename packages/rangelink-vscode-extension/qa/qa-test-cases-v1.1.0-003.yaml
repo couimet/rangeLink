@@ -2632,3 +2632,16 @@ test_cases:
       - 'Check activation logs for absence of custom-ai:github.copilot-chat registration'
     expected_result: 'No custom-ai:github.copilot-chat registration found — override takes over the built-in kind instead'
     automated: true
+
+  - id: custom-ai-assistant-017
+    feature: 'Custom AI Assistants — Cold Start'
+    scenario: 'Tier 1 direct insert works when the AI extension panel is not yet visible'
+    preconditions:
+      - 'Dummy AI extension loaded but sidebar panel NOT pre-opened'
+      - 'Settings entry with insertCommands pointing to dummyAi.insertText'
+    steps:
+      - 'Bind to Dummy AI (Tier 1) via R-D picker'
+      - 'Execute R-L'
+      - 'Check dummy extension textarea via dummyAi.getText'
+    expected_result: 'Panel auto-initializes on first insert; tier1 textarea contains the generated link; tier2 is empty'
+    automated: assisted
