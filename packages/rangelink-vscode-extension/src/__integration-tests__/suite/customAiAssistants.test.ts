@@ -420,7 +420,9 @@ suite('Custom AI Assistants — Paste Flow', () => {
       'Expected tier1 textarea to be empty (Tier 3 uses manual paste, not direct insert)',
     );
 
-    log('✓ Tier 3 shows manual-paste toast, clipboard not restored (link stays), manual paste verified');
+    log(
+      '✓ Tier 3 shows manual-paste toast, clipboard not restored (link stays), manual paste verified',
+    );
   });
 
   test('[assisted] custom-ai-assistant-013: Tier 2→3 fallback — clipboard not restored and manual paste works', async () => {

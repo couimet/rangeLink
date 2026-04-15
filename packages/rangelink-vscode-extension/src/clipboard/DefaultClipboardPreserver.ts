@@ -14,6 +14,12 @@ export class DefaultClipboardPreserver implements ClipboardPreserver {
   ) {}
 
   preserve<T>(fn: () => Promise<T>, shouldRestore?: () => boolean): Promise<T> {
-    return withClipboardPreservation(this.clipboard, this.configReader, this.logger, fn, shouldRestore);
+    return withClipboardPreservation(
+      this.clipboard,
+      this.configReader,
+      this.logger,
+      fn,
+      shouldRestore,
+    );
   }
 }
