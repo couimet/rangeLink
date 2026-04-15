@@ -1,8 +1,8 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
+import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { resolveFocusTier } from '../../../destinations/capabilities/resolveFocusTier';
 import type { FocusTier } from '../../../destinations/types';
-import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 
 const createMockInsertFactory = (): jest.Mocked<InsertFactory<void>> => ({
   forTarget: jest.fn().mockReturnValue(jest.fn().mockResolvedValue(true)),
@@ -57,18 +57,18 @@ describe('resolveFocusTier', () => {
       probeMode: 'execute',
     };
 
-    const result = resolveFocusTier(
-      [tier1, tier2],
-      ['sparkAi.focus'],
-      mockLogger,
-      LOG_PREFIX,
-    );
+    const result = resolveFocusTier([tier1, tier2], ['sparkAi.focus'], mockLogger, LOG_PREFIX);
 
     expect(result).toBeDefined();
     expect(result!.resolvedTier.label).toBe('focusCommands');
     expect(result!.isFallback).toBe(false);
     expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'resolveFocusTier', tier: 'insertCommands', checkedCommands: ['sparkAi.insertText'], logPrefix: LOG_PREFIX },
+      {
+        fn: 'resolveFocusTier',
+        tier: 'insertCommands',
+        checkedCommands: ['sparkAi.insertText'],
+        logPrefix: LOG_PREFIX,
+      },
       'TestAssistant: no registered commands for insertCommands, trying next tier',
     );
   });
@@ -87,12 +87,7 @@ describe('resolveFocusTier', () => {
       probeMode: 'execute',
     };
 
-    const result = resolveFocusTier(
-      [emptyTier, tier2],
-      ['sparkAi.focus'],
-      mockLogger,
-      LOG_PREFIX,
-    );
+    const result = resolveFocusTier([emptyTier, tier2], ['sparkAi.focus'], mockLogger, LOG_PREFIX);
 
     expect(result).toBeDefined();
     expect(result!.resolvedTier.label).toBe('focusCommands');
@@ -106,12 +101,7 @@ describe('resolveFocusTier', () => {
       probeMode: 'none',
     };
 
-    const result = resolveFocusTier(
-      [tier],
-      ['other.cmd'],
-      mockLogger,
-      LOG_PREFIX,
-    );
+    const result = resolveFocusTier([tier], ['other.cmd'], mockLogger, LOG_PREFIX);
 
     expect(result).toBeUndefined();
     expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -186,16 +176,17 @@ describe('resolveFocusTier', () => {
       probeMode: 'execute',
     };
 
-    const result = resolveFocusTier(
-      [tier],
-      ['fallback.cmd'],
-      mockLogger,
-      LOG_PREFIX,
-    );
+    const result = resolveFocusTier([tier], ['fallback.cmd'], mockLogger, LOG_PREFIX);
 
     expect(result).toBeDefined();
     expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'resolveFocusTier', tier: 'focusAndPasteCommands', command: 'fallback.cmd', isFallback: false, logPrefix: LOG_PREFIX },
+      {
+        fn: 'resolveFocusTier',
+        tier: 'focusAndPasteCommands',
+        command: 'fallback.cmd',
+        isFallback: false,
+        logPrefix: LOG_PREFIX,
+      },
       'TestAssistant: resolved to focusAndPasteCommands (command: fallback.cmd)',
     );
   });

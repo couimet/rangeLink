@@ -10,7 +10,7 @@ const USER_DATA_DIR = path.join(os.tmpdir(), 'rl-vscode-test');
 export default defineConfig([
   {
     files: 'out/__integration-tests__/suite/**/*.test.js',
-    extensionDevelopmentPath: './',
+    extensionDevelopmentPath: ['./', './test-fixtures/dummy-ai-extension/'],
     workspaceFolder: './',
     version: 'stable',
     launchArgs: ['--user-data-dir', USER_DATA_DIR],

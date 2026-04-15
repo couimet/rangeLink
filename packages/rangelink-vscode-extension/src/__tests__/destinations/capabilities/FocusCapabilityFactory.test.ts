@@ -1,11 +1,11 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
+import type { CustomAiAssistantConfig } from '../../../config/parseCustomAiAssistants';
 import { AIAssistantFocusCapability } from '../../../destinations/capabilities/AIAssistantFocusCapability';
 import { EditorFocusCapability } from '../../../destinations/capabilities/EditorFocusCapability';
 import { FocusCapabilityFactory } from '../../../destinations/capabilities/FocusCapabilityFactory';
+import { LazyResolvedFocusCapability } from '../../../destinations/capabilities/LazyResolvedFocusCapability';
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
-import { TieredFocusCapability } from '../../../destinations/capabilities/TieredFocusCapability';
-import type { CustomAiAssistantConfig } from '../../../config/parseCustomAiAssistants';
 import {
   createMockClipboardPreserver,
   createMockTerminal,
@@ -46,8 +46,8 @@ describe('FocusCapabilityFactory', () => {
     expect(capability).toBeInstanceOf(AIAssistantFocusCapability);
   });
 
-  describe('createCustomAIAssistantCapability', () => {
-    it('creates TieredFocusCapability with all three tiers', () => {
+  describe('buildCustomAIAssistantTiers', () => {
+    it('builds tiers for all three command types', () => {
       const config: CustomAiAssistantConfig = {
         kind: 'custom-ai:acme.spark-ai',
         extensionId: 'acme.spark-ai',
@@ -57,12 +57,18 @@ describe('FocusCapabilityFactory', () => {
         focusCommands: ['sparkAi.chatView.focus'],
       };
 
-      const capability = factory.createCustomAIAssistantCapability(config);
+      const tiers = factory.buildCustomAIAssistantTiers(config);
 
-      expect(capability).toBeInstanceOf(TieredFocusCapability);
+      expect(tiers).toHaveLength(3);
+      expect(tiers[0].label).toBe('insertCommands');
+      expect(tiers[0].probeMode).toBe('none');
+      expect(tiers[1].label).toBe('focusAndPasteCommands');
+      expect(tiers[1].probeMode).toBe('execute');
+      expect(tiers[2].label).toBe('focusCommands');
+      expect(tiers[2].probeMode).toBe('execute');
     });
 
-    it('creates TieredFocusCapability with only focusCommands', () => {
+    it('builds tiers for only focusCommands', () => {
       const config: CustomAiAssistantConfig = {
         kind: 'custom-ai:acme.spark-ai',
         extensionId: 'acme.spark-ai',
@@ -70,12 +76,13 @@ describe('FocusCapabilityFactory', () => {
         focusCommands: ['sparkAi.chatView.focus'],
       };
 
-      const capability = factory.createCustomAIAssistantCapability(config);
+      const tiers = factory.buildCustomAIAssistantTiers(config);
 
-      expect(capability).toBeInstanceOf(TieredFocusCapability);
+      expect(tiers).toHaveLength(1);
+      expect(tiers[0].label).toBe('focusCommands');
     });
 
-    it('creates TieredFocusCapability with only insertCommands', () => {
+    it('builds tiers for only insertCommands', () => {
       const config: CustomAiAssistantConfig = {
         kind: 'custom-ai:acme.spark-ai',
         extensionId: 'acme.spark-ai',
@@ -83,9 +90,29 @@ describe('FocusCapabilityFactory', () => {
         insertCommands: [{ command: 'sparkAi.insertText' }],
       };
 
-      const capability = factory.createCustomAIAssistantCapability(config);
+      const tiers = factory.buildCustomAIAssistantTiers(config);
 
-      expect(capability).toBeInstanceOf(TieredFocusCapability);
+      expect(tiers).toHaveLength(1);
+      expect(tiers[0].label).toBe('insertCommands');
+      expect(tiers[0].probeMode).toBe('none');
+    });
+  });
+
+  describe('createLazyResolvedCapability', () => {
+    it('creates LazyResolvedFocusCapability from tiers', () => {
+      const config: CustomAiAssistantConfig = {
+        kind: 'custom-ai:acme.spark-ai',
+        extensionId: 'acme.spark-ai',
+        extensionName: 'Spark AI',
+        insertCommands: [{ command: 'sparkAi.insertText' }],
+        focusAndPasteCommands: ['sparkAi.openChat'],
+        focusCommands: ['sparkAi.chatView.focus'],
+      };
+
+      const tiers = factory.buildCustomAIAssistantTiers(config);
+      const capability = factory.createLazyResolvedCapability(tiers, 'Spark AI');
+
+      expect(capability).toBeInstanceOf(LazyResolvedFocusCapability);
     });
   });
 });

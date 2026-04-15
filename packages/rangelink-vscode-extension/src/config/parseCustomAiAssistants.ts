@@ -41,7 +41,9 @@ const normalizeInsertCommandEntry = (item: unknown): InsertCommandEntry | undefi
   if (item && typeof item === 'object' && !Array.isArray(item)) {
     const obj = item as Record<string, unknown>;
     if (typeof obj.command === 'string' && obj.command.trim().length > 0) {
-      return obj.args !== undefined ? { command: obj.command, args: obj.args } : { command: obj.command };
+      return obj.args !== undefined
+        ? { command: obj.command, args: obj.args }
+        : { command: obj.command };
     }
   }
   return undefined;

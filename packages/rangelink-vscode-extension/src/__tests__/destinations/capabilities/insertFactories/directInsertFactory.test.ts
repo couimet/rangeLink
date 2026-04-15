@@ -60,9 +60,7 @@ describe('DirectInsertFactory', () => {
       .spyOn(mockAdapter, 'executeCommand')
       .mockResolvedValue(undefined);
 
-    const entries: InsertCommandEntry[] = [
-      { command: 'cmd', args: { content: '${content}' } },
-    ];
+    const entries: InsertCommandEntry[] = [{ command: 'cmd', args: { content: '${content}' } }];
     const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
     const insertFn = factory.forTarget();
 
@@ -79,10 +77,7 @@ describe('DirectInsertFactory', () => {
       .mockRejectedValueOnce(new Error('Not found'))
       .mockResolvedValueOnce(undefined);
 
-    const entries: InsertCommandEntry[] = [
-      { command: 'cmd.primary' },
-      { command: 'cmd.fallback' },
-    ];
+    const entries: InsertCommandEntry[] = [{ command: 'cmd.primary' }, { command: 'cmd.fallback' }];
     const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
     const insertFn = factory.forTarget();
 
@@ -105,10 +100,7 @@ describe('DirectInsertFactory', () => {
       .mockRejectedValueOnce(new Error('First failed'))
       .mockRejectedValueOnce(new Error('Second failed'));
 
-    const entries: InsertCommandEntry[] = [
-      { command: 'cmd.first' },
-      { command: 'cmd.second' },
-    ];
+    const entries: InsertCommandEntry[] = [{ command: 'cmd.first' }, { command: 'cmd.second' }];
     const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
     const insertFn = factory.forTarget();
 

@@ -310,9 +310,11 @@ describe('parseCustomAiAssistants', () => {
 
     it('logs loaded count with extension IDs', () => {
       const configReader = createMockConfigReader({
-        get: jest.fn().mockReturnValue([
-          { extensionId: 'acme.ai', extensionName: 'Acme', focusCommands: ['acme.focus'] },
-        ]),
+        get: jest
+          .fn()
+          .mockReturnValue([
+            { extensionId: 'acme.ai', extensionName: 'Acme', focusCommands: ['acme.focus'] },
+          ]),
       });
 
       parseCustomAiAssistants(configReader, mockLogger);

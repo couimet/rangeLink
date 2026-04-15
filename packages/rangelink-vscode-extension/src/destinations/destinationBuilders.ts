@@ -10,7 +10,13 @@ import type * as vscode from 'vscode';
 import type { CustomAiAssistantConfig } from '../config/parseCustomAiAssistants';
 import { CHAT_PASTE_COMMANDS } from '../constants';
 import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors';
-import { AutoPasteResult, type DestinationKind, MessageCode, RelativePathFormat } from '../types';
+import {
+  AutoPasteResult,
+  type AIAssistantDestinationKind,
+  type DestinationKind,
+  MessageCode,
+  RelativePathFormat,
+} from '../types';
 import {
   formatMessage,
   getUntitledDisplayName,
@@ -30,13 +36,52 @@ import { compareEditorsByUri } from './equality/compareEditorsByUri';
 import { compareTerminalsByProcessId } from './equality/compareTerminalsByProcessId';
 import type { PasteDestination } from './PasteDestination';
 
+// ============================================================================
+// Built-in AI assistant lookup
+// ============================================================================
+
+interface BuiltinAiAssistantDef {
+  readonly kind: AIAssistantDestinationKind;
+  readonly focusAndPasteCommands: readonly string[];
+  readonly displayName: string;
+  readonly jumpMessageCode: MessageCode;
+  readonly userInstructionMessageCode: MessageCode;
+  readonly isAvailable: (context: DestinationBuilderContext) => boolean | Promise<boolean>;
+}
+
+const BUILTIN_AI_ASSISTANTS: Record<string, BuiltinAiAssistantDef> = {
+  'cursor.cursor': {
+    kind: 'cursor-ai',
+    focusAndPasteCommands: CURSOR_AI_FOCUS_COMMANDS,
+    displayName: 'Cursor AI Assistant',
+    jumpMessageCode: MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI,
+    userInstructionMessageCode: MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS,
+    isAvailable: (ctx) => isCursorIDEDetected(ctx.ideAdapter, ctx.logger),
+  },
+  'anthropic.claude-code': {
+    kind: 'claude-code',
+    focusAndPasteCommands: CLAUDE_CODE_FOCUS_COMMANDS,
+    displayName: 'Claude Code Chat',
+    jumpMessageCode: MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE,
+    userInstructionMessageCode: MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS,
+    isAvailable: (ctx) => isClaudeCodeAvailable(ctx.ideAdapter, ctx.logger),
+  },
+  'github.copilot-chat': {
+    kind: 'github-copilot-chat',
+    focusAndPasteCommands: GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
+    displayName: 'GitHub Copilot Chat',
+    jumpMessageCode: MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT,
+    userInstructionMessageCode: MessageCode.INFO_GITHUB_COPILOT_CHAT_USER_INSTRUCTIONS,
+    isAvailable: (ctx) => isGitHubCopilotChatAvailable(ctx.ideAdapter, ctx.logger),
+  },
+};
+
+// ============================================================================
+// Terminal & Editor builders
+// ============================================================================
+
 /**
  * Build a Terminal destination using ComposablePasteDestination factory method.
- *
- * This builder is a thin adapter that:
- * 1. Extracts terminal from options
- * 2. Creates capabilities using context factories
- * 3. Delegates to ComposablePasteDestination.createTerminal()
  *
  * @param options - Type-discriminated options containing terminal reference
  * @param context - Builder context with factories and dependencies
@@ -70,10 +115,6 @@ export const buildTerminalDestination: DestinationBuilder = (options, context) =
 
 /**
  * Get resource name from a URI (workspace-relative path or untitled name).
- *
- * @param context - Builder context with ideAdapter
- * @param uri - The document URI
- * @returns Resource name for display (e.g., "src/file.ts" or "Untitled-1")
  */
 const getResourceName = (context: DestinationBuilderContext, uri: vscode.Uri): string => {
   if (uri.scheme === 'untitled') {
@@ -90,11 +131,6 @@ const getResourceName = (context: DestinationBuilderContext, uri: vscode.Uri): s
 
 /**
  * Build a TextEditor destination using ComposablePasteDestination factory method.
- *
- * This builder is a thin adapter that:
- * 1. Extracts editor from options
- * 2. Creates capabilities using context factories
- * 3. Delegates to ComposablePasteDestination.createEditor()
  *
  * @param options - Type-discriminated options containing editor reference
  * @param context - Builder context with factories and dependencies
@@ -129,130 +165,54 @@ export const buildTextEditorDestination: DestinationBuilder = (options, context)
   });
 };
 
-/**
- * Build a CursorAI destination using ComposablePasteDestination factory method.
- *
- * Cursor AI uses clipboard-based paste with focus commands.
- *
- * @param options - Type-discriminated options
- * @param context - Builder context with dependencies
- * @returns ComposablePasteDestination configured for Cursor AI
- */
-export const buildCursorAIDestination: DestinationBuilder = (options, context) => {
-  if (options.kind !== 'cursor-ai') {
-    throw new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
-      message: `buildCursorAIDestination called with wrong kind: ${options.kind}`,
-      functionName: 'buildCursorAIDestination',
-      details: { actualKind: options.kind, expectedKind: 'cursor-ai' },
-    });
-  }
-
-  return ComposablePasteDestination.createAiAssistant({
-    id: 'cursor-ai',
-    displayName: 'Cursor AI Assistant',
-    focusCapability: context.factories.focusCapability.createAIAssistantCapability(
-      CURSOR_AI_FOCUS_COMMANDS,
-      [...CHAT_PASTE_COMMANDS],
-    ),
-    isAvailable: async () => isCursorIDEDetected(context.ideAdapter, context.logger),
-    jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CURSOR_AI),
-    loggingDetails: {},
-    logger: context.logger,
-    getUserInstruction: (autoPasteResult) =>
-      autoPasteResult === AutoPasteResult.Success
-        ? undefined
-        : formatMessage(MessageCode.INFO_CURSOR_AI_USER_INSTRUCTIONS),
-  });
-};
-
-/**
- * Build a ClaudeCode destination using ComposablePasteDestination factory method.
- *
- * Claude Code uses clipboard-based paste with focus commands.
- *
- * @param options - Type-discriminated options
- * @param context - Builder context with dependencies
- * @returns ComposablePasteDestination configured for Claude Code
- */
-export const buildClaudeCodeDestination: DestinationBuilder = (options, context) => {
-  if (options.kind !== 'claude-code') {
-    throw new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
-      message: `buildClaudeCodeDestination called with wrong kind: ${options.kind}`,
-      functionName: 'buildClaudeCodeDestination',
-      details: { actualKind: options.kind, expectedKind: 'claude-code' },
-    });
-  }
-
-  return ComposablePasteDestination.createAiAssistant({
-    id: 'claude-code',
-    displayName: 'Claude Code Chat',
-    focusCapability: context.factories.focusCapability.createAIAssistantCapability(
-      CLAUDE_CODE_FOCUS_COMMANDS,
-      [...CHAT_PASTE_COMMANDS],
-    ),
-    isAvailable: async () => isClaudeCodeAvailable(context.ideAdapter, context.logger),
-    jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_CLAUDE_CODE),
-    loggingDetails: {},
-    logger: context.logger,
-    getUserInstruction: (autoPasteResult) =>
-      autoPasteResult === AutoPasteResult.Success
-        ? undefined
-        : formatMessage(MessageCode.INFO_CLAUDE_CODE_USER_INSTRUCTIONS),
-  });
-};
-
 // ============================================================================
-// AI Assistant Builders
+// Built-in AI Assistant Builders
 // ============================================================================
 
 /**
- * Build a GitHubCopilotChat destination using ComposablePasteDestination factory method.
+ * Build a built-in AI assistant destination (Cursor AI, Claude Code, GitHub Copilot Chat).
  *
- * GitHub Copilot Chat uses clipboard-based paste with focus commands.
- *
- * @param options - Type-discriminated options
- * @param context - Builder context with dependencies
- * @returns ComposablePasteDestination configured for GitHub Copilot Chat
+ * Uses the standard focus+paste flow via AIAssistantFocusCapability.
  */
-export const buildGitHubCopilotChatDestination: DestinationBuilder = (options, context) => {
-  if (options.kind !== 'github-copilot-chat') {
-    throw new RangeLinkExtensionError({
-      code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
-      message: `buildGitHubCopilotChatDestination called with wrong kind: ${options.kind}`,
-      functionName: 'buildGitHubCopilotChatDestination',
-      details: { actualKind: options.kind, expectedKind: 'github-copilot-chat' },
-    });
-  }
-
-  return ComposablePasteDestination.createAiAssistant({
-    id: 'github-copilot-chat',
-    displayName: 'GitHub Copilot Chat',
+const buildBuiltinAiAssistantDestination = (
+  def: BuiltinAiAssistantDef,
+  context: DestinationBuilderContext,
+): ComposablePasteDestination =>
+  ComposablePasteDestination.createAiAssistant({
+    id: def.kind,
+    displayName: def.displayName,
     focusCapability: context.factories.focusCapability.createAIAssistantCapability(
-      GITHUB_COPILOT_CHAT_FOCUS_COMMANDS,
+      [...def.focusAndPasteCommands],
       [...CHAT_PASTE_COMMANDS],
     ),
-    isAvailable: () => isGitHubCopilotChatAvailable(context.ideAdapter, context.logger),
-    jumpSuccessMessage: formatMessage(MessageCode.STATUS_BAR_JUMP_SUCCESS_GITHUB_COPILOT_CHAT),
+    isAvailable: async () => def.isAvailable(context),
+    jumpSuccessMessage: formatMessage(def.jumpMessageCode),
     loggingDetails: {},
     logger: context.logger,
     getUserInstruction: (autoPasteResult) =>
       autoPasteResult === AutoPasteResult.Success
         ? undefined
-        : formatMessage(MessageCode.INFO_GITHUB_COPILOT_CHAT_USER_INSTRUCTIONS),
+        : formatMessage(def.userInstructionMessageCode),
   });
-};
 
 /**
- * Create a builder for a user-defined custom AI assistant.
+ * Create a builder for a built-in AI assistant (no user override).
+ */
+const createBuiltinAiAssistantBuilder =
+  (def: BuiltinAiAssistantDef): DestinationBuilder =>
+  (_options, context) =>
+    buildBuiltinAiAssistantDestination(def, context);
+
+// ============================================================================
+// Custom AI Assistant Builders
+// ============================================================================
+
+/**
+ * Create a builder for a user-defined custom AI assistant (no built-in match).
  *
  * Returns a DestinationBuilder that creates a ComposablePasteDestination
  * configured with the user's extensionId, displayName, and three-tier commands.
- *
- * Availability detection: checks if the extension is installed and active
- * via getExtension(extensionId). Falls back to checking if any command from
- * any tier is a registered VS Code command.
+ * Tier resolution happens lazily on first focus() call via LazyResolvedFocusCapability.
  */
 export const createCustomAiAssistantBuilder = (
   config: CustomAiAssistantConfig,
@@ -265,13 +225,16 @@ export const createCustomAiAssistantBuilder = (
   ];
 
   return (_options, context) => {
-    const tieredCapability =
-      context.factories.focusCapability.createCustomAIAssistantCapability(config);
+    const tiers = context.factories.focusCapability.buildCustomAIAssistantTiers(config);
+    const lazyCapability = context.factories.focusCapability.createLazyResolvedCapability(
+      tiers,
+      extensionName,
+    );
 
     return ComposablePasteDestination.createAiAssistant({
       id: kind,
       displayName: extensionName,
-      focusCapability: tieredCapability,
+      focusCapability: lazyCapability,
       isAvailable: async () => {
         const extension = context.ideAdapter.getExtension(extensionId);
         const extensionFound = extension !== undefined;
@@ -302,7 +265,7 @@ export const createCustomAiAssistantBuilder = (
       logger: context.logger,
       getUserInstruction: (autoPasteResult) => {
         if (autoPasteResult === AutoPasteResult.Success) {
-          if (tieredCapability.lastTierLabel === 'focusCommands') {
+          if (lazyCapability.resolvedTierLabel === 'focusCommands') {
             return formatMessage(MessageCode.INFO_CUSTOM_AI_USER_INSTRUCTIONS, { extensionName });
           }
           return undefined;
@@ -313,10 +276,68 @@ export const createCustomAiAssistantBuilder = (
   };
 };
 
+// ============================================================================
+// Built-in Override Builder
+// ============================================================================
+
+/**
+ * Create a builder for a built-in AI assistant overridden by user config.
+ *
+ * Merges user-defined tiers with built-in fallback commands. At bind time,
+ * tier resolution walks user tiers first; if none have registered commands,
+ * falls back to the built-in's hardcoded focus commands.
+ *
+ * Uses the built-in's kind, availability detection, i18n messages, and
+ * display name — only the focus strategy is overridden.
+ */
+const createOverriddenBuiltinBuilder =
+  (config: CustomAiAssistantConfig, builtin: BuiltinAiAssistantDef): DestinationBuilder =>
+  (_options, context) => {
+    const userTiers = context.factories.focusCapability.buildCustomAIAssistantTiers(config);
+    const fallbackTier = context.factories.focusCapability.buildBuiltinFallbackTier(
+      builtin.focusAndPasteCommands,
+    );
+
+    const allTiers = [...userTiers, fallbackTier];
+    const fallbackTierIndex = userTiers.length;
+
+    const lazyCapability = context.factories.focusCapability.createLazyResolvedCapability(
+      allTiers,
+      builtin.displayName,
+      fallbackTierIndex,
+    );
+
+    return ComposablePasteDestination.createAiAssistant({
+      id: builtin.kind,
+      displayName: builtin.displayName,
+      focusCapability: lazyCapability,
+      isAvailable: async () => builtin.isAvailable(context),
+      jumpSuccessMessage: formatMessage(builtin.jumpMessageCode),
+      loggingDetails: { extensionId: config.extensionId, overridden: true },
+      logger: context.logger,
+      getUserInstruction: (autoPasteResult) => {
+        if (autoPasteResult === AutoPasteResult.Success) {
+          const tierLabel = lazyCapability.resolvedTierLabel;
+          if (tierLabel === 'focusCommands') {
+            return formatMessage(builtin.userInstructionMessageCode);
+          }
+          return undefined;
+        }
+        return formatMessage(builtin.userInstructionMessageCode);
+      },
+    });
+  };
+
+// ============================================================================
+// Registration
+// ============================================================================
+
 /**
  * Register all destination builders with the registry.
  *
  * Called from extension.ts during activation to set up all destination kinds.
+ * When a custom assistant's extensionId matches a built-in, the custom config
+ * is merged with the built-in as an override (user tiers + built-in fallback).
  *
  * @param registry - DestinationRegistry to register builders with
  * @param customAssistants - Optional custom AI assistant configs from user settings
@@ -329,11 +350,23 @@ export const registerAllDestinationBuilders = (
 ): void => {
   registry.register('terminal', buildTerminalDestination);
   registry.register('text-editor', buildTextEditorDestination);
-  registry.register('cursor-ai', buildCursorAIDestination);
-  registry.register('claude-code', buildClaudeCodeDestination);
-  registry.register('github-copilot-chat', buildGitHubCopilotChatDestination);
+
+  const overriddenKinds = new Set<AIAssistantDestinationKind>();
 
   for (const config of customAssistants) {
-    registry.register(config.kind, createCustomAiAssistantBuilder(config));
+    const builtin = BUILTIN_AI_ASSISTANTS[config.extensionId];
+
+    if (builtin) {
+      registry.register(builtin.kind, createOverriddenBuiltinBuilder(config, builtin));
+      overriddenKinds.add(builtin.kind);
+    } else {
+      registry.register(config.kind, createCustomAiAssistantBuilder(config));
+    }
+  }
+
+  for (const [, def] of Object.entries(BUILTIN_AI_ASSISTANTS)) {
+    if (!overriddenKinds.has(def.kind)) {
+      registry.register(def.kind, createBuiltinAiAssistantBuilder(def));
+    }
   }
 };

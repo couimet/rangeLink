@@ -1,8 +1,8 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
+import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { LazyResolvedFocusCapability } from '../../../destinations/capabilities/LazyResolvedFocusCapability';
 import type { FocusTier } from '../../../destinations/types';
-import type { InsertFactory } from '../../../destinations/capabilities/insertFactories';
 import { createMockVscodeAdapter } from '../../helpers';
 
 const CONTEXT = { fn: 'test' };
@@ -32,12 +32,7 @@ describe('LazyResolvedFocusCapability', () => {
       probeMode: 'none',
     };
 
-    const capability = new LazyResolvedFocusCapability(
-      mockAdapter,
-      [tier],
-      mockLogger,
-      LOG_PREFIX,
-    );
+    const capability = new LazyResolvedFocusCapability(mockAdapter, [tier], mockLogger, LOG_PREFIX);
 
     expect(capability.resolvedTierLabel).toBeUndefined();
 
@@ -62,12 +57,7 @@ describe('LazyResolvedFocusCapability', () => {
       probeMode: 'none',
     };
 
-    const capability = new LazyResolvedFocusCapability(
-      mockAdapter,
-      [tier],
-      mockLogger,
-      LOG_PREFIX,
-    );
+    const capability = new LazyResolvedFocusCapability(mockAdapter, [tier], mockLogger, LOG_PREFIX);
 
     const result1 = await capability.focus(CONTEXT);
     expect(result1.success).toBe(false);
@@ -130,12 +120,7 @@ describe('LazyResolvedFocusCapability', () => {
       probeMode: 'none',
     };
 
-    const capability = new LazyResolvedFocusCapability(
-      mockAdapter,
-      [tier],
-      mockLogger,
-      LOG_PREFIX,
-    );
+    const capability = new LazyResolvedFocusCapability(mockAdapter, [tier], mockLogger, LOG_PREFIX);
 
     await capability.focus(CONTEXT);
 
@@ -160,12 +145,7 @@ describe('LazyResolvedFocusCapability', () => {
       probeMode: 'execute',
     };
 
-    const capability = new LazyResolvedFocusCapability(
-      mockAdapter,
-      [tier],
-      mockLogger,
-      LOG_PREFIX,
-    );
+    const capability = new LazyResolvedFocusCapability(mockAdapter, [tier], mockLogger, LOG_PREFIX);
 
     const result = await capability.focus(CONTEXT);
 

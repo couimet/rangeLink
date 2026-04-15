@@ -2,16 +2,15 @@ import { createMockLogger } from 'barebone-logger-testing';
 import type * as vscode from 'vscode';
 
 import {
-  buildClaudeCodeDestination,
-  buildCursorAIDestination,
-  buildGitHubCopilotChatDestination,
   buildTerminalDestination,
   buildTextEditorDestination,
   createCustomAiAssistantBuilder,
   type DestinationBuilderContext,
+  type DestinationBuilder,
   registerAllDestinationBuilders,
 } from '../../destinations';
 import { AutoPasteResult } from '../../types';
+import type { DestinationKind } from '../../types';
 import {
   createMockDocument,
   createMockEditor,
@@ -38,6 +37,21 @@ describe('destinationBuilders', () => {
     ideAdapter: createMockVscodeAdapter(adapterOverrides),
     logger: mockLogger,
   });
+
+  /**
+   * Register all builders and extract the builder for a specific kind.
+   */
+  const getBuiltinBuilder = (kind: DestinationKind): DestinationBuilder => {
+    const builders = new Map<DestinationKind, DestinationBuilder>();
+    registerAllDestinationBuilders({
+      register: (k: DestinationKind, b: DestinationBuilder) => builders.set(k, b),
+    });
+    const builder = builders.get(kind);
+    if (!builder) {
+      throw new Error(`No builder registered for kind: ${kind}`);
+    }
+    return builder;
+  };
 
   describe('buildTerminalDestination', () => {
     it('creates terminal destination with correct id and displayName', () => {
@@ -195,11 +209,12 @@ describe('destinationBuilders', () => {
     });
   });
 
-  describe('buildCursorAIDestination', () => {
+  describe('built-in AI assistants via registerAllDestinationBuilders', () => {
     it('creates cursor-ai destination with correct id and displayName', () => {
+      const builder = getBuiltinBuilder('cursor-ai');
       const context = createMockContext();
 
-      const destination = buildCursorAIDestination({ kind: 'cursor-ai' }, context);
+      const destination = builder({ kind: 'cursor-ai' }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'cursor-ai',
@@ -207,49 +222,39 @@ describe('destinationBuilders', () => {
       });
     });
 
-    it('isAvailable delegates to isCursorIDEDetected', async () => {
+    it('cursor-ai isAvailable delegates to isCursorIDEDetected', async () => {
       const spy = spyOnIsCursorIDEDetected().mockReturnValue(true);
+      const builder = getBuiltinBuilder('cursor-ai');
       const context = createMockContext();
-      const destination = buildCursorAIDestination({ kind: 'cursor-ai' }, context);
+      const destination = builder({ kind: 'cursor-ai' }, context);
 
       expect(await destination.isAvailable()).toBe(true);
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
-    it('getUserInstruction returns undefined on auto-paste success', () => {
+    it('cursor-ai getUserInstruction returns undefined on auto-paste success', () => {
+      const builder = getBuiltinBuilder('cursor-ai');
       const context = createMockContext();
-      const destination = buildCursorAIDestination({ kind: 'cursor-ai' }, context);
+      const destination = builder({ kind: 'cursor-ai' }, context);
 
       expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
     });
 
-    it('getUserInstruction returns instruction message on auto-paste failure', () => {
+    it('cursor-ai getUserInstruction returns instruction message on auto-paste failure', () => {
+      const builder = getBuiltinBuilder('cursor-ai');
       const context = createMockContext();
-      const destination = buildCursorAIDestination({ kind: 'cursor-ai' }, context);
+      const destination = builder({ kind: 'cursor-ai' }, context);
 
       expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
         'Paste (Cmd/Ctrl+V) in Cursor chat to use.',
       );
     });
 
-    it('throws RangeLinkExtensionError when called with wrong kind', () => {
-      const context = createMockContext();
-
-      expect(() =>
-        buildCursorAIDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
-        message: 'buildCursorAIDestination called with wrong kind: terminal',
-        functionName: 'buildCursorAIDestination',
-        details: { actualKind: 'terminal', expectedKind: 'cursor-ai' },
-      });
-    });
-  });
-
-  describe('buildClaudeCodeDestination', () => {
     it('creates claude-code destination with correct id and displayName', () => {
+      const builder = getBuiltinBuilder('claude-code');
       const context = createMockContext();
 
-      const destination = buildClaudeCodeDestination({ kind: 'claude-code' }, context);
+      const destination = builder({ kind: 'claude-code' }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'claude-code',
@@ -257,52 +262,39 @@ describe('destinationBuilders', () => {
       });
     });
 
-    it('isAvailable delegates to isClaudeCodeAvailable', async () => {
+    it('claude-code isAvailable delegates to isClaudeCodeAvailable', async () => {
       const spy = spyOnIsClaudeCodeAvailable().mockReturnValue(false);
+      const builder = getBuiltinBuilder('claude-code');
       const context = createMockContext();
-      const destination = buildClaudeCodeDestination({ kind: 'claude-code' }, context);
+      const destination = builder({ kind: 'claude-code' }, context);
 
       expect(await destination.isAvailable()).toBe(false);
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
-    it('getUserInstruction returns undefined on auto-paste success', () => {
+    it('claude-code getUserInstruction returns undefined on auto-paste success', () => {
+      const builder = getBuiltinBuilder('claude-code');
       const context = createMockContext();
-      const destination = buildClaudeCodeDestination({ kind: 'claude-code' }, context);
+      const destination = builder({ kind: 'claude-code' }, context);
 
       expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
     });
 
-    it('getUserInstruction returns instruction message on auto-paste failure', () => {
+    it('claude-code getUserInstruction returns instruction message on auto-paste failure', () => {
+      const builder = getBuiltinBuilder('claude-code');
       const context = createMockContext();
-      const destination = buildClaudeCodeDestination({ kind: 'claude-code' }, context);
+      const destination = builder({ kind: 'claude-code' }, context);
 
       expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
         'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
       );
     });
 
-    it('throws RangeLinkExtensionError when called with wrong kind', () => {
-      const context = createMockContext();
-
-      expect(() =>
-        buildClaudeCodeDestination({ kind: 'terminal', terminal: {} as vscode.Terminal }, context),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
-        message: 'buildClaudeCodeDestination called with wrong kind: terminal',
-        functionName: 'buildClaudeCodeDestination',
-        details: { actualKind: 'terminal', expectedKind: 'claude-code' },
-      });
-    });
-  });
-
-  describe('buildGitHubCopilotChatDestination', () => {
     it('creates github-copilot-chat destination with correct id and displayName', () => {
+      const builder = getBuiltinBuilder('github-copilot-chat');
       const context = createMockContext();
 
-      const destination = buildGitHubCopilotChatDestination(
-        { kind: 'github-copilot-chat' },
-        context,
-      );
+      const destination = builder({ kind: 'github-copilot-chat' }, context);
 
       expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
         id: 'github-copilot-chat',
@@ -310,53 +302,32 @@ describe('destinationBuilders', () => {
       });
     });
 
-    it('isAvailable delegates to isGitHubCopilotChatAvailable', async () => {
+    it('github-copilot-chat isAvailable delegates to isGitHubCopilotChatAvailable', async () => {
       const spy = spyOnIsGitHubCopilotChatAvailable().mockResolvedValue(true);
+      const builder = getBuiltinBuilder('github-copilot-chat');
       const context = createMockContext();
-      const destination = buildGitHubCopilotChatDestination(
-        { kind: 'github-copilot-chat' },
-        context,
-      );
+      const destination = builder({ kind: 'github-copilot-chat' }, context);
 
       expect(await destination.isAvailable()).toBe(true);
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
-    it('getUserInstruction returns undefined on auto-paste success', () => {
+    it('github-copilot-chat getUserInstruction returns undefined on auto-paste success', () => {
+      const builder = getBuiltinBuilder('github-copilot-chat');
       const context = createMockContext();
-      const destination = buildGitHubCopilotChatDestination(
-        { kind: 'github-copilot-chat' },
-        context,
-      );
+      const destination = builder({ kind: 'github-copilot-chat' }, context);
 
       expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
     });
 
-    it('getUserInstruction returns instruction message on auto-paste failure', () => {
+    it('github-copilot-chat getUserInstruction returns instruction message on failure', () => {
+      const builder = getBuiltinBuilder('github-copilot-chat');
       const context = createMockContext();
-      const destination = buildGitHubCopilotChatDestination(
-        { kind: 'github-copilot-chat' },
-        context,
-      );
+      const destination = builder({ kind: 'github-copilot-chat' }, context);
 
       expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
         'Paste (Cmd/Ctrl+V) in GitHub Copilot chat to use.',
       );
-    });
-
-    it('throws RangeLinkExtensionError when called with wrong kind', () => {
-      const context = createMockContext();
-
-      expect(() =>
-        buildGitHubCopilotChatDestination(
-          { kind: 'terminal', terminal: {} as vscode.Terminal },
-          context,
-        ),
-      ).toThrowRangeLinkExtensionError('UNEXPECTED_DESTINATION_KIND', {
-        message: 'buildGitHubCopilotChatDestination called with wrong kind: terminal',
-        functionName: 'buildGitHubCopilotChatDestination',
-        details: { actualKind: 'terminal', expectedKind: 'github-copilot-chat' },
-      });
     });
   });
 
@@ -460,21 +431,6 @@ describe('destinationBuilders', () => {
       expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
     });
 
-    it('getUserInstruction returns toast on success when tier 3 (focusCommands) won', () => {
-      const context = createMockContext();
-      const mockTiered = context.factories.focusCapability.createCustomAIAssistantCapability(
-        customConfig,
-      );
-      mockTiered.lastTierLabel = 'focusCommands';
-
-      const builder = createCustomAiAssistantBuilder(customConfig);
-      const destination = builder({ kind: customConfig.kind }, context);
-
-      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBe(
-        'Paste (Cmd/Ctrl+V) in Spark AI to use.',
-      );
-    });
-
     it('getUserInstruction returns instruction with extensionName on failure', () => {
       const context = createMockContext();
       const builder = createCustomAiAssistantBuilder(customConfig);
@@ -496,25 +452,31 @@ describe('destinationBuilders', () => {
 
   describe('registerAllDestinationBuilders', () => {
     it('registers all five built-in destination kinds', () => {
-      const mockRegister = jest.fn();
-      const mockRegistry = { register: mockRegister };
+      const registeredKinds: DestinationKind[] = [];
+      const mockRegistry = {
+        register: (kind: DestinationKind, _builder: DestinationBuilder) => {
+          registeredKinds.push(kind);
+        },
+      };
 
       registerAllDestinationBuilders(mockRegistry);
 
-      expect(mockRegister).toHaveBeenCalledTimes(5);
-      expect(mockRegister).toHaveBeenCalledWith('terminal', buildTerminalDestination);
-      expect(mockRegister).toHaveBeenCalledWith('text-editor', buildTextEditorDestination);
-      expect(mockRegister).toHaveBeenCalledWith('cursor-ai', buildCursorAIDestination);
-      expect(mockRegister).toHaveBeenCalledWith('claude-code', buildClaudeCodeDestination);
-      expect(mockRegister).toHaveBeenCalledWith(
+      expect(registeredKinds).toStrictEqual([
+        'terminal',
+        'text-editor',
+        'cursor-ai',
+        'claude-code',
         'github-copilot-chat',
-        buildGitHubCopilotChatDestination,
-      );
+      ]);
     });
 
     it('registers custom AI assistants when provided', () => {
-      const mockRegister = jest.fn();
-      const mockRegistry = { register: mockRegister };
+      const registeredKinds: DestinationKind[] = [];
+      const mockRegistry = {
+        register: (kind: DestinationKind, _builder: DestinationBuilder) => {
+          registeredKinds.push(kind);
+        },
+      };
 
       registerAllDestinationBuilders(mockRegistry, [
         {
@@ -525,8 +487,61 @@ describe('destinationBuilders', () => {
         },
       ]);
 
-      expect(mockRegister).toHaveBeenCalledTimes(6);
-      expect(mockRegister).toHaveBeenCalledWith('custom-ai:acme.spark-ai', expect.any(Function));
+      expect(registeredKinds).toStrictEqual([
+        'terminal',
+        'text-editor',
+        'custom-ai:acme.spark-ai',
+        'cursor-ai',
+        'claude-code',
+        'github-copilot-chat',
+      ]);
+    });
+
+    it('overrides built-in when custom assistant extensionId matches', () => {
+      const registeredKinds: DestinationKind[] = [];
+      const mockRegistry = {
+        register: (kind: DestinationKind, _builder: DestinationBuilder) => {
+          registeredKinds.push(kind);
+        },
+      };
+
+      registerAllDestinationBuilders(mockRegistry, [
+        {
+          kind: 'custom-ai:anthropic.claude-code',
+          extensionId: 'anthropic.claude-code',
+          extensionName: 'Claude Code (Custom)',
+          insertCommands: [{ command: 'claude-vscode.insertText' }],
+        },
+      ]);
+
+      expect(registeredKinds).toStrictEqual([
+        'terminal',
+        'text-editor',
+        'claude-code',
+        'cursor-ai',
+        'github-copilot-chat',
+      ]);
+    });
+
+    it('overridden built-in uses built-in kind, not custom-ai prefix', () => {
+      const builders = new Map<DestinationKind, DestinationBuilder>();
+      const mockRegistry = {
+        register: (kind: DestinationKind, builder: DestinationBuilder) => {
+          builders.set(kind, builder);
+        },
+      };
+
+      registerAllDestinationBuilders(mockRegistry, [
+        {
+          kind: 'custom-ai:anthropic.claude-code',
+          extensionId: 'anthropic.claude-code',
+          extensionName: 'Claude Code (Custom)',
+          insertCommands: [{ command: 'claude-vscode.insertText' }],
+        },
+      ]);
+
+      expect(builders.has('claude-code')).toBe(true);
+      expect(builders.has('custom-ai:anthropic.claude-code')).toBe(false);
     });
   });
 });

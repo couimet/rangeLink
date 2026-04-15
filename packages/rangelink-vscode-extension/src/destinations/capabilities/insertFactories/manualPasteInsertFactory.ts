@@ -29,7 +29,10 @@ export class ManualPasteInsertFactory implements InsertFactory<void> {
         return false;
       }
 
-      this.logger.info({ fn, textLength: text.length }, 'Link copied to clipboard for manual paste');
+      this.logger.info(
+        { fn, textLength: text.length },
+        'Link copied to clipboard for manual paste',
+      );
       return true;
     };
   }

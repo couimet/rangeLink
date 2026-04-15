@@ -115,7 +115,10 @@ suite('Custom AI Assistants', () => {
     const commands = await vscode.commands.getCommands(true);
 
     assert.ok(commands.includes('dummyAi.insertText'), 'Expected dummyAi.insertText command');
-    assert.ok(commands.includes('dummyAi.insertWithArgs'), 'Expected dummyAi.insertWithArgs command');
+    assert.ok(
+      commands.includes('dummyAi.insertWithArgs'),
+      'Expected dummyAi.insertWithArgs command',
+    );
     assert.ok(commands.includes('dummyAi.focusForPaste'), 'Expected dummyAi.focusForPaste command');
     assert.ok(commands.includes('dummyAi.focusPanel'), 'Expected dummyAi.focusPanel command');
     assert.ok(commands.includes('dummyAi.getText'), 'Expected dummyAi.getText command');
@@ -180,11 +183,9 @@ suite('Custom AI Assistants — Paste Flow', () => {
     tmpFileUris.push(uri);
     await settle();
 
-    await waitForHuman(
-      'custom-ai-assistant-010',
-      "Cmd+R Cmd+D → select 'Dummy AI (Tier 1)'",
-      ['Press Cmd+R Cmd+D and select "Dummy AI (Tier 1)" from the picker.'],
-    );
+    await waitForHuman('custom-ai-assistant-010', "Cmd+R Cmd+D → select 'Dummy AI (Tier 1)'", [
+      'Press Cmd+R Cmd+D and select "Dummy AI (Tier 1)" from the picker.',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tier1-paste');
@@ -196,14 +197,24 @@ suite('Custom AI Assistants — Paste Flow', () => {
     const lines = logCapture.getLinesSince('before-tier1-paste');
 
     const directInsertLog = lines.find(
-      (line) => line.includes('DirectInsertFactory.insert') && line.includes('Direct insert succeeded'),
+      (line) =>
+        line.includes('DirectInsertFactory.insert') && line.includes('Direct insert succeeded'),
     );
     assert.ok(directInsertLog, 'Expected DirectInsertFactory.insert success log');
 
-    const textResult = await vscode.commands.executeCommand('dummyAi.getText') as { tier1: string; tier2: string } | undefined;
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
+      | { tier1: string; tier2: string }
+      | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.ok(textResult!.tier1.length > 0, `Expected tier1 textarea to contain the link but got empty string`);
-    assert.strictEqual(textResult!.tier2, '', 'Expected tier2 textarea to be empty (no cross-contamination)');
+    assert.ok(
+      textResult!.tier1.length > 0,
+      `Expected tier1 textarea to contain the link but got empty string`,
+    );
+    assert.strictEqual(
+      textResult!.tier2,
+      '',
+      'Expected tier2 textarea to be empty (no cross-contamination)',
+    );
 
     log('✓ Tier 1 direct insert delivered text to dummy textarea');
   });
@@ -213,11 +224,9 @@ suite('Custom AI Assistants — Paste Flow', () => {
     tmpFileUris.push(uri);
     await settle();
 
-    await waitForHuman(
-      'custom-ai-assistant-011',
-      "Cmd+R Cmd+D → select 'Dummy AI (Tier 1)'",
-      ['Press Cmd+R Cmd+D and select "Dummy AI (Tier 1)" from the picker.'],
-    );
+    await waitForHuman('custom-ai-assistant-011', "Cmd+R Cmd+D → select 'Dummy AI (Tier 1)'", [
+      'Press Cmd+R Cmd+D and select "Dummy AI (Tier 1)" from the picker.',
+    ]);
 
     await writeClipboardSentinel();
     const logCapture = getLogCapture();
@@ -227,7 +236,9 @@ suite('Custom AI Assistants — Paste Flow', () => {
     await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
     await settle();
 
-    await assertClipboardRestored('Tier 1 should not disturb clipboard — outer preserve restores sentinel');
+    await assertClipboardRestored(
+      'Tier 1 should not disturb clipboard — outer preserve restores sentinel',
+    );
 
     log('✓ Tier 1 clipboard isolation — sentinel preserved after R-L');
   });
@@ -237,11 +248,9 @@ suite('Custom AI Assistants — Paste Flow', () => {
     tmpFileUris.push(uri);
     await settle();
 
-    await waitForHuman(
-      'custom-ai-assistant-012',
-      "Cmd+R Cmd+D → select 'Dummy AI (Tier 3)'",
-      ['Press Cmd+R Cmd+D and select "Dummy AI (Tier 3)" from the picker.'],
-    );
+    await waitForHuman('custom-ai-assistant-012', "Cmd+R Cmd+D → select 'Dummy AI (Tier 3)'", [
+      'Press Cmd+R Cmd+D and select "Dummy AI (Tier 3)" from the picker.',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-tier3-paste');
@@ -258,7 +267,9 @@ suite('Custom AI Assistants — Paste Flow', () => {
     });
 
     const manualPasteLog = lines.find(
-      (line) => line.includes('ManualPasteInsertFactory.insert') && line.includes('Link copied to clipboard for manual paste'),
+      (line) =>
+        line.includes('ManualPasteInsertFactory.insert') &&
+        line.includes('Link copied to clipboard for manual paste'),
     );
     assert.ok(manualPasteLog, 'Expected ManualPasteInsertFactory success log');
 
@@ -270,11 +281,9 @@ suite('Custom AI Assistants — Paste Flow', () => {
     tmpFileUris.push(uri);
     await settle();
 
-    await waitForHuman(
-      'custom-ai-assistant-013',
-      "Cmd+R Cmd+D → select 'Dummy AI (Fallback)'",
-      ['Press Cmd+R Cmd+D and select "Dummy AI (Fallback)" from the picker.'],
-    );
+    await waitForHuman('custom-ai-assistant-013', "Cmd+R Cmd+D → select 'Dummy AI (Fallback)'", [
+      'Press Cmd+R Cmd+D and select "Dummy AI (Fallback)" from the picker.',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-fallback-paste');
@@ -314,11 +323,9 @@ suite('Custom AI Assistants — Paste Flow', () => {
     tmpFileUris.push(uri);
     await settle();
 
-    await waitForHuman(
-      'custom-ai-assistant-014',
-      "Cmd+R Cmd+D → select 'Dummy AI (Template)'",
-      ['Press Cmd+R Cmd+D and select "Dummy AI (Template)" from the picker.'],
-    );
+    await waitForHuman('custom-ai-assistant-014', "Cmd+R Cmd+D → select 'Dummy AI (Template)'", [
+      'Press Cmd+R Cmd+D and select "Dummy AI (Template)" from the picker.',
+    ]);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-template-paste');
@@ -330,13 +337,19 @@ suite('Custom AI Assistants — Paste Flow', () => {
     const lines = logCapture.getLinesSince('before-template-paste');
 
     const insertLog = lines.find(
-      (line) => line.includes('DirectInsertFactory.insert') && line.includes('dummyAi.insertWithArgs'),
+      (line) =>
+        line.includes('DirectInsertFactory.insert') && line.includes('dummyAi.insertWithArgs'),
     );
     assert.ok(insertLog, 'Expected DirectInsertFactory success log for dummyAi.insertWithArgs');
 
-    const textResult = await vscode.commands.executeCommand('dummyAi.getText') as { tier1: string; tier2: string } | undefined;
+    const textResult = (await vscode.commands.executeCommand('dummyAi.getText')) as
+      | { tier1: string; tier2: string }
+      | undefined;
     assert.ok(textResult, 'Expected dummyAi.getText to return a result');
-    assert.ok(textResult!.tier1.length > 0, 'Expected tier1 textarea to contain the link via template interpolation');
+    assert.ok(
+      textResult!.tier1.length > 0,
+      'Expected tier1 textarea to contain the link via template interpolation',
+    );
 
     log('✓ ${content} template interpolation delivered text to dummy textarea via insertWithArgs');
   });

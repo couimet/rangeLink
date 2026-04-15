@@ -49,9 +49,9 @@ describe('interpolateArgs', () => {
     });
 
     it('handles nested objects', () => {
-      expect(
-        interpolateArgs({ outer: { inner: '${content}' } }, LINK_TEXT),
-      ).toStrictEqual({ outer: { inner: 'src/app.ts#L10-L20' } });
+      expect(interpolateArgs({ outer: { inner: '${content}' } }, LINK_TEXT)).toStrictEqual({
+        outer: { inner: 'src/app.ts#L10-L20' },
+      });
     });
 
     it('handles empty object', () => {
