@@ -38,7 +38,10 @@ export class ClipboardRouter {
       options.control.destinationBehavior !== DestinationBehavior.ClipboardOnly &&
       this.destinationManager.isBound();
     if (shouldPreserve) {
-      await this.clipboardPreserver.preserve(() => this.executeCopyAndSend(options));
+      await this.clipboardPreserver.preserve(
+        () => this.executeCopyAndSend(options),
+        () => this.destinationManager.isClipboardRestorationApplicable(),
+      );
     } else {
       await this.executeCopyAndSend(options);
     }

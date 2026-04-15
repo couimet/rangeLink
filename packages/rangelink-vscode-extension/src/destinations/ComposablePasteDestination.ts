@@ -76,6 +76,7 @@ export interface AiAssistantDestinationParams {
   readonly loggingDetails: Record<string, unknown>;
   readonly logger: Logger;
   readonly getUserInstruction?: (autoPasteResult: AutoPasteResult) => string | undefined;
+  readonly shouldPreserveClipboard?: () => boolean;
 }
 
 /**
@@ -144,6 +145,17 @@ export interface ComposablePasteDestinationConfig {
   readonly getUserInstruction?: (autoPasteResult: AutoPasteResult) => string | undefined;
 
   /**
+   * Whether clipboard content should be restored after paste (optional).
+   *
+   * When provided, delegates clipboard preservation decisions to the destination.
+   * If not provided, defaults to true (always restore clipboard).
+   *
+   * Custom AI assistants use this to signal that Tier 3 (focusCommands)
+   * resolved — the link must stay on the clipboard for manual paste.
+   */
+  readonly shouldPreserveClipboard?: () => boolean;
+
+  /**
    * Custom equality comparison function (optional).
    *
    * Provides destination-specific equality logic (e.g., comparing terminal process IDs,
@@ -193,6 +205,7 @@ export class ComposablePasteDestination implements PasteDestination {
   private readonly loggingDetails: Record<string, unknown>;
   private readonly logger: Logger;
   private readonly getUserInstructionFn?: (autoPasteResult: AutoPasteResult) => string | undefined;
+  private readonly shouldPreserveClipboardFn?: () => boolean;
   private readonly compareWithFn?: (other: PasteDestination) => Promise<boolean>;
 
   private constructor(config: ComposablePasteDestinationConfig) {
@@ -206,6 +219,7 @@ export class ComposablePasteDestination implements PasteDestination {
     this.loggingDetails = config.loggingDetails;
     this.logger = config.logger;
     this.getUserInstructionFn = config.getUserInstruction;
+    this.shouldPreserveClipboardFn = config.shouldPreserveClipboard;
     this.compareWithFn = config.compareWith;
   }
 
@@ -358,6 +372,10 @@ export class ComposablePasteDestination implements PasteDestination {
       return undefined;
     }
     return this.getUserInstructionFn(autoPasteResult);
+  }
+
+  shouldPreserveClipboard(): boolean {
+    return this.shouldPreserveClipboardFn?.() ?? true;
   }
 
   /**
@@ -524,6 +542,7 @@ export class ComposablePasteDestination implements PasteDestination {
       loggingDetails: params.loggingDetails,
       logger: params.logger,
       getUserInstruction: params.getUserInstruction,
+      shouldPreserveClipboard: params.shouldPreserveClipboard,
       compareWith: async (other) => other.id === params.id,
     });
   }

@@ -2,7 +2,7 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import { Result } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
-import type { FocusTier } from '../types';
+import type { FocusTier, FocusTierLabel } from '../types';
 
 import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
 
@@ -20,10 +20,10 @@ import { FocusErrorReason, type FocusCapability, type FocusResult } from './Focu
  */
 export class ResolvedFocusCapability implements FocusCapability {
   /**
-   * The label of the resolved tier. Used by getUserInstruction to determine
-   * toast behavior (e.g., manual paste instructions for focusCommands tier).
+   * The label of the resolved tier. Used by getUserInstruction and
+   * shouldPreserveClipboard to make tier-dependent decisions.
    */
-  readonly resolvedTierLabel: string;
+  readonly resolvedTierLabel: FocusTierLabel;
 
   constructor(
     private readonly ideAdapter: VscodeAdapter,

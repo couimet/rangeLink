@@ -2,7 +2,7 @@ import type { Logger, LoggingContext } from 'barebone-logger';
 import { Result } from 'rangelink-core-ts';
 
 import type { VscodeAdapter } from '../../ide/vscode/VscodeAdapter';
-import type { FocusTier } from '../types';
+import type { FocusTier, FocusTierLabel } from '../types';
 
 import { FocusErrorReason, type FocusCapability, type FocusResult } from './FocusCapability';
 import { ResolvedFocusCapability } from './ResolvedFocusCapability';
@@ -26,7 +26,7 @@ export class LazyResolvedFocusCapability implements FocusCapability {
    * The label of the resolved tier. Available after first focus() call.
    * Returns undefined before resolution or if resolution failed.
    */
-  get resolvedTierLabel(): string | undefined {
+  get resolvedTierLabel(): FocusTierLabel | undefined {
     return this.resolved?.resolvedTierLabel;
   }
 

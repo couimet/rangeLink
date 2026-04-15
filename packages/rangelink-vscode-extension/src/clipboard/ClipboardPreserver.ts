@@ -4,7 +4,13 @@
  *
  * Implementations own the mode check and the save/restore lifecycle.
  * Call sites pass only the operation to wrap.
+ *
+ * @param fn - The async operation to wrap
+ * @param shouldRestore - Optional callback evaluated AFTER fn completes.
+ *   When provided and returns false, clipboard restoration is skipped.
+ *   Used by Tier 3 (focusCommands) destinations where the link must
+ *   stay on the clipboard for manual paste.
  */
 export interface ClipboardPreserver {
-  preserve<T>(fn: () => Promise<T>): Promise<T>;
+  preserve<T>(fn: () => Promise<T>, shouldRestore?: () => boolean): Promise<T>;
 }

@@ -14,6 +14,18 @@ import type { InsertFactory } from '../capabilities/insertFactories';
 export type FocusTierProbeMode = 'execute' | 'none';
 
 /**
+ * Known tier labels assigned in FocusCapabilityFactory.
+ *
+ * Used to make tier-dependent decisions type-safe (e.g., clipboard
+ * preservation checks compare against this union, not raw strings).
+ */
+export type FocusTierLabel =
+  | 'insertCommands'
+  | 'focusAndPasteCommands'
+  | 'focusCommands'
+  | 'builtinFallback';
+
+/**
  * A tier in the tiered focus strategy.
  *
  * Each tier pairs a set of VS Code commands with an InsertFactory that
@@ -22,6 +34,6 @@ export type FocusTierProbeMode = 'execute' | 'none';
 export interface FocusTier {
   readonly commands: readonly string[];
   readonly insertFactory: InsertFactory<void>;
-  readonly label: string;
+  readonly label: FocusTierLabel;
   readonly probeMode: FocusTierProbeMode;
 }

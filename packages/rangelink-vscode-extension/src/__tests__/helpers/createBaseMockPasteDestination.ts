@@ -108,6 +108,7 @@ export const createBaseMockPasteDestination = (
     focus: jest.fn().mockResolvedValue(true),
     getLoggingDetails: jest.fn().mockReturnValue({}),
     getJumpSuccessMessage: jest.fn().mockReturnValue('✓ Focused'),
+    shouldPreserveClipboard: jest.fn().mockReturnValue(true),
     equals: jest.fn().mockResolvedValue(false),
     getDestinationUri: jest.fn().mockReturnValue(undefined),
     ...processedOverrides,

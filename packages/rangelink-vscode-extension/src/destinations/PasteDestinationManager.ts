@@ -186,6 +186,24 @@ export class PasteDestinationManager implements vscode.Disposable {
   }
 
   /**
+   * Whether clipboard content should be restored after a paste operation.
+   *
+   * Delegates to the bound destination's shouldPreserveClipboard() method.
+   * Returns true (restore) when no destination is bound or when the
+   * destination signals that clipboard restoration is appropriate.
+   *
+   * Returns false when the bound destination resolved to a manual-paste
+   * tier (focusCommands) — the link must stay on the clipboard for the
+   * user to paste manually.
+   */
+  isClipboardRestorationApplicable(): boolean {
+    if (!this.boundDestination) {
+      return true;
+    }
+    return this.boundDestination.shouldPreserveClipboard();
+  }
+
+  /**
    * Focus the currently bound destination.
    *
    * Brings the bound destination into focus/view for quick navigation.

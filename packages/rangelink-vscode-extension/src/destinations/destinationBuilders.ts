@@ -235,6 +235,7 @@ export const createCustomAiAssistantBuilder = (
       id: kind,
       displayName: extensionName,
       focusCapability: lazyCapability,
+      shouldPreserveClipboard: () => lazyCapability.resolvedTierLabel !== 'focusCommands',
       isAvailable: async () => {
         const extension = context.ideAdapter.getExtension(extensionId);
         const extensionFound = extension !== undefined;
@@ -311,6 +312,7 @@ const createOverriddenBuiltinBuilder =
       id: builtin.kind,
       displayName: builtin.displayName,
       focusCapability: lazyCapability,
+      shouldPreserveClipboard: () => lazyCapability.resolvedTierLabel !== 'focusCommands',
       isAvailable: async () => builtin.isAvailable(context),
       jumpSuccessMessage: formatMessage(builtin.jumpMessageCode),
       loggingDetails: { extensionId: config.extensionId, overridden: true },

@@ -115,6 +115,30 @@ describe('ClipboardRouter', () => {
       );
     });
 
+    it('passes shouldRestore callback that delegates to isClipboardRestorationApplicable', async () => {
+      const dest = createMockTerminalPasteDestination({ displayName: 'Terminal' });
+      mockDestinationManager = createMockDestinationManager({
+        isBound: true,
+        boundDestination: dest,
+      });
+      mockDestinationManager.isClipboardRestorationApplicable.mockReturnValue(false);
+      router = new ClipboardRouter(
+        mockAdapter,
+        mockDestinationManager,
+        mockPicker,
+        mockPreserver,
+        mockLogger,
+      );
+
+      const options = buildOptions();
+
+      await router.copyAndSendToDestination(options);
+
+      const shouldRestoreCallback = mockPreserver.preserve.mock.calls[0][1] as () => boolean;
+      expect(shouldRestoreCallback()).toBe(false);
+      expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledTimes(1);
+    });
+
     it('skips preservation when destinationBehavior is ClipboardOnly', async () => {
       const dest = createMockTerminalPasteDestination({ displayName: 'Terminal' });
       mockDestinationManager = createMockDestinationManager({

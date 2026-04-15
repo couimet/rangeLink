@@ -243,7 +243,7 @@ suite('Custom AI Assistants — Paste Flow', () => {
     log('✓ Tier 1 clipboard isolation — sentinel preserved after R-L');
   });
 
-  test('[assisted] custom-ai-assistant-012: Tier 3 shows manual-paste toast', async () => {
+  test('[assisted] custom-ai-assistant-012: Tier 3 shows manual-paste toast and clipboard not restored', async () => {
     const { uri } = await createAndOpenFile('__rl-test-tier3', 'tier three test');
     tmpFileUris.push(uri);
     await settle();
@@ -252,6 +252,7 @@ suite('Custom AI Assistants — Paste Flow', () => {
       'Press Cmd+R Cmd+D and select "Dummy AI (Tier 3)" from the picker.',
     ]);
 
+    await writeClipboardSentinel();
     const logCapture = getLogCapture();
     logCapture.mark('before-tier3-paste');
 
@@ -273,7 +274,19 @@ suite('Custom AI Assistants — Paste Flow', () => {
     );
     assert.ok(manualPasteLog, 'Expected ManualPasteInsertFactory success log');
 
-    log('✓ Tier 3 shows manual-paste toast and logs clipboard write');
+    const clipboardContent = await assertClipboardChanged(
+      'Tier 3 clipboard should NOT be restored — link must stay for manual paste',
+    );
+    assert.ok(clipboardContent.length > 0, 'Clipboard should contain the RangeLink');
+
+    const skipRestoreLog = lines.find(
+      (line) =>
+        line.includes('withClipboardPreservation') &&
+        line.includes('Clipboard restoration skipped'),
+    );
+    assert.ok(skipRestoreLog, 'Expected clipboard restoration skip log');
+
+    log('✓ Tier 3 shows manual-paste toast, clipboard not restored (link stays)');
   });
 
   test('[assisted] custom-ai-assistant-013: Tier 2→3 fallback when focusAndPasteCommands not registered', async () => {
