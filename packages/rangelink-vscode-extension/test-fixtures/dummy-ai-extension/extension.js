@@ -33,9 +33,8 @@ function activate(context) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('dummyAi.focusForPaste', async () => {
-      if (!provider?._view) {
-        await vscode.commands.executeCommand('dummyAi.chatView.focus');
-      } else {
+      await provider?.ensureView();
+      if (provider?._view) {
         provider.reveal();
       }
       provider?.postMessage({ type: 'focusForPaste' });

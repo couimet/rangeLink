@@ -98,6 +98,18 @@ describe('FocusCapabilityFactory', () => {
     });
   });
 
+  describe('buildBuiltinFallbackTier', () => {
+    it('creates tier with builtinFallback label and execute probeMode', () => {
+      const FOCUS_COMMANDS = ['cursorAi.focus', 'cursorAi.sidebar.open'];
+
+      const tier = factory.buildBuiltinFallbackTier(FOCUS_COMMANDS);
+
+      expect(tier.label).toBe('builtinFallback');
+      expect(tier.probeMode).toBe('execute');
+      expect(tier.commands).toStrictEqual(FOCUS_COMMANDS);
+    });
+  });
+
   describe('createLazyResolvedCapability', () => {
     it('creates LazyResolvedFocusCapability from tiers', () => {
       const config: CustomAiAssistantConfig = {

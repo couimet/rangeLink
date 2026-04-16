@@ -41,6 +41,16 @@ describe('resolveFocusTier', () => {
     expect(result).toBeDefined();
     expect(result!.resolvedTier.label).toBe('insertCommands');
     expect(result!.isFallback).toBe(false);
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      {
+        fn: 'resolveFocusTier',
+        tier: 'insertCommands',
+        command: 'sparkAi.insertText',
+        isFallback: false,
+        logPrefix: LOG_PREFIX,
+      },
+      'TestAssistant: resolved to insertCommands (command: sparkAi.insertText)',
+    );
   });
 
   it('falls through to second tier when first has no registered commands', () => {
@@ -91,6 +101,16 @@ describe('resolveFocusTier', () => {
 
     expect(result).toBeDefined();
     expect(result!.resolvedTier.label).toBe('focusCommands');
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      {
+        fn: 'resolveFocusTier',
+        tier: 'focusCommands',
+        command: 'sparkAi.focus',
+        isFallback: false,
+        logPrefix: LOG_PREFIX,
+      },
+      'TestAssistant: resolved to focusCommands (command: sparkAi.focus)',
+    );
   });
 
   it('returns undefined when no tier has registered commands', () => {

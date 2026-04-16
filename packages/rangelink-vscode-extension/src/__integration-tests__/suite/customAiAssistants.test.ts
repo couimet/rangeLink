@@ -18,6 +18,9 @@ import {
   writeClipboardSentinel,
 } from '../helpers';
 
+const EXPECTED_CUSTOM_ASSISTANTS_COUNT = 6;
+const EXPECTED_CUSTOM_AI_REGISTRATIONS = 5;
+
 suite('Custom AI Assistants', () => {
   suiteSetup(async () => {
     await activateExtension();
@@ -36,8 +39,8 @@ suite('Custom AI Assistants', () => {
       'Expected parseCustomAiAssistants INFO log showing loaded custom AI assistants — if missing, the rangelink.customAiAssistants setting may not be configured in the test workspace',
     );
     assert.ok(
-      parseLogLine.includes('"count":6'),
-      `Expected 6 custom AI assistants loaded but got: ${parseLogLine}`,
+      parseLogLine.includes(`"count":${EXPECTED_CUSTOM_ASSISTANTS_COUNT}`),
+      `Expected ${EXPECTED_CUSTOM_ASSISTANTS_COUNT} custom AI assistants loaded but got: ${parseLogLine}`,
     );
     assert.ok(
       parseLogLine.includes('rangelink.dummy-ai-extension'),
@@ -55,8 +58,8 @@ suite('Custom AI Assistants', () => {
 
     assert.strictEqual(
       registrationLogs.length,
-      5,
-      `Expected 5 custom AI registrations but found ${registrationLogs.length}: ${registrationLogs.join('\n')}`,
+      EXPECTED_CUSTOM_AI_REGISTRATIONS,
+      `Expected ${EXPECTED_CUSTOM_AI_REGISTRATIONS} custom AI registrations but found ${registrationLogs.length}: ${registrationLogs.join('\n')}`,
     );
     assert.ok(
       registrationLogs.some((l) => l.includes('custom-ai:rangelink.dummy-ai-extension"')),
@@ -164,7 +167,7 @@ suite('Custom AI Assistants', () => {
     );
   });
 
-  test('custom-ai-assistant-016: built-in override carries overridden flag in logging details', async () => {
+  test('custom-ai-assistant-016: built-in override does not register a separate custom-ai kind', async () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
 

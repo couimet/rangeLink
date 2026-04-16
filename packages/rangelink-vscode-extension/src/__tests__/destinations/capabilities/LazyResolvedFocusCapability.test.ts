@@ -37,12 +37,12 @@ describe('LazyResolvedFocusCapability', () => {
     expect(capability.resolvedTierLabel).toBeUndefined();
 
     const result1 = await capability.focus(CONTEXT);
-    expect(result1.success).toBe(true);
+    expect(result1).toBeOk();
     expect(capability.resolvedTierLabel).toBe('insertCommands');
     expect(getCommandsSpy).toHaveBeenCalledTimes(1);
 
     const result2 = await capability.focus(CONTEXT);
-    expect(result2.success).toBe(true);
+    expect(result2).toBeOk();
     expect(getCommandsSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -60,10 +60,14 @@ describe('LazyResolvedFocusCapability', () => {
     const capability = new LazyResolvedFocusCapability(mockAdapter, [tier], mockLogger, LOG_PREFIX);
 
     const result1 = await capability.focus(CONTEXT);
-    expect(result1.success).toBe(false);
+    expect(result1).toBeErrWith((error: { reason: string }) => {
+      expect(error).toStrictEqual({ reason: 'COMMAND_FOCUS_FAILED' });
+    });
 
     const result2 = await capability.focus(CONTEXT);
-    expect(result2.success).toBe(false);
+    expect(result2).toBeErrWith((error: { reason: string }) => {
+      expect(error.reason).toBe('COMMAND_FOCUS_FAILED');
+    });
   });
 
   it('exposes isFallbackResolution when resolved tier is at fallbackTierIndex', async () => {
@@ -149,8 +153,36 @@ describe('LazyResolvedFocusCapability', () => {
 
     const result = await capability.focus(CONTEXT);
 
-    expect(result.success).toBe(true);
+    expect(result).toBeOk();
     expect(executeCommandSpy).toHaveBeenCalledWith('sparkAi.focus');
     expect(capability.resolvedTierLabel).toBe('focusAndPasteCommands');
+  });
+
+  it('concurrent focus() calls share a single resolution — getCommands called exactly once', async () => {
+    const mockAdapter = createMockVscodeAdapter();
+    let resolveGetCommands: ((value: string[]) => void) | undefined;
+    jest.spyOn(mockAdapter, 'getCommands').mockImplementation(
+      () => new Promise((resolve) => { resolveGetCommands = resolve; }),
+    );
+
+    const tier: FocusTier = {
+      commands: ['sparkAi.insertText'],
+      insertFactory: createMockInsertFactory(),
+      label: 'insertCommands',
+      probeMode: 'none',
+    };
+
+    const capability = new LazyResolvedFocusCapability(mockAdapter, [tier], mockLogger, LOG_PREFIX);
+
+    const focus1 = capability.focus(CONTEXT);
+    const focus2 = capability.focus(CONTEXT);
+
+    resolveGetCommands!(['sparkAi.insertText']);
+
+    const [result1, result2] = await Promise.all([focus1, focus2]);
+
+    expect(result1).toBeOk();
+    expect(result2).toBeOk();
+    expect(mockAdapter.getCommands).toHaveBeenCalledTimes(1);
   });
 });

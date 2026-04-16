@@ -19,16 +19,16 @@ describe('DirectInsertFactory', () => {
       .spyOn(mockAdapter, 'executeCommand')
       .mockResolvedValue(undefined);
 
-    const entries: InsertCommandEntry[] = [{ command: 'piChat.insertText' }];
+    const entries: InsertCommandEntry[] = [{ command: 'sparkAi.insertText' }];
     const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
     const insertFn = factory.forTarget();
 
     const result = await insertFn(LINK_TEXT);
 
     expect(result).toBe(true);
-    expect(executeCommandSpy).toHaveBeenCalledWith('piChat.insertText', 'src/app.ts#L10-L20');
+    expect(executeCommandSpy).toHaveBeenCalledWith('sparkAi.insertText', 'src/app.ts#L10-L20');
     expect(mockLogger.info).toHaveBeenCalledWith(
-      { fn: 'DirectInsertFactory.insert', command: 'piChat.insertText' },
+      { fn: 'DirectInsertFactory.insert', command: 'sparkAi.insertText' },
       'Direct insert succeeded',
     );
   });
@@ -70,11 +70,38 @@ describe('DirectInsertFactory', () => {
     expect(executeCommandSpy).toHaveBeenCalledWith('cmd', { content: 'src/app.ts#L10-L20' });
   });
 
-  it('falls through to next command when first fails', async () => {
+  it('spreads multiple elements from an array args template as separate arguments', async () => {
     const mockAdapter = createMockVscodeAdapter();
     const executeCommandSpy = jest
       .spyOn(mockAdapter, 'executeCommand')
-      .mockRejectedValueOnce(new Error('Not found'))
+      .mockResolvedValue(undefined);
+
+    const entries: InsertCommandEntry[] = [
+      { command: 'multi.cmd', args: ['${content}', { source: 'rangelink' }] },
+    ];
+    const factory = new DirectInsertFactory(mockAdapter, entries, mockLogger);
+    const insertFn = factory.forTarget();
+
+    const result = await insertFn(LINK_TEXT);
+
+    expect(result).toBe(true);
+    expect(executeCommandSpy).toHaveBeenCalledWith(
+      'multi.cmd',
+      'src/app.ts#L10-L20',
+      { source: 'rangelink' },
+    );
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      { fn: 'DirectInsertFactory.insert', command: 'multi.cmd' },
+      'Direct insert succeeded',
+    );
+  });
+
+  it('falls through to next command when first fails', async () => {
+    const mockAdapter = createMockVscodeAdapter();
+    const primaryError = new Error('Not found');
+    const executeCommandSpy = jest
+      .spyOn(mockAdapter, 'executeCommand')
+      .mockRejectedValueOnce(primaryError)
       .mockResolvedValueOnce(undefined);
 
     const entries: InsertCommandEntry[] = [{ command: 'cmd.primary' }, { command: 'cmd.fallback' }];
@@ -88,7 +115,7 @@ describe('DirectInsertFactory', () => {
     expect(executeCommandSpy).toHaveBeenNthCalledWith(1, 'cmd.primary', 'src/app.ts#L10-L20');
     expect(executeCommandSpy).toHaveBeenNthCalledWith(2, 'cmd.fallback', 'src/app.ts#L10-L20');
     expect(mockLogger.debug).toHaveBeenCalledWith(
-      { fn: 'DirectInsertFactory.insert', command: 'cmd.primary', error: expect.any(Error) },
+      { fn: 'DirectInsertFactory.insert', command: 'cmd.primary', error: primaryError },
       'Direct insert command failed, trying next',
     );
   });

@@ -324,5 +324,78 @@ describe('parseCustomAiAssistants', () => {
         'Loaded 1 custom AI assistant(s)',
       );
     });
+
+    it('trims whitespace from extensionId and extensionName', () => {
+      const configReader = createMockConfigReader({
+        get: jest
+          .fn()
+          .mockReturnValue([
+            { extensionId: '  acme.ai  ', extensionName: '  Acme AI  ', focusCommands: ['acme.focus'] },
+          ]),
+      });
+
+      const result = parseCustomAiAssistants(configReader, mockLogger);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].extensionId).toBe('acme.ai');
+      expect(result[0].extensionName).toBe('Acme AI');
+      expect(result[0].kind).toBe('custom-ai:acme.ai');
+    });
+
+    it('deduplicates extensionIds after trimming', () => {
+      const configReader = createMockConfigReader({
+        get: jest
+          .fn()
+          .mockReturnValue([
+            { extensionId: 'acme.ai', extensionName: 'Acme', focusCommands: ['acme.focus'] },
+            { extensionId: '  acme.ai  ', extensionName: 'Acme Dupe', focusCommands: ['acme.other'] },
+          ]),
+      });
+
+      const result = parseCustomAiAssistants(configReader, mockLogger);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].extensionName).toBe('Acme');
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'parseCustomAiAssistants', index: 1, extensionId: 'acme.ai' },
+        "Skipping customAiAssistants[1]: duplicate extensionId 'acme.ai'",
+      );
+    });
+
+    it('warns when focusCommands is present but malformed', () => {
+      const configReader = createMockConfigReader({
+        get: jest
+          .fn()
+          .mockReturnValue([
+            { extensionId: 'acme.ai', extensionName: 'Acme', focusCommands: [123, null] },
+          ]),
+      });
+
+      const result = parseCustomAiAssistants(configReader, mockLogger);
+
+      expect(result).toHaveLength(0);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'parseCustomAiAssistants', index: 0, fieldName: 'focusCommands' },
+        'Skipping customAiAssistants[0].focusCommands: must be a non-empty array of strings',
+      );
+    });
+
+    it('warns when focusAndPasteCommands is present but malformed', () => {
+      const configReader = createMockConfigReader({
+        get: jest
+          .fn()
+          .mockReturnValue([
+            { extensionId: 'acme.ai', extensionName: 'Acme', focusAndPasteCommands: 'not-array', focusCommands: ['acme.focus'] },
+          ]),
+      });
+
+      const result = parseCustomAiAssistants(configReader, mockLogger);
+
+      expect(result).toHaveLength(1);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'parseCustomAiAssistants', index: 0, fieldName: 'focusAndPasteCommands' },
+        'Skipping customAiAssistants[0].focusAndPasteCommands: must be a non-empty array of strings',
+      );
+    });
   });
 });

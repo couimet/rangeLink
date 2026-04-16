@@ -448,6 +448,193 @@ describe('destinationBuilders', () => {
 
       expect(destination.getJumpSuccessMessage()).toBe('✓ Focused Spark AI');
     });
+
+    it('allCommands includes insertCommands when present', async () => {
+      const configWithInsert = {
+        kind: 'custom-ai:acme.spark-ai' as const,
+        extensionId: 'acme.spark-ai',
+        extensionName: 'Spark AI',
+        insertCommands: [{ command: 'sparkAi.insertText' }],
+        focusCommands: ['sparkAi.focus'],
+      };
+      const context = createMockContext();
+      jest.spyOn(context.ideAdapter, 'getExtension').mockReturnValue(undefined);
+      jest
+        .spyOn(context.ideAdapter, 'getCommands')
+        .mockResolvedValue(['sparkAi.insertText']);
+
+      const builder = createCustomAiAssistantBuilder(configWithInsert);
+      const destination = builder({ kind: configWithInsert.kind }, context);
+
+      expect(await destination.isAvailable()).toBe(true);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'customAiAssistant.isAvailable',
+          extensionId: 'acme.spark-ai',
+          extensionFound: false,
+          extensionActive: false,
+          commandAvailable: true,
+          checkedCommands: ['sparkAi.insertText', 'sparkAi.focus'],
+          available: true,
+        },
+        "Custom AI assistant 'Spark AI' available: true",
+      );
+    });
+
+    it('shouldPreserveClipboard returns true when resolvedTierLabel is not focusCommands', () => {
+      const context = createMockContext();
+      const mockCapability = context.factories.focusCapability.createLazyResolvedCapability([], '');
+      (mockCapability as any).resolvedTierLabel = 'insertCommands';
+
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect(destination.shouldPreserveClipboard()).toBe(true);
+    });
+
+    it('shouldPreserveClipboard returns false when resolvedTierLabel is focusCommands', () => {
+      const context = createMockContext();
+      const mockCapability = context.factories.focusCapability.createLazyResolvedCapability([], '');
+      (mockCapability as any).resolvedTierLabel = 'focusCommands';
+
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect(destination.shouldPreserveClipboard()).toBe(false);
+    });
+
+    it('getUserInstruction returns manual-paste message on success when resolvedTierLabel is focusCommands', () => {
+      const context = createMockContext();
+      const mockCapability = context.factories.focusCapability.createLazyResolvedCapability([], '');
+      (mockCapability as any).resolvedTierLabel = 'focusCommands';
+
+      const builder = createCustomAiAssistantBuilder(customConfig);
+      const destination = builder({ kind: customConfig.kind }, context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBe(
+        'Paste (Cmd/Ctrl+V) in Spark AI to use.',
+      );
+    });
+  });
+
+  describe('createOverriddenBuiltinBuilder (via registerAllDestinationBuilders)', () => {
+    const overrideConfig = {
+      kind: 'custom-ai:anthropic.claude-code' as const,
+      extensionId: 'anthropic.claude-code',
+      extensionName: 'Claude Code (Custom)',
+      insertCommands: [{ command: 'claude-vscode.insertText' }],
+    };
+
+    const buildOverriddenDestination = (context: DestinationBuilderContext) => {
+      const builders = new Map<DestinationKind, DestinationBuilder>();
+      registerAllDestinationBuilders(
+        { register: (k: DestinationKind, b: DestinationBuilder) => builders.set(k, b) },
+        [overrideConfig],
+      );
+      const builder = builders.get('claude-code')!;
+      return builder({ kind: 'claude-code' }, context);
+    };
+
+    it('creates destination with built-in kind and display name', () => {
+      const context = createMockContext();
+      const destination = buildOverriddenDestination(context);
+
+      expect({ id: destination.id, displayName: destination.displayName }).toStrictEqual({
+        id: 'claude-code',
+        displayName: 'Claude Code Chat',
+      });
+    });
+
+    it('includes overridden flag in logging details', () => {
+      const context = createMockContext();
+      const destination = buildOverriddenDestination(context);
+
+      expect(destination.getLoggingDetails()).toStrictEqual({
+        extensionId: 'anthropic.claude-code',
+        overridden: true,
+      });
+    });
+
+    it('calls buildCustomAIAssistantTiers with user config', () => {
+      const context = createMockContext();
+      buildOverriddenDestination(context);
+
+      expect(context.factories.focusCapability.buildCustomAIAssistantTiers).toHaveBeenCalledWith(
+        overrideConfig,
+      );
+    });
+
+    it('calls buildBuiltinFallbackTier with built-in focus commands', () => {
+      const context = createMockContext();
+      buildOverriddenDestination(context);
+
+      expect(context.factories.focusCapability.buildBuiltinFallbackTier).toHaveBeenCalledTimes(1);
+    });
+
+    it('creates lazy capability with merged tiers and fallback index', () => {
+      const context = createMockContext();
+      buildOverriddenDestination(context);
+
+      const buildFallbackSpy = context.factories.focusCapability.buildBuiltinFallbackTier as jest.Mock;
+      const mockFallbackTier = buildFallbackSpy.mock.results[0].value;
+      const FALLBACK_TIER_INDEX = 0;
+
+      expect(context.factories.focusCapability.createLazyResolvedCapability).toHaveBeenCalledWith(
+        [mockFallbackTier],
+        'Claude Code Chat',
+        FALLBACK_TIER_INDEX,
+      );
+    });
+
+    it('isAvailable delegates to built-in availability check', async () => {
+      const spy = spyOnIsClaudeCodeAvailable().mockResolvedValue(true);
+      const context = createMockContext();
+      const destination = buildOverriddenDestination(context);
+
+      expect(await destination.isAvailable()).toBe(true);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('shouldPreserveClipboard returns false when resolvedTierLabel is focusCommands', () => {
+      const context = createMockContext();
+      const mockCapability = context.factories.focusCapability.createLazyResolvedCapability([], '');
+      (mockCapability as any).resolvedTierLabel = 'focusCommands';
+
+      const destination = buildOverriddenDestination(context);
+
+      expect(destination.shouldPreserveClipboard()).toBe(false);
+    });
+
+    it('getUserInstruction returns built-in message on success when focusCommands tier', () => {
+      const context = createMockContext();
+      const mockCapability = context.factories.focusCapability.createLazyResolvedCapability([], '');
+      (mockCapability as any).resolvedTierLabel = 'focusCommands';
+
+      const destination = buildOverriddenDestination(context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBe(
+        'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
+      );
+    });
+
+    it('getUserInstruction returns undefined on success when tier is not focusCommands', () => {
+      const context = createMockContext();
+      const mockCapability = context.factories.focusCapability.createLazyResolvedCapability([], '');
+      (mockCapability as any).resolvedTierLabel = 'insertCommands';
+
+      const destination = buildOverriddenDestination(context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Success)).toBeUndefined();
+    });
+
+    it('getUserInstruction returns built-in message on failure', () => {
+      const context = createMockContext();
+      const destination = buildOverriddenDestination(context);
+
+      expect(destination.getUserInstruction(AutoPasteResult.Failure)).toBe(
+        'Paste (Cmd/Ctrl+V) in Claude Code chat to use.',
+      );
+    });
   });
 
   describe('registerAllDestinationBuilders', () => {

@@ -122,6 +122,15 @@ describe('ClipboardRouter', () => {
         boundDestination: dest,
       });
       mockDestinationManager.isClipboardRestorationApplicable.mockReturnValue(false);
+
+      let capturedShouldRestore: (() => boolean) | undefined;
+      mockPreserver.preserve.mockImplementation(
+        async (fn: () => Promise<unknown>, shouldRestore?: () => boolean) => {
+          capturedShouldRestore = shouldRestore;
+          return fn();
+        },
+      );
+
       router = new ClipboardRouter(
         mockAdapter,
         mockDestinationManager,
@@ -134,8 +143,8 @@ describe('ClipboardRouter', () => {
 
       await router.copyAndSendToDestination(options);
 
-      const shouldRestoreCallback = mockPreserver.preserve.mock.calls[0][1] as () => boolean;
-      expect(shouldRestoreCallback()).toBe(false);
+      expect(mockPreserver.preserve).toHaveBeenCalledTimes(1);
+      expect(capturedShouldRestore?.()).toBe(false);
       expect(mockDestinationManager.isClipboardRestorationApplicable).toHaveBeenCalledTimes(1);
     });
 

@@ -13,9 +13,10 @@ const CONTENT_PLACEHOLDER = '${content}';
  */
 export const interpolateArgs = (template: unknown, content: string): unknown => {
   if (typeof template === 'string') {
-    return template === CONTENT_PLACEHOLDER
-      ? content
-      : template.replace(CONTENT_PLACEHOLDER, content);
+    if (template === CONTENT_PLACEHOLDER) {
+      return content;
+    }
+    return template.split(CONTENT_PLACEHOLDER).join(content);
   }
 
   if (Array.isArray(template)) {

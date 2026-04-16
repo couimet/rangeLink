@@ -2554,7 +2554,7 @@ test_cases:
       - 'File open in editor with text selected'
     steps:
       - 'Bind to Dummy AI (Tier 1) via R-D picker'
-      - 'Execute R-L (Copy Link with Relative Path)'
+      - 'Execute R-L (Send RangeLink)'
       - 'Check dummy extension textarea via dummyAi.getText'
     expected_result: 'tier1 textarea contains the generated link; tier2 textarea is empty'
     automated: assisted

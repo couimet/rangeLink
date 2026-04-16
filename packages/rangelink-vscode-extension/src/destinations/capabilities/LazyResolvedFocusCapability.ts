@@ -21,6 +21,7 @@ import { resolveFocusTier, type TierResolutionResult } from './resolveFocusTier'
 export class LazyResolvedFocusCapability implements FocusCapability {
   private resolved: ResolvedFocusCapability | undefined;
   private resolutionFailed = false;
+  private resolutionInFlight: Promise<void> | undefined;
 
   /**
    * The label of the resolved tier. Available after first focus() call.
@@ -54,54 +55,68 @@ export class LazyResolvedFocusCapability implements FocusCapability {
     }
 
     if (!this.resolved) {
-      const registeredCommands = await this.ideAdapter.getCommands();
-      const result = resolveFocusTier(
-        this.tiers,
-        registeredCommands,
-        this.logger,
-        this.logPrefix,
-        this.fallbackTierIndex,
-      );
-
-      if (!result) {
-        this.resolutionFailed = true;
-        this.logger.warn(
-          { ...context, logPrefix: this.logPrefix },
-          `${this.logPrefix}: tier resolution failed — no commands registered`,
-        );
-        return Result.err({ reason: FocusErrorReason.COMMAND_FOCUS_FAILED });
-      }
-
-      this.resolutionResult = result;
-
-      if (result.isFallback) {
-        this.logger.warn(
-          {
-            ...context,
-            tier: result.resolvedTier.label,
-            commands: result.resolvedTier.commands,
-            logPrefix: this.logPrefix,
-          },
-          `${this.logPrefix}: custom commands not registered, falling back to built-in commands`,
-        );
+      if (this.resolutionInFlight) {
+        await this.resolutionInFlight;
       } else {
-        this.logger.info(
-          {
-            ...context,
-            tier: result.resolvedTier.label,
-            logPrefix: this.logPrefix,
-          },
-          `${this.logPrefix}: resolved to ${result.resolvedTier.label}`,
-        );
+        this.resolutionInFlight = this.resolve(context);
+        await this.resolutionInFlight;
+        this.resolutionInFlight = undefined;
       }
+    }
 
-      this.resolved = new ResolvedFocusCapability(
-        this.ideAdapter,
-        result.resolvedTier,
-        this.logger,
+    if (this.resolutionFailed) {
+      return Result.err({ reason: FocusErrorReason.COMMAND_FOCUS_FAILED });
+    }
+
+    return this.resolved!.focus(context);
+  }
+
+  private async resolve(context: LoggingContext): Promise<void> {
+    const registeredCommands = await this.ideAdapter.getCommands();
+    const result = resolveFocusTier(
+      this.tiers,
+      registeredCommands,
+      this.logger,
+      this.logPrefix,
+      this.fallbackTierIndex,
+    );
+
+    if (!result) {
+      this.resolutionFailed = true;
+      this.logger.warn(
+        { ...context, logPrefix: this.logPrefix },
+        `${this.logPrefix}: tier resolution failed — no commands registered`,
+      );
+      return;
+    }
+
+    this.resolutionResult = result;
+
+    if (result.isFallback) {
+      this.logger.warn(
+        {
+          ...context,
+          tier: result.resolvedTier.label,
+          commands: result.resolvedTier.commands,
+          logPrefix: this.logPrefix,
+        },
+        `${this.logPrefix}: custom commands not registered, falling back to built-in commands`,
+      );
+    } else {
+      this.logger.info(
+        {
+          ...context,
+          tier: result.resolvedTier.label,
+          logPrefix: this.logPrefix,
+        },
+        `${this.logPrefix}: resolved to ${result.resolvedTier.label}`,
       );
     }
 
-    return this.resolved.focus(context);
+    this.resolved = new ResolvedFocusCapability(
+      this.ideAdapter,
+      result.resolvedTier,
+      this.logger,
+    );
   }
 }

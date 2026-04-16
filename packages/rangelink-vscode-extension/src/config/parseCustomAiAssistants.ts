@@ -83,11 +83,24 @@ const parseInsertCommands = (
 
 /**
  * Parse an optional string array field. Returns undefined if absent or invalid.
+ * Logs a warning when the value exists but is malformed.
  */
-const parseOptionalStringArray = (raw: unknown): string[] | undefined => {
+const parseOptionalStringArray = (
+  raw: unknown,
+  fieldName: string,
+  index: number,
+  logger: Logger,
+): string[] | undefined => {
+  if (raw === undefined) {
+    return undefined;
+  }
   if (isNonEmptyStringArray(raw)) {
     return raw;
   }
+  logger.warn(
+    { fn: 'parseCustomAiAssistants', index, fieldName },
+    `Skipping customAiAssistants[${index}].${fieldName}: must be a non-empty array of strings`,
+  );
   return undefined;
 };
 
@@ -122,27 +135,30 @@ export const parseCustomAiAssistants = (
       continue;
     }
 
-    const { extensionId, extensionName } = entry;
+    const { extensionId: rawExtensionId, extensionName: rawExtensionName } = entry;
 
-    if (!isNonEmptyString(extensionId)) {
+    if (!isNonEmptyString(rawExtensionId)) {
       logger.warn(
-        { fn: 'parseCustomAiAssistants', index, extensionId },
+        { fn: 'parseCustomAiAssistants', index, extensionId: rawExtensionId },
         `Skipping customAiAssistants[${index}]: extensionId must be a non-empty string`,
       );
       continue;
     }
 
-    if (!isNonEmptyString(extensionName)) {
+    if (!isNonEmptyString(rawExtensionName)) {
       logger.warn(
-        { fn: 'parseCustomAiAssistants', index, extensionName },
+        { fn: 'parseCustomAiAssistants', index, extensionName: rawExtensionName },
         `Skipping customAiAssistants[${index}]: extensionName must be a non-empty string`,
       );
       continue;
     }
 
+    const extensionId = rawExtensionId.trim();
+    const extensionName = rawExtensionName.trim();
+
     const insertCommands = parseInsertCommands(entry.insertCommands, index, logger);
-    const focusAndPasteCommands = parseOptionalStringArray(entry.focusAndPasteCommands);
-    const focusCommands = parseOptionalStringArray(entry.focusCommands);
+    const focusAndPasteCommands = parseOptionalStringArray(entry.focusAndPasteCommands, 'focusAndPasteCommands', index, logger);
+    const focusCommands = parseOptionalStringArray(entry.focusCommands, 'focusCommands', index, logger);
 
     if (!insertCommands && !focusAndPasteCommands && !focusCommands) {
       logger.warn(

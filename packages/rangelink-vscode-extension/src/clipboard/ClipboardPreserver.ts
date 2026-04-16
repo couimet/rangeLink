@@ -3,7 +3,8 @@
  * rangelink.clipboard.preserve setting.
  *
  * Implementations own the mode check and the save/restore lifecycle.
- * Call sites pass only the operation to wrap.
+ * Call sites pass the operation to wrap and may optionally pass a
+ * shouldRestore callback to control post-operation clipboard restoration.
  *
  * @param fn - The async operation to wrap
  * @param shouldRestore - Optional callback evaluated AFTER fn completes.

@@ -14,6 +14,12 @@ describe('interpolateArgs', () => {
       );
     });
 
+    it('replaces all ${content} occurrences in a single string', () => {
+      expect(interpolateArgs('${content} and ${content}', LINK_TEXT)).toBe(
+        'src/app.ts#L10-L20 and src/app.ts#L10-L20',
+      );
+    });
+
     it('returns string unchanged when no placeholder present', () => {
       expect(interpolateArgs('no-placeholder', LINK_TEXT)).toBe('no-placeholder');
     });
