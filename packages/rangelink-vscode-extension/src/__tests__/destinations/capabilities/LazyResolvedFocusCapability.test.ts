@@ -188,4 +188,28 @@ describe('LazyResolvedFocusCapability', () => {
     expect(result2).toBeOk();
     expect(mockAdapter.getCommands).toHaveBeenCalledTimes(1);
   });
+
+  it('clears resolutionInFlight on failure so subsequent calls return clean error', async () => {
+    const mockAdapter = createMockVscodeAdapter();
+    const getCommandsError = new Error('getCommands crashed');
+    jest.spyOn(mockAdapter, 'getCommands').mockRejectedValue(getCommandsError);
+
+    const tier: FocusTier = {
+      commands: ['sparkAi.insertText'],
+      insertFactory: createMockInsertFactory(),
+      label: 'insertCommands',
+      probeMode: 'none',
+    };
+
+    const capability = new LazyResolvedFocusCapability(mockAdapter, [tier], mockLogger, LOG_PREFIX);
+
+    await expect(capability.focus(CONTEXT)).rejects.toThrow(getCommandsError);
+
+    jest.spyOn(mockAdapter, 'getCommands').mockResolvedValue([]);
+    const result = await capability.focus(CONTEXT);
+
+    expect(result).toBeErrWith((error: { reason: string }) => {
+      expect(error).toStrictEqual({ reason: 'COMMAND_FOCUS_FAILED' });
+    });
+  });
 });

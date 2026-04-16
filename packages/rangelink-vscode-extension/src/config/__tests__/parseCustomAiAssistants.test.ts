@@ -327,15 +327,13 @@ describe('parseCustomAiAssistants', () => {
 
     it('trims whitespace from extensionId and extensionName', () => {
       const configReader = createMockConfigReader({
-        get: jest
-          .fn()
-          .mockReturnValue([
-            {
-              extensionId: '  acme.ai  ',
-              extensionName: '  Acme AI  ',
-              focusCommands: ['acme.focus'],
-            },
-          ]),
+        get: jest.fn().mockReturnValue([
+          {
+            extensionId: '  acme.ai  ',
+            extensionName: '  Acme AI  ',
+            focusCommands: ['acme.focus'],
+          },
+        ]),
       });
 
       const result = parseCustomAiAssistants(configReader, mockLogger);
@@ -384,16 +382,14 @@ describe('parseCustomAiAssistants', () => {
 
     it('warns when focusAndPasteCommands is present but malformed', () => {
       const configReader = createMockConfigReader({
-        get: jest
-          .fn()
-          .mockReturnValue([
-            {
-              extensionId: 'acme.ai',
-              extensionName: 'Acme',
-              focusAndPasteCommands: 'not-array',
-              focusCommands: ['acme.focus'],
-            },
-          ]),
+        get: jest.fn().mockReturnValue([
+          {
+            extensionId: 'acme.ai',
+            extensionName: 'Acme',
+            focusAndPasteCommands: 'not-array',
+            focusCommands: ['acme.focus'],
+          },
+        ]),
       });
 
       const result = parseCustomAiAssistants(configReader, mockLogger);

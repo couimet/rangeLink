@@ -59,8 +59,11 @@ export class LazyResolvedFocusCapability implements FocusCapability {
         await this.resolutionInFlight;
       } else {
         this.resolutionInFlight = this.resolve(context);
-        await this.resolutionInFlight;
-        this.resolutionInFlight = undefined;
+        try {
+          await this.resolutionInFlight;
+        } finally {
+          this.resolutionInFlight = undefined;
+        }
       }
     }
 
