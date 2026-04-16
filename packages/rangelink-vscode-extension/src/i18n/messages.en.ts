@@ -203,6 +203,12 @@ export const messagesEn: Record<MessageCode, string> = {
 
   [MessageCode.UNKNOWN_FILENAME_FALLBACK]: 'Unknown',
 
+  [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER]:
+    'File has unsaved changes. The AI tool may read stale content from disk.',
+  [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER_CONTINUE]: 'Send Anyway',
+  [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER_SAVE]: 'Save & Send',
+  [MessageCode.WARN_FILE_PATH_DIRTY_BUFFER_SAVE_FAILED]:
+    'File could not be saved. File path send aborted.',
   [MessageCode.WARN_FILE_PATH_NOT_FOUND]: 'RangeLink: Cannot find file: {path}',
   [MessageCode.WARN_LINK_DIRTY_BUFFER]:
     'File has unsaved changes. Link may point to wrong position after save.',

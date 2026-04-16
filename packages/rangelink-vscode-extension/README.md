@@ -475,11 +475,11 @@ Most paste commands default to `"both"` to prevent the pasted text from concaten
 
 | Setting                                    | Default | Description                                                                                                   |
 | ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
-| `rangelink.warnOnDirtyBuffer`              | `true`  | Show warning when generating a link from a file with unsaved changes                                          |
+| `rangelink.warnOnDirtyBuffer`              | `true`  | Show warning when a file has unsaved changes (applies to R-L and R-F)                                         |
 | `rangelink.navigation.showNavigatedToast`  | `true`  | Show info toast after successful navigation (e.g., "Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16") |
 | `rangelink.navigation.showClampingWarning` | `true`  | Show warning toast when navigation is clamped to file boundaries                                              |
 
-When `warnOnDirtyBuffer` is enabled, a dialog appears with options: "Save & Generate", "Generate Anyway", or dismiss to abort. This helps avoid creating links that may point to incorrect positions after the file is saved.
+When `warnOnDirtyBuffer` is enabled and a file has unsaved changes, a dialog appears before proceeding. For R-L (Send RangeLink), the options are "Save & Generate" / "Generate Anyway" — this helps avoid creating links that may point to incorrect positions after the file is saved. For R-F (Send File Path), the options are "Save & Send" / "Send Anyway" — this ensures the AI tool reads the same content the user sees on screen, not stale content from disk.
 
 Set the navigation settings to `false` for a quieter workflow. Navigation itself is unaffected — only the feedback toasts are suppressed. Error toasts (e.g., "Failed to navigate") always appear regardless of these settings.
 

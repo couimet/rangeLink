@@ -9,10 +9,17 @@ import {
 } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
-import { MessageCode, PasteContentType, PathFormat, RelativePathFormat } from '../types';
+import {
+  DirtyBufferWarningResult,
+  MessageCode,
+  PasteContentType,
+  PathFormat,
+  RelativePathFormat,
+} from '../types';
 import { formatMessage } from '../utils';
 
 import type { ClipboardRouter } from './ClipboardRouter';
+import { FILE_PATH_DIRTY_BUFFER_CODES, handleDirtyBufferWarning } from './handleDirtyBufferWarning';
 
 /**
  * Resolves a file URI to a reference path based on the requested format.
@@ -77,6 +84,23 @@ export class FilePathPaster {
     uriSource: 'context-menu' | 'command-palette',
   ): Promise<void> {
     const logCtx = { fn: 'FilePathPaster.pasteFilePath', pathFormat, uriSource };
+
+    const document = this.ideAdapter.findOpenDocument(uri);
+    if (document) {
+      const warningResult = await handleDirtyBufferWarning(
+        document,
+        this.configReader,
+        this.ideAdapter,
+        this.logger,
+        FILE_PATH_DIRTY_BUFFER_CODES,
+      );
+      if (
+        warningResult === DirtyBufferWarningResult.Dismissed ||
+        warningResult === DirtyBufferWarningResult.SaveFailed
+      ) {
+        return;
+      }
+    }
 
     const filePath = getReferencePath(this.ideAdapter, uri, pathFormat);
     this.logger.debug({ ...logCtx, filePath }, `Resolved file path: ${filePath}`);

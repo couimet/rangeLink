@@ -89,6 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Shows a dialog with options: "Save & Generate", "Generate Anyway", or dismiss to abort
   - Controlled by `rangelink.warnOnDirtyBuffer` setting (default: `true`)
   - Helps avoid creating links that may point to incorrect positions after the file is saved
+  - Also applies to Send File Path (R-F) commands — warns when the file has unsaved changes that may cause the AI tool to read stale content from disk (#513)
 - **Send Terminal Selection (R-V)** - Send terminal text to your bound destination (#331)
   - **Keyboard shortcut:** `Cmd+R Cmd+V` (Mac) / `Ctrl+R Ctrl+V` (Win/Linux) when terminal has focus
   - Terminal context menu "Send Selection to Destination" entry when text is selected and a destination is bound

@@ -200,7 +200,7 @@ describe('LinkGenerator', () => {
       expect(mockGenLink).not.toHaveBeenCalled();
     });
 
-    it('handles dirty document with warning disabled', async () => {
+    it('aborts when dirty buffer warning returns Dismissed', async () => {
       const mockDoc = createMockDocument({
         uri: createMockUri('/workspace/src/file.ts'),
         isDirty: true,
@@ -209,30 +209,6 @@ describe('LinkGenerator', () => {
         editor: { document: mockDoc, selections: [createMockSelection({ isEmpty: false })] },
         selections: [createMockSelection({ isEmpty: false })],
       });
-      mockConfigReader.getBoolean.mockReturnValue(false);
-      mockGenLink.mockReturnValue(Result.ok(createMockFormattedLink('src/file.ts#L1')));
-      jest.spyOn(mockAdapter, 'getActiveTextEditorUri').mockReturnValue(mockDoc.uri);
-      jest.spyOn(mockAdapter, 'getWorkspaceFolder').mockReturnValue(undefined);
-      mockClipboardRouter.resolveDestinationBehavior.mockResolvedValue(undefined);
-
-      await generator.createLink();
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        { fn: 'generateLinkFromSelection', documentUri: mockDoc.uri.toString() },
-        'Document has unsaved changes but warning is disabled by setting',
-      );
-    });
-
-    it('aborts when dirty buffer warning is dismissed', async () => {
-      const mockDoc = createMockDocument({
-        uri: createMockUri('/workspace/src/file.ts'),
-        isDirty: true,
-      });
-      mockSelectionValidator.validateSelectionsAndShowError.mockReturnValue({
-        editor: { document: mockDoc, selections: [createMockSelection({ isEmpty: false })] },
-        selections: [createMockSelection({ isEmpty: false })],
-      });
-      mockConfigReader.getBoolean.mockReturnValue(true);
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.Dismissed);
@@ -242,7 +218,7 @@ describe('LinkGenerator', () => {
       expect(mockGenLink).not.toHaveBeenCalled();
     });
 
-    it('aborts when save fails', async () => {
+    it('aborts when dirty buffer warning returns SaveFailed', async () => {
       const mockDoc = createMockDocument({
         uri: createMockUri('/workspace/src/file.ts'),
         isDirty: true,
@@ -251,7 +227,6 @@ describe('LinkGenerator', () => {
         editor: { document: mockDoc, selections: [createMockSelection({ isEmpty: false })] },
         selections: [createMockSelection({ isEmpty: false })],
       });
-      mockConfigReader.getBoolean.mockReturnValue(true);
       jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.SaveFailed);

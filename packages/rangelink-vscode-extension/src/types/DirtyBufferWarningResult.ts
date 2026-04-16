@@ -1,31 +1,36 @@
 /**
- * Result of the dirty buffer warning dialog.
+ * Result of the dirty buffer warning check.
  *
- * Indicates the user's choice when prompted about generating a link
- * from a file with unsaved changes.
+ * Indicates the document state or the user's choice when prompted
+ * about a file with unsaved changes.
  */
 export enum DirtyBufferWarningResult {
   /**
-   * User chose "Save & Generate".
-   * Document was saved before link generation continues.
+   * Document has no unsaved changes — proceed without warning.
    */
-  SaveAndGenerate = 'SaveAndGenerate',
+  Clean = 'Clean',
 
   /**
-   * User chose "Generate Anyway".
-   * Link generation continues without saving.
+   * User chose to save before proceeding.
+   * Document was saved before the operation continues.
    */
-  GenerateAnyway = 'GenerateAnyway',
+  SaveAndContinue = 'SaveAndContinue',
+
+  /**
+   * User chose to proceed without saving.
+   * Operation continues with unsaved changes.
+   */
+  ContinueAnyway = 'ContinueAnyway',
 
   /**
    * User dismissed the warning dialog.
-   * Link generation should be aborted.
+   * Operation should be aborted.
    */
   Dismissed = 'Dismissed',
 
   /**
-   * User chose "Save & Generate" but the save operation failed.
-   * Link generation should be aborted.
+   * User chose to save but the save operation failed.
+   * Operation should be aborted.
    */
   SaveFailed = 'SaveFailed',
 }
