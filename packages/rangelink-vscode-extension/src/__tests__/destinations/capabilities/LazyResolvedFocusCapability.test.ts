@@ -162,7 +162,10 @@ describe('LazyResolvedFocusCapability', () => {
     const mockAdapter = createMockVscodeAdapter();
     let resolveGetCommands: ((value: string[]) => void) | undefined;
     jest.spyOn(mockAdapter, 'getCommands').mockImplementation(
-      () => new Promise((resolve) => { resolveGetCommands = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          resolveGetCommands = resolve;
+        }),
     );
 
     const tier: FocusTier = {

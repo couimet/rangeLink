@@ -459,9 +459,7 @@ describe('destinationBuilders', () => {
       };
       const context = createMockContext();
       jest.spyOn(context.ideAdapter, 'getExtension').mockReturnValue(undefined);
-      jest
-        .spyOn(context.ideAdapter, 'getCommands')
-        .mockResolvedValue(['sparkAi.insertText']);
+      jest.spyOn(context.ideAdapter, 'getCommands').mockResolvedValue(['sparkAi.insertText']);
 
       const builder = createCustomAiAssistantBuilder(configWithInsert);
       const destination = builder({ kind: configWithInsert.kind }, context);
@@ -575,7 +573,8 @@ describe('destinationBuilders', () => {
       const context = createMockContext();
       buildOverriddenDestination(context);
 
-      const buildFallbackSpy = context.factories.focusCapability.buildBuiltinFallbackTier as jest.Mock;
+      const buildFallbackSpy = context.factories.focusCapability
+        .buildBuiltinFallbackTier as jest.Mock;
       const mockFallbackTier = buildFallbackSpy.mock.results[0].value;
       const FALLBACK_TIER_INDEX = 0;
 

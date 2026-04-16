@@ -157,8 +157,18 @@ export const parseCustomAiAssistants = (
     const extensionName = rawExtensionName.trim();
 
     const insertCommands = parseInsertCommands(entry.insertCommands, index, logger);
-    const focusAndPasteCommands = parseOptionalStringArray(entry.focusAndPasteCommands, 'focusAndPasteCommands', index, logger);
-    const focusCommands = parseOptionalStringArray(entry.focusCommands, 'focusCommands', index, logger);
+    const focusAndPasteCommands = parseOptionalStringArray(
+      entry.focusAndPasteCommands,
+      'focusAndPasteCommands',
+      index,
+      logger,
+    );
+    const focusCommands = parseOptionalStringArray(
+      entry.focusCommands,
+      'focusCommands',
+      index,
+      logger,
+    );
 
     if (!insertCommands && !focusAndPasteCommands && !focusCommands) {
       logger.warn(

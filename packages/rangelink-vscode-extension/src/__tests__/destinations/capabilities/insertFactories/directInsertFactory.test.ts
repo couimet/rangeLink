@@ -85,11 +85,9 @@ describe('DirectInsertFactory', () => {
     const result = await insertFn(LINK_TEXT);
 
     expect(result).toBe(true);
-    expect(executeCommandSpy).toHaveBeenCalledWith(
-      'multi.cmd',
-      'src/app.ts#L10-L20',
-      { source: 'rangelink' },
-    );
+    expect(executeCommandSpy).toHaveBeenCalledWith('multi.cmd', 'src/app.ts#L10-L20', {
+      source: 'rangelink',
+    });
     expect(mockLogger.info).toHaveBeenCalledWith(
       { fn: 'DirectInsertFactory.insert', command: 'multi.cmd' },
       'Direct insert succeeded',

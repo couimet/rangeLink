@@ -113,10 +113,6 @@ export class LazyResolvedFocusCapability implements FocusCapability {
       );
     }
 
-    this.resolved = new ResolvedFocusCapability(
-      this.ideAdapter,
-      result.resolvedTier,
-      this.logger,
-    );
+    this.resolved = new ResolvedFocusCapability(this.ideAdapter, result.resolvedTier, this.logger);
   }
 }
