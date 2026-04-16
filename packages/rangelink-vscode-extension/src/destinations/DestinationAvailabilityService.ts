@@ -9,13 +9,15 @@ import { RangeLinkExtensionError, RangeLinkExtensionErrorCodes } from '../errors
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
   type AIAssistantDestinationKind,
-  DESTINATION_KINDS,
+  type BindOptions,
+  type CustomAiAssistantKind,
   type EligibleFile,
   type EligibleTerminal,
   type FileBindableQuickPickItem,
   type FileMoreQuickPickItem,
   type GetAvailableDestinationItemsOptions,
   type GroupedDestinationItems,
+  isCustomAiAssistantKind,
   MessageCode,
   type TerminalBindableQuickPickItem,
   type TerminalMoreQuickPickItem,
@@ -78,7 +80,9 @@ export class DestinationAvailabilityService {
    * @param kind - AI assistant destination kind
    * @returns Promise<true> if available, Promise<false> otherwise
    */
-  async isAIAssistantAvailable(kind: AIAssistantDestinationKind): Promise<boolean> {
+  async isAIAssistantAvailable(
+    kind: AIAssistantDestinationKind | CustomAiAssistantKind,
+  ): Promise<boolean> {
     const destination = this.registry.create({ kind });
     const available = await destination.isAvailable();
 
@@ -159,7 +163,7 @@ export class DestinationAvailabilityService {
       -readonly [K in keyof GroupedDestinationItems]: GroupedDestinationItems[K];
     } = {};
 
-    const destinationKinds = options?.destinationKinds ?? DESTINATION_KINDS;
+    const destinationKinds = options?.destinationKinds ?? this.registry.getSupportedKinds();
     if (options?.destinationKinds) {
       this.logger.debug(
         { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', destinationKinds },
@@ -167,8 +171,11 @@ export class DestinationAvailabilityService {
       );
     } else {
       this.logger.debug(
-        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems' },
-        'Using default DESTINATION_KINDS',
+        {
+          fn: 'DestinationAvailabilityService.getGroupedDestinationItems',
+          kindCount: destinationKinds.length,
+        },
+        'Using all registered destination kinds',
       );
     }
 
@@ -238,12 +245,27 @@ export class DestinationAvailabilityService {
         }
 
         default: {
-          const _exhaustiveCheck: never = kind;
+          if (isCustomAiAssistantKind(kind)) {
+            const destination = this.registry.create({ kind } as BindOptions);
+            const available = await destination.isAvailable();
+            if (!available) break;
+
+            const displayName = destination.displayName;
+            result[kind] = [
+              {
+                label: displayName,
+                displayName,
+                bindOptions: { kind },
+                itemKind: 'bindable',
+              },
+            ];
+            break;
+          }
           throw new RangeLinkExtensionError({
             code: RangeLinkExtensionErrorCodes.UNEXPECTED_DESTINATION_KIND,
             message: `Unhandled destination kind in getGroupedDestinationItems`,
             functionName: 'DestinationAvailabilityService.getGroupedDestinationItems',
-            details: { kind: _exhaustiveCheck },
+            details: { kind },
           });
         }
       }

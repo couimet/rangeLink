@@ -10,12 +10,14 @@ interface CommandContribution {
 
 interface ConfigurationProperty {
   type: string;
-  default: string | boolean | number;
+  default: string | boolean | number | unknown[];
   description: string;
+  markdownDescription?: string;
   pattern?: string;
   enum?: string[];
   enumDescriptions?: string[];
   minimum?: number;
+  items?: unknown;
 }
 
 interface KeybindingContribution {
@@ -513,6 +515,75 @@ describe('package.json contributions', () => {
       });
     });
 
+    describe('custom AI assistant settings', () => {
+      it('rangelink.customAiAssistants', () => {
+        expect(properties['rangelink.customAiAssistants']).toStrictEqual({
+          type: 'array',
+          default: [],
+          description:
+            'Custom AI assistants for RangeLink destination picker. At least one command tier required per entry. Run "Developer: Reload Window" after changes. See README for details.',
+          markdownDescription:
+            'Custom AI assistants for the RangeLink destination picker. At least one command tier required per entry. Run **Developer: Reload Window** after changes. See the README for configuration guide and examples.',
+          items: {
+            type: 'object',
+            required: ['extensionId', 'extensionName'],
+            properties: {
+              extensionId: {
+                type: 'string',
+                description:
+                  'VS Code extension identifier (publisher.name) used to detect availability',
+              },
+              extensionName: {
+                type: 'string',
+                description: 'Display name shown in the destination picker menu',
+              },
+              insertCommands: {
+                type: 'array',
+                items: {
+                  oneOf: [
+                    {
+                      type: 'string',
+                      description: 'Command ID — link text is passed as the first argument',
+                    },
+                    {
+                      type: 'object',
+                      required: ['command'],
+                      properties: {
+                        command: {
+                          type: 'string',
+                          description: 'VS Code command ID',
+                        },
+                        args: {
+                          description:
+                            'Argument template — use ${content} as placeholder for the link text',
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                  ],
+                },
+                description:
+                  'Tier 1: Commands that accept text directly as an argument (clipboard is never touched). Plain strings pass text as the first argument. Objects use ${content} interpolation in the args template.',
+              },
+              focusAndPasteCommands: {
+                type: 'array',
+                items: { type: 'string' },
+                description:
+                  'Tier 2: Commands that focus the AI chat input where VS Code paste commands work. RangeLink auto-pastes via clipboard (clipboard content is preserved).',
+              },
+              focusCommands: {
+                type: 'array',
+                items: { type: 'string' },
+                description:
+                  'Tier 3: Commands that focus/reveal the AI panel but cannot receive paste commands (e.g., webview-based assistants). RangeLink copies the link to clipboard and shows a "paste now" toast. Clipboard content is NOT restored.',
+              },
+            },
+            additionalProperties: false,
+          },
+        });
+      });
+    });
+
     describe('delimiter settings', () => {
       it('rangelink.delimiterLine', () => {
         expect(properties['rangelink.delimiterLine']).toStrictEqual({
@@ -656,7 +727,7 @@ describe('package.json contributions', () => {
     });
 
     it('has the expected number of configuration properties', () => {
-      expect(Object.keys(properties)).toHaveLength(14);
+      expect(Object.keys(properties)).toHaveLength(15);
     });
   });
 

@@ -2084,6 +2084,31 @@ describe('PasteDestinationManager', () => {
     });
   });
 
+  describe('isClipboardRestorationApplicable()', () => {
+    it('returns true when no destination is bound', () => {
+      expect(manager.isClipboardRestorationApplicable()).toBe(true);
+    });
+
+    it('returns true when terminal is bound', async () => {
+      const mockTerminal = createMockTerminal();
+      mockAdapter.__getVscodeInstance().window.activeTerminal = mockTerminal;
+      await manager.bind({ kind: 'terminal', terminal: mockTerminal });
+
+      expect(manager.isClipboardRestorationApplicable()).toBe(true);
+    });
+
+    it('returns true when built-in AI assistant is bound', async () => {
+      const { manager: localManager } = createManager({
+        envOptions: { appName: 'Cursor' },
+      });
+      await localManager.bind({ kind: 'cursor-ai' });
+
+      expect(localManager.isClipboardRestorationApplicable()).toBe(true);
+
+      localManager.dispose();
+    });
+  });
+
   describe('dispose()', () => {
     it('should dispose of event listeners', () => {
       const disposeSpy = jest.fn();

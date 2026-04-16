@@ -1135,4 +1135,64 @@ describe('DestinationAvailabilityService', () => {
       );
     });
   });
+
+  describe('custom AI assistant in getGroupedDestinationItems', () => {
+    it('includes available custom AI assistant in menu results', async () => {
+      const customKind = 'custom-ai:acme.spark-ai' as const;
+      const mockDestination = createBaseMockPasteDestination({
+        id: customKind,
+        displayName: 'Spark AI',
+      });
+      mockDestination.isAvailable.mockResolvedValue(true);
+
+      const customRegistry = createMockDestinationRegistry({
+        createImpl: () => mockDestination,
+      });
+      customRegistry.getSupportedKinds.mockReturnValue([customKind]);
+
+      const customService = new DestinationAvailabilityService(
+        customRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = await customService.getGroupedDestinationItems();
+
+      expect(result[customKind]).toStrictEqual([
+        {
+          label: 'Spark AI',
+          displayName: 'Spark AI',
+          bindOptions: { kind: customKind },
+          itemKind: 'bindable',
+        },
+      ]);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'DestinationAvailabilityService.getGroupedDestinationItems', kindCount: 1 },
+        'Using all registered destination kinds',
+      );
+    });
+
+    it('excludes unavailable custom AI assistant from menu results', async () => {
+      const customKind = 'custom-ai:unavailable.ext' as const;
+      const mockDestination = createBaseMockPasteDestination({ id: customKind });
+      mockDestination.isAvailable.mockResolvedValue(false);
+
+      const customRegistry = createMockDestinationRegistry({
+        createImpl: () => mockDestination,
+      });
+      customRegistry.getSupportedKinds.mockReturnValue([customKind]);
+
+      const customService = new DestinationAvailabilityService(
+        customRegistry,
+        ideAdapter,
+        mockConfigReader,
+        mockLogger,
+      );
+
+      const result = await customService.getGroupedDestinationItems();
+
+      expect(result[customKind]).toBeUndefined();
+    });
+  });
 });

@@ -582,6 +582,34 @@ describe('ComposablePasteDestination', () => {
     });
   });
 
+  describe('shouldPreserveClipboard()', () => {
+    it('returns true when no callback is provided', () => {
+      const destination = createMockComposablePasteDestination({
+        logger: mockLogger,
+      });
+
+      expect(destination.shouldPreserveClipboard()).toBe(true);
+    });
+
+    it('delegates to shouldPreserveClipboard callback when provided', () => {
+      const destination = createMockComposablePasteDestination({
+        shouldPreserveClipboard: () => false,
+        logger: mockLogger,
+      });
+
+      expect(destination.shouldPreserveClipboard()).toBe(false);
+    });
+
+    it('returns true when callback returns true', () => {
+      const destination = createMockComposablePasteDestination({
+        shouldPreserveClipboard: () => true,
+        logger: mockLogger,
+      });
+
+      expect(destination.shouldPreserveClipboard()).toBe(true);
+    });
+  });
+
   describe('getDestinationUri()', () => {
     it('should return document URI for editor destinations', () => {
       const mockUri = { toString: () => 'file:///workspace/src/file.ts' } as never;

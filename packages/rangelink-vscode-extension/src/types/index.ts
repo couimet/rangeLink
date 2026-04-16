@@ -23,7 +23,11 @@ export type { DestinationPickerOutcome, DestinationPickerResult } from './Destin
 export {
   AI_ASSISTANT_KINDS,
   DESTINATION_KINDS,
+  isAnyAiAssistantKind,
+  isCustomAiAssistantKind,
   type AIAssistantDestinationKind,
+  type BuiltInDestinationKind,
+  type CustomAiAssistantKind,
   type DestinationKind,
   type NonTerminalDestinationKind,
 } from './DestinationKind';

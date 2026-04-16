@@ -35,6 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - When more open files exist beyond the inline list, extras collapse into "More files..." which opens a secondary picker
   - Secondary picker organizes all open files into "Active Files" section + per-"Tab Group N" sections
   - Escaping the secondary picker returns to the destination picker
+- **Custom AI Assistants** - Connect RangeLink to any AI tool with a VS Code extension (#500) <sup>Unreleased</sup>
+  - New setting `rangelink.customAiAssistants`: three-tier command schema — `insertCommands` (direct text delivery), `focusAndPasteCommands` (focus + auto-paste), `focusCommands` (focus + manual paste toast)
+  - Custom assistants appear in the destination picker (R-D) alongside built-in destinations
+  - Lazy tier resolution: RangeLink checks which commands are registered on first use and caches the winning tier — no per-operation overhead
+  - Override built-in assistants (Cursor, Claude Code, Copilot) via config with automatic fallback to hardcoded commands
+  - `${content}` template interpolation for insert commands with non-standard argument formats
 - **Clipboard Preservation** - RangeLink no longer silently overwrites your clipboard (#353)
   - New setting `rangelink.clipboard.preserve` (`"always"` | `"never"`, default: `"always"`)
   - Under `"always"`, your prior clipboard content is saved before each transport operation (R-L, R-V, R-F, AI assistant paste, terminal paste) and restored afterward — your clipboard is only permanently overwritten when you explicitly ask for it (R-C)

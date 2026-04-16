@@ -81,6 +81,7 @@ export const createMockDestinationManager = (
     sendLinkToDestination: jest.fn().mockResolvedValue(sendLinkToDestinationResult),
     sendTextToDestination: jest.fn().mockResolvedValue(sendTextToDestinationResult),
     getBoundDestination: getBoundDestinationMock,
+    isClipboardRestorationApplicable: jest.fn().mockReturnValue(true),
     bind: bindMock,
     unbind: jest.fn(),
     focusBoundDestination: jest.fn(),

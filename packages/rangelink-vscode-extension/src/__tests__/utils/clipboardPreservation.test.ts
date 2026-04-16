@@ -121,6 +121,56 @@ describe('withClipboardPreservation', () => {
     });
   });
 
+  describe('shouldRestore callback', () => {
+    it('skips clipboard restoration when shouldRestore returns false', async () => {
+      const clipboard = createMockClipboard();
+      clipboard.readTextFromClipboard.mockResolvedValue('prior content');
+      clipboard.writeTextToClipboard.mockResolvedValue(undefined);
+      const fn = jest.fn().mockResolvedValue(undefined);
+      const configReader = createMockConfigReader({
+        getWithDefault: jest.fn().mockReturnValue('always'),
+      });
+
+      await withClipboardPreservation(clipboard, configReader, mockLogger, fn, () => false);
+
+      expect(fn).toHaveBeenCalledTimes(1);
+      expect(clipboard.readTextFromClipboard).toHaveBeenCalledTimes(1);
+      expect(clipboard.writeTextToClipboard).not.toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'withClipboardPreservation' },
+        'Clipboard restoration skipped — destination controls clipboard',
+      );
+    });
+
+    it('restores clipboard when shouldRestore returns true', async () => {
+      const clipboard = createMockClipboard();
+      clipboard.readTextFromClipboard.mockResolvedValue('prior content');
+      clipboard.writeTextToClipboard.mockResolvedValue(undefined);
+      const fn = jest.fn().mockResolvedValue(undefined);
+      const configReader = createMockConfigReader({
+        getWithDefault: jest.fn().mockReturnValue('always'),
+      });
+
+      await withClipboardPreservation(clipboard, configReader, mockLogger, fn, () => true);
+
+      expect(clipboard.writeTextToClipboard).toHaveBeenCalledWith('prior content');
+    });
+
+    it('restores clipboard when shouldRestore is undefined', async () => {
+      const clipboard = createMockClipboard();
+      clipboard.readTextFromClipboard.mockResolvedValue('prior content');
+      clipboard.writeTextToClipboard.mockResolvedValue(undefined);
+      const fn = jest.fn().mockResolvedValue(undefined);
+      const configReader = createMockConfigReader({
+        getWithDefault: jest.fn().mockReturnValue('always'),
+      });
+
+      await withClipboardPreservation(clipboard, configReader, mockLogger, fn, undefined);
+
+      expect(clipboard.writeTextToClipboard).toHaveBeenCalledWith('prior content');
+    });
+  });
+
   describe("mode 'never'", () => {
     it('calls fn without saving or restoring clipboard', async () => {
       const clipboard = createMockClipboard();

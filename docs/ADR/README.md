@@ -21,9 +21,10 @@ We follow the format from [adr.github.io](https://adr.github.io/):
 
 ## ADRs
 
-| #                                                | Title                          | Status   |
-| ------------------------------------------------ | ------------------------------ | -------- |
-| [0001](./0001-result-vs-exception-convention.md) | Result vs Exception Convention | Accepted |
+| #                                                         | Title                                   | Status   |
+| --------------------------------------------------------- | --------------------------------------- | -------- |
+| [0001](./0001-result-vs-exception-convention.md)          | Result vs Exception Convention          | Accepted |
+| [0002](./0002-three-tier-custom-ai-assistant-commands.md) | Three-Tier Custom AI Assistant Commands | Accepted |
 
 ## Future ADRs
 

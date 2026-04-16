@@ -22,12 +22,6 @@ import {
   waitForHuman,
 } from '../helpers';
 
-const AI_ASSISTANT_DISPLAY_NAMES = [
-  'Claude Code Chat',
-  'Cursor AI Assistant',
-  'GitHub Copilot Chat',
-];
-
 suite('R-D Bind to Destination', () => {
   const log = createLogger('bindToDestination');
   const terminals: vscode.Terminal[] = [];
@@ -174,6 +168,11 @@ suite('R-D Bind to Destination', () => {
 
     const lines = logCapture.getLinesSince('before-btd-006');
 
+    const AI_ASSISTANT_DISPLAY_NAMES = [
+      'Claude Code Chat',
+      'Cursor AI Assistant',
+      'GitHub Copilot Chat',
+    ];
     const boundToAny = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
       lines.some((line) => line.includes(`✓ RangeLink bound to ${name}`)),
     );
@@ -371,6 +370,11 @@ suite('R-D Bind to Destination', () => {
       `Expected exactly 2 showQuickPick entries (two destination picker opens, no confirmation dialog), got ${quickPickEntries.length}`,
     );
 
+    const AI_ASSISTANT_DISPLAY_NAMES = [
+      'Claude Code Chat',
+      'Cursor AI Assistant',
+      'GitHub Copilot Chat',
+    ];
     const alreadyBoundLogged = AI_ASSISTANT_DISPLAY_NAMES.some((name) =>
       lines.some((line) => line.includes(`RangeLink: Already bound to ${name}`)),
     );
@@ -387,25 +391,17 @@ suite('R-D Bind to Destination', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-012: switching between different AI assistants shows confirmation dialog', async () => {
-    await waitForHuman(
-      'bind-to-destination-012 (setup)',
-      'Ensure at least 2 AI assistant extensions are installed and enabled',
-      [
-        'This test requires two different AI assistants (e.g., GitHub Copilot Chat + Claude Code).',
-        'Install a second one now if needed, then dismiss this notification.',
-      ],
-    );
-
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-012');
 
     await waitForHuman(
       'bind-to-destination-012',
-      'Cmd+R Cmd+D → select AI assistant A → Cmd+R Cmd+D → select different AI assistant B → click "Yes, replace"',
+      'Cmd+R Cmd+D → select GitHub Copilot Chat → Cmd+R Cmd+D → select Dummy AI (Tier 3) → click "Yes, replace"',
       [
-        '1. Press Cmd+R Cmd+D and select one AI assistant (e.g., Claude Code Chat)',
+        'The Dummy AI extension is loaded — its destinations appear in the picker.',
+        '1. Press Cmd+R Cmd+D and select GitHub Copilot Chat',
         '2. Press Cmd+R Cmd+D again',
-        '3. Select a different AI assistant (e.g., GitHub Copilot Chat)',
+        '3. Select "Dummy AI (Tier 3)" (custom AI assistant)',
         '4. When the confirmation dialog appears, click "Yes, replace"',
       ],
     );

@@ -17,12 +17,18 @@ import type { ClipboardProvider } from '../ide/ClipboardProvider';
  *
  * Note: `return await fn()` in the try block is intentional — without await,
  * the finally (clipboard restore) would run before fn() resolves.
+ *
+ * @param shouldRestore - Optional callback evaluated AFTER fn completes.
+ *   When provided and returns false, clipboard restoration is skipped even
+ *   when mode is 'always'. Used by Tier 3 destinations that need the link
+ *   to stay on the clipboard for manual paste.
  */
 export const withClipboardPreservation = async <T>(
   clipboard: ClipboardProvider,
   configReader: ConfigReader,
   logger: Logger,
   fn: () => Promise<T>,
+  shouldRestore?: () => boolean,
 ): Promise<T> => {
   const mode = configReader.getWithDefault(SETTING_CLIPBOARD_PRESERVE, DEFAULT_CLIPBOARD_PRESERVE);
 
@@ -49,14 +55,21 @@ export const withClipboardPreservation = async <T>(
   try {
     return await fn();
   } finally {
-    try {
-      await clipboard.writeTextToClipboard(saved);
+    if (shouldRestore !== undefined && !shouldRestore()) {
       logger.debug(
-        { fn: 'withClipboardPreservation', restoredLength: saved.length },
-        'Clipboard restored',
+        { fn: 'withClipboardPreservation' },
+        'Clipboard restoration skipped — destination controls clipboard',
       );
-    } catch (error) {
-      logger.error({ fn: 'withClipboardPreservation', error }, 'Clipboard restoration failed');
+    } else {
+      try {
+        await clipboard.writeTextToClipboard(saved);
+        logger.debug(
+          { fn: 'withClipboardPreservation', restoredLength: saved.length },
+          'Clipboard restored',
+        );
+      } catch (error) {
+        logger.error({ fn: 'withClipboardPreservation', error }, 'Clipboard restoration failed');
+      }
     }
   }
 };

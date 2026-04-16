@@ -178,6 +178,19 @@ export interface PasteDestination {
   getDestinationUri(): vscode.Uri | undefined;
 
   /**
+   * Whether clipboard content should be restored after a paste operation.
+   *
+   * Most destinations return true — the clipboard is used as a transport
+   * mechanism and the original content should be restored afterward.
+   * Manual-paste destinations (Tier 3 focusCommands) return false because
+   * the link must stay on the clipboard for the user to paste manually.
+   *
+   * Called AFTER the paste operation completes, so lazy-resolved tiers
+   * are already resolved when this is checked.
+   */
+  shouldPreserveClipboard(): boolean;
+
+  /**
    * Check if this destination equals another destination
    *
    * @param other - The destination to compare against (may be undefined)

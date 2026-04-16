@@ -16,6 +16,7 @@ import {
   ShowVersionCommand,
 } from './commands';
 import { ConfigReader, DelimiterCache } from './config';
+import { parseCustomAiAssistants } from './config/parseCustomAiAssistants';
 import { EligibilityCheckerFactory } from './destinations/capabilities/EligibilityCheckerFactory';
 import { FocusCapabilityFactory } from './destinations/capabilities/FocusCapabilityFactory';
 import { DestinationAvailabilityService } from './destinations/DestinationAvailabilityService';
@@ -99,7 +100,8 @@ export const createWiringServices = (
     ideAdapter,
     logger,
   );
-  registerAllDestinationBuilders(registry);
+  const customAssistants = parseCustomAiAssistants(configReader, logger);
+  registerAllDestinationBuilders(registry, customAssistants);
 
   const availabilityService = new DestinationAvailabilityService(
     registry,

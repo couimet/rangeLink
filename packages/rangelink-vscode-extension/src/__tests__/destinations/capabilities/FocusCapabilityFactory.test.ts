@@ -1,8 +1,10 @@
 import { createMockLogger } from 'barebone-logger-testing';
 
+import type { CustomAiAssistantConfig } from '../../../config/parseCustomAiAssistants';
 import { AIAssistantFocusCapability } from '../../../destinations/capabilities/AIAssistantFocusCapability';
 import { EditorFocusCapability } from '../../../destinations/capabilities/EditorFocusCapability';
 import { FocusCapabilityFactory } from '../../../destinations/capabilities/FocusCapabilityFactory';
+import { LazyResolvedFocusCapability } from '../../../destinations/capabilities/LazyResolvedFocusCapability';
 import { TerminalFocusCapability } from '../../../destinations/capabilities/TerminalFocusCapability';
 import {
   createMockClipboardPreserver,
@@ -42,5 +44,87 @@ describe('FocusCapabilityFactory', () => {
     );
 
     expect(capability).toBeInstanceOf(AIAssistantFocusCapability);
+  });
+
+  describe('buildCustomAIAssistantTiers', () => {
+    it('builds tiers for all three command types', () => {
+      const config: CustomAiAssistantConfig = {
+        kind: 'custom-ai:acme.spark-ai',
+        extensionId: 'acme.spark-ai',
+        extensionName: 'Spark AI',
+        insertCommands: [{ command: 'sparkAi.insertText' }],
+        focusAndPasteCommands: ['sparkAi.openChat'],
+        focusCommands: ['sparkAi.chatView.focus'],
+      };
+
+      const tiers = factory.buildCustomAIAssistantTiers(config);
+
+      expect(tiers).toHaveLength(3);
+      expect(tiers[0].label).toBe('insertCommands');
+      expect(tiers[0].probeMode).toBe('none');
+      expect(tiers[1].label).toBe('focusAndPasteCommands');
+      expect(tiers[1].probeMode).toBe('execute');
+      expect(tiers[2].label).toBe('focusCommands');
+      expect(tiers[2].probeMode).toBe('execute');
+    });
+
+    it('builds tiers for only focusCommands', () => {
+      const config: CustomAiAssistantConfig = {
+        kind: 'custom-ai:acme.spark-ai',
+        extensionId: 'acme.spark-ai',
+        extensionName: 'Spark AI',
+        focusCommands: ['sparkAi.chatView.focus'],
+      };
+
+      const tiers = factory.buildCustomAIAssistantTiers(config);
+
+      expect(tiers).toHaveLength(1);
+      expect(tiers[0].label).toBe('focusCommands');
+    });
+
+    it('builds tiers for only insertCommands', () => {
+      const config: CustomAiAssistantConfig = {
+        kind: 'custom-ai:acme.spark-ai',
+        extensionId: 'acme.spark-ai',
+        extensionName: 'Spark AI',
+        insertCommands: [{ command: 'sparkAi.insertText' }],
+      };
+
+      const tiers = factory.buildCustomAIAssistantTiers(config);
+
+      expect(tiers).toHaveLength(1);
+      expect(tiers[0].label).toBe('insertCommands');
+      expect(tiers[0].probeMode).toBe('none');
+    });
+  });
+
+  describe('buildBuiltinFallbackTier', () => {
+    it('creates tier with builtinFallback label and execute probeMode', () => {
+      const FOCUS_COMMANDS = ['cursorAi.focus', 'cursorAi.sidebar.open'];
+
+      const tier = factory.buildBuiltinFallbackTier(FOCUS_COMMANDS);
+
+      expect(tier.label).toBe('builtinFallback');
+      expect(tier.probeMode).toBe('execute');
+      expect(tier.commands).toStrictEqual(FOCUS_COMMANDS);
+    });
+  });
+
+  describe('createLazyResolvedCapability', () => {
+    it('creates LazyResolvedFocusCapability from tiers', () => {
+      const config: CustomAiAssistantConfig = {
+        kind: 'custom-ai:acme.spark-ai',
+        extensionId: 'acme.spark-ai',
+        extensionName: 'Spark AI',
+        insertCommands: [{ command: 'sparkAi.insertText' }],
+        focusAndPasteCommands: ['sparkAi.openChat'],
+        focusCommands: ['sparkAi.chatView.focus'],
+      };
+
+      const tiers = factory.buildCustomAIAssistantTiers(config);
+      const capability = factory.createLazyResolvedCapability(tiers, 'Spark AI');
+
+      expect(capability).toBeInstanceOf(LazyResolvedFocusCapability);
+    });
   });
 });

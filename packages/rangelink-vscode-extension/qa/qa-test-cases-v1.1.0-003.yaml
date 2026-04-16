@@ -2439,3 +2439,209 @@ test_cases:
       - 'Click a RangeLink using a relative path with directory separators (e.g., src/utils/resolveWorkspacePath.ts#L10)'
     expected_result: 'Navigation succeeds via standard workspace-relative resolution — the file opens and line 10 is fully selected.'
     automated: true
+
+  # ---------------------------------------------------------------------------
+  # Section — Custom AI Assistants
+  # ---------------------------------------------------------------------------
+
+  - id: custom-ai-assistant-001
+    feature: 'Custom AI Assistants — Configuration'
+    scenario: 'Three-tier config with dummy AI extension is parsed and logged at activation'
+    preconditions:
+      - 'settings.json contains 3 custom AI assistant entries (one per tier) using dummy extension commands'
+      - 'Dummy AI extension loaded via extensionDevelopmentPath'
+    steps:
+      - 'Extension activates with custom AI assistants configured'
+      - 'Check output logs'
+    expected_result: 'Log shows "Loaded 3 custom AI assistant(s)" with all three extensionIds'
+    automated: true
+
+  - id: custom-ai-assistant-002
+    feature: 'Custom AI Assistants — Registration'
+    scenario: 'All three tier entries registered as destination kinds'
+    preconditions:
+      - 'settings.json contains 3 custom AI assistant entries (one per tier)'
+    steps:
+      - 'Extension activates'
+      - 'Check registration logs'
+    expected_result: 'Log shows 3 custom-ai: destination registrations — one for each tier entry'
+    automated: true
+
+  - id: custom-ai-assistant-003
+    feature: 'Custom AI Assistants — Destination Picker'
+    scenario: 'Custom AI assistant appears in the R-D destination picker with configured display name'
+    preconditions:
+      - 'A real AI extension installed with known focus commands'
+      - 'settings.json configures it as a custom AI assistant'
+    steps:
+      - 'Press Cmd+R Cmd+D to open destination picker'
+      - 'Observe the picker items'
+    expected_result: 'The custom AI assistant appears in the picker with its configured extensionName, after the built-in destinations'
+    automated: false
+
+  - id: custom-ai-assistant-004
+    feature: 'Custom AI Assistants — Command Detection'
+    scenario: 'Dummy extension insertText command is detectable by the availability system'
+    preconditions:
+      - 'Dummy AI extension loaded with dummyAi.insertText command'
+    steps:
+      - 'Query registered commands'
+    expected_result: 'dummyAi.insertText is present in the registered commands list'
+    automated: true
+
+  - id: custom-ai-assistant-005
+    feature: 'Custom AI Assistants — Availability'
+    scenario: 'Tier 1 entry availability checked when insertCommand is registered'
+    preconditions:
+      - 'Custom AI assistant configured with insertCommands pointing to dummy extension command'
+      - 'Dummy AI extension loaded and active'
+    steps:
+      - 'Extension checks availability'
+      - 'Check output logs'
+    expected_result: 'Availability check log exists for the Tier 1 entry'
+    automated: true
+
+  - id: custom-ai-assistant-006
+    feature: 'Custom AI Assistants — Command Registration'
+    scenario: 'All dummy extension commands are registered and detectable'
+    preconditions:
+      - 'Dummy AI extension loaded via extensionDevelopmentPath'
+    steps:
+      - 'Query registered VS Code commands'
+    expected_result: 'All 5 dummyAi commands (insertText, focusForPaste, focusPanel, getText, clearAll) are registered'
+    automated: true
+
+  - id: custom-ai-assistant-007
+    feature: 'Custom AI Assistants — Destination Picker'
+    scenario: 'Multiple custom AI assistants listed in user-defined order'
+    preconditions:
+      - 'Two or more custom AI assistants configured with different extensionNames'
+      - 'All have available focus commands or extensions'
+    steps:
+      - 'Press Cmd+R Cmd+D to open destination picker'
+      - 'Observe order of custom AI assistants in the picker'
+    expected_result: 'Custom AI assistants appear after built-in destinations, in the same order as defined in settings.json'
+    automated: false
+
+  - id: custom-ai-assistant-008
+    feature: 'Custom AI Assistants — Configuration'
+    scenario: 'Parser normalizes plain string insertCommands to { command } objects'
+    preconditions:
+      - 'settings.json contains custom AI assistant with insertCommands as plain strings'
+    steps:
+      - 'Extension activates'
+      - 'Check output logs for parsed config'
+    expected_result: 'Activation log shows insertCommands were parsed and the assistant was loaded'
+    automated: true
+
+  - id: custom-ai-assistant-009
+    feature: 'Custom AI Assistants — Configuration'
+    scenario: 'Template entry with ${content} interpolation in insertCommands is parsed and registered'
+    preconditions:
+      - 'settings.json contains custom AI assistant with insertCommands using { command, args } object with ${content} placeholder'
+      - 'Dummy AI extension loaded with dummyAi.insertWithArgs command'
+    steps:
+      - 'Extension activates'
+      - 'Check registration logs'
+    expected_result: 'Destination builder registered for the template entry'
+    automated: true
+
+  - id: custom-ai-assistant-010
+    feature: 'Custom AI Assistants — Tier 1 Paste Flow'
+    scenario: 'Tier 1 direct insert delivers text to dummy extension textarea'
+    preconditions:
+      - 'Dummy AI extension loaded'
+      - 'File open in editor with text selected'
+    steps:
+      - 'Bind to Dummy AI (Tier 1) via R-D picker'
+      - 'Execute R-L (Send RangeLink)'
+      - 'Check dummy extension textarea via dummyAi.getText'
+    expected_result: 'tier1 textarea contains the generated link; tier2 textarea is empty'
+    automated: assisted
+
+  - id: custom-ai-assistant-011
+    feature: 'Custom AI Assistants — Tier 1 Clipboard'
+    scenario: 'Tier 1 paste preserves clipboard (sentinel restored after R-L)'
+    preconditions:
+      - 'Bound to Dummy AI (Tier 1)'
+      - 'Clipboard sentinel written before R-L'
+    steps:
+      - 'Write clipboard sentinel'
+      - 'Execute R-L'
+      - 'Read clipboard after settle'
+    expected_result: 'Clipboard contains the sentinel (outer preserve restores it; DirectInsertFactory never touches clipboard)'
+    automated: assisted
+
+  - id: custom-ai-assistant-012
+    feature: 'Custom AI Assistants — Tier 3 Toast'
+    scenario: 'Tier 3 focusCommands shows manual-paste toast after R-L'
+    preconditions:
+      - 'Dummy AI extension loaded'
+      - 'File open in editor with text selected'
+    steps:
+      - 'Bind to Dummy AI (Tier 3) via R-D picker'
+      - 'Execute R-L'
+      - 'Check logs for toast and ManualPasteInsertFactory'
+    expected_result: 'Info toast "Paste (Cmd/Ctrl+V) in Dummy AI (Tier 3) to use." logged; ManualPasteInsertFactory success logged'
+    automated: assisted
+
+  - id: custom-ai-assistant-013
+    feature: 'Custom AI Assistants — Tier 2→3 Fallback'
+    scenario: 'Tier 2 focusAndPasteCommands not registered — falls through to Tier 3'
+    preconditions:
+      - 'Dummy AI extension loaded'
+      - 'Settings entry with non-existent focusAndPasteCommands + valid focusCommands'
+    steps:
+      - 'Bind to Dummy AI (Fallback) via R-D picker'
+      - 'Execute R-L'
+      - 'Check logs for tier skip and resolution'
+    expected_result: 'Tier 2 skip log (nonexistent.paste not registered), Tier 3 resolution log (dummyAi.focusPanel), manual-paste toast shown'
+    automated: assisted
+
+  - id: custom-ai-assistant-014
+    feature: 'Custom AI Assistants — ${content} Template'
+    scenario: 'insertCommands with ${content} template interpolation delivers text via insertWithArgs'
+    preconditions:
+      - 'Dummy AI extension loaded with dummyAi.insertWithArgs command'
+      - 'Settings entry uses { command, args } object with ${content} placeholder'
+    steps:
+      - 'Bind to Dummy AI (Template) via R-D picker'
+      - 'Execute R-L'
+      - 'Check dummy extension textarea via dummyAi.getText'
+    expected_result: 'tier1 textarea contains the generated link; DirectInsertFactory success log mentions dummyAi.insertWithArgs'
+    automated: assisted
+
+  - id: custom-ai-assistant-015
+    feature: 'Custom AI Assistants — Built-in Override'
+    scenario: 'custom config with built-in extensionId registers under the built-in kind'
+    preconditions:
+      - 'Settings entry with extensionId github.copilot-chat and custom insertCommands pointing to dummy extension'
+    steps:
+      - 'Extension activates with override config'
+      - 'Check activation logs for registration of github-copilot-chat kind'
+    expected_result: 'Exactly one registration for github-copilot-chat kind (override replaces built-in); no separate custom-ai: registration'
+    automated: true
+
+  - id: custom-ai-assistant-016
+    feature: 'Custom AI Assistants — Built-in Override'
+    scenario: 'built-in override does not register a separate custom-ai: kind'
+    preconditions:
+      - 'Settings entry with extensionId github.copilot-chat and custom insertCommands pointing to dummy extension'
+    steps:
+      - 'Extension activates with override config'
+      - 'Check activation logs for absence of custom-ai:github.copilot-chat registration'
+    expected_result: 'No custom-ai:github.copilot-chat registration found — override takes over the built-in kind instead'
+    automated: true
+
+  - id: custom-ai-assistant-017
+    feature: 'Custom AI Assistants — Cold Start'
+    scenario: 'Tier 1 direct insert works when the AI extension panel is not yet visible'
+    preconditions:
+      - 'Dummy AI extension loaded but sidebar panel NOT pre-opened'
+      - 'Settings entry with insertCommands pointing to dummyAi.insertText'
+    steps:
+      - 'Bind to Dummy AI (Tier 1) via R-D picker'
+      - 'Execute R-L'
+      - 'Check dummy extension textarea via dummyAi.getText'
+    expected_result: 'Panel auto-initializes on first insert; tier1 textarea contains the generated link; tier2 is empty'
+    automated: assisted

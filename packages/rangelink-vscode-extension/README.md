@@ -24,11 +24,11 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 - **One keybinding** — `Cmd+R Cmd+L` works with Claude, Copilot, Cursor, terminal tools, text editors. Learn once, use everywhere.
 - **Better precision** — Character-level ranges, not just lines. Share exactly what matters.
 - **Universal format** — GitHub-style links work in PRs, Slack, docs. Not proprietary.
-- **AI-agnostic** — Your workflow doesn't change when you switch AI assistants.
+- **AI-agnostic** — Your workflow doesn't change when you switch AI assistants. Bring your own AI tool — if it has a VS Code extension with a focus command, RangeLink can paste into it.
 
 ### For AI-Assisted Development
 
-**Using Claude Code Extension, terminal claude-code, ChatGPT, or Cursor for development?** RangeLink eliminates the context-sharing friction:
+**Using Claude Code, Cursor, Copilot, or any other AI tool?** RangeLink eliminates the context-sharing friction:
 
 1. **Select code** → Generate link (`Cmd+R Cmd+L`)
 2. **Destination handles delivery** → Link appears where your AI can see it
@@ -45,7 +45,7 @@ Every AI coding assistant has its own way to share code — different shortcuts,
 
 ### Perfect For
 
-- 🤖 **AI assistants** — Claude Code Extension, Cursor AI, terminal claude-code, Copilot with _exact_ context + clickable navigation
+- 🤖 **AI assistants** — Claude Code Extension, Cursor AI, terminal claude-code, Copilot, plus any custom AI tool via settings <sup>Unreleased</sup> — with _exact_ context + clickable navigation
 - 💬 **Code reviews** — "The bug is in `api/routes.ts#L215C8-L223C45`" (click to view)
 - 👥 **Team collaboration** — Universal format everyone can use and navigate
 
@@ -137,25 +137,27 @@ When you close the bound file, RangeLink auto-unbinds with a notification. If th
 
 **Pro tip:** Split your editor into two panes (side-by-side or vertical) for the smoothest workflow — browse code on one side, build your prompt on the other. No tab switching needed.
 
-#### AI Assistants (Claude Code, Cursor AI & GitHub Copilot)
+#### AI Assistants (Built-in + Custom) <sup>Unreleased</sup>
 
 **One keybinding to rule them all.** AI assistants have their own ways to share code — different shortcuts, different formats, and only work with _their_ AI. RangeLink unifies it all: **one keybinding** (`Cmd+R Cmd+L`), **character-level precision** (not just lines), and works with **any AI assistant**.
 
 **The precision advantage:** Most AI code-sharing tools work at _line-level_ precision. RangeLink goes deeper with _character-level_ ranges (`#L3C14-L15C9`), letting you highlight exactly the function signature, the problematic condition, or that one sneaky semicolon — not the whole block.
 
-**Supported AI assistants:**
+**Built-in AI assistants:**
 
 - **[Claude Code Extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)** — Anthropic's official extension (works in VSCode and Cursor)
 - **Cursor AI** — Built into Cursor IDE
 - **[GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat)** — GitHub's AI coding assistant
 
+**Bring Your Own AI Assistant** <sup>Unreleased</sup>: Any VS Code extension that exposes a focus command or a text-insertion command can be integrated as a RangeLink destination via settings. Three delivery tiers are supported — from direct text injection to manual paste — so RangeLink adapts to each extension's capabilities. See [Custom AI Assistant Settings](#custom-ai-assistant-settings-unreleased) for configuration details.
+
 **How it works:**
 
-1. Bind your AI assistant: Command Palette → "Bind to..."
+1. Bind your AI assistant: Command Palette → "Bind to..." or R-D picker
 2. Select code → `Cmd+R Cmd+L` → Link auto-pastes into chat
 3. Review and send
 
-**One destination at a time:** Bind to Claude Code, Cursor AI, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command to replace your current binding with confirmation—no need to unbind first.
+**One destination at a time:** Bind to Claude Code, Cursor AI, a custom AI tool, terminal, OR text editor. **Quick switching:** Run a different "Bind to..." command or use the R-D picker to replace your current binding with confirmation—no need to unbind first.
 
 ---
 
@@ -360,48 +362,87 @@ Positioned after VSCode's "Copy Path" / "Copy Relative Path":
 
 Customize settings in VSCode (Preferences > Settings > search "rangelink").
 
-### Delimiter Settings
+### Custom AI Assistant Settings <sup>Unreleased</sup>
 
-| Setting                       | Default | Description                         |
-| ----------------------------- | ------- | ----------------------------------- |
-| `rangelink.delimiterLine`     | `"L"`   | Line number prefix                  |
-| `rangelink.delimiterPosition` | `"C"`   | Column/character position prefix    |
-| `rangelink.delimiterHash`     | `"#"`   | Separator between path and location |
-| `rangelink.delimiterRange`    | `"-"`   | Range separator (start-end)         |
+| Setting                        | Default | Description                                          |
+| ------------------------------ | ------- | ---------------------------------------------------- |
+| `rangelink.customAiAssistants` | `[]`    | Array of custom AI assistant definitions (see below) |
 
-**Validation Rules:**
+Define custom AI assistants to extend RangeLink beyond the three built-in AI tools. Each entry has two required fields and three optional command arrays:
 
-- Delimiters cannot contain digits
-- Delimiters cannot be empty
-- All delimiters must be unique
-- Reserved characters (`~`, `|`, `/`, `\`, `:`, `,`, `@`) cannot be used
+| Field                   | Type                   | Required | Description                                                                                                                                                                                          |
+| ----------------------- | ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `extensionId`           | `string`               | Yes      | VS Code extension identifier (`publisher.name`) — used for availability check                                                                                                                        |
+| `extensionName`         | `string`               | Yes      | Display name shown in the destination picker                                                                                                                                                         |
+| `insertCommands`        | `(string \| object)[]` | No       | **Tier 1:** Commands that accept text directly as an argument. Clipboard is never touched.                                                                                                           |
+| `focusAndPasteCommands` | `string[]`             | No       | **Tier 2:** Commands that focus the AI chat input where VS Code paste commands work. RangeLink auto-pastes via clipboard (clipboard preserved).                                                      |
+| `focusCommands`         | `string[]`             | No       | **Tier 3:** Commands that focus/reveal the AI panel. RangeLink copies the link to clipboard and shows a "paste now" toast — clipboard is intentionally left with the link so you can Cmd+V / Ctrl+V. |
 
-Invalid configurations will fall back to defaults with a warning in the output channel (`Cmd+Shift+U` / `Ctrl+Shift+U`, select "RangeLink"). See [DEVELOPMENT.md](./DEVELOPMENT.md#development-workflow) for details.
+At least one of the three command arrays must be present. RangeLink tries them in tier order (1 → 2 → 3) and uses the first tier whose commands are registered in VS Code. This is resolved once on first use and cached — not checked on every operation.
 
-### Navigation Settings <sup>Unreleased</sup>
+**Example — webview-based assistant (focus only, user pastes manually):**
 
-| Setting                                    | Default | Description                                                                                                   |
-| ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
-| `rangelink.navigation.showClampingWarning` | `true`  | Show warning toast when navigation is clamped to file boundaries                                              |
-| `rangelink.navigation.showNavigatedToast`  | `true`  | Show info toast after successful navigation (e.g., "Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16") |
+```json
+{
+  "rangelink.customAiAssistants": [
+    {
+      "extensionId": "acme.spark-ai",
+      "extensionName": "Spark AI",
+      "focusCommands": ["sparkAi.chatView.focus"]
+    }
+  ]
+}
+```
 
-Set either to `false` for a quieter workflow. Navigation itself is unaffected — only the feedback toasts are suppressed. Error toasts (e.g., "Failed to navigate") always appear regardless of these settings.
+**Example — assistant with direct insert + focus fallback:**
 
-### Warning Settings <sup>Unreleased</sup>
+```json
+{
+  "rangelink.customAiAssistants": [
+    {
+      "extensionId": "acme.spark-ai",
+      "extensionName": "Spark AI",
+      "insertCommands": ["sparkAi.insertText"],
+      "focusCommands": ["sparkAi.chatView.focus"]
+    }
+  ]
+}
+```
 
-| Setting                       | Default | Description                                                          |
-| ----------------------------- | ------- | -------------------------------------------------------------------- |
-| `rangelink.warnOnDirtyBuffer` | `true`  | Show warning when generating a link from a file with unsaved changes |
+When `sparkAi.insertText` is registered (extension supports it), RangeLink uses direct insertion — no clipboard involved. If the command isn't available (older extension version), RangeLink falls back to the focus + manual paste flow automatically.
 
-When enabled, a dialog appears with options: "Save & Generate", "Generate Anyway", or dismiss to abort. This helps avoid creating links that may point to incorrect positions after the file is saved.
+**Overriding built-in assistants:** <sup>Unreleased</sup> You can customize the built-in AI assistants (Cursor, Claude Code, Copilot) by adding an entry with the same `extensionId`. RangeLink merges your custom tiers with the built-in's hardcoded commands as a safety-net fallback. If your custom commands aren't registered (typo, extension not updated), the built-in behavior takes over automatically.
 
-### Terminal Picker Settings <sup>Unreleased</sup>
+```json
+{
+  "rangelink.customAiAssistants": [
+    {
+      "extensionId": "github.copilot-chat",
+      "extensionName": "Copilot (Custom)",
+      "insertCommands": ["myPlugin.sendToCopilot"]
+    }
+  ]
+}
+```
 
-| Setting                              | Default | Description                                                              |
-| ------------------------------------ | ------- | ------------------------------------------------------------------------ |
-| `rangelink.terminalPicker.maxInline` | `5`     | Maximum terminals shown inline in picker (extras in "More terminals...") |
+Here `insertCommands` is tried first (Tier 1). If `myPlugin.sendToCopilot` isn't registered, RangeLink falls back to Copilot's built-in focus + paste commands.
 
-When you have more terminals than this threshold, the destination picker shows a "More terminals..." option instead of listing all terminals individually.
+**`insertCommands` argument format:** Plain strings pass the link text as the first positional argument. For extensions that expect a different argument shape, use an object with `${content}` interpolation:
+
+```json
+"insertCommands": [
+  "sparkAi.insertText",
+  { "command": "sparkAi.addContext", "args": [{ "text": "${content}", "source": "rangelink" }] }
+]
+```
+
+**How availability works:** A custom assistant appears in the destination picker when either the extension is installed and active (matched by `extensionId`), or at least one command from any tier is registered as a VS Code command. Both conditions are checked — an extension that registers commands without activating still works.
+
+> **Finding extension and command IDs:** Open the Extensions panel, click on the extension, and find the identifier shown as `publisher.name` below the title (e.g., `github.copilot-chat`). To discover command IDs, check the extension's documentation or run **Developer: Toggle Developer Tools** and use `await vscode.commands.getCommands(true)` in the console.
+
+> **Duplicate entries:** If two entries use the same `extensionId`, only the first is used — duplicates are skipped with a warning in the RangeLink output channel.
+
+Run **Developer: Reload Window** (or restart VS Code) after changing this setting.
 
 ### Clipboard Settings <sup>Unreleased</sup>
 
@@ -429,6 +470,44 @@ When you have more terminals than this threshold, the destination picker shows a
 **Available values:** `"both"` (space before and after), `"before"` (space before only), `"after"` (space after only), `"none"` (no padding).
 
 Most paste commands default to `"both"` to prevent the pasted text from concatenating with surrounding content. The exception is `pasteContent` which defaults to `"none"` — selected text is pasted exactly as-is since it typically represents raw code or prose where extra whitespace would be unwanted.
+
+### Feedback & Warning Settings <sup>Unreleased</sup>
+
+| Setting                                    | Default | Description                                                                                                   |
+| ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
+| `rangelink.warnOnDirtyBuffer`              | `true`  | Show warning when generating a link from a file with unsaved changes                                          |
+| `rangelink.navigation.showNavigatedToast`  | `true`  | Show info toast after successful navigation (e.g., "Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16") |
+| `rangelink.navigation.showClampingWarning` | `true`  | Show warning toast when navigation is clamped to file boundaries                                              |
+
+When `warnOnDirtyBuffer` is enabled, a dialog appears with options: "Save & Generate", "Generate Anyway", or dismiss to abort. This helps avoid creating links that may point to incorrect positions after the file is saved.
+
+Set the navigation settings to `false` for a quieter workflow. Navigation itself is unaffected — only the feedback toasts are suppressed. Error toasts (e.g., "Failed to navigate") always appear regardless of these settings.
+
+### Terminal Picker Settings <sup>Unreleased</sup>
+
+| Setting                              | Default | Description                                                              |
+| ------------------------------------ | ------- | ------------------------------------------------------------------------ |
+| `rangelink.terminalPicker.maxInline` | `5`     | Maximum terminals shown inline in picker (extras in "More terminals...") |
+
+When you have more terminals than this threshold, the destination picker shows a "More terminals..." option instead of listing all terminals individually.
+
+### Delimiter Settings
+
+| Setting                       | Default | Description                         |
+| ----------------------------- | ------- | ----------------------------------- |
+| `rangelink.delimiterHash`     | `"#"`   | Separator between path and location |
+| `rangelink.delimiterLine`     | `"L"`   | Line number prefix                  |
+| `rangelink.delimiterPosition` | `"C"`   | Column/character position prefix    |
+| `rangelink.delimiterRange`    | `"-"`   | Range separator (start-end)         |
+
+**Validation Rules:**
+
+- Delimiters cannot contain digits
+- Delimiters cannot be empty
+- All delimiters must be unique
+- Reserved characters (`~`, `|`, `/`, `\`, `:`, `,`, `@`) cannot be used
+
+Invalid configurations will fall back to defaults with a warning in the output channel (`Cmd+Shift+U` / `Ctrl+Shift+U`, select "RangeLink"). See [DEVELOPMENT.md](./DEVELOPMENT.md#development-workflow) for details.
 
 ## What's Next
 

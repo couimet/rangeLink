@@ -54,7 +54,7 @@
     "test:release": "./scripts/test-release-run.sh",
     "test:release:automated": "./scripts/test-release-run.sh --automated",
     "test:release:grep": "./scripts/test-release-run.sh --grep",
-    "test:release:prepare": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json",
+    "test:release:prepare": "pnpm compile && rm -rf out/__integration-tests__ && tsc -p tsconfig.integration.json && node scripts/setup-integration-test-settings.js",
     "test:watch": "jest --watch",
     "validate:qa-coverage": "./scripts/validate-qa-coverage.sh",
     "verify:qa-scripts": "./scripts/verify-qa-scripts.sh",
@@ -339,29 +339,84 @@
     "configuration": {
       "title": "RangeLink",
       "properties": {
-        "rangelink.delimiterLine": {
-          "type": "string",
-          "default": "L",
-          "description": "Delimiter used before line numbers (e.g., L in #L10-L20)",
-          "pattern": "^[^0-9]+$"
+        "rangelink.customAiAssistants": {
+          "type": "array",
+          "default": [],
+          "description": "Custom AI assistants for RangeLink destination picker. At least one command tier required per entry. Run \"Developer: Reload Window\" after changes. See README for details.",
+          "markdownDescription": "Custom AI assistants for the RangeLink destination picker. At least one command tier required per entry. Run **Developer: Reload Window** after changes. See the README for configuration guide and examples.",
+          "items": {
+            "type": "object",
+            "required": [
+              "extensionId",
+              "extensionName"
+            ],
+            "properties": {
+              "extensionId": {
+                "type": "string",
+                "description": "VS Code extension identifier (publisher.name) used to detect availability"
+              },
+              "extensionName": {
+                "type": "string",
+                "description": "Display name shown in the destination picker menu"
+              },
+              "insertCommands": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "description": "Command ID — link text is passed as the first argument"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "command"
+                      ],
+                      "properties": {
+                        "command": {
+                          "type": "string",
+                          "description": "VS Code command ID"
+                        },
+                        "args": {
+                          "description": "Argument template — use ${content} as placeholder for the link text"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "description": "Tier 1: Commands that accept text directly as an argument (clipboard is never touched). Plain strings pass text as the first argument. Objects use ${content} interpolation in the args template."
+              },
+              "focusAndPasteCommands": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tier 2: Commands that focus the AI chat input where VS Code paste commands work. RangeLink auto-pastes via clipboard (clipboard content is preserved)."
+              },
+              "focusCommands": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tier 3: Commands that focus/reveal the AI panel but cannot receive paste commands (e.g., webview-based assistants). RangeLink copies the link to clipboard and shows a \"paste now\" toast. Clipboard content is NOT restored."
+              }
+            },
+            "additionalProperties": false
+          }
         },
-        "rangelink.delimiterPosition": {
+        "rangelink.clipboard.preserve": {
           "type": "string",
-          "default": "C",
-          "description": "Delimiter used before position numbers (e.g., C in #L10C5-L20C10)",
-          "pattern": "^[^0-9]+$"
-        },
-        "rangelink.delimiterHash": {
-          "type": "string",
-          "default": "#",
-          "description": "Delimiter used before the range specification (e.g., # in path#L10-L20)",
-          "pattern": "^[^0-9]+$"
-        },
-        "rangelink.delimiterRange": {
-          "type": "string",
-          "default": "-",
-          "description": "Delimiter used between start and end positions (e.g., - in #L10-L20)",
-          "pattern": "^[^0-9]+$"
+          "enum": [
+            "always",
+            "never"
+          ],
+          "default": "always",
+          "enumDescriptions": [
+            "Save and restore clipboard around operations that use it as transport — your prior clipboard content is preserved (default)",
+            "Never restore clipboard — clipboard always contains last RangeLink output"
+          ],
+          "description": "Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism"
         },
         "rangelink.smartPadding.pasteLink": {
           "type": "string",
@@ -431,25 +486,20 @@
           ],
           "description": "Smart padding for saved bookmarks when pasting to destinations"
         },
-        "rangelink.features.bookmarks.enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable Bookmarks feature (beta). Save code locations for quick access later."
-        },
-        "rangelink.navigation.showClampingWarning": {
+        "rangelink.warnOnDirtyBuffer": {
           "type": "boolean",
           "default": true,
-          "description": "Show warning toast when navigation position is clamped to file boundaries"
+          "description": "Show warning when generating link from file with unsaved changes"
         },
         "rangelink.navigation.showNavigatedToast": {
           "type": "boolean",
           "default": true,
           "description": "Show info toast after successful navigation (e.g., 'Navigated to recipes/baking/chickenpie.ts @ 3:14-314:16')"
         },
-        "rangelink.warnOnDirtyBuffer": {
+        "rangelink.navigation.showClampingWarning": {
           "type": "boolean",
           "default": true,
-          "description": "Show warning when generating link from file with unsaved changes"
+          "description": "Show warning toast when navigation position is clamped to file boundaries"
         },
         "rangelink.terminalPicker.maxInline": {
           "type": "number",
@@ -457,18 +507,34 @@
           "minimum": 1,
           "description": "Maximum terminals shown inline in destination picker (extras collapsed into 'More terminals...')"
         },
-        "rangelink.clipboard.preserve": {
+        "rangelink.delimiterHash": {
           "type": "string",
-          "enum": [
-            "always",
-            "never"
-          ],
-          "default": "always",
-          "enumDescriptions": [
-            "Save and restore clipboard around operations that use it as transport — your prior clipboard content is preserved (default)",
-            "Never restore clipboard — clipboard always contains last RangeLink output"
-          ],
-          "description": "Controls whether RangeLink restores your clipboard after operations that use it as a transport mechanism"
+          "default": "#",
+          "description": "Delimiter used before the range specification (e.g., # in path#L10-L20)",
+          "pattern": "^[^0-9]+$"
+        },
+        "rangelink.delimiterLine": {
+          "type": "string",
+          "default": "L",
+          "description": "Delimiter used before line numbers (e.g., L in #L10-L20)",
+          "pattern": "^[^0-9]+$"
+        },
+        "rangelink.delimiterPosition": {
+          "type": "string",
+          "default": "C",
+          "description": "Delimiter used before position numbers (e.g., C in #L10C5-L20C10)",
+          "pattern": "^[^0-9]+$"
+        },
+        "rangelink.delimiterRange": {
+          "type": "string",
+          "default": "-",
+          "description": "Delimiter used between start and end positions (e.g., - in #L10-L20)",
+          "pattern": "^[^0-9]+$"
+        },
+        "rangelink.features.bookmarks.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Bookmarks feature (beta). Save code locations for quick access later."
         }
       }
     },
