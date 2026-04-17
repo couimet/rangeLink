@@ -65,6 +65,10 @@ suite('Dirty Buffer Warning', () => {
       clipboard.includes('#L'),
       `Expected clipboard to contain a line reference but got: ${clipboard}`,
     );
+    assert.ok(
+      editor.document.isDirty,
+      'Expected document to remain dirty — setting disabled should not trigger a save',
+    );
   });
 
   test('dirty-buffer-warning-008: warnOnDirtyBuffer=false — R-F sends file path without showing warning dialog', async () => {
@@ -88,6 +92,10 @@ suite('Dirty Buffer Warning', () => {
       clipboard,
       'rangelink-rf-dirty-sentinel',
       'Expected clipboard to contain a file path, not the sentinel — warnOnDirtyBuffer=false should bypass dialog for R-F',
+    );
+    assert.ok(
+      editor.document.isDirty,
+      'Expected document to remain dirty — setting disabled should not trigger a save',
     );
   });
 
@@ -117,6 +125,7 @@ suite('Dirty Buffer Warning', () => {
       undefined,
       'Expected no dirty buffer warning log for clean file',
     );
+    assert.ok(!editor.document.isDirty, 'Expected document to remain clean');
 
     await closeAllEditors();
     cleanupFiles([cleanUri]);
@@ -384,6 +393,11 @@ suite('Dirty Buffer Warning — Dialog Interaction', () => {
     );
     assert.ok(pastedLog, 'Expected link to be sent to the bound destination');
 
+    assert.ok(
+      editor.document.isDirty,
+      'Expected document to remain dirty after Generate Anyway',
+    );
+
     log('✓ R-L dirty + bound destination: clipboard preserved after Generate Anyway');
   });
 
@@ -412,6 +426,8 @@ suite('Dirty Buffer Warning — Dialog Interaction', () => {
     await assertClipboardRestored(
       'R-F with bound destination + dirty buffer dialog: clipboard should be restored after send',
     );
+
+    assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Send Anyway');
 
     log('✓ R-F dirty + bound destination: clipboard preserved after Send Anyway');
   });
