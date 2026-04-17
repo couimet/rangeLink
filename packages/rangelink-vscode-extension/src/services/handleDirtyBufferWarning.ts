@@ -75,7 +75,7 @@ export const handleDirtyBufferWarning = async (
 
   switch (result) {
     case DirtyBufferWarningResult.SaveAndContinue: {
-      logger.debug({ fn }, 'User chose to save and generate');
+      logger.debug({ fn }, 'User chose to save and continue');
       const saved = await document.save();
       if (!saved) {
         logger.warn({ fn }, 'Save operation failed or was cancelled');
@@ -86,7 +86,7 @@ export const handleDirtyBufferWarning = async (
       return result;
     }
     case DirtyBufferWarningResult.ContinueAnyway:
-      logger.debug({ fn }, 'User chose to generate anyway');
+      logger.debug({ fn }, 'User chose to continue without saving');
       return result;
     case DirtyBufferWarningResult.Dismissed:
       logger.debug({ fn }, 'User dismissed warning, aborting');

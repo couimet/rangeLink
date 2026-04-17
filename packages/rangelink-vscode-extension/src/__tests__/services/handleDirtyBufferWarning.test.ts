@@ -146,7 +146,7 @@ describe('handleDirtyBufferWarning', () => {
     expect(result).toBe('ContinueAnyway');
     expect(mockLogger.debug).toHaveBeenCalledWith(
       { fn: 'handleDirtyBufferWarning' },
-      'User chose to generate anyway',
+      'User chose to continue without saving',
     );
   });
 

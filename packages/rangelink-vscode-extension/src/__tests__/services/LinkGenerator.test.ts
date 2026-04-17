@@ -209,12 +209,13 @@ describe('LinkGenerator', () => {
         editor: { document: mockDoc, selections: [createMockSelection({ isEmpty: false })] },
         selections: [createMockSelection({ isEmpty: false })],
       });
-      jest
+      const warningSpy = jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.Dismissed);
 
       await generator.createLink();
 
+      expect(warningSpy).toHaveBeenCalledTimes(1);
       expect(mockGenLink).not.toHaveBeenCalled();
     });
 
@@ -227,12 +228,13 @@ describe('LinkGenerator', () => {
         editor: { document: mockDoc, selections: [createMockSelection({ isEmpty: false })] },
         selections: [createMockSelection({ isEmpty: false })],
       });
-      jest
+      const warningSpy = jest
         .spyOn(handleDirtyBufferWarningModule, 'handleDirtyBufferWarning')
         .mockResolvedValue(DirtyBufferWarningResult.SaveFailed);
 
       await generator.createLink();
 
+      expect(warningSpy).toHaveBeenCalledTimes(1);
       expect(mockGenLink).not.toHaveBeenCalled();
     });
 

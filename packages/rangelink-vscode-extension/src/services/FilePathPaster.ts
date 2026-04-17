@@ -19,7 +19,8 @@ import {
 import { formatMessage } from '../utils';
 
 import type { ClipboardRouter } from './ClipboardRouter';
-import { FILE_PATH_DIRTY_BUFFER_CODES, handleDirtyBufferWarning } from './handleDirtyBufferWarning';
+import { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
+import { FILE_PATH_DIRTY_BUFFER_CODES } from './types';
 
 /**
  * Resolves a file URI to a reference path based on the requested format.
