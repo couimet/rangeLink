@@ -1173,28 +1173,32 @@ test_cases:
 
   - id: dirty-buffer-warning-008
     feature: 'Dirty Buffer Warning — R-F'
-    scenario: 'warnOnDirtyBuffer=false — R-F sends file path without showing warning dialog'
+    scenario: 'warnOnDirtyBuffer=false — R-F bypasses dialog'
     preconditions:
       - 'rangelink.warnOnDirtyBuffer = false'
       - 'File has unsaved changes'
+      - 'A terminal exists for the destination picker'
     steps:
       - 'Set warnOnDirtyBuffer to false'
       - 'Make unsaved change to a file'
-      - 'Execute R-F (Send Current File Path)'
-    expected_result: 'No dialog appears. File path copied to clipboard immediately.'
-    automated: true
+      - 'Press Cmd+R Cmd+F — confirm dirty buffer dialog does NOT appear'
+      - 'When destination picker appears, select the terminal'
+    expected_result: 'No dialog appears. File path copied to clipboard. "Disabled by setting" log emitted. No dialog log.'
+    automated: assisted
 
   - id: dirty-buffer-warning-009
     feature: 'Dirty Buffer Warning — R-F'
-    scenario: 'R-F on clean file sends path without warning'
+    scenario: 'R-F on clean file skips warning logic entirely'
     preconditions:
       - 'rangelink.warnOnDirtyBuffer = true (default)'
       - 'File is saved (no unsaved changes)'
+      - 'A terminal exists for the destination picker'
     steps:
       - 'Save file to ensure clean state'
-      - 'Execute R-F (Send Current File Path)'
-    expected_result: 'No dialog appears. File path copied to clipboard immediately. No dirty buffer log emitted.'
-    automated: true
+      - 'Press Cmd+R Cmd+F — confirm dirty buffer dialog does NOT appear'
+      - 'When destination picker appears, select the terminal'
+    expected_result: 'No dialog appears. File path copied to clipboard. No handleDirtyBufferWarning logs emitted (Clean early-return).'
+    automated: assisted
 
   - id: dirty-buffer-warning-010
     feature: 'Dirty Buffer Warning — R-C Dialog'
