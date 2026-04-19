@@ -3,11 +3,7 @@ import { type DelimiterConfigGetter, type FormattedLink, LinkType } from 'rangel
 import type * as vscode from 'vscode';
 
 import type { ConfigReader } from '../config/ConfigReader';
-import {
-  DEFAULT_SMART_PADDING_PASTE_LINK,
-  SETTING_SMART_PADDING_PASTE_LINK,
-  SETTING_WARN_ON_DIRTY_BUFFER,
-} from '../constants';
+import { DEFAULT_SMART_PADDING_PASTE_LINK, SETTING_SMART_PADDING_PASTE_LINK } from '../constants';
 import type { PasteDestinationManager } from '../destinations/PasteDestinationManager';
 import type { VscodeAdapter } from '../ide/vscode/VscodeAdapter';
 import {
@@ -21,7 +17,7 @@ import { formatMessage, generateLinkFromSelections } from '../utils';
 
 import type { ClipboardRouter } from './ClipboardRouter';
 import { getReferencePath } from './FilePathPaster';
-import { handleDirtyBufferWarning } from './handleDirtyBufferWarning';
+import { handleDirtyBufferWarning, LINK_DIRTY_BUFFER_CODES } from './handleDirtyBufferWarning';
 import type { SelectionValidator } from './SelectionValidator';
 
 const NOOP_SEND_FN = () => Promise.resolve(false);
@@ -119,26 +115,18 @@ export class LinkGenerator {
     const { editor, selections } = validated;
     const document = editor.document;
 
-    if (document.isDirty) {
-      const shouldWarnOnDirty = this.configReader.getBoolean(SETTING_WARN_ON_DIRTY_BUFFER, true);
-      if (shouldWarnOnDirty) {
-        const warningResult = await handleDirtyBufferWarning(
-          document,
-          this.ideAdapter,
-          this.logger,
-        );
-        if (
-          warningResult === DirtyBufferWarningResult.Dismissed ||
-          warningResult === DirtyBufferWarningResult.SaveFailed
-        ) {
-          return undefined;
-        }
-      } else {
-        this.logger.debug(
-          { fn: 'generateLinkFromSelection', documentUri: document.uri.toString() },
-          'Document has unsaved changes but warning is disabled by setting',
-        );
-      }
+    const warningResult = await handleDirtyBufferWarning(
+      document,
+      this.configReader,
+      this.ideAdapter,
+      this.logger,
+      LINK_DIRTY_BUFFER_CODES,
+    );
+    if (
+      warningResult === DirtyBufferWarningResult.Dismissed ||
+      warningResult === DirtyBufferWarningResult.SaveFailed
+    ) {
+      return undefined;
     }
 
     const referencePath = getReferencePath(this.ideAdapter, document.uri, pathFormat);

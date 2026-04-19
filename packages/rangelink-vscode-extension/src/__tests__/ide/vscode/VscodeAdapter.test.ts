@@ -1526,6 +1526,38 @@ describe('VscodeAdapter', () => {
     });
   });
 
+  describe('findOpenDocument', () => {
+    it('returns the document when it is open', () => {
+      const targetUri = createMockUri('/workspace/src/file.ts');
+      const otherUri = createMockUri('/workspace/src/other.ts');
+      const targetDoc = createMockDocument({ uri: targetUri });
+      const otherDoc = createMockDocument({ uri: otherUri });
+      mockVSCode.workspace.textDocuments = [otherDoc, targetDoc];
+
+      const result = adapter.findOpenDocument(targetUri);
+
+      expect(result).toBe(targetDoc);
+    });
+
+    it('returns undefined when the document is not open', () => {
+      const targetUri = createMockUri('/workspace/src/missing.ts');
+      const otherDoc = createMockDocument({ uri: createMockUri('/workspace/src/other.ts') });
+      mockVSCode.workspace.textDocuments = [otherDoc];
+
+      const result = adapter.findOpenDocument(targetUri);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('returns undefined when no documents are open', () => {
+      mockVSCode.workspace.textDocuments = [];
+
+      const result = adapter.findOpenDocument(createMockUri('/workspace/src/file.ts'));
+
+      expect(result).toBeUndefined();
+    });
+  });
+
   describe('getExtension', () => {
     it('should return extension when it exists', () => {
       const customVscode = createMockVscode({

@@ -39,6 +39,12 @@ export const DEFAULT_NAVIGATION_SHOW_CLAMPING_WARNING = true;
 export const DEFAULT_NAVIGATION_SHOW_NAVIGATED_TOAST = true;
 
 // =============================================================================
+// Dirty Buffer Warning Defaults
+// =============================================================================
+
+export const DEFAULT_WARN_ON_DIRTY_BUFFER = true;
+
+// =============================================================================
 // Smart Padding Defaults
 // =============================================================================
 

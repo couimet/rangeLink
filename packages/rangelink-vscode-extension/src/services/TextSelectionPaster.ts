@@ -25,6 +25,8 @@ export class TextSelectionPaster {
     private readonly logger: Logger,
   ) {}
 
+  // No dirty-buffer warning: R-V sends the in-memory selection text, so
+  // stale-on-disk is not a concern (unlike R-L/R-C/R-F which reference files by path).
   async pasteSelectedTextToDestination(): Promise<void> {
     const logCtx = { fn: 'TextSelectionPaster.pasteSelectedTextToDestination' };
 
