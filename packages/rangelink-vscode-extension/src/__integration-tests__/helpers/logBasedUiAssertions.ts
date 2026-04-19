@@ -94,6 +94,30 @@ export const assertNoStatusBarMsgLogged = (
   );
 };
 
+const INPUT_BOX_FN = 'VscodeAdapter.showInputBox';
+
+interface InputBoxAssertionOptions {
+  prompt: string;
+  placeHolder: string;
+}
+
+/**
+ * Assert that a showInputBox log entry was emitted with the expected prompt and placeholder.
+ * Matches against the raw JSON payload under `options` — exact-string matches on both fields.
+ */
+export const assertInputBoxLogged = (lines: string[], opts: InputBoxAssertionOptions): void => {
+  const found = lines.some(
+    (line) =>
+      line.includes(INPUT_BOX_FN) &&
+      line.includes(`"prompt":"${opts.prompt}"`) &&
+      line.includes(`"placeHolder":"${opts.placeHolder}"`),
+  );
+  assert.ok(
+    found,
+    `Expected ${INPUT_BOX_FN} log entry with prompt "${opts.prompt}" and placeholder "${opts.placeHolder}" but it was not found in ${lines.length} log lines`,
+  );
+};
+
 const QUICK_PICK_FN = 'VscodeAdapter.showQuickPick';
 
 interface QuickPickItemExpectation {
