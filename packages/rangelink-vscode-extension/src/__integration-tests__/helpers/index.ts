@@ -16,6 +16,7 @@ export {
 } from './fileHelpers';
 export { getLogCapture } from './getLogCapture';
 export {
+  assertInputBoxLogged,
   assertNoStatusBarMsgLogged,
   assertNoToastLogged,
   assertQuickPickItemsLogged,

@@ -1274,19 +1274,11 @@ test_cases:
     steps:
       - 'Press Cmd+R Cmd+G'
     expected_result: 'An input box appears with placeholder text indicating it expects a RangeLink (e.g., path/to/file.ts#L10).'
-    automated: false
+    automated: assisted
 
-  - id: go-to-link-002
-    feature: 'R-G Go to Link'
-    scenario: 'Ctrl+R Ctrl+G on Win/Linux'
-    preconditions:
-      - 'Extension installed'
-      - 'Any workspace open'
-      - 'Running on Windows or Linux'
-    steps:
-      - 'Press Ctrl+R Ctrl+G'
-    expected_result: 'Same input box opens as Cmd+R Cmd+G.'
-    automated: false
+  # go-to-link-002 removed — Ctrl+R Ctrl+G on Win/Linux tests VS Code's keybinding
+  # resolution, not RangeLink behavior. Both bindings are declared in package.json;
+  # VS Code dispatches the platform-appropriate one. See issues/508 for rationale.
 
   - id: go-to-link-003
     feature: 'R-G Go to Link'
@@ -1299,7 +1291,7 @@ test_cases:
       - 'Type or paste: src/utils/helper.ts#L3-L7'
       - 'Press Enter'
     expected_result: 'VS Code opens src/utils/helper.ts and selects lines 3-7. The selection is visible and highlighted.'
-    automated: false
+    automated: assisted
 
   - id: go-to-link-004
     feature: 'R-G Go to Link'
@@ -1312,7 +1304,7 @@ test_cases:
       - 'Type: src/utils/helper.ts#L3C5-L3C20'
       - 'Press Enter'
     expected_result: 'The file opens and the selection spans from column 5 to column 20 on line 3 (character-level precision).'
-    automated: false
+    automated: assisted
 
   - id: go-to-link-005
     feature: 'R-G Go to Link'
@@ -1324,19 +1316,19 @@ test_cases:
       - 'Type: not-a-valid-link-format'
       - 'Press Enter'
     expected_result: "An error notification appears (e.g., 'Invalid RangeLink format'). No navigation occurs."
-    automated: false
+    automated: assisted
 
   - id: go-to-link-006
     feature: 'R-G Go to Link'
-    scenario: 'Empty input dismisses with info notification'
+    scenario: 'Empty input dismisses with error notification'
     preconditions:
       - 'Extension installed'
     steps:
       - 'Press Cmd+R Cmd+G'
       - 'Clear the input (leave it empty)'
       - 'Press Enter'
-    expected_result: "The input box closes. An info notification appears (e.g., 'No link entered'). No navigation, no error."
-    automated: false
+    expected_result: "The input box closes. An error notification appears (e.g., 'Please enter a link to navigate'). No navigation occurs."
+    automated: assisted
 
   - id: go-to-link-007
     feature: 'R-G Go to Link'
@@ -1348,7 +1340,7 @@ test_cases:
       - 'Type: src/nonexistent/file.ts#L1'
       - 'Press Enter'
     expected_result: "A warning notification appears (e.g., 'File not found: src/nonexistent/file.ts'). No navigation occurs."
-    automated: false
+    automated: assisted
 
   - id: go-to-link-008
     feature: 'R-G Go to Link'
@@ -1359,7 +1351,7 @@ test_cases:
       - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
       - "Type 'Go to Link' and select 'RangeLink: Go to Link'"
     expected_result: 'Same input box opens as the R-G keybinding.'
-    automated: false
+    automated: assisted
 
   - id: go-to-link-009
     feature: 'R-G Go to Link'
@@ -1370,7 +1362,7 @@ test_cases:
       - 'Open R-M menu'
       - "Select 'Go to Link'"
     expected_result: 'The R-G input box opens. Behavior is identical to the keybinding.'
-    automated: false
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 11 — R-U Unbind
