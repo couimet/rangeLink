@@ -527,6 +527,19 @@ export class VscodeAdapter
     return undefined;
   }
 
+  /**
+   * Find an open document by URI.
+   *
+   * Searches workspace.textDocuments for a document whose URI matches.
+   * Returns undefined if the file is not open (e.g., Explorer context-menu
+   * invocation on a closed file).
+   */
+  findOpenDocument(uri: vscode.Uri): vscode.TextDocument | undefined {
+    return this.ideInstance.workspace.textDocuments.find(
+      (doc) => doc.uri.toString() === uri.toString(),
+    );
+  }
+
   // ============================================================================
   // Extension Lifecycle Operations
   // ============================================================================

@@ -255,6 +255,29 @@
   <rationale>Integration tests verify behavior via log capture. Unlogged mutations are invisible to test assertions and can only be checked via side effects, which is fragile.</rationale>
 </rule>
 
+<rule id="T016" priority="critical">
+  <title>Integration tests import command IDs from constants; unit tests use literals</title>
+  <scope>Integration tests under `src/__integration-tests__/` only</scope>
+  <do>Import command IDs from `src/constants/commandIds.ts` when dispatching via `vscode.commands.executeCommand`</do>
+  <never>Use string literals for command IDs in integration-test dispatches — a typo passes compile and silently fails inside VS Code's promise chain</never>
+  <exception>Unit tests still use literals per T003. This rule is scoped to integration-test command dispatch only, not assertions.</exception>
+  <rationale>Dispatch is not an assertion — the command string is being routed to VS Code, not compared against a frozen contract. Importing the constant gives compile-time detection when a command is renamed or removed. A typo'd literal (e.g., `rangelink.sendCurrentFilePath` vs the real `rangelink.pasteCurrentFileRelativePath`) compiles locally, fails silently at runtime, and only surfaces when CI runs the integration tests.</rationale>
+  <good-example>
+    ```typescript
+    import { CMD_PASTE_CURRENT_FILE_PATH_RELATIVE } from '../../constants/commandIds';
+
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
+    ```
+
+  </good-example>
+  <bad-example>
+    ```typescript
+    // BAD: typo compiles, fails silently at runtime
+    await vscode.commands.executeCommand('rangelink.sendCurrentFilePath');
+    ```
+  </bad-example>
+</rule>
+
 <rule id="E001" priority="critical">
   <title>Shell environment setup</title>
   <when>Before running pnpm, npm, node, or any JS tooling commands</when>
