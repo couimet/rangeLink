@@ -2,10 +2,7 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import {
-  CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
-  CMD_UNBIND_DESTINATION,
-} from '../../constants/commandIds';
+import { CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 import {
   activateExtension,
   assertClipboardRestored,
