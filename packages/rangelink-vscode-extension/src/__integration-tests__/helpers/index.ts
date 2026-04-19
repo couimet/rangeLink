@@ -16,10 +16,14 @@ export {
 } from './fileHelpers';
 export { getLogCapture } from './getLogCapture';
 export {
+  assertClipboardWriteLogged,
+  assertFilePathLogged,
   assertInputBoxLogged,
+  assertNoSetContextLogged,
   assertNoStatusBarMsgLogged,
   assertNoToastLogged,
   assertQuickPickItemsLogged,
+  assertSetContextLogged,
   assertStatusBarMsgLogged,
   extractQuickPickItemsLogged,
   parseQuickPickItemsFromLogLine,

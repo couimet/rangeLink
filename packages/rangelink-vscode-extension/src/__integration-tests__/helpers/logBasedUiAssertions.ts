@@ -233,3 +233,110 @@ export const assertSuppressionLogged = (
     `Expected suppression log with fn="${opts.fn}" and suppressedMessage="${opts.suppressedMessage}" but it was not found in ${lines.length} log lines`,
   );
 };
+
+const FILE_PATH_FN = 'FilePathPaster.pasteFilePath';
+
+interface FilePathAssertionOptions {
+  pathFormat: 'absolute' | 'workspace-relative';
+  uriSource: 'context-menu' | 'command-palette';
+  filePath: string;
+}
+
+/**
+ * Assert that FilePathPaster.pasteFilePath resolved a file path via the expected route.
+ * Compares `fn`, `pathFormat`, `uriSource`, and `filePath` directly on parsed log context.
+ */
+export const assertFilePathLogged = (lines: string[], opts: FilePathAssertionOptions): void => {
+  const found = lines.some((line) => {
+    const ctx = parseLogContext(line) as
+      | (LoggingContext & {
+          pathFormat?: unknown;
+          uriSource?: unknown;
+          filePath?: unknown;
+        })
+      | undefined;
+    return (
+      ctx?.fn === FILE_PATH_FN &&
+      ctx.pathFormat === opts.pathFormat &&
+      ctx.uriSource === opts.uriSource &&
+      ctx.filePath === opts.filePath
+    );
+  });
+  assert.ok(
+    found,
+    `Expected ${FILE_PATH_FN} log with pathFormat="${opts.pathFormat}", uriSource="${opts.uriSource}", filePath="${opts.filePath}" but it was not found in ${lines.length} log lines`,
+  );
+};
+
+const EXECUTE_COMMAND_FN = 'VscodeAdapter.executeCommand';
+const SET_CONTEXT_COMMAND = 'setContext';
+
+type ContextKeyValue = boolean | string | number;
+
+interface SetContextAssertionOptions {
+  key: string;
+  value: ContextKeyValue;
+}
+
+const matchSetContextLog = (line: string, opts: SetContextAssertionOptions): boolean => {
+  const ctx = parseLogContext(line) as
+    | (LoggingContext & {
+        command?: unknown;
+        args?: unknown;
+      })
+    | undefined;
+  if (ctx?.fn !== EXECUTE_COMMAND_FN || ctx.command !== SET_CONTEXT_COMMAND) return false;
+  if (!Array.isArray(ctx.args)) return false;
+  return ctx.args[0] === opts.key && ctx.args[1] === opts.value;
+};
+
+/**
+ * Assert that a `setContext` executeCommand log was emitted for the given context key + value.
+ * Matches against the parsed `args` array: args[0] === key, args[1] === value.
+ */
+export const assertSetContextLogged = (lines: string[], opts: SetContextAssertionOptions): void => {
+  assert.ok(
+    lines.some((line) => matchSetContextLog(line, opts)),
+    `Expected setContext log with key="${opts.key}" value=${String(opts.value)} but it was not found in ${lines.length} log lines`,
+  );
+};
+
+/**
+ * Assert that NO `setContext` executeCommand log was emitted for the given key + value.
+ * Use to prove state-invariants during an observation window.
+ */
+export const assertNoSetContextLogged = (
+  lines: string[],
+  opts: SetContextAssertionOptions,
+): void => {
+  assert.ok(
+    !lines.some((line) => matchSetContextLog(line, opts)),
+    `Expected setContext log with key="${opts.key}" value=${String(opts.value)} to NOT be logged, but it was found`,
+  );
+};
+
+const CLIPBOARD_WRITE_FN = 'VscodeAdapter.writeTextToClipboard';
+
+interface ClipboardWriteAssertionOptions {
+  textLength: number;
+}
+
+/**
+ * Assert that `writeTextToClipboard` logged with the expected textLength.
+ * NOTE: The adapter only logs the length, not the content — this is a sanity check,
+ * not a content assertion. Pair with a content-bearing log (e.g., FilePathPaster.pasteFilePath's
+ * `filePath` field) when you need to prove WHAT was written.
+ */
+export const assertClipboardWriteLogged = (
+  lines: string[],
+  opts: ClipboardWriteAssertionOptions,
+): void => {
+  const found = lines.some((line) => {
+    const ctx = parseLogContext(line) as (LoggingContext & { textLength?: unknown }) | undefined;
+    return ctx?.fn === CLIPBOARD_WRITE_FN && ctx.textLength === opts.textLength;
+  });
+  assert.ok(
+    found,
+    `Expected ${CLIPBOARD_WRITE_FN} log with textLength=${opts.textLength} but it was not found in ${lines.length} log lines`,
+  );
+};
