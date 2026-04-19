@@ -1286,9 +1286,9 @@ test_cases:
     preconditions:
       - 'rangelink.warnOnDirtyBuffer = true (default)'
       - 'rangelink.clipboard.preserve = always (default)'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
       - 'File has unsaved changes, text selected'
     steps:
-      - 'Bind to a terminal via Cmd+R Cmd+D'
       - 'Make unsaved change, write sentinel to clipboard'
       - 'Press Cmd+R Cmd+L — dialog appears'
       - 'Click Generate Anyway'
@@ -1301,13 +1301,80 @@ test_cases:
     preconditions:
       - 'rangelink.warnOnDirtyBuffer = true (default)'
       - 'rangelink.clipboard.preserve = always (default)'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
       - 'File has unsaved changes'
     steps:
-      - 'Bind to a terminal via Cmd+R Cmd+D'
       - 'Make unsaved change, write sentinel to clipboard'
       - 'Press Cmd+R Cmd+F — dialog appears'
       - 'Click Send Anyway'
     expected_result: 'File path sent to terminal. Clipboard restored to sentinel (not overwritten by the path).'
+    automated: assisted
+
+  - id: dirty-buffer-warning-018
+    feature: 'Dirty Buffer Warning — Setting disabled'
+    scenario: 'R-L with warnOnDirtyBuffer=false sends link to bound destination without warning dialog'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = false'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text, write sentinel to clipboard'
+      - 'Press Cmd+R Cmd+L (Send RangeLink) — confirm NO dialog appears'
+    expected_result: 'No dialog. Link sent to terminal (Pasted log). Clipboard restored to sentinel. File still dirty (setting disabled should not trigger a save). handleDirtyBufferWarning logs "disabled by setting".'
+    automated: assisted
+
+  - id: dirty-buffer-warning-019
+    feature: 'Dirty Buffer Warning — Clean file'
+    scenario: 'R-C on clean file generates link without warning'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'File is clean (no unsaved changes), text selected'
+    steps:
+      - 'Open a clean file, select text'
+      - 'Press Cmd+R Cmd+C (Copy RangeLink)'
+    expected_result: 'No dialog. RangeLink on clipboard with #L reference. File remains clean. No handleDirtyBufferWarning logs emitted (Clean early-return).'
+    automated: true
+
+  - id: dirty-buffer-warning-020
+    feature: 'Dirty Buffer Warning — R-L Dialog'
+    scenario: 'R-L Save & Generate saves file and sends link to bound destination'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text, write sentinel to clipboard'
+      - 'Press Cmd+R Cmd+L (Send RangeLink) — dialog appears'
+      - 'Click Save & Generate'
+    expected_result: 'File saved (modified indicator gone). Link sent to terminal (Pasted log). Clipboard restored to sentinel. handleDirtyBufferWarning logs "showing warning".'
+    automated: assisted
+
+  - id: dirty-buffer-warning-021
+    feature: 'Dirty Buffer Warning — R-L Dialog'
+    scenario: 'R-L Generate Anyway sends link to bound destination without saving'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text, write sentinel to clipboard'
+      - 'Press Cmd+R Cmd+L (Send RangeLink) — dialog appears'
+      - 'Click Generate Anyway'
+    expected_result: 'File still dirty. Link sent to terminal (Pasted log). Clipboard restored to sentinel. handleDirtyBufferWarning logs "showing warning".'
+    automated: assisted
+
+  - id: dirty-buffer-warning-022
+    feature: 'Dirty Buffer Warning — R-L Dialog'
+    scenario: 'R-L dismiss aborts link send'
+    preconditions:
+      - 'rangelink.warnOnDirtyBuffer = true (default)'
+      - 'A terminal is bound as destination (bound programmatically by the test harness)'
+      - 'File has unsaved changes, text selected'
+    steps:
+      - 'Make unsaved change, select text, write sentinel to clipboard'
+      - 'Press Cmd+R Cmd+L (Send RangeLink) — dialog appears'
+      - 'Press Escape or click X to dismiss'
+    expected_result: 'Clipboard still has sentinel (no send occurred). File still dirty. No Pasted log. handleDirtyBufferWarning logs "showing warning".'
     automated: assisted
 
   # ---------------------------------------------------------------------------
