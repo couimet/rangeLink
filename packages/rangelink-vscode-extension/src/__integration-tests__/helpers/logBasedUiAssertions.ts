@@ -103,15 +103,26 @@ interface InputBoxAssertionOptions {
 
 /**
  * Assert that a showInputBox log entry was emitted with the expected prompt and placeholder.
- * Matches against the raw JSON payload under `options` — exact-string matches on both fields.
+ * Parses each line's log context and compares `fn` + `options.prompt` + `options.placeHolder`
+ * directly — no raw substring matching.
  */
 export const assertInputBoxLogged = (lines: string[], opts: InputBoxAssertionOptions): void => {
-  const found = lines.some(
-    (line) =>
-      line.includes(INPUT_BOX_FN) &&
-      line.includes(`"prompt":"${opts.prompt}"`) &&
-      line.includes(`"placeHolder":"${opts.placeHolder}"`),
-  );
+  const found = lines.some((line) => {
+    const ctx = parseLogContext(line) as
+      | (LoggingContext & {
+          options?: {
+            prompt?: unknown;
+            placeHolder?: unknown;
+          };
+        })
+      | undefined;
+
+    return (
+      ctx?.fn === INPUT_BOX_FN &&
+      ctx.options?.prompt === opts.prompt &&
+      ctx.options?.placeHolder === opts.placeHolder
+    );
+  });
   assert.ok(
     found,
     `Expected ${INPUT_BOX_FN} log entry with prompt "${opts.prompt}" and placeholder "${opts.placeHolder}" but it was not found in ${lines.length} log lines`,

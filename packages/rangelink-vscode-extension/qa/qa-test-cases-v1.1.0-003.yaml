@@ -1320,14 +1320,14 @@ test_cases:
 
   - id: go-to-link-006
     feature: 'R-G Go to Link'
-    scenario: 'Empty input dismisses with info notification'
+    scenario: 'Empty input dismisses with error notification'
     preconditions:
       - 'Extension installed'
     steps:
       - 'Press Cmd+R Cmd+G'
       - 'Clear the input (leave it empty)'
       - 'Press Enter'
-    expected_result: "The input box closes. An info notification appears (e.g., 'No link entered'). No navigation, no error."
+    expected_result: "The input box closes. An error notification appears (e.g., 'Please enter a link to navigate'). No navigation occurs."
     automated: assisted
 
   - id: go-to-link-007

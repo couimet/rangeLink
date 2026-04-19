@@ -11,6 +11,7 @@ import {
   closeAllEditors,
   createAndOpenFile,
   createLogger,
+  extractQuickPickItemsLogged,
   getLogCapture,
   printAssistedBanner,
   settle,
@@ -184,6 +185,7 @@ suite('R-G Go to Link', () => {
 
   test('[assisted] go-to-link-005: invalid link format shows error toast', async () => {
     const invalidInput = 'not-a-valid-link-format';
+    const uriBefore = vscode.window.activeTextEditor?.document.uri.toString();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-gtl-005');
@@ -211,6 +213,12 @@ suite('R-G Go to Link', () => {
       'Expected GoToRangeLinkCommand.execute "Invalid link format" debug log',
     );
 
+    assert.strictEqual(
+      vscode.window.activeTextEditor?.document.uri.toString(),
+      uriBefore,
+      'Expected active editor URI to be unchanged (no navigation occurred)',
+    );
+
     log('✓ Invalid input produced error toast with exact message; no navigation occurred');
   });
 
@@ -219,6 +227,8 @@ suite('R-G Go to Link', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] go-to-link-006: empty input shows error toast', async () => {
+    const uriBefore = vscode.window.activeTextEditor?.document.uri.toString();
+
     const logCapture = getLogCapture();
     logCapture.mark('before-gtl-006');
 
@@ -245,6 +255,12 @@ suite('R-G Go to Link', () => {
       'Expected GoToRangeLinkCommand.execute "Empty input provided" debug log',
     );
 
+    assert.strictEqual(
+      vscode.window.activeTextEditor?.document.uri.toString(),
+      uriBefore,
+      'Expected active editor URI to be unchanged (no navigation occurred)',
+    );
+
     log('✓ Empty input produced the empty-input error toast; no parse attempted');
   });
 
@@ -255,6 +271,7 @@ suite('R-G Go to Link', () => {
   test('[assisted] go-to-link-007: nonexistent file path shows warning toast', async () => {
     const missingPath = 'src/nonexistent/file.ts';
     const linkText = `${missingPath}#L1`;
+    const uriBefore = vscode.window.activeTextEditor?.document.uri.toString();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-gtl-007');
@@ -272,6 +289,12 @@ suite('R-G Go to Link', () => {
       type: 'warning',
       message: `RangeLink: Cannot find file: ${missingPath}`,
     });
+
+    assert.strictEqual(
+      vscode.window.activeTextEditor?.document.uri.toString(),
+      uriBefore,
+      'Expected active editor URI to be unchanged (no navigation occurred)',
+    );
 
     log('✓ Nonexistent file produced the file-not-found warning toast with exact path');
   });
@@ -323,13 +346,11 @@ suite('R-G Go to Link', () => {
 
     const lines = logCapture.getLinesSince('before-gtl-009');
 
-    const menuQuickPickLogged = lines.some(
-      (line) =>
-        line.includes('VscodeAdapter.showQuickPick') && line.includes(GO_TO_LINK_MENU_LABEL),
-    );
+    const menuItems = extractQuickPickItemsLogged(lines);
+    assert.ok(menuItems, 'Expected R-M menu quick pick log entry with items payload');
     assert.ok(
-      menuQuickPickLogged,
-      `Expected R-M menu quick pick log entry containing "${GO_TO_LINK_MENU_LABEL}"`,
+      menuItems!.some((item) => item.label === GO_TO_LINK_MENU_LABEL),
+      `Expected R-M menu item with label "${GO_TO_LINK_MENU_LABEL}"`,
     );
 
     assertInputBoxLogged(lines, INPUT_BOX_OPTS);
