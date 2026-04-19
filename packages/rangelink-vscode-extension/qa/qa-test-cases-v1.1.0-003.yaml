@@ -876,7 +876,7 @@ test_cases:
       - 'Right-click the file tab in the tab bar'
       - "Select 'RangeLink: Send File Path'"
     expected_result: "Terminal receives the absolute file path of the tab's file."
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-tab-002
     feature: 'Context Menus — Editor Tab'
@@ -888,7 +888,7 @@ test_cases:
       - 'Right-click the file tab'
       - "Select 'RangeLink: Send Relative File Path'"
     expected_result: 'Terminal receives the workspace-relative path.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-tab-003
     feature: 'Context Menus — Editor Tab'
@@ -900,7 +900,7 @@ test_cases:
       - 'Right-click the file tab'
       - "Select 'RangeLink: Bind Here'"
     expected_result: "The tab's file is now the bound text editor destination. Success toast appears."
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-tab-004
     feature: 'Context Menus — Editor Tab'
@@ -911,7 +911,7 @@ test_cases:
       - 'Right-click any editor tab'
       - "Select 'RangeLink: Unbind'"
     expected_result: 'Destination is unbound. Confirmation notification.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-001
     feature: 'Context Menus — Editor Content'
