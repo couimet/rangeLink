@@ -1,4 +1,3 @@
-import assert from 'node:assert';
 import * as path from 'node:path';
 
 import * as vscode from 'vscode';
@@ -8,8 +7,10 @@ import {
   activateExtension,
   assertClipboardWriteLogged,
   assertFilePathLogged,
+  assertFnLogged,
   assertSetContextLogged,
   assertStatusBarMsgLogged,
+  assertTerminalPasteLogged,
   cleanupFiles,
   closeAllEditors,
   createAndOpenFile,
@@ -82,6 +83,10 @@ suite('Context Menus — Editor Tab', () => {
       filePath: uri.fsPath,
     });
     assertClipboardWriteLogged(lines, { textLength: uri.fsPath.length });
+    assertTerminalPasteLogged(lines, {
+      terminalName,
+      minTextLength: uri.fsPath.length,
+    });
 
     log('✓ Editor-tab context menu routed absolute path via context-menu route to bound terminal');
   });
@@ -124,6 +129,10 @@ suite('Context Menus — Editor Tab', () => {
       filePath: relativePath,
     });
     assertClipboardWriteLogged(lines, { textLength: relativePath.length });
+    assertTerminalPasteLogged(lines, {
+      terminalName,
+      minTextLength: relativePath.length,
+    });
 
     log('✓ Editor-tab context menu routed workspace-relative path to bound terminal');
   });
@@ -151,10 +160,7 @@ suite('Context Menus — Editor Tab', () => {
 
     const lines = logCapture.getLinesSince('before-ctxmenu-tab-003');
 
-    const executeWithUriLogged = lines.some((line) =>
-      line.includes('"fn":"BindToTextEditorCommand.executeWithUri"'),
-    );
-    assert.ok(executeWithUriLogged, 'Expected BindToTextEditorCommand.executeWithUri log');
+    assertFnLogged(lines, { fn: 'BindToTextEditorCommand.executeWithUri' });
 
     assertStatusBarMsgLogged(lines, {
       message: `✓ RangeLink bound to Text Editor ("${fn}")`,
