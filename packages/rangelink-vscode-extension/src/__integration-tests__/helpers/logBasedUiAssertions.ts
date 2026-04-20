@@ -315,6 +315,60 @@ export const assertNoSetContextLogged = (
   );
 };
 
+const TERMINAL_PASTE_FN = 'VscodeAdapter.pasteTextToTerminalViaClipboard';
+
+interface TerminalPasteAssertionOptions {
+  terminalName: string;
+  minTextLength?: number;
+}
+
+/**
+ * Assert that `pasteTextToTerminalViaClipboard` logged delivery to the expected terminal.
+ * Proves the bound terminal actually received a paste — clipboard write alone does not.
+ *
+ * The adapter logs the padded textLength (post-smart-padding), so `minTextLength` is a
+ * lower bound rather than an exact match. Pair with `assertClipboardWriteLogged` for the
+ * exact content length on the first clipboard write.
+ */
+export const assertTerminalPasteLogged = (
+  lines: string[],
+  opts: TerminalPasteAssertionOptions,
+): void => {
+  const found = lines.some((line) => {
+    const ctx = parseLogContext(line) as
+      | (LoggingContext & { terminalName?: unknown; textLength?: unknown })
+      | undefined;
+    if (ctx?.fn !== TERMINAL_PASTE_FN || ctx.terminalName !== opts.terminalName) return false;
+    if (opts.minTextLength === undefined) return true;
+    return typeof ctx.textLength === 'number' && ctx.textLength >= opts.minTextLength;
+  });
+  const lengthSuffix =
+    opts.minTextLength === undefined ? '' : ` and textLength >= ${opts.minTextLength}`;
+  assert.ok(
+    found,
+    `Expected ${TERMINAL_PASTE_FN} log with terminalName="${opts.terminalName}"${lengthSuffix} but it was not found in ${lines.length} log lines`,
+  );
+};
+
+interface FnAssertionOptions {
+  fn: string;
+}
+
+/**
+ * Assert that at least one log line has a parsed `fn` field strictly equal to `opts.fn`.
+ * Use for presence-only checks where the function name alone is the contract.
+ */
+export const assertFnLogged = (lines: string[], opts: FnAssertionOptions): void => {
+  const found = lines.some((line) => {
+    const ctx = parseLogContext(line);
+    return ctx?.fn === opts.fn;
+  });
+  assert.ok(
+    found,
+    `Expected log entry with fn="${opts.fn}" but it was not found in ${lines.length} log lines`,
+  );
+};
+
 const CLIPBOARD_WRITE_FN = 'VscodeAdapter.writeTextToClipboard';
 
 interface ClipboardWriteAssertionOptions {

@@ -18,6 +18,7 @@ export { getLogCapture } from './getLogCapture';
 export {
   assertClipboardWriteLogged,
   assertFilePathLogged,
+  assertFnLogged,
   assertInputBoxLogged,
   assertNoSetContextLogged,
   assertNoStatusBarMsgLogged,
@@ -25,6 +26,7 @@ export {
   assertQuickPickItemsLogged,
   assertSetContextLogged,
   assertStatusBarMsgLogged,
+  assertTerminalPasteLogged,
   extractQuickPickItemsLogged,
   parseQuickPickItemsFromLogLine,
   assertSuppressionLogged,
