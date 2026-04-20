@@ -593,7 +593,9 @@ suite('Dirty Buffer Warning — Dialog Interaction', () => {
 
       assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Generate Anyway');
 
-      log('✓ R-L dirty + bound destination: link landed in terminal; clipboard preserved after Generate Anyway');
+      log(
+        '✓ R-L dirty + bound destination: link landed in terminal; clipboard preserved after Generate Anyway',
+      );
     } finally {
       capturing.terminal.dispose();
     }
@@ -631,7 +633,9 @@ suite('Dirty Buffer Warning — Dialog Interaction', () => {
 
       assert.ok(editor.document.isDirty, 'Expected document to remain dirty after Send Anyway');
 
-      log('✓ R-F dirty + bound destination: path landed in terminal; clipboard preserved after Send Anyway');
+      log(
+        '✓ R-F dirty + bound destination: path landed in terminal; clipboard preserved after Send Anyway',
+      );
     } finally {
       capturing.terminal.dispose();
     }

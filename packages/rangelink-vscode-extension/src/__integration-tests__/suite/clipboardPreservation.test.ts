@@ -99,6 +99,9 @@ suite('Clipboard Preservation', () => {
     assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
     const captured = capturing.getCapturedText();
     assertTerminalBufferContains(captured, 'clipboard');
-    assert.ok(captured.includes('#L'), `Expected line reference in terminal buffer, got: ${captured}`);
+    assert.ok(
+      captured.includes('#L'),
+      `Expected line reference in terminal buffer, got: ${captured}`,
+    );
   });
 });

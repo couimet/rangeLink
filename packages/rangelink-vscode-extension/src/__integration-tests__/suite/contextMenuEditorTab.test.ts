@@ -84,7 +84,9 @@ suite('Context Menus — Editor Tab', () => {
     assertClipboardWriteLogged(lines, { textLength: uri.fsPath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${uri.fsPath} `);
 
-    log('✓ Editor-tab absolute path landed in bound terminal buffer (pty capture verified content)');
+    log(
+      '✓ Editor-tab absolute path landed in bound terminal buffer (pty capture verified content)',
+    );
   });
 
   // ---------------------------------------------------------------------------
@@ -125,7 +127,9 @@ suite('Context Menus — Editor Tab', () => {
     assertClipboardWriteLogged(lines, { textLength: relativePath.length });
     assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
-    log('✓ Editor-tab relative path landed in bound terminal buffer (pty capture verified content)');
+    log(
+      '✓ Editor-tab relative path landed in bound terminal buffer (pty capture verified content)',
+    );
   });
 
   // ---------------------------------------------------------------------------
