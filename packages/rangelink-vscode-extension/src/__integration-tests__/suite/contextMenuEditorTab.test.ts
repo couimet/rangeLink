@@ -10,10 +10,11 @@ import {
   assertFnLogged,
   assertSetContextLogged,
   assertStatusBarMsgLogged,
-  assertTerminalPasteLogged,
+  assertTerminalBufferEquals,
   cleanupFiles,
   closeAllEditors,
   createAndOpenFile,
+  createCapturingTerminal,
   createLogger,
   getLogCapture,
   printAssistedBanner,
@@ -55,15 +56,13 @@ suite('Context Menus — Editor Tab', () => {
     const fn = path.basename(uri.fsPath);
 
     const terminalName = 'rl-ctxmenu-tab-001';
-    const terminal = vscode.window.createTerminal({ name: terminalName });
-    terminals.push(terminal);
-    terminal.show(true);
-    await settle();
+    const capturing = await createCapturingTerminal(terminalName, terminals);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-001');
+    capturing.clearCaptured();
 
     await waitForHuman(
       'context-menus-editor-tab-001',
@@ -83,12 +82,9 @@ suite('Context Menus — Editor Tab', () => {
       filePath: uri.fsPath,
     });
     assertClipboardWriteLogged(lines, { textLength: uri.fsPath.length });
-    assertTerminalPasteLogged(lines, {
-      terminalName,
-      minTextLength: uri.fsPath.length,
-    });
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${uri.fsPath} `);
 
-    log('✓ Editor-tab context menu routed absolute path via context-menu route to bound terminal');
+    log('✓ Editor-tab absolute path landed in bound terminal buffer (pty capture verified content)');
   });
 
   // ---------------------------------------------------------------------------
@@ -101,15 +97,13 @@ suite('Context Menus — Editor Tab', () => {
     const relativePath = vscode.workspace.asRelativePath(uri, false);
 
     const terminalName = 'rl-ctxmenu-tab-002';
-    const terminal = vscode.window.createTerminal({ name: terminalName });
-    terminals.push(terminal);
-    terminal.show(true);
-    await settle();
+    const capturing = await createCapturingTerminal(terminalName, terminals);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-tab-002');
+    capturing.clearCaptured();
 
     await waitForHuman(
       'context-menus-editor-tab-002',
@@ -129,12 +123,9 @@ suite('Context Menus — Editor Tab', () => {
       filePath: relativePath,
     });
     assertClipboardWriteLogged(lines, { textLength: relativePath.length });
-    assertTerminalPasteLogged(lines, {
-      terminalName,
-      minTextLength: relativePath.length,
-    });
+    assertTerminalBufferEquals(capturing.getCapturedText(), ` ${relativePath} `);
 
-    log('✓ Editor-tab context menu routed workspace-relative path to bound terminal');
+    log('✓ Editor-tab relative path landed in bound terminal buffer (pty capture verified content)');
   });
 
   // ---------------------------------------------------------------------------

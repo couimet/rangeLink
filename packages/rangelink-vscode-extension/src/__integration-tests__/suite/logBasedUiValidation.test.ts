@@ -7,9 +7,13 @@ import {
   assertNoStatusBarMsgLogged,
   assertNoToastLogged,
   assertStatusBarMsgLogged,
+  assertTerminalBufferContains,
+  assertTerminalBufferEquals,
   assertToastLogged,
+  type CapturingTerminal,
   cleanupFiles,
   closeAllEditors,
+  createCapturingTerminal,
   createWorkspaceFile,
   getLogCapture,
   settle,
@@ -17,6 +21,7 @@ import {
 
 suite('Log-Based UI Assertions', () => {
   let terminal: vscode.Terminal | undefined;
+  let capturing: CapturingTerminal | undefined;
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {
@@ -44,16 +49,16 @@ suite('Log-Based UI Assertions', () => {
       terminal.dispose();
       terminal = undefined;
     }
+    capturing = undefined;
     cleanupFiles([testFileUri]);
   });
 
-  const bindTerminal = async (): Promise<vscode.Terminal> => {
-    terminal = vscode.window.createTerminal({ name: 'rl-toast-test' });
-    terminal.show();
-    await settle();
+  const bindTerminal = async (): Promise<CapturingTerminal> => {
+    capturing = await createCapturingTerminal('rl-toast-test');
+    terminal = capturing.terminal;
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
     await settle();
-    return terminal;
+    return capturing;
   };
 
   const openAndSelectLines = async (
@@ -130,9 +135,10 @@ suite('Log-Based UI Assertions', () => {
   });
 
   test('core-send-commands-r-l-001: R-L sends RangeLink to bound terminal', async () => {
-    await bindTerminal();
+    const capturingTerminal = await bindTerminal();
     await openAndSelectLines(1, 4);
     await settle();
+    capturingTerminal.clearCaptured();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-send-rl-001');
@@ -144,22 +150,21 @@ suite('Log-Based UI Assertions', () => {
     assertStatusBarMsgLogged(lines, {
       message: '✓ RangeLink copied to clipboard & sent to Terminal ("rl-toast-test")',
     });
+    const captured = capturingTerminal.getCapturedText();
+    assertTerminalBufferContains(captured, 'toast-test');
     assert.ok(
-      lines.some(
-        (line) =>
-          line.includes('VscodeAdapter.pasteTextToTerminalViaClipboard') &&
-          line.includes('rl-toast-test'),
-      ),
-      'Expected pasteTextToTerminalViaClipboard to be logged for rl-toast-test',
+      captured.startsWith(' ') && captured.endsWith(' '),
+      `Expected padded (space-bracketed) link in terminal buffer, got: ${JSON.stringify(captured)}`,
     );
   });
 
   test('send-file-path-001: R-F sends file path to bound terminal', async () => {
-    await bindTerminal();
+    const capturingTerminal = await bindTerminal();
     const doc = await vscode.workspace.openTextDocument(testFileUri);
     await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
     await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
     await settle();
+    capturingTerminal.clearCaptured();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-send-fp-001');
@@ -167,18 +172,12 @@ suite('Log-Based UI Assertions', () => {
     await vscode.commands.executeCommand('rangelink.pasteCurrentFileRelativePath');
     await settle();
 
+    const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
     const lines = logCapture.getLinesSince('before-send-fp-001');
     assertStatusBarMsgLogged(lines, {
       message: '✓ File path copied to clipboard & sent to Terminal ("rl-toast-test")',
     });
-    assert.ok(
-      lines.some(
-        (line) =>
-          line.includes('VscodeAdapter.pasteTextToTerminalViaClipboard') &&
-          line.includes('rl-toast-test'),
-      ),
-      'Expected pasteTextToTerminalViaClipboard to be logged for rl-toast-test',
-    );
+    assertTerminalBufferEquals(capturingTerminal.getCapturedText(), ` ${relativePath} `);
   });
 
   test('dirty-buffer-warning-007: clean file generates link immediately without dialog', async () => {
