@@ -2,6 +2,8 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
+import { CMD_BIND_TO_TERMINAL_HERE } from '../../constants/commandIds';
+
 import { settle, TERMINAL_READY_MS } from './testEnv';
 
 /**
@@ -58,6 +60,26 @@ export const createCapturingTerminal = async (
       captured = '';
     },
   };
+};
+
+/**
+ * Create a capturing terminal and bind it as the RangeLink paste destination.
+ * Mirrors `createAndBindTerminal` but returns a `CapturingTerminal` so tests
+ * can read back what the extension actually sent.
+ */
+export const createAndBindCapturingTerminal = async (
+  name: string,
+  trackingArray?: vscode.Terminal[],
+): Promise<CapturingTerminal> => {
+  const capturing = await createCapturingTerminal(name, trackingArray);
+  try {
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+  } catch (error) {
+    capturing.terminal.dispose();
+    throw error;
+  }
+  await settle();
+  return capturing;
 };
 
 /**

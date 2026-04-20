@@ -181,10 +181,11 @@ suite('Log-Based UI Assertions', () => {
   });
 
   test('dirty-buffer-warning-007: clean file generates link immediately without dialog', async () => {
-    await bindTerminal();
+    const capturingTerminal = await bindTerminal();
     const editor = await openAndSelectLines(1, 3);
     await editor.document.save();
     await settle();
+    capturingTerminal.clearCaptured();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-clean-send-007');
@@ -200,10 +201,16 @@ suite('Log-Based UI Assertions', () => {
       type: 'warning',
       message: 'File has unsaved changes. Link may point to wrong position after save.',
     });
+    const captured = capturingTerminal.getCapturedText();
+    assertTerminalBufferContains(captured, 'toast-test');
+    assert.ok(
+      captured.startsWith(' ') && captured.endsWith(' '),
+      `Expected padded link in terminal buffer, got: ${JSON.stringify(captured)}`,
+    );
   });
 
   test('full-line-selection-validation-001: full-line selection generates link without error', async () => {
-    await bindTerminal();
+    const capturingTerminal = await bindTerminal();
     await vscode.window.showTextDocument(
       await vscode.workspace.openTextDocument(testFileUri),
       vscode.ViewColumn.One,
@@ -212,6 +219,7 @@ suite('Log-Based UI Assertions', () => {
 
     await vscode.commands.executeCommand('expandLineSelection');
     await settle();
+    capturingTerminal.clearCaptured();
 
     const logCapture = getLogCapture();
     logCapture.mark('before-fullline-001');
@@ -227,5 +235,11 @@ suite('Log-Based UI Assertions', () => {
       type: 'error',
       message: 'RangeLink: No active editor',
     });
+    const captured = capturingTerminal.getCapturedText();
+    assertTerminalBufferContains(captured, 'toast-test');
+    assert.ok(
+      captured.startsWith(' ') && captured.endsWith(' '),
+      `Expected padded link in terminal buffer, got: ${JSON.stringify(captured)}`,
+    );
   });
 });

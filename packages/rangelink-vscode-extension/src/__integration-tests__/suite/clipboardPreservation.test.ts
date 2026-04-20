@@ -6,9 +6,11 @@ import {
   activateExtension,
   assertClipboardChanged,
   assertClipboardRestored,
+  assertTerminalBufferContains,
+  type CapturingTerminal,
   cleanupFiles,
   closeAllEditors,
-  createAndBindTerminal,
+  createAndBindCapturingTerminal,
   createWorkspaceFile,
   openEditor,
   writeClipboardSentinel,
@@ -17,7 +19,7 @@ import {
 suite('Clipboard Preservation', () => {
   let testFileUri: vscode.Uri;
   let editor: vscode.TextEditor;
-  let terminal: vscode.Terminal;
+  let capturing: CapturingTerminal;
 
   suiteSetup(async () => {
     await activateExtension();
@@ -27,12 +29,12 @@ suite('Clipboard Preservation', () => {
 
     editor = await openEditor(testFileUri);
 
-    terminal = await createAndBindTerminal('rl-clipboard-test');
+    capturing = await createAndBindCapturingTerminal('rl-clipboard-test');
     editor = await openEditor(testFileUri);
   });
 
   suiteTeardown(async () => {
-    terminal.dispose();
+    capturing.terminal.dispose();
     await closeAllEditors();
     cleanupFiles([testFileUri]);
   });
@@ -80,8 +82,10 @@ suite('Clipboard Preservation', () => {
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
 
+    capturing.clearCaptured();
     await vscode.commands.executeCommand('rangelink.pasteCurrentFileRelativePath');
     await assertClipboardRestored('R-F with preserve=always');
+    assertTerminalBufferContains(capturing.getCapturedText(), 'clipboard');
   });
 
   test('clipboard-preservation-006: R-L with preserve=never leaves clipboard with the generated link', async () => {
@@ -89,8 +93,12 @@ suite('Clipboard Preservation', () => {
       .getConfiguration('rangelink')
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
+    capturing.clearCaptured();
     await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
     const clipboard = await assertClipboardChanged('R-L with preserve=never');
     assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
+    const captured = capturing.getCapturedText();
+    assertTerminalBufferContains(captured, 'clipboard');
+    assert.ok(captured.includes('#L'), `Expected line reference in terminal buffer, got: ${captured}`);
   });
 });

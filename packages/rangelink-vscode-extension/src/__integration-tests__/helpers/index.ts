@@ -3,6 +3,7 @@ export {
   assertTerminalBufferContains,
   assertTerminalBufferEquals,
   type CapturingTerminal,
+  createAndBindCapturingTerminal,
   createCapturingTerminal,
 } from './capturingPtyHelpers';
 export {
