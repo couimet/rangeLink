@@ -1,5 +1,12 @@
 export { printAssistedBanner, waitForHuman } from './assistedTestHelper';
 export {
+  assertTerminalBufferContains,
+  assertTerminalBufferEquals,
+  type CapturingTerminal,
+  createAndBindCapturingTerminal,
+  createCapturingTerminal,
+} from './capturingPtyHelpers';
+export {
   assertClipboardChanged,
   assertClipboardRestored,
   CLIPBOARD_SENTINEL,
