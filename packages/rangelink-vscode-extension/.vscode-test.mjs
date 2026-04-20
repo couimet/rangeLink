@@ -3,7 +3,11 @@ import * as path from 'node:path';
 
 import { defineConfig } from '@vscode/test-cli';
 
-const MOCHA_TIMEOUT_MS = 300_000;
+// 10 minutes per test — assisted tests block on human interaction (modal
+// verdict dialogs don't auto-dismiss), so the human needs headroom to read
+// instructions, complete UI actions, or step away for a break. Automated tests
+// never come close to this threshold.
+const MOCHA_TIMEOUT_MS = 600_000;
 const USER_DATA_DIR = path.join(os.tmpdir(), 'rl-vscode-test');
 
 export default defineConfig([

@@ -1,4 +1,9 @@
-export { printAssistedBanner, waitForHuman } from './assistedTestHelper';
+export {
+  type HumanVerdict,
+  printAssistedBanner,
+  waitForHuman,
+  waitForHumanVerdict,
+} from './assistedTestHelper';
 export {
   assertTerminalBufferContains,
   assertTerminalBufferEquals,

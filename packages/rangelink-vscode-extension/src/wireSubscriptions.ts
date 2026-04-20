@@ -91,8 +91,8 @@ export const wireSubscriptions = (
     delimiterCache,
   } = services;
 
-  const bindToTerminalHandler = async () => {
-    await bindToTerminalCommand.execute();
+  const bindToTerminalHandler = async (terminal?: unknown) => {
+    await bindToTerminalCommand.execute(terminal as vscode.Terminal | undefined);
   };
   const bindToTextEditorHandler = async (uri?: unknown) => {
     await bindToTextEditorCommand.execute(uri as vscode.Uri | undefined);

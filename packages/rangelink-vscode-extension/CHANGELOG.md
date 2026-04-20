@@ -78,8 +78,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "RangeLink: Bind Here" - Bind this editor as destination (file/untitled only)
     - "RangeLink: Unbind" - Unbind current destination (when bound)
   - **Terminal** (right-click on terminal tabs or inside terminal):
+    - "RangeLink: Send Selection to Destination" - Send the selected terminal text to the bound destination (content-area menu only; opens the destination picker if nothing is bound)
     - "RangeLink: Bind Here" - Bind this terminal as destination
-    - "RangeLink: Unbind" - Unbind current destination (when bound)
+    - "RangeLink: Unbind" - Unbind current destination (content-area menu only when bound)
 - **Navigation clamping feedback** - Navigation now warns when a link points beyond file boundaries instead of silently landing at the nearest valid position
 - **Navigation toast settings** - Control which toasts appear after clicking a RangeLink (#54)
   - `rangelink.navigation.showNavigatedToast` (default: `true`) — suppress the "Navigated to …" info toast for a quieter workflow
@@ -92,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Also applies to Send File Path (R-F) commands — warns when the file has unsaved changes that may cause the AI tool to read stale content from disk (#513)
 - **Send Terminal Selection (R-V)** - Send terminal text to your bound destination (#331)
   - **Keyboard shortcut:** `Cmd+R Cmd+V` (Mac) / `Ctrl+R Ctrl+V` (Win/Linux) when terminal has focus
-  - Terminal context menu "Send Selection to Destination" entry when text is selected and a destination is bound
+  - Terminal context menu "Send Selection to Destination" entry when text is selected — opens the destination picker if nothing is bound
   - R-L and R-C gracefully guide users who press editor keybindings while in the terminal
 - **Go to Link Command (R-G)** - Paste or type a RangeLink to go directly to that code location
   - **Keyboard shortcut:** `Cmd+R Cmd+G` (Mac) / `Ctrl+R Ctrl+G` (Win/Linux)

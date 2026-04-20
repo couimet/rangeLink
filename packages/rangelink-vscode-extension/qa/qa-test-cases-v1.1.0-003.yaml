@@ -1052,7 +1052,7 @@ test_cases:
       - 'Right-click the terminal tab in the terminal panel tab bar'
       - "Select 'RangeLink: Bind Here'"
     expected_result: 'That terminal is bound as the destination. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-terminal-002
     feature: 'Context Menus — Terminal'
@@ -1064,18 +1064,44 @@ test_cases:
       - 'Right-click inside the terminal output area'
       - "Select 'RangeLink: Bind Here'"
     expected_result: 'Same result as context-menus-terminal-001 — the terminal is bound. Success toast.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-terminal-003
     feature: 'Context Menus — Terminal'
-    scenario: 'Terminal: RangeLink: Unbind is visible when a destination is bound'
+    scenario: 'Terminal content-area: RangeLink: Unbind is visible when bound and unbinds on click'
     preconditions:
       - 'A destination is currently bound'
     steps:
-      - 'Right-click in a terminal (tab or content area)'
-      - 'Observe the context menu'
-    expected_result: "'RangeLink: Unbind' is visible in the terminal context menu."
-    automated: false
+      - 'Right-click INSIDE the terminal content area (the tab menu does not render Unbind)'
+      - "Select 'RangeLink: Unbind'"
+    expected_result: "'RangeLink: Unbind' is visible in the content-area menu and selecting it unbinds the destination. Confirmation notification."
+    automated: assisted
+
+  - id: context-menus-terminal-004
+    feature: 'Context Menus — Terminal'
+    scenario: 'Terminal tab right-click binds THAT specific terminal (multi-terminal disambiguation)'
+    preconditions:
+      - 'Extension installed'
+      - 'Two or more terminals are open with distinct names'
+    steps:
+      - 'Identify a specific TARGET terminal'
+      - "Right-click the TARGET terminal's TAB in the terminal panel's tab bar"
+      - "Select 'RangeLink: Bind Here'"
+    expected_result: 'The TARGET terminal is bound (status bar confirms the TARGET name, not the other terminal). No picker is shown.'
+    automated: assisted
+
+  - id: context-menus-terminal-005
+    feature: 'Context Menus — Terminal'
+    scenario: 'Terminal content-area right-click binds THAT specific terminal (multi-terminal disambiguation)'
+    preconditions:
+      - 'Extension installed'
+      - 'Two or more terminals are open with distinct names'
+    steps:
+      - 'Focus a specific TARGET terminal'
+      - "Right-click INSIDE the TARGET terminal's content area"
+      - "Select 'RangeLink: Bind Here'"
+    expected_result: 'The TARGET terminal is bound (status bar confirms the TARGET name, not the other terminal). No picker is shown.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 8 — Dirty Buffer Warning
@@ -1435,15 +1461,15 @@ test_cases:
 
   - id: send-terminal-selection-005
     feature: 'R-V Send Terminal Selection'
-    scenario: 'Terminal context menu Send Selection to Destination when text selected and bound'
+    scenario: 'Terminal content-area context menu Send Selection to Destination when text selected and bound'
     preconditions:
       - 'Terminal focused, text selected in terminal, destination bound'
     steps:
       - 'Select text in terminal'
-      - 'Right-click in terminal'
+      - 'Right-click INSIDE the terminal content area (not the tab)'
       - 'Click RangeLink: Send Selection to Destination'
     expected_result: 'Selected text sent to bound destination. Same behavior as R-V keybinding.'
-    automated: false
+    automated: assisted
 
   - id: send-terminal-selection-006
     feature: 'R-V Send Terminal Selection'
@@ -1466,6 +1492,79 @@ test_cases:
       - 'Press Cmd+R Cmd+C'
     expected_result: 'Notification guides user to use R-V instead. No clipboard write for invalid terminal context.'
     automated: true
+
+  - id: send-terminal-selection-008
+    feature: 'R-V Send Terminal Selection'
+    scenario: 'Cross-terminal: content-area "Send Selection" routes selection from source terminal to bound terminal and shifts focus'
+    preconditions:
+      - 'Two terminals exist (SOURCE and BOUND)'
+      - 'BOUND terminal is bound as destination'
+      - 'Text is selected in SOURCE terminal'
+    steps:
+      - 'Right-click INSIDE the SOURCE terminal content area'
+      - "Select 'RangeLink: Send Selection to Destination'"
+    expected_result: 'Selected text is pasted into the BOUND terminal, and focus shifts to BOUND. Status bar confirms "sent to Terminal (BOUND)".'
+    automated: assisted
+
+  - id: send-terminal-selection-009
+    feature: 'R-V Send Terminal Selection'
+    scenario: 'Terminal TAB context menu does NOT include "Send Selection to Destination"'
+    preconditions:
+      - 'Terminal bound, text selected in terminal'
+    steps:
+      - 'Right-click the terminal TAB (not the content area)'
+      - 'Observe the context menu'
+    expected_result: '"RangeLink: Send Selection to Destination" is NOT present in the tab menu (the command is only registered for the content-area menu).'
+    automated: assisted
+
+  - id: send-terminal-selection-010
+    feature: 'R-V Send Terminal Selection'
+    scenario: 'Self-paste: bound terminal sends its own selection to itself (no self-paste guard)'
+    preconditions:
+      - 'A terminal is bound as destination'
+      - 'Text is selected in THAT SAME terminal'
+    steps:
+      - 'Right-click INSIDE the bound terminal content area'
+      - "Select 'RangeLink: Send Selection to Destination'"
+    expected_result: 'Selected text is pasted back into the same terminal (documents current behavior; a terminal-specific self-paste guard is a potential future improvement).'
+    automated: assisted
+
+  - id: send-terminal-selection-011
+    feature: 'R-V Send Terminal Selection'
+    scenario: 'Unbound: "Send Selection to Destination" is visible; clicking opens destination picker and delivers to picked destination'
+    preconditions:
+      - 'No destination is bound'
+      - 'Two terminals exist — SOURCE (with selected text) and DEST (empty)'
+    steps:
+      - 'Right-click INSIDE the SOURCE terminal content area'
+      - "Select 'RangeLink: Send Selection to Destination'"
+      - 'Pick the DEST terminal from the destination picker that opens'
+    expected_result: 'The item is visible (parity with editor family — no isBound gate). The destination picker opens, and after picking DEST, the selection is delivered to DEST and DEST becomes the bound destination.'
+    automated: assisted
+
+  - id: send-terminal-selection-012
+    feature: 'R-V Send Terminal Selection'
+    scenario: '"Send Selection to Destination" is hidden when no terminal text is selected'
+    preconditions:
+      - 'A destination is bound'
+      - 'No text is selected in the terminal'
+    steps:
+      - 'Right-click INSIDE the terminal content area without selecting anything'
+      - 'Observe the context menu'
+    expected_result: '"RangeLink: Send Selection to Destination" is NOT present (`when` clause requires `terminalTextSelected`).'
+    automated: assisted
+
+  - id: send-terminal-selection-013
+    feature: 'R-V Send Terminal Selection'
+    scenario: 'Terminal content-area "Send Selection" delivers selected text to a bound AI-assistant destination'
+    preconditions:
+      - 'Dummy AI (Tier 1) is bound as destination (via R-D)'
+      - 'Text is selected in a terminal'
+    steps:
+      - 'Right-click INSIDE the terminal content area'
+      - "Select 'RangeLink: Send Selection to Destination'"
+    expected_result: 'The selected text is delivered to the Dummy AI extension via Tier 1 direct insert; the dummy textarea contains the selection.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 10 — R-G Go to Link

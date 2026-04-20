@@ -20,6 +20,7 @@ import {
   printAssistedBanner,
   settle,
   waitForHuman,
+  waitForHumanVerdict,
 } from '../helpers';
 
 suite('R-D Bind to Destination', () => {
@@ -290,13 +291,15 @@ suite('R-D Bind to Destination', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-009');
 
-    await waitForHuman(
+    const verdict = await waitForHumanVerdict(
       'bind-to-destination-009',
-      'Cmd+R Cmd+D → select "rl-btd-009-b" → click "No, keep current binding"',
+      'Cmd+R Cmd+D → select "rl-btd-009-b" → click "No, keep current binding" — did the original binding ("rl-btd-009-a") survive?',
       [
         '1. Press Cmd+R Cmd+D',
         '2. Select Terminal ("rl-btd-009-b") from the list',
         '3. When the confirmation dialog appears, click "No, keep current binding"',
+        '4. Click Pass if the original binding to "rl-btd-009-a" was kept (no rebind, no status-bar change).',
+        '   Click Fail if "rl-btd-009-b" ended up bound or you saw a rebind toast.',
       ],
     );
 
@@ -308,8 +311,13 @@ suite('R-D Bind to Destination', () => {
     assertNoStatusBarMsgLogged(lines, {
       message: '✓ RangeLink bound to Terminal ("rl-btd-009-b")',
     });
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported the original binding was NOT preserved when clicking "No, keep current binding"',
+    );
 
-    log('✓ No rebind toast — original binding preserved');
+    log('✓ No rebind toast — original binding preserved (human verdict + state invariant)');
   });
 
   // ---------------------------------------------------------------------------
