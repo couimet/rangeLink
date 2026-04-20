@@ -818,7 +818,7 @@ test_cases:
       - "Select 'RangeLink: Send File Path'"
       - 'Observe the terminal'
     expected_result: 'Terminal receives the absolute file path (e.g., /Users/username/project/src/utils/helper.ts). No link format, no line number.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-explorer-002
     feature: 'Context Menus — Explorer'
@@ -830,7 +830,7 @@ test_cases:
       - 'Right-click a file in Explorer'
       - "Select 'RangeLink: Send Relative File Path'"
     expected_result: 'Terminal receives the workspace-relative path (e.g., src/utils/helper.ts). No leading slash.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-explorer-003
     feature: 'Context Menus — Explorer'
@@ -842,7 +842,7 @@ test_cases:
       - 'Right-click a file in Explorer (e.g., src/utils/helper.ts)'
       - "Select 'RangeLink: Bind Here'"
     expected_result: 'src/utils/helper.ts opens in the editor and becomes the bound text editor destination. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-explorer-004
     feature: 'Context Menus — Explorer'
@@ -853,7 +853,7 @@ test_cases:
       - 'Right-click any file in Explorer'
       - "Locate and select 'RangeLink: Unbind'"
     expected_result: 'The destination is unbound. Confirmation notification appears.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-explorer-005
     feature: 'Context Menus — Explorer'
@@ -864,7 +864,7 @@ test_cases:
       - 'Right-click any file in Explorer'
       - 'Observe the context menu'
     expected_result: "'RangeLink: Unbind' is not visible in the menu (or is disabled)."
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-tab-001
     feature: 'Context Menus — Editor Tab'
