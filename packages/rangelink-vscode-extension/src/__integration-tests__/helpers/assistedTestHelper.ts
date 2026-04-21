@@ -59,3 +59,121 @@ export const waitForHuman = async (
       }),
   );
 };
+
+/**
+ * Verdict returned by the human driver for visibility/absence tests.
+ *
+ * - `'pass'` — the described behavior was observed (e.g., menu item was
+ *   correctly hidden or visible).
+ * - `'fail'` — the described behavior was NOT observed. The test should fail.
+ */
+export type HumanVerdict = 'pass' | 'fail';
+
+const VERDICT_PASS_COMMAND_PREFIX = 'rangelink._test.verdict.pass';
+const VERDICT_FAIL_COMMAND_PREFIX = 'rangelink._test.verdict.fail';
+
+// Per-invocation counter: suffixes the verdict command IDs so concurrent or
+// nested `waitForHumanVerdict` calls never collide on `registerCommand`. Tests
+// today run sequentially, but future parallelism or accidental missed-await
+// patterns would otherwise throw `command '...' already exists`.
+let verdictInvocationCounter = 0;
+
+/**
+ * Pauses the test until the human clicks Pass or Fail in the status bar.
+ *
+ * Use this instead of `waitForHuman` when the test is pure visual verification
+ * (e.g., "menu item is/isn't visible", "dialog has/hasn't appeared") and the
+ * only machine-verifiable signal is a weak state-invariant check. The explicit
+ * Pass/Fail choice forces the driver to confirm the outcome — no "just hit
+ * Cancel without looking" passes.
+ *
+ * Implementation: wraps everything in `vscode.window.withProgress` so the
+ * action prompt appears as a persistent notification in the bottom-right
+ * corner. In parallel, two status bar items (PASS / FAIL) are created on the
+ * bottom-left with ephemeral commands. When the human clicks one, the
+ * underlying promise resolves, the status bar items dispose, AND the progress
+ * notification dismisses automatically — all from the same promise settlement.
+ *
+ * Why this combination:
+ * - Modal dialogs (`{ modal: true }`) are blocked by VS Code's test host.
+ * - QuickPick verdicts conflict with scenarios that themselves open
+ *   QuickPicks (R-D, R-M menus).
+ * - Plain notifications (info/warning/error) can auto-collapse depending on
+ *   `workbench.notifications.*` user settings, even with action buttons.
+ * - Status bar items never auto-dismiss — they persist until disposed.
+ * - `withProgress` notifications are tied to a promise's lifetime — they
+ *   stay visible as long as the task is running.
+ * - Combining the two gives us persistent instructions (progress title) AND
+ *   persistent buttons (status bar), with a single promise resolving both.
+ *
+ * Mocha's per-test timeout (currently 10 min in `.vscode-test.mjs`) bounds
+ * the maximum wait.
+ *
+ * @param tcId - Test case ID shown as the notification title prefix
+ * @param action - Short prompt describing what to verify
+ * @param consoleSteps - Optional bulleted steps (shown in the terminal console)
+ * @returns `'pass'` if the human clicked the Pass status bar item, `'fail'` otherwise
+ */
+export const waitForHumanVerdict = async (
+  tcId: string,
+  action: string,
+  consoleSteps?: string[],
+): Promise<HumanVerdict> => {
+  nodeConsole.log(`\n${SECTION_LINE}`);
+  nodeConsole.log(`[${tcId}] ${action}`);
+  if (consoleSteps !== undefined) {
+    consoleSteps.forEach((line) => nodeConsole.log(`  ${line}`));
+  }
+  nodeConsole.log('Click the PASS or FAIL button in the status bar (bottom-left) when done.');
+  nodeConsole.log(SECTION_LINE);
+
+  const invocationId = ++verdictInvocationCounter;
+  const passCommand = `${VERDICT_PASS_COMMAND_PREFIX}.${invocationId}`;
+  const failCommand = `${VERDICT_FAIL_COMMAND_PREFIX}.${invocationId}`;
+
+  return vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: `🧪 ${tcId}: ${action}`,
+      cancellable: false,
+    },
+    (progress) => {
+      progress.report({ message: 'Click PASS or FAIL in the bottom-left status bar' });
+
+      return new Promise<HumanVerdict>((resolve) => {
+        const disposables: vscode.Disposable[] = [];
+        let settled = false;
+
+        const settleWith = (verdict: HumanVerdict): void => {
+          if (settled) return;
+          settled = true;
+          for (const d of disposables) {
+            d.dispose();
+          }
+          resolve(verdict);
+        };
+
+        disposables.push(
+          vscode.commands.registerCommand(passCommand, () => settleWith('pass')),
+          vscode.commands.registerCommand(failCommand, () => settleWith('fail')),
+        );
+
+        const passItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10000);
+        passItem.text = `$(check) PASS [${tcId}]`;
+        passItem.tooltip = `Click if the expected behavior was observed for ${tcId}`;
+        passItem.command = passCommand;
+        passItem.color = new vscode.ThemeColor('testing.iconPassed');
+        passItem.show();
+        disposables.push(passItem);
+
+        const failItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 9999);
+        failItem.text = `$(x) FAIL [${tcId}]`;
+        failItem.tooltip = `Click if the expected behavior was NOT observed for ${tcId}`;
+        failItem.command = failCommand;
+        failItem.color = new vscode.ThemeColor('testing.iconFailed');
+        failItem.show();
+        disposables.push(failItem);
+      });
+    },
+  );
+};

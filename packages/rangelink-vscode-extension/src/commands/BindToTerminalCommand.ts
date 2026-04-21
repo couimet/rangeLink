@@ -1,4 +1,5 @@
 import type { Logger } from 'barebone-logger';
+import type * as vscode from 'vscode';
 
 import type {
   BindSuccessInfo,
@@ -11,12 +12,15 @@ import { type ExtensionResult, MessageCode, type QuickPickBindResult } from '../
 import { formatMessage } from '../utils';
 
 /**
- * Command handler for binding to a terminal via picker.
+ * Command handler for binding to a terminal.
  *
- * Orchestrates the terminal selection flow:
- * - 0 terminals: Shows error message, returns 'no-resource'
- * - 1 terminal: Auto-binds to it (no picker shown)
- * - 2+ terminals: Shows picker, binds to selected terminal
+ * Two entry points:
+ * - With `preferredTerminal` (terminal context menu "Bind Here"): binds that
+ *   terminal directly, no picker. Mirrors BindToTextEditorCommand's
+ *   executeWithUri path.
+ * - Without `preferredTerminal` (palette, keybinding): falls through to the
+ *   picker flow — 0 terminals shows error, 1 auto-binds, 2+ shows the terminal
+ *   picker.
  *
  * Success feedback is handled by PasteDestinationManager.bind().
  */
@@ -33,8 +37,18 @@ export class BindToTerminalCommand {
     );
   }
 
-  async execute(): Promise<QuickPickBindResult> {
+  async execute(preferredTerminal?: vscode.Terminal): Promise<QuickPickBindResult> {
     const logCtx = { fn: 'BindToTerminalCommand.execute' };
+
+    if (preferredTerminal) {
+      this.logger.debug(
+        { ...logCtx, terminalName: preferredTerminal.name, source: 'context-menu' },
+        `Direct bind to terminal "${preferredTerminal.name}" from context menu`,
+      );
+      return this.mapBindResult(
+        await this.destinationManager.bind({ kind: 'terminal', terminal: preferredTerminal }),
+      );
+    }
 
     const boundTerminalProcessId = await resolveBoundTerminalProcessId(this.destinationManager);
     const terminalItems = await this.availabilityService.getTerminalItems(

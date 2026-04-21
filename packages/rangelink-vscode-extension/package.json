@@ -864,7 +864,7 @@
       ],
       "terminal/context": [
         {
-          "when": "terminalTextSelected && rangelink.isBound",
+          "when": "terminalTextSelected",
           "command": "rangelink.terminal.pasteSelectedTextToDestination",
           "group": "2_edit@10"
         },

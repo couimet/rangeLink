@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import * as path from 'node:path';
 
 import * as vscode from 'vscode';
@@ -21,6 +22,7 @@ import {
   printAssistedBanner,
   settle,
   waitForHuman,
+  waitForHumanVerdict,
 } from '../helpers';
 
 const FILE_CONTENT = 'explorer context-menu test file\n';
@@ -218,23 +220,28 @@ suite('Context Menus — Explorer', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ctxmenu-exp-005');
 
-    await waitForHuman(
+    const verdict = await waitForHumanVerdict(
       'context-menus-explorer-005',
-      `Right-click "${fn}" in Explorer and verify "RangeLink: Unbind" is HIDDEN`,
+      `Right-click "${fn}" in Explorer — is "RangeLink: Unbind" ABSENT from the menu?`,
       [
         `1. Locate "${fn}" in the Explorer panel`,
         '2. Right-click it',
-        '3. Verify "RangeLink: Unbind" is NOT in the menu (the when-clause is rangelink.isBound)',
-        '4. Dismiss the menu (Escape), then Cancel this notification',
+        '3. Click Pass if "RangeLink: Unbind" is NOT in the menu (the `when: rangelink.isBound` clause should hide it).',
+        '   Click Fail if it IS present (that would be a bug).',
       ],
     );
 
     const lines = logCapture.getLinesSince('before-ctxmenu-exp-005');
 
     assertNoSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported "RangeLink: Unbind" WAS visible in Explorer when unbound — the `when: rangelink.isBound` clause is not working',
+    );
 
     log(
-      '✓ State invariant held (no bind during observation); human confirmed "Unbind" entry hidden',
+      '✓ Unbound state: "Unbind" absent from Explorer context menu (human verdict + state invariant)',
     );
   });
 });

@@ -287,5 +287,98 @@ describe('BindToTerminalCommand', () => {
         );
       });
     });
+
+    describe('preferredTerminal (context-menu direct bind)', () => {
+      it('binds the provided terminal directly without querying available terminals', async () => {
+        const terminal = createMockTerminal({ name: 'Right-Clicked Terminal' });
+        mockAdapter = createMockVscodeAdapter();
+        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(
+          Result.ok({
+            destinationName: 'Right-Clicked Terminal',
+            destinationKind: 'terminal',
+          }),
+        );
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
+
+        const result = await command.execute(terminal);
+
+        expect(result).toStrictEqual({
+          outcome: 'bound',
+          bindInfo: {
+            destinationName: 'Right-Clicked Terminal',
+            destinationKind: 'terminal',
+          },
+        });
+        expect(mockAvailabilityService.getTerminalItems).not.toHaveBeenCalled();
+        expect(showTerminalPickerSpy).not.toHaveBeenCalled();
+        expect(mockDestinationManager.bind).toHaveBeenCalledWith({
+          kind: 'terminal',
+          terminal,
+        });
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          {
+            fn: 'BindToTerminalCommand.execute',
+            terminalName: 'Right-Clicked Terminal',
+            source: 'context-menu',
+          },
+          'Direct bind to terminal "Right-Clicked Terminal" from context menu',
+        );
+      });
+
+      it('returns bind-failed when the direct bind fails', async () => {
+        const terminal = createMockTerminal({ name: 'Right-Clicked Terminal' });
+        const bindError = new RangeLinkExtensionError({
+          code: RangeLinkExtensionErrorCodes.DESTINATION_BIND_FAILED,
+          message: 'Cannot bind',
+          functionName: 'PasteDestinationManager.bind',
+        });
+        mockAdapter = createMockVscodeAdapter();
+        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(
+          Result.err(bindError) as ExtensionResult<BindSuccessInfo>,
+        );
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
+
+        const result = await command.execute(terminal);
+
+        expect(result).toStrictEqual({ outcome: 'bind-failed', error: bindError });
+        expect(mockAvailabilityService.getTerminalItems).not.toHaveBeenCalled();
+        expect(showTerminalPickerSpy).not.toHaveBeenCalled();
+      });
+
+      it('falls through to picker-flow logic when preferredTerminal is omitted', async () => {
+        const terminal = createMockTerminal({ name: 'Only Terminal' });
+        mockAdapter = createMockVscodeAdapter();
+        mockAvailabilityService.getTerminalItems.mockResolvedValue([
+          createMockTerminalQuickPickItem(terminal),
+        ]);
+        (mockDestinationManager.bind as jest.Mock).mockResolvedValue(
+          Result.ok({ destinationName: 'Only Terminal', destinationKind: 'terminal' }),
+        );
+        command = new BindToTerminalCommand(
+          mockAdapter,
+          mockAvailabilityService,
+          mockDestinationManager,
+          mockLogger,
+        );
+
+        await command.execute();
+
+        expect(mockAvailabilityService.getTerminalItems).toHaveBeenCalledWith(Infinity, undefined);
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          { fn: 'BindToTerminalCommand.execute', terminalName: 'Only Terminal' },
+          'Single terminal, auto-binding',
+        );
+      });
+    });
   });
 });

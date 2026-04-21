@@ -1309,9 +1309,9 @@ describe('package.json contributions', () => {
         expect(terminalContextMenu).toHaveLength(3);
       });
 
-      it('pasteSelectedTextToDestination in edit group when text selected and bound', () => {
+      it('pasteSelectedTextToDestination in edit group when text selected (matches editor family — no isBound gate)', () => {
         expect(terminalContextMenu[0]).toStrictEqual({
-          when: 'terminalTextSelected && rangelink.isBound',
+          when: 'terminalTextSelected',
           command: 'rangelink.terminal.pasteSelectedTextToDestination',
           group: '2_edit@10',
         });
