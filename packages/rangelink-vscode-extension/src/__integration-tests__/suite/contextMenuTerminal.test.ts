@@ -12,9 +12,12 @@ import {
   activateExtension,
   assertSetContextLogged,
   assertStatusBarMsgLogged,
+  assertTerminalBufferContains,
   cleanupFiles,
   closeAllEditors,
+  createAndBindCapturingTerminal,
   createAndOpenFile,
+  createCapturingTerminal,
   createLogger,
   createTerminal,
   getLogCapture,
@@ -312,12 +315,7 @@ suite('Context Menus — Terminal', () => {
     const boundName = 'rl-sts-008-BOUND';
     const sourceName = 'rl-sts-008-SOURCE';
 
-    const boundTerminal = vscode.window.createTerminal({ name: boundName });
-    terminals.push(boundTerminal);
-    boundTerminal.show(true);
-    await settle(TERMINAL_READY_MS);
-    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
-    await settle();
+    const capturingBound = await createAndBindCapturingTerminal(boundName, terminals);
 
     const sourceTerminal = vscode.window.createTerminal({ name: sourceName });
     terminals.push(sourceTerminal);
@@ -329,12 +327,13 @@ suite('Context Menus — Terminal', () => {
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-008');
+    capturingBound.clearCaptured();
 
     await waitForHuman(
       'send-terminal-selection-008',
       `Select "${markerText}" in SOURCE terminal "${sourceName}" → right-click → "Send Selection to Destination"`,
       [
-        `Destination: Terminal "${boundName}" is bound.`,
+        `Destination: Terminal "${boundName}" is bound (pty-captured — the test reads its buffer to verify content).`,
         `Source: Terminal "${sourceName}" contains "${markerText}".`,
         `1. Click the "${sourceName}" terminal to focus it`,
         `2. Select the "${markerText}" text in its output`,
@@ -362,18 +361,11 @@ suite('Context Menus — Terminal', () => {
     );
     assert.ok(focusLogged, `Expected "Terminal focused via showTerminal()" log for "${boundName}"`);
 
-    const pasteSucceeded = lines.some(
-      (line) =>
-        line.includes('"fn":"TerminalInsertFactory.insert"') &&
-        line.includes(`"terminalName":"${boundName}"`) &&
-        line.includes('Terminal paste succeeded'),
-    );
-    assert.ok(
-      pasteSucceeded,
-      `Expected "Terminal paste succeeded" log for terminalName="${boundName}"`,
-    );
+    assertTerminalBufferContains(capturingBound.getCapturedText(), markerText);
 
-    log('✓ Cross-terminal send: source selection routed to bound terminal with focus shift');
+    log(
+      '✓ Cross-terminal send: source selection landed in bound terminal buffer (pty-captured) with focus shift',
+    );
   });
 
   // ---------------------------------------------------------------------------
@@ -432,25 +424,21 @@ suite('Context Menus — Terminal', () => {
 
   test('[assisted] send-terminal-selection-010: Self-paste — bound terminal selection is sent back to itself (current behavior, no guard)', async () => {
     const terminalName = 'rl-sts-010';
-    const terminal = vscode.window.createTerminal({ name: terminalName });
-    terminals.push(terminal);
-    terminal.show(true);
-    await settle(TERMINAL_READY_MS);
-    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
-    await settle();
+    const capturing = await createAndBindCapturingTerminal(terminalName, terminals);
     const markerText = 'STS_010_SELF_PASTE_MARKER';
-    terminal.sendText(`echo ${markerText}`, true);
+    capturing.terminal.sendText(markerText, false);
     await settle(TERMINAL_READY_MS);
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-010');
+    capturing.clearCaptured();
 
     await waitForHuman(
       'send-terminal-selection-010',
       `Select "${markerText}" in "${terminalName}" → right-click content area → "Send Selection to Destination"`,
       [
         `Destination: Terminal "${terminalName}" is bound (the SAME terminal we'll select from).`,
-        `1. Select "${markerText}" in "${terminalName}"`,
+        `1. Select "${markerText}" in "${terminalName}" (the marker text is visible in the buffer)`,
         '2. Right-click INSIDE the content area',
         '3. Select "RangeLink: Send Selection to Destination"',
         'The selection will be pasted BACK into the same terminal (this documents current behavior; a self-paste guard for terminals is worth filing as a follow-up).',
@@ -463,19 +451,10 @@ suite('Context Menus — Terminal', () => {
       message: `✓ Selected text copied to clipboard & sent to Terminal ("${terminalName}")`,
     });
 
-    const pasteSucceeded = lines.some(
-      (line) =>
-        line.includes('"fn":"TerminalInsertFactory.insert"') &&
-        line.includes(`"terminalName":"${terminalName}"`) &&
-        line.includes('Terminal paste succeeded'),
-    );
-    assert.ok(
-      pasteSucceeded,
-      `Expected "Terminal paste succeeded" log for self-paste to "${terminalName}"`,
-    );
+    assertTerminalBufferContains(capturing.getCapturedText(), markerText);
 
     log(
-      '✓ Self-paste is not currently guarded — selection echoed back into bound terminal (follow-up issue worth filing)',
+      '✓ Self-paste: selection echoed back into bound terminal buffer (pty-captured; follow-up issue worth filing for guard)',
     );
   });
 
@@ -492,10 +471,7 @@ suite('Context Menus — Terminal', () => {
     const sourceName = 'rl-sts-011-SOURCE';
     const destName = 'rl-sts-011-DEST';
 
-    const destTerminal = vscode.window.createTerminal({ name: destName });
-    terminals.push(destTerminal);
-    destTerminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    const capturingDest = await createCapturingTerminal(destName, terminals);
 
     const sourceTerminal = vscode.window.createTerminal({ name: sourceName });
     terminals.push(sourceTerminal);
@@ -507,6 +483,7 @@ suite('Context Menus — Terminal', () => {
 
     const logCapture = getLogCapture();
     logCapture.mark('before-sts-011');
+    capturingDest.clearCaptured();
 
     await waitForHuman(
       'send-terminal-selection-011',
@@ -542,19 +519,10 @@ suite('Context Menus — Terminal', () => {
       message: `✓ Selected text copied to clipboard & sent to Terminal ("${destName}")`,
     });
 
-    const destPasteSucceeded = lines.some(
-      (line) =>
-        line.includes('"fn":"TerminalInsertFactory.insert"') &&
-        line.includes(`"terminalName":"${destName}"`) &&
-        line.includes('Terminal paste succeeded'),
-    );
-    assert.ok(
-      destPasteSucceeded,
-      `Expected "Terminal paste succeeded" log for destination terminal "${destName}"`,
-    );
+    assertTerminalBufferContains(capturingDest.getCapturedText(), markerText);
 
     log(
-      '✓ Unbound state: menu item shown; click opened picker; selection delivered to picked destination',
+      '✓ Unbound state: menu item shown; click opened picker; selection landed in picked destination buffer (pty-captured)',
     );
   });
 
