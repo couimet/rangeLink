@@ -264,10 +264,7 @@ suite('Context Menus — Terminal', () => {
     await settle();
 
     const terminalName = 'rl-ctxmenu-term-sts-005';
-    const terminal = vscode.window.createTerminal({ name: terminalName });
-    terminals.push(terminal);
-    terminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    const terminal = await createTerminal(terminalName, terminals);
 
     const markerText = 'STS_005_MARKER_TEXT';
     terminal.sendText(`echo ${markerText}`, true);
@@ -318,10 +315,7 @@ suite('Context Menus — Terminal', () => {
 
     const capturingBound = await createAndBindCapturingTerminal(boundName, terminals);
 
-    const sourceTerminal = vscode.window.createTerminal({ name: sourceName });
-    terminals.push(sourceTerminal);
-    sourceTerminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    const sourceTerminal = await createTerminal(sourceName, terminals);
     const markerText = 'STS_008_CROSS_TERMINAL_MARKER';
     sourceTerminal.sendText(`echo ${markerText}`, true);
     await settle(TERMINAL_READY_MS);
@@ -375,10 +369,7 @@ suite('Context Menus — Terminal', () => {
 
   test('[assisted] send-terminal-selection-009: "Send Selection to Destination" is NOT in the terminal TAB menu', async () => {
     const terminalName = 'rl-sts-009';
-    const terminal = vscode.window.createTerminal({ name: terminalName });
-    terminals.push(terminal);
-    terminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    const terminal = await createTerminal(terminalName, terminals);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
     terminal.sendText(`echo STS_009_MARKER_TEXT`, true);
@@ -401,17 +392,17 @@ suite('Context Menus — Terminal', () => {
 
     const lines = logCapture.getLinesSince('before-sts-009');
 
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported "Send Selection to Destination" WAS visible in the tab menu — this is a bug',
+    );
     const pasteFired = lines.some((line) =>
       line.includes('"fn":"TerminalSelectionService.pasteTerminalSelectionToDestination"'),
     );
     assert.ok(
       !pasteFired,
       'Expected no TerminalSelectionService log — nothing should have triggered a paste during observation',
-    );
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Human reported "Send Selection to Destination" WAS visible in the tab menu — this is a bug',
     );
 
     log('✓ Tab menu did NOT offer "Send Selection" (human verdict + no paste log)');
@@ -474,10 +465,7 @@ suite('Context Menus — Terminal', () => {
 
     const capturingDest = await createCapturingTerminal(destName, terminals);
 
-    const sourceTerminal = vscode.window.createTerminal({ name: sourceName });
-    terminals.push(sourceTerminal);
-    sourceTerminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    const sourceTerminal = await createTerminal(sourceName, terminals);
     const markerText = 'STS_011_MARKER_TEXT';
     sourceTerminal.sendText(`echo ${markerText}`, true);
     await settle(TERMINAL_READY_MS);
@@ -537,10 +525,7 @@ suite('Context Menus — Terminal', () => {
 
   test('[assisted] send-terminal-selection-012: "Send Selection" is hidden when no terminal text is selected', async () => {
     const terminalName = 'rl-sts-012';
-    const terminal = vscode.window.createTerminal({ name: terminalName });
-    terminals.push(terminal);
-    terminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    const terminal = await createTerminal(terminalName, terminals);
     await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
     await settle();
     terminal.sendText(`echo STS_012_MARKER_TEXT`, true);
@@ -563,17 +548,17 @@ suite('Context Menus — Terminal', () => {
 
     const lines = logCapture.getLinesSince('before-sts-012');
 
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported "Send Selection" WAS visible with no text selected — the `when: terminalTextSelected` clause is not working',
+    );
     const pasteFired = lines.some((line) =>
       line.includes('"fn":"TerminalSelectionService.pasteTerminalSelectionToDestination"'),
     );
     assert.ok(
       !pasteFired,
       'Expected no paste log — nothing should have triggered a paste during observation',
-    );
-    assert.strictEqual(
-      verdict,
-      'pass',
-      'Human reported "Send Selection" WAS visible with no text selected — the `when: terminalTextSelected` clause is not working',
     );
 
     log('✓ No-selection state: "Send Selection" absent (human verdict + no paste log)');
@@ -596,10 +581,7 @@ suite('Context Menus — Terminal', () => {
     );
 
     const terminalName = 'rl-sts-013';
-    const terminal = vscode.window.createTerminal({ name: terminalName });
-    terminals.push(terminal);
-    terminal.show(true);
-    await settle(TERMINAL_READY_MS);
+    const terminal = await createTerminal(terminalName, terminals);
     const markerText = 'STS_013_AI_DELIVERY_MARKER';
     terminal.sendText(`echo ${markerText}`, true);
     await settle(TERMINAL_READY_MS);
