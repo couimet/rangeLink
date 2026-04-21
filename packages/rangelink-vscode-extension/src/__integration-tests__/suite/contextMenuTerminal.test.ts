@@ -20,6 +20,7 @@ import {
   createCapturingTerminal,
   createLogger,
   createTerminal,
+  extractQuickPickItemsLogged,
   getLogCapture,
   printAssistedBanner,
   settle,
@@ -505,12 +506,15 @@ suite('Context Menus — Terminal', () => {
     );
     assert.ok(readLogged, 'Expected TerminalSelectionService log (selection was read)');
 
-    const pickerShown = lines.some(
-      (line) => line.includes('VscodeAdapter.showQuickPick') && line.includes('"items"'),
-    );
+    const pickerItems = extractQuickPickItemsLogged(lines);
     assert.ok(
-      pickerShown,
+      pickerItems,
       'Expected showQuickPick log with items — destination picker should have opened because nothing was bound',
+    );
+    const destLabel = `Terminal ("${destName}")`;
+    assert.ok(
+      pickerItems!.some((item) => item.label === destLabel),
+      `Expected destination picker to offer "${destLabel}" as a pickable item`,
     );
 
     assertSetContextLogged(lines, { key: CONTEXT_IS_BOUND_KEY, value: true });

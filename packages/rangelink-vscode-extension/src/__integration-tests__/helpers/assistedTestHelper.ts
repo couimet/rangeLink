@@ -69,8 +69,14 @@ export const waitForHuman = async (
  */
 export type HumanVerdict = 'pass' | 'fail';
 
-const VERDICT_PASS_COMMAND = 'rangelink._test.verdict.pass';
-const VERDICT_FAIL_COMMAND = 'rangelink._test.verdict.fail';
+const VERDICT_PASS_COMMAND_PREFIX = 'rangelink._test.verdict.pass';
+const VERDICT_FAIL_COMMAND_PREFIX = 'rangelink._test.verdict.fail';
+
+// Per-invocation counter: suffixes the verdict command IDs so concurrent or
+// nested `waitForHumanVerdict` calls never collide on `registerCommand`. Tests
+// today run sequentially, but future parallelism or accidental missed-await
+// patterns would otherwise throw `command '...' already exists`.
+let verdictInvocationCounter = 0;
 
 /**
  * Pauses the test until the human clicks Pass or Fail in the status bar.
@@ -121,6 +127,10 @@ export const waitForHumanVerdict = async (
   nodeConsole.log('Click the PASS or FAIL button in the status bar (bottom-left) when done.');
   nodeConsole.log(SECTION_LINE);
 
+  const invocationId = ++verdictInvocationCounter;
+  const passCommand = `${VERDICT_PASS_COMMAND_PREFIX}.${invocationId}`;
+  const failCommand = `${VERDICT_FAIL_COMMAND_PREFIX}.${invocationId}`;
+
   return vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
@@ -144,23 +154,23 @@ export const waitForHumanVerdict = async (
         };
 
         disposables.push(
-          vscode.commands.registerCommand(VERDICT_PASS_COMMAND, () => settleWith('pass')),
-          vscode.commands.registerCommand(VERDICT_FAIL_COMMAND, () => settleWith('fail')),
+          vscode.commands.registerCommand(passCommand, () => settleWith('pass')),
+          vscode.commands.registerCommand(failCommand, () => settleWith('fail')),
         );
 
         const passItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10000);
         passItem.text = `$(check) PASS [${tcId}]`;
         passItem.tooltip = `Click if the expected behavior was observed for ${tcId}`;
-        passItem.command = VERDICT_PASS_COMMAND;
-        passItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+        passItem.command = passCommand;
+        passItem.color = new vscode.ThemeColor('testing.iconPassed');
         passItem.show();
         disposables.push(passItem);
 
         const failItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 9999);
         failItem.text = `$(x) FAIL [${tcId}]`;
         failItem.tooltip = `Click if the expected behavior was NOT observed for ${tcId}`;
-        failItem.command = VERDICT_FAIL_COMMAND;
-        failItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
+        failItem.command = failCommand;
+        failItem.color = new vscode.ThemeColor('testing.iconFailed');
         failItem.show();
         disposables.push(failItem);
       });
