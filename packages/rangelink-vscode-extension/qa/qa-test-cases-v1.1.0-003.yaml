@@ -924,7 +924,7 @@ test_cases:
       - 'Right-click in the editor'
       - "Select 'RangeLink: Send RangeLink'"
     expected_result: 'Terminal receives the RangeLink (same as R-L keybinding). Success toast.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-002
     feature: 'Context Menus — Editor Content'
@@ -935,7 +935,7 @@ test_cases:
     steps:
       - "Select text, right-click, select 'RangeLink: Send RangeLink (Absolute)'"
     expected_result: 'Terminal receives the RangeLink with an absolute file path (e.g., /full/path/to/file.ts#L3-L5).'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-003
     feature: 'Context Menus — Editor Content'
@@ -946,7 +946,7 @@ test_cases:
     steps:
       - "Select text, right-click, select 'RangeLink: Send Portable Link'"
     expected_result: 'Terminal receives the portable link format (GitHub-style URL with blob path and line anchor).'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-004
     feature: 'Context Menus — Editor Content'
@@ -957,7 +957,7 @@ test_cases:
     steps:
       - "Select text, right-click, select 'RangeLink: Send Portable Link (Absolute)'"
     expected_result: 'Terminal receives the portable link with an absolute file path variant.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-005
     feature: 'Context Menus — Editor Content'
@@ -968,7 +968,7 @@ test_cases:
     steps:
       - "Select 2-3 lines, right-click, select 'RangeLink: Send Selected Text'"
     expected_result: 'Terminal receives the raw selected text (not a link format). Success toast.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-006
     feature: 'Context Menus — Editor Content'
@@ -980,7 +980,7 @@ test_cases:
       - 'Right-click inside the editor (with or without selection)'
       - 'Observe the context menu structure'
     expected_result: 'A visual separator line is visible between the RangeLink commands and the rest of the VS Code context menu items.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-007
     feature: 'Context Menus — Editor Content'
@@ -992,7 +992,7 @@ test_cases:
       - 'Right-click inside the editor (no selection needed)'
       - "Select 'RangeLink: Send This File's Path'"
     expected_result: 'Terminal receives the absolute path of the current file.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-008
     feature: 'Context Menus — Editor Content'
@@ -1004,7 +1004,7 @@ test_cases:
       - 'Right-click inside the editor'
       - "Select 'RangeLink: Send This File's Relative Path'"
     expected_result: 'Terminal receives the workspace-relative path of the current file.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-009
     feature: 'Context Menus — Editor Content'
@@ -1016,31 +1016,33 @@ test_cases:
       - 'Right-click inside the editor'
       - "Select 'RangeLink: Bind Here'"
     expected_result: 'The current file is bound as the text editor destination. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: context-menus-editor-content-010
     feature: 'Context Menus — Editor Content'
-    scenario: 'Editor content: RangeLink: Unbind visible when bound'
+    scenario: 'Editor content: RangeLink: Unbind visible when bound and unbinds on click'
     preconditions:
       - 'A destination is bound'
     steps:
       - 'Right-click inside any editor'
-      - "Observe for 'RangeLink: Unbind'"
-    expected_result: "'RangeLink: Unbind' is visible in the editor context menu."
-    automated: false
+      - "Verify 'RangeLink: Unbind' is visible"
+      - "Select 'RangeLink: Unbind'"
+    expected_result: "'RangeLink: Unbind' is visible in the editor context menu. Selecting it unbinds the destination and shows the unbind confirmation."
+    automated: assisted
 
   - id: context-menus-editor-content-011
     feature: 'Context Menus — Editor Content'
     scenario: 'Selection-dependent items hidden when no text is selected'
     preconditions:
       - 'Editor open'
+      - 'A destination is bound'
       - 'No text selected (cursor only)'
     steps:
       - 'Click in the editor to place cursor (no selection)'
       - 'Right-click inside the editor'
       - 'Observe which RangeLink items are present'
     expected_result: "'Send RangeLink', 'Send RangeLink (Absolute)', 'Send Portable Link', 'Send Portable Link (Absolute)', and 'Send Selected Text' are NOT visible. File-path and Bind/Unbind items remain visible."
-    automated: false
+    automated: assisted
 
   - id: context-menus-terminal-001
     feature: 'Context Menus — Terminal'
