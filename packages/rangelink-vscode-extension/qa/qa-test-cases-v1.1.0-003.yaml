@@ -1035,6 +1035,7 @@ test_cases:
     scenario: 'Selection-dependent items hidden when no text is selected'
     preconditions:
       - 'Editor open'
+      - 'A destination is bound'
       - 'No text selected (cursor only)'
     steps:
       - 'Click in the editor to place cursor (no selection)'
