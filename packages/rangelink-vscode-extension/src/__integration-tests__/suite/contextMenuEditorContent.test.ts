@@ -252,7 +252,7 @@ suite('Context Menus — Editor Content', () => {
         '1. Right-click INSIDE the highlighted selection',
         '2. Select "RangeLink: Send Selected Text"',
         'Visual note: the test terminal will LOOK like it only shows "line 3" — that is correct.',
-        'VS Code\'s terminal paste converts newlines to carriage returns so each line',
+        "VS Code's terminal paste converts newlines to carriage returns so each line",
         'would execute separately in a real shell. Our capturing pty has no shell, so',
         'successive `\\r`s overwrite the same screen row. All three lines ARE delivered',
         '(the test reads the raw captured buffer, not the rendered display).',
