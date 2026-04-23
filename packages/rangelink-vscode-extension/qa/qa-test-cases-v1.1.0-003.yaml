@@ -1020,13 +1020,14 @@ test_cases:
 
   - id: context-menus-editor-content-010
     feature: 'Context Menus — Editor Content'
-    scenario: 'Editor content: RangeLink: Unbind visible when bound'
+    scenario: 'Editor content: RangeLink: Unbind visible when bound and unbinds on click'
     preconditions:
       - 'A destination is bound'
     steps:
       - 'Right-click inside any editor'
-      - "Observe for 'RangeLink: Unbind'"
-    expected_result: "'RangeLink: Unbind' is visible in the editor context menu."
+      - "Verify 'RangeLink: Unbind' is visible"
+      - "Select 'RangeLink: Unbind'"
+    expected_result: "'RangeLink: Unbind' is visible in the editor context menu. Selecting it unbinds the destination and shows the unbind confirmation."
     automated: assisted
 
   - id: context-menus-editor-content-011

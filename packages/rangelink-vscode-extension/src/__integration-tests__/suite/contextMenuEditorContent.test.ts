@@ -32,16 +32,33 @@ suite('Context Menus — Editor Content', () => {
   const log = createLogger('contextMenuEditorContent');
   const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
+  let originalMultiLinePasteWarning: unknown;
 
   suiteSetup(async () => {
     await activateExtension();
     // Multi-line "Send Selected Text" triggers VS Code's terminal
     // multi-line-paste warning dialog by default; set to 'never' so
     // TC 005's selection delivers deterministically in the test host.
+    const terminalConfig = vscode.workspace.getConfiguration('terminal.integrated');
+    originalMultiLinePasteWarning = terminalConfig.inspect(
+      'enableMultiLinePasteWarning',
+    )?.globalValue;
+    await terminalConfig.update(
+      'enableMultiLinePasteWarning',
+      'never',
+      vscode.ConfigurationTarget.Global,
+    );
+    printAssistedBanner();
+  });
+
+  suiteTeardown(async () => {
     await vscode.workspace
       .getConfiguration('terminal.integrated')
-      .update('enableMultiLinePasteWarning', 'never', vscode.ConfigurationTarget.Global);
-    printAssistedBanner();
+      .update(
+        'enableMultiLinePasteWarning',
+        originalMultiLinePasteWarning,
+        vscode.ConfigurationTarget.Global,
+      );
   });
 
   teardown(async () => {
@@ -435,15 +452,22 @@ suite('Context Menus — Editor Content', () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-ed-010');
 
-    await waitForHuman(
+    const verdict = await waitForHumanVerdict(
       'context-menus-editor-content-010',
-      `Right-click in "${fn}" → "RangeLink: Unbind"`,
+      `Right-click in "${fn}" → verify "RangeLink: Unbind" is visible, then click it`,
       [
         `A Terminal "${terminalName}" is bound as the current destination.`,
         '1. Right-click anywhere inside the editor',
-        '2. Verify "RangeLink: Unbind" IS present in the menu (clicking it proves visibility)',
+        '2. Verify "RangeLink: Unbind" IS present in the menu',
         '3. Select "RangeLink: Unbind"',
+        '4. Click Pass if the item was visible and clicked. Click Fail if it was absent or could not be selected.',
       ],
+    );
+
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported RangeLink: Unbind was absent or could not be selected while bound',
     );
 
     const lines = logCapture.getLinesSince('before-ed-010');
