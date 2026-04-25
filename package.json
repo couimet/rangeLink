@@ -13,6 +13,7 @@
     "clean:all": "pnpm -r clean:all",
     "compile": "pnpm clean && find . -name '*.tsbuildinfo' -delete && pnpm -r --workspace-concurrency=1 compile",
     "enable-pnpm": "corepack enable",
+    "fix": "pnpm lint:fix && pnpm format:fix",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "generate:publish-instructions:vscode-extension": "pnpm --filter rangelink-vscode-extension run generate:publish-instructions",
