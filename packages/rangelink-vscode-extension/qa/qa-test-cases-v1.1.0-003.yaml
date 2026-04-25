@@ -1743,11 +1743,11 @@ test_cases:
     automated: true
 
   # ---------------------------------------------------------------------------
-  # Section 12 — Changed Behaviors
+  # Section — Editor Binding Validation
   # ---------------------------------------------------------------------------
 
-  - id: changed-editor-binding-validation-001
-    feature: 'Changed — Editor Binding Validation'
+  - id: editor-binding-validation-001
+    feature: 'Editor Binding Validation'
     scenario: 'Binding a git diff view shows clear rejection: Cannot bind to read-only editor (git)'
     preconditions:
       - 'A git diff view is open in VS Code'
@@ -1757,8 +1757,8 @@ test_cases:
     expected_result: "A clear rejection message appears (e.g., 'Cannot bind to read-only editor'). The git diff view is not bound."
     automated: false
 
-  - id: changed-editor-binding-validation-002
-    feature: 'Changed — Editor Binding Validation'
+  - id: editor-binding-validation-002
+    feature: 'Editor Binding Validation'
     scenario: 'Binding an output panel shows clear rejection message'
     preconditions:
       - 'An Output panel is open (e.g., Extension Host output)'
@@ -1768,8 +1768,8 @@ test_cases:
     expected_result: 'Clear rejection message. Output panel is not bound.'
     automated: false
 
-  - id: changed-editor-binding-validation-003
-    feature: 'Changed — Editor Binding Validation'
+  - id: editor-binding-validation-003
+    feature: 'Editor Binding Validation'
     scenario: 'Binding the Settings UI shows clear rejection message'
     preconditions:
       - 'VS Code Settings (Cmd+,) is open'
@@ -1779,8 +1779,8 @@ test_cases:
     expected_result: 'Clear rejection message. Settings UI is not bound.'
     automated: false
 
-  - id: changed-editor-binding-validation-004
-    feature: 'Changed — Editor Binding Validation'
+  - id: editor-binding-validation-004
+    feature: 'Editor Binding Validation'
     scenario: 'Binding a binary file shows: Cannot bind to [file] - binary file'
     preconditions:
       - 'A binary file (e.g., a .png image) is open in VS Code'
@@ -2074,6 +2074,7 @@ test_cases:
     preconditions:
       - 'No destination bound'
     steps:
+      - 'Confirm no destination is bound'
       - 'Select text in a file'
       - 'Press Cmd+R Cmd+L'
       - 'Observe — destination picker should appear'
@@ -2087,6 +2088,7 @@ test_cases:
       - 'No destination bound'
       - 'Text selected in an editor'
     steps:
+      - 'Confirm no destination is bound'
       - 'Open Command Palette'
       - "Select 'RangeLink: Send Portable Link'"
       - 'Observe — destination picker should appear'
@@ -2100,6 +2102,7 @@ test_cases:
       - 'No destination bound'
       - 'Text selected in editor'
     steps:
+      - 'Confirm no destination is bound'
       - 'Select text'
       - "Open Command Palette, select 'RangeLink: Send Selected Text'"
     expected_result: 'Destination picker opens. Selecting a destination sends the selected text to it.'

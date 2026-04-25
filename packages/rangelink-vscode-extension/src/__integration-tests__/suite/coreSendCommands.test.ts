@@ -35,7 +35,7 @@ suite('Core Send Commands', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] core-send-commands-r-l-005: R-L with no bound destination opens picker', async () => {
-    const fileUri = createWorkspaceFile('chg-pwu-001', 'test content\n');
+    const fileUri = createWorkspaceFile('csc-r-l-005', 'test content\n');
     tmpFileUris.push(fileUri);
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
@@ -47,7 +47,7 @@ suite('Core Send Commands', () => {
       'No destination is bound. Press Cmd+R Cmd+L — verify destination picker opens (not silent clipboard fallback). Escape to dismiss.',
       [
         '1. Text "test" is already selected',
-        '2. Confirm no destination is bound (status bar shows unbound)',
+        '2. Confirm no destination is bound',
         '3. Press Cmd+R Cmd+L',
         '4. Verify destination picker appears (NOT a clipboard copy with no UI)',
         '5. Press Escape to dismiss',
@@ -64,7 +64,7 @@ suite('Core Send Commands', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] core-send-commands-r-p-001: Send Portable Link with no bound destination opens picker', async () => {
-    const fileUri = createWorkspaceFile('chg-pwu-002', 'test content\n');
+    const fileUri = createWorkspaceFile('csc-r-p-001', 'test content\n');
     tmpFileUris.push(fileUri);
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
@@ -76,9 +76,10 @@ suite('Core Send Commands', () => {
       'No destination is bound. From Command Palette, run "Send Portable Link" — verify destination picker opens. Escape.',
       [
         '1. Text "test" is already selected',
-        '2. Press Cmd+Shift+P → type "Send Portable Link" → select "RangeLink: Send Portable Link"',
-        '3. Verify destination picker appears',
-        '4. Press Escape to dismiss',
+        '2. Confirm no destination is bound',
+        '3. Press Cmd+Shift+P → type "Send Portable Link" → select "RangeLink: Send Portable Link"',
+        '4. Verify destination picker appears',
+        '5. Press Escape to dismiss',
         '   Click Pass if picker appeared, Fail if link was silently copied without a picker',
       ],
     );
@@ -96,7 +97,7 @@ suite('Core Send Commands', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] core-send-commands-r-v-001: Send Selected Text with no bound destination opens picker', async () => {
-    const fileUri = createWorkspaceFile('chg-pwu-004', 'test content\n');
+    const fileUri = createWorkspaceFile('csc-r-v-001', 'test content\n');
     tmpFileUris.push(fileUri);
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
@@ -108,9 +109,10 @@ suite('Core Send Commands', () => {
       'No destination is bound. From Command Palette, run "Send Selected Text" — verify destination picker opens. Escape.',
       [
         '1. Text "test" is already selected',
-        '2. Press Cmd+Shift+P → type "Send Selected Text" → select "RangeLink: Send Selected Text"',
-        '3. Verify destination picker appears',
-        '4. Press Escape to dismiss',
+        '2. Confirm no destination is bound',
+        '3. Press Cmd+Shift+P → type "Send Selected Text" → select "RangeLink: Send Selected Text"',
+        '4. Verify destination picker appears',
+        '5. Press Escape to dismiss',
         '   Click Pass if picker appeared, Fail if text was silently copied without a picker',
       ],
     );

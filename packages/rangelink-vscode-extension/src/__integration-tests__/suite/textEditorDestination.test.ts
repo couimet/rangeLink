@@ -35,7 +35,7 @@ suite('Text Editor Destination', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] text-editor-destination-001: self-paste R-L copies to clipboard and shows info message', async () => {
-    const fileUri = createWorkspaceFile('chg-nosplit-002', 'self-paste test\n');
+    const fileUri = createWorkspaceFile('ted-001', 'self-paste test\n');
     tmpFileUris.push(fileUri);
     const doc = await vscode.workspace.openTextDocument(fileUri);
     const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
@@ -44,7 +44,7 @@ suite('Text Editor Destination', () => {
     await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
     await settle();
 
-    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 9));
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 10));
     await settle();
 
     const logCapture = getLogCapture();
@@ -55,7 +55,7 @@ suite('Text Editor Destination', () => {
       'The file is bound to itself. Press Cmd+R Cmd+L — verify info message appears and file is unchanged.',
       [
         '1. The current file is already set as its own destination (bound via test setup)',
-        '2. Text "self-past" is already selected',
+        '2. Text "self-paste" is already selected',
         '3. Press Cmd+R Cmd+L',
         '4. Verify an info notification appears saying the link was copied and cannot auto-paste to same file',
         '5. Verify the file content has NOT changed',

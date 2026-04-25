@@ -473,8 +473,8 @@ suite('R-D Bind to Destination', () => {
   test('[assisted] bind-to-destination-015: binding a text editor with a single tab group succeeds', async () => {
     await closeAllEditors();
 
-    const fileA = createWorkspaceFile('chg-nosplit-001-a', 'file A content\n');
-    const fileB = createWorkspaceFile('chg-nosplit-001-b', 'file B content\n');
+    const fileA = createWorkspaceFile('btd-015-a', 'file A content\n');
+    const fileB = createWorkspaceFile('btd-015-b', 'file B content\n');
     tmpFileUris.push(fileA, fileB);
     const docA = await vscode.workspace.openTextDocument(fileA);
     const docB = await vscode.workspace.openTextDocument(fileB);
