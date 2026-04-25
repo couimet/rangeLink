@@ -238,6 +238,29 @@ test_cases:
     expected_result: 'Picker shows inline terminal items up to maxInline limit, "More terminals..." overflow item, inline file items (current-in-group), "More files..." overflow item, and standard command items (Go to Link, Show Version Info).'
     automated: assisted
 
+  - id: bind-to-destination-014
+    feature: 'R-D Bind to Destination'
+    scenario: 'Jump to Bound Destination (R-J) with no destination bound opens the destination picker'
+    preconditions:
+      - 'No destination bound'
+    steps:
+      - 'Open R-M menu or Command Palette'
+      - "Select 'Jump to Bound Destination' (or press Cmd+R Cmd+J)"
+    expected_result: 'Destination picker opens so the user can bind a destination first.'
+    automated: assisted
+
+  - id: bind-to-destination-015
+    feature: 'R-D Bind to Destination'
+    scenario: 'Binding a text editor in a single tab group (no split) succeeds'
+    preconditions:
+      - 'Only one tab group open (no editor split)'
+      - 'Multiple files open in that one group'
+    steps:
+      - 'Press Cmd+R Cmd+D'
+      - 'Select any open file from the list'
+    expected_result: 'The file is bound successfully. Success toast appears. No error about needing a split view or second tab group.'
+    automated: assisted
+
   # ---------------------------------------------------------------------------
   # Section 3 — Terminal Picker
   # ---------------------------------------------------------------------------
@@ -1723,91 +1746,6 @@ test_cases:
   # Section 12 — Changed Behaviors
   # ---------------------------------------------------------------------------
 
-  - id: changed-picker-when-unbound-001
-    feature: 'Changed — Picker When Unbound'
-    scenario: 'R-L with no bound destination opens destination picker (no silent clipboard fallback)'
-    preconditions:
-      - 'No destination bound'
-    steps:
-      - 'Select text in a file'
-      - 'Press Cmd+R Cmd+L'
-      - 'Observe — destination picker should appear'
-    expected_result: 'Destination picker opens. Selecting a destination binds it and sends the RangeLink. Escape dismisses silently with no clipboard write.'
-    automated: false
-
-  - id: changed-picker-when-unbound-002
-    feature: 'Changed — Picker When Unbound'
-    scenario: 'Send Portable Link with no bound destination opens picker'
-    preconditions:
-      - 'No destination bound'
-      - 'Text selected in an editor'
-    steps:
-      - 'Open Command Palette'
-      - "Select 'RangeLink: Send Portable Link'"
-      - 'Observe — destination picker should appear'
-    expected_result: 'Destination picker opens (not a silent clipboard fallback). Selecting a destination binds it and sends the portable link.'
-    automated: false
-
-  - id: changed-picker-when-unbound-003
-    feature: 'Changed — Picker When Unbound'
-    scenario: 'Jump to Bound Destination with no bound destination opens picker'
-    preconditions:
-      - 'No destination bound'
-    steps:
-      - 'Open R-M menu or Command Palette'
-      - "Select 'Jump to Bound Destination' (or equivalent bind-and-jump item)"
-    expected_result: 'Destination picker opens so the user can bind a destination first.'
-    automated: false
-
-  - id: changed-picker-when-unbound-004
-    feature: 'Changed — Picker When Unbound'
-    scenario: 'Send Selected Text with no bound destination opens picker'
-    preconditions:
-      - 'No destination bound'
-      - 'Text selected in editor'
-    steps:
-      - 'Select text'
-      - "Open Command Palette, select 'RangeLink: Send Selected Text'"
-    expected_result: 'Destination picker opens. Selecting a destination sends the selected text to it.'
-    automated: false
-
-  - id: changed-text-editor-no-split-required-001
-    feature: 'Changed — Text Editor No Split Required'
-    scenario: 'Binding a text editor in a single tab group (no split) succeeds'
-    preconditions:
-      - 'Only one tab group open (no editor split)'
-      - 'Multiple files open in that one group'
-    steps:
-      - 'Press Cmd+R Cmd+D'
-      - 'Select any open file from the list'
-    expected_result: 'The file is bound successfully. Success toast appears. No error about needing a split view or second tab group.'
-    automated: false
-
-  - id: changed-text-editor-no-split-required-002
-    feature: 'Changed — Text Editor No Split Required'
-    scenario: 'Self-paste: pasting R-L to the same file copies to clipboard and shows info message'
-    preconditions:
-      - 'src/utils/helper.ts open'
-      - 'That same file bound as the text editor destination'
-    steps:
-      - 'With bound file focused, select 2-3 lines'
-      - 'Press Cmd+R Cmd+L'
-      - 'Observe notifications and file content'
-    expected_result: 'Info notification appears about cannot paste to same file. File not modified. Clipboard contains RangeLink.'
-    automated: false
-
-  - id: changed-text-editor-no-split-required-003
-    feature: 'Changed — Text Editor No Split Required'
-    scenario: 'Self-paste info message for R-L suggests using R-C as alternative'
-    preconditions:
-      - 'Same file bound as destination (same as changed-text-editor-no-split-required-002)'
-    steps:
-      - 'With bound file focused, select 2-3 lines'
-      - 'Press Cmd+R Cmd+L'
-      - 'Read the notification text'
-    expected_result: 'Notification message specifically mentions R-C (Copy RangeLink) as an alternative for clipboard-only links.'
-    automated: false
-
   - id: changed-editor-binding-validation-001
     feature: 'Changed — Editor Binding Validation'
     scenario: 'Binding a git diff view shows clear rejection: Cannot bind to read-only editor (git)'
@@ -2129,6 +2067,60 @@ test_cases:
       - 'Press Cmd+V in any text field'
     expected_result: 'Terminal received nothing. Clipboard contains the RangeLink.'
     automated: false
+
+  - id: core-send-commands-r-l-005
+    feature: 'Core Send Commands — R-L'
+    scenario: 'R-L with no bound destination opens destination picker (not silent clipboard fallback)'
+    preconditions:
+      - 'No destination bound'
+    steps:
+      - 'Select text in a file'
+      - 'Press Cmd+R Cmd+L'
+      - 'Observe — destination picker should appear'
+    expected_result: 'Destination picker opens. Selecting a destination binds it and sends the RangeLink. Escape dismisses silently with no clipboard write.'
+    automated: assisted
+
+  - id: core-send-commands-r-p-001
+    feature: 'Core Send Commands — R-P'
+    scenario: 'R-P (Send Portable Link) with no bound destination opens destination picker'
+    preconditions:
+      - 'No destination bound'
+      - 'Text selected in an editor'
+    steps:
+      - 'Open Command Palette'
+      - "Select 'RangeLink: Send Portable Link'"
+      - 'Observe — destination picker should appear'
+    expected_result: 'Destination picker opens (not a silent clipboard fallback). Selecting a destination binds it and sends the portable link.'
+    automated: assisted
+
+  - id: core-send-commands-r-v-001
+    feature: 'Core Send Commands — R-V'
+    scenario: 'R-V (Send Selected Text, editor) with no bound destination opens destination picker'
+    preconditions:
+      - 'No destination bound'
+      - 'Text selected in editor'
+    steps:
+      - 'Select text'
+      - "Open Command Palette, select 'RangeLink: Send Selected Text'"
+    expected_result: 'Destination picker opens. Selecting a destination sends the selected text to it.'
+    automated: assisted
+
+  # ---------------------------------------------------------------------------
+  # Section — Text Editor Destination
+  # ---------------------------------------------------------------------------
+
+  - id: text-editor-destination-001
+    feature: 'Text Editor Destination'
+    scenario: 'Self-paste: R-L to the same file that is bound as destination copies link to clipboard and shows info message'
+    preconditions:
+      - 'A file is open in the editor'
+      - 'That same file is bound as the text editor destination'
+    steps:
+      - 'With the bound file focused, select 2-3 lines'
+      - 'Press Cmd+R Cmd+L'
+      - 'Observe notifications and file content'
+    expected_result: 'Info notification appears: "RangeLink copied to clipboard. Cannot auto-paste to same file. Tip: Use R-C for clipboard-only links." File is not modified. Clipboard contains the RangeLink.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section — Clickable File Paths (issues/253)

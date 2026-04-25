@@ -12,6 +12,7 @@ import {
   createAndOpenFile,
   createLogger,
   createTerminal,
+  createWorkspaceFile,
   extractQuickPickItemsLogged,
   findTerminalItems,
   findTestItemsByPrefix,
@@ -438,5 +439,67 @@ suite('R-D Bind to Destination', () => {
     assert.ok(reboundLogged, 'Expected rebound status bar message after "Yes, replace"');
 
     log('✓ Confirmation dialog shown; rebind toast logged after "Yes, replace"');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC bind-to-destination-014
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] bind-to-destination-014: Jump to Bound Destination with no bound destination opens picker', async () => {
+    const verdict = await waitForHumanVerdict(
+      'bind-to-destination-014',
+      'No destination is bound. Press Cmd+R Cmd+J (Jump to Bound Destination) — verify destination picker opens. Escape.',
+      [
+        '1. Confirm no destination is bound',
+        '2. Press Cmd+R Cmd+J',
+        '3. Verify destination picker appears so you can bind first',
+        '4. Press Escape to dismiss',
+        '   Click Pass if picker appeared, Fail if nothing happened or you got an error',
+      ],
+    );
+
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Jump to Bound Destination with no destination did not open picker',
+    );
+    log('✓ Jump to Bound Destination with no destination opens picker (human verdict)');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC bind-to-destination-015
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] bind-to-destination-015: binding a text editor with a single tab group succeeds', async () => {
+    await closeAllEditors();
+
+    const fileA = createWorkspaceFile('chg-nosplit-001-a', 'file A content\n');
+    const fileB = createWorkspaceFile('chg-nosplit-001-b', 'file B content\n');
+    tmpFileUris.push(fileA, fileB);
+    const docA = await vscode.workspace.openTextDocument(fileA);
+    const docB = await vscode.workspace.openTextDocument(fileB);
+    await vscode.window.showTextDocument(docA, vscode.ViewColumn.One);
+    await vscode.window.showTextDocument(docB, vscode.ViewColumn.One);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'bind-to-destination-015',
+      'One tab group only — no split. Press Cmd+R Cmd+D, select any file, verify success toast and no split-required error.',
+      [
+        '1. Confirm there is only ONE tab group (no split view)',
+        '2. Press Cmd+R Cmd+D',
+        '3. Select either open file from the destination picker',
+        '4. Verify a success toast appears (e.g., "✓ RangeLink bound to ...")',
+        '5. Verify NO error about needing a split view or a second tab group',
+        '   Click Pass if binding succeeded without any split requirement, Fail otherwise',
+      ],
+    );
+
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Binding a text editor in a single tab group failed or required a split',
+    );
+    log('✓ Text editor binding works in single tab group — no split required (human verdict)');
   });
 });
