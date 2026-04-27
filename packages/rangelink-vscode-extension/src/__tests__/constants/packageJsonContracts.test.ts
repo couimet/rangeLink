@@ -921,7 +921,7 @@ describe('package.json contributions', () => {
 
       it('editorContext.copyLink at top of RangeLink group', () => {
         expect(editorContextMenu[0]).toStrictEqual({
-          when: 'editorHasSelection',
+          when: 'editorHasSelection && (resourceScheme == file || resourceScheme == untitled)',
           command: 'rangelink.editorContext.copyLink',
           group: '8_rangelink@0',
         });
@@ -929,7 +929,7 @@ describe('package.json contributions', () => {
 
       it('editorContext.copyLinkAbsolute in context menu', () => {
         expect(editorContextMenu[1]).toStrictEqual({
-          when: 'editorHasSelection',
+          when: 'editorHasSelection && (resourceScheme == file || resourceScheme == untitled)',
           command: 'rangelink.editorContext.copyLinkAbsolute',
           group: '8_rangelink@1',
         });
@@ -937,7 +937,7 @@ describe('package.json contributions', () => {
 
       it('editorContext.copyPortableLink in context menu', () => {
         expect(editorContextMenu[2]).toStrictEqual({
-          when: 'editorHasSelection',
+          when: 'editorHasSelection && (resourceScheme == file || resourceScheme == untitled)',
           command: 'rangelink.editorContext.copyPortableLink',
           group: '8_rangelink@2',
         });
@@ -945,7 +945,7 @@ describe('package.json contributions', () => {
 
       it('editorContext.copyPortableLinkAbsolute in context menu', () => {
         expect(editorContextMenu[3]).toStrictEqual({
-          when: 'editorHasSelection',
+          when: 'editorHasSelection && (resourceScheme == file || resourceScheme == untitled)',
           command: 'rangelink.editorContext.copyPortableLinkAbsolute',
           group: '8_rangelink@3',
         });
@@ -969,6 +969,7 @@ describe('package.json contributions', () => {
 
       it('editorContent.pasteFilePath in context menu', () => {
         expect(editorContextMenu[6]).toStrictEqual({
+          when: 'resourceScheme == file || resourceScheme == untitled',
           command: 'rangelink.editorContent.pasteFilePath',
           group: '8_rangelink_files@0',
         });
@@ -976,6 +977,7 @@ describe('package.json contributions', () => {
 
       it('editorContent.pasteRelativeFilePath in context menu', () => {
         expect(editorContextMenu[7]).toStrictEqual({
+          when: 'resourceScheme == file || resourceScheme == untitled',
           command: 'rangelink.editorContent.pasteRelativeFilePath',
           group: '8_rangelink_files@1',
         });
@@ -1009,6 +1011,7 @@ describe('package.json contributions', () => {
 
       it('editorTab.pasteFilePath in editor title context menu', () => {
         expect(editorTitleContextMenu[0]).toStrictEqual({
+          when: 'resourceScheme == file || resourceScheme == untitled',
           command: 'rangelink.editorTab.pasteFilePath',
           group: '3_rangelink@1',
         });
@@ -1016,6 +1019,7 @@ describe('package.json contributions', () => {
 
       it('editorTab.pasteRelativeFilePath in editor title context menu', () => {
         expect(editorTitleContextMenu[1]).toStrictEqual({
+          when: 'resourceScheme == file || resourceScheme == untitled',
           command: 'rangelink.editorTab.pasteRelativeFilePath',
           group: '3_rangelink@2',
         });

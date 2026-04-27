@@ -1748,47 +1748,66 @@ test_cases:
 
   - id: editor-binding-validation-001
     feature: 'Editor Binding Validation'
-    scenario: 'Binding a git diff view shows clear rejection: Cannot bind to read-only editor (git)'
+    scenario: 'Search editor content area hides link-generation and bind commands'
     preconditions:
-      - 'A git diff view is open in VS Code'
+      - 'No destination is bound'
     steps:
-      - 'Focus the git diff editor'
-      - "Press Cmd+R Cmd+D and select the diff view, or right-click → 'RangeLink: Bind Here'"
-    expected_result: "A clear rejection message appears (e.g., 'Cannot bind to read-only editor'). The git diff view is not bound."
-    automated: false
+      - 'Press Cmd+Shift+P → run "Open New Search Editor"'
+      - 'Right-click in the EDITOR CONTENT AREA (not the tab at the top)'
+      - 'Inspect the context menu for RangeLink link and bind items'
+    expected_result: '"Send RangeLink", "Send This File''s Path", and "RangeLink: Bind Here" do NOT appear. "Send Selected Text" and "Unbind" are acceptable if present. The when-clauses restrict link-generation commands to resourceScheme == file || resourceScheme == untitled; the bind command carries the same restriction.'
+    automated: assisted
 
   - id: editor-binding-validation-002
     feature: 'Editor Binding Validation'
-    scenario: 'Binding an output panel shows clear rejection message'
+    scenario: 'Output panel hides file path and bind commands in its context menu'
     preconditions:
-      - 'An Output panel is open (e.g., Extension Host output)'
+      - 'No destination is bound'
     steps:
-      - 'Focus the output panel'
-      - "Press Cmd+R Cmd+D and select the output panel, or use 'Bind Here' context menu"
-    expected_result: 'Clear rejection message. Output panel is not bound.'
-    automated: false
+      - 'Press Cmd+Shift+U (or View → Output) to open the Output panel'
+      - 'Click inside the Output panel to focus it'
+      - 'Right-click anywhere in the Output panel'
+      - 'Inspect the context menu for RangeLink file path and bind items'
+    expected_result: 'No "Send This File''s Path" or "RangeLink: Bind Here" appears. "Unbind" is acceptable. The when-clauses restrict editorContent.pasteFilePath and editorContent.bind to resourceScheme == file || resourceScheme == untitled.'
+    automated: assisted
 
   - id: editor-binding-validation-003
     feature: 'Editor Binding Validation'
-    scenario: 'Binding the Settings UI shows clear rejection message'
+    scenario: 'Settings UI hides file path and bind commands in both content and tab menus'
     preconditions:
-      - 'VS Code Settings (Cmd+,) is open'
+      - 'No destination is bound'
     steps:
-      - 'Focus the Settings editor'
-      - "Try to bind via Cmd+R Cmd+D or context menu 'Bind Here'"
-    expected_result: 'Clear rejection message. Settings UI is not bound.'
-    automated: false
+      - 'Press Cmd+, to open the Settings UI'
+      - 'Right-click anywhere in the Settings editor content area'
+      - 'Right-click the Settings TAB at the top of the editor area'
+      - 'Press Cmd+R Cmd+D and scan the destination picker; press Escape to dismiss'
+    expected_result: 'No "RangeLink: Bind Here" in the content menu. No "Send File Path" or "Send Relative File Path" in the tab menu. Settings UI does not appear as a bindable destination in the R-D picker.'
+    automated: assisted
 
   - id: editor-binding-validation-004
     feature: 'Editor Binding Validation'
-    scenario: 'Binding a binary file shows: Cannot bind to [file] - binary file'
+    scenario: 'Binary .png file is excluded from the R-D destination picker even when open'
     preconditions:
-      - 'A binary file (e.g., a .png image) is open in VS Code'
+      - 'A binary .png file is open in column 2 and a plain .txt file is open in column 1'
     steps:
-      - 'Press Cmd+R Cmd+D'
-      - 'Select the binary file from the picker'
-    expected_result: "Rejection message: 'Cannot bind to [filename] - binary file' (or equivalent). File is not bound."
-    automated: false
+      - 'Press Cmd+R Cmd+D to open the destination picker'
+      - 'Confirm the .txt file IS listed (positive control)'
+      - 'Confirm the .png file is NOT listed'
+      - 'Press Escape to dismiss'
+    expected_result: 'The .png file does not appear in the picker despite being open. The .txt file does appear. The isBinaryFile filter in the R-D picker is the upstream defense; runtime rejection in PasteDestinationManager.bindTextEditor is a defense-in-depth layer covered by unit tests.'
+    automated: assisted
+
+  - id: editor-binding-validation-005
+    feature: 'Editor Binding Validation'
+    scenario: 'Search editor TAB hides file path commands in the tab context menu'
+    preconditions:
+      - 'No destination is bound'
+    steps:
+      - 'Press Cmd+Shift+P → run "Open New Search Editor"'
+      - 'Right-click the search editor TAB at the top of the editor area (not the content)'
+      - 'Inspect the context menu for RangeLink file path items'
+    expected_result: 'No "Send File Path" or "Send Relative File Path" appears. "Unbind" is acceptable. The when-clause on editorTab.pasteFilePath and editorTab.pasteRelativeFilePath restricts them to resourceScheme == file || resourceScheme == untitled.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 13 — Bug Fix Regressions
