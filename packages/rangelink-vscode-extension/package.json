@@ -763,22 +763,22 @@
       ],
       "editor/context": [
         {
-          "when": "editorHasSelection",
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled)",
           "command": "rangelink.editorContext.copyLink",
           "group": "8_rangelink@0"
         },
         {
-          "when": "editorHasSelection",
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled)",
           "command": "rangelink.editorContext.copyLinkAbsolute",
           "group": "8_rangelink@1"
         },
         {
-          "when": "editorHasSelection",
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled)",
           "command": "rangelink.editorContext.copyPortableLink",
           "group": "8_rangelink@2"
         },
         {
-          "when": "editorHasSelection",
+          "when": "editorHasSelection && (resourceScheme == file || resourceScheme == untitled)",
           "command": "rangelink.editorContext.copyPortableLinkAbsolute",
           "group": "8_rangelink@3"
         },
@@ -793,10 +793,12 @@
           "group": "8_rangelink@5"
         },
         {
+          "when": "resourceScheme == file || resourceScheme == untitled",
           "command": "rangelink.editorContent.pasteFilePath",
           "group": "8_rangelink_files@0"
         },
         {
+          "when": "resourceScheme == file || resourceScheme == untitled",
           "command": "rangelink.editorContent.pasteRelativeFilePath",
           "group": "8_rangelink_files@1"
         },
@@ -813,10 +815,12 @@
       ],
       "editor/title/context": [
         {
+          "when": "resourceScheme == file || resourceScheme == untitled",
           "command": "rangelink.editorTab.pasteFilePath",
           "group": "3_rangelink@1"
         },
         {
+          "when": "resourceScheme == file || resourceScheme == untitled",
           "command": "rangelink.editorTab.pasteRelativeFilePath",
           "group": "3_rangelink@2"
         },
