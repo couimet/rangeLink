@@ -2,6 +2,7 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
+import { CMD_BIND_TO_TEXT_EDITOR_HERE, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 import {
   activateExtension,
   assertClipboardChanged,
@@ -10,9 +11,17 @@ import {
   type CapturingTerminal,
   cleanupFiles,
   closeAllEditors,
+  CLIPBOARD_SENTINEL,
   createAndBindCapturingTerminal,
+  createLogger,
+  createTerminal,
   createWorkspaceFile,
+  loadSettingsProfile,
   openEditor,
+  printAssistedBanner,
+  resetRangelinkSettings,
+  settle,
+  waitForHuman,
   writeClipboardSentinel,
 } from '../helpers';
 
@@ -51,32 +60,6 @@ suite('Clipboard Preservation', () => {
       .update('clipboard.preserve', undefined, vscode.ConfigurationTarget.Global);
   });
 
-  test('clipboard-preservation-008: R-C writes link to clipboard with preserve=always (R-C is exempt from preserve)', async () => {
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
-
-    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
-    const clipboard = await assertClipboardChanged('R-C with preserve=always');
-    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
-  });
-
-  test('clipboard-preservation-008 (variant): R-C writes link to clipboard with default preserve setting', async () => {
-    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
-    const clipboard = await assertClipboardChanged('R-C with default preserve');
-    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
-  });
-
-  test('clipboard-preservation-008 (variant): R-C writes link to clipboard with preserve=never', async () => {
-    await vscode.workspace
-      .getConfiguration('rangelink')
-      .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
-
-    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
-    const clipboard = await assertClipboardChanged('R-C with preserve=never');
-    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
-  });
-
   test('clipboard-preservation-003: R-F with preserve=always restores clipboard to sentinel after send', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
@@ -103,5 +86,255 @@ suite('Clipboard Preservation', () => {
       captured.includes('#L'),
       `Expected line reference in terminal buffer, got: ${captured}`,
     );
+  });
+
+  test('clipboard-preservation-008: R-C writes link to clipboard with preserve=always (R-C is exempt from preserve)', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
+
+    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    const clipboard = await assertClipboardChanged('R-C with preserve=always');
+    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
+  });
+
+  test('clipboard-preservation-008 (variant): R-C writes link to clipboard with default preserve setting', async () => {
+    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    const clipboard = await assertClipboardChanged('R-C with default preserve');
+    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
+  });
+
+  test('clipboard-preservation-008 (variant): R-C writes link to clipboard with preserve=never', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
+
+    await vscode.commands.executeCommand('rangelink.copyLinkOnlyWithRelativePath');
+    const clipboard = await assertClipboardChanged('R-C with preserve=never');
+    assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
+  });
+});
+
+suite('Clipboard Preservation — Assisted', () => {
+  const log = createLogger('clipboardPreservationAssisted');
+  const tmpFileUris: vscode.Uri[] = [];
+  const tmpTerminals: vscode.Terminal[] = [];
+
+  suiteSetup(async () => {
+    await activateExtension();
+    printAssistedBanner();
+  });
+
+  teardown(async () => {
+    await resetRangelinkSettings(log);
+    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
+    for (const t of tmpTerminals.splice(0)) t.dispose();
+    await closeAllEditors();
+    cleanupFiles(tmpFileUris);
+    await settle();
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC clipboard-preservation-001
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] clipboard-preservation-001: always mode — R-L to terminal restores clipboard', async () => {
+    await loadSettingsProfile('default', log);
+
+    const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content`);
+    const fileUri = createWorkspaceFile('cbp-001', lines.join('\n') + '\n');
+    tmpFileUris.push(fileUri);
+
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
+      'cbp-001-dest',
+      tmpTerminals,
+    );
+
+    await openEditor(fileUri);
+    await writeClipboardSentinel();
+
+    await waitForHuman(
+      'clipboard-preservation-001',
+      `clipboard.preserve="always". Terminal "cbp-001-dest" is bound. Select lines 2-4 in the test file and press Cmd+R Cmd+L. Sentinel: "${CLIPBOARD_SENTINEL}".`,
+      [
+        '1. Click into the open test file (cbp-001-...)',
+        '2. Select lines 2 through 4',
+        '3. Press Cmd+R Cmd+L — the link should appear in terminal "cbp-001-dest"',
+        '4. Press Cancel to continue (clipboard assertion happens automatically)',
+      ],
+    );
+
+    await assertClipboardRestored('clipboard-preservation-001: always + R-L');
+    assertTerminalBufferContains(capturing.getCapturedText(), '#L');
+    log('✓ Clipboard restored to sentinel after R-L; terminal received link');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC clipboard-preservation-002
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] clipboard-preservation-002: always mode — R-V from terminal restores clipboard', async () => {
+    await loadSettingsProfile('default', log);
+
+    const fileUri = createWorkspaceFile('cbp-002', 'destination file\n');
+    tmpFileUris.push(fileUri);
+
+    await openEditor(fileUri);
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await settle();
+
+    const srcTerminal = await createTerminal('cbp-002-src', tmpTerminals);
+    srcTerminal.show(true);
+    await settle();
+
+    await writeClipboardSentinel();
+
+    await waitForHuman(
+      'clipboard-preservation-002',
+      `clipboard.preserve="always". File "cbp-002" is bound. In terminal "cbp-002-src", type a phrase, select it, press Cmd+R Cmd+V. Sentinel: "${CLIPBOARD_SENTINEL}".`,
+      [
+        '1. Click into the "cbp-002-src" terminal that just appeared',
+        '2. Type a short phrase (e.g. "hello world") — it appears in the terminal',
+        '3. Select that phrase (drag-select or double-click)',
+        '4. Press Cmd+R Cmd+V — the phrase should be sent to file cbp-002',
+        '5. Press Cancel to continue (clipboard assertion happens automatically)',
+      ],
+    );
+
+    await assertClipboardRestored('clipboard-preservation-002: always + R-V');
+    log('✓ Clipboard restored to sentinel after R-V (preserve=always)');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC clipboard-preservation-004
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] clipboard-preservation-004: always mode — AI assistant paste restores clipboard', async () => {
+    await loadSettingsProfile('default', log);
+
+    const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content`);
+    const fileUri = createWorkspaceFile('cbp-004', lines.join('\n') + '\n');
+    tmpFileUris.push(fileUri);
+
+    await openEditor(fileUri);
+    await writeClipboardSentinel();
+
+    await waitForHuman(
+      'clipboard-preservation-004',
+      `clipboard.preserve="always". Press Cmd+R Cmd+D → bind "Dummy AI (Tier 1)"; then select code and press Cmd+R Cmd+L. Sentinel: "${CLIPBOARD_SENTINEL}".`,
+      [
+        '1. Press Cmd+R Cmd+D → select "Dummy AI (Tier 1)" from the picker',
+        '2. Click back into the test file (cbp-004-...)',
+        '3. Select 3 lines of code',
+        '4. Press Cmd+R Cmd+L — the link should appear in Dummy AI',
+        '5. Press Cancel to continue (clipboard assertion happens automatically)',
+      ],
+    );
+
+    await assertClipboardRestored('clipboard-preservation-004: always + AI paste');
+    log('✓ Clipboard restored to sentinel after AI paste (preserve=always)');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC clipboard-preservation-005
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] clipboard-preservation-005: always mode — terminal paste (fresh bind) restores clipboard', async () => {
+    await loadSettingsProfile('default', log);
+
+    const lines = Array.from({ length: 10 }, (_, i) => `entry ${i + 1}`);
+    const fileUri = createWorkspaceFile('cbp-005', lines.join('\n') + '\n');
+    tmpFileUris.push(fileUri);
+
+    const capturing: CapturingTerminal = await createAndBindCapturingTerminal(
+      'cbp-005-dest',
+      tmpTerminals,
+    );
+
+    await openEditor(fileUri);
+    await writeClipboardSentinel();
+
+    await waitForHuman(
+      'clipboard-preservation-005',
+      `clipboard.preserve="always". Terminal "cbp-005-dest" is bound. Select 2-3 lines in the test file and press Cmd+R Cmd+L. Sentinel: "${CLIPBOARD_SENTINEL}".`,
+      [
+        '1. Click into the open test file (cbp-005-...)',
+        '2. Select 2 or 3 lines',
+        '3. Press Cmd+R Cmd+L — the link should appear in terminal "cbp-005-dest"',
+        '4. Press Cancel to continue (clipboard assertion happens automatically)',
+      ],
+    );
+
+    await assertClipboardRestored('clipboard-preservation-005: always + terminal paste');
+    assertTerminalBufferContains(capturing.getCapturedText(), '#L');
+    log('✓ Clipboard restored to sentinel after terminal paste (preserve=always)');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC clipboard-preservation-007
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] clipboard-preservation-007: never mode — R-V from terminal overwrites clipboard', async () => {
+    await loadSettingsProfile('clipboard-never', log);
+
+    const fileUri = createWorkspaceFile('cbp-007', 'destination file\n');
+    tmpFileUris.push(fileUri);
+
+    await openEditor(fileUri);
+    await vscode.commands.executeCommand(CMD_BIND_TO_TEXT_EDITOR_HERE);
+    await settle();
+
+    const srcTerminal = await createTerminal('cbp-007-src', tmpTerminals);
+    srcTerminal.show(true);
+    await settle();
+
+    await writeClipboardSentinel();
+
+    await waitForHuman(
+      'clipboard-preservation-007',
+      `clipboard.preserve="never". File "cbp-007" is bound. In terminal "cbp-007-src", type a phrase, select it, press Cmd+R Cmd+V. Sentinel must be GONE afterwards.`,
+      [
+        '1. Click into the "cbp-007-src" terminal that just appeared',
+        '2. Type a short phrase (e.g. "test phrase") — it appears in the terminal',
+        '3. Select that phrase',
+        '4. Press Cmd+R Cmd+V — the phrase should be sent to file cbp-007',
+        '5. Press Cancel to continue (test asserts clipboard changed to the terminal text)',
+      ],
+    );
+
+    await assertClipboardChanged('clipboard-preservation-007: never + R-V');
+    log('✓ Clipboard changed from sentinel after R-V (preserve=never)');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC clipboard-preservation-009
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] clipboard-preservation-009: always mode — dismissed picker leaves clipboard unchanged', async () => {
+    await loadSettingsProfile('default', log);
+    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
+
+    const lines = Array.from({ length: 5 }, (_, i) => `line ${i + 1}`);
+    const fileUri = createWorkspaceFile('cbp-009', lines.join('\n') + '\n');
+    tmpFileUris.push(fileUri);
+
+    await openEditor(fileUri);
+    await settle();
+    await writeClipboardSentinel();
+
+    await waitForHuman(
+      'clipboard-preservation-009',
+      `clipboard.preserve="always", no destination bound. Select lines, press Cmd+R Cmd+L (picker opens), press Escape. Sentinel: "${CLIPBOARD_SENTINEL}".`,
+      [
+        '1. Click into the test file (cbp-009-...)',
+        '2. Select a few lines',
+        '3. Press Cmd+R Cmd+L — the destination picker opens (no destination is bound)',
+        '4. Press Escape to dismiss without selecting anything',
+        '5. Press Cancel to continue (test asserts clipboard still has the sentinel)',
+      ],
+    );
+
+    await assertClipboardRestored('clipboard-preservation-009: always + picker dismissed');
+    log('✓ Clipboard unchanged after picker dismissed (no operation performed)');
   });
 });

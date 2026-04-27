@@ -550,32 +550,31 @@ test_cases:
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before R-L is restored after the operation'
     preconditions:
-      - 'rangelink.clipboard.preserve = "always" (default)'
-      - 'Terminal open and bound as destination'
-      - 'TypeScript file open with 5+ lines'
+      - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
+      - 'Test file with 10 lines open in editor'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Select lines 2-4 in the TypeScript file'
-      - 'Press Cmd+R Cmd+L'
-      - 'Verify terminal received the RangeLink'
-      - 'Press Cmd+V in any text field'
-    expected_result: 'Clipboard contains CLIPBOARD_SENTINEL (not the RangeLink). Clipboard was silently restored after delivery.'
-    automated: false
+      - 'Test writes sentinel to clipboard automatically'
+      - 'Press Cmd+R Cmd+D → bind a terminal destination'
+      - 'Click back into the test file, select lines 2-4'
+      - 'Press Cmd+R Cmd+L — link appears in terminal'
+      - 'Press Cancel — test reads clipboard and asserts it equals the sentinel'
+    expected_result: 'Clipboard contains the sentinel value (not the RangeLink). assertClipboardRestored passes — preserve=always silently restored the clipboard after delivery.'
+    automated: assisted
 
   - id: clipboard-preservation-002
     feature: 'Clipboard Preservation'
-    scenario: 'always mode: clipboard content before R-V is restored after the operation'
+    scenario: 'always mode: clipboard content before R-V from terminal is restored after the operation'
     preconditions:
-      - 'rangelink.clipboard.preserve = "always"'
-      - 'Terminal with visible output, another destination bound'
+      - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
+      - 'Text editor file open as bindable destination'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Focus terminal, select a line of output'
-      - 'Press Cmd+R Cmd+V'
-      - 'Verify bound destination received terminal text'
-      - 'Press Cmd+V anywhere'
-    expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. Terminal text sent to destination; clipboard preserved.'
-    automated: false
+      - 'Test writes sentinel to clipboard automatically'
+      - 'Press Cmd+R Cmd+D → bind the cbp-002 text file'
+      - 'Open a terminal and type a short phrase; select that phrase'
+      - 'Press Cmd+R Cmd+V — phrase appears in bound file'
+      - 'Press Cancel — test reads clipboard and asserts it equals the sentinel'
+    expected_result: 'Clipboard contains the sentinel value (not the terminal text). assertClipboardRestored passes — preserve=always silently restored the clipboard after R-V delivery.'
+    automated: assisted
 
   - id: clipboard-preservation-003
     feature: 'Clipboard Preservation'
@@ -596,31 +595,31 @@ test_cases:
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before AI assistant paste is restored after'
     preconditions:
-      - 'rangelink.clipboard.preserve = "always"'
-      - 'AI assistant (Claude Code or Copilot Chat) bound, AI panel open'
+      - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
+      - 'AI assistant (Claude Code, Copilot Chat, or Cursor AI) available'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Select 3 lines of code'
-      - 'Press Cmd+R Cmd+L'
-      - 'Verify RangeLink appeared in AI chat'
-      - 'Press Cmd+V anywhere'
-    expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. RangeLink delivered to AI chat; clipboard preserved.'
-    automated: false
+      - 'Test writes sentinel to clipboard automatically'
+      - 'Press Cmd+R Cmd+D → bind Claude Code, Copilot Chat, or Cursor AI'
+      - 'Click into any code file and select 3 lines'
+      - 'Press Cmd+R Cmd+L — link appears in AI chat'
+      - 'Press Cancel — test reads clipboard and asserts it equals the sentinel'
+    expected_result: 'Clipboard contains the sentinel value (not the RangeLink). assertClipboardRestored passes — preserve=always silently restored the clipboard after AI delivery.'
+    automated: assisted
 
   - id: clipboard-preservation-005
     feature: 'Clipboard Preservation'
-    scenario: 'always mode: clipboard content before terminal paste is restored after'
+    scenario: 'always mode: clipboard content before terminal paste (fresh bind) is restored after'
     preconditions:
-      - 'rangelink.clipboard.preserve = "always"'
-      - 'Terminal bound as destination'
+      - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
+      - 'Test file with 10 lines open in editor'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Select 2-3 lines of code'
-      - 'Press Cmd+R Cmd+L'
-      - 'Verify terminal received RangeLink'
-      - 'Press Cmd+V anywhere'
-    expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. RangeLink sent to terminal; clipboard preserved.'
-    automated: false
+      - 'Test writes sentinel to clipboard automatically'
+      - 'Press Cmd+R Cmd+D → bind a fresh terminal destination'
+      - 'Click back into the test file, select 2-3 lines'
+      - 'Press Cmd+R Cmd+L — link appears in terminal'
+      - 'Press Cancel — test reads clipboard and asserts it equals the sentinel'
+    expected_result: 'Clipboard contains the sentinel value (not the RangeLink). assertClipboardRestored passes — preserve=always silently restored the clipboard after delivery to a freshly bound terminal.'
+    automated: assisted
 
   - id: clipboard-preservation-006
     feature: 'Clipboard Preservation'
@@ -638,17 +637,18 @@ test_cases:
 
   - id: clipboard-preservation-007
     feature: 'Clipboard Preservation'
-    scenario: 'never mode: clipboard contains last output after R-V'
+    scenario: 'never mode: clipboard contains last output after R-V (sentinel is gone)'
     preconditions:
-      - 'rangelink.clipboard.preserve = "never"'
-      - 'Another destination bound, terminal open'
+      - 'rangelink.clipboard.preserve = "never" (loaded automatically by test)'
+      - 'Text editor file open as bindable destination'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Focus terminal, select text'
-      - 'Press Cmd+R Cmd+V'
-      - 'Press Cmd+V anywhere'
-    expected_result: 'Clipboard contains the selected terminal text. CLIPBOARD_SENTINEL is gone.'
-    automated: false
+      - 'Test writes sentinel to clipboard automatically'
+      - 'Press Cmd+R Cmd+D → bind the cbp-007 text file'
+      - 'Open a terminal and type a short phrase; select that phrase'
+      - 'Press Cmd+R Cmd+V — phrase appears in bound file'
+      - 'Press Cancel — test reads clipboard and asserts it changed (sentinel is gone)'
+    expected_result: 'Clipboard contains the selected terminal text, NOT the sentinel. assertClipboardChanged passes — preserve=never overwrites clipboard with the transported content.'
+    automated: assisted
 
   - id: clipboard-preservation-008
     feature: 'Clipboard Preservation'
@@ -666,18 +666,18 @@ test_cases:
 
   - id: clipboard-preservation-009
     feature: 'Clipboard Preservation'
-    scenario: 'always mode: no preserve invoked when no destination is bound (ClipboardOnly path)'
+    scenario: 'always mode: dismissed picker leaves clipboard unchanged (no operation performed)'
     preconditions:
-      - 'rangelink.clipboard.preserve = "always"'
-      - 'No destination bound'
+      - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
+      - 'No destination bound (ensured by test teardown)'
     steps:
-      - 'Copy CLIPBOARD_SENTINEL to clipboard'
-      - 'Select 3 lines of code'
-      - 'Press Cmd+R Cmd+L (picker appears)'
-      - 'Press Escape to dismiss'
-      - 'Press Cmd+V anywhere'
-    expected_result: 'Clipboard contains CLIPBOARD_SENTINEL. No RangeLink was written because the operation was cancelled.'
-    automated: false
+      - 'Test writes sentinel to clipboard automatically'
+      - 'Click into any file and select a few lines'
+      - 'Press Cmd+R Cmd+L — destination picker opens (no destination bound)'
+      - 'Press Escape to dismiss without selecting anything'
+      - 'Press Cancel — test reads clipboard and asserts it still equals the sentinel'
+    expected_result: 'Clipboard contains the sentinel value. assertClipboardRestored passes — no preserve cycle was triggered because the operation was cancelled before any transport.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 6 — Send File Path Commands
