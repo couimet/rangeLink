@@ -608,17 +608,17 @@ test_cases:
 
   - id: clipboard-preservation-005
     feature: 'Clipboard Preservation'
-    scenario: 'always mode: clipboard content before terminal paste (fresh bind) is restored after'
+    scenario: 'always mode: clipboard content before terminal paste is restored after'
     preconditions:
       - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
       - 'Test file with 10 lines open in editor'
+      - 'Terminal "cbp-005-dest" pre-bound by the test'
     steps:
       - 'Test writes sentinel to clipboard automatically'
-      - 'Press Cmd+R Cmd+D → bind a fresh terminal destination'
       - 'Click back into the test file, select 2-3 lines'
-      - 'Press Cmd+R Cmd+L — link appears in terminal'
+      - 'Press Cmd+R Cmd+L — link appears in terminal "cbp-005-dest"'
       - 'Press Cancel — test reads clipboard and asserts it equals the sentinel'
-    expected_result: 'Clipboard contains the sentinel value (not the RangeLink). assertClipboardRestored passes — preserve=always silently restored the clipboard after delivery to a freshly bound terminal.'
+    expected_result: 'Clipboard contains the sentinel value (not the RangeLink). assertClipboardRestored passes — preserve=always silently restored the clipboard after delivery.'
     automated: assisted
 
   - id: clipboard-preservation-006
