@@ -22,6 +22,7 @@ export {
   cleanupFiles,
   closeAllEditors,
   createAndOpenFile,
+  createFileAt,
   createWorkspaceFile,
   findTestItemsByPrefix,
   openEditor,

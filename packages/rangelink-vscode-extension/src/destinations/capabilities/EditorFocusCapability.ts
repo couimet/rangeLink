@@ -115,6 +115,15 @@ export class EditorFocusCapability implements FocusCapability {
     const matchingEditors = this.ideAdapter.findVisibleEditorsByUri(this.documentUri);
 
     if (matchingEditors.length === 0) {
+      const tabGroup = this.ideAdapter.findTabGroupForDocument(this.documentUri);
+      if (tabGroup && tabGroup.viewColumn === this.boundViewColumn) {
+        this.logger.debug(
+          { fn, editorUri, viewColumn: this.boundViewColumn },
+          'Editor hidden behind other tabs at bound viewColumn',
+        );
+        return this.boundViewColumn;
+      }
+
       this.logger.warn(
         { fn, editorUri },
         'Bound editor not visible (defensive: auto-unbind should prevent this)',

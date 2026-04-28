@@ -212,8 +212,9 @@ suite('Clipboard Preservation — Assisted', () => {
 
     await settle();
     const destContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
+    // Strip terminal wrap newlines — narrow terminals insert \n at visual line boundaries during selection
     assert.ok(
-      destContent.includes(PHRASE),
+      destContent.replace(/[\r\n]/g, '').includes(PHRASE),
       `Expected "${PHRASE}" in destination file, got: ${JSON.stringify(destContent)}`,
     );
     await assertClipboardRestored('clipboard-preservation-002: always + R-V');
@@ -254,8 +255,9 @@ suite('Clipboard Preservation — Assisted', () => {
       tier1: string;
       tier2: string;
     };
+    // trim() strips smart-padding spaces (pasteLink='both' adds leading/trailing space)
     assert.strictEqual(
-      dummyText.tier1,
+      dummyText.tier1.trim(),
       expectedLink,
       `Expected Dummy AI tier1="${expectedLink}", got: ${JSON.stringify(dummyText.tier1)}`,
     );
@@ -334,8 +336,9 @@ suite('Clipboard Preservation — Assisted', () => {
 
     await settle();
     const destContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
+    // Strip terminal wrap newlines — narrow terminals insert \n at visual line boundaries during selection
     assert.ok(
-      destContent.includes(PHRASE),
+      destContent.replace(/[\r\n]/g, '').includes(PHRASE),
       `Expected "${PHRASE}" in destination file, got: ${JSON.stringify(destContent)}`,
     );
     await assertClipboardChanged('clipboard-preservation-007: never + R-V');

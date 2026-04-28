@@ -709,7 +709,7 @@ test_cases:
       - 'Press Cmd+R Cmd+Shift+F'
       - 'Observe terminal'
     expected_result: 'Terminal receives full absolute path (e.g. /Users/you/project/src/utils/helper.ts).'
-    automated: false
+    automated: assisted
 
   - id: send-file-path-003
     feature: 'Send File Path'
@@ -736,7 +736,7 @@ test_cases:
       - 'Press Cmd+R Cmd+F'
       - 'Observe terminal output'
     expected_result: "Terminal receives 'src/my folder/helper.ts' — single-quoted."
-    automated: false
+    automated: assisted
 
   - id: send-file-path-005
     feature: 'Send File Path'
@@ -749,11 +749,11 @@ test_cases:
       - 'Press Cmd+R Cmd+F'
       - 'Observe terminal'
     expected_result: "Terminal receives 'src/utils (v2)/helper.ts' — single-quoted."
-    automated: false
+    automated: assisted
 
   - id: send-file-path-006
     feature: 'Send File Path'
-    scenario: 'Text editor destination: path sent unquoted'
+    scenario: 'Text editor destination: path with spaces is auto-quoted'
     preconditions:
       - 'Text editor (not terminal) bound as destination'
       - 'Active file has spaces in path'
@@ -761,8 +761,8 @@ test_cases:
       - 'Focus the file with spaces'
       - 'Press Cmd+R Cmd+F'
       - 'Observe bound text editor'
-    expected_result: 'Text editor receives unquoted path. Shell-quoting only applies to terminal destinations.'
-    automated: false
+    expected_result: "Text editor receives single-quoted path (e.g. 'my folder/file.ts'). Shell-quoting applies to all destinations."
+    automated: true
 
   - id: send-file-path-007
     feature: 'Send File Path'
@@ -775,7 +775,7 @@ test_cases:
       - 'Observe terminal (receives quoted path)'
       - 'Press Cmd+V in any text field'
     expected_result: 'Clipboard contains unquoted path. Terminal received quoted version.'
-    automated: false
+    automated: true
 
   - id: send-file-path-008
     feature: 'Send File Path'
@@ -788,7 +788,7 @@ test_cases:
       - 'Verify file not modified'
       - 'Press Cmd+V anywhere'
     expected_result: 'Info notification appears. Clipboard contains path. File not modified.'
-    automated: false
+    automated: true
 
   - id: send-file-path-009
     feature: 'Send File Path'
@@ -799,7 +799,7 @@ test_cases:
       - 'Press Cmd+R Cmd+F'
       - 'Observe destination picker appearing'
     expected_result: 'Destination picker opens. Selecting a destination binds it and sends the file path.'
-    automated: false
+    automated: assisted
 
   - id: send-file-path-010
     feature: 'Send File Path'
@@ -811,7 +811,7 @@ test_cases:
       - 'Type Send Current File Path, press Enter'
       - 'Observe terminal'
     expected_result: 'Terminal receives workspace-relative path. Same as Cmd+R Cmd+F.'
-    automated: false
+    automated: assisted
 
   - id: send-file-path-011
     feature: 'Send File Path'
@@ -823,7 +823,20 @@ test_cases:
       - 'Type Send Current File Path (Absolute), press Enter'
       - 'Observe terminal'
     expected_result: 'Terminal receives absolute path. Same as Cmd+R Cmd+Shift+F.'
-    automated: false
+    automated: assisted
+
+  - id: send-file-path-012
+    feature: 'Send File Path'
+    scenario: 'Bound text editor hidden behind another tab — paste still lands in bound editor'
+    preconditions:
+      - 'Text editor bound as destination in single column'
+      - 'Source file opened in same column (hides bound editor)'
+    steps:
+      - 'With source file active (bound editor hidden behind it), press Cmd+R Cmd+F'
+      - 'Observe that the bound editor is brought to the foreground'
+      - 'Confirm file path appears in the bound editor at cursor position'
+    expected_result: 'Bound editor is surfaced automatically and receives the file path. Source editor had focus; paste still landed in bound editor.'
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 7 — Context Menu Integrations
@@ -1966,15 +1979,29 @@ test_cases:
 
   - id: hidden-tab-paste-001
     feature: 'Text Editor Destination — Hidden Tab Paste'
-    scenario: 'Bound editor hidden behind other tabs — paste succeeds and brings the tab to foreground'
+    scenario: 'Bound editor hidden behind other tabs — R-L paste succeeds and brings the tab to foreground'
     preconditions:
-      - 'src/utils/helper.ts is bound as destination but is not the frontmost tab in its group'
+      - 'Bound text editor is not the frontmost tab in its group'
+      - 'Source file open in same column with text selected'
     steps:
-      - 'Open several files in the same tab group as src/utils/helper.ts so it is not visible'
-      - 'Select text in any other file'
-      - 'Press Cmd+R Cmd+L'
-    expected_result: 'The paste succeeds. src/utils/helper.ts comes to the foreground (tab is activated). RangeLink inserted. No error about hidden or inactive tab.'
-    automated: false
+      - 'With bound editor hidden behind source file in same column, press Cmd+R Cmd+L'
+      - 'Observe that the bound editor is brought to the foreground'
+      - 'Confirm RangeLink appears in bound editor at cursor position'
+    expected_result: 'Bound editor is surfaced automatically and receives the RangeLink. No error about hidden or inactive tab.'
+    automated: assisted
+
+  - id: hidden-tab-paste-002
+    feature: 'Text Editor Destination — Hidden Tab Paste'
+    scenario: 'Bound editor hidden behind other tabs — R-V paste succeeds and brings the tab to foreground'
+    preconditions:
+      - 'Bound text editor is not the frontmost tab in its group'
+      - 'Source file open in same column with text selected'
+    steps:
+      - 'With bound editor hidden behind source file in same column, press Cmd+R Cmd+V'
+      - 'Observe that the bound editor is brought to the foreground'
+      - 'Confirm selected text appears in bound editor at cursor position'
+    expected_result: 'Bound editor is surfaced automatically and receives the selected text. No error about hidden or inactive tab.'
+    automated: assisted
 
   - id: document-link-tooltip-001
     feature: 'Clickable Links — Document Link Tooltip'
