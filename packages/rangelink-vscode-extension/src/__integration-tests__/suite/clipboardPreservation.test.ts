@@ -2,7 +2,12 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
-import { CMD_BIND_TO_TEXT_EDITOR_HERE, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
+import {
+  CMD_BIND_TO_TEXT_EDITOR_HERE,
+  CMD_COPY_LINK_RELATIVE,
+  CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
+  CMD_UNBIND_DESTINATION,
+} from '../../constants/commandIds';
 import {
   activateExtension,
   assertClipboardChanged,
@@ -66,7 +71,7 @@ suite('Clipboard Preservation', () => {
       .update('clipboard.preserve', 'always', vscode.ConfigurationTarget.Global);
 
     capturing.clearCaptured();
-    await vscode.commands.executeCommand('rangelink.pasteCurrentFileRelativePath');
+    await vscode.commands.executeCommand(CMD_PASTE_CURRENT_FILE_PATH_RELATIVE);
     await assertClipboardRestored('R-F with preserve=always');
     assertTerminalBufferContains(capturing.getCapturedText(), 'clipboard');
   });
@@ -77,7 +82,7 @@ suite('Clipboard Preservation', () => {
       .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
 
     capturing.clearCaptured();
-    await vscode.commands.executeCommand('rangelink.copyLinkWithRelativePath');
+    await vscode.commands.executeCommand(CMD_COPY_LINK_RELATIVE);
     const clipboard = await assertClipboardChanged('R-L with preserve=never');
     assert.ok(clipboard.includes('#L'), `Expected line reference but got: ${clipboard}`);
     const captured = capturing.getCapturedText();
@@ -128,9 +133,11 @@ suite('Clipboard Preservation — Assisted', () => {
   teardown(async () => {
     await resetRangelinkSettings(log);
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
+    await vscode.commands.executeCommand('dummyAi.clearAll');
     for (const t of tmpTerminals.splice(0)) t.dispose();
     await closeAllEditors();
     cleanupFiles(tmpFileUris);
+    tmpFileUris.splice(0);
     await settle();
   });
 
@@ -174,9 +181,11 @@ suite('Clipboard Preservation — Assisted', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] clipboard-preservation-002: always mode — R-V from terminal restores clipboard', async () => {
+    const PHRASE = 'hello world cbp-002';
+
     await loadSettingsProfile('default', log);
 
-    const fileUri = createWorkspaceFile('cbp-002', 'destination file\n');
+    const fileUri = createWorkspaceFile('cbp-002', '');
     tmpFileUris.push(fileUri);
 
     await openEditor(fileUri);
@@ -191,18 +200,24 @@ suite('Clipboard Preservation — Assisted', () => {
 
     await waitForHuman(
       'clipboard-preservation-002',
-      `clipboard.preserve="always". File "cbp-002" is bound. In terminal "cbp-002-src", type a phrase, select it, press Cmd+R Cmd+V. Sentinel: "${CLIPBOARD_SENTINEL}".`,
+      `clipboard.preserve="always". File "cbp-002" is bound. In terminal "cbp-002-src", type exactly "${PHRASE}", select it, press Cmd+R Cmd+V. Sentinel: "${CLIPBOARD_SENTINEL}".`,
       [
         '1. Click into the "cbp-002-src" terminal that just appeared',
-        '2. Type a short phrase (e.g. "hello world") — it appears in the terminal',
+        `2. Type exactly: ${PHRASE}`,
         '3. Select that phrase (drag-select or double-click)',
         '4. Press Cmd+R Cmd+V — the phrase should be sent to file cbp-002',
-        '5. Press Cancel to continue (clipboard assertion happens automatically)',
+        '5. Press Cancel to continue (assertions happen automatically)',
       ],
     );
 
+    await settle();
+    const destContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
+    assert.ok(
+      destContent.includes(PHRASE),
+      `Expected "${PHRASE}" in destination file, got: ${JSON.stringify(destContent)}`,
+    );
     await assertClipboardRestored('clipboard-preservation-002: always + R-V');
-    log('✓ Clipboard restored to sentinel after R-V (preserve=always)');
+    log('✓ Clipboard restored to sentinel and phrase landed in destination file after R-V');
   });
 
   // ---------------------------------------------------------------------------
@@ -216,23 +231,36 @@ suite('Clipboard Preservation — Assisted', () => {
     const fileUri = createWorkspaceFile('cbp-004', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
 
+    const relPath = vscode.workspace.asRelativePath(fileUri);
+    const expectedLink = `${relPath}#L1-L3`;
+
     await openEditor(fileUri);
     await writeClipboardSentinel();
 
     await waitForHuman(
       'clipboard-preservation-004',
-      `clipboard.preserve="always". Press Cmd+R Cmd+D → bind "Dummy AI (Tier 1)"; then select code and press Cmd+R Cmd+L. Sentinel: "${CLIPBOARD_SENTINEL}".`,
+      `clipboard.preserve="always". Press Cmd+R Cmd+D → bind "Dummy AI (Tier 1)"; click back into the cbp-004 file, select exactly lines 1-3, press Cmd+R Cmd+L. Sentinel: "${CLIPBOARD_SENTINEL}".`,
       [
         '1. Press Cmd+R Cmd+D → select "Dummy AI (Tier 1)" from the picker',
-        '2. Click back into the test file (cbp-004-...)',
-        '3. Select 3 lines of code',
-        '4. Press Cmd+R Cmd+L — the link should appear in Dummy AI',
-        '5. Press Cancel to continue (clipboard assertion happens automatically)',
+        `2. Click back into the test file (${relPath})`,
+        '3. Select exactly lines 1-3 (click line 1, shift-click end of line 3)',
+        '4. Press Cmd+R Cmd+L — the link should appear in Dummy AI Tier 1 textarea',
+        '5. Press Cancel to continue (assertions happen automatically)',
       ],
     );
 
+    await settle();
+    const dummyText = (await vscode.commands.executeCommand('dummyAi.getText')) as {
+      tier1: string;
+      tier2: string;
+    };
+    assert.strictEqual(
+      dummyText.tier1,
+      expectedLink,
+      `Expected Dummy AI tier1="${expectedLink}", got: ${JSON.stringify(dummyText.tier1)}`,
+    );
     await assertClipboardRestored('clipboard-preservation-004: always + AI paste');
-    log('✓ Clipboard restored to sentinel after AI paste (preserve=always)');
+    log('✓ Clipboard restored to sentinel and link landed in Dummy AI after R-L');
   });
 
   // ---------------------------------------------------------------------------
@@ -275,9 +303,11 @@ suite('Clipboard Preservation — Assisted', () => {
   // ---------------------------------------------------------------------------
 
   test('[assisted] clipboard-preservation-007: never mode — R-V from terminal overwrites clipboard', async () => {
+    const PHRASE = 'test phrase cbp-007';
+
     await loadSettingsProfile('clipboard-never', log);
 
-    const fileUri = createWorkspaceFile('cbp-007', 'destination file\n');
+    const fileUri = createWorkspaceFile('cbp-007', '');
     tmpFileUris.push(fileUri);
 
     await openEditor(fileUri);
@@ -292,18 +322,24 @@ suite('Clipboard Preservation — Assisted', () => {
 
     await waitForHuman(
       'clipboard-preservation-007',
-      `clipboard.preserve="never". File "cbp-007" is bound. In terminal "cbp-007-src", type a phrase, select it, press Cmd+R Cmd+V. Sentinel must be GONE afterwards.`,
+      `clipboard.preserve="never". File "cbp-007" is bound. In terminal "cbp-007-src", type exactly "${PHRASE}", select it, press Cmd+R Cmd+V. Sentinel must be GONE afterwards.`,
       [
         '1. Click into the "cbp-007-src" terminal that just appeared',
-        '2. Type a short phrase (e.g. "test phrase") — it appears in the terminal',
+        `2. Type exactly: ${PHRASE}`,
         '3. Select that phrase',
         '4. Press Cmd+R Cmd+V — the phrase should be sent to file cbp-007',
-        '5. Press Cancel to continue (test asserts clipboard changed to the terminal text)',
+        '5. Press Cancel to continue (assertions happen automatically)',
       ],
     );
 
+    await settle();
+    const destContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
+    assert.ok(
+      destContent.includes(PHRASE),
+      `Expected "${PHRASE}" in destination file, got: ${JSON.stringify(destContent)}`,
+    );
     await assertClipboardChanged('clipboard-preservation-007: never + R-V');
-    log('✓ Clipboard changed from sentinel after R-V (preserve=never)');
+    log('✓ Clipboard changed from sentinel and phrase landed in destination file after R-V');
   });
 
   // ---------------------------------------------------------------------------
