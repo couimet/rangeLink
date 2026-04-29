@@ -820,15 +820,31 @@ export class VscodeAdapter
    * @returns The tab group containing the document, or undefined if not found
    */
   findTabGroupForDocument(documentUri: vscode.Uri): vscode.TabGroup | undefined {
+    return this.findAllTabGroupsForDocument(documentUri)[0];
+  }
+
+  /**
+   * Find all tab groups that contain a document with the given URI.
+   *
+   * Unlike findTabGroupForDocument (which returns the first match), this collects
+   * every tab group that has a tab for the document — necessary when the same file
+   * is hidden in multiple tab groups at different columns.
+   *
+   * @param documentUri - The document URI to search for
+   * @returns All tab groups containing the document (empty array if none found)
+   */
+  findAllTabGroupsForDocument(documentUri: vscode.Uri): vscode.TabGroup[] {
+    const matches: vscode.TabGroup[] = [];
     for (const tabGroup of this.ideInstance.window.tabGroups.all) {
       for (const tab of tabGroup.tabs) {
         const tabUri = this.getTabDocumentUri(tab);
         if (tabUri && tabUri.toString() === documentUri.toString()) {
-          return tabGroup;
+          matches.push(tabGroup);
+          break;
         }
       }
     }
-    return undefined;
+    return matches;
   }
 
   /**

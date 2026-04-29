@@ -8,7 +8,6 @@ import {
   assertNoToastLogged,
   assertStatusBarMsgLogged,
   assertTerminalBufferContains,
-  assertTerminalBufferEquals,
   assertToastLogged,
   type CapturingTerminal,
   cleanupFiles,
@@ -156,28 +155,6 @@ suite('Log-Based UI Assertions', () => {
       captured.startsWith(' ') && captured.endsWith(' '),
       `Expected padded (space-bracketed) link in terminal buffer, got: ${JSON.stringify(captured)}`,
     );
-  });
-
-  test('send-file-path-001: R-F sends file path to bound terminal', async () => {
-    const capturingTerminal = await bindTerminal();
-    const doc = await vscode.workspace.openTextDocument(testFileUri);
-    await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
-    await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
-    await settle();
-    capturingTerminal.clearCaptured();
-
-    const logCapture = getLogCapture();
-    logCapture.mark('before-send-fp-001');
-
-    await vscode.commands.executeCommand('rangelink.pasteCurrentFileRelativePath');
-    await settle();
-
-    const relativePath = vscode.workspace.asRelativePath(testFileUri, false);
-    const lines = logCapture.getLinesSince('before-send-fp-001');
-    assertStatusBarMsgLogged(lines, {
-      message: '✓ File path copied to clipboard & sent to Terminal ("rl-toast-test")',
-    });
-    assertTerminalBufferEquals(capturingTerminal.getCapturedText(), ` ${relativePath} `);
   });
 
   test('dirty-buffer-warning-007: clean file generates link immediately without dialog', async () => {

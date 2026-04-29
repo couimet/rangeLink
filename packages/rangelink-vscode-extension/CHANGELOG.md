@@ -51,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "Send Current File Path" - Sends workspace-relative path (default)
     - "Send Current File Path (Absolute)" - Sends absolute path
   - **Keyboard shortcuts** - `Cmd+R Cmd+F` for relative, `Cmd+R Cmd+Shift+F` for absolute
-  - **Shell-safe quoting for terminals** - Paths with special characters (spaces, parentheses, etc.) are automatically wrapped in single quotes when sent to terminal destinations, matching Cursor's drag-drop behavior. Clipboard retains unquoted path for non-shell contexts.
+  - **Shell-safe quoting** - Paths with special characters (spaces, parentheses, etc.) are automatically wrapped in single quotes when sent to any destination, matching Cursor's drag-drop behavior. Clipboard retains the unquoted path.
   - Includes separate `smartPadding.pasteFilePath` setting (default: `both`) for controlling whitespace around pasted paths
   - Copies to clipboard + sends to bound destination (like other send commands)
   - Shows quick pick to bind a destination when unbound

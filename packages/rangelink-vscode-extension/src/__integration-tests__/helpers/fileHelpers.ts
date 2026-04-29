@@ -45,6 +45,12 @@ export const findTestItemsByPrefix = (
       (item.label as string).includes(prefix),
   );
 
+export const createFileAt = (filename: string, content: string): vscode.Uri => {
+  const filePath = path.join(getWorkspaceRoot(), filename);
+  fs.writeFileSync(filePath, content, 'utf8');
+  return vscode.Uri.file(filePath);
+};
+
 export const openEditor = async (
   uri: vscode.Uri,
   viewColumn?: vscode.ViewColumn,

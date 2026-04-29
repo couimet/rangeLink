@@ -207,6 +207,7 @@ describe('EditorFocusCapability', () => {
       const mockAdapter = createMockVscodeAdapter();
       jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
       jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([]);
+      jest.spyOn(mockAdapter, 'findAllTabGroupsForDocument').mockReturnValue([]);
       const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
 
       const mockInsertFactory = createMockInsertFactory();
@@ -271,6 +272,133 @@ describe('EditorFocusCapability', () => {
           matchCount: 2,
         },
         'Bound editor moved but found in multiple tab groups — ambiguous target',
+      );
+    });
+  });
+
+  describe('hidden tab — file not in visibleTextEditors but present in a tab group', () => {
+    it('brings hidden tab to foreground when tab group is at bound viewColumn', async () => {
+      const mockAdapter = createMockVscodeAdapter();
+      jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
+      jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([]);
+      jest
+        .spyOn(mockAdapter, 'findAllTabGroupsForDocument')
+        .mockReturnValue([{ viewColumn: BOUND_VIEW_COLUMN } as any]);
+
+      const freshEditor = createMockEditor({
+        document: createMockDocument({ uri: DOCUMENT_URI }),
+        viewColumn: BOUND_VIEW_COLUMN,
+      });
+      jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(freshEditor);
+
+      const mockInserterFn = jest.fn().mockResolvedValue(true);
+      const mockInsertFactory = createMockInsertFactory();
+      mockInsertFactory.forTarget.mockReturnValue(mockInserterFn);
+
+      const capability = new EditorFocusCapability(
+        mockAdapter,
+        DOCUMENT_URI,
+        BOUND_VIEW_COLUMN,
+        mockInsertFactory,
+        mockLogger,
+      );
+
+      const result = await capability.focus(LOGGING_CONTEXT);
+
+      expect(result).toBeOkWith((value: FocusedDestination) => {
+        expect(value.inserter).toBe(mockInserterFn);
+      });
+      expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, {
+        viewColumn: BOUND_VIEW_COLUMN,
+      });
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'EditorFocusCapability.resolveViewColumn',
+          editorUri: DOCUMENT_URI_STRING,
+          viewColumn: BOUND_VIEW_COLUMN,
+        },
+        'Editor hidden behind other tabs at bound viewColumn',
+      );
+    });
+
+    it('brings hidden tab to foreground when document is in multiple tab groups and one matches bound column', async () => {
+      const DIFFERENT_VIEW_COLUMN = 2;
+      const mockAdapter = createMockVscodeAdapter();
+      jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
+      jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([]);
+      jest
+        .spyOn(mockAdapter, 'findAllTabGroupsForDocument')
+        .mockReturnValue([
+          { viewColumn: DIFFERENT_VIEW_COLUMN } as any,
+          { viewColumn: BOUND_VIEW_COLUMN } as any,
+        ]);
+
+      const freshEditor = createMockEditor({
+        document: createMockDocument({ uri: DOCUMENT_URI }),
+        viewColumn: BOUND_VIEW_COLUMN,
+      });
+      jest.spyOn(mockAdapter, 'showTextDocument').mockResolvedValue(freshEditor);
+
+      const mockInserterFn = jest.fn().mockResolvedValue(true);
+      const mockInsertFactory = createMockInsertFactory();
+      mockInsertFactory.forTarget.mockReturnValue(mockInserterFn);
+
+      const capability = new EditorFocusCapability(
+        mockAdapter,
+        DOCUMENT_URI,
+        BOUND_VIEW_COLUMN,
+        mockInsertFactory,
+        mockLogger,
+      );
+
+      const result = await capability.focus(LOGGING_CONTEXT);
+
+      expect(result).toBeOkWith((value: FocusedDestination) => {
+        expect(value.inserter).toBe(mockInserterFn);
+      });
+      expect(mockAdapter.showTextDocument).toHaveBeenCalledWith(DOCUMENT_URI, {
+        viewColumn: BOUND_VIEW_COLUMN,
+      });
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        {
+          fn: 'EditorFocusCapability.resolveViewColumn',
+          editorUri: DOCUMENT_URI_STRING,
+          viewColumn: BOUND_VIEW_COLUMN,
+        },
+        'Editor hidden behind other tabs at bound viewColumn',
+      );
+    });
+
+    it('returns EDITOR_NOT_VISIBLE when tab group is at a different viewColumn', async () => {
+      const DIFFERENT_VIEW_COLUMN = 2;
+      const mockAdapter = createMockVscodeAdapter();
+      jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
+      jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([]);
+      jest
+        .spyOn(mockAdapter, 'findAllTabGroupsForDocument')
+        .mockReturnValue([{ viewColumn: DIFFERENT_VIEW_COLUMN } as any]);
+      const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
+
+      const mockInsertFactory = createMockInsertFactory();
+      const capability = new EditorFocusCapability(
+        mockAdapter,
+        DOCUMENT_URI,
+        BOUND_VIEW_COLUMN,
+        mockInsertFactory,
+        mockLogger,
+      );
+
+      const result = await capability.focus(LOGGING_CONTEXT);
+
+      expect(result).toBeErrWith((error) => {
+        expect(error).toStrictEqual({ reason: 'EDITOR_NOT_VISIBLE' });
+      });
+      expect(showErrorSpy).toHaveBeenCalledWith(
+        'RangeLink: Bound editor is no longer visible. Re-open the file and bind again.',
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { fn: 'EditorFocusCapability.resolveViewColumn', editorUri: DOCUMENT_URI_STRING },
+        'Bound editor not visible (defensive: auto-unbind should prevent this)',
       );
     });
   });
