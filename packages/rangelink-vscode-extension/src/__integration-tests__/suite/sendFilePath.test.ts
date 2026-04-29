@@ -285,6 +285,7 @@ suite('Send File Path', () => {
     await settle();
 
     const relativePath = vscode.workspace.asRelativePath(fileUri, false);
+    const clipboard = await vscode.env.clipboard.readText();
     const lines = logCapture.getLinesSince('before-007');
     assertFilePathLogged(lines, {
       pathFormat: 'workspace-relative',
@@ -299,7 +300,8 @@ suite('Send File Path', () => {
       'Expected "Quoted path for unsafe characters" log — proves the SEND was quoted while the clipboard write used the unquoted path',
     );
     assertTerminalBufferContains(capturing.getCapturedText(), `'${relativePath}'`);
-    log('✓ Log shows unquoted filePath submitted; terminal received quoted version');
+    assert.strictEqual(clipboard, relativePath, 'Clipboard should contain the raw unquoted path');
+    log('✓ Log shows unquoted filePath submitted; terminal received quoted version; clipboard has unquoted path');
   });
 
   // ---------------------------------------------------------------------------
@@ -510,6 +512,12 @@ suite('Send File Path', () => {
     );
 
     await settle();
+
+    assert.strictEqual(
+      vscode.window.activeTextEditor?.document.uri.toString(),
+      destUri.toString(),
+      'Expected bound editor to be active after paste',
+    );
 
     const relativePath = vscode.workspace.asRelativePath(sourceUri, false);
     const lines = logCapture.getLinesSince('before-012');

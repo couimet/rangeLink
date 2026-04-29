@@ -6,8 +6,10 @@ import {
   CMD_BIND_TO_TEXT_EDITOR_HERE,
   CMD_COPY_LINK_RELATIVE,
   CMD_PASTE_CURRENT_FILE_PATH_RELATIVE,
+  CMD_TERMINAL_PASTE_SELECTED_TEXT,
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
+import { VSCODE_CMD_TERMINAL_SELECT_ALL } from '../../constants/vscodeCommandIds';
 import {
   activateExtension,
   assertClipboardChanged,
@@ -26,6 +28,7 @@ import {
   printAssistedBanner,
   resetRangelinkSettings,
   settle,
+  TERMINAL_READY_MS,
   waitForHuman,
   writeClipboardSentinel,
 } from '../helpers';
@@ -180,7 +183,7 @@ suite('Clipboard Preservation — Assisted', () => {
   // TC clipboard-preservation-002
   // ---------------------------------------------------------------------------
 
-  test('[assisted] clipboard-preservation-002: always mode — R-V from terminal restores clipboard', async () => {
+  test('clipboard-preservation-002: always mode — R-V from terminal restores clipboard', async () => {
     const PHRASE = 'hello world cbp-002';
 
     await loadSettingsProfile('default', log);
@@ -196,23 +199,19 @@ suite('Clipboard Preservation — Assisted', () => {
     srcTerminal.show(true);
     await settle();
 
+    srcTerminal.sendText(PHRASE, false);
+    await settle(TERMINAL_READY_MS);
+
+    await vscode.commands.executeCommand(VSCODE_CMD_TERMINAL_SELECT_ALL);
+    await settle();
+
+    // Sentinel written after selectAll so copyOnSelection cannot overwrite it
     await writeClipboardSentinel();
 
-    await waitForHuman(
-      'clipboard-preservation-002',
-      `clipboard.preserve="always". File "cbp-002" is bound. In terminal "cbp-002-src", type exactly "${PHRASE}", select it, press Cmd+R Cmd+V. Sentinel: "${CLIPBOARD_SENTINEL}".`,
-      [
-        '1. Click into the "cbp-002-src" terminal that just appeared',
-        `2. Type exactly: ${PHRASE}`,
-        '3. Select that phrase (drag-select or double-click)',
-        '4. Press Cmd+R Cmd+V — the phrase should be sent to file cbp-002',
-        '5. Press Cancel to continue (assertions happen automatically)',
-      ],
-    );
-
+    await vscode.commands.executeCommand(CMD_TERMINAL_PASTE_SELECTED_TEXT);
     await settle();
+
     const destContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
-    // Strip terminal wrap newlines — narrow terminals insert \n at visual line boundaries during selection
     assert.ok(
       destContent.replace(/[\r\n]/g, '').includes(PHRASE),
       `Expected "${PHRASE}" in destination file, got: ${JSON.stringify(destContent)}`,
@@ -304,7 +303,7 @@ suite('Clipboard Preservation — Assisted', () => {
   // TC clipboard-preservation-007
   // ---------------------------------------------------------------------------
 
-  test('[assisted] clipboard-preservation-007: never mode — R-V from terminal overwrites clipboard', async () => {
+  test('clipboard-preservation-007: never mode — R-V from terminal overwrites clipboard', async () => {
     const PHRASE = 'test phrase cbp-007';
 
     await loadSettingsProfile('clipboard-never', log);
@@ -320,23 +319,19 @@ suite('Clipboard Preservation — Assisted', () => {
     srcTerminal.show(true);
     await settle();
 
+    srcTerminal.sendText(PHRASE, false);
+    await settle(TERMINAL_READY_MS);
+
+    await vscode.commands.executeCommand(VSCODE_CMD_TERMINAL_SELECT_ALL);
+    await settle();
+
+    // Sentinel written after selectAll so copyOnSelection cannot overwrite it
     await writeClipboardSentinel();
 
-    await waitForHuman(
-      'clipboard-preservation-007',
-      `clipboard.preserve="never". File "cbp-007" is bound. In terminal "cbp-007-src", type exactly "${PHRASE}", select it, press Cmd+R Cmd+V. Sentinel must be GONE afterwards.`,
-      [
-        '1. Click into the "cbp-007-src" terminal that just appeared',
-        `2. Type exactly: ${PHRASE}`,
-        '3. Select that phrase',
-        '4. Press Cmd+R Cmd+V — the phrase should be sent to file cbp-007',
-        '5. Press Cancel to continue (assertions happen automatically)',
-      ],
-    );
-
+    await vscode.commands.executeCommand(CMD_TERMINAL_PASTE_SELECTED_TEXT);
     await settle();
+
     const destContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
-    // Strip terminal wrap newlines — narrow terminals insert \n at visual line boundaries during selection
     assert.ok(
       destContent.replace(/[\r\n]/g, '').includes(PHRASE),
       `Expected "${PHRASE}" in destination file, got: ${JSON.stringify(destContent)}`,

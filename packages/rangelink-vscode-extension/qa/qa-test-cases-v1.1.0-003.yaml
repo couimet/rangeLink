@@ -567,14 +567,14 @@ test_cases:
     preconditions:
       - 'rangelink.clipboard.preserve = "always" (loaded automatically by test)'
       - 'Empty text editor file pre-bound as destination (cbp-002-...)'
-      - 'Terminal "cbp-002-src" open and focused'
+      - 'Terminal "cbp-002-src" created and focused by test'
     steps:
-      - 'Test writes sentinel to clipboard automatically'
-      - 'Type exactly "hello world cbp-002" in the terminal, select it'
-      - 'Press Cmd+R Cmd+V — phrase appears in bound file'
-      - 'Press Cancel — test asserts phrase in dest file and clipboard restored to sentinel'
+      - 'Test types "hello world cbp-002" into terminal via sendText and selects all via selectAll'
+      - 'Test writes sentinel to clipboard (after selection to prevent copyOnSelection interference)'
+      - 'Test invokes R-V command directly — phrase lands in bound file'
+      - 'Test asserts phrase in dest file and clipboard restored to sentinel'
     expected_result: 'Destination file contains "hello world cbp-002". Clipboard contains the sentinel value. assertClipboardRestored passes — preserve=always silently restored the clipboard after R-V delivery.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-003
     feature: 'Clipboard Preservation'
@@ -641,14 +641,14 @@ test_cases:
     preconditions:
       - 'rangelink.clipboard.preserve = "never" (loaded automatically by test)'
       - 'Empty text editor file pre-bound as destination (cbp-007-...)'
-      - 'Terminal "cbp-007-src" open and focused'
+      - 'Terminal "cbp-007-src" created and focused by test'
     steps:
-      - 'Test writes sentinel to clipboard automatically'
-      - 'Type exactly "test phrase cbp-007" in the terminal, select it'
-      - 'Press Cmd+R Cmd+V — phrase appears in bound file'
-      - 'Press Cancel — test asserts phrase in dest file and clipboard changed (sentinel is gone)'
+      - 'Test types "test phrase cbp-007" into terminal via sendText and selects all via selectAll'
+      - 'Test writes sentinel to clipboard (after selection to prevent copyOnSelection interference)'
+      - 'Test invokes R-V command directly — phrase lands in bound file'
+      - 'Test asserts phrase in dest file and clipboard changed (sentinel is gone)'
     expected_result: 'Destination file contains "test phrase cbp-007". Clipboard contains the selected terminal text, NOT the sentinel. assertClipboardChanged passes — preserve=never overwrites clipboard with the transported content.'
-    automated: assisted
+    automated: true
 
   - id: clipboard-preservation-008
     feature: 'Clipboard Preservation'

@@ -2576,6 +2576,50 @@ describe('VscodeAdapter', () => {
       });
     });
 
+    describe('findAllTabGroupsForDocument', () => {
+      it('returns all tab groups containing the document', () => {
+        const targetUri = createMockUri('/workspace/target.ts');
+        const tab1 = createMockTab(targetUri);
+        const tab2 = createMockTab(createMockUri('/workspace/other.ts'));
+        const tab3 = createMockTab(targetUri);
+
+        const group1 = createMockTabGroup([tab1]);
+        const group2 = createMockTabGroup([tab2]);
+        const group3 = createMockTabGroup([tab3]);
+
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [group1, group2, group3] });
+
+        const result = adapter.findAllTabGroupsForDocument(targetUri);
+
+        expect(result).toStrictEqual([group1, group3]);
+      });
+
+      it('returns empty array when document not in any tab group', () => {
+        const targetUri = createMockUri('/workspace/missing.ts');
+        const tab = createMockTab(createMockUri('/workspace/other.ts'));
+        const group = createMockTabGroup([tab]);
+
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [group] });
+
+        const result = adapter.findAllTabGroupsForDocument(targetUri);
+
+        expect(result).toStrictEqual([]);
+      });
+
+      it('returns one entry per tab group even when the group has multiple tabs for the document', () => {
+        const targetUri = createMockUri('/workspace/target.ts');
+        const tab1 = createMockTab(targetUri);
+        const tab2 = createMockTab(targetUri);
+
+        const group = createMockTabGroup([tab1, tab2]);
+        mockVSCode.window.tabGroups = createMockTabGroups({ all: [group] });
+
+        const result = adapter.findAllTabGroupsForDocument(targetUri);
+
+        expect(result).toStrictEqual([group]);
+      });
+    });
+
     describe('isTextEditorTab', () => {
       it('should return true for text editor tab (TabInputText)', () => {
         const tab = createMockTab(createMockUri('/workspace/file.ts'));
