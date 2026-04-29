@@ -281,9 +281,9 @@ describe('EditorFocusCapability', () => {
       const mockAdapter = createMockVscodeAdapter();
       jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
       jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([]);
-      jest.spyOn(mockAdapter, 'findAllTabGroupsForDocument').mockReturnValue([
-        { viewColumn: BOUND_VIEW_COLUMN } as any,
-      ]);
+      jest
+        .spyOn(mockAdapter, 'findAllTabGroupsForDocument')
+        .mockReturnValue([{ viewColumn: BOUND_VIEW_COLUMN } as any]);
 
       const freshEditor = createMockEditor({
         document: createMockDocument({ uri: DOCUMENT_URI }),
@@ -326,10 +326,12 @@ describe('EditorFocusCapability', () => {
       const mockAdapter = createMockVscodeAdapter();
       jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
       jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([]);
-      jest.spyOn(mockAdapter, 'findAllTabGroupsForDocument').mockReturnValue([
-        { viewColumn: DIFFERENT_VIEW_COLUMN } as any,
-        { viewColumn: BOUND_VIEW_COLUMN } as any,
-      ]);
+      jest
+        .spyOn(mockAdapter, 'findAllTabGroupsForDocument')
+        .mockReturnValue([
+          { viewColumn: DIFFERENT_VIEW_COLUMN } as any,
+          { viewColumn: BOUND_VIEW_COLUMN } as any,
+        ]);
 
       const freshEditor = createMockEditor({
         document: createMockDocument({ uri: DOCUMENT_URI }),
@@ -372,9 +374,9 @@ describe('EditorFocusCapability', () => {
       const mockAdapter = createMockVscodeAdapter();
       jest.spyOn(mockAdapter, 'hasVisibleEditorAt').mockReturnValue(false);
       jest.spyOn(mockAdapter, 'findVisibleEditorsByUri').mockReturnValue([]);
-      jest.spyOn(mockAdapter, 'findAllTabGroupsForDocument').mockReturnValue([
-        { viewColumn: DIFFERENT_VIEW_COLUMN } as any,
-      ]);
+      jest
+        .spyOn(mockAdapter, 'findAllTabGroupsForDocument')
+        .mockReturnValue([{ viewColumn: DIFFERENT_VIEW_COLUMN } as any]);
       const showErrorSpy = jest.spyOn(mockAdapter, 'showErrorMessage');
 
       const mockInsertFactory = createMockInsertFactory();

@@ -301,7 +301,9 @@ suite('Send File Path', () => {
     );
     assertTerminalBufferContains(capturing.getCapturedText(), `'${relativePath}'`);
     assert.strictEqual(clipboard, relativePath, 'Clipboard should contain the raw unquoted path');
-    log('✓ Log shows unquoted filePath submitted; terminal received quoted version; clipboard has unquoted path');
+    log(
+      '✓ Log shows unquoted filePath submitted; terminal received quoted version; clipboard has unquoted path',
+    );
   });
 
   // ---------------------------------------------------------------------------
