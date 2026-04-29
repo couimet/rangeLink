@@ -2,6 +2,7 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
+import { CMD_BIND_TO_TERMINAL_HERE, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 import {
   activateExtension,
   assertQuickPickItemsLogged,
@@ -15,6 +16,7 @@ import {
   settle,
   TERMINAL_READY_MS,
   waitForHuman,
+  waitForHumanVerdict,
 } from '../helpers';
 
 const SEPARATOR_KIND = -1;
@@ -139,5 +141,174 @@ suite('R-M Status Bar Menu', () => {
       await vscode.commands.executeCommand('rangelink.unbindDestination');
       terminal.dispose();
     }
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC status-bar-menu-001
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] status-bar-menu-001: status bar item visible with correct text and tooltip', async () => {
+    const verdict = await waitForHumanVerdict(
+      'status-bar-menu-001',
+      'Look at the VS Code status bar (bottom right). Does it show "$(link) RangeLink" with tooltip "RangeLink Menu" on hover?',
+      [
+        '1. Locate the RangeLink item in the bottom-right status bar',
+        '2. Hover over it to reveal the tooltip',
+        '3. Click PASS if it shows "$(link) RangeLink" with tooltip "RangeLink Menu"',
+        '   Click FAIL if the text or tooltip is wrong, or the item is missing',
+      ],
+    );
+    assert.strictEqual(verdict, 'pass', 'Human reported status bar text or tooltip was incorrect');
+    log('✓ Status bar item shows correct text and tooltip');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC status-bar-menu-006
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] status-bar-menu-006: R-M menu shows destination picker items when no destination is bound', async () => {
+    await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
+    await settle();
+
+    const logCapture = getLogCapture();
+    logCapture.mark('before-006');
+
+    await waitForHuman(
+      'status-bar-menu-006',
+      'No destination bound. Open the R-M menu (Cmd+R Cmd+M), observe the first item and the absence of "Jump to Bound Destination", then press Escape.',
+      [
+        '1. Press Cmd+R Cmd+M to open the R-M menu',
+        '2. Confirm the first item says "No bound destination. Choose below to bind:"',
+        '3. Confirm there is NO "Jump to Bound Destination" item',
+        '4. Press Escape to dismiss, then click Cancel',
+      ],
+    );
+
+    const lines = logCapture.getLinesSince('before-006');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry with items');
+    assert.deepStrictEqual(
+      { label: items![0].label, itemKind: items![0].itemKind },
+      { label: 'No bound destination. Choose below to bind:', itemKind: 'info' },
+    );
+    assert.strictEqual(
+      items!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
+      undefined,
+      'Expected no Jump item in unbound state',
+    );
+    log('✓ Unbound menu shows "choose below" info item and no Jump item');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC status-bar-menu-007
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] status-bar-menu-007: R-M menu Unbind Destination item unbinds the destination when selected', async () => {
+    const terminal = vscode.window.createTerminal({ name: 'rl-sbm-007' });
+    terminal.show(true);
+    await settle(TERMINAL_READY_MS);
+    await vscode.commands.executeCommand(CMD_BIND_TO_TERMINAL_HERE);
+    await settle();
+
+    try {
+      const logCapture = getLogCapture();
+      logCapture.mark('before-007');
+
+      await waitForHuman(
+        'status-bar-menu-007',
+        'Destination is bound to "rl-sbm-007". Open the R-M menu (Cmd+R Cmd+M), verify Jump and Unbind are present, select "$(close) Unbind Destination", then click Cancel.',
+        [
+          '1. Press Cmd+R Cmd+M to open the R-M menu',
+          '2. Confirm "$(arrow-right) Jump to Bound Destination" shows "rl-sbm-007"',
+          '3. Confirm "$(close) Unbind Destination" is visible',
+          '4. Select "$(close) Unbind Destination"',
+          '5. Click Cancel on this notification',
+        ],
+      );
+
+      const lines = logCapture.getLinesSince('before-007');
+      const items = extractQuickPickItemsLogged(lines);
+      assert.ok(items, 'Expected showQuickPick log entry with items');
+      assert.ok(
+        items!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
+        'Expected Jump item present in bound state',
+      );
+      assert.ok(
+        items!.find((i) => i.label === '$(close) Unbind Destination'),
+        'Expected Unbind item present in bound state',
+      );
+      const commandSelectedLog = lines.find(
+        (l) => l.includes('Command item selected') && l.includes('Unbind Destination'),
+      );
+      assert.ok(commandSelectedLog, 'Expected "Command item selected" log for Unbind Destination');
+      log('✓ Bound menu showed Jump + Unbind; human selected Unbind and it was dispatched');
+    } finally {
+      terminal.dispose();
+    }
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC status-bar-menu-008
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] status-bar-menu-008: R-M menu Go to Link item opens the R-G input box', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-008');
+
+    await waitForHuman(
+      'status-bar-menu-008',
+      'Open the R-M menu (Cmd+R Cmd+M), select "$(link-external) Go to Link", dismiss the R-G input box (Escape), then click Cancel.',
+      [
+        '1. Press Cmd+R Cmd+M to open the R-M menu',
+        '2. Select "$(link-external) Go to Link"',
+        '3. The R-G input box opens — press Escape to dismiss it',
+        '4. Click Cancel on this notification',
+      ],
+    );
+
+    const lines = logCapture.getLinesSince('before-008');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry with items');
+    assert.ok(
+      items!.find((i) => i.label === '$(link-external) Go to Link'),
+      'Expected "Go to Link" item in menu',
+    );
+    const commandSelectedLog = lines.find(
+      (l) => l.includes('Command item selected') && l.includes('Go to Link'),
+    );
+    assert.ok(commandSelectedLog, 'Expected "Command item selected" log for Go to Link');
+    const inputBoxLog = lines.find(
+      (l) => l.includes('GoToRangeLinkCommand.execute') && l.includes('Showing input box'),
+    );
+    assert.ok(inputBoxLog, 'Expected GoToRangeLinkCommand to log input box presentation');
+    log('✓ R-M menu "Go to Link" dispatched the R-G command and input box was shown');
+  });
+
+  // ---------------------------------------------------------------------------
+  // TC status-bar-menu-009
+  // ---------------------------------------------------------------------------
+
+  test('[assisted] status-bar-menu-009: R-M menu Show Version Info displays version, commit, branch, and build date', async () => {
+    const verdict = await waitForHumanVerdict(
+      'status-bar-menu-009',
+      'Open the R-M menu (Cmd+R Cmd+M), select "$(info) Show Version Info", read the notification. Does it show the version, a short commit SHA, a branch name, and a build date?',
+      [
+        '1. Press Cmd+R Cmd+M to open the R-M menu',
+        '2. Select "$(info) Show Version Info"',
+        '3. Read the notification — verify it contains:',
+        '   • Extension version (e.g. 1.1.0)',
+        '   • Short commit SHA (e.g. abc1234)',
+        '   • Branch name (e.g. main or issues/509-block7)',
+        '   • Build date',
+        '4. Dismiss the notification, then click PASS or FAIL',
+      ],
+    );
+
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported version info notification was missing fields',
+    );
+    log('✓ Show Version Info displayed notification with all required fields (human verified)');
   });
 });

@@ -31,7 +31,7 @@ test_cases:
       - 'Locate the RangeLink item'
       - 'Hover over it to see the tooltip'
     expected_result: "Status bar shows $(link) RangeLink. Tooltip reads 'RangeLink Menu'."
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-002
     feature: 'R-M Status Bar Menu'
@@ -86,7 +86,7 @@ test_cases:
       - 'Open the R-M menu'
       - 'Observe the first item'
     expected_result: "Menu shows a bind item that opens the destination picker. 'Jump to Bound Destination' is absent."
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-007
     feature: 'R-M Status Bar Menu'
@@ -97,7 +97,7 @@ test_cases:
       - 'Open the R-M menu'
       - "Select 'Unbind Destination'"
     expected_result: "The destination is unbound. A notification confirms. R-M menu no longer shows 'Jump to Bound Destination' next time."
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-008
     feature: 'R-M Status Bar Menu'
@@ -108,7 +108,7 @@ test_cases:
       - 'Open the R-M menu'
       - "Select 'Go to Link'"
     expected_result: 'R-G input box opens, ready to accept a RangeLink for navigation.'
-    automated: false
+    automated: assisted
 
   - id: status-bar-menu-009
     feature: 'R-M Status Bar Menu'
@@ -119,7 +119,7 @@ test_cases:
       - 'Open the R-M menu'
       - "Select 'Show Version Info'"
     expected_result: 'A notification or info message shows the extension version, short commit SHA, branch name, and build date.'
-    automated: false
+    automated: assisted
 
   # ---------------------------------------------------------------------------
   # Section 2 — R-D Bind to Destination
