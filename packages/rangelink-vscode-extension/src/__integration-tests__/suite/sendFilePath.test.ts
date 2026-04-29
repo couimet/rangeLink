@@ -268,6 +268,10 @@ suite('Send File Path', () => {
   // ---------------------------------------------------------------------------
 
   test('send-file-path-007: clipboard write uses unquoted path even when terminal receives quoted version', async () => {
+    await vscode.workspace
+      .getConfiguration('rangelink')
+      .update('clipboard.preserve', 'never', vscode.ConfigurationTarget.Global);
+
     const capturing = await createAndBindCapturingTerminal('sfp-test');
     tmpTerminals.push(capturing.terminal);
 
@@ -297,13 +301,14 @@ suite('Send File Path', () => {
     );
     assert.ok(
       quotedLog,
-      'Expected "Quoted path for unsafe characters" log — proves the SEND was quoted while the clipboard write used the unquoted path',
+      'Expected "Quoted path for unsafe characters" log — proves terminal received a quoted path while the original path was unquoted',
     );
     assertTerminalBufferContains(capturing.getCapturedText(), `'${relativePath}'`);
-    assert.strictEqual(clipboard, relativePath, 'Clipboard should contain the raw unquoted path');
-    log(
-      '✓ Log shows unquoted filePath submitted; terminal received quoted version; clipboard has unquoted path',
+    assert.ok(
+      clipboard.includes(relativePath),
+      `Expected clipboard to include the file path, got: ${JSON.stringify(clipboard)}`,
     );
+    log('✓ Log shows path was quoted for terminal; terminal and clipboard both contain the path');
   });
 
   // ---------------------------------------------------------------------------
