@@ -249,7 +249,9 @@ suite('R-M Status Bar Menu', () => {
         undefined,
         'Expected no Jump item after unbind',
       );
-      log('✓ Bound menu showed Jump + Unbind; human selected Unbind; post-unbind menu confirmed Jump absent');
+      log(
+        '✓ Bound menu showed Jump + Unbind; human selected Unbind; post-unbind menu confirmed Jump absent',
+      );
     } finally {
       terminal.dispose();
     }
@@ -320,6 +322,8 @@ suite('R-M Status Bar Menu', () => {
       'pass',
       'Human reported version info notification was missing fields',
     );
-    log('✓ Show Version Info dispatched and notification displayed all required fields (human verified)');
+    log(
+      '✓ Show Version Info dispatched and notification displayed all required fields (human verified)',
+    );
   });
 });
