@@ -139,6 +139,9 @@ export const messagesEn: Record<MessageCode, string> = {
   [MessageCode.INFO_NAVIGATION_INPUT_BOX_PROMPT]: 'Enter RangeLink to navigate',
   [MessageCode.INFO_NAVIGATION_INVALID_LINK]: "RangeLink: Invalid link format: '{input}'",
   [MessageCode.INFO_NAVIGATION_SUCCESS]: 'RangeLink: Navigated to {path} @ {position}',
+  [MessageCode.INFO_NEW_VERSION_NOTIFICATION]: 'RangeLink updated to v{version}. See what changed!',
+  [MessageCode.INFO_NEW_VERSION_SKIP_BUTTON]: 'Skip for this version',
+  [MessageCode.INFO_NEW_VERSION_WHATS_NEW_BUTTON]: "What's New",
   [MessageCode.INFO_PASTE_CONTENT_NO_DESTINATIONS_AVAILABLE]: NO_DESTINATIONS_AVAILABLE,
   [MessageCode.INFO_PASTE_CONTENT_QUICK_PICK_DESTINATIONS_CHOOSE_BELOW]:
     'RangeLink: No bound destination. Choose below to bind and paste',

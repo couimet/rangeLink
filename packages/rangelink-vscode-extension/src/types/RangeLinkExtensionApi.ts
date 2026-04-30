@@ -1,4 +1,5 @@
 import type { LogCapture } from '../LogCapture';
+import type { ReleaseNotifier } from '../notification';
 
 /**
  * Extension API surface returned from activate().
@@ -6,4 +7,5 @@ import type { LogCapture } from '../LogCapture';
  */
 export interface RangeLinkExtensionApi {
   readonly logCapture: LogCapture;
+  readonly releaseNotifier: ReleaseNotifier;
 }

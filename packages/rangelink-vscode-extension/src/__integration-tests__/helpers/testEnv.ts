@@ -21,5 +21,11 @@ export const activateExtension = async (): Promise<void> => {
   await ext.activate();
 };
 
+export const getExtensionVersion = (): string => {
+  const ext = vscode.extensions.getExtension(EXTENSION_ID);
+  assert.ok(ext, `Extension ${EXTENSION_ID} not found`);
+  return ext.packageJSON.version as string;
+};
+
 export const settle = (ms: number = SETTLE_MS): Promise<void> =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));

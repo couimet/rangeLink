@@ -5,6 +5,7 @@ import { createWiringServices } from './createWiringServices';
 import { setLocale } from './i18n/LocaleManager';
 import { VscodeAdapter } from './ide/vscode/VscodeAdapter';
 import { LogCapture } from './LogCapture';
+import { ReleaseNotifier } from './notification';
 import { createSubscriptionRegistrar } from './SubscriptionRegistrar';
 import type { RangeLinkExtensionApi, VersionInfo } from './types';
 import { VSCodeLogger } from './VSCodeLogger';
@@ -55,7 +56,10 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
   const services = createWiringServices({ ideAdapter, logger, versionInfo }, context);
   wireSubscriptions(registrar, services);
 
-  return { logCapture };
+  const releaseNotifier = new ReleaseNotifier(context.globalState, versionInfo, ideAdapter, logger);
+  void releaseNotifier.maybeNotify();
+
+  return { logCapture, releaseNotifier };
 }
 
 /**

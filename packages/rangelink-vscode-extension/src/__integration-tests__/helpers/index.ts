@@ -51,6 +51,7 @@ export { loadSettingsProfile, resetRangelinkSettings } from './settingsHelpers';
 export { createAndBindTerminal, createTerminal, findTerminalItems } from './terminalHelpers';
 export {
   activateExtension,
+  getExtensionVersion,
   getWorkspaceRoot,
   POLL_INTERVAL_MS,
   POLL_TIMEOUT_MS,

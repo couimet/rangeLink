@@ -485,6 +485,17 @@ export class VscodeAdapter
     return (await this.ideInstance.commands.getCommands(filterInternal)) || [];
   }
 
+  /**
+   * Open a URI in the system's default application (browser, file manager, etc.).
+   *
+   * @param uri - URI string to open externally
+   * @returns Promise resolving to true if the URI was opened successfully
+   */
+  async openExternal(uri: string): Promise<boolean> {
+    this.logger.debug({ fn: 'VscodeAdapter.openExternal', uri }, 'Opening external URI');
+    return this.ideInstance.env.openExternal(this.ideInstance.Uri.parse(uri, true));
+  }
+
   // ============================================================================
   // Workspace Operations
   // ============================================================================

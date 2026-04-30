@@ -13,6 +13,7 @@ export interface MockEnvOptions {
   appName?: string;
   uriScheme?: string;
   clipboard?: MockClipboard;
+  openExternal?: jest.Mock;
 }
 
 /**
@@ -30,5 +31,6 @@ export const createMockEnv = (options?: MockEnvOptions): typeof vscode.env => {
     appName: options?.appName || 'Visual Studio Code',
     uriScheme: options?.uriScheme || 'vscode',
     clipboard: options?.clipboard ?? createMockClipboard(),
+    openExternal: options?.openExternal ?? jest.fn().mockResolvedValue(true),
   } as unknown as typeof vscode.env;
 };
