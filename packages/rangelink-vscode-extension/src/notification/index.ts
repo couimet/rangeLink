@@ -1,0 +1,1 @@
+export { ReleaseNotifier } from './ReleaseNotifier';

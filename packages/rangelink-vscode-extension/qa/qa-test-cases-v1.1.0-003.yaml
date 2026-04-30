@@ -2895,3 +2895,71 @@ test_cases:
       - 'Check dummy extension textarea via dummyAi.getText'
     expected_result: 'Panel auto-initializes on first insert; tier1 textarea contains the generated link; tier2 is empty'
     automated: assisted
+
+  # ---------------------------------------------------------------------------
+  # Section — Release Notifier
+  # ---------------------------------------------------------------------------
+
+  - id: release-notifier-001
+    feature: 'Release Notifier'
+    scenario: 'First install stores current version silently with no notification'
+    preconditions:
+      - 'Fresh VS Code profile with no prior RangeLink globalState'
+      - 'Extension installed from .vsix build'
+    steps:
+      - 'Open VS Code with the fresh profile'
+      - 'Confirm no "RangeLink updated" notification appears on activation'
+      - 'Open Output → RangeLink and confirm "First install — stored version" log entry'
+    expected_result: 'No notification popup; log confirms version stored silently'
+    automated: true
+
+  - id: release-notifier-002
+    feature: 'Release Notifier'
+    scenario: 'Same version stored — no notification on subsequent launches'
+    preconditions:
+      - 'Extension already installed and launched once (version stored in globalState)'
+    steps:
+      - 'Close and reopen VS Code'
+      - 'Confirm no "RangeLink updated" notification appears'
+      - 'Open Output → RangeLink and confirm "Same version — skipping" log entry'
+    expected_result: 'No notification popup; log confirms same-version skip'
+    automated: true
+
+  - id: release-notifier-003
+    feature: 'Release Notifier'
+    scenario: 'Upgrade detected — dismissing (X) is temporary and does not store the version'
+    preconditions:
+      - 'Prior version stored in globalState (simulated via setLastNotifiedVersion in integration test)'
+    steps:
+      - 'Trigger maybeNotify() with a prior version set to 0.0.0'
+      - 'When "RangeLink updated to vX.Y.Z. See what changed!" appears, close it with X'
+      - 'Confirm "Release notification dismissed — will reappear on next activation" log appears'
+      - 'Confirm no "Opened release notes in browser" log'
+    expected_result: 'Notification dismissed without storing version; popup will reappear on next activation'
+    automated: assisted
+
+  - id: release-notifier-004
+    feature: 'Release Notifier'
+    scenario: "Clicking What's New stores version and opens GitHub releases page in browser"
+    preconditions:
+      - 'Prior version stored in globalState (simulated via setLastNotifiedVersion in integration test)'
+    steps:
+      - 'Trigger maybeNotify() with a prior version set to 0.0.0'
+      - 'When "RangeLink updated" notification appears, click "What''s New"'
+      - 'Confirm browser opens to the GitHub releases page for that version'
+      - 'Confirm "Opened release notes in browser" log appears'
+    expected_result: 'Browser navigates to https://github.com/couimet/rangeLink/releases/tag/vscode-extension-vX.Y.Z; version stored — notification will not reappear'
+    automated: assisted
+
+  - id: release-notifier-005
+    feature: 'Release Notifier'
+    scenario: 'Clicking Skip for this version stores version without opening browser'
+    preconditions:
+      - 'Prior version stored in globalState (simulated via setLastNotifiedVersion in integration test)'
+    steps:
+      - 'Trigger maybeNotify() with a prior version set to 0.0.0'
+      - 'When "RangeLink updated" notification appears, click "Skip for this version"'
+      - 'Confirm no browser window opens'
+      - 'Confirm "Release notification skipped for this version" log appears'
+    expected_result: 'Version stored silently; notification will not reappear; no browser opened'
+    automated: assisted

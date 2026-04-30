@@ -41,6 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Lazy tier resolution: RangeLink checks which commands are registered on first use and caches the winning tier — no per-operation overhead
   - Override built-in assistants (Cursor, Claude Code, Copilot) via config with automatic fallback to hardcoded commands
   - `${content}` template interpolation for insert commands with non-standard argument formats
+- **Release Notifier** - Once-per-upgrade notification so new versions don't go unnoticed (#525)
+  - On upgrade, shows "RangeLink updated to vX.Y.Z. See what changed!" with "What's New" and "Skip for this version" buttons
+  - "What's New" opens the GitHub releases page; "Skip for this version" silences without opening the browser
+  - Dismissing (X) is temporary — the notification reappears on the next activation until you act
 - **Clipboard Preservation** - RangeLink no longer silently overwrites your clipboard (#353)
   - New setting `rangelink.clipboard.preserve` (`"always"` | `"never"`, default: `"always"`)
   - Under `"always"`, your prior clipboard content is saved before each transport operation (R-L, R-V, R-F, AI assistant paste, terminal paste) and restored afterward — your clipboard is only permanently overwritten when you explicitly ask for it (R-C)
