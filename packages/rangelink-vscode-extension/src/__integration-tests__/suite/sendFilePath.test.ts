@@ -55,10 +55,6 @@ suite('Send File Path', () => {
     await settle();
   });
 
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-001
-  // ---------------------------------------------------------------------------
-
   test('send-file-path-001: R-F sends workspace-relative path to bound terminal', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
     tmpTerminals.push(capturing.terminal);
@@ -88,10 +84,6 @@ suite('Send File Path', () => {
     });
     log('✓ R-F sends workspace-relative path to terminal');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-002
-  // ---------------------------------------------------------------------------
 
   test('[assisted] send-file-path-002: Cmd+R Cmd+Shift+F sends absolute path to bound terminal', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
@@ -128,10 +120,6 @@ suite('Send File Path', () => {
     assertTerminalBufferContains(capturing.getCapturedText(), absolutePath);
     log('✓ Cmd+R Cmd+Shift+F sends absolute path to terminal');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-004
-  // ---------------------------------------------------------------------------
 
   test('[assisted] send-file-path-004: terminal destination — path with spaces is auto-quoted in single quotes', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
@@ -170,10 +158,6 @@ suite('Send File Path', () => {
     log('✓ Path with spaces auto-quoted for terminal destination');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-005
-  // ---------------------------------------------------------------------------
-
   test('[assisted] send-file-path-005: terminal destination — path with parentheses is auto-quoted in single quotes', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
     tmpTerminals.push(capturing.terminal);
@@ -210,10 +194,6 @@ suite('Send File Path', () => {
     assertTerminalBufferContains(capturing.getCapturedText(), `'${relativePath}'`);
     log('✓ Path with parentheses auto-quoted for terminal destination');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-006
-  // ---------------------------------------------------------------------------
 
   test('send-file-path-006: text editor destination — path with spaces is auto-quoted', async () => {
     const ANCHOR_START = 'ANCHOR_START';
@@ -263,10 +243,6 @@ suite('Send File Path', () => {
     log('✓ Text editor destination receives auto-quoted path (spaces → single quotes)');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-007
-  // ---------------------------------------------------------------------------
-
   test('send-file-path-007: clipboard write uses unquoted path even when terminal receives quoted version', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
@@ -311,10 +287,6 @@ suite('Send File Path', () => {
     log('✓ Log shows path was quoted for terminal; terminal and clipboard both contain the path');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-008
-  // ---------------------------------------------------------------------------
-
   test('send-file-path-008: self-paste shows info notification and copies path to clipboard without modifying file', async () => {
     await vscode.workspace
       .getConfiguration('rangelink')
@@ -350,10 +322,6 @@ suite('Send File Path', () => {
     assert.ok(!doc.isDirty, 'Expected file to remain unmodified after self-paste');
     log('✓ Self-paste: info notification shown, path on clipboard, file unchanged');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-009
-  // ---------------------------------------------------------------------------
 
   test('[assisted] send-file-path-009: unbound — R-F opens destination picker before sending', async () => {
     const capturing = await createCapturingTerminal('sfp-picker-test');
@@ -394,10 +362,6 @@ suite('Send File Path', () => {
     log('✓ Unbound R-F opens picker; path sent after selection');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-010
-  // ---------------------------------------------------------------------------
-
   test('[assisted] send-file-path-010: Command Palette "Send Current File Path" sends workspace-relative path', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
     tmpTerminals.push(capturing.terminal);
@@ -435,10 +399,6 @@ suite('Send File Path', () => {
     log('✓ Command Palette "Send Current File Path" sends workspace-relative path');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-011
-  // ---------------------------------------------------------------------------
-
   test('[assisted] send-file-path-011: Command Palette "Send Current File Path (Absolute)" sends absolute path', async () => {
     const capturing = await createAndBindCapturingTerminal('sfp-test');
     tmpTerminals.push(capturing.terminal);
@@ -475,10 +435,6 @@ suite('Send File Path', () => {
     assertTerminalBufferContains(capturing.getCapturedText(), absolutePath);
     log('✓ Command Palette "Send Current File Path (Absolute)" sends absolute path');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC send-file-path-012
-  // ---------------------------------------------------------------------------
 
   test('[assisted] send-file-path-012: bound text editor hidden behind another tab — paste still lands in bound editor', async () => {
     const ANCHOR_START = 'ANCHOR_START';

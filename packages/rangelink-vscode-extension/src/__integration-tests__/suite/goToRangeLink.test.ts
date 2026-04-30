@@ -54,10 +54,6 @@ suite('R-G Go to Link', () => {
     await settle();
   });
 
-  // ---------------------------------------------------------------------------
-  // TC go-to-link-001
-  // ---------------------------------------------------------------------------
-
   test('[assisted] go-to-link-001: Cmd+R Cmd+G opens the Go to Link input box', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-gtl-001');
@@ -71,10 +67,6 @@ suite('R-G Go to Link', () => {
 
     log('✓ Input box opened with correct prompt/placeholder; cancellation logged');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC go-to-link-003
-  // ---------------------------------------------------------------------------
 
   test('[assisted] go-to-link-003: valid link navigates to file and selects the range', async () => {
     const uri = await createAndOpenFile(
@@ -126,10 +118,6 @@ suite('R-G Go to Link', () => {
     log('✓ Navigation toast logged; editor selection spans lines 3-7 of the target file');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC go-to-link-004
-  // ---------------------------------------------------------------------------
-
   test('[assisted] go-to-link-004: character-level precision link selects the exact column range', async () => {
     const uri = await createAndOpenFile(
       'gtl-004',
@@ -179,10 +167,6 @@ suite('R-G Go to Link', () => {
     log('✓ Character-precision navigation logged; selection spans col 5 to col 20 on line 3');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC go-to-link-005
-  // ---------------------------------------------------------------------------
-
   test('[assisted] go-to-link-005: invalid link format shows error toast', async () => {
     const invalidInput = 'not-a-valid-link-format';
     const uriBefore = vscode.window.activeTextEditor?.document.uri.toString();
@@ -222,10 +206,6 @@ suite('R-G Go to Link', () => {
     log('✓ Invalid input produced error toast with exact message; no navigation occurred');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC go-to-link-006
-  // ---------------------------------------------------------------------------
-
   test('[assisted] go-to-link-006: empty input shows error toast', async () => {
     const uriBefore = vscode.window.activeTextEditor?.document.uri.toString();
 
@@ -264,10 +244,6 @@ suite('R-G Go to Link', () => {
     log('✓ Empty input produced the empty-input error toast; no parse attempted');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC go-to-link-007
-  // ---------------------------------------------------------------------------
-
   test('[assisted] go-to-link-007: nonexistent file path shows warning toast', async () => {
     const missingPath = 'src/nonexistent/file.ts';
     const linkText = `${missingPath}#L1`;
@@ -299,10 +275,6 @@ suite('R-G Go to Link', () => {
     log('✓ Nonexistent file produced the file-not-found warning toast with exact path');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC go-to-link-008
-  // ---------------------------------------------------------------------------
-
   test('[assisted] go-to-link-008: Command Palette "RangeLink: Go to Link" opens the same input box', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-gtl-008');
@@ -325,10 +297,6 @@ suite('R-G Go to Link', () => {
 
     log('✓ Command Palette entry opened the same Go to Link input box');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC go-to-link-009
-  // ---------------------------------------------------------------------------
 
   test('[assisted] go-to-link-009: R-M menu "Go to Link" item opens the same input box', async () => {
     const logCapture = getLogCapture();

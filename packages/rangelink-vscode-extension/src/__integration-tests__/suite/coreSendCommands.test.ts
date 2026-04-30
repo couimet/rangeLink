@@ -54,10 +54,6 @@ suite('Core Send Commands', () => {
     await settle();
   });
 
-  // ---------------------------------------------------------------------------
-  // TC core-send-commands-r-l-002
-  // ---------------------------------------------------------------------------
-
   test('[assisted] core-send-commands-r-l-002: R-L sends RangeLink to bound text editor destination', async () => {
     const srcUri = createWorkspaceFile(
       'csc-r-l-002-src',
@@ -103,10 +99,6 @@ suite('Core Send Commands', () => {
     log('✓ R-L inserted RangeLink into bound text editor destination');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC core-send-commands-r-l-003
-  // ---------------------------------------------------------------------------
-
   test('[assisted] core-send-commands-r-l-003: R-L sends RangeLink to bound AI assistant destination', async () => {
     const lines = Array.from({ length: 10 }, (_, i) => `line ${i + 1} content`);
     const fileUri = createWorkspaceFile('csc-r-l-003', lines.join('\n') + '\n');
@@ -149,10 +141,6 @@ suite('Core Send Commands', () => {
     log('✓ R-L sent RangeLink to Dummy AI (Tier 1) destination');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC core-send-commands-r-c-001
-  // ---------------------------------------------------------------------------
-
   test('core-send-commands-r-c-001: R-C copies RangeLink to clipboard and does NOT send to terminal', async () => {
     const fileUri = createWorkspaceFile('csc-r-c-001', 'line 1\nline 2\nline 3\n');
     tmpFileUris.push(fileUri);
@@ -191,10 +179,6 @@ suite('Core Send Commands', () => {
     log('✓ R-C wrote link to clipboard; terminal received nothing');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC core-send-commands-r-l-004
-  // ---------------------------------------------------------------------------
-
   test('[assisted] core-send-commands-r-l-004: Command Palette "Send RangeLink" behaves identically to R-L keybinding', async () => {
     const fileUri = createWorkspaceFile('csc-r-l-004', 'line 1\nline 2\nline 3\n');
     tmpFileUris.push(fileUri);
@@ -224,10 +208,6 @@ suite('Core Send Commands', () => {
     });
     log('✓ Command Palette "Send RangeLink" delivered link to bound terminal destination');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC core-send-commands-r-c-002
-  // ---------------------------------------------------------------------------
 
   test('[assisted] core-send-commands-r-c-002: Command Palette "Copy RangeLink" behaves identically to R-C keybinding', async () => {
     const fileUri = createWorkspaceFile('csc-r-c-002', 'line 1\nline 2\nline 3\n');
@@ -270,10 +250,6 @@ suite('Core Send Commands', () => {
     log('✓ Command Palette "Copy RangeLink" wrote link to clipboard; terminal received nothing');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC send-terminal-selection-001
-  // ---------------------------------------------------------------------------
-
   test('[assisted] send-terminal-selection-001: Cmd+R Cmd+V with terminal text selected sends to bound destination', async () => {
     const MARKER = 'rl-sts-001-marker';
 
@@ -308,10 +284,6 @@ suite('Core Send Commands', () => {
     log('✓ R-V sent selected terminal text to bound destination');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC send-terminal-selection-003
-  // ---------------------------------------------------------------------------
-
   test('send-terminal-selection-003: R-V with no text selected in terminal shows error message', async () => {
     const terminal = vscode.window.createTerminal({ name: 'csc-sts-003' });
     terminal.show(true);
@@ -335,10 +307,6 @@ suite('Core Send Commands', () => {
     });
     log('✓ R-V with no selection shows "no text selected" error toast');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC send-terminal-selection-004
-  // ---------------------------------------------------------------------------
 
   test('[assisted] send-terminal-selection-004: R-V with no bound destination opens destination picker', async () => {
     const MARKER = 'rl-sts-004-marker';
@@ -376,10 +344,6 @@ suite('Core Send Commands', () => {
     log('✓ R-V with no bound destination opens picker (log-based)');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC core-send-commands-r-l-005
-  // ---------------------------------------------------------------------------
-
   test('[assisted] core-send-commands-r-l-005: R-L with no bound destination opens picker', async () => {
     const fileUri = createWorkspaceFile('csc-r-l-005', 'test content\n');
     tmpFileUris.push(fileUri);
@@ -409,10 +373,6 @@ suite('Core Send Commands', () => {
     log('✓ R-L with no destination opens picker (log-based)');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC core-send-commands-r-p-001
-  // ---------------------------------------------------------------------------
-
   test('[assisted] core-send-commands-r-p-001: Send Portable Link with no bound destination opens picker', async () => {
     const fileUri = createWorkspaceFile('csc-r-p-001', 'test content\n');
     tmpFileUris.push(fileUri);
@@ -441,10 +401,6 @@ suite('Core Send Commands', () => {
     assert.ok(itemsRp001.length > 0, 'Expected destination picker to contain at least one item');
     log('✓ Send Portable Link with no destination opens picker (log-based)');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC core-send-commands-r-v-001
-  // ---------------------------------------------------------------------------
 
   test('[assisted] core-send-commands-r-v-001: Send Selected Text with no bound destination opens picker', async () => {
     const fileUri = createWorkspaceFile('csc-r-v-001', 'test content\n');

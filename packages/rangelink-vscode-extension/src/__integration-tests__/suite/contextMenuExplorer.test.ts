@@ -50,10 +50,6 @@ suite('Context Menus — Explorer', () => {
     await settle();
   });
 
-  // ---------------------------------------------------------------------------
-  // TC context-menus-explorer-001
-  // ---------------------------------------------------------------------------
-
   test('[assisted] context-menus-explorer-001: Explorer "Send File Path" sends absolute path to bound terminal', async () => {
     const uri = await createAndOpenFile('ctxmenu-exp-001', FILE_CONTENT, undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
@@ -89,10 +85,6 @@ suite('Context Menus — Explorer', () => {
 
     log('✓ Absolute path landed in bound terminal buffer (pty capture verified content)');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-explorer-002
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-explorer-002: Explorer "Send Relative File Path" sends relative path to bound terminal', async () => {
     const uri = await createAndOpenFile('ctxmenu-exp-002', FILE_CONTENT, undefined, tmpFileUris);
@@ -131,10 +123,6 @@ suite('Context Menus — Explorer', () => {
     log('✓ Workspace-relative path landed in bound terminal buffer (pty capture verified content)');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC context-menus-explorer-003
-  // ---------------------------------------------------------------------------
-
   test('[assisted] context-menus-explorer-003: Explorer "Bind Here" opens the file and binds it as text editor destination', async () => {
     const uri = await createAndOpenFile('ctxmenu-exp-003', FILE_CONTENT, undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
@@ -164,10 +152,6 @@ suite('Context Menus — Explorer', () => {
 
     log('✓ Explorer "Bind Here" committed a text-editor binding with correct displayName');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-explorer-004
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-explorer-004: Explorer "Unbind" is visible when bound and unbinds on click', async () => {
     const uri = await createAndOpenFile('ctxmenu-exp-004', FILE_CONTENT, undefined, tmpFileUris);
@@ -205,10 +189,6 @@ suite('Context Menus — Explorer', () => {
 
     log('✓ Explorer "Unbind" fired the unbind path; context key flipped to false');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-explorer-005
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-explorer-005: Explorer "Unbind" is hidden when no destination is bound', async () => {
     const uri = await createAndOpenFile('ctxmenu-exp-005', FILE_CONTENT, undefined, tmpFileUris);

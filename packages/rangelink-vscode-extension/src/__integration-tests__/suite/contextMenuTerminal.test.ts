@@ -9,6 +9,7 @@ import {
   CMD_UNBIND_DESTINATION,
 } from '../../constants/commandIds';
 import {
+  TERMINAL_READY_MS,
   activateExtension,
   assertSetContextLogged,
   assertStatusBarMsgLogged,
@@ -24,7 +25,6 @@ import {
   getLogCapture,
   printAssistedBanner,
   settle,
-  TERMINAL_READY_MS,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
@@ -52,10 +52,6 @@ suite('Context Menus — Terminal', () => {
     tmpFileUris.length = 0;
     await settle();
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-terminal-001
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-terminal-001: Terminal tab "Bind Here" binds that terminal', async () => {
     const terminalName = 'rl-ctxmenu-term-001';
@@ -85,10 +81,6 @@ suite('Context Menus — Terminal', () => {
     log('✓ Terminal-tab context menu bound the terminal destination');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC context-menus-terminal-002
-  // ---------------------------------------------------------------------------
-
   test('[assisted] context-menus-terminal-002: Terminal content-area "Bind Here" binds that terminal', async () => {
     const terminalName = 'rl-ctxmenu-term-002';
     await createTerminal(terminalName, terminals);
@@ -116,10 +108,6 @@ suite('Context Menus — Terminal', () => {
 
     log('✓ Terminal content-area context menu bound the terminal destination');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-terminal-003
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-terminal-003: Terminal content-area "Unbind" is visible when bound and unbinds on click', async () => {
     const terminalName = 'rl-ctxmenu-term-003';
@@ -151,10 +139,6 @@ suite('Context Menus — Terminal', () => {
 
     log('✓ Terminal content-area "Unbind" was visible (clicked it) and fired the unbind path');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-terminal-004
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-terminal-004: Right-clicking a specific terminal TAB binds THAT terminal (multi-terminal disambiguation)', async () => {
     const targetName = 'rl-ctxmenu-term-004-TARGET';
@@ -197,10 +181,6 @@ suite('Context Menus — Terminal', () => {
 
     log('✓ Right-clicked TAB bound the target terminal directly (picker bypassed)');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-terminal-005
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-terminal-005: Right-clicking a specific terminal CONTENT AREA binds THAT terminal (multi-terminal disambiguation)', async () => {
     const targetName = 'rl-ctxmenu-term-005-TARGET';
@@ -362,10 +342,6 @@ suite('Context Menus — Terminal', () => {
       '✓ Cross-terminal send: source selection landed in bound terminal buffer (pty-captured) with focus shift',
     );
   });
-
-  // ---------------------------------------------------------------------------
-  // TC send-terminal-selection-009 (TAB menu does NOT include "Send Selection")
-  // ---------------------------------------------------------------------------
 
   test('[assisted] send-terminal-selection-009: "Send Selection to Destination" is NOT in the terminal TAB menu', async () => {
     const terminalName = 'rl-sts-009';
