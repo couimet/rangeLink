@@ -1457,7 +1457,7 @@ test_cases:
       - 'Press Cmd+R Cmd+V'
       - 'Observe bound destination'
     expected_result: 'Bound destination receives selected terminal text. Success toast appears.'
-    automated: false
+    automated: assisted
 
   - id: send-terminal-selection-002
     feature: 'R-V Send Terminal Selection'
@@ -1482,7 +1482,7 @@ test_cases:
       - 'Click in terminal (no selection)'
       - 'Press Cmd+R Cmd+V'
     expected_result: 'Error notification: No text selected in the terminal. Select text and try again. Nothing sent to destination.'
-    automated: false
+    automated: true
 
   - id: send-terminal-selection-004
     feature: 'R-V Send Terminal Selection'
@@ -1495,7 +1495,7 @@ test_cases:
       - 'Select text in terminal'
       - 'Press Cmd+R Cmd+V'
     expected_result: 'Destination picker opens. On selection: text sent to new destination. On Escape: nothing sent.'
-    automated: false
+    automated: assisted
 
   - id: send-terminal-selection-005
     feature: 'R-V Send Terminal Selection'
@@ -2057,7 +2057,7 @@ test_cases:
       - 'Press Cmd+R Cmd+L'
       - 'Observe file B'
     expected_result: 'RangeLink text inserted at cursor in file B. Success toast confirms send.'
-    automated: false
+    automated: assisted
 
   - id: core-send-commands-r-l-003
     feature: 'Core Send Commands — R-L'
@@ -2071,7 +2071,7 @@ test_cases:
       - 'Press Cmd+R Cmd+L'
       - 'Observe AI chat input area'
     expected_result: 'RangeLink appears in AI chat input. Success toast confirms send.'
-    automated: false
+    automated: assisted
 
   - id: core-send-commands-r-c-001
     feature: 'Core Send Commands — R-C'
@@ -2085,7 +2085,7 @@ test_cases:
       - 'Observe terminal — nothing should arrive'
       - 'Press Cmd+V in any text field'
     expected_result: 'Clipboard contains the RangeLink. Terminal received nothing. No destination picker shown.'
-    automated: false
+    automated: true
 
   - id: core-send-commands-r-l-004
     feature: 'Core Send Commands — R-L'
@@ -2098,7 +2098,7 @@ test_cases:
       - 'Type Send RangeLink and press Enter on RangeLink: Send RangeLink'
       - 'Observe terminal'
     expected_result: 'Terminal receives the RangeLink. Identical to R-L keybinding.'
-    automated: false
+    automated: assisted
 
   - id: core-send-commands-r-c-002
     feature: 'Core Send Commands — R-C'
@@ -2112,7 +2112,7 @@ test_cases:
       - 'Observe terminal — nothing should arrive'
       - 'Press Cmd+V in any text field'
     expected_result: 'Terminal received nothing. Clipboard contains the RangeLink.'
-    automated: false
+    automated: assisted
 
   - id: core-send-commands-r-l-005
     feature: 'Core Send Commands — R-L'
