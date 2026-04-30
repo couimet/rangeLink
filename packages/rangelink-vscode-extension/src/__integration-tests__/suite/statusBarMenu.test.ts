@@ -143,10 +143,6 @@ suite('R-M Status Bar Menu', () => {
     }
   });
 
-  // ---------------------------------------------------------------------------
-  // TC status-bar-menu-001
-  // ---------------------------------------------------------------------------
-
   test('[assisted] status-bar-menu-001: status bar item visible with correct text and tooltip', async () => {
     const verdict = await waitForHumanVerdict(
       'status-bar-menu-001',
@@ -161,10 +157,6 @@ suite('R-M Status Bar Menu', () => {
     assert.strictEqual(verdict, 'pass', 'Human reported status bar text or tooltip was incorrect');
     log('✓ Status bar item shows correct text and tooltip');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC status-bar-menu-006
-  // ---------------------------------------------------------------------------
 
   test('[assisted] status-bar-menu-006: R-M menu shows destination picker items when no destination is bound', async () => {
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);
@@ -198,10 +190,6 @@ suite('R-M Status Bar Menu', () => {
     );
     log('✓ Unbound menu shows "choose below" info item and no Jump item');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC status-bar-menu-007
-  // ---------------------------------------------------------------------------
 
   test('[assisted] status-bar-menu-007: R-M menu Unbind Destination item unbinds the destination when selected', async () => {
     const terminal = vscode.window.createTerminal({ name: 'rl-sbm-007' });
@@ -241,15 +229,31 @@ suite('R-M Status Bar Menu', () => {
         (l) => l.includes('Command item selected') && l.includes('Unbind Destination'),
       );
       assert.ok(commandSelectedLog, 'Expected "Command item selected" log for Unbind Destination');
-      log('✓ Bound menu showed Jump + Unbind; human selected Unbind and it was dispatched');
+
+      logCapture.mark('after-unbind-007');
+      await waitForHuman(
+        'status-bar-menu-007',
+        'Re-open the R-M menu (Cmd+R Cmd+M), verify "Jump to Bound Destination" is gone, then press Escape and click Cancel.',
+        [
+          '1. Press Cmd+R Cmd+M to open the R-M menu',
+          '2. Confirm "$(arrow-right) Jump to Bound Destination" is NOT present',
+          '3. Press Escape to dismiss, then click Cancel',
+        ],
+      );
+
+      const postLines = logCapture.getLinesSince('after-unbind-007');
+      const postItems = extractQuickPickItemsLogged(postLines);
+      assert.ok(postItems, 'Expected post-unbind showQuickPick log entry with items');
+      assert.strictEqual(
+        postItems!.find((i) => i.label === '$(arrow-right) Jump to Bound Destination'),
+        undefined,
+        'Expected no Jump item after unbind',
+      );
+      log('✓ Bound menu showed Jump + Unbind; human selected Unbind; post-unbind menu confirmed Jump absent');
     } finally {
       terminal.dispose();
     }
   });
-
-  // ---------------------------------------------------------------------------
-  // TC status-bar-menu-008
-  // ---------------------------------------------------------------------------
 
   test('[assisted] status-bar-menu-008: R-M menu Go to Link item opens the R-G input box', async () => {
     const logCapture = getLogCapture();
@@ -284,11 +288,10 @@ suite('R-M Status Bar Menu', () => {
     log('✓ R-M menu "Go to Link" dispatched the R-G command and input box was shown');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC status-bar-menu-009
-  // ---------------------------------------------------------------------------
-
   test('[assisted] status-bar-menu-009: R-M menu Show Version Info displays version, commit, branch, and build date', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-009');
+
     const verdict = await waitForHumanVerdict(
       'status-bar-menu-009',
       'Open the R-M menu (Cmd+R Cmd+M), select "$(info) Show Version Info", read the notification. Does it show the version, a short commit SHA, a branch name, and a build date?',
@@ -304,11 +307,19 @@ suite('R-M Status Bar Menu', () => {
       ],
     );
 
+    const lines = logCapture.getLinesSince('before-009');
+    // "Executing command" is logged by VscodeAdapter before awaiting ShowVersionCommand.execute(),
+    // so it lands in the capture regardless of when the human dismisses the version notification.
+    const commandDispatchLog = lines.find(
+      (l) => l.includes('Executing command') && l.includes('rangelink.showVersion'),
+    );
+    assert.ok(commandDispatchLog, 'Expected command dispatch log for Show Version Info');
+
     assert.strictEqual(
       verdict,
       'pass',
       'Human reported version info notification was missing fields',
     );
-    log('✓ Show Version Info displayed notification with all required fields (human verified)');
+    log('✓ Show Version Info dispatched and notification displayed all required fields (human verified)');
   });
 });
