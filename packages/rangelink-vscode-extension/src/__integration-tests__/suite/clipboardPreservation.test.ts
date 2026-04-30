@@ -144,10 +144,6 @@ suite('Clipboard Preservation — Assisted', () => {
     await settle();
   });
 
-  // ---------------------------------------------------------------------------
-  // TC clipboard-preservation-001
-  // ---------------------------------------------------------------------------
-
   test('[assisted] clipboard-preservation-001: always mode — R-L to terminal restores clipboard', async () => {
     await loadSettingsProfile('default', log);
 
@@ -178,10 +174,6 @@ suite('Clipboard Preservation — Assisted', () => {
     assertTerminalBufferContains(capturing.getCapturedText(), '#L');
     log('✓ Clipboard restored to sentinel after R-L; terminal received link');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC clipboard-preservation-002
-  // ---------------------------------------------------------------------------
 
   test('clipboard-preservation-002: always mode — R-V from terminal restores clipboard', async () => {
     const PHRASE = 'hello world cbp-002';
@@ -219,10 +211,6 @@ suite('Clipboard Preservation — Assisted', () => {
     await assertClipboardRestored('clipboard-preservation-002: always + R-V');
     log('✓ Clipboard restored to sentinel and phrase landed in destination file after R-V');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC clipboard-preservation-004
-  // ---------------------------------------------------------------------------
 
   test('[assisted] clipboard-preservation-004: always mode — AI assistant paste restores clipboard', async () => {
     await loadSettingsProfile('default', log);
@@ -264,10 +252,6 @@ suite('Clipboard Preservation — Assisted', () => {
     log('✓ Clipboard restored to sentinel and link landed in Dummy AI after R-L');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC clipboard-preservation-005
-  // ---------------------------------------------------------------------------
-
   test('[assisted] clipboard-preservation-005: always mode — terminal paste (fresh bind) restores clipboard', async () => {
     await loadSettingsProfile('default', log);
 
@@ -298,10 +282,6 @@ suite('Clipboard Preservation — Assisted', () => {
     assertTerminalBufferContains(capturing.getCapturedText(), '#L');
     log('✓ Clipboard restored to sentinel after terminal paste (preserve=always)');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC clipboard-preservation-007
-  // ---------------------------------------------------------------------------
 
   test('clipboard-preservation-007: never mode — R-V from terminal overwrites clipboard', async () => {
     const PHRASE = 'test phrase cbp-007';
@@ -339,10 +319,6 @@ suite('Clipboard Preservation — Assisted', () => {
     await assertClipboardChanged('clipboard-preservation-007: never + R-V');
     log('✓ Clipboard changed from sentinel and phrase landed in destination file after R-V');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC clipboard-preservation-009
-  // ---------------------------------------------------------------------------
 
   test('[assisted] clipboard-preservation-009: always mode — dismissed picker leaves clipboard unchanged', async () => {
     await loadSettingsProfile('default', log);

@@ -73,10 +73,6 @@ suite('Context Menus — Editor Content', () => {
     await settle();
   });
 
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-001: "Send RangeLink"
-  // ---------------------------------------------------------------------------
-
   test('[assisted] context-menus-editor-content-001: Editor content "Send RangeLink" sends workspace-relative link to bound terminal', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-001', FILE_CONTENT, undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
@@ -116,10 +112,6 @@ suite('Context Menus — Editor Content', () => {
     log('✓ Editor-content "Send RangeLink" delivered workspace-relative link to bound terminal');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-002: "Send RangeLink (Absolute)"
-  // ---------------------------------------------------------------------------
-
   test('[assisted] context-menus-editor-content-002: Editor content "Send RangeLink (Absolute)" sends absolute link to bound terminal', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-002', FILE_CONTENT, undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
@@ -156,10 +148,6 @@ suite('Context Menus — Editor Content', () => {
 
     log('✓ Editor-content "Send RangeLink (Absolute)" delivered absolute link to bound terminal');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-003: "Send Portable Link"
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-editor-content-003: Editor content "Send Portable Link" sends portable link with workspace-relative path', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-003', FILE_CONTENT, undefined, tmpFileUris);
@@ -199,10 +187,6 @@ suite('Context Menus — Editor Content', () => {
     log('✓ Editor-content "Send Portable Link" delivered portable link to bound terminal');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-004: "Send Portable Link (Absolute)"
-  // ---------------------------------------------------------------------------
-
   test('[assisted] context-menus-editor-content-004: Editor content "Send Portable Link (Absolute)" sends portable link with absolute path', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-004', FILE_CONTENT, undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
@@ -241,10 +225,6 @@ suite('Context Menus — Editor Content', () => {
       '✓ Editor-content "Send Portable Link (Absolute)" delivered portable link with absolute path',
     );
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-005: "Send Selected Text"
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-editor-content-005: Editor content "Send Selected Text" sends raw selected text to bound terminal', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-005', FILE_CONTENT, undefined, tmpFileUris);
@@ -293,10 +273,6 @@ suite('Context Menus — Editor Content', () => {
     log('✓ Editor-content "Send Selected Text" delivered raw selected text to bound terminal');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-006: visual separator in editor content menu
-  // ---------------------------------------------------------------------------
-
   test('[assisted] context-menus-editor-content-006: Visual separator is visible between RangeLink commands and other menu items', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-006', FILE_CONTENT, undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
@@ -320,10 +296,6 @@ suite('Context Menus — Editor Content', () => {
 
     log('✓ Editor-content context menu renders a visual separator for the RangeLink block');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-007: "Send This File's Path" (absolute)
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-editor-content-007: Editor content "Send This File\'s Path" sends absolute path to bound terminal', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-007', FILE_CONTENT, undefined, tmpFileUris);
@@ -360,10 +332,6 @@ suite('Context Menus — Editor Content', () => {
 
     log('✓ Editor-content "Send This File\'s Path" delivered absolute path to bound terminal');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-008: "Send This File's Relative Path"
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-editor-content-008: Editor content "Send This File\'s Relative Path" sends workspace-relative path to bound terminal', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-008', FILE_CONTENT, undefined, tmpFileUris);
@@ -404,10 +372,6 @@ suite('Context Menus — Editor Content', () => {
     );
   });
 
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-009: "Bind Here" binds current file as text editor
-  // ---------------------------------------------------------------------------
-
   test('[assisted] context-menus-editor-content-009: Editor content "Bind Here" binds the current file as the text editor destination', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-009', FILE_CONTENT, undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
@@ -434,10 +398,6 @@ suite('Context Menus — Editor Content', () => {
 
     log('✓ Editor-content "Bind Here" committed a text-editor binding for the current file');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-010: Unbind visible when bound + click fires unbind
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-editor-content-010: Editor content "Unbind" is visible when bound and unbinds on click', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-010', FILE_CONTENT, undefined, tmpFileUris);
@@ -479,10 +439,6 @@ suite('Context Menus — Editor Content', () => {
 
     log('✓ Editor-content "Unbind" was visible (clicked it) and fired the unbind path');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-content-011: selection-dependent items hidden when no selection
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-editor-content-011: Selection-dependent RangeLink items are hidden when no text is selected', async () => {
     const uri = await createAndOpenFile('ctxmenu-ed-011', FILE_CONTENT, undefined, tmpFileUris);

@@ -37,10 +37,6 @@ suite('Editor Binding Validation', () => {
     await settle();
   });
 
-  // ---------------------------------------------------------------------------
-  // TC editor-binding-validation-001
-  // ---------------------------------------------------------------------------
-
   test('[assisted] editor-binding-validation-001: search editor content hides link and bind commands', async () => {
     const verdict = await waitForHumanVerdict(
       'editor-binding-validation-001',
@@ -61,10 +57,6 @@ suite('Editor Binding Validation', () => {
     );
     log('✓ Search editor content hides link/bind commands (human verdict)');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC editor-binding-validation-002
-  // ---------------------------------------------------------------------------
 
   test('[assisted] editor-binding-validation-002: output panel hides file path and bind commands', async () => {
     const verdict = await waitForHumanVerdict(
@@ -88,10 +80,6 @@ suite('Editor Binding Validation', () => {
     log('✓ Output panel hides file path/bind commands (human verdict)');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC editor-binding-validation-003
-  // ---------------------------------------------------------------------------
-
   test('[assisted] editor-binding-validation-003: Settings UI hides file path and bind commands', async () => {
     const verdict = await waitForHumanVerdict(
       'editor-binding-validation-003',
@@ -111,10 +99,6 @@ suite('Editor Binding Validation', () => {
     assert.strictEqual(verdict, 'pass', 'File path or bind commands appeared for the Settings UI');
     log('✓ Settings UI hides file path/bind commands (human verdict)');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC editor-binding-validation-004
-  // ---------------------------------------------------------------------------
 
   test('[assisted] editor-binding-validation-004: binary .png file is excluded from R-D destination picker', async () => {
     // Minimal PNG magic bytes — enough for VSCode to detect as binary
@@ -174,10 +158,6 @@ suite('Editor Binding Validation', () => {
 
     log('✓ Binary .png excluded from R-D picker; .txt control file present (log verified)');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC editor-binding-validation-005
-  // ---------------------------------------------------------------------------
 
   test('[assisted] editor-binding-validation-005: search editor TAB hides file path commands', async () => {
     const verdict = await waitForHumanVerdict(

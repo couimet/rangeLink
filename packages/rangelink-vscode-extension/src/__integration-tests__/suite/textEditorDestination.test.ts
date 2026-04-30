@@ -32,10 +32,6 @@ suite('Text Editor Destination', () => {
     await settle();
   });
 
-  // ---------------------------------------------------------------------------
-  // TC text-editor-destination-001
-  // ---------------------------------------------------------------------------
-
   test('[assisted] text-editor-destination-001: self-paste R-L copies to clipboard and shows info message', async () => {
     const fileUri = createWorkspaceFile('ted-001', 'self-paste test\n');
     tmpFileUris.push(fileUri);
@@ -74,10 +70,6 @@ suite('Text Editor Destination', () => {
 
     log('✓ Self-paste R-L: info toast shown, file unchanged (log verified)');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC hidden-tab-paste-001
-  // ---------------------------------------------------------------------------
 
   test('[assisted] hidden-tab-paste-001: R-L with bound editor hidden behind another tab — paste still lands in bound editor', async () => {
     const ANCHOR_START = 'ANCHOR_START';
@@ -145,10 +137,6 @@ suite('Text Editor Destination', () => {
 
     log('✓ Bound editor brought to foreground and received RangeLink');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC hidden-tab-paste-002
-  // ---------------------------------------------------------------------------
 
   test('[assisted] hidden-tab-paste-002: R-V with bound editor hidden behind another tab — paste still lands in bound editor', async () => {
     const ANCHOR_START = 'ANCHOR_START';

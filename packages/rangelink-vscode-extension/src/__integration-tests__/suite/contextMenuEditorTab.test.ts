@@ -47,10 +47,6 @@ suite('Context Menus — Editor Tab', () => {
     await settle();
   });
 
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-tab-001
-  // ---------------------------------------------------------------------------
-
   test('[assisted] context-menus-editor-tab-001: Editor tab "Send File Path" sends absolute path to bound terminal', async () => {
     const uri = await createAndOpenFile('ctxmenu-tab-001', FILE_CONTENT, undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
@@ -88,10 +84,6 @@ suite('Context Menus — Editor Tab', () => {
       '✓ Editor-tab absolute path landed in bound terminal buffer (pty capture verified content)',
     );
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-tab-002
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-editor-tab-002: Editor tab "Send Relative File Path" sends relative path to bound terminal', async () => {
     const uri = await createAndOpenFile('ctxmenu-tab-002', FILE_CONTENT, undefined, tmpFileUris);
@@ -132,10 +124,6 @@ suite('Context Menus — Editor Tab', () => {
     );
   });
 
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-tab-003
-  // ---------------------------------------------------------------------------
-
   test('[assisted] context-menus-editor-tab-003: Editor tab "Bind Here" binds that editor as text editor destination', async () => {
     const uri = await createAndOpenFile('ctxmenu-tab-003', FILE_CONTENT, undefined, tmpFileUris);
     const fn = path.basename(uri.fsPath);
@@ -165,10 +153,6 @@ suite('Context Menus — Editor Tab', () => {
 
     log('✓ Editor-tab "Bind Here" committed a text-editor binding with correct displayName');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC context-menus-editor-tab-004
-  // ---------------------------------------------------------------------------
 
   test('[assisted] context-menus-editor-tab-004: Editor tab "Unbind" is visible when bound and unbinds on click', async () => {
     const uri = await createAndOpenFile('ctxmenu-tab-004', FILE_CONTENT, undefined, tmpFileUris);

@@ -49,10 +49,6 @@ suite('R-D Bind to Destination', () => {
   const findFileItems = (items: Record<string, unknown>[]): Record<string, unknown>[] =>
     findTestItemsByPrefix(items, '__rl-test-btd-');
 
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-004
-  // ---------------------------------------------------------------------------
-
   test('[assisted] bind-to-destination-004: selecting a terminal destination binds it and shows success toast', async () => {
     await createTerminal('rl-btd-004', terminals);
 
@@ -101,10 +97,6 @@ suite('R-D Bind to Destination', () => {
 
     log('✓ Picker showed unbound terminal; bind succeeded with correct status bar toast');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-005
-  // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-005: selecting a text editor destination binds it and shows success toast', async () => {
     await createAndOpenFile('btd-005-a', 'line 1\n', undefined, tmpFileUris);
@@ -155,10 +147,6 @@ suite('R-D Bind to Destination', () => {
     log('✓ Picker showed unbound file; bind succeeded with correct status bar toast');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-006
-  // ---------------------------------------------------------------------------
-
   test('[assisted] bind-to-destination-006: selecting an AI assistant destination binds it and shows success toast', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-btd-006');
@@ -185,10 +173,6 @@ suite('R-D Bind to Destination', () => {
 
     log('✓ AI assistant bind success toast logged');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-007
-  // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-007: when already bound, destination picker shows smart-bind confirmation dialog', async () => {
     await createTerminal('rl-btd-007-a', terminals);
@@ -243,10 +227,6 @@ suite('R-D Bind to Destination', () => {
     log('✓ Confirmation dialog items validated; no bind/rebind toast after Escape');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-008
-  // ---------------------------------------------------------------------------
-
   test('[assisted] bind-to-destination-008: smart-bind confirmation Yes replaces the binding', async () => {
     await createTerminal('rl-btd-008-a', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
@@ -278,10 +258,6 @@ suite('R-D Bind to Destination', () => {
 
     log('✓ Replacement binding toast logged; old binding not re-confirmed');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-009
-  // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-009: smart-bind confirmation No keeps existing binding', async () => {
     await createTerminal('rl-btd-009-a', terminals);
@@ -321,10 +297,6 @@ suite('R-D Bind to Destination', () => {
     log('✓ No rebind toast — original binding preserved (human verdict + state invariant)');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-010
-  // ---------------------------------------------------------------------------
-
   test('[assisted] bind-to-destination-010: Escape from destination picker dismisses without changing binding', async () => {
     await createTerminal('rl-btd-010', terminals);
     await vscode.commands.executeCommand('rangelink.bindToTerminalHere');
@@ -349,10 +321,6 @@ suite('R-D Bind to Destination', () => {
 
     log('✓ No bind or unbind toast after Escape — binding state unchanged');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-011
-  // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-011: re-binding same AI assistant shows already-bound message', async () => {
     const logCapture = getLogCapture();
@@ -394,10 +362,6 @@ suite('R-D Bind to Destination', () => {
 
     log('✓ Already-bound info toast logged; no confirmation dialog shown');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-012
-  // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-012: switching between different AI assistants shows confirmation dialog', async () => {
     const logCapture = getLogCapture();
@@ -441,10 +405,6 @@ suite('R-D Bind to Destination', () => {
     log('✓ Confirmation dialog shown; rebind toast logged after "Yes, replace"');
   });
 
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-014
-  // ---------------------------------------------------------------------------
-
   test('[assisted] bind-to-destination-014: Jump to Bound Destination with no bound destination opens picker', async () => {
     const verdict = await waitForHumanVerdict(
       'bind-to-destination-014',
@@ -465,10 +425,6 @@ suite('R-D Bind to Destination', () => {
     );
     log('✓ Jump to Bound Destination with no destination opens picker (human verdict)');
   });
-
-  // ---------------------------------------------------------------------------
-  // TC bind-to-destination-015
-  // ---------------------------------------------------------------------------
 
   test('[assisted] bind-to-destination-015: binding a text editor with a single tab group succeeds', async () => {
     await closeAllEditors();
