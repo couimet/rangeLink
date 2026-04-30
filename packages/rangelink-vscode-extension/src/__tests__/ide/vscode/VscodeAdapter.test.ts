@@ -1994,11 +1994,19 @@ describe('VscodeAdapter', () => {
 
     it('returns false when env.openExternal returns false', async () => {
       const mockOpenExternal = jest.fn().mockResolvedValue(false);
+      const mockUri = { toString: () => 'https://example.com' };
+      mockVSCode.Uri.parse = jest.fn().mockReturnValue(mockUri);
       mockVSCode.env.openExternal = mockOpenExternal;
 
       const result = await adapter.openExternal('https://example.com');
 
+      expect(mockVSCode.Uri.parse).toHaveBeenCalledWith('https://example.com', true);
+      expect(mockOpenExternal).toHaveBeenCalledWith(mockUri);
       expect(result).toBe(false);
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        { fn: 'VscodeAdapter.openExternal', uri: 'https://example.com' },
+        'Opening external URI',
+      );
     });
   });
 

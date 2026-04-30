@@ -57,7 +57,9 @@ export function activate(context: vscode.ExtensionContext): RangeLinkExtensionAp
   wireSubscriptions(registrar, services);
 
   const releaseNotifier = new ReleaseNotifier(context.globalState, versionInfo, ideAdapter, logger);
-  void releaseNotifier.maybeNotify();
+  void releaseNotifier.maybeNotify().catch((error: unknown) => {
+    logger.warn({ fn: 'activate', error }, 'Release notification failed');
+  });
 
   return { logCapture, releaseNotifier };
 }
