@@ -341,6 +341,13 @@ suite('Text Editor Destination', () => {
         'RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again.',
     });
 
+    const destContentAfter = (await vscode.workspace.openTextDocument(destUri)).getText();
+    assert.strictEqual(
+      destContentAfter,
+      'ANCHOR\n',
+      `Expected destination to remain unchanged when duplicate-tab guard blocks paste, got: "${destContentAfter}"`,
+    );
+
     log('✓ Paste blocked with ambiguous-columns error when dest is in multiple tab groups');
   });
 
