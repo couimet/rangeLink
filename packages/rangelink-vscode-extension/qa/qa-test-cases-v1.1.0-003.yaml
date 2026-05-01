@@ -1975,7 +1975,7 @@ test_cases:
       - 'Select text in another file'
       - 'Press Cmd+R Cmd+L'
     expected_result: 'The RangeLink is inserted into src/utils/helper.ts in tab group 2. Paste did not fail due to stale tab group reference.'
-    automated: false
+    automated: true
 
   - id: hidden-tab-paste-001
     feature: 'Text Editor Destination — Hidden Tab Paste'
@@ -2399,7 +2399,7 @@ test_cases:
       - 'Drag the src/utils/helper.ts tab to a second tab group (or right-click the tab → Split Right/Down)'
       - 'Observe the notification area immediately after the split'
     expected_result: 'A warning toast appears: "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." No paste was attempted — the warning fires on tab change, not on paste.'
-    automated: false
+    automated: true
 
   - id: duplicate-tab-group-002
     feature: 'Text Editor Destination — Multi-Group Guard (No Re-warn)'
@@ -2411,7 +2411,7 @@ test_cases:
       - 'Open src/utils/helper.ts in a third tab group (or trigger another tab change that keeps 2+ instances visible)'
       - 'Observe the notification area'
     expected_result: 'No second warning toast appears. The warning is shown only once per entry into the duplicate state, not on every subsequent tab change while duplicates exist.'
-    automated: false
+    automated: true
 
   - id: duplicate-tab-group-003
     feature: 'Text Editor Destination — Multi-Group Guard (Reactive Paste Error)'
@@ -2423,7 +2423,7 @@ test_cases:
       - 'Select any text in a different file'
       - 'Press Cmd+R Cmd+L (or any bound-destination send command: R-V, R-L, Send File Path)'
     expected_result: 'Paste does not occur. An error toast appears: "RangeLink: Bound editor is open in multiple tab groups. Close the duplicate tab and try again." No text is inserted into either instance of src/utils/helper.ts.'
-    automated: false
+    automated: true
 
   - id: duplicate-tab-group-004
     feature: 'Text Editor Destination — Multi-Group Guard (State Clears on Resolve)'
@@ -2437,7 +2437,7 @@ test_cases:
       - 'Open src/utils/helper.ts again in a second tab group (re-enter the duplicate state)'
       - 'Observe the notification area again'
     expected_result: 'Step 2: No toast appears when the duplicate is closed. Step 4: A fresh warning toast appears — "RangeLink: Bound file is open in multiple editor groups. Paste will not work until the duplicate tab is closed." — confirming the flag was reset and re-entry into the duplicate state is correctly detected.'
-    automated: false
+    automated: true
 
   # ---------------------------------------------------------------------------
   # Section — Text Editor Destination: Language-Mode Binding Resilience (#472)
