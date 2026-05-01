@@ -1,15 +1,20 @@
 import assert from 'node:assert';
 
 import { NoOpLogger } from 'barebone-logger';
-import { findLinksInText, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, findLinksInText } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import {
   activateExtension,
   cleanupFiles,
   closeAllEditors,
+  createAndOpenFile,
+  createLogger,
   createWorkspaceFile,
   openEditor,
+  printAssistedBanner,
+  settle,
+  waitForHumanVerdict,
 } from '../helpers';
 
 const LOGGER = new NoOpLogger();
@@ -156,5 +161,73 @@ suite('Link Generation', () => {
       0,
       `Expected 0 RangeLinks for HTTP URL but got ${links.length}: ${links.map((l) => l.linkText).join(', ')}`,
     );
+  });
+});
+
+suite('Link Generation — Clickable Links (Assisted)', () => {
+  const log = createLogger('linkGenerationAssisted');
+  const tmpFileUris: vscode.Uri[] = [];
+
+  suiteSetup(async () => {
+    await activateExtension();
+    printAssistedBanner();
+  });
+
+  teardown(async () => {
+    await closeAllEditors();
+    cleanupFiles(tmpFileUris);
+    tmpFileUris.length = 0;
+    await settle();
+  });
+
+  test('[assisted] url-exclusion-002: https:// URL in document does not receive a RangeLink document link', async () => {
+    const uri = await createAndOpenFile(
+      '__rl-test-url-exclusion',
+      'Some text\nhttps://example.com/path/file.ts#L10\nMore text\n',
+    );
+    tmpFileUris.push(uri);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'url-exclusion-002',
+      'Hover over https://example.com/path/file.ts#L10 in the editor',
+      [
+        '1. Look at the line: https://example.com/path/file.ts#L10',
+        '2. Hover your cursor over any part of that URL',
+        '3. PASS if: no RangeLink tooltip or clickable underline appears',
+        '4. A browser-style VS Code link tooltip is OK — only RangeLink must NOT add its own',
+        '5. FAIL if: a RangeLink tooltip or clickable underline appears',
+      ],
+    );
+
+    assert.strictEqual(
+      verdict,
+      'pass',
+      'Human reported FAIL: RangeLink document link appeared on https:// URL',
+    );
+    log('✓ url-exclusion-002 — no RangeLink document link on https:// URL (human verified)');
+  });
+
+  test('[assisted] document-link-tooltip-001: hovering a clickable RangeLink shows clean tooltip', async () => {
+    const uri = await createAndOpenFile(
+      '__rl-test-doc-link-tooltip',
+      'See code at src/utils/helper.ts#L5 for details\n',
+    );
+    tmpFileUris.push(uri);
+    await settle();
+
+    const verdict = await waitForHumanVerdict(
+      'document-link-tooltip-001',
+      'Hover over src/utils/helper.ts#L5 in the editor',
+      [
+        '1. Look at the line: See code at src/utils/helper.ts#L5 for details',
+        '2. Hover your cursor over the link text (it should be underlined/clickable)',
+        '3. PASS if: the tooltip shows clean human-readable text (file path and line number)',
+        '4. FAIL if: the tooltip shows raw JSON, a command: URI, or internal parameters',
+      ],
+    );
+
+    assert.strictEqual(verdict, 'pass', 'Human reported FAIL: document link tooltip was not clean');
+    log('✓ document-link-tooltip-001 — clean tooltip on RangeLink document link (human verified)');
   });
 });

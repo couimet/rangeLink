@@ -1962,7 +1962,7 @@ test_cases:
       - 'Add the text: https://example.com/path/file.ts#L10'
       - 'Hover over it to inspect the link tooltip (if any)'
     expected_result: 'RangeLink does not provide a document link for this text. No RangeLink navigation offered.'
-    automated: false
+    automated: assisted
 
   - id: stale-viewcolumn-001
     feature: 'Text Editor Destination — Stale viewColumn'
@@ -2012,7 +2012,7 @@ test_cases:
       - 'Hover over the link in the editor'
       - 'Observe the tooltip that appears'
     expected_result: 'The tooltip shows clean human-readable text (e.g., file path and line number). It does NOT show raw JSON, a command: URI, or internal command parameters.'
-    automated: false
+    automated: assisted
 
   - id: full-line-selection-validation-001
     feature: 'Link Generation — Full-Line Selection Validation'
@@ -2666,7 +2666,7 @@ test_cases:
     steps:
       - 'Click a RangeLink using only the ambiguous filename (e.g., index.ts#L1)'
     expected_result: 'A warning toast is shown: "RangeLink: Multiple files match: index.ts". No navigation occurs.'
-    automated: false
+    automated: true
 
   - id: filename-fallback-navigation-003
     feature: 'Filename-Only Navigation Fallback'
@@ -2677,7 +2677,7 @@ test_cases:
     steps:
       - 'Click a RangeLink using a nonexistent bare filename (e.g., nonexistent-file.ts#L1)'
     expected_result: 'A warning toast is shown: "RangeLink: Cannot find file: nonexistent-file.ts". No navigation occurs.'
-    automated: false
+    automated: true
 
   - id: filename-fallback-navigation-004
     feature: 'Filename-Only Navigation Fallback'
@@ -2727,7 +2727,7 @@ test_cases:
       - 'Press Cmd+R Cmd+D to open destination picker'
       - 'Observe the picker items'
     expected_result: 'The custom AI assistant appears in the picker with its configured extensionName, after the built-in destinations'
-    automated: false
+    automated: assisted
 
   - id: custom-ai-assistant-004
     feature: 'Custom AI Assistants — Command Detection'
@@ -2771,7 +2771,7 @@ test_cases:
       - 'Press Cmd+R Cmd+D to open destination picker'
       - 'Observe order of custom AI assistants in the picker'
     expected_result: 'Custom AI assistants appear after built-in destinations, in the same order as defined in settings.json'
-    automated: false
+    automated: assisted
 
   - id: custom-ai-assistant-008
     feature: 'Custom AI Assistants — Configuration'
