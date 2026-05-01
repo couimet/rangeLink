@@ -1156,7 +1156,7 @@ test_cases:
       - 'Select 2-3 lines'
       - 'Press Cmd+R Cmd+L'
     expected_result: 'A warning dialog appears before the RangeLink is generated. Dialog references unsaved changes.'
-    automated: false
+    automated: assisted
 
   - id: dirty-buffer-warning-002
     feature: 'Dirty Buffer Warning'
@@ -1170,7 +1170,7 @@ test_cases:
       - 'Select 2-3 lines, press Cmd+R Cmd+L'
       - 'Observe the dialog options'
     expected_result: 'Three choices visible: Save & Generate, Generate Anyway, and dismiss/cancel.'
-    automated: false
+    automated: assisted
 
   - id: dirty-buffer-warning-003
     feature: 'Dirty Buffer Warning'
@@ -1183,7 +1183,7 @@ test_cases:
       - 'Click Save & Generate'
       - 'Observe file state and terminal'
     expected_result: 'File saved (modified indicator gone). RangeLink generated and sent to terminal. Success toast shown.'
-    automated: false
+    automated: assisted
 
   - id: dirty-buffer-warning-004
     feature: 'Dirty Buffer Warning'
@@ -1208,7 +1208,7 @@ test_cases:
       - 'Select 2-3 lines, press Cmd+R Cmd+L'
       - 'Press Escape or click X to dismiss'
     expected_result: 'No RangeLink generated. Terminal unchanged. File still dirty.'
-    automated: false
+    automated: assisted
 
   - id: dirty-buffer-warning-006
     feature: 'Dirty Buffer Warning'
@@ -1220,7 +1220,7 @@ test_cases:
       - 'Make unsaved change to a file'
       - 'Select 2-3 lines, press Cmd+R Cmd+L'
     expected_result: 'No dialog appears. RangeLink generated and sent immediately.'
-    automated: false
+    automated: true
 
   - id: dirty-buffer-warning-007
     feature: 'Dirty Buffer Warning'
