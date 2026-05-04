@@ -23,6 +23,7 @@ import {
   printAssistedBanner,
   settle,
   waitForHuman,
+  waitForHumanVerdict,
   writeClipboardSentinel,
 } from '../helpers';
 
@@ -396,14 +397,20 @@ suite('Dirty Buffer Warning — Dialog Interaction', () => {
       logCapture.mark('before-001');
       capturing.clearCaptured();
 
-      await waitForHuman(
+      const verdict = await waitForHumanVerdict(
         'dirty-buffer-warning-001',
-        'R-L on dirty file → confirm dialog appears, then dismiss',
+        'Select text, press Cmd+R Cmd+L → PASS if warning dialog appears (then dismiss it), FAIL if not',
         [
-          'Click in the editor and ensure some text is selected.',
-          'Press Cmd+R Cmd+L — the dirty buffer warning dialog should appear.',
-          'Press Escape or click X to dismiss.',
+          'Click in the editor and ensure text is selected.',
+          'Press Cmd+R Cmd+L.',
+          'If the dirty buffer warning dialog appears → click PASS, then dismiss it (Escape or X).',
+          'If no dialog appears → click FAIL.',
         ],
+      );
+      assert.strictEqual(
+        verdict,
+        'pass',
+        'Human confirmed: warning dialog did NOT appear when R-L on dirty file',
       );
 
       await settle();
@@ -446,15 +453,20 @@ suite('Dirty Buffer Warning — Dialog Interaction', () => {
       logCapture.mark('before-002');
       capturing.clearCaptured();
 
-      await waitForHuman(
+      const verdict = await waitForHumanVerdict(
         'dirty-buffer-warning-002',
-        'R-L on dirty file → verify 3 dialog options are visible, then dismiss',
+        'Press Cmd+R Cmd+L → PASS if dialog shows "Save & Generate" + "Generate Anyway" + X, FAIL if not',
         [
-          'Click in the editor and ensure some text is selected.',
-          'Press Cmd+R Cmd+L — the dirty buffer warning dialog should appear.',
+          'Press Cmd+R Cmd+L — the dirty buffer dialog should appear.',
           'Confirm the dialog shows exactly 3 choices: "Save & Generate", "Generate Anyway", and an X/dismiss button.',
-          'Press Escape or click X to dismiss.',
+          'If all 3 options are present → click PASS, then dismiss the dialog (Escape or X).',
+          'If any option is missing or the dialog did not appear → click FAIL.',
         ],
+      );
+      assert.strictEqual(
+        verdict,
+        'pass',
+        'Human confirmed: dialog options did not match expected (Save & Generate / Generate Anyway / dismiss)',
       );
 
       await settle();
@@ -476,7 +488,7 @@ suite('Dirty Buffer Warning — Dialog Interaction', () => {
       );
       assert.ok(
         dismissLog,
-        'Expected "User dismissed warning, aborting" log — confirms user saw and dismissed dialog',
+        'Expected "User dismissed warning, aborting" log — confirms dialog was dismissed after verdict',
       );
 
       assertTerminalBufferEquals(capturing.getCapturedText(), '');
