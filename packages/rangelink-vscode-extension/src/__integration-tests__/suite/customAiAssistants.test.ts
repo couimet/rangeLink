@@ -11,6 +11,7 @@ import {
   closeAllEditors,
   createAndOpenFile,
   createLogger,
+  extractQuickPickItemsLogged,
   getLogCapture,
   printAssistedBanner,
   settle,
@@ -205,6 +206,86 @@ suite('Custom AI Assistants', () => {
     assert.ok(
       parseLog.includes('rangelink.dummy-ai-extension'),
       `Expected loaded assistant to include rangelink.dummy-ai-extension but got: ${parseLog}`,
+    );
+  });
+});
+
+suite('Custom AI Assistants — Destination Picker (Assisted)', () => {
+  const log = createLogger('customAiPicker');
+
+  suiteSetup(async () => {
+    await activateExtension();
+    printAssistedBanner();
+  });
+
+  test('[assisted] custom-ai-assistant-003: custom AI assistant appears in R-D destination picker with configured display name', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-003');
+
+    await waitForHuman(
+      'custom-ai-assistant-003',
+      'Open R-D picker (Cmd+R Cmd+D), observe that Dummy AI entries appear, then press Escape',
+      [
+        '1. Press Cmd+R Cmd+D to open the destination picker',
+        '2. Observe the list — confirm "Dummy AI (Tier 1)" appears',
+        '3. Press Escape to close without selecting',
+      ],
+    );
+
+    const lines = logCapture.getLinesSince('before-003');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry — was the picker opened?');
+
+    const tier1 = items!.find((item) => item.displayName === 'Dummy AI (Tier 1)');
+    assert.ok(tier1, 'Expected "Dummy AI (Tier 1)" in the destination picker items');
+    assert.strictEqual(tier1!.itemKind, 'bindable');
+
+    log('✓ custom-ai-assistant-003 — log confirms "Dummy AI (Tier 1)" appears in R-D picker');
+  });
+
+  test('[assisted] custom-ai-assistant-007: multiple custom AI assistants listed in user-defined order', async () => {
+    const logCapture = getLogCapture();
+    logCapture.mark('before-007');
+
+    await waitForHuman(
+      'custom-ai-assistant-007',
+      'Open R-D picker (Cmd+R Cmd+D), observe Dummy AI order (Tier 1 → Tier 2 → Tier 3 → Template → Fallback), then press Escape',
+      [
+        '1. Press Cmd+R Cmd+D to open the destination picker',
+        '2. Observe custom AI assistants appear in order: Tier 1, Tier 2, Tier 3, Template, Fallback',
+        '3. Press Escape to close without selecting',
+      ],
+    );
+
+    const lines = logCapture.getLinesSince('before-007');
+    const items = extractQuickPickItemsLogged(lines);
+    assert.ok(items, 'Expected showQuickPick log entry — was the picker opened?');
+
+    const EXPECTED_ORDER = [
+      'Dummy AI (Tier 1)',
+      'Dummy AI (Tier 2)',
+      'Dummy AI (Tier 3)',
+      'Dummy AI (Template)',
+      'Dummy AI (Fallback)',
+    ];
+
+    const indices = EXPECTED_ORDER.map((name) =>
+      items!.findIndex((item) => item.displayName === name),
+    );
+
+    for (const [i, name] of EXPECTED_ORDER.entries()) {
+      assert.notStrictEqual(indices[i], -1, `Expected "${name}" in the destination picker items`);
+    }
+
+    for (let i = 0; i < indices.length - 1; i++) {
+      assert.ok(
+        indices[i]! < indices[i + 1]!,
+        `Expected "${EXPECTED_ORDER[i]}" (index ${indices[i]}) before "${EXPECTED_ORDER[i + 1]}" (index ${indices[i + 1]})`,
+      );
+    }
+
+    log(
+      '✓ custom-ai-assistant-007 — log confirms custom AI assistants appear in settings.json order',
     );
   });
 });
