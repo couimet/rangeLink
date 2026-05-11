@@ -86,7 +86,7 @@ if [[ -n "$LABEL_FILTER" ]]; then
     else
       echo "${base}-000.yaml"
     fi
-  done | sort -r | head -1)
+  done | sort -V | tail -1)
   # If normalization produced a synthetic path, restore the real one
   if [[ ! -f "$LATEST_YAML" ]]; then
     LATEST_YAML="${LATEST_YAML%-000.yaml}.yaml"
@@ -96,15 +96,20 @@ if [[ -n "$LABEL_FILTER" ]]; then
     exit 1
   fi
 
-  LABEL_IDS=$(node -e "
+  LABEL_IDS=$(LABEL_FILTER_ENV="$LABEL_FILTER" \
+    LATEST_YAML_ENV="$LATEST_YAML" \
+    ASSISTED_ONLY_ENV="$ASSISTED_ONLY" \
+    NO_ASSISTED_ENV="$NO_ASSISTED" \
+    node -e "
     const fs = require('fs');
-    const lines = fs.readFileSync('$LATEST_YAML', 'utf8').split('\n');
+    const lines = fs.readFileSync(process.env.LATEST_YAML_ENV, 'utf8').split('\n');
+    const labelFilter = process.env.LABEL_FILTER_ENV;
     const ids = [];
     let currentId = '';
     let labelMatched = false;
     let currentAutomated = '';
-    const assistedOnly = $ASSISTED_ONLY;
-    const noAssisted = $NO_ASSISTED;
+    const assistedOnly = process.env.ASSISTED_ONLY_ENV === 'true';
+    const noAssisted = process.env.NO_ASSISTED_ENV === 'true';
     function flush() {
       if (labelMatched && currentId) {
         if (assistedOnly && currentAutomated !== 'assisted') return;
@@ -123,7 +128,7 @@ if [[ -n "$LABEL_FILTER" ]]; then
         for (let j = i + 1; j < lines.length; j++) {
           const tagMatch = lines[j].match(/^\s*- (.+)/);
           if (tagMatch) {
-            if (tagMatch[1].trim() === '$LABEL_FILTER') labelMatched = true;
+            if (tagMatch[1].trim() === labelFilter) labelMatched = true;
           } else if (lines[j].trim() !== '') break;
         }
       }
@@ -216,14 +221,23 @@ FINAL_EXIT=$((TEST_EXIT > QA_EXIT ? TEST_EXIT : QA_EXIT))
     FAILED_IDS=$(grep -A1 '^\s*[0-9]\+)\s' "$REPORT_FILE" | grep -oE '[a-z][-a-z]*-[0-9]{3}' | sort -u)
     if [[ -n "$FAILED_IDS" ]]; then
       RERUN_PATTERN=$(echo "$FAILED_IDS" | paste -sd '|' -)
+      RERUN_CMD="./scripts/test-release-run.sh"
+      if [[ -n "$LABEL_FILTER" ]]; then
+        RERUN_CMD="$RERUN_CMD --label \"$LABEL_FILTER\""
+      fi
+      if [[ "$ASSISTED_ONLY" == "true" ]]; then
+        RERUN_CMD="$RERUN_CMD --assisted"
+      fi
+      if [[ "$NO_ASSISTED" == "true" ]]; then
+        RERUN_CMD="$RERUN_CMD --no-assisted"
+      fi
+      if [[ "$WITH_EXTENSIONS" == "true" ]]; then
+        RERUN_CMD="$RERUN_CMD --with-extensions"
+      fi
       echo ""
       echo ""
       echo "Re-run failed tests:"
-      if [[ -n "$GREP_PATTERN" ]]; then
-        echo "  $COMMAND"
-      else
-        echo "  $COMMAND --grep \"$RERUN_PATTERN\""
-      fi
+      echo "  $RERUN_CMD --grep \"$RERUN_PATTERN\""
     fi
   fi
 } | tee -a "$REPORT_FILE"
