@@ -6,23 +6,26 @@
 
 ## Quick Reference
 
-| Test type             | Command                                                       | When to run                        | Runs in CI           |
-| --------------------- | ------------------------------------------------------------- | ---------------------------------- | -------------------- |
-| Unit tests            | `pnpm test`                                                   | Every change                       | ✅                   |
-| Unit tests (watch)    | `pnpm test:watch` (from extension dir)                        | During active development          | —                    |
-| Coverage report       | `pnpm test:coverage` (from extension dir)                     | Before PR / on demand              | ✅ (with thresholds) |
-| Integration tests     | `pnpm test:release`                                           | Before PR, after feature work      | —                    |
-| Integration (CI-safe) | `pnpm test:release:automated`                                 | CI / headless environments         | ✅                   |
-| Integration (filter)  | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite    | —                    |
-| Prepare QA test plan  | `pnpm generate:qa-test-plan:vscode-extension`                 | Start of release cycle             | —                    |
-| Generate QA issue     | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle | —                    |
-| Local QA checklist    | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass    | —                    |
-| QA smoke setup        | `pnpm qa:setup:vscode-extension`                              | Before manual QA pass              | —                    |
-| Validate QA coverage  | `pnpm validate:qa-coverage:vscode-extension`                  | After adding integration tests     | ✅                   |
-| Release testing guide | `pnpm generate:release-testing-instructions:vscode-extension` | Start of release cycle             | —                    |
-| Verify all QA scripts | `pnpm verify:qa-scripts:vscode-extension`                     | After QA script changes            | —                    |
+| Test type                | Command                                                       | When to run                        | Runs in CI           |
+| ------------------------ | ------------------------------------------------------------- | ---------------------------------- | -------------------- |
+| Unit tests               | `pnpm test`                                                   | Every change                       | ✅                   |
+| Unit tests (watch)       | `pnpm test:watch` (from extension dir)                        | During active development          | —                    |
+| Coverage report          | `pnpm test:coverage` (from extension dir)                     | Before PR / on demand              | ✅ (with thresholds) |
+| Integration tests        | `pnpm test:release`                                           | Before PR, after feature work      | —                    |
+| Integration (CI-safe)    | `pnpm test:release:automated`                                 | CI / headless environments         | ✅                   |
+| Integration (extensions) | `pnpm test:release:with-extensions`                           | Tests needing real AI extensions   | —                    |
+| Integration (filter)     | `pnpm test:release:grep "<pattern>"`                          | Run specific TCs by ID or suite    | —                    |
+| Prepare QA test plan     | `pnpm generate:qa-test-plan:vscode-extension`                 | Start of release cycle             | —                    |
+| Generate QA issue        | `pnpm generate:qa-issue:vscode-extension`                     | At the start of each release cycle | —                    |
+| Local QA checklist       | `pnpm generate:qa-issue:vscode-extension -- --local`          | Offline QA / before manual pass    | —                    |
+| QA smoke setup           | `pnpm qa:setup:vscode-extension`                              | Before manual QA pass              | —                    |
+| Validate QA coverage     | `pnpm validate:qa-coverage:vscode-extension`                  | After adding integration tests     | ✅                   |
+| Release testing guide    | `pnpm generate:release-testing-instructions:vscode-extension` | Start of release cycle             | —                    |
+| Verify all QA scripts    | `pnpm verify:qa-scripts:vscode-extension`                     | After QA script changes            | —                    |
 
 All commands run from the project root unless noted.
+
+All `test:release*` commands accept `--label <tag>` (filter by QA YAML label), `--assisted` (limit to `automated: assisted` TCs), and `--no-assisted` (limit to `automated: true` TCs). See [Label-based filtering](#label-based-filtering-with---label) below.
 
 ---
 
@@ -124,6 +127,40 @@ When tests fail, the script extracts failed TC IDs and prints a ready-to-use rer
 Re-run failed tests:
   pnpm test:release:grep "file-picker-002|file-picker-003"
 ```
+
+### Label-based filtering with `--label`
+
+The `--label` flag resolves test IDs from QA YAML labels and builds a Mocha grep pattern. Labels in the YAML are multi-line lists under each test case:
+
+```yaml
+- id: clipboard-preservation-001
+  labels:
+    - clipboard
+  automated: true
+```
+
+Common flag combinations:
+
+```bash
+# All tests with a given label (any automated status — true, assisted, or false)
+pnpm test:release --label clipboard
+
+# Label + assisted-only (human-in-the-loop tests only)
+pnpm test:release --label clipboard --assisted
+
+# Label + exclude assisted (CI-safe, automated: true tests only)
+pnpm test:release --label clipboard --no-assisted
+
+# Label + assisted + real AI extensions (e.g., Claude Code)
+pnpm test:release:with-extensions --label clipboard --assisted
+
+# Label combined with an explicit --grep pattern
+pnpm test:release:grep "cold-paste" --label clipboard --assisted
+```
+
+When `--assisted` is passed, only TCs marked `automated: assisted` are included. When `--no-assisted` is passed, only TCs marked `automated: true` are included. Without either, all matching TCs run regardless of their `automated` status.
+
+`--label` resolves from the latest QA YAML in `qa/`. It combines with `--with-extensions` and `--grep` — the label IDs are appended to any existing grep pattern via OR (`|`). The `validate:qa-coverage` step is skipped when filtering (same as `--grep` filtering), since it expects the full suite.
 
 **Adding new assisted tests:**
 

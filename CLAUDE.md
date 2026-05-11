@@ -648,6 +648,25 @@
   <rationale>TCs describe what is tested, not why it was added; domain grouping survives across releases</rationale>
 </rule>
 
+<rule id="QA008" priority="critical">
+  <title>Labels in QA YAML test cases use multi-line list format for minimal SCM diff noise</title>
+  <scope>Optional `labels:` field on test cases in `packages/rangelink-vscode-extension/qa/*.yaml` files</scope>
+  <do>Use multi-line list format: each label on its own indented line with `- labelname`</do>
+  <never>Use inline array format `labels: [tag1, tag2]` — adding or removing a tag changes the entire line, producing noisy diffs</never>
+  <rationale>Multi-line format means adding/removing a label touches only that label's line, making diffs readable and cherry-pick-safe</rationale>
+  <good-example>
+    ```yaml
+      labels:
+        - clipboard
+    ```
+  </good-example>
+  <bad-example>
+    ```yaml
+      labels: [clipboard]
+    ```
+  </bad-example>
+</rule>
+
 </qa-yaml>
 
 ---
