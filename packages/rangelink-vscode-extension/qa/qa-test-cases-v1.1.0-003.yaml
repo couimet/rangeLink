@@ -547,6 +547,8 @@ test_cases:
   # ---------------------------------------------------------------------------
 
   - id: clipboard-preservation-001
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before R-L is restored after the operation'
     preconditions:
@@ -562,6 +564,8 @@ test_cases:
     automated: assisted
 
   - id: clipboard-preservation-002
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before R-V from terminal is restored after the operation'
     preconditions:
@@ -577,6 +581,8 @@ test_cases:
     automated: true
 
   - id: clipboard-preservation-003
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before R-F is restored after the operation'
     preconditions:
@@ -592,6 +598,8 @@ test_cases:
     automated: true
 
   - id: clipboard-preservation-004
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before AI assistant paste is restored after'
     preconditions:
@@ -607,6 +615,8 @@ test_cases:
     automated: assisted
 
   - id: clipboard-preservation-005
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: clipboard content before terminal paste is restored after'
     preconditions:
@@ -622,6 +632,8 @@ test_cases:
     automated: assisted
 
   - id: clipboard-preservation-006
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'never mode: clipboard contains the last RangeLink output after R-L'
     preconditions:
@@ -636,6 +648,8 @@ test_cases:
     automated: true
 
   - id: clipboard-preservation-007
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'never mode: clipboard contains last output after R-V (sentinel is gone)'
     preconditions:
@@ -651,6 +665,8 @@ test_cases:
     automated: true
 
   - id: clipboard-preservation-008
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'R-C (Copy RangeLink) always writes to clipboard regardless of preserve setting'
     preconditions:
@@ -665,6 +681,8 @@ test_cases:
     automated: true
 
   - id: clipboard-preservation-009
+    labels:
+      - clipboard
     feature: 'Clipboard Preservation'
     scenario: 'always mode: dismissed picker leaves clipboard unchanged (no operation performed)'
     preconditions:
@@ -684,6 +702,8 @@ test_cases:
   # ---------------------------------------------------------------------------
 
   - id: send-file-path-001
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Cmd+R Cmd+F sends workspace-relative path to bound terminal destination'
     preconditions:
@@ -698,6 +718,8 @@ test_cases:
     automated: true
 
   - id: send-file-path-002
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Cmd+R Cmd+Shift+F sends absolute path to bound terminal destination'
     preconditions:
@@ -712,6 +734,8 @@ test_cases:
     automated: assisted
 
   - id: send-file-path-003
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Ctrl+R Ctrl+F sends relative path on Win/Linux'
     preconditions:
@@ -726,6 +750,8 @@ test_cases:
     automated: false
 
   - id: send-file-path-004
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Terminal destination: path with spaces is auto-quoted in single quotes'
     preconditions:
@@ -739,6 +765,8 @@ test_cases:
     automated: assisted
 
   - id: send-file-path-005
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Terminal destination: path with parentheses is auto-quoted in single quotes'
     preconditions:
@@ -752,6 +780,8 @@ test_cases:
     automated: assisted
 
   - id: send-file-path-006
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Text editor destination: path with spaces is auto-quoted'
     preconditions:
@@ -765,6 +795,8 @@ test_cases:
     automated: true
 
   - id: send-file-path-007
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Clipboard always contains the unquoted path regardless of destination type'
     preconditions:
@@ -778,6 +810,8 @@ test_cases:
     automated: true
 
   - id: send-file-path-008
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Self-paste: sending path of the currently active file to that same file shows info + clipboard copy'
     preconditions:
@@ -791,6 +825,8 @@ test_cases:
     automated: true
 
   - id: send-file-path-009
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Unbound: R-F opens destination picker to bind before sending'
     preconditions:
@@ -802,6 +838,8 @@ test_cases:
     automated: assisted
 
   - id: send-file-path-010
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'RangeLink: Send Current File Path in Command Palette'
     preconditions:
@@ -814,6 +852,8 @@ test_cases:
     automated: assisted
 
   - id: send-file-path-011
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'RangeLink: Send Current File Path (Absolute) in Command Palette'
     preconditions:
@@ -826,6 +866,8 @@ test_cases:
     automated: assisted
 
   - id: send-file-path-012
+    labels:
+      - clipboard
     feature: 'Send File Path'
     scenario: 'Bound text editor hidden behind another tab — paste still lands in bound editor'
     preconditions:
@@ -950,6 +992,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-001
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content (with selection): RangeLink: Send RangeLink'
     preconditions:
@@ -963,6 +1007,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-002
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content (with selection): RangeLink: Send RangeLink (Absolute)'
     preconditions:
@@ -974,6 +1020,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-003
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content (with selection): RangeLink: Send Portable Link'
     preconditions:
@@ -985,6 +1033,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-004
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content (with selection): RangeLink: Send Portable Link (Absolute)'
     preconditions:
@@ -996,6 +1046,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-005
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content (with selection): RangeLink: Send Selected Text'
     preconditions:
@@ -1007,6 +1059,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-006
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Visual separator is visible in editor content context menu'
     preconditions:
@@ -1019,6 +1073,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-007
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: "Editor content: RangeLink: Send This File's Path (absolute)"
     preconditions:
@@ -1031,6 +1087,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-008
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: "Editor content: RangeLink: Send This File's Relative Path"
     preconditions:
@@ -1043,6 +1101,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-009
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content: RangeLink: Bind Here'
     preconditions:
@@ -1055,6 +1115,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-010
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content: RangeLink: Unbind visible when bound and unbinds on click'
     preconditions:
@@ -1067,6 +1129,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-editor-content-011
+    labels:
+      - clipboard
     feature: 'Context Menus — Editor Content'
     scenario: 'Selection-dependent items hidden when no text is selected'
     preconditions:
@@ -1081,6 +1145,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-terminal-001
+    labels:
+      - clipboard
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal tab: RangeLink: Bind Here binds that terminal'
     preconditions:
@@ -1093,6 +1159,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-terminal-002
+    labels:
+      - clipboard
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal content: RangeLink: Bind Here binds the terminal'
     preconditions:
@@ -1105,6 +1173,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-terminal-003
+    labels:
+      - clipboard
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal content-area: RangeLink: Unbind is visible when bound and unbinds on click'
     preconditions:
@@ -1116,6 +1186,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-terminal-004
+    labels:
+      - clipboard
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal tab right-click binds THAT specific terminal (multi-terminal disambiguation)'
     preconditions:
@@ -1129,6 +1201,8 @@ test_cases:
     automated: assisted
 
   - id: context-menus-terminal-005
+    labels:
+      - clipboard
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal content-area right-click binds THAT specific terminal (multi-terminal disambiguation)'
     preconditions:
@@ -1446,6 +1520,8 @@ test_cases:
   # ---------------------------------------------------------------------------
 
   - id: send-terminal-selection-001
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'Cmd+R Cmd+V with terminal focused and text selected sends to bound destination'
     preconditions:
@@ -1460,6 +1536,8 @@ test_cases:
     automated: assisted
 
   - id: send-terminal-selection-002
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'Ctrl+R Ctrl+V on Win/Linux'
     preconditions:
@@ -1474,6 +1552,8 @@ test_cases:
     automated: false
 
   - id: send-terminal-selection-003
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'R-V with no text selected in terminal shows error message'
     preconditions:
@@ -1485,6 +1565,8 @@ test_cases:
     automated: true
 
   - id: send-terminal-selection-004
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'R-V with no bound destination (picker or clipboard fallback behavior)'
     preconditions:
@@ -1498,6 +1580,8 @@ test_cases:
     automated: assisted
 
   - id: send-terminal-selection-005
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'Terminal content-area context menu Send Selection to Destination when text selected and bound'
     preconditions:
@@ -1510,6 +1594,8 @@ test_cases:
     automated: assisted
 
   - id: send-terminal-selection-006
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'R-L keybinding pressed while terminal has focus shows guidance message suggesting R-V'
     preconditions:
@@ -1521,6 +1607,8 @@ test_cases:
     automated: true
 
   - id: send-terminal-selection-007
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'R-C keybinding pressed while terminal has focus shows guidance message suggesting R-V'
     preconditions:
@@ -1532,6 +1620,8 @@ test_cases:
     automated: true
 
   - id: send-terminal-selection-008
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'Cross-terminal: content-area "Send Selection" routes selection from source terminal to bound terminal and shifts focus'
     preconditions:
@@ -1545,6 +1635,8 @@ test_cases:
     automated: assisted
 
   - id: send-terminal-selection-009
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'Terminal TAB context menu does NOT include "Send Selection to Destination"'
     preconditions:
@@ -1556,6 +1648,8 @@ test_cases:
     automated: assisted
 
   - id: send-terminal-selection-010
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'Self-paste: bound terminal sends its own selection to itself (no self-paste guard)'
     preconditions:
@@ -1568,6 +1662,8 @@ test_cases:
     automated: assisted
 
   - id: send-terminal-selection-011
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'Unbound: "Send Selection to Destination" is visible; clicking opens destination picker and delivers to picked destination'
     preconditions:
@@ -1581,6 +1677,8 @@ test_cases:
     automated: assisted
 
   - id: send-terminal-selection-012
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: '"Send Selection to Destination" is hidden when no terminal text is selected'
     preconditions:
@@ -1593,6 +1691,8 @@ test_cases:
     automated: assisted
 
   - id: send-terminal-selection-013
+    labels:
+      - clipboard
     feature: 'R-V Send Terminal Selection'
     scenario: 'Terminal content-area "Send Selection" delivers selected text to a bound AI-assistant destination'
     preconditions:
@@ -1978,6 +2078,8 @@ test_cases:
     automated: true
 
   - id: hidden-tab-paste-001
+    labels:
+      - clipboard
     feature: 'Text Editor Destination — Hidden Tab Paste'
     scenario: 'Bound editor hidden behind other tabs — R-L paste succeeds and brings the tab to foreground'
     preconditions:
@@ -1991,6 +2093,8 @@ test_cases:
     automated: assisted
 
   - id: hidden-tab-paste-002
+    labels:
+      - clipboard
     feature: 'Text Editor Destination — Hidden Tab Paste'
     scenario: 'Bound editor hidden behind other tabs — R-V paste succeeds and brings the tab to foreground'
     preconditions:
@@ -2031,6 +2135,8 @@ test_cases:
   # ---------------------------------------------------------------------------
 
   - id: core-send-commands-r-l-001
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L (Cmd+R Cmd+L) sends RangeLink to bound terminal destination'
     preconditions:
@@ -2046,6 +2152,8 @@ test_cases:
     automated: true
 
   - id: core-send-commands-r-l-002
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L sends RangeLink to bound text editor destination'
     preconditions:
@@ -2060,6 +2168,8 @@ test_cases:
     automated: assisted
 
   - id: core-send-commands-r-l-003
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L sends RangeLink to bound AI assistant destination'
     preconditions:
@@ -2074,6 +2184,8 @@ test_cases:
     automated: assisted
 
   - id: core-send-commands-r-c-001
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-C'
     scenario: 'R-C (Cmd+R Cmd+C) copies RangeLink to clipboard and does NOT send to destination'
     preconditions:
@@ -2088,6 +2200,8 @@ test_cases:
     automated: true
 
   - id: core-send-commands-r-l-004
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-L'
     scenario: 'RangeLink: Send RangeLink in Command Palette behaves identically to R-L keybinding'
     preconditions:
@@ -2101,6 +2215,8 @@ test_cases:
     automated: assisted
 
   - id: core-send-commands-r-c-002
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-C'
     scenario: 'RangeLink: Copy RangeLink in Command Palette behaves identically to R-C keybinding'
     preconditions:
@@ -2115,6 +2231,8 @@ test_cases:
     automated: assisted
 
   - id: core-send-commands-r-l-005
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L with no bound destination opens destination picker (not silent clipboard fallback)'
     preconditions:
@@ -2128,6 +2246,8 @@ test_cases:
     automated: assisted
 
   - id: core-send-commands-r-p-001
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-P'
     scenario: 'R-P (Send Portable Link) with no bound destination opens destination picker'
     preconditions:
@@ -2142,6 +2262,8 @@ test_cases:
     automated: assisted
 
   - id: core-send-commands-r-v-001
+    labels:
+      - clipboard
     feature: 'Core Send Commands — R-V'
     scenario: 'R-V (Send Selected Text, editor) with no bound destination opens destination picker'
     preconditions:
@@ -2159,6 +2281,8 @@ test_cases:
   # ---------------------------------------------------------------------------
 
   - id: text-editor-destination-001
+    labels:
+      - clipboard
     feature: 'Text Editor Destination'
     scenario: 'Self-paste: R-L to the same file that is bound as destination copies link to clipboard and shows info message'
     preconditions:
@@ -2308,6 +2432,8 @@ test_cases:
   # ---------------------------------------------------------------------------
 
   - id: smart-padding-001
+    labels:
+      - clipboard
     feature: 'Smart Padding'
     scenario: 'Whitespace-only text preserved when sent to destination with smart padding enabled'
     preconditions:
@@ -2321,6 +2447,8 @@ test_cases:
     automated: true
 
   - id: smart-padding-002
+    labels:
+      - clipboard
     feature: 'Smart Padding'
     scenario: 'Simple text with pasteContent=both adds leading and trailing space'
     preconditions:
@@ -2334,6 +2462,8 @@ test_cases:
     automated: true
 
   - id: smart-padding-003
+    labels:
+      - clipboard
     feature: 'Smart Padding'
     scenario: 'Multiline selection sent to editor destination'
     preconditions:
@@ -2347,6 +2477,8 @@ test_cases:
     automated: true
 
   - id: smart-padding-004
+    labels:
+      - clipboard
     feature: 'Smart Padding'
     scenario: 'pasteContent=none sends exact text without padding'
     preconditions:
@@ -2360,6 +2492,8 @@ test_cases:
     automated: true
 
   - id: smart-padding-005
+    labels:
+      - clipboard
     feature: 'Smart Padding'
     scenario: 'pasteContent=before adds leading space only'
     preconditions:
@@ -2373,6 +2507,8 @@ test_cases:
     automated: true
 
   - id: smart-padding-006
+    labels:
+      - clipboard
     feature: 'Smart Padding'
     scenario: 'pasteContent=after adds trailing space only'
     preconditions:
@@ -2707,6 +2843,8 @@ test_cases:
     automated: true
 
   - id: custom-ai-assistant-002
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Registration'
     scenario: 'All three tier entries registered as destination kinds'
     preconditions:
@@ -2718,6 +2856,8 @@ test_cases:
     automated: true
 
   - id: custom-ai-assistant-003
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Destination Picker'
     scenario: 'Custom AI assistant appears in the R-D destination picker with configured display name'
     preconditions:
@@ -2730,6 +2870,8 @@ test_cases:
     automated: assisted
 
   - id: custom-ai-assistant-004
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Command Detection'
     scenario: 'Dummy extension insertText command is detectable by the availability system'
     preconditions:
@@ -2740,6 +2882,8 @@ test_cases:
     automated: true
 
   - id: custom-ai-assistant-005
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Availability'
     scenario: 'Tier 1 entry availability checked when insertCommand is registered'
     preconditions:
@@ -2752,6 +2896,8 @@ test_cases:
     automated: true
 
   - id: custom-ai-assistant-006
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Command Registration'
     scenario: 'All dummy extension commands are registered and detectable'
     preconditions:
@@ -2762,6 +2908,8 @@ test_cases:
     automated: true
 
   - id: custom-ai-assistant-007
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Destination Picker'
     scenario: 'Multiple custom AI assistants listed in user-defined order'
     preconditions:
@@ -2774,6 +2922,8 @@ test_cases:
     automated: assisted
 
   - id: custom-ai-assistant-008
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Configuration'
     scenario: 'Parser normalizes plain string insertCommands to { command } objects'
     preconditions:
@@ -2785,6 +2935,8 @@ test_cases:
     automated: true
 
   - id: custom-ai-assistant-009
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Configuration'
     scenario: 'Template entry with ${content} interpolation in insertCommands is parsed and registered'
     preconditions:
@@ -2797,6 +2949,8 @@ test_cases:
     automated: true
 
   - id: custom-ai-assistant-010
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Tier 1 Paste Flow'
     scenario: 'Tier 1 direct insert delivers text to dummy extension textarea'
     preconditions:
@@ -2810,6 +2964,8 @@ test_cases:
     automated: assisted
 
   - id: custom-ai-assistant-011
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Tier 1 Clipboard'
     scenario: 'Tier 1 paste preserves clipboard (sentinel restored after R-L)'
     preconditions:
@@ -2823,6 +2979,8 @@ test_cases:
     automated: assisted
 
   - id: custom-ai-assistant-012
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Tier 3 Toast'
     scenario: 'Tier 3 focusCommands shows manual-paste toast after R-L'
     preconditions:
@@ -2836,6 +2994,8 @@ test_cases:
     automated: assisted
 
   - id: custom-ai-assistant-013
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Tier 2→3 Fallback'
     scenario: 'Tier 2 focusAndPasteCommands not registered — falls through to Tier 3'
     preconditions:
@@ -2849,6 +3009,8 @@ test_cases:
     automated: assisted
 
   - id: custom-ai-assistant-014
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — ${content} Template'
     scenario: 'insertCommands with ${content} template interpolation delivers text via insertWithArgs'
     preconditions:
@@ -2862,6 +3024,8 @@ test_cases:
     automated: assisted
 
   - id: custom-ai-assistant-015
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Built-in Override'
     scenario: 'custom config with built-in extensionId registers under the built-in kind'
     preconditions:
@@ -2873,6 +3037,8 @@ test_cases:
     automated: true
 
   - id: custom-ai-assistant-016
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Built-in Override'
     scenario: 'built-in override does not register a separate custom-ai: kind'
     preconditions:
@@ -2884,6 +3050,8 @@ test_cases:
     automated: true
 
   - id: custom-ai-assistant-017
+    labels:
+      - clipboard
     feature: 'Custom AI Assistants — Cold Start'
     scenario: 'Tier 1 direct insert works when the AI extension panel is not yet visible'
     preconditions:

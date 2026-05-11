@@ -7,6 +7,10 @@
 #   ./scripts/test-release-run.sh --automated                # CI-safe (skips [assisted])
 #   ./scripts/test-release-run.sh --grep "pattern"           # filtered by Mocha grep
 #   ./scripts/test-release-run.sh --grep "\[assisted\]"      # only [assisted] tests
+#   ./scripts/test-release-run.sh --with-extensions          # installs Claude Code marketplace extension
+#   ./scripts/test-release-run.sh --label "clipboard"         # only tests with matching label in QA YAML
+#   ./scripts/test-release-run.sh --label "clipboard" --assisted  # label + assisted-only filter
+#   ./scripts/test-release-run.sh --label "clipboard" --no-assisted # label + exclude assisted tests
 #
 # Output: qa/output/test-run-<timestamp>-<mode>.txt
 
@@ -20,10 +24,17 @@ MODE="all"
 VSCODE_TEST_CONFIG=""
 GREP_PATTERN=""
 COMMAND="pnpm test:release"
+WITH_EXTENSIONS=false
+LABEL_FILTER=""
+ASSISTED_ONLY=false
+NO_ASSISTED=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --automated) MODE="automated"; VSCODE_TEST_CONFIG="--config .vscode-test.automated.mjs"; COMMAND="pnpm test:release:automated"; shift ;;
+    --assisted) ASSISTED_ONLY=true; shift ;;
+    --no-assisted) NO_ASSISTED=true; shift ;;
+    --with-extensions) MODE="with-extensions"; VSCODE_TEST_CONFIG="--config .vscode-test.with-extensions.mjs"; COMMAND="pnpm test:release:with-extensions"; WITH_EXTENSIONS=true; shift ;;
     --grep)
       if [[ $# -lt 2 ]]; then
         echo "Error: --grep requires a pattern argument" >&2
@@ -38,21 +49,128 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       GREP_PATTERN="$2"
-      MODE="grep"
-      COMMAND="pnpm test:release:grep \"$2\""
+      if [[ "$MODE" == "all" ]]; then
+        MODE="grep"
+        COMMAND="pnpm test:release:grep \"$2\""
+      else
+        COMMAND="$COMMAND --grep \"$2\""
+      fi
+      shift 2
+      ;;
+    --label)
+      if [[ $# -lt 2 ]]; then
+        echo "Error: --label requires a label name argument" >&2
+        echo ""
+        echo "Usage: ./scripts/test-release-run.sh --label <label-name>"
+        echo ""
+        echo "Examples:"
+        echo "  ./scripts/test-release-run.sh --label clipboard"
+        echo "  ./scripts/test-release-run.sh --with-extensions --label clipboard"
+        exit 1
+      fi
+      LABEL_FILTER="$2"
       shift 2
       ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
 
+# Resolve --label to test IDs from the latest QA YAML
+if [[ -n "$LABEL_FILTER" ]]; then
+  QA_DIR="$PACKAGE_ROOT/qa"
+  # Normalize unsuffixed files (v1.1.0.yaml) to sort BEFORE suffixed ones (v1.1.0-001.yaml)
+  LATEST_YAML=$(for f in "$QA_DIR"/qa-test-cases-*.yaml; do
+    base="${f%.yaml}"
+    if [[ "$base" =~ -[0-9]{3}$ ]]; then
+      echo "$f"
+    else
+      echo "${base}-000.yaml"
+    fi
+  done | sort -V | tail -1)
+  # If normalization produced a synthetic path, restore the real one
+  if [[ ! -f "$LATEST_YAML" ]]; then
+    LATEST_YAML="${LATEST_YAML%-000.yaml}.yaml"
+  fi
+  if [[ -z "$LATEST_YAML" ]]; then
+    echo "Error: No QA YAML found to resolve --label $LABEL_FILTER" >&2
+    exit 1
+  fi
+
+  LABEL_IDS=$(LABEL_FILTER_ENV="$LABEL_FILTER" \
+    LATEST_YAML_ENV="$LATEST_YAML" \
+    ASSISTED_ONLY_ENV="$ASSISTED_ONLY" \
+    NO_ASSISTED_ENV="$NO_ASSISTED" \
+    node -e "
+    const fs = require('fs');
+    const lines = fs.readFileSync(process.env.LATEST_YAML_ENV, 'utf8').split('\n');
+    const labelFilter = process.env.LABEL_FILTER_ENV;
+    const ids = [];
+    let currentId = '';
+    let labelMatched = false;
+    let currentAutomated = '';
+    const assistedOnly = process.env.ASSISTED_ONLY_ENV === 'true';
+    const noAssisted = process.env.NO_ASSISTED_ENV === 'true';
+    function flush() {
+      if (labelMatched && currentId) {
+        if (assistedOnly && currentAutomated !== 'assisted') return;
+        if (noAssisted && currentAutomated !== 'true') return;
+        ids.push(currentId);
+      }
+      labelMatched = false;
+      currentAutomated = '';
+    }
+    for (let i = 0; i < lines.length; i++) {
+      const idMatch = lines[i].match(/^\s*- id:\s*(.+)/);
+      if (idMatch) { flush(); currentId = idMatch[1]; }
+      const autoMatch = lines[i].match(/^\s*automated:\s*(.+)/);
+      if (autoMatch) currentAutomated = autoMatch[1].trim();
+      if (lines[i].trim() === 'labels:') {
+        for (let j = i + 1; j < lines.length; j++) {
+          const tagMatch = lines[j].match(/^\s*- (.+)/);
+          if (tagMatch) {
+            if (tagMatch[1].trim() === labelFilter) labelMatched = true;
+          } else if (lines[j].trim() !== '') break;
+        }
+      }
+    }
+    flush();
+    console.log(ids.join('\n'));
+  ")
+
+  if [[ -z "$LABEL_IDS" ]]; then
+    echo "Error: No test cases found with label '$LABEL_FILTER' in $(basename "$LATEST_YAML")" >&2
+    exit 1
+  fi
+
+  LABEL_GREP=$(echo "$LABEL_IDS" | paste -sd '|' -)
+  echo "Label '$LABEL_FILTER' matched $(echo "$LABEL_IDS" | wc -l | tr -d ' ') test(s): $LABEL_GREP"
+  echo ""
+
+  if [[ -n "$GREP_PATTERN" ]]; then
+    GREP_PATTERN="$GREP_PATTERN|$LABEL_GREP"
+    COMMAND="$COMMAND --grep \"$LABEL_GREP\""
+  else
+    GREP_PATTERN="$LABEL_GREP"
+    if [[ "$MODE" == "all" ]]; then
+      MODE="grep"
+      COMMAND="pnpm test:release:grep \"$LABEL_GREP\""
+    else
+      COMMAND="$COMMAND --grep \"$LABEL_GREP\""
+    fi
+  fi
+fi
+
 OUTPUT_DIR="$PACKAGE_ROOT/qa/output"
 mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
 
-if [[ "$MODE" == "grep" ]]; then
+if [[ -n "$GREP_PATTERN" ]]; then
   PATTERN_SLUG=$(echo "$GREP_PATTERN" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//' | cut -c1-80)
-  REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-grep-${PATTERN_SLUG}.txt"
+  if [[ "$MODE" == "grep" ]]; then
+    REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-grep-${PATTERN_SLUG}.txt"
+  else
+    REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-${MODE}-grep-${PATTERN_SLUG}.txt"
+  fi
 else
   REPORT_FILE="$OUTPUT_DIR/test-run-${TIMESTAMP}-${MODE}.txt"
 fi
@@ -77,15 +195,19 @@ echo ""
 pnpm test:release:prepare
 
 TEST_EXIT=0
-if [[ -n "$GREP_PATTERN" ]]; then
-  MOCHA_GREP="$GREP_PATTERN" npx vscode-test 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE" || TEST_EXIT=$?
-else
-  # shellcheck disable=SC2086
-  npx vscode-test $VSCODE_TEST_CONFIG 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE" || TEST_EXIT=$?
+# shellcheck disable=SC2086
+MOCHA_GREP="$GREP_PATTERN" npx vscode-test $VSCODE_TEST_CONFIG 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE" || TEST_EXIT=$?
+
+if [[ -n "$GREP_PATTERN" && $TEST_EXIT -eq 0 ]]; then
+  if ! grep -qE '[1-9][0-9]* passing' "$REPORT_FILE"; then
+    echo ""
+    echo "Error: --grep matched no tests. Pattern: $GREP_PATTERN" | tee -a "$REPORT_FILE"
+    TEST_EXIT=1
+  fi
 fi
 
 QA_EXIT=0
-if [[ "$MODE" != "grep" ]]; then
+if [[ -z "$GREP_PATTERN" && "$MODE" != "grep" ]]; then
   pnpm validate:qa-coverage 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee -a "$REPORT_FILE" || QA_EXIT=$?
 fi
 
@@ -99,9 +221,23 @@ FINAL_EXIT=$((TEST_EXIT > QA_EXIT ? TEST_EXIT : QA_EXIT))
     FAILED_IDS=$(grep -A1 '^\s*[0-9]\+)\s' "$REPORT_FILE" | grep -oE '[a-z][-a-z]*-[0-9]{3}' | sort -u)
     if [[ -n "$FAILED_IDS" ]]; then
       RERUN_PATTERN=$(echo "$FAILED_IDS" | paste -sd '|' -)
+      RERUN_CMD="./scripts/test-release-run.sh"
+      if [[ -n "$LABEL_FILTER" ]]; then
+        RERUN_CMD="$RERUN_CMD --label \"$LABEL_FILTER\""
+      fi
+      if [[ "$ASSISTED_ONLY" == "true" ]]; then
+        RERUN_CMD="$RERUN_CMD --assisted"
+      fi
+      if [[ "$NO_ASSISTED" == "true" ]]; then
+        RERUN_CMD="$RERUN_CMD --no-assisted"
+      fi
+      if [[ "$WITH_EXTENSIONS" == "true" ]]; then
+        RERUN_CMD="$RERUN_CMD --with-extensions"
+      fi
+      echo ""
       echo ""
       echo "Re-run failed tests:"
-      echo "  pnpm test:release:grep \"$RERUN_PATTERN\""
+      echo "  $RERUN_CMD --grep \"$RERUN_PATTERN\""
     fi
   fi
 } | tee -a "$REPORT_FILE"
