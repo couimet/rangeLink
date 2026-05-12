@@ -330,7 +330,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: 'Hidden background terminals do not appear in the picker. Only user-visible terminals are listed.'
-    automated: false
+    automated: assisted
 
   - id: terminal-picker-007
     feature: 'Terminal Picker'
