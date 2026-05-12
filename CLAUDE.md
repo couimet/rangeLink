@@ -601,23 +601,23 @@
 </rule>
 
 <rule id="QA002" priority="critical">
-  <title>QA YAML files are a journal — copy-forward, never edit in place</title>
-  <do>Copy the latest QA YAML file to a new version-suffixed file (e.g., `qa-test-cases-v1.1.0-001.yaml`), then append new TCs to the copy</do>
-  <do>Update the header and `generate:qa-issue` filename reference in the new copy</do>
-  <never>Edit a previous QA YAML file to add, remove, or reorder test cases</never>
-  <exception>Fixing typos or updating `automated` status (`true`/`assisted`/`false`) in an existing file is allowed</exception>
-  <rationale>Each file is a point-in-time snapshot; diffing consecutive files shows exactly what was added between QA cycles</rationale>
+  <title>QA YAML is a single file per release cycle</title>
+  <do>Edit `qa-test-cases-v<version>.yaml` in place during the current release cycle — add TCs, update automated status, adjust preconditions</do>
+  <do>When moving to a new version (e.g., v1.1.0 → v1.2.0), use `pnpm generate:qa-test-plan:vscode-extension` to create the new file from the previous one</do>
+  <never>Edit a YAML file from a previous release cycle (e.g., don't touch v1.0.0.yaml after v1.1.0 work starts)</never>
+  <exception>Fixing typos or updating `automated` status (`true`/`assisted`/`false`) in the current file is always allowed</exception>
+  <rationale>Each version has exactly one QA file. Suffix files (v1.1.0-001.yaml, -002.yaml, etc.) were journal snapshots from an older workflow and are no longer created.</rationale>
 </rule>
 
 <rule id="QA003" priority="critical">
-  <title>TC IDs are globally unique across all QA YAML files</title>
-  <do>Check all existing YAML files in `qa/` for the highest ID in the same `<feature-slug>` before assigning new numbers</do>
-  <never>Reuse an ID that appears in any QA YAML file for the same version</never>
+  <title>TC IDs are globally unique within the current QA YAML file</title>
+  <do>Check the current `qa-test-cases-v<version>.yaml` for the highest ID in the same `<feature-slug>` before assigning new numbers</do>
+  <never>Reuse an ID that already appears in the current QA YAML file</never>
 </rule>
 
 <rule id="QA004" priority="critical">
   <title>No gaps in TC ID sequences</title>
-  <do>When appending TCs to a journal snapshot, continue from the highest existing ID in that feature slug (e.g., if `bind-to-destination-010` exists, the next is `bind-to-destination-011`)</do>
+  <do>When appending TCs to the current YAML file, continue from the highest existing ID in that feature slug (e.g., if `bind-to-destination-010` exists, the next is `bind-to-destination-011`)</do>
   <never>Skip numbers or leave gaps in the sequence</never>
   <rationale>Gaps make it ambiguous whether a TC was deleted or never existed</rationale>
 </rule>
