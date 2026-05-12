@@ -30,9 +30,17 @@ const getRangelinkKeys = (): string[] => {
   if (cachedRangelinkKeys) return cachedRangelinkKeys;
 
   const pkgPath = path.join(getWorkspaceRoot(), 'package.json');
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as {
-    contributes?: { configuration?: { properties?: Record<string, unknown> } };
-  };
+
+  if (!fs.existsSync(pkgPath)) {
+    throw new Error(`getRangelinkKeys: package.json not found at ${pkgPath}`);
+  }
+
+  let pkg: { contributes?: { configuration?: { properties?: Record<string, unknown> } } };
+  try {
+    pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  } catch (err) {
+    throw new Error(`getRangelinkKeys: Failed to parse package.json: ${err}`);
+  }
 
   cachedRangelinkKeys = Object.keys(pkg.contributes?.configuration?.properties ?? {}).filter((k) =>
     k.startsWith('rangelink.'),

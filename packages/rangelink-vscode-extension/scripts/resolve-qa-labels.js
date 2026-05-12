@@ -15,6 +15,10 @@ let yamlPath = '';
 for (let i = 0; i < args.length; i++) {
   switch (args[i]) {
     case '--label':
+      if (i + 1 >= args.length) {
+        process.stderr.write('Error: --label requires a value\n');
+        process.exit(1);
+      }
       labelFilter = args[++i];
       break;
     case '--assisted':
@@ -24,6 +28,10 @@ for (let i = 0; i < args.length; i++) {
       noAssisted = true;
       break;
     case '--yaml':
+      if (i + 1 >= args.length) {
+        process.stderr.write('Error: --yaml requires a value\n');
+        process.exit(1);
+      }
       yamlPath = args[++i];
       break;
     default:

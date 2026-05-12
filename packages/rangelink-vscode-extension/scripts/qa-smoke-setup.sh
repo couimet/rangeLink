@@ -51,7 +51,7 @@ Prerequisite: build and install the extension first:
 
 Options:
   --editor <vscode|cursor|both>    Editor to target (default: both)
-  --settings <profile-name>        Settings profile to apply (default: default)
+  --settings <profile-name>        Settings profile to apply (default: none, uses package.json defaults)
   --terminal-count <N>             Remind to open N terminal tabs (default: 0)
   --list-profiles                  List available settings profiles and exit
   --clean                          Remove qa-test profile extension

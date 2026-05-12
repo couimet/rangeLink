@@ -18,7 +18,11 @@ export const standardSuite = (
 
     suiteSetup(async () => {
       await activateExtension();
-      if (options.assisted) {
+      const assisted = options.assisted ?? false;
+      log(
+        `[DEBUG] standardSuite.assisted=${assisted} (${options.assisted === undefined ? 'default' : 'provided'})`,
+      );
+      if (assisted) {
         printAssistedBanner();
       }
     });
