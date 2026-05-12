@@ -2,27 +2,24 @@ import assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import {
-  activateExtension,
   assertToastLogged,
   cleanupFiles,
   clearEditorSelection,
-  closeAllEditors,
   getLogCapture,
   getWorkspaceRoot,
   navigateViaHandleLinkClick,
+  standardSuite,
 } from '../helpers';
 
-suite('Navigation Precision', () => {
+standardSuite('Navigation Precision', {}, (_log) => {
   let testFilename: string;
   let testFileUri: vscode.Uri;
 
   suiteSetup(async () => {
-    await activateExtension();
-
     const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
     testFilename = `__rl-test-nav-${Date.now()}.ts`;
     const testFilePath = path.join(getWorkspaceRoot(), testFilename);
@@ -31,7 +28,6 @@ suite('Navigation Precision', () => {
   });
 
   suiteTeardown(async () => {
-    await closeAllEditors();
     cleanupFiles([testFileUri]);
   });
 

@@ -8,7 +8,7 @@
 #
 # Schema:
 #   id:              Unique test case identifier (<feature-slug>-NNN)
-#   feature:         Feature area / CHANGELOG section
+#   feature:         Feature area
 #   scenario:        One-line description of the specific scenario being tested
 #   preconditions:   List of required setup steps before executing
 #   steps:           Ordered list of test actions
@@ -24,7 +24,6 @@ test_cases:
     feature: 'R-M Status Bar Menu'
     scenario: 'Status bar item visible with correct text and tooltip in unbound state'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Any workspace is open'
     steps:
       - 'Look at the VS Code status bar (bottom bar)'
@@ -37,7 +36,6 @@ test_cases:
     feature: 'R-M Status Bar Menu'
     scenario: 'Clicking the status bar item opens the R-M menu'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Any workspace is open'
     steps:
       - 'Click the $(link) RangeLink item in the status bar'
@@ -48,7 +46,6 @@ test_cases:
     feature: 'R-M Status Bar Menu'
     scenario: 'Cmd+R Cmd+M keybinding opens the R-M menu'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Any workspace open with editor focus'
     steps:
       - 'Press Cmd+R Cmd+M'
@@ -59,7 +56,6 @@ test_cases:
     feature: 'R-M Status Bar Menu'
     scenario: 'Ctrl+R Ctrl+M keybinding opens the R-M menu'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Any workspace open with editor focus'
     steps:
       - 'Press Ctrl+R Ctrl+M'
@@ -102,8 +98,6 @@ test_cases:
   - id: status-bar-menu-008
     feature: 'R-M Status Bar Menu'
     scenario: 'R-M menu Go to Link item opens the R-G input box'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Open the R-M menu'
       - "Select 'Go to Link'"
@@ -113,8 +107,6 @@ test_cases:
   - id: status-bar-menu-009
     feature: 'R-M Status Bar Menu'
     scenario: 'R-M menu Show Version Info displays version, commit, branch, and build date'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Open the R-M menu'
       - "Select 'Show Version Info'"
@@ -843,7 +835,7 @@ test_cases:
     feature: 'Send File Path'
     scenario: 'RangeLink: Send Current File Path in Command Palette'
     preconditions:
-      - 'Extension installed, terminal bound, workspace open'
+      - 'Terminal bound, workspace open'
     steps:
       - 'Open Command Palette (Cmd+Shift+P)'
       - 'Type Send Current File Path, press Enter'
@@ -857,7 +849,7 @@ test_cases:
     feature: 'Send File Path'
     scenario: 'RangeLink: Send Current File Path (Absolute) in Command Palette'
     preconditions:
-      - 'Extension installed, terminal bound, workspace open'
+      - 'Terminal bound, workspace open'
     steps:
       - 'Open Command Palette (Cmd+Shift+P)'
       - 'Type Send Current File Path (Absolute), press Enter'
@@ -888,7 +880,6 @@ test_cases:
     feature: 'Context Menus — Explorer'
     scenario: 'Explorer: RangeLink: Send File Path sends absolute path to bound destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file exists in the Explorer panel'
       - 'Terminal is bound as destination'
     steps:
@@ -902,7 +893,6 @@ test_cases:
     feature: 'Context Menus — Explorer'
     scenario: 'Explorer: RangeLink: Send Relative File Path sends relative path'
     preconditions:
-      - 'Extension installed'
       - 'Terminal bound'
     steps:
       - 'Right-click a file in Explorer'
@@ -914,7 +904,6 @@ test_cases:
     feature: 'Context Menus — Explorer'
     scenario: 'Explorer: RangeLink: Bind Here opens the file and binds it as text editor destination'
     preconditions:
-      - 'Extension installed'
       - 'No binding active'
     steps:
       - 'Right-click a file in Explorer (e.g., src/utils/helper.ts)'
@@ -972,7 +961,6 @@ test_cases:
     feature: 'Context Menus — Editor Tab'
     scenario: 'Editor tab: RangeLink: Bind Here binds that editor'
     preconditions:
-      - 'Extension installed'
       - 'File is open in a tab'
     steps:
       - 'Right-click the file tab'
@@ -1064,7 +1052,6 @@ test_cases:
     feature: 'Context Menus — Editor Content'
     scenario: 'Visual separator is visible in editor content context menu'
     preconditions:
-      - 'Extension installed'
       - 'Text editor open'
     steps:
       - 'Right-click inside the editor (with or without selection)'
@@ -1106,7 +1093,6 @@ test_cases:
     feature: 'Context Menus — Editor Content'
     scenario: 'Editor content: RangeLink: Bind Here'
     preconditions:
-      - 'Extension installed'
       - 'File open in editor'
     steps:
       - 'Right-click inside the editor'
@@ -1150,7 +1136,6 @@ test_cases:
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal tab: RangeLink: Bind Here binds that terminal'
     preconditions:
-      - 'Extension installed'
       - 'Terminal open'
     steps:
       - 'Right-click the terminal tab in the terminal panel tab bar'
@@ -1164,7 +1149,6 @@ test_cases:
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal content: RangeLink: Bind Here binds the terminal'
     preconditions:
-      - 'Extension installed'
       - 'Terminal open'
     steps:
       - 'Right-click inside the terminal output area'
@@ -1191,7 +1175,6 @@ test_cases:
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal tab right-click binds THAT specific terminal (multi-terminal disambiguation)'
     preconditions:
-      - 'Extension installed'
       - 'Two or more terminals are open with distinct names'
     steps:
       - 'Identify a specific TARGET terminal'
@@ -1206,7 +1189,6 @@ test_cases:
     feature: 'Context Menus — Terminal'
     scenario: 'Terminal content-area right-click binds THAT specific terminal (multi-terminal disambiguation)'
     preconditions:
-      - 'Extension installed'
       - 'Two or more terminals are open with distinct names'
     steps:
       - 'Focus a specific TARGET terminal'
@@ -1712,7 +1694,6 @@ test_cases:
     feature: 'R-G Go to Link'
     scenario: 'Cmd+R Cmd+G opens the Go to Link input box'
     preconditions:
-      - 'Extension installed'
       - 'Any workspace open'
     steps:
       - 'Press Cmd+R Cmd+G'
@@ -1727,7 +1708,6 @@ test_cases:
     feature: 'R-G Go to Link'
     scenario: 'Valid RangeLink in input box navigates to the file and selects the range'
     preconditions:
-      - 'Extension installed'
       - 'A file with 10+ lines exists in the workspace (e.g., src/utils/helper.ts)'
     steps:
       - 'Press Cmd+R Cmd+G'
@@ -1740,7 +1720,6 @@ test_cases:
     feature: 'R-G Go to Link'
     scenario: 'Supports range format: path/to/file.ts#L3C14-L15C9'
     preconditions:
-      - 'Extension installed'
       - 'src/utils/helper.ts exists'
     steps:
       - 'Press Cmd+R Cmd+G'
@@ -1752,8 +1731,6 @@ test_cases:
   - id: go-to-link-005
     feature: 'R-G Go to Link'
     scenario: 'Invalid link format shows error message'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Press Cmd+R Cmd+G'
       - 'Type: not-a-valid-link-format'
@@ -1764,8 +1741,6 @@ test_cases:
   - id: go-to-link-006
     feature: 'R-G Go to Link'
     scenario: 'Empty input dismisses with error notification'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Press Cmd+R Cmd+G'
       - 'Clear the input (leave it empty)'
@@ -1776,8 +1751,6 @@ test_cases:
   - id: go-to-link-007
     feature: 'R-G Go to Link'
     scenario: 'File not found shows warning message'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Press Cmd+R Cmd+G'
       - 'Type: src/nonexistent/file.ts#L1'
@@ -1788,8 +1761,6 @@ test_cases:
   - id: go-to-link-008
     feature: 'R-G Go to Link'
     scenario: 'RangeLink: Go to Link available in Command Palette'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Open Command Palette (Cmd+Shift+P / Ctrl+Shift+P)'
       - "Type 'Go to Link' and select 'RangeLink: Go to Link'"
@@ -1799,8 +1770,6 @@ test_cases:
   - id: go-to-link-009
     feature: 'R-G Go to Link'
     scenario: 'Go to Link item in R-M menu opens the same input box'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Open R-M menu'
       - "Select 'Go to Link'"
@@ -2140,7 +2109,6 @@ test_cases:
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L (Cmd+R Cmd+L) sends RangeLink to bound terminal destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Workspace open with a TypeScript file containing 10+ lines'
       - 'Terminal open and bound as destination'
     steps:
@@ -2157,7 +2125,6 @@ test_cases:
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L sends RangeLink to bound text editor destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Two files open (file A and file B)'
       - 'File B bound as text editor destination, cursor positioned in file B'
     steps:
@@ -2173,7 +2140,6 @@ test_cases:
     feature: 'Core Send Commands — R-L'
     scenario: 'R-L sends RangeLink to bound AI assistant destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Claude Code or GitHub Copilot Chat extension installed, active, and bound'
       - 'AI chat panel open'
     steps:
@@ -2189,7 +2155,6 @@ test_cases:
     feature: 'Core Send Commands — R-C'
     scenario: 'R-C (Cmd+R Cmd+C) copies RangeLink to clipboard and does NOT send to destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Terminal open and bound (to verify it does NOT receive anything)'
     steps:
       - 'Select 3 lines in any file'
@@ -2205,7 +2170,7 @@ test_cases:
     feature: 'Core Send Commands — R-L'
     scenario: 'RangeLink: Send RangeLink in Command Palette behaves identically to R-L keybinding'
     preconditions:
-      - 'Extension installed, terminal bound'
+      - 'Terminal bound'
     steps:
       - 'Select text in a file'
       - 'Open Command Palette (Cmd+Shift+P)'
@@ -2220,7 +2185,7 @@ test_cases:
     feature: 'Core Send Commands — R-C'
     scenario: 'RangeLink: Copy RangeLink in Command Palette behaves identically to R-C keybinding'
     preconditions:
-      - 'Extension installed, terminal bound'
+      - 'Terminal bound'
     steps:
       - 'Select text in a file'
       - 'Open Command Palette (Cmd+Shift+P)'
@@ -2302,8 +2267,6 @@ test_cases:
   - id: clickable-file-paths-001
     feature: 'Clickable File Paths'
     scenario: 'Absolute path (/path/to/file.ts) is detected as a clickable link'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern(DEFAULT_DELIMITERS).exec on text containing /path/to/file.ts'
     expected_result: 'Pattern returns one match; extractFilePath yields /path/to/file.ts'
@@ -2312,8 +2275,6 @@ test_cases:
   - id: clickable-file-paths-002
     feature: 'Clickable File Paths'
     scenario: 'Relative path (./file.ts) is detected as a clickable link'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing ./file.ts'
     expected_result: 'Pattern returns one match; extractFilePath yields ./file.ts'
@@ -2322,8 +2283,6 @@ test_cases:
   - id: clickable-file-paths-003
     feature: 'Clickable File Paths'
     scenario: 'Parent-relative path (../dir/file.ts) is detected as a clickable link'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing ../dir/file.ts'
     expected_result: 'Pattern returns one match; extractFilePath yields ../dir/file.ts'
@@ -2332,8 +2291,6 @@ test_cases:
   - id: clickable-file-paths-004
     feature: 'Clickable File Paths'
     scenario: 'Tilde home path (~/projects/app.ts) is detected as a clickable link'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing ~/projects/app.ts'
     expected_result: 'Pattern returns one match; extractFilePath yields ~/projects/app.ts'
@@ -2342,8 +2299,6 @@ test_cases:
   - id: clickable-file-paths-005
     feature: 'Clickable File Paths'
     scenario: 'Double-quoted path with spaces is detected and quotes are stripped'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing "/path/with spaces/file.ts"'
     expected_result: 'Pattern returns one match; extractFilePath strips quotes and yields /path/with spaces/file.ts'
@@ -2352,8 +2307,6 @@ test_cases:
   - id: clickable-file-paths-006
     feature: 'Clickable File Paths'
     scenario: 'Single-quoted path is detected and quotes are stripped'
-    preconditions:
-      - 'Extension installed'
     steps:
       - "Call buildFilePathPattern on text containing '/path/to/file.ts'"
     expected_result: 'Pattern returns one match; extractFilePath strips quotes and yields /path/to/file.ts'
@@ -2362,8 +2315,6 @@ test_cases:
   - id: clickable-file-paths-007
     feature: 'Clickable File Paths'
     scenario: 'HTTP URL is NOT detected as a file path (false-positive guard)'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing https://github.com/foo/bar.ts'
     expected_result: 'Pattern returns zero matches — URL is excluded'
@@ -2372,8 +2323,6 @@ test_cases:
   - id: clickable-file-paths-008
     feature: 'Clickable File Paths'
     scenario: 'RangeLink path (src/foo.ts#L5) is NOT detected as a plain file path (coexistence guard)'
-    preconditions:
-      - 'Extension installed'
     steps:
       - 'Call buildFilePathPattern on text containing src/foo.ts#L5'
     expected_result: 'Pattern returns zero matches — the #L suffix blocks the file path match so RangeLinkDocumentProvider handles it without overlap'
@@ -2382,8 +2331,6 @@ test_cases:
   - id: clickable-file-paths-009
     feature: 'Clickable File Paths'
     scenario: "ORM-style string ('User') without a path separator is NOT detected"
-    preconditions:
-      - 'Extension installed'
     steps:
       - "Call buildFilePathPattern on text containing 'User'"
     expected_result: 'Pattern returns zero matches — single-quoted string without a path separator is excluded'
@@ -2393,7 +2340,6 @@ test_cases:
     feature: 'Clickable File Paths'
     scenario: 'rangelink.handleFilePathClick opens a real workspace file in the active editor'
     preconditions:
-      - 'Extension installed and activated'
       - 'A workspace is open'
     steps:
       - 'Create a temp .ts file in the workspace root'
@@ -2407,7 +2353,6 @@ test_cases:
     feature: 'Clickable File Paths'
     scenario: 'rangelink.handleFilePathClick shows a warning for a non-existent file path'
     preconditions:
-      - 'Extension installed and activated'
       - 'A workspace is open'
     steps:
       - 'Execute rangelink.handleFilePathClick with an absolute path that does not exist on the current OS'
@@ -2419,7 +2364,6 @@ test_cases:
     feature: 'Clickable File Paths'
     scenario: 'Custom delimiter config respected — file path with custom delimiter suffix defers to RangeLink instead of matching as plain file path'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Setting rangelink.delimiter.line set to a custom value (e.g., @l)'
       - 'Terminal or editor contains a path like ./src/file.ts@l10'
     steps:
@@ -2437,7 +2381,6 @@ test_cases:
     feature: 'Smart Padding'
     scenario: 'Whitespace-only text preserved when sent to destination with smart padding enabled'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A text editor is bound as destination'
       - 'smartPadding.pasteContent set to "none" (default)'
     steps:
@@ -2452,7 +2395,6 @@ test_cases:
     feature: 'Smart Padding'
     scenario: 'Simple text with pasteContent=both adds leading and trailing space'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A text editor is bound as destination'
       - 'smartPadding.pasteContent set to "both"'
     steps:
@@ -2467,7 +2409,6 @@ test_cases:
     feature: 'Smart Padding'
     scenario: 'Multiline selection sent to editor destination'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A text editor is bound as destination'
       - 'smartPadding.pasteContent set to "none" (default)'
     steps:
@@ -2482,7 +2423,6 @@ test_cases:
     feature: 'Smart Padding'
     scenario: 'pasteContent=none sends exact text without padding'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A text editor is bound as destination'
       - 'smartPadding.pasteContent set to "none" (default)'
     steps:
@@ -2497,7 +2437,6 @@ test_cases:
     feature: 'Smart Padding'
     scenario: 'pasteContent=before adds leading space only'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A text editor is bound as destination'
       - 'smartPadding.pasteContent set to "before"'
     steps:
@@ -2512,7 +2451,6 @@ test_cases:
     feature: 'Smart Padding'
     scenario: 'pasteContent=after adds trailing space only'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A text editor is bound as destination'
       - 'smartPadding.pasteContent set to "after"'
     steps:
@@ -2529,7 +2467,6 @@ test_cases:
     feature: 'Text Editor Destination — Multi-Group Guard (Proactive Warning)'
     scenario: 'Proactive warning toast appears when bound file is opened in a second editor group'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'src/utils/helper.ts is bound as a text editor destination (visible in tab group 1)'
     steps:
       - 'Drag the src/utils/helper.ts tab to a second tab group (or right-click the tab → Split Right/Down)'
@@ -2583,7 +2520,6 @@ test_cases:
     feature: 'Text Editor Destination — Language-Mode Resilience'
     scenario: 'Binding survives manual language-mode change on untitled file'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'An untitled file is open in ViewColumn.Two and bound as a text editor destination'
     steps:
       - 'Change the untitled file language mode to Markdown (via status bar or setTextDocumentLanguage)'
@@ -2596,7 +2532,6 @@ test_cases:
     feature: 'Text Editor Destination — Language-Mode Resilience'
     scenario: 'Binding survives language change after content insertion'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'An untitled file (plaintext) is open in ViewColumn.Two and bound as a text editor destination'
     steps:
       - 'Insert markdown-style content (e.g., triple backticks with code) into the untitled file'
@@ -2614,7 +2549,6 @@ test_cases:
     feature: 'Navigation Clamping Feedback'
     scenario: 'Navigate to line beyond end of file — cursor lands at last line'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file with a known number of lines exists in the workspace (e.g., src/utils/helper.ts with 45 lines)'
     steps:
       - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
@@ -2627,7 +2561,6 @@ test_cases:
     feature: 'Navigation Clamping Feedback'
     scenario: 'Navigate to column beyond line length — cursor lands at end of line'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file exists in the workspace with lines shorter than 200 characters'
     steps:
       - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
@@ -2640,7 +2573,6 @@ test_cases:
     feature: 'Navigation Clamping Feedback'
     scenario: 'Navigate to valid position — cursor lands exactly, info toast shown'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file with 10+ lines exists in the workspace'
     steps:
       - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
@@ -2653,7 +2585,6 @@ test_cases:
     feature: 'Navigation Clamping Feedback'
     scenario: 'Navigate with both line and column beyond bounds — both axes clamped'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file with a known number of lines and short lines exists in the workspace'
     steps:
       - 'Press Cmd+R Cmd+G (or Ctrl+R Ctrl+G)'
@@ -2670,7 +2601,6 @@ test_cases:
     feature: 'Untitled File Navigation'
     scenario: 'Navigate to single line in open untitled file'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'An untitled file is open with at least 10 lines of content'
     steps:
       - 'In a terminal or document, create a RangeLink referencing the untitled file: Untitled-1#L5'
@@ -2682,7 +2612,6 @@ test_cases:
     feature: 'Untitled File Navigation'
     scenario: 'Navigate to line range in open untitled file'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'An untitled file is open with at least 10 lines of content'
     steps:
       - 'In a terminal or document, create a RangeLink referencing the untitled file: Untitled-1#L3-L7'
@@ -2694,7 +2623,6 @@ test_cases:
     feature: 'Untitled File Navigation'
     scenario: 'Navigate to untitled file that is not currently open shows file-not-found warning'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'No untitled files are open'
     steps:
       - 'Use Cmd+R Cmd+G (or Ctrl+R Ctrl+G) and type Untitled-99#L1'
@@ -2706,7 +2634,6 @@ test_cases:
     feature: 'Untitled File Navigation'
     scenario: 'Character-precision navigation in open untitled file'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'An untitled file is open with at least 10 lines of content'
     steps:
       - 'Create a RangeLink referencing the untitled file with character precision: Untitled-1#L5C10-L5C20'
@@ -2718,7 +2645,6 @@ test_cases:
     feature: 'Untitled File Navigation'
     scenario: 'Line clamping when navigating beyond end of untitled file'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'An untitled file is open with 15 lines of content'
     steps:
       - 'Create a RangeLink referencing line 50 of the untitled file: Untitled-1#L50'
@@ -2730,7 +2656,6 @@ test_cases:
     feature: 'Untitled File Navigation'
     scenario: 'Case-insensitive untitled-name matching'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'An untitled file named "Untitled-1" (or locale equivalent) is open with at least 10 lines'
     steps:
       - 'Create a RangeLink using a differently-cased name: untitled-1#L5 (all lowercase)'
@@ -2746,7 +2671,6 @@ test_cases:
     feature: 'Navigation Toast Settings'
     scenario: 'showNavigatedToast=false suppresses info toast after successful navigation'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file with at least 10 lines exists in the workspace'
     steps:
       - 'Set rangelink.navigation.showNavigatedToast to false in workspace settings'
@@ -2758,7 +2682,6 @@ test_cases:
     feature: 'Navigation Toast Settings'
     scenario: 'showClampingWarning=false suppresses clamping warning toast'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file with 10 lines exists in the workspace'
     steps:
       - 'Set rangelink.navigation.showClampingWarning to false in workspace settings'
@@ -2770,7 +2693,6 @@ test_cases:
     feature: 'Navigation Toast Settings'
     scenario: 'Default settings show info toast after successful navigation'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file with at least 10 lines exists in the workspace'
       - 'Navigation toast settings are at their defaults (both true)'
     steps:
@@ -2786,7 +2708,6 @@ test_cases:
     feature: 'Filename-Only Navigation Fallback'
     scenario: 'Bare filename with unique match navigates to correct file and line'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file with a unique name exists somewhere in the workspace (e.g., uniqueTestFile.ts)'
     steps:
       - 'Click a RangeLink using only the filename without a directory path (e.g., uniqueTestFile.ts#L5)'
@@ -2797,7 +2718,6 @@ test_cases:
     feature: 'Filename-Only Navigation Fallback'
     scenario: 'Bare filename with multiple matches shows ambiguity warning'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'Two or more files with the same name exist in different directories (e.g., index.ts in src/ and lib/)'
     steps:
       - 'Click a RangeLink using only the ambiguous filename (e.g., index.ts#L1)'
@@ -2808,7 +2728,6 @@ test_cases:
     feature: 'Filename-Only Navigation Fallback'
     scenario: 'Bare filename with no matches shows file-not-found warning'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'No file named nonexistent-file.ts exists in the workspace'
     steps:
       - 'Click a RangeLink using a nonexistent bare filename (e.g., nonexistent-file.ts#L1)'
@@ -2819,7 +2738,6 @@ test_cases:
     feature: 'Filename-Only Navigation Fallback'
     scenario: 'Path with directory separators uses standard resolution, not fallback'
     preconditions:
-      - 'Extension installed from .vsix build'
       - 'A file exists at a known relative path in the workspace'
     steps:
       - 'Click a RangeLink using a relative path with directory separators (e.g., src/utils/resolveWorkspacePath.ts#L10)'
@@ -3073,7 +2991,6 @@ test_cases:
     scenario: 'First install stores current version silently with no notification'
     preconditions:
       - 'Fresh VS Code profile with no prior RangeLink globalState'
-      - 'Extension installed from .vsix build'
     steps:
       - 'Open VS Code with the fresh profile'
       - 'Confirm no "RangeLink updated" notification appears on activation'
@@ -3130,4 +3047,20 @@ test_cases:
       - 'Confirm no browser window opens'
       - 'Confirm "Release notification skipped for this version" log appears'
     expected_result: 'Version stored silently; notification will not reappear; no browser opened'
+    automated: assisted
+
+  - id: ubuntu-ctrl-keybindings-001
+    labels:
+      - ubuntu
+    feature: 'Platform Keybindings'
+    scenario: 'Ctrl+R chord keybindings work on Ubuntu/Linux (R-M menu, R-D picker, R-L send, R-G goto, R-U unbind)'
+    preconditions:
+      - 'Running on Ubuntu/Linux with Ctrl key available'
+    steps:
+      - 'Press Ctrl+R Ctrl+M — verify RangeLink menu opens, then Escape'
+      - 'Press Ctrl+R Ctrl+D — verify destination picker opens, then Escape'
+      - 'Select lines, press Ctrl+R Ctrl+L — verify RangeLink is sent'
+      - 'Press Ctrl+R Ctrl+G — verify Go to Link input box opens, then Escape'
+      - 'Bind a destination, press Ctrl+R Ctrl+U — verify destination unbound'
+    expected_result: 'All Ctrl+R chords behave identically to Cmd+R on macOS — menu, picker, send, goto, and unbind work correctly'
     automated: assisted

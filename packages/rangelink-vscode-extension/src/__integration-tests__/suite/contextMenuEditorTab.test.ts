@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 
 import { CMD_BIND_TO_TERMINAL_HERE, CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 import {
-  activateExtension,
   assertClipboardWriteLogged,
   assertFilePathLogged,
   assertFnLogged,
@@ -15,25 +14,18 @@ import {
   closeAllEditors,
   createAndOpenFile,
   createCapturingTerminal,
-  createLogger,
   getLogCapture,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
 } from '../helpers';
 
 const FILE_CONTENT = 'editor-tab context-menu test file\n';
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-suite('Context Menus — Editor Tab', () => {
-  const log = createLogger('contextMenuEditorTab');
+standardSuite('Context Menus — Editor Tab', { assisted: true }, (log) => {
   const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
 
   teardown(async () => {
     await vscode.commands.executeCommand(CMD_UNBIND_DESTINATION);

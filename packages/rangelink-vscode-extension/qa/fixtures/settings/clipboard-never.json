@@ -1,8 +1,3 @@
 {
-  "rangelink.clipboard.preserve": "never",
-  "rangelink.warnOnDirtyBuffer": true,
-  "rangelink.terminalPicker.maxInline": 5,
-  "rangelink.smartPadding.pasteLink": "both",
-  "rangelink.smartPadding.pasteContent": "none",
-  "rangelink.smartPadding.pasteFilePath": "both"
+  "rangelink.clipboard.preserve": "never"
 }

@@ -5,32 +5,24 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 import {
-  activateExtension,
   cleanupFiles,
   closeAllEditors,
   createAndOpenFile,
-  createLogger,
   extractQuickPickItemsLogged,
   findTestItemsByPrefix,
   getLogCapture,
   getWorkspaceRoot,
   parseQuickPickItemsFromLogLine,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
 } from '../helpers';
 
 const SEPARATOR_KIND = -1;
 const FILE_OVERFLOW_THRESHOLD = 5;
 
-suite('File Picker', () => {
-  const log = createLogger('filePicker');
+standardSuite('File Picker', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
 
   teardown(async () => {
     await vscode.commands.executeCommand('rangelink.unbindDestination');

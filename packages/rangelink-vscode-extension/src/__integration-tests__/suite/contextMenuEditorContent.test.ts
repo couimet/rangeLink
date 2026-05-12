@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 
 import { CMD_UNBIND_DESTINATION } from '../../constants/commandIds';
 import {
-  activateExtension,
   assertClipboardWriteLogged,
   assertFilePathLogged,
   assertFnLogged,
@@ -16,11 +15,10 @@ import {
   closeAllEditors,
   createAndBindCapturingTerminal,
   createAndOpenFile,
-  createLogger,
   getLogCapture,
   openEditor,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
   waitForHumanVerdict,
 } from '../helpers';
@@ -28,14 +26,12 @@ import {
 const FILE_CONTENT = 'line 1\nline 2\nline 3\nline 4\n';
 const CONTEXT_IS_BOUND_KEY = 'rangelink.isBound';
 
-suite('Context Menus — Editor Content', () => {
-  const log = createLogger('contextMenuEditorContent');
+standardSuite('Context Menus — Editor Content', { assisted: true }, (log) => {
   const terminals: vscode.Terminal[] = [];
   const tmpFileUris: vscode.Uri[] = [];
   let originalMultiLinePasteWarning: unknown;
 
   suiteSetup(async () => {
-    await activateExtension();
     // Multi-line "Send Selected Text" triggers VS Code's terminal
     // multi-line-paste warning dialog by default; set to 'never' so
     // TC 005's selection delivers deterministically in the test host.
@@ -48,7 +44,6 @@ suite('Context Menus — Editor Content', () => {
       'never',
       vscode.ConfigurationTarget.Global,
     );
-    printAssistedBanner();
   });
 
   suiteTeardown(async () => {

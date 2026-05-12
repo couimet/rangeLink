@@ -48,6 +48,8 @@ export {
 export { createLogger } from './logHelpers';
 export { navigateViaHandleLinkClick } from './navigationHelpers';
 export { loadSettingsProfile, resetRangelinkSettings } from './settingsHelpers';
+export { standardSuite } from './standardSuite';
+export type { StandardSuiteOptions } from './standardSuite';
 export { createAndBindTerminal, createTerminal, findTerminalItems } from './terminalHelpers';
 export {
   activateExtension,

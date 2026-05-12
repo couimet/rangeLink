@@ -5,27 +5,20 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 import {
-  activateExtension,
   cleanupFiles,
   closeAllEditors,
-  createLogger,
   getWorkspaceRoot,
-  loadSettingsProfile,
-  resetRangelinkSettings,
   settle,
+  standardSuite,
   waitForActiveEditor,
 } from '../helpers';
 
-const log = createLogger('smartPadding');
-
-suite('Smart Padding — Editor-to-Editor R-V', () => {
+standardSuite('Smart Padding — Editor-to-Editor R-V', {}, (log) => {
   let sourceFileUri: vscode.Uri;
   let destFileUri: vscode.Uri;
 
   suiteSetup(async () => {
     log('suiteSetup: activating extension');
-    await activateExtension();
-    log('suiteSetup: extension activated');
   });
 
   setup(async () => {
@@ -45,10 +38,9 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   });
 
   teardown(async () => {
-    log('teardown: unbinding + closing editors + resetting settings');
+    log('teardown: unbinding + closing editors');
     await vscode.commands.executeCommand('rangelink.unbindDestination');
     await closeAllEditors();
-    await resetRangelinkSettings(log);
     cleanupFiles([sourceFileUri, destFileUri]);
     log('teardown: complete');
   });
@@ -119,7 +111,6 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
     log(
       'smart-padding-001: starting — whitespace-only content, default profile (pasteContent=none)',
     );
-    await loadSettingsProfile('default', log);
 
     const { sourceEditor, destEditor } = await setupEditorPair(whitespaceContent);
 
@@ -153,7 +144,6 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-002: simple text with pasteContent=both adds leading and trailing space', async () => {
     const sourceContent = 'hello world';
     log('smart-padding-002: starting — loading default profile then overriding pasteContent=both');
-    await loadSettingsProfile('default', log);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'both', vscode.ConfigurationTarget.Global);
@@ -185,7 +175,6 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-001-untitled: whitespace-only text sent to untitled editor destination', async () => {
     const whitespaceContent = '   \t   ';
     log('smart-padding-001-untitled: starting — default profile');
-    await loadSettingsProfile('default', log);
 
     const { sourceEditor, destDoc } = await setupUntitledEditorPair(whitespaceContent);
 
@@ -214,7 +203,6 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-003: multiline selection sent to editor destination', async () => {
     const sourceContent = 'line 1\nline 2\nline 3';
     log('smart-padding-003: starting — multiline, default profile (pasteContent=none)');
-    await loadSettingsProfile('default', log);
 
     const { sourceEditor, destEditor } = await setupEditorPair(sourceContent);
 
@@ -245,7 +233,6 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-004: pasteContent=none sends exact text without padding', async () => {
     const sourceContent = 'hello';
     log('smart-padding-004: starting — default profile (pasteContent=none)');
-    await loadSettingsProfile('default', log);
 
     const { sourceEditor, destEditor } = await setupEditorPair(sourceContent);
 
@@ -271,7 +258,6 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-005: pasteContent=before adds leading space only', async () => {
     const sourceContent = 'hello';
     log('smart-padding-005: starting — pasteContent=before');
-    await loadSettingsProfile('default', log);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'before', vscode.ConfigurationTarget.Global);
@@ -300,7 +286,6 @@ suite('Smart Padding — Editor-to-Editor R-V', () => {
   test('smart-padding-006: pasteContent=after adds trailing space only', async () => {
     const sourceContent = 'hello';
     log('smart-padding-006: starting — pasteContent=after');
-    await loadSettingsProfile('default', log);
     await vscode.workspace
       .getConfiguration('rangelink')
       .update('smartPadding.pasteContent', 'after', vscode.ConfigurationTarget.Global);

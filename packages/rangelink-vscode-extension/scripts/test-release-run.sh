@@ -77,73 +77,18 @@ done
 
 # Resolve --label to test IDs from the latest QA YAML
 if [[ -n "$LABEL_FILTER" ]]; then
-  QA_DIR="$PACKAGE_ROOT/qa"
-  # Normalize unsuffixed files (v1.1.0.yaml) to sort BEFORE suffixed ones (v1.1.0-001.yaml)
-  LATEST_YAML=$(for f in "$QA_DIR"/qa-test-cases-*.yaml; do
-    base="${f%.yaml}"
-    if [[ "$base" =~ -[0-9]{3}$ ]]; then
-      echo "$f"
-    else
-      echo "${base}-000.yaml"
-    fi
-  done | sort -V | tail -1)
-  # If normalization produced a synthetic path, restore the real one
-  if [[ ! -f "$LATEST_YAML" ]]; then
-    LATEST_YAML="${LATEST_YAML%-000.yaml}.yaml"
-  fi
-  if [[ -z "$LATEST_YAML" ]]; then
-    echo "Error: No QA YAML found to resolve --label $LABEL_FILTER" >&2
-    exit 1
-  fi
+  RESOLVE_ARGS=("--label" "$LABEL_FILTER")
+  [[ "$ASSISTED_ONLY" == true ]] && RESOLVE_ARGS+=("--assisted")
+  [[ "$NO_ASSISTED" == true ]] && RESOLVE_ARGS+=("--no-assisted")
 
-  LABEL_IDS=$(LABEL_FILTER_ENV="$LABEL_FILTER" \
-    LATEST_YAML_ENV="$LATEST_YAML" \
-    ASSISTED_ONLY_ENV="$ASSISTED_ONLY" \
-    NO_ASSISTED_ENV="$NO_ASSISTED" \
-    node -e "
-    const fs = require('fs');
-    const lines = fs.readFileSync(process.env.LATEST_YAML_ENV, 'utf8').split('\n');
-    const labelFilter = process.env.LABEL_FILTER_ENV;
-    const ids = [];
-    let currentId = '';
-    let labelMatched = false;
-    let currentAutomated = '';
-    const assistedOnly = process.env.ASSISTED_ONLY_ENV === 'true';
-    const noAssisted = process.env.NO_ASSISTED_ENV === 'true';
-    function flush() {
-      if (labelMatched && currentId) {
-        if (assistedOnly && currentAutomated !== 'assisted') return;
-        if (noAssisted && currentAutomated !== 'true') return;
-        ids.push(currentId);
-      }
-      labelMatched = false;
-      currentAutomated = '';
-    }
-    for (let i = 0; i < lines.length; i++) {
-      const idMatch = lines[i].match(/^\s*- id:\s*(.+)/);
-      if (idMatch) { flush(); currentId = idMatch[1]; }
-      const autoMatch = lines[i].match(/^\s*automated:\s*(.+)/);
-      if (autoMatch) currentAutomated = autoMatch[1].trim();
-      if (lines[i].trim() === 'labels:') {
-        for (let j = i + 1; j < lines.length; j++) {
-          const tagMatch = lines[j].match(/^\s*- (.+)/);
-          if (tagMatch) {
-            if (tagMatch[1].trim() === labelFilter) labelMatched = true;
-          } else if (lines[j].trim() !== '') break;
-        }
-      }
-    }
-    flush();
-    console.log(ids.join('\n'));
-  ")
-
-  if [[ -z "$LABEL_IDS" ]]; then
-    echo "Error: No test cases found with label '$LABEL_FILTER' in $(basename "$LATEST_YAML")" >&2
+  LABEL_IDS=$(node "$SCRIPT_DIR/resolve-qa-labels.js" "${RESOLVE_ARGS[@]}") || {
+    echo "$LABEL_IDS" >&2
     exit 1
-  fi
+  }
 
   LABEL_GREP=$(echo "$LABEL_IDS" | paste -sd '|' -)
-  echo "Label '$LABEL_FILTER' matched $(echo "$LABEL_IDS" | wc -l | tr -d ' ') test(s): $LABEL_GREP"
+  LABEL_COUNT=$(echo "$LABEL_IDS" | wc -l | tr -d ' ')
+  echo "Label '$LABEL_FILTER' matched ${LABEL_COUNT} test(s): $LABEL_GREP"
   echo ""
 
   if [[ -n "$GREP_PATTERN" ]]; then

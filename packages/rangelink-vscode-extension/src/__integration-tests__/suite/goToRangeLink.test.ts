@@ -4,17 +4,15 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 import {
-  activateExtension,
   assertInputBoxLogged,
   assertToastLogged,
   cleanupFiles,
   closeAllEditors,
   createAndOpenFile,
-  createLogger,
   extractQuickPickItemsLogged,
   getLogCapture,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
 } from '../helpers';
 
@@ -38,14 +36,8 @@ const assertUserCancelledInputLogged = (lines: string[]): void => {
   assert.ok(found, 'Expected GoToRangeLinkCommand.execute "User cancelled input" debug log');
 };
 
-suite('R-G Go to Link', () => {
-  const log = createLogger('goToRangeLink');
+standardSuite('R-G Go to Link', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
 
   teardown(async () => {
     await closeAllEditors();

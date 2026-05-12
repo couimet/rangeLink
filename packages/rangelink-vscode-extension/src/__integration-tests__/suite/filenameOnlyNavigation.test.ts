@@ -2,24 +2,23 @@ import assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { parseLink, DEFAULT_DELIMITERS } from 'rangelink-core-ts';
+import { DEFAULT_DELIMITERS, parseLink } from 'rangelink-core-ts';
 import * as vscode from 'vscode';
 
 import { CMD_HANDLE_DOCUMENT_LINK_CLICK } from '../../constants/commandIds';
 import {
-  activateExtension,
   assertToastLogged,
   clearEditorSelection,
-  closeAllEditors,
   getLogCapture,
   getWorkspaceRoot,
   navigateViaHandleLinkClick,
   settle,
+  standardSuite,
 } from '../helpers';
 
 const DUPLICATE_FILE_CONTENT = 'duplicate file content\n';
 
-suite('Filename-Only Navigation Fallback', () => {
+standardSuite('Filename-Only Navigation Fallback', {}, (_log) => {
   let uniqueFilename: string;
   let uniqueFilePath: string;
   let relativeFilePath: string;
@@ -29,8 +28,6 @@ suite('Filename-Only Navigation Fallback', () => {
   let duplicateFilePath2: string;
 
   suiteSetup(async () => {
-    await activateExtension();
-
     const lines = Array.from({ length: 25 }, (_, i) => `line ${i + 1} content`);
 
     uniqueFilename = `__rl-test-fallback-${Date.now()}.ts`;
@@ -55,7 +52,6 @@ suite('Filename-Only Navigation Fallback', () => {
   });
 
   suiteTeardown(async () => {
-    await closeAllEditors();
     try {
       fs.unlinkSync(uniqueFilePath);
     } catch {

@@ -2,6 +2,8 @@ import assert from 'node:assert';
 
 import * as vscode from 'vscode';
 
+import { standardSuite } from '../helpers';
+
 const EXPECTED_COMMAND_IDS = [
   'rangelink.copyLinkWithRelativePath',
   'rangelink.copyLinkWithAbsolutePath',
@@ -58,7 +60,7 @@ const EXPECTED_COMMAND_IDS = [
   'rangelink.handleFilePathClick',
 ] as const;
 
-suite('Command Registration', () => {
+standardSuite('Command Registration', {}, (_log) => {
   let registeredCommands: string[];
 
   suiteSetup(async () => {

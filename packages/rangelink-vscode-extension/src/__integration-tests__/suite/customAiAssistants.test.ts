@@ -3,18 +3,16 @@ import assert from 'node:assert';
 import * as vscode from 'vscode';
 
 import {
-  activateExtension,
   assertClipboardChanged,
   assertClipboardRestored,
   assertToastLogged,
   cleanupFiles,
   closeAllEditors,
   createAndOpenFile,
-  createLogger,
   extractQuickPickItemsLogged,
   getLogCapture,
-  printAssistedBanner,
   settle,
+  standardSuite,
   waitForHuman,
   writeClipboardSentinel,
 } from '../helpers';
@@ -22,11 +20,7 @@ import {
 const EXPECTED_CUSTOM_ASSISTANTS_COUNT = 6;
 const EXPECTED_CUSTOM_AI_REGISTRATIONS = 5;
 
-suite('Custom AI Assistants', () => {
-  suiteSetup(async () => {
-    await activateExtension();
-  });
-
+standardSuite('Custom AI Assistants', {}, (_log) => {
   test('custom-ai-assistant-001: three-tier config is parsed and logged at activation', () => {
     const logCapture = getLogCapture();
     const allLines = logCapture.getAllLines();
@@ -210,14 +204,7 @@ suite('Custom AI Assistants', () => {
   });
 });
 
-suite('Custom AI Assistants — Destination Picker (Assisted)', () => {
-  const log = createLogger('customAiPicker');
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
-
+standardSuite('Custom AI Assistants — Destination Picker (Assisted)', { assisted: true }, (log) => {
   test('[assisted] custom-ai-assistant-003: custom AI assistant appears in R-D destination picker with configured display name', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-003');
@@ -290,14 +277,8 @@ suite('Custom AI Assistants — Destination Picker (Assisted)', () => {
   });
 });
 
-suite('Custom AI Assistants — Cold Start', () => {
-  const log = createLogger('customAiColdStart');
+standardSuite('Custom AI Assistants — Cold Start', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
-
-  suiteSetup(async () => {
-    await activateExtension();
-    printAssistedBanner();
-  });
 
   teardown(async () => {
     await vscode.commands.executeCommand('rangelink.unbindDestination');
@@ -352,16 +333,13 @@ suite('Custom AI Assistants — Cold Start', () => {
   });
 });
 
-suite('Custom AI Assistants — Paste Flow', () => {
-  const log = createLogger('customAiPasteFlow');
+standardSuite('Custom AI Assistants — Paste Flow', { assisted: true }, (log) => {
   const tmpFileUris: vscode.Uri[] = [];
 
   suiteSetup(async () => {
-    await activateExtension();
     await vscode.commands.executeCommand('dummyAi.focusPanel');
     await settle();
     await vscode.commands.executeCommand('dummyAi.getText');
-    printAssistedBanner();
   });
 
   teardown(async () => {
