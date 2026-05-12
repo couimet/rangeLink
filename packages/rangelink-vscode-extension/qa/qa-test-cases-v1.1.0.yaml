@@ -53,6 +53,8 @@ test_cases:
     automated: assisted
 
   - id: status-bar-menu-004
+    labels:
+      - ubuntu
     feature: 'R-M Status Bar Menu'
     scenario: 'Ctrl+R Ctrl+M keybinding opens the R-M menu'
     preconditions:
@@ -736,6 +738,7 @@ test_cases:
   - id: send-file-path-003
     labels:
       - clipboard
+      - ubuntu
     feature: 'Send File Path'
     scenario: 'Ctrl+R Ctrl+F sends relative path on Win/Linux'
     preconditions:
@@ -1528,6 +1531,7 @@ test_cases:
   - id: send-terminal-selection-002
     labels:
       - clipboard
+      - ubuntu
     feature: 'R-V Send Terminal Selection'
     scenario: 'Ctrl+R Ctrl+V on Win/Linux'
     preconditions:
@@ -1800,6 +1804,8 @@ test_cases:
     automated: true
 
   - id: unbind-002
+    labels:
+      - ubuntu
     feature: 'R-U Unbind'
     scenario: 'Ctrl+R Ctrl+U on Win/Linux'
     preconditions:
