@@ -244,7 +244,7 @@ echo "Found $TOTAL_TCS assisted/manual test cases across $TOTAL_GROUPS groups"
 echo ""
 
 # Build the issue body
-ISSUE_TITLE="QA Checklist — v${VERSION}"
+ISSUE_TITLE="QA Checklist — ${VERSION}"
 ISSUE_BODY="Generated from \`$(basename "$YAML_FILE")\`.
 
 CI runs fully automated tests (\`test:release:automated\`). The checkboxes below cover assisted and manual tests only.
@@ -339,7 +339,7 @@ if [[ "$LOCAL_MODE" == true ]]; then
   TOTAL_MANUAL=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['total_manual'])")
 
   {
-    echo "# QA Checklist — v${VERSION}"
+    echo "# QA Checklist — ${VERSION}"
     echo ""
     echo "Generated from \`$(basename "$YAML_FILE")\` on $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
     echo ""
