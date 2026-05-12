@@ -142,6 +142,8 @@ test_cases:
     automated: assisted
 
   - id: bind-to-destination-006
+    labels:
+      - requires-extensions
     feature: 'R-D Bind to Destination'
     scenario: 'Selecting an AI assistant destination binds it and shows success toast'
     preconditions:
@@ -197,6 +199,8 @@ test_cases:
     automated: assisted
 
   - id: bind-to-destination-011
+    labels:
+      - requires-extensions
     feature: 'R-D Bind to Destination'
     scenario: 'Re-binding same AI assistant shows already-bound message instead of confirmation dialog'
     preconditions:
@@ -207,6 +211,8 @@ test_cases:
     automated: assisted
 
   - id: bind-to-destination-012
+    labels:
+      - requires-extensions
     feature: 'R-D Bind to Destination'
     scenario: 'Switching between different AI assistants shows confirmation dialog'
     preconditions:
@@ -314,6 +320,8 @@ test_cases:
     automated: assisted
 
   - id: terminal-picker-006
+    labels:
+      - cursor
     feature: 'Terminal Picker'
     scenario: 'Hidden IDE terminals are absent from the picker'
     preconditions:
@@ -322,7 +330,7 @@ test_cases:
     steps:
       - 'Open the terminal picker'
     expected_result: 'Hidden background terminals do not appear in the picker. Only user-visible terminals are listed.'
-    automated: assisted
+    automated: false
 
   - id: terminal-picker-007
     feature: 'Terminal Picker'
@@ -2776,6 +2784,7 @@ test_cases:
   - id: custom-ai-assistant-003
     labels:
       - clipboard
+      - requires-extensions
     feature: 'Custom AI Assistants — Destination Picker'
     scenario: 'Custom AI assistant appears in the R-D destination picker with configured display name'
     preconditions:

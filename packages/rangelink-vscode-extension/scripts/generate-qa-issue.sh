@@ -5,10 +5,11 @@ set -euo pipefail
 # Example: ./scripts/generate-qa-issue.sh qa/qa-test-cases-v1.1.0.yaml
 #          ./scripts/generate-qa-issue.sh --local
 #
-# Creates one parent GitHub issue + one sub-issue per feature section from a versioned QA YAML file.
+# Creates a single GitHub issue with checkboxes grouped by TC ID prefix (feature domain).
+# CI covers fully automated tests; the issue tracks assisted and manual tests only.
+#
 # With --local, writes the same structured content to a local markdown file in qa/ instead of
-# creating GitHub issues. Useful for offline QA sessions and comparing runs.
-# The parent issue body uses GitHub task-list syntax (- [ ] #N) to track section-level progress.
+# creating a GitHub issue. Useful for offline QA sessions and comparing runs.
 #
 # If no yaml-file is provided, auto-discovers the most recent QA YAML in qa/ and
 # prompts for confirmation before proceeding.
@@ -18,8 +19,7 @@ set -euo pipefail
 #
 # Requires:
 #   python3 with PyYAML  — auto-installed into .venv/ if missing
-#   gh CLI               — authenticated with write access to the repo
-#   jq                   — for building GraphQL payloads (sub-issue linking)
+#   gh CLI               — authenticated with write access to the repo (not needed with --dry-run or --local)
 
 DRY_RUN=false
 LOCAL_MODE=false
@@ -102,20 +102,6 @@ if [[ "$DRY_RUN" == false && "$LOCAL_MODE" == false ]] && ! command -v gh &>/dev
   exit 1
 fi
 
-if [[ "$DRY_RUN" == false && "$LOCAL_MODE" == false ]] && ! command -v jq &>/dev/null; then
-  echo "Error: jq is required but not found on PATH" >&2
-  exit 1
-fi
-
-REPO_OWNER=$(gh repo view --json owner -q '.owner.login' 2>/dev/null) || true
-REPO_NAME=$(gh repo view --json name -q '.name' 2>/dev/null) || true
-
-if [[ "$DRY_RUN" == false && "$LOCAL_MODE" == false ]] && [[ -z "$REPO_OWNER" || -z "$REPO_NAME" ]]; then
-  echo "Error: could not determine repository owner/name via 'gh repo view'." >&2
-  echo "Ensure you are in a git repo with a GitHub remote and 'gh auth status' succeeds." >&2
-  exit 1
-fi
-
 # Derive version from filename.
 # Pattern: qa-test-cases-<version>[-NNN].yaml
 BASENAME=$(basename "$YAML_FILE" .yaml)
@@ -127,20 +113,21 @@ else
   VERSION="$REST"
 fi
 
-echo "QA issue generator"
+echo "QA checklist generator"
 echo "  Version : $VERSION"
 echo "  Source  : $YAML_FILE"
-[[ "$DRY_RUN" == true ]] && echo "  Mode    : DRY RUN (no GitHub issues will be created)"
-[[ "$LOCAL_MODE" == true ]] && echo "  Mode    : LOCAL (writing to file, no GitHub issues)"
+[[ "$DRY_RUN" == true ]] && echo "  Mode    : DRY RUN (no GitHub issue will be created)"
+[[ "$LOCAL_MODE" == true ]] && echo "  Mode    : LOCAL (writing to file, no GitHub issue)"
 echo ""
 
-# Parse YAML into JSON: array of {feature, count, body} per section.
-# Body includes full TC details (preconditions, steps, expected result) as sub-bullets.
-SECTIONS_JSON=$(python3 - "$YAML_FILE" <<'PYEOF'
-import sys, json, yaml
-
-def normalize(value):
-    return ' '.join(str(value).split()) if value else ''
+# Parse YAML into JSON: object with groups and special-label TCs.
+# Groups TCs by ID prefix (everything before the final -NNN).
+# "feature" is the most common feature: value among TCs in the group.
+# Only includes groups where at least one TC has automated: assisted or automated: false.
+# Special labels (cursor, ubuntu) extract TCs into their own sections.
+GROUPS_JSON=$(python3 - "$YAML_FILE" <<'PYEOF'
+import sys, json, yaml, re
+from collections import Counter
 
 with open(sys.argv[1]) as f:
     data = yaml.safe_load(f)
@@ -149,82 +136,219 @@ tcs = data.get('test_cases', [])
 if not tcs:
     sys.exit(1)
 
-sections = {}
-section_order = []
+# Group TCs by ID prefix (everything before the final -NNN)
+groups = {}  # prefix -> list of TCs
 for tc in tcs:
-    feature = tc.get('feature', 'Uncategorized')
-    if feature not in sections:
-        sections[feature] = []
-        section_order.append(feature)
-    sections[feature].append(tc)
+    tc_id = str(tc.get('id', ''))
+    m = re.match(r'^(.*?)-\d{3}$', tc_id)
+    prefix = m.group(1) if m else tc_id
+    groups.setdefault(prefix, []).append(tc)
 
-result = []
-for feature in section_order:
-    tc_list = sections[feature]
-    lines = []
+result_groups = []
+cursor_tcs = []
+ubuntu_tcs = []
+total_assisted = 0
+total_manual = 0
+
+for prefix, tc_list in sorted(groups.items()):
+    feature_counts = Counter()
+    assisted_count = 0
+    manual_count = 0
+    requires_extensions = False
+
     for tc in tc_list:
-        tc_id = normalize(tc.get('id', ''))
-        scenario = normalize(tc.get('scenario', ''))
+        labels = tc.get('labels') or []
+
+        # Check for special labels BEFORE counting in group
+        tc_id = str(tc.get('id', ''))
         automated = tc.get('automated', False)
-        if automated is True:
-            auto_tag = ' `automated`'
-        elif automated == 'assisted':
-            auto_tag = ' `assisted`'
-        else:
-            auto_tag = ''
-        lines.append(f"- [ ] **{tc_id}** — {scenario}{auto_tag}")
+        feat = tc.get('feature', 'Uncategorized')
 
-        for pre in tc.get('preconditions', []):
-            lines.append(f"  - **Pre:** {normalize(pre)}")
-        for i, step in enumerate(tc.get('steps', []), 1):
-            lines.append(f"  - **Step {i}:** {normalize(step)}")
-        expected = normalize(tc.get('expected_result', ''))
-        if expected:
-            lines.append(f"  - **Expected:** {expected}")
+        if 'cursor' in labels:
+            cursor_tcs.append({
+                "id": tc_id,
+                "feature": feat,
+                "scenario": tc.get('scenario', ''),
+                "automated": automated,
+            })
+            continue  # skip normal group counting
 
-    result.append({"feature": feature, "count": len(tc_list), "body": '\n'.join(lines)})
+        if 'ubuntu' in labels:
+            ubuntu_tcs.append({
+                "id": tc_id,
+                "feature": feat,
+                "scenario": tc.get('scenario', ''),
+                "automated": automated,
+            })
+            continue  # skip normal group counting
 
-json.dump(result, sys.stdout)
+        if 'requires-extensions' in labels:
+            requires_extensions = True
+
+        feature_counts[feat] += 1
+
+        if automated == 'assisted':
+            assisted_count += 1
+        elif automated is False:
+            manual_count += 1
+
+    non_automated = assisted_count + manual_count
+    if non_automated == 0:
+        continue
+
+    total_assisted += assisted_count
+    total_manual += manual_count
+    most_common = feature_counts.most_common(1)[0][0]
+
+    result_groups.append({
+        "prefix": prefix,
+        "feature": most_common,
+        "assisted": assisted_count,
+        "manual": manual_count,
+        "total": non_automated,
+        "requires_extensions": requires_extensions,
+    })
+
+# Count cursor/ubuntu TCs for totals
+for tc in cursor_tcs:
+    if tc['automated'] == 'assisted':
+        total_assisted += 1
+    elif tc['automated'] is False:
+        total_manual += 1
+
+for tc in ubuntu_tcs:
+    if tc['automated'] == 'assisted':
+        total_assisted += 1
+    elif tc['automated'] is False:
+        total_manual += 1
+
+json.dump({
+    "groups": result_groups,
+    "cursor_tcs": cursor_tcs,
+    "ubuntu_tcs": ubuntu_tcs,
+    "total_assisted": total_assisted,
+    "total_manual": total_manual,
+}, sys.stdout)
 PYEOF
 )
 
-if [[ -z "$SECTIONS_JSON" ]]; then
+if [[ -z "$GROUPS_JSON" ]]; then
   echo "Error: No test cases found in $YAML_FILE" >&2
   exit 1
 fi
 
-TOTAL_SECTIONS=$(echo "$SECTIONS_JSON" | jq 'length')
-TOTAL_TCS=$(echo "$SECTIONS_JSON" | jq '[.[].count] | add')
+TOTAL_GROUPS=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['groups']))")
+TOTAL_TCS=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(sum(g['total'] for g in d['groups']) + len(d['cursor_tcs']) + len(d['ubuntu_tcs']))")
 
-echo "Found $TOTAL_TCS test cases across $TOTAL_SECTIONS sections"
+echo "Found $TOTAL_TCS assisted/manual test cases across $TOTAL_GROUPS groups"
 echo ""
 
-# --- Local mode: write structured content to a markdown file ---
+# Build the issue body
+ISSUE_TITLE="QA Checklist — v${VERSION}"
+ISSUE_BODY="Generated from \`$(basename "$YAML_FILE")\`.
+
+CI runs fully automated tests (\`test:release:automated\`). The checkboxes below cover assisted and manual tests only.
+
+"
+
+# Collect group checkbox lines
+GROUP_CHECKBOXES=""
+for i in $(seq 0 $((TOTAL_GROUPS - 1))); do
+  PREFIX=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['groups'][$i]['prefix'])")
+  FEATURE=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['groups'][$i]['feature'])")
+  ASSISTED=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['groups'][$i]['assisted'])")
+  MANUAL=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['groups'][$i]['manual'])")
+  REQ_EXT=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['groups'][$i]['requires_extensions'])")
+
+  # Build label: (N assisted, M manual) or just (N assisted) or (M manual)
+  LABEL_PARTS=""
+  if [[ "$ASSISTED" -gt 0 ]]; then
+    LABEL_PARTS="${ASSISTED} assisted"
+  fi
+  if [[ "$MANUAL" -gt 0 ]]; then
+    if [[ -n "$LABEL_PARTS" ]]; then
+      LABEL_PARTS="${LABEL_PARTS}, ${MANUAL} manual"
+    else
+      LABEL_PARTS="${MANUAL} manual"
+    fi
+  fi
+
+  if [[ "$REQ_EXT" == "True" ]]; then
+    GROUP_CHECKBOXES+="- [ ] **${FEATURE}** (${LABEL_PARTS}) — \`pnpm test:release:with-extensions --grep \"${PREFIX}\"\`"$'\n'
+  else
+    GROUP_CHECKBOXES+="- [ ] **${FEATURE}** (${LABEL_PARTS}) — \`pnpm test:release:grep \"${PREFIX}\"\`"$'\n'
+  fi
+done
+
+# Cursor section — sub-checkboxes for each cursor-labeled TC
+CURSOR_SECTION=$(echo "$GROUPS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+tcs = data['cursor_tcs']
+if not tcs:
+    print('')
+    sys.exit(0)
+lines = []
+lines.append('- [ ] **Cursor — IDE-Specific Tests** — \`./scripts/qa-smoke-setup.sh --editor cursor\`:')
+for tc in tcs:
+    auto = 'manual' if tc['automated'] is False else tc['automated']
+    lines.append(f'  - [ ] {tc[\"id\"]} ({auto}): {tc[\"scenario\"]}')
+print('\n'.join(lines))
+")
+CURSOR_COUNT=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['cursor_tcs']))")
+if [[ "$CURSOR_COUNT" -gt 0 ]]; then
+  GROUP_CHECKBOXES+=$'\n'
+  GROUP_CHECKBOXES+="${CURSOR_SECTION}"$'\n'
+fi
+
+# Ubuntu section — sub-checkboxes for each ubuntu-labeled TC
+UBUNTU_SECTION=$(echo "$GROUPS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+tcs = data['ubuntu_tcs']
+if not tcs:
+    print('')
+    sys.exit(0)
+lines = []
+lines.append('- [ ] **Ubuntu — Ctrl+R Keybindings** — \`./scripts/qa-ubuntu-docker.sh\` (Docker):')
+for tc in tcs:
+    auto = 'manual' if tc['automated'] is False else tc['automated']
+    lines.append(f'  - [ ] {tc[\"id\"]} ({auto}): {tc[\"scenario\"]}')
+print('\n'.join(lines))
+")
+UBUNTU_COUNT=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['ubuntu_tcs']))")
+if [[ "$UBUNTU_COUNT" -gt 0 ]]; then
+  GROUP_CHECKBOXES+=$'\n'
+  GROUP_CHECKBOXES+="${UBUNTU_SECTION}"$'\n'
+fi
+
+ISSUE_BODY="${ISSUE_BODY}${GROUP_CHECKBOXES}"
+
+TOTAL_ASSISTED=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['total_assisted'])")
+TOTAL_MANUAL=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['total_manual'])")
+ISSUE_BODY="${ISSUE_BODY}"$'\n'"**Total: ${TOTAL_ASSISTED} assisted, ${TOTAL_MANUAL} manual**"
+
+# --- Local mode: write to a markdown file ---
 if [[ "$LOCAL_MODE" == true ]]; then
   OUTPUT_DIR="$QA_DIR/output"
   mkdir -p "$OUTPUT_DIR"
   TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
-  LOCAL_FILE="$OUTPUT_DIR/qa-issues-local-${VERSION}-${TIMESTAMP}.md"
+  LOCAL_FILE="$OUTPUT_DIR/qa-checklist-${VERSION}-${TIMESTAMP}.md"
+
+  TOTAL_ASSISTED=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['total_assisted'])")
+  TOTAL_MANUAL=$(echo "$GROUPS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['total_manual'])")
 
   {
-    echo "# QA Checklist — ${VERSION}"
+    echo "# QA Checklist — v${VERSION}"
     echo ""
     echo "Generated from \`$(basename "$YAML_FILE")\` on $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
     echo ""
-    echo "---"
+    echo "CI runs fully automated tests (\`test:release:automated\`). The checkboxes below cover assisted and manual tests only."
+    echo ""
+    echo "${GROUP_CHECKBOXES}"
+    echo ""
+    echo "**Total: ${TOTAL_ASSISTED} assisted, ${TOTAL_MANUAL} manual**"
 
-    for i in $(seq 0 $((TOTAL_SECTIONS - 1))); do
-      section=$(echo "$SECTIONS_JSON" | jq -r ".[$i].feature")
-      COUNT=$(echo "$SECTIONS_JSON" | jq -r ".[$i].count")
-      CHECKBOXES=$(echo "$SECTIONS_JSON" | jq -r ".[$i].body")
-
-      echo ""
-      echo "## ${section} (${COUNT} TCs)"
-      echo ""
-      echo "${CHECKBOXES}"
-      echo ""
-      echo "---"
-    done
   } > "$LOCAL_FILE"
 
   REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -233,126 +357,14 @@ if [[ "$LOCAL_MODE" == true ]]; then
   exit 0
 fi
 
-# --- GitHub mode: create sub-issues and accumulate their numbers for the parent body ---
-SUB_ISSUE_ENTRIES=""
-
-for i in $(seq 0 $((TOTAL_SECTIONS - 1))); do
-  section=$(echo "$SECTIONS_JSON" | jq -r ".[$i].feature")
-  COUNT=$(echo "$SECTIONS_JSON" | jq -r ".[$i].count")
-  CHECKBOXES=$(echo "$SECTIONS_JSON" | jq -r ".[$i].body")
-
-  TITLE="[QA ${VERSION}] ${section}"
-  BODY="Test cases for **${section}** — QA cycle ${VERSION}
-
-${CHECKBOXES}"
-
-  if [[ "$DRY_RUN" == true ]]; then
-    echo "DRY-RUN sub-issue: $TITLE ($COUNT TCs)"
-    SUB_ISSUE_ENTRIES+="<N>§${section}§${COUNT}"$'\n'
-  else
-    URL=$(gh issue create --title "$TITLE" --body "$BODY")
-    NUMBER=$(basename "$URL")
-    echo "Created #${NUMBER}: ${section} ($COUNT TCs)"
-    SUB_ISSUE_ENTRIES+="${NUMBER}§${section}§${COUNT}"$'\n'
-  fi
-done
-
-# Build parent issue body from collected sub-issue entries (§-delimited: number§section§count)
-PARENT_CHECKLIST=""
-while IFS= read -r entry; do
-  [[ -z "$entry" ]] && continue
-  NUMBER=$(echo "$entry" | cut -d'§' -f1)
-  SECTION_NAME=$(echo "$entry" | cut -d'§' -f2)
-  COUNT=$(echo "$entry" | cut -d'§' -f3)
-  PARENT_CHECKLIST+="- [ ] #${NUMBER} ${SECTION_NAME} (${COUNT} TCs)"$'\n'
-done <<< "$SUB_ISSUE_ENTRIES"
-
-PARENT_TITLE="QA Checklist — ${VERSION}"
-PARENT_BODY="Generated from \`${YAML_FILE}\`.
-
-${PARENT_CHECKLIST}"
-
-echo ""
+# --- GitHub mode: create a single issue ---
 if [[ "$DRY_RUN" == true ]]; then
-  echo "DRY-RUN parent issue: $PARENT_TITLE"
+  echo "DRY-RUN issue: $ISSUE_TITLE"
   echo ""
-  echo "--- Parent body ---"
-  echo "$PARENT_BODY"
+  echo "--- Body ---"
+  echo "$ISSUE_BODY"
   echo "---"
 else
-  PARENT_URL=$(gh issue create --title "$PARENT_TITLE" --body "$PARENT_BODY")
-  PARENT_NUMBER=$(basename "$PARENT_URL")
-  echo "Created parent issue: $PARENT_URL"
-
-  echo ""
-  echo "Linking sub-issues to parent #${PARENT_NUMBER}..."
-
-  link_sub_issue() {
-    local parent_num="$1" child_num="$2"
-    local nodes_payload mutation_payload
-
-    nodes_payload="$(mktemp "${TMPDIR:-/tmp}/qa-link.nodes.XXXXXX.json")"
-    mutation_payload="$(mktemp "${TMPDIR:-/tmp}/qa-link.mutation.XXXXXX.json")"
-
-    jq -n \
-      --arg owner "$REPO_OWNER" \
-      --arg repo "$REPO_NAME" \
-      --argjson parent "$parent_num" \
-      --argjson child "$child_num" \
-      '{"query": "query($owner: String!, $repo: String!, $parent: Int!, $child: Int!) { repository(owner: $owner, name: $repo) { parent: issue(number: $parent) { id } child: issue(number: $child) { id } } }", "variables": {"owner": $owner, "repo": $repo, "parent": $parent, "child": $child}}' \
-      > "$nodes_payload"
-
-    local NODES
-    NODES=$(gh api graphql -H 'GraphQL-Features: sub_issues' --input "$nodes_payload" 2>&1) || {
-      echo "  Warning: failed to fetch node IDs for #$child_num → #$parent_num: $NODES" >&2
-      rm -f "$nodes_payload" "$mutation_payload"
-      return 1
-    }
-
-    local PARENT_NODE_ID CHILD_NODE_ID
-    PARENT_NODE_ID=$(echo "$NODES" | jq -r '.data.repository.parent.id // empty')
-    CHILD_NODE_ID=$(echo "$NODES" | jq -r '.data.repository.child.id // empty')
-
-    if [[ -z "$PARENT_NODE_ID" || -z "$CHILD_NODE_ID" ]]; then
-      echo "  Warning: could not resolve node IDs for #$child_num → #$parent_num" >&2
-      rm -f "$nodes_payload" "$mutation_payload"
-      return 1
-    fi
-
-    jq -n \
-      --arg parentId "$PARENT_NODE_ID" \
-      --arg childId "$CHILD_NODE_ID" \
-      '{"query": "mutation($parentId: ID!, $childId: ID!) { addSubIssue(input: {issueId: $parentId, subIssueId: $childId}) { issue { number } subIssue { number } } }", "variables": {"parentId": $parentId, "childId": $childId}}' \
-      > "$mutation_payload"
-
-    local RESULT
-    RESULT=$(gh api graphql -H 'GraphQL-Features: sub_issues' --input "$mutation_payload" 2>&1) || {
-      echo "  Warning: addSubIssue failed for #$child_num → #$parent_num: $RESULT" >&2
-      rm -f "$nodes_payload" "$mutation_payload"
-      return 1
-    }
-
-    local ERRORS
-    ERRORS=$(echo "$RESULT" | jq -r '.errors[0].message // empty')
-    if [[ -n "$ERRORS" ]]; then
-      echo "  Warning: addSubIssue error for #$child_num → #$parent_num: $ERRORS" >&2
-      rm -f "$nodes_payload" "$mutation_payload"
-      return 1
-    fi
-
-    rm -f "$nodes_payload" "$mutation_payload"
-    echo "  Linked #$child_num → #$parent_num"
-  }
-
-  LINK_FAILURES=0
-  while IFS= read -r entry; do
-    [[ -z "$entry" ]] && continue
-    CHILD_NUMBER=$(echo "$entry" | cut -d'§' -f1)
-    link_sub_issue "$PARENT_NUMBER" "$CHILD_NUMBER" || LINK_FAILURES=$((LINK_FAILURES + 1))
-  done <<< "$SUB_ISSUE_ENTRIES"
-
-  if [[ $LINK_FAILURES -gt 0 ]]; then
-    echo ""
-    echo "Warning: $LINK_FAILURES sub-issue(s) could not be linked. Link them manually via the GitHub UI."
-  fi
+  URL=$(gh issue create --title "$ISSUE_TITLE" --body "$ISSUE_BODY")
+  echo "Created: $URL"
 fi
