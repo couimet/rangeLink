@@ -45,6 +45,11 @@ if (!labelFilter) {
   process.exit(1);
 }
 
+if (assistedOnly && noAssisted) {
+  process.stderr.write('Error: --assisted and --no-assisted are mutually exclusive\n');
+  process.exit(1);
+}
+
 // ── Auto-discover latest QA YAML ──────────────────────────────────────────────
 
 const scriptDir = path.dirname(__filename);
@@ -78,7 +83,13 @@ if (!yamlPath) {
 
 // ── Parse YAML ────────────────────────────────────────────────────────────────
 
-const content = fs.readFileSync(yamlPath, 'utf8');
+let content;
+try {
+  content = fs.readFileSync(yamlPath, 'utf8');
+} catch (err) {
+  process.stderr.write(`Error: Cannot read YAML file ${yamlPath}: ${err.message}\n`);
+  process.exit(1);
+}
 const lines = content.split('\n');
 
 const testCases = [];
