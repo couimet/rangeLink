@@ -42,3 +42,20 @@ jobs:
           # For PRs: compare with base branch
           # For pushes to main: just count current TODOs
           base-ref: ${{ github.event_name == 'pull_request' && github.base_ref || '' }}
+
+  test-with-extensions:
+    name: Integration Tests (with extensions)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+
+      - name: Run integration tests with extensions
+        uses: ./.github/actions/run-integration-tests-with-extensions
