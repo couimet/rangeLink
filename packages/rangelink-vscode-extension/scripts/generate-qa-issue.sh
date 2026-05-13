@@ -164,7 +164,7 @@ for prefix, tc_list in sorted(groups.items()):
         automated = tc.get('automated', False)
         feat = tc.get('feature', 'Uncategorized')
 
-        if 'cursor' in labels:
+        if 'cursor' in labels and automated is not True:
             cursor_tcs.append({
                 "id": tc_id,
                 "feature": feat,
@@ -173,7 +173,7 @@ for prefix, tc_list in sorted(groups.items()):
             })
             continue  # skip normal group counting
 
-        if 'ubuntu' in labels:
+        if 'ubuntu' in labels and automated is not True:
             ubuntu_tcs.append({
                 "id": tc_id,
                 "feature": feat,

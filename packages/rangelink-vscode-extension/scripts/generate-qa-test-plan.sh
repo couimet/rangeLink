@@ -10,7 +10,7 @@ set -euo pipefail
 # Reads version (last published) to document the scope in the header.
 #
 # Filename: qa-test-cases-v<version>.yaml
-# Fails if the file already exists — delete it first to regenerate.
+# If the file already exists, exits successfully (no-op).
 #
 # Requires: jq
 

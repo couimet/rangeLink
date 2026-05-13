@@ -55,22 +55,14 @@ if [[ -n "$WARNINGS" ]]; then
   echo -e "$WARNINGS"
 fi
 
-# --- Output file with collision suffix ---
+# --- Output file ---
 
 BASE_NAME="release-testing-instructions-v${NEXT_VERSION}"
 OUTPUT_FILE="$QA_DIR/${BASE_NAME}.md"
 
 if [[ -f "$OUTPUT_FILE" ]]; then
-  MAX_SUFFIX=0
-  for existing in "$QA_DIR/${BASE_NAME}"-[0-9][0-9][0-9].md; do
-    [[ -e "$existing" ]] || continue
-    suffix="${existing%.md}"
-    suffix="${suffix##*-}"
-    num=$((10#$suffix))
-    [[ $num -gt $MAX_SUFFIX ]] && MAX_SUFFIX=$num
-  done
-  NEXT_SUFFIX=$((MAX_SUFFIX + 1))
-  OUTPUT_FILE="$QA_DIR/${BASE_NAME}-$(printf '%03d' "$NEXT_SUFFIX").md"
+  echo "$OUTPUT_FILE already exists — nothing to generate"
+  exit 0
 fi
 
 # --- Generate markdown ---
