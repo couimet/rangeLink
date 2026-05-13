@@ -30,7 +30,7 @@ standardSuite('R-M Status Bar Menu', (log) => {
     cleanupFiles(tmpFileUris);
   });
 
-  test('status-bar-menu-002: clicking the status bar item opens the R-M menu', async () => {
+  test('status-bar-menu-002: invoking openStatusBarMenu command opens the R-M menu', async () => {
     const logCapture = getLogCapture();
     logCapture.mark('before-menu-002');
 
@@ -64,7 +64,7 @@ standardSuite('R-M Status Bar Menu', (log) => {
     log('✓ Unbound menu: no Jump item, correct structure');
   });
 
-  test('status-bar-menu-003: Cmd+R Cmd+M keybinding opens the R-M menu', async () => {
+  test('status-bar-menu-003: invoking openStatusBarMenu command opens the R-M menu', async () => {
     const testFileUri = createWorkspaceFile('menu-003', 'line 1\nline 2\n');
     tmpFileUris.push(testFileUri);
     const doc = await vscode.workspace.openTextDocument(testFileUri);
@@ -101,7 +101,7 @@ standardSuite('R-M Status Bar Menu', (log) => {
       ],
     );
 
-    log('✓ Keybinding menu: no Jump item, correct structure');
+    log('✓ Direct command menu: no Jump item, correct structure');
   });
 
   test('status-bar-menu-005: R-M menu shows Jump to Bound Destination when bound', async () => {

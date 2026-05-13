@@ -307,10 +307,14 @@ standardSuite('Clipboard Preservation — Assisted', (log) => {
     const fileUri = createWorkspaceFile('cbp-009', lines.join('\n') + '\n');
     tmpFileUris.push(fileUri);
 
+    const SELECTION_START_LINE = 0;
+    const SELECTION_END_LINE = 2;
+    const SELECTION_COLUMN = 0;
+
     const editor009 = await openEditor(fileUri);
     editor009.selection = new vscode.Selection(
-      new vscode.Position(0, 0),
-      new vscode.Position(2, 0),
+      new vscode.Position(SELECTION_START_LINE, SELECTION_COLUMN),
+      new vscode.Position(SELECTION_END_LINE, SELECTION_COLUMN),
     );
     await settle();
     await writeClipboardSentinel();

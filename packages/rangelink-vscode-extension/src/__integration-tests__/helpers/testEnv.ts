@@ -37,7 +37,17 @@ export const settle = (ms: number = SETTLE_MS): Promise<void> =>
 export const openAndDismiss = async (command: string): Promise<void> => {
   const promise = vscode.commands.executeCommand(command);
   await settle();
-  await vscode.commands.executeCommand('workbench.action.closeQuickOpen');
+  const deadline = Date.now() + POLL_TIMEOUT_MS;
+  // Retry dismissal until the command resolves — the picker may be slow to render on loaded CI.
+  for (;;) {
+    await vscode.commands.executeCommand('workbench.action.closeQuickOpen');
+    const done = await Promise.race([
+      promise.then(() => true),
+      settle(POLL_INTERVAL_MS).then(() => false),
+    ]);
+    if (done) break;
+    if (Date.now() >= deadline) break;
+  }
   await promise;
   await settle();
 };

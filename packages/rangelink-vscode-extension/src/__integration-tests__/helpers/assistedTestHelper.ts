@@ -4,7 +4,8 @@ import * as vscode from 'vscode';
 
 const nodeConsole = new Console(process.stdout, process.stderr);
 
-const SECTION_LINE = '─'.repeat(60);
+const SECTION_LINE_WIDTH = 60;
+const SECTION_LINE = '─'.repeat(SECTION_LINE_WIDTH);
 
 /**
  * Pauses the test until the human completes a UI action.
