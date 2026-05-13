@@ -46,7 +46,11 @@ export const openAndDismiss = async (command: string): Promise<void> => {
       settle(POLL_INTERVAL_MS).then(() => false),
     ]);
     if (done) break;
-    if (Date.now() >= deadline) break;
+    if (Date.now() >= deadline) {
+      throw new Error(
+        `openAndDismiss: "${command}" did not resolve within ${POLL_TIMEOUT_MS}ms deadline`,
+      );
+    }
   }
   await promise;
   await settle();
